@@ -1,19 +1,14 @@
 // Pocket Core: This is the starting point of the CLI.
 package main
 
-import "fmt"
-
-const (
-	clientIdentifier = "pocket_core"
-	version = "0.0.1"
+import (
+	"github.com/pocket_network/pocket-core/cmd/util"
 )
 
+
+// "Main" is the starting function of the client.
+// Keep main as light as possible by calling accessory functions.
 func main() {
-	welcome()
-}
-
-func welcome(){
-	fmt.Println("Client:\t\t", clientIdentifier)
-	fmt.Println("Version:\t", version)
-
+	util.ParseFlags()
+	util.PrintClientInfo()
 }
