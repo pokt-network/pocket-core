@@ -6,12 +6,6 @@ import (
 	"fmt"
 )
 
-const (
-	// "clientIdentifier" holds the Pocket Network Client Identifier.
-	clientIdentifier = "pocket_core"
-	// "version" holds the Pocket Core Client version.
-	version = "0.0.1"
-)
 var (
 	// A string variable derived from flags, used to setup data directory of Pocket Core.
 	datadir = flag.String("datadir", "/path/to/data/dir", "setup the data directory for the DB and keystore")
