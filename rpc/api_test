@@ -1,4 +1,0 @@
-curl --header "Content-Type: application/json" \
-  --request GET \
-  --data '{"title":"xyz","test":"xyz2","data":"xyz3"}' \
-  http://localhost:8080
