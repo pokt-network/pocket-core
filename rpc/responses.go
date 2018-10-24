@@ -32,15 +32,15 @@ type APIError struct {
 	Title  string `json:"title"`
 }
 
-func writeResponse(w http.ResponseWriter, m interface{}) {
+func WriteResponse(w http.ResponseWriter, m interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&JSONResponse{Data: m}); err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
+		WriteErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
 	}
 }
 
-func writeErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
+func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(errorCode)
 	json.
