@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"github.com/pocket_network/pocket-core/const"
 )
+/*
+flags.go specifies startup command flags for the client
+ */
 
 var (
 	// A string variable derived from flags, used to setup data directory of Pocket Core.
@@ -16,7 +19,7 @@ var (
 	rpc = flag.Bool("rpc", false, "whether or not to start the rpc server")
 	// A string variable derived from flags, that specifies which port to run the listener for the rpc (default :8545)
 	rpcport = flag.String("rpcport", "8545", "specified port to run rpc")
-	// A Boolean variable derived from flags, that describes whether or not to start the web sockets server
+	// A boolean variable derived from flags, that describes whether or not to start the web sockets server
 	ws = flag.Bool("ws", false, "whether or not to start the ws server")
 	// A string variable derived from flags, that specifies the websocket listening interface (default :localhost).
 	wsaddr = flag.String("wsaddr", "localhost", "specified ws listening addr")
