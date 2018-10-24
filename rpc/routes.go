@@ -23,14 +23,3 @@ type Route struct {
 "Routes" is a slice that holds all of the routes within one structure.
  */
 type Routes []Route
-
-/*
-"AllRoutes" is a function that returns all of the routes of the API.
-TODO add all routes below
- */
-func AllRoutes() Routes {
-	routes := Routes{
-		Route{"Index", "GET", "/", mockAPIFunc},
-	}
-	return routes
-}
