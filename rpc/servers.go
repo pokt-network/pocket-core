@@ -2,20 +2,28 @@
 package rpc
 
 import (
+	"github.com/pocket_network/pocket-core/rpc/client"
+	"github.com/pocket_network/pocket-core/rpc/relay"
 	"log"
 	"net/http"
 )
 
-/*
-TODO need separate endpoints for custom facing (relay) vs. local facing APIs
- */
 func StartEndpoints() {
 
 }
 
 /*
-"StartRPC" starts an RPC/REST API server at a specific port.
+"StartClientRPC" starts the client RPC/REST API server at a specific port.
  */
-func StartRPC(port string) {
-	log.Fatal(http.ListenAndServe(":"+port, NewClientRouter(AllRoutes())))
+func StartClientRPC(port string) {
+	// This starts the client RPC API.
+	log.Fatal(http.ListenAndServe(":"+port, NewRouter(client.ClientRoutes())))
+}
+
+/*
+"StartRelayRPC" starts the client RPC/REST API server at a specific port.
+ */
+func StartRelayRPC(port string) {
+	// This starts the relay RPC API.
+	log.Fatal(http.ListenAndServe(":"+port, NewRouter(relay.RelayRoutes())))
 }

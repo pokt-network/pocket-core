@@ -9,14 +9,11 @@ import (
 	"net/http"
 )
 
-/*
-"handlers.go holds all of the handler functions for the specified API routes.
- */
 
 func mockAPIFunc(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	example := &Example{}
 	populateModelFromParams(w, r, ps, example)
-	writeResponse(w, example)
+	WriteResponse(w, example)
 }
 
 //Populates a model from the params
