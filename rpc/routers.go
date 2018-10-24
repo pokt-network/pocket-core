@@ -4,9 +4,9 @@ package rpc
 import "github.com/julienschmidt/httprouter"
 
 /*
-"NewClientRouter" creates a new httprouter from all of the routes and corresponding functions dealing with local calls.
+"NewRouter" creates a new httprouter from all of the routes and corresponding functions dealing with local calls.
  */
-func NewClientRouter(routes Routes) *httprouter.Router {
+func NewRouter(routes Routes) *httprouter.Router {
 	// Declare a new http router.
 	router := httprouter.New()
 	// For each 'route' within 'routes'
