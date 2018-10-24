@@ -1,5 +1,4 @@
-// This package is for the RPC/REST API
-package rpc
+package shared
 
 /*
 Define all API models in this file
@@ -13,3 +12,4 @@ type Example struct {
 	Test  string `json:"test"`
 	Data  string `json:"data"`
 }
+

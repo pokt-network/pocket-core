@@ -1,9 +1,8 @@
-// This package is for the RPC/REST API
-package rpc
+package shared
 
 import (
-	"encoding/json"
-	"net/http"
+"encoding/json"
+"net/http"
 )
 
 /*

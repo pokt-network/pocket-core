@@ -1,8 +1,7 @@
-// This package is for the RPC/REST API
-package rpc
+package shared
 
 import (
-	"github.com/julienschmidt/httprouter"
+"github.com/julienschmidt/httprouter"
 )
 
 /*
@@ -23,3 +22,4 @@ type Route struct {
 "Routes" is a slice that holds all of the routes within one structure.
  */
 type Routes []Route
+

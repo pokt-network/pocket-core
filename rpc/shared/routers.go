@@ -1,5 +1,4 @@
-// This package is for the RPC/REST API
-package rpc
+package shared
 
 import "github.com/julienschmidt/httprouter"
 
@@ -17,3 +16,4 @@ func NewRouter(routes Routes) *httprouter.Router {
 	// Return the Router
 	return router
 }
+
