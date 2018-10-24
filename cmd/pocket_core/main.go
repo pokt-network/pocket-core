@@ -14,5 +14,6 @@ func main() {
 	util.ParseFlags()
 	util.PrintClientInfo()
 	// TODO change to flag function
-	rpc.StartRPC("8080")
+	rpc.StartClientRPC("8545")
+	rpc.StartRelayRPC("8546")
 }
