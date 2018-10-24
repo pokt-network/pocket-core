@@ -3,6 +3,7 @@ package rpc
 
 import (
 	"github.com/pocket_network/pocket-core/rpc/client"
+	"github.com/pocket_network/pocket-core/rpc/shared"
 	"github.com/pocket_network/pocket-core/rpc/relay"
 	"log"
 	"net/http"
@@ -17,7 +18,7 @@ func StartEndpoints() {
  */
 func StartClientRPC(port string) {
 	// This starts the client RPC API.
-	log.Fatal(http.ListenAndServe(":"+port, NewRouter(client.ClientRoutes())))
+	log.Fatal(http.ListenAndServe(":"+port, shared.NewRouter(client.ClientRoutes())))
 }
 
 /*
@@ -25,5 +26,5 @@ func StartClientRPC(port string) {
  */
 func StartRelayRPC(port string) {
 	// This starts the relay RPC API.
-	log.Fatal(http.ListenAndServe(":"+port, NewRouter(relay.RelayRoutes())))
+	log.Fatal(http.ListenAndServe(":"+port, shared.NewRouter(relay.RelayRoutes())))
 }

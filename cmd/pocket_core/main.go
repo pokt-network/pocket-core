@@ -15,5 +15,5 @@ func main() {
 	util.PrintClientInfo()
 	// TODO change to flag function
 	rpc.StartClientRPC("8545")
-	rpc.StartRelayRPC("8546")
+	rpc.StartRelayRPC("8546") //TODO make these into separate workers (goroutine maybe)
 }
