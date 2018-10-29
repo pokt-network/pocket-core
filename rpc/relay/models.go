@@ -1,3 +1,4 @@
+// This package contains files for the Relay API
 package relay
 
 /*
@@ -12,4 +13,3 @@ type Example struct {
 	Test  string `json:"test"`
 	Data  string `json:"data"`
 }
-

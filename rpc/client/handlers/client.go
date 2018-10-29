@@ -1,9 +1,12 @@
+// This package is contains the handler functions needed for the Client API
 package handlers
 
 import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
+
+// Define all API handlers that are under the 'client' category within this file.
 
 /*
  "GetClient" handles the localhost:<client-port>/v1/client call.

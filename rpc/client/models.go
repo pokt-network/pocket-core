@@ -1,9 +1,7 @@
-// This package is for the RPC/REST API
+// This package contains files for the Client API
 package client
 
-/*
-Define all API models in this file
- */
+// Define all Client API models in this file.
 
 /*
 "Example" is a basic JSON structure serving as a placeholder.
