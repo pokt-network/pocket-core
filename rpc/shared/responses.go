@@ -1,13 +1,12 @@
+// This package is shared between the different RPC packages
 package shared
 
 import (
-"encoding/json"
-"net/http"
+	"encoding/json"
+	"net/http"
 )
 
-/*
-"responses.go is the interface for the types of responses for the API.
- */
+// "responses.go is the interface for the types of responses for the API.
 
 /*
 "JSONResponse" is a metadata and data response in JSON format.
@@ -24,13 +23,16 @@ type JSONErrorResponse struct {
 }
 
 /*
-	"APIError" is an error feedback structure containing a title and a status.
+"APIError" is an error feedback structure containing a title and a status.
  */
 type APIError struct {
 	Status int    `json:"error"`
 	Title  string `json:"title"`
 }
 
+/*
+"WriteResponse" writes a normal JSON response.
+ */
 func WriteResponse(w http.ResponseWriter, m interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -38,7 +40,9 @@ func WriteResponse(w http.ResponseWriter, m interface{}) {
 		WriteErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
 	}
 }
-
+/*
+"WriteErrorResponse" writes an error JSON response.
+ */
 func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(errorCode)

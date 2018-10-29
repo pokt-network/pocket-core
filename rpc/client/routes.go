@@ -1,10 +1,13 @@
+// This package contains files for the Client API
 package client
 
-import(
+import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/pocket_network/pocket-core/rpc/client/handlers"
 	"github.com/pocket_network/pocket-core/rpc/shared"
 )
+
+// Define all Client API routes in this file.
 
 /*
 The "Route" structure defines the generalization of an api route.
@@ -20,6 +23,7 @@ type Route struct {
 "Routes" is a slice that holds all of the routes within one structure.
  */
 type Routes []Route
+
 /*
 "clientRoutes" is a function that returns all of the routes of the API.
  */

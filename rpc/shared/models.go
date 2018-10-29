@@ -1,8 +1,9 @@
+// This package is shared between the different RPC packages
 package shared
 
-/*
-Define all API models in this file
- */
+
+// Define all shared API modles
+
 
 /*
 "Example" is a basic JSON structure serving as a placeholder.
