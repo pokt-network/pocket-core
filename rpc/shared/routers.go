@@ -1,3 +1,4 @@
+// This package is shared between the different RPC packages
 package shared
 
 import "github.com/julienschmidt/httprouter"
