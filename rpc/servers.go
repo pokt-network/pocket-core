@@ -3,15 +3,13 @@ package rpc
 
 import (
 	"github.com/pocket_network/pocket-core/rpc/client"
-	"github.com/pocket_network/pocket-core/rpc/shared"
 	"github.com/pocket_network/pocket-core/rpc/relay"
+	"github.com/pocket_network/pocket-core/rpc/shared"
 	"log"
 	"net/http"
 )
 
-func StartEndpoints() {
-
-}
+// Define RPC/REST API serving functions within this file.
 
 /*
 "StartClientRPC" starts the client RPC/REST API server at a specific port.

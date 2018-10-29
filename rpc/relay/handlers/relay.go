@@ -1,9 +1,12 @@
+// This package is contains the handler functions needed for the Relay API
 package handlers
 
 import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
+
+// Define all API handlers that are under the 'relay' category within this file.
 
 /*
  "RelayOptions" handles the localhost:<relay-port>/v1/relay call.

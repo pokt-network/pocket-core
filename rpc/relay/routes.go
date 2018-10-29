@@ -1,14 +1,16 @@
+// This package contains files for the Relay API
 package relay
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/pocket_network/pocket-core/rpc/shared"
 	"github.com/pocket_network/pocket-core/rpc/relay/handlers"
+	"github.com/pocket_network/pocket-core/rpc/shared"
 )
 
 /*
 "relayRoutes" is a function that returns all of the routes of the API.
  */
+
 /*
 The "Route" structure defines the generalization of an api route.
 */
@@ -23,7 +25,7 @@ type Route struct {
 "Routes" is a slice that holds all of the routes within one structure.
  */
 type Routes []Route
- 
+
 func RelayRoutes() shared.Routes {
 	routes := shared.Routes{
 		shared.Route{"GetRelayAPIVersion", "POST", "/v1/", handlers.GetRelayAPIVersion},
@@ -35,4 +37,3 @@ func RelayRoutes() shared.Routes {
 	}
 	return routes
 }
-

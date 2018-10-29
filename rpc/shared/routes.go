@@ -1,12 +1,13 @@
+// This package is shared between the different RPC packages
 package shared
 
 import (
 "github.com/julienschmidt/httprouter"
 )
 
-/*
-"routes.go" is responsible for declaring all of the possible routes for the API.
- */
+
+// "routes.go" defines all of the structures needed for API routing.
+
 
 /*
 The "Route" structure defines the generalization of an api route.
