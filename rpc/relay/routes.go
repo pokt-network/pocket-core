@@ -28,12 +28,12 @@ type Routes []Route
 
 func RelayRoutes() shared.Routes {
 	routes := shared.Routes{
-		shared.Route{"GetRelayAPIVersion", "POST", "/v1/", handlers.GetRelayAPIVersion},
-		shared.Route{"DispatchOptions", "POST", "/v1/dispatch/", handlers.DispatchOptions},
-		shared.Route{"DispatchServe", "POST", "/v1/dispatch/serve/", handlers.DispatchServe},
-		shared.Route{"RelayOptions", "POST", "/v1/relay/", handlers.RelayOptions},
-		shared.Route{"RelayRead", "POST", "/v1/relay/read/", handlers.RelayRead},
-		shared.Route{"RelayWrite", "POST", "/v1/relay/write/", handlers.RelayWrite},
+		shared.Route{"GetRelayAPIVersion", "GET", "/v1", handlers.GetRelayAPIVersion},
+		shared.Route{"DispatchOptions", "GET", "/v1/dispatch", handlers.DispatchOptions},
+		shared.Route{"DispatchServe", "GET", "/v1/dispatch/serve", handlers.DispatchServe},
+		shared.Route{"RelayOptions", "GET", "/v1/relay", handlers.RelayOptions},
+		shared.Route{"RelayRead", "GET", "/v1/relay/read", handlers.RelayRead},
+		shared.Route{"RelayWrite", "GET", "/v1/relay/write", handlers.RelayWrite},
 	}
 	return routes
 }

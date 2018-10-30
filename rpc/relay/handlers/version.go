@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"github.com/pocket_network/pocket-core/rpc/shared"
 	"net/http"
 )
 
@@ -12,6 +13,6 @@ import (
  "GetRelayAPIVersion" handles the localhost:<relay-port>/v1 call.
  */
 func GetRelayAPIVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	shared.WriteResponse(w, "Hello, World!")
 }
 
