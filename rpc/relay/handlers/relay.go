@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"github.com/pocket_network/pocket-core/rpc/shared"
 	"net/http"
 )
 
@@ -12,19 +13,19 @@ import (
  "RelayOptions" handles the localhost:<relay-port>/v1/relay call.
  */
 func RelayOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	shared.WriteResponse(w, "Hello, World!")
 }
 
 /*
  "RelayRead" handles the localhost:<relay-port>/v1/relay/read call.
  */
 func RelayRead(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	shared.WriteResponse(w, "Hello, World!")
 }
 
 /*
  "RelayWrite" handles the localhost:<relay-port>/v1/relay/write call.
  */
 func RelayWrite(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	shared.WriteResponse(w, "Hello, World!")
 }
