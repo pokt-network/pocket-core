@@ -16,13 +16,13 @@ var (
 	// A boolean variable derived from flags, that describes whether or not to print the version of the client.
 	print_version = flag.Bool("version", false, "whether or not to print the version of the client")
 	// A boolean variable derived from flags, that describes whether or not to start the client rpc server.
-	client_rpc = flag.Bool("client_rpc", false, "whether or not to start the rpc server")
+	client_rpc = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
 	// A string variable derived from flags, that specifies which port to run the listener for the client rpc (default :8545)
-	client_rpcport = flag.String("client_rpcport", "8545", "specified port to run rpc")
+	client_rpcport = flag.String("clientrpcport", "8545", "specified port to run rpc")
 	// A boolean variable derived from flags, that describes whether or not to start the relay rpc server.
-	relay_rpc = flag.Bool("relay_rpc", false, "whether or not to start the rpc server")
+	relay_rpc = flag.Bool("relayrpc", false, "whether or not to start the rpc server")
 	// A string variable derived from flags, that specifies which port to run the listener for the relay rpc (default :8546)
-	relay_rpcport = flag.String("relay_rpcport", "8546", "specified port to run rpc")
+	relay_rpcport = flag.String("relayrpcport", "8546", "specified port to run rpc")
 	// A boolean variable derived from flags, that describes whether or not to start the web sockets server
 	ws = flag.Bool("ws", false, "whether or not to start the ws server")
 	// A string variable derived from flags, that specifies the websocket listening interface (default :localhost).
