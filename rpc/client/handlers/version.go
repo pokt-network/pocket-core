@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"github.com/pocket_network/pocket-core/rpc/shared"
 	"net/http"
 )
 
@@ -12,5 +13,5 @@ import (
  "getClientAPIVersion" handles the localhost:<client-port>/v1 call.
  */
 func GetClientAPIVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	shared.WriteResponse(w, "Hello, World!")
 }
