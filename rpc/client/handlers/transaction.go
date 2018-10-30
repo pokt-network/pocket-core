@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"github.com/pocket_network/pocket-core/rpc/shared"
 	"net/http"
 )
 
@@ -12,12 +13,12 @@ import (
  "txOptions" handles the localhost:<client-port>/v1/transaction call.
  */
 func TxOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	shared.WriteResponse(w, "Hello, World!")
 }
 
 /*
  "getTxByHash" handles the localhost:<client-port>/v1/transaction/hash call.
  */
 func GetTxByHash(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	shared.WriteResponse(w, "Hello, World!")
 }

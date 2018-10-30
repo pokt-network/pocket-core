@@ -13,7 +13,6 @@ import (
  "DispatchOptions" handles the localhost:<relay-port>/v1/dispatch call.
  */
 func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
 	shared.WriteResponse(w, "Hello, World!")
 }
 
@@ -21,5 +20,5 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
  "DispatchServe" handles the localhost:<relay-port>/v1/dispatch/serve call.
  */
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO
+	shared.WriteResponse(w, "Hello, World!")
 }
