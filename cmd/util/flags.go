@@ -4,6 +4,7 @@ package util
 import (
 	"flag"
 	"fmt"
+	"github.com/pocket_network/pocket-core/const"
 )
 
 var (
@@ -36,9 +37,9 @@ func ParseFlags() {
 "PrintClientInfo" prints startup information about the client
  */
 func PrintClientInfo(){
-	fmt.Println("CLIENT ID:", clientIdentifier)
+	fmt.Println("CLIENT ID:", _const.ClientIdentifier)
 	if *print_version{
-		fmt.Println("VERSION:", version)
+		fmt.Println("VERSION:", _const.Version)
 	}
 	fmt.Println("DATADIR:", *datadir)
 	fmt.Println("RPC:", *rpc)
