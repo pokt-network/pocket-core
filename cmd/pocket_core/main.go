@@ -12,6 +12,5 @@ import (
  Keep main as light as possible by calling accessory functions.
 */
 func main() {
-	util.ParseFlags()
-	util.CLI_Test()
+	util.StartConfig()
 }
