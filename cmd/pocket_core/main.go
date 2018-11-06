@@ -2,15 +2,25 @@
 package main
 
 import (
-	"github.com/pocket_network/pocket-core/cmd/util"
+	"github.com/pocket_network/pocket-core/config"
+	"github.com/pocket_network/pocket-core/rpc"
 )
 
 //TODO add logging
 
 /*
-"Main" is the starting function of the client.
+"main" is the starting function of the client.
  Keep main as light as possible by calling accessory functions.
 */
 func main() {
-	util.StartConfig()
+	startClient()
+}
+
+/*
+"startClient" Starts the client with the given initial configuration.
+ */
+func startClient(){
+	config.InitializeConfiguration()
+	config.PrintConfiguration()
+	rpc.RunAPIEndpoints()
 }
