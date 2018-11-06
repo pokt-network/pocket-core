@@ -28,4 +28,6 @@ on the input.
 func StartConfig() {
 	flag.Parse()
 	NewConfiguration(*datadir, *client_rpc, *relay_rpc, *client_rpcport, *relay_rpcport)
+	printConfiguration()
+	runConfiguration()
 }
