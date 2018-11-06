@@ -82,4 +82,4 @@ func GetInstance() *config {
 		}
 	})
 	return instance
-}// somethings wrong here... getblank instance instead of global instance.
+}
