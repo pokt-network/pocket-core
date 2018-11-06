@@ -37,14 +37,12 @@ func NewConfiguration(dd string, crpc bool, rrpc bool, crpcport string, rrpcport
 			rrpc,
 			rrpcport}
 	}
-	runConfiguration()
 }
 
 /*
 "runConfiguration" executes the specified configuration for the client.
  */
 func runConfiguration(){
-	printConfiguration()
 	if config.Clientrpc{
 		go rpc.StartClientRPC(config.Clientrpcport)
 	}
