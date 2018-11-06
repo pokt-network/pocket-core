@@ -54,7 +54,6 @@ func InitializeConfiguration(){
 "NewConfiguration() is a Constructor function of the configuration type.
  */
 func newConfiguration() {
-	if (instance == &config{}) { // This checks for empty configuration.
 		instance = &config{
 			_const.CLIENTID,
 			_const.VERSION,
@@ -63,7 +62,6 @@ func newConfiguration() {
 			*client_rpcport,
 			*relay_rpc,
 			*relay_rpcport}
-	}
 }
 
 /*
@@ -79,7 +77,9 @@ func PrintConfiguration() {
  */
 func GetInstance() *config {
 	once.Do(func() {
-		instance = &config{}
+		if instance==nil {
+			instance = &config{}
+		}
 	})
 	return instance
-}
+}// somethings wrong here... getblank instance instead of global instance.
