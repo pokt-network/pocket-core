@@ -1,5 +1,5 @@
 // This package is contains the handler functions needed for the Relay API
-package handlers
+package relay
 
 import (
 	"github.com/julienschmidt/httprouter"
