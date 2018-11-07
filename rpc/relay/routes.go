@@ -3,7 +3,6 @@ package relay
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/pocket_network/pocket-core/rpc/relay/handlers"
 	"github.com/pocket_network/pocket-core/rpc/shared"
 )
 
@@ -28,12 +27,12 @@ type Routes []Route
 
 func RelayRoutes() shared.Routes {
 	routes := shared.Routes{
-		shared.Route{"GetRelayAPIVersion", "GET", "/v1", handlers.GetRelayAPIVersion},
-		shared.Route{"DispatchOptions", "GET", "/v1/dispatch", handlers.DispatchOptions},
-		shared.Route{"DispatchServe", "GET", "/v1/dispatch/serve", handlers.DispatchServe},
-		shared.Route{"RelayOptions", "GET", "/v1/relay", handlers.RelayOptions},
-		shared.Route{"RelayRead", "GET", "/v1/relay/read", handlers.RelayRead},
-		shared.Route{"RelayWrite", "GET", "/v1/relay/write", handlers.RelayWrite},
+		shared.Route{"GetRelayAPIVersion", "POST", "/v1", GetRelayAPIVersion},
+		shared.Route{"DispatchOptions", "POST", "/v1/dispatch", DispatchOptions},
+		shared.Route{"DispatchServe", "POST", "/v1/dispatch/serve", DispatchServe},
+		shared.Route{"RelayOptions", "POST", "/v1/relay", RelayOptions},
+		shared.Route{"RelayRead", "POST", "/v1/relay/read", RelayRead},
+		shared.Route{"RelayWrite", "POST", "/v1/relay/write", RelayWrite},
 	}
 	return routes
 }

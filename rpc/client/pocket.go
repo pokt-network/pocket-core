@@ -1,5 +1,5 @@
 // This package is contains the handler functions needed for the Client API
-package handlers
+package client
 
 import (
 	"github.com/julienschmidt/httprouter"
