@@ -47,7 +47,7 @@ func parseFlags() {
 
 func InitializeConfiguration(){
 	parseFlags()
-	newConfiguration()
+	GetInstance()
 }
 
 /*
@@ -78,7 +78,7 @@ func PrintConfiguration() {
 func GetInstance() *config {
 	once.Do(func() {
 		if instance==nil {
-			instance = &config{}
+			newConfiguration()
 		}
 	})
 	return instance
