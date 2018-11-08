@@ -2,11 +2,8 @@
 package relay
 
 import (
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pocket_network/pocket-core/rpc/shared"
-	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -23,10 +20,7 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
  "DispatchServe" handles the localhost:<relay-port>/v1/dispatch/serve call.
  */
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", reqBody)
-	//TODO unmarshal this into a model
+	dispatch := &Dispatch{}
+	shared.PopulateModelFromParams(w,r,ps,dispatch)
+
 }
