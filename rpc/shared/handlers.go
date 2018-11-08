@@ -16,14 +16,14 @@ Unused mock api function for example.
  */
 func mockAPIFunc(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	example := &Example{}
-	populateModelFromParams(w, r, ps, example)
+	PopulateModelFromParams(w, r, ps, example)
 	WriteResponse(w, example)
 }
 
 /*
 Populate the model from the parameters of the POST call.
  */
-func populateModelFromParams(w http.ResponseWriter, r *http.Request, params httprouter.Params, model interface{}) error {
+func PopulateModelFromParams(w http.ResponseWriter, r *http.Request, params httprouter.Params, model interface{}) error {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		return err
