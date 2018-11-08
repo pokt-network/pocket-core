@@ -1,1 +1,1 @@
-curl -X POST --data '{"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64}' http://localhost:8546/v1/dispatch/serve
+curl -X POST --data '{"devid":"0110","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64}' http://localhost:8546/v1/dispatch/serve

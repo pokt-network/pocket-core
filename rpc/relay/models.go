@@ -13,3 +13,7 @@ type Example struct {
 	Test  string `json:"test"`
 	Data  string `json:"data"`
 }
+
+type Dispatch struct {
+	DevID string `json:"devid"`
+}
