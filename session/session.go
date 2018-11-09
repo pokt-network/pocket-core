@@ -12,6 +12,7 @@ var (
 /*
 This is the session structure.
  */
+ // TODO consider converting validators and servicers to map
 type Session struct {
 	// "devID" is the developer's ID that identifies the session.
 	devID string
@@ -74,7 +75,9 @@ func SearchSessionList(dID string) *Session{
 	return nil
 }
 
+/*
+"PrintSessionList" prints the session list map"
+ */
 func PrintSessionList(){
-	list:= GetSessionListInstance()
-	fmt.Println(list.sessions)
+	fmt.Println(GetSessionListInstance().sessions)
 }
