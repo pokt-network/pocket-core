@@ -14,3 +14,10 @@ type Example struct {
 	Data  string `json:"data"`
 }
 
+type Information struct{
+	Endpoint 	string `json:"endpoint"`
+	Method 		string `json:"method"`
+	Parameters 	[]string `json:"params"`
+	Returns		string `json:"returns"`
+	Example		string `json:"example"`
+}

@@ -3,6 +3,8 @@ package shared
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -40,6 +42,23 @@ func WriteResponse(w http.ResponseWriter, m interface{}) {
 		WriteErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
 	}
 }
+/*
+"WriteInfo" provides useful information about the api URL when get is called
+ */
+ // TODO implement and test
+func WriteInfoResponse(w http.ResponseWriter, information Information) {
+	b, err := json.Marshal(information)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if _,err := io.WriteString(w,string(b)); err != nil {
+		WriteErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
+	}
+}
+
 /*
 "WriteErrorResponse" writes an error JSON response.
  */
