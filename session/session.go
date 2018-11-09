@@ -4,7 +4,6 @@ package session
 import (
 	"fmt"
 	"github.com/pocket_network/pocket-core/node"
-	"sync"
 )
 
 var (
@@ -30,13 +29,15 @@ type sessionList struct {
 	sessions map[string]Session
 }
 
+/*
+ "GetSessionListInstance() returns the singleton instance of the global session list
+  TODO make thread safe
+ */
 func GetSessionListInstance() *sessionList {
-	sync.Once{}.Do(func() {
 		if (globalSessionList == nil) {
 			globalSessionList = &sessionList{}
 			globalSessionList.sessions = make(map[string]Session)
 		}
-	})
 	return globalSessionList
 }
 
@@ -67,12 +68,13 @@ func SearchSessionList(dID string) *Session{
 	// pulls the session with the developer ID
 	session:=list.sessions[dID]
 	// if the session is found
-	// TODO may be an error here
-	if &session!=nil{
-		fmt.Println("Session Found!")
+	if session.devID!=""{
 		return &session
 	}
-	// else return nil
-	fmt.Println("Session Not Found!")
 	return nil
+}
+
+func PrintSessionList(){
+	list:= GetSessionListInstance()
+	fmt.Println(list.sessions)
 }

@@ -4,6 +4,7 @@ package relay
 import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/pocket_network/pocket-core/rpc/shared"
+	"github.com/pocket_network/pocket-core/session"
 	"net/http"
 )
 
@@ -22,5 +23,12 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	dispatch := &Dispatch{}
 	shared.PopulateModelFromParams(w,r,ps,dispatch)
-
+	if session.SearchSessionList(dispatch.DevID)!=nil{
+		// Session Found
+	} else {
+		// Session not found
+		session.CreateNewSession(dispatch.DevID)
+		session.SearchSessionList(dispatch.DevID)
+	}
+	session.PrintSessionList()
 }
