@@ -2,8 +2,11 @@
 package main
 
 import (
+	"github.com/logmatic/logmatic-go"
 	"github.com/pocket_network/pocket-core/config"
+	"github.com/pocket_network/pocket-core/logs"
 	"github.com/pocket_network/pocket-core/rpc"
+	"github.com/sirupsen/logrus"
 )
 
 //TODO add logging
@@ -20,6 +23,8 @@ func main() {
 "startClient" Starts the client with the given initial configuration.
  */
 func startClient(){
+	logs.LogConstructorAndLog("test.log","pocket-core/cmd/pocket_core/main.go",
+		"27", "Testing testing 123", logrus.DebugLevel, &logmatic.JSONFormatter{})
 	config.InitializeConfiguration()
 	config.PrintConfiguration()
 	rpc.RunAPIEndpoints()
