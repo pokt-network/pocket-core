@@ -32,7 +32,7 @@ type sessionPool struct {
 }
 
 /*
- "GetSessionPoolInstance() returns the singleton instance of the global session list
+ "GetSessionPoolInstance() returns the singleton instance of the global session pool
   TODO make thread safe
  */
 func GetSessionPoolInstance() *sessionPool {
@@ -52,10 +52,10 @@ func CreateNewSession(dID string) {
 		sList := GetSessionPoolInstance().list
 		// simulated List of Validators
 		// TODO turn into real list of validators
-		validators :=[]node.Validator{}
+		validators := make(map[string]node.Validator)
 		// simulated List of Servicers
 		// TODO turn into real list of servicers
-		servicers :=[]node.Service{}
+		servicers := make(map[string]node.Service)
 		// adds a new session to the sessionlist (map)
 		sList[dID]=Session{dID,validators, servicers}
 	}
@@ -65,7 +65,7 @@ func CreateNewSession(dID string) {
 "SearchSessionList" searches the session list for the specific devID
  */
 func SearchSessionList(dID string) *Session{
-	// gets global session list from singleton
+	// gets global session pool from singleton
 	list := GetSessionPoolInstance()
 	// pulls the session with the developer ID
 	session:=list.list[dID]
@@ -77,7 +77,7 @@ func SearchSessionList(dID string) *Session{
 }
 
 /*
-"PrintSessionList" prints the session list map"
+"PrintSessionList" prints the list from the session pool map"
  */
 func PrintSessionList(){
 	fmt.Println(GetSessionPoolInstance().list)
