@@ -9,13 +9,13 @@ import (
 "Logger" prints the log to the file specified
  */
 func Logger(l Log) {
-	f, err := os.OpenFile("logs/Logs/"+l.Filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	f, err := os.OpenFile("logs/Logs/"+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	defer f.Close()
 	logrus.SetLevel(logrus.TraceLevel)
-	logrus.SetFormatter(l.Format)
+	logrus.SetFormatter(l.Fmt.format)
 	logrus.SetOutput(f)
 	lg := logrus.WithFields(
 		logrus.Fields{
@@ -23,7 +23,7 @@ func Logger(l Log) {
 			"LineNumber": l.LineNumber,
 		})
 
-	switch l.Level {
+	switch l.Lev.level {
 	case logrus.InfoLevel:
 		lg.Info(l.Message)
 	case logrus.DebugLevel:

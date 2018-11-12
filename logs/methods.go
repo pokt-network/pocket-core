@@ -1,27 +1,23 @@
 package logs
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/pocket_network/pocket-core/util"
+	"strconv"
+	"time"
+)
 
-func LogConstructor(filename, filePath,
-linenumber, message string, level logrus.Level, format logrus.Formatter) *Log{
+func LogConstructorAndLog(message string,level LogLevel, format LogFormat) {
+	currentTime := time.Now()
+	f,t :=util.MyCaller()
+	filepath,ln:=f.FileLine(t)
 	log:=&Log{}
-	log.Filename=filename
-	log.Level= level
-	log.Format=format
-	log.FilePath=filePath
-	log.LineNumber=linenumber
-	log.Message=message
-	return log
-}
-
-func LogConstructorAndLog(filename, filePath,
-linenumber, message string, level logrus.Level, format logrus.Formatter) {
-	log:=&Log{}
-	log.Filename=filename
-	log.Level= level
-	log.Format=format
-	log.FilePath=filePath
-	log.LineNumber=linenumber
+	log.Name=currentTime.Format("2006.01.02 15:04:05")
+	log.FunctionName=f.Name()
+	log.FilePath= filepath
+	log.Lev = level
+	log.Fmt =format
+	log.LineNumber= strconv.Itoa(ln)
 	log.Message=message
 	Logger(*log)
 }
+
