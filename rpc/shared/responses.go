@@ -46,7 +46,7 @@ func WriteResponse(w http.ResponseWriter, m interface{}) {
 "WriteInfo" provides useful information about the api URL when get is called
  */
  // TODO implement and test
-func WriteInfoResponse(w http.ResponseWriter, information Information) {
+func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 	b, err := json.Marshal(information)
 	if err != nil {
 		fmt.Println(err)
