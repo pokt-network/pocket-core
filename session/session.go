@@ -16,10 +16,11 @@ This is the session structure.
 type Session struct {
 	// "devID" is the developer's ID that identifies the session.
 	devID string
-	// "validators" is an array of validator nodes.
-	validators []node.Validator
-	// "servicers" is an array of service nodes.
-	servicers []node.Service
+	// "validators" is a map [devid]Node validator nodes.
+	validators map[string]node.Validator
+
+	// "validators" is a map [devid]Node servicer nodes.
+	servicers  map[string]node.Service
 }
 
 /*
@@ -61,7 +62,7 @@ func CreateNewSession(dID string) {
 }
 
 /*
-"searchSessionList" searches the session list for the specific devID
+"SearchSessionList" searches the session list for the specific devID
  */
 func SearchSessionList(dID string) *Session{
 	// gets global session list from singleton
