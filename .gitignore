@@ -10,3 +10,6 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Ignore vendor folder: every environment needs to build their own based on package management.
+vendor/
