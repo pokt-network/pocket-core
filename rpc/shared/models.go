@@ -14,7 +14,7 @@ type Example struct {
 	Data  string `json:"data"`
 }
 
-type Information struct{
+type APIReference struct{
 	Endpoint 	string `json:"endpoint"`
 	Method 		string `json:"method"`
 	Parameters 	[]string `json:"params"`
