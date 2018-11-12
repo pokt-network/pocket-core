@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	globalSessionList *sessionList
+	globalSessionList *sessionPool
 )
 /*
 This is the session structure.
@@ -24,32 +24,32 @@ type Session struct {
 }
 
 /*
-This holds a list of sessions that are active (needs to confirm using liveness check).
+This holds a list of list that are active (needs to confirm using liveness check).
  */
-type sessionList struct {
-	// "sessions" is the local list of ongoing sessions.
-	sessions map[string]Session
+type sessionPool struct {
+	// "list" is the local list of ongoing list.
+	list map[string]Session
 }
 
 /*
- "GetSessionListInstance() returns the singleton instance of the global session list
+ "GetSessionPoolInstance() returns the singleton instance of the global session list
   TODO make thread safe
  */
-func GetSessionListInstance() *sessionList {
+func GetSessionPoolInstance() *sessionPool {
 		if (globalSessionList == nil) {
-			globalSessionList = &sessionList{}
-			globalSessionList.sessions = make(map[string]Session)
+			globalSessionList = &sessionPool{}
+			globalSessionList.list = make(map[string]Session)
 		}
 	return globalSessionList
 }
 
 /*
-"createNewSession" creates a new session for the specific devID and adds to global sessionList (map)
+"createNewSession" creates a new session for the specific devID and adds to global sessionPool (map)
  */
 func CreateNewSession(dID string) {
 	if(SearchSessionList(dID)==nil){
 		// pulls the global list from the singleton
-		sList :=GetSessionListInstance().sessions
+		sList := GetSessionPoolInstance().list
 		// simulated List of Validators
 		// TODO turn into real list of validators
 		validators :=[]node.Validator{}
@@ -66,9 +66,9 @@ func CreateNewSession(dID string) {
  */
 func SearchSessionList(dID string) *Session{
 	// gets global session list from singleton
-	list := GetSessionListInstance()
+	list := GetSessionPoolInstance()
 	// pulls the session with the developer ID
-	session:=list.sessions[dID]
+	session:=list.list[dID]
 	// if the session is found
 	if session.devID!=""{
 		return &session
@@ -80,5 +80,5 @@ func SearchSessionList(dID string) *Session{
 "PrintSessionList" prints the session list map"
  */
 func PrintSessionList(){
-	fmt.Println(GetSessionListInstance().sessions)
+	fmt.Println(GetSessionPoolInstance().list)
 }
