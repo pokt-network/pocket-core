@@ -2,9 +2,9 @@
 package main
 
 import (
-	"github.com/pocket_network/pocket-core/config"
-	"github.com/pocket_network/pocket-core/logs"
-	"github.com/pocket_network/pocket-core/rpc"
+	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/logs"
+	"github.com/pokt-network/pocket-core/rpc"
 )
 
 //TODO add logging

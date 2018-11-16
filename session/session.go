@@ -3,7 +3,7 @@ package session
 
 import (
 	"fmt"
-	"github.com/pocket_network/pocket-core/node"
+	"github.com/pokt-network/pocket-core/node"
 )
 
 var (

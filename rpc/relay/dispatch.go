@@ -3,8 +3,8 @@ package relay
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/pocket_network/pocket-core/rpc/shared"
-	"github.com/pocket_network/pocket-core/session"
+	"github.com/pokt-network/pocket-core/rpc/shared"
+	"github.com/pokt-network/pocket-core/session"
 	"net/http"
 )
 
