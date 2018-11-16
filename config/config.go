@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/pocket_network/pocket-core/const"
+	"github.com/pokt-network/pocket-core/const"
 	"sync"
 )
 

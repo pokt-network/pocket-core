@@ -2,10 +2,10 @@
 package rpc
 
 import (
-	"github.com/pocket_network/pocket-core/config"
-	"github.com/pocket_network/pocket-core/rpc/client"
-	"github.com/pocket_network/pocket-core/rpc/relay"
-	"github.com/pocket_network/pocket-core/rpc/shared"
+	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/rpc/client"
+	"github.com/pokt-network/pocket-core/rpc/relay"
+	"github.com/pokt-network/pocket-core/rpc/shared"
 	"log"
 	"net/http"
 )
