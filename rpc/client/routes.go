@@ -3,7 +3,7 @@ package client
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/pocket_network/pocket-core/rpc/shared"
+	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
 // Define all Client API routes in this file.

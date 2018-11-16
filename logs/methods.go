@@ -1,7 +1,7 @@
 package logs
 
 import (
-	"github.com/pocket_network/pocket-core/util"
+	"github.com/pokt-network/pocket-core/util"
 	"strconv"
 	"time"
 )
