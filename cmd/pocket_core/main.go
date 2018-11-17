@@ -3,7 +3,6 @@ package main
 
 import (
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc"
 )
 
@@ -21,7 +20,7 @@ func main() {
 "startClient" Starts the client with the given initial configuration.
  */
 func startClient(){
-	logs.LogConstructorAndLog("TESTING TESTING",logs.InfoLevel,logs.JSONLogFormat)
+	//logs.LogConstructorAndLog("TESTING TESTING",logs.InfoLevel,logs.JSONLogFormat)
 	config.InitializeConfiguration()
 	config.PrintConfiguration()
 	rpc.RunAPIEndpoints()

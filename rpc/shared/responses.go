@@ -4,7 +4,6 @@ package shared
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -14,7 +13,7 @@ import (
 "JSONResponse" is a metadata and data response in JSON format.
  */
 type JSONResponse struct {
-	Data interface{} `json:"data"`
+	Data string `json:"data"`
 }
 
 /*
@@ -35,27 +34,31 @@ type APIError struct {
 /*
 "WriteResponse" writes a normal JSON response.
  */
-func WriteResponse(w http.ResponseWriter, m interface{}) {
+func WriteResponse(w http.ResponseWriter, m string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&JSONResponse{Data: m}); err != nil {
-		WriteErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
+	b,err := json.MarshalIndent(&JSONResponse{m},"","\t");
+	if err!= nil {
+		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+	} else{
+		w.Write(b)
 	}
 }
 /*
 "WriteInfo" provides useful information about the api URL when get is called
  */
- // TODO implement and test
 func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
-	b, err := json.Marshal(information)
+	b,err := json.MarshalIndent(information,"","\t");
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if _,err := io.WriteString(w,string(b)); err != nil {
-		WriteErrorResponse(w, http.StatusInternalServerError, "Internal Server Error")
+	if err!= nil {
+		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+	} else{
+		w.Write(b)
 	}
 }
 
