@@ -2,8 +2,11 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/rpc"
+	"os"
 )
 
 //TODO add logging
@@ -24,4 +27,7 @@ func startClient(){
 	config.InitializeConfiguration()
 	config.PrintConfiguration()
 	rpc.RunAPIEndpoints()
+	fmt.Print("Press any key to quit: ")
+	input := bufio.NewScanner(os.Stdin)
+	input.Scan()
 }
