@@ -1,4 +1,4 @@
-package tests
+package rpc
 
 import (
 	"github.com/pokt-network/pocket-core/config"
