@@ -2,6 +2,8 @@
 package logs
 
 import (
+	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/const"
 	"github.com/sirupsen/logrus"
 	"os"
 )
@@ -9,7 +11,8 @@ import (
 "Logger" prints the log to the file specified
  */
 func Logger(l Log) {
-	f, err := os.OpenFile("logs/Logs/"+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	f, err := os.OpenFile(config.GetInstance().Datadir+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+
+		l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		logrus.Fatal(err)
 	}

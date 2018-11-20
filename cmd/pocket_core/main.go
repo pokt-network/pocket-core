@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
@@ -22,11 +23,11 @@ func main() {
 /*
 "startClient" Starts the client with the given initial configuration.
  */
-func startClient(){
-	//logs.LogConstructorAndLog("TESTING TESTING",logs.InfoLevel,logs.JSONLogFormat)
+func startClient() {
 	config.InitializeConfiguration()
 	config.BuildConfiguration()
 	config.PrintConfiguration()
+	logs.LogConstructorAndLog("TESTING TESTING", logs.InfoLevel, logs.JSONLogFormat)
 	rpc.RunAPIEndpoints()
 	fmt.Print("Press any key + 'Return' to quit: ")
 	input := bufio.NewScanner(os.Stdin)
