@@ -33,5 +33,8 @@ Reach out to us on [Slack](https://www.pokt.network/slack-pokt) and start a disc
 # How to build
 `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
 
+### Where to find logs
+`<datadir>/logs`
+
 # License
 The pocket-core code is licensed under the MIT License, also included in the repository in the LICENSE file.
