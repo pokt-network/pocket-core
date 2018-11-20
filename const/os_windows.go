@@ -7,6 +7,10 @@ import "os"
 /*
 This file is for OS specific data directory configuration
  */
- var(
- 	DATADIR = os.Getenv("APPDATA")+"\\"+"Pocket"
- )
+const (
+	FILESEPARATOR = "\\"
+)
+
+var (
+	DATADIR = os.Getenv("APPDATA") + "\\" + "Pocket"
+)
