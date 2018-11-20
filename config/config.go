@@ -24,7 +24,7 @@ type config struct {
 var (
 	instance *config
 	once     sync.Once
-	datadir=flag.String("datadir",_const.DATADIR, "setup the data director for the DB and keystore")
+	datadir  = flag.String("datadir", _const.DATADIR, "setup the data director for the DB and keystore")
 	// A boolean variable derived from flags, that describes whether or not to print the version of the client.
 	client_rpc = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
 	// A string variable derived from flags, that specifies which port to run the listener for the client rpc (default :8545)
@@ -40,14 +40,14 @@ var (
 "parseFlags" reads in specific command line arguments passed to the client and executes events based
 on the input.
  */
- /*
- The default value is `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac
-  */
+/*
+The default value is `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac
+ */
 func parseFlags() {
 	flag.Parse()
 }
 
-func InitializeConfiguration(){
+func InitializeConfiguration() {
 	parseFlags()
 	GetInstance()
 }
@@ -56,14 +56,14 @@ func InitializeConfiguration(){
 "NewConfiguration() is a Constructor function of the configuration type.
  */
 func newConfiguration() {
-		instance = &config{
-			_const.CLIENTID,
-			_const.VERSION,
-			*datadir,
-			*client_rpc,
-			*client_rpcport,
-			*relay_rpc,
-			*relay_rpcport}
+	instance = &config{
+		_const.CLIENTID,
+		_const.VERSION,
+		*datadir,
+		*client_rpc,
+		*client_rpcport,
+		*relay_rpc,
+		*relay_rpcport}
 }
 
 /*
@@ -79,7 +79,7 @@ func PrintConfiguration() {
  */
 func GetInstance() *config {
 	once.Do(func() {
-		if instance==nil {
+		if instance == nil {
 			newConfiguration()
 		}
 	})
