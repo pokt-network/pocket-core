@@ -7,7 +7,7 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 # How to run it
 To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
 
-- `--datadir <absolute path>` to configure the data directory where the blockchain information will be stored.
+- `--datadir <absolute path>` to configure the data directory where the blockchain information will be stored. The default value is `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac
 - `--clientrpc` to enable the Client RPC endpoints. The default value is `false`.
 - `--clientrpcport <port number>` the port on which the Client RPC endpoints will run. The default value is `8545`.
 - `--relayrpc` to enable the Relay RPC endpoints. The default value is `false`.

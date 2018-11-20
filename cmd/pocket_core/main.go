@@ -25,9 +25,10 @@ func main() {
 func startClient(){
 	//logs.LogConstructorAndLog("TESTING TESTING",logs.InfoLevel,logs.JSONLogFormat)
 	config.InitializeConfiguration()
+	config.BuildConfiguration()
 	config.PrintConfiguration()
 	rpc.RunAPIEndpoints()
-	fmt.Print("Press any key to quit: ")
+	fmt.Print("Press any key + 'Return' to quit: ")
 	input := bufio.NewScanner(os.Stdin)
 	input.Scan()
 }
