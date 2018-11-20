@@ -30,6 +30,7 @@ func RelayRoutes() shared.Routes {
 		shared.Route{"GetRelayAPIVersion", "POST", "/v1", GetRelayAPIVersion},
 		shared.Route{"DispatchOptions", "POST", "/v1/dispatch", DispatchOptions},
 		shared.Route{"DispatchServe", "POST", "/v1/dispatch/serve", DispatchServe},
+		shared.Route{"DispatchServeInfo", "GET", "/v1/dispatch/serve", DispatchServeInfo},
 		shared.Route{"RelayOptions", "POST", "/v1/relay", RelayOptions},
 		shared.Route{"RelayRead", "POST", "/v1/relay/read", RelayRead},
 		shared.Route{"RelayWrite", "POST", "/v1/relay/write", RelayWrite},

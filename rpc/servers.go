@@ -17,17 +17,17 @@ import (
  */
 func RunAPIEndpoints() {
 	if config.GetInstance().Clientrpc {
-		go startClientRPC(config.GetInstance().Clientrpcport)
+		go StartClientRPC(config.GetInstance().Clientrpcport)
 	}
 	if config.GetInstance().Relayrpc {
-		startRelayRPC(config.GetInstance().Relayrpcport) // TODO convert to go routine
+		go StartRelayRPC(config.GetInstance().Relayrpcport) // TODO convert to go routine
 	}
 }
 
 /*
 "startClientRPC" starts the client RPC/REST API server at a specific port.
  */
-func startClientRPC(port string) {
+func StartClientRPC(port string) {
 	// This starts the client RPC API.
 	log.Fatal(http.ListenAndServe(":"+port, shared.NewRouter(client.ClientRoutes())))
 }
@@ -35,7 +35,7 @@ func startClientRPC(port string) {
 /*
 "startRelayRPC" starts the client RPC/REST API server at a specific port.
  */
-func startRelayRPC(port string) {
+func StartRelayRPC(port string) {
 	// This starts the relay RPC API.
 	log.Fatal(http.ListenAndServe(":"+port, shared.NewRouter(relay.RelayRoutes())))
 }

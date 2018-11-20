@@ -13,6 +13,9 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
 - `--relayrpc` to enable the Relay RPC endpoints. The default value is `false`.
 - `--relayrpcport <port number>` the port on which the Relay RPC endpoints will run. The default value is `8546`.
 
+# How to test
+To run the Pocket Core unit tests, use the go testing tools and the `go test ./..` command within the tests directory
+
 # How to contribute
 Pocket Core is an open source project, and as such we welcome any contribution from anyone on the internet. Please read our [Developer Setup Guide](https://github.com/pokt-network/pocket-core/wiki/Developer-Setup-Guide) on how get started.
 
@@ -26,6 +29,9 @@ Reach out to us on [Slack](https://www.pokt.network/slack-pokt) and start a disc
 - (Optional) Use [Editor Config](https://editorconfig.org) to help your Text Editor keep the same formatting used throughout the project.
 - Code must be documented adhering to the official Go commentary guidelines.
 - Pull requests need to be based on and opened against the `staging` branch.
+
+# How to build
+`go build pokt-network/pocket-core/cmd/pocket_core/main.go`
 
 # License
 The pocket-core code is licensed under the MIT License, also included in the repository in the LICENSE file.

@@ -3,6 +3,17 @@
 ## Endpoints
 Default API Endpoints:
 
+## Check In-Client Reference
+Example: `````localhost:8546/v1/dispatch/serve`````
+
+Returns: ```{ "endpoint": "/v1/dispatch/serve",
+              	"method": "POST",
+              	"params": [
+              		"devid"
+              	],
+              	"returns": "DATA - Session ID",
+              	"example": "curl --data {devid:1234}' http://localhost:8546/v1/dispatch/serve"
+              }```
 
 | Type  |URL      |
 | :-----| :----|

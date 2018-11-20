@@ -17,4 +17,5 @@ vendor/
 # Log files should be ignored
 *.log
 logs/Logs
+*.idea
 
