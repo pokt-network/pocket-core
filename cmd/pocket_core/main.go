@@ -6,11 +6,17 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
+	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
 
-//TODO add logging
+/*
+Called before main.go
+ */
+func init(){
+	crypto.GenerateSeed()
+}
 
 /*
 "main" is the starting function of the client.
