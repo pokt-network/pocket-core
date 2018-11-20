@@ -1,6 +1,9 @@
 package util
 
-import "runtime"
+import (
+	"encoding/hex"
+	"runtime"
+)
 
 // MyCaller returns the caller of the function that called it :)
 func MyCaller() (*runtime.Func,uintptr){
@@ -22,4 +25,8 @@ func MyCaller() (*runtime.Func,uintptr){
 
 	// return its name
 	return fun, fpcs[0]
+}
+
+func BytesToHex(h []byte) string{
+	return hex.EncodeToString(h)
 }
