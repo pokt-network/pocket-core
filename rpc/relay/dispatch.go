@@ -5,6 +5,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"github.com/pokt-network/pocket-core/session"
+	"github.com/pokt-network/pocket-core/util"
 	"net/http"
 )
 
@@ -32,12 +33,16 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	shared.PopulateModelFromParams(w,r,ps,dispatch)
 	if session.SearchSessionList(dispatch.DevID)!=nil{
 		// Session Found
-		shared.WriteResponse(w,"Session Already Exists!\n")
+		// Write the sessionKey
+		// TODO should store sessionKey and return value if found
+		shared.WriteResponse(w,util.BytesToHex(session.SessionKeyAlgo(dispatch.DevID)))
 	} else {
 		// Session not found
 		session.CreateNewSession(dispatch.DevID)
 		session.SearchSessionList(dispatch.DevID)
 		shared.WriteResponse(w,"Successfully Created New Session")
+		shared.WriteResponse(w,util.BytesToHex(session.SessionKeyAlgo(dispatch.DevID)))
+		// TODO store sessionKey
 	}
 	session.PrintSessionList()
 }

@@ -15,7 +15,7 @@ func SessionHash (s []byte) []byte {
 }
 
 /*
-"SessionNonce" generates a 32 byte random key.
+"SessionNonce" generates a 32 byte random key. (Unused for now)
  */
 func SessionNonce() []byte{
 	return RandBytes(32)
