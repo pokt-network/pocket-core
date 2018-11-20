@@ -24,8 +24,7 @@ type config struct {
 var (
 	instance *config
 	once     sync.Once
-	// A string variable derived from flags, used to setup data directory of Pocket Core.
-	datadir = flag.String("datadir", "/path/to/data/dir", "setup the data directory for the DB and keystore")
+	datadir=flag.String("datadir",_const.DATADIR, "setup the data director for the DB and keystore")
 	// A boolean variable derived from flags, that describes whether or not to print the version of the client.
 	client_rpc = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
 	// A string variable derived from flags, that specifies which port to run the listener for the client rpc (default :8545)
@@ -41,6 +40,9 @@ var (
 "parseFlags" reads in specific command line arguments passed to the client and executes events based
 on the input.
  */
+ /*
+ The default value is `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac
+  */
 func parseFlags() {
 	flag.Parse()
 }
