@@ -4,6 +4,6 @@ package _const
 import "crypto"
 
 const(
-	SessionHashingAlgorithm = crypto.SHA3_256
+	SessionHashingAlgorithm = crypto.SHA1
 )
 
