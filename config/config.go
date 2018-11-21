@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-// This file describes all of the configuration properties of the client (set by startup flags)
+// "config.go" describes all of the configuration properties of the client (set by startup flags)
 
 type config struct {
 	Clientid      string `json:"CLIENTID"` // This variable holds a client identifier string.
@@ -36,20 +36,9 @@ var (
 	// A boolean variable derived from flags, that describes whether or not to start the web sockets server
 )
 
-/*
-"parseFlags" reads in specific command line arguments passed to the client and executes events based
-on the input.
- */
-/*
-The default value is `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac
- */
-func parseFlags() {
-	flag.Parse()
-}
-
 func InitializeConfiguration() {
-	parseFlags()
-	GetInstance()
+	flag.Parse()        // built in function to parse the flags above.
+	GetConfigInstance() // returns the thread safe instance of the client configuration.
 }
 
 /*
@@ -57,31 +46,31 @@ func InitializeConfiguration() {
  */
 func newConfiguration() {
 	instance = &config{
-		_const.CLIENTID,
-		_const.VERSION,
-		*datadir,
-		*client_rpc,
-		*client_rpcport,
-		*relay_rpc,
-		*relay_rpcport}
+		_const.CLIENTID,			// client identifier is set in global constants.
+		_const.VERSION,			// client version is set in global constants.
+		*datadir,				// data directory path specified by the flag.
+		*client_rpc,			// the client rpc is running.
+		*client_rpcport,		// the port the client rpc is running.
+		*relay_rpc,				// the relay rpc is running.
+		*relay_rpcport}		// the port the relay rpc is running.
 }
 
 /*
 "PrintConfiguration()" prints the client configuration information to the CLI.
  */
 func PrintConfiguration() {
-	data, _ := json.MarshalIndent(instance, "", "    ")
-	fmt.Println("Pocket Core Configuration:\n", string(data))
+	data, _ := json.MarshalIndent(instance, "", "    ")           	// pretty configure the json data
+	fmt.Println("Pocket Core Configuration:\n", string(data))     			// pretty print the pocket configuration
 }
 
 /*
-"GetInstance()" returns the configuration object in a thread safe manner.
+"GetConfigInstance()" returns the configuration object in a thread safe manner.
  */
-func GetInstance() *config {
-	once.Do(func() {
-		if instance == nil {
+func GetConfigInstance() *config { 	// singleton structure to return the configuration object
+	once.Do(func() {				// thread safety.
+		if instance == nil {		// if nil make a new configuration
 			newConfiguration()
 		}
 	})
-	return instance
+	return instance					// else return the configuration
 }

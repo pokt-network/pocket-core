@@ -4,13 +4,12 @@ package _const
 
 import "os"
 
-/*
-This file is for OS specific data directory configuration
- */
+// "os_windows.go" is for OS specific constants.
+
 const (
-	FILESEPARATOR = "\\"
+	FILESEPARATOR = "\\"										// os specific file separator
 )
 
 var (
-	DATADIR = os.Getenv("APPDATA") + "\\" + "Pocket"
+	DATADIR = os.Getenv("APPDATA") + "\\" + "Pocket"		// os specific data directory.
 )

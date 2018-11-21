@@ -9,7 +9,7 @@ import (
 func TestDataDir(t *testing.T) {
 	config.InitializeConfiguration()
 	config.PrintConfiguration()
-	datadir := config.GetInstance().Datadir
+	datadir := config.GetConfigInstance().Datadir
 	if(datadir==_const.DATADIR){
 		t.Log(datadir)
 	} else{

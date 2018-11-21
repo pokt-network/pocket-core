@@ -4,13 +4,12 @@ package _const
 
 import "os"
 
-/*
-This file is for OS specific data directory configuration
- */
+// "os_linux.go" is for OS specific constants.
+
 const (
-	FILESEPARATOR = "/"
+	FILESEPARATOR = "/"										// os specific file separator
 )
 
 var (
-	DATADIR = os.Getenv("HOME") + "/.pocket"
+	DATADIR = os.Getenv("HOME") + "/.pocket"			// os specific data directory.
 )
