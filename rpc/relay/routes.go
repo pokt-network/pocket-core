@@ -6,9 +6,7 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-/*
-"relayRoutes" is a function that returns all of the routes of the API.
- */
+// "routes.go" defines all of the relay routes within this file.
 
 /*
 The "Route" structure defines the generalization of an api route.
@@ -25,6 +23,9 @@ type Route struct {
  */
 type Routes []Route
 
+/*
+"relayRoutes" is a function that returns all of the routes of the API.
+ */
 func RelayRoutes() shared.Routes {
 	routes := shared.Routes{
 		shared.Route{"GetRelayAPIVersion", "POST", "/v1", GetRelayAPIVersion},

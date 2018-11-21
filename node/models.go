@@ -1,6 +1,8 @@
 // This package contains files related specifically to nodes.
 package node
 
+// models.go maintains the structures for the node package.
+
 type Node struct{
 	// TODO add general node data here
 }

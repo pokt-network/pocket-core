@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// Define all API handlers that are under the 'client' category within this file.
+// "client.go" defines handlers that are under the 'client' category within this file.
 
 /*
  "GetClient" handles the localhost:<client-port>/v1/client call.

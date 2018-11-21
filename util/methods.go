@@ -1,3 +1,4 @@
+// This package is for global utility functions and structures.
 package util
 
 import (
@@ -5,7 +6,9 @@ import (
 	"runtime"
 )
 
-// Caller returns the caller of the function that called it :)
+// "methods.go" defines global utility functions
+
+// "Caller" returns the caller of the function that called it :)
 func Caller() (*runtime.Func,uintptr){
 
 	// we get the callers as uintptrs - but we just need 1
@@ -27,6 +30,9 @@ func Caller() (*runtime.Func,uintptr){
 	return fun, fpcs[0]
 }
 
+/*
+"BytesToHex" converts a byte array into a hex string
+ */
 func BytesToHex(h []byte) string{
 	return hex.EncodeToString(h)
 }
