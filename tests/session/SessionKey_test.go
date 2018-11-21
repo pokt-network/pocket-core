@@ -2,10 +2,12 @@ package session
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
-	"io/ioutil"
+	"github.com/pokt-network/pocket-core/session"
+	"github.com/pokt-network/pocket-core/util"
 	"net/http"
 	"testing"
 )
@@ -36,6 +38,12 @@ func TestSessionKey(t *testing.T) {
 	// Deferred: close the body of the response
 	defer resp.Body.Close()
 	// Read the body from the response using ioutil
-	body, _ := ioutil.ReadAll(resp.Body)
-	t.Log(string(body))
+	response := new(shared.JSONResponse)
+	json.NewDecoder(resp.Body).Decode(response)
+	expectedKey := util.BytesToHex(session.GenerateSessionKey("testing"))
+	t.Log("Expected Key: "+expectedKey )
+	t.Log("Generated Key: "+response.Data)
+	if response.Data!=expectedKey {
+		t.Errorf("Response does not contain expected key...")
+	}
 }

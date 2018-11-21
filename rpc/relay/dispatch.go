@@ -35,13 +35,12 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		// Session Found
 		// Write the sessionKey
 		// TODO should store sessionKey and return value if found
-		shared.WriteResponse(w,util.BytesToHex(session.SessionKeyAlgo(dispatch.DevID)))
+		shared.WriteResponse(w,util.BytesToHex(session.GenerateSessionKey(dispatch.DevID)))
 	} else {
 		// Session not found
 		session.CreateNewSession(dispatch.DevID)
 		session.SearchSessionList(dispatch.DevID)
-		shared.WriteResponse(w,"Successfully Created New Session")
-		shared.WriteResponse(w,util.BytesToHex(session.SessionKeyAlgo(dispatch.DevID)))
+		shared.WriteResponse(w,util.BytesToHex(session.GenerateSessionKey(dispatch.DevID)))
 		// TODO store sessionKey
 	}
 	session.PrintSessionList()

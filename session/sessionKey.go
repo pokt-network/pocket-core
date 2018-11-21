@@ -4,9 +4,9 @@ package session
 import "github.com/pokt-network/pocket-core/crypto"
 
 /*
-"SessionKeyAlgo" function determines the sessionKey.
+"GenerateSessionKey" function determines the sessionKey.
  */
-func SessionKeyAlgo(devID string) []byte {
+func GenerateSessionKey(devID string) []byte {
 	// Simulate block hash
 	b1 := "block 1"
 	b2 := "block 2"
