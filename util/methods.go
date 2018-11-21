@@ -5,8 +5,8 @@ import (
 	"runtime"
 )
 
-// MyCaller returns the caller of the function that called it :)
-func MyCaller() (*runtime.Func,uintptr){
+// Caller returns the caller of the function that called it :)
+func Caller() (*runtime.Func,uintptr){
 
 	// we get the callers as uintptrs - but we just need 1
 	fpcs := make([]uintptr, 1)
