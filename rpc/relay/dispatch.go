@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-// Define all API handlers that are under the 'dispatch' category within this file.
+// "dispatch.go" defines API handlers that are under the 'dispatch' category within this file.
 
 /*
  "DispatchOptions" handles the localhost:<relay-port>/v1/dispatch call.

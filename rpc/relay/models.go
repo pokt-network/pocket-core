@@ -2,7 +2,7 @@
 package relay
 
 /*
-Define all API models in this file
+"models.go" defines API models in this file.
  */
 
 /*

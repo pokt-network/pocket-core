@@ -14,9 +14,9 @@ import (
 
 func TestSessionKey(t *testing.T) {
 	// Start server instance
-	go http.ListenAndServe(":"+config.GetInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
+	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
 	// @ Url
-	u := "http://localhost:" + config.GetInstance().Relayrpcport + "/v1/dispatch/serve"
+	u := "http://localhost:" + config.GetConfigInstance().Relayrpcport + "/v1/dispatch/serve"
 	// Create json string
 	jsonString := []byte(`{"devid":"testing"}`)
 	// Create post request

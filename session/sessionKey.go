@@ -3,22 +3,20 @@ package session
 
 import "github.com/pokt-network/pocket-core/crypto"
 
+// "sessionKey.go" defines sessionKey specific methods
+
 /*
 "GenerateSessionKey" function determines the sessionKey.
  */
 func GenerateSessionKey(devID string) []byte {
-	// Simulate block hash
-	b1 := "block 1"
+	b1 := "block 1"								// Simulate block hash
 	b2 := "block 2"
 	block1 := crypto.SessionHash([]byte(b1))
 	block2 := crypto.SessionHash([]byte(b2))
-	// Get Developer ID Bytes
-	dIDBytes := []byte(devID)
+	dIDBytes := []byte(devID)					// Get Developer ID Bytes
 	key := []byte{}
-	// Create the publicly verifiable key for the algorithm
-	key = append(key, block1...)
+	key = append(key, block1...)				// Create the publicly verifiable key for the algorithm
 	key = append(key, block2...)
 	key = append(key, dIDBytes...)
-	// Run through hashing algorithm
-	return crypto.SessionHash(key)
+	return crypto.SessionHash(key)				// Run through hashing algorithm
 }

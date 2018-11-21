@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// Define all API handlers that are under the 'pocket' category within this file.
+// "pocket.go" handles all API handlers that are under the 'pocket' category within this file.
 
 /*
  "GetPocketBCInfo" handles the localhost:<client-port>/v1/pocket call.

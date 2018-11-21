@@ -2,7 +2,7 @@
 package _const
 
 
-// "cmd.go" contains constants that are useful for cmd.
+// "cmd.go" contains constants that are useful for the cmd package.
 
 const (
 // "CLIENTID" holds the Pocket Network Client Identifier.

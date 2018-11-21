@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// Define all API handlers that are under the 'transaction' category within this file.
+// "transaction.go" defines API handlers that are under the 'transaction' category within this file.
 
 /*
  "txOptions" handles the localhost:<client-port>/v1/transaction call.
