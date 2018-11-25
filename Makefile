@@ -1,5 +1,7 @@
+default: build
+
 build:
-	@go build ./cmd/pocket_core/main.go
+	@go build -o core ./cmd/pocket_core/main.go
 
 test:
 	@go test ./tests/*/

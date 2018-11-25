@@ -26,6 +26,26 @@
   revision = "9eb00af17b4c3c788c9b88a476c98fec79dd39df"
 
 [[projects]]
+  branch = "staging"
+  digest = "1:7c357c8b846495ca3b3a62ab455c936b8d5f1f94f412dffe86dfa62e0788d392"
+  name = "github.com/pokt-network/pocket-core"
+  packages = [
+    "config",
+    "const",
+    "crypto",
+    "logs",
+    "node",
+    "rpc",
+    "rpc/client",
+    "rpc/relay",
+    "rpc/shared",
+    "session",
+    "util",
+  ]
+  pruneopts = "UT"
+  revision = "ef6334dd3dd8df3ba797c2a2db0d03c402c9f91e"
+
+[[projects]]
   digest = "1:69b1cc331fca23d702bd72f860c6a647afd0aa9fcbc1d0659b1365e26546dd70"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -58,6 +78,17 @@
   input-imports = [
     "github.com/julienschmidt/httprouter",
     "github.com/logmatic/logmatic-go",
+    "github.com/pokt-network/pocket-core/config",
+    "github.com/pokt-network/pocket-core/const",
+    "github.com/pokt-network/pocket-core/crypto",
+    "github.com/pokt-network/pocket-core/logs",
+    "github.com/pokt-network/pocket-core/node",
+    "github.com/pokt-network/pocket-core/rpc",
+    "github.com/pokt-network/pocket-core/rpc/client",
+    "github.com/pokt-network/pocket-core/rpc/relay",
+    "github.com/pokt-network/pocket-core/rpc/shared",
+    "github.com/pokt-network/pocket-core/session",
+    "github.com/pokt-network/pocket-core/util",
     "github.com/sirupsen/logrus",
   ]
   solver-name = "gps-cdcl"
