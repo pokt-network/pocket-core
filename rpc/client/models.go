@@ -1,7 +1,7 @@
 // This package contains files for the Client API
 package client
 
-// Define all Client API models in this file.
+// "models.go" describes Client API models in this file.
 
 /*
 "Example" is a basic JSON structure serving as a placeholder.

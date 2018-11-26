@@ -5,17 +5,17 @@ import (
 	"math/rand"
 )
 
+// "util.go" specifies utility functions for the crypto package.
+
+
 /*
 "RandBytes" returns a random string of bytes.
  */
-func RandBytes(n int) []byte {
-	output := make([]byte, n)
-	// We will take n bytes, one byte for each character of output.
-	randomness := make([]byte, n)
-	// read all random
-	_, err := rand.Read(randomness)
+func RandBytes(n int) []byte { 	// generates random bytes from the seed specified
+	output := make([]byte, n)  	// create n bytes
+	_, err := rand.Read(output)	// read all random
 	if err != nil {
-		panic(err)
+		panic(err)				// if error panic
 	}
-	return output
+	return output				// return the random bytes.
 }

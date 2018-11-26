@@ -6,7 +6,7 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-// Define all Client API routes in this file.
+// "routes.go" defines all Client API routes in this file.
 
 /*
 The "Route" structure defines the generalization of an api route.

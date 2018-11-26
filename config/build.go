@@ -7,37 +7,30 @@ import (
 	"os"
 )
 
-/*
-This file is for building the Pocket Core configuration
- */
+// "build.go" is for building the Pocket Core configuration
 
 /*
 This function builds the configuration needed for the client.
  */
 func BuildConfiguration() {
-	buildDataDir()
-	buildLogsDir()
+	buildDataDir()													// builds the data directory on the local machine
+	buildLogsDir()													// builds the logs directory within the datadirectory
 }
 
 /*
 This function builds the directory needed for DB and keystore etc.
  */
 func buildDataDir() {
-	err := os.MkdirAll(GetInstance().Datadir, os.ModePerm);
-	if err != nil {
-		// If unable to write the folder... Probably unable to write this log file
-		//logs.LogConstructorAndLog("Unable to create ",logs.ErrorLevel,logs.JSONLogFormat)
-		// So redundantly log with built in logger to print and quit
-		log.Fatal(err.Error())
-	}
-}
+	err := os.MkdirAll(GetConfigInstance().Datadir, os.ModePerm) 	// attempts to make the data directory.
+	if err != nil {													// if unable to create custom data directory
+		log.Fatal(err.Error())										// notice use of built in log constructor
+	}                                                            	// if the data directory isn't built then no use
+}																	// using custom logs.
 
 func buildLogsDir() {
-	err := os.MkdirAll(GetInstance().Datadir+_const.FILESEPARATOR+"logs", os.ModePerm);
+	err := os.MkdirAll(GetConfigInstance().Datadir+ 			// attempts to make the logs directory
+		_const.FILESEPARATOR+"logs", os.ModePerm)
 	if err != nil {
-		// If unable to write the folder... Probably unable to write this log file
-		//logs.LogConstructorAndLog("Unable to create ",logs.ErrorLevel,logs.JSONLogFormat)
-		// So redundantly log with built in logger to print and quit
-		log.Fatal(err.Error())
+		log.Fatal(err.Error())										// log if error
 	}
 }

@@ -1,23 +1,73 @@
+// This package is for logging runtime data.
 package logs
 
 import (
+	"os"
 	"strconv"
 	"time"
 
+	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
+	"github.com/sirupsen/logrus"
 )
 
-func LogConstructorAndLog(message string, level LogLevel, format LogFormat) {
-	currentTime := time.Now()
-	f, t := util.Caller()
-	filepath, ln := f.FileLine(t)
-	log := &Log{}
-	log.Name = currentTime.Format("2006.01.02 15:04:05")
-	log.FunctionName = f.Name()
-	log.FilePath = filepath
-	log.Lev = level
-	log.Fmt = format
-	log.LineNumber = strconv.Itoa(ln)
-	log.Message = message
-	Logger(*log)
+// "methods.go" describes custom logging functions.
+
+/*
+"NewLog" creates a custom log and calls the logger function.
+*/
+func NewLog(message string, level LogLevel, format LogFormat) {
+	currentTime := time.Now()                            // get current time
+	f, t := util.Caller()                                // get the caller from util TODO: not cross platform windows issue
+	filepath, ln := f.FileLine(t)                        // get the line called from
+	log := &Log{}                                        // create a new log structure
+	log.Name = currentTime.Format("2006.01.02 15:04:05") // set the current time in the specified format
+	log.FunctionName = f.Name()                          // set the name of the function
+	log.FilePath = filepath                              // set thee path of the file
+	log.Lev = level                                      // set the level
+	log.Fmt = format                                     // set the format of the log (json)
+	log.LineNumber = strconv.Itoa(ln)                    // set the line number
+	log.Message = message                                // set the message
+	Logger(*log)                                         // call the logger function to write to file
+}
+
+/*
+"Logger" prints the log to data directory
+*/
+func Logger(l Log) {
+	f, err := os.OpenFile(config.GetConfigInstance().Datadir+ // open/create the new log file
+		_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+
+		l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	if err != nil { // if there is an error then handle
+		logrus.Fatal(err)
+	}
+	defer f.Close()                   // close the file once the function finishes
+	logrus.SetFormatter(l.Fmt.format) // set the format from the log
+	logrus.SetOutput(f)               // set the output file
+	lg := logrus.WithFields(          // set custom fields
+		logrus.Fields{
+			"FilePath":     l.FilePath,     // the path of the file the log was called from
+			"LineNumber":   l.LineNumber,   // the line number of the file the log was called from
+			"FunctionName": l.FunctionName, // the function name of the file the log was called
+		})
+
+	switch l.Lev.level { // switch statement for the logging levels
+	case logrus.InfoLevel: // this is necessary to ensure the logrus dependency
+		lg.Info(l.Message) // exists within the logs package only.
+	case logrus.DebugLevel:
+		lg.Debug(l.Message)
+	case logrus.FatalLevel:
+		lg.Fatal(l.Message)
+	case logrus.ErrorLevel:
+		lg.Error(l.Message)
+	case logrus.PanicLevel:
+		lg.Panic(l.Message)
+	case logrus.WarnLevel:
+		lg.Warn(l.Message)
+	case logrus.TraceLevel:
+		lg.Trace(l.Message)
+	default:
+		lg.Info(l.Message)
+	}
 }

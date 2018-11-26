@@ -2,7 +2,7 @@
 package shared
 
 
-// Define all shared API modles
+// "models.go" defines all shared API models
 
 
 /*

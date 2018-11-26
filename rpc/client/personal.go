@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// Define all API handlers that are under the 'personal' category within this file.
+// "personal.go" defines API handlers that are under the 'personal' category within this file.
 
 /*
  "GetPersonalInfo" handles the localhost:<client-port>/v1/personal call.

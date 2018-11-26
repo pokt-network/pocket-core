@@ -1,21 +1,22 @@
-// Pocket Core: This is the starting point of the CLI.
+// This package is the starting point of the CLI.
 package main
 
 import (
 	"bufio"
 	"fmt"
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
 
+// "main.go" is the entry point of the client.
+
 /*
-Called before main.go
+"init" is a built in function that is automatically called before main.
  */
-func init(){
-	crypto.GenerateSeed()
+func init() {
+	crypto.GenerateSeed() 								// generates seed for randomization
 }
 
 /*
@@ -23,19 +24,18 @@ func init(){
  Keep main as light as possible by calling accessory functions.
 */
 func main() {
-	startClient()
+	startClient() 										// see function call below
 }
 
 /*
 "startClient" Starts the client with the given initial configuration.
  */
 func startClient() {
-	config.InitializeConfiguration()
-	config.BuildConfiguration()
-	config.PrintConfiguration()
-	logs.LogConstructorAndLog("TESTING TESTING", logs.InfoLevel, logs.JSONLogFormat)
-	rpc.RunAPIEndpoints()
-	fmt.Print("Press any key + 'Return' to quit: ")
-	input := bufio.NewScanner(os.Stdin)
-	input.Scan()
+	config.InitializeConfiguration()                	// initializes the configuration from flags and defaults.
+	config.BuildConfiguration()                     	// builds the proper structure on pc for core client to operate.
+	config.PrintConfiguration()                     	// print the configuration the the cmd.
+	rpc.RunAPIEndpoints()                           	// runs the server endpoints for client and relay api.
+	fmt.Print("Press any key + 'Return' to quit: ") 	// prompt user to exit
+	input := bufio.NewScanner(os.Stdin)             	// unnecessary temporary entry
+	input.Scan()                                    	// wait
 }

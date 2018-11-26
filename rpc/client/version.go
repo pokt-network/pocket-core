@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// Define all API handlers that are under the 'version' category within this file.
+// "version.go" defines API handlers that are under the 'version' category within this file.
 
 /*
  "getClientAPIVersion" handles the localhost:<client-port>/v1 call.
