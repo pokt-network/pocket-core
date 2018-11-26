@@ -1,0 +1,2 @@
+curl -X POST --data '{"blockchain":"ethereum","netid":"n/a","data":"{\"jsonrpc\":\"2.0\", \"method\":\"web3_clientVersion\", \"params\":[], \"id\":\"67\"}"}' http://localhost:8081/v1/relay/read // TODO convert to unit test
+
