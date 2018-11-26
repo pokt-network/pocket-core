@@ -4,7 +4,6 @@ package shared
 
 // "models.go" defines all shared API models
 
-
 /*
 "JSONResponse" is a metadata and data response in JSON format.
  */
