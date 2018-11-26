@@ -17,3 +17,12 @@ type Example struct {
 type Dispatch struct {
 	DevID string `json:"devid"`
 }
+
+/*
+"Relay" is a JSON structure that specifies information to complete reads and writes to other blockchains
+ */
+type Relay struct {
+	Blockchain string 	`json:"blockchain"`
+	NetworkID string	`json:"netid"`
+	Data string 		`json:"data"`
+}
