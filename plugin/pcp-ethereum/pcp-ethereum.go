@@ -3,7 +3,6 @@ package pcp_ethereum
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -16,7 +15,6 @@ func ExecuteRequest(jsonStr []byte, ethPort string) string {
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))		// call POST request to forward string
 	req.Header.Set("Content-Type", "application/json")					// specify json header
 	resp, err := (&http.Client{}).Do(req)											// execute request
-	fmt.Println(string(jsonStr))
 	if err != nil {																	// handle error
 		panic(err)
 	}

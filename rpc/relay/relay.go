@@ -31,7 +31,7 @@ func RelayRead(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	relay := &Relay{}															// create empty relay structure
 	shared.PopulateModelFromParams(w,r,ps,relay)								// populate the relay struct from params
 	response:=RouteRelay(*relay)												// route the relay to the correct chain
-	shared.WriteResponse(w,response)											// relay the response
+	shared.WriteJSONResponse(w,response)										// relay the response
 }
 
 /*
@@ -60,6 +60,6 @@ func RouteRelay(relay Relay) string {
 	case "bitcoin":
 		return pcp_bitcoin.ExecuteRequest([]byte(relay.Data), config.GetConfigInstance().Btcrpcport)
 	}
-	logs.NewLog("No response from relay route", logs.ErrorLevel, logs.JSONLogFormat)
-	return "Error: no response"
+	logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
+	return "Error: not a supported blockchain"
 }
