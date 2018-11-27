@@ -22,7 +22,7 @@ func TestRelay(t *testing.T) {
 	_, err := net.Listen("tcp", ":"+port)
 	// handle error
 	if err == nil {
-		t.Fatalf("No ethereum client on on port %q: %s", port, err)
+		t.Fatalf("No ethereum client on on port %q:", port)
 	}
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
