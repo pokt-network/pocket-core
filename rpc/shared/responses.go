@@ -41,6 +41,20 @@ func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 }
 
 /*
+"WriteJSON" provides useful information about the api URL when get is called
+ */
+func WriteJSONResponse(w http.ResponseWriter, m string) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	b,err := json.MarshalIndent(m,"","\t");
+	if err!= nil {
+		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+	} else{
+		w.Write(b)
+	}
+}
+
+/*
 "WriteErrorResponse" writes an error JSON response.
  */
 func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
