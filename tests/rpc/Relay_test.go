@@ -7,6 +7,7 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"testing"
 )
@@ -15,6 +16,14 @@ import (
 Unit test for the relay functionality
  */
 func TestRelay(t *testing.T) {
+	// check for ethereum client
+	port := config.GetConfigInstance().Ethrpcport
+	// try to bind on eth port
+	_, err := net.Listen("tcp", ":"+port)
+	// handle error
+	if err == nil {
+		t.Fatalf("No ethereum client on on port %q: %s", port, err)
+	}
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
 	// @ Url
@@ -48,8 +57,8 @@ func TestRelay(t *testing.T) {
 		t.Fatalf("Unable to do post request " + err.Error())
 	}
 	// get body of response
-	body, err:=ioutil.ReadAll(resp.Body)
-	if err!=nil {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		t.Fatalf("Unable to unmarshal response: " + err.Error())
 	}
 	t.Log(string(body))
