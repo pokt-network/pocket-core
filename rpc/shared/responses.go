@@ -55,6 +55,16 @@ func WriteJSONResponse(w http.ResponseWriter, m string) {
 }
 
 /*
+=======
+"WriteRawJSON" provides useful information about the api URL when get is called
+ */
+func WriteRawJSONResponse(w http.ResponseWriter, b []byte) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write(b)
+}
+
+/*
 "WriteErrorResponse" writes an error JSON response.
  */
 func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
