@@ -87,5 +87,5 @@ func GetConfigInstance() *config { 	// singleton structure to return the configu
 			newConfiguration()
 		}
 	})
-	return instance					// else return the configuration
+	return instance					// return the configuration
 }
