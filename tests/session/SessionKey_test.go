@@ -60,7 +60,10 @@ func TestSessionKey(t *testing.T) {
 	if err!=nil{
 		t.Fatalf("Unable to unmarshall json node response 2: "+ err.Error())
 	}
-	if(data[0].GID!=n1.GID){
+	if(data[0].GID!=n1.GID){		// Assert order
+		t.Fatalf("Nodes are not in correct order")
+	}
+	if(data[1].GID!=n2.GID){		// Assert order
 		t.Fatalf("Nodes are not in correct order")
 	}
 }

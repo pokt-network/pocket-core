@@ -8,7 +8,7 @@ import (
 )
 
 // "responses.go is the interface for the types of responses for the API.
-
+// TODO there are a lot of functions that are very similar. See if we can abstract
 /*
 "WriteResponse" writes a normal JSON response.
  */
