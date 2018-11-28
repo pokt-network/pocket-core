@@ -26,14 +26,6 @@ type APIError struct {
 	Title  string `json:"title"`
 }
 
-/*
-"Example" is a basic JSON structure serving as a placeholder.
- */
-type Example struct {
-	Title string `json:"title"`
-	Test  string `json:"test"`
-	Data  string `json:"data"`
-}
 
 type APIReference struct{
 	Endpoint 	string `json:"endpoint"`

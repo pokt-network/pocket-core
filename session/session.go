@@ -1,6 +1,6 @@
 // This package is for all 'session' related code.
 package session
-
+// TODO thread safety
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/node"
@@ -44,14 +44,12 @@ func GetSessionPoolInstance() *sessionPool {
 "createNewSession" creates a new session for the specific devID and adds to global sessionPool (map)
  */
 func CreateNewSession(dID string) {
-	once.Do(func() { 										 	// thread safety.
-		if (SearchSessionList(dID) == nil) {
-			sList := GetSessionPoolInstance().list           	// pulls the global list from the singleton
-			validators := make(map[string]node.Validator)    	// simulated List of Validators
-			servicers := make(map[string]node.Service)       	// simulated List of Servicers
-			sList[dID] = Session{dID, validators, servicers} // adds a new session to the sessionlist (map)
-		}
-	})
+	if (SearchSessionList(dID) == nil) {
+		sList := GetSessionPoolInstance().list           	// pulls the global list from the singleton
+		validators := make(map[string]node.Validator)    	// simulated List of Validators
+		servicers := make(map[string]node.Service)       	// simulated List of Servicers
+		sList[dID] = Session{dID, validators, servicers} // adds a new session to the sessionlist (map)
+	}
 }
 
 /*

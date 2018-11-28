@@ -8,7 +8,6 @@ import (
 // "peers.go" specifies peer related code.
 // TODO could convert to structure in the future to make more robust
 // TODO add concurrency protection
-// TODO init only once
 var (
 	peerList = make(map[string]node.Node) // only make the peerlist once
 )
