@@ -3,11 +3,13 @@ package session
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/net"
+	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
-	"github.com/pokt-network/pocket-core/session"
-	"github.com/pokt-network/pocket-core/util"
+	"io/ioutil"
 	"net/http"
 	"testing"
 )
@@ -51,6 +53,19 @@ func TestSessionKey(t *testing.T) {
 */
 
 func TestSessionKey(t *testing.T) {
+	// hard code in some nodes
+	var empty []string
+	n1:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b1",
+	"","","","","","",empty}
+	n2:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b2",
+		"","","","","","",empty}
+	n3:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b3",
+		"","","","","","",empty}
+	// add to peerList
+	net.GetPeerList()
+	net.AddNodePeerList(n1)
+	net.AddNodePeerList(n2)
+	net.AddNodePeerList(n3)
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
 	// @ Url
@@ -75,10 +90,15 @@ func TestSessionKey(t *testing.T) {
 	}
 	// Deferred: close the body of the response
 	defer resp.Body.Close()
-	// Read the body from the response using ioutil
-	response := new(shared.JSONResponse)
-	json.NewDecoder(resp.Body).Decode(response)
-	expectedKey := util.BytesToUInt32(session.GenerateSessionKey("asdf"))
-	t.Log(expectedKey)
-	t.Log("Generated Key: "+response.Data)
+	body,_:=ioutil.ReadAll(resp.Body)
+	fmt.Println("BODY: " + string(body))
+	var data []node.Node
+	err = json.Unmarshal(body,&data)
+	fmt.Println(data)
+	if err!=nil{
+		t.Fatalf("Unable to unmarshall json node response 2: "+ err.Error())
+	}
+	if(data[0].GID!=n1.GID){
+		t.Fatalf("Nodes are not in correct order")
+	}
 }
