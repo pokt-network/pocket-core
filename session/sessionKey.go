@@ -1,7 +1,9 @@
 // This package is for all 'session' related code.
 package session
 
-import "github.com/pokt-network/pocket-core/crypto"
+import (
+	"github.com/pokt-network/pocket-core/crypto"
+)
 
 // "sessionKey.go" defines sessionKey specific methods
 

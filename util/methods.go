@@ -2,8 +2,10 @@
 package util
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"reflect"
+	"fmt"
 	"runtime"
 	"strings"
 )
@@ -37,6 +39,35 @@ func Caller() (*runtime.Func, uintptr) {
  */
 func BytesToHex(h []byte) string {
 	return hex.EncodeToString(h)
+	return hex.EncodeToString(h)[2:]	// remove the 0X
+}
+
+/*
+"ByteToUInt16" converts a byte array into an unsigned integer
+ */
+func BytesToUInt16(h []byte) uint16 {
+	return binary.BigEndian.Uint16(h)
+}
+
+/*
+"ByteToUInt32" converts a byte array into an unsigned integer
+ */
+func BytesToUInt32(h []byte) uint32 {
+	return binary.BigEndian.Uint32(h)
+}
+
+/*
+"ByteToUInt64" converts a byte array into an unsigned integer
+*/
+func BytesToUInt64(h []byte) uint64 {
+	return binary.BigEndian.Uint64(h)
+}
+
+/*
+"ArrayToString" converts array into comma separated String
+ */
+func ArrayToString(a interface{}, delim string) string {
+	return strings.Trim(strings.Replace(fmt.Sprint(a), " ", delim, -1), "[]")
 }
 
 /*

@@ -4,6 +4,7 @@ package node
 // models.go maintains the structures for the node package.
 
 type Node struct{
+	GID				string				// node's global id (could be public address)
 	RemoteIP 		string 				// holds the remote IP address
 	LocalIP 		string 				// holds the local IP address
 	RelayPort		string				// specifies the port for relay API
