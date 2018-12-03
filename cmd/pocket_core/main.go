@@ -41,7 +41,7 @@ func manualPeers(){
 /*
 "startClient" Starts the client with the given initial configuration.
  */
-func startClient() {
+func startClient(){
 	config.InitializeConfiguration()                	// initializes the configuration from flags and defaults.
 	config.BuildConfiguration()                     	// builds the proper structure on pc for core client to operate.
 	config.PrintConfiguration()                     	// print the configuration the the cmd.
