@@ -3,7 +3,6 @@ package session
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/net"
 	"github.com/pokt-network/pocket-core/node"
@@ -53,7 +52,6 @@ func TestSessionKey(t *testing.T) {
 	// Deferred: close the body of the response
 	defer resp.Body.Close()
 	body,_:=ioutil.ReadAll(resp.Body)
-	fmt.Println("BODY: " + string(body))
 	var data []node.Node
 	err = json.Unmarshal(body,&data)
 	if err!=nil{

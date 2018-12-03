@@ -47,6 +47,9 @@ func GetSessionPoolInstance() *sessionPool {
 func CreateNewSession(dID string) {
 	lock.Lock()
 	defer lock.Unlock()
+	if globalSessionPool==nil{
+		GetSessionPoolInstance()
+	}
 	if !sessionListContains(dID) {
 		sList := GetSessionPoolInstance().list           	// pulls the global list from the singleton
 		validators := make(map[string]node.Validator)    	// simulated List of Validators
@@ -70,6 +73,9 @@ Thread safe
 func SessionListContains(dID string) bool{
 	lock.Lock()
 	defer lock.Unlock()
+	if globalSessionPool==nil{				// TODO check if this is necessary in session.go and peers.go
+		GetSessionPoolInstance()
+	}
 	_,ok := GetSessionPoolInstance().list[dID]
 	return ok
 }
