@@ -18,15 +18,17 @@ import (
  */
 func NewLog(message string, level LogLevel, format LogFormat) {
 	currentTime := time.Now()                            // get current time
-	f, t := util.Caller()                                // get the caller from util TODO: not cross platform windows issue
-	filepath, ln := f.FileLine(t)                        // get the line called from
+	frame := util.Caller()                        		 // get the caller from util TODO: not cross platform windows issue
+	if(frame==nil){
+		panic("Frame from new log was nil")
+	}
 	log := &Log{}                                        // create a new log structure
 	log.Name = currentTime.Format("2006.01.02 15:04:05") // set the current time in the specified format
-	log.FunctionName = f.Name()                          // set the name of the function
-	log.FilePath = filepath                              // set thee path of the file
+	log.FunctionName = frame.Func.Name()                 // set the name of the function
+	log.FilePath = frame.File                            // set thee path of the file
 	log.Lev = level                                      // set the level
 	log.Fmt = format                                     // set the format of the log (json)
-	log.LineNumber = strconv.Itoa(ln)                    // set the line number
+	log.LineNumber = strconv.Itoa(frame.Line)            // set the line number
 	log.Message = message                                // set the message
 	Logger(*log)                                         // call the logger function to write to file
 }
