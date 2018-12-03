@@ -60,6 +60,7 @@ func CreateNewSession(dID string) {
 
 /*
 "sessionListContains" searches the session list for the specific devID and returns whether or not it is held
+<<<<<<< 4b882753294f034021971c577be6c5ff147314a1
  */
 func sessionListContains(dID string) bool{
 	_,ok := GetSessionPoolInstance().list[dID]
