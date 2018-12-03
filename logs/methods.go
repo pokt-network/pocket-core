@@ -18,7 +18,7 @@ import (
  */
 func NewLog(message string, level LogLevel, format LogFormat) {
 	currentTime := time.Now()                            // get current time
-	frame := util.Caller()                        		 // get the caller from util TODO: not cross platform windows issue
+	frame := util.Caller()                        		 // get the caller from util
 	if(frame==nil){
 		panic("Frame from new log was nil")
 	}

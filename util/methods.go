@@ -14,16 +14,16 @@ import (
 
 // "Caller" returns the caller of the function that called it
 func Caller() (*runtime.Frame){
-	fpcs := make([]uintptr, 1)
-	n := runtime.Callers(3, fpcs)
+	fpcs := make([]uintptr, 1)				// make a slice of unsigned integers
+	n := runtime.Callers(3, fpcs)		// skip 3 to get the original function call
 	if n == 0 {
-		return nil
+		return nil							// return nil pointer if error (can't custom log)
 	}
-	info, err:=runtime.CallersFrames(fpcs).Next()
+	info, err:=runtime.CallersFrames(fpcs).Next()	// get the information by calling callersframes on fpcs
 	if(err){
-		return nil
+		return nil							// handle error
 	}
-	return &info
+	return &info							// return frame pointer
 }
 
 /*
