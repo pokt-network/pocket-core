@@ -26,6 +26,10 @@ func GetPeerList() map[string]node.Node {
 	return peerList
 }
 
+func GetPeerCount() int{
+	return len(GetPeerList())
+}
+
 func AddNodePeerList(node node.Node) {
 	if peerList==nil{
 		GetPeerList()
