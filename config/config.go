@@ -23,6 +23,7 @@ type config struct {
 	Ethrpcport	  string `json:"ETHRPCPORT"` 	// This variable holds the port the ETH rpc is running on.
 	Bitcoin		  bool 	 `json:"BITCOIN"`		// This variable describes if Bitcoin is hosted.
 	Btcrpcport	  string `json:"BTCRPCPORT"`	// This variable holds the port the BTC rpc is running on.
+	PeerFile	  string `json:"PEERFILE"`		// This variable holds the filepath to the peerFile.json
 }
 
 var (
@@ -45,6 +46,8 @@ var (
 	bitcoin = flag.Bool("bitcoin", false, "whether or not bitcoin is hosted")
 	// A string variable derived from flags, that specifies which port Bitcoin's json rpc is running.
 	btc_rpcport = flag.String("btcrpcport", "8333", "specified port to run bitcoin rpc")
+	// A string variable derived from flags, that specifies the filepath for peerFile.json
+	peerFile = flag.String("peerFile", _const.DATADIR+_const.FILESEPARATOR+"peerFile.json","specifies the filepath for peerFile.json")
 )
 
 func InitializeConfiguration() {
@@ -67,7 +70,8 @@ func newConfiguration() {
 		*ethereum,				// ethereum is hosted
 		*eth_rpcport,			// the port Ethereum's rpc is on
 		*bitcoin,				// bitcoin is hosted
-		*btc_rpcport}			// the port Bitcoin's rpc is on
+		*btc_rpcport,			// the port Bitcoin's rpc is on
+		*peerFile} 				// the filepath for peerFile.json
 }
 
 /*
