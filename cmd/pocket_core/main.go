@@ -30,17 +30,23 @@ func main() {
 }
 
 /*
+"manualPeers" checks if manual peers are specified and adds them to the peerlist.
+ */
+func manualPeers(){
+	if config.GetConfigInstance().ManPeers {					// if flag enabled
+		net.Manualpeers(config.GetConfigInstance().PeerFile)	// add peers from file
+	}
+}
+
+/*
 "startClient" Starts the client with the given initial configuration.
  */
 func startClient() {
 	config.InitializeConfiguration()                	// initializes the configuration from flags and defaults.
 	config.BuildConfiguration()                     	// builds the proper structure on pc for core client to operate.
 	config.PrintConfiguration()                     	// print the configuration the the cmd.
-	if config.GetConfigInstance().ManPeers {
-		net.Manualpeers(config.GetConfigInstance().PeerFile)
-	}
-	fmt.Println(net.GetPeerCount())
-	logs.NewLog("test", logs.InfoLevel,logs.JSONLogFormat)
+	manualPeers()										// check for manual peers
+	logs.NewLog("Started Client", logs.InfoLevel,logs.JSONLogFormat) 	// log start message
 	rpc.RunAPIEndpoints()                           	// runs the server endpoints for client and relay api.
 	fmt.Print("Press any key + 'Return' to quit: ") 	// prompt user to exit
 	input := bufio.NewScanner(os.Stdin)             	// unnecessary temporary entry
