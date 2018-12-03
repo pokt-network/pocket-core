@@ -7,9 +7,9 @@ import "os"
 // "os_windows.go" is for OS specific constants.
 
 const (
-	FILESEPARATOR = "\\"										// os specific file separator
+	FILESEPARATOR = "\\"								// os specific file separator
 )
 
 var (
-	DATADIR = os.Getenv("APPDATA") + "\\" + "Pocket"		// os specific data directory.
+	DATADIR = os.Getenv("APPDATA") + "\\Pocket"		// os specific data directory.
 )
