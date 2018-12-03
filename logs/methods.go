@@ -23,7 +23,7 @@ func NewLog(message string, level LogLevel, format LogFormat) {
 		panic("Frame from new log was nil")
 	}
 	log := &Log{}                                        // create a new log structure
-	log.Name = currentTime.Format("2006.01.02 15:04:05") // set the current time in the specified format
+	log.Name = currentTime.Format("2006.01.02_15:04:05") // set the current time in the specified format
 	log.FunctionName = frame.Func.Name()                 // set the name of the function
 	log.FilePath = frame.File                            // set thee path of the file
 	log.Lev = level                                      // set the level
