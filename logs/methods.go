@@ -20,7 +20,7 @@ func NewLog(message string, level LogLevel, format LogFormat) {
 	currentTime := time.Now()                            // get current time
 	frame := util.Caller()                        		 // get the caller from util
 	if frame==nil {										 // if the frame returned nil
-		panic("Frame from new log was nil")			 // panic and print
+		panic("Frame from log was nil")			 	 // panic and print
 	}
 	log := &Log{}                                        // create a new log structure
 	log.Name = currentTime.Format("2006-01-02T15-04-05") // set the current time in the specified format
