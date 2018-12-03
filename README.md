@@ -20,10 +20,10 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
     	specified port to run client rpc (default "8080")
     	
  ` -datadir string`
-    	setup the data director for the DB and keystore 
+    	setup the data director for the DB and keystore (default: 
     	`%APPDATA%\Pocket` for Windows, 
     	`~/.pocket` for Linux, 
-    	`~/Library/Pocket` for Mac
+    	`~/Library/Pocket` for Mac)
     	
  ` -ethereum`
     	whether or not ethereum is hosted
@@ -35,7 +35,7 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
     	specifies if peers are manually added
     	
   `-peerFile string`
-    	specifies the filepath for peers.json (default "<DATADIR>/peers.json")
+    	specifies the filepath for peers.json (default `<datadir>/peers.json`)
     	
   `-relayrpc`
     	whether or not to start the rpc server
