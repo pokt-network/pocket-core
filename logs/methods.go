@@ -19,7 +19,7 @@ import (
 func NewLog(message string, level LogLevel, format LogFormat) {
 	currentTime := time.Now()                            // get current time
 	frame := util.Caller()                        		 // get the caller from util
-	if(frame==nil){
+	if frame==nil{
 		panic("Frame from new log was nil")
 	}
 	log := &Log{}                                        // create a new log structure
