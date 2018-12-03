@@ -37,7 +37,7 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
   `-peerFile string`
     	specifies the filepath for peers.json (default `<datadir>/peers.json`)
     	
-  `-relayrpc`
+  `-relayrpc` 
     	whether or not to start the rpc server
     	
   `-relayrpcport string`
