@@ -9,7 +9,8 @@ import (
 
 var (
 	globalSessionPool *sessionPool							// global session pool instance
-	once              sync.Once								// for thread safety
+	once              sync.Once								// only occurs once throughout program
+	lock			  sync.Mutex							// for thread safety
 )
 /*
 This is the session structure.
@@ -31,7 +32,7 @@ type sessionPool struct {
  "GetSessionPoolInstance() returns the singleton instance of the global session pool
  */
 func GetSessionPoolInstance() *sessionPool {
-	once.Do(func() { 										  	// thread safety.
+	once.Do(func() { 										  	// only do once
 		if (globalSessionPool == nil) { 					  	// if no existing globalSessionPool
 			globalSessionPool = &sessionPool{}                	// create a new session pool
 			globalSessionPool.list = make(map[string]Session) 	// create a map of sessions
@@ -44,7 +45,9 @@ func GetSessionPoolInstance() *sessionPool {
 "createNewSession" creates a new session for the specific devID and adds to global sessionPool (map)
  */
 func CreateNewSession(dID string) {
-	if (SearchSessionList(dID) == nil) {
+	lock.Lock()
+	defer lock.Unlock()
+	if !sessionListContains(dID) {
 		sList := GetSessionPoolInstance().list           	// pulls the global list from the singleton
 		validators := make(map[string]node.Validator)    	// simulated List of Validators
 		servicers := make(map[string]node.Service)       	// simulated List of Servicers
@@ -53,15 +56,22 @@ func CreateNewSession(dID string) {
 }
 
 /*
-"SearchSessionList" searches the session list for the specific devID
+"sessionListContains" searches the session list for the specific devID and returns whether or not it is held
  */
-func SearchSessionList(dID string) *Session {
-	list := GetSessionPoolInstance()							// gets global session pool from singleton
-	session := list.list[dID]									// pulls the session with the developer ID
-	if session.devID != "" {									// if the session is found
-		return &session
-	}
-	return nil
+func sessionListContains(dID string) bool{
+	_,ok := GetSessionPoolInstance().list[dID]
+	return ok
+}
+
+/*
+"SessionListContains" searches the session list for the specific devID and returns whether or not it is held
+Thread safe
+ */
+func SessionListContains(dID string) bool{
+	lock.Lock()
+	defer lock.Unlock()
+	_,ok := GetSessionPoolInstance().list[dID]
+	return ok
 }
 
 /*
