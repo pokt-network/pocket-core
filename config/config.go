@@ -24,6 +24,7 @@ type config struct {
 	Bitcoin		  bool 	 `json:"BITCOIN"`		// This variable describes if Bitcoin is hosted.
 	Btcrpcport	  string `json:"BTCRPCPORT"`	// This variable holds the port the BTC rpc is running on.
 	PeerFile	  string `json:"PEERFILE"`		// This variable holds the filepath to the peerFile.json
+	ManPeers	  bool   `json:"MANPEERS"`		// This variable specifies if manual peers are being used
 }
 
 var (
@@ -46,8 +47,10 @@ var (
 	bitcoin = flag.Bool("bitcoin", false, "whether or not bitcoin is hosted")
 	// A string variable derived from flags, that specifies which port Bitcoin's json rpc is running.
 	btc_rpcport = flag.String("btcrpcport", "8333", "specified port to run bitcoin rpc")
+	// A boolean variable derived from flags, that specifies if peers are manually added
+	manPeers = flag.Bool("manpeers",false,"specifies if peers are manually added")
 	// A string variable derived from flags, that specifies the filepath for peerFile.json
-	peerFile = flag.String("peerFile", _const.DATADIR+_const.FILESEPARATOR+"peerFile.json","specifies the filepath for peerFile.json")
+	peerFile = flag.String("peerFile", _const.DATADIR+_const.FILESEPARATOR+"peers.json","specifies the filepath for peers.json")
 )
 
 func InitializeConfiguration() {
@@ -71,7 +74,8 @@ func newConfiguration() {
 		*eth_rpcport,			// the port Ethereum's rpc is on
 		*bitcoin,				// bitcoin is hosted
 		*btc_rpcport,			// the port Bitcoin's rpc is on
-		*peerFile} 				// the filepath for peerFile.json
+		*peerFile,				// the filepath of the peers.json
+		*manPeers} 			// using manual peers
 }
 
 /*
