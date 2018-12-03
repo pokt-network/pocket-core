@@ -23,19 +23,3 @@ func AddNodePeerList(node node.Node) {
 func RemoveNodePeerList(node node.Node) {
 	delete(peerList, node.GID)
 }
-
-func DummyList() {
-	// hard code in some nodes
-	var empty []string
-	n1:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b1",
-		"","","","","","",empty}
-	n2:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b2",
-		"","","","","","",empty}
-	n3:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b3",
-		"","","","","","",empty}
-	// add to peerList
-	GetPeerList()
-	AddNodePeerList(n1)
-	AddNodePeerList(n2)
-	AddNodePeerList(n3)
-}

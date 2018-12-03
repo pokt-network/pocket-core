@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/net"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
@@ -35,7 +34,6 @@ func startClient() {
 	config.InitializeConfiguration()                	// initializes the configuration from flags and defaults.
 	config.BuildConfiguration()                     	// builds the proper structure on pc for core client to operate.
 	config.PrintConfiguration()                     	// print the configuration the the cmd.
-	net.DummyList()										// feed the peerlist with dummy data
 	rpc.RunAPIEndpoints()                           	// runs the server endpoints for client and relay api.
 	fmt.Print("Press any key + 'Return' to quit: ") 	// prompt user to exit
 	input := bufio.NewScanner(os.Stdin)             	// unnecessary temporary entry
