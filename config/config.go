@@ -61,7 +61,7 @@ func InitializeConfiguration() {
 /*
 "NewConfiguration() is a Constructor function of the configuration type.
  */
-func newConfiguration() {
+func newConfiguration(){
 	instance = &config{
 		_const.CLIENTID,			// client identifier is set in global constants.
 		_const.VERSION,			// client version is set in global constants.
