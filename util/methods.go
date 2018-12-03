@@ -16,7 +16,7 @@ import (
 func Caller() (*runtime.Frame){
 	fpcs := make([]uintptr, 1)				// make a slice of unsigned integers
 	n := runtime.Callers(3, fpcs)		// skip 3 to get the original function call
-	if n == 0 {
+	if n==0 {
 		return nil							// return nil pointer if error (can't custom log)
 	}
 	info, err:=runtime.CallersFrames(fpcs).Next()	// get the information by calling callersframes on fpcs

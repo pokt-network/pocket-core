@@ -46,7 +46,7 @@ func startClient() {
 	config.BuildConfiguration()                     	// builds the proper structure on pc for core client to operate.
 	config.PrintConfiguration()                     	// print the configuration the the cmd.
 	manualPeers()										// check for manual peers
-	logs.NewLog("Started Client", logs.InfoLevel,logs.JSONLogFormat) 	// log start message
+	logs.NewLog("Started Client ", logs.InfoLevel,logs.JSONLogFormat) 	// log start message
 	rpc.RunAPIEndpoints()                           	// runs the server endpoints for client and relay api.
 	fmt.Print("Press any key + 'Return' to quit: ") 	// prompt user to exit
 	input := bufio.NewScanner(os.Stdin)             	// unnecessary temporary entry
