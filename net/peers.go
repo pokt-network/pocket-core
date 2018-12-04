@@ -14,7 +14,7 @@ import (
 var (
 	once     sync.Once
 	peerList map[string]node.Node
-	lock sync.Mutex
+	lock     sync.Mutex
 )
 
 func GetPeerList() map[string]node.Node {
@@ -26,54 +26,54 @@ func GetPeerList() map[string]node.Node {
 	return peerList
 }
 
-func GetPeerCount() int{
+func GetPeerCount() int {
 	return len(GetPeerList())
 }
 
 func AddNodePeerList(node node.Node) {
-	if peerList==nil{
+	if peerList == nil {
 		GetPeerList()
 	}
-	lock.Lock()										// concurrency protection 'only one thread can add at a time'
+	lock.Lock() // concurrency protection 'only one thread can add at a time'
 	defer lock.Unlock()
 	if !peerlistContains(node.GID) { // if node not within peerlist
-		peerList[node.GID] = node					// TODO could add update function
+		peerList[node.GID] = node // TODO could add update function
 	}
 }
 
 func RemoveNodePeerList(node node.Node) {
-	if peerList==nil{
+	if peerList == nil {
 		GetPeerList()
 	}
 	delete(peerList, node.GID)
 }
 
-func peerlistContains(GID string) bool{
+func peerlistContains(GID string) bool {
 	_, ok := peerList[GID]
 	return ok
 }
 
-func PeerlistContains(GID string) bool{
-	lock.Lock()										// concurrency protection 'only one thread can search at a time'
+func PeerlistContains(GID string) bool {
+	lock.Lock() // concurrency protection 'only one thread can search at a time'
 	defer lock.Unlock()
-	if peerList==nil{
+	if peerList == nil {
 		GetPeerList()
 	}
 	_, ok := peerList[GID]
 	return ok
 }
 
-func Manualpeers(filepath string){
-	if peerList==nil{
+func Manualpeers(filepath string) {
+	if peerList == nil {
 		GetPeerList()
 	}
 	file, _ := ioutil.ReadFile(filepath)
-	var data [] node.Node
-	err := json.Unmarshal(file,&data)
-	if err!=nil{
+	var data []node.Node
+	err := json.Unmarshal(file, &data)
+	if err != nil {
 		log.Fatal("Unable to unmarshal json from " + filepath)
 	}
-	for _,n:= range data{
+	for _, n := range data {
 		AddNodePeerList(n)
 	}
 }

@@ -10,26 +10,26 @@ import (
 
 /*
 "CreateInfoStruct" generates the specific APIReference structure dynamically.
- */
+*/
 func CreateInfoStruct(r *http.Request, method string, model interface{}, returns string) APIReference {
 	params := util.StructTagsToString(model)
-	return APIReference{"localhost:port"+r.URL.String(), method,
+	return APIReference{"localhost:port" + r.URL.String(), method,
 		params, returns,
 		createExampleString(r.URL.String(), params)}
 }
 
 /*
 "createExampleString" creates the APIReference example string shown to the devs.
- */
+*/
 func createExampleString(url string, params []string) string {
 	var data string
-	data="'{"
+	data = "'{"
 	for index, s := range params {
-		if index == len(params)-1{ // last iteration
-			data += "\""+s+"\"" + ": \"foo\""+"}'"
-		}else{
-			data += "\""+s+"\"" + ": \"foo\", "
+		if index == len(params)-1 { // last iteration
+			data += "\"" + s + "\"" + ": \"foo\"" + "}'"
+		} else {
+			data += "\"" + s + "\"" + ": \"foo\", "
 		}
 	}
-	return "curl --data " + data + " localhost:port" +url
+	return "curl --data " + data + " localhost:port" + url
 }

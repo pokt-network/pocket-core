@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-const(
+const (
 	relayReadMethod = "relayRead()"
 )
 
@@ -19,40 +19,40 @@ const(
 
 /*
  "RelayOptions" handles the localhost:<relay-port>/v1/relay call.
- */
+*/
 func RelayOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteResponse(w, "Hello, World!")
 }
 
 /*
  "RelayRead" handles the localhost:<relay-port>/v1/relay/read call.
- */
+*/
 func RelayRead(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	relay := &Relay{}															// create empty relay structure
-	shared.PopulateModelFromParams(w,r,ps,relay)								// populate the relay struct from params
-	response:=RouteRelay(*relay)												// route the relay to the correct chain
-	shared.WriteJSONResponse(w,response)										// relay the response
+	relay := &Relay{}                               // create empty relay structure
+	shared.PopulateModelFromParams(w, r, ps, relay) // populate the relay struct from params
+	response := RouteRelay(*relay)                  // route the relay to the correct chain
+	shared.WriteJSONResponse(w, response)           // relay the response
 }
 
 /*
 "RelayReadInfo" handles a get request to localhost:<relay-port>/v1/relay/read call.
 And provides the developers with an in-client reference to the API call
- */
-func RelayReadInfo(w http.ResponseWriter, r * http.Request, ps httprouter.Params){
-	info:=shared.CreateInfoStruct(r, "RelayRead", Relay{}, "Response from hosted chain")
-	shared.WriteInfoResponse(w,info)
+*/
+func RelayReadInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	info := shared.CreateInfoStruct(r, "RelayRead", Relay{}, "Response from hosted chain")
+	shared.WriteInfoResponse(w, info)
 }
 
 /*
  "RelayWrite" handles the localhost:<relay-port>/v1/relay/write call.
- */
+*/
 func RelayWrite(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteResponse(w, "Hello, World!")
 }
 
 /*
 "RouteRelay" routes the relay to the specified hosted chain
- */
+*/
 func RouteRelay(relay Relay) string {
 	switch relay.Blockchain {
 	case "ethereum":

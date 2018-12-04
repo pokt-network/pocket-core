@@ -7,11 +7,10 @@ import (
 
 // "session.go" specifies session related code for the crypto package.
 
-
 /*
 "SessionHash" returns the <SessionHashingAlgorithm> hash of a byte array.
- */
-func SessionHash (s []byte) []byte {				// hashing algorithm of the session
+*/
+func SessionHash(s []byte) []byte { // hashing algorithm of the session
 	hasher := _const.SessionHashingAlgorithm.New()
 	hasher.Write(s)
 	return hasher.Sum(nil)
@@ -19,11 +18,7 @@ func SessionHash (s []byte) []byte {				// hashing algorithm of the session
 
 /*
 "SessionNonce" generates a 32 byte random key. (Unused for now)
- */
-func SessionNonce() []byte{							// one time random number from session
+*/
+func SessionNonce() []byte { // one time random number from session
 	return RandBytes(32)
 }
-
-
-
-
