@@ -2,6 +2,8 @@
 package session
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
 	"net"
@@ -10,7 +12,7 @@ import (
 /*
 "ServeAndListen" creates a new 'persistent conn' server.
  */
-func ServeAndListen(port string, host string) { // TODO get this from flags
+func ServeAndListen(port string, host string) {
 	l, err := net.Listen(_const.SESSION_CONN_TYPE, host+":"+port)				// listen on port & host
 	if err != nil {																// handle server creation error
 		logs.NewLog("Unable to create a new "+_const.SESSION_CONN_TYPE+" server on port:"+port, logs.PanicLevel, logs.JSONLogFormat)
@@ -36,6 +38,7 @@ func handleRequest(conn net.Conn) {
 		logs.NewLog("Unable to read the incoming message", logs.PanicLevel, logs.JSONLogFormat)
 		logs.NewLog("ERROR: "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 	}
+	fmt.Println(string(bytes.Trim(buf, "\x00")))
 	conn.Write([]byte("ACK"))
 	conn.Close()
 }
