@@ -63,16 +63,27 @@ func PeerlistContains(GID string) bool{
 	return ok
 }
 
-func Manualpeers(filepath string){
+func ManualPeersFile(filepath string){
 	if peerList==nil{
 		GetPeerList()
 	}
-	file, _ := ioutil.ReadFile(filepath)
+	file, _ := ioutil.ReadFile(filepath)	// TODO error handling -> use custom logs
 	var data [] node.Node
 	err := json.Unmarshal(file,&data)
 	if err!=nil{
 		log.Fatal("Unable to unmarshal json from " + filepath)
 	}
+	for _,n:= range data{
+		AddNodePeerList(n)
+	}
+}
+
+func ManualPeersJSON(b []byte){
+	if peerList==nil{
+		GetPeerList()	// TODO error handling
+	}
+	var data [] node.Node
+	_ := json.Unmarshal(b,&data)
 	for _,n:= range data{
 		AddNodePeerList(n)
 	}
