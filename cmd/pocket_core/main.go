@@ -35,7 +35,7 @@ func main() {
  */
 func manualPeers(){
 	if config.GetConfigInstance().ManPeers {					// if flag enabled
-		net.Manualpeers(config.GetConfigInstance().PeerFile)	// add peers from file
+		net.ManualPeersFile(config.GetConfigInstance().PeerFile) // add peers from file
 	}
 }
 
