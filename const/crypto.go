@@ -1,4 +1,4 @@
-// This package is for cryptography that is used in Pocket Core.
+// This package holds global constants.
 package _const
 
 import "crypto"
