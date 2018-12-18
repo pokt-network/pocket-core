@@ -1,26 +1,29 @@
 package session
 
 import (
-	"github.com/pokt-network/pocket-core/const"
+	"fmt"
+	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/net/session"
-	"io/ioutil"
-	"net"
 	"testing"
 )
 
 func TestConnection(t *testing.T) {
 	const port = "3333"
 	const host = "localhost"
-	go session.ServeAndListen(port,host)										// start the server
-	conn, err := net.Dial(_const.SESSION_CONN_TYPE, host+":"+port)				// establish a connection
-	if err != nil {
-		t.Errorf("Unable to establish " + _const.SESSION_CONN_TYPE + " connection on port " + host+":"+port)
+	go session.Listen(port,host)                                   // start the server
+	peer1 := session.NewPeer()
+	peer1.CreateConnection(port,host)
+	t.Log(peer1.Conn.RemoteAddr())
+	fmt.Println(peer1.Conn.LocalAddr().String())
+	// get peer2 from the peerlist
+	for session.GetSessionPeerlist()[peer1.Conn.LocalAddr().String()]==(session.Peer{}){
+
 	}
-	defer conn.Close()
-	conn.Write([]byte("testing"))												// send message 'testing'
-	response, err := ioutil.ReadAll(conn)
-	if err != nil {
-		t.Errorf("Unable to read data from  " + _const.SESSION_CONN_TYPE + " connection on port " + host+":"+port)
-	}
-	t.Log(string(response))
+	peer2 := session.GetSessionPeerlist()[peer1.Conn.LocalAddr().String()]
+	// Create a new message to send
+	pl := message.Payload{0,"I am peer 2 : "+peer2.Conn.LocalAddr().String()}
+	m:= message.NewMessage(pl)
+	peer2.Send(m)
+	peer1.Receive()
+	peer1.CloseConnection()
 }
