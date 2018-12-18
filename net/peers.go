@@ -11,6 +11,7 @@ import (
 
 // "peers.go" specifies peer related code.
 // TODO could convert to structure in the future to make more robust
+// TODO need to gracefully connect the following concepts: PEERLIST -> SESSIONLIST -> SESSIONPEERLIST
 var (
 	once     sync.Once
 	peerList map[string]node.Node
