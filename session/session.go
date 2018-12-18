@@ -33,7 +33,7 @@ type sessionPool struct {
  */
 func GetSessionPoolInstance() *sessionPool {
 	once.Do(func() { 										  	// only do once
-		if (globalSessionPool == nil) { 					  	// if no existing globalSessionPool
+		if 	globalSessionPool == nil { 					  		// if no existing globalSessionPool
 			globalSessionPool = &sessionPool{}                	// create a new session pool
 			globalSessionPool.list = make(map[string]Session) 	// create a map of sessions
 		}

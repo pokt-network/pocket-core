@@ -8,7 +8,6 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/net"
-	"github.com/pokt-network/pocket-core/net/session"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
@@ -49,7 +48,6 @@ func startClient(){
 	manualPeers()										// check for manual peers
 	logs.NewLog("Started Client ", logs.InfoLevel,logs.JSONLogFormat) 	// log start message
 	rpc.RunAPIEndpoints()                           	// runs the server endpoints for client and relay api.
-	session.ServeAndListen("3333","localhost")
 	fmt.Print("Press any key + 'Return' to quit: ") 	// prompt user to exit
 	input := bufio.NewScanner(os.Stdin)             	// unnecessary temporary entry
 	input.Scan()                                    	// wait
