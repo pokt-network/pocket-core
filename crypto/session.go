@@ -24,6 +24,20 @@ func SessionNonce() []byte{							// one time random number from session
 	return RandBytes(32)
 }
 
-
+/*
+"GenerateSessionKey" function determines the sessionKey.
+ */
+func GenerateSessionKey(devID string) []byte {
+	b1 := "block 1"								// Simulate block hash
+	b2 := "block 2"
+	block1 := SessionHash([]byte(b1))
+	block2 := SessionHash([]byte(b2))
+	dIDBytes := []byte(devID)					// Get Developer ID Bytes
+	key := []byte{}
+	key = append(key, block1...)				// Create the publicly verifiable key for the algorithm
+	key = append(key, block2...)
+	key = append(key, dIDBytes...)
+	return SessionHash(key)						// Run through hashing algorithm
+}
 
 

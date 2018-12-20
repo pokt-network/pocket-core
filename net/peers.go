@@ -11,12 +11,14 @@ import (
 
 // "peers.go" specifies peer related code.
 
-// TODO document and reorder message indexing
-// TODO need to gracefully connect the following concepts: PEERLIST -> SESSIONLIST -> SESSIONPEERLIST
-// 		Each session has a sessionPeerList
-// 		Each sessionPeerList is made of persistent connections to peers (not peers as defined in this file but peers as defined
-// 		in net/session/peer.go) <- confusing right? That's why this needs to be fixed ASAP
+// TODO assign roles to each node within the peerlist
+// TODO need to gracefully connect the following concepts: PEERLIST -> SESSIONLIST -> SESSIONCONNLIST
+//		Register each peer to connection
+// 		Register each connection to session
+// 		Register each session to sessionList
+
 // TODO turn all panics into error correction (do research into this, next RC)
+// TODO TODO document and reorder message indexing (ongoing)
 // TODO restructure packages (next RC)
 // TODO add logging (next RC)
 
@@ -45,7 +47,7 @@ func AddNodePeerList(node node.Node) {
 	}
 	lock.Lock()										// concurrency protection 'only one thread can add at a time'
 	defer lock.Unlock()
-	if !peerlistContains(node.GID) { // if node not within peerlist
+	if !peerlistContains(node.GID) { 				// if node not within peerlist
 		peerList[node.GID] = node					// TODO could add update function
 	}
 }
