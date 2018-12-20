@@ -1,38 +1,22 @@
 // This package is for all 'session' related code.
-package session
+package sessio
 // TODO thread safety
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/node"
 	"sync"
 )
 
 var (
-	globalSessionPool *sessionPool							// global session pool instance
-	once              sync.Once								// only occurs once throughout program
-	lock			  sync.Mutex							// for thread safety
+	globalSessionPool *sessionPool // global session pool instance
+	o                 sync.Once    // only occurs o throughout program
+	lock              sync.Mutex   // for thread safety // TODO consider making a member of the sessionPool
 )
-/*
-This is the session structure.
- */
-type Session struct {
-	devID string											// "devID" is the developer's ID that identifies the session.
-	validators map[string]node.Validator					// "validators" is a map [devid]Node validator nodes.
-	servicers map[string]node.Service						// "validators" is a map [devid]Node servicer nodes.
-}
-
-/*
-This holds a list of list that are active (needs to confirm using liveness check).
- */
-type sessionPool struct {
-	list map[string]Session // "list" is the local list of ongoing list.
-}
 
 /*
  "GetSessionPoolInstance() returns the singleton instance of the global session pool
  */
 func GetSessionPoolInstance() *sessionPool {
-	once.Do(func() { 										  	// only do once
+	o.Do(func() { // only do o
 		if 	globalSessionPool == nil { 					  		// if no existing globalSessionPool
 			globalSessionPool = &sessionPool{}                	// create a new session pool
 			globalSessionPool.list = make(map[string]Session) 	// create a map of sessions
@@ -44,18 +28,24 @@ func GetSessionPoolInstance() *sessionPool {
 /*
 "createNewSession" creates a new session for the specific devID and adds to global sessionPool (map)
  */
-func CreateNewSession(dID string) {
+func CreateAndRegisterSession(dID string) {
+	RegisterSession(NewSession(dID))
+}
+
+func RegisterSession(session Session){
 	lock.Lock()
 	defer lock.Unlock()
 	if globalSessionPool==nil{
 		GetSessionPoolInstance()
 	}
-	if !sessionListContains(dID) {
-		sList := GetSessionPoolInstance().list           	// pulls the global list from the singleton
-		validators := make(map[string]node.Validator)    	// simulated List of Validators
-		servicers := make(map[string]node.Service)       	// simulated List of Servicers
-		sList[dID] = Session{dID, validators, servicers} // adds a new session to the sessionlist (map)
+	if !sessionListContains(session.devID) {
+		sList := GetSessionPoolInstance().list           							// pulls the global list from the singleton
+		sList[session.devID] = session												// adds a new session to the sessionlist (map)
 	}
+}
+
+func NewSession(dID string) Session{
+	return Session{dID,make(map[string]Connection)}
 }
 
 /*
@@ -74,7 +64,7 @@ Thread safe
 func SessionListContains(dID string) bool{
 	lock.Lock()
 	defer lock.Unlock()
-	if globalSessionPool==nil{				// TODO check if this is necessary in session.go and peers.go
+	if globalSessionPool==nil{				// TODO check if this is necessary in sessiogo and peers.go
 		GetSessionPoolInstance()
 	}
 	_,ok := GetSessionPoolInstance().list[dID]
@@ -86,4 +76,20 @@ func SessionListContains(dID string) bool{
  */
 func PrintSessionList() {
 	fmt.Println(GetSessionPoolInstance().list)
+}
+
+func (session *Session) GetSessionConnList() map[string]Connection {
+	once.Do(func() {
+		session.connectionList = make(map[string]Connection)
+	})
+	return session.connectionList
+}
+
+func (session *Session) RegisterSessionConn(connection Connection) {
+	fmt.Println("REGISTERING CONN "+ connection.Conn.RemoteAddr().String())
+	session.GetSessionConnList()[connection.Conn.RemoteAddr().String()] = connection // added by remote addr
+}
+
+func (session *Session) ClearSessionConnList(){
+	session.GetSessionConnList() = make(map[string]Connection)
 }

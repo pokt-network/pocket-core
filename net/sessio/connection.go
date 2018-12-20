@@ -1,5 +1,5 @@
 // This package deals with all things networking related.
-package session
+package sessio
 
 import (
 	"encoding/gob"
@@ -10,39 +10,40 @@ import (
 )
 
 /*
-"NewPeer" returns a pointer to an empty peer structure.
+"NewConnection" returns a pointer to an empty connection structure.
  */
-func NewPeer() *Peer {
-	return &Peer{} // return an empty peer pointer
+func NewConnection() *Connection {
+	return &Connection{} // return an empty connection pointer
 }
 
 /*
-"NewPeerFromConn" returns a new peer connection from an already established connection.
+"NewPeerFromConn" returns a new connection connection from an already established connection.
  */
-func NewPeerFromConn(conn net.Conn) *Peer {
-	peer := &Peer{}   															// init a peer pointer
-	peer.Conn = conn  															// save connection to this peer instance
-	go peer.Receive() 															// run receive to listen for incoming messages
-	return peer       															// return the peer
+func NewPeerFromConn(conn net.Conn) *Connection {
+	connection := &Connection{} // init a connection pointer
+	connection.Conn = conn      // save connection to this connection instance
+	go connection.Receive()     // run receive to listen for incoming messages
+	return connection           // return the connection
 }
 
 /*
-"CreateConnection" establishes a connection as a peer acting as a client (to a peer acting as a server).
+"CreateConnection" establishes a connection as a connection acting as a client (to a connection acting as a server).
  */
-func (peer *Peer) CreateConnection(port string, host string) {
+func (connection *Connection) CreateConnection(port string, host string, session Session) {
 	conn, err := net.Dial(_const.SESSION_CONN_TYPE, host+":"+port) 				// establish a connection
 	if err != nil { 															// handle connection error
 		logs.NewLog("Unable to establish "+_const.SESSION_CONN_TYPE+" connection on port "+host+":"+port,
 			logs.PanicLevel, logs.JSONLogFormat)
 	}
-	peer.Conn = conn  															// save the connection to this peer instance
-	go peer.Receive() 															// run receive to listen for incoming messages
+	connection.Conn = conn  													// save the connection to this connection instance
+	go connection.Receive() 													// run receive to listen for incoming messages
+	session.RegisterSessionConn(*connection)
 }
 
 /*
 "Listen" Listens on a specific port for incoming connection
  */
-func Listen(port string, host string) {
+func Listen(port string, host string, session Session) {
 	l, err := net.Listen(_const.SESSION_CONN_TYPE, host+":"+port)				// listen on port & host
 	if err != nil {																// handle server creation error
 		logs.NewLog("Unable to create a new "+_const.SESSION_CONN_TYPE+" server on port:"+port, logs.PanicLevel, logs.JSONLogFormat)
@@ -56,19 +57,19 @@ func Listen(port string, host string) {
 			logs.NewLog("Unable to accept the "+_const.SESSION_CONN_TYPE+" Conn on port:"+port, logs.PanicLevel, logs.JSONLogFormat)
 			logs.NewLog("ERROR: "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 		}
-		peer:=NewPeerFromConn(conn)												// create a new peer from connection
-		RegisterSessionPeerConnection(*peer)									// register the peer to the global list
+		connection:=NewPeerFromConn(conn) // create a new connection from connection
+		session.RegisterSessionConn(*connection)  // register the connection to the global list
 	}
 }
 
 /*
 "Send" sends a message structure through the stream.
  */
-func (peer *Peer) Send(message message.Message) {
-	peer.Lock()																	// lock the peer for encoding
-	encoder := gob.NewEncoder(peer.Conn)										// create a new gob encoder to the connection stream
+func (connection *Connection) Send(message message.Message) {
+	connection.Lock()															// lock the connection for encoding
+	encoder := gob.NewEncoder(connection.Conn)									// create a new gob encoder to the connection stream
 	err := encoder.Encode(message)												// encode the structure into the stream
-	peer.Unlock()																// unlock the peer
+	connection.Unlock()															// unlock the connection
 	if err != nil {																// handle any errors
 		logs.NewLog("Unable to encode the message "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 	}
@@ -77,13 +78,13 @@ func (peer *Peer) Send(message message.Message) {
 /*
 "Receive" listens for messages within the stream.
  */
-func (peer *Peer) Receive() {													// TODO curious if there is a more efficient way (blocking) to do this
-	dec := gob.NewDecoder(peer.Conn)											// create a gob decoder object
+func (connection *Connection) Receive() { // TODO curious if there is a more efficient way (blocking) to do this
+	dec := gob.NewDecoder(connection.Conn)										// create a gob decoder object
 	for {
 		m := message.Message{}													// create an empty message
 		dec.Decode(&m)															// decode the message from the stream
 		if m != (message.Message{}) {											// if the message isn't empty
-			HandleMessage(&m, peer)												// handle the message
+			HandleMessage(&m, connection)										// handle the message
 		}
 	}
 }
@@ -91,8 +92,16 @@ func (peer *Peer) Receive() {													// TODO curious if there is a more eff
 /*
 "CloseConnection" ends the persistent connection
  */
-func (peer *Peer) CloseConnection() {
-	peer.Lock()																	// lock the peer
-	defer peer.Unlock()															// once complete unlock the peer
-	peer.Conn.Close()															// close the connection
+func (connection *Connection) CloseConnection() {
+	connection.Lock()															// lock the connection
+	defer connection.Unlock()													// o complete unlock the connection
+	connection.Conn.Close()														// close the connection
+}
+
+func (connection *Connection) SetRole(role Role){
+	connection.role = role
+}
+
+func (connection *Connection) GetRole() Role{
+	return connection.role
 }

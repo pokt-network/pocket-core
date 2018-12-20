@@ -4,11 +4,12 @@ package relay
 import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/net"
+	"github.com/pokt-network/pocket-core/net/sessio"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/shared"
-	"github.com/pokt-network/pocket-core/session"
 	"github.com/pokt-network/pocket-core/util"
 	"math/big"
 	"net/http"
@@ -31,17 +32,17 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	dispatch := &Dispatch{}
 	shared.PopulateModelFromParams(w, r, ps, dispatch)
-	if !session.SessionListContains(dispatch.DevID) {
-		session.CreateNewSession(dispatch.DevID)
+	if !sessio.SessionListContains(dispatch.DevID) {
+		sessio.CreateAndRegisterSession(dispatch.DevID)
 	}
-	sessionKey := util.BytesToHex(session.GenerateSessionKey(dispatch.DevID)) // TODO should store the session key
+	sessionKey := util.BytesToHex(crypto.GenerateSessionKey(dispatch.DevID)) // TODO should store the session key
 	nodes := DispatchFind(sessionKey)
 	res, err := json.Marshal(nodes)
 	if err != nil {
 		logs.NewLog("Couldn't convert node array to json array: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	shared.WriteRawJSONResponse(w, res)
-	session.PrintSessionList()
+	sessio.PrintSessionList()
 }
 
 /*
