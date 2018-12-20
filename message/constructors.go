@@ -12,5 +12,5 @@ func NewMessage(pLoad Payload) Message {
 }
 
 func NewSessionPeersMessage(sessionPeersJSON []byte) Message{
-	return NewMessage(Payload{1,sessionPeersJSON})
+	// TODO
 }
