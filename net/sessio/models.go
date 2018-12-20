@@ -11,23 +11,23 @@ type Role int
 const (
 	VALIDATOR Role = iota+1
 	SERVICER
-	DISPATCHER
+	DISPATCHER // TODO
 )
 // The peer structure represents a persistent connection between two nodes within a session
 type Connection struct {
-	Conn net.Conn		// the persistent connection between the two
-	sync.Mutex			// the lock for sending messages and closing the connection
-	node.Node			// the peer that is connected
-	role Role			// role the node plays within the session
-
+	Conn       net.Conn		`json:"conn"` 					// the persistent connection between the two
+	sync.Mutex 				`json:"mutex"`                	// the sPoolLock for sending messages and closing the connection
+	node.Node  				`json:"node"`                 	// the peer that is connected
+	Role       Role 		`json:"Role"`            		// Role the node plays within the session
 }
 
 /*
 This is the session structure.
  */
 type Session struct {
-	devID string											// "devID" is the developer's ID that identifies the sessio
-	connectionList map[string]Connection
+	DevID    string                `json:"DevID"` 			// "DevID" is the developer's ID that identifies the sessio
+	ConnList map[string]Connection `json:"connList"`		// "ConnList" is the list of peer connections
+	sync.Mutex
 }
 
 /*
