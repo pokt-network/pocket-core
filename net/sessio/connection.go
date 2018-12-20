@@ -66,7 +66,7 @@ func Listen(port string, host string, session Session) {
 "Send" sends a message structure through the stream.
  */
 func (connection *Connection) Send(message message.Message) {
-	connection.Lock()															// lock the connection for encoding
+	connection.Lock()															// sPoolLock the connection for encoding
 	encoder := gob.NewEncoder(connection.Conn)									// create a new gob encoder to the connection stream
 	err := encoder.Encode(message)												// encode the structure into the stream
 	connection.Unlock()															// unlock the connection
@@ -93,15 +93,15 @@ func (connection *Connection) Receive() { // TODO curious if there is a more eff
 "CloseConnection" ends the persistent connection
  */
 func (connection *Connection) CloseConnection() {
-	connection.Lock()															// lock the connection
+	connection.Lock()															// sPoolLock the connection
 	defer connection.Unlock()													// o complete unlock the connection
 	connection.Conn.Close()														// close the connection
 }
 
 func (connection *Connection) SetRole(role Role){
-	connection.role = role
+	connection.Role = role
 }
 
 func (connection *Connection) GetRole() Role{
-	return connection.role
+	return connection.Role
 }

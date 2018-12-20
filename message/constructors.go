@@ -11,6 +11,3 @@ func NewMessage(pLoad Payload) Message {
 	return Message{_const.NETID, _const.CLIENTID, 0, pLoad}
 }
 
-func NewSessionPeersMessage(sessionPeersJSON []byte) Message{
-	// TODO
-}
