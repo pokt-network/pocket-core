@@ -2,10 +2,10 @@
 package session
 
 import (
+	"fmt"
 	"net"
 	"sync"
 )
-// TODO the name peer clashes too much, consider new name for persistent connection instance
 // The peer structure represents a persistent connection between two nodes within a session
 type Peer struct {
 	Conn net.Conn		// the persistent connection between the two
@@ -15,8 +15,6 @@ type Peer struct {
 /***********************************************************************************************************************
 Everything below is temporary. This session peerlist is a basic structure to register a new peer connection easily for
 testing. The currently developed solution is decoupled from the sessionList under the global session package
-
-TODO need to integrate the SessionPeerlist with the sessionList
  */
 var peerList map[string]Peer
 var once sync.Once
@@ -29,7 +27,12 @@ func GetSessionPeerlist() map[string]Peer {
 }
 
 func RegisterSessionPeerConnection(peer Peer) {
+	fmt.Println("REGISTERING CONN "+peer.Conn.RemoteAddr().String())
 	GetSessionPeerlist()[peer.Conn.RemoteAddr().String()] = peer // added by remote addr
+}
+
+func ClearSessionPeerList(){
+	peerList = make(map[string]Peer)
 }
 
 /**********************************************************************************************************************/
