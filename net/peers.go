@@ -10,8 +10,16 @@ import (
 )
 
 // "peers.go" specifies peer related code.
-// TODO could convert to structure in the future to make more robust
+
+// TODO document and reorder message indexing
 // TODO need to gracefully connect the following concepts: PEERLIST -> SESSIONLIST -> SESSIONPEERLIST
+// 		Each session has a sessionPeerList
+// 		Each sessionPeerList is made of persistent connections to peers (not peers as defined in this file but peers as defined
+// 		in net/session/peer.go) <- confusing right? That's why this needs to be fixed ASAP
+// TODO turn all panics into error correction (do research into this, next RC)
+// TODO restructure packages (next RC)
+// TODO add logging (next RC)
+
 var (
 	once     sync.Once
 	peerList map[string]node.Node
@@ -84,7 +92,7 @@ func ManualPeersJSON(b []byte){
 		GetPeerList()	// TODO error handling
 	}
 	var data [] node.Node
-	_ := json.Unmarshal(b,&data)
+	json.Unmarshal(b,&data)
 	for _,n:= range data{
 		AddNodePeerList(n)
 	}

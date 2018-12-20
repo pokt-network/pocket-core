@@ -15,13 +15,13 @@ func TestConnection(t *testing.T) {
 	// create a new peer
 	peer1 := session.NewPeer()
 	peer1.CreateConnection(port,host)
-	// get peer2 from the peerlist
-	for session.GetSessionPeerlist()[peer1.Conn.LocalAddr().String()]==(session.Peer{}){} // wait for peer registration
+	// wait for peer registration
+	for session.GetSessionPeerlist()[peer1.Conn.LocalAddr().String()]==(session.Peer{}){}
 	// get peer2 from global peer list
 	peer2 := session.GetSessionPeerlist()[peer1.Conn.LocalAddr().String()]
 	// create a new message to send
-	peer1Payload := message.Payload{0,"I am  peer 1: "+peer1.Conn.LocalAddr().String()}
-	peer2Payload := message.Payload{0,"I am  peer 2: "+peer2.Conn.LocalAddr().String()}
+	peer1Payload := message.Payload{0,"I am peer 1: "+peer1.Conn.LocalAddr().String()}
+	peer2Payload := message.Payload{0,"I am peer 2: "+peer2.Conn.LocalAddr().String()}
 	// send several messages back and forth
 	peer1.Send(message.NewMessage(peer1Payload))
 	peer2.Send(message.NewMessage(peer2Payload))
