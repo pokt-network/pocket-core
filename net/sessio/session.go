@@ -3,13 +3,14 @@ package sessio
 // TODO thread safety
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/node"
 	"sync"
 )
 
 var (
 	globalSessionPool *sessionPool // global session pool instance
 	o                 sync.Once    // only occurs o throughout program
-	lock              sync.Mutex   // for thread safety // TODO consider making a member of the sessionPool
+	sPoolLock         sync.Mutex   // for thread safety // TODO consider making a member of the sessionPool
 )
 
 /*
@@ -26,31 +27,44 @@ func GetSessionPoolInstance() *sessionPool {
 }
 
 /*
-"createNewSession" creates a new session for the specific devID and adds to global sessionPool (map)
+"createNewSession" creates a new session for the specific DevID and adds to global sessionPool (map)
  */
 func CreateAndRegisterSession(dID string) {
 	RegisterSession(NewSession(dID))
 }
 
-func RegisterSession(session Session){
-	lock.Lock()
-	defer lock.Unlock()
+func RegisterSession(session Session){ // this is a function because only 1 global sessionPool instance
+	sPoolLock.Lock()
+	defer sPoolLock.Unlock()
 	if globalSessionPool==nil{
 		GetSessionPoolInstance()
 	}
-	if !sessionListContains(session.devID) {
-		sList := GetSessionPoolInstance().list           							// pulls the global list from the singleton
-		sList[session.devID] = session												// adds a new session to the sessionlist (map)
+	if !sessionListContains(session.DevID) {
+		sList := GetSessionPoolInstance().list // pulls the global list from the singleton
+		sList[session.DevID] = session         // adds a new session to the sessionlist (map)
 	}
 }
 
-func NewSession(dID string) Session{
-	return Session{dID,make(map[string]Connection)}
+func NewSession(dID string) Session{ // TODO will derive peers for session using blockchain
+	connList:=make(map[string]Connection)
+	// create dummy nodes
+	sNode1 := node.Node{GID: "snode1", RemoteIP: "localhost", LocalIP: "localhost"}
+	sNode2 := node.Node{GID: "snode2", RemoteIP: "localhost", LocalIP: "localhost"}
+	vNode := node.Node{GID:"vnode", RemoteIP:"localhost", LocalIP:"localhost"}
+	// create dummy connections
+	sNodeConn1:= Connection{Mutex: sync.Mutex{}, Node: sNode1, Role: SERVICER}
+	sNodeConn2:= Connection{Mutex: sync.Mutex{}, Node: sNode2, Role: SERVICER}
+	vNodeConn:= Connection{Mutex:sync.Mutex{}, Node: vNode, Role: VALIDATOR}
+	// add to list
+	connList[sNode1.GID]=sNodeConn1
+	connList[sNode2.GID]=sNodeConn2
+	connList[vNode.GID]=vNodeConn
+	// return resulting session
+	return Session{dID,connList, sync.Mutex{}}
 }
 
 /*
 "sessionListContains" searches the session list for the specific devID and returns whether or not it is held
-<<<<<<< 4b882753294f034021971c577be6c5ff147314a1
  */
 func sessionListContains(dID string) bool{
 	_,ok := GetSessionPoolInstance().list[dID]
@@ -58,12 +72,12 @@ func sessionListContains(dID string) bool{
 }
 
 /*
-"SessionListContains" searches the session list for the specific devID and returns whether or not it is held
+"SessionListContains" searches the session list for the specific DevID and returns whether or not it is held
 Thread safe
  */
 func SessionListContains(dID string) bool{
-	lock.Lock()
-	defer lock.Unlock()
+	sPoolLock.Lock()
+	defer sPoolLock.Unlock()
 	if globalSessionPool==nil{				// TODO check if this is necessary in sessiogo and peers.go
 		GetSessionPoolInstance()
 	}
@@ -80,16 +94,27 @@ func PrintSessionList() {
 
 func (session *Session) GetSessionConnList() map[string]Connection {
 	once.Do(func() {
-		session.connectionList = make(map[string]Connection)
+		session.ConnList = make(map[string]Connection)
 	})
-	return session.connectionList
+	return session.ConnList
 }
 
 func (session *Session) RegisterSessionConn(connection Connection) {
 	fmt.Println("REGISTERING CONN "+ connection.Conn.RemoteAddr().String())
+	session.Lock()
+	defer session.Unlock()
 	session.GetSessionConnList()[connection.Conn.RemoteAddr().String()] = connection // added by remote addr
 }
 
+func (session *Session) GetConnectionFromList(gid string) Connection {
+	session.Lock()
+	defer session.Unlock()
+	sessConnList:= session.GetSessionConnList()
+	return sessConnList[gid]
+}
+
 func (session *Session) ClearSessionConnList(){
-	session.GetSessionConnList() = make(map[string]Connection)
+	session.Lock()
+	defer session.Unlock()
+	session.ConnList = make(map[string]Connection)
 }
