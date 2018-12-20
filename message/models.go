@@ -10,8 +10,6 @@ NOTE: 	The ideology here in design is to maintain a simple message structure whi
 		decoding structure for the payload
 
 		This is a WIP design, but for MVP it seems like the way to go
-
-		TODO document proper message indexing once messages are established
  */
 
 // Payload is the 'meat' of the message

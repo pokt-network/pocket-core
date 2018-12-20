@@ -9,25 +9,6 @@ import (
 	"net"
 )
 
-/***********************************************************************************************************************
-NOTE: 	The ideology behind this design is once the persistent connection has been established between the actors within
-		the session, they can send and receive messages back and forth.
-
-		Step by step:
-			STEP 1
-				1) If initially acting as a client... CreateConnection()
-				2) If initially acting as a server... NewPeerFromConn()
-
-			STEP 2
-				Register the session peer connection in a data structure specific to the session
-
-			STEP 3
-				Handle messages accordingly
-
-			TODO add logging
-			TODO restructure packaging net->session is sloppy
-***********************************************************************************************************************/
-
 /*
 "NewPeer" returns a pointer to an empty peer structure.
  */
@@ -72,7 +53,7 @@ func Listen(port string, host string) {
 	for {																		// for the duration of incoming requests
 		conn, err := l.Accept()													// accept the connection
 		if err != nil {															// handle request accept err
-			logs.NewLog("Unable to accept the "+_const.SESSION_CONN_TYPE+" Conn on port:"+port, logs.PanicLevel, logs.JSONLogFormat) // TODO fix all panic levels with consecutive logs
+			logs.NewLog("Unable to accept the "+_const.SESSION_CONN_TYPE+" Conn on port:"+port, logs.PanicLevel, logs.JSONLogFormat)
 			logs.NewLog("ERROR: "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 		}
 		peer:=NewPeerFromConn(conn)												// create a new peer from connection
@@ -89,7 +70,7 @@ func (peer *Peer) Send(message message.Message) {
 	err := encoder.Encode(message)												// encode the structure into the stream
 	peer.Unlock()																// unlock the peer
 	if err != nil {																// handle any errors
-		logs.NewLog("Unable to encode the message "+err.Error(), logs.PanicLevel, logs.JSONLogFormat) // TODO fix all panics to return error
+		logs.NewLog("Unable to encode the message "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 	}
 }
 
@@ -102,7 +83,7 @@ func (peer *Peer) Receive() {													// TODO curious if there is a more eff
 		m := message.Message{}													// create an empty message
 		dec.Decode(&m)															// decode the message from the stream
 		if m != (message.Message{}) {											// if the message isn't empty
-			message.HandleMessage(&m)											// handle the message
+			HandleMessage(&m, peer)												// handle the message
 		}
 	}
 }
