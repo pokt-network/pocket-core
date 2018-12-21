@@ -26,15 +26,16 @@ This is the session structure.
  */
 type Session struct {
 	DevID    string                `json:"DevID"` 			// "DevID" is the developer's ID that identifies the sessio
-	ConnList map[string]Connection `json:"connList"`		// "ConnList" is the list of peer connections
+	ConnList map[string]Connection `json:"connList"`		// "ConnList" is the List of peer connections
 	sync.Mutex
 }
 
 /*
-This holds a list of list that are active (needs to confirm using liveness check).
+This holds a List of List that are active (needs to confirm using liveness check).
  */
 type sessionPool struct {
-	list map[string]Session // "list" is the local list of ongoing list.
+	List map[string]Session // "List" is the local List of ongoing List.
+	sync.Mutex              // for thread safety
 }
 
 
