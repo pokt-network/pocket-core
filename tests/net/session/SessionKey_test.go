@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/net"
+	"github.com/pokt-network/pocket-core/net/peers"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
@@ -23,10 +23,10 @@ func TestSessionKey(t *testing.T) {
 	n3:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b3",
 		"","","","","","",empty}
 	// add to peerList
-	net.GetPeerList()
-	net.AddNodePeerList(n1)
-	net.AddNodePeerList(n2)
-	net.AddNodePeerList(n3)
+	pList := peers.GetPeerList()
+	pList.AddPeer(n1)
+	pList.AddPeer(n2)
+	pList.AddPeer(n3)
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
 	// @ Url
@@ -63,4 +63,5 @@ func TestSessionKey(t *testing.T) {
 	if(data[1].GID!=n2.GID){		// Assert order
 		t.Fatalf("Nodes are not in correct order")
 	}
+	peers.GetPeerList().Print()
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/net"
+	"github.com/pokt-network/pocket-core/net/peers"
 	"github.com/pokt-network/pocket-core/net/sessio"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/shared"
@@ -32,8 +32,10 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	dispatch := &Dispatch{}
 	shared.PopulateModelFromParams(w, r, ps, dispatch)
-	if !sessio.SessionListContains(dispatch.DevID) {
-		sessio.CreateAndRegisterSession(dispatch.DevID)
+	sList := sessio.GetSessionList()
+	if !sList.Contains(dispatch.DevID) {
+		session:=sessio.NewSession(dispatch.DevID)
+		sList.AddSession(session)
 	}
 	sessionKey := util.BytesToHex(crypto.GenerateSessionKey(dispatch.DevID)) // TODO should store the session key
 	nodes := DispatchFind(sessionKey)
@@ -42,22 +44,24 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		logs.NewLog("Couldn't convert node array to json array: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	shared.WriteRawJSONResponse(w, res)
-	sessio.PrintSessionList()
 }
 
 /*
 "DispatchFind" orders the nodes from smallest proximity from sessionKey to largest proximity to sessionKey
-// TODO convert to P2P
+// TODO convert to P2P -> currently just searches the peerlist
+// TODO NEED a separate dispatch file with calls like these
  */
 func DispatchFind(sessionKey string) []node.Node {
 	bigSessionKey := new(big.Int)                   		// create new big integer to store sessionKey in
 	bigSessionKey.SetString(sessionKey, 16)         	// convert hex string into big integer
-	peerList := net.GetPeerList()                   		// get the global peerlist
+	peerList := peers.GetPeerList()                   		// get the global peerlist
+	peerList.Lock()											// TODO currently locking the peerlist, however this will all change when p2p is integerated
+	defer peerList.Unlock()
 	m := make(map[uint64]node.Node)                 		// map the nodes to the corresponding difference
-	keys := make([]uint64, len(peerList))           		// store the keys (to easily sort)
-	sortedNodes := make([]node.Node, len(peerList)) 		// resulting array that holds the sorted nodes ordered by difference
+	keys := make([]uint64, len(peerList.List))           	// store the keys (to easily sort)
+	sortedNodes := make([]node.Node, len(peerList.List)) 	// resulting array that holds the sorted nodes ordered by difference
 	var i = 0                                       		// loop count
-	for gid, curNode := range peerList { 					// for each curNode in the peerlist
+	for gid, curNode := range peerList.List { 				// for each curNode in the peerlist
 		id := new(big.Int)                                 	// setup a new big integer to hold the converted ID
 		id.SetString(gid, 16)                         	// convert the hex GID into a bigInteger for comparison
 		difference := big.NewInt(0).Sub(bigSessionKey, id) // find the difference between the two
