@@ -10,13 +10,6 @@ import (
 )
 
 /*
-"NewConnection" returns a pointer to an empty connection structure.
- */
-func NewConnection() *Connection {
-	return &Connection{} // return an empty connection pointer
-}
-
-/*
 "NewPeerFromConn" returns a new connection connection from an already established connection.
  */
 func NewPeerFromConn(conn net.Conn) *Connection {
@@ -37,7 +30,7 @@ func (connection *Connection) CreateConnection(port string, host string, session
 	}
 	connection.Conn = conn  													// save the connection to this connection instance
 	go connection.Receive() 													// run receive to listen for incoming messages
-	session.RegisterSessionConn(*connection)
+	session.RegisterSessionConn(*connection) // TODO consider returning the connection and register it from caller
 }
 
 /*
@@ -58,7 +51,7 @@ func Listen(port string, host string, session Session) {
 			logs.NewLog("ERROR: "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 		}
 		connection:=NewPeerFromConn(conn) // create a new connection from connection
-		session.RegisterSessionConn(*connection)  // register the connection to the global list
+		session.RegisterSessionConn(*connection)  // TODO consider returning the connection and register it from caller
 	}
 }
 
@@ -76,7 +69,7 @@ func (connection *Connection) Send(message message.Message) {
 }
 
 /*
-"Receive" listens for messages within the stream.
+"Receive" listens for messages within the stream. TODO may need to lock up for the decoding
  */
 func (connection *Connection) Receive() { // TODO curious if there is a more efficient way (blocking) to do this
 	dec := gob.NewDecoder(connection.Conn)										// create a gob decoder object
