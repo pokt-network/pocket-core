@@ -1,10 +1,10 @@
 // This package is for all 'session' related code.
 package sessio
+
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/node"
 	"net"
 	"sync"
 )
@@ -73,40 +73,24 @@ func NewSession(dID string) Session{
 	return Session {DevID: dID}
 }
 
-func NewDummySession(dID string) Session{
-	connList:=make(map[string]Connection)
-	// create dummy nodes // TODO will derive peers for session using blockchain
-	sNode1 := node.Node{GID: "snode1", RemoteIP: "localhost", LocalIP: "localhost"}
-	sNode2 := node.Node{GID: "snode2", RemoteIP: "localhost", LocalIP: "localhost"}
-	vNode := node.Node{GID:"vnode", RemoteIP:"localhost", LocalIP:"localhost"}
-	// create dummy connections
-	sNodeConn1:= Connection{Mutex: sync.Mutex{}, Node: sNode1, Role: SERVICER}
-	sNodeConn2:= Connection{Mutex: sync.Mutex{}, Node: sNode2, Role: SERVICER}
-	vNodeConn:= Connection{Mutex:sync.Mutex{}, Node: vNode, Role: VALIDATOR}
-	// add to List
-	connList[sNode1.GID]=sNodeConn1
-	connList[sNode2.GID]=sNodeConn2
-	connList[vNode.GID]=vNodeConn
-	// return resulting session
-	return Session{dID,connList, sync.Mutex{}}
-}
-
 /***********************************************************************************************************************
 Session Methods
  */
 func (session *Session) GetConnections() map[string]Connection {
 	var once sync.Once
 	once.Do(func() {
-		session.ConnList = make(map[string]Connection)
+		if session.ConnList == nil {
+			session.ConnList = make(map[string]Connection)
+		}
 	})
 	return session.ConnList
 }
 
 func (session *Session) AddConnection(connection Connection) {
-	fmt.Println("REGISTERING CONN "+ connection.Conn.RemoteAddr().String())
+	fmt.Println("Adding Connection: "+ connection.GID +" to Session: "+session.DevID+"")
 	session.Lock()
 	defer session.Unlock()
-	session.GetConnections()[connection.Conn.RemoteAddr().String()] = connection // added by remote addr
+	session.GetConnections()[connection.GID] = connection
 }
 
 func (session *Session) GetConnection(gid string) Connection {
@@ -116,13 +100,31 @@ func (session *Session) GetConnection(gid string) Connection {
 	return sessConnList[gid]
 }
 
+func (session *Session) GetConnectionByIP(ip string) Connection {
+	session.Lock()
+	defer session.Unlock()
+	fmt.Println(session.GetConnections())
+	fmt.Println(ip)
+	connection := session.GetConnections()[ip]
+	if new(Connection)==&connection{
+		panic("Unable to locate connection from IP")
+	}
+	return connection
+}
+
+func (session *Session) NewConnections(sp []SessionPeer){
+	for _, sessionPeer := range sp {
+		session.Dial("3333", sessionPeer.LocalIP, Connection{SessionPeer:sessionPeer}) // TODO allow flexible ports: startup flag -> in Node structure -> in Session Peer Structure -> called here
+	}
+}
+
 func (session *Session) ClearConnections(){
 	session.Lock()
 	defer session.Unlock()
 	session.ConnList = make(map[string]Connection)
 }
 
-func (session *Session) Listen(port string, host string) {
+func (session *Session) Listen(port string, host string) {	// TODO eventually derive port and host (need scheme to allow multiple sessions)
 	l, err := net.Listen(_const.SESSION_CONN_TYPE, host+":"+port)				// listen on port & host
 	if err != nil {																// handle server creation error
 		logs.NewLog("Unable to create a new "+_const.SESSION_CONN_TYPE+" server on port:"+port, logs.PanicLevel, logs.JSONLogFormat)
@@ -141,7 +143,7 @@ func (session *Session) Listen(port string, host string) {
 	}
 }
 
-func (session *Session) Dial(port string, host string, connection Connection) {
+func (session *Session) Dial(port string, host string, connection Connection) { // TODO eventually derive port and host from connection.SessionPeer
 	conn, err := net.Dial(_const.SESSION_CONN_TYPE, host+":"+port) 				// establish a connection
 	if err != nil { 															// handle connection error
 		logs.NewLog("Unable to establish "+_const.SESSION_CONN_TYPE+" connection on port "+host+":"+port,

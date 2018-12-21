@@ -4,24 +4,24 @@ package sessio
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/message"
-	"github.com/pokt-network/pocket-core/net/peers"
+	"sync"
 )
 /***********************************************************************************************************************
 Message Constructors
  */
-func NewSessionMessage(session Session) message.Message{
-	return message.NewMessage(message.Payload{ID: 1, Data: session})
+func NewSessionMessage(nSPL NewSessionPayload) message.Message{
+	return message.NewMessage(message.Payload{ID: 1, Data: nSPL})
 }
 /***********************************************************************************************************************
 Message Handlers
  */
 
-func HandleMessage(message *message.Message, sender *Connection){
+func HandleMessage(message *message.Message){
 	switch message.Payload.ID {
 	case 0: // simple print message (testing purposes)
 		NewPrintMessage(message)
 	case 1: // sessionPeers message
-		NewSessionMessageHandler(message, sender)
+		NewSessionMessageHandler(message)
 	}
 }
 
@@ -35,21 +35,18 @@ func NewPrintMessage(message *message.Message){
 /*
 Handles the session peers message
  */
-func NewSessionMessageHandler(message *message.Message, peer *Connection){ //TODO confirm the nodes by referencing the blockchain
+func NewSessionMessageHandler(message *message.Message){ //TODO confirm the nodes by referencing the blockchain
 	sList := GetSessionList()
-	pList := peers.GetPeerList()
-	session:=message.Payload.Data.(Session)
+	// extract the NewSessionPayload
+	nSPL:=message.Payload.Data.(NewSessionPayload)
+	// create a session using developerID from payload
+	session := Session{DevID:nSPL.DevID, ConnList: make(map[string]Connection), Mutex:sync.Mutex{}}
+	// create new connections with each peer
+	session.NewConnections(nSPL.Peers)
 	// register the session
 	sList.AddSession(session)
-	// extract the connection List
-	connList :=session.ConnList
-	// add sender to peerlist
-	pList.AddPeer(peer.Node)
-	// get each peer from the connectionList
-	for _, connection := range connList {
-		// add node to peerlist
-		pList.AddPeer(connection.Node)
-		// establish connection with each node
-		session.Dial("3333",connection.RemoteIP, connection) // TODO allow for flexible/manual ports
-	}
+	// TODO add sender to the peer and sessionPeers list
+	fmt.Println(fmt.Println("NEW SESSION CREATED: "))
+	fmt.Println(session.ConnList)
 }
+

@@ -26,4 +26,3 @@ type Message struct {
 	Payload			Payload		`json:"payload"`
 }
 
-

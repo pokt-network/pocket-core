@@ -12,8 +12,11 @@ import (
 
 // "peers.go" specifies peer related code.
 
+// TODO walk through the logic of the messaging system (why session.Listen() and session.Dial())
+// TODO session.ConnList() contains duplicate information about the nodes
 // TODO turn all panics into error correction (do research into this, next RC)
 // TODO standard network errors (next RC)
+// TODO ensure no duplicate sessions (try not to break tests while doing so)
 // TODO TODO document and reorder message indexing (ongoing)
 // TODO restructure packages (next RC)
 // TODO add logging (next RC)
