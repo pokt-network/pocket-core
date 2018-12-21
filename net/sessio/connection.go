@@ -28,23 +28,25 @@ func (connection *Connection) CloseConnection() {
 	connection.Conn.Close()														// close the connection
 }
 
-func (connection *Connection) Send(message message.Message) {
+func (connection *Connection) Send(message message.Message) { // TODO register type upon caller
 	connection.Lock()															// sPoolLock the connection for encoding
+	gob.Register(NewSessionPayload{})
 	encoder := gob.NewEncoder(connection.Conn)									// create a new gob encoder to the connection stream
 	err := encoder.Encode(message)												// encode the structure into the stream
 	connection.Unlock()															// unlock the connection
 	if err != nil {																// handle any errors
+		panic(err.Error())
 		logs.NewLog("Unable to encode the message "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 	}
 }
 
-func (connection *Connection) Receive() {										// TODO consider locking for decoding messages (needs its own lock 'rLock')
+func (connection *Connection) Receive() {		 								// TODO consider locking for decoding messages (needs its own lock 'rLock')
 	dec := gob.NewDecoder(connection.Conn)										// create a gob decoder object
 	for {
 		m := message.Message{}													// create an empty message
 		dec.Decode(&m)															// decode the message from the stream
 		if m != (message.Message{}) {											// if the message isn't empty
-			HandleMessage(&m, connection)										// handle the message
+			HandleMessage(&m)													// handle the message
 		}
 	}
 }
