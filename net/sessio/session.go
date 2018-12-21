@@ -1,23 +1,25 @@
 // This package is for all 'session' related code.
 package sessio
-// TODO thread safety
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/node"
 	"sync"
 )
 
+/***********************************************************************************************************************
+Session Pool Code // TODO naming convention ' sessionList' or 'sessionpool'
+ */
+
 var (
 	globalSessionPool *sessionPool // global session pool instance
-	o                 sync.Once    // only occurs o throughout program
-	sPoolLock         sync.Mutex   // for thread safety // TODO consider making a member of the sessionPool
+	sPoolLock         sync.Mutex   // for thread safety
 )
 
 /*
  "GetSessionPoolInstance() returns the singleton instance of the global session pool
  */
 func GetSessionPoolInstance() *sessionPool {
-	o.Do(func() { // only do o
+	sync.Once{}.Do(func() { // only do o
 		if 	globalSessionPool == nil { 					  		// if no existing globalSessionPool
 			globalSessionPool = &sessionPool{}                	// create a new session pool
 			globalSessionPool.list = make(map[string]Session) 	// create a map of sessions
@@ -26,9 +28,6 @@ func GetSessionPoolInstance() *sessionPool {
 	return globalSessionPool // return the session pool
 }
 
-/*
-"createNewSession" creates a new session for the specific DevID and adds to global sessionPool (map)
- */
 func CreateAndRegisterSession(dID string) {
 	RegisterSession(NewSession(dID))
 }
@@ -43,24 +42,6 @@ func RegisterSession(session Session){ // this is a function because only 1 glob
 		sList := GetSessionPoolInstance().list // pulls the global list from the singleton
 		sList[session.DevID] = session         // adds a new session to the sessionlist (map)
 	}
-}
-
-func NewSession(dID string) Session{ // TODO will derive peers for session using blockchain
-	connList:=make(map[string]Connection)
-	// create dummy nodes
-	sNode1 := node.Node{GID: "snode1", RemoteIP: "localhost", LocalIP: "localhost"}
-	sNode2 := node.Node{GID: "snode2", RemoteIP: "localhost", LocalIP: "localhost"}
-	vNode := node.Node{GID:"vnode", RemoteIP:"localhost", LocalIP:"localhost"}
-	// create dummy connections
-	sNodeConn1:= Connection{Mutex: sync.Mutex{}, Node: sNode1, Role: SERVICER}
-	sNodeConn2:= Connection{Mutex: sync.Mutex{}, Node: sNode2, Role: SERVICER}
-	vNodeConn:= Connection{Mutex:sync.Mutex{}, Node: vNode, Role: VALIDATOR}
-	// add to list
-	connList[sNode1.GID]=sNodeConn1
-	connList[sNode2.GID]=sNodeConn2
-	connList[vNode.GID]=vNodeConn
-	// return resulting session
-	return Session{dID,connList, sync.Mutex{}}
 }
 
 /*
@@ -92,8 +73,30 @@ func PrintSessionList() {
 	fmt.Println(GetSessionPoolInstance().list)
 }
 
+/***********************************************************************************************************************
+Session Code
+ */
+
+func NewSession(dID string) Session{ // TODO will derive peers for session using blockchain
+	connList:=make(map[string]Connection)
+	// create dummy nodes
+	sNode1 := node.Node{GID: "snode1", RemoteIP: "localhost", LocalIP: "localhost"}
+	sNode2 := node.Node{GID: "snode2", RemoteIP: "localhost", LocalIP: "localhost"}
+	vNode := node.Node{GID:"vnode", RemoteIP:"localhost", LocalIP:"localhost"}
+	// create dummy connections
+	sNodeConn1:= Connection{Mutex: sync.Mutex{}, Node: sNode1, Role: SERVICER}
+	sNodeConn2:= Connection{Mutex: sync.Mutex{}, Node: sNode2, Role: SERVICER}
+	vNodeConn:= Connection{Mutex:sync.Mutex{}, Node: vNode, Role: VALIDATOR}
+	// add to list
+	connList[sNode1.GID]=sNodeConn1
+	connList[sNode2.GID]=sNodeConn2
+	connList[vNode.GID]=vNodeConn
+	// return resulting session
+	return Session{dID,connList, sync.Mutex{}}
+}
+
 func (session *Session) GetSessionConnList() map[string]Connection {
-	once.Do(func() {
+	sync.Once{}.Do(func() {
 		session.ConnList = make(map[string]Connection)
 	})
 	return session.ConnList

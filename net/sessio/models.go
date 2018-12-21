@@ -37,6 +37,4 @@ type sessionPool struct {
 	list map[string]Session // "list" is the local list of ongoing list.
 }
 
-var once sync.Once
-
 
