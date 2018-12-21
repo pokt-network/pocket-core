@@ -7,7 +7,7 @@ import (
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/net"
+	"github.com/pokt-network/pocket-core/net/peers"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
@@ -33,8 +33,8 @@ func main() {
 "manualPeers" checks if manual peers are specified and adds them to the peerlist.
  */
 func manualPeers(){
-	if config.GetConfigInstance().ManPeers {					// if flag enabled
-		net.ManualPeersFile(config.GetConfigInstance().PeerFile) // add peers from file
+	if config.GetConfigInstance().ManPeers {						// if flag enabled
+		peers.ManualPeersFile(config.GetConfigInstance().PeerFile) // add peers from file
 	}
 }
 
