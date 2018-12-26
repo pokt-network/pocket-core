@@ -6,6 +6,12 @@ import (
 	"github.com/pokt-network/pocket-core/message"
 	"sync"
 )
+
+type NewSessionPayload struct {
+	DevID string			`json:"devid"`
+	Peers []SessionPeer		`json:"peers"`
+}
+
 /***********************************************************************************************************************
 Message Constructors
  */
@@ -45,8 +51,7 @@ func NewSessionMessageHandler(message *message.Message){ //TODO confirm the node
 	session.NewConnections(nSPL.Peers)
 	// register the session
 	sList.AddSession(session)
-	// TODO add sender to the peer and sessionPeers list
-	fmt.Println(fmt.Println("NEW SESSION CREATED: "))
-	fmt.Println(session.ConnList)
+	// add peers to peerList
+	AddSessionPeersToPeerlist(nSPL.Peers)
 }
 

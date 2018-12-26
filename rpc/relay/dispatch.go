@@ -52,10 +52,10 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 // TODO NEED a separate dispatch file with calls like these
  */
 func DispatchFind(sessionKey string) []node.Node {
-	bigSessionKey := new(big.Int)                   		// create new big integer to store sessionKey in
-	bigSessionKey.SetString(sessionKey, 16)         	// convert hex string into big integer
-	peerList := peers.GetPeerList()                   		// get the global peerlist
-	peerList.Lock()											// TODO currently locking the peerlist, however this will all change when p2p is integerated
+	bigSessionKey := new(big.Int)           // create new big integer to store sessionKey in
+	bigSessionKey.SetString(sessionKey, 16) // convert hex string into big integer
+	peerList := peers.GetPeerList()         // get the global peerlist
+	peerList.Lock()                         // TODO currently locking the peerlist, however this will all change when p2p is integerated
 	defer peerList.Unlock()
 	m := make(map[uint64]node.Node)                 		// map the nodes to the corresponding difference
 	keys := make([]uint64, len(peerList.List))           	// store the keys (to easily sort)

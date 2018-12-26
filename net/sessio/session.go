@@ -3,13 +3,21 @@ package sessio
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/const"
-	"github.com/pokt-network/pocket-core/logs"
-	"net"
 	"sync"
 )
+
+/*
+This is the session structure.
+ */
+type Session struct {
+	DevID    string                	`json:"devid"` 			// "DevID" is the developer's ID that identifies the sessio
+	ConnList map[string]Connection 	`json:"connList"`		// "ConnList" is the List of peer connections [GID] Connection
+	sync.Mutex						`json:"mutex"`
+}
+
+
 /***********************************************************************************************************************
-Session Pool Code // TODO naming convention ' sessionList' or 'sessionpool'
+Session Pool Code // TODO naming convention ' sessionPool' or 'sessionpool'
  */
 
 var (
@@ -87,16 +95,16 @@ func (session *Session) GetConnections() map[string]Connection {
 }
 
 func (session *Session) AddConnection(connection Connection) {
-	fmt.Println("Adding Connection: "+ connection.GID +" to Session: "+session.DevID+"")
+	fmt.Println("Adding Connection: " + connection.Peer.(SessionPeer).GID + " to Session: " + session.DevID + "")
 	session.Lock()
 	defer session.Unlock()
-	session.GetConnections()[connection.GID] = connection
+	session.GetConnections()[connection.Peer.(SessionPeer).GID] = connection
 }
 
 func (session *Session) GetConnection(gid string) Connection {
 	session.Lock()
 	defer session.Unlock()
-	sessConnList:= session.GetConnections()
+	sessConnList := session.GetConnections()
 	return sessConnList[gid]
 }
 
@@ -106,50 +114,22 @@ func (session *Session) GetConnectionByIP(ip string) Connection {
 	fmt.Println(session.GetConnections())
 	fmt.Println(ip)
 	connection := session.GetConnections()[ip]
-	if new(Connection)==&connection{
+	if new(Connection) == &connection {
 		panic("Unable to locate connection from IP")
 	}
 	return connection
 }
 
-func (session *Session) NewConnections(sp []SessionPeer){
-	for _, sessionPeer := range sp {
-		session.Dial("3333", sessionPeer.LocalIP, Connection{SessionPeer:sessionPeer}) // TODO allow flexible ports: startup flag -> in Node structure -> in Session Peer Structure -> called here
+func (session *Session) NewConnections(sp []SessionPeer) {
+	for _, sessionPeer := range sp {	// TODO dial each individual sessionPeer -> add connection to connList
+		connection := Connection{Peer: sessionPeer}
+		//connection.Dial("3333", sessionPeer.LocalIP) // TODO allow flexible ports: startup flag -> in Node structure -> in Session Peer Structure -> called here
+		session.AddConnection(connection)
 	}
 }
 
-func (session *Session) ClearConnections(){
+func (session *Session) ClearConnections() {
 	session.Lock()
 	defer session.Unlock()
 	session.ConnList = make(map[string]Connection)
-}
-
-func (session *Session) Listen(port string, host string) {	// TODO eventually derive port and host (need scheme to allow multiple sessions)
-	l, err := net.Listen(_const.SESSION_CONN_TYPE, host+":"+port)				// listen on port & host
-	if err != nil {																// handle server creation error
-		logs.NewLog("Unable to create a new "+_const.SESSION_CONN_TYPE+" server on port:"+port, logs.PanicLevel, logs.JSONLogFormat)
-		logs.NewLog("ERROR: "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
-	}
-	defer l.Close()																// close the server after serve and listen finishes
-	logs.NewLog("Listening on port :"+port, logs.InfoLevel, logs.JSONLogFormat) // log the new connection
-	for {																		// for the duration of incoming requests
-		conn, err := l.Accept()													// accept the connection
-		if err != nil {															// handle request accept err
-			logs.NewLog("Unable to accept the "+_const.SESSION_CONN_TYPE+" Conn on port:"+port, logs.PanicLevel, logs.JSONLogFormat)
-			logs.NewLog("ERROR: "+err.Error(), logs.PanicLevel, logs.JSONLogFormat)
-		}
-		connection:= NewConnection(conn)   // create a new connection from connection
-		session.AddConnection(*connection) // TODO consider returning the connection and register it from caller
-	}
-}
-
-func (session *Session) Dial(port string, host string, connection Connection) { // TODO eventually derive port and host from connection.SessionPeer
-	conn, err := net.Dial(_const.SESSION_CONN_TYPE, host+":"+port) 				// establish a connection
-	if err != nil { 															// handle connection error
-		logs.NewLog("Unable to establish "+_const.SESSION_CONN_TYPE+" connection on port "+host+":"+port,
-			logs.PanicLevel, logs.JSONLogFormat)
-	}
-	connection.Conn = conn            // save the connection to this connection instance
-	go connection.Receive()           // run receive to listen for incoming messages
-	session.AddConnection(connection) // TODO consider returning the connection and register it from caller
 }

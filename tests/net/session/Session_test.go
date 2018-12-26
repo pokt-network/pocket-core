@@ -1,6 +1,7 @@
 package session
 
 import (
+	"github.com/pokt-network/pocket-core/net/peers"
 	"github.com/pokt-network/pocket-core/net/sessio"
 	"github.com/pokt-network/pocket-core/node"
 	"testing"
@@ -8,28 +9,70 @@ import (
 )
 
 func TestSessionMessage(t *testing.T) {
-	const LPORT = "3333"      // port for listener
-	const LHOST = "localhost" // host for listener
-	const SHOST = "localhost" // host for sender
+	const PORT = "3333"      // port for listener
+	const HOST = "localhost" // host for listener
+	const DEVID = "dummy-id"
 	// STEP 1: CREATE DUMMY SESSION PEERS
 	var spl []sessio.SessionPeer
 	sNode1 := sessio.SessionPeer{Role: sessio.SERVICER, Node: node.Node{GID: "sNode1", RemoteIP: "localhost", LocalIP: "localhost"}}
 	sNode2 := sessio.SessionPeer{Role: sessio.SERVICER, Node: node.Node{GID: "sNode2", RemoteIP: "localhost", LocalIP: "localhost"}}
 	vNode := sessio.SessionPeer{Role: sessio.VALIDATOR, Node: node.Node{GID: "vNode", RemoteIP: "localhost", LocalIP: "localhost"}}
-	spl = append(spl, sNode1,sNode2, vNode)
+	dNode := sessio.SessionPeer{Role: sessio.DISPATCHER, Node: node.Node{GID: "dNode", RemoteIP:"localhost", LocalIP:"localhost"}}
+	spl = append(spl, sNode1,sNode2, vNode, dNode)	// add them to a list
 	// STEP 2: CREATE NEW SESSION MESSAGE
-	nSPL := sessio.NewSessionPayload{DevID: "dummy-id", Peers: spl}
+	nSPL := sessio.NewSessionPayload{DevID: DEVID, Peers: spl}
 	message:= sessio.NewSessionMessage(nSPL)
-	// STEP 3: CREATE DUMMY SESSION
-	dSess:= sessio.Session{DevID:"senderSession"}
-	// STEP 3: LISTEN FOR INCOMING MESSAGE
-	sess := sessio.Session{DevID:"receiverSession"}
-	go sess.Listen(LPORT,LHOST)
-	// STEP 4: ESTABLISH CONN WITH SERVER
-	dSess.Dial(LPORT,LHOST,sessio.Connection{SessionPeer: sessio.SessionPeer{sessio.DISPATCHER, node.Node{GID: "dNode", RemoteIP: "localhost", LocalIP: "localhost"}}})
-	// STEP 5: SEND MESSAGE OVER THE WIRE
-	for len(dSess.ConnList) ==0 {}
-	dConn:=dSess.ConnList["dNode"]
-	dConn.Send(message)
-	time.Sleep(time.Second*2)
+	// STEP 3: SERVE ON PORT
+	server := sessio.Connection{}
+	go server.Listen(PORT, HOST)
+	// STEP 4: DIAL TO PORT
+	client := sessio.Connection{}
+	client.Dial(PORT, HOST)
+	// STEP 5: send message over the wire
+	time.Sleep(time.Second)
+	server.Send(message, sessio.NewSessionPayload{})
+	client.Send(message, sessio.NewSessionPayload{})
+	time.Sleep(time.Second)
+	// STEP 6: confirm added to session list
+	sessionList := sessio.GetSessionList().List
+	if len(sessionList) == 0 {
+		t.Fatalf("Empty Session List")
+	}
+	if _, contains :=sessionList[DEVID]; !contains {
+		t.Fatal("Session not within list")
+	}
+	// STEP 7: confirm nodes are within peerlist
+	peerList := peers.GetPeerList()
+	if peers.GetPeerCount() == 0 {
+		t.Fatalf("Empty Peer List")
+	}
+	if !peerList.Contains(sNode1.GID) {
+		t.Fatalf("Peer: "+ sNode1.GID + " is not within the peerList")
+	}
+	if !peerList.Contains(sNode2.GID) {
+		t.Fatalf("Peer: "+ sNode2.GID+" is not within the peerList")
+	}
+	if !peerList.Contains(vNode.GID) {
+		t.Fatalf("Peer: "+ vNode.GID+ " is not within the peerList")
+	}
+	if !peerList.Contains(dNode.GID) {
+		t.Fatalf("Peer: "+ dNode.GID+ " is not within the peerList")
+	}
+	// STEP 8: confirm that session contains the session peers
+	session := sessionList[DEVID]
+	if len(session.GetConnections()) == 0 {
+		t.Fatalf("There are no peers within the session")
+	}
+	if session.GetConnection(sNode1.GID) == (sessio.Connection{}) {
+		t.Fatalf("Peer: "+ sNode1.GID + " is not within the sessionList")
+	}
+	if session.GetConnection(sNode2.GID) == (sessio.Connection{}) {
+		t.Fatalf("Peer: "+ sNode2.GID + " is not within the sessionList")
+	}
+	if session.GetConnection(vNode.GID) == (sessio.Connection{}) {
+		t.Fatalf("Peer: "+ vNode.GID + " is not within the sessionList")
+	}
+	if session.GetConnection(dNode.GID) == (sessio.Connection{}) {
+		t.Fatalf("Peer: "+ dNode.GID + " is not within the sessionList")
+	}
 }
