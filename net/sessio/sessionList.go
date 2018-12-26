@@ -4,6 +4,13 @@ import (
 	"fmt"
 	"sync"
 )
+/*
+This holds a List of List that are active (needs to confirm using liveness check).
+ */
+type sessionPool struct {
+	List map[string]Session // "List" is the local List of ongoing List.
+	sync.Mutex              // for thread safety
+}
 
 var (
 	sList *sessionPool // global session pool instance
