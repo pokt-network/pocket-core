@@ -11,8 +11,7 @@ import (
 
 /*
  "GetRelayAPIVersion" handles the localhost:<relay-port>/v1 call.
- */
+*/
 func GetRelayAPIVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteResponse(w, "Hello, World!")
 }
-

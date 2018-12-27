@@ -17,11 +17,11 @@ func TestSessionMessage(t *testing.T) {
 	sNode1 := sessio.SessionPeer{Role: sessio.SERVICER, Node: node.Node{GID: "sNode1", RemoteIP: "localhost", LocalIP: "localhost"}}
 	sNode2 := sessio.SessionPeer{Role: sessio.SERVICER, Node: node.Node{GID: "sNode2", RemoteIP: "localhost", LocalIP: "localhost"}}
 	vNode := sessio.SessionPeer{Role: sessio.VALIDATOR, Node: node.Node{GID: "vNode", RemoteIP: "localhost", LocalIP: "localhost"}}
-	dNode := sessio.SessionPeer{Role: sessio.DISPATCHER, Node: node.Node{GID: "dNode", RemoteIP:"localhost", LocalIP:"localhost"}}
-	spl = append(spl, sNode1,sNode2, vNode, dNode)	// add them to a list
+	dNode := sessio.SessionPeer{Role: sessio.DISPATCHER, Node: node.Node{GID: "dNode", RemoteIP: "localhost", LocalIP: "localhost"}}
+	spl = append(spl, sNode1, sNode2, vNode, dNode) // add them to a list
 	// STEP 2: CREATE NEW SESSION MESSAGE
 	nSPL := sessio.NewSessionPayload{DevID: DEVID, Peers: spl}
-	message:= sessio.NewSessionMessage(nSPL)
+	message := sessio.NewSessionMessage(nSPL)
 	// STEP 3: SERVE ON PORT
 	server := sessio.Connection{}
 	go server.Listen(PORT, HOST)
@@ -38,7 +38,7 @@ func TestSessionMessage(t *testing.T) {
 	if len(sessionList) == 0 {
 		t.Fatalf("Empty Session List")
 	}
-	if _, contains :=sessionList[DEVID]; !contains {
+	if _, contains := sessionList[DEVID]; !contains {
 		t.Fatal("Session not within list")
 	}
 	// STEP 7: confirm nodes are within peerlist
@@ -47,16 +47,16 @@ func TestSessionMessage(t *testing.T) {
 		t.Fatalf("Empty Peer List")
 	}
 	if !peerList.Contains(sNode1.GID) {
-		t.Fatalf("Peer: "+ sNode1.GID + " is not within the peerList")
+		t.Fatalf("Peer: " + sNode1.GID + " is not within the peerList")
 	}
 	if !peerList.Contains(sNode2.GID) {
-		t.Fatalf("Peer: "+ sNode2.GID+" is not within the peerList")
+		t.Fatalf("Peer: " + sNode2.GID + " is not within the peerList")
 	}
 	if !peerList.Contains(vNode.GID) {
-		t.Fatalf("Peer: "+ vNode.GID+ " is not within the peerList")
+		t.Fatalf("Peer: " + vNode.GID + " is not within the peerList")
 	}
 	if !peerList.Contains(dNode.GID) {
-		t.Fatalf("Peer: "+ dNode.GID+ " is not within the peerList")
+		t.Fatalf("Peer: " + dNode.GID + " is not within the peerList")
 	}
 	// STEP 8: confirm that session contains the session peers
 	session := sessionList[DEVID]
@@ -64,15 +64,15 @@ func TestSessionMessage(t *testing.T) {
 		t.Fatalf("There are no peers within the session")
 	}
 	if session.GetConnection(sNode1.GID) == (sessio.Connection{}) {
-		t.Fatalf("Peer: "+ sNode1.GID + " is not within the sessionList")
+		t.Fatalf("Peer: " + sNode1.GID + " is not within the sessionList")
 	}
 	if session.GetConnection(sNode2.GID) == (sessio.Connection{}) {
-		t.Fatalf("Peer: "+ sNode2.GID + " is not within the sessionList")
+		t.Fatalf("Peer: " + sNode2.GID + " is not within the sessionList")
 	}
 	if session.GetConnection(vNode.GID) == (sessio.Connection{}) {
-		t.Fatalf("Peer: "+ vNode.GID + " is not within the sessionList")
+		t.Fatalf("Peer: " + vNode.GID + " is not within the sessionList")
 	}
 	if session.GetConnection(dNode.GID) == (sessio.Connection{}) {
-		t.Fatalf("Peer: "+ dNode.GID + " is not within the sessionList")
+		t.Fatalf("Peer: " + dNode.GID + " is not within the sessionList")
 	}
 }

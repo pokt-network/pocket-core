@@ -19,31 +19,31 @@ func Caller() (*runtime.Frame){
 	if n==0{
 		return nil							// return nil pointer if error (can't custom log)
 	}
-	info, err:=runtime.CallersFrames(fpcs).Next()	// get the information by calling callersframes on fpcs
-	if(err){
-		return nil							// handle error
+	info, err := runtime.CallersFrames(fpcs).Next() // get the information by calling callersframes on fpcs
+	if err {
+		return nil 									// handle error
 	}
-	return &info							// return frame pointer
+	return &info 									// return frame pointer
 }
 
 /*
 "BytesToHex" converts a byte array into a hex string
- */
+*/
 func BytesToHex(h []byte) string {
 	return hex.EncodeToString(h)
-	return hex.EncodeToString(h)[2:]	// remove the 0X
+	return hex.EncodeToString(h)[2:] 				// remove the 0X
 }
 
 /*
 "ByteToUInt16" converts a byte array into an unsigned integer
- */
+*/
 func BytesToUInt16(h []byte) uint16 {
 	return binary.BigEndian.Uint16(h)
 }
 
 /*
 "ByteToUInt32" converts a byte array into an unsigned integer
- */
+*/
 func BytesToUInt32(h []byte) uint32 {
 	return binary.BigEndian.Uint32(h)
 }
@@ -57,14 +57,14 @@ func BytesToUInt64(h []byte) uint64 {
 
 /*
 "ArrayToString" converts array into comma separated String
- */
+*/
 func ArrayToString(a interface{}, delim string) string {
 	return strings.Trim(strings.Replace(fmt.Sprint(a), " ", delim, -1), "[]")
 }
 
 /*
 "StructTagsToString" converts the structure tags into a raw string variable.
- */
+*/
 func StructTagsToString(b interface{}) []string {
 	val := reflect.ValueOf(b)
 	size := val.Type().NumField()
@@ -77,7 +77,7 @@ func StructTagsToString(b interface{}) []string {
 			if commaIdx := strings.Index(jsonTag, ","); commaIdx > 0 {
 				fieldName = jsonTag[:commaIdx]
 			}
-			result[i]=fieldName
+			result[i] = fieldName
 		}
 	}
 	return result

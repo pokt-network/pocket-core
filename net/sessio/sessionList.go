@@ -1,76 +1,106 @@
+// This package is network code relating to pocket 'sessions'
 package sessio
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/logs"
 	"sync"
 )
+
+// "sessionList.go" holds the sessionList structure, methods and functions.
+
 /*
 This holds a List of List that are active (needs to confirm using liveness check).
- */
-type sessionPool struct {
-	List map[string]Session // "List" is the local List of ongoing List.
-	sync.Mutex              // for thread safety
+*/
+type sessionList struct {
+	List       map[string]Session 						// "List" is the local List of ongoing List.
+	sync.Mutex                    						// for thread safety
 }
 
 var (
-	sList *sessionPool // global session pool instance
+	sList *sessionList	 								// global session pool instance
 )
 
 /***********************************************************************************************************************
 Singleton getter
+*/
+
+/*
+"GetSessionList" returns the global sessionList object
  */
-func GetSessionList() *sessionPool {
+func GetSessionList() *sessionList {
 	var once sync.Once
-	once.Do(func() { // only do once
-		if 	sList == nil { // if no existing sList
-			sList = &sessionPool{}                // create a new session pool
-			sList.List = make(map[string]Session) // create a map of sessions
+	once.Do(func() { 									// only do once
+		if sList == nil { 								// if no existing sList
+			sList = &sessionList{}                		// create a new session pool
+			sList.List = make(map[string]Session) 		// create a map of sessions
 		}
 	})
-	return sList // return the session pool
+	return sList 										// return the session pool
 }
 
 /***********************************************************************************************************************
-sessionPool Methods
+sessionList Methods
+*/
+
+/*
+"AddSession" adds a session object to the global list
  */
-func (sList *sessionPool) AddSession(session Session){ // this is a function because only 1 global sessionPool instance
+func (sList *sessionList) AddSession(session Session) { // this is a function because only 1 global sessionList instance
 	if !sList.Contains(session.DevID) {
-		sList.Lock()
-		defer sList.Unlock()
-		sList.List[session.DevID] = session // adds a new session to the sessionlist (map)
+		sList.Lock()									// lock the list
+		defer sList.Unlock()							// unlock after complete
+		logs.NewLog("New session added to list: "+session.DevID, logs.InfoLevel, logs.JSONLogFormat)
+		sList.List[session.DevID] = session 			// adds a new session to the sessionlist (map)
 	}
 }
 
-func (sList *sessionPool) RemoveSession(session Session){
-	sList.Lock()
-	defer sList.Unlock()
-	delete(sList.List, session.DevID)
+/*
+"RemoveSession" removes a session object from the global list
+ */
+func (sList *sessionList) RemoveSession(session Session) {
+	sList.Lock()										// locks the list
+	defer sList.Unlock()								// unlock after complete
+	logs.NewLog("Session "+session.DevID +" removed from list", logs.InfoLevel, logs.JSONLogFormat)
+	delete(sList.List, session.DevID)					// delete from list
 }
 
-func (sList *sessionPool) Contains(dID string) bool{
-	sList.Lock()
-	defer sList.Unlock()
-	_,ok := sList.List[dID]
-	return ok
+/*
+"Contains" checks to see if a session is within the global list
+ */
+func (sList *sessionList) Contains(dID string) bool {
+	sList.Lock()										// lock the list
+	defer sList.Unlock()								// unlock the list
+	_, ok := sList.List[dID]							// check if contains
+	return ok											// return the bool
 }
 
-func (pList *sessionPool) Count() int{
-	pList.Lock()
-	defer pList.Unlock()
-	return len(pList.List)
+/*
+"Count" returns the number of sessions within the global list
+ */
+func (pList *sessionList) Count() int {
+	pList.Lock()										// lock the list
+	defer pList.Unlock()								// unlock the list
+	return len(pList.List)								// return the length of the global list
 }
 
-func (sList *sessionPool) Print() {
-	fmt.Println(sList.List)
+/*
+"Print" prints the global session list to the CLI
+ */
+func (sList *sessionList) Print() {
+	fmt.Println(sList.List)								// print to the CLI
 }
 
 /***********************************************************************************************************************
-sessionPool Functions
- */
+sessionList Functions
+*/
 
-func GetSessionCountt() int{
-	sList := GetSessionList()
-	sList.Lock()
-	defer sList.Unlock()
-	return len(sList.List)
+/*
+"GetSessionCount" returns the number of sessions without the global sessionList object
+ */
+func GetSessionCount() int {
+	sList := GetSessionList()							// get the list
+	sList.Lock()										// lock the list
+	defer sList.Unlock()								// after unlock the list
+	return len(sList.List)								// return the length of the global list
 }
