@@ -10,4 +10,3 @@ import (
 func NewMessage(pLoad Payload) Message {
 	return Message{_const.NETID, _const.CLIENTID, 0, pLoad}
 }
-

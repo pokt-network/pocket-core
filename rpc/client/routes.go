@@ -10,7 +10,7 @@ import (
 
 /*
 The "Route" structure defines the generalization of an api route.
- */
+*/
 type Route struct {
 	Name        string
 	Method      string
@@ -20,12 +20,12 @@ type Route struct {
 
 /*
 "Routes" is a slice that holds all of the routes within one structure.
- */
+*/
 type Routes []Route
 
 /*
 "clientRoutes" is a function that returns all of the routes of the API.
- */
+*/
 func ClientRoutes() shared.Routes {
 	routes := shared.Routes{
 		shared.Route{"GetClientAPIVersion", "POST", "/v1", GetClientAPIVersion},

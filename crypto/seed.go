@@ -8,10 +8,9 @@ import (
 
 // "seed.go" holds cryptographic seed generation.
 
-
 /*
 "GenerateSeed" creates the random seed from nanosecond.
- */
-func GenerateSeed(){
-	rand.Seed(time.Now().UTC().UnixNano())	// used for random generators.
+*/
+func GenerateSeed() {
+	rand.Seed(time.Now().UTC().UnixNano()) // used for random generators.
 }

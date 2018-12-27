@@ -20,12 +20,12 @@ type Route struct {
 
 /*
 "Routes" is a slice that holds all of the routes within one structure.
- */
+*/
 type Routes []Route
 
 /*
 "relayRoutes" is a function that returns all of the routes of the API.
- */
+*/
 func RelayRoutes() shared.Routes {
 	routes := shared.Routes{
 		shared.Route{"GetRelayAPIVersion", "POST", "/v1", GetRelayAPIVersion},

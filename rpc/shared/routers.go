@@ -7,12 +7,11 @@ import "github.com/julienschmidt/httprouter"
 
 /*
 "NewRouter" creates a new httprouter from all of the routes and corresponding functions dealing with local calls.
- */
+*/
 func NewRouter(routes Routes) *httprouter.Router {
-	router := httprouter.New()										// Declare a new http router.
-	for _, route := range routes {									// For each 'route' within 'routes'
+	router := httprouter.New()     									// Declare a new http router.
+	for _, route := range routes { 									// For each 'route' within 'routes'
 		router.Handle(route.Method, route.Path, route.HandlerFunc) 	// Setup the router for this route.
-	}																// Return the Router
+	} 																// Return the Router
 	return router
 }
-

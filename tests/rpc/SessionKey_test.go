@@ -16,12 +16,12 @@ import (
 func TestSessionKey(t *testing.T) {
 	// hard code in some nodes
 	var empty []string
-	n1:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b1",
-	"","","","","","",empty}
-	n2:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b2",
-		"","","","","","",empty}
-	n3:= node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b3",
-		"","","","","","",empty}
+	n1 := node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b1",
+		"", "", "", "", "", "", empty}
+	n2 := node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b2",
+		"", "", "", "", "", "", empty}
+	n3 := node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b3",
+		"", "", "", "", "", "", empty}
 	// add to peerList
 	pList := peers.GetPeerList()
 	pList.AddPeer(n1)
@@ -40,7 +40,7 @@ func TestSessionKey(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	// Set header of the request
-	req.Header.Set("Content-Type","application/json")
+	req.Header.Set("Content-Type", "application/json")
 	// Create a new http client
 	client := &http.Client{}
 	// Execute the request
@@ -51,16 +51,16 @@ func TestSessionKey(t *testing.T) {
 	}
 	// Deferred: close the body of the response
 	defer resp.Body.Close()
-	body,_:=ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	var data []node.Node
-	err = json.Unmarshal(body,&data)
-	if err!=nil{
-		t.Fatalf("Unable to unmarshall json node response : "+ err.Error())
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		t.Fatalf("Unable to unmarshall json node response : " + err.Error())
 	}
-	if(data[0].GID!=n1.GID){		// Assert order
+	if data[0].GID != n1.GID { // Assert order
 		t.Fatalf("Nodes are not in correct order")
 	}
-	if(data[1].GID!=n2.GID){		// Assert order
+	if data[1].GID != n2.GID { // Assert order
 		t.Fatalf("Nodes are not in correct order")
 	}
 	peers.GetPeerList().Print()

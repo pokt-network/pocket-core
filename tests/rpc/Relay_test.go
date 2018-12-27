@@ -14,7 +14,7 @@ import (
 
 /*
 Unit test for the relay functionality
- */
+*/
 func TestRelay(t *testing.T) {
 	// check for ethereum client
 	port := config.GetConfigInstance().Ethrpcport
