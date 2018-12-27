@@ -11,14 +11,14 @@ import (
 
 /*
  "txOptions" handles the localhost:<client-port>/v1/transaction call.
- */
+*/
 func TxOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteResponse(w, "Hello, World!")
 }
 
 /*
  "getTxByHash" handles the localhost:<client-port>/v1/transaction/hash call.
- */
+*/
 func GetTxByHash(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteResponse(w, "Hello, World!")
 }
