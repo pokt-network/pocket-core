@@ -67,7 +67,7 @@ func (connection *Connection) Send(message message.Message, registrants ...inter
 }
 
 /*
-"Receive" receives a message via the Connection object
+"receive" receives a message via the Connection object
  */
 func (connection *Connection) Receive() {
 	dec := gob.NewDecoder(connection.Conn) 										// create a gob decoder object
@@ -89,9 +89,9 @@ func (connection *Connection) Receive() {
  */
 // TODO eventually derive port and host (need scheme to allow multiple sessions)
 func (connection *Connection) Listen(port string, host string) error {
-	l, err := net.Listen(_const.CONNECTIONTYPE, host+":"+port) 					// listen on port & host
+	l, err := net.Listen(_const.SESSCONNTYPE, host+":"+port) // listen on port & host
 	if err != nil {                                               				// handle server creation error
-		logs.NewLog("Unable to create a new "+_const.CONNECTIONTYPE+
+		logs.NewLog("Unable to create a new "+_const.SESSCONNTYPE+
 			" server on port:"+port, logs.ErrorLevel, logs.JSONLogFormat)
 		logs.NewLog("ERROR: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		return err
@@ -101,7 +101,7 @@ func (connection *Connection) Listen(port string, host string) error {
 	for {                                                                       // for the duration of incoming requests
 		conn, err := l.Accept() 												// accept the connection
 		if err != nil {         												// handle request accept err
-			logs.NewLog("Unable to accept the "+_const.CONNECTIONTYPE+
+			logs.NewLog("Unable to accept the "+_const.SESSCONNTYPE+
 				" Conn on port:"+port, logs.ErrorLevel, logs.JSONLogFormat)
 			logs.NewLog("ERROR: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 			return err															// return the error
@@ -116,9 +116,9 @@ func (connection *Connection) Listen(port string, host string) error {
  */
 // TODO eventually derive port and host from connection.SessionPeer
 func (connection *Connection) Dial(port string, host string) error {
-	conn, err := net.Dial(_const.CONNECTIONTYPE, host+":"+port) 				// establish a connection
+	conn, err := net.Dial(_const.SESSCONNTYPE, host+":"+port) // establish a connection
 	if err != nil {                                                				// handle connection error
-		logs.NewLog("Unable to establish "+_const.CONNECTIONTYPE+" connection on port "+host+":"+port,
+		logs.NewLog("Unable to establish "+_const.SESSCONNTYPE+" connection on port "+host+":"+port,
 			logs.ErrorLevel, logs.JSONLogFormat)
 		return err																// return the error
 	}
