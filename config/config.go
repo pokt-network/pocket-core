@@ -63,18 +63,18 @@ func InitializeConfiguration() {
 */
 func newConfiguration() {
 	instance = &config{
-		_const.CLIENTID, // client identifier is set in global constants.
-		_const.VERSION,  // client version is set in global constants.
-		*datadir,        // data directory path specified by the flag.
-		*clientRpc,      // the client rpc is running.
-		*clientRpcport,  // the port the client rpc is running.
-		*relayRpc,       // the relay rpc is running.
-		*relayRpcport,   // the port the relay rpc is running.
-		*ethereum,       // ethereum is hosted
-		*ethRpcport,     // the port Ethereum's rpc is on
-		*bitcoin,        // bitcoin is hosted
-		*btcRpcport,     // the port Bitcoin's rpc is on
-		*peerFile,       // the filepath of the peers.json
+		_const.CLIENTID, 		// client identifier is set in global constants.
+		_const.VERSION,  		// client version is set in global constants.
+		*datadir,        		// data directory path specified by the flag.
+		*clientRpc,      		// the client rpc is running.
+		*clientRpcport,  	// the port the client rpc is running.
+		*relayRpc,       		// the relay rpc is running.
+		*relayRpcport,   	// the port the relay rpc is running.
+		*ethereum,       		// ethereum is hosted
+		*ethRpcport,     		// the port Ethereum's rpc is on
+		*bitcoin,        		// bitcoin is hosted
+		*btcRpcport,     		// the port Bitcoin's rpc is on
+		*peerFile,       		// the filepath of the peers.json
 		*manPeers}       		// using manual peers
 }
 

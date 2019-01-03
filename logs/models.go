@@ -23,13 +23,13 @@ var (
 "Log" model holds the structure for the log properties.
 */
 type Log struct {
-	Name         string    `json:"filename"`     // name of the log file
-	Fmt          LogFormat `json:"format"`       // format of the log
-	Lev          LogLevel  `json:"Lev"`          // level of the log (see var above)
-	FilePath     string    `json:"filepath"`     // where the log message came from
-	FunctionName string    `json:"functionname"` // the functionName where the
-	LineNumber   string    `json:"LineNumber"`   // specific line number from the message
-	Message      string    `json:"message"`      // the main message "payload" of the log.
+	Name         string    `json:"filename"`     				// name of the log file
+	Fmt          LogFormat `json:"format"`       				// format of the log
+	Lev          LogLevel  `json:"Lev"`          				// level of the log (see var above)
+	FilePath     string    `json:"filepath"`     				// where the log message came from
+	FunctionName string    `json:"functionname"` 				// the functionName where the
+	LineNumber   string    `json:"LineNumber"`   				// specific line number from the message
+	Message      string    `json:"message"`      				// the main message "payload" of the log.
 }
 
 /*
