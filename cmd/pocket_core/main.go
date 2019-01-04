@@ -8,7 +8,7 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/message"
-	"github.com/pokt-network/pocket-core/net/peers"
+	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )

@@ -63,7 +63,7 @@ func (pList *PeerList) AddPeer(node node.Node) {
 }
 
 /*
-"RemoveConnection" removes a peer object from the global list
+"RemovePeer" removes a peer object from the global list
  */
 func (pList *PeerList) RemovePeer(node node.Node) {
 	pList.Lock()									// lock the list
