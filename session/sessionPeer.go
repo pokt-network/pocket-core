@@ -1,8 +1,8 @@
 // This package is network code relating to pocket 'sessions'
-package sessio
+package session
 
 import (
-	"github.com/pokt-network/pocket-core/net/peers"
+	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/node"
 )
 
@@ -34,7 +34,7 @@ Session Peer Functions
 /*
 "AddSessionPeersToPeerList" adds sessionPeers from a slice to the peerlist
  */
-func AddSessionPeersToPeerlist(spl []SessionPeer) {
+func AddSessPeersToPL(spl []SessionPeer) {
 	pl := peers.GetPeerList()			// get the peerlist
 	for _, sp := range spl {			// for each SessionPeer
 		pl.AddPeer(sp.Node)				// add to the list

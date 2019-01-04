@@ -1,5 +1,5 @@
 // This package is network code relating to pocket 'sessions'
-package sessio
+package session
 
 import (
 	"fmt"
