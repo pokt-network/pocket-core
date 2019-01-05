@@ -1,15 +1,20 @@
-// This package maintains the client configuration.
+/*
+Package config builds, maintains, and serves as the source of the client's configuration
+
+"config.go" describes all of the configuration properties of the client (set by startup flags)
+"build.go" is for building the Pocket Core configuration
+*/
 package config
 
 import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/pokt-network/pocket-core/const"
 	"sync"
+
+	"github.com/pokt-network/pocket-core/const"
 )
 
-// "config.go" describes all of the configuration properties of the client (set by startup flags)
 // TODO configuration updating
 type config struct {
 	Clientid      string `json:"CLIENTID"`   // This variable holds a client identifier string.
@@ -28,54 +33,49 @@ type config struct {
 }
 
 var (
-	instance *config
-	once     sync.Once
-	datadir  = flag.String("datadir", _const.DATADIR, "setup the data director for the DB and keystore")
-	// A boolean variable derived from flags, that describes whether or not to print the version of the client.
-	clientRpc = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
-	// A string variable derived from flags, that specifies which port to run the listener for the client rpc (default :8080)
-	clientRpcport = flag.String("clientrpcport", "8080", "specified port to run client rpc")
-	// A boolean variable derived from flags, that describes whether or not to start the relay rpc server.
-	relayRpc = flag.Bool("relayrpc", false, "whether or not to start the rpc server")
-	// A string variable derived from flags, that specifies which port to run the listener for the relay rpc (default :8081)
-	relayRpcport = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
-	// A boolean variable derived from flags, that specifies if Ethereum is hosted.
-	ethereum = flag.Bool("ethereum", false, "whether or not ethereum is hosted")
-	// A string variable derived from flags, that specifies which port Ethereum's json rpc is running.
-	ethRpcport = flag.String("ethrpcport", "8545", "specified port to run ethereum rpc")
-	// A boolean variable derived from flags, that specifies if Bitcoin is hosted.
-	bitcoin = flag.Bool("bitcoin", false, "whether or not bitcoin is hosted")
-	// A string variable derived from flags, that specifies which port Bitcoin's json rpc is running.
-	btcRpcport = flag.String("btcrpcport", "8333", "specified port to run bitcoin rpc")
-	// A boolean variable derived from flags, that specifies if peers are manually added
-	manPeers = flag.Bool("manpeers", false, "specifies if peers are manually added")
-	// A string variable derived from flags, that specifies the filepath for peerFile.json
-	peerFile = flag.String("peerFile", _const.DATADIR+_const.FILESEPARATOR+"peers.json", "specifies the filepath for peers.json")
+	instance       *config
+	once           sync.Once
+	datadir        = flag.String("datadir", _const.DATADIR, "setup the data directory for the DB and keystore")
+	runClientRpc   = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
+	clientRpcport  = flag.String("clientrpcport", "8080", "specified port to run client rpc")
+	runRelayRpc    = flag.Bool("relayrpc", false, "whether or not to start the rpc server")
+	relayRpcport   = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
+	ethereumHosted = flag.Bool("ethereum", false, "whether or not ethereum is hosted")
+	ethRpcport     = flag.String("ethrpcport", "8545", "specified port to run ethereum rpc")
+	bitcoinHosted  = flag.Bool("bitcoin", false, "whether or not bitcoin is hosted")
+	btcRpcport     = flag.String("btcrpcport", "8333", "specified port to run bitcoin rpc")
+	manPeers       = flag.Bool("manpeers", false, "specifies if peers are manually added")
+	peerFile       = flag.String("peerFile", _const.DATADIR+_const.FILESEPARATOR+"peers.json", "specifies the filepath for peers.json")
 )
 
-func InitializeConfiguration() {
-	flag.Parse()        				// built in function to parse the flags above.
-	GetConfigInstance() 				// returns the thread safe instance of the client configuration.
-}
-
-/*
-"NewConfiguration() is a Constructor function of the configuration type.
-*/
-func newConfiguration() {
+func constructConfiguration() {
 	instance = &config{
-		_const.CLIENTID, 		// client identifier is set in global constants.
-		_const.VERSION,  		// client version is set in global constants.
-		*datadir,        		// data directory path specified by the flag.
-		*clientRpc,      		// the client rpc is running.
-		*clientRpcport,  	// the port the client rpc is running.
-		*relayRpc,       		// the relay rpc is running.
-		*relayRpcport,   	// the port the relay rpc is running.
-		*ethereum,       		// ethereum is hosted
-		*ethRpcport,     		// the port Ethereum's rpc is on
-		*bitcoin,        		// bitcoin is hosted
-		*btcRpcport,     		// the port Bitcoin's rpc is on
-		*peerFile,       		// the filepath of the peers.json
-		*manPeers}       		// using manual peers
+		// Client identifier; set in global constants.
+		_const.CLIENTID,
+		// Client version; set in global constants.
+		_const.VERSION,
+		// Data directory path; specified by flag.
+		*datadir,
+		// Client RPC .
+		*runClientRpc,
+		// Port for the client RPC.
+		*clientRpcport,
+		// Whether the relay rpc should run.
+		*runRelayRpc,
+		// Port the relay RPC.
+		*relayRpcport,
+		// ethereum is hosted
+		*ethereumHosted,
+		// the port Ethereum's rpc is on
+		*ethRpcport,
+		// bitcoin is hosted
+		*bitcoinHosted,
+		// the port Bitcoin's rpc is on
+		*btcRpcport,
+		// the filepath of the peers.json
+		*peerFile,
+		// using manual peers
+		*manPeers}
 }
 
 /*
@@ -83,17 +83,19 @@ func newConfiguration() {
 */
 func PrintConfiguration() {
 	data, _ := json.MarshalIndent(instance, "", "    ")       // pretty configure the json data
-	fmt.Println("Pocket Core Configuration:\n", string(data)) 			// pretty print the pocket configuration
+	fmt.Println("Pocket Core Configuration:\n", string(data)) // pretty print the pocket configuration
 }
 
 /*
-"GetConfigInstance()" returns the configuration object in a thread safe manner.
+"GetConfigInstance()" returns the configuration object.
+
+Because there is only one configuration per instance of the program, initialization is guarded by a sync.Once instance.
+This invocation ensures the flags are parsed before the configuration is instantiated.
 */
-func GetConfigInstance() *config { 						// singleton structure to return the configuration object
-	once.Do(func() { 									// thread safety.
-		if instance == nil { 							// if nil make a new configuration
-			newConfiguration()
-		}
+func GetConfigInstance() *config {
+	once.Do(func() {
+		flag.Parse()
+		constructConfiguration()
 	})
-	return instance 									// return the configuration
+	return instance
 }
