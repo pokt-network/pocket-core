@@ -91,9 +91,7 @@ func PrintConfiguration() {
 */
 func GetConfigInstance() *config { 						// singleton structure to return the configuration object
 	once.Do(func() { 									// thread safety.
-		if instance == nil { 							// if nil make a new configuration
 			newConfiguration()
-		}
 	})
 	return instance 									// return the configuration
 }
