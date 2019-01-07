@@ -22,7 +22,7 @@ func TestSessionMessage(t *testing.T) {
 	m:=message.NewSessionMessage(message.NewSessionPayload{DevID: DEVID, Peers: sessPeerList})
 	// send the message over the wire
 	message.SendMessage(message.RELAY,m,IP, message.NewSessionPayload{})
-	time.Sleep(time.Second)
+	time.Sleep(time.Second*2)
 	// check for session count
 	if session.GetSessionList().Count() == 0 {
 		t.Fatalf("No sessions within list")
@@ -49,3 +49,11 @@ func TestSessionMessage(t *testing.T) {
 		t.Fatal(SNODE+ " and " + VNODE + " do not exist within the session peer list")
 	}
 }
+
+//func TestTwoSessionsMessage(t *testing.T) {
+//	// add two different sessions to the sessionlist
+//	session1:=session.NewSession("session1")
+//	session2:=session.NewSession("session2")
+//	sessionList := session.GetSessionList()
+//	sessionList.AddSession(session1)
+//}
