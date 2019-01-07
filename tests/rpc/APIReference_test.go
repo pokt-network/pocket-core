@@ -11,7 +11,7 @@ import (
 
 /*
 Unit test for APIReference
- */
+*/
 func TestApiReference(t *testing.T) {
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))

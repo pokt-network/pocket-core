@@ -1,74 +1,93 @@
-// This package is for all 'session' related code.
+// This package is network code relating to pocket 'sessions'
 package session
 
 import (
-	"fmt"
-	"github.com/pokt-network/pocket-core/node"
+	"github.com/pokt-network/pocket-core/logs"
 	"sync"
 )
 
-var (
-	globalSessionPool *sessionPool							// global session pool instance
-	once              sync.Once								// for thread safety
-)
+// "session.go" specifies the session structure, methods, and functions
+
 /*
 This is the session structure.
- */
+*/
 type Session struct {
-	devID string											// "devID" is the developer's ID that identifies the session.
-	validators map[string]node.Validator					// "validators" is a map [devid]Node validator nodes.
-	servicers map[string]node.Service						// "validators" is a map [devid]Node servicer nodes.
+	DevID      string               `json:"devid"`
+	Peers      SessionPeerList		`json:"sessionpeerlist"`
+	sync.Mutex 						`json:"mutex"`
 }
 
-/*
-This holds a list of list that are active (needs to confirm using liveness check).
- */
-type sessionPool struct {
-	list map[string]Session // "list" is the local list of ongoing list.
-}
+/***********************************************************************************************************************
+Session Constructor
+*/
 
 /*
- "GetSessionPoolInstance() returns the singleton instance of the global session pool
+"NewEmptySession" returns an empty session object with the devID prefilled
  */
-func GetSessionPoolInstance() *sessionPool {
-	once.Do(func() { 										  	// thread safety.
-		if (globalSessionPool == nil) { 					  	// if no existing globalSessionPool
-			globalSessionPool = &sessionPool{}                	// create a new session pool
-			globalSessionPool.list = make(map[string]Session) 	// create a map of sessions
+func NewEmptySession(dID string) Session {
+	return Session{DevID: dID}											// prefill the devID and return
+}
+
+/***********************************************************************************************************************
+Session Methods
+*/
+
+/*
+"GetPeers" returns a map of Connection objects [GID]Connection
+ */
+func (session *Session) GetPeers() map[string]SessionPeer {
+	var once sync.Once
+	once.Do(func() {													// only do once
+		if session.Peers.List == nil { 									// if nil connectionList
+			session.Peers.List = make(map[string]SessionPeer) 			// make a new map
 		}
 	})
-	return globalSessionPool // return the session pool
+	return session.Peers.List 											// return the connectionlist
+}
+/*
+"AddPeer" adds a connection object to the session
+ */
+func (session *Session) AddPeer(sPeer SessionPeer) {
+	logs.NewLog("Adding Connection: " + sPeer.GID + " to Session: " +
+		session.DevID, logs.InfoLevel, logs.JSONLogFormat)
+	session.Lock()                        								// lock the session
+	defer session.Unlock()                								// after function completes unlock
+	session.GetPeers()[sPeer.GID] = sPeer 								// add sPeer to list
 }
 
 /*
-"createNewSession" creates a new session for the specific devID and adds to global sessionPool (map)
+"RemovePeer" removes a connection object from the session
  */
-func CreateNewSession(dID string) {
-	once.Do(func() { 										 	// thread safety.
-		if (SearchSessionList(dID) == nil) {
-			sList := GetSessionPoolInstance().list           	// pulls the global list from the singleton
-			validators := make(map[string]node.Validator)    	// simulated List of Validators
-			servicers := make(map[string]node.Service)       	// simulated List of Servicers
-			sList[dID] = Session{dID, validators, servicers} // adds a new session to the sessionlist (map)
-		}
-	})
+func (session *Session) RemovePeer(sPeer SessionPeer) {
+	session.Lock()                        								// lock the session
+	defer session.Unlock()                								// after the function completes unlock
+	delete(session.Peers.List, sPeer.GID) 								// delete the item from the map
+	logs.NewLog("Removed peer: "+sPeer.GID, logs.InfoLevel, logs.JSONLogFormat)
 }
 
 /*
-"SearchSessionList" searches the session list for the specific devID
+"GetPeer" returns the connection from the session by peer.GID
  */
-func SearchSessionList(dID string) *Session {
-	list := GetSessionPoolInstance()							// gets global session pool from singleton
-	session := list.list[dID]									// pulls the session with the developer ID
-	if session.devID != "" {									// if the session is found
-		return &session
+func (session *Session) GetPeer(gid string) SessionPeer {
+	session.Lock()                 										// lock the session
+	defer session.Unlock()         										// after function completes unlock
+	return session.GetPeers()[gid] 										// get and return
+}
+
+/*
+"NewPeers" adds the connections to the session from []SessionPeer and dials them
+ */
+func (session *Session) NewPeers(sp []SessionPeer) {
+	for _, sessionPeer := range sp {
+		session.AddPeer(sessionPeer)
 	}
-	return nil
 }
 
 /*
-"PrintSessionList" prints the list from the session pool map"
+"ClearPeers" removes all connections from a session
  */
-func PrintSessionList() {
-	fmt.Println(GetSessionPoolInstance().list)
+func (session *Session) ClearPeers() {
+	session.Lock()                                    					// lock the session
+	defer session.Unlock()                            					// after function completes unlock
+	session.Peers.List = make(map[string]SessionPeer) 					// clear the list
 }

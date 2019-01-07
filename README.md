@@ -7,12 +7,41 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 # How to run it
 To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
 
-- `--datadir <absolute path>` to configure the data directory where the blockchain information will be stored. The default value is `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac
-- `--clientrpc` to enable the Client RPC endpoints. The default value is `false`.
-- `--clientrpcport <port number>` the port on which the Client RPC endpoints will run. The default value is `8545`.
-- `--relayrpc` to enable the Relay RPC endpoints. The default value is `false`.
-- `--relayrpcport <port number>` the port on which the Relay RPC endpoints will run. The default value is `8546`.
-
+  `-bitcoin`
+    	whether or not bitcoin is hosted
+    	
+ ` -btcrpcport string`
+    	specified port to run bitcoin rpc (default "8333")
+    	
+ ` -clientrpc`
+    	whether or not to start the rpc server
+    	
+ ` -clientrpcport string`
+    	specified port to run client rpc (default "8080")
+    	
+ ` -datadir string`
+    	setup the data director for the DB and keystore (default: 
+    	`%APPDATA%\Pocket` for Windows, 
+    	`~/.pocket` for Linux, 
+    	`~/Library/Pocket` for Mac)
+    	
+ ` -ethereum`
+    	whether or not ethereum is hosted
+    	
+ ` -ethrpcport string`
+    	specified port to run ethereum rpc (default "8545")
+    	
+  `-manpeers`
+    	specifies if peers are manually added
+    	
+  `-peerFile string`
+    	specifies the filepath for peers.json (default `<datadir>/peers.json`)
+    	
+  `-relayrpc` 
+    	whether or not to start the rpc server
+    	
+  `-relayrpcport string`
+    	specified port to run relay rpc (default "8081")
 # How to test
 To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory
 
