@@ -7,7 +7,8 @@ import (
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/net/peers"
+	"github.com/pokt-network/pocket-core/message"
+	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
@@ -43,12 +44,13 @@ func manualPeers() {
 */
 func startClient() {
 	config.GetConfigInstance()                                        // initializes the configuration from flags and defaults.
-	config.BuildConfiguration()                                       // builds the proper structure on pc for core client to operate.
-	config.PrintConfiguration()                                       // print the configuration the the cmd.
-	manualPeers()                                                     // check for manual peers
-	logs.NewLog("Started client", logs.InfoLevel, logs.JSONLogFormat) // log start message
-	rpc.RunAPIEndpoints()                                             // runs the server endpoints for client and relay api.
-	fmt.Print("Press any key + 'Return' to quit: ")                   // prompt user to exit
-	input := bufio.NewScanner(os.Stdin)                               // unnecessary temporary entry
-	input.Scan()                                                      // wait
+	config.BuildConfiguration()                                     			// builds the proper structure on pc for core client to operate.
+	config.PrintConfiguration()                                     			// print the configuration the the cmd.
+	manualPeers()                                                   			// check for manual peers
+	logs.NewLog("Started client", logs.InfoLevel, logs.JSONLogFormat) 	// log start message
+	rpc.RunAPIEndpoints()                                           			// runs the server endpoints for client and relay api.
+	message.RunMessageServers()												// runs servers for messages
+	fmt.Print("Press any key + 'Return' to quit: ")                 			// prompt user to exit
+	input := bufio.NewScanner(os.Stdin)                             			// unnecessary temporary entry
+	input.Scan()                                                    			// wait
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/net/peers"
-	"github.com/pokt-network/pocket-core/net/sessio"
+	"github.com/pokt-network/pocket-core/peers"
+	"github.com/pokt-network/pocket-core/session"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"github.com/pokt-network/pocket-core/util"
@@ -32,9 +32,9 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	dispatch := &Dispatch{}
 	shared.PopulateModelFromParams(w, r, ps, dispatch)
-	sList := sessio.GetSessionList()
+	sList := session.GetSessionList()
 	if !sList.Contains(dispatch.DevID) {
-		session := sessio.NewEmptySession(dispatch.DevID)
+		session := session.NewEmptySession(dispatch.DevID)
 		sList.AddSession(session)
 	}
 	sessionKey := util.BytesToHex(crypto.GenerateSessionKey(dispatch.DevID)) // TODO should store the session key

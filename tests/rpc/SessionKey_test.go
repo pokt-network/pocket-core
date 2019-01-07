@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/net/peers"
+	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
