@@ -78,10 +78,10 @@ func (sList *sessionList) Contains(dID string) bool {
 /*
 "Count" returns the number of sessions within the global list
  */
-func (pList *sessionList) Count() int {
-	pList.Lock()										// lock the list
-	defer pList.Unlock()								// unlock the list
-	return len(pList.List)								// return the length of the global list
+func (sList *sessionList) Count() int {
+	sList.Lock()										// lock the list
+	defer sList.Unlock()								// unlock the list
+	return len(sList.List)								// return the length of the global list
 }
 
 /*
@@ -90,6 +90,24 @@ func (pList *sessionList) Count() int {
 func (sList *sessionList) Print() {
 	fmt.Println(sList.List)								// print to the CLI
 }
+
+/*
+"Get" returns a session from the list based on the developer ID
+ */
+func (sList *sessionList) Get(dID string) Session{
+	sList.Lock()
+	defer sList.Unlock()
+	return sList.List[dID]
+}
+
+/*
+"Set" updates a session within the list based on the developer ID
+ */
+ func (sList *sessionList) Set(dID string, s Session){
+ 	sList.Lock()
+ 	defer sList.Unlock()
+ 	sList.List[dID]= s
+ }
 
 /***********************************************************************************************************************
 sessionList Functions
