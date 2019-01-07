@@ -31,10 +31,8 @@ Singleton getter
 func GetSessionList() *sessionList {
 	var once sync.Once
 	once.Do(func() { 									// only do once
-		if sList == nil { 								// if no existing sList
-			sList = &sessionList{}                		// create a new session pool
-			sList.List = make(map[string]Session) 		// create a map of sessions
-		}
+		sList = &sessionList{}                		// create a new session pool
+		sList.List = make(map[string]Session) 		// create a map of sessions
 	})
 	return sList 										// return the session pool
 }
