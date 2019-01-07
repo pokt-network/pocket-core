@@ -37,9 +37,9 @@ Singleton getter
 "GetPeerList" returns the global list of peers
  */
 func GetPeerList() *PeerList {
-	once.Do(func() {							// only do once (thread safety)
-		pList = &PeerList{}						// init empty peerlist
-		pList.List = make(map[string]node.Node) // make the map [GID]Node
+	once.Do(func() {								// only do once (thread safety)
+		pList = &PeerList{}							// init empty peerlist
+		pList.List = make(map[string]node.Node) 	// make the map [GID]Node
 	})
 	return pList									// return the peerlist
 }
