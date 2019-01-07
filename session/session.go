@@ -38,9 +38,7 @@ Session Methods
 func (session *Session) GetPeers() map[string]SessionPeer {
 	var once sync.Once
 	once.Do(func() {													// only do once
-		if session.Peers.List == nil { 									// if nil connectionList
-			session.Peers.List = make(map[string]SessionPeer) 			// make a new map
-		}
+		session.Peers.List = make(map[string]SessionPeer) 			// make a new map
 	})
 	return session.Peers.List 											// return the connectionlist
 }
