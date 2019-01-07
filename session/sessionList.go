@@ -19,8 +19,9 @@ type sessionList struct {
 
 var (
 	sList *sessionList	 								// global session pool instance
+	once sync.Once
 )
-
+// TODO consider abstracting list type
 /***********************************************************************************************************************
 Singleton getter
 */
@@ -29,7 +30,6 @@ Singleton getter
 "GetSessionList" returns the global sessionList object
  */
 func GetSessionList() *sessionList {
-	var once sync.Once
 	once.Do(func() { 									// only do once
 		sList = &sessionList{}                		// create a new session pool
 		sList.List = make(map[string]Session) 		// create a map of sessions
