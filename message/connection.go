@@ -31,6 +31,9 @@ Exported Calls
  */
 func SendMessage(msgtype MSGTYPE, message Message, ip string, registrants ...interface{}) error {
 	var port string
+	for _,r := range registrants {
+		gob.Register(r)
+	}
 	switch msgtype {
 	case BLOCKCHAIN:
 		port = _const.BCMSGPORT

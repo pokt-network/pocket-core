@@ -26,9 +26,10 @@ func PrintMessage(message *Message, addr *net.UDPAddr) {
 func NewSessionMessageHandler(message *Message) {
 	sList := session.GetSessionList()
 	nSPL := message.Payload.Data.(NewSessionPayload)				// extract the NewSessionPayload
-	s := session.Session{DevID: nSPL.DevID, // create a session using developerID from payload
-		PeerList: make(map[string]session.SessionPeer), Mutex: sync.Mutex{}}
-	s.NewPeers(nSPL.Peers)                  // create new connections with each peer
-	sList.AddSession(s)                     // register the session
-	session.AddSessPeersToPL(nSPL.Peers) // add peers to peerList
+	s := session.Session{DevID: nSPL.DevID, 						// create a session using developerID from payload
+		Peers: session.SessionPeerList{List: make(map[string]session.SessionPeer)},
+		Mutex: sync.Mutex{}}
+	s.NewPeers(nSPL.Peers)                  						// create new connections with each peer
+	sList.AddSession(s)                     						// register the session
+	session.AddSessPeersToPL(nSPL.Peers) 							// add peers to peerList
 }

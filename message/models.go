@@ -1,6 +1,8 @@
 // This package is all message related code
 package message
 
+import "github.com/pokt-network/pocket-core/session"
+
 // "models.go" holds all of the structures for the message package
 
 /*
@@ -24,4 +26,9 @@ type Message struct {
 	Client  string  `json:"client"`
 	Nonce   int64   `json:"nonce"`
 	Payload Payload `json:"payload"`
+}
+
+type NewSessionPayload struct {
+	DevID string                `json:"devid"` // the devID of the session
+	Peers []session.SessionPeer `json:"peers"` // the list of peers
 }
