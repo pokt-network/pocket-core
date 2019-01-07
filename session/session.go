@@ -22,9 +22,9 @@ Session Constructor
 */
 
 /*
-"NewEmptySession" returns an empty session object with the devID prefilled
+"NewSession" returns an empty session object with the devID prefilled
  */
-func NewEmptySession(dID string) Session {
+func NewSession(dID string) Session {
 	return Session{DevID: dID}											// prefill the devID and return
 }
 

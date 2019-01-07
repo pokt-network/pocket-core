@@ -44,10 +44,10 @@ sessionList Methods
 /*
 "AddSession" adds a session object to the global list
  */
-func (sList *sessionList) AddSession(session Session) { // this is a function because only 1 global sessionList instance
-	if !sList.Contains(session.DevID) {
-		sList.Lock()									// lock the list
-		defer sList.Unlock()							// unlock after complete
+func (sList *sessionList) AddSession(s... Session) { 	// this is a function because only 1 global sessionList instance
+	sList.Lock()										// lock the list
+	defer sList.Unlock()								// unlock after complete
+	for _, session := range s {							// for each session
 		logs.NewLog("New session added to list: "+session.DevID, logs.InfoLevel, logs.JSONLogFormat)
 		sList.List[session.DevID] = session 			// adds a new session to the sessionlist (map)
 	}
@@ -56,11 +56,13 @@ func (sList *sessionList) AddSession(session Session) { // this is a function be
 /*
 "RemoveSession" removes a session object from the global list
  */
-func (sList *sessionList) RemoveSession(session Session) {
+func (sList *sessionList) RemoveSession(s... Session) {
 	sList.Lock()										// locks the list
 	defer sList.Unlock()								// unlock after complete
-	logs.NewLog("Session "+session.DevID +" removed from list", logs.InfoLevel, logs.JSONLogFormat)
-	delete(sList.List, session.DevID)					// delete from list
+	for _,session := range s {
+		logs.NewLog("Session "+session.DevID+" removed from list", logs.InfoLevel, logs.JSONLogFormat)
+		delete(sList.List, session.DevID) 				// delete from list
+	}
 }
 
 /*

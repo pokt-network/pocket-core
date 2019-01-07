@@ -34,7 +34,7 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	shared.PopulateModelFromParams(w, r, ps, dispatch)
 	sList := session.GetSessionList()
 	if !sList.Contains(dispatch.DevID) {
-		session := session.NewEmptySession(dispatch.DevID)
+		session := session.NewSession(dispatch.DevID)
 		sList.AddSession(session)
 	}
 	sessionKey := util.BytesToHex(crypto.GenerateSessionKey(dispatch.DevID)) // TODO should store the session key
