@@ -16,7 +16,7 @@ These constants are essentially an enum structure for Peer 'Role'
 const (
 	VALIDATOR Role = iota + 1
 	SERVICER
-	DISPATCHER // TODO
+	DISPATCHER
 )
 
 /*
