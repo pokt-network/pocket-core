@@ -10,7 +10,13 @@ import (
 )
 
 func TestSessionMessage(t *testing.T) {
-	const DEVID, SNODE, VNODE, IP = "DUMMYDEVID", "SNODE", "VNODE", "localhost"
+	const DEVID, DEVID2, SNODE, VNODE, IP = "SESSION1", "SESSION2", "SNODE", "VNODE", "localhost"
+	// start two different sessions
+	session1:=session.NewSession(DEVID)
+	session2:=session.NewSession(DEVID2)
+	// add them to the session list
+	sessionList := session.GetSessionList()
+	sessionList.AddSession(session1, session2)
 	// run message servers
 	message.RunMessageServers()
 	// create the dummy peers to send over the wire
@@ -39,21 +45,17 @@ func TestSessionMessage(t *testing.T) {
 	if !peers.GetPeerList().Contains(SNODE) || !peers.GetPeerList().Contains(VNODE) {
 		t.Fatalf(SNODE + " and " + VNODE + " do not exist within peerlist")
 	}
-	// check for any sessionPeers
-	s := session.GetSessionList().Get(DEVID)
-	if s.Peers.Count() == 0 {
-		t.Fatal("There are no peers within the session")
+	session1=session.GetSessionList().Get(DEVID)
+	session2=session.GetSessionList().Get(DEVID2)
+	if session1.Peers.Count() == 0 {
+		t.Fatalf("There are no peers within the session")
 	}
 	// check for proper sessionPeers
-	if s.Peers.Get(SNODE).GID != SNODE || s.Peers.Get(VNODE).GID != VNODE{
-		t.Fatal(SNODE+ " and " + VNODE + " do not exist within the session peer list")
+	if session1.Peers.Get(SNODE).GID != SNODE || session1.Peers.Get(VNODE).GID != VNODE{
+		t.Fatalf(SNODE+ " and " + VNODE + " do not exist within the session peer list")
+	}
+	if session2.Peers.Count() != 0 {
+		t.Fatalf("Too many peers in session2")
 	}
 }
 
-func TestTwoSessionsMessage(t *testing.T) {
-	// add two different sessions to the sessionlist
-	session1:=session.NewSession("session1")
-	session2:=session.NewSession("session2")
-	sessionList := session.GetSessionList()
-	sessionList.AddSession(session1, session2)
-}
