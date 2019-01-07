@@ -12,6 +12,6 @@ func (sPL *SessionPeerList) Set(gid string, sP SessionPeer){
 	sPL.List[gid]=sP
 }
 
-func (sPL *SessionPeerList) Count() int {
+func (sPL *SessionPeerList) Count() int { // TODO probably need MUX for thread safety
 	return len(sPL.List)
 }

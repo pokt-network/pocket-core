@@ -16,7 +16,7 @@ type Session struct {
 	Peers      SessionPeerList		`json:"sessionpeerlist"`
 	sync.Mutex 						`json:"mutex"`
 }
-
+var o sync.Once
 /***********************************************************************************************************************
 Session Constructor
 */
@@ -36,8 +36,7 @@ Session Methods
 "GetPeers" returns a map of Connection objects [GID]Connection
  */
 func (session *Session) GetPeers() map[string]SessionPeer {
-	var once sync.Once
-	once.Do(func() {													// only do once
+	o.Do(func() {													// only do once
 		session.Peers.List = make(map[string]SessionPeer) 			// make a new map
 	})
 	return session.Peers.List 											// return the connectionlist
