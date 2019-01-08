@@ -1,5 +1,5 @@
-// This package is the native pocket core plugin for bitcoin.
-package pcp_bitcoin
+// The relay forwarding plugin for rpc medium
+package rpc_plugin
 
 import (
 	"bytes"
@@ -8,10 +8,10 @@ import (
 )
 
 /*
-"ExecuteRequest" takes in the raw json string and forwards it to the bitcoin port
+"ExecuteRequest" takes in the raw json string and forwards it to the port
 */
-func ExecuteRequest(jsonStr []byte, btcport string) (string, error) {
-	url := "http://localhost:" + btcport                               			// create a url for btc port
+func ExecuteRequest(jsonStr []byte, port string) (string, error) {
+	url := "http://localhost:" + port                                  			// create a url for the port
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr)) 	// call POST request to forward string
 	req.Header.Set("Content-Type", "application/json")               // specify json header
 	resp, err := (&http.Client{}).Do(req)                              			// execute request

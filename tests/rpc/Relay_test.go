@@ -6,8 +6,8 @@ import (
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
+	"github.com/pokt-network/pocket-core/service"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"testing"
 )
@@ -16,13 +16,9 @@ import (
 Unit test for the relay functionality
 */
 func TestRelay(t *testing.T) {
-	// check for ethereum client
-	port := config.GetConfigInstance().Ethrpcport
-	// try to bind on eth port
-	_, err := net.Listen("tcp", ":"+port)
-	// handle error
-	if err == nil {
-		t.Fatalf("No ethereum client on on port %q:", port)
+	// grab the hosted chains via file
+	if err := service.HostedChainsFile(config.GetConfigInstance().ChainsFilepath); err != nil {
+		t.Fatalf(err.Error())
 	}
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
@@ -33,7 +29,9 @@ func TestRelay(t *testing.T) {
 	// add blockchain value
 	r.Blockchain = "ethereum"
 	// add netid value
-	r.NetworkID = "n/a"
+	r.NetworkID = "1"
+	// add version value
+	r.Version = "1.0"
 	// add data value
 	r.Data = "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}"
 	// convert structure to json
