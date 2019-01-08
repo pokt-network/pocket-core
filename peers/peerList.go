@@ -7,7 +7,6 @@ import (
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
 	"io/ioutil"
-	"log"
 	"sync"
 )
 
@@ -102,23 +101,26 @@ peerList Functions
 /*
 "ManualPeersFile" adds peers from a peers.json to the peerlist
  */
-func ManualPeersFile(filepath string) {
+func ManualPeersFile(filepath string) error {
 	file, err := ioutil.ReadFile(filepath)			// read the file from the specified path
 	if err != nil {									// if error
-		log.Fatalf(err.Error())						// fatal log because custom logging system has not yet been init
+		return err
 	}
-	ManualPeersJSON(file)							// call manPeers.Json on the byte[]
+	return ManualPeersJSON(file)					// call manPeers.Json on the byte[]
 }
 /*
 "ManualPeersJSON" adds peers from a json []byte to the peerlist
  */
-func ManualPeersJSON(b []byte) {
+func ManualPeersJSON(b []byte) error{
 	var data []node.Node							// create an empty structure to hold the data temporarily
-	json.Unmarshal(b, &data)						// unmarshal the byte array into the struct
+	if err:=json.Unmarshal(b, &data); err != nil{	// unmarshal the byte array into the struct
+		return err
+	}
 	for _, n := range data {						// copy struct into global peerlist
 		pList := GetPeerList()
 		pList.AddPeer(n)
 	}
+	return nil
 }
 
 /*

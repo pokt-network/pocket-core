@@ -10,6 +10,7 @@ import (
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/rpc"
+	"github.com/pokt-network/pocket-core/service"
 	"os"
 )
 
@@ -31,11 +32,20 @@ func main() {
 }
 
 /*
-"manualPeers" checks if manual peers are specified and adds them to the peerlist.
+"manualPeers" parses peers from peers.json file
 */
-func manualPeers() {
-	if config.GetConfigInstance().ManPeers { // if flag enabled
-		peers.ManualPeersFile(config.GetConfigInstance().PeerFile) // add peers from file
+func peersFromFile() {
+	if err := peers.ManualPeersFile(config.GetConfigInstance().PeerFile); err!=nil { // add peers from file
+		// TODO handle error (note: if file doesn't exist this still should work)
+	}
+}
+
+/*
+"chainsFromFile" parses hosted chains from chains.json file
+ */
+func chainsFromFile(){
+	if err := service.HostedChainsFile(config.GetConfigInstance().ChainsFilepath); err!=nil {
+		// TODO handle error (note: if hosted chains file doesn't exist how to proceed?"
 	}
 }
 
@@ -46,10 +56,11 @@ func startClient() {
 	config.InitializeConfiguration()                                			// initializes the configuration from flags and defaults.
 	config.BuildConfiguration()                                     			// builds the proper structure on pc for core client to operate.
 	config.PrintConfiguration()                                     			// print the configuration the the cmd.
-	manualPeers()                                                   			// check for manual peers
+	peersFromFile()                                                   			// check for manual peers
+	chainsFromFile()															// check for chains.json file
 	logs.NewLog("Started client", logs.InfoLevel, logs.JSONLogFormat) 	// log start message
 	rpc.RunAPIEndpoints()                                           			// runs the server endpoints for client and relay api.
-	message.RunMessageServers()												// runs servers for messages
+	message.RunMessageServers()													// runs servers for messages
 	fmt.Print("Press any key + 'Return' to quit: ")                 			// prompt user to exit
 	input := bufio.NewScanner(os.Stdin)                             			// unnecessary temporary entry
 	input.Scan()                                                    			// wait
