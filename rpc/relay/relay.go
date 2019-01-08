@@ -2,7 +2,6 @@
 package relay
 
 import (
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/plugin/rpc-plugin"
@@ -53,7 +52,6 @@ func RelayWrite(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 "RouteRelay" routes the relay to the specified hosted chain
 */
 func RouteRelay(relay Relay) (string, error) {
-	fmt.Println(relay, "THIS IS RELAY")
 	port := service.GetHostedChainPort(relay.Blockchain, relay.NetworkID, relay.Version)
 	if port == "" {
 		logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
