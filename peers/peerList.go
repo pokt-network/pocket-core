@@ -106,12 +106,12 @@ func ManualPeersFile(filepath string) error {
 	if err != nil {									// if error
 		return err
 	}
-	return ManualPeersJSON(file)					// call manPeers.Json on the byte[]
+	return manualPeersJSON(file) // call manPeers.Json on the byte[]
 }
 /*
-"ManualPeersJSON" adds peers from a json []byte to the peerlist
+"manualPeersJSON" adds peers from a json []byte to the peerlist
  */
-func ManualPeersJSON(b []byte) error{
+func manualPeersJSON(b []byte) error{
 	var data []node.Node							// create an empty structure to hold the data temporarily
 	if err:=json.Unmarshal(b, &data); err != nil{	// unmarshal the byte array into the struct
 		return err
