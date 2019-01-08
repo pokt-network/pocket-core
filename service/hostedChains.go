@@ -8,11 +8,11 @@ import (
 )
 
 type HostedChain struct {
-	Ticker 	string 	`json:"name"`
-	NetID	string	`json:"netid"`
-	Version	string	`json:"version"`
-	Port	string	`json:"port"`
-	Medium	string	`json:"medium"`
+	Name    string `json:"name"`
+	NetID   string `json:"netid"`
+	Version string `json:"version"`
+	Port    string `json:"port"`
+	Medium  string `json:"medium"`
 }
 
 var (
@@ -53,6 +53,15 @@ func HostedChainsFile(filepath string) error {
 		return err
 	}
 	return UnmarshalChains(file) 					// call manPeers.Json on the byte[]
+}
+
+func GetHostedChainPort(name string, netid string, version string) string {	// TODO optimize this currently O(n)
+	for _,chain := range *GetHostedChains() {
+		if name == chain.Name && netid == chain.NetID && version == chain.Version {
+			return chain.Port
+		}
+	}
+	return ""
 }
 
 func TestForHostedChains(){

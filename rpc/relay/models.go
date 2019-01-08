@@ -15,5 +15,6 @@ type Dispatch struct {
 type Relay struct {
 	Blockchain string `json:"blockchain"`
 	NetworkID  string `json:"netid"`
+	Version	   string `json:"version"`
 	Data       string `json:"data"`
 }
