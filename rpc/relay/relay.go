@@ -3,10 +3,7 @@ package relay
 
 import (
 	"github.com/julienschmidt/httprouter"
-	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/plugin/pcp-bitcoin"
-	"github.com/pokt-network/pocket-core/plugin/pcp-ethereum"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"net/http"
 )
@@ -57,12 +54,12 @@ func RelayWrite(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 "RouteRelay" routes the relay to the specified hosted chain
 */
 func RouteRelay(relay Relay) (string, error) {
-	switch relay.Blockchain {
-	case "ethereum":
-		return pcp_ethereum.ExecuteRequest([]byte(relay.Data), config.GetConfigInstance().Ethrpcport)
-	case "bitcoin":
-		return pcp_bitcoin.ExecuteRequest([]byte(relay.Data), config.GetConfigInstance().Btcrpcport)
-	}
+	//switch relay.Blockchain {
+	//case "ethereum":
+	//	return pcp_ethereum.ExecuteRequest([]byte(relay.Data), config.GetConfigInstance().Ethrpcport)
+	//case "bitcoin":
+	//	return pcp_bitcoin.ExecuteRequest([]byte(relay.Data), config.GetConfigInstance().Btcrpcport)
+	//} // TODO route relays based off of hosted chains
 	logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
 	return "Error: not a supported blockchain", nil // TODO custom error here
 }
