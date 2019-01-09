@@ -1,0 +1,21 @@
+// Sample chain.json file. To use, place in data directory
+[
+    {
+        "blockchain": {
+            "name": "ethereum",
+            "netid": "1",
+            "version": "1.0"
+        },
+        "port": "8545",
+        "medium": "rpc"
+    },
+    {
+        "blockchain": {
+            "name": "bitcoin",
+            "netid": "1",
+            "version": "1.0"
+        },
+        "port": "8333",
+        "medium": "rpc"
+    }
+]

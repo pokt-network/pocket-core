@@ -4,9 +4,9 @@ package relay
 import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/logs"
+	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/plugin/rpc-plugin"
 	"github.com/pokt-network/pocket-core/rpc/shared"
-	"github.com/pokt-network/pocket-core/service"
 	"net/http"
 )
 
@@ -52,7 +52,7 @@ func RelayWrite(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 "RouteRelay" routes the relay to the specified hosted chain
 */
 func RouteRelay(relay Relay) (string, error) {
-	port := service.GetHostedChainPort(relay.Blockchain, relay.NetworkID, relay.Version)
+	port := node.GetHostedChainPort(relay.Blockchain, relay.NetworkID, relay.Version)
 	if port == "" {
 		logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
 		return "Error: not a supported blockchain", nil // TODO custom error here

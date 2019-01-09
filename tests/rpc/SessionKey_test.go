@@ -15,13 +15,9 @@ import (
 
 func TestSessionKey(t *testing.T) {
 	// hard code in some nodes
-	var empty []string
-	n1 := node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b1",
-		"", "", "", "", "", "", empty}
-	n2 := node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b2",
-		"", "", "", "", "", "", empty}
-	n3 := node.Node{"211057e8a7bbf340614b55fce0c481f3da8179b3",
-		"", "", "", "", "", "", empty}
+	n1 := node.Node{GID:"211057e8a7bbf340614b55fce0c481f3da8179b1"}
+	n2 := node.Node{GID:"211057e8a7bbf340614b55fce0c481f3da8179b2"}
+	n3 := node.Node{GID:"211057e8a7bbf340614b55fce0c481f3da8179b3"}
 	// add to peerList
 	pList := peers.GetPeerList()
 	pList.AddPeer(n1)
