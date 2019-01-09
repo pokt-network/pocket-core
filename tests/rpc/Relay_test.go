@@ -3,10 +3,11 @@ package rpc
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
-	"github.com/pokt-network/pocket-core/service"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -17,9 +18,10 @@ Unit test for the relay functionality
 */
 func TestRelay(t *testing.T) {
 	// grab the hosted chains via file
-	if err := service.HostedChainsFile(config.GetConfigInstance().ChainsFilepath); err != nil {
+	if err := node.HostedChainsFile(config.GetConfigInstance().ChainsFilepath); err != nil {
 		t.Fatalf(err.Error())
 	}
+	fmt.Println(node.GetHostedChains())
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
 	// @ Url

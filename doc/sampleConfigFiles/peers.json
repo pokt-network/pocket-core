@@ -1,0 +1,45 @@
+// Sample peers.json file. To use, place in data directory
+[
+    {
+        "gid": "gid1",
+        "remoteip": "remoteid",
+        "localip": "localip",
+        "relayport": "relayport",
+        "clientport": "clientport",
+        "clientid": "clientid",
+        "cliversion": "cliversion",
+        "blockchains": [
+            {
+                "name": "ethereum",
+                "netid": "1",
+                "version": "1.0"
+            },
+            {
+                "name": "bitcoin",
+                "netid": "1",
+                "version": "1.0"
+            }
+        ]
+    },
+    {
+        "gid": "gid2",
+        "remoteip": "remoteid",
+        "localip": "localip",
+        "relayport": "relayport",
+        "clientport": "clientport",
+        "clientid": "clientid",
+        "cliversion": "cliversion",
+        "blockchains": [
+            {
+                "name": "ethereum",
+                "netid": "1",
+                "version": "1.0"
+            },
+            {
+                "name": "bitcoin",
+                "netid": "1",
+                "version": "1.0"
+            }
+        ]
+    }
+]
