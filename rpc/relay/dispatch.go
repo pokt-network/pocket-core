@@ -6,7 +6,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/session"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/shared"
@@ -54,7 +53,7 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 func DispatchFind(sessionKey string) []node.Node {
 	bigSessionKey := new(big.Int)           					// create new big integer to store sessionKey in
 	bigSessionKey.SetString(sessionKey, 16) 				// convert hex string into big integer
-	peerList := peers.GetPeerList()         					// get the global peerlist
+	peerList := node.GetPeerList()         						// get the global peerlist
 	peerList.Lock()                         					// TODO currently locking the peerlist, however this will all change when p2p is integerated
 	defer peerList.Unlock()
 	m := make(map[uint64]node.Node)                      		// map the nodes to the corresponding difference

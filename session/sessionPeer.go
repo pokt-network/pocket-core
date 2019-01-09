@@ -2,7 +2,6 @@
 package session
 
 import (
-	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/node"
 )
 
@@ -35,7 +34,7 @@ Session Peer Functions
 "AddSessionPeersToPeerList" adds sessionPeers from a slice to the peerlist
  */
 func AddSessPeersToPL(spl []SessionPeer) {
-	pl := peers.GetPeerList()			// get the peerlist
+	pl := node.GetPeerList()			// get the peerlist
 	for _, sp := range spl {			// for each SessionPeer
 		pl.AddPeer(sp.Node)				// add to the list
 	}
@@ -45,6 +44,6 @@ func AddSessPeersToPL(spl []SessionPeer) {
 "AddSessionPeerToPeerList" adds a single sessionPeer to the peerList
  */
 func AddSessionPeerToPeerlist(sp SessionPeer) {
-	pl := peers.GetPeerList()			// get the peerlist
+	pl := node.GetPeerList()			// get the peerlist
 	pl.AddPeer(sp.Node)					// add the peer to the list
 }

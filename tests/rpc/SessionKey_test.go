@@ -59,5 +59,5 @@ func TestSessionKey(t *testing.T) {
 	if data[1].GID != n2.GID { // Assert order
 		t.Fatalf("Nodes are not in correct order")
 	}
-	peers.GetPeerList().Print()
+	node.GetPeerList().Print()
 }

@@ -38,11 +38,11 @@ func TestSessionMessage(t *testing.T) {
 		t.Fatalf("The session for "+ DEVID+" doesn't exist")
 	}
 	// check for any peers within the peerlist
-	if peers.GetPeerList().Count() == 0 {
+	if node.GetPeerList().Count() == 0 {
 		t.Fatalf("No peers within peerlist")
 	}
 	// check for the correct peers within the peerlist
-	if !peers.GetPeerList().Contains(SNODE) || !peers.GetPeerList().Contains(VNODE) {
+	if !node.GetPeerList().Contains(SNODE) || !node.GetPeerList().Contains(VNODE) {
 		t.Fatalf(SNODE + " and " + VNODE + " do not exist within peerlist")
 	}
 	session1=session.GetSessionList().Get(DEVID)
