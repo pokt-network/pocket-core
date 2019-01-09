@@ -48,4 +48,3 @@ package rpc
 //	}
 //	node.GetPeerList().Print()
 //}
-
