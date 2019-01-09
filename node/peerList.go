@@ -1,11 +1,10 @@
 // This package is network code relating to other nodes within the network.
-package peers
+package node
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/node"
 	"io/ioutil"
 	"sync"
 )
@@ -16,7 +15,7 @@ import (
 Peerlist structure
  */
 type PeerList struct {
-	List map[string]node.Node
+	List map[string]Node
 	sync.Mutex
 }
 
@@ -24,7 +23,7 @@ type PeerList struct {
 Peerlist instance
  */
 var (
-	once  sync.Once
+	o  sync.Once
 	pList *PeerList
 )
 
@@ -36,9 +35,9 @@ Singleton getter
 "GetPeerList" returns the global list of peers
  */
 func GetPeerList() *PeerList {
-	once.Do(func() {								// only do once (thread safety)
+	o.Do(func() {									// only do once (thread safety)
 		pList = &PeerList{}							// init empty peerlist
-		pList.List = make(map[string]node.Node) 	// make the map [GID]Node
+		pList.List = make(map[string]Node) 			// make the map [GID]Node
 	})
 	return pList									// return the peerlist
 }
@@ -50,7 +49,7 @@ peerList Methods
 /*
 "AddPeer" adds a peer object to the global peerlist
  */
-func (pList *PeerList) AddPeer(node node.Node) {
+func (pList *PeerList) AddPeer(node Node) {
 	if !pList.Contains(node.GID) { 					// if node not within peerlist
 		pList.Lock()								// lock the list
 		defer pList.Unlock()						// after function completes unlock the list
@@ -62,7 +61,7 @@ func (pList *PeerList) AddPeer(node node.Node) {
 /*
 "RemovePeer" removes a peer object from the global list
  */
-func (pList *PeerList) RemovePeer(node node.Node) {
+func (pList *PeerList) RemovePeer(node Node) {
 	pList.Lock()									// lock the list
 	defer pList.Unlock()							// after the function completes unlock the list
 	logs.NewLog("Removed peer: "+node.GID, logs.InfoLevel, logs.JSONLogFormat)
@@ -112,7 +111,7 @@ func ManualPeersFile(filepath string) error {
 "manualPeersJSON" adds peers from a json []byte to the peerlist
  */
 func manualPeersJSON(b []byte) error{
-	var data []node.Node							// create an empty structure to hold the data temporarily
+	var data []Node									// create an empty structure to hold the data temporarily
 	if err:=json.Unmarshal(b, &data); err != nil{	// unmarshal the byte array into the struct
 		return err
 	}

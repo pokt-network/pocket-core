@@ -9,7 +9,6 @@ import (
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/node"
-	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
@@ -35,7 +34,7 @@ func main() {
 "manualPeers" parses peers from peers.json file
 */
 func peersFromFile() {
-	if err := peers.ManualPeersFile(config.GetConfigInstance().PeerFile); err!=nil { // add peers from file
+	if err := node.ManualPeersFile(config.GetConfigInstance().PeerFile); err!=nil { // add peers from file
 		// TODO handle error (note: if file doesn't exist this still should work)
 	}
 }
