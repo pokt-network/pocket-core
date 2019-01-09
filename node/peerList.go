@@ -39,7 +39,7 @@ func GetPeerList() *PeerList {
 		pList = &PeerList{}							// init empty peerlist
 		pList.List = make(map[string]Node) 			// make the map [GID]Node
 	})
-	return pList									// return the peerlist
+	return pList // return the peerlist
 }
 
 /***********************************************************************************************************************
@@ -54,7 +54,7 @@ func (pList *PeerList) AddPeer(node Node) {
 		pList.Lock()								// lock the list
 		defer pList.Unlock()						// after function completes unlock the list
 		logs.NewLog("Added new peer: "+node.GID, logs.InfoLevel, logs.JSONLogFormat)
-		pList.List[node.GID] = node					// add the node to the global map
+		pList.List[node.GID] = node // add the node to the global map
 	}
 }
 
@@ -65,32 +65,37 @@ func (pList *PeerList) RemovePeer(node Node) {
 	pList.Lock()									// lock the list
 	defer pList.Unlock()							// after the function completes unlock the list
 	logs.NewLog("Removed peer: "+node.GID, logs.InfoLevel, logs.JSONLogFormat)
-	delete(pList.List, node.GID)					// delete the item from the map
+	delete(pList.List, node.GID) // delete the item from the map
+}
+
+func (pList *PeerList) contains(GID string) bool {
+	_, ok := pList.List[GID]
+	return ok
 }
 
 /*
 "Contains" returns true if node is within peerlist
  */
 func (pList *PeerList) Contains(GID string) bool {
-	pList.Lock()									// lock the list
-	defer pList.Unlock()							// after the function completes unlock the list
-	_, ok := pList.List[GID]						// check if within the list
-	return ok										// return the bool
+	pList.Lock()
+	defer pList.Unlock()
+	return pList.contains(GID)
 }
 
 /*
 "Count" returns the count of peers within the list
  */
 func (pList *PeerList) Count() int {
-	pList.Lock()									// lock the list
-	defer pList.Unlock()							// after the function completes unlock the list
-	return len(pList.List)							// return the length of the list
+	pList.Lock()           // lock the list
+	defer pList.Unlock()   // after the function completes unlock the list
+	return len(pList.List) // return the length of the list
 }
+
 /*
 "Print" prints the peerlist to the CLI
  */
 func (pList *PeerList) Print() {
-	fmt.Println(pList.List)							// print the list to the console
+	fmt.Println(pList.List) // print the list to the console
 }
 
 // NOTE Centralized Dispatch for MVP Only
@@ -110,12 +115,13 @@ peerList Functions
 "ManualPeersFile" adds peers from a peers.json to the peerlist
  */
 func ManualPeersFile(filepath string) error {
-	file, err := ioutil.ReadFile(filepath)			// read the file from the specified path
-	if err != nil {									// if error
+	file, err := ioutil.ReadFile(filepath) // read the file from the specified path
+	if err != nil { // if error
 		return err
 	}
 	return manualPeersJSON(file) // call manPeers.Json on the byte[]
 }
+
 /*
 "manualPeersJSON" adds peers from a json []byte to the peerlist
  */
@@ -124,7 +130,7 @@ func manualPeersJSON(b []byte) error{
 	if err:=json.Unmarshal(b, &data); err != nil{	// unmarshal the byte array into the struct
 		return err
 	}
-	for _, n := range data {						// copy struct into global peerlist
+	for _, n := range data { // copy struct into global peerlist
 		pList := GetPeerList()
 		pList.AddPeer(n)
 	}
@@ -135,8 +141,8 @@ func manualPeersJSON(b []byte) error{
 "GetPeerCount" returns the number of peers
  */
 func GetPeerCount() int {
-	pList := GetPeerList()							// get the peerlist
-	pList.Lock()									// lock the list
-	defer pList.Unlock()							// unlock once function completes
-	return len(pList.List)							// return the length of the list
+	pList := GetPeerList() // get the peerlist
+	pList.Lock()           // lock the list
+	defer pList.Unlock()   // unlock once function completes
+	return len(pList.List) // return the length of the list
 }
