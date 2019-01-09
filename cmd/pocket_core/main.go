@@ -8,9 +8,9 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/message"
+	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/rpc"
-	"github.com/pokt-network/pocket-core/service"
 	"os"
 )
 
@@ -44,7 +44,7 @@ func peersFromFile() {
 "chainsFromFile" parses hosted chains from chains.json file
  */
 func chainsFromFile(){
-	if err := service.HostedChainsFile(config.GetConfigInstance().ChainsFilepath); err!=nil {
+	if err := node.HostedChainsFile(config.GetConfigInstance().ChainsFilepath); err!=nil {
 		// TODO handle error (note: if hosted chains file doesn't exist how to proceed?"
 	}
 }

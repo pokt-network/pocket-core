@@ -1,4 +1,4 @@
-package service
+package node
 
 import (
 	"encoding/json"
@@ -8,9 +8,7 @@ import (
 )
 
 type HostedChain struct {
-	Name    string `json:"name"`
-	NetID   string `json:"netid"`
-	Version string `json:"version"`
+	Blockchain	   `json:"blockchain"`
 	Port    string `json:"port"`
 	Medium  string `json:"medium"`
 }
