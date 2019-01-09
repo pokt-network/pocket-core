@@ -93,6 +93,15 @@ func (pList *PeerList) Print() {
 	fmt.Println(pList.List)							// print the list to the console
 }
 
+// NOTE Centralized Dispatch for MVP Only
+func (pList *PeerList) AddPeersToDispatchStructure(){
+	pList.Lock()
+	defer pList.Unlock()
+	for _, peer := range pList.List {
+		NewDispatchPeer(peer)
+	}
+}
+
 /***********************************************************************************************************************
 peerList Functions
 */
