@@ -4,14 +4,13 @@ package node
 // models.go maintains the structures for the node package.
 
 type Node struct {
-	GID          string  		`json:"gid"` 					// node's global id (could be public address)
-	RemoteIP     string  		`json:"remoteid"`				// holds the remote IP address
-	LocalIP      string  		`json:"localip"`				// holds the local IP address
-	RelayPort    string  		`json:"relayport"`				// specifies the port for relay API
-	ClientPort   string  		`json:"clientport"`				// specifies the port for the client API
-	ClientID     string  		`json:"clientid"`				// holds the identifier string for the client "pocket_core"
-	CliVersion   string  		`json:"cliversion"`				// holds the version of the client
-	Blockchains []Blockchain	`json:"blockchains"`			// holds the hosted blockchains
+	GID         string       `json:"gid"`         // node's global id (could be public address)
+	IP          string       `json:"ip"`    	  // holds the remote IP address
+	RelayPort   string       `json:"relayport"`   // specifies the port for relay API
+	ClientPort  string       `json:"clientport"`  // specifies the port for the client API
+	ClientID    string       `json:"clientid"`    // holds the identifier string for the client "pocket_core"
+	CliVersion  string       `json:"cliversion"`  // holds the version of the client
+	Blockchains []Blockchain `json:"blockchains"` // holds the hosted blockchains
 }
 
 type Validator struct {
