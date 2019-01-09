@@ -1,4 +1,4 @@
-// Sample peers.json file. To use, place in data directory
+// Sample peers.json file. To use, place in data directory (REMOVE THIS COMMENT BEFORE USE)
 [
     {
         "gid": "gid1",
