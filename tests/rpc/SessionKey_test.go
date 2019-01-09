@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
@@ -19,7 +18,7 @@ func TestSessionKey(t *testing.T) {
 	n2 := node.Node{GID:"211057e8a7bbf340614b55fce0c481f3da8179b2"}
 	n3 := node.Node{GID:"211057e8a7bbf340614b55fce0c481f3da8179b3"}
 	// add to peerList
-	pList := peers.GetPeerList()
+	pList := node.GetPeerList()
 	pList.AddPeer(n1)
 	pList.AddPeer(n2)
 	pList.AddPeer(n3)
