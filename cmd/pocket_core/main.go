@@ -56,6 +56,7 @@ func startClient() {
 	config.BuildConfiguration()                                     			// builds the proper structure on pc for core client to operate.
 	config.PrintConfiguration()                                     			// print the configuration the the cmd.
 	peersFromFile()                                                   			// check for manual peers
+	node.GetPeerList().AddPeersToDispatchStructure()							// add peers to dispatch structure
 	chainsFromFile()															// check for chains.json file
 	logs.NewLog("Started client", logs.InfoLevel, logs.JSONLogFormat) 	// log start message
 	rpc.RunAPIEndpoints()                                           			// runs the server endpoints for client and relay api.
