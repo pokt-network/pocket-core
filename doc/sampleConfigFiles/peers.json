@@ -2,8 +2,7 @@
 [
     {
         "gid": "gid1",
-        "remoteip": "remoteid",
-        "localip": "localip",
+        "ip": "ip",
         "relayport": "relayport",
         "clientport": "clientport",
         "clientid": "clientid",
@@ -23,8 +22,7 @@
     },
     {
         "gid": "gid2",
-        "remoteip": "remoteid",
-        "localip": "localip",
+        "ip": "ip",
         "relayport": "relayport",
         "clientport": "clientport",
         "clientid": "clientid",
