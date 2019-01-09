@@ -1,5 +1,4 @@
 // Sample chain.json file. To use, place in data directory (REMOVE THIS COMMENT BEFORE USE)
-
 [
     {
         "blockchain": {
