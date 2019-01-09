@@ -10,6 +10,10 @@ import (
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/node"
+<<<<<<< HEAD
+=======
+	"github.com/pokt-network/pocket-core/peers"
+>>>>>>> added customization for peerlist
 	"github.com/pokt-network/pocket-core/rpc"
 	"os"
 )
