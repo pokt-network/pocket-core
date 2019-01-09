@@ -4,12 +4,9 @@ package relay
 import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
-	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/session"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/shared"
-	"github.com/pokt-network/pocket-core/util"
 	"math/big"
 	"net/http"
 	"sort"
@@ -27,18 +24,22 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 
 /*
  "DispatchServe" handles the localhost:<relay-port>/v1/dispatch/serve call.
+ NOTE: this call has been augmented for the Pocket Core MVP Centralized Dispatcher
+// TODO see if this can be done more efficiently
 */
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	dispatch := &Dispatch{}
+	result := make(map[node.Blockchain][]string)
 	shared.PopulateModelFromParams(w, r, ps, dispatch)
-	sList := session.GetSessionList()
-	if !sList.Contains(dispatch.DevID) {
-		session := session.NewSession(dispatch.DevID)
-		sList.AddSession(session)
+	for _, blockchain := range dispatch.Blockchains {
+		ips := make([]string,0)
+		nodes := node.GetPeersByBlockchain(blockchain)
+		for _,n:= range nodes {
+			ips=append(ips, n.IP)
+		}
+		result[blockchain]=ips
 	}
-	sessionKey := util.BytesToHex(crypto.GenerateSessionKey(dispatch.DevID)) // TODO should store the session key
-	nodes := DispatchFind(sessionKey)
-	res, err := json.Marshal(nodes)
+	res, err := json.Marshal(result)
 	if err != nil {
 		logs.NewLog("Couldn't convert node array to json array: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
@@ -81,6 +82,6 @@ func DispatchFind(sessionKey string) []node.Node {
 And provides the developers with an in-client reference to the API call
 */
 func DispatchServeInfo(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	info := shared.CreateInfoStruct(r, "DispatchServe", Dispatch{}, "sessionKey")
+	info := shared.CreateInfoStruct(r, "DispatchServe", Dispatch{}, "list of service nodes")
 	shared.WriteInfoResponse(w, info)
 }

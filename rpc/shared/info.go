@@ -11,6 +11,7 @@ import (
 /*
 "CreateInfoStruct" generates the specific APIReference structure dynamically.
 */
+// TODO adapt this for slice structures
 func CreateInfoStruct(r *http.Request, method string, model interface{}, returns string) APIReference {
 	params := util.StructTagsToString(model)
 	return APIReference{"localhost:port" + r.URL.String(), method,
