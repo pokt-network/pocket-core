@@ -3,7 +3,6 @@ package message
 import (
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/node"
-	"github.com/pokt-network/pocket-core/peers"
 	"github.com/pokt-network/pocket-core/session"
 	"testing"
 	"time"
