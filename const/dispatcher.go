@@ -2,5 +2,5 @@ package _const
 
 const(
 	DISPATCHGID ="DISPATCH"
-	DISPATCHIP="0.0.0.0"
+	DISPATCHIP="127.0.0.1"
 )
