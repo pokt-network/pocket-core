@@ -47,4 +47,3 @@ type ExitNetworkPayload struct {
 type EnterNetworkPayload struct {
 	node.Node `json:"node"`
 }
-
