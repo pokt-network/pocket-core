@@ -12,21 +12,23 @@ import (
 // "config.go" describes all of the configuration properties of the client (set by startup flags)
 // TODO configuration updating
 type config struct {
-	Clientid      string `json:"CLIENTID"`      // This variable holds a client identifier string.
-	Version       string `json:"VERSION"`       // This variable holds the client version string.
-	Datadir        string `json:"DATADIR"`      // This variable holds the working directory string.
-	Clientrpc      bool   `json:"CRPC"`         // This variable describes if the client rpc is running.
-	Clientrpcport  string `json:"CRPCPORT"`     // This variable holds the client rpc port string.
-	Relayrpc       bool   `json:"RRPC"`         // This variable describes if the relay rpc is running.
-	Relayrpcport   string `json:"RRPCPORT"`     // This variable holds the relay rpc port string.
-	ChainsFilepath string `json:"HOSTEDCHAINS"` // This variable holds the filepath to the chains.json
-	PeerFile       string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json
+	GID				string `json:"GID"`				// This variable holds the nodes GID
+	Clientid      	string `json:"CLIENTID"`    	// This variable holds a client identifier string.
+	Version       	string `json:"VERSION"`       	// This variable holds the client version string.
+	Datadir        	string `json:"DATADIR"`      	// This variable holds the working directory string.
+	Clientrpc      	bool   `json:"CRPC"`         	// This variable describes if the client rpc is running.
+	Clientrpcport  	string `json:"CRPCPORT"`     	// This variable holds the client rpc port string.
+	Relayrpc       	bool   `json:"RRPC"`         	// This variable describes if the relay rpc is running.
+	Relayrpcport   	string `json:"RRPCPORT"`     	// This variable holds the relay rpc port string.
+	ChainsFilepath 	string `json:"HOSTEDCHAINS"` 	// This variable holds the filepath to the chains.json
+	PeerFile       	string `json:"PEERFILE"`     	// This variable holds the filepath to the peerFile.json
 }
 
 var (
 	instance *config
 	once     sync.Once
-	datadir  = flag.String("datadir", _const.DATADIR, "setup the data director for the DB and keystore")
+	gid = flag.String("gid","0", "set the selfNode.GID for pocket core mvp")
+	datadir  = flag.String("datadir", _const.DATADIR, "setup the data directory for the DB and keystore")
 	// A boolean variable derived from flags, that describes whether or not to print the version of the client.
 	clientRpc = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
 	// A string variable derived from flags, that specifies which port to run the listener for the client rpc (default :8080)
@@ -51,6 +53,7 @@ func InitializeConfiguration() {
 */
 func newConfiguration() {
 	instance = &config{
+		*gid,						// the global identifier of this node
 		_const.CLIENTID, 		// client identifier is set in global constants.
 		_const.VERSION,  		// client version is set in global constants.
 		*datadir,        		// data directory path specified by the flag.
