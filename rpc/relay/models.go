@@ -15,6 +15,7 @@ type Dispatch struct {
 /*
 "Relay" is a JSON structure that specifies information to complete reads and writes to other blockchains
 */
+// TODO convert to blockchain structure (see node.Blockchain)
 type Relay struct {
 	Blockchain string `json:"blockchain"`
 	NetworkID  string `json:"netid"`
