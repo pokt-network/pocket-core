@@ -20,7 +20,6 @@ func NewSessionMessage(nSPL NewSessionPayload) Message {
 	return NewMessage(Payload{ID: 1, Data: nSPL})	// return message with NewSessionPayload
 }
 
-
 func NewSessPayload(devID string, peers []session.SessionPeer) NewSessionPayload{
 	return NewSessionPayload{devID,peers}
 }
