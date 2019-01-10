@@ -2,10 +2,8 @@ package node
 
 import (
 	"fmt"
-	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/util"
-	
 	"sync"
 )
 
