@@ -33,20 +33,20 @@ func newSessionMessageHandler(message *Message) {
 // may remove for production
 func enterNetworkMessage(message *Message){
 	// get node
-	n := message.Payload.Data.(node.Node)
+	n := message.Payload.Data.(EnterNetworkPayload)
 	// add to peerlist
-	node.GetPeerList().AddPeer(n)
+	node.GetPeerList().AddPeer(n.Node)
 	// add to dispatch peers
-	node.NewDispatchPeer(n)
+	node.NewDispatchPeer(n.Node)
 }
 
 //NOTE: this is for pocket core mvp centralized dispatcher
 // may remove for production
 func exitNetworkMessage(message *Message){
 	// get node
-	n := message.Payload.Data.(node.Node)
+	n := message.Payload.Data.(ExitNetworkPayload)
 	// add to peerlist
-	node.GetPeerList().RemovePeer(n)
+	node.GetPeerList().RemovePeer(n.Node)
 	// add to dispatch peers
-	node.DeleteDispatchPeer(n)
+	node.DeleteDispatchPeer(n.Node)
 }
