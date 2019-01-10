@@ -59,3 +59,8 @@ func RouteRelay(relay Relay) (string, error) {
 	}
 	return rpc_plugin.ExecuteRequest([]byte(relay.Data),port)
 }
+
+// NOTE: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
+func ReportServiceNode(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	shared.WriteResponse(w, "Hello, World!")
+}
