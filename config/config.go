@@ -23,7 +23,7 @@ type config struct {
 	ChainsFilepath 	string `json:"HOSTEDCHAINS"` 	// This variable holds the filepath to the chains.json
 	PeerFile       	string `json:"PEERFILE"`     	// This variable holds the filepath to the peerFile.json
 	ServiceNodeWL  string `json:"SNWL"`    			// This variable holds the filepath to the service_whitelist.json
-	DeveloperWL  string 	`json:"DWL"`    			// This variable holds the filepath to the developer_whitelist.json
+	DeveloperWL  string 	`json:"DWL"`    			// This variable holds the filepath to the developer_whitelist.json e
 }
 
 var (
