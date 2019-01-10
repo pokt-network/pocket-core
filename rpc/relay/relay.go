@@ -2,12 +2,15 @@
 package relay
 
 import (
+	"encoding/json"
 	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/plugin/rpc-plugin"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"net/http"
+	"os"
 )
 
 // "relay.go" defines API handlers that are under the 'relay' category within this file.
@@ -24,7 +27,7 @@ func RelayOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 */
 func RelayRead(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	relay := &Relay{}                               // create empty relay structure
-	shared.PopulateModelFromParams(w, r, ps, relay) // populate the relay struct from params
+	shared.PopulateModelFromParams(w, r, ps, relay) // populate the relay struct from params //TODO handle error for populate model from params (in all cases within codebase!)
 	response, err := RouteRelay(*relay)             // route the relay to the correct chain
 	if err != nil {
 		// TODO handle error
@@ -63,4 +66,29 @@ func RouteRelay(relay Relay) (string, error) {
 // NOTE: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
 func ReportServiceNode(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteResponse(w, "Hello, World!")
+	report := &Report{}
+	shared.PopulateModelFromParams(w,r,ps,report)
+	response, err := HandleReport(report)
+	if err != nil {
+		//TODO handle errors
+	}
+	shared.WriteJSONResponse(w,response)
+}
+
+// NOTE: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
+func HandleReport(report *Report) (string,error){
+	f, err := os.OpenFile(_const.REPORTFILENAME, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+	text, err:= json.Marshal(report)
+	if err != nil {
+		return "500 ERROR", err
+	}
+	if _, err = f.WriteString(string(text)); err != nil {
+		return "500 ERROR", err
+	}
+	return "Okay! The node has been successfully reported to our servers and will be reviewed! Thank you!", err
 }
