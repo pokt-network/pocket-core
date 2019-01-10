@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -41,13 +40,12 @@ func TestDispatchServe(t *testing.T) {
 	node.NewDispatchPeer(node3)
 	// get node lists
 	// json call string for dispatch serve
-	jsons:=[]byte("{\"DevID\": \"foo\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}," +
-		"{\"name\":\"bitcoin\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
+	requestJSON :=[]byte("{\"DevID\": \"foo\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
 	// start relay server
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
 	// url for the POST request
 	u := "http://localhost:" + config.GetConfigInstance().Relayrpcport + "/v1/dispatch/serve"
-	req, err := http.NewRequest("POST", u, bytes.NewBuffer(jsons))
+	req, err := http.NewRequest("POST", u, bytes.NewBuffer(requestJSON))
 	if err != nil{
 		t.Fatalf(err.Error())
 	}
@@ -68,10 +66,10 @@ func TestDispatchServe(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to unmarshall json node response : " + err.Error())
 	}
-	fmt.Println(result)
-	btcAns:= []string{"ip1","ip2"}
-	btcKey := strings.ToUpper(bitcoin.Name)+"V"+bitcoin.Version+" | NetID "+bitcoin.NetID
-	if !reflect.DeepEqual(result[btcKey],btcAns) {
+	expectedBody:= map[string][]string{"ETHEREUMV1.0 | NetID 1":{"ip1","ip2","ip3"}}
+	fmt.Println("EXPECTED BODY:",expectedBody)
+	fmt.Println("RECEIVED BODY:",result)
+	if !reflect.DeepEqual(result,expectedBody) {
 		t.Fatalf("The resulting dispatchPeers is not as expected")
 	}
 }
