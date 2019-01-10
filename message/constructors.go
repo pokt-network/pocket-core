@@ -26,23 +26,23 @@ func NewSessPayload(devID string, peers []session.SessionPeer) NewSessionPayload
 
 //NOTE: this is for pocket core mvp centralized dispatcher
 // may remove for production
-func NewEnterNetPayload() EnterNetworkPayload{
+func newEnterNetPayload() EnterNetworkPayload{
 	return EnterNetworkPayload{*node.GetSelf()}
 }
 //NOTE: this is for pocket core mvp centralized dispatcher
 // may remove for production
-func NewExitNetPayload() ExitNetworkPayload{
+func newExitNetPayload() ExitNetworkPayload{
 	return ExitNetworkPayload{*node.GetSelf()}
 }
 
 //NOTE: this is for pocket core mvp centralized dispatcher
 // may remove for production
-func NewEnterNetMessage(payload EnterNetworkPayload) Message {
-	return NewMessage(Payload{ID:2, Data: payload})
+func NewEnterNetMessage() Message {
+	return NewMessage(Payload{ID:2, Data: newEnterNetPayload()})
 }
 
 //NOTE: this is for pocket core mvp centralized dispatcher
 // may remove for production
-func NewExitNetMessage(payload ExitNetworkPayload) Message {
-	return NewMessage(Payload{ID:3, Data: payload})
+func NewExitNetMessage() Message {
+	return NewMessage(Payload{ID:3, Data : newExitNetPayload()})
 }

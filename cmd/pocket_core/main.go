@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/message"
@@ -50,7 +51,13 @@ func chainsFromFile(){
 
 //NOTE: this is for centralized dispatch and may be removed at production
 func sendEntryMessage(){
-	message.NewEnterNetMessage()
+	m:=message.NewEnterNetMessage()
+	message.SendMessage(message.RELAY, m, _const.DISPATCHIP, message.EnterNetworkPayload{})
+}
+
+func sendExitMessage(){
+	m:=message.NewExitNetMessage()
+	message.SendMessage(message.RELAY, m, _const.DISPATCHIP, message.ExitNetworkPayload{})
 }
 
 /*
@@ -67,7 +74,9 @@ func startClient() {
 	logs.NewLog("Started client", logs.InfoLevel, logs.JSONLogFormat) 	  // log start message
 	rpc.StartAPIServers()                                           			// runs the server endpoints for client and relay api.
 	message.RunMessageServers()													                  // runs servers for messages
+	sendEntryMessage()															// send entry message
 	fmt.Print("Press any key + 'Return' to quit: ")                 			// prompt user to exit
 	input := bufio.NewScanner(os.Stdin)                             			// unnecessary temporary entry
 	input.Scan()                                                    			// wait
+	sendExitMessage()															// send exit message to dispatcher
 }
