@@ -18,3 +18,9 @@ type Relay struct {
 	Version	   string `json:"version"`
 	Data       string `json:"data"`
 }
+
+// NOTE: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
+type Report struct {
+	GID string 		`json:"gid"`
+	Message string 	`json:"message"`
+}
