@@ -1,7 +1,10 @@
 // This package is all message related code
 package message
 
-import "github.com/pokt-network/pocket-core/session"
+import (
+	"github.com/pokt-network/pocket-core/node"
+	"github.com/pokt-network/pocket-core/session"
+)
 
 // "models.go" holds all of the structures for the message package
 
@@ -32,3 +35,16 @@ type NewSessionPayload struct {
 	DevID string                `json:"devid"` // the devID of the session
 	Peers []session.SessionPeer `json:"peers"` // the list of peers
 }
+
+//NOTE: this is for pocket core mvp centralized dispatcher
+// may remove for production
+type ExitNetworkPayload struct {
+	node.Node `json:"node"`
+}
+
+//NOTE: this is for pocket core mvp centralized dispatcher
+// may remove for production
+type EnterNetworkPayload struct {
+	node.Node `json:"node"`
+}
+

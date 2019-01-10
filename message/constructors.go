@@ -17,3 +17,15 @@ func NewMessage(pLoad Payload) Message {
 func NewSessionMessage(nSPL NewSessionPayload) Message {
 	return NewMessage(Payload{ID: 1, Data: nSPL})	// return message with NewSessionPayload
 }
+
+//NOTE: this is for pocket core mvp centralized dispatcher
+// may remove for production
+func NewEnterNetMessage(payload Payload) Message {
+	return NewMessage(Payload{ID:2, Data: payload})
+}
+
+//NOTE: this is for pocket core mvp centralized dispatcher
+// may remove for production
+func NewExitNetMessage(payload Payload) Message {
+	return NewMessage(Payload{ID:3, Data: payload})
+}
