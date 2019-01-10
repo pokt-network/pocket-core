@@ -30,6 +30,7 @@ func RelayRoutes() shared.Routes {
 	routes := shared.Routes{
 		shared.Route{"GetRelayAPIVersion", "POST", "/v1", GetRelayAPIVersion},
 		shared.Route{"ReportServiceNode","POST","/v1/report", ReportServiceNode},
+		shared.Route{"ReportServiceNodeInfo","GET","/v1/report",ReportServiceNodeInfo},
 		shared.Route{"DispatchOptions", "POST", "/v1/dispatch", DispatchOptions},
 		shared.Route{"DispatchServe", "POST", "/v1/dispatch/serve", DispatchServe},
 		shared.Route{"DispatchServeInfo", "GET", "/v1/dispatch/serve", DispatchServeInfo},

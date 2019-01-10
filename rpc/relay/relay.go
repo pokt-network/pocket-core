@@ -65,7 +65,6 @@ func RouteRelay(relay Relay) (string, error) {
 
 // NOTE: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
 func ReportServiceNode(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteResponse(w, "Hello, World!")
 	report := &Report{}
 	shared.PopulateModelFromParams(w,r,ps,report)
 	response, err := HandleReport(report)
@@ -81,14 +80,18 @@ func HandleReport(report *Report) (string,error){
 	if err != nil {
 		panic(err)
 	}
-
 	defer f.Close()
 	text, err:= json.Marshal(report)
 	if err != nil {
 		return "500 ERROR", err
 	}
-	if _, err = f.WriteString(string(text)); err != nil {
+	if _, err = f.WriteString(string(text)+"\n"); err != nil {
 		return "500 ERROR", err
 	}
 	return "Okay! The node has been successfully reported to our servers and will be reviewed! Thank you!", err
+}
+
+func ReportServiceNodeInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	info := shared.CreateInfoStruct(r, "ReportServiceNode", Report{}, "Success or failure message")
+	shared.WriteInfoResponse(w, info)
 }
