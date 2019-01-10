@@ -3,6 +3,7 @@ package relay
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
@@ -10,6 +11,7 @@ import (
 	"math/big"
 	"net/http"
 	"sort"
+	"strings"
 )
 
 // TODO fix dispatch serve example APIInformation
@@ -29,7 +31,7 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 */
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	dispatch := &Dispatch{}
-	result := make(map[node.Blockchain][]string)
+	result := make(map[string][]string)
 	shared.PopulateModelFromParams(w, r, ps, dispatch)
 	for _, blockchain := range dispatch.Blockchains {
 		ips := make([]string,0)
@@ -37,10 +39,11 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		for _,n:= range nodes {
 			ips=append(ips, n.IP)
 		}
-		result[blockchain]=ips
+		result[strings.ToUpper(blockchain.Name)+"V"+blockchain.Version+" | NetID "+blockchain.NetID]=ips
 	}
-	res, err := json.Marshal(result)
+	res, err := json.MarshalIndent(result,"","  ")
 	if err != nil {
+		fmt.Println(err)
 		logs.NewLog("Couldn't convert node array to json array: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	shared.WriteRawJSONResponse(w, res)
