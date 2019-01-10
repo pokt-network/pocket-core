@@ -48,6 +48,11 @@ func chainsFromFile(){
 	}
 }
 
+//NOTE: this is for centralized dispatch and may be removed at production
+func sendEntryMessage(){
+	message.NewEnterNetMessage()
+}
+
 /*
 "startClient" Starts the client with the given initial configuration.
 */
