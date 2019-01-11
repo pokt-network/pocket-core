@@ -55,9 +55,15 @@ func sendEntryMessage(){
 	message.SendMessage(message.RELAY, m, _const.DISPATCHIP, message.EnterNetworkPayload{})
 }
 
-func sendExitMessage(){
-	m:=message.NewExitNetMessage()
+func sendExitMessage() {
+	m := message.NewExitNetMessage()
 	message.SendMessage(message.RELAY, m, _const.DISPATCHIP, message.ExitNetworkPayload{})
+}
+
+func whiteListFromFile(){
+	if err := node.WhitelistFromFile(); err != nil {
+		// TODO handle error
+	}
 }
 
 /*
@@ -71,6 +77,7 @@ func startClient() {
 	node.GetPeerList().AddPeersToDispatchStructure()							        // add peers to dispatch structure
 	chainsFromFile()															                        // check for chains.json file
 	node.TestForHostedChains()                                            // check for hosted chains
+	whiteListFromFile()															// adds to GID's to whitelist struct from file
 	logs.NewLog("Started client", logs.InfoLevel, logs.JSONLogFormat) 	  // log start message
 	rpc.StartAPIServers()                                           			// runs the server endpoints for client and relay api.
 	message.RunMessageServers()													                  // runs servers for messages
