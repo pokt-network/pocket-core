@@ -2,7 +2,7 @@
 Official implementation of the Pocket Network Protocol.
 
 # Overview
-The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can visit [https://pokt.network](https://pokt.network).
+The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can visit [pokt.network](https://pokt.network).
 
 # How to run it
 To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
