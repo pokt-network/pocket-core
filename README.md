@@ -7,41 +7,21 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 # How to run it
 To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
 
-  `-bitcoin`
-    	whether or not bitcoin is hosted
-    	
- ` -btcrpcport string`
-    	specified port to run bitcoin rpc (default "8333")
-    	
- ` -clientrpc`
-    	whether or not to start the rpc server
-    	
- ` -clientrpcport string`
-    	specified port to run client rpc (default "8080")
-    	
- ` -datadir string`
-    	setup the data director for the DB and keystore (default: 
-    	`%APPDATA%\Pocket` for Windows, 
-    	`~/.pocket` for Linux, 
-    	`~/Library/Pocket` for Mac)
-    	
- ` -ethereum`
-    	whether or not ethereum is hosted
-    	
- ` -ethrpcport string`
-    	specified port to run ethereum rpc (default "8545")
-    	
-  `-manpeers`
-    	specifies if peers are manually added
-    	
-  `-peerFile string`
-    	specifies the filepath for peers.json (default `<datadir>/peers.json`)
-    	
-  `-relayrpc` 
-    	whether or not to start the rpc server
-    	
-  `-relayrpcport string`
-    	specified port to run relay rpc (default "8081")
+    -clientrpc
+      	whether or not to start the rpc server
+    -clientrpcport string
+      	specified port to run client rpc (default "8080")
+    -datadir string
+      	setup the data director for the DB and keystore 
+      	(default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
+    -hostedchains string
+      	specifies the filepath for hosted chains (default "datadir/chains.json")
+    -peerFile string
+      	specifies the filepath for peers.json (default "datadir/peers.json")
+    -relayrpc
+      	whether or not to start the rpc server
+    -relayrpcport string
+      	specified port to run relay rpc (default "8081")
 # How to test
 To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory
 
@@ -51,7 +31,7 @@ Pocket Core is an open source project, and as such we welcome any contribution f
 Please fork, code and submit a Pull Request for the Pocket Core Team to review and merge. We ask that you please follow the guidelines below in order to submit your contributions for review:
 
 ## High impact or architectural changes
-Reach out to us on [Slack](https://www.pokt.network/slack-pokt) and start a discussion with the Pocket Core Team regarding your change before you start working. Communication is key for open source projects and asynchronous contributions.
+Reach out to us on [Telegram](https://t.me/POKTnetwork) and start a discussion with the Pocket Core Team regarding your change before you start working. Communication is key for open source projects and asynchronous contributions.
 
 ## Coding style
 - Code must adhere to the official Go formatting guidelines (i.e. uses [gofmt](https://golang.org/cmd/gofmt)).
