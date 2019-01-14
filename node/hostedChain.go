@@ -2,8 +2,10 @@ package node
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"sync"
 )
 
@@ -54,6 +56,7 @@ func HostedChainsFile(filepath string) error {
 }
 
 func GetHostedChainPort(name string, netid string, version string) string {	// TODO optimize this currently O(n)
+// TODO this can be compared with a hosted chain structure so no need to do individual comparison!
 	for _,chain := range *GetHostedChains() {
 		if name == chain.Name && netid == chain.NetID && version == chain.Version {
 			return chain.Port
@@ -62,6 +65,21 @@ func GetHostedChainPort(name string, netid string, version string) string {	// T
 	return ""
 }
 
-func TestForHostedChains(){
-	// TODO runtime test that checks for the hosted chain
+func TestForHostedChains() bool{
+	hc := GetHostedChains()
+	for _,chain := range *hc {
+		if err := pingPort(chain.Port); err!= nil {
+			fmt.Println(chain.Name, " client is not detected on port ", chain.Port)
+			return false
+		}
+	}
+	return true
+}
+
+func pingPort(port string) error{
+	_, err := net.Listen("tcp", ":" + port)
+	if err != nil {
+		return nil
+	}
+	return errors.New("port: "+port+" is not in use")
 }
