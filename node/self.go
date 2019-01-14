@@ -1,7 +1,11 @@
 package node
 
 import (
+	"fmt"
+	
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/util"
+	
 	"sync"
 )
 
@@ -13,7 +17,12 @@ var (
 
 func GetSelf() *Node{
 	selfOnce.Do(func(){
-		self = &Node{GID:config.GetConfigInstance().GID}
+		ip, err := util.GetIPAdress()
+		if err != nil {
+			// TODO handle ip error
+			fmt.Println(err.Error())
+		}
+		self = &Node{GID:config.GetConfigInstance().GID, RelayPort:config.GetConfigInstance().Relayrpcport, IP:ip}
 	})
 	return self
 }
