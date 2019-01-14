@@ -3,6 +3,7 @@ package relay
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"net/http"
 )
@@ -13,5 +14,5 @@ import (
  "GetRelayAPIVersion" handles the localhost:<relay-port>/v1 call.
 */
 func GetRelayAPIVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteResponse(w, "Hello, World!")
+	shared.WriteResponse(w, _const.APIVERSION)
 }
