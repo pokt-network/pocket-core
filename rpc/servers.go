@@ -14,9 +14,9 @@ import (
 // "servers.go" defines RPC/REST API serving functions within this file.
 
 /*
-"RunAPIEndpoints" executes the specified configuration for the client.
+"StartAPIServers" executes the specified configuration for the client.
 */
-func RunAPIEndpoints() {
+func StartAPIServers() {
 	if config.GetConfigInstance().Clientrpc { 						// if flag set
 		go StartClientRPC(config.GetConfigInstance().Clientrpcport) // run the client rpc in a goroutine
 	}

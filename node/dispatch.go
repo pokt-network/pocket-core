@@ -81,9 +81,12 @@ func DispatchLivenessCheck(){
 }
 
 func isAlive(peer Node) bool{ // TODO handle scenarios where the error is on the dispatch node side
-  if resp,err:= liveCheck(peer); err!=nil || resp.StatusCode != http.StatusOK {
+  if resp,err:= liveCheck(peer); err!=nil || resp==nil || resp.StatusCode != http.StatusOK {
+    fmt.Println(resp)
+    fmt.Println("Failed Liveness Check")
     return false
   }
+  fmt.Println("Successful liveness check")
   return true
 }
 
