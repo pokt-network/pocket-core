@@ -25,15 +25,18 @@ func TestDispatchServe(t *testing.T) {
 	node1:= node.Node{
 		GID:"node1",
 		IP:"ip1",
+		RelayPort:"0",
 		Blockchains:[]node.Blockchain{ethereum, rinkeby, bitcoin}}
 	node2:= node.Node{
 		GID:"node2",
 		IP:"ip2",
-		Blockchains:[]node.Blockchain{ethereum, bitcoin, bitcoinv1}}
+		RelayPort:"0",
+		Blockchains:[]node.Blockchain{rinkeby, bitcoin, bitcoinv1}}
 	node3:= node.Node{
 		GID:"node3",
 		IP:"ip3",
-		Blockchains:[]node.Blockchain{bitcoinCash, ethereum, bitcoinv1}}
+		RelayPort:"0",
+		Blockchains:[]node.Blockchain{bitcoinCash, rinkeby, bitcoinv1}}
 	// add them to dispatchPeers
 	node.NewDispatchPeer(node1)
 	node.NewDispatchPeer(node2)
@@ -66,7 +69,7 @@ func TestDispatchServe(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to unmarshall json node response : " + err.Error())
 	}
-	expectedBody:= map[string][]string{"ETHEREUMV1.0 | NetID 1":{"ip1","ip2","ip3"}}
+	expectedBody:= map[string][]string{"ETHEREUMV1.0 | NetID 1":{"ip1:0"}}
 	fmt.Println("EXPECTED BODY:",expectedBody)
 	fmt.Println("RECEIVED BODY:",result)
 	if !reflect.DeepEqual(result,expectedBody) {
