@@ -33,6 +33,13 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	dispatch := &Dispatch{}
 	result := make(map[string][]string)
 	shared.PopulateModelFromParams(w, r, ps, dispatch)
+	// cross check the WL
+	if !node.GetDeveloperWhiteList().Contains(dispatch.DevID){
+		fmt.Println("Developer ",dispatch.DevID, "rejected because the developer ID is not within whitelist")
+		shared.WriteResponse(w, "Invalid Credentials")
+		return
+	}
+	// if is within the white list
 	for _, blockchain := range dispatch.Blockchains {
 		ips := make([]string,0)
 		nodes := node.GetPeersByBlockchain(blockchain)

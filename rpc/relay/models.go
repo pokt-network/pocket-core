@@ -21,6 +21,7 @@ type Relay struct {
 	NetworkID  string `json:"netid"`
 	Version	   string `json:"version"`
 	Data       string `json:"data"`
+	DevID			 string	`json:"devid"`
 }
 
 // NOTE: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
