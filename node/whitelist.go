@@ -8,37 +8,48 @@ import (
 	"sync"
 )
 
-type Whitelist map[string]struct{} // gid and 0 space (essentially a set)
+type Whitelist struct{
+	list map[string]struct{}
+	mux sync.Mutex
+}
 
 var(
 	dispatchWL Whitelist
 	dispatchWLOnce sync.Once
-	dispatchWLMux sync.Mutex
+	developerWL Whitelist
+	developerWLOnce sync.Once
 )
 
 func GetDispatchWhitelist() Whitelist{
 	dispatchWLOnce.Do(func() {
-		dispatchWL = make(map[string]struct{})
+		dispatchWL.list = make(map[string]struct{})
 	})
 	return dispatchWL
 }
 
+func GetDeveloperWhiteList() Whitelist{
+	developerWLOnce.Do(func() {
+		developerWL.list = make(map[string]struct{})
+	})
+	return developerWL
+}
+
 func (w Whitelist) Contains(s string) bool{
-	dispatchWLMux.Lock()
-	defer dispatchWLMux.Unlock()
-	_,ok := w[s]; return ok
+	w.mux.Lock()
+	defer w.mux.Unlock()
+	_,ok := w.list[s]; return ok
 }
 
 func (w Whitelist) Delete(s string){
-	dispatchWLMux.Lock()
-	defer dispatchWLMux.Unlock()
-	delete(w,s)
+	w.mux.Lock()
+	defer w.mux.Unlock()
+	delete(w.list,s)
 }
 
 func (w Whitelist) Add (s string){
-	dispatchWLMux.Lock()
-	defer dispatchWLMux.Unlock()
-	w[s]= struct{}{}
+	w.mux.Lock()
+	defer w.mux.Unlock()
+	w.list[s]= struct{}{}
 }
 
 func (w Whitelist) AddMulti(list []string) {
@@ -48,24 +59,32 @@ func (w Whitelist) AddMulti(list []string) {
 }
 
 func (w Whitelist) Size() int {
-	dispatchWLMux.Lock()
-	defer dispatchWLMux.Unlock()
-	return len(w)
+	w.mux.Lock()
+	defer w.mux.Unlock()
+	return len(w.list)
 }
 
-func WhitelistFromFile() error{
-	plan, err := ioutil.ReadFile(config.GetConfigInstance().Whitelist)
+func DispatchWLFromFile() error{
+	return GetDispatchWhitelist().whiteListFromFile(config.GetConfigInstance().DeveloperWL)
+}
+
+func DeveloperWLFromFile() error{
+	return GetDeveloperWhiteList().whiteListFromFile(config.GetConfigInstance().ServiceNodeWL)
+}
+
+func (w Whitelist) whiteListFromFile(filePath string) error {
+	f, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
 	var data []string
-	err = json.Unmarshal(plan, &data)
+	err = json.Unmarshal(f, &data)
 	if err != nil {
 		fmt.Println(err.Error())
 		return err
 	}
-	GetDispatchWhitelist().AddMulti(data)
-	fmt.Println(GetDispatchWhitelist())
+	w.AddMulti(data)
+	fmt.Println(w)
 	return nil
 }

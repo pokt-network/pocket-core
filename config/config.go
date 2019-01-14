@@ -22,7 +22,8 @@ type config struct {
 	Relayrpcport   	string `json:"RRPCPORT"`     	// This variable holds the relay rpc port string.
 	ChainsFilepath 	string `json:"HOSTEDCHAINS"` 	// This variable holds the filepath to the chains.json
 	PeerFile       	string `json:"PEERFILE"`     	// This variable holds the filepath to the peerFile.json
-	Whitelist	   string `json:"WHITELIST"`	// This variable holds the filepath to the whitelist.json
+	ServiceNodeWL  string `json:"SNWL"`    			// This variable holds the filepath to the service_whitelist.json
+	DeveloperWL  string 	`json:"DWL"`    			// This variable holds the filepath to the developer_whitelist.json
 }
 
 var (
@@ -42,8 +43,10 @@ var (
 	hostedChains = flag.String("hostedchains", _const.CHAINSFILENAME, "specifies the filepath for hosted chains")
 	// A string variable derived from flags, that specifies the filepath for peerFile.json
 	peerFile = flag.String("peerFile", _const.PEERFILENAME, "specifies the filepath for peers.json")
-	// A string variable derived from flags, that specifies the fielpath for whitelist.json
-	whitelistFIle = flag.String("whitelist", _const.WHITELISTFILENAME, "specifies the filepath for whitelist.json")
+	// A string variable derived from flags, that specifies the fielpath for serivce_whitelist.json
+	snwl = flag.String("snwl", _const.SNWLFILENAME, "specifies the filepath for service_whitelist.json")
+	// A string variable derived from flags, that specifies the fielpath for developer_whitelist.json
+	dwl = flag.String("dwl", _const.DWLFILENAME, "specifies the filepath for developer_whitelist.json")
 )
 
 func InitializeConfiguration() {
@@ -66,7 +69,8 @@ func newConfiguration() {
 		*relayRpcport,   	// the port the relay rpc is running.
 		*hostedChains,		// the filepath for the chains.json
 		*peerFile,				// the filepath of the peers.json
-		*whitelistFIle}       	// the filepath of the whitelist.json
+		*snwl,				// the filepath of the service_whitelist.json
+		*dwl} // the filepath of the developer_whitelist.json
 }
 
 /*
