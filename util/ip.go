@@ -22,5 +22,6 @@ func GetIPAdress() (string, error) { // TODO wonering if there is a cleaner way 
   if err != nil {
     return ",", err
   }
+  fmt.Println(string(ip))
   return string(ip), nil
 }
