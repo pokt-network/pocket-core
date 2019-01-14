@@ -17,10 +17,12 @@ import (
 Unit test for the relay functionality
 */
 func TestRelay(t *testing.T) {
+	node.GetDeveloperWhiteList().Add("DEVID1")
 	// grab the hosted chains via file
 	if err := node.HostedChainsFile(config.GetConfigInstance().ChainsFilepath); err != nil {
 		t.Fatalf(err.Error())
 	}
+	node.TestForHostedChains()
 	fmt.Println(node.GetHostedChains())
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
@@ -36,6 +38,8 @@ func TestRelay(t *testing.T) {
 	r.Version = "1.0"
 	// add data value
 	r.Data = "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}"
+	// add developer id
+	r.DevID = "DEVID1"
 	// convert structure to json
 	j, err := json.Marshal(r)
 	// handle error

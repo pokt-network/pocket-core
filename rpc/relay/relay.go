@@ -9,6 +9,7 @@ import (
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/plugin/rpc-plugin"
 	"github.com/pokt-network/pocket-core/rpc/shared"
+	"fmt"
 	"net/http"
 	"os"
 )
@@ -28,6 +29,11 @@ func RelayOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 func RelayRead(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	relay := &Relay{}                               // create empty relay structure
 	shared.PopulateModelFromParams(w, r, ps, relay) // populate the relay struct from params //TODO handle error for populate model from params (in all cases within codebase!)
+	if !node.GetDeveloperWhiteList().Contains(relay.DevID){
+		fmt.Println("Developer ", relay.DevID, "rejected because the developer ID is not within whitelist")
+		shared.WriteResponse(w, "Invalid Credentials")
+		return
+	}
 	response, err := RouteRelay(*relay)             // route the relay to the correct chain
 	if err != nil {
 		// TODO handle error
