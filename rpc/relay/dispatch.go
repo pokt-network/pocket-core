@@ -37,7 +37,7 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 		ips := make([]string,0)
 		nodes := node.GetPeersByBlockchain(blockchain)
 		for _,n:= range nodes {
-			ips=append(ips, n.IP)
+			ips=append(ips, n.IP+":"+n.RelayPort)
 		}
 		result[strings.ToUpper(blockchain.Name)+"V"+blockchain.Version+" | NetID "+blockchain.NetID]=ips
 	}
