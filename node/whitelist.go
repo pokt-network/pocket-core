@@ -15,22 +15,28 @@ type Whitelist struct{
 
 var(
 	dispatchWL Whitelist
-	dispatchWLOnce sync.Once
 	developerWL Whitelist
-	developerWLOnce sync.Once
+	wlOnce sync.Once
 )
 
-func GetDispatchWhitelist() Whitelist{
-	dispatchWLOnce.Do(func() {
+func WhiteListInit(){
+	wlOnce.Do(func(){
 		dispatchWL.list = make(map[string]struct{})
+		developerWL.list = make(map[string]struct{})
 	})
+}
+
+func GetDispatchWhitelist() Whitelist{
+	if dispatchWL.list == nil {		// just in case
+		WhiteListInit()
+	}
 	return dispatchWL
 }
 
 func GetDeveloperWhiteList() Whitelist{
-	developerWLOnce.Do(func() {
-		developerWL.list = make(map[string]struct{})
-	})
+	if developerWL.list == nil {	// just in case
+		WhiteListInit()
+	}
 	return developerWL
 }
 
