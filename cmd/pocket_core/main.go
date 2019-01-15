@@ -61,6 +61,7 @@ func sendExitMessage() {
 }
 
 func whiteListsFromFile(){
+	node.WhiteListInit()
 	if err := node.DispatchWLFromFile(); err != nil {
 		// TODO handle error
 	}
