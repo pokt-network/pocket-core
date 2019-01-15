@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/rpc/shared"
 	"io/ioutil"
+	"net/http"
 	"sync"
 )
 
@@ -93,4 +95,13 @@ func (w Whitelist) whiteListFromFile(filePath string) error {
 	w.AddMulti(data)
 	fmt.Println(w)
 	return nil
+}
+
+func EnsureWL(whiteList Whitelist, query string, w ...http.ResponseWriter) bool{
+	if !whiteList.Contains(query){
+		fmt.Println("Developer ", query, "rejected because it is not within whitelist")
+		shared.WriteResponse(w[0], "Invalid Credentials")
+		return false
+	}
+	return true
 }
