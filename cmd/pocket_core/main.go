@@ -52,16 +52,17 @@ func chainsFromFile(){
 "startClient" Starts the client with the given initial configuration.
 */
 func startClient() {
-	config.InitializeConfiguration()                                  // initializes the configuration from flags and defaults.
-	config.BuildConfiguration()                                       // builds the proper structure on pc for core client to operate.
-	config.PrintConfiguration()                                       // print the configuration the the cmd.
-	peersFromFile()                                                   // check for manual peers
-	node.GetPeerList().AddPeersToDispatchStructure()                  // add peers to dispatch structure
-	chainsFromFile()                                                  // check for chains.json file
-	logs.NewLog("Started client", logs.InfoLevel, logs.JSONLogFormat) // log start message
-	rpc.StartAPIServers()                                             // runs the server endpoints for client and relay api.
-	message.RunMessageServers()                                       // runs servers for messages
-	fmt.Print("Press any key + 'Return' to quit: ")                   // prompt user to exit
-	input := bufio.NewScanner(os.Stdin)                               // unnecessary temporary entry
-	input.Scan()                                                      // wait
+	config.InitializeConfiguration()                                			// initializes the configuration from flags and defaults.
+	config.BuildConfiguration()                                     			// builds the proper structure on pc for core client to operate.
+	config.PrintConfiguration()                                     			// print the configuration the the cmd.
+	peersFromFile()                                                   	  // check for manual peers
+	node.GetPeerList().AddPeersToDispatchStructure()							        // add peers to dispatch structure
+	chainsFromFile()															                        // check for chains.json file
+	node.TestForHostedChains()                                            // check for hosted chains
+	logs.NewLog("Started client", logs.InfoLevel, logs.JSONLogFormat) 	  // log start message
+	rpc.StartAPIServers()                                           			// runs the server endpoints for client and relay api.
+	message.RunMessageServers()													                  // runs servers for messages
+	fmt.Print("Press any key + 'Return' to quit: ")                 			// prompt user to exit
+	input := bufio.NewScanner(os.Stdin)                             			// unnecessary temporary entry
+	input.Scan()                                                    			// wait
 }
