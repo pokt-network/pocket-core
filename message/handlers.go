@@ -3,7 +3,6 @@ package message
 import (
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/session"
-	"fmt"
 	"net"
 	"sync"
 )
@@ -35,15 +34,12 @@ func newSessionMessageHandler(message *Message) {
 func enterNetworkMessage(message *Message){
 	// get node
 	n := message.Payload.Data.(EnterNetworkPayload)
-	// Cross reference white list
-	if !node.GetDispatchWhitelist().Contains(n.GID){
-		fmt.Println("Node: ", n.GID, " rejected because it is not within service_whitelist.json")
-		return
+	if node.EnsureWL(node.GetDispatchWhitelist(), n.GID) {
+		// add to peerlist
+		node.GetPeerList().AddPeer(n.Node)
+		// add to dispatch peers
+		node.NewDispatchPeer(n.Node)
 	}
-	// add to peerlist
-	node.GetPeerList().AddPeer(n.Node)
-	// add to dispatch peers
-	node.NewDispatchPeer(n.Node)
 }
 
 //NOTE: this is for pocket core mvp centralized dispatcher

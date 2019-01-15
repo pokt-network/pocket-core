@@ -33,27 +33,22 @@ func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	dispatch := &Dispatch{}
 	result := make(map[string][]string)
 	shared.PopulateModelFromParams(w, r, ps, dispatch)
-	// cross check the WL
-	if !node.GetDeveloperWhiteList().Contains(dispatch.DevID){
-		fmt.Println("Developer ",dispatch.DevID, "rejected because the developer ID is not within whitelist")
-		shared.WriteResponse(w, "Invalid Credentials")
-		return
-	}
-	// if is within the white list
-	for _, blockchain := range dispatch.Blockchains {
-		ips := make([]string,0)
-		nodes := node.GetPeersByBlockchain(blockchain)
-		for _,n:= range nodes {
-			ips=append(ips, n.IP+":"+n.RelayPort)
+	if node.EnsureWL(node.GetDeveloperWhiteList(), dispatch.DevID, w) {
+		for _, blockchain := range dispatch.Blockchains {
+			ips := make([]string,0)
+			nodes := node.GetPeersByBlockchain(blockchain)
+			for _,n:= range nodes {
+				ips=append(ips, n.IP+":"+n.RelayPort)
+			}
+			result[strings.ToUpper(blockchain.Name)+"V"+blockchain.Version+" | NetID "+blockchain.NetID]=ips
 		}
-		result[strings.ToUpper(blockchain.Name)+"V"+blockchain.Version+" | NetID "+blockchain.NetID]=ips
+		res, err := json.MarshalIndent(result,"","  ")
+		if err != nil {
+			fmt.Println(err)
+			logs.NewLog("Couldn't convert node array to json array: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		}
+		shared.WriteRawJSONResponse(w, res)
 	}
-	res, err := json.MarshalIndent(result,"","  ")
-	if err != nil {
-		fmt.Println(err)
-		logs.NewLog("Couldn't convert node array to json array: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
-	}
-	shared.WriteRawJSONResponse(w, res)
 }
 
 /*
