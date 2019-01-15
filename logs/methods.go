@@ -2,60 +2,75 @@
 package logs
 
 import (
-	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/const"
-	"github.com/pokt-network/pocket-core/util"
-	"github.com/sirupsen/logrus"
 	"os"
+	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/const"
+	"github.com/sirupsen/logrus"
 )
 
 // "methods.go" describes custom logging functions.
+
+// "Caller" returns the caller of the function that called it
+func caller() (*runtime.Frame) {
+	fpcs := make([]uintptr, 1)    // make a slice of unsigned integers
+	n := runtime.Callers(3, fpcs) // skip 3 to get the original function call
+	if n == 0 {
+		return nil // return nil pointer if error (can't custom log)
+	}
+	info, err := runtime.CallersFrames(fpcs).Next() // get the information by calling callersframes on fpcs
+	if err {
+		return nil // handle error
+	}
+	return &info // return frame pointer
+}
 
 /*
 "NewLog" creates a custom log and calls the logger function.
 */
 func NewLog(message string, level LogLevel, format LogFormat) {
-	currentTime := time.Now() 									// get current time
-	frame := util.Caller()    									// get the caller from util
-	if frame == nil {         									// if the frame returned nil
-		panic("Frame from new log was nil") 					// panic and print
+	currentTime := time.Now() // get current time
+	frame := caller()         // get the caller from util
+	if frame == nil { // if the frame returned nil
+		panic("Frame from new log was nil") // panic and print
 	}
-	log := &Log{}                                        		// create a new log structure
+	log := &Log{}                                        // create a new log structure
 	log.Name = currentTime.Format("2006-01-02T15-04-05") // set the current time in the specified format
-	log.FunctionName = frame.Func.Name()                 		// set the name of the function
-	log.FilePath = frame.File                            		// set thee path of the file
-	log.Lev = level                                      		// set the level
-	log.Fmt = format                                     		// set the format of the log (json)
-	log.LineNumber = strconv.Itoa(frame.Line)            		// set the line number
-	log.Message = message                                		// set the message
-	Logger(*log)                                         		// call the logger function to write to file
+	log.FunctionName = frame.Func.Name()                 // set the name of the function
+	log.FilePath = frame.File                            // set thee path of the file
+	log.Lev = level                                      // set the level
+	log.Fmt = format                                     // set the format of the log (json)
+	log.LineNumber = strconv.Itoa(frame.Line)            // set the line number
+	log.Message = message                                // set the message
+	Logger(*log)                                         // call the logger function to write to file
 }
 
 /*
 "Logger" prints the log to data directory
 */
 func Logger(l Log) {
-	f, err := os.OpenFile(config.GetConfigInstance().Datadir+ 	// open/create the new log file
+	f, err := os.OpenFile(config.GetConfigInstance().Datadir+ // open/create the new log file
 		_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+
 		l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
-	if err != nil { 											// if there is an error then handle
+	if err != nil { // if there is an error then handle
 		logrus.Fatal(err)
 	}
-	defer f.Close()                   							// close the file once the function finishes
-	logrus.SetFormatter(l.Fmt.format) 							// set the format from the log
-	logrus.SetOutput(f)               							// set the output file
-	lg := logrus.WithFields(          							// set custom fields
+	defer f.Close()                   // close the file once the function finishes
+	logrus.SetFormatter(l.Fmt.format) // set the format from the log
+	logrus.SetOutput(f)               // set the output file
+	lg := logrus.WithFields( // set custom fields
 		logrus.Fields{
-			"FilePath":     l.FilePath,     					// the path of the file the log was called from
-			"LineNumber":   l.LineNumber,   					// the line number of the file the log was called from
-			"FunctionName": l.FunctionName, 					// the function name of the file the log was called
+			"FilePath":     l.FilePath,     // the path of the file the log was called from
+			"LineNumber":   l.LineNumber,   // the line number of the file the log was called from
+			"FunctionName": l.FunctionName, // the function name of the file the log was called
 		})
 
-	switch l.Lev.level { 										// switch statement for the logging levels
-	case logrus.InfoLevel: 										// this is necessary to ensure the logrus dependency
-		lg.Info(l.Message) 										// exists within the logs package only.
+	switch l.Lev.level { // switch statement for the logging levels
+	case logrus.InfoLevel: // this is necessary to ensure the logrus dependency
+		lg.Info(l.Message) // exists within the logs package only.
 	case logrus.DebugLevel:
 		lg.Debug(l.Message)
 	case logrus.FatalLevel:
