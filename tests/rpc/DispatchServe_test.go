@@ -41,7 +41,8 @@ func TestDispatchServe(t *testing.T) {
 	node.NewDispatchPeer(node1)
 	node.NewDispatchPeer(node2)
 	node.NewDispatchPeer(node3)
-	// get node lists
+	// add foo to the whitelist
+	node.GetDeveloperWhiteList().Add("foo")
 	// json call string for dispatch serve
 	requestJSON :=[]byte("{\"DevID\": \"foo\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
 	// start relay server
@@ -64,6 +65,7 @@ func TestDispatchServe(t *testing.T) {
 	// Deferred: close the body of the response
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
 	var result map[string][]string
 	err = json.Unmarshal(body, &result)
 	if err != nil {

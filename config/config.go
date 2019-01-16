@@ -29,7 +29,7 @@ type config struct {
 var (
 	instance *config
 	once     sync.Once
-	gid = flag.String("gid","0", "set the selfNode.GID for pocket core mvp")
+	gid = flag.String("gid","GID1", "set the selfNode.GID for pocket core mvp")
 	datadir  = flag.String("datadir", _const.DATADIR, "setup the data directory for the DB and keystore")
 	// A boolean variable derived from flags, that describes whether or not to print the version of the client.
 	clientRpc = flag.Bool("clientrpc", false, "whether or not to start the rpc server")

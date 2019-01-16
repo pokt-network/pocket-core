@@ -99,8 +99,10 @@ func (w Whitelist) whiteListFromFile(filePath string) error {
 
 func EnsureWL(whiteList Whitelist, query string, w ...http.ResponseWriter) bool{
 	if !whiteList.Contains(query){
-		fmt.Println("Developer ", query, "rejected because it is not within whitelist")
-		shared.WriteResponse(w[0], "Invalid Credentials")
+		fmt.Println("Node: ", query, "rejected because it is not within whitelist")
+		if len(w)!=0 {
+			shared.WriteResponse(w[0], "Invalid Credentials")
+		}
 		return false
 	}
 	return true
