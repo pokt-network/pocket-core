@@ -1,95 +1,112 @@
 package node
 
 import (
-  "fmt"
-  "net/http"
-  "sync"
+	"fmt"
+	"net/http"
+	"sync"
 )
 
-// This file holds a global structure used for dispatching
-// NOTE: currently this is developed for PC MVP Shift and may be phased out depending on performance and need
+// DISCLAIMER: the code below is for pocket core mvp centralized dispatcher
+// may remove for production
+
+type DispatchPeers struct {
+	Map map[Blockchain]map[string]Node // <BlockchainOBJ><GID><Node>
+	sync.Mutex
+}
 
 var (
-  dispatchPeers map[Blockchain]map[string]Node // <BlockchainOBJ><GID><Node>
-  m             sync.Mutex
-  one           sync.Once
+	dp  *DispatchPeers
+	one sync.Once
 )
 
-func getDispatchPeers() map[Blockchain]map[string]Node {
-  one.Do(func() {
-    dispatchPeers = make(map[Blockchain]map[string]Node)
-  })
-  return dispatchPeers
+// "GetDispatchPeers" gets Map structure.
+func GetDispatchPeers() *DispatchPeers {
+	one.Do(func() {
+		dp = &DispatchPeers{Map: make(map[Blockchain]map[string]Node)}
+	})
+	return dp
 }
 
-func NewDispatchPeer(newNode Node) {
-  m.Lock()
-  defer m.Unlock()
-  dispatchPeers := getDispatchPeers()
-  for _, blockchain := range newNode.Blockchains {
-    nodes := dispatchPeers[blockchain] // type map[GID]Node
-    if nodes == nil { // blockchain not within list
-      dispatchPeers[blockchain] = map[string]Node{newNode.GID: newNode} // add new node to empty map
-    } else { // blockchain is within list
-      nodes[newNode.GID] = newNode      // add node to inner map
-      dispatchPeers[blockchain] = nodes // update outer map
-    }
-  }
+// "Add" adds a peer to the dispatchPeers structure
+func (dp *DispatchPeers) Add(n Node) {
+	dp.Lock()
+	defer dp.Unlock()
+	for _, bchain := range n.Blockchains {
+		// type map[GID]Node
+		nodes := dp.Map[bchain]
+		// if bchain not within Map
+		if nodes == nil {
+			// add new node to empty map
+			dp.Map[bchain] = map[string]Node{n.GID: n}
+			continue
+		}
+		// add node to inner map
+		nodes[n.GID] = n
+		// update outer map
+		dp.Map[bchain] = nodes
+	}
 }
 
-func getPeersByBlockchain(blockchain Blockchain) map[string]Node {
-  return getDispatchPeers()[blockchain]
+// "getPeers" returns a map of peers by blockchain.
+func getPeers(dp DispatchPeers, bc Blockchain) map[string]Node {
+	return dp.Map[bc]
 }
 
-func GetPeersByBlockchain(blockchain Blockchain) map[string]Node {
-  m.Lock()
-  defer m.Unlock()
-  return getPeersByBlockchain(blockchain)
+// "GetPeers" returns a map of peers by blockchain.
+func (dp DispatchPeers) GetPeers(bc Blockchain) map[string]Node {
+	dp.Lock()
+	defer dp.Unlock()
+	return getPeers(dp, bc)
 }
 
-func DeleteDispatchPeer(delNode Node) {
-  m.Lock()
-  defer m.Unlock()
-  for _, blockchain := range delNode.Blockchains {
-    delete(getPeersByBlockchain(blockchain), delNode.GID) // delete node from map via GID
-  }
+// "Delete" deletes a peer from DispatchPeers.
+func (dp *DispatchPeers) Delete(n Node) {
+	dp.Lock()
+	defer dp.Unlock()
+	for _, chain := range n.Blockchains {
+		delete(getPeers(*dp, chain), n.GID) // delete node from map via GID
+	}
 }
 
-func PrintDispatchPeers() {
-  m.Lock()
-  defer m.Unlock()
-  for blockchain, nodeMap := range getDispatchPeers() {
-    fmt.Println(blockchain.Name, "Version:", blockchain.Version, "NetID:", blockchain.NetID)
-    fmt.Println("  GID's:")
-    for gid, _ := range nodeMap {
-      fmt.Println("   ", gid)
-    }
-    fmt.Println("")
-  }
+// "Print" outputs the dispatchPeer structure to the CLI
+func (dp *DispatchPeers) Print() {
+	dp.Lock()
+	defer dp.Unlock()
+	// [blockchain]Map of nodes
+	for bc, nMap := range dp.Map {
+		fmt.Println(bc.Name, "Version:", bc.Version, "NetID:", bc.NetID)
+		fmt.Println("  GID's:")
+		// GID in Map
+		for gid := range nMap {
+			fmt.Println("   ", gid)
+		}
+		fmt.Println("")
+	}
 }
 
-func DispatchLivenessCheck(){
-  pl := GetPeerList()
-  for _,peer := range pl.List{
-    if !isAlive(peer){
-      if !isAlive(peer){
-        pl.RemovePeer(peer)
-        DeleteDispatchPeer(peer)
-      }
-    }
-  }
+// "Check" checks each service node's liveness.
+func (dp *DispatchPeers) Check() {
+	pl := GetPeerList()
+	for _, p := range pl.Map {
+		if !isAlive(p) {
+			// try again
+			if !isAlive(p) {
+				pl.Remove(p)
+				dp.Delete(p)
+			}
+		}
+	}
 }
 
-func isAlive(peer Node) bool{ // TODO handle scenarios where the error is on the dispatch node side
-  if resp,err:= liveCheck(peer); err!=nil || resp==nil || resp.StatusCode != http.StatusOK {
-    fmt.Println("Failed Liveness Check")
-    return false
-  }
-  fmt.Println("Successful liveness check")
-  return true
+// "isAlive" checks a node and returns the status of that check.
+func isAlive(n Node) bool { // TODO handle scenarios where the error is on the dispatch node side
+	if resp, err := check(n); err != nil || resp == nil || resp.StatusCode != http.StatusOK {
+		return false
+	}
+	return true
 }
 
-func liveCheck(peer Node) (*http.Response, error){
-  u := "http://"+peer.IP+":"+peer.RelayPort+"/v1/"
-  return http.Get(u)
+// "check" tests a node by doing an HTTP GET to API.
+func check(n Node) (*http.Response, error) {
+	return http.Get("http://" + n.IP + ":" + n.RelayPort + "/v1/")
 }

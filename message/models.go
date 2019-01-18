@@ -1,21 +1,9 @@
-// This package is all message related code
 package message
 
 import (
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/session"
 )
-
-// "models.go" holds all of the structures for the message package
-
-/*
-NOTE: 	The ideology here in design is to maintain a simple message structure while swapping out the payload.
-
-		For example: A message would have a payload (int) ID that would identify the proper
-		decoding structure for the payload
-
-		This is a WIP design, but for MVP it seems like the way to go
-*/
 
 // Payload is the 'meat' of the message
 type Payload struct {
@@ -31,19 +19,18 @@ type Message struct {
 	Payload Payload `json:"payload"`
 }
 
-type NewSessionPayload struct {
+type SessionPL struct {
 	DevID string                `json:"devid"` // the devID of the session
 	Peers []session.SessionPeer `json:"peers"` // the list of peers
 }
 
-//NOTE: this is for pocket core mvp centralized dispatcher
+// DISCLAIMER: the code below is for pocket core mvp centralized dispatcher
 // may remove for production
-type ExitNetworkPayload struct {
+
+type ExitPL struct {
 	node.Node `json:"node"`
 }
 
-//NOTE: this is for pocket core mvp centralized dispatcher
-// may remove for production
-type EnterNetworkPayload struct {
+type EnterPL struct {
 	node.Node `json:"node"`
 }

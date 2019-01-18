@@ -15,13 +15,13 @@ import (
 )
 
 func TestReport(t *testing.T) {
-	report := relay.Report{GID:"test", Message:"foo"}
+	report := relay.Report{GID: "test", Message: "foo"}
 	// Start server instance
-	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
+	go http.ListenAndServe(":"+config.GetInstance().RRPCPort, shared.NewRouter(relay.Routes()))
 	// @ Url
-	u := "http://localhost:" + config.GetConfigInstance().Relayrpcport + "/v1/report"
+	u := "http://localhost:" + config.GetInstance().RRPCPort + "/v1/report"
 	j, err := json.Marshal(report)
-	if err!=nil {
+	if err != nil {
 		t.Fatalf(err.Error())
 	}
 	req, err := http.NewRequest("POST", u, bytes.NewBuffer(j))
@@ -41,14 +41,14 @@ func TestReport(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to unmarshal response: " + err.Error())
 	}
-	expectedBody:="\"Okay! The node has been successfully reported to our servers and will be reviewed! Thank you!\""
-	fmt.Println("Expected Body:",expectedBody)
+	expectedBody := "\"Okay! The node has been successfully reported to our servers and will be reviewed! Thank you!\""
+	fmt.Println("Expected Body:", expectedBody)
 	fmt.Println("Received Body", string(body))
-	if expectedBody!=string(body) {
+	if expectedBody != string(body) {
 		log.Fatalf("Body is not as expected")
 	}
 	t.Log(string(body))
-	b, err:= ioutil.ReadFile(_const.REPORTFILENAME)
+	b, err := ioutil.ReadFile(_const.REPORTFILENAME)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

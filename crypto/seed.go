@@ -6,11 +6,7 @@ import (
 	"time"
 )
 
-// "seed.go" holds cryptographic seed generation.
-
-/*
-"GenerateSeed" creates the random seed from nanosecond.
-*/
+// "GenerateSeed" creates the random seed from nanosecond.
 func GenerateSeed() {
-	rand.Seed(time.Now().UTC().UnixNano()) // used for random generators.
+	rand.Seed(time.Now().UTC().UnixNano())
 }

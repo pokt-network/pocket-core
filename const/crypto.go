@@ -1,10 +1,9 @@
-// This package holds global constants.
 package _const
 
 import "crypto"
 
-// "crypto.go" contains constants that are useful for the crypto package.
-
+// TODO will change SHA to algorithm decided on by core team
 const (
-	SessionHashingAlgorithm = crypto.SHA1 // defines the session hashing algorithm
+	// defines the session hashing algorithm
+	SESSALGO = crypto.SHA1
 )

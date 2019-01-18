@@ -1,137 +1,136 @@
-// This package is all message related code
+// This package defines p2p messaging between nodes.
 package message
 
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
-	"github.com/pokt-network/pocket-core/const"
-	"github.com/pokt-network/pocket-core/logs"
 	"net"
 	"sync"
+
+	"github.com/pokt-network/pocket-core/logs"
 )
 
-/***********************************************************************************************************************
-Connection types
- */
 type MSGTYPE int
-
-var (
-	serverMUX sync.Mutex
-	clientMUX sync.Mutex
-)
 
 const (
 	BLOCKCHAIN MSGTYPE = iota + 1
 	RELAY
 )
 
-/***********************************************************************************************************************
-Exported Calls
- */
+var (
+	server sync.Mutex
+	client sync.Mutex
+)
+
+// "SendMessage" sends a message struct over the wire.
 func SendMessage(msgtype MSGTYPE, message Message, ip string, registrants ...interface{}) error {
 	var port string
-	for _,r := range registrants {
+	for _, r := range registrants {
 		gob.Register(r)
 	}
 	switch msgtype {
 	case BLOCKCHAIN:
-		port = _const.BCMSGPORT
+		port = BCMSGPORT
 	case RELAY:
-		port = _const.RMSGPORT
+		port = RMSGPORT
 	}
-	addr, err := net.ResolveUDPAddr(_const.MSGCONNTYPE, ip+":"+port)
+	addr, err := net.ResolveUDPAddr(UDP, ip+":"+port)
 	if err != nil {
 		return err
 	}
 	return dial(message, addr, registrants)
 }
 
-func RunMessageServers() {
-	go runBCMSGServer()
-	go runRelayMSGServer()
+// "StartServers" starts the blockchain and relay servers.
+func StartServers() {
+	go bmsgServer()
+	go rmsgServer()
 }
 
-/***********************************************************************************************************************
-Server
- */
-
-func runRelayMSGServer() { // TODO handle error
-	if err := listen(_const.RMSGPORT); err != nil {
+// "rmsgServer" runs the relay messaging server.
+func rmsgServer() { // TODO handle error
+	if err := listen(RMSGPORT); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 }
 
-func runBCMSGServer() { // TODO handle error
-	if err := listen(_const.BCMSGPORT); err != nil {
+// "runBCMSGserver" runs the blockchain messaging server.
+func bmsgServer() { // TODO handle error
+	if err := listen(BCMSGPORT); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 }
 
+// "listen" starts a server on a specific port.
 func listen(port string) error {
-	serverAddr, err := net.ResolveUDPAddr(_const.MSGCONNTYPE, _const.MSGHOST+":"+port)
+	// get the local udp address
+	serverAddr, err := net.ResolveUDPAddr(UDP, MSGHOST+":"+port)
 	if err != nil {
 		return err
 	}
-	serverConn, err := net.ListenUDP(_const.MSGCONNTYPE, serverAddr)
+	// start listening locally
+	conn, err := net.ListenUDP(UDP, serverAddr)
 	if err != nil {
 		return err
 	}
-	defer serverConn.Close()
-	buf := make([]byte, 1024) // create a gob decoder object
+	defer conn.Close()
+	buf := make([]byte, 1024)
 	for {
-		if err = receive(serverConn, buf); err != nil {
-			return err
+		if err = receive(conn, buf); err != nil {
+			logs.NewLog("Receive errored out "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		}
 	}
 	return nil
 }
 
+// "receive" handles incoming messages accordingly.
 func receive(conn *net.UDPConn, buf []byte) error {
-	serverMUX.Lock()
-	defer serverMUX.Unlock()
+	// TODO is this mux necessary?
+	server.Lock()
+	defer server.Unlock()
 	n, addr, err := conn.ReadFromUDP(buf)
 	if err != nil {
 		return err
 	}
 	m := new(Message)
+	// use gob to decode the message struct
 	if err := gob.NewDecoder(bytes.NewReader(buf[:n])).Decode(m); err != nil {
 		return err
 	}
-	HandleMessage(m, addr)
+	HandleMSG(m, addr)
 	return nil
 }
 
-/***********************************************************************************************************************
-Client
- */
-
+// "dial" initializes a connection.
 func dial(message Message, ip *net.UDPAddr, registrants ...interface{}) error {
-	localAddr, err := net.ResolveUDPAddr("udp", "localhost"+":"+"0")
+	// port shouldn't matter because of constant messaging ports throughtout
+	localAddr, err := net.ResolveUDPAddr(UDP, MSGHOST+":0")
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
-	conn, err := net.DialUDP("udp", localAddr, ip)
+	conn, err := net.DialUDP(UDP, localAddr, ip)
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
 	defer conn.Close()
 	return send(conn, message, registrants)
 }
 
+// "send" sends a message over the udp connection
 func send(conn *net.UDPConn, message Message, registrants ...interface{}) error {
-	clientMUX.Lock()
-	defer clientMUX.Unlock()
+	client.Lock()
+	defer client.Unlock()
 	var buf bytes.Buffer
 	for r := range registrants {
 		gob.Register(r)
 	}
+	// use gob to encode a new message structure
 	if err := gob.NewEncoder(&buf).Encode(message); err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
 	_, err := conn.Write(buf.Bytes())
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
 	return nil
 }

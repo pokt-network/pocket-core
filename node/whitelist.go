@@ -3,84 +3,95 @@ package node
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/rpc/shared"
 	"io/ioutil"
-	"net/http"
 	"sync"
+
+	"github.com/pokt-network/pocket-core/config"
 )
 
-type Whitelist struct{
-	list map[string]struct{}
+type Whitelist struct {
+	Map map[string]struct{}
 	mux sync.Mutex
 }
 
-var(
-	dispatchWL Whitelist
-	developerWL Whitelist
+var (
+	SNWL   Whitelist
+	DWL    Whitelist
 	wlOnce sync.Once
 )
 
-func WhiteListInit(){
-	wlOnce.Do(func(){
-		dispatchWL.list = make(map[string]struct{})
-		developerWL.list = make(map[string]struct{})
+// "WhiteListInit()" initializes both whitelist structures.
+func WhiteListInit() {
+	wlOnce.Do(func() {
+		SNWL.Map = make(map[string]struct{})
+		DWL.Map = make(map[string]struct{})
 	})
 }
 
-func GetDispatchWhitelist() Whitelist{
-	if dispatchWL.list == nil {		// just in case
+// "GetSWL" returns service node white list.
+func GetSWL() Whitelist {
+	if SNWL.Map == nil { // just in case
 		WhiteListInit()
 	}
-	return dispatchWL
+	return SNWL
 }
 
-func GetDeveloperWhiteList() Whitelist{
-	if developerWL.list == nil {	// just in case
+// "GetDWL" returns developer.
+func GetDWL() Whitelist {
+	if DWL.Map == nil { // just in case
 		WhiteListInit()
 	}
-	return developerWL
+	return DWL
 }
 
-func (w Whitelist) Contains(s string) bool{
+// "Contains" returns if within whitelist.
+func (w Whitelist) Contains(s string) bool {
 	w.mux.Lock()
 	defer w.mux.Unlock()
-	_,ok := w.list[s]; return ok
+	_, ok := w.Map[s]
+	return ok
 }
 
-func (w Whitelist) Delete(s string){
+// "Delete" removes item from whitelist.
+func (w Whitelist) Delete(s string) {
 	w.mux.Lock()
 	defer w.mux.Unlock()
-	delete(w.list,s)
+	delete(w.Map, s)
 }
 
-func (w Whitelist) Add (s string){
+// "Add" appends item to whitelist.
+func (w Whitelist) Add(s string) {
 	w.mux.Lock()
 	defer w.mux.Unlock()
-	w.list[s]= struct{}{}
+	w.Map[s] = struct{}{}
 }
 
+// "AddMulti" appends multiple items to whitelist
 func (w Whitelist) AddMulti(list []string) {
 	for _, v := range list {
 		w.Add(v)
 	}
 }
 
+// "Size" returns the length of the whitelist.
 func (w Whitelist) Size() int {
 	w.mux.Lock()
 	defer w.mux.Unlock()
-	return len(w.list)
+	return len(w.Map)
 }
 
-func DispatchWLFromFile() error{
-	return GetDispatchWhitelist().whiteListFromFile(config.GetConfigInstance().DeveloperWL)
+// "SWLFile" builds the service white list from a file.
+func SWLFile() error {
+	return GetSWL().wlFile(config.GetInstance().DWL)
 }
 
-func DeveloperWLFromFile() error{
-	return GetDeveloperWhiteList().whiteListFromFile(config.GetConfigInstance().ServiceNodeWL)
+// "DWLFile" builds the develoeprs white list from a file.
+func DWLFile() error {
+	return GetDWL().wlFile(config.GetInstance().SNWL)
 }
 
-func (w Whitelist) whiteListFromFile(filePath string) error {
+// "wlFile" builds a whitelist structure from a file.
+func (w Whitelist) wlFile(filePath string) error {
 	f, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -97,12 +108,10 @@ func (w Whitelist) whiteListFromFile(filePath string) error {
 	return nil
 }
 
-func EnsureWL(whiteList Whitelist, query string, w ...http.ResponseWriter) bool{
-	if !whiteList.Contains(query){
+// "EnsureWL" cross checks the whitelist for
+func EnsureWL(whiteList Whitelist, query string) bool {
+	if !whiteList.Contains(query) {
 		fmt.Println("Node: ", query, "rejected because it is not within whitelist")
-		if len(w)!=0 {
-			shared.WriteResponse(w[0], "Invalid Credentials")
-		}
 		return false
 	}
 	return true
