@@ -12,65 +12,69 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// "methods.go" describes custom logging functions.
-
 // "Caller" returns the caller of the function that called it
-func caller() (*runtime.Frame) {
-	fpcs := make([]uintptr, 1)    // make a slice of unsigned integers
-	n := runtime.Callers(3, fpcs) // skip 3 to get the original function call
+func caller() *runtime.Frame {
+	// make a slice of unsigned integers
+	fpcs := make([]uintptr, 1)
+	// skip 3 to get the original function call
+	n := runtime.Callers(3, fpcs)
 	if n == 0 {
-		return nil // return nil pointer if error (can't custom log)
+		return nil
 	}
-	info, err := runtime.CallersFrames(fpcs).Next() // get the information by calling callersframes on fpcs
+	// get the information by calling callersframes on fpcs
+	info, err := runtime.CallersFrames(fpcs).Next()
 	if err {
-		return nil // handle error
+		return nil
 	}
-	return &info // return frame pointer
+	return &info
 }
 
-/*
-"NewLog" creates a custom log and calls the logger function.
-*/
+// "NewLog" creates a custom log and calls the logger function.
 func NewLog(message string, level LogLevel, format LogFormat) {
-	currentTime := time.Now() // get current time
-	frame := caller()         // get the caller from util
-	if frame == nil { // if the frame returned nil
-		panic("Frame from new log was nil") // panic and print
+	currentTime := time.Now()
+	// get the caller from util
+	frame := caller()
+	if frame == nil {
+		panic("Frame from new log was nil")
 	}
-	log := &Log{}                                        // create a new log structure
-	log.Name = currentTime.Format("2006-01-02T15-04-05") // set the current time in the specified format
-	log.FunctionName = frame.Func.Name()                 // set the name of the function
-	log.FilePath = frame.File                            // set thee path of the file
-	log.Lev = level                                      // set the level
-	log.Fmt = format                                     // set the format of the log (json)
-	log.LineNumber = strconv.Itoa(frame.Line)            // set the line number
-	log.Message = message                                // set the message
-	Logger(*log)                                         // call the logger function to write to file
+	// create a new log structure
+	log := Log{}
+	log.Name = currentTime.Format("2006-01-02T15-04-05")
+	// set the name of the function
+	log.FunctionName = frame.Func.Name()
+	// set the path of the file
+	log.FilePath = frame.File
+	log.Lev = level
+	// json
+	log.Fmt = format
+	// set the line number
+	log.LineNumber = strconv.Itoa(frame.Line)
+	log.Message = message
+	if err := Logger(log); err != nil {
+		// TODO handle error
+	}
 }
 
-/*
-"Logger" prints the log to data directory
-*/
-func Logger(l Log) {
-	f, err := os.OpenFile(config.GetConfigInstance().Datadir+ // open/create the new log file
-		_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+
-		l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
-	if err != nil { // if there is an error then handle
-		logrus.Fatal(err)
+// "Logger" prints the log to data directory
+func Logger(l Log) error {
+	// open/create the new log file
+	f, err := os.OpenFile(config.GetInstance().DD+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	if err != nil {
+		return err
 	}
-	defer f.Close()                   // close the file once the function finishes
-	logrus.SetFormatter(l.Fmt.format) // set the format from the log
-	logrus.SetOutput(f)               // set the output file
-	lg := logrus.WithFields( // set custom fields
+	defer f.Close()
+	logrus.SetFormatter(l.Fmt.format)
+	logrus.SetOutput(f)
+	lg := logrus.WithFields(
 		logrus.Fields{
 			"FilePath":     l.FilePath,     // the path of the file the log was called from
 			"LineNumber":   l.LineNumber,   // the line number of the file the log was called from
 			"FunctionName": l.FunctionName, // the function name of the file the log was called
 		})
 
-	switch l.Lev.level { // switch statement for the logging levels
-	case logrus.InfoLevel: // this is necessary to ensure the logrus dependency
-		lg.Info(l.Message) // exists within the logs package only.
+	switch l.Lev.level {
+	case logrus.InfoLevel:
+		lg.Info(l.Message)
 	case logrus.DebugLevel:
 		lg.Debug(l.Message)
 	case logrus.FatalLevel:
@@ -86,4 +90,5 @@ func Logger(l Log) {
 	default:
 		lg.Info(l.Message)
 	}
+	return nil
 }

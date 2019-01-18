@@ -2,89 +2,66 @@
 package session
 
 import (
-	"github.com/pokt-network/pocket-core/logs"
 	"sync"
+
+	"github.com/pokt-network/pocket-core/logs"
 )
 
-// "session.go" specifies the session structure, methods, and functions
-
-/*
-This is the session structure.
-*/
 type Session struct {
-	DevID      string               `json:"devid"`
-	Peers      SessionPeerList		`json:"sessionpeerlist"`
-	sync.Mutex 						`json:"mutex"`
+	DevID      string   `json:"devid"`
+	Peers      PeerList `json:"sessionpeerlist"`
+	sync.Mutex `json:"mutex"`
 }
+
 var o sync.Once
-/***********************************************************************************************************************
-Session Constructor
-*/
 
-/*
-"NewSession" returns an empty session object with the devID prefilled
- */
+// "NewSession" returns an empty session object with the devID prefilled
 func NewSession(dID string) Session {
-	return Session{DevID: dID}											// prefill the devID and return
+	return Session{DevID: dID}
 }
 
-/***********************************************************************************************************************
-Session Methods
-*/
-
-/*
-"GetPeers" returns a map of Connection objects [GID]Connection
- */
+// "GetPeers" returns a map of Connection objects [GID]Connection
 func (session *Session) GetPeers() map[string]SessionPeer {
-	o.Do(func() {													// only do once
-		session.Peers.List = make(map[string]SessionPeer) 			// make a new map
+	o.Do(func() {
+		session.Peers.List = make(map[string]SessionPeer)
 	})
-	return session.Peers.List 											// return the connectionlist
-}
-/*
-"AddPeer" adds a connection object to the session
- */
-func (session *Session) AddPeer(sPeer SessionPeer) {
-	logs.NewLog("Adding Connection: " + sPeer.GID + " to Session: " +
-		session.DevID, logs.InfoLevel, logs.JSONLogFormat)
-	session.Lock()                        								// lock the session
-	defer session.Unlock()                								// after function completes unlock
-	session.GetPeers()[sPeer.GID] = sPeer 								// add sPeer to list
+	return session.Peers.List
 }
 
-/*
-"RemovePeer" removes a connection object from the session
- */
+// "Add" adds a connection object to the session
+func (session *Session) AddPeer(sPeer SessionPeer) {
+	logs.NewLog("Adding Connection: "+sPeer.GID+" to Session: "+
+		session.DevID, logs.InfoLevel, logs.JSONLogFormat)
+	session.Lock()
+	defer session.Unlock()
+	session.GetPeers()[sPeer.GID] = sPeer
+}
+
+// "Remove" removes a connection object from the session
 func (session *Session) RemovePeer(sPeer SessionPeer) {
-	session.Lock()                        								// lock the session
-	defer session.Unlock()                								// after the function completes unlock
-	delete(session.Peers.List, sPeer.GID) 								// delete the item from the map
+	session.Lock()
+	defer session.Unlock()
+	delete(session.Peers.List, sPeer.GID)
 	logs.NewLog("Removed peer: "+sPeer.GID, logs.InfoLevel, logs.JSONLogFormat)
 }
 
-/*
-"GetPeer" returns the connection from the session by peer.GID
- */
+// "GetPeer" returns the connection from the session by peer.GID
 func (session *Session) GetPeer(gid string) SessionPeer {
-	session.Lock()                 										// lock the session
-	defer session.Unlock()         										// after function completes unlock
-	return session.GetPeers()[gid] 										// get and return
+	session.Lock()
+	defer session.Unlock()
+	return session.GetPeers()[gid]
 }
 
-/*
-"NewPeers" adds the connections to the session from []SessionPeer and dials them
- */
+// "NewPeers" adds the connections to the session from []SessionPeer and dials them
 func (session *Session) NewPeers(sp []SessionPeer) {
 	for _, sessionPeer := range sp {
 		session.AddPeer(sessionPeer)
 	}
 }
 
-/*
-"ClearPeers" removes all connections from a session
- */
+// "ClearPeers" removes all connections from a session
 func (session *Session) ClearPeers() {
-	session.Lock()                                    					// lock the session
-	defer session.Unlock()                            					// after function completes unlock
-	session.Peers.List = make(map[string]SessionPeer) 					// clear the list
+	session.Lock()
+	defer session.Unlock()
+	session.Peers.List = make(map[string]SessionPeer)
 }

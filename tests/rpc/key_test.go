@@ -1,4 +1,5 @@
 package rpc
+
 // TODO removed test due to centralized dispatcher
 //func TestSessionKey(t *testing.T) {
 //	// hard code in some nodes
@@ -7,9 +8,9 @@ package rpc
 //	n3 := node.Node{GID:"211057e8a7bbf340614b55fce0c481f3da8179b3"}
 //	// add to peerList
 //	pList := node.GetPeerList()
-//	pList.AddPeer(n1)
-//	pList.AddPeer(n2)
-//	pList.AddPeer(n3)
+//	pList.Add(n1)
+//	pList.Add(n2)
+//	pList.Add(n3)
 //	// Start server instance
 //	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
 //	// @ Url

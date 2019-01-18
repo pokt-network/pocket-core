@@ -8,6 +8,8 @@ import (
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
+	"github.com/pokt-network/pocket-core/service"
+
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -17,19 +19,19 @@ import (
 Unit test for the relay functionality
 */
 func TestRelay(t *testing.T) {
-	node.GetDeveloperWhiteList().Add("DEVID1")
+	node.GetDWL().Add("DEVID1")
 	// grab the hosted chains via file
-	if err := node.HostedChainsFile(config.GetConfigInstance().ChainsFilepath); err != nil {
+	if err := node.CFIle(config.GetInstance().CFile); err != nil {
 		t.Fatalf(err.Error())
 	}
-	node.TestForHostedChains()
-	fmt.Println(node.GetHostedChains())
+	node.TestChains()
+	fmt.Println(node.GetChains())
 	// Start server instance
-	go http.ListenAndServe(":"+config.GetConfigInstance().Relayrpcport, shared.NewRouter(relay.RelayRoutes()))
+	go http.ListenAndServe(":"+config.GetInstance().RRPCPort, shared.NewRouter(relay.Routes()))
 	// @ Url
-	u := "http://localhost:" + config.GetConfigInstance().Relayrpcport + "/v1/relay/read"
+	u := "http://localhost:" + config.GetInstance().RRPCPort + "/v1/relay/"
 	// Setup relay
-	r := relay.Relay{}
+	r := service.Relay{}
 	// add blockchain value
 	r.Blockchain = "ethereum"
 	// add netid value

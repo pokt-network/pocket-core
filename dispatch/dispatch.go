@@ -1,0 +1,79 @@
+package dispatch
+
+import (
+	"encoding/json"
+	"fmt"
+	"math/big"
+	"sort"
+	"strings"
+
+	"github.com/pokt-network/pocket-core/logs"
+	"github.com/pokt-network/pocket-core/node"
+)
+
+type Dispatch struct {
+	DevID       string            `json:"devid"`
+	Blockchains []node.Blockchain `json:"blockchains"`
+}
+
+// NOTE: this call has been augmented for the Pocket Core MVP Centralized Dispatcher
+// TODO see if this can be done more efficiently
+// "Serve" formats Dispatch Peers for an API request.
+func Serve(dispatch *Dispatch) []byte {
+	if node.EnsureWL(node.GetDWL(), dispatch.DevID) {
+		result := make(map[string][]string)
+		for _, bc := range dispatch.Blockchains {
+			ips := make([]string, 0)
+			nodes := node.GetDispatchPeers().GetPeers(bc)
+			for _, n := range nodes {
+				ips = append(ips, n.IP+":"+n.RelayPort)
+			}
+			result[strings.ToUpper(bc.Name)+"V"+bc.Version+" | NetID "+bc.NetID] = ips
+		}
+		res, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			fmt.Println(err)
+			logs.NewLog("Couldn't convert node array to json array: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		}
+		return res
+	}
+	return []byte("Invalid Credentials")
+}
+
+/*
+"Find" orders the nodes from smallest proximity from sessionKey to largest proximity to sessionKey.
+// TODO convert to P2P -> currently just searches the peerlist
+// TODO NEED a separate dispatch file with calls like these
+*/
+func Find(sessionKey string) []node.Node {
+	// create new key
+	bigSessionKey := new(big.Int)
+	bigSessionKey.SetString(sessionKey, 16)
+	peerList := node.GetPeerList()
+	peerList.Lock() // TODO currently locking the peerlist, however this will all change when p2p is integerated
+	defer peerList.Unlock()
+	// map the nodes to the corresponding difference
+	m := make(map[uint64]node.Node)
+	// store the keys (to easily sort)
+	keys := make([]uint64, len(peerList.Map))
+	// resulting array that holds the sorted nodes ordered by difference
+	sortedNodes := make([]node.Node, len(peerList.Map))
+	var i = 0
+	for gid, n := range peerList.Map {
+		// setup a new big integer to hold the converted ID
+		id := new(big.Int)
+		// convert the hex GID into a bigInteger for comparison
+		id.SetString(gid, 16)
+		difference := big.NewInt(0).Sub(bigSessionKey, id)
+		// take absolute of the difference for comparison
+		difference.Abs(difference)
+		m[difference.Uint64()] = n
+		keys[i] = difference.Uint64()
+		i++
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+	for i, k := range keys {
+		sortedNodes[i] = m[k]
+	}
+	return sortedNodes
+}
