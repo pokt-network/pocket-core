@@ -1,24 +1,18 @@
-// This package is contains the handler functions needed for the Client API
 package client
 
 import (
+	"net/http"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/rpc/shared"
-	"net/http"
 )
 
-// "transaction.go" defines API handlers that are under the 'transaction' category within this file.
-
-/*
- "txOptions" handles the localhost:<client-port>/v1/transaction call.
-*/
+// "txOptions" handles the localhost:<client-port>/v1/transaction call.
 func TxOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteResponse(w, "Hello, World!")
+	shared.WriteResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-/*
- "getTxByHash" handles the localhost:<client-port>/v1/transaction/hash call.
-*/
+// "getTxByHash" handles the localhost:<client-port>/v1/transaction/hash call.
 func GetTxByHash(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteResponse(w, "Hello, World!")
+	shared.WriteResponse(w, "Hello! This endpoint is currently in development!")
 }

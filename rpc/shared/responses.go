@@ -7,11 +7,8 @@ import (
 	"net/http"
 )
 
-// "responses.go is the interface for the types of responses for the API.
 // TODO there are a lot of functions that are very similar. See if we can abstract
-/*
-"WriteResponse" writes a normal JSON response.
-*/
+// "WriteResponse" writes a normal JSON response.
 func WriteResponse(w http.ResponseWriter, m string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -23,9 +20,7 @@ func WriteResponse(w http.ResponseWriter, m string) {
 	}
 }
 
-/*
-"WriteInfo" provides useful information about the api URL when get is called
-*/
+// "WriteInfo" provides useful information about the api URL when get is called
 func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 	b, err := json.MarshalIndent(information, "", "\t")
 	if err != nil {
@@ -41,9 +36,7 @@ func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 	}
 }
 
-/*
-"WriteJSON" provides useful information about the api URL when get is called
-*/
+// "WriteJSON" provides useful information about the api URL when get is called
 func WriteJSONResponse(w http.ResponseWriter, m string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -55,23 +48,16 @@ func WriteJSONResponse(w http.ResponseWriter, m string) {
 	}
 }
 
-/*
-=======
-"WriteRawJSON" provides useful information about the api URL when get is called
-*/
+// "WriteRawJSON" provides useful information about the api URL when get is called
 func WriteRawJSONResponse(w http.ResponseWriter, b []byte) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write(b)
 }
 
-/*
-"WriteErrorResponse" writes an error JSON response.
-*/
+// "WriteErrorResponse" writes an error JSON response.
 func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(errorCode)
-	json.
-		NewEncoder(w).
-		Encode(&JSONErrorResponse{Error: &APIError{Status: errorCode, Title: errorMsg}})
+	json.NewEncoder(w).Encode(&JSONErrorResponse{Error: &APIError{Status: errorCode, Title: errorMsg}})
 }

@@ -1,3 +1,4 @@
+// This package is node related code.
 package node
 
 type Blockchain struct {

@@ -1,142 +1,93 @@
-// This package is network code relating to other nodes within the network.
 package node
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/logs"
 	"io/ioutil"
 	"sync"
 )
 
-// "peerList.go" specifies the peerlist structure, methods, and functions
-
-/***********************************************************************************************************************
-Peerlist structure
- */
 type PeerList struct {
-	List map[string]Node
+	Map map[string]Node
 	sync.Mutex
 }
 
-/***********************************************************************************************************************
-Peerlist instance
- */
 var (
 	o  sync.Once
-	pList *PeerList
+	pl *PeerList
 )
 
-/***********************************************************************************************************************
-Singleton getter
-*/
-
-/*
-"GetPeerList" returns the global list of peers
- */
+// "GetPeerList" returns the global map of nodes.
 func GetPeerList() *PeerList {
-	o.Do(func() {									// only do once (thread safety)
-		pList = &PeerList{}							// init empty peerlist
-		pList.List = make(map[string]Node) 			// make the map [GID]Node
+	o.Do(func() {
+		pl = &PeerList{Map: make(map[string]Node)}
 	})
-	return pList									// return the peerlist
+	return pl
 }
 
-/***********************************************************************************************************************
-peerList Methods
-*/
-
-/*
-"AddPeer" adds a peer object to the global peerlist
- */
-func (pList *PeerList) AddPeer(node Node) {
-	if !pList.Contains(node.GID) { 					// if node not within peerlist
-		pList.Lock()								// lock the list
-		defer pList.Unlock()						// after function completes unlock the list
-		logs.NewLog("Added new peer: "+node.GID, logs.InfoLevel, logs.JSONLogFormat)
-		pList.List[node.GID] = node					// add the node to the global map
-	}
+// "Add" adds a peer object to the global map.
+func (pl *PeerList) Add(node Node) {
+	pl.Lock()
+	defer pl.Unlock()
+	pl.Map[node.GID] = node
 }
 
-/*
-"RemovePeer" removes a peer object from the global list
- */
-func (pList *PeerList) RemovePeer(node Node) {
-	pList.Lock()									// lock the list
-	defer pList.Unlock()							// after the function completes unlock the list
-	logs.NewLog("Removed peer: "+node.GID, logs.InfoLevel, logs.JSONLogFormat)
-	delete(pList.List, node.GID)					// delete the item from the map
+// "Remove" removes a peer object from the global map.
+func (pl *PeerList) Remove(node Node) {
+	pl.Lock()
+	defer pl.Unlock()
+	delete(pl.Map, node.GID)
 }
 
-/*
-"Contains" returns true if node is within peerlist
- */
-func (pList *PeerList) Contains(GID string) bool {
-	pList.Lock()									// lock the list
-	defer pList.Unlock()							// after the function completes unlock the list
-	_, ok := pList.List[GID]						// check if within the list
-	return ok										// return the bool
+// "Contains" returns true if node is within peerlist.
+func (pl *PeerList) Contains(GID string) bool {
+	pl.Lock()
+	defer pl.Unlock()
+	_, ok := pl.Map[GID]
+	return ok
 }
 
-/*
-"Count" returns the count of peers within the list
- */
-func (pList *PeerList) Count() int {
-	pList.Lock()									// lock the list
-	defer pList.Unlock()							// after the function completes unlock the list
-	return len(pList.List)							// return the length of the list
-}
-/*
-"Print" prints the peerlist to the CLI
- */
-func (pList *PeerList) Print() {
-	fmt.Println(pList.List)							// print the list to the console
+// "Count" returns the count of peers within the map.
+func (pl *PeerList) Count() int {
+	pl.Lock()
+	defer pl.Unlock()
+	return len(pl.Map)
 }
 
-// NOTE Centralized Dispatch for MVP Only
-func (pList *PeerList) AddPeersToDispatchStructure(){
-	pList.Lock()
-	defer pList.Unlock()
-	for _, peer := range pList.List {
-		NewDispatchPeer(peer)
-	}
+// "Print" prints the peerlist to the CLI
+func (pl *PeerList) Print() {
+	fmt.Println(pl.Map)
 }
 
-/***********************************************************************************************************************
-peerList Functions
-*/
-
-/*
-"ManualPeersFile" adds peers from a peers.json to the peerlist
- */
+// "ManualPeersFile" adds Map from a peers.json to the peerlist
 func ManualPeersFile(filepath string) error {
-	file, err := ioutil.ReadFile(filepath)			// read the file from the specified path
-	if err != nil {									// if error
+	file, err := ioutil.ReadFile(filepath)
+	if err != nil {
 		return err
 	}
-	return manualPeersJSON(file) // call manPeers.Json on the byte[]
+	return manualPeersJSON(file)
 }
-/*
-"manualPeersJSON" adds peers from a json []byte to the peerlist
- */
-func manualPeersJSON(b []byte) error{
-	var data []Node									// create an empty structure to hold the data temporarily
-	if err:=json.Unmarshal(b, &data); err != nil{	// unmarshal the byte array into the struct
+
+// "manualPeersJSON" adds Map from a json []byte to the peerlist
+func manualPeersJSON(b []byte) error {
+	var nSlice []Node
+	if err := json.Unmarshal(b, &nSlice); err != nil {
 		return err
 	}
-	for _, n := range data {						// copy struct into global peerlist
+	for _, n := range nSlice {
 		pList := GetPeerList()
-		pList.AddPeer(n)
+		pList.Add(n)
 	}
 	return nil
 }
 
-/*
-"GetPeerCount" returns the number of peers
- */
-func GetPeerCount() int {
-	pList := GetPeerList()							// get the peerlist
-	pList.Lock()									// lock the list
-	defer pList.Unlock()							// unlock once function completes
-	return len(pList.List)							// return the length of the list
+// DISCLAIMER: the code below is for pocket core mvp centralized dispatcher
+// may remove for production
+
+func (pl *PeerList) CopyToDP() {
+	pl.Lock()
+	defer pl.Unlock()
+	for _, peer := range pl.Map {
+		GetDispatchPeers().Add(peer)
+	}
 }

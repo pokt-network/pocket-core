@@ -1,6 +1,7 @@
 package _const
 
-const(
-	DISPATCHGID ="DISPATCH"
-	DISPATCHIP="127.0.0.1"
+const (
+	// for centralized dispatcher
+	DISPATCHGID = "DISPATCH"
+	DISPATCHIP  = "127.0.0.1"
 )

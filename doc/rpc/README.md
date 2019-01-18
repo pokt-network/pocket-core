@@ -1,5 +1,5 @@
 # JSON RPC/REST
-//TODO CONTENTS
+//TODO
 ## Endpoints
 Default API Endpoints:
 

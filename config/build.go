@@ -2,35 +2,33 @@
 package config
 
 import (
-	"github.com/pokt-network/pocket-core/const"
 	"log"
 	"os"
+
+	"github.com/pokt-network/pocket-core/const"
 )
 
-// "build.go" is for building the Pocket Core configuration
-
-/*
-This function builds the configuration needed for the client.
-*/
-func BuildConfiguration() {
-	buildDataDir() 													// builds the data directory on the local machine
-	buildLogsDir() 													// builds the logs directory within the datadir
+// "Build" builds the configuration structure needed for the client.
+func Build() {
+	// builds the data directory on the local machine
+	dataDir()
+	// builds the logs directory within the data directory
+	logsDir()
 }
 
-/*
-This function builds the directory needed for DB and keystore etc.
-*/
-func buildDataDir() {
-	err := os.MkdirAll(GetConfigInstance().Datadir, os.ModePerm) 	// attempts to make the data directory.
-	if err != nil {                                              	// if unable to create custom data directory
-		log.Fatal(err.Error()) 										// notice use of built in log constructor
-	} 																// if the data directory isn't built then no use
-} 																	// using custom logs.
+// "dataDir" builds the directory for program files.
+func dataDir() {
+	// attempts to make the data directory.
+	if err := os.MkdirAll(GetInstance().DD, os.ModePerm); err != nil {
+		// doesn't use custom logs, because they may or may not be available at this point
+		log.Fatalf(err.Error())
+	}
+}
 
-func buildLogsDir() {
-	err := os.MkdirAll(GetConfigInstance().Datadir+ 			// attempts to make the logs directory
-		_const.FILESEPARATOR+"logs", os.ModePerm)
-	if err != nil {
-		log.Fatal(err.Error()) 										// log if error
+// "logsDir" builds the directory for logs.
+func logsDir() {
+	// attempts to make the logs directory
+	if err := os.MkdirAll(GetInstance().DD+_const.FILESEPARATOR+"logs", os.ModePerm); err != nil {
+		log.Fatal(err.Error())
 	}
 }

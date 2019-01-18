@@ -1,27 +1,21 @@
-// This package is shared between the different RPC packages
 package shared
 
 import (
-	"github.com/pokt-network/pocket-core/util"
 	"net/http"
+
+	"github.com/pokt-network/pocket-core/util"
 )
 
-// "info.go" specifies methods pertaining to APIInfo endpoints
-
-/*
-"CreateInfoStruct" generates the specific APIReference structure dynamically.
-*/
+// "CreateInfoStruct" generates the specific APIReference structure dynamically.
 // TODO adapt this for slice structures
 func CreateInfoStruct(r *http.Request, method string, model interface{}, returns string) APIReference {
-	params := util.StructTagsToString(model)
+	params := util.StructTags(model)
 	return APIReference{"localhost:port" + r.URL.String(), method,
 		params, returns,
 		createExampleString(r.URL.String(), params)}
 }
 
-/*
-"createExampleString" creates the APIReference example string shown to the devs.
-*/
+// "createExampleString" creates the APIReference example string shown to the devs.
 func createExampleString(url string, params []string) string {
 	var data string
 	data = "'{"

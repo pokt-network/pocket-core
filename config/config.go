@@ -1,92 +1,80 @@
-// This package maintains the client configuration.
 package config
 
 import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/pokt-network/pocket-core/const"
 	"sync"
+
+	"github.com/pokt-network/pocket-core/const"
 )
 
-// "config.go" describes all of the configuration properties of the client (set by startup flags)
 // TODO configuration updating
 type config struct {
-	GID				string `json:"GID"`				// This variable holds the nodes GID
-	Clientid      	string `json:"CLIENTID"`    	// This variable holds a client identifier string.
-	Version       	string `json:"VERSION"`       	// This variable holds the client version string.
-	Datadir        	string `json:"DATADIR"`      	// This variable holds the working directory string.
-	Clientrpc      	bool   `json:"CRPC"`         	// This variable describes if the client rpc is running.
-	Clientrpcport  	string `json:"CRPCPORT"`     	// This variable holds the client rpc port string.
-	Relayrpc       	bool   `json:"RRPC"`         	// This variable describes if the relay rpc is running.
-	Relayrpcport   	string `json:"RRPCPORT"`     	// This variable holds the relay rpc port string.
-	ChainsFilepath 	string `json:"HOSTEDCHAINS"` 	// This variable holds the filepath to the chains.json
-	PeerFile       	string `json:"PEERFILE"`     	// This variable holds the filepath to the peerFile.json
-	ServiceNodeWL  string `json:"SNWL"`    			// This variable holds the filepath to the service_whitelist.json
-	DeveloperWL  string 	`json:"DWL"`    			// This variable holds the filepath to the developer_whitelist.json e
+	GID      string `json:"GID"`          // This variable holds self.GID.
+	CID      string `json:"CLIENTID"`     // This variable holds a client identifier string.
+	Ver      string `json:"VERSION"`      // This variable holds the client version string.
+	DD       string `json:"DATADIR"`      // This variable holds the working directory string.
+	CRPC     bool   `json:"CRPC"`         // This variable describes if the client rpc is running.
+	CRPCPort string `json:"CRPCPORT"`     // This variable holds the client rpc port string.
+	RRPC     bool   `json:"RRPC"`         // This variable describes if the relay rpc is running.
+	RRPCPort string `json:"RRPCPort"`     // This variable holds the relay rpc port string.
+	CFile    string `json:"HOSTEDCHAINS"` // This variable holds the filepath to the chains.json.
+	PFile    string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json.
+	SNWL     string `json:"SNWL"`         // This variable holds the filepath to the service_whitelist.json.
+	DWL      string `json:"DWL"`          // This variable holds the filepath to the developer_whitelist.json
 }
 
 var (
-	instance *config
+	c        *config
 	once     sync.Once
-	gid = flag.String("gid","GID1", "set the selfNode.GID for pocket core mvp")
-	datadir  = flag.String("datadir", _const.DATADIR, "setup the data directory for the DB and keystore")
-	// A boolean variable derived from flags, that describes whether or not to print the version of the client.
-	clientRpc = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
-	// A string variable derived from flags, that specifies which port to run the listener for the client rpc (default :8080)
-	clientRpcport = flag.String("clientrpcport", "8080", "specified port to run client rpc")
-	// A boolean variable derived from flags, that describes whether or not to start the relay rpc server.
-	relayRpc = flag.Bool("relayrpc", false, "whether or not to start the rpc server")
-	// A string variable derived from flags, that specifies which port to run the listener for the relay rpc (default :8081)
-	relayRpcport = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
-	// A string variable derived from flags, that specifies a custom path for the hosted chains
-	hostedChains = flag.String("hostedchains", _const.CHAINSFILENAME, "specifies the filepath for hosted chains")
-	// A string variable derived from flags, that specifies the filepath for peerFile.json
-	peerFile = flag.String("peerFile", _const.PEERFILENAME, "specifies the filepath for peers.json")
-	// A string variable derived from flags, that specifies the fielpath for serivce_whitelist.json
-	snwl = flag.String("snwl", _const.SNWLFILENAME, "specifies the filepath for service_whitelist.json")
-	// A string variable derived from flags, that specifies the fielpath for developer_whitelist.json
-	dwl = flag.String("dwl", _const.DWLFILENAME, "specifies the filepath for developer_whitelist.json")
+	gid      = flag.String("gid", "GID1", "set the selfNode.GID for pocket core mvp")
+	dd       = flag.String("dd", _const.DATADIR, "setup the data directory for the DB and keystore")
+	rRpcPort = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
+	cFile    = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
+	pFile    = flag.String("pfile", _const.PEERFILENAME, "specifies the filepath for peers.json")
+	snwl     = flag.String("sFile", _const.SNWLFILENAME, "specifies the filepath for service_whitelist.json")
+	dwl      = flag.String("dFile", _const.DWLFILENAME, "specifies the filepath for developer_whitelist.json")
+	cRpcPort = flag.String("clientrpcport", "8080", "specified port to run client rpc")
+	cRpc     = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
+	rRpc     = flag.Bool("relayrpc", false, "whether or not to start the rpc server")
 )
 
-func InitializeConfiguration() {
-	flag.Parse()        				// built in function to parse the flags above.
-	GetConfigInstance() 				// returns the thread safe instance of the client configuration.
+// "Init" initializes the configuration object.
+func Init() {
+	// built in function to parse the flags above.
+	flag.Parse()
+	// returns the thread safe c of the client configuration.
+	GetInstance()
 }
 
-/*
-"NewConfiguration() is a Constructor function of the configuration type.
-*/
+// "newConfiguration() is a constructor function of the configuration type.
 func newConfiguration() {
-	instance = &config{
-		*gid,						// the global identifier of this node
-		_const.CLIENTID, 		// client identifier is set in global constants.
-		_const.VERSION,  		// client version is set in global constants.
-		*datadir,        		// data directory path specified by the flag.
-		*clientRpc,      		// the client rpc is running.
-		*clientRpcport,  	// the port the client rpc is running.
-		*relayRpc,       		// the relay rpc is running.
-		*relayRpcport,   	// the port the relay rpc is running.
-		*hostedChains,		// the filepath for the chains.json
-		*peerFile,				// the filepath of the peers.json
-		*snwl,				// the filepath of the service_whitelist.json
-		*dwl} // the filepath of the developer_whitelist.json
+	c = &config{
+		*gid,
+		_const.CLIENTID,
+		_const.VERSION,
+		*dd,
+		*cRpc,
+		*cRpcPort,
+		*rRpc,
+		*rRpcPort,
+		*cFile,
+		*pFile,
+		*snwl,
+		*dwl}
 }
 
-/*
-"PrintConfiguration()" prints the client configuration information to the CLI.
-*/
-func PrintConfiguration() {
-	data, _ := json.MarshalIndent(instance, "", "    ")       	// pretty configure the json data
-	fmt.Println("Pocket Core Configuration:\n", string(data)) 			// pretty print the pocket configuration
+// "Print()" prints the client configuration information to the CLI.
+func Print() {
+	data, _ := json.MarshalIndent(c, "", "    ")              // pretty configure the json data
+	fmt.Println("Pocket Core Configuration:\n", string(data)) // pretty print the pocket configuration
 }
 
-/*
-"GetConfigInstance()" returns the configuration object in a thread safe manner.
-*/
-func GetConfigInstance() *config { 						// singleton structure to return the configuration object
-	once.Do(func() { 									// thread safety.
-			newConfiguration()
+// "GetInstance()" returns the configuration object in a thread safe manner.
+func GetInstance() *config { // singleton structure to return the configuration object
+	once.Do(func() { // thread safety.
+		newConfiguration()
 	})
-	return instance 									// return the configuration
+	return c // return the configuration
 }

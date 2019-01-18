@@ -1,43 +1,20 @@
-// This package contains files for the Relay API
 package relay
 
 import (
-	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-// "routes.go" defines all of the relay routes within this file.
-
-/*
-The "Route" structure defines the generalization of an api route.
-*/
-type Route struct {
-	Name        string
-	Method      string
-	Path        string
-	HandlerFunc httprouter.Handle
-}
-
-/*
-"Routes" is a slice that holds all of the routes within one structure.
-*/
-type Routes []Route
-
-/*
-"relayRoutes" is a function that returns all of the routes of the API.
-*/
-func RelayRoutes() shared.Routes {
+// "Routes" is a function that returns all of the routes of the API.
+func Routes() shared.Routes {
 	routes := shared.Routes{
-		shared.Route{"GetRelayAPIVersion", "GET", "/v1", GetRelayAPIVersion},
-		shared.Route{"ReportServiceNode","POST","/v1/report", ReportServiceNode},
-		shared.Route{"ReportServiceNodeInfo","GET","/v1/report",ReportServiceNodeInfo},
-		shared.Route{"DispatchOptions", "POST", "/v1/dispatch", DispatchOptions},
-		shared.Route{"DispatchServe", "POST", "/v1/dispatch/serve", DispatchServe},
-		shared.Route{"DispatchServeInfo", "GET", "/v1/dispatch/serve", DispatchServeInfo},
-		shared.Route{"RelayOptions", "POST", "/v1/relay", RelayOptions},
-		shared.Route{"RelayRead", "POST", "/v1/relay/read", RelayRead},
-		shared.Route{"RelayReadInfo", "GET", "/v1/relay/read", RelayReadInfo},
-		shared.Route{"RelayWrite", "POST", "/v1/relay/write", RelayWrite},
+		shared.Route{Name: "GetRelayAPIVersion", Method: "GET", Path: "/v1", HandlerFunc: GetRelayAPIVersion},
+		shared.Route{Name: "ReportServiceNode", Method: "POST", Path: "/v1/report", HandlerFunc: ReportServiceNode},
+		shared.Route{Name: "ReportServiceNodeInfo", Method: "GET", Path: "/v1/report", HandlerFunc: ReportServiceNodeInfo},
+		shared.Route{Name: "DispatchOptions", Method: "POST", Path: "/v1/dispatch", HandlerFunc: DispatchOptions},
+		shared.Route{Name: "DispatchServe", Method: "POST", Path: "/v1/dispatch/serve", HandlerFunc: DispatchServe},
+		shared.Route{Name: "DispatchServeInfo", Method: "GET", Path: "/v1/dispatch/serve", HandlerFunc: DispatchServeInfo},
+		shared.Route{Name: "Relay", Method: "POST", Path: "/v1/relay/", HandlerFunc: Forward},
+		shared.Route{Name: "RelayReadInfo", Method: "GET", Path: "/v1/relay/", HandlerFunc: RelayReadInfo},
 	}
 	return routes
 }
