@@ -16,13 +16,13 @@ func TestSessionMessage(t *testing.T) {
 	session2 := session.NewSession(DEVID2)
 	// add them to the session list
 	sessionList := session.GetSessionList()
-	sessionList.AddSession(session1, session2)
+	sessionList.AddMulti(session1, session2)
 	// run message servers
 	message.StartServers()
 	// create the dummy peers to send over the wire
-	var sessPeerList []session.SessionPeer // create list
-	sNode := session.SessionPeer{Role: session.SERVICER, Node: node.Node{GID: SNODE}}
-	vNode := session.SessionPeer{Role: session.VALIDATOR, Node: node.Node{GID: VNODE}}
+	var sessPeerList []session.Peer // create list
+	sNode := session.Peer{Role: session.SERVICER, Node: node.Node{GID: SNODE}}
+	vNode := session.Peer{Role: session.VALIDATOR, Node: node.Node{GID: VNODE}}
 	sessPeerList = append(sessPeerList, sNode, vNode) // add nodes to list
 	// create the message structure
 	m := message.NewSessionMessage(DEVID, sessPeerList)
