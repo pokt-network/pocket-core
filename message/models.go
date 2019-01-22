@@ -19,6 +19,6 @@ type Message struct {
 }
 
 type SessionPL struct {
-	DevID string                `json:"devid"` // the devID of the session
-	Peers []session.SessionPeer `json:"peers"` // the list of peers
+	DevID string         `json:"devid"` // the devID of the session
+	Peers []session.Peer `json:"peers"` // the list of peers
 }

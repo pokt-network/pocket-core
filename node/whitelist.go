@@ -5,79 +5,70 @@ import (
 	"fmt"
 	"io/ioutil"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/types"
 )
 
-type Whitelist struct {
-	Map map[string]struct{}
-	mux sync.Mutex
-}
+type Whitelist types.Set
 
 var (
-	SNWL   Whitelist
-	DWL    Whitelist
+	SNWL   *Whitelist
+	DWL    *Whitelist
 	wlOnce sync.Once
 )
 
 // "WhiteListInit()" initializes both whitelist structures.
 func WhiteListInit() {
 	wlOnce.Do(func() {
-		SNWL.Map = make(map[string]struct{})
-		DWL.Map = make(map[string]struct{})
+		SNWL = (*Whitelist)(types.NewSet())
+		DWL = (*Whitelist)(types.NewSet())
 	})
 }
 
 // "GetSWL" returns service node white list.
-func GetSWL() Whitelist {
-	if SNWL.Map == nil { // just in case
+func GetSWL() *Whitelist {
+	if SNWL == nil { // just in case
 		WhiteListInit()
 	}
 	return SNWL
 }
 
-// "GetDWL" returns developer.
-func GetDWL() Whitelist {
-	if DWL.Map == nil { // just in case
+// "GetDWL" returns developer white list.
+func GetDWL() *Whitelist {
+	if DWL == nil { // just in case
 		WhiteListInit()
 	}
 	return DWL
 }
 
 // "Contains" returns if within whitelist.
-func (w Whitelist) Contains(s string) bool {
-	w.mux.Lock()
-	defer w.mux.Unlock()
-	_, ok := w.Map[s]
-	return ok
+func (w *Whitelist) Contains(s string) bool {
+	return (*types.Set)(w).Contains(s)
 }
 
-// "Delete" removes item from whitelist.
-func (w Whitelist) Delete(s string) {
-	w.mux.Lock()
-	defer w.mux.Unlock()
-	delete(w.Map, s)
+// "Remove" removes item from whitelist.
+func (w *Whitelist) Remove(s string) {
+	(*types.Set)(w).Remove(s)
 }
 
 // "Add" appends item to whitelist.
-func (w Whitelist) Add(s string) {
-	w.mux.Lock()
-	defer w.mux.Unlock()
-	w.Map[s] = struct{}{}
+func (w *Whitelist) Add(s string) {
+	(*types.Set)(w).Add(s)
 }
 
 // "AddMulti" appends multiple items to whitelist
-func (w Whitelist) AddMulti(list []string) {
+func (w *Whitelist) AddMulti(list []string) {
+	w.Mux.Lock()
+	defer w.Mux.Unlock()
 	for _, v := range list {
-		w.Add(v)
+		w.M[v] = struct{}{}
 	}
 }
 
-// "Size" returns the length of the whitelist.
-func (w Whitelist) Size() int {
-	w.mux.Lock()
-	defer w.mux.Unlock()
-	return len(w.Map)
+// "Count" returns the length of the whitelist.
+func (w *Whitelist) Count() int {
+	return (*types.Set)(w).Count()
 }
 
 // "SWLFile" builds the service white list from a file.
@@ -91,7 +82,7 @@ func DWLFile() error {
 }
 
 // "wlFile" builds a whitelist structure from a file.
-func (w Whitelist) wlFile(filePath string) error {
+func (w *Whitelist) wlFile(filePath string) error {
 	f, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -109,7 +100,7 @@ func (w Whitelist) wlFile(filePath string) error {
 }
 
 // "EnsureWL" cross checks the whitelist for
-func EnsureWL(whiteList Whitelist, query string) bool {
+func EnsureWL(whiteList *Whitelist, query string) bool {
 	if !whiteList.Contains(query) {
 		fmt.Println("Node: ", query, "rejected because it is not within whitelist")
 		return false

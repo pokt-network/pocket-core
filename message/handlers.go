@@ -2,7 +2,6 @@ package message
 
 import (
 	"net"
-	"sync"
 	
 	"github.com/pokt-network/pocket-core/session"
 )
@@ -17,16 +16,15 @@ func HandleMSG(message *Message, addr *net.UDPAddr) {
 
 // "sessionMSG" handles an incoming message by deriving a new session from the payload.
 func sessionMSG(message *Message) {
-	sList := session.GetSessionList()
+	sl := session.GetSessionList()
 	// extract the SessionPL
-	nSPL := message.Payload.Data.(SessionPL)
+	spl := message.Payload.Data.(SessionPL)
 	// create a session using developerID from payload
-	s := session.Session{DevID: nSPL.DevID,
-		Peers: session.PeerList{List: make(map[string]session.SessionPeer)},
-		Mutex: sync.Mutex{}}
+	s := session.Session{DevID: spl.DevID,
+		Peers: session.NewPeerList()}
 	// TODO create new connections with each peer
-	s.NewPeers(nSPL.Peers)
+	s.AddPeers(spl.Peers)
 	// adds new session to sessionList and adds peers to the peerList
-	sList.AddSession(s)
-	session.AddSPeers(nSPL.Peers)
+	sl.Add(s)
+	session.AddPeer(spl.Peers)
 }
