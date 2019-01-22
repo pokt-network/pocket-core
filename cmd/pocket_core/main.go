@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
@@ -44,7 +44,7 @@ func startClient() {
 	// runs servers for messages
 	message.StartServers()
 	// sends an entry message to the centralized dispatcher
-	message.SendEntryMSG()
+	node.Register()
 	// logs the client starting
 	logs.NewLog("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
 	// prompt user to exit
@@ -52,5 +52,5 @@ func startClient() {
 	// wait for input
 	bufio.NewScanner(os.Stdin).Scan()
 	// send exit message to dispatcher
-	message.SendExitMSG()
+	node.UnRegister(0)
 }

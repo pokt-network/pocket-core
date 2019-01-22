@@ -27,6 +27,12 @@ func (l *List) Remove(key interface{}) {
 	delete(l.M, key)
 }
 
+func (l *List) Get(key interface{}) interface{}{
+	l.Mux.Lock()
+	defer l.Mux.Unlock()
+	return l.M[key]
+}
+
 func (l *List) Contains(key interface{}) bool {
 	l.Mux.Lock()
 	defer l.Mux.Unlock()
