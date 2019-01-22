@@ -1,75 +1,69 @@
-// This package is network code relating to pocket 'sessions'
 package session
 
 import (
-	"fmt"
 	"sync"
 	
-	"github.com/pokt-network/pocket-core/logs"
+	"github.com/pokt-network/pocket-core/types"
 )
 
-type sessionList struct {
-	List map[string]Session // [DID]
-	sync.Mutex
-}
+type List types.List
 
 var (
-	sList *sessionList
-	once  sync.Once
+	sesList *List
+	sListO  sync.Once
 )
 
-// "GetSessionList" returns the global sessionList object
-func GetSessionList() *sessionList {
-	once.Do(func() {
-		sList = &sessionList{}
-		sList.List = make(map[string]Session)
+func GetSessionList() *List {
+	sListO.Do(func() {
+		sesList = (*List)(types.NewList())
 	})
-	return sList
+	return sesList
 }
 
 // "AddSession" adds a session object to the global list
-func (sList *sessionList) AddSession(s ...Session) {
-	sList.Lock()
-	defer sList.Unlock()
+func (sList *List) AddMulti(s ...Session) {
+	sList.Mux.Lock()
+	defer sList.Mux.Unlock()
 	for _, session := range s {
-		logs.NewLog("New session added to list: "+session.DevID, logs.InfoLevel, logs.JSONLogFormat)
-		sList.List[session.DevID] = session
+		sList.M[session.DevID] = session
 	}
 }
 
 // "RemoveSession" removes a session object from the global list
-func (sList *sessionList) RemoveSession(s ...Session) {
-	sList.Lock()
-	defer sList.Unlock()
+func (sList *List) RemoveSession(s ...Session) {
+	sList.Mux.Lock()
+	defer sList.Mux.Unlock()
 	for _, session := range s {
-		logs.NewLog("Session "+session.DevID+" removed from list", logs.InfoLevel, logs.JSONLogFormat)
-		delete(sList.List, session.DevID)
+		delete(sList.M, session.DevID)
 	}
 }
 
-// "Contains" checks to see if a session is within the global list
-func (sList *sessionList) Contains(dID string) bool {
-	sList.Lock()
-	defer sList.Unlock()
-	_, ok := sList.List[dID]
-	return ok
+// "Add" adds a session to the global list
+func (sList *List) Add(s Session) {
+	(*types.List)(sList).Add(s.DevID, s)
 }
 
-// "Count" returns the number of sessions within the global list
-func (sList *sessionList) Count() int {
-	sList.Lock()
-	defer sList.Unlock()
-	return len(sList.List)
+// "Remove" removes a session from the global list
+func (sList *List) Remove(s Session) {
+	(*types.List)(sList).Remove(s.DevID)
 }
 
-// "Print" prints the global session list to the CLI
-func (sList *sessionList) Print() {
-	fmt.Println(sList.List) // print to the CLI
+// "Contains" returns whether or not it is within the list.
+func (sList *List) Contains(devID string) bool {
+	return (*types.List)(sList).Contains(devID)
 }
 
-// "Get" returns a session from the list based on the developer ID
-func (sList *sessionList) Get(dID string) Session {
-	sList.Lock()
-	defer sList.Unlock()
-	return sList.List[dID]
+// "Count" returns number of sessions
+func (sList *List) Count() int {
+	return (*types.List)(sList).Count()
+}
+
+// "Get" returns the number of sessions
+func (sList *List) Get(devID string) Session {
+	return (*types.List)(sList).Get(devID).(Session)
+}
+
+// "Print" prints the global sessionList
+func (sList *List) Print() {
+	(*types.List)(sList).Print()
 }

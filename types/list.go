@@ -27,10 +27,16 @@ func (l *List) Remove(key interface{}) {
 	delete(l.M, key)
 }
 
-func (l *List) Get(key interface{}) interface{}{
+func (l *List) Get(key interface{}) interface{} {
 	l.Mux.Lock()
 	defer l.Mux.Unlock()
 	return l.M[key]
+}
+
+func (l *List) Count() int {
+	l.Mux.Lock()
+	defer l.Mux.Unlock()
+	return len(l.M)
 }
 
 func (l *List) Contains(key interface{}) bool {
