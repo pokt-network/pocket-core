@@ -9,7 +9,7 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"github.com/pokt-network/pocket-core/service"
-	
+
 	"io/ioutil"
 	"log"
 	"net/http"

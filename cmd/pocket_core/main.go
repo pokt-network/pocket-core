@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"

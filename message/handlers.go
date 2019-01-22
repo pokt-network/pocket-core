@@ -2,7 +2,7 @@ package message
 
 import (
 	"net"
-	
+
 	"github.com/pokt-network/pocket-core/session"
 )
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/types"
 )
 
