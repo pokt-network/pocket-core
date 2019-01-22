@@ -11,6 +11,6 @@ func NewMessage(pLoad Payload) Message {
 }
 
 // "NewSessionMessage" creates a new message with a payload that can derive a session
-func NewSessionMessage(devID string, peers []session.SessionPeer) Message {
+func NewSessionMessage(devID string, peers []session.Peer) Message {
 	return NewMessage(Payload{ID: 1, Data: SessionPL{devID, peers}})
 }

@@ -9,15 +9,15 @@ import (
 type List types.List
 
 var (
-	sesList *List
-	sListO  sync.Once
+	sessionList *List
+	o           sync.Once
 )
 
 func GetSessionList() *List {
-	sListO.Do(func() {
-		sesList = (*List)(types.NewList())
+	o.Do(func() {
+		sessionList = (*List)(types.NewList())
 	})
-	return sesList
+	return sessionList
 }
 
 // "AddSession" adds a session object to the global list
