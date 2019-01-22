@@ -3,7 +3,7 @@ package session
 
 import (
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/types"
 )
 
