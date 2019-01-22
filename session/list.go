@@ -4,7 +4,7 @@ package session
 import (
 	"fmt"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/logs"
 )
 
@@ -72,13 +72,4 @@ func (sList *sessionList) Get(dID string) Session {
 	sList.Lock()
 	defer sList.Unlock()
 	return sList.List[dID]
-}
-
-/*
-"Set" updates a session within the list based on the developer ID
-*/
-func (sList *sessionList) Set(dID string, s Session) {
-	sList.Lock()
-	defer sList.Unlock()
-	sList.List[dID] = s
 }

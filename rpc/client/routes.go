@@ -7,6 +7,10 @@ import (
 // "ClientRoutes" is a function that returns all of the routes of the API.
 func ClientRoutes() shared.Routes {
 	routes := shared.Routes{
+		shared.Route{Name:"Register", Method: "POST", Path:"/v1/register", HandlerFunc: Register},
+		shared.Route{Name:"UnRegister", Method:"POST", Path:"/v1/unregister", HandlerFunc: UnRegister},
+		shared.Route{Name:"RegisterInfo", Method: "GET", Path:"/v1/register", HandlerFunc: RegisterInfo},
+		shared.Route{Name:"UnRegisterInfo", Method:"GET", Path:"/v1/unregister", HandlerFunc: UnRegisterInfo},
 		shared.Route{Name: "GetClientAPIVersion", Method: "POST", Path: "/v1", HandlerFunc: GetClientAPIVersion},
 		shared.Route{Name: "GetAccount", Method: "POST", Path: "/v1/account", HandlerFunc: GetAccount},
 		shared.Route{Name: "IsAccountActive", Method: "POST", Path: "/v1/account/active", HandlerFunc: IsAccountActive},
