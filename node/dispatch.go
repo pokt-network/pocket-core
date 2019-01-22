@@ -59,7 +59,7 @@ func (dp DispatchPeers) GetPeers(bc Blockchain) map[string]Node {
 	return getPeers(dp, bc)
 }
 
-// "Delete" deletes a peer from DispatchPeers.
+// "Remove" deletes a peer from DispatchPeers.
 func (dp *DispatchPeers) Delete(n Node) {
 	dp.Lock()
 	defer dp.Unlock()
@@ -87,12 +87,12 @@ func (dp *DispatchPeers) Print() {
 // "Check" checks each service node's liveness.
 func (dp *DispatchPeers) Check() {
 	pl := GetPeerList()
-	for _, p := range pl.Map {
-		if !isAlive(p) {
+	for _, p := range pl.M {
+		if !isAlive(p.(Node)) {
 			// try again
-			if !isAlive(p) {
-				pl.Remove(p)
-				dp.Delete(p)
+			if !isAlive(p.(Node)) {
+				pl.Remove(p.(Node))
+				dp.Delete(p.(Node))
 			}
 		}
 	}
