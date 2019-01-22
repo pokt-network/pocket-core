@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/types"
 )

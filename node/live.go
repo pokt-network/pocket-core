@@ -3,7 +3,7 @@ package node
 import (
 	"fmt"
 	"time"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
 )
@@ -12,7 +12,7 @@ func Register() {
 	if _, err := util.RPCRequest("http://"+_const.DISPATCHIP+":"+_const.DISPATCHCLIENTPORT+"/v1/register", GetSelf(), util.POST); err != nil {
 		util.ExitGracefully("Error, unable to register node at Pocket Incorporated's Dispatcher")
 	}
-	fmt.Println("Node registered successfully " , GetPeerList().M)
+	fmt.Println("Node registered successfully ", GetPeerList().M)
 }
 
 func UnRegister(count int) {
