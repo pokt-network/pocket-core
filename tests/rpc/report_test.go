@@ -8,6 +8,8 @@ import (
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
+	"github.com/pokt-network/pocket-core/service"
+	
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,7 +17,7 @@ import (
 )
 
 func TestReport(t *testing.T) {
-	report := relay.Report{GID: "test", Message: "foo"}
+	report := service.Report{GID: "test", Message: "foo"}
 	// Start server instance
 	go http.ListenAndServe(":"+config.GetInstance().RRPCPort, shared.NewRouter(relay.Routes()))
 	// @ Url
