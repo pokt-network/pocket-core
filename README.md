@@ -1,26 +1,26 @@
 <div align="center">
-  <img src="https://pokt.network/wp-content/uploads/2018/12/Logo-488x228-px.png" alt="drawing" width="340"/>
+  <img href="www.pokt.network" src="https://pokt.network/wp-content/uploads/2018/12/Logo-488x228-px.png" alt="drawing" width="340"/>
 </div>
 <h1 align="center">Pocket Core</h1>
 <h6 align="center">Official golang implementation of the Pocket Network Protocol.</h6>
 <div align="center">
-  <img alt="undefined" href="https://godoc.org/github.com/pokt-network/pocket-core" src="https://img.shields.io/badge/godoc-reference-blue.svg"/>
-  <img alt="undefined" href="https://goreport.com" src="https://goreportcard.com/badge/github.com/pokt-network/pocket-core"/>
-  <img alt="undefined" src="https://img.shields.io/badge/golang-v1.11-red.svg"/>
-  <img alt="undefined" src="https://img.shields.io/badge/godep-dependency-71a3d9.svg"/>
+  <img href="https://godoc.org/github.com/pokt-network/pocket-core" src="https://img.shields.io/badge/godoc-reference-blue.svg"/>
+  <img href="https://goreport.com" src="https://goreportcard.com/badge/github.com/pokt-network/pocket-core"/>
+  <img src="https://img.shields.io/badge/golang-v1.11-red.svg"/>
+  <img src="https://img.shields.io/badge/godep-dependency-71a3d9.svg"/>
 </div>
 
 <h1 align="center"> Overview</h1>
 <div align="center">
-    <img alt="undefined" src="https://img.shields.io/github/release-pre/pokt-network/pocket-core.svg"/>
-  <img alt="undefined" src="https://img.shields.io/github/languages/code-size/pokt-network/pocket-core.svg"/>
-  <img alt="undefined" src="https://img.shields.io/github/contributors/pokt-network/pocket-core.svg"/>
-  <img alt="undefined" src="https://img.shields.io/badge/License-MIT-blue.svg"/>
+    <img src="https://img.shields.io/github/release-pre/pokt-network/pocket-core.svg"/>
+  <img src="https://img.shields.io/github/languages/code-size/pokt-network/pocket-core.svg"/>
+  <img src="https://img.shields.io/github/contributors/pokt-network/pocket-core.svg"/>
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg"/>
     <br >
-  <img alt="undefined" src="https://img.shields.io/github/last-commit/pokt-network/pocket-core.svg"/>
-  <img alt="undefined" src="https://img.shields.io/github/issues-pr/pokt-network/pocket-core.svg"/>
+  <img src="https://img.shields.io/github/last-commit/pokt-network/pocket-core.svg"/>
+  <img src="https://img.shields.io/github/issues-pr/pokt-network/pocket-core.svg"/>
   <img alt="issues" src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
-  <img alt="undefined" src="https://img.shields.io/github/commit-activity/w/pokt-network/pocket-core.svg"/>
+  <img src="https://img.shields.io/github/commit-activity/w/pokt-network/pocket-core.svg"/>
 </div>
 
 The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can visit [pokt.network](https://pokt.network).
@@ -73,8 +73,8 @@ run: `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
 
 <h1 align="center">Contact</h1>
 <div align="center">
-  <img alt="undefined" href="https://twitter.com/poktnetwork" src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social">
-  <img alt="undefined" href="https://t.me/POKTnetwork" src="https://img.shields.io/badge/Telegram-blue.svg">
-  <img alt="undefined" href="https://www.facebook.com/POKTnetwork" src="https://img.shields.io/badge/Facebook-red.svg">
-  <img alt="undefined" src="https://img.shields.io/discourse/https/research.pokt.network/posts.svg">
+  <img href="https://twitter.com/poktnetwork" src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social">
+  <img href="https://t.me/POKTnetwork" src="https://img.shields.io/badge/Telegram-blue.svg">
+  <img href="https://www.facebook.com/POKTnetwork" src="https://img.shields.io/badge/Facebook-red.svg">
+  <img src="https://img.shields.io/discourse/https/research.pokt.network/posts.svg">
 </div>
