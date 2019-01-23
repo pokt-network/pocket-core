@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="www.pokt.network">
+  <a href="https://www.pokt.network">
     <img src="https://pokt.network/wp-content/uploads/2018/12/Logo-488x228-px.png" alt="drawing" width="340"/>
   </a>
 </div>
