@@ -1,5 +1,7 @@
 <div align="center">
-  <img href="www.pokt.network" src="https://pokt.network/wp-content/uploads/2018/12/Logo-488x228-px.png" alt="drawing" width="340"/>
+  <a href="www.pokt.network">
+    <img src="https://pokt.network/wp-content/uploads/2018/12/Logo-488x228-px.png" alt="drawing" width="340"/>
+  </a>
 </div>
 <h1 align="center">Pocket Core</h1>
 <h6 align="center">Official golang implementation of the Pocket Network Protocol.</h6>
