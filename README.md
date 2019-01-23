@@ -16,7 +16,7 @@
   <img alt="undefined" src="https://img.shields.io/github/languages/code-size/pokt-network/pocket-core.svg"/>
   <img alt="undefined" src="https://img.shields.io/github/contributors/pokt-network/pocket-core.svg"/>
   <img alt="undefined" src="https://img.shields.io/badge/License-MIT-blue.svg"/>
-    
+    <br >
   <img alt="undefined" src="https://img.shields.io/github/last-commit/pokt-network/pocket-core.svg"/>
   <img alt="undefined" src="https://img.shields.io/github/issues-pr/pokt-network/pocket-core.svg"/>
   <img alt="issues" src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
