@@ -36,8 +36,8 @@ var (
 	snwl     = flag.String("sFile", _const.SNWLFILENAME, "specifies the filepath for service_whitelist.json")
 	dwl      = flag.String("dFile", _const.DWLFILENAME, "specifies the filepath for developer_whitelist.json")
 	cRpcPort = flag.String("clientrpcport", "8080", "specified port to run client rpc")
-	cRpc     = flag.Bool("clientrpc", false, "whether or not to start the rpc server")
-	rRpc     = flag.Bool("relayrpc", false, "whether or not to start the rpc server")
+	cRpc     = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
+	rRpc     = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 )
 
 // "Init" initializes the configuration object.
