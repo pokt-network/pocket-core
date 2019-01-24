@@ -6,23 +6,45 @@
 <h1 align="center">Pocket Core</h1>
 <h6 align="center">Official golang implementation of the Pocket Network Protocol.</h6>
 <div align="center">
-  <img href="https://godoc.org/github.com/pokt-network/pocket-core" src="https://img.shields.io/badge/godoc-reference-blue.svg"/>
-  <img href="https://goreportcard.com/report/github.com/pokt-network/pocket-core" src="https://goreportcard.com/badge/github.com/pokt-network/pocket-core"/>
-  <img href="https://golang.org" src="https://img.shields.io/badge/golang-v1.11-red.svg"/>
-  <img href="https://github.com/tools/godep" src="https://img.shields.io/badge/godep-dependency-71a3d9.svg"/>
+  <a  href="https://godoc.org/github.com/pokt-network/pocket-core">
+    <img src="https://img.shields.io/badge/godoc-reference-blue.svg"/>
+  </a>
+  <a  href="https://goreportcard.com/report/github.com/pokt-network/pocket-core">
+    <img src="https://goreportcard.com/badge/github.com/pokt-network/pocket-core"/>
+    </a>
+  <a href="https://golang.org">
+  <img  src="https://img.shields.io/badge/golang-v1.11-red.svg"/>
+    </a>
+  <a  href="https://github.com/tools/godep" >
+    <img src="https://img.shields.io/badge/godep-dependency-71a3d9.svg"/>
+  </a>
 </div>
 
 <h1 align="center"> Overview</h1>
-<div align="center">
-    <img href="https://github.com/pokt-network/pocket-core/releases" src="https://img.shields.io/github/release-pre/pokt-network/pocket-core.svg"/>
-  <img href="https://github.com/pokt-network/pocket-core/pulse" src="https://img.shields.io/github/languages/code-size/pokt-network/pocket-core.svg"/>
-  <img href="https://github.com/pokt-network/pocket-core/pulse" src="https://img.shields.io/github/contributors/pokt-network/pocket-core.svg"/>
-  <img href="https://opensource.org/licenses/MIT" src="https://img.shields.io/badge/License-MIT-blue.svg"/>
+  <div align="center">
+    <a  href="https://github.com/pokt-network/pocket-core/releases">
+      <img src="https://img.shields.io/github/release-pre/pokt-network/pocket-core.svg"/>
+    </a>
+    <a href="https://github.com/pokt-network/pocket-core/pulse">
+      <img src="https://img.shields.io/github/languages/code-size/pokt-network/pocket-core.svg"/>
+    </a>
+    <a  href="https://github.com/pokt-network/pocket-core/pulse">
+      <img src="https://img.shields.io/github/contributors/pokt-network/pocket-core.svg"/>
+    </a>
+    <a href="https://opensource.org/licenses/MIT">
+      <img src="https://img.shields.io/badge/License-MIT-blue.svg"/>
+    </a>
     <br >
-  <img href="https://github.com/pokt-network/pocket-core/pulse" src="https://img.shields.io/github/last-commit/pokt-network/pocket-core.svg"/>
-  <img href="https://github.com/pokt-network/pocket-core/issues" src="https://img.shields.io/github/issues-pr/pokt-network/pocket-core.svg"/>
-  <img alt="issues" href="https://github.com/pokt-network/pocket-core/issues?q=is%3Aissue+is%3Aclosed" src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
-  <img href="https://github.com/pokt-network/pocket-core/commits/staging" src="https://img.shields.io/github/commit-activity/w/pokt-network/pocket-core.svg"/>
+    <a href="https://github.com/pokt-network/pocket-core/pulse">
+      <img src="https://img.shields.io/github/last-commit/pokt-network/pocket-core.svg"/>
+    </a>
+    <a href="https://github.com/pokt-network/pocket-core/issues">
+      <img src="https://img.shields.io/github/issues-pr/pokt-network/pocket-core.svg"/>
+    </a>
+  <img src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
+    <a href="https://github.com/pokt-network/pocket-core/commits/staging" >
+      <img src="https://img.shields.io/github/commit-activity/w/pokt-network/pocket-core.svg"/>
+    </a>
 </div>
 
 The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can visit [pokt.network](https://pokt.network).
@@ -75,8 +97,16 @@ run: `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
 
 <h1 align="center">Contact</h1>
 <div align="center">
-  <img href="https://twitter.com/poktnetwork" src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social">
-  <img href="https://t.me/POKTnetwork" src="https://img.shields.io/badge/Telegram-blue.svg">
-  <img href="https://www.facebook.com/POKTnetwork" src="https://img.shields.io/badge/Facebook-red.svg">
-  <img href="https://research.pokt.network" src="https://img.shields.io/discourse/https/research.pokt.network/posts.svg">
+  <a  href="https://twitter.com/poktnetwork" >
+    <img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social">
+  </a>
+  <a href="https://t.me/POKTnetwork">
+    <img src="https://img.shields.io/badge/Telegram-blue.svg">
+  </a>
+  <a href="https://www.facebook.com/POKTnetwork" >
+  <img src="https://img.shields.io/badge/Facebook-red.svg">
+  </a>
+  <a href="https://research.pokt.network">
+  <img src="https://img.shields.io/discourse/https/research.pokt.network/posts.svg">
+  </a>
 </div>
