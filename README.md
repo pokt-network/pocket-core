@@ -52,23 +52,29 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 <h1 align="center">How to run it</h1>
 
 To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
-
-    -clientrpc
-      	whether or not to start the rpc server
-    -clientrpcport string
-      	specified port to run client rpc (default "8080")
-    -datadir string
-      	setup the data director for the DB and keystore 
-      	(default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
-    -hostedchains string
-      	specifies the filepath for hosted chains (default "datadir/chains.json")
-    -peerFile string
-      	specifies the filepath for peers.json (default "datadir/peers.json")
-    -relayrpc
-      	whether or not to start the rpc server
-    -relayrpcport string
-      	specified port to run relay rpc (default "8081")
-
+````
+  -clientrpc
+    	whether or not to start the rpc server
+  -clientrpcport string
+    	specified port to run client rpc
+  -datadir string
+    	setup the data directory for the DB and keystore
+        (default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
+  -dwl string
+    	specifies the filepath for developer_whitelist.json
+  -gid string
+    	set the selfNode.GID for pocket core mvp
+  -hostedchains string
+    	specifies the filepath for hosted chains
+  -peerFile string
+    	specifies the filepath for peers.json
+  -relayrpc
+    	whether or not to start the rpc server
+  -relayrpcport string
+    	specified port to run relay rpc
+  -snwl string
+    	specifies the filepath for service_whitelist.json
+````
 <h1 align="center">How to test</h1>
 To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory
 
