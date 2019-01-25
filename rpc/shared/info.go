@@ -8,7 +8,6 @@ import (
 )
 
 // "CreateInfoStruct" generates the specific APIReference structure dynamically.
-// TODO adapt this for slice structures
 func CreateInfoStruct(r *http.Request, method string, model interface{}, returns string) APIReference {
 	params := util.StructTags(model)
 	return APIReference{r.Host + r.URL.String(), method,
