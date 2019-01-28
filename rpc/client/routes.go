@@ -1,12 +1,18 @@
 package client
 
 import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-// "ClientRoutes" is a function that returns all of the routes of the API.
-func ClientRoutes() shared.Routes {
+// "Routes" is a function that returns all of the routes of the API.
+func Routes() shared.Routes {
 	routes := shared.Routes{
+		shared.Route{Name: "Routes", Method: "GET", Path: "/v1/routes", HandlerFunc: GetRoutes},
 		shared.Route{Name: "Register", Method: "POST", Path: "/v1/register", HandlerFunc: Register},
 		shared.Route{Name: "UnRegister", Method: "POST", Path: "/v1/unregister", HandlerFunc: UnRegister},
 		shared.Route{Name: "RegisterInfo", Method: "GET", Path: "/v1/register", HandlerFunc: RegisterInfo},
@@ -53,4 +59,17 @@ func ClientRoutes() shared.Routes {
 		shared.Route{Name: "GetTxByHash", Method: "POST", Path: "/v1/pocket/transaction/hash", HandlerFunc: GetTxByHash},
 	}
 	return routes
+}
+
+// "GetRoutes" handles the localhost:<relay-port>/routes call.
+func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var paths []string
+	for _, v := range Routes() {
+		paths = append(paths, v.Path)
+	}
+	j, err := json.MarshalIndent(paths, "", "    ")
+	if err != nil {
+		logs.NewLog("Unable to marshal GetRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
+	}
+	shared.WriteRawJSONResponse(w, j)
 }

@@ -12,9 +12,3 @@ import (
 func GetRelayAPIVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteResponse(w, _const.RAPIVERSION)
 }
-
-// "GetRoutes" handles the localhost:<relay-port>/routes call.
-func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// expose routes in json format todo
-	shared.WriteResponse(w, _const.RAPIVERSION)
-}
