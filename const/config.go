@@ -1,7 +1,6 @@
 // This package holds global constants.
 package _const
 
-// TODO will need API version for relay and client RPC
 const (
 	// client identifier
 	CLIENTID = "pocket_core"
@@ -9,6 +8,8 @@ const (
 	VERSION = "0.0.1"
 	// pocket core mvp netID
 	NETID = 0
-	// version of Pocket Core API
-	APIVERSION = "0.0.1"
+	// version of Pocket Core Relay API
+	RAPIVERSION = "0.0.1"
+	// version of Pocket Core Client API
+	CAPIVERSION = "0.0.1"
 )

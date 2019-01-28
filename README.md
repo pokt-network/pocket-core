@@ -38,16 +38,18 @@
     <a href="https://github.com/pokt-network/pocket-core/pulse">
       <img src="https://img.shields.io/github/last-commit/pokt-network/pocket-core.svg"/>
     </a>
-    <a href="https://github.com/pokt-network/pocket-core/issues">
+    <a href="https://github.com/pokt-network/pocket-core/pulls">
       <img src="https://img.shields.io/github/issues-pr/pokt-network/pocket-core.svg"/>
     </a>
-  <img src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
+    <a href="https://github.com/pokt-network/pocket-core/issues">
+        <img src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
+    </a>
     <a href="https://github.com/pokt-network/pocket-core/commits/staging" >
       <img src="https://img.shields.io/github/commit-activity/w/pokt-network/pocket-core.svg"/>
     </a>
 </div>
 
-The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can visit [pokt.network](https://pokt.network).
+The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can visit <a href="https://pokt.network">pokt.network</a>.
 
 <h1 align="center">How to run it</h1>
 
@@ -79,20 +81,20 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
 To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory
 
 <h1 align="center">How to contribute</h1>
-Pocket Core is an open source project, and as such we welcome any contribution from anyone on the internet. Please read our [Developer Setup Guide](https://github.com/pokt-network/pocket-core/wiki/Developer-Setup-Guide) on how get started.
+Pocket Core is an open source project, and as such we welcome any contribution from anyone on the internet. Please read our <a href="https://github.com/pokt-network/pocket-core/wiki/Developer-Setup-Guide">Developer Setup Guide</a> on how get started.
 
 Please fork, code and submit a Pull Request for the Pocket Core Team to review and merge. We ask that you please follow the guidelines below in order to submit your contributions for review:
 
 <h3 align="center">High impact or architectural changes</h3>
-Reach out to us on [Telegram](https://t.me/POKTnetwork) and start a discussion with the Pocket Core Team regarding your change before you start working. Communication is key for open source projects and asynchronous contributions.
+Reach out to us on <a href="https://t.me/POKTnetwork">Telegram</a> and start a discussion with the Pocket Core Team regarding your change before you start working. Communication is key for open source projects and asynchronous contributions.
 
-For an active research forum, checkout and post on [our forum](https://research.pokt.network).
+For an active research forum, checkout and post on <a href="https://research.pokt.network">our forum</a>.
 
 <h3 align="center">Coding style</h3>
 <ul>
-  <li>Code must adhere to the official Go formatting guidelines (i.e. uses [gofmt](https://golang.org/cmd/gofmt)).</li>
+	<li>Code must adhere to the official Go formatting guidelines (i.e. uses <a href="https://golang.org/cmd/gofmt">gofmt</a>).</li>
 
-  <li>(Optional) Use [Editor Config](https://editorconfig.org) to help your Text Editor keep the same formatting used throughout the project.</li>
+  <li>(Optional) Use <a href="https://editorconfig.org">Editor Config</a> to help your Text Editor keep the same formatting used throughout the project.</li>
 
   <li>Code must be documented adhering to the official Go commentary guidelines.</li>
 
