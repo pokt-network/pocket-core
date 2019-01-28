@@ -38,10 +38,12 @@
     <a href="https://github.com/pokt-network/pocket-core/pulse">
       <img src="https://img.shields.io/github/last-commit/pokt-network/pocket-core.svg"/>
     </a>
-    <a href="https://github.com/pokt-network/pocket-core/issues">
+    <a href="https://github.com/pokt-network/pocket-core/pulls">
       <img src="https://img.shields.io/github/issues-pr/pokt-network/pocket-core.svg"/>
     </a>
-  <img src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
+    <a href="https://github.com/pokt-network/pocket-core/issues">
+        <img src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
+    </a>
     <a href="https://github.com/pokt-network/pocket-core/commits/staging" >
       <img src="https://img.shields.io/github/commit-activity/w/pokt-network/pocket-core.svg"/>
     </a>
