@@ -9,7 +9,7 @@ import (
 	"github.com/pokt-network/pocket-core/const"
 )
 
-// TODO configuration updating
+// TODO configuration updating through CLI
 type config struct {
 	GID      string `json:"GID"`          // This variable holds self.GID.
 	CID      string `json:"CLIENTID"`     // This variable holds a client identifier string.

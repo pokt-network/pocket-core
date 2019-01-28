@@ -8,6 +8,7 @@ import (
 func Routes() shared.Routes {
 	routes := shared.Routes{
 		shared.Route{Name: "GetRelayAPIVersion", Method: "GET", Path: "/v1", HandlerFunc: GetRelayAPIVersion},
+		shared.Route{Name: "GetRoutes", Method: "GET", Path: "/v1/routes", HandlerFunc: GetRoutes},
 		shared.Route{Name: "ReportServiceNode", Method: "POST", Path: "/v1/report", HandlerFunc: ReportServiceNode},
 		shared.Route{Name: "ReportServiceNodeInfo", Method: "GET", Path: "/v1/report", HandlerFunc: ReportServiceNodeInfo},
 		shared.Route{Name: "DispatchOptions", Method: "POST", Path: "/v1/dispatch", HandlerFunc: DispatchOptions},
