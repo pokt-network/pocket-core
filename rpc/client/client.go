@@ -8,21 +8,21 @@ import (
 )
 
 // "GetClient" handles the localhost:<client-port>/v1/client call.
-func GetClientInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func CliInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-// "GetClientID" handles the localhost:<client-port>/v1/client/id call.
-func GetClientID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// "CliID" handles the localhost:<client-port>/v1/client/id call.
+func CliID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-// "GetClientVersion" handles the localhost:<client-port>/v1/client/version call.
-func GetClientVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// "CliVersion" handles the localhost:<client-port>/v1/client/version call.
+func CliVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-// "GetCliSyncStatus" handles the localhost:<client-port>/v1/client/syncing call.
-func GetCliSyncStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// "CliSyncStatus" handles the localhost:<client-port>/v1/client/syncing call.
+func CliSyncStatus(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }

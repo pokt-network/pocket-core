@@ -13,7 +13,7 @@ import (
 // "Register" handles the localhost:<client-port>/v1/register call.
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := &node.Node{}
-	if err := shared.PopulateModelFromParams(w, r, ps, n); err != nil {
+	if err := shared.PopModel(w, r, ps, n); err != nil {
 		shared.WriteJSONResponse(w, "500 error: "+err.Error())
 		return
 	}
@@ -31,7 +31,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 // "Register" handles the localhost:<client-port>/v1/register call.
 func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := &node.Node{}
-	if err := shared.PopulateModelFromParams(w, r, ps, n); err != nil {
+	if err := shared.PopModel(w, r, ps, n); err != nil {
 		shared.WriteJSONResponse(w, "500 error: "+err.Error())
 		return
 	}
@@ -43,11 +43,11 @@ func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func RegisterInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	info := shared.CreateInfoStruct(r, "Register", node.Node{}, "Success or failure message")
+	info := shared.InfoStruct(r, "Register", node.Node{}, "Success or failure message")
 	shared.WriteInfoResponse(w, info)
 }
 
 func UnRegisterInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	info := shared.CreateInfoStruct(r, "UnRegister", node.Node{}, "Success or failure message")
+	info := shared.InfoStruct(r, "UnRegister", node.Node{}, "Success or failure message")
 	shared.WriteInfoResponse(w, info)
 }

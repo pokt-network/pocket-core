@@ -19,7 +19,7 @@ import (
 func TestReport(t *testing.T) {
 	report := service.Report{GID: "test", Message: "foo"}
 	// Start server instance
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
+	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
 	// @ Url
 	u := "http://localhost:" + config.Get().RRPCPort + "/v1/report"
 	j, err := json.Marshal(report)
