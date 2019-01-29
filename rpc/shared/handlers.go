@@ -11,7 +11,7 @@ import (
 )
 
 // Populate the model from the parameters of the POST call.
-func PopulateModelFromParams(_ http.ResponseWriter, r *http.Request, _ httprouter.Params, model interface{}) error {
+func PopModel(_ http.ResponseWriter, r *http.Request, _ httprouter.Params, model interface{}) error {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 	if err != nil {
 		return err

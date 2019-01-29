@@ -7,18 +7,13 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-// "GetPersonalInfo" handles the localhost:<client-port>/v1/personal call.
-func GetPersonalInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// "PersonalInfo" handles the localhost:<client-port>/v1/personal call.
+func PersonalInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-// "ListAccounts" handles the localhost:<client-port>/v1/personal/accounts call.
-func ListAccounts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
-}
-
-// "PersonalNetOptions" handles the localhost:<client-port>/v1/personal/network call.
-func PersonalNetOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// "Accounts" handles the localhost:<client-port>/v1/personal/accounts call.
+func Accounts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
@@ -32,8 +27,8 @@ func ExitNetwork(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-// "GetPrimaryAddr" handles the localhost:<client-port>/v1/personal/primary_address call.
-func GetPrimaryAddr(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// "PrimaryAddr" handles the localhost:<client-port>/v1/personal/primary_address call.
+func PrimaryAddr(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
@@ -52,12 +47,6 @@ func SendPOKTRaw(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func Sign(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
-
-// "StakeOptions" handles the localhost:<client-port>/v1/personal/stake call.
-func StakeOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
-}
-
 // "Stake" handles the localhost:<client-port>/v1/personal/stake/add call.
 func Stake(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")

@@ -9,6 +9,6 @@ import (
 )
 
 // "getClientAPIVersion" handles the localhost:<client-port>/v1 call.
-func GetClientAPIVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func Version(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, _const.RAPIVERSION)
 }
