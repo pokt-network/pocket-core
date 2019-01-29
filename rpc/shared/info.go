@@ -52,7 +52,7 @@ func apiRef(data string, i interface{}) string {
 				// convert to single element of slice object
 				sa := reflect.Zero(reflect.TypeOf(s).Elem()).Interface()
 				// recursively run the struct builder
-				data += "\"" + n + "\":[" + ApiRef(sa) + ", {struct2}], "
+				data += "\"" + n + "\":[" + ApiRef(sa) + "], "
 				continue
 			}
 			if e.Kind() == reflect.Slice { // slice of slices
@@ -62,7 +62,7 @@ func apiRef(data string, i interface{}) string {
 					s := reflect.Zero(e).Interface()
 					// convert single element of slice to object
 					sa := reflect.Zero(reflect.TypeOf(s).Elem()).Interface()
-					data += "\"" + n + "\":[[" + ApiRef(sa) + ", struct2], [struct1,struct2]], "
+					data += "\"" + n + "\":[[" + ApiRef(sa) + "]], "
 					continue
 				}
 				// inner elm is not a struct
