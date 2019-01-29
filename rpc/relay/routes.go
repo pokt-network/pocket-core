@@ -28,7 +28,9 @@ func Routes() shared.Routes {
 func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var paths []string
 	for _, v := range Routes() {
-		paths = append(paths, v.Path)
+		if v.Method != "GET" {
+			paths = append(paths, v.Path)
+		}
 	}
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
