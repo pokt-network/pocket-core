@@ -22,6 +22,6 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 // "DispatchInfo" handles a get request to localhost:<relay-port>/v1/dispatch/serve call.
 // And provides the developers with an in-client reference to the API call
 func DispatchInfo(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	info := shared.InfoStruct(r, "Serve", dispatch.Dispatch{}, "list of service nodes")
+	info := shared.InfoStruct(r, "Serve", dispatch.Dispatch{}, "zero or more service nodes")
 	shared.WriteInfoResponse(w, info)
 }
