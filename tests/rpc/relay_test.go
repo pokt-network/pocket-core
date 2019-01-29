@@ -27,7 +27,11 @@ func TestRelay(t *testing.T) {
 	node.TestChains()
 	fmt.Println(node.GetChains())
 	// Start server instance
+<<<<<<< HEAD
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
+=======
+	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
+>>>>>>> fixed all possible todos throughout package
 	// @ Url
 	u := "http://localhost:" + config.Get().RRPCPort + "/v1/relay/"
 	// Setup relay
