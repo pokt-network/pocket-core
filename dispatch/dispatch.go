@@ -43,14 +43,13 @@ func Serve(dispatch *Dispatch) []byte {
 /*
 "Find" orders the nodes from smallest proximity from sessionKey to largest proximity to sessionKey.
 // TODO convert to P2P -> currently just searches the peerlist
-// TODO NEED a separate dispatch file with calls like these
 */
 func Find(sessionKey string) []node.Node {
 	// create new key
 	bigSessionKey := new(big.Int)
 	bigSessionKey.SetString(sessionKey, 16)
 	peerList := node.GetPeerList()
-	peerList.Mux.Lock() // TODO currently locking the peerlist, however this will all change when p2p is integerated
+	peerList.Mux.Lock()
 	defer peerList.Mux.Unlock()
 	// map the nodes to the corresponding difference
 	m := make(map[uint64]node.Node)
