@@ -13,8 +13,7 @@ import (
 // "Register" handles the localhost:<client-port>/v1/register call.
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := &node.Node{}
-	err := shared.PopulateModelFromParams(w, r, ps, n)
-	if err != nil {
+	if err := shared.PopulateModelFromParams(w, r, ps, n); err != nil {
 		shared.WriteResponse(w, "500 error: "+err.Error())
 		return
 	}
@@ -32,8 +31,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 // "Register" handles the localhost:<client-port>/v1/register call.
 func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := &node.Node{}
-	err := shared.PopulateModelFromParams(w, r, ps, n)
-	if err != nil {
+	if err := shared.PopulateModelFromParams(w, r, ps, n); err != nil {
 		shared.WriteResponse(w, "500 error: "+err.Error())
 		return
 	}
