@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 
 	"github.com/pokt-network/pocket-core/const"
@@ -11,7 +12,6 @@ import (
 )
 
 // "Relay" is a JSON structure that specifies information to complete reads and writes to other blockchains
-// TODO convert to blockchain structure (see node.Blockchain)
 type Relay struct {
 	Blockchain string `json:"blockchain"`
 	NetworkID  string `json:"netid"`
@@ -26,7 +26,7 @@ func RouteRelay(relay Relay) (string, error) {
 		port := node.GetChainPort(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID, Version: relay.Version})
 		if port == "" {
 			logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
-			return "Error: not a supported blockchain", nil // TODO custom error here
+			return "", errors.New("not a supported blockchain")
 		}
 		return rpc.ExecuteRequest([]byte(relay.Data), port)
 	}

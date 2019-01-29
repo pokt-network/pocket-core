@@ -5,7 +5,6 @@ import (
 	"sync"
 )
 
-// TODO replace redundant code with this general type
 type List struct {
 	M   map[interface{}]interface{}
 	Mux sync.Mutex

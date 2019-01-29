@@ -22,7 +22,6 @@ func sessionMSG(message *Message) {
 	// create a session using developerID from payload
 	s := session.Session{DevID: spl.DevID,
 		Peers: session.NewPeerList()}
-	// TODO create new connections with each peer
 	s.AddPeers(spl.Peers)
 	// adds new session to sessionList and adds peers to the peerList
 	sl.Add(s)

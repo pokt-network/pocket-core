@@ -32,7 +32,7 @@ func TestLogsDir(t *testing.T) {
 func TestDataDir(t *testing.T) {
 	config.Init()
 	config.Print()
-	datadir := config.GetInstance().DD
+	datadir := config.Get().DD
 	if datadir == _const.DATADIR {
 		t.Log(datadir)
 	} else {

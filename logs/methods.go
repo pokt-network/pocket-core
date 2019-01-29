@@ -51,14 +51,14 @@ func NewLog(message string, level LogLevel, format LogFormat) {
 	log.LineNumber = strconv.Itoa(frame.Line)
 	log.Message = message
 	if err := Logger(log); err != nil {
-		// TODO handle error
+		panic(err.Error())
 	}
 }
 
 // "Logger" prints the log to data directory
 func Logger(l Log) error {
 	// open/create the new log file
-	f, err := os.OpenFile(config.GetInstance().DD+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	f, err := os.OpenFile(config.Get().DD+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		return err
 	}
