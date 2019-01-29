@@ -15,10 +15,14 @@ Unit test for APIReference
 func TestApiReference(t *testing.T) {
 	// Start server instance
 <<<<<<< HEAD
+<<<<<<< HEAD
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
 =======
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
 >>>>>>> fixed all possible todos throughout package
+=======
+	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
+>>>>>>> updated RPC package names, removed unnecessary 'Get' as specified in 'Effective Go'
 	// @ Url
 	u := "http://localhost:" + config.Get().RRPCPort + "/v1/dispatch/serve"
 	// Send get request
