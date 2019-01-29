@@ -73,12 +73,12 @@ func (w *Whitelist) Count() int {
 
 // "SWLFile" builds the service white list from a file.
 func SWLFile() error {
-	return GetSWL().wlFile(config.GetInstance().DWL)
+	return GetSWL().wlFile(config.Get().DWL)
 }
 
 // "DWLFile" builds the develoeprs white list from a file.
 func DWLFile() error {
-	return GetDWL().wlFile(config.GetInstance().SNWL)
+	return GetDWL().wlFile(config.Get().SNWL)
 }
 
 // "wlFile" builds a whitelist structure from a file.

@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func GetIPAdress() (string, error) { // TODO wonering if there is a cleaner way to get public ip.
+func GetIPAdress() (string, error) {
 	url := "https://api.ipify.org?format=text"
 	fmt.Printf("Getting IP address from  ipify ...\n")
 	resp, err := http.Get(url)

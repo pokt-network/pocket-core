@@ -48,14 +48,14 @@ func StartServers() {
 }
 
 // "rmsgServer" runs the relay messaging server.
-func rmsgServer() { // TODO handle error
+func rmsgServer() {
 	if err := listen(RMSGPORT); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 }
 
 // "runBCMSGserver" runs the blockchain messaging server.
-func bmsgServer() { // TODO handle error
+func bmsgServer() {
 	if err := listen(BCMSGPORT); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
@@ -85,7 +85,6 @@ func listen(port string) error {
 
 // "receive" handles incoming messages accordingly.
 func receive(conn *net.UDPConn, buf []byte) error {
-	// TODO is this mux necessary?
 	server.Lock()
 	defer server.Unlock()
 	n, addr, err := conn.ReadFromUDP(buf)
