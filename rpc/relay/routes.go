@@ -16,8 +16,8 @@ func Routes() shared.Routes {
 		shared.Route{Name: "GetRoutes", Method: "GET", Path: "/v1/routes", HandlerFunc: GetRoutes},
 		shared.Route{Name: "Report", Method: "POST", Path: "/v1/report", HandlerFunc: Report},
 		shared.Route{Name: "ReportInfo", Method: "GET", Path: "/v1/report", HandlerFunc: ReportInfo},
-		shared.Route{Name: "Dispatch", Method: "POST", Path: "/v1/dispatch/serve", HandlerFunc: Dispatch},
-		shared.Route{Name: "DispatchInfo", Method: "GET", Path: "/v1/dispatch/serve", HandlerFunc: DispatchInfo},
+		shared.Route{Name: "Dispatch", Method: "POST", Path: "/v1/dispatch", HandlerFunc: Dispatch},
+		shared.Route{Name: "DispatchInfo", Method: "GET", Path: "/v1/dispatch", HandlerFunc: DispatchInfo},
 		shared.Route{Name: "Relay", Method: "POST", Path: "/v1/relay/", HandlerFunc: Relay},
 		shared.Route{Name: "RelayInfo", Method: "GET", Path: "/v1/relay/", HandlerFunc: RelayInfo},
 	}
