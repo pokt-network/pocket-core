@@ -28,10 +28,14 @@ func TestRelay(t *testing.T) {
 	fmt.Println(node.GetChains())
 	// Start server instance
 <<<<<<< HEAD
+<<<<<<< HEAD
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
 =======
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
 >>>>>>> fixed all possible todos throughout package
+=======
+	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
+>>>>>>> updated RPC package names, removed unnecessary 'Get' as specified in 'Effective Go'
 	// @ Url
 	u := "http://localhost:" + config.Get().RRPCPort + "/v1/relay/"
 	// Setup relay
