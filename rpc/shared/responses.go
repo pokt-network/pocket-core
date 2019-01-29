@@ -28,6 +28,8 @@ func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.WriteHeader(http.StatusOK)
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())

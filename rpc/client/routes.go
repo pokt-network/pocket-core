@@ -68,6 +68,8 @@ func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		paths = append(paths, v.Path)
 	}
 	j, err := json.MarshalIndent(paths, "", "    ")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	if err != nil {
 		logs.NewLog("Unable to marshal GetRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
 	}
