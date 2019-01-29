@@ -44,8 +44,8 @@
     <a href="https://github.com/pokt-network/pocket-core/releases">
       <img src="https://img.shields.io/badge/platform-linux%20%7C%20windows%20%7C%20macos-pink.svg"/>
     </a>
-    <a href="https://github.com/pokt-network/pocket-core/issues">
-      <img src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/>
+    <a href="https://github.com/pokt-network/pocket-core/releases" >
+      <img src="https://img.shields.io/badge/platform-linux | windows | macos-grey.svg/>
     </a>
 </div>
 
