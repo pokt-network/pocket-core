@@ -21,15 +21,15 @@ Unit test for the relay functionality
 func TestRelay(t *testing.T) {
 	node.GetDWL().Add("DEVID1")
 	// grab the hosted chains via file
-	if err := node.CFIle(config.GetInstance().CFile); err != nil {
+	if err := node.CFIle(config.Get().CFile); err != nil {
 		t.Fatalf(err.Error())
 	}
 	node.TestChains()
 	fmt.Println(node.GetChains())
 	// Start server instance
-	go http.ListenAndServe(":"+config.GetInstance().RRPCPort, shared.NewRouter(relay.Routes()))
+	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
 	// @ Url
-	u := "http://localhost:" + config.GetInstance().RRPCPort + "/v1/relay/"
+	u := "http://localhost:" + config.Get().RRPCPort + "/v1/relay/"
 	// Setup relay
 	r := service.Relay{}
 	// add blockchain value

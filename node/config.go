@@ -1,22 +1,25 @@
 package node
 
-import "github.com/pokt-network/pocket-core/config"
+import (
+	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/logs"
+)
 
 func Files() {
 	// Map.json
-	if err := ManualPeersFile(config.GetInstance().PFile); err != nil { // add Map from file
-		// TODO handle error (note: if file doesn't exist this still should work)
+	if err := ManualPeersFile(config.Get().PFile); err != nil { // add Map from file
+		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 	}
 	// chains.json
-	if err := CFIle(config.GetInstance().CFile); err != nil {
-		// TODO handle error (note: if hosted chains file doesn't exist how to proceed?"
+	if err := CFIle(config.Get().CFile); err != nil {
+		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 	}
 	// whitelists for centralized dispatcher
 	WhiteListInit()
 	if err := SWLFile(); err != nil {
-		// TODO handle error
+		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 	}
 	if err := DWLFile(); err != nil {
-		// TODO handle error
+		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 	}
 }

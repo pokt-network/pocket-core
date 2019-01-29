@@ -10,10 +10,9 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-// TODO fix dispatch serve example APIInformation
 // "DispatchOptions" handles the localhost:<relay-port>/v1/dispatch call.
 func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteResponse(w, "Hello! This endpoint is currently in development!")
+	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
 // "DispatchServe" handles the localhost:<relay-port>/v1/dispatch/serve call.
