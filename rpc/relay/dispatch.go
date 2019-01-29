@@ -6,6 +6,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/dispatch"
+	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
@@ -18,7 +19,9 @@ func DispatchOptions(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 // "DispatchServe" handles the localhost:<relay-port>/v1/dispatch/serve call.
 func DispatchServe(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	d := &dispatch.Dispatch{}
-	shared.PopulateModelFromParams(w, r, ps, d)
+	if err:=shared.PopulateModelFromParams(w, r, ps, d); err!=nil{
+		logs.NewLog(err.Error(),logs.ErrorLevel, logs.JSONLogFormat)
+	}
 	shared.WriteRawJSONResponse(w, dispatch.Serve(d))
 }
 
