@@ -7,16 +7,16 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 )
 
-// "CreateInfoStruct" generates the specific APIReference structure dynamically.
-func CreateInfoStruct(r *http.Request, method string, model interface{}, returns string) APIReference {
+// "InfoStruct" generates the specific APIReference structure dynamically.
+func InfoStruct(r *http.Request, method string, model interface{}, returns string) APIReference {
 	params := util.StructTags(model)
 	return APIReference{r.Host + r.URL.String(), method,
 		params, returns,
-		createExampleString(r.Host+r.URL.String(), ApiRef(model))}
+		example(r.Host+r.URL.String(), ApiRef(model))}
 }
 
-// "createExampleString" creates the APIReference example string shown to the devs.
-func createExampleString(url string, data string) string {
+// "example" creates the APIReference example string shown to the devs.
+func example(url string, data string) string {
 	return "curl --data " + data + " " + url
 }
 

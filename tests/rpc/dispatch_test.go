@@ -47,7 +47,7 @@ func TestDispatchServe(t *testing.T) {
 	// json call string for dispatch serve
 	requestJSON := []byte("{\"DevID\": \"foo\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
 	// start relay server
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
+	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
 	// url for the POST request
 	u := "http://localhost:" + config.Get().RRPCPort + "/v1/dispatch/serve"
 	req, err := http.NewRequest("POST", u, bytes.NewBuffer(requestJSON))

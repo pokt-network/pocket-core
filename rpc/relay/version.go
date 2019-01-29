@@ -8,7 +8,7 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-// "GetRelayAPIVersion" handles the localhost:<relay-port>/v1 call.
-func GetRelayAPIVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+// "Version" handles the localhost:<relay-port>/v1 call.
+func Version(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, _const.RAPIVERSION)
 }
