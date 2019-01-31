@@ -18,9 +18,9 @@ type APIError struct {
 
 // "APIReference' is an in-client API reference.
 type APIReference struct {
-	Endpoint   string   `json:"endpoint"`
-	Method     string   `json:"method"`
-	Parameters []string `json:"params"`
-	Returns    string   `json:"returns"`
-	Example    string   `json:"example"`
+	Endpoint   string `json:"endpoint"`
+	Method     string `json:"method"`
+	Parameters string `json:"params"`
+	Returns    string `json:"returns"`
+	Example    string `json:"example"`
 }
