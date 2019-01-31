@@ -3,15 +3,12 @@ package shared
 import (
 	"net/http"
 	"reflect"
-
-	"github.com/pokt-network/pocket-core/util"
 )
 
 // "InfoStruct" generates the specific APIReference structure dynamically.
 func InfoStruct(r *http.Request, method string, model interface{}, returns string) APIReference {
-	params := util.StructTags(model)
 	return APIReference{r.Host + r.URL.String(), method,
-		params, returns,
+		ApiRef(model), returns,
 		example(r.Host+r.URL.String(), ApiRef(model))}
 }
 
