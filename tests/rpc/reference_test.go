@@ -1,12 +1,13 @@
 package rpc
 
 import (
-	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/rpc/relay"
-	"github.com/pokt-network/pocket-core/rpc/shared"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/rpc/relay"
+	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
 /*
@@ -14,17 +15,9 @@ Unit test for APIReference
 */
 func TestApiReference(t *testing.T) {
 	// Start server instance
-<<<<<<< HEAD
-<<<<<<< HEAD
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
-=======
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
->>>>>>> fixed all possible todos throughout package
-=======
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
->>>>>>> updated RPC package names, removed unnecessary 'Get' as specified in 'Effective Go'
 	// @ Url
-	u := "http://localhost:" + config.Get().RRPCPort + "/v1/dispatch/serve"
+	u := "http://localhost:" + config.Get().RRPCPort + "/v1/dispatch"
 	// Send get request
 	resp, err := http.Get(u)
 	if err != nil {
