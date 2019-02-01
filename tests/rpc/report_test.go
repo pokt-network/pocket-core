@@ -4,30 +4,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"github.com/pokt-network/pocket-core/service"
-
-	"io/ioutil"
-	"log"
-	"net/http"
-	"testing"
 )
 
 func TestReport(t *testing.T) {
 	report := service.Report{GID: "test", Message: "foo"}
 	// Start server instance
-<<<<<<< HEAD
-<<<<<<< HEAD
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
-=======
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
->>>>>>> fixed all possible todos throughout package
-=======
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
->>>>>>> updated RPC package names, removed unnecessary 'Get' as specified in 'Effective Go'
 	// @ Url
 	u := "http://localhost:" + config.Get().RRPCPort + "/v1/report"
 	j, err := json.Marshal(report)

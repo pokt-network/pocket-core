@@ -4,38 +4,30 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 	"github.com/pokt-network/pocket-core/service"
-
-	"io/ioutil"
-	"net/http"
-	"testing"
 )
 
 /*
 Unit test for the relay functionality
 */
 func TestRelay(t *testing.T) {
-	node.GetDWL().Add("DEVID1")
+	node.DWL().Add("DEVID1")
 	// grab the hosted chains via file
 	if err := node.CFIle(config.Get().CFile); err != nil {
 		t.Fatalf(err.Error())
 	}
 	node.TestChains()
-	fmt.Println(node.GetChains())
+	fmt.Println(node.Chains())
 	// Start server instance
-<<<<<<< HEAD
-<<<<<<< HEAD
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
-=======
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
->>>>>>> fixed all possible todos throughout package
-=======
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
->>>>>>> updated RPC package names, removed unnecessary 'Get' as specified in 'Effective Go'
 	// @ Url
 	u := "http://localhost:" + config.Get().RRPCPort + "/v1/relay/"
 	// Setup relay
