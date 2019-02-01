@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/node"
-	"github.com/pokt-network/pocket-core/rpc/relay"
-	"github.com/pokt-network/pocket-core/rpc/shared"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/node"
+	"github.com/pokt-network/pocket-core/rpc/relay"
+	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
 func TestDispatchServe(t *testing.T) {
@@ -38,26 +39,18 @@ func TestDispatchServe(t *testing.T) {
 		RelayPort:   "0",
 		Blockchains: []node.Blockchain{bitcoinCash, rinkeby, bitcoinv1}}
 	// add them to dispatchPeers
-	dp := node.GetDispatchPeers()
+	dp := node.DispatchPeers()
 	dp.Add(node1)
 	dp.Add(node2)
 	dp.Add(node3)
 	// add foo to the whitelist
-	node.GetDWL().Add("foo")
+	node.DWL().Add("foo")
 	// json call string for dispatch serve
 	requestJSON := []byte("{\"DevID\": \"foo\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
 	// start relay server
-<<<<<<< HEAD
-<<<<<<< HEAD
 	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
-=======
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.NewRouter(relay.Routes()))
->>>>>>> fixed all possible todos throughout package
-=======
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
->>>>>>> updated RPC package names, removed unnecessary 'Get' as specified in 'Effective Go'
 	// url for the POST request
-	u := "http://localhost:" + config.Get().RRPCPort + "/v1/dispatch/serve"
+	u := "http://localhost:" + config.Get().RRPCPort + "/v1/dispatch/"
 	req, err := http.NewRequest("POST", u, bytes.NewBuffer(requestJSON))
 	if err != nil {
 		t.Fatalf(err.Error())
