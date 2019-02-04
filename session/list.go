@@ -13,7 +13,7 @@ var (
 	o           sync.Once
 )
 
-func GetSessionList() *List {
+func SessionList() *List {
 	o.Do(func() {
 		sessionList = (*List)(types.NewList())
 	})

@@ -9,7 +9,7 @@ import (
 
 type Session struct {
 	DevID string   `json:"devid"`
-	Peers PeerList `json:"peerlist"`
+	PL    PeerList `json:"peerlist"`
 }
 
 var one sync.Once
@@ -19,17 +19,17 @@ func NewSession(dID string) Session {
 	return Session{DevID: dID}
 }
 
-// "GetPeers" returns a map of Connection objects [GID]Connection
-func (s *Session) GetPeers() PeerList {
+// "Peers" returns a map of sessionPeers [GID]Connection
+func (s *Session) Peers() PeerList {
 	one.Do(func() {
-		s.Peers = NewPeerList()
+		s.PL = NewPeerList()
 	})
-	return s.Peers
+	return s.PL
 }
 
 // "Add" adds a peer to the session
 func (s *Session) AddPeer(sPeer Peer) {
-	(*types.List)(&s.Peers).Add(sPeer.GID, sPeer)
+	(*types.List)(&s.PL).Add(sPeer.GID, sPeer)
 }
 
 func (s *Session) AddPeers(peers []Peer) {
@@ -38,12 +38,12 @@ func (s *Session) AddPeers(peers []Peer) {
 	}
 }
 
-// "Remove" removes a connection object from the session
+// "Remove" removes a sessionPeer from the session
 func (s *Session) RemovePeer(gid string) {
-	(*types.List)(&s.Peers).Remove(gid)
+	(*types.List)(&s.PL).Remove(gid)
 }
 
-// "GetPeer" returns the connection from the session by peer.GID
+// "GetPeer" returns the sessionPeer from the session by peer.GID
 func (s *Session) GetPeer(gid string) Peer {
-	return (*types.List)(&s.Peers).Get(gid).(Peer)
+	return (*types.List)(&s.PL).Get(gid).(Peer)
 }

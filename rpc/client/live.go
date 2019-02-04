@@ -17,11 +17,11 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteJSONResponse(w, "500 error: "+err.Error())
 		return
 	}
-	if node.EnsureWL(node.GetSWL(), n.GID) {
+	if node.EnsureWL(node.SWL(), n.GID) {
 		// add to peerlist
-		node.GetPeerList().Add(*n)
+		node.PeerList().Add(*n)
 		// add to dispatch peers
-		node.GetDispatchPeers().Add(*n)
+		node.DispatchPeers().Add(*n)
 		shared.WriteJSONResponse(w, "Success! Your node is now registered in the Pocket Network")
 		return
 	}
@@ -36,9 +36,9 @@ func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	// remove from peerlist
-	node.GetPeerList().Remove(*n)
+	node.PeerList().Remove(*n)
 	// remove from dispatch peers
-	node.GetDispatchPeers().Delete(*n)
+	node.DispatchPeers().Delete(*n)
 	shared.WriteJSONResponse(w, "Success! Your node is now unregistered in the Pocket Network")
 }
 

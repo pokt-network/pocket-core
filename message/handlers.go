@@ -16,12 +16,12 @@ func HandleMSG(message *Message, addr *net.UDPAddr) {
 
 // "sessionMSG" handles an incoming message by deriving a new session from the payload.
 func sessionMSG(message *Message) {
-	sl := session.GetSessionList()
+	sl := session.SessionList()
 	// extract the SessionPL
 	spl := message.Payload.Data.(SessionPL)
 	// create a session using developerID from payload
 	s := session.Session{DevID: spl.DevID,
-		Peers: session.NewPeerList()}
+		PL: session.NewPeerList()}
 	s.AddPeers(spl.Peers)
 	// adds new session to sessionList and adds peers to the peerList
 	sl.Add(s)

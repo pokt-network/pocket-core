@@ -27,7 +27,7 @@ func PeerList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-// "Peers" handles the localhost:<client-port>/v1/network/peers call.
+// "PL" handles the localhost:<client-port>/v1/network/peers call.
 func Peers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }

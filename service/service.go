@@ -22,8 +22,8 @@ type Relay struct {
 
 // "RouteRelay" routes the relay to the specified hosted chain
 func RouteRelay(relay Relay) (string, error) {
-	if node.EnsureWL(node.GetDWL(), relay.DevID) {
-		port := node.GetChainPort(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID, Version: relay.Version})
+	if node.EnsureWL(node.DWL(), relay.DevID) {
+		port := node.ChainPort(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID, Version: relay.Version})
 		if port == "" {
 			logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
 			return "", errors.New("not a supported blockchain")

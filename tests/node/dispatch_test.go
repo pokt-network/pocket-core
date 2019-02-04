@@ -15,7 +15,7 @@ func TestDispatchLiveness(t *testing.T) {
 	go rpc.StartRelayRPC(config.Get().RRPCPort)
 	time.Sleep(time.Second)
 	// get peer list
-	pl := node.GetPeerList()
+	pl := node.PeerList()
 	// create arbitrary nodes
 	self := node.Node{GID: "self", IP: "localhost", RelayPort: config.Get().RRPCPort}
 	dead := node.Node{GID: "deadNode", IP: "0.0.0.0", RelayPort: "0"}
@@ -24,7 +24,7 @@ func TestDispatchLiveness(t *testing.T) {
 	// add dead node to peerlist
 	pl.Add(dead)
 	// check liveness port of self
-	node.GetDispatchPeers().Check()
+	node.DispatchPeers().Check()
 	// ensure that dead node is deleted and live node is still within list
 	if !pl.Contains(self.GID) || pl.Contains(dead.GID) {
 		t.Fatalf("Peerlist result not correct, expected: " + self.GID + " only, and not: " + dead.GID)
@@ -50,16 +50,16 @@ func TestDispatchPeers(t *testing.T) {
 		GID:         "node3",
 		Blockchains: []node.Blockchain{bitcoinCash, ethereum, bitcoin}}
 	// add them to dispatchPeers
-	dp := node.GetDispatchPeers()
+	dp := node.DispatchPeers()
 	dp.Add(node1)
 	dp.Add(node2)
 	dp.Add(node3)
 	// get node lists
-	ethereumNodes := dp.GetPeers(ethereum)
-	btcNodes := dp.GetPeers(bitcoin)
-	btcNodesV1 := dp.GetPeers(bitcoinv1)
-	bchNodes := dp.GetPeers(bitcoinCash)
-	rinkebyNodes := dp.GetPeers(rinkeby)
+	ethereumNodes := dp.Peers(ethereum)
+	btcNodes := dp.Peers(bitcoin)
+	btcNodesV1 := dp.Peers(bitcoinv1)
+	bchNodes := dp.Peers(bitcoinCash)
+	rinkebyNodes := dp.Peers(rinkeby)
 	// ensure each list has proper node count
 	if len(ethereumNodes) != 3 || len(btcNodes) != 3 || len(rinkebyNodes) != 1 && len(btcNodesV1) != 1 && len(bchNodes) != 1 {
 		log.Fatalf("Incorrect node count")

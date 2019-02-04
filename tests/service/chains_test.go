@@ -16,7 +16,7 @@ func TestHostedChains(t *testing.T) {
 			"\"port\":\"8333\", \"medium\":\"rpc\"}" +
 			"]")
 	node.UnmarshalChains(json)
-	hc := node.GetChains()
+	hc := node.Chains()
 	if len(hc) == 0 {
 		t.Fatalf("No hosted chains were found")
 	}
