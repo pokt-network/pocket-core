@@ -15,8 +15,8 @@ var (
 	pl *List
 )
 
-// "GetPeerList" returns the global map of nodes.
-func GetPeerList() *List {
+// "PeerList" returns the global map of nodes.
+func PeerList() *List {
 	o.Do(func() {
 		pl = (*List)(types.NewList())
 	})
@@ -64,7 +64,7 @@ func manualPeersJSON(b []byte) error {
 		return err
 	}
 	for _, n := range nSlice {
-		pList := GetPeerList()
+		pList := PeerList()
 		pList.Add(n)
 	}
 	return nil
@@ -77,6 +77,6 @@ func (pl *List) CopyToDP() {
 	pl.Mux.Lock()
 	defer pl.Mux.Unlock()
 	for _, peer := range pl.M {
-		GetDispatchPeers().Add(peer.(Node))
+		DispatchPeers().Add(peer.(Node))
 	}
 }

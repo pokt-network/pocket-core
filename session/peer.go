@@ -20,7 +20,7 @@ type Peer struct {
 
 // "AddPeer" adds sessionPeers from a slice to the peerlist
 func AddPeer(spl []Peer) {
-	pl := node.GetPeerList()
+	pl := node.PeerList()
 	for _, sp := range spl {
 		pl.Add(sp.Node)
 	}

@@ -11,9 +11,9 @@ import (
 
 // A structure that specifies a non-native blockchain client running on a port.
 type HostedChain struct {
-	Blockchain `json:"blockchain"` // blockchain structure
-	Port       string              `json:"port"`   // port that the client is running on
-	Medium     string              `json:"medium"` // http, ws, tcp, etc.
+	Blockchain `json:"blockchain"`    // blockchain structure
+	Port       string `json:"port"`   // port that the client is running on
+	Medium     string `json:"medium"` // http, ws, tcp, etc.
 }
 
 var (
@@ -23,8 +23,8 @@ var (
 	mux    sync.Mutex
 )
 
-// "GetChains" is the singleton accessor for chains.
-func GetChains() map[Blockchain]HostedChain {
+// "Chains" is the singleton accessor for chains.
+func Chains() map[Blockchain]HostedChain {
 	once.Do(func() {
 		chains = make(map[Blockchain]HostedChain)
 	})
@@ -35,12 +35,12 @@ func GetChains() map[Blockchain]HostedChain {
 func ExportChains() ([]byte, error) {
 	mux.Lock()
 	defer mux.Unlock()
-	return json.Marshal(GetChains())
+	return json.Marshal(Chains())
 }
 
 // "UnmarshalChains" converts json into chains.
 func UnmarshalChains(b []byte) error {
-	h := GetChains()
+	h := Chains()
 	data := make([]HostedChain, 0)
 	mux.Lock()
 	defer mux.Unlock()
@@ -65,16 +65,16 @@ func CFIle(filepath string) error {
 	return UnmarshalChains(file)
 }
 
-// "GetChainPort" returns the port of a blockchain client.
-func GetChainPort(b Blockchain) string {
+// "ChainPort" returns the port of a blockchain client.
+func ChainPort(b Blockchain) string {
 	mux.Lock()
 	defer mux.Unlock()
-	return GetChains()[b].Port
+	return Chains()[b].Port
 }
 
 // "TestChains" tests for hosted blockchain clients.
 func TestChains() bool {
-	hc := GetChains()
+	hc := Chains()
 	mux.Lock()
 	defer mux.Unlock()
 	for _, c := range hc {

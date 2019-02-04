@@ -9,26 +9,26 @@ import (
 // DISCLAIMER: the code below is for pocket core mvp centralized dispatcher
 // may remove for production
 
-type DispatchPeers struct {
+type DPeers struct {
 	Map map[Blockchain]map[string]Node // <BlockchainOBJ><GID><Node>
 	sync.Mutex
 }
 
 var (
-	dp  *DispatchPeers
+	dp  *DPeers
 	one sync.Once
 )
 
-// "GetDispatchPeers" gets Map structure.
-func GetDispatchPeers() *DispatchPeers {
+// "DispatchPeers" gets Map structure.
+func DispatchPeers() *DPeers {
 	one.Do(func() {
-		dp = &DispatchPeers{Map: make(map[Blockchain]map[string]Node)}
+		dp = &DPeers{Map: make(map[Blockchain]map[string]Node)}
 	})
 	return dp
 }
 
 // "Add" adds a peer to the dispatchPeers structure
-func (dp *DispatchPeers) Add(n Node) {
+func (dp *DPeers) Add(n Node) {
 	dp.Lock()
 	defer dp.Unlock()
 	for _, bchain := range n.Blockchains {
@@ -47,29 +47,29 @@ func (dp *DispatchPeers) Add(n Node) {
 	}
 }
 
-// "getPeers" returns a map of peers by blockchain.
-func getPeers(dp DispatchPeers, bc Blockchain) map[string]Node {
+// "peers" returns a map of peers by blockchain.
+func peers(dp DPeers, bc Blockchain) map[string]Node {
 	return dp.Map[bc]
 }
 
-// "GetPeers" returns a map of peers by blockchain.
-func (dp DispatchPeers) GetPeers(bc Blockchain) map[string]Node {
+// "Peers" returns a map of peers by blockchain.
+func (dp DPeers) Peers(bc Blockchain) map[string]Node {
 	dp.Lock()
 	defer dp.Unlock()
-	return getPeers(dp, bc)
+	return peers(dp, bc)
 }
 
-// "Remove" deletes a peer from DispatchPeers.
-func (dp *DispatchPeers) Delete(n Node) {
+// "Remove" deletes a peer from DPeers.
+func (dp *DPeers) Delete(n Node) {
 	dp.Lock()
 	defer dp.Unlock()
 	for _, chain := range n.Blockchains {
-		delete(getPeers(*dp, chain), n.GID) // delete node from map via GID
+		delete(peers(*dp, chain), n.GID) // delete node from map via GID
 	}
 }
 
 // "Print" outputs the dispatchPeer structure to the CLI
-func (dp *DispatchPeers) Print() {
+func (dp *DPeers) Print() {
 	dp.Lock()
 	defer dp.Unlock()
 	// [blockchain]Map of nodes
@@ -85,8 +85,8 @@ func (dp *DispatchPeers) Print() {
 }
 
 // "Check" checks each service node's liveness.
-func (dp *DispatchPeers) Check() {
-	pl := GetPeerList()
+func (dp *DPeers) Check() {
+	pl := PeerList()
 	for _, p := range pl.M {
 		if !isAlive(p.(Node)) {
 			// try again

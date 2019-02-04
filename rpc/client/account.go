@@ -8,11 +8,6 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-// "GetAccount" handles the localhost:<client-port>/v1/account call.
-func GetAccount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development")
-}
-
 // "Account" handles the localhost:<client-port>/v1/account call.
 func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development")

@@ -9,14 +9,14 @@ import (
 )
 
 func Register() {
-	if _, err := util.RPCRequest("http://"+_const.DISPATCHIP+":"+_const.DISPATCHCLIENTPORT+"/v1/register", GetSelf(), util.POST); err != nil {
+	if _, err := util.RPCRequest("http://"+_const.DISPATCHIP+":"+_const.DISPATCHCLIENTPORT+"/v1/register", Self(), util.POST); err != nil {
 		util.ExitGracefully("Error, unable to register node at Pocket Incorporated's Dispatcher")
 	}
-	fmt.Println("Node registered successfully ", GetPeerList().M)
+	fmt.Println("Node registered successfully ", PeerList().M)
 }
 
 func UnRegister(count int) {
-	if _, err := util.RPCRequest("http://"+_const.DISPATCHIP+":"+_const.DISPATCHCLIENTPORT+"/v1/register", GetSelf(), util.POST); err != nil {
+	if _, err := util.RPCRequest("http://"+_const.DISPATCHIP+":"+_const.DISPATCHCLIENTPORT+"/v1/register", Self(), util.POST); err != nil {
 		fmt.Println("Error, unable to unregister node at Pocket Incorporated's Dispatcher, trying again!")
 		time.Sleep(2)
 		if count > 5 {
