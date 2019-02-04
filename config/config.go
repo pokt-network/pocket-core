@@ -45,7 +45,7 @@ func Init() {
 	// built in function to parse the flags above.
 	flag.Parse()
 	// returns the thread safe c of the client configuration.
-	Get()
+	GlobalConfig()
 }
 
 // "newConfiguration() is a constructor function of the configuration type.
@@ -71,8 +71,8 @@ func Print() {
 	fmt.Println("Pocket Core Configuration:\n", string(data)) // pretty print the pocket configuration
 }
 
-// "Get()" returns the configuration object in a thread safe manner.
-func Get() *config { // singleton structure to return the configuration object
+// "GlobalConfig()" returns the configuration object in a thread safe manner.
+func GlobalConfig() *config { // singleton structure to return the configuration object
 	once.Do(func() { // thread safety.
 		newConfiguration()
 	})

@@ -10,7 +10,7 @@ import (
 // "Routes" is a function that returns all of the routes of the API.
 func Routes() shared.Routes {
 	routes := shared.Routes{
-		shared.Route{Name: "Routes", Method: "GET", Path: "/v1/routes", HandlerFunc: GetRoutes},
+		shared.Route{Name: "Routes", Method: "GET", Path: "/v1/routes", HandlerFunc: WriteRoutes},
 		shared.Route{Name: "Register", Method: "POST", Path: "/v1/register", HandlerFunc: Register},
 		shared.Route{Name: "UnRegister", Method: "POST", Path: "/v1/unregister", HandlerFunc: UnRegister},
 		shared.Route{Name: "RegisterInfo", Method: "GET", Path: "/v1/register", HandlerFunc: RegisterInfo},
@@ -56,7 +56,7 @@ func Routes() shared.Routes {
 	return routes
 }
 
-// "GetRoutes" handles the localhost:<client-port>/routes call.
-func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.GetRoutes(w, r, ps, Routes())
+// "WriteRoutes" handles the localhost:<client-port>/routes call.
+func WriteRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	shared.WriteRoutes(w, r, ps, Routes())
 }

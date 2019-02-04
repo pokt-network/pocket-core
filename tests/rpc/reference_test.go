@@ -15,9 +15,9 @@ Unit test for APIReference
 */
 func TestApiReference(t *testing.T) {
 	// Start server instance
-	go http.ListenAndServe(":"+config.Get().RRPCPort, shared.Router(relay.Routes()))
+	go http.ListenAndServe(":"+config.GlobalConfig().RRPCPort, shared.Router(relay.Routes()))
 	// @ Url
-	u := "http://localhost:" + config.Get().RRPCPort + "/v1/dispatch"
+	u := "http://localhost:" + config.GlobalConfig().RRPCPort + "/v1/dispatch"
 	// Send get request
 	resp, err := http.Get(u)
 	if err != nil {

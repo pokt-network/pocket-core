@@ -11,7 +11,7 @@ import (
 func Routes() shared.Routes {
 	routes := shared.Routes{
 		shared.Route{Name: "Version", Method: "GET", Path: "/v1", HandlerFunc: Version},
-		shared.Route{Name: "GetRoutes", Method: "GET", Path: "/v1/routes", HandlerFunc: GetRoutes},
+		shared.Route{Name: "WriteRoutes", Method: "GET", Path: "/v1/routes", HandlerFunc: WriteRoutes},
 		shared.Route{Name: "Report", Method: "POST", Path: "/v1/report", HandlerFunc: Report},
 		shared.Route{Name: "ReportInfo", Method: "GET", Path: "/v1/report", HandlerFunc: ReportInfo},
 		shared.Route{Name: "Dispatch", Method: "POST", Path: "/v1/dispatch", HandlerFunc: Dispatch},
@@ -22,7 +22,7 @@ func Routes() shared.Routes {
 	return routes
 }
 
-// "GetRoutes" handles the localhost:<relay-port>/routes call.
-func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.GetRoutes(w,r,ps,Routes())
+// "WriteRoutes" handles the localhost:<relay-port>/routes call.
+func WriteRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	shared.WriteRoutes(w,r,ps,Routes())
 }

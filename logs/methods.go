@@ -58,7 +58,7 @@ func NewLog(message string, level LogLevel, format LogFormat) {
 // "Logger" prints the log to data directory
 func Logger(l Log) error {
 	// open/create the new log file
-	f, err := os.OpenFile(config.Get().DD+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	f, err := os.OpenFile(config.GlobalConfig().DD+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		return err
 	}
