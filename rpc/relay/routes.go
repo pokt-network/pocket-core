@@ -1,11 +1,9 @@
 package relay
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
@@ -26,17 +24,5 @@ func Routes() shared.Routes {
 
 // "GetRoutes" handles the localhost:<relay-port>/routes call.
 func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var paths []string
-	for _, v := range Routes() {
-		if v.Method != "GET" {
-			paths = append(paths, v.Path)
-		}
-	}
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	j, err := json.MarshalIndent(paths, "", "    ")
-	if err != nil {
-		logs.NewLog("Unable to marshal GetRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
-	}
-	shared.WriteRawJSONResponse(w, j)
+	shared.GetRoutes(w,r,ps,Routes())
 }

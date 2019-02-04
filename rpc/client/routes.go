@@ -1,11 +1,9 @@
 package client
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
@@ -35,7 +33,7 @@ func Routes() shared.Routes {
 		// shared.Route{Name: "NetID", Method: "POST", Path: "/v1/network/id", HandlerFunc: NetID},
 		// shared.Route{Name: "PeerCount", Method: "POST", Path: "/v1/network/peer_count", HandlerFunc: PeerCount},
 		// shared.Route{Name: "PeerList", Method: "POST", Path: "/v1/network/peer_list", HandlerFunc: PeerList},
-		// shared.Route{Name: "Peers", Method: "POST", Path: "/v1/network/peers", HandlerFunc: Peers},
+		// shared.Route{Name: "PL", Method: "POST", Path: "/v1/network/peers", HandlerFunc: PL},
 		// shared.Route{Name: "PersonalInfo", Method: "POST", Path: "/v1/personal", HandlerFunc: PersonalInfo},
 		// shared.Route{Name: "Accounts", Method: "POST", Path: "/v1/personal/list_accounts", HandlerFunc: Accounts},
 		// shared.Route{Name: "EnterNetwork", Method: "POST", Path: "/v1/personal/network/enter", HandlerFunc: EnterNetwork},
@@ -58,19 +56,7 @@ func Routes() shared.Routes {
 	return routes
 }
 
-// "GetRoutes" handles the localhost:<relay-port>/routes call.
+// "GetRoutes" handles the localhost:<client-port>/routes call.
 func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var paths []string
-	for _, v := range Routes() {
-		if v.Method != "GET" {
-			paths = append(paths, v.Path)
-		}
-	}
-	j, err := json.MarshalIndent(paths, "", "    ")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	if err != nil {
-		logs.NewLog("Unable to marshal GetRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
-	}
-	shared.WriteRawJSONResponse(w, j)
+	shared.GetRoutes(w, r, ps, Routes())
 }

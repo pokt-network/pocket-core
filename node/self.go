@@ -13,9 +13,9 @@ var (
 	selfOnce sync.Once
 )
 
-func GetSelf() *Node {
+func Self() *Node {
 	selfOnce.Do(func() {
-		ip, err := util.GetIPAdress()
+		ip, err := util.IP()
 		if err != nil {
 			logs.NewLog(err.Error(), logs.FatalLevel, logs.JSONLogFormat)
 		}

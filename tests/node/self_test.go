@@ -8,5 +8,5 @@ import (
 )
 
 func TestSelf(t *testing.T) { // TODO
-	fmt.Println(node.GetSelf())
+	fmt.Println(node.Self())
 }

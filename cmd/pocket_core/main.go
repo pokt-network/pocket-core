@@ -36,7 +36,7 @@ func startClient() {
 	// print the configuration the the cmd
 	config.Print()
 	// add peers to dispatch structure
-	node.GetPeerList().CopyToDP()
+	node.PeerList().CopyToDP()
 	// check for hosted chains
 	node.TestChains()
 	// runs the server endpoints for client and relay api

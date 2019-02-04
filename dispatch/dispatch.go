@@ -18,13 +18,13 @@ type Dispatch struct {
 
 // NOTE: this call has been augmented for the Pocket Core MVP Centralized Dispatcher
 // TODO see if this can be done more efficiently
-// "Serve" formats Dispatch Peers for an API request.
+// "Serve" formats Dispatch PL for an API request.
 func Serve(dispatch *Dispatch) []byte {
-	if node.EnsureWL(node.GetDWL(), dispatch.DevID) {
+	if node.EnsureWL(node.DWL(), dispatch.DevID) {
 		result := make(map[string][]string)
 		for _, bc := range dispatch.Blockchains {
 			ips := make([]string, 0)
-			nodes := node.GetDispatchPeers().GetPeers(bc)
+			nodes := node.DispatchPeers().Peers(bc)
 			for _, n := range nodes {
 				ips = append(ips, n.IP+":"+n.RelayPort)
 			}
@@ -48,7 +48,7 @@ func Find(sessionKey string) []node.Node {
 	// create new key
 	bigSessionKey := new(big.Int)
 	bigSessionKey.SetString(sessionKey, 16)
-	peerList := node.GetPeerList()
+	peerList := node.PeerList()
 	peerList.Mux.Lock()
 	defer peerList.Mux.Unlock()
 	// map the nodes to the corresponding difference

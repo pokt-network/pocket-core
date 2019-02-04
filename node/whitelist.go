@@ -14,7 +14,7 @@ type Whitelist types.Set
 
 var (
 	SNWL   *Whitelist
-	DWL    *Whitelist
+	DevWL  *Whitelist
 	wlOnce sync.Once
 )
 
@@ -22,24 +22,24 @@ var (
 func WhiteListInit() {
 	wlOnce.Do(func() {
 		SNWL = (*Whitelist)(types.NewSet())
-		DWL = (*Whitelist)(types.NewSet())
+		DevWL = (*Whitelist)(types.NewSet())
 	})
 }
 
-// "GetSWL" returns service node white list.
-func GetSWL() *Whitelist {
+// "SWL" returns service node white list.
+func SWL() *Whitelist {
 	if SNWL == nil { // just in case
 		WhiteListInit()
 	}
 	return SNWL
 }
 
-// "GetDWL" returns developer white list.
-func GetDWL() *Whitelist {
-	if DWL == nil { // just in case
+// "DWL" returns developer white list.
+func DWL() *Whitelist {
+	if DevWL == nil { // just in case
 		WhiteListInit()
 	}
-	return DWL
+	return DevWL
 }
 
 // "Contains" returns if within whitelist.
@@ -73,12 +73,12 @@ func (w *Whitelist) Count() int {
 
 // "SWLFile" builds the service white list from a file.
 func SWLFile() error {
-	return GetSWL().wlFile(config.Get().DWL)
+	return SWL().wlFile(config.Get().DWL)
 }
 
 // "DWLFile" builds the develoeprs white list from a file.
 func DWLFile() error {
-	return GetDWL().wlFile(config.Get().SNWL)
+	return DWL().wlFile(config.Get().SNWL)
 }
 
 // "wlFile" builds a whitelist structure from a file.
