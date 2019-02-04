@@ -19,8 +19,8 @@ type Route struct {
 // "Routes" is a slice that holds all of the routes within one structure.
 type Routes []Route
 
-// "GetRoutes" handles the localhost:<relay-port>/routes call.
-func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params, routes Routes) {
+// "WriteRoutes" handles the localhost:<relay-port>/routes call.
+func WriteRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params, routes Routes) {
 	var paths []string
 	for _, v := range routes {
 		if v.Method != "GET" {
@@ -31,7 +31,7 @@ func GetRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params, rou
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	j, err := json.MarshalIndent(paths, "", "    ")
 	if err != nil {
-		logs.NewLog("Unable to marshal GetRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
+		logs.NewLog("Unable to marshal WriteRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	WriteRawJSONResponse(w, j)
 }

@@ -14,11 +14,11 @@ import (
 
 // "StartServers" executes the specified configuration for the client.
 func StartServers() {
-	if config.Get().CRPC { // if flag set
-		go StartClientRPC(config.Get().CRPCPort) // run the client rpc in a goroutine
+	if config.GlobalConfig().CRPC { // if flag set
+		go StartClientRPC(config.GlobalConfig().CRPCPort) // run the client rpc in a goroutine
 	}
-	if config.Get().RRPC { // if flag set
-		go StartRelayRPC(config.Get().RRPCPort) // run the relay rpc in a goroutine
+	if config.GlobalConfig().RRPC { // if flag set
+		go StartRelayRPC(config.GlobalConfig().RRPCPort) // run the relay rpc in a goroutine
 	}
 }
 

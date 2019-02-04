@@ -12,12 +12,12 @@ import (
 
 func TestDispatchLiveness(t *testing.T) {
 	// start API servers
-	go rpc.StartRelayRPC(config.Get().RRPCPort)
+	go rpc.StartRelayRPC(config.GlobalConfig().RRPCPort)
 	time.Sleep(time.Second)
 	// get peer list
 	pl := node.PeerList()
 	// create arbitrary nodes
-	self := node.Node{GID: "self", IP: "localhost", RelayPort: config.Get().RRPCPort}
+	self := node.Node{GID: "self", IP: "localhost", RelayPort: config.GlobalConfig().RRPCPort}
 	dead := node.Node{GID: "deadNode", IP: "0.0.0.0", RelayPort: "0"}
 	// add self to peerlist
 	pl.Add(self)

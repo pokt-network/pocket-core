@@ -19,7 +19,7 @@ func Build() {
 // "dataDir" builds the directory for program files.
 func dataDir() {
 	// attempts to make the data directory.
-	if err := os.MkdirAll(Get().DD, os.ModePerm); err != nil {
+	if err := os.MkdirAll(GlobalConfig().DD, os.ModePerm); err != nil {
 		// doesn't use custom logs, because they may or may not be available at this point
 		log.Fatalf(err.Error())
 	}
@@ -28,7 +28,7 @@ func dataDir() {
 // "logsDir" builds the directory for logs.
 func logsDir() {
 	// attempts to make the logs directory
-	if err := os.MkdirAll(Get().DD+_const.FILESEPARATOR+"logs", os.ModePerm); err != nil {
+	if err := os.MkdirAll(GlobalConfig().DD+_const.FILESEPARATOR+"logs", os.ModePerm); err != nil {
 		log.Fatal(err.Error())
 	}
 }

@@ -19,7 +19,7 @@ func Self() *Node {
 		if err != nil {
 			logs.NewLog(err.Error(), logs.FatalLevel, logs.JSONLogFormat)
 		}
-		self = &Node{GID: config.Get().GID, RelayPort: config.Get().RRPCPort, IP: ip}
+		self = &Node{GID: config.GlobalConfig().GID, RelayPort: config.GlobalConfig().RRPCPort, IP: ip}
 	})
 	return self
 }

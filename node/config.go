@@ -7,11 +7,11 @@ import (
 
 func Files() {
 	// Map.json
-	if err := ManualPeersFile(config.Get().PFile); err != nil { // add Map from file
+	if err := ManualPeersFile(config.GlobalConfig().PFile); err != nil { // add Map from file
 		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 	}
 	// chains.json
-	if err := CFIle(config.Get().CFile); err != nil {
+	if err := CFIle(config.GlobalConfig().CFile); err != nil {
 		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 	}
 	// whitelists for centralized dispatcher
