@@ -25,8 +25,8 @@
     <a  href="https://github.com/pokt-network/pocket-core/releases">
       <img src="https://img.shields.io/github/release-pre/pokt-network/pocket-core.svg"/>
     </a>
-    <a href="https://github.com/pokt-network/pocket-core/pulse">
-      <img src="https://img.shields.io/github/languages/code-size/pokt-network/pocket-core.svg"/>
+    <a href="https://circleci.com/gh/pokt-network/pocket-core/tree/staging">
+      <img src="https://circleci.com/gh/pokt-network/pocket-core/tree/staging.svg?style=svg"/>
     </a>
     <a  href="https://github.com/pokt-network/pocket-core/pulse">
       <img src="https://img.shields.io/github/contributors/pokt-network/pocket-core.svg"/>
