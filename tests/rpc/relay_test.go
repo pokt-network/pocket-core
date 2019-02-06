@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
@@ -20,8 +21,13 @@ Unit test for the relay functionality
 */
 func TestRelay(t *testing.T) {
 	node.DWL().Add("DEVID1")
+	chainsFilePath := config.GlobalConfig().CFile
+	if _, err := os.Stat(chainsFilePath); os.IsNotExist(err) {
+		t.Log("No chains.json file found, thus not running test")
+		return
+	}
 	// grab the hosted chains via file
-	if err := node.CFIle(config.GlobalConfig().CFile); err != nil {
+	if err := node.CFIle(chainsFilePath); err != nil {
 		t.Fatalf(err.Error())
 	}
 	node.TestChains()
