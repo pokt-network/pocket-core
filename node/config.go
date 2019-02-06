@@ -3,6 +3,7 @@ package node
 import (
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
+	"github.com/pokt-network/pocket-core/util"
 )
 
 func Files() {
@@ -13,6 +14,7 @@ func Files() {
 	// chains.json
 	if err := CFIle(config.GlobalConfig().CFile); err != nil {
 		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
+		util.ExitGracefully(err.Error() + config.GlobalConfig().CFile)
 	}
 	// whitelists for centralized dispatcher
 	WhiteListInit()
