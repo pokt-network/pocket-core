@@ -16,7 +16,7 @@ const (
 )
 
 func (m Method) String() string {
-	return [...]string{"POST", "GET"}[m]
+	return [...]string{"GET", "POST"}[m]
 }
 
 // "RPCRequest" sends a Pocket RPC request and returns the response
@@ -40,6 +40,11 @@ func RPCRequest(url string, data interface{}, m Method) (string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", errors.New("Unable to do request " + err.Error())
+	}
+	
+	if resp.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(resp.Body)
+		return "", errors.New(string(body))
 	}
 	// get body of response
 	body, err := ioutil.ReadAll(resp.Body)

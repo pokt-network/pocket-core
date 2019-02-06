@@ -2,7 +2,7 @@ package client
 
 import (
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
@@ -10,6 +10,7 @@ import (
 // "Routes" is a function that returns all of the routes of the API.
 func Routes() shared.Routes {
 	routes := shared.Routes{
+		shared.Route{Name: "Flags", Method: "GET", Path: "/v1/flags", HandlerFunc: Flags},
 		shared.Route{Name: "Routes", Method: "GET", Path: "/v1/routes", HandlerFunc: WriteRoutes},
 		shared.Route{Name: "Register", Method: "POST", Path: "/v1/register", HandlerFunc: Register},
 		shared.Route{Name: "UnRegister", Method: "POST", Path: "/v1/unregister", HandlerFunc: UnRegister},
