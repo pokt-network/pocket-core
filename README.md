@@ -78,6 +78,7 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
     	specifies the filepath for service_whitelist.json
 ````
 <h1 align="center">How to test</h1>
+
 To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory
 
 <h1 align="center">How to contribute</h1>
