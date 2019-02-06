@@ -23,5 +23,5 @@ jobs:
 
       # specify any bash command here prefixed with `run: `
       - run: dep ensure
-			- run: go build cmd/pocket_core/main.go
-			- run: go test ./...
+      - run: go build cmd/pocket_core/main.go
+      - run: go test ./...
