@@ -2,7 +2,7 @@ package client
 
 import (
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/shared"
@@ -14,7 +14,7 @@ import (
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := &node.Node{}
 	if err := shared.PopModel(w, r, ps, n); err != nil {
-		shared.WriteJSONResponse(w, "500 error: "+err.Error())
+		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
 	if node.EnsureWL(node.SWL(), n.GID) {
@@ -25,14 +25,14 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteJSONResponse(w, "Success! Your node is now registered in the Pocket Network")
 		return
 	}
-	shared.WriteJSONResponse(w, "Invalid credentials")
+	shared.WriteErrorResponse(w, 401, "Invalid credentials")
 }
 
 // "Register" handles the localhost:<client-port>/v1/register call.
 func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := &node.Node{}
 	if err := shared.PopModel(w, r, ps, n); err != nil {
-		shared.WriteJSONResponse(w, "500 error: "+err.Error())
+		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
 	// remove from peerlist
