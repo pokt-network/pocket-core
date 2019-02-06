@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/types"
 )
@@ -73,12 +74,12 @@ func (w *Whitelist) Count() int {
 
 // "SWLFile" builds the service white list from a file.
 func SWLFile() error {
-	return SWL().wlFile(config.GlobalConfig().DWL)
+	return SWL().wlFile(config.GlobalConfig().SNWL)
 }
 
 // "DWLFile" builds the develoeprs white list from a file.
 func DWLFile() error {
-	return DWL().wlFile(config.GlobalConfig().SNWL)
+	return DWL().wlFile(config.GlobalConfig().DWL)
 }
 
 // "wlFile" builds a whitelist structure from a file.
@@ -102,7 +103,9 @@ func (w *Whitelist) wlFile(filePath string) error {
 // "EnsureWL" cross checks the whitelist for
 func EnsureWL(whiteList *Whitelist, query string) bool {
 	if !whiteList.Contains(query) {
-		fmt.Println("Node: ", query, "rejected because it is not within whitelist")
+		os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist\n")
+		fmt.Println("NOTE: if you are a developer, just add a service_whitelist.json file to " + config.GlobalConfig().DD)
+		fmt.Println("An example of this file is under the docs directory")
 		return false
 	}
 	return true
