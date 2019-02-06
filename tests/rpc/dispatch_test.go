@@ -44,9 +44,9 @@ func TestDispatchServe(t *testing.T) {
 	dp.Add(node2)
 	dp.Add(node3)
 	// add foo to the whitelist
-	node.DWL().Add("foo")
+	node.DWL().Add("foo1")
 	// json call string for dispatch serve
-	requestJSON := []byte("{\"DevID\": \"foo\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
+	requestJSON := []byte("{\"DevID\": \"foo1\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
 	// start relay server
 	go http.ListenAndServe(":"+config.GlobalConfig().RRPCPort, shared.Router(relay.Routes()))
 	// url for the POST request

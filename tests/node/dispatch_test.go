@@ -34,11 +34,11 @@ func TestDispatchLiveness(t *testing.T) {
 
 func TestDispatchPeers(t *testing.T) {
 	// create arbitrary blockchains
-	ethereum := node.Blockchain{"ethereum", "1", "1.0"}
-	rinkeby := node.Blockchain{"ethereum", "4", "1.0"}
-	bitcoin := node.Blockchain{"bitcoin", "1", "1.0"}
-	bitcoinv1 := node.Blockchain{"bitcoin", "1", "1.1"}
-	bitcoinCash := node.Blockchain{"bitcoinCash", "1", "1.0"}
+	ethereum := node.Blockchain{Name: "ethereum", NetID: "1", Version: "1.0"}
+	rinkeby := node.Blockchain{Name: "ethereum", NetID: "4", Version: "1.0"}
+	bitcoin := node.Blockchain{Name: "bitcoin", NetID: "1", Version: "1.0"}
+	bitcoinv1 := node.Blockchain{Name: "bitcoin", NetID: "1", Version: "1.1"}
+	bitcoinCash := node.Blockchain{Name: "bitcoinCash", NetID: "1", Version: "1.0"}
 	// create arbitrary nodes
 	node1 := node.Node{
 		GID:         "node1",
