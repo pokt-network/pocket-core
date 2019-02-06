@@ -28,7 +28,7 @@ func TestSessionMessage(t *testing.T) {
 	m := message.NewSessionMessage(DEVID, sessPeerList)
 	// send the message over the wire
 	message.SendMessage(message.RELAY, m, IP, message.SessionPL{})
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 4)
 	// check for session count
 	if session.SessionList().Count() == 0 {
 		t.Fatalf("No sessions within list")
