@@ -11,7 +11,7 @@ import (
 func WriteJSONResponse(w http.ResponseWriter, m string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	b, err := json.MarshalIndent(&JSONResponse{m}, "", "\t")
+	b, err := json.MarshalIndent(m, "", "\t")
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 	} else {
