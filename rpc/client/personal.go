@@ -47,6 +47,7 @@ func SendPOKTRaw(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func Sign(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
+
 // "Stake" handles the localhost:<client-port>/v1/personal/stake/add call.
 func Stake(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")

@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"

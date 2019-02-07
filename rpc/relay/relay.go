@@ -12,12 +12,12 @@ import (
 // "Relay" handles the localhost:<relay-port>/v1/relaycall.
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	relay := &service.Relay{}
-	if err:=shared.PopModel(w, r, ps, relay); err!=nil{
-		logs.NewLog(err.Error(),logs.ErrorLevel, logs.JSONLogFormat)
+	if err := shared.PopModel(w, r, ps, relay); err != nil {
+		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	response, err := service.RouteRelay(*relay)
 	if err != nil {
-		logs.NewLog(err.Error(),logs.ErrorLevel, logs.JSONLogFormat)
+		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	shared.WriteJSONResponse(w, response) // relay the response
 }
@@ -33,12 +33,12 @@ func RelayInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 // "Report" is client side protection against a bad/faulty service node.
 func Report(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	report := &service.Report{}
-	if err:=shared.PopModel(w, r, ps, report); err!=nil{
-		logs.NewLog(err.Error(),logs.ErrorLevel, logs.JSONLogFormat)
+	if err := shared.PopModel(w, r, ps, report); err != nil {
+		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	response, err := service.HandleReport(report)
 	if err != nil {
-		logs.NewLog(err.Error(),logs.ErrorLevel, logs.JSONLogFormat)
+		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	shared.WriteJSONResponse(w, response)
 }
