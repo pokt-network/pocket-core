@@ -42,7 +42,6 @@ func (db *DB) Remove(n node.Node) (*dynamodb.DeleteItemOutput, error) {
 		},
 		TableName: aws.String(_const.Tablename),
 	}
-	
 	return db.dynamo.DeleteItem(input)
 }
 
