@@ -31,6 +31,14 @@ func Chains() map[Blockchain]HostedChain {
 	return chains
 }
 
+func ChainsSlice() []Blockchain {
+	cs := make([]Blockchain, 0)
+	for k := range Chains() {
+		cs = append(cs, k)
+	}
+	return cs
+}
+
 // "ExportChains" converts chains into json.
 func ExportChains() ([]byte, error) {
 	mux.Lock()
