@@ -4,6 +4,7 @@ import (
 	"net/http"
 	
 	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
@@ -12,16 +13,22 @@ import (
 
 // "Register" handles the localhost:<client-port>/v1/register call.
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	n := &node.Node{}
+	n := node.Node{}
 	if err := shared.PopModel(w, r, ps, n); err != nil {
 		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
 	if node.EnsureWL(node.SWL(), n.GID) {
 		// add to peerlist
-		node.PeerList().Add(*n)
+		node.PeerList().Add(n)
 		// add to dispatch peers
-		node.DispatchPeers().Add(*n)
+		node.DispatchPeers().Add(n)
+		// write to db
+		if _, err := db.NewDB().Add(n); err != nil {
+			shared.WriteErrorResponse(w, 500, "unable to write peer to database")
+			return
+		}
+		// write response
 		shared.WriteJSONResponse(w, "Success! Your node is now registered in the Pocket Network")
 		return
 	}
@@ -30,15 +37,20 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 // "Register" handles the localhost:<client-port>/v1/register call.
 func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	n := &node.Node{}
+	n := node.Node{}
 	if err := shared.PopModel(w, r, ps, n); err != nil {
 		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
 	// remove from peerlist
-	node.PeerList().Remove(*n)
+	node.PeerList().Remove(n)
 	// remove from dispatch peers
-	node.DispatchPeers().Delete(*n)
+	node.DispatchPeers().Delete(n)
+	// delete from database
+	if _, err := db.NewDB().Remove(n); err != nil {
+		shared.WriteErrorResponse(w, 500, "unable to remove peer from database")
+		return
+	}
 	shared.WriteJSONResponse(w, "Success! Your node is now unregistered in the Pocket Network")
 }
 
