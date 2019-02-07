@@ -16,7 +16,7 @@ func Register() {
 }
 
 func UnRegister(count int) {
-	if _, err := util.RPCRequest("http://"+_const.DISPATCHIP+":"+_const.DISPATCHCLIENTPORT+"/v1/register", Self(), util.POST); err != nil {
+	if _, err := util.RPCRequest("http://"+_const.DISPATCHIP+":"+_const.DISPATCHCLIENTPORT+"/v1/unregister", Self(), util.POST); err != nil {
 		fmt.Println("Error, unable to unregister node at Pocket Incorporated's Dispatcher, trying again!")
 		time.Sleep(2)
 		if count > 5 {
