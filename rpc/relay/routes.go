@@ -24,5 +24,5 @@ func Routes() shared.Routes {
 
 // "WriteRoutes" handles the localhost:<relay-port>/routes call.
 func WriteRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteRoutes(w,r,ps,Routes())
+	shared.WriteRoutes(w, r, ps, Routes())
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"sync"
-	
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -50,7 +50,7 @@ func main() {
 	case 2:
 		DeleteTable()
 	}
-	
+
 }
 
 func CreateTable() {
@@ -81,14 +81,14 @@ func CreateTable() {
 		},
 		TableName: aws.String(_const.Tablename),
 	}
-	
+
 	result, err := DB().CreateTable(input)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 	fmt.Println(result)
-	
+
 	fmt.Println("DONE")
 }
 

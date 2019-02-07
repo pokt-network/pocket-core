@@ -3,7 +3,7 @@ package util
 import (
 	"fmt"
 	"os"
-	
+
 	"github.com/pokt-network/pocket-core/logs"
 )
 
