@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"net/http"
 	
 	"github.com/julienschmidt/httprouter"
@@ -14,7 +15,7 @@ import (
 // "Register" handles the localhost:<client-port>/v1/register call.
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := node.Node{}
-	if err := shared.PopModel(w, r, ps, n); err != nil {
+	if err := shared.PopModel(w, r, ps, &n); err != nil {
 		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
@@ -25,6 +26,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		node.DispatchPeers().Add(n)
 		// write to db
 		if _, err := db.NewDB().Add(n); err != nil {
+			fmt.Println(err.Error())
 			shared.WriteErrorResponse(w, 500, "unable to write peer to database")
 			return
 		}
@@ -38,7 +40,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 // "Register" handles the localhost:<client-port>/v1/register call.
 func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := node.Node{}
-	if err := shared.PopModel(w, r, ps, n); err != nil {
+	if err := shared.PopModel(w, r, ps, &n); err != nil {
 		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
