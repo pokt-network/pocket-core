@@ -79,7 +79,7 @@ func CreateTable() {
 			ReadCapacityUnits:  aws.Int64(10),
 			WriteCapacityUnits: aws.Int64(10),
 		},
-		TableName: aws.String(_const.Tablename),
+		TableName: aws.String(_const.DBTABLENAME),
 	}
 
 	result, err := DB().CreateTable(input)
@@ -93,7 +93,7 @@ func CreateTable() {
 }
 
 func DeleteTable() {
-	res, err := DB().DeleteTable(&dynamodb.DeleteTableInput{TableName: aws.String(_const.Tablename)})
+	res, err := DB().DeleteTable(&dynamodb.DeleteTableInput{TableName: aws.String(_const.DBTABLENAME)})
 	if err != nil {
 		fmt.Println(err.Error())
 		return
