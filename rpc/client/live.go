@@ -3,7 +3,7 @@ package client
 import (
 	"fmt"
 	"net/http"
-	
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/node"
