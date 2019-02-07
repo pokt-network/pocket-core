@@ -1,5 +1,7 @@
 package _const
 
 const (
-	Tablename = "dispatchPeers"
+	DBTABLENAME = "dispatchPeers"
+	DBREIGON    = "us-east-2"
+	DBENDPOINT = "dynamodb.us-east-2.amazonaws.com"
 )

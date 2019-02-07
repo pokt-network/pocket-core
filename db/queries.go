@@ -19,7 +19,7 @@ func (db *DB) Add(n node.Node) (*dynamodb.PutItemOutput, error) {
 	}
 	input := &dynamodb.PutItemInput{
 		Item:      av,
-		TableName: aws.String(_const.Tablename),
+		TableName: aws.String(_const.DBTABLENAME),
 	}
 	res, err := db.dynamo.PutItem(input)
 	if err != nil {
@@ -40,13 +40,13 @@ func (db *DB) Remove(n node.Node) (*dynamodb.DeleteItemOutput, error) {
 				S: aws.String(n.IP),
 			},
 		},
-		TableName: aws.String(_const.Tablename),
+		TableName: aws.String(_const.DBTABLENAME),
 	}
 	return db.dynamo.DeleteItem(input)
 }
 
 // "GetAll" returns all nodes from the database.
 func (db *DB) GetAll() (*dynamodb.ScanOutput, error) {
-	input := &dynamodb.ScanInput{TableName: aws.String(_const.Tablename)}
+	input := &dynamodb.ScanInput{TableName: aws.String(_const.DBTABLENAME)}
 	return db.dynamo.Scan(input)
 }
