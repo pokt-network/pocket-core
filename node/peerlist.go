@@ -43,11 +43,12 @@ func (pl *List) Count() int {
 	return (*types.List)(pl).Count()
 }
 
-// "Print" prints the peerlist to the CLI
+// "Print" prints the peerlist to the CLI.
 func (pl *List) Print() {
 	(*types.List)(pl).Print()
 }
 
+// "Clear" removes all nodes from the map.
 func (pl *List) Clear() {
 	(*types.List)(pl).Clear()
 }
