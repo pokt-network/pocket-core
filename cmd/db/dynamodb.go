@@ -51,7 +51,7 @@ func main() {
 			CreateTable()
 		case 2:
 			DeleteTable()
-		default:
+		case 0:
 			os.Exit(0)
 		}
 	}
