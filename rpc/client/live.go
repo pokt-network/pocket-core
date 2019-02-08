@@ -16,7 +16,7 @@ import (
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := node.Node{}
 	if err := shared.PopModel(w, r, ps, &n); err != nil {
-		shared.WriteErrorResponse(w, 500, err.Error())
+		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
 	if node.EnsureWL(node.SWL(), n.GID) {
@@ -41,7 +41,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := node.Node{}
 	if err := shared.PopModel(w, r, ps, &n); err != nil {
-		shared.WriteErrorResponse(w, 500, err.Error())
+		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
 	// remove from peerlist
