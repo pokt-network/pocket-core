@@ -98,7 +98,7 @@ func (dp *DPeers) Check() {
 	}
 }
 
-// "Clear" removes all nodes from the list.
+// "Clear" removes all nodes from the map.
 func (dp *DPeers) Clear() {
 	dp.Lock()
 	defer dp.Unlock()
