@@ -100,6 +100,8 @@ func (dp *DPeers) Check() {
 
 // "Clear" removes all nodes from the list.
 func (dp *DPeers) Clear() {
+	dp.Lock()
+	defer dp.Unlock()
 	dp.Map = make(map[Blockchain]map[string]Node)
 }
 
