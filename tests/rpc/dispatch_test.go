@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 	"time"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/relay"
@@ -46,7 +46,7 @@ func TestDispatchServe(t *testing.T) {
 	dp.Add(node3)
 	// add foo to the whitelist
 	node.DWL().Add("foo1")
-	time.Sleep(4*time.Second)
+	time.Sleep(4 * time.Second)
 	// json call string for dispatch serve
 	requestJSON := []byte("{\"DevID\": \"foo1\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
 	// start relay server
