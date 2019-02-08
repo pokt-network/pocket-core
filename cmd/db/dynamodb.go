@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -39,16 +40,20 @@ func DB() *dynamodb.DynamoDB {
 
 func main() {
 	var i int
-	fmt.Print("(1) Create DP Table:\n(2) Delete DP Table: ")
-	_, err := fmt.Scanf("%d", &i)
-	if err != nil {
-		fmt.Println(err)
-	}
-	switch i {
-	case 1:
-		CreateTable()
-	case 2:
-		DeleteTable()
+	for {
+		fmt.Print("(1) Create DP Table:\n(2) Delete DP Table:\n(0) Quit\n")
+		_, err := fmt.Scanf("%d", &i)
+		if err != nil {
+			fmt.Println(err)
+		}
+		switch i {
+		case 1:
+			CreateTable()
+		case 2:
+			DeleteTable()
+		default:
+			os.Exit(0)
+		}
 	}
 
 }
