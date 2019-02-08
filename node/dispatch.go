@@ -98,6 +98,11 @@ func (dp *DPeers) Check() {
 	}
 }
 
+// "Clear" removes all nodes from the list.
+func (dp *DPeers) Clear() {
+	dp.Map = make(map[Blockchain]map[string]Node)
+}
+
 // "isAlive" checks a node and returns the status of that check.
 func isAlive(n Node) bool { // TODO handle scenarios where the error is on the dispatch node side
 	if resp, err := check(n); err != nil || resp == nil || resp.StatusCode != http.StatusOK {
