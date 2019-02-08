@@ -48,6 +48,10 @@ func (pl *List) Print() {
 	(*types.List)(pl).Print()
 }
 
+func (pl *List) Clear() {
+	(*types.List)(pl).Clear()
+}
+
 // "ManualPeersFile" adds Map from a peers.json to the peerlist
 func ManualPeersFile(filepath string) error {
 	file, err := ioutil.ReadFile(filepath)

@@ -48,3 +48,9 @@ func (l *List) Contains(key interface{}) bool {
 func (l *List) Print() {
 	fmt.Println(l.M)
 }
+
+func (l *List) Clear() {
+	l.Mux.Lock()
+	defer l.Mux.Unlock()
+	l.M = map[interface{}]interface{}{}
+}
