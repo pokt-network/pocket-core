@@ -8,6 +8,7 @@ import (
 
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/node"
@@ -43,6 +44,8 @@ func startClient() {
 	rpc.StartServers()
 	// runs servers for messages
 	message.StartServers()
+	// run db refresh on peers (if dispatch node)
+	db.PeersRefresh()
 	// sends an entry message to the centralized dispatcher
 	node.Register()
 	// logs the client starting
