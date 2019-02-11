@@ -59,8 +59,6 @@ func (db *DB) GetAll() (*dynamodb.ScanOutput, error) {
 func peersRefresh() {
 	var items []node.Node
 	for {
-		// every x minutes
-		time.Sleep(_const.DBREFRESH * time.Minute)
 		output, err := NewDB().GetAll()
 		if err != nil {
 			fmt.Fprint(os.Stderr, err.Error())
@@ -75,6 +73,10 @@ func peersRefresh() {
 		pl := node.PeerList()
 		pl.Set(items)
 		pl.CopyToDP()
+		fmt.Println("SUCCESSFULLY REFRESHED")
+		fmt.Println(node.DispatchPeers())
+		// every x minutes
+		time.Sleep(_const.DBREFRESH * time.Minute)
 	}
 }
 
