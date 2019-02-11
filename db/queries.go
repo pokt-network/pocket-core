@@ -3,11 +3,14 @@ package db
 
 import (
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/pokt-network/pocket-core/const"
+	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
 )
 
@@ -49,4 +52,31 @@ func (db *DB) Remove(n node.Node) (*dynamodb.DeleteItemOutput, error) {
 func (db *DB) GetAll() (*dynamodb.ScanOutput, error) {
 	input := &dynamodb.ScanInput{TableName: aws.String(_const.DBTABLENAME)}
 	return db.dynamo.Scan(input)
+}
+
+// "peersRefresh" updates the peerList and dispatchPeerList from the database every x time.
+func peersRefresh() {
+	var items []node.Node
+	for {
+		// every x minutes
+		time.Sleep(_const.DBREFRESH * time.Minute)
+		output, err := NewDB().GetAll()
+		if err != nil {
+			fmt.Fprint(os.Stderr, err.Error())
+			logs.NewLog(err.Error(), logs.PanicLevel, logs.JSONLogFormat)
+		}
+		// unmarshal the output from the database call
+		err = dynamodbattribute.UnmarshalListOfMaps(output.Items, &items)
+		if err != nil {
+			fmt.Fprint(os.Stderr, err.Error())
+			logs.NewLog(err.Error(), logs.PanicLevel, logs.JSONLogFormat)
+		}
+		// update the entire peerlist with the nodes
+		// TODO WIP
+	}
+}
+
+// "PeersRefresh" is a helper function that runs peersRefresh in a go routine
+func PeersRefresh() {
+	go peersRefresh()
 }
