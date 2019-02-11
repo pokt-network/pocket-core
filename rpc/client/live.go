@@ -5,32 +5,47 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/db"
+	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc/shared"
+	"github.com/pokt-network/pocket-core/service"
 )
 
 // DISCLAIMER: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
 
 // "Register" handles the localhost:<client-port>/v1/register call.
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// if in deprecated mode
+	if config.GlobalConfig().DisMode == 2 {
+		shared.WriteErrorResponse(w, 410, "Deprecated, please upgrade software")
+		return
+	}
 	n := node.Node{}
+	// if cannot populate model
 	if err := shared.PopModel(w, r, ps, &n); err != nil {
 		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
+	// if within white list
 	if node.EnsureWL(node.SWL(), n.GID) {
-		// add to peerlist
 		node.PeerList().Add(n)
-		// add to dispatch peers
 		node.DispatchPeers().Add(n)
-		// write to db
 		if _, err := db.NewDB().Add(n); err != nil {
 			fmt.Println(err.Error())
 			shared.WriteErrorResponse(w, 500, "unable to write peer to database")
 			return
 		}
-		// write response
+		// if within migrate mode
+		if config.GlobalConfig().DisMode == 1 {
+			_, err := service.HandleReport(&service.Report{GID: n.GID, Message: "This node has not upgraded Pocket Core"})
+			if err != nil {
+				logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+			}
+			shared.WriteJSONResponse(w, "WARNING: Pocket Core is now in the Migration Phase. Please upgrade your software as this version will soon be deprecated and not supported")
+			return
+		}
 		shared.WriteJSONResponse(w, "Success! Your node is now registered in the Pocket Network")
 		return
 	}
@@ -44,11 +59,8 @@ func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	// remove from peerlist
 	node.PeerList().Remove(n)
-	// remove from dispatch peers
 	node.DispatchPeers().Delete(n)
-	// delete from database
 	if _, err := db.NewDB().Remove(n); err != nil {
 		shared.WriteErrorResponse(w, 500, "unable to remove peer from database")
 		return
