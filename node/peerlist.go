@@ -53,6 +53,14 @@ func (pl *List) Clear() {
 	(*types.List)(pl).Clear()
 }
 
+// "Set" clears all nodes from the map and sets the peerlist as the node slice.
+func (pl *List) Set(nodes []Node) {
+	pl.Clear()
+	for _, n := range nodes {
+		pl.Add(n)
+	}
+}
+
 // "ManualPeersFile" adds Map from a peers.json to the peerlist
 func ManualPeersFile(filepath string) error {
 	file, err := ioutil.ReadFile(filepath)
@@ -81,6 +89,7 @@ func manualPeersJSON(b []byte) error {
 func (pl *List) CopyToDP() {
 	pl.Mux.Lock()
 	defer pl.Mux.Unlock()
+	DispatchPeers().Clear()
 	for _, peer := range pl.M {
 		DispatchPeers().Add(peer.(Node))
 	}
