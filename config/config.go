@@ -24,6 +24,7 @@ type config struct {
 	SNWL     string `json:"SNWL"`         // This variable holds the filepath to the service_whitelist.json.
 	DWL      string `json:"DWL"`          // This variable holds the filepath to the developer_whitelist.json
 	Dispatch bool   `json:"DISPATCH"`     // This variable describes whether or not this node is a dispatcher
+	DisMode  int    `json:"DISMODE"`      // The mode by which the dispatch runs in (NORM, MIGRATE, DEPCRECATED)
 }
 
 var (
@@ -40,6 +41,7 @@ var (
 	cRpc     = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc     = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	dispatch = flag.Bool("dispatch", false, "specifies if this node is operating as a dispatcher")
+	dismode  = flag.Int("dismode", 0, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
 )
 
 // "Init" initializes the configuration object.
@@ -65,7 +67,8 @@ func newConfiguration() {
 		*pFile,
 		*snwl,
 		*dwl,
-		*dispatch}
+		*dispatch,
+		*dismode}
 }
 
 // "Print()" prints the client configuration information to the CLI.
