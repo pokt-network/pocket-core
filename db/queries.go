@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
@@ -71,12 +72,15 @@ func peersRefresh() {
 			fmt.Fprint(os.Stderr, err.Error())
 			logs.NewLog(err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 		}
-		// update the entire peerlist with the nodes
-		// TODO WIP
+		pl := node.PeerList()
+		pl.Set(items)
+		pl.CopyToDP()
 	}
 }
 
 // "PeersRefresh" is a helper function that runs peersRefresh in a go routine
 func PeersRefresh() {
-	go peersRefresh()
+	if config.GlobalConfig().Dispatch {
+		go peersRefresh()
+	}
 }
