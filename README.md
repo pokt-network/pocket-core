@@ -64,6 +64,8 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
         (default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
   -dwl string
     	specifies the filepath for developer_whitelist.json
+  -dispatch
+      	specifies if this node is operating as a dispatcher
   -gid string
     	set the selfNode.GID for pocket core mvp
   -hostedchains string
