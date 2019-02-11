@@ -62,10 +62,12 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
   -datadir string
     	setup the data directory for the DB and keystore
         (default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
+  -dispatch
+        specifies if this node is operating as a dispatcher
+  -dismode int
+        specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated
   -dwl string
     	specifies the filepath for developer_whitelist.json
-  -dispatch
-      	specifies if this node is operating as a dispatcher
   -gid string
     	set the selfNode.GID for pocket core mvp
   -hostedchains string
