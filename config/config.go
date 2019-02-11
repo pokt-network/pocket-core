@@ -23,6 +23,7 @@ type config struct {
 	PFile    string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json.
 	SNWL     string `json:"SNWL"`         // This variable holds the filepath to the service_whitelist.json.
 	DWL      string `json:"DWL"`          // This variable holds the filepath to the developer_whitelist.json
+	Dispatch bool   `json:"DISPATCH"`     // This variable describes whether or not this node is a dispatcher
 }
 
 var (
@@ -38,6 +39,7 @@ var (
 	cRpcPort = flag.String("clientrpcport", "8080", "specified port to run client rpc")
 	cRpc     = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc     = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
+	dispatch = flag.Bool("dispatch", false, "specifies if this node is operating as a dispatcher")
 )
 
 // "Init" initializes the configuration object.
@@ -62,7 +64,8 @@ func newConfiguration() {
 		*cFile,
 		*pFile,
 		*snwl,
-		*dwl}
+		*dwl,
+		*dispatch}
 }
 
 // "Print()" prints the client configuration information to the CLI.
