@@ -17,6 +17,11 @@ import (
 
 // "Register" handles the localhost:<client-port>/v1/register call.
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// if not a dispatcher
+	if !config.GlobalConfig().Dispatch {
+		shared.WriteErrorResponse(w, 405, "Not a dispatch node")
+		return
+	}
 	// if in deprecated mode
 	if config.GlobalConfig().DisMode == 2 {
 		shared.WriteErrorResponse(w, 410, "Deprecated, please upgrade software")
@@ -32,7 +37,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if node.EnsureWL(node.SWL(), n.GID) {
 		node.PeerList().Add(n)
 		node.DispatchPeers().Add(n)
-		if _, err := db.NewDB().Add(n); err != nil {
+		if _, err := db.DB().Add(n); err != nil {
 			fmt.Println(err.Error())
 			shared.WriteErrorResponse(w, 500, "unable to write peer to database")
 			return
@@ -61,7 +66,7 @@ func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	node.PeerList().Remove(n)
 	node.DispatchPeers().Delete(n)
-	if _, err := db.NewDB().Remove(n); err != nil {
+	if _, err := db.DB().Remove(n); err != nil {
 		shared.WriteErrorResponse(w, 500, "unable to remove peer from database")
 		return
 	}
