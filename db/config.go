@@ -17,27 +17,27 @@ const (
 	ENDPOINT = "http://localhost:8000"
 )
 
-type DB struct {
+var (
+	db     *Database
+	dbOnce sync.Once
+)
+
+type Database struct {
 	dynamo *dynamodb.DynamoDB
-	sync.Once
+	sync.Mutex
 }
 
-// "NewDB" returns a new database instance.
-func NewDB() *DB {
-	db := &DB{}
-	db.init()
-	return db
-}
-
-// "init" initializes the database.
-func (db *DB) init() {
-	var config *aws.Config
-	db.Do(func() {
+// "DB" returns a new database instance.
+func DB() *Database {
+	dbOnce.Do(func() {
+		db = &Database{}
+		var config *aws.Config
 		config = &aws.Config{
 			Region:   aws.String(_const.DBREIGON),
 			Endpoint: aws.String(_const.DBENDPOINT),
 		}
+		// start the session
+		db.dynamo = dynamodb.New(session.Must(session.NewSession(config)))
 	})
-	// start the session
-	db.dynamo = dynamodb.New(session.Must(session.NewSession(config)))
+	return db
 }
