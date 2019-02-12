@@ -93,7 +93,6 @@ func CreateTable() {
 		return
 	}
 	fmt.Println(result)
-
 	fmt.Println("DONE")
 }
 
