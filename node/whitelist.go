@@ -96,7 +96,6 @@ func (w *Whitelist) wlFile(filePath string) error {
 		return err
 	}
 	w.AddMulti(data)
-	fmt.Println(w)
 	return nil
 }
 
