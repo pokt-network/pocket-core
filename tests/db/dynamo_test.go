@@ -22,7 +22,7 @@ func DummyNode() node.Node {
 }
 
 func TestPut(t *testing.T) {
-	d := db.NewDB()
+	d := db.DB()
 	_, err := d.Add(DummyNode())
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -30,16 +30,8 @@ func TestPut(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	d := db.NewDB()
+	d := db.DB()
 	_, err := d.Remove(DummyNode())
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-}
-
-func TestGetAll(t *testing.T) {
-	d := db.NewDB()
-	_, err := d.GetAll()
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
