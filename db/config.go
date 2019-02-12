@@ -12,11 +12,6 @@ import (
 // NOTE: You need to setup your AWS configuration
 // first https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html
 
-const (
-	REGION   = "us-west-2"
-	ENDPOINT = "http://localhost:8000"
-)
-
 var (
 	db     *Database
 	dbOnce sync.Once
