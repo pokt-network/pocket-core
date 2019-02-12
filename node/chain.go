@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"os"
 	"sync"
+
+	"github.com/pokt-network/pocket-core/util"
 )
 
 // A structure that specifies a non-native blockchain client running on a port.
@@ -81,17 +84,16 @@ func ChainPort(b Blockchain) string {
 }
 
 // "TestChains" tests for hosted blockchain clients.
-func TestChains() bool {
+func TestChains() {
 	hc := Chains()
 	mux.Lock()
 	defer mux.Unlock()
 	for _, c := range hc {
 		if err := pingPort(c.Port); err != nil {
-			fmt.Println(c.Name, " client is not detected on port ", c.Port)
-			return false
+			fmt.Fprint(os.Stderr, c.Name+" client is not detected on port "+c.Port)
+			util.ExitGracefully(c.Name + " client isn't detected")
 		}
 	}
-	return true
 }
 
 // "pingPort" attempts to connect to the specific port hosting the chain.
