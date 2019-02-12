@@ -12,7 +12,7 @@ type JSONErrorResponse struct {
 
 // "APIError" is an error feedback structure containing a title and a status.
 type APIError struct {
-	Status int    `json:"error"`
+	Status int    `json:"code"`
 	Title  string `json:"title"`
 }
 
