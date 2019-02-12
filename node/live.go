@@ -11,9 +11,9 @@ import (
 func Register() {
 	resp, err := util.RPCRequest("http://"+_const.DISPATCHIP+":"+_const.DISPATCHCLIENTPORT+"/v1/register", Self(), util.POST)
 	if err != nil {
-		util.ExitGracefully("Error, unable to register node at Pocket Incorporated's Dispatcher")
+		util.ExitGracefully(err.Error())
 	}
-	fmt.Println(resp, PeerList().M)
+	fmt.Println(resp)
 }
 
 func UnRegister(count int) {
