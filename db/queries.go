@@ -16,7 +16,9 @@ import (
 )
 
 // "Add" 'puts' a node into the persistent data storage.
-func (db *DB) Add(n node.Node) (*dynamodb.PutItemOutput, error) {
+func (db *Database) Add(n node.Node) (*dynamodb.PutItemOutput, error) {
+	db.Lock()
+	defer db.Unlock()
 	av, err := dynamodbattribute.MarshalMap(n)
 	if err != nil {
 		return nil, err
@@ -34,7 +36,9 @@ func (db *DB) Add(n node.Node) (*dynamodb.PutItemOutput, error) {
 }
 
 // "Remove" 'deletes' a node from the persistent data storage.
-func (db *DB) Remove(n node.Node) (*dynamodb.DeleteItemOutput, error) {
+func (db *Database) Remove(n node.Node) (*dynamodb.DeleteItemOutput, error) {
+	db.Lock()
+	defer db.Unlock()
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"gid": {
@@ -49,8 +53,8 @@ func (db *DB) Remove(n node.Node) (*dynamodb.DeleteItemOutput, error) {
 	return db.dynamo.DeleteItem(input)
 }
 
-// "GetAll" returns all nodes from the database.
-func (db *DB) GetAll() (*dynamodb.ScanOutput, error) {
+// "getAll" returns all nodes from the database.
+func (db *Database) getAll() (*dynamodb.ScanOutput, error) {
 	input := &dynamodb.ScanInput{TableName: aws.String(_const.DBTABLENAME)}
 	return db.dynamo.Scan(input)
 }
@@ -58,23 +62,26 @@ func (db *DB) GetAll() (*dynamodb.ScanOutput, error) {
 // "peersRefresh" updates the peerList and dispatchPeerList from the database every x time.
 func peersRefresh() {
 	var items []node.Node
+	db := DB()
 	for {
-		output, err := NewDB().GetAll()
+		db.Lock()
+		output, err := DB().getAll()
 		if err != nil {
 			fmt.Fprint(os.Stderr, err.Error())
+			db.Unlock()
 			logs.NewLog(err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 		}
 		// unmarshal the output from the database call
 		err = dynamodbattribute.UnmarshalListOfMaps(output.Items, &items)
 		if err != nil {
 			fmt.Fprint(os.Stderr, err.Error())
+			db.Unlock()
 			logs.NewLog(err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 		}
 		pl := node.PeerList()
 		pl.Set(items)
 		pl.CopyToDP()
-		fmt.Println("SUCCESSFULLY REFRESHED")
-		fmt.Println(node.DispatchPeers())
+		db.Unlock()
 		// every x minutes
 		time.Sleep(_const.DBREFRESH * time.Minute)
 	}
