@@ -41,7 +41,7 @@ var (
 	cRpc     = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc     = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	dispatch = flag.Bool("dispatch", false, "specifies if this node is operating as a dispatcher")
-	dismode  = flag.Int("dismode", 0, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
+	dismode  = flag.Int("dismode", _const.DISMODENORMAL, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
 )
 
 // "Init" initializes the configuration object.

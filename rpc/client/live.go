@@ -6,6 +6,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
@@ -23,7 +24,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	// if in deprecated mode
-	if config.GlobalConfig().DisMode == 2 {
+	if config.GlobalConfig().DisMode == _const.DISMODEDEPRECATED {
 		shared.WriteErrorResponse(w, 410, "Deprecated, please upgrade software")
 		return
 	}
@@ -43,7 +44,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		// if within migrate mode
-		if config.GlobalConfig().DisMode == 1 {
+		if config.GlobalConfig().DisMode == _const.DISMODEMIGRATE {
 			_, err := service.HandleReport(&service.Report{GID: n.GID, Message: "This node has not upgraded Pocket Core"})
 			if err != nil {
 				logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
