@@ -38,7 +38,7 @@ func peersRefresh() {
 		pl.CopyToDP()
 		db.Unlock()
 		// every x minutes
-		time.Sleep(_const.DBREFRESH * time.Second)
+		time.Sleep(_const.DBREFRESH * time.Minute)
 	}
 }
 
@@ -70,7 +70,7 @@ func checkPeers() {
 				}
 			}
 		}
-		time.Sleep(_const.DBREFRESH * time.Second)
+		time.Sleep(_const.DBREFRESH * time.Minute)
 	}
 }
 
