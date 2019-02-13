@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/db"
@@ -46,6 +46,8 @@ func startClient() {
 	message.StartServers()
 	// run db refresh on peers (if dispatch node)
 	db.PeersRefresh()
+	// runs a check on all service nodes periodically
+	db.CheckPeers()
 	// sends an entry message to the centralized dispatcher
 	node.Register()
 	// logs the client starting
