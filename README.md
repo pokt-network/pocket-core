@@ -64,6 +64,8 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
         (default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
   -dbend string
       	specifies the database endpoint for the centralized dispatcher (default "dynamodb.us-east-2.amazonaws.com")
+  -dfile string
+      	specifies the filepath for developer_whitelist.json
   -discport string
         specifies the client port of the centralized dispatcher (default "8080")
   -disip string
@@ -74,19 +76,17 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
         specifies if this node is operating as a dispatcher
   -disrport string
         specifies the relay port of the centralized dispatcher (default "8081")
-  -dwl string
-    	specifies the filepath for developer_whitelist.json
   -gid string
     	set the selfNode.GID for pocket core mvp
   -hostedchains string
     	specifies the filepath for hosted chains
-  -peerFile string
+  -pfile string
     	specifies the filepath for peers.json
   -relayrpc
     	whether or not to start the rpc server
   -relayrpcport string
     	specified port to run relay rpc
-  -snwl string
+  -sfile string
     	specifies the filepath for service_whitelist.json
 ````
 <h1 align="center">How to test</h1>
