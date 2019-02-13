@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 )
 
@@ -25,6 +25,10 @@ type config struct {
 	DWL      string `json:"DWL"`          // This variable holds the filepath to the developer_whitelist.json
 	Dispatch bool   `json:"DISPATCH"`     // This variable describes whether or not this node is a dispatcher
 	DisMode  int    `json:"DISMODE"`      // The mode by which the dispatch runs in (NORM, MIGRATE, DEPCRECATED)
+	DBEND    string `json:"DBENDPOINT"`   // The endpoint of the centralized database for dispatch configuration
+	DisIP    string `json:"DISIP"`        // The IP address of the centralized dispatcher
+	DisCPort string `json:"DISCPort"`     // The client port of the centralized dispatcher
+	DisRPort string `json:"DISCPort"`     // The relay port of the centralized dispatcher
 }
 
 var (
@@ -42,6 +46,10 @@ var (
 	rRpc     = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	dispatch = flag.Bool("dispatch", false, "specifies if this node is operating as a dispatcher")
 	dismode  = flag.Int("dismode", _const.DISMODENORMAL, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
+	dbend    = flag.String("dbend", _const.DBENDPOINT, "specifies the database endpoint for the centralized dispatcher")
+	disip    = flag.String("disip", _const.DISPATCHIP, "specifies the address of the centralized dispatcher")
+	discport = flag.String("discport", _const.DISPATCHCLIENTPORT, "specifies the client port of the centralized dispatcher")
+	disrport = flag.String("disrport", _const.DISPATCHRELAYPORT, "specifies the relay port of the centralized dispatcher")
 )
 
 // "Init" initializes the configuration object.
@@ -68,7 +76,11 @@ func newConfiguration() {
 		*snwl,
 		*dwl,
 		*dispatch,
-		*dismode}
+		*dismode,
+		*dbend,
+		*disip,
+		*discport,
+		*disrport}
 }
 
 // "Print()" prints the client configuration information to the CLI.
