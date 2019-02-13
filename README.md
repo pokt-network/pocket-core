@@ -59,13 +59,21 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
     	whether or not to start the rpc server
   -clientrpcport string
     	specified port to run client rpc
-  -datadir string
+  -dd string
     	setup the data directory for the DB and keystore
         (default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
-  -dispatch
-        specifies if this node is operating as a dispatcher
+  -dbend string
+      	specifies the database endpoint for the centralized dispatcher (default "dynamodb.us-east-2.amazonaws.com")
+  -discport string
+        specifies the client port of the centralized dispatcher (default "8080")
+  -disip string
+        specifies the address of the centralized dispatcher (default "127.0.0.1")
   -dismode int
         specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated
+  -dispatch
+        specifies if this node is operating as a dispatcher
+  -disrport string
+        specifies the relay port of the centralized dispatcher (default "8081")
   -dwl string
     	specifies the filepath for developer_whitelist.json
   -gid string
