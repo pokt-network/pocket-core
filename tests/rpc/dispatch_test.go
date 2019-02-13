@@ -19,6 +19,7 @@ import (
 func TestDispatchServe(t *testing.T) {
 	// add foo to the whitelist
 	node.DWL().Add("foo1")
+	fmt.Println(node.DWL())
 	// create arbitrary blockchains
 	ethereum := node.Blockchain{Name: "ethereum", NetID: "1", Version: "1.0"}
 	rinkeby := node.Blockchain{Name: "ethereum", NetID: "4", Version: "1.0"}
