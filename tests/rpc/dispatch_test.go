@@ -17,6 +17,8 @@ import (
 )
 
 func TestDispatchServe(t *testing.T) {
+	// add foo to the whitelist
+	node.DWL().Add("foo1")
 	// create arbitrary blockchains
 	ethereum := node.Blockchain{Name: "ethereum", NetID: "1", Version: "1.0"}
 	rinkeby := node.Blockchain{Name: "ethereum", NetID: "4", Version: "1.0"}
@@ -44,8 +46,6 @@ func TestDispatchServe(t *testing.T) {
 	dp.Add(node1)
 	dp.Add(node2)
 	dp.Add(node3)
-	// add foo to the whitelist
-	node.DWL().Add("foo1")
 	time.Sleep(4 * time.Second)
 	// json call string for dispatch serve
 	requestJSON := []byte("{\"DevID\": \"foo1\", \"Blockchains\": [{\"name\":\"ethereum\",\"netid\":\"1\",\"version\":\"1.0\"}]}")
