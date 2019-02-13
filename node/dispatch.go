@@ -2,7 +2,6 @@ package node
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 )
 
@@ -84,20 +83,6 @@ func (dp *DPeers) Print() {
 	}
 }
 
-// "Check" checks each service node's liveness.
-func (dp *DPeers) Check() {
-	pl := PeerList()
-	for _, p := range pl.M {
-		if !isAlive(p.(Node)) {
-			// try again
-			if !isAlive(p.(Node)) {
-				pl.Remove(p.(Node))
-				dp.Delete(p.(Node))
-			}
-		}
-	}
-}
-
 // "Clear" removes all nodes from the map.
 func (dp *DPeers) Clear() {
 	dp.Lock()
@@ -105,15 +90,3 @@ func (dp *DPeers) Clear() {
 	dp.Map = make(map[Blockchain]map[string]Node)
 }
 
-// "isAlive" checks a node and returns the status of that check.
-func isAlive(n Node) bool { // TODO handle scenarios where the error is on the dispatch node side
-	if resp, err := check(n); err != nil || resp == nil || resp.StatusCode != http.StatusOK {
-		return false
-	}
-	return true
-}
-
-// "check" tests a node by doing an HTTP GET to API.
-func check(n Node) (*http.Response, error) {
-	return http.Get("http://" + n.IP + ":" + n.RelayPort + "/v1/")
-}
