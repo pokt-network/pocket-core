@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc"
 )
@@ -24,7 +25,8 @@ func TestDispatchLiveness(t *testing.T) {
 	// add dead node to peerlist
 	pl.Add(dead)
 	// check liveness port of self
-	node.DispatchPeers().Check()
+	db.CheckPeers()
+	time.Sleep(5*time.Second) // yet another race condition
 	// ensure that dead node is deleted and live node is still within list
 	if !pl.Contains(self.GID) || pl.Contains(dead.GID) {
 		t.Fatalf("Peerlist result not correct, expected: " + self.GID + " only, and not: " + dead.GID)
