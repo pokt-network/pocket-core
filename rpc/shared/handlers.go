@@ -3,6 +3,7 @@ package shared
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 // Populate the model from the parameters of the POST call.
 func PopModel(_ http.ResponseWriter, r *http.Request, _ httprouter.Params, model interface{}) error {
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	fmt.Println(string(body))
 	if err != nil {
 		return err
 	}

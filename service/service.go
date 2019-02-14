@@ -3,8 +3,9 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
@@ -23,6 +24,7 @@ type Relay struct {
 // "RouteRelay" routes the relay to the specified hosted chain
 func RouteRelay(relay Relay) (string, error) {
 	if node.EnsureWL(node.DWL(), relay.DevID) {
+		fmt.Println(relay.Data)
 		port := node.ChainPort(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID, Version: relay.Version})
 		if port == "" {
 			logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
