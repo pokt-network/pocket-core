@@ -11,7 +11,7 @@ import (
 func TestGlobalConfig(t *testing.T) {
 	c := config.GlobalConfig()
 	if c != nil {
-		c.Print()
+		config.Print()
 		return
 	}
 	t.Fatalf("The global configuration object returned nil")
