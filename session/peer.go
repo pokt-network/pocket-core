@@ -1,4 +1,3 @@
-// This package is network code relating to pocket 'sessions'
 package session
 
 import (
@@ -18,8 +17,8 @@ type Peer struct {
 	node.Node `json:"node"`
 }
 
-// "AddPeer" adds sessionPeers from a slice to the peerlist
-func AddPeer(spl []Peer) {
+// "AddPeers" adds sessionPeers from a slice to the Global peerlist
+func AddPeers(spl []Peer) {
 	pl := node.PeerList()
 	for _, sp := range spl {
 		pl.Add(sp.Node)

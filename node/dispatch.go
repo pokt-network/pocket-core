@@ -51,8 +51,8 @@ func peers(dp DPeers, bc Blockchain) map[string]Node {
 	return dp.Map[bc]
 }
 
-// "Peers" returns a map of peers by blockchain.
-func (dp DPeers) Peers(bc Blockchain) map[string]Node {
+// "PeersByChain" returns a map of peers by blockchain.
+func (dp DPeers) PeersByChain(bc Blockchain) map[string]Node {
 	dp.Lock()
 	defer dp.Unlock()
 	return peers(dp, bc)
@@ -89,4 +89,3 @@ func (dp *DPeers) Clear() {
 	defer dp.Unlock()
 	dp.Map = make(map[Blockchain]map[string]Node)
 }
-

@@ -1,3 +1,4 @@
+// This package is node related code.
 package node
 
 import (
@@ -12,6 +13,13 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 )
 
+// A structure that specifies a non-native blockchain.
+type Blockchain struct {
+	Name    string `json:"name"`
+	NetID   string `json:"netid"`
+	Version string `json:"version"`
+}
+
 // A structure that specifies a non-native blockchain client running on a port.
 type HostedChain struct {
 	Blockchain `json:"blockchain"` // blockchain structure
@@ -20,8 +28,7 @@ type HostedChain struct {
 }
 
 var (
-	// A globally acessed structure that holds the HostedChains structures.
-	chains map[Blockchain]HostedChain
+	chains map[Blockchain]HostedChain // A structure to hold the hosted chains of the client.
 	once   sync.Once
 	mux    sync.Mutex
 )
@@ -34,6 +41,7 @@ func Chains() map[Blockchain]HostedChain {
 	return chains
 }
 
+// "ChainsSlice" converts the chains structure into a slice of type Blockchain.
 func ChainsSlice() []Blockchain {
 	cs := make([]Blockchain, 0)
 	for k := range Chains() {
@@ -42,15 +50,8 @@ func ChainsSlice() []Blockchain {
 	return cs
 }
 
-// "ExportChains" converts chains into json.
-func ExportChains() ([]byte, error) {
-	mux.Lock()
-	defer mux.Unlock()
-	return json.Marshal(Chains())
-}
-
-// "UnmarshalChains" converts json into chains.
-func UnmarshalChains(b []byte) error {
+// "jsonToChains" converts json into chains structure.
+func jsonToChains(b []byte) error {
 	h := Chains()
 	data := make([]HostedChain, 0)
 	mux.Lock()
@@ -58,8 +59,6 @@ func UnmarshalChains(b []byte) error {
 	if err := json.Unmarshal(b, &data); err != nil {
 		return err
 	}
-	// convert slice into map for quick access
-	// this is o(n) but alternative is a more complicated chains.json file
 	for _, hc := range data {
 		h[hc.Blockchain] = hc
 	}
@@ -67,13 +66,13 @@ func UnmarshalChains(b []byte) error {
 }
 
 // "CFile" reads a file into chains.
-func CFIle(filepath string) error {
+func CFile(filepath string) error {
 	file, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	return UnmarshalChains(file)
+	return jsonToChains(file)
 }
 
 // "ChainPort" returns the port of a blockchain client.
@@ -81,6 +80,15 @@ func ChainPort(b Blockchain) string {
 	mux.Lock()
 	defer mux.Unlock()
 	return Chains()[b].Port
+}
+
+// "pingPort" attempts to connect to the specific port hosting the chain.
+func pingPort(port string) error {
+	_, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		return nil
+	}
+	return errors.New("port: " + port + " is not in use")
 }
 
 // "TestChains" tests for hosted blockchain clients.
@@ -94,13 +102,4 @@ func TestChains() {
 			util.ExitGracefully(c.Name + " client isn't detected")
 		}
 	}
-}
-
-// "pingPort" attempts to connect to the specific port hosting the chain.
-func pingPort(port string) error {
-	_, err := net.Listen("tcp", ":"+port)
-	if err != nil {
-		return nil
-	}
-	return errors.New("port: " + port + " is not in use")
 }

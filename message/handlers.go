@@ -25,5 +25,5 @@ func sessionMSG(message *Message) {
 	s.AddPeers(spl.Peers)
 	// adds new session to sessionList and adds peers to the peerList
 	sl.Add(s)
-	session.AddPeer(spl.Peers)
+	session.AddPeers(spl.Peers)
 }
