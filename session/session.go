@@ -12,6 +12,8 @@ type Session struct {
 	PL    PeerList `json:"peerlist"`
 }
 
+type PeerList types.List
+
 var one sync.Once
 
 // "NewSession" returns an empty session object with the devID prefilled
@@ -19,12 +21,9 @@ func NewSession(dID string) Session {
 	return Session{DevID: dID}
 }
 
-// "Peers" returns a map of sessionPeers [GID]Connection
-func (s *Session) Peers() PeerList {
-	one.Do(func() {
-		s.PL = NewPeerList()
-	})
-	return s.PL
+// "NewPeerList" returns a sessionPeerList (similar to global peerlist but type peer[node and role])
+func NewPeerList() PeerList {
+	return *(*PeerList)(types.NewList())
 }
 
 // "Add" adds a peer to the session

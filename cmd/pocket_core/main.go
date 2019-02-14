@@ -5,7 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/db"
@@ -28,14 +28,12 @@ func main() {
 
 // "startClient" Starts the client with the given initial configuration.
 func startClient() {
-	// initializes the configuration from flags and defaults
-	config.Init()
+	// print the configuration the the cmd
+	config.GlobalConfig().Print()
 	// builds the proper structure on pc for core client to operate
 	config.Build()
 	// builds node structures from files
-	node.Files()
-	// print the configuration the the cmd
-	config.Print()
+	node.ConfigFiles()
 	// add peers to dispatch structure
 	node.PeerList().CopyToDP()
 	// check for hosted chains
