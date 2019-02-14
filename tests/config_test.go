@@ -31,7 +31,6 @@ func TestBuildConfig(t *testing.T) {
 func TestDataDir(t *testing.T) {
 	datadir := config.GlobalConfig().DD
 	if datadir == _const.DATADIR {
-		t.Log(datadir)
 		return
 	}
 	t.Fatalf("Data Directory: " + datadir + " is the incorrect value. \n Expected: " + _const.DATADIR)
