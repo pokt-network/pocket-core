@@ -29,7 +29,7 @@ func main() {
 // "startClient" Starts the client with the given initial configuration.
 func startClient() {
 	// print the configuration the the cmd
-	config.GlobalConfig().Print()
+	config.GlobalConfig()
 	// builds the proper structure on pc for core client to operate
 	config.Build()
 	// builds node structures from files
