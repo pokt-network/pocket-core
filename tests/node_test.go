@@ -7,40 +7,41 @@ import (
 	"testing"
 
 	"github.com/pokt-network/pocket-core/config"
+	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/node"
 )
 
 func writeSampleConfigFiles() error {
-	datadirectory := config.GlobalConfig().DD
-	cFile, err := filepath.Abs("./fixtures/chains.json")
+	datadirectory := config.GlobalConfig().DD+_const.FILESEPARATOR
+	cFile, err := filepath.Abs("fixtures"+_const.FILESEPARATOR+"chains.json")
 	if err != nil {
 		return err
 	}
-	pFile, err := filepath.Abs("./fixtures/peers.json")
+	pFile, err := filepath.Abs("fixtures"+_const.FILESEPARATOR+"peers.json")
 	if err != nil {
 		return err
 	}
-	dwl, err := filepath.Abs("./fixtures/developer_whitelist.json")
+	dwl, err := filepath.Abs("fixtures"+_const.FILESEPARATOR+"developer_whitelist.json")
 	if err != nil {
 		return err
 	}
-	swl, err := filepath.Abs("./fixtures/service_whitelist.json")
+	swl, err := filepath.Abs("fixtures"+_const.FILESEPARATOR+"service_whitelist.json")
 	if err != nil {
 		return err
 	}
-	err = copyFile(cFile, datadirectory+"/chains.json")
+	err = copyFile(cFile, datadirectory+"chains.json")
 	if err != nil {
 		return err
 	}
-	err = copyFile(pFile, datadirectory+"/peers.json")
+	err = copyFile(pFile, datadirectory+"peers.json")
 	if err != nil {
 		return err
 	}
-	copyFile(dwl, datadirectory+"/developer_whitelist.json")
+	copyFile(dwl, datadirectory+"developer_whitelist.json")
 	if err != nil {
 		return err
 	}
-	copyFile(swl, datadirectory+"/service_whitelist.json")
+	copyFile(swl, datadirectory+"service_whitelist.json")
 	if err != nil {
 		return err
 	}
