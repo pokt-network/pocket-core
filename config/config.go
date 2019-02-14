@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 )
 
