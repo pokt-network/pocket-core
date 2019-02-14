@@ -30,7 +30,7 @@ func caller() *runtime.Frame {
 }
 
 // "NewLog" creates a custom log and calls the logger function.
-func NewLog(message string, level LogLevel, format LogFormat) {
+func NewLog(message string, level LogLevel, format LogFormat) error {
 	currentTime := time.Now()
 	// get the caller from util
 	frame := caller()
@@ -51,8 +51,9 @@ func NewLog(message string, level LogLevel, format LogFormat) {
 	log.LineNumber = strconv.Itoa(frame.Line)
 	log.Message = message
 	if err := Logger(log); err != nil {
-		panic(err.Error())
+		return err
 	}
+	return nil
 }
 
 // "Logger" prints the log to data directory

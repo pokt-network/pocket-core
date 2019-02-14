@@ -3,14 +3,18 @@ package node
 import (
 	"fmt"
 	"time"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/util"
 )
 
 func Register() {
 	c := config.GlobalConfig()
-	resp, err := util.RPCRequest("http://"+c.DisIP+":"+c.DisCPort+"/v1/register", Self(), util.POST)
+	s, err := Self()
+	if err != nil {
+		util.ExitGracefully(err.Error())
+	}
+	resp, err := util.RPCRequest("http://"+c.DisIP+":"+c.DisCPort+"/v1/register", s, util.POST)
 	if err != nil {
 		util.ExitGracefully(err.Error())
 	}
@@ -19,7 +23,11 @@ func Register() {
 
 func UnRegister(count int) {
 	c := config.GlobalConfig()
-	if _, err := util.RPCRequest("http://"+c.DisIP+":"+c.DisCPort+"/v1/unregister", Self(), util.POST); err != nil {
+	s, err := Self()
+	if err != nil {
+		util.ExitGracefully(err.Error())
+	}
+	if _, err := util.RPCRequest("http://"+c.DisIP+":"+c.DisCPort+"/v1/unregister", s, util.POST); err != nil {
 		fmt.Println("Error, unable to unregister node at Pocket Incorporated's Dispatcher, trying again!")
 		time.Sleep(2)
 		if count > 5 {

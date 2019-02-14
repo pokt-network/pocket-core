@@ -24,7 +24,7 @@ func Serve(dispatch *Dispatch) []byte {
 		result := make(map[string][]string)
 		for _, bc := range dispatch.Blockchains {
 			ips := make([]string, 0)
-			nodes := node.DispatchPeers().Peers(bc)
+			nodes := node.DispatchPeers().PeersByChain(bc)
 			for _, n := range nodes {
 				ips = append(ips, n.IP+":"+n.RelayPort)
 			}
