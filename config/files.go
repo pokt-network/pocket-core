@@ -50,13 +50,13 @@ func copyFile(src, dst string) error {
 			return err
 		}
 		defer in.Close()
-		
+
 		out, err := os.Create(dst)
 		if err != nil {
 			return err
 		}
 		defer out.Close()
-		
+
 		_, err = io.Copy(out, in)
 		if err != nil {
 			return err
