@@ -103,8 +103,6 @@ func (w *Whitelist) wlFile(filePath string) error {
 func EnsureWL(whiteList *Whitelist, query string) bool {
 	if !whiteList.Contains(query) {
 		os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist\n")
-		fmt.Println("NOTE: if you are a developer, just add a service_whitelist.json file to " + config.GlobalConfig().DD)
-		fmt.Println("An example of this file is under the docs directory")
 		return false
 	}
 	return true
