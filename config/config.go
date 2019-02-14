@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 )
 
@@ -52,10 +52,26 @@ var (
 	disrport = flag.String("disrport", _const.DISPATCHRELAYPORT, "specifies the relay port of the centralized dispatcher")
 )
 
-// "initConfig" initializes the configuration object.
-func initConfig() {
+// "Init" initializes the configuration object.
+func Init() {
 	// built in function to parse the flags above.
 	flag.Parse()
+	// returns the thread safe c of the client configuration.
+	GlobalConfig()
+}
+
+// "Print()" prints the client configuration information to the CLI.
+func Print() {
+	data, _ := json.MarshalIndent(c, "", "    ")              // pretty configure the json data
+	fmt.Println("Pocket Core Configuration:\n", string(data)) // pretty print the pocket configuration
+}
+
+// "GlobalConfig()" returns the configuration object in a thread safe manner.
+func GlobalConfig() *config { // singleton structure to return the configuration object
+	once.Do(func() { // thread safety.
+		newConfiguration()
+	})
+	return c // return the configuration
 }
 
 // "newConfiguration() is a constructor function of the configuration type.
@@ -79,19 +95,4 @@ func newConfiguration() {
 		*disip,
 		*discport,
 		*disrport}
-}
-
-// "Print()" prints the client configuration information to the CLI.
-func (c config) Print() {
-	data, _ := json.MarshalIndent(c, "", "    ")
-	fmt.Println("Pocket Core Configuration:\n", string(data))
-}
-
-// "GlobalConfig()" returns the configuration object in a thread safe manner.
-func GlobalConfig() *config { // singleton structure to return the configuration object
-	once.Do(func() { // thread safety.
-		newConfiguration()
-		initConfig()
-	})
-	return c // return the configuration
 }
