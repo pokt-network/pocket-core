@@ -14,6 +14,8 @@ func Build() {
 	dataDir()
 	// builds the logs directory within the data directory
 	logsDir()
+	// write fixture files
+	WriteFixtures()
 }
 
 // "dataDir" builds the directory for program files.
