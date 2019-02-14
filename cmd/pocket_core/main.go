@@ -28,12 +28,14 @@ func main() {
 
 // "startClient" Starts the client with the given initial configuration.
 func startClient() {
-	// print the configuration the the cmd
-	config.GlobalConfig()
+	// initializes the configuration from flags and defaults
+	config.Init()
 	// builds the proper structure on pc for core client to operate
 	config.Build()
 	// builds node structures from files
 	node.ConfigFiles()
+	// print the configuration the the cmd
+	config.Print()
 	// add peers to dispatch structure
 	node.PeerList().CopyToDP()
 	// check for hosted chains
