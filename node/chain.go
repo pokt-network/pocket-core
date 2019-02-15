@@ -79,8 +79,6 @@ func CFile(filepath string) error {
 func ChainPort(b Blockchain) string {
 	mux.Lock()
 	defer mux.Unlock()
-	fmt.Println(b, " is being checked for port")
-	fmt.Println(Chains())
 	return Chains()[b].Port
 }
 

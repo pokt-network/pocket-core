@@ -26,7 +26,7 @@ func RouteRelay(relay Relay) (string, error) {
 		port := node.ChainPort(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID, Version: relay.Version})
 		if port == "" {
 			logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
-			return "This relay type is not supported by this node", errors.New("not a supported blockchain")
+			return "This blockchain is not supported by this node", errors.New("not a supported blockchain")
 		}
 		return rpc.ExecuteRequest([]byte(relay.Data), port)
 	}
