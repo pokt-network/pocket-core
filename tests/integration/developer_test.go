@@ -1,4 +1,4 @@
-package Integration
+package integration
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 /*
 Integration Testing Assumptions:
 1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: 0 | NetworkID: 0 | Version: 0)
-2)
+2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)
  */
 
 func TestDispatch(t *testing.T) {
