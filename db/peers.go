@@ -90,5 +90,7 @@ func check(n node.Node) (*http.Response, error) {
 
 // "CheckPeers" is a helper function to checks each service node's liveness. Runs checkPeers() in a go routine.
 func CheckPeers() {
-	go checkPeers()
+	if config.GlobalConfig().Dispatch {
+		go checkPeers()
+	}
 }
