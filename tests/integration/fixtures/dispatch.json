@@ -1,0 +1,10 @@
+{
+  "devid": "DEVID1",
+  "blockchains": [
+    {
+      "name": "ethereum",
+      "version": "0",
+      "netid": "0"
+    }
+  ]
+}

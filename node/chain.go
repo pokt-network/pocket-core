@@ -101,6 +101,6 @@ func TestChains() {
 			fmt.Fprint(os.Stderr, c.Name+" client is not detected on port "+c.Port)
 			util.ExitGracefully(c.Name + " client isn't detected")
 		}
-		fmt.Println(c.Name + "V" + c.Version + " ID:" + c.NetID + " client is active and ready for service on port " + c.Port)
+		fmt.Println(c.Name + " V:" + c.Version + " NetID:" + c.NetID + " client is active and ready for service on port " + c.Port)
 	}
 }
