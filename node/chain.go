@@ -22,9 +22,9 @@ type Blockchain struct {
 
 // A structure that specifies a non-native blockchain client running on a port.
 type HostedChain struct {
-	Blockchain `json:"blockchain"` // blockchain structure
-	Port       string              `json:"port"`   // port that the client is running on
-	Medium     string              `json:"medium"` // http, ws, tcp, etc.
+	Blockchain `json:"blockchain"`    // blockchain structure
+	Port       string `json:"port"`   // port that the client is running on
+	Medium     string `json:"medium"` // http, ws, tcp, etc.
 }
 
 var (
@@ -79,6 +79,8 @@ func CFile(filepath string) error {
 func ChainPort(b Blockchain) string {
 	mux.Lock()
 	defer mux.Unlock()
+	fmt.Println(b, " is being checked for port")
+	fmt.Println(Chains())
 	return Chains()[b].Port
 }
 
@@ -101,5 +103,6 @@ func TestChains() {
 			fmt.Fprint(os.Stderr, c.Name+" client is not detected on port "+c.Port)
 			util.ExitGracefully(c.Name + " client isn't detected")
 		}
+		fmt.Println(c.Name + "V" + c.Version + " ID:" + c.NetID + " client is active and ready for service on port " + c.Port)
 	}
 }
