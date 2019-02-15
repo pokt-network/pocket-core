@@ -19,8 +19,17 @@ func (m Method) String() string {
 	return [...]string{"GET", "POST"}[m]
 }
 
-// "RPCRequest" sends a Pocket RPC request and returns the response
-func RPCRequest(url string, data interface{}, m Method) (string, error) {
+func RPCRequ(url string, data []byte, m Method) (string, error) {
+	req, err := http.NewRequest(m.String(), url, bytes.NewBuffer(data))
+	// handle error
+	if err != nil {
+		return "", errors.New("Cannot convert struct to json " + err.Error())
+	}
+	return rpcRequ(url, req)
+}
+
+// "StructRPCReq" sends an RPC request and returns the response
+func StructRPCReq(url string, data interface{}, m Method) (string, error) {
 	// convert structure to json
 	j, err := json.Marshal(data)
 	// handle error
@@ -33,6 +42,10 @@ func RPCRequest(url string, data interface{}, m Method) (string, error) {
 	if err != nil {
 		return "", errors.New("Cannot create request " + err.Error())
 	}
+	return rpcRequ(url, req)
+}
+
+func rpcRequ(url string, req *http.Request) (string, error) {
 	// setup header for json data
 	req.Header.Set("Content-Type", "application/json")
 	// setup http client
