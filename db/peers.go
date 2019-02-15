@@ -33,12 +33,13 @@ func peersRefresh() {
 			db.Unlock()
 			logs.NewLog(err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 		}
+		fmt.Println("retrieved from db", items)
 		pl := node.PeerList()
 		pl.Set(items)
 		pl.CopyToDP()
 		db.Unlock()
 		// every x minutes
-		time.Sleep(_const.DBREFRESH * time.Minute)
+		time.Sleep(_const.DBREFRESH * time.Second)
 	}
 }
 
@@ -70,7 +71,7 @@ func checkPeers() {
 				}
 			}
 		}
-		time.Sleep(_const.DBREFRESH * time.Minute)
+		time.Sleep(_const.DBREFRESH * time.Second)
 	}
 }
 

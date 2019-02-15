@@ -71,7 +71,7 @@ func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 500, "unable to remove peer from database")
 		return
 	}
-	shared.WriteJSONResponse(w, "Success! Your node is now unregistered in the Pocket Network")
+	shared.WriteJSONResponse(w, "Success! Your node is now unregistered from the Pocket Network")
 }
 
 func RegisterInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
