@@ -3,11 +3,11 @@ package db
 
 import (
 	"fmt"
-
+	
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"github.com/pokt-network/pocket-core/const"
+	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/node"
 )
 
@@ -21,7 +21,7 @@ func (db *Database) Add(n node.Node) (*dynamodb.PutItemOutput, error) {
 	}
 	input := &dynamodb.PutItemInput{
 		Item:      av,
-		TableName: aws.String(_const.DBTABLENAME),
+		TableName: aws.String(config.GlobalConfig().DBTableName),
 	}
 	res, err := db.dynamo.PutItem(input)
 	if err != nil {
@@ -44,13 +44,13 @@ func (db *Database) Remove(n node.Node) (*dynamodb.DeleteItemOutput, error) {
 				S: aws.String(n.IP),
 			},
 		},
-		TableName: aws.String(_const.DBTABLENAME),
+		TableName: aws.String(config.GlobalConfig().DBTableName),
 	}
 	return db.dynamo.DeleteItem(input)
 }
 
 // "getAll" returns all nodes from the database.
 func (db *Database) getAll() (*dynamodb.ScanOutput, error) {
-	input := &dynamodb.ScanInput{TableName: aws.String(_const.DBTABLENAME)}
+	input := &dynamodb.ScanInput{TableName: aws.String(config.GlobalConfig().DBTableName)}
 	return db.dynamo.Scan(input)
 }
