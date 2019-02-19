@@ -4,25 +4,25 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 )
 
 func WriteFixtures() error {
-	datadirectory := GlobalConfig().DD+_const.FILESEPARATOR
-	cFile, err := filepath.Abs("config"+_const.FILESEPARATOR+"fixtures"+_const.FILESEPARATOR+"chains.json")
+	datadirectory := GlobalConfig().DD + _const.FILESEPARATOR
+	cFile, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "chains.json")
 	if err != nil {
 		return err
 	}
-	pFile, err := filepath.Abs("config"+_const.FILESEPARATOR+"fixtures"+_const.FILESEPARATOR+"peers.json")
+	pFile, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "peers.json")
 	if err != nil {
 		return err
 	}
-	dwl, err := filepath.Abs("config"+_const.FILESEPARATOR+"fixtures"+_const.FILESEPARATOR+"developer_whitelist.json")
+	dwl, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "developer_whitelist.json")
 	if err != nil {
 		return err
 	}
-	swl, err := filepath.Abs("config"+_const.FILESEPARATOR+"fixtures"+_const.FILESEPARATOR+"service_whitelist.json")
+	swl, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "service_whitelist.json")
 	if err != nil {
 		return err
 	}
