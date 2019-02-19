@@ -62,8 +62,8 @@ func Init() {
 
 // "Print()" prints the client configuration information to the CLI.
 func Print() {
-	data, _ := json.MarshalIndent(c, "", "    ")              // pretty configure the json data
-	fmt.Println("Pocket Core Configuration:\n", string(data)) // pretty print the pocket configuration
+	data, _ := json.MarshalIndent(c, "", "    ")
+	fmt.Println("Pocket Core Configuration:\n", string(data))
 }
 
 // "GlobalConfig()" returns the configuration object in a thread safe manner.
