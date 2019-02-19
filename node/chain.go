@@ -22,9 +22,9 @@ type Blockchain struct {
 
 // A structure that specifies a non-native blockchain client running on a port.
 type HostedChain struct {
-	Blockchain `json:"blockchain"`    // blockchain structure
-	Port       string `json:"port"`   // port that the client is running on
-	Medium     string `json:"medium"` // http, ws, tcp, etc.
+	Blockchain `json:"blockchain"` // blockchain structure
+	Port       string              `json:"port"`   // port that the client is running on
+	Medium     string              `json:"medium"` // http, ws, tcp, etc.
 }
 
 var (

@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -16,8 +17,7 @@ Integration Testing Assumptions:
 2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)
 3) Dispatcher is running on DispIP:DisRPort
 4) Dispatcher has valid aws credentials for DB test
- */
-var dispatchURL = "http://" + config.GlobalConfig().DisIP + ":"
+*/
 
 type PORT int
 
@@ -27,6 +27,7 @@ const (
 )
 
 func requestFromFile(urlSuffix string, port PORT) (string, error) {
+	var dispatchURL = "http://" + config.GlobalConfig().DisIP + ":"
 	switch port {
 	case Relay:
 		dispatchURL = dispatchURL + config.GlobalConfig().DisRPort + "/v1/"
@@ -41,6 +42,7 @@ func requestFromFile(urlSuffix string, port PORT) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(dispatchURL + urlSuffix)
 	return util.RPCRequ(dispatchURL+urlSuffix, b, util.POST)
 }
 

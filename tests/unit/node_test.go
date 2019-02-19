@@ -12,20 +12,20 @@ import (
 )
 
 func writeSampleConfigFiles() error {
-	datadirectory := config.GlobalConfig().DD+_const.FILESEPARATOR
-	cFile, err := filepath.Abs("fixtures"+_const.FILESEPARATOR+"chains.json")
+	datadirectory := config.GlobalConfig().DD + _const.FILESEPARATOR
+	cFile, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + "chains.json")
 	if err != nil {
 		return err
 	}
-	pFile, err := filepath.Abs("fixtures"+_const.FILESEPARATOR+"peers.json")
+	pFile, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + "peers.json")
 	if err != nil {
 		return err
 	}
-	dwl, err := filepath.Abs("fixtures"+_const.FILESEPARATOR+"developer_whitelist.json")
+	dwl, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + "developer_whitelist.json")
 	if err != nil {
 		return err
 	}
-	swl, err := filepath.Abs("fixtures"+_const.FILESEPARATOR+"service_whitelist.json")
+	swl, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + "service_whitelist.json")
 	if err != nil {
 		return err
 	}
