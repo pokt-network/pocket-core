@@ -33,13 +33,12 @@ func peersRefresh() {
 			db.Unlock()
 			logs.NewLog(err.Error(), logs.PanicLevel, logs.JSONLogFormat)
 		}
-		fmt.Println("retrieved from db", items)
 		pl := node.PeerList()
 		pl.Set(items)
 		pl.CopyToDP()
 		db.Unlock()
 		// every x minutes
-		time.Sleep(_const.DBREFRESH * time.Second)
+		time.Sleep(_const.DBREFRESH * time.Minute)
 	}
 }
 
@@ -61,7 +60,7 @@ func checkPeers() {
 			if !isAlive(p) {
 				// try again
 				if !isAlive(p) {
-					fmt.Println("\n" + p.GID + " failed a livenss check from dispatcher at " + p.IP + ":" + p.ClientPort + "\n")
+					fmt.Println("\n" + p.GID + " failed a liveness check from dispatcher at " + p.IP + ":" + p.ClientPort + "\n")
 					pl.Remove(p)
 					dp.Delete(p)
 					db.Remove(p)
@@ -71,7 +70,7 @@ func checkPeers() {
 				}
 			}
 		}
-		time.Sleep(_const.DBREFRESH * time.Second)
+		time.Sleep(_const.DBREFRESH * time.Minute)
 	}
 }
 
