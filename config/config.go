@@ -5,31 +5,31 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 )
 
 // TODO configuration updating through CLI
 type config struct {
-	GID        string `json:"GID"`          // This variable holds self.GID.
-	CID        string `json:"CLIENTID"`     // This variable holds a client identifier string.
-	Ver        string `json:"VERSION"`      // This variable holds the client version string.
-	DD         string `json:"DATADIR"`      // This variable holds the working directory string.
-	CRPC       bool   `json:"CRPC"`         // This variable describes if the client rpc is running.
-	CRPCPort   string `json:"CRPCPORT"`     // This variable holds the client rpc port string.
-	RRPC       bool   `json:"RRPC"`         // This variable describes if the relay rpc is running.
-	RRPCPort   string `json:"RRPCPort"`     // This variable holds the relay rpc port string.
-	CFile      string `json:"HOSTEDCHAINS"` // This variable holds the filepath to the chains.json.
-	PFile      string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json.
-	SNWL       string `json:"SNWL"`         // This variable holds the filepath to the service_whitelist.json.
-	DWL         string `json:"DWL"`         // This variable holds the filepath to the developer_whitelist.json
-	Dispatch    bool   `json:"DISPATCH"`    // This variable describes whether or not this node is a dispatcher
-	DisMode     int    `json:"DISMODE"`     // The mode by which the dispatch runs in (NORM, MIGRATE, DEPCRECATED)
-	DBEndpoint  string `json:"DBENDPOINT"`  // The endpoint of the centralized database for dispatch configuration
-	DBTableName string `json:"DBTABLE"`     // The table name of the centralized dispatcher database
-	DisIP       string `json:"DISIP"`       // The IP address of the centralized dispatcher
-	DisCPort    string `json:"DISCPort"`    // The client port of the centralized dispatcher
-	DisRPort    string `json:"DISCPort"`    // The relay port of the centralized dispatcher
+	GID         string `json:"GID"`          // This variable holds self.GID.
+	CID         string `json:"CLIENTID"`     // This variable holds a client identifier string.
+	Ver         string `json:"VERSION"`      // This variable holds the client version string.
+	DD          string `json:"DATADIR"`      // This variable holds the working directory string.
+	CRPC        bool   `json:"CRPC"`         // This variable describes if the client rpc is running.
+	CRPCPort    string `json:"CRPCPORT"`     // This variable holds the client rpc port string.
+	RRPC        bool   `json:"RRPC"`         // This variable describes if the relay rpc is running.
+	RRPCPort    string `json:"RRPCPort"`     // This variable holds the relay rpc port string.
+	CFile       string `json:"HOSTEDCHAINS"` // This variable holds the filepath to the chains.json.
+	PFile       string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json.
+	SNWL        string `json:"SNWL"`         // This variable holds the filepath to the service_whitelist.json.
+	DWL         string `json:"DWL"`          // This variable holds the filepath to the developer_whitelist.json
+	Dispatch    bool   `json:"DISPATCH"`     // This variable describes whether or not this node is a dispatcher
+	DisMode     int    `json:"DISMODE"`      // The mode by which the dispatch runs in (NORM, MIGRATE, DEPCRECATED)
+	DBEndpoint  string `json:"DBENDPOINT"`   // The endpoint of the centralized database for dispatch configuration
+	DBTableName string `json:"DBTABLE"`      // The table name of the centralized dispatcher database
+	DisIP       string `json:"DISIP"`        // The IP address of the centralized dispatcher
+	DisCPort    string `json:"DISCPort"`     // The client port of the centralized dispatcher
+	DisRPort    string `json:"DISCPort"`     // The relay port of the centralized dispatcher
 }
 
 var (

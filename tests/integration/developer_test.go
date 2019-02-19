@@ -11,13 +11,14 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 )
 
-/*
-Integration Testing Assumptions:
-1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: 0 | NetworkID: 0 | Version: 0) in chains.json file
-2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)
-3) Dispatcher is running on DispIP:DisRPort
-4) Dispatcher has valid aws credentials for DB test
-*/
+
+const assumptions =
+	"Integration Testing Assumptions:\n"+
+	"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ethereum | NetworkID: 0 | Version: 0) in chains.json file\n"+
+	"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n"+
+	"3) Dispatcher is running on DispIP:DisRPort\n"+
+	"4) Dispatcher has valid aws credentials for DB test"
+
 
 type PORT int
 
@@ -49,6 +50,7 @@ func requestFromFile(urlSuffix string, port PORT) (string, error) {
 func TestRelay(t *testing.T) {
 	resp, err := requestFromFile("relay", Relay)
 	if err != nil {
+		t.Log(assumptions)
 		t.Fatalf(err.Error())
 	}
 	t.Log(resp)
@@ -57,6 +59,7 @@ func TestRelay(t *testing.T) {
 func TestReport(t *testing.T) {
 	resp, err := requestFromFile("report", Relay)
 	if err != nil {
+		t.Log(assumptions)
 		t.Fatalf(err.Error())
 	}
 	t.Log(resp)
@@ -65,6 +68,7 @@ func TestReport(t *testing.T) {
 func TestDispatch(t *testing.T) {
 	resp, err := requestFromFile("dispatch", Relay)
 	if err != nil {
+		t.Log(assumptions)
 		t.Fatalf(err.Error())
 	}
 	t.Log(resp)
