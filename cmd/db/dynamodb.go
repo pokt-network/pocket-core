@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 	"sync"
-
+	
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/pokt-network/pocket-core/const"
+	PocketCoreConfig "github.com/pokt-network/pocket-core/config"
 )
 
 // NOTE: You need to setup your AWS configuration
@@ -84,7 +84,7 @@ func CreateTable() {
 			ReadCapacityUnits:  aws.Int64(10),
 			WriteCapacityUnits: aws.Int64(10),
 		},
-		TableName: aws.String(_const.DBTABLENAME),
+		TableName: aws.String(PocketCoreConfig.GlobalConfig().DBTableName),
 	}
 
 	result, err := DB().CreateTable(input)
@@ -97,7 +97,7 @@ func CreateTable() {
 }
 
 func DeleteTable() {
-	res, err := DB().DeleteTable(&dynamodb.DeleteTableInput{TableName: aws.String(_const.DBTABLENAME)})
+	res, err := DB().DeleteTable(&dynamodb.DeleteTableInput{TableName: aws.String(PocketCoreConfig.GlobalConfig().DBTableName)})
 	if err != nil {
 		fmt.Println(err.Error())
 		return
