@@ -3,7 +3,7 @@ package relay
 
 import (
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/dispatch"
 	"github.com/pokt-network/pocket-core/logs"
@@ -15,6 +15,11 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	d := &dispatch.Dispatch{}
 	if err := shared.PopModel(w, r, ps, d); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		shared.WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	if d.DevID=="" || len(d.Blockchains)== 0 {
+		shared.WriteErrorResponse(w, 400, "Request was not formatted properly")
 	}
 	shared.WriteRawJSONResponse(w, dispatch.Serve(d))
 }
