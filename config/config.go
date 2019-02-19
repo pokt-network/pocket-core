@@ -5,37 +5,38 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 )
 
 // TODO configuration updating through CLI
 type config struct {
-	GID      string `json:"GID"`          // This variable holds self.GID.
-	CID      string `json:"CLIENTID"`     // This variable holds a client identifier string.
-	Ver      string `json:"VERSION"`      // This variable holds the client version string.
-	DD       string `json:"DATADIR"`      // This variable holds the working directory string.
-	CRPC     bool   `json:"CRPC"`         // This variable describes if the client rpc is running.
-	CRPCPort string `json:"CRPCPORT"`     // This variable holds the client rpc port string.
-	RRPC     bool   `json:"RRPC"`         // This variable describes if the relay rpc is running.
-	RRPCPort string `json:"RRPCPort"`     // This variable holds the relay rpc port string.
-	CFile    string `json:"HOSTEDCHAINS"` // This variable holds the filepath to the chains.json.
-	PFile    string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json.
-	SNWL     string `json:"SNWL"`         // This variable holds the filepath to the service_whitelist.json.
-	DWL      string `json:"DWL"`          // This variable holds the filepath to the developer_whitelist.json
-	Dispatch bool   `json:"DISPATCH"`     // This variable describes whether or not this node is a dispatcher
-	DisMode  int    `json:"DISMODE"`      // The mode by which the dispatch runs in (NORM, MIGRATE, DEPCRECATED)
-	DBEND    string `json:"DBENDPOINT"`   // The endpoint of the centralized database for dispatch configuration
-	DisIP    string `json:"DISIP"`        // The IP address of the centralized dispatcher
-	DisCPort string `json:"DISCPort"`     // The client port of the centralized dispatcher
-	DisRPort string `json:"DISCPort"`     // The relay port of the centralized dispatcher
+	GID        string `json:"GID"`          // This variable holds self.GID.
+	CID        string `json:"CLIENTID"`     // This variable holds a client identifier string.
+	Ver        string `json:"VERSION"`      // This variable holds the client version string.
+	DD         string `json:"DATADIR"`      // This variable holds the working directory string.
+	CRPC       bool   `json:"CRPC"`         // This variable describes if the client rpc is running.
+	CRPCPort   string `json:"CRPCPORT"`     // This variable holds the client rpc port string.
+	RRPC       bool   `json:"RRPC"`         // This variable describes if the relay rpc is running.
+	RRPCPort   string `json:"RRPCPort"`     // This variable holds the relay rpc port string.
+	CFile      string `json:"HOSTEDCHAINS"` // This variable holds the filepath to the chains.json.
+	PFile      string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json.
+	SNWL       string `json:"SNWL"`         // This variable holds the filepath to the service_whitelist.json.
+	DWL         string `json:"DWL"`         // This variable holds the filepath to the developer_whitelist.json
+	Dispatch    bool   `json:"DISPATCH"`    // This variable describes whether or not this node is a dispatcher
+	DisMode     int    `json:"DISMODE"`     // The mode by which the dispatch runs in (NORM, MIGRATE, DEPCRECATED)
+	DBEndpoint  string `json:"DBENDPOINT"`  // The endpoint of the centralized database for dispatch configuration
+	DBTableName string `json:"DBTABLE"`     // The table name of the centralized dispatcher database
+	DisIP       string `json:"DISIP"`       // The IP address of the centralized dispatcher
+	DisCPort    string `json:"DISCPort"`    // The client port of the centralized dispatcher
+	DisRPort    string `json:"DISCPort"`    // The relay port of the centralized dispatcher
 }
 
 var (
 	c        *config
 	once     sync.Once
 	gid      = flag.String("gid", "GID1", "set the selfNode.GID for pocket core mvp")
-	dd       = flag.String("dd", _const.DATADIR, "setup the data directory for the DB and keystore")
+	dd       = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
 	rRpcPort = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
 	cFile    = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
 	pFile    = flag.String("pfile", _const.PEERFILENAME, "specifies the filepath for peers.json")
@@ -47,6 +48,7 @@ var (
 	dispatch = flag.Bool("dispatch", false, "specifies if this node is operating as a dispatcher")
 	dismode  = flag.Int("dismode", _const.DISMODENORMAL, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
 	dbend    = flag.String("dbend", _const.DBENDPOINT, "specifies the database endpoint for the centralized dispatcher")
+	dbtable  = flag.String("dbtable", _const.DBTABLENAME, "specifies the database tablename for the centralized dispatcher")
 	disip    = flag.String("disip", _const.DISPATCHIP, "specifies the address of the centralized dispatcher")
 	discport = flag.String("discport", _const.DISPATCHCLIENTPORT, "specifies the client port of the centralized dispatcher")
 	disrport = flag.String("disrport", _const.DISPATCHRELAYPORT, "specifies the relay port of the centralized dispatcher")
@@ -92,6 +94,7 @@ func newConfiguration() {
 		*dispatch,
 		*dismode,
 		*dbend,
+		*dbtable,
 		*disip,
 		*discport,
 		*disrport}
