@@ -65,7 +65,8 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
     	setup a custom location for the datadirectory 
 	(default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
   -dbend string
-    	specifies the database endpoint for the centralized dispatcher (default "dynamodb.us-east-2.amazonaws.com")
+    	specifies the database endpoint for the centralized dispatcher 
+	(default "dynamodb.us-east-2.amazonaws.com")
   -dbtable string
     	specifies the database tablename for the centralized dispatcher (default "dispatchPeers")
   -dfile string
