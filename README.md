@@ -55,14 +55,15 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
 ````
--cfile string
+  -cfile string
     	specifies the filepath for chains.json (default "[datadir]/chains.json")
   -clientrpc
     	whether or not to start the rpc server (default true)
   -clientrpcport string
     	specified port to run client rpc (default "8080")
   -datadirectory string
-    	setup a custom location for the datadirectory (default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
+    	setup a custom location for the datadirectory 
+	(default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
   -dbend string
     	specifies the database endpoint for the centralized dispatcher (default "dynamodb.us-east-2.amazonaws.com")
   -dbtable string
