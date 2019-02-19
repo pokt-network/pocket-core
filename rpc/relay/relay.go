@@ -2,7 +2,7 @@ package relay
 
 import (
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc/shared"
@@ -14,10 +14,17 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	relay := &service.Relay{}
 	if err := shared.PopModel(w, r, ps, relay); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		shared.WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	if relay.Blockchain == "" || relay.NetworkID == "" || relay.DevID == "" || relay.Version == "" || relay.Data == "" {
+		shared.WriteErrorResponse(w, 400, "The request was not properly formatted")
+		return
 	}
 	response, err := service.RouteRelay(*relay)
 	if err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		// error is embedded in the response
 	}
 	shared.WriteJSONResponse(w, response) // relay the response
 }
@@ -35,6 +42,8 @@ func Report(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	report := &service.Report{}
 	if err := shared.PopModel(w, r, ps, report); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		shared.WriteErrorResponse(w, 400, err.Error())
+		return
 	}
 	response, err := service.HandleReport(report)
 	if err != nil {
