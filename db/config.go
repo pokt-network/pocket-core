@@ -31,7 +31,7 @@ func DB() *Database {
 		var c *aws.Config
 		c = &aws.Config{
 			Region:   aws.String(_const.DBREIGON),
-			Endpoint: aws.String(con.DBEND),
+			Endpoint: aws.String(con.DBEndpoint),
 		}
 		// start the session
 		db.dynamo = dynamodb.New(session.Must(session.NewSession(c)))
