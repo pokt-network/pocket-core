@@ -25,10 +25,12 @@ func TestDB(t *testing.T) {
 	n := DummyNode()
 	_, err := db.DB().Add(n)
 	if err != nil {
+		t.Log(assumptions)
 		t.Fatalf(err.Error())
 	}
 	_, err = db.DB().Remove(n)
 	if err != nil {
+		t.Log(assumptions)
 		t.Fatalf(err.Error())
 	}
 }
