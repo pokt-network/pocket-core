@@ -9,18 +9,29 @@ FROM golang:1.11-alpine
 ENV POCKET_PATH=/go/src/github.com/pokt-network/pocket-core/
 RUN mkdir -p ${POCKET_PATH}
 COPY . $POCKET_PATH
-RUN apk add curl git gcc musl-dev && \
-	rm -rf /var/cache/apk/* && \
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+RUN apk -v --update add \
+		curl \
+		git \
+		python \
+		py-pip \
+		groff \
+		less \
+		mailcap \
+		dep \
+		bash && \
+	pip install --upgrade awscli s3cmd python-magic && \
+	apk -v --purge del py-pip && \
+	rm /var/cache/apk/*
+
+# Setup data directory
+RUN mkdir ${POCKET_PATH}datadir
+ENV POCKET_PATH_DATADIR=${POCKET_PATH}datadir
 
 # Install project dependencies and builds the binary
 RUN cd ${POCKET_PATH} && dep ensure && go build -o ${GOBIN}/bin/pocket-core ./cmd/pocket_core/main.go
 
 # TODO: Run tests
 #RUN go test tests/unit/...
-
-# Print container state
-RUN ls $GOBIN/bin
 
 # Create app user and add permissions
 RUN addgroup -S app \
@@ -30,3 +41,6 @@ RUN chown -R app /go
 # Setup the WORKDIR with app user
 USER app
 WORKDIR $POCKET_PATH
+
+# Entrypoint
+ENTRYPOINT [ "/bin/bash", "entrypoint.sh" ]
