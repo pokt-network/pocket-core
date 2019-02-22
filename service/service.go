@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
@@ -43,7 +44,7 @@ type Report struct {
 
 // NOTE: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
 func HandleReport(report *Report) (string, error) {
-	f, err := os.OpenFile(_const.REPORTFILENAME, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(config.GlobalConfig().DD+_const.FILESEPARATOR+_const.REPORTFILENAME, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		panic(err)
 	}
