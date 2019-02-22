@@ -10,12 +10,7 @@ import (
 // "Routes" is a function that returns all of the routes of the API.
 func Routes() shared.Routes {
 	routes := shared.Routes{
-		shared.Route{Name: "Flags", Method: "GET", Path: "/v1/flags", HandlerFunc: Flags},
 		shared.Route{Name: "Routes", Method: "GET", Path: "/v1/routes", HandlerFunc: WriteRoutes},
-		shared.Route{Name: "Register", Method: "POST", Path: "/v1/register", HandlerFunc: Register},
-		shared.Route{Name: "UnRegister", Method: "POST", Path: "/v1/unregister", HandlerFunc: UnRegister},
-		shared.Route{Name: "RegisterInfo", Method: "GET", Path: "/v1/register", HandlerFunc: RegisterInfo},
-		shared.Route{Name: "UnRegisterInfo", Method: "GET", Path: "/v1/unregister", HandlerFunc: UnRegisterInfo},
 		shared.Route{Name: "Version", Method: "GET", Path: "/v1", HandlerFunc: Version},
 		// shared.Route{Name: "Account", Method: "POST", Path: "/v1/account", HandlerFunc: Account},
 		// shared.Route{Name: "IsAccountActive", Method: "POST", Path: "/v1/account/active", HandlerFunc: IsAccountActive},

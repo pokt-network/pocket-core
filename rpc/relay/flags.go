@@ -1,4 +1,4 @@
-package client
+package relay
 
 import (
 	"flag"
