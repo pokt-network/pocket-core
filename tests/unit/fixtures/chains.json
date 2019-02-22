@@ -5,6 +5,7 @@
       "netid": "0",
       "version": "0"
     },
+    "host":"localhost",
     "port": "8545",
     "medium": "rpc"
   }
