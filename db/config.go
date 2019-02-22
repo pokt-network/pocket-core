@@ -29,7 +29,7 @@ func DB() *Database {
 		db = &Database{}
 		var c *aws.Config
 		c = &aws.Config{
-			Region:   aws.String(config.GlobalConfig().DBRegion),
+			Region:   aws.String(con.DBRegion),
 			Endpoint: aws.String(con.DBEndpoint),
 		}
 		// start the session
