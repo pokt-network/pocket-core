@@ -27,6 +27,7 @@ type config struct {
 	DisMode     int    `json:"DISMODE"`      // The mode by which the dispatch runs in (NORM, MIGRATE, DEPCRECATED)
 	DBEndpoint  string `json:"DBENDPOINT"`   // The endpoint of the centralized database for dispatch configuration
 	DBTableName string `json:"DBTABLE"`      // The table name of the centralized dispatcher database
+	DBRegion    string `json:"DBREGION"`     // The aws reigion for the centralized datablase for dispatch configuration
 	DisIP       string `json:"DISIP"`        // The IP address of the centralized dispatcher
 	DisCPort    string `json:"DISCPort"`     // The client port of the centralized dispatcher
 	DisRPort    string `json:"DISCPort"`     // The relay port of the centralized dispatcher
@@ -49,6 +50,7 @@ var (
 	dismode  = flag.Int("dismode", _const.DISMODENORMAL, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
 	dbend    = flag.String("dbend", _const.DBENDPOINT, "specifies the database endpoint for the centralized dispatcher")
 	dbtable  = flag.String("dbtable", _const.DBTABLENAME, "specifies the database tablename for the centralized dispatcher")
+	dbregion = flag.String("dbregion", _const.DBREGION, "specifies the region of the db for the centralized dispatcher")
 	disip    = flag.String("disip", _const.DISPATCHIP, "specifies the address of the centralized dispatcher")
 	discport = flag.String("discport", _const.DISPATCHCLIENTPORT, "specifies the client port of the centralized dispatcher")
 	disrport = flag.String("disrport", _const.DISPATCHRELAYPORT, "specifies the relay port of the centralized dispatcher")
@@ -87,14 +89,15 @@ func newConfiguration() {
 		*cRpcPort,
 		*rRpc,
 		*rRpcPort,
-		*dd+_const.FILESEPARATOR+*cFile,
-		*dd+_const.FILESEPARATOR+*pFile,
-		*dd+_const.FILESEPARATOR+*snwl,
-		*dd+_const.FILESEPARATOR+*dwl,
+		*dd + _const.FILESEPARATOR + *cFile,
+		*dd + _const.FILESEPARATOR + *pFile,
+		*dd + _const.FILESEPARATOR + *snwl,
+		*dd + _const.FILESEPARATOR + *dwl,
 		*dispatch,
 		*dismode,
 		*dbend,
 		*dbtable,
+		*dbregion,
 		*disip,
 		*discport,
 		*disrport}
