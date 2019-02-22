@@ -8,8 +8,8 @@ import (
 )
 
 // "ExecuteRequest" takes in the raw json string and forwards it to the port
-func ExecuteRequest(jsonStr []byte, host string,port string) (string, error) {
-	url := host+":"+ port
+func ExecuteRequest(jsonStr []byte, host string, port string) (string, error) {
+	url := host + ":" + port
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := (&http.Client{}).Do(req)
