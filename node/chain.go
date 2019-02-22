@@ -3,12 +3,12 @@ package node
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/pokt-network/pocket-core/util"
 )
@@ -22,9 +22,10 @@ type Blockchain struct {
 
 // A structure that specifies a non-native blockchain client running on a port.
 type HostedChain struct {
-	Blockchain `json:"blockchain"` // blockchain structure
-	Port       string              `json:"port"`   // port that the client is running on
-	Medium     string              `json:"medium"` // http, ws, tcp, etc.
+	Blockchain `json:"blockchain"`
+	Port       string `json:"port"`
+	Host       string `json:"host"`
+	Medium     string `json:"medium"` // http, ws, tcp, etc.
 }
 
 var (
@@ -75,20 +76,19 @@ func CFile(filepath string) error {
 	return jsonToChains(file)
 }
 
-// "ChainPort" returns the port of a blockchain client.
-func ChainPort(b Blockchain) string {
+// "ChainToHosted" returns the hostedChain Object from a blockchain.
+func ChainToHosted(b Blockchain) HostedChain {
 	mux.Lock()
 	defer mux.Unlock()
-	return Chains()[b].Port
+	return Chains()[b]
 }
 
-// "pingPort" attempts to connect to the specific port hosting the chain.
-func pingPort(port string) error {
-	_, err := net.Listen("tcp", ":"+port)
-	if err != nil {
-		return nil
+// "dialHC" attempts to connect to the specific host:port hosting the chain.
+func dialHC(host string, port string) error {
+	if _, err := net.DialTimeout("tcp", host+":"+port, time.Duration(1*time.Second)); err != nil {
+		return err
 	}
-	return errors.New("port: " + port + " is not in use")
+	return nil
 }
 
 // "TestChains" tests for hosted blockchain clients.
@@ -97,9 +97,9 @@ func TestChains() {
 	mux.Lock()
 	defer mux.Unlock()
 	for _, c := range hc {
-		if err := pingPort(c.Port); err != nil {
-			fmt.Fprint(os.Stderr, c.Name+" client is not detected on port "+c.Port)
-			util.ExitGracefully(c.Name + " client isn't detected")
+		if err := dialHC(c.Host, c.Port); err != nil {
+			fmt.Fprint(os.Stderr, c.Name+" client is not detected @ "+c.Host+":"+c.Port+"\n")
+			util.ExitGracefully(c.Name + " client isn't detected" + "\n")
 		}
 		fmt.Println(c.Name + " V:" + c.Version + " NetID:" + c.NetID + " client is active and ready for service on port " + c.Port)
 	}
