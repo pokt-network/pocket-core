@@ -8,7 +8,7 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 )
 
-const chainsFileExample = "[{\"blockchain\": {\"name\": \"ethereum\",\"netid\": \"1\",\"version\": \"1.0\"},\"port\": \"8545\",\"medium\": \"rpc\"},{\"blockchain\": {\"name\": \"bitcoin\",\"netid\": \"1\",\"version\": \"1.0\"},\"port\": \"8333\",\"medium\": \"rpc\"}]"
+const chainsFileExample = "[{\"blockchain\": {\"name\": \"ethereum\",\"netid\": \"1\",\"version\": \"1.0\"},\"host\":\"localhost\",\"port\": \"8545\",\"medium\": \"rpc\"},{\"blockchain\": {\"name\": \"bitcoin\",\"netid\": \"1\",\"version\": \"1.0\"},\"host\":\"localhost\",\"port\": \"8333\",\"medium\": \"rpc\"}]"
 const peerFileExample = "[{\"gid\":\"gid1\",\"ip\":\"localhost\",\"relayport\":\"8080\",\"clientport\":\"8081\",\"clientid\":\"pocket_core\",\"cliversion\":\"0.0.1\",\"blockchains\":[{\"name\":\"ethereum\", \"version\":\"0\",\"netid\":\"0\"}]}]"
 const devFileExample = "[\"DEVID1\"]"
 const serFileExample = "[\"GID1\"]"

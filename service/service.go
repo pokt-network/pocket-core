@@ -23,12 +23,14 @@ type Relay struct {
 // "RouteRelay" routes the relay to the specified hosted chain
 func RouteRelay(relay Relay) (string, error) {
 	if node.EnsureWL(node.DWL(), relay.DevID) {
-		port := node.ChainPort(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID, Version: relay.Version})
-		if port == "" {
+		hc := node.ChainToHosted(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID, Version: relay.Version})
+		port := hc.Port
+		host := hc.Host
+		if port == "" || host == "" {
 			logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
 			return "This blockchain is not supported by this node", errors.New("not a supported blockchain")
 		}
-		return rpc.ExecuteRequest([]byte(relay.Data), port)
+		return rpc.ExecuteRequest([]byte(relay.Data), host, port)
 	}
 	return "Invalid credentials", nil
 }

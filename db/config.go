@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/const"
 )
 
 // NOTE: You need to setup your AWS configuration
@@ -30,7 +29,7 @@ func DB() *Database {
 		db = &Database{}
 		var c *aws.Config
 		c = &aws.Config{
-			Region:   aws.String(_const.DBREIGON),
+			Region:   aws.String(config.GlobalConfig().DBRegion),
 			Endpoint: aws.String(con.DBEndpoint),
 		}
 		// start the session
