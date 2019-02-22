@@ -11,14 +11,11 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 )
 
-
-const assumptions =
-	"Integration Testing Assumptions:\n"+
-	"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ethereum | NetworkID: 0 | Version: 0) in chains.json file\n"+
-	"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n"+
-	"3) Dispatcher is running on DispIP:DisRPort\n"+
+const assumptions = "Integration Testing Assumptions:\n" +
+	"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ethereum | NetworkID: 0 | Version: 0) in chains.json file\n" +
+	"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n" +
+	"3) Dispatcher is running on DispIP:DisRPort\n" +
 	"4) Dispatcher has valid aws credentials for DB test"
-
 
 type PORT int
 
