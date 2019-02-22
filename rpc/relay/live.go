@@ -1,4 +1,4 @@
-package client
+package relay
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ import (
 
 // DISCLAIMER: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
 
-// "Register" handles the localhost:<client-port>/v1/register call.
+// "Register" handles the localhost:<relay-port>/v1/register call.
 func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// if not a dispatcher
 	if !config.GlobalConfig().Dispatch {
@@ -58,7 +58,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteErrorResponse(w, 401, "Invalid credentials")
 }
 
-// "Register" handles the localhost:<client-port>/v1/register call.
+// "Register" handles the localhost:<relay-port>/v1/register call.
 func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	n := node.Node{}
 	if err := shared.PopModel(w, r, ps, &n); err != nil {
