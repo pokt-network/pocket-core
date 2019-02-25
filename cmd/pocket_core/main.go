@@ -2,9 +2,8 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
 	"os"
+	"os/signal"
 
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
@@ -52,10 +51,12 @@ func startClient() {
 	node.Register()
 	// logs the client starting
 	logs.NewLog("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
-	// prompt user to exit
-	fmt.Print("Press any key + 'Return' to quit: ")
-	// wait for input
-	bufio.NewScanner(os.Stdin).Scan()
-	// send exit message to dispatcher
-	node.UnRegister(0)
+	// Catches OS system interrupt signal and calls unregister
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Kill)
+	select {
+	case sig := <-c:
+		// Call util.ExitGracefully
+	}
 }
