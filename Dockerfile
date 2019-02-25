@@ -42,5 +42,8 @@ RUN chown -R app /go
 USER app
 WORKDIR $POCKET_PATH
 
+# Expose port 8081
+EXPOSE 8081
+
 # Entrypoint
 ENTRYPOINT [ "/bin/bash", "entrypoint.sh" ]
