@@ -2,9 +2,6 @@
 package main
 
 import (
-	"os"
-	"os/signal"
-
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/db"
@@ -51,12 +48,6 @@ func startClient() {
 	node.Register()
 	// logs the client starting
 	logs.NewLog("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
-	// Catches OS system interrupt signal and calls unregister
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, os.Kill)
-	select {
-	case sig := <-c:
-		// Call util.ExitGracefully
-	}
+	// hang and wait for exit signal
+	node.WaitForExit()
 }

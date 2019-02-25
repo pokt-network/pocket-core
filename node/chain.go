@@ -9,8 +9,6 @@ import (
 	"os"
 	"sync"
 	"time"
-
-	"github.com/pokt-network/pocket-core/util"
 )
 
 // A structure that specifies a non-native blockchain.
@@ -99,7 +97,7 @@ func TestChains() {
 	for _, c := range hc {
 		if err := dialHC(c.Host, c.Port); err != nil {
 			fmt.Fprint(os.Stderr, c.Name+" client is not detected @ "+c.Host+":"+c.Port+"\n")
-			util.ExitGracefully(c.Name + " client isn't detected" + "\n")
+			ExitGracefully(c.Name + " client isn't detected" + "\n")
 		}
 		fmt.Println(c.Name + " V:" + c.Version + " NetID:" + c.NetID + " client is active and ready for service on port " + c.Port)
 	}

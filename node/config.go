@@ -76,7 +76,7 @@ func chainsConfigFile() {
 	if err := CFile(config.GlobalConfig().CFile); err != nil {
 		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		fileErrorMessage(ChainFile)
-		util.ExitGracefully(err.Error() + " " + config.GlobalConfig().CFile) // currently just exit
+		ExitGracefully(err.Error() + " " + config.GlobalConfig().CFile) // currently just exit
 	}
 }
 
