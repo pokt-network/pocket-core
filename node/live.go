@@ -21,19 +21,19 @@ func Register() {
 	fmt.Println(resp)
 }
 
-func UnRegister(count int) {
+func UnRegister(count int) error {
 	c := config.GlobalConfig()
 	s, err := Self()
 	if err != nil {
-		util.ExitGracefully(err.Error())
+		return err
 	}
 	if _, err := util.StructRPCReq("http://"+c.DisIP+":"+c.DisRPort+"/v1/unregister", s, util.POST); err != nil {
 		fmt.Println("Error, unable to unregister node at Pocket Incorporated's Dispatcher, trying again!")
 		time.Sleep(2)
 		if count > 5 {
-			util.ExitGracefully("Please contact Pocket Incorporated with this error! As your node was unable to be unregistered")
+			return error.new("Please contact Pocket Incorporated with this error! As your node was unable to be unregistered")
 		}
 		UnRegister(count + 1)
 	}
-	util.ExitGracefully("you have been unregistered! Thank you for using Pocket Core MVP! Goodbye")
+	return nil
 }
