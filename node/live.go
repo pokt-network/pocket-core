@@ -1,6 +1,7 @@
 package node
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,11 +13,11 @@ func Register() {
 	c := config.GlobalConfig()
 	s, err := Self()
 	if err != nil {
-		util.ExitGracefully(err.Error())
+		ExitGracefully("error registering node "+ err.Error())
 	}
 	resp, err := util.StructRPCReq("http://"+c.DisIP+":"+c.DisRPort+"/v1/register", s, util.POST)
 	if err != nil {
-		util.ExitGracefully(err.Error())
+		ExitGracefully("error registering node "+ err.Error())
 	}
 	fmt.Println(resp)
 }
@@ -31,7 +32,7 @@ func UnRegister(count int) error {
 		fmt.Println("Error, unable to unregister node at Pocket Incorporated's Dispatcher, trying again!")
 		time.Sleep(2)
 		if count > 5 {
-			return error.new("Please contact Pocket Incorporated with this error! As your node was unable to be unregistered")
+			return errors.New("please contact Pocket Incorporated with this error! As your node was unable to be unregistered")
 		}
 		UnRegister(count + 1)
 	}
