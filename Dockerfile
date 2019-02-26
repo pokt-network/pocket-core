@@ -46,4 +46,6 @@ WORKDIR $POCKET_PATH
 EXPOSE 8081
 
 # Entrypoint
-ENTRYPOINT [ "/bin/bash", "entrypoint.sh" ]
+ENTRYPOINT ["/bin/bash", "entrypoint.sh" ]
+
+CMD ["/bin/bash", "cmd.sh"]
