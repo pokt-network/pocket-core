@@ -1,0 +1,9 @@
+// Generated from helloMessage.proto
+
+namespace messages;
+
+table HelloMessage {
+  gid:[ubyte];
+}
+
+root_type HelloMessage;
