@@ -20,10 +20,16 @@ set -o nounset
 # Service only
 # POCKET_CORE_DISPATCH_IP = Dispatch node address (defaults to 127.0.0.1)
 
-cmd="$@"
 
-# Download node configurations from S3
-echo 'Downloading node configurations'
-aws s3 sync $POCKET_CORE_S3_CONFIG_URL $POCKET_PATH_DATADIR
 
-exec $cmd
+# Start pocket-core
+if [ $POCKET_CORE_NODE_TYPE = "dispatch" ]; then
+	echo 'Starting pocket-core dispatch'
+	exec pocket-core --dispatch --datadirectory $POCKET_PATH_DATADIR --dbend ${AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} --dbtable ${AWS_DYNAMODB_TABLE:-dispatch-peers-staging} --dbregion ${AWS_DYNAMODB_REGION:-us-east-1}
+elif [ $POCKET_CORE_NODE_TYPE = "service" ]; then
+	echo 'Starting pocket-core service'
+	exec pocket-core --datadirectory $POCKET_PATH_DATADIR --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}
+else
+	echo 'Need to specify a node type, either dispatch or service.'
+	exit 1
+fi
