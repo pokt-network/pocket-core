@@ -47,5 +47,3 @@ EXPOSE 8081
 
 # Entrypoint
 ENTRYPOINT [ "/bin/bash", "entrypoint.sh" ]
-
-CMD ["cmd.sh"]
