@@ -131,7 +131,7 @@ For an active research forum, checkout and post on <a href="https://research.pok
   <li>Pull requests need to be based on and opened against the `staging` branch.</.i>
 </ul>
 <h1 align="center"> How to build </h1>
-run: `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
+<pre>run: `go build pokt-network/pocket-core/cmd/pocket_core/main.go`</pre>
 
 <h1 align="center">Contact</h1>
 <div align="center">
