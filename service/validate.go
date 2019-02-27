@@ -2,7 +2,7 @@ package service
 
 import (
 	"bytes"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 )
 
