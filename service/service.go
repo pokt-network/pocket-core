@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	
+
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/plugin/rpc"

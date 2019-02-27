@@ -3,7 +3,7 @@ package relay
 
 import (
 	"net/http"
-	
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )

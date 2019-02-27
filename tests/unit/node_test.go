@@ -103,4 +103,3 @@ func TestPeerList(t *testing.T) {
 		t.Fatalf("PeerList.Remove(Node) did not appear to remove the node")
 	}
 }
-

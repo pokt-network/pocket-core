@@ -59,7 +59,7 @@ func chainsConfigFile() {
 
 func ConfigFiles() error {
 	chainsConfigFile()
-	if err := peerConfigFile(); err != nil{
+	if err := peerConfigFile(); err != nil {
 		return err
 	}
 	return nil

@@ -3,13 +3,13 @@
 package messages
 
 type Type = int32
+
 const (
-	TypeUNDEFINED Type = 0
+	TypeUNDEFINED  Type = 0
 	TypeDISC_HELLO Type = 1
 )
 
 var EnumNamesType = map[Type]string{
-	TypeUNDEFINED:"UNDEFINED",
-	TypeDISC_HELLO:"DISC_HELLO",
+	TypeUNDEFINED:  "UNDEFINED",
+	TypeDISC_HELLO: "DISC_HELLO",
 }
-
