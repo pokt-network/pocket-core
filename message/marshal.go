@@ -35,7 +35,7 @@ func MarshalHelloMessage(builder *flatbuffers.Builder, helloMessage HelloMessage
 	return builder.FinishedBytes()
 }
 
-func MarshalValidateMessage(builder *flatbuffers.Builder, validateMessage ValidateMessage) []byte{
+func MarshalValidateMessage(builder *flatbuffers.Builder, validateMessage ValidateMessage) []byte {
 	// this line allows us to reuse the same builder
 	builder.Reset()
 	// serialize relay object
