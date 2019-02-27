@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 	"time"
-	
+
 	"github.com/google/flatbuffers/go"
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/message/fbs"
@@ -26,7 +26,7 @@ func TestMessageSerialization(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	if m.Type_ != fbs.MessageTypeDISCHELLO|| helloMessage.Gid != gid {
+	if m.Type_ != fbs.MessageTypeDISCHELLO || helloMessage.Gid != gid {
 		t.Fatalf("Incorrect response from the serialization")
 	}
 	t.Log("\nThe message received was of type:", m.Type_, "\nThe message payload was:", helloMessage, "\nThe message was timestamped at ", time.Unix(int64(m.Timestamp), 0).UTC())
