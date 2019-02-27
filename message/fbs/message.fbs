@@ -8,7 +8,7 @@ namespace fbs;
 // Pocket should have a few more types
 enum MessageType:int{
   UNDEFINED = 0,
-  DISC_HELLO = 1,
+  DISCHELLO = 1,
 }
 
 table Message {
