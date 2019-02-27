@@ -1,6 +1,6 @@
 // Generated from helloMessage.proto
 
-namespace messages;
+namespace fbs;
 
 table HelloMessage {
   gid:[ubyte];
