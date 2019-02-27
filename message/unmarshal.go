@@ -2,7 +2,7 @@ package message
 
 import (
 	"errors"
-	
+
 	"github.com/pokt-network/pocket-core/message/fbs"
 	"github.com/pokt-network/pocket-core/service"
 )

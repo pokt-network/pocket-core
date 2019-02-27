@@ -1,13 +1,9 @@
 package dispatch
 
 import (
-	"encoding/json"
-	"fmt"
 	"math/big"
 	"sort"
-	"strings"
 
-	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
 )
 
@@ -20,7 +16,7 @@ type Dispatch struct {
 // TODO see if this can be done more efficiently
 // "Serve" formats Dispatch PL for an API request.
 func Serve(dispatch *Dispatch) []byte {
-		
+
 }
 
 /*

@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 	"time"
-	
+
 	"github.com/google/flatbuffers/go"
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/message/fbs"
