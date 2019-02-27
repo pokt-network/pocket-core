@@ -5,9 +5,9 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 )
 
-// "Hash" returns the <SESSALGO> hash of a byte array.
+// "Hash" returns the <SESSIONHASHINGALGORITHM> hash of a byte array.
 func Hash(s []byte) []byte {
-	hasher := _const.SESSALGO.New()
+	hasher := _const.SESSIONHASHINGALGORITHM.New()
 	hasher.Write(s)
 	return hasher.Sum(nil)
 }
