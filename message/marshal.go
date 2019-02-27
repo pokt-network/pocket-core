@@ -25,7 +25,6 @@ func MarshalMessage(builder *flatbuffers.Builder, message Message) []byte {
 func MarshalHelloMessage(builder *flatbuffers.Builder, helloMessage HelloMessage) []byte {
 	// this line allows us to reuse the same builder
 	builder.Reset()
-	// Create a variable to hold the flatbuffer byte vector
 	gidVector := builder.CreateByteVector([]byte(helloMessage.Gid))
 	// Create the hello message
 	fbs.HelloMessageStart(builder)
@@ -33,5 +32,29 @@ func MarshalHelloMessage(builder *flatbuffers.Builder, helloMessage HelloMessage
 	hm := fbs.HelloMessageEnd(builder)
 	// since helloMessage is the root_object
 	builder.Finish(hm)
+	return builder.FinishedBytes()
+}
+
+func MarshalValidateMessage(builder *flatbuffers.Builder, validateMessage ValidateMessage) []byte{
+	// this line allows us to reuse the same builder
+	builder.Reset()
+	// serialize relay object
+	fbs.RelayStart(builder)
+	fbs.RelayAddBlockchain(builder, builder.CreateString(validateMessage.Relay.Blockchain))
+	fbs.RelayAddData(builder, builder.CreateString(validateMessage.Relay.Data))
+	fbs.RelayAddDevID(builder, builder.CreateString(validateMessage.Relay.DevID))
+	fbs.RelayAddNetworkID(builder, builder.CreateString(validateMessage.Relay.NetworkID))
+	fbs.RelayAddVersion(builder, builder.CreateString(validateMessage.Relay.Version))
+	r := fbs.RelayEnd(builder)
+	// builder.Finish(r)
+	// relayBytes := builder.FinishedBytes()
+	// serialize the validate message
+	builder.Reset()
+	fbs.ValidateMessageStart(builder)
+	hashVector := builder.CreateByteVector(validateMessage.Hash)
+	fbs.ValidateMessageAddHash(builder, hashVector)
+	fbs.ValidateMessageAddRelay(builder, r)
+	vm := fbs.ValidateMessageEnd(builder)
+	builder.Finish(vm)
 	return builder.FinishedBytes()
 }

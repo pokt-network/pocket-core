@@ -1,13 +1,15 @@
 package unit
 
 import (
+	"fmt"
 	"log"
 	"testing"
 	"time"
-
+	
 	"github.com/google/flatbuffers/go"
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/message/fbs"
+	"github.com/pokt-network/pocket-core/service"
 )
 
 const gid = "TESTGID"
@@ -45,4 +47,26 @@ func TestHelloMessageSerialization(t *testing.T) {
 	}
 	t.Log(deserializedResult)
 	t.Log(serializedResult)
+}
+
+func TestValidateMessageSerialization(t *testing.T) {
+	// define validate message and relay struct
+	const (
+		dummyRelayAnswer = "dummy"
+		blockchain       = "ethereum"
+		version          = "0"
+		netid            = "0"
+		data             = "dummy2"
+		devid            = "devid1"
+	)
+	hash := service.ValidationHash(dummyRelayAnswer)
+	r := service.Relay{Blockchain: blockchain, NetworkID: netid, Version: version, Data: data, DevID: devid}
+	vm := message.ValidateMessage{Relay: r, Hash: hash}
+	// create a fbs buffer to create our validate message from
+	builder := flatbuffers.NewBuilder(0)
+	// serialize
+	vmBytes := message.MarshalValidateMessage(builder, vm)
+	// deserialize
+	validateMessage := message.UnmarshalValidateMessage(vmBytes)
+	fmt.Println(validateMessage)
 }

@@ -1,0 +1,16 @@
+namespace fbs;
+
+table Relay {
+  Blockchain:string;
+  NetworkID:string;
+  Version:string;
+  Data:string;
+  DevID:string;
+}
+
+table ValidateMessage {
+  hash:[ubyte];
+  relay:Relay;
+}
+
+root_type ValidateMessage;

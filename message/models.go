@@ -1,6 +1,9 @@
 package message
 
-import "github.com/pokt-network/pocket-core/message/fbs"
+import (
+	"github.com/pokt-network/pocket-core/message/fbs"
+	"github.com/pokt-network/pocket-core/service"
+)
 
 type Message struct {
 	Type_     fbs.MessageType `json:"type"`
@@ -10,4 +13,9 @@ type Message struct {
 
 type HelloMessage struct {
 	Gid string `json:"gid"`
+}
+
+type ValidateMessage struct {
+	Relay service.Relay `json:"relay"`
+	Hash  []byte        `json:"hash"`
 }
