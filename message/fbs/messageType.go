@@ -5,11 +5,11 @@ package fbs
 type MessageType = int32
 const (
 	MessageTypeUNDEFINED MessageType = 0
-	MessageTypeDISC_HELLO MessageType = 1
+	MessageTypeDISCHELLO MessageType = 1
 )
 
 var EnumNamesMessageType = map[MessageType]string{
 	MessageTypeUNDEFINED:"UNDEFINED",
-	MessageTypeDISC_HELLO:"DISC_HELLO",
+	MessageTypeDISCHELLO:"DISCHELLO",
 }
 
