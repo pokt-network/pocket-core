@@ -14,13 +14,17 @@ func UnmarshalMessage(flatBuffer []byte) Message {
 func RouteMessageByPayload(m Message) (interface{}, error) {
 	switch m.Type_ {
 	case fbs.MessageTypeDISC_HELLO:
-		return UnmarshalHelloMessage(m.Payload), nil
+		return UnmarshalHelloMessage(m.Payload)
 	default:
 		return nil, errors.New("unsupported message type" + string(m.Type_))
 	}
 }
 
-func UnmarshalHelloMessage(flatBuffer []byte) HelloMessage {
+func UnmarshalHelloMessage(flatBuffer []byte) (*HelloMessage, error) {
 	helloMessage := fbs.GetRootAsHelloMessage(flatBuffer, 0)
-	return HelloMessage{string(helloMessage.GidBytes())}
+	// TODO add more error checking on the GID
+	if len(string(helloMessage.GidBytes())) == 0 {
+		return nil, errors.New("unable to unmarshal to hello message")
+	}
+	return &HelloMessage{string(helloMessage.GidBytes())}, nil
 }
