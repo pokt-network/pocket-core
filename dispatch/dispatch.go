@@ -15,9 +15,8 @@ type Dispatch struct {
 // NOTE: this call has been augmented for the Pocket Core MVP Centralized Dispatcher
 // TODO see if this can be done more efficiently
 // "Serve" formats Dispatch PL for an API request.
-func Serve(dispatch *Dispatch) []byte {
-
-}
+// func Serve(dispatch *Dispatch) []byte {
+// }
 
 /*
 "Find" orders the nodes from smallest proximity from sessionKey to largest proximity to sessionKey.
