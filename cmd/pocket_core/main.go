@@ -2,17 +2,12 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc"
+	"github.com/pokt-network/pocket-core/util"
 )
 
 // "init" is a built in function that is automatically called before main.
@@ -36,26 +31,12 @@ func startClient() {
 	node.ConfigFiles()
 	// print the configuration the the cmd
 	config.Print()
-	// add peers to dispatch structure
-	node.PeerList().CopyToDP()
 	// check for hosted chains
 	node.TestChains()
 	// runs the server endpoints for client and relay api
 	rpc.StartServers()
-	// runs servers for messages
-	message.StartServers()
-	// run db refresh on peers (if dispatch node)
-	db.PeersRefresh()
-	// runs a check on all service nodes periodically
-	db.CheckPeers()
-	// sends an entry message to the centralized dispatcher
-	node.Register()
 	// logs the client starting
 	logs.NewLog("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
-	// prompt user to exit
-	fmt.Print("Press any key + 'Return' to quit: ")
-	// wait for input
-	bufio.NewScanner(os.Stdin).Scan()
-	// send exit message to dispatcher
-	node.UnRegister(0)
+	// wait for the interrupt command
+	util.WaitForExit()
 }
