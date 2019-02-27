@@ -28,7 +28,7 @@ func Serve(dispatch *Dispatch) []byte {
 			for _, n := range nodes {
 				ips = append(ips, n.IP+":"+n.RelayPort)
 			}
-			result[strings.ToUpper(bc.Name)+"V"+bc.Version+" | NetID "+bc.NetID] = ips
+			result[strings.ToUpper(bc.Name)+"|"+bc.Version+"|"+bc.NetID] = ips
 		}
 		res, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {
