@@ -1,4 +1,4 @@
-namespace messages;
+namespace fbs;
 
 // Define message types here
 // Hyperledger uses 4 types:
@@ -6,15 +6,13 @@ namespace messages;
 // https://github.com/diegomasini/hyperledger-fabric/blob/master/docs/protocol-spec.md#31-message
 
 // Pocket should have a few more types
-enum Type : int {
+enum MessageType:int{
   UNDEFINED = 0,
   DISC_HELLO = 1,
 }
 
-namespace messages;
-
 table Message {
-  type:Messages.Type;
+  type:MessageType;
   payload:[ubyte];
   timestamp:uint;
 }
