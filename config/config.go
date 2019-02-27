@@ -11,15 +11,15 @@ import (
 
 // TODO configuration updating through CLI
 type config struct {
-	CID         string `json:"CLIENTID"`     // This variable holds a client identifier string.
-	Ver         string `json:"VERSION"`      // This variable holds the client version string.
-	DD          string `json:"DATADIR"`      // This variable holds the working directory string.
-	CRPC        bool   `json:"CRPC"`         // This variable describes if the client rpc is running.
-	CRPCPort    string `json:"CRPCPORT"`     // This variable holds the client rpc port string.
-	RRPC        bool   `json:"RRPC"`         // This variable describes if the relay rpc is running.
-	RRPCPort    string `json:"RRPCPort"`     // This variable holds the relay rpc port string.
-	CFile       string `json:"HOSTEDCHAINS"` // This variable holds the filepath to the chains.json.
-	PFile       string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json.
+	CID      string `json:"CLIENTID"`     // This variable holds a client identifier string.
+	Ver      string `json:"VERSION"`      // This variable holds the client version string.
+	DD       string `json:"DATADIR"`      // This variable holds the working directory string.
+	CRPC     bool   `json:"CRPC"`         // This variable describes if the client rpc is running.
+	CRPCPort string `json:"CRPCPORT"`     // This variable holds the client rpc port string.
+	RRPC     bool   `json:"RRPC"`         // This variable describes if the relay rpc is running.
+	RRPCPort string `json:"RRPCPort"`     // This variable holds the relay rpc port string.
+	CFile    string `json:"HOSTEDCHAINS"` // This variable holds the filepath to the chains.json.
+	PFile    string `json:"PEERFILE"`     // This variable holds the filepath to the peerFile.json.
 }
 
 var (
@@ -67,5 +67,5 @@ func newConfiguration() {
 		*rRpc,
 		*rRpcPort,
 		*dd + _const.FILESEPARATOR + *cFile,
-		*dd + _const.FILESEPARATOR + *pFile,}
+		*dd + _const.FILESEPARATOR + *pFile}
 }
