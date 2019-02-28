@@ -5,13 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 )
 
 // TODO configuration updating through CLI
 type config struct {
 	GID         string `json:"GID"`          // This variable holds self.GID.
+	IP          string `json:"IP"`           // This variable holds the ip of the client
 	CID         string `json:"CLIENTID"`     // This variable holds a client identifier string.
 	Ver         string `json:"VERSION"`      // This variable holds the client version string.
 	DD          string `json:"DATADIR"`      // This variable holds the working directory string.
@@ -36,7 +37,8 @@ type config struct {
 var (
 	c        *config
 	once     sync.Once
-	gid      = flag.String("gid", "GID1", "set the selfNode.GID for pocket core mvp")
+	gid      = flag.String("gid", "GID1", "set the self GID prefix for pocket core mvp node")
+	ip       = flag.String("ip", "127.0.0.1", "set the IP address of the pocket core mvp node")
 	dd       = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
 	rRpcPort = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
 	cFile    = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
@@ -82,6 +84,7 @@ func GlobalConfig() *config { // singleton structure to return the configuration
 func newConfiguration() {
 	c = &config{
 		*gid,
+		*ip,
 		_const.CLIENTID,
 		_const.VERSION,
 		*dd,
