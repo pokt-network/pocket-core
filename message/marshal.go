@@ -2,9 +2,10 @@ package message
 
 import (
 	"time"
-
+	
 	"github.com/google/flatbuffers/go"
 	"github.com/pokt-network/pocket-core/message/fbs"
+	"github.com/pokt-network/pocket-core/service"
 )
 
 func MarshalMessage(builder *flatbuffers.Builder, message Message) []byte {
@@ -36,25 +37,47 @@ func MarshalHelloMessage(builder *flatbuffers.Builder, helloMessage HelloMessage
 }
 
 func MarshalValidateMessage(builder *flatbuffers.Builder, validateMessage ValidateMessage) []byte {
-	// this line allows us to reuse the same builder
 	builder.Reset()
-	// serialize relay object
+	// create the fbs strings for the relay object
+	bc := builder.CreateString(validateMessage.Relay.Blockchain)
+	devid := builder.CreateString(validateMessage.Relay.DevID)
+	data := builder.CreateString(validateMessage.Relay.Data)
+	ver := builder.CreateString(validateMessage.Relay.Version)
+	nid := builder.CreateString(validateMessage.Relay.NetworkID)
+	// start the relay build process
 	fbs.RelayStart(builder)
-	fbs.RelayAddBlockchain(builder, builder.CreateString(validateMessage.Relay.Blockchain))
-	fbs.RelayAddData(builder, builder.CreateString(validateMessage.Relay.Data))
-	fbs.RelayAddDevID(builder, builder.CreateString(validateMessage.Relay.DevID))
-	fbs.RelayAddNetworkID(builder, builder.CreateString(validateMessage.Relay.NetworkID))
-	fbs.RelayAddVersion(builder, builder.CreateString(validateMessage.Relay.Version))
+	fbs.RelayAddBlockchain(builder, bc)
+	fbs.RelayAddDevID(builder, devid)
+	fbs.RelayAddData(builder, data)
+	fbs.RelayAddVersion(builder, ver)
+	fbs.RelayAddNetid(builder, nid)
 	r := fbs.RelayEnd(builder)
-	// builder.Finish(r)
-	// relayBytes := builder.FinishedBytes()
-	// serialize the validate message
-	builder.Reset()
+	// create the fbs byte vector for the hash
+	h := builder.CreateByteVector(validateMessage.Hash)
+	// start the validate message
 	fbs.ValidateMessageStart(builder)
-	hashVector := builder.CreateByteVector(validateMessage.Hash)
-	fbs.ValidateMessageAddHash(builder, hashVector)
+	fbs.ValidateMessageAddHash(builder, h)
 	fbs.ValidateMessageAddRelay(builder, r)
 	vm := fbs.ValidateMessageEnd(builder)
+	// finish the validate message
 	builder.Finish(vm)
+	return builder.FinishedBytes()
+}
+
+func MarshalRelay(builder *flatbuffers.Builder, relay service.Relay) []byte {
+	builder.Reset()
+	bc := builder.CreateString(relay.Blockchain)
+	devid := builder.CreateString(relay.DevID)
+	data := builder.CreateString(relay.Data)
+	ver := builder.CreateString(relay.Version)
+	nid := builder.CreateString(relay.NetworkID)
+	fbs.RelayStart(builder)
+	fbs.RelayAddBlockchain(builder, bc)
+	fbs.RelayAddDevID(builder, devid)
+	fbs.RelayAddData(builder, data)
+	fbs.RelayAddVersion(builder, ver)
+	fbs.RelayAddNetid(builder, nid)
+	r := fbs.RelayEnd(builder)
+	builder.Finish(r)
 	return builder.FinishedBytes()
 }
