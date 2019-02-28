@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/types"
 )
@@ -101,7 +102,8 @@ func (w *Whitelist) wlFile(filePath string) error {
 
 // "EnsureWL" cross checks the whitelist for
 func EnsureWL(whiteList *Whitelist, query string) bool {
-	if !whiteList.Contains(query) {
+	prefix := query[:strings.IndexByte(query, ':')] // delimited by ':'
+	if !whiteList.Contains(prefix) {
 		os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist\n")
 		return false
 	}
