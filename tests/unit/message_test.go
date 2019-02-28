@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 	"time"
-
+	
 	"github.com/google/flatbuffers/go"
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/message/fbs"
@@ -65,8 +65,8 @@ func TestValidateMessageSerialization(t *testing.T) {
 	// create a fbs buffer to create our validate message from
 	builder := flatbuffers.NewBuilder(0)
 	// serialize
-	vmBytes := message.MarshalValidateMessage(builder, vm)
+	v := message.MarshalValidateMessage(builder, vm)
 	// deserialize
-	validateMessage := message.UnmarshalValidateMessage(vmBytes)
-	fmt.Println(validateMessage)
+	valMessage, _ := message.UnmarshalValidateMessage(v)
+	fmt.Println(valMessage)
 }
