@@ -43,7 +43,7 @@ func fileErrorMessage(fn FileName) {
 		filename = "service white list file"
 		example = serFileExample
 	}
-	fmt.Println("There seems to be something wrong with your" + filename + " file @ " + path)
+	fmt.Println("There seems to be something wrong with your " + filename + " file @ " + path)
 	fmt.Println("Please ensure that it is in the proper format:")
 	res, err := util.StringToPrettyJSON(example)
 	if err == nil {
