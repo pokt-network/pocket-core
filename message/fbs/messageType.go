@@ -7,9 +7,11 @@ type MessageType = int32
 const (
 	MessageTypeUNDEFINED MessageType = 0
 	MessageTypeDISCHELLO MessageType = 1
+	MessageTypeVALIDATE  MessageType = 2
 )
 
 var EnumNamesMessageType = map[MessageType]string{
 	MessageTypeUNDEFINED: "UNDEFINED",
 	MessageTypeDISCHELLO: "DISCHELLO",
+	MessageTypeVALIDATE:  "VALIDATE",
 }
