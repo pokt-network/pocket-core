@@ -38,7 +38,7 @@ var (
 	c        *config
 	once     sync.Once
 	gid      = flag.String("gid", "GID1", "set the self GID prefix for pocket core mvp node")
-	ip       = flag.String("ip", "127.0.0.1", "set the IP address of the pocket core mvp node")
+	ip       = flag.String("ip", _const.DEFAULTIP, "set the IP address of the pocket core mvp node")
 	dd       = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
 	rRpcPort = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
 	cFile    = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")

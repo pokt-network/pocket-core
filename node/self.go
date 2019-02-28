@@ -17,7 +17,10 @@ var (
 func Self() (*Node, error) {
 	var err error
 	selfOnce.Do(func() {
-		ip, err := util.IP()
+		ip := config.GlobalConfig().IP
+		if ip ==_const.DEFAULTIP{
+			ip, err = util.IP()
+		}
 		if err != nil {
 			logs.NewLog(err.Error(), logs.FatalLevel, logs.JSONLogFormat)
 			return
