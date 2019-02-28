@@ -1,5 +1,5 @@
 package _const
 
-const(
-	DEFAULTIP = "127.0.0.1"
+const (
+	DEFAULTIP = "your_public_ip"
 )
