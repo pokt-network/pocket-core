@@ -2,7 +2,8 @@ package node
 
 import (
 	"fmt"
-
+	"time"
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/util"
@@ -106,5 +107,23 @@ func ConfigFiles() error {
 	if err3 != nil {
 		return err3
 	}
+	if config.GlobalConfig().Dispatch {
+		go WLRefresh()
+	}
 	return nil
+}
+
+func WLRefresh() {
+	for {
+		var err error
+		err = dwlConfigFile()
+		if err != nil {
+			fmt.Println("Error with Developers WL " + err.Error())
+		}
+		err = swlConfigFile()
+		if err != nil {
+			fmt.Println("Error with Developers WL " + err.Error())
+		}
+		time.Sleep(time.Duration(config.GlobalConfig().PRefresh) * time.Second)
+	}
 }
