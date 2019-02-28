@@ -9,6 +9,7 @@ namespace fbs;
 enum MessageType:int{
   UNDEFINED = 0,
   DISCHELLO = 1,
+  VALIDATE = 2,
 }
 
 table Message {
