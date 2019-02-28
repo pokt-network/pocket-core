@@ -1,7 +1,7 @@
 package unit
 
 import (
-	"fmt"
+	"bytes"
 	"log"
 	"testing"
 	"time"
@@ -68,5 +68,7 @@ func TestValidateMessageSerialization(t *testing.T) {
 	v := message.MarshalValidateMessage(builder, vm)
 	// deserialize
 	valMessage, _ := message.UnmarshalValidateMessage(v)
-	fmt.Println(valMessage)
+	if !bytes.Equal(hash, valMessage.Hash) && valMessage.Relay.Blockchain != blockchain && valMessage.Relay.Data!= data{
+		t.Fatalf("Incorrect deserizliation response for validate message")
+	}
 }
