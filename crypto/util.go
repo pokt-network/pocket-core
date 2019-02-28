@@ -1,6 +1,8 @@
 package crypto
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"math/rand"
 )
 
@@ -12,4 +14,15 @@ func RandBytes(n int) ([]byte, error) {
 		return nil, err
 	}
 	return output, nil
+}
+
+func NewSHA1Hash() (string, error) {
+	randBytes, err := RandBytes(16)
+	if err != nil {
+		return "", err
+	}
+	hash := sha1.New()
+	hash.Write(randBytes)
+	bs := hash.Sum(nil)
+	return fmt.Sprintf("%x", bs), nil
 }

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/types"
 )
@@ -72,6 +73,11 @@ func (w *Whitelist) Count() int {
 	return (*types.Set)(w).Count()
 }
 
+// "Clear" removes all items from the whitelist
+func (w *Whitelist) Clear() {
+	(*types.Set)(w).Clear()
+}
+
 // "SWLFile" builds the service white list from a file.
 func SWLFile() error {
 	return SWL().wlFile(config.GlobalConfig().SNWL)
@@ -84,6 +90,7 @@ func DWLFile() error {
 
 // "wlFile" builds a whitelist structure from a file.
 func (w *Whitelist) wlFile(filePath string) error {
+	w.Clear()
 	f, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -101,9 +108,14 @@ func (w *Whitelist) wlFile(filePath string) error {
 
 // "EnsureWL" cross checks the whitelist for
 func EnsureWL(whiteList *Whitelist, query string) bool {
-	if !whiteList.Contains(query) {
-		os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist\n")
-		return false
+	if index := strings.IndexByte(query, ':'); index > 0 { // delimited by ':'
+		prefix := query[:index]
+		if !whiteList.Contains(prefix) {
+			os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 1\n")
+			return false
+		}
+		return true
 	}
-	return true
+	os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 2\n")
+	return false
 }

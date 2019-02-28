@@ -5,10 +5,9 @@ import (
 	"net/http"
 	"os"
 	"time"
-
+	
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/service"
@@ -38,7 +37,7 @@ func peersRefresh() {
 		pl.CopyToDP()
 		db.Unlock()
 		// every x minutes
-		time.Sleep(_const.DBREFRESH * time.Minute)
+		time.Sleep(time.Duration(config.GlobalConfig().PRefresh) * time.Second)
 	}
 }
 
@@ -60,17 +59,17 @@ func checkPeers() {
 			if !isAlive(p) {
 				// try again
 				if !isAlive(p) {
-					fmt.Println("\n" + p.GID + " failed a liveness check from dispatcher at " + p.IP + ":" + p.ClientPort + "\n")
+					fmt.Println("\n" + p.GID + " failed a liveness check from dispatcher at " + p.IP + ":" + p.RelayPort + "\n")
 					pl.Remove(p)
 					dp.Delete(p)
 					db.Remove(p)
 					service.HandleReport(&service.Report{
 						GID:     p.GID,
-						Message: " failed a livenss check from dispatcher at " + p.IP + ":" + p.ClientPort + "\n"})
+						Message: " failed a livenss check from dispatcher at " + p.IP + ":" + p.RelayPort + "\n"})
 				}
 			}
 		}
-		time.Sleep(_const.DBREFRESH * time.Minute)
+		time.Sleep(time.Duration(config.GlobalConfig().PRefresh) * time.Second)
 	}
 }
 
