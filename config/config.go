@@ -5,13 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 )
 
 // TODO configuration updating through CLI
 type config struct {
 	GID         string `json:"GID"`          // This variable holds self.GID.
+	IP          string `json:"IP"`           // This variable holds the ip of the client
 	CID         string `json:"CLIENTID"`     // This variable holds a client identifier string.
 	Ver         string `json:"VERSION"`      // This variable holds the client version string.
 	DD          string `json:"DATADIR"`      // This variable holds the working directory string.
@@ -31,29 +32,32 @@ type config struct {
 	DisIP       string `json:"DISIP"`        // The IP address of the centralized dispatcher
 	DisCPort    string `json:"DISCPort"`     // The client port of the centralized dispatcher
 	DisRPort    string `json:"DISCPort"`     // The relay port of the centralized dispatcher
+	PRefresh    int `json:"PREFRESH"`     // The peer refresh time for the centralized dispatcher in seconds
 }
 
 var (
-	c        *config
-	once     sync.Once
-	gid      = flag.String("gid", "GID1", "set the selfNode.GID for pocket core mvp")
-	dd       = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
-	rRpcPort = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
-	cFile    = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
-	pFile    = flag.String("pfile", _const.PEERFILENAME, "specifies the filepath for peers.json")
-	snwl     = flag.String("sfile", _const.SNWLFILENAME, "specifies the filepath for service_whitelist.json")
-	dwl      = flag.String("dfile", _const.DWLFILENAME, "specifies the filepath for developer_whitelist.json")
-	cRpcPort = flag.String("clientrpcport", "8080", "specified port to run client rpc")
-	cRpc     = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
-	rRpc     = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
-	dispatch = flag.Bool("dispatch", false, "specifies if this node is operating as a dispatcher")
-	dismode  = flag.Int("dismode", _const.DISMODENORMAL, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
-	dbend    = flag.String("dbend", _const.DBENDPOINT, "specifies the database endpoint for the centralized dispatcher")
-	dbtable  = flag.String("dbtable", _const.DBTABLENAME, "specifies the database tablename for the centralized dispatcher")
-	dbregion = flag.String("dbregion", _const.DBREGION, "specifies the region of the db for the centralized dispatcher")
-	disip    = flag.String("disip", _const.DISPATCHIP, "specifies the address of the centralized dispatcher")
-	discport = flag.String("discport", _const.DISPATCHCLIENTPORT, "specifies the client port of the centralized dispatcher")
-	disrport = flag.String("disrport", _const.DISPATCHRELAYPORT, "specifies the relay port of the centralized dispatcher")
+	c           *config
+	once        sync.Once
+	gid         = flag.String("gid", "GID1", "set the self GID prefix for pocket core mvp node")
+	ip          = flag.String("ip", _const.DEFAULTIP, "set the IP address of the pocket core mvp node, if not set, uses public ip")
+	dd          = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
+	rRpcPort    = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
+	cFile       = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
+	pFile       = flag.String("pfile", _const.PEERFILENAME, "specifies the filepath for peers.json")
+	snwl        = flag.String("sfile", _const.SNWLFILENAME, "specifies the filepath for service_whitelist.json")
+	dwl         = flag.String("dfile", _const.DWLFILENAME, "specifies the filepath for developer_whitelist.json")
+	cRpcPort    = flag.String("clientrpcport", "8080", "specified port to run client rpc")
+	cRpc        = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
+	rRpc        = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
+	dispatch    = flag.Bool("dispatch", false, "specifies if this node is operating as a dispatcher")
+	dismode     = flag.Int("dismode", _const.DISMODENORMAL, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
+	dbend       = flag.String("dbend", _const.DBENDPOINT, "specifies the database endpoint for the centralized dispatcher")
+	dbtable     = flag.String("dbtable", _const.DBTABLENAME, "specifies the database tablename for the centralized dispatcher")
+	dbregion    = flag.String("dbregion", _const.DBREGION, "specifies the region of the db for the centralized dispatcher")
+	disip       = flag.String("disip", _const.DISPATCHIP, "specifies the address of the centralized dispatcher")
+	discport    = flag.String("discport", _const.DISPATCHCLIENTPORT, "specifies the client port of the centralized dispatcher")
+	disrport    = flag.String("disrport", _const.DISPATCHRELAYPORT, "specifies the relay port of the centralized dispatcher")
+	peerrefresh = flag.Int("peerrefresh", _const.DBREFRESH, "specifies the peer refresh time for the centralized dispatcher liveness checks")
 )
 
 // "Init" initializes the configuration object.
@@ -82,6 +86,7 @@ func GlobalConfig() *config { // singleton structure to return the configuration
 func newConfiguration() {
 	c = &config{
 		*gid,
+		*ip,
 		_const.CLIENTID,
 		_const.VERSION,
 		*dd,
@@ -100,5 +105,6 @@ func newConfiguration() {
 		*dbregion,
 		*disip,
 		*discport,
-		*disrport}
+		*disrport,
+		*peerrefresh}
 }
