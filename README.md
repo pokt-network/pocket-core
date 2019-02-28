@@ -91,8 +91,10 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
     	specifies the relay port of the centralized dispatcher 
 	(default "8081")
   -gid string
-    	set the selfNode.GID for pocket core mvp 
+    	set the GID for pocket core mvp 
 	(default "GID1")
+  -ip string
+        set the IP for pocket core mvp
   -pfile string
     	specifies the filepath for peers.json 
 	(default "[datadir]/peers.json")

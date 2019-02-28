@@ -42,3 +42,9 @@ func (s *Set) Contains(key interface{}) bool {
 func (s *Set) Print() {
 	fmt.Println(s.M)
 }
+
+func (s *Set) Clear() {
+	s.Mux.Lock()
+	defer s.Mux.Unlock()
+	s.M = map[interface{}]struct{}{}
+}
