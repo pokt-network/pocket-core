@@ -1,11 +1,11 @@
 namespace fbs;
 
 table Relay {
-  Blockchain:string;
-  NetworkID:string;
-  Version:string;
-  Data:string;
-  DevID:string;
+  blockchain:string;
+  netid:string;
+  version:string;
+  data:string;
+  devID:string;
 }
 
 table ValidateMessage {
