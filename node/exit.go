@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	
+
 	"github.com/pokt-network/pocket-core/logs"
 )
 
@@ -27,6 +27,6 @@ func WaitForExit() {
 	signal.Notify(c, os.Kill)
 	select {
 	case sig := <-c:
-		ExitGracefully(sig.String()+" command executed.")
+		ExitGracefully(sig.String() + " command executed.")
 	}
 }

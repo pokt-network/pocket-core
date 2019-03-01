@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 )
 
@@ -13,6 +13,7 @@ import (
 type config struct {
 	GID         string `json:"GID"`          // This variable holds self.GID.
 	IP          string `json:"IP"`           // This variable holds the ip of the client
+	Port        string `json:"PORT"`         // The public service port that will be displayed to the clients
 	CID         string `json:"CLIENTID"`     // This variable holds a client identifier string.
 	Ver         string `json:"VERSION"`      // This variable holds the client version string.
 	DD          string `json:"DATADIR"`      // This variable holds the working directory string.
@@ -32,7 +33,7 @@ type config struct {
 	DisIP       string `json:"DISIP"`        // The IP address of the centralized dispatcher
 	DisCPort    string `json:"DISCPort"`     // The client port of the centralized dispatcher
 	DisRPort    string `json:"DISCPort"`     // The relay port of the centralized dispatcher
-	PRefresh    int `json:"PREFRESH"`     // The peer refresh time for the centralized dispatcher in seconds
+	PRefresh    int    `json:"PREFRESH"`     // The peer refresh time for the centralized dispatcher in seconds
 }
 
 var (
@@ -40,6 +41,7 @@ var (
 	once        sync.Once
 	gid         = flag.String("gid", "GID1", "set the self GID prefix for pocket core mvp node")
 	ip          = flag.String("ip", _const.DEFAULTIP, "set the IP address of the pocket core mvp node, if not set, uses public ip")
+	port        = flag.String("port", _const.DEFAULTPORT, "set the publicly displayed servicing port")
 	dd          = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
 	rRpcPort    = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
 	cFile       = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
@@ -87,6 +89,7 @@ func newConfiguration() {
 	c = &config{
 		*gid,
 		*ip,
+		*port,
 		_const.CLIENTID,
 		_const.VERSION,
 		*dd,
