@@ -19,3 +19,8 @@ type ValidateMessage struct {
 	Relay service.Relay `json:"relay"`
 	Hash  []byte        `json:"hash"`
 }
+
+type HelloSessionMessage struct {
+	Gid string `json:"gid"`
+
+}
