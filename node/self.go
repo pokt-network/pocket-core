@@ -2,7 +2,7 @@ package node
 
 import (
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/crypto"
@@ -47,7 +47,7 @@ func Self() (*Node, error) {
 		if err != nil {
 			ExitGracefully("unable to generate GID " + err.Error())
 		}
-		self = &Node{GID: gid, RelayPort: config.GlobalConfig().RRPCPort,
+		self = &Node{GID: gid, RelayPort: config.GlobalConfig().Port, // notice this change
 			IP: ip, ClientPort: config.GlobalConfig().CRPCPort, Blockchains: ChainsSlice(),
 			ClientID: _const.CLIENTID, CliVersion: _const.VERSION}
 	})
