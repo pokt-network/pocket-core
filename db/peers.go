@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 	"time"
-	
+
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"

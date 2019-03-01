@@ -3,7 +3,7 @@ package node
 import (
 	"fmt"
 	"time"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/util"
