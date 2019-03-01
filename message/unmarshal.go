@@ -26,6 +26,15 @@ func UnmarshalRelay(flatbuffer []byte) (*service.Relay, error) {
 	return &service.Relay{Blockchain: string(relay.Blockchain()), NetworkID: string(relay.Netid()), Version: string(relay.Version()), Data: string(relay.Data()), DevID: string(relay.DevID())}, nil
 }
 
+func UnmarshalHelloSessionMessage(flatbuffer []byte) (*HelloSessionMessage, error) {
+	hsm := fbs.GetRootAsHelloSessionMessage(flatbuffer, 0)
+	helloSessionMessage := &HelloSessionMessage{string(hsm.GidBytes()), hsm.Role()}
+	if helloSessionMessage.Gid == "" {
+		return nil, errors.New("empty GID")
+	}
+	return helloSessionMessage, nil
+}
+
 func UnmarshalValidateMessage(flatbuffer []byte) (*ValidateMessage, error) {
 	vm := fbs.GetRootAsValidateMessage(flatbuffer, 0)
 	r := &fbs.Relay{}

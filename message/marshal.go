@@ -64,6 +64,17 @@ func MarshalValidateMessage(builder *flatbuffers.Builder, validateMessage Valida
 	return builder.FinishedBytes()
 }
 
+func MarshalHelloSession(builder *flatbuffers.Builder, helloSessionMessage HelloSessionMessage) []byte {
+	builder.Reset()
+	gidVector := builder.CreateByteVector([]byte(helloSessionMessage.Gid))
+	fbs.HelloSessionMessageStart(builder)
+	fbs.HelloSessionMessageAddGid(builder, gidVector)
+	fbs.HelloSessionMessageAddRole(builder, helloSessionMessage.Role)
+	hsm := fbs.HelloSessionMessageEnd(builder)
+	builder.Finish(hsm)
+	return builder.FinishedBytes()
+}
+
 func MarshalRelay(builder *flatbuffers.Builder, relay service.Relay) []byte {
 	builder.Reset()
 	bc := builder.CreateString(relay.Blockchain)
