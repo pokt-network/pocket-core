@@ -72,3 +72,20 @@ func TestValidateMessageSerialization(t *testing.T) {
 		t.Fatalf("Incorrect deserizliation response for validate message")
 	}
 }
+
+func TestHelloSessionMessage(t *testing.T){
+	const(
+		gid="dummygid"
+		role=fbs.SessionRoleVALIDATOR
+	)
+	hsm := message.HelloSessionMessage{Gid: gid, Role: role}
+	builder := flatbuffers.NewBuilder(0)
+	b := message.MarshalHelloSession(builder, hsm)
+	helloSessionMessage, err := message.UnmarshalHelloSessionMessage(b)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	if helloSessionMessage.Gid!=gid && helloSessionMessage.Role!=role {
+		t.Fatalf("Output not expected")
+	}
+}
