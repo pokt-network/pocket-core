@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 	"time"
-	
+
 	"github.com/google/flatbuffers/go"
 	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/message/fbs"
@@ -68,7 +68,7 @@ func TestValidateMessageSerialization(t *testing.T) {
 	v := message.MarshalValidateMessage(builder, vm)
 	// deserialize
 	valMessage, _ := message.UnmarshalValidateMessage(v)
-	if !bytes.Equal(hash, valMessage.Hash) && valMessage.Relay.Blockchain != blockchain && valMessage.Relay.Data!= data{
+	if !bytes.Equal(hash, valMessage.Hash) && valMessage.Relay.Blockchain != blockchain && valMessage.Relay.Data != data {
 		t.Fatalf("Incorrect deserizliation response for validate message")
 	}
 }
