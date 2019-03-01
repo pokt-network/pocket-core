@@ -21,6 +21,6 @@ type ValidateMessage struct {
 }
 
 type HelloSessionMessage struct {
-	Gid string `json:"gid"`
-
+	Gid  string          `json:"gid"`
+	Role fbs.SessionRole `json:"role"`
 }
