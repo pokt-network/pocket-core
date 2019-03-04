@@ -3,7 +3,7 @@ package integration
 import "testing"
 
 func TestRegister(t *testing.T) {
-	resp, err := requestFromFile("register", Client)
+	resp, err := requestFromFile("register", Relay)
 	if err != nil {
 		t.Log(assumptions)
 		t.Fatalf(err.Error())
@@ -12,7 +12,7 @@ func TestRegister(t *testing.T) {
 }
 
 func TestUnRegister(t *testing.T) {
-	resp, err := requestFromFile("unregister", Client)
+	resp, err := requestFromFile("unregister", Relay)
 	if err != nil {
 		t.Log(assumptions)
 		t.Fatalf(err.Error())
