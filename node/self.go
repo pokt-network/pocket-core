@@ -2,7 +2,7 @@ package node
 
 import (
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
