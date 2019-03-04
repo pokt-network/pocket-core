@@ -1,5 +1,5 @@
 {
-  "GID": "GID1",
+  "GID": "GID1:fakeextension",
   "IP": "FAKEIP",
   "RelayPort": "8081",
   "ClientPort": "8080",
