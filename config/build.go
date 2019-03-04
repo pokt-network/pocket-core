@@ -4,7 +4,7 @@ package config
 import (
 	"log"
 	"os"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 )
 
@@ -16,6 +16,8 @@ func Build() {
 	logsDir()
 	// write fixture files
 	WriteFixtures()
+	// setup the gid with hash
+	GlobalConfig().GID = GIDSetup()
 }
 
 // "dataDir" builds the directory for program files.

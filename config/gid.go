@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	
+
 	"github.com/pokt-network/pocket-core/crypto"
 )
 
@@ -30,7 +30,7 @@ func checkPrefix(gid string, query string) error {
 	return errors.New("prefix not detected ':' not found")
 }
 
-func createGIDFile(filepath string) string{
+func createGIDFile(filepath string) string {
 	f, err := os.Create(filepath)
 	if err != nil {
 		log.Fatalf(err.Error())
@@ -48,7 +48,7 @@ func GIDSetup() string {
 		// unable to read file or prefix is not the same as gid
 		if err != nil || err2 != nil {
 			err := os.Remove(fp)
-			if err != nil {  // unable to delete file
+			if err != nil { // unable to delete file
 				log.Fatalf(err.Error())
 			}
 			return createGIDFile(fp)
