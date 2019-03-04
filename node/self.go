@@ -2,10 +2,9 @@ package node
 
 import (
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
-	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/util"
 )
@@ -28,14 +27,6 @@ func ipSetup() (string, error) {
 	return ip, nil
 }
 
-func gidSetup() (string, error) {
-	hashString, err := crypto.NewSHA1Hash()
-	if err != nil {
-		return "", err
-	}
-	return config.GlobalConfig().GID + ":" + hashString, nil
-}
-
 func Self() (*Node, error) {
 	var err error
 	selfOnce.Do(func() {
@@ -43,11 +34,10 @@ func Self() (*Node, error) {
 		if err != nil {
 			ExitGracefully("unable to obtain public ip " + err.Error())
 		}
-		gid, err := gidSetup()
 		if err != nil {
 			ExitGracefully("unable to generate GID " + err.Error())
 		}
-		self = &Node{GID: gid, RelayPort: config.GlobalConfig().Port, // notice this change
+		self = &Node{GID: config.GlobalConfig().GID, RelayPort: config.GlobalConfig().Port, // notice this change
 			IP: ip, ClientPort: config.GlobalConfig().CRPCPort, Blockchains: ChainsSlice(),
 			ClientID: _const.CLIENTID, CliVersion: _const.VERSION}
 	})
