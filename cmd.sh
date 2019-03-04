@@ -21,16 +21,18 @@ set -o nounset
 # POCKET_CORE_DISPATCH_IP = Dispatch node address (defaults to 127.0.0.1)
 # POCKET_CORE_DISPATCH_PORT = Dispatch node port (defaults to 8081)
 # POCKET_CORE_SERVICE_GID = GID of the service node (required)
+# POCKET_CORE_SERVICE_IP = IP of the Pocket Core service node (required)
+# POCKET_CORE_SERVICE_PORT = Port of the Pocket Core service node (required)
 
 
 
 # Start pocket-core
 if [ $POCKET_CORE_NODE_TYPE = "dispatch" ]; then
 	echo 'Starting pocket-core dispatch'
-	exec pocket-core --dispatch --datadirectory $POCKET_PATH_DATADIR --dbend ${AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} --dbtable ${AWS_DYNAMODB_TABLE:-dispatch-peers-staging} --dbregion ${AWS_DYNAMODB_REGION:-us-east-1}
+	exec pocket-core --dispatch --datadirectory ${POCKET_PATH_DATADIR} --dbend ${AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} --dbtable ${AWS_DYNAMODB_TABLE:-dispatch-peers-staging} --dbregion ${AWS_DYNAMODB_REGION:-us-east-1}
 elif [ $POCKET_CORE_NODE_TYPE = "service" ]; then
 	echo 'Starting pocket-core service'
-	exec pocket-core --datadirectory $POCKET_PATH_DATADIR --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --disrport ${POCKET_CORE_DISPATCH_PORT:-8081} --gid ${POCKET_CORE_SERVICE_GID}
+	exec pocket-core --datadirectory ${POCKET_PATH_DATADIR} --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --disrport ${POCKET_CORE_DISPATCH_PORT:-8081} --gid ${POCKET_CORE_SERVICE_GID} --ip ${POCKET_CORE_SERVICE_IP} --port ${POCKET_CORE_SERVICE_PORT}
 else
 	echo 'Need to specify a node type, either dispatch or service.'
 	exit 1
