@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 )
 
@@ -86,9 +86,8 @@ func GlobalConfig() *config { // singleton structure to return the configuration
 
 // "newConfiguration() is a constructor function of the configuration type.
 func newConfiguration() {
-	s := GIDSetup()
 	c = &config{
-		s,
+		*gid,
 		*ip,
 		*port,
 		_const.CLIENTID,
