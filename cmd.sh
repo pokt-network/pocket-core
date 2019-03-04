@@ -11,6 +11,8 @@ set -o nounset
 # POCKET_CORE_S3_CONFIG_URL = S3 directory to download configurations from
 # AWS_ACCESS_KEY_ID = aws access key to download the S3 / connect to dynamodb (dispatch only)
 # AWS_SECRET_ACCESS_KEY = aws secret key to download the S3 / connect to dynamodb (dispatch only)
+# POCKET_CORE_DISPATCH_IP = Dispatch node address (defaults to 127.0.0.1)
+# POCKET_CORE_DISPATCH_PORT = Dispatch node port (defaults to 8081)
 
 # Dispatch only
 # AWS_DYNAMODB_ENDPOINT = AWS dynamodb endpoint (defaults to dynamodb.us-east-1.amazonaws.com)
@@ -18,8 +20,6 @@ set -o nounset
 # AWS_DYNAMODB_REGION = AWS dynamodb region (defaults to us-east-1)
 
 # Service only
-# POCKET_CORE_DISPATCH_IP = Dispatch node address (defaults to 127.0.0.1)
-# POCKET_CORE_DISPATCH_PORT = Dispatch node port (defaults to 8081)
 # POCKET_CORE_SERVICE_GID = GID of the service node (required)
 # POCKET_CORE_SERVICE_IP = IP of the Pocket Core service node (required)
 # POCKET_CORE_SERVICE_PORT = Port of the Pocket Core service node (required)
@@ -29,7 +29,7 @@ set -o nounset
 # Start pocket-core
 if [ $POCKET_CORE_NODE_TYPE = "dispatch" ]; then
 	echo 'Starting pocket-core dispatch'
-	exec pocket-core --dispatch --datadirectory ${POCKET_PATH_DATADIR} --dbend ${AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} --dbtable ${AWS_DYNAMODB_TABLE:-dispatch-peers-staging} --dbregion ${AWS_DYNAMODB_REGION:-us-east-1}
+	exec pocket-core --dispatch --datadirectory ${POCKET_PATH_DATADIR} --dbend ${AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} --dbtable ${AWS_DYNAMODB_TABLE:-dispatch-peers-staging} --dbregion ${AWS_DYNAMODB_REGION:-us-east-1} --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --disrport ${POCKET_CORE_DISPATCH_PORT:-8081}
 elif [ $POCKET_CORE_NODE_TYPE = "service" ]; then
 	echo 'Starting pocket-core service'
 	exec pocket-core --datadirectory ${POCKET_PATH_DATADIR} --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --disrport ${POCKET_CORE_DISPATCH_PORT:-8081} --gid ${POCKET_CORE_SERVICE_GID} --ip ${POCKET_CORE_SERVICE_IP} --port ${POCKET_CORE_SERVICE_PORT}
