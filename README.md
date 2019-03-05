@@ -53,8 +53,15 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 <h1 align="center">How to run it</h1>
 
-To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
-````
+If you don't have the `pocket-core` binaries, scroll down to the "How to build" section for instructions on building from source.
+
+The Pocket Core binary, `pocket-core`, accepts many arguments.
+
+Here, we break them all down by category:
+
+<h2> Arguments for service nodes</h2>
+
+```
   -cfile string
     	specifies the filepath for chains.json 
 	(default "[datadir]/chains.json")
@@ -67,12 +74,6 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
   -datadirectory string
     	setup a custom location for the datadirectory 
 	(default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
-  -dbend string
-    	specifies the database endpoint for the centralized dispatcher 
-	(default "dynamodb.us-east-2.amazonaws.com")
-  -dbtable string
-    	specifies the database tablename for the centralized dispatcher 
-	(default "dispatchPeers")
   -dfile string
     	specifies the filepath for developer_whitelist.json 
 	(default "[datadir]/developer_whitelist.json")
@@ -82,19 +83,12 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
   -disip string
     	specifies the address of the centralized dispatcher 
 	(default "localhost")
-  -dismode int
-    	specifies the mode by which the dispatcher is operating 
-	(0) Normal, (1) Migrate, (2) Deprecated
-  -dispatch
-    	specifies if this node is operating as a dispatcher
   -disrport string
     	specifies the relay port of the centralized dispatcher 
 	(default "8081")
   -gid string
-    	set the GID for pocket core mvp 
+    	set the selfNode.GID for pocket core mvp 
 	(default "GID1")
-  -ip string
-        set the IP for pocket core mvp
   -pfile string
     	specifies the filepath for peers.json 
 	(default "[datadir]/peers.json")
@@ -107,7 +101,32 @@ To run the Pocket Core binary you can use the following flags alongside the `poc
   -sfile string
     	specifies the filepath for service_whitelist.json 
 	(default "[datadir]/service_whitelist.json")
-````
+```
+
+<h2>Arguments for dispatcher nodes</h2>
+
+```
+  -dbend string
+    	specifies the database endpoint for the centralized dispatcher 
+	(default "dynamodb.us-east-2.amazonaws.com")
+
+  -dbtable string
+    	specifies the database tablename for the centralized dispatcher 
+	(default "dispatchPeers")
+		
+  -dismode int
+    	specifies the mode by which the dispatcher is operating 
+	(0) Normal, (1) Migrate, (2) Deprecated
+	
+  -dispatch
+      	specifies if this node is operating as a dispatcher
+```
+
+<h1 align="center">How to build</h1>
+If your environment is not set up, visit our <a href="https://github.com/pokt-network/pocket-core/wiki/Developer-Setup-Guide">Developer Setup Guide</a> to make sure you have everything you need to get the project up and running.
+
+After your environment is set up, run: `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
+
 <h1 align="center">How to test</h1>
 
 To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory
@@ -132,9 +151,6 @@ For an active research forum, checkout and post on <a href="https://research.pok
 
   <li>Pull requests need to be based on and opened against the `staging` branch.</.i>
 </ul>
-<h1 align="center"> How to build </h1>
-
-run: `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
 
 <h1 align="center">Contact</h1>
 <div align="center">
