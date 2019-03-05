@@ -1,24 +1,26 @@
 package message
 
 import (
-	"github.com/pokt-network/pocket-core/session"
+	"github.com/pokt-network/pocket-core/message/fbs"
+	"github.com/pokt-network/pocket-core/service"
 )
 
-// Payload is the 'meat' of the message
-type Payload struct {
-	ID   int         `json:"id"`
-	Data interface{} `json:"data"`
-}
-
-// Generalized message structure that describes the network, client, nonce, and payload
 type Message struct {
-	Network int     `json:"net"`
-	Client  string  `json:"client"`
-	Nonce   int64   `json:"nonce"`
-	Payload Payload `json:"payload"`
+	Type_     fbs.MessageType `json:"type"`
+	Payload   []byte          `json:"payload"`
+	Timestamp uint32          `json:"timestamp"`
 }
 
-type SessionPL struct {
-	DevID string         `json:"devid"` // the devID of the session
-	Peers []session.Peer `json:"peers"` // the list of peers
+type HelloMessage struct {
+	Gid string `json:"gid"`
+}
+
+type ValidateMessage struct {
+	Relay service.Relay `json:"relay"`
+	Hash  []byte        `json:"hash"`
+}
+
+type HelloSessionMessage struct {
+	Gid  string          `json:"gid"`
+	Role fbs.SessionRole `json:"role"`
 }

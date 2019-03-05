@@ -56,55 +56,20 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
 ````
   -cfile string
-    	specifies the filepath for chains.json 
-	(default "[datadir]/chains.json")
+    	specifies the filepath for chains.json (default "chains.json")
   -clientrpc
-    	whether or not to start the rpc server 
-	(default true)
+    	whether or not to start the rpc server (default true)
   -clientrpcport string
-    	specified port to run client rpc 
-	(default "8080")
+    	specified port to run client rpc (default "8080")
   -datadirectory string
     	setup a custom location for the datadirectory 
-	(default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
-  -dbend string
-    	specifies the database endpoint for the centralized dispatcher 
-	(default "dynamodb.us-east-2.amazonaws.com")
-  -dbtable string
-    	specifies the database tablename for the centralized dispatcher 
-	(default "dispatchPeers")
-  -dfile string
-    	specifies the filepath for developer_whitelist.json 
-	(default "[datadir]/developer_whitelist.json")
-  -discport string
-    	specifies the client port of the centralized dispatcher 
-	(default "8080")
-  -disip string
-    	specifies the address of the centralized dispatcher 
-	(default "localhost")
-  -dismode int
-    	specifies the mode by which the dispatcher is operating 
-	(0) Normal, (1) Migrate, (2) Deprecated
-  -dispatch
-    	specifies if this node is operating as a dispatcher
-  -disrport string
-    	specifies the relay port of the centralized dispatcher 
-	(default "8081")
-  -gid string
-    	set the selfNode.GID for pocket core mvp 
-	(default "GID1")
+        	(default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
   -pfile string
-    	specifies the filepath for peers.json 
-	(default "[datadir]/peers.json")
+    	specifies the filepath for peers.json (default "peers.json")
   -relayrpc
-    	whether or not to start the rpc server 
-	(default true)
+    	whether or not to start the rpc server (default true)
   -relayrpcport string
-    	specified port to run relay rpc 
-	(default "8081")
-  -sfile string
-    	specifies the filepath for service_whitelist.json 
-	(default "[datadir]/service_whitelist.json")
+    	specified port to run relay rpc (default "8081")
 ````
 <h1 align="center">How to test</h1>
 
@@ -131,7 +96,8 @@ For an active research forum, checkout and post on <a href="https://research.pok
   <li>Pull requests need to be based on and opened against the `staging` branch.</.i>
 </ul>
 <h1 align="center"> How to build </h1>
-run: `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
+
+Run `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
 
 <h1 align="center">Contact</h1>
 <div align="center">

@@ -1,29 +1,47 @@
 package message
 
 import (
-	"net"
+	"errors"
 
-	"github.com/pokt-network/pocket-core/session"
+	"github.com/pokt-network/pocket-core/message/fbs"
+	"github.com/pokt-network/pocket-core/service"
 )
 
-// "HandleMSG" handles all incoming messages and dispatches the information to the appropriate sub-handler.
-func HandleMSG(message *Message, addr *net.UDPAddr) {
-	switch message.Payload.ID {
-	case 1: // sessionPeers message
-		sessionMSG(message)
+func RouteMessageByPayload(m Message) error {
+	switch m.Type_ {
+	case fbs.MessageTypeUNDEFINED:
+		return nil
+	case fbs.MessageTypeDISCHELLO:
+		return HandleDISCHELLOMessage(m)
+	case fbs.MessageTypeVALIDATE:
+		return HandleValidateMessage(m)
+	default:
+		return errors.New("unsupported message type" + string(m.Type_))
 	}
 }
 
-// "sessionMSG" handles an incoming message by deriving a new session from the payload.
-func sessionMSG(message *Message) {
-	sl := session.SessionList()
-	// extract the SessionPL
-	spl := message.Payload.Data.(SessionPL)
-	// create a session using developerID from payload
-	s := session.Session{DevID: spl.DevID,
-		PL: session.NewPeerList()}
-	s.AddPeers(spl.Peers)
-	// adds new session to sessionList and adds peers to the peerList
-	sl.Add(s)
-	session.AddPeers(spl.Peers)
+func HandleUndefinedMessage(m Message) string {
+	return string(m.Payload)
+}
+
+func HandleDISCHELLOMessage(m Message) error { // TODO
+	helloMessage, err := UnmarshalHelloMessage(m.Payload)
+	helloMessage = helloMessage // arbitrary
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func HandleValidateMessage(m Message) error { // TODO
+	vm, err := UnmarshalValidateMessage(m.Payload)
+	if err != nil {
+		return err
+	}
+	b, err := service.Validate(vm.Relay, vm.Hash)
+	if err != nil {
+		return err
+	}
+	b = b // arbitrary
+	return nil
 }

@@ -82,15 +82,3 @@ func manualPeersJSON(b []byte) error {
 	}
 	return nil
 }
-
-// DISCLAIMER: the code below is for pocket core mvp centralized dispatcher
-// may remove for production
-
-func (pl *List) CopyToDP() {
-	pl.Mux.Lock()
-	defer pl.Mux.Unlock()
-	DispatchPeers().Clear()
-	for _, peer := range pl.M {
-		DispatchPeers().Add(peer.(Node))
-	}
-}

@@ -18,27 +18,11 @@ func WriteFixtures() error {
 	if err != nil {
 		return err
 	}
-	dwl, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "developer_whitelist.json")
-	if err != nil {
-		return err
-	}
-	swl, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "service_whitelist.json")
-	if err != nil {
-		return err
-	}
 	err = copyFile(cFile, datadirectory+"chains.json")
 	if err != nil {
 		return err
 	}
 	err = copyFile(pFile, datadirectory+"peers.json")
-	if err != nil {
-		return err
-	}
-	copyFile(dwl, datadirectory+"developer_whitelist.json")
-	if err != nil {
-		return err
-	}
-	copyFile(swl, datadirectory+"service_whitelist.json")
 	if err != nil {
 		return err
 	}
