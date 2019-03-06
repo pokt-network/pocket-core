@@ -9,7 +9,7 @@ FROM golang:1.11-alpine
 ENV POCKET_PATH=/go/src/github.com/pokt-network/pocket-core/
 RUN mkdir -p ${POCKET_PATH}
 COPY . $POCKET_PATH
-RUN apk -v --update add \
+RUN apk -v --update --no-cache add \
 		curl \
 		git \
 		python \
@@ -18,10 +18,12 @@ RUN apk -v --update add \
 		less \
 		mailcap \
 		dep \
+                gcc \
+                libc-dev \
 		bash && \
-	pip install --upgrade awscli s3cmd python-magic && \
+	pip install --upgrade --no-cache awscli s3cmd python-magic && \
 	apk -v --purge del py-pip && \
-	rm /var/cache/apk/*
+	rm /var/cache/apk/* || true
 
 # Setup data directory
 RUN mkdir ${POCKET_PATH}datadir

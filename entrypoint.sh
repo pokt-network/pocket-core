@@ -26,4 +26,18 @@ cmd="$@"
 echo 'Downloading node configurations'
 aws s3 sync $POCKET_CORE_S3_CONFIG_URL $POCKET_PATH_DATADIR
 
+# Running tests
+
+
+if [ ${POCKET_CORE_UNIT_TESTS:-false} == true ]; then
+    echo "Initializing unit testing"
+    go test ./tests/unit/...
+fi
+
+if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == true ]; then
+    echo "Initializing integration testing"
+    go test ./tests/integration/...
+fi
+
+
 exec $cmd
