@@ -109,13 +109,13 @@ func (w *Whitelist) wlFile(filePath string) error {
 // "EnsureWL" cross checks the whitelist for
 func EnsureWL(whiteList *Whitelist, query string) bool {
 	if index := strings.IndexByte(query, ':'); index > 0 { // delimited by ':'
-		prefix := query[:index]
-		if !whiteList.Contains(prefix) {
-			os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 1\n")
-			return false
-		}
-		return true
+		query = query[:index]
 	}
+	if !whiteList.Contains(query) {
+		os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 1\n")
+		return false
+	}
+	return true
 	os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 2\n")
 	return false
 }

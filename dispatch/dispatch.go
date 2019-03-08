@@ -2,6 +2,7 @@ package dispatch
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"sort"
@@ -19,7 +20,8 @@ type Dispatch struct {
 // NOTE: this call has been augmented for the Pocket Core MVP Centralized Dispatcher
 // TODO see if this can be done more efficiently
 // "Serve" formats Dispatch PL for an API request.
-func Serve(dispatch *Dispatch) []byte {
+func Serve(dispatch *Dispatch) ([]byte, error, int) {
+	fmt.Println(dispatch.DevID)
 	if node.EnsureWL(node.DWL(), dispatch.DevID) {
 		result := make(map[string][]string)
 		for _, bc := range dispatch.Blockchains {
@@ -32,12 +34,12 @@ func Serve(dispatch *Dispatch) []byte {
 		}
 		res, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {
-			fmt.Println(err)
+			return nil, err, 500
 			logs.NewLog("Couldn't convert node array to json array: "+err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		}
-		return res
+		return res, nil, 200
 	}
-	return []byte("Invalid Credentials")
+	return []byte(""), errors.New("invalid Credentials"), 401
 }
 
 /*
