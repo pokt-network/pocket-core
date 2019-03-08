@@ -21,7 +21,11 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if d.DevID == "" || len(d.Blockchains) == 0 {
 		shared.WriteErrorResponse(w, 400, "Request was not formatted properly")
 	}
-	shared.WriteRawJSONResponse(w, dispatch.Serve(d))
+	res, err, code := dispatch.Serve(d)
+	if err != nil {
+		shared.WriteErrorResponse(w, code, err.Error())
+	}
+	shared.WriteRawJSONResponse(w, res)
 }
 
 // "DispatchInfo" handles a get request to localhost:<relay-port>/v1/dispatch/serve call.

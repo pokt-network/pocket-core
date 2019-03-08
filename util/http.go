@@ -54,7 +54,6 @@ func rpcRequ(url string, req *http.Request) (string, error) {
 	if err != nil {
 		return "", errors.New("Unable to do request " + err.Error())
 	}
-
 	if resp.StatusCode != http.StatusOK {
 		body, _ := ioutil.ReadAll(resp.Body)
 		return "", errors.New(string(body))
