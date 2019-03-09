@@ -8,7 +8,7 @@ import (
 )
 
 func DummyNode() node.Node {
-	chains := []node.Blockchain{{Name: "ethereum", NetID: "1", Version: "1"}}
+	chains := []node.Blockchain{{Name: "ETH", NetID: "4", Version: "0"}}
 	n := node.Node{
 		GID:         "test",
 		IP:          "123",
