@@ -23,20 +23,22 @@ set -o nounset
 cmd="$@"
 
 # Download node configurations from S3
-echo 'Downloading node configurations'
-aws s3 sync $POCKET_CORE_S3_CONFIG_URL $POCKET_PATH_DATADIR
+
+if [  ${POCKET_CORE_S3_CONFIG_URL:-false} != false ]; then
+    echo 'Downloading node configurations'
+    aws s3 sync $POCKET_CORE_S3_CONFIG_URL ${POCKET_PATH_DATADIR:-datadir}
+fi
 
 # Running tests
 
-
 if [ ${POCKET_CORE_UNIT_TESTS:-false} == true ]; then
     echo "Initializing unit testing"
-    go test ./tests/unit/...
+    go test ./tests/unit/...  
 fi
 
 if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == true ]; then
     echo "Initializing integration testing"
-    go test ./tests/integration/...
+    go test ./tests/integration/... --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --disrport ${POCKET_CORE_DISPATCH_PORT:-8081}
 fi
 
 
