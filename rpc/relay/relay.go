@@ -24,7 +24,8 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	response, err := service.RouteRelay(*relay)
 	if err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
-		// error is embedded in the response
+		shared.WriteErrorResponse(w, 500, err.Error())
+		return
 	}
 	shared.WriteJSONResponse(w, response) // relay the response
 }
