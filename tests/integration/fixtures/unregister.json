@@ -7,7 +7,7 @@
   "CliVersion": "0.0.1",
   "Blockchains": [
     {
-      "Name": "ethereum",
+      "Name": "ETH",
       "NetID": "4",
       "Version": "0"
     }
