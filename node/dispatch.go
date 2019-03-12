@@ -5,9 +5,6 @@ import (
 	"sync"
 )
 
-// DISCLAIMER: the code below is for pocket core mvp centralized dispatcher
-// may remove for production
-
 type DPeers struct {
 	Map map[Blockchain]map[string]Node // <BlockchainOBJ><GID><Node>
 	sync.Mutex

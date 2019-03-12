@@ -17,10 +17,6 @@ func writeSampleConfigFiles() error {
 	if err != nil {
 		return err
 	}
-	pFile, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + "peers.json")
-	if err != nil {
-		return err
-	}
 	dwl, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + "developer_whitelist.json")
 	if err != nil {
 		return err
@@ -30,10 +26,6 @@ func writeSampleConfigFiles() error {
 		return err
 	}
 	err = copyFile(cFile, datadirectory+"chains.json")
-	if err != nil {
-		return err
-	}
-	err = copyFile(pFile, datadirectory+"peers.json")
 	if err != nil {
 		return err
 	}
@@ -74,7 +66,6 @@ func dummyNode() node.Node {
 		GID:         "test",
 		IP:          "123",
 		RelayPort:   "0",
-		ClientPort:  "0",
 		ClientID:    "0",
 		CliVersion:  "0",
 		Blockchains: chains,

@@ -9,6 +9,7 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 )
 
+// "Register" marks a service node 'ready for work' in the database.
 func Register() {
 	c := config.GlobalConfig()
 	s, err := Self()
@@ -22,6 +23,7 @@ func Register() {
 	fmt.Println(resp)
 }
 
+// "Unregister" removes a service node from the database
 func UnRegister(count int) error {
 	c := config.GlobalConfig()
 	s, err := Self()

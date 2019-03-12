@@ -16,6 +16,7 @@ func RandBytes(n int) ([]byte, error) {
 	return output, nil
 }
 
+// "NewSHA1Hash" generates a sha1 hash from random bytes.
 func NewSHA1Hash() (string, error) {
 	randBytes, err := RandBytes(16)
 	if err != nil {
