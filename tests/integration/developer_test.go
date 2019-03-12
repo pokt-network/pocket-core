@@ -2,7 +2,6 @@ package integration
 
 import (
 	"flag"
-	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"io/ioutil"
 	"path/filepath"
@@ -24,19 +23,23 @@ const (
 	report   = "report"
 	dispatch = "dispatch"
 )
+
 var dispatchU, serviceU *string
-func init(){
-	dispatchU = flag.String("dispatchtesturl", config.GlobalConfig().DisIP, "the host:port for the test dispatch node")
-	serviceU = flag.String("servicetesturl", config.GlobalConfig().DisIP, "the host:port for the test service node")
+
+func init() {
+	dispatchU = flag.String("dispatchtesturl", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test dispatch node")
+	serviceU = flag.String("servicetesturl", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test service node")
+	*dispatchU = *dispatchU+"/v1/"
+	*serviceU = *serviceU+"/v1/"
 	flag.Parse()
 }
 func requestFromFile(urlSuffix string) (string, error) {
 	const http = "http://"
 	if !strings.Contains(*dispatchU, http) {
-		*dispatchU = http + *dispatchU+"/v1/"
+		*dispatchU = http + *dispatchU
 	}
 	if !strings.Contains(*serviceU, http) {
-		*serviceU = http + *serviceU+"/v1/"
+		*serviceU = http + *serviceU
 	}
 	fp, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + urlSuffix + ".json")
 	if err != nil {
