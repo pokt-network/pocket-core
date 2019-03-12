@@ -14,7 +14,7 @@ import (
 )
 
 const assumptions = "Integration Testing Assumptions:\n" +
-	"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ethereum | NetworkID: 0 | Version: 0) in chains.json file\n" +
+	"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ETH | NetworkID: 4 | Version: 0) in chains.json file\n" +
 	"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n" +
 	"3) Dispatcher is running on DispIP:DisRPort\n" +
 	"4) Dispatcher has valid aws credentials for DB test"
@@ -55,7 +55,6 @@ func requestFromFile(urlSuffix string) (string, error) {
 
 	}
 	if urlSuffix == relay {
-		fmt.Println(*serviceU+urlSuffix)
 		return util.RPCRequ(*serviceU+urlSuffix, b, util.POST)
 	}
 	return util.RPCRequ(*dispatchU+urlSuffix, b, util.POST)

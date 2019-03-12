@@ -33,12 +33,12 @@ fi
 
 if [ ${POCKET_CORE_UNIT_TESTS:-false} == true ]; then
     echo "Initializing unit testing"
-    go test ./tests/unit/...  
+    go test ./tests/unit/...
 fi
 
 if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == true ]; then
     echo "Initializing integration testing"
-    go test ./tests/integration/... --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --disrport ${POCKET_CORE_DISPATCH_PORT:-8081}
+    go test ./tests/integration/... --dispatchtesturl dispatch.staging.pokt.network --servicetesturl service.staging.pokt.network
 fi
 
 
