@@ -4,7 +4,7 @@ package config
 import (
 	"log"
 	"os"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 )
 

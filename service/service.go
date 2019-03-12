@@ -1,3 +1,4 @@
+// This package is for the service functionality of Pocket Core. In other words, this package is for executing nonnative relay requests from clients
 package service
 
 import (
@@ -36,7 +37,6 @@ func RouteRelay(relay Relay) (string, error) {
 	return "Invalid credentials", nil
 }
 
-// DISCLAIMER: The code below is for the centralized dispatcher of Pocket core mvp, may be removed for production
 type Report struct {
 	GID     string `json:"gid"`
 	Message string `json:"message"`

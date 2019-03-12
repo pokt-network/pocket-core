@@ -8,13 +8,10 @@ import (
 	"github.com/pokt-network/pocket-core/const"
 )
 
+// "WriteFixtures" writes placeholder configuration files to the datadirectory
 func WriteFixtures() error {
 	datadirectory := GlobalConfig().DD + _const.FILESEPARATOR
 	cFile, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "chains.json")
-	if err != nil {
-		return err
-	}
-	pFile, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "peers.json")
 	if err != nil {
 		return err
 	}
@@ -27,10 +24,6 @@ func WriteFixtures() error {
 		return err
 	}
 	err = copyFile(cFile, datadirectory+"chains.json")
-	if err != nil {
-		return err
-	}
-	err = copyFile(pFile, datadirectory+"peers.json")
 	if err != nil {
 		return err
 	}

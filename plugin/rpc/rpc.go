@@ -4,7 +4,6 @@ package rpc
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -18,7 +17,6 @@ func ExecuteRequest(jsonStr []byte, host string, port string) (string, error) {
 	url := host + ":" + port
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Close = true
-	fmt.Println(req)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := (&http.Client{}).Do(req)
 	if err != nil {

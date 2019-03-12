@@ -40,6 +40,8 @@ func createGIDFile(filepath string) string {
 	return s
 }
 
+// "GIDSetup" creates a unique from the GID prefix. ->
+// GID prefix + random_hash
 func GIDSetup() string {
 	fp := filepath.FromSlash(*dd + "/gid.dat")
 	if _, err := os.Stat(fp); err == nil { // file exists

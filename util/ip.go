@@ -7,6 +7,7 @@ import (
 	"github.com/pokt-network/pocket-core/logs"
 )
 
+// "IP" returns the public ip of the user
 func IP() (string, error) {
 	url := "https://api.ipify.org?format=text"
 	resp, err := http.Get(url)

@@ -13,7 +13,6 @@ func DummyNode() node.Node {
 		GID:         "test",
 		IP:          "123",
 		RelayPort:   "0",
-		ClientPort:  "0",
 		ClientID:    "0",
 		CliVersion:  "0",
 		Blockchains: chains,

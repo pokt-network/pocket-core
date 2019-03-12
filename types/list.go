@@ -1,3 +1,4 @@
+// This package consists of custom types used in Pocket Core
 package types
 
 import (

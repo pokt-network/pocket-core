@@ -29,9 +29,9 @@ var dispatchU, serviceU *string
 func init() {
 	dispatchU = flag.String("dispatchtesturl", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test dispatch node")
 	serviceU = flag.String("servicetesturl", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test service node")
-	*dispatchU = *dispatchU+"/v1/"
-	*serviceU = *serviceU+"/v1/"
 	flag.Parse()
+	*serviceU = *serviceU + "/v1/"
+	*dispatchU = *dispatchU + "/v1/"
 }
 func requestFromFile(urlSuffix string) (string, error) {
 	const http = "http://"
