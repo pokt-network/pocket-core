@@ -1,12 +1,14 @@
 package integration
 
 import (
+	"flag"
 	"fmt"
+	"github.com/pokt-network/pocket-core/config"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
 )
@@ -22,15 +24,24 @@ type PORT int
 const (
 	Relay PORT = iota
 	Client
-)
 
-func requestFromFile(urlSuffix string, port PORT) (string, error) {
-	var dispatchURL = "http://" + config.GlobalConfig().DisIP + ":"
-	switch port {
-	case Relay:
-		dispatchURL = dispatchURL + config.GlobalConfig().DisRPort + "/v1/"
-	case Client:
-		dispatchURL = dispatchURL + config.GlobalConfig().DisCPort + "/v1/"
+	relay    = "relay"
+	report   = "report"
+	dispatch = "dispatch"
+)
+var dispatchU, serviceU *string
+func init(){
+	dispatchU = flag.String("dispatchtesturl", config.GlobalConfig().DisIP, "the host:port for the test dispatch node")
+	serviceU = flag.String("servicetesturl", config.GlobalConfig().DisIP, "the host:port for the test service node")
+	flag.Parse()
+}
+func requestFromFile(urlSuffix string) (string, error) {
+	const http = "http://"
+	if !strings.Contains(*dispatchU, http) {
+		*dispatchU = http + *dispatchU+"/v1/"
+	}
+	if !strings.Contains(*serviceU, http) {
+		*serviceU = http + *serviceU+"/v1/"
 	}
 	fp, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + urlSuffix + ".json")
 	if err != nil {
@@ -40,12 +51,18 @@ func requestFromFile(urlSuffix string, port PORT) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(dispatchURL + urlSuffix)
-	return util.RPCRequ(dispatchURL+urlSuffix, b, util.POST)
+	switch urlSuffix {
+
+	}
+	if urlSuffix == relay {
+		fmt.Println(*serviceU+urlSuffix)
+		return util.RPCRequ(*serviceU+urlSuffix, b, util.POST)
+	}
+	return util.RPCRequ(*dispatchU+urlSuffix, b, util.POST)
 }
 
 func TestRelay(t *testing.T) {
-	resp, err := requestFromFile("relay", Relay)
+	resp, err := requestFromFile(relay)
 	if err != nil {
 		t.Log(assumptions)
 		t.Fatalf(err.Error())
@@ -54,7 +71,7 @@ func TestRelay(t *testing.T) {
 }
 
 func TestReport(t *testing.T) {
-	resp, err := requestFromFile("report", Relay)
+	resp, err := requestFromFile(report)
 	if err != nil {
 		t.Log(assumptions)
 		t.Fatalf(err.Error())
@@ -63,7 +80,7 @@ func TestReport(t *testing.T) {
 }
 
 func TestDispatch(t *testing.T) {
-	resp, err := requestFromFile("dispatch", Relay)
+	resp, err := requestFromFile(dispatch)
 	if err != nil {
 		t.Log(assumptions)
 		t.Fatalf(err.Error())
