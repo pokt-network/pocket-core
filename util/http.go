@@ -14,6 +14,7 @@ const (
 	POST Method = iota + 1
 	GET
 )
+
 // "String" converts a Method Iota to a string
 func (m Method) String() string {
 	return [...]string{"GET", "POST"}[m]
