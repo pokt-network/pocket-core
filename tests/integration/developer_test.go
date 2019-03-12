@@ -19,12 +19,7 @@ const assumptions = "Integration Testing Assumptions:\n" +
 	"3) Dispatcher is running on DispIP:DisRPort\n" +
 	"4) Dispatcher has valid aws credentials for DB test"
 
-type PORT int
-
 const (
-	Relay PORT = iota
-	Client
-
 	relay    = "relay"
 	report   = "report"
 	dispatch = "dispatch"
