@@ -14,11 +14,12 @@ const (
 	POST Method = iota + 1
 	GET
 )
-
+// "String" converts a Method Iota to a string
 func (m Method) String() string {
 	return [...]string{"GET", "POST"}[m]
 }
 
+// "RPCRequ" executes an RPC request
 func RPCRequ(url string, data []byte, m Method) (string, error) {
 	req, err := http.NewRequest(m.String(), url, bytes.NewBuffer(data))
 	req.Close = true
@@ -39,6 +40,7 @@ func StructRPCReq(url string, data interface{}, m Method) (string, error) {
 	}
 	// create new post request
 	req, err := http.NewRequest(m.String(), url, bytes.NewBuffer(j))
+	req.Close = true
 	// hanlde error
 	if err != nil {
 		return "", errors.New("Cannot create request " + err.Error())

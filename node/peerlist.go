@@ -83,9 +83,7 @@ func manualPeersJSON(b []byte) error {
 	return nil
 }
 
-// DISCLAIMER: the code below is for pocket core mvp centralized dispatcher
-// may remove for production
-
+// "CopyToDP" takes the peerlist and copies it over to the dispatch peers
 func (pl *List) CopyToDP() {
 	pl.Mux.Lock()
 	defer pl.Mux.Unlock()

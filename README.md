@@ -65,11 +65,6 @@ Here, we break them all down by category:
   -cfile string
     	specifies the filepath for chains.json 
 	(default "[datadir]/chains.json")
-  -clientrpc
-    	whether or not to start the rpc server 
-	(default true)
-  -clientrpcport string
-    	specified port to run client rpc 
 	(default "8080")
   -datadirectory string
     	setup a custom location for the datadirectory 
@@ -77,9 +72,6 @@ Here, we break them all down by category:
   -dfile string
     	specifies the filepath for developer_whitelist.json 
 	(default "[datadir]/developer_whitelist.json")
-  -discport string
-    	specifies the client port of the centralized dispatcher 
-	(default "8080")
   -disip string
     	specifies the address of the centralized dispatcher 
 	(default "localhost")
@@ -89,9 +81,6 @@ Here, we break them all down by category:
   -gid string
     	set the selfNode.GID for pocket core mvp 
 	(default "GID1")
-  -pfile string
-    	specifies the filepath for peers.json 
-	(default "[datadir]/peers.json")
   -relayrpc
     	whether or not to start the rpc server 
 	(default true)

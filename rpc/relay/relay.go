@@ -37,7 +37,6 @@ func RelayInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteInfoResponse(w, info)
 }
 
-// DISCLAIMER: This is for the centralized dispatcher of Pocket core mvp, may be removed for production
 // "Report" is client side protection against a bad/faulty service node.
 func Report(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	report := &service.Report{}

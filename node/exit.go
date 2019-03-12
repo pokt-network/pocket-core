@@ -8,6 +8,7 @@ import (
 	"github.com/pokt-network/pocket-core/logs"
 )
 
+// "ExitGracefully" is the shutdown sequece of Pocket Core
 func ExitGracefully(message string) {
 	// unregister from the network
 	if err := UnRegister(0); err != nil {
@@ -20,6 +21,7 @@ func ExitGracefully(message string) {
 	os.Exit(0)
 }
 
+// "WaitForExit" listens for interrupt signal and calls unregister
 func WaitForExit() {
 	// Catches OS system interrupt signal and calls unregister
 	c := make(chan os.Signal)

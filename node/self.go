@@ -38,7 +38,7 @@ func Self() (*Node, error) {
 			ExitGracefully("unable to generate GID " + err.Error())
 		}
 		self = &Node{GID: config.GlobalConfig().GID, RelayPort: config.GlobalConfig().Port, // notice this change
-			IP: ip, ClientPort: config.GlobalConfig().CRPCPort, Blockchains: ChainsSlice(),
+			IP: ip, Blockchains: ChainsSlice(),
 			ClientID: _const.CLIENTID, CliVersion: _const.VERSION}
 	})
 	if err != nil {

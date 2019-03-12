@@ -10,7 +10,6 @@ import (
 )
 
 const chainsFileExample = "[{\"blockchain\": {\"name\": \"ethereum\",\"netid\": \"1\",\"version\": \"1.0\"},\"host\":\"localhost\",\"port\": \"8545\",\"medium\": \"rpc\"},{\"blockchain\": {\"name\": \"bitcoin\",\"netid\": \"1\",\"version\": \"1.0\"},\"host\":\"localhost\",\"port\": \"8333\",\"medium\": \"rpc\"}]"
-const peerFileExample = "[{\"gid\":\"gid1\",\"ip\":\"localhost\",\"relayport\":\"8080\",\"clientport\":\"8081\",\"clientid\":\"pocket_core\",\"cliversion\":\"0.0.1\",\"blockchains\":[{\"name\":\"ethereum\", \"version\":\"0\",\"netid\":\"0\"}]}]"
 const devFileExample = "[\"DEVID1\"]"
 const serFileExample = "[\"GID1\"]"
 
@@ -18,7 +17,6 @@ type FileName int
 
 const (
 	ChainFile FileName = iota + 1
-	PeerFile
 	DeveWL
 	SerWL
 )
@@ -30,10 +28,6 @@ func fileErrorMessage(fn FileName) {
 		path = config.GlobalConfig().CFile
 		filename = "chains"
 		example = chainsFileExample
-	case PeerFile:
-		path = config.GlobalConfig().PFile
-		filename = "peer"
-		example = peerFileExample
 	case DeveWL:
 		path = config.GlobalConfig().DWL
 		filename = "developer white list file"
@@ -49,16 +43,6 @@ func fileErrorMessage(fn FileName) {
 	if err == nil {
 		fmt.Println(string(res))
 	}
-}
-
-func peerConfigFile() error {
-	// Map.json
-	if err := ManualPeersFile(config.GlobalConfig().PFile); err != nil { // add Map from file
-		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
-		fileErrorMessage(PeerFile)
-		return err
-	}
-	return nil
 }
 
 func swlConfigFile() error {
@@ -92,20 +76,17 @@ func dwlConfigFile() error {
 	return nil
 }
 
+// "ConfigFiles" configure the client based off of files in the data directory.
 func ConfigFiles() error {
 	chainsConfigFile()
-	err1 := peerConfigFile()
 	WhiteListInit()
-	err2 := dwlConfigFile()
-	err3 := swlConfigFile()
-	if err1 != nil {
-		return err1
+	err := dwlConfigFile()
+	err2 := swlConfigFile()
+	if err != nil {
+		return err
 	}
 	if err2 != nil {
 		return err2
-	}
-	if err3 != nil {
-		return err3
 	}
 	if config.GlobalConfig().Dispatch {
 		go WLRefresh()
@@ -113,6 +94,7 @@ func ConfigFiles() error {
 	return nil
 }
 
+// "WLRefresh" updates data structure in memory from file for both whitelists after a certain amount of time.
 func WLRefresh() {
 	for {
 		var err error

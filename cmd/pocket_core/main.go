@@ -6,7 +6,6 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/message"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/rpc"
 )
@@ -38,8 +37,6 @@ func startClient() {
 	node.TestChains()
 	// runs the server endpoints for client and relay api
 	rpc.StartServers()
-	// runs servers for messages
-	message.StartServers()
 	// run db refresh on peers (if dispatch node)
 	db.PeersRefresh()
 	// runs a check on all service nodes periodically

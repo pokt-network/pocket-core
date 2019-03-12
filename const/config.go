@@ -1,4 +1,4 @@
-// This package holds global constants.
+// This package holds globally accessible data that is not expected to be dynamic.
 package _const
 
 const (
