@@ -1,8 +1,8 @@
 package _const
 
 const (
-	REPORTFILENAME = "reports.json"
-	SNWLFILENAME   = "service_whitelist.json"
-	DWLFILENAME    = "developer_whitelist.json"
-	CHAINSFILENAME = "chains.json"
+	REPORTFILENAMEPLACEHOLDER = "<your_data_directory>/reports.json"
+	SNWLFILENAMEPLACEHOLDER   = "<your_data_directory>/service_whitelist.json"
+	DWLFILENAMEPLACEHOLDER    = "<your_data_directory>/developer_whitelist.json"
+	CHAINFILEPLACEHOLDER      = "<your_data_directory>/chains.json"
 )

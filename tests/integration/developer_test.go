@@ -59,6 +59,10 @@ func requestFromFile(urlSuffix string) (string, error) {
 }
 
 func TestRelay(t *testing.T) {
+	// if service node skip
+	if !config.GlobalConfig().Dispatch{
+		t.Skip()
+	}
 	resp, err := requestFromFile(relay)
 	if err != nil {
 		t.Log(assumptions)
@@ -68,6 +72,10 @@ func TestRelay(t *testing.T) {
 }
 
 func TestReport(t *testing.T) {
+	// if dispatch node skip
+	if config.GlobalConfig().Dispatch{
+		t.Skip()
+	}
 	resp, err := requestFromFile(report)
 	if err != nil {
 		t.Log(assumptions)
@@ -77,6 +85,10 @@ func TestReport(t *testing.T) {
 }
 
 func TestDispatch(t *testing.T) {
+	// if dispatch node skip
+	if config.GlobalConfig().Dispatch{
+		t.Skip()
+	}
 	resp, err := requestFromFile(dispatch)
 	if err != nil {
 		t.Log(assumptions)

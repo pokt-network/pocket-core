@@ -40,9 +40,9 @@ var (
 	port        = flag.String("port", _const.DEFAULTPORT, "set the publicly displayed servicing port")
 	dd          = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
 	rRpcPort    = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
-	cFile       = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
-	snwl        = flag.String("sfile", _const.SNWLFILENAME, "specifies the filepath for service_whitelist.json")
-	dwl         = flag.String("dfile", _const.DWLFILENAME, "specifies the filepath for developer_whitelist.json")
+	cFile       = flag.String("cfile", _const.CHAINFILEPLACEHOLDER, "specifies the filepath for chains.json")
+	snwl        = flag.String("sfile", _const.SNWLFILENAMEPLACEHOLDER, "specifies the filepath for service_whitelist.json")
+	dwl         = flag.String("dfile", _const.DWLFILENAMEPLACEHOLDER, "specifies the filepath for developer_whitelist.json")
 	rRpc        = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	dispatch    = flag.Bool("dispatch", false, "specifies if this node is operating as a dispatcher")
 	dismode     = flag.Int("dismode", _const.DISMODENORMAL, "specifies the mode by which the dispatcher is operating (0) Normal, (1) Migrate, (2) Deprecated")
@@ -58,6 +58,8 @@ var (
 func Init() {
 	// built in function to parse the flags above.
 	flag.Parse()
+	// generates filepaths from data directory flag
+	filePaths()
 	// returns the thread safe c of the client configuration.
 	GlobalConfig()
 }
@@ -76,6 +78,18 @@ func GlobalConfig() *config { // singleton structure to return the configuration
 	return c // return the configuration
 }
 
+func filePaths() {
+	if *cFile == _const.CHAINFILEPLACEHOLDER {
+		*cFile = *dd + _const.FILESEPARATOR + "chains.json"
+	}
+	if *snwl == _const.SNWLFILENAMEPLACEHOLDER {
+		*snwl = *dd + _const.FILESEPARATOR + "service_whitelist.json"
+	}
+	if *dwl == _const.DWLFILENAMEPLACEHOLDER {
+		*dwl = *dd + _const.FILESEPARATOR + "developer_whitelist.json"
+	}
+}
+
 // "newConfiguration() is a constructor function of the configuration type.
 func newConfiguration() {
 	c = &config{
@@ -87,9 +101,9 @@ func newConfiguration() {
 		*dd,
 		*rRpc,
 		*rRpcPort,
-		*dd + _const.FILESEPARATOR + *cFile,
-		*dd + _const.FILESEPARATOR + *snwl,
-		*dd + _const.FILESEPARATOR + *dwl,
+		*cFile,
+		*snwl,
+		*dwl,
 		*dispatch,
 		*dismode,
 		*dbend,
