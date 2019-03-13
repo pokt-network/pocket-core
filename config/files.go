@@ -38,6 +38,18 @@ func WriteFixtures() error {
 	return nil
 }
 
+func filePaths() {
+	if *cFile == _const.CHAINFILEPLACEHOLDER {
+		*cFile = *dd + _const.FILESEPARATOR + "chains.json"
+	}
+	if *snwl == _const.SNWLFILENAMEPLACEHOLDER {
+		*snwl = *dd + _const.FILESEPARATOR + "service_whitelist.json"
+	}
+	if *dwl == _const.DWLFILENAMEPLACEHOLDER {
+		*dwl = *dd + _const.FILESEPARATOR + "developer_whitelist.json"
+	}
+}
+
 func copyFile(src, dst string) error {
 	if _, err := os.Stat(dst); os.IsNotExist(err) {
 		in, err := os.Open(src)
