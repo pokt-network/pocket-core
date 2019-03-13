@@ -78,6 +78,18 @@ func GlobalConfig() *config { // singleton structure to return the configuration
 	return c // return the configuration
 }
 
+func filePaths() {
+	if *cFile == _const.CHAINFILEPLACEHOLDER {
+		*cFile = *dd + _const.FILESEPARATOR + "chains.json"
+	}
+	if *snwl == _const.SNWLFILENAMEPLACEHOLDER {
+		*snwl = *dd + _const.FILESEPARATOR + "service_whitelist.json"
+	}
+	if *dwl == _const.DWLFILENAMEPLACEHOLDER {
+		*dwl = *dd + _const.FILESEPARATOR + "developer_whitelist.json"
+	}
+}
+
 // "newConfiguration() is a constructor function of the configuration type.
 func newConfiguration() {
 	c = &config{
