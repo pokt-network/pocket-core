@@ -1,13 +1,20 @@
 package integration
 
-import "testing"
+import (
+	"github.com/pokt-network/pocket-core/config"
+	"testing"
+)
 
-const(
-	register = "register"
+const (
+	register   = "register"
 	unregister = "unregister"
 )
 
 func TestRegister(t *testing.T) {
+	// if dispatch node skip
+	if config.GlobalConfig().Dispatch {
+		t.Skip()
+	}
 	resp, err := requestFromFile(register)
 	if err != nil {
 		t.Log(assumptions)
@@ -17,6 +24,10 @@ func TestRegister(t *testing.T) {
 }
 
 func TestUnRegister(t *testing.T) {
+	// if dispatch node skip
+	if config.GlobalConfig().Dispatch {
+		t.Skip()
+	}
 	resp, err := requestFromFile(unregister)
 	if err != nil {
 		t.Log(assumptions)
