@@ -59,12 +59,12 @@ func checkPeers() {
 			if !isAlive(p) {
 				// try again
 				if !isAlive(p) {
-					fmt.Println("\n" + p.GID + " failed a liveness check from dispatcher at " + p.IP + ":" + p.RelayPort + "\n")
+					fmt.Println("\n" + p.IP + " failed a liveness check from dispatcher at " + p.IP + ":" + p.RelayPort + "\n")
 					pl.Remove(p)
 					dp.Delete(p)
 					db.Remove(p)
 					service.HandleReport(&service.Report{
-						GID:     p.GID,
+						IP:      p.IP,
 						Message: " failed a livenss check from dispatcher at " + p.IP + ":" + p.RelayPort + "\n"})
 				}
 			}

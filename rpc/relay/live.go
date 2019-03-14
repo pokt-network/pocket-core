@@ -43,7 +43,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		}
 		// if within migrate mode
 		if config.GlobalConfig().DisMode == _const.DISMODEMIGRATE {
-			_, err := service.HandleReport(&service.Report{GID: n.GID, Message: "This node has not upgraded Pocket Core"})
+			_, err := service.HandleReport(&service.Report{IP: n.IP, Message: "This node has not upgraded Pocket Core"})
 			if err != nil {
 				logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 			}
