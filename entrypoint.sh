@@ -36,10 +36,6 @@ if [ ${POCKET_CORE_UNIT_TESTS:-false} == true ]; then
     go test ./tests/unit/...
 fi
 
-if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == true ]; then
-    echo "Initializing integration testing"
-    go test ./tests/integration/... --dispatchtesturl dispatch.staging.pokt.network --servicetesturl service.staging.pokt.network
-fi
 
 
 exec $cmd
