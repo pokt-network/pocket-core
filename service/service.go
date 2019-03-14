@@ -38,7 +38,7 @@ func RouteRelay(relay Relay) (string, error) {
 }
 
 type Report struct {
-	GID     string `json:"gid"`
+	IP      string `json:"ip"`
 	Message string `json:"message"`
 }
 

@@ -7,7 +7,7 @@ import (
 )
 
 func TestReport(t *testing.T) {
-	if _, err := service.HandleReport(&service.Report{GID: "TestReport", Message: "This is a test report"}); err != nil {
+	if _, err := service.HandleReport(&service.Report{IP: "TestReport", Message: "This is a test report"}); err != nil {
 		t.Fatalf(err.Error())
 	}
 }
