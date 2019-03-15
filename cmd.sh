@@ -55,7 +55,7 @@ if [ $POCKET_CORE_NODE_TYPE = "dispatch" ]; then
 		  --disrport ${POCKET_CORE_DISPATCH_PORT:-8081} &
 
 		sleep 10 
-		exec go test ./tests/integration/... --dispatch --dispatchtesturl dispatch.staging.pokt.network --servicetesturl service.staging.pokt.network
+		exec go test ./tests/integration/... --dispatch --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --servicetesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}
 
 	fi
 
@@ -81,7 +81,7 @@ elif [ $POCKET_CORE_NODE_TYPE = "service" ]; then
 			--port ${POCKET_CORE_SERVICE_PORT:-8081} &
 		
 		sleep 10 
-		exec go test ./tests/integration/... --dispatchtesturl dispatch.staging.pokt.network --servicetesturl service.staging.pokt.network
+		exec go test ./tests/integration/... --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --servicetesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}
 	fi
 else
 	echo 'Need to specify a node type, either dispatch or service.'
