@@ -43,7 +43,6 @@ if [ $POCKET_CORE_NODE_TYPE = "dispatch" ]; then
 		  --disrport ${POCKET_CORE_DISPATCH_PORT:-8081}
 
 	else
-		echo 'Initializing integration testing'
 		echo 'Starting pocket-core dispatch'
 		
 		nohup pocket-core --dispatch \
@@ -55,6 +54,7 @@ if [ $POCKET_CORE_NODE_TYPE = "dispatch" ]; then
 		  --disrport ${POCKET_CORE_DISPATCH_PORT:-8081} &
 
 		sleep 10 
+		echo 'Initializing integration testing'
 		exec go test ./tests/integration/... --dispatch --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --servicetesturl ${POCKET_CORE_SERVICE_IP:-127.0.0.1}
 
 	fi
@@ -71,7 +71,7 @@ elif [ $POCKET_CORE_NODE_TYPE = "service" ]; then
 			--port ${POCKET_CORE_SERVICE_PORT:-8081}
 
 	else
-		echo 'Initializing integration testing'
+		echo 'Starting pocket-core service'
 		
 		nohup pocket-core --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
 			--disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} \
@@ -80,7 +80,8 @@ elif [ $POCKET_CORE_NODE_TYPE = "service" ]; then
 			--disrport ${POCKET_CORE_DISPATCH_PORT:-8081} \
 			--port ${POCKET_CORE_SERVICE_PORT:-8081} &
 		
-		sleep 10 
+		sleep 10
+		echo 'Initializing integration testing'
 		exec go test ./tests/integration/... --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} --servicetesturl ${POCKET_CORE_SERVICE_IP:-127.0.0.1}
 	fi
 else
