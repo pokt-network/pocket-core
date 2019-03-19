@@ -24,7 +24,7 @@ cmd="$@"
 
 # Download node configurations from S3
 
-if [  ${POCKET_CORE_S3_CONFIG_URL:-false} != false ]; then
+if [  ${POCKET_CORE_S3_CONFIG_URL:-false} == true ]; then
     echo 'Downloading node configurations'
     aws s3 sync $POCKET_CORE_S3_CONFIG_URL ${POCKET_PATH_DATADIR:-datadir}
 fi
