@@ -25,12 +25,8 @@ set -o nounset
 # POCKET_CORE_SERVICE_PORT = Port of the Pocket Core service node (required)
 
 
-
-
-
-
 # Start pocket-core
-if [ $POCKET_CORE_NODE_TYPE = "dispatch" ]; then
+if [ ${POCKET_CORE_UNIT_TESTS:-service} = "dispatch" ]; then
 	if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == false ]; then
 		echo 'Starting pocket-core dispatch'
 	    
@@ -59,7 +55,7 @@ if [ $POCKET_CORE_NODE_TYPE = "dispatch" ]; then
 
 	fi
 
-elif [ $POCKET_CORE_NODE_TYPE = "service" ]; then
+elif [ ${POCKET_CORE_UNIT_TESTS:-service} = "service" ]; then
 	if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == false ]; then
 		echo 'Starting pocket-core service'
 
