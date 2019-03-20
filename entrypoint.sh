@@ -24,9 +24,11 @@ cmd="$@"
 
 # Download node configurations from S3
 
-if [  ${POCKET_CORE_S3_CONFIG_URL:-false} == true ]; then
-    echo 'Downloading node configurations'
-    aws s3 sync $POCKET_CORE_S3_CONFIG_URL ${POCKET_PATH_DATADIR:-datadir}
+if [  ${POCKET_CORE_S3_CONFIG_URL:-false} == false  ]; then
+ 	echo 'POCKET_CORE_S3_CONFIG_URL env variable not found, Using default configurations'
+else
+ 	echo 'Downloading node configurations from S3'
+	aws s3 sync $POCKET_CORE_S3_CONFIG_URL ${POCKET_PATH_DATADIR:-datadir}
 fi
 
 # Running tests
@@ -35,7 +37,6 @@ if [ ${POCKET_CORE_UNIT_TESTS:-false} == true ]; then
     echo "Initializing unit testing"
     go test ./tests/unit/...
 fi
-
 
 
 exec $cmd

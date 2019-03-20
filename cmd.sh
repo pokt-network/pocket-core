@@ -29,7 +29,6 @@ set -o nounset
 if [ ${POCKET_CORE_NODE_TYPE:-service} = "dispatch" ]; then
 	if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == false ]; then
 		echo 'Starting pocket-core dispatch'
-	    
 		exec pocket-core --dispatch \
 		  --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
 		  --dbend ${POCKET_CORE_AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} \
@@ -40,7 +39,6 @@ if [ ${POCKET_CORE_NODE_TYPE:-service} = "dispatch" ]; then
 
 	else
 		echo 'Starting pocket-core dispatch'
-		
 		nohup pocket-core --dispatch \
 		  --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
 		  --dbend ${POCKET_CORE_AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} \
