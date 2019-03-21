@@ -5,3 +5,7 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+[[override]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
