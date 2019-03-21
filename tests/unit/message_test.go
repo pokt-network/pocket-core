@@ -73,10 +73,10 @@ func TestValidateMessageSerialization(t *testing.T) {
 	}
 }
 
-func TestHelloSessionMessage(t *testing.T){
-	const(
-		gid="dummygid"
-		role=fbs.SessionRoleVALIDATOR
+func TestHelloSessionMessage(t *testing.T) {
+	const (
+		gid  = "dummygid"
+		role = fbs.SessionRoleVALIDATOR
 	)
 	hsm := message.HelloSessionMessage{Gid: gid, Role: role}
 	builder := flatbuffers.NewBuilder(0)
@@ -85,7 +85,7 @@ func TestHelloSessionMessage(t *testing.T){
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	if helloSessionMessage.Gid!=gid && helloSessionMessage.Role!=role {
+	if helloSessionMessage.Gid != gid && helloSessionMessage.Role != role {
 		t.Fatalf("Output not expected")
 	}
 }
