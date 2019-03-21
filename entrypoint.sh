@@ -16,16 +16,21 @@ set -o nounset
 # AWS_DYNAMODB_ENDPOINT = AWS dynamodb endpoint (defaults to dynamodb.us-east-1.amazonaws.com)
 # AWS_DYNAMODB_TABLE = AWS dynamodb table name (defaults to dispatch-peers-staging)
 # AWS_DYNAMODB_REGION = AWS dynamodb region (defaults to us-east-1)
-
-# Service only
+# POCKET_CORE_SERVICE_WHITELIST = Array list of service whitelist configuration ex. ('["SERVICE1"]'), defaults to []
+# POCKET_CORE_DEVELOPER_WHITELIST = Array list of developer whitelist configuration ex. (["DEVELOPER1"]'), defaults to []
 # POCKET_CORE_DISPATCH_IP = Dispatch node address (defaults to 127.0.0.1)
 
 cmd="$@"
 
-# Download node configurations from S3
+# Loading pocket-core configurations 
+## If variable POCKET_CORE_S3_CONFIG_URL is not provided, we use POCKET_CORE_SERVICE_WHITELIST and POCKET_CORE_DEVLEOPER_WHITELIST variables
+## If variable POCKET_CORE_S3_CONFIG_URL is provided, we use only the configuration inside the S3 path
 
 if [  ${POCKET_CORE_S3_CONFIG_URL:-false} == false  ]; then
  	echo 'POCKET_CORE_S3_CONFIG_URL env variable not found, Using default configurations'
+	echo ${POCKET_CORE_SERVICE_WHITELIST:-[]} >  ${POCKET_PATH_DATADIR:-datadir}/service_whitelist.json
+	echo ${POCKET_CORE_DEVELOPER_WHITELIST:-[]} > ${POCKET_PATH_DATADIR:-datadir}/developer_whitelist.json
+
 else
  	echo 'Downloading node configurations from S3'
 	aws s3 sync $POCKET_CORE_S3_CONFIG_URL ${POCKET_PATH_DATADIR:-datadir}
