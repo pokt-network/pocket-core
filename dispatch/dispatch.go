@@ -17,7 +17,6 @@ type Dispatch struct {
 
 type DispatchServe struct {
 	Name    string   `json:"name"`
-	Version string   `json:"version"`
 	NetID   string   `json:"netid"`
 	Ips     []string `json:"ips"`
 }
@@ -33,7 +32,7 @@ func Serve(dispatch *Dispatch) ([]byte, error, int) {
 			for _, n := range nodes {
 				ips = append(ips, n.IP+":"+n.RelayPort)
 			}
-			result = append(result, DispatchServe{Name: strings.ToUpper(bc.Name), Version: strings.ToUpper(bc.Version), NetID: strings.ToUpper(bc.NetID), Ips: ips})
+			result = append(result, DispatchServe{Name: strings.ToUpper(bc.Name), NetID: strings.ToUpper(bc.NetID), Ips: ips})
 		}
 		res, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {

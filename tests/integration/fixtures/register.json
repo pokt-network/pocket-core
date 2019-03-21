@@ -8,8 +8,7 @@
   "Blockchains": [
     {
       "Name": "ETH",
-      "NetID": "4",
-      "Version": "0"
+      "NetID": "4"
     }
   ]
 }

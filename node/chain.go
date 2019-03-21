@@ -15,7 +15,6 @@ import (
 type Blockchain struct {
 	Name    string `json:"name"`
 	NetID   string `json:"netid"`
-	Version string `json:"version"`
 }
 
 // A structure that specifies a non-native blockchain client running on a port.
@@ -99,6 +98,6 @@ func TestChains() {
 			fmt.Fprint(os.Stderr, c.Name+" client is not detected @ "+c.Host+":"+c.Port+"\n")
 			ExitGracefully(c.Name + " client isn't detected" + "\n")
 		}
-		fmt.Println(c.Name + " V:" + c.Version + " NetID:" + c.NetID + " client is active and ready for service on port " + c.Port)
+		fmt.Println(c.Name + " NetID:" + c.NetID + " client is active and ready for service on port " + c.Port)
 	}
 }

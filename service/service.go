@@ -17,7 +17,6 @@ import (
 type Relay struct {
 	Blockchain string `json:"blockchain"`
 	NetworkID  string `json:"netid"`
-	Version    string `json:"version"`
 	Data       string `json:"data"`
 	DevID      string `json:"devid"`
 }
@@ -25,7 +24,7 @@ type Relay struct {
 // "RouteRelay" routes the relay to the specified hosted chain
 func RouteRelay(relay Relay) (string, error) {
 	if node.EnsureWL(node.DWL(), relay.DevID) {
-		hc := node.ChainToHosted(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID, Version: relay.Version})
+		hc := node.ChainToHosted(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID})
 		port := hc.Port
 		host := hc.Host
 		if port == "" || host == "" {
