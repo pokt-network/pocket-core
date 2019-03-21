@@ -9,7 +9,7 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 )
 
-const chainsFileExample = "[{\"blockchain\": {\"name\": \"ethereum\",\"netid\": \"1\",\"version\": \"1.0\"},\"host\":\"localhost\",\"port\": \"8545\",\"medium\": \"rpc\"},{\"blockchain\": {\"name\": \"bitcoin\",\"netid\": \"1\",\"version\": \"1.0\"},\"host\":\"localhost\",\"port\": \"8333\",\"medium\": \"rpc\"}]"
+const chainsFileExample = "[{\"blockchain\": {\"name\": \"ethereum\",\"netid\": \"1\",\"host\":\"localhost\",\"port\": \"8545\",\"medium\": \"rpc\"},{\"blockchain\": {\"name\": \"bitcoin\",\"netid\": \"1\",\"host\":\"localhost\",\"port\": \"8333\",\"medium\": \"rpc\"}]"
 const devFileExample = "[\"DEVID1\"]"
 const serFileExample = "[\"GID1\"]"
 

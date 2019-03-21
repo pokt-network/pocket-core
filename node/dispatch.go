@@ -70,7 +70,7 @@ func (dp *DPeers) Print() {
 	defer dp.Unlock()
 	// [blockchain]Map of nodes
 	for bc, nMap := range dp.Map {
-		fmt.Println(bc.Name, "Version:", bc.Version, "NetID:", bc.NetID)
+		fmt.Println(bc.Name, "NetID:", bc.NetID)
 		fmt.Println("  GID's:")
 		// GID in Map
 		for gid := range nMap {

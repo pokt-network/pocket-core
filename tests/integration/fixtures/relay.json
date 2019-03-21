@@ -1,1 +1,1 @@
-{"Blockchain":"ETH","NetID":"4","Version":"0","Data":"{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"0xa02e5aad91bed3a1c6bbd1958cea6f0ecedd31ac8801a435913b7ada136dcdfa\",\"latest\"],\"id\":67}","DevID":"DEVID1"}
+{"Blockchain":"ETH","NetID":"4","Data":"{\"jsonrpc\":\"2.0\",\"method\":\"eth_getBalance\",\"params\":[\"0xa02e5aad91bed3a1c6bbd1958cea6f0ecedd31ac8801a435913b7ada136dcdfa\",\"latest\"],\"id\":67}","DevID":"DEVID1"}

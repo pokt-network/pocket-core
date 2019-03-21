@@ -18,7 +18,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	if relay.Blockchain == "" || relay.NetworkID == "" || relay.DevID == "" || relay.Version == "" || relay.Data == "" {
+	if relay.Blockchain == "" || relay.NetworkID == "" || relay.DevID == "" || relay.Data == "" {
 		shared.WriteErrorResponse(w, 400, "The request was not properly formatted")
 		return
 	}

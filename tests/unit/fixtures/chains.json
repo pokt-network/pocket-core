@@ -2,8 +2,7 @@
   {
     "blockchain": {
       "name": "ethereum",
-      "netid": "0",
-      "version": "0"
+      "netid": "0"
     },
     "host":"localhost",
     "port": "8545",
