@@ -3,13 +3,13 @@
 package fbs
 
 type SessionRole = int32
+
 const (
-	SessionRoleSERVICE SessionRole = 0
+	SessionRoleSERVICE   SessionRole = 0
 	SessionRoleVALIDATOR SessionRole = 1
 )
 
 var EnumNamesSessionRole = map[SessionRole]string{
-	SessionRoleSERVICE:"SERVICE",
-	SessionRoleVALIDATOR:"VALIDATOR",
+	SessionRoleSERVICE:   "SERVICE",
+	SessionRoleVALIDATOR: "VALIDATOR",
 }
-
