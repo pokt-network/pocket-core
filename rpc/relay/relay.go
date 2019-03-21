@@ -1,6 +1,7 @@
 package relay
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -43,6 +44,12 @@ func Report(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err := shared.PopModel(w, r, ps, report); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		shared.WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	if report.IP == "" || report.Message == "" {
+		err := errors.New("empty field error")
+		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		shared.WriteErrorResponse(w, 401, err.Error())
 		return
 	}
 	response, err := service.HandleReport(report)
