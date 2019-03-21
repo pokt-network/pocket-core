@@ -3,7 +3,6 @@
   "blockchains": [
     {
       "name": "ETH",
-      "version": "0",
       "netid": "4"
     }
   ]
