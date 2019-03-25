@@ -1,0 +1,6022 @@
+[
+    {
+        "enode": "enode://UA2Bqv5jdxelL4ZQ5UIG5k2jPSc=@9.88.37.78:30303?discport=30301",
+        "stake": 96,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://-TfDfpSdnvog0pWK8wkjXHPsA5o=@35.30.69.46:30303?discport=30301",
+        "stake": 99,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Lb9Epot3sVv6W8PWbJeJKldAK74=@85.26.45.52:30303?discport=30301",
+        "stake": 64,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://pG_gxNqwRT9dhr7WIGBAiA9ZOT4=@54.5.4.79:30303?discport=30301",
+        "stake": 15,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://naMFOa82OcYAxiVvdpF1ClgcNsI=@48.22.4.87:30303?discport=30301",
+        "stake": 25,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://sKabH5_oLWwUkXnOSOIvnIQRr-M=@54.71.83.13:30303?discport=30301",
+        "stake": 98,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://dOWkvKtzVbjKt99z0HdHzYXJJec=@66.60.20.27:30303?discport=30301",
+        "stake": 72,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wD5V0VYCozkihY6XZk6jPzaO9d4=@23.69.73.17:30303?discport=30301",
+        "stake": 66,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xluGgaTuwdQbG6GwE1NfHJbZQ6s=@1.37.54.87:30303?discport=30301",
+        "stake": 84,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://B4UoRYbvWBC4BWAxnvJJaOiX984=@99.65.78.75:30303?discport=30301",
+        "stake": 45,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ThXccqbAkVffeqiGx2xNCvGscsY=@46.15.65.51:30303?discport=30301",
+        "stake": 21,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://t0wjYVqV2Vuqwzs7Gb_YOsMgQC8=@79.70.59.55:30303?discport=30301",
+        "stake": 47,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://pB-jNfUC0nk2HcibikvQYYwnv4M=@20.26.91.63:30303?discport=30301",
+        "stake": 41,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://qEX6_uWC38uK-9nqW4US6N2WQ7g=@38.44.76.89:30303?discport=30301",
+        "stake": 41,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://GLpKHJy3JKBcRsDb9qb1lVLbrBc=@57.44.16.96:30303?discport=30301",
+        "stake": 86,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://BRuQAdXR8YLKZprz_F-4ZlKStPI=@78.92.36.59:30303?discport=30301",
+        "stake": 22,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7IO4b39vwDpeb3k13On4jBh7V1U=@80.21.55.26:30303?discport=30301",
+        "stake": 9,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2Iz713xRqXp3CSZWEN60ZVsdm3M=@52.22.92.34:30303?discport=30301",
+        "stake": 16,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wwh34Bqf1KJui5mzMLCifa5l3cU=@26.99.72.61:30303?discport=30301",
+        "stake": 73,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ahiSbGUrA2sgViVHZvrNRkZWw9g=@47.97.83.94:30303?discport=30301",
+        "stake": 95,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CzegOVxIQPosCc0-tGhQsgcwRqU=@41.92.60.43:30303?discport=30301",
+        "stake": 24,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ZxsnV6ifD7GlQy4byRtrQuUx1o0=@60.92.27.53:30303?discport=30301",
+        "stake": 77,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://fHKeOWXqhWJLhP0SgV5V4vDxwD0=@13.59.18.65:30303?discport=30301",
+        "stake": 70,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://cQNO-AXoKslQiyuV_by50Vm3MCY=@5.53.27.86:30303?discport=30301",
+        "stake": 61,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://A-EetsJowwRC1xDtTwwHcBEgKAs=@17.2.39.66:30303?discport=30301",
+        "stake": 14,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Vu0R08Ipjlvdz2xUMpnFCL5iJXU=@11.31.28.31:30303?discport=30301",
+        "stake": 24,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://B4458UvhAerTuHjrCRNw0sjMK9c=@13.46.3.85:30303?discport=30301",
+        "stake": 68,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://sL8Nol2Y3gBgdP61wJMXyhu51BU=@19.86.8.5:30303?discport=30301",
+        "stake": 14,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://EgdxawZDEV7okpe7UzQn1N65RpA=@44.11.82.58:30303?discport=30301",
+        "stake": 39,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://i6jn7_-7Ox0iWi7zfBbDp1C8Yps=@38.11.51.67:30303?discport=30301",
+        "stake": 35,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://36pXZIqL7qCFIEYYdjNKUdwtpm8=@40.61.67.22:30303?discport=30301",
+        "stake": 64,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MQPGrcgOCDSS68KJ1dEyPYjsuIM=@30.27.62.74:30303?discport=30301",
+        "stake": 73,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://0ykRe2lLVf-N0SBV7c9tZfRSolg=@85.43.26.30:30303?discport=30301",
+        "stake": 17,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://uBe6nhBxXZ93a0DRYtDU4GGtfDQ=@73.76.62.63:30303?discport=30301",
+        "stake": 60,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2szK7tqN10IJ8s_daz1riiwh-Ak=@73.81.99.8:30303?discport=30301",
+        "stake": 84,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://C0FHzc-Ng9DBVkA0JD2Y0hlwynk=@41.92.48.27:30303?discport=30301",
+        "stake": 58,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://z1jMYY_YXzzj8XhCIDWB2_tUCaY=@41.19.92.46:30303?discport=30301",
+        "stake": 18,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://N4yX7bA89tL7mSxO-xrHQPM2rCw=@25.38.52.20:30303?discport=30301",
+        "stake": 95,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://REQ23GegIfEFbERXRm1meAVE2iE=@33.59.94.90:30303?discport=30301",
+        "stake": 96,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://swCul9-fW5UNn2P0xCXBhJTGgyw=@5.46.35.3:30303?discport=30301",
+        "stake": 78,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ver1EBermuQIHZYZL-PesdSFEMA=@19.81.92.54:30303?discport=30301",
+        "stake": 32,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://gkESEcnxi0YZoTauE5fOuiuPbfg=@77.10.55.24:30303?discport=30301",
+        "stake": 21,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://LF_LAijHdwj0F0gnapINr-V_l00=@22.66.48.65:30303?discport=30301",
+        "stake": 0,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://bLfsztm82hns3p2z1jv5X3DXKz8=@78.50.80.13:30303?discport=30301",
+        "stake": 9,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ui63GMHdeaV7eGoQ8_xXZJxrnPg=@2.58.58.67:30303?discport=30301",
+        "stake": 52,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ReyOtwetdH52drpYZRe_kaLSoo8=@14.54.34.92:30303?discport=30301",
+        "stake": 40,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nFhPuMRgbjOZ-UgGzRloo23sFsA=@82.69.0.39:30303?discport=30301",
+        "stake": 37,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://NJzdDWm77LGiXYLzqPd7p6Ig21I=@62.71.86.18:30303?discport=30301",
+        "stake": 52,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5NFyZR1ZpbiLobY95Ap7AOdp7y4=@19.65.20.90:30303?discport=30301",
+        "stake": 99,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://398F4BP4I3qlD53y9TPf9p5gFi8=@9.35.14.26:30303?discport=30301",
+        "stake": 8,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://kUHYL-oDF-M7rsGeL9kTrzcd-AA=@6.27.31.12:30303?discport=30301",
+        "stake": 93,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://WhQg7iVJaBqItLII9Z416wniL6M=@66.52.70.56:30303?discport=30301",
+        "stake": 70,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xU_iUj0cy3bhk40n6Ci3OXUHmDM=@28.59.63.49:30303?discport=30301",
+        "stake": 96,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://haHsQ0M_WFDFRj3yuBXBibkeRLc=@9.10.83.38:30303?discport=30301",
+        "stake": 4,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ryziewYD3wJcD9WOhS5YCNViIyA=@92.66.68.92:30303?discport=30301",
+        "stake": 67,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://OFEGwWuLHrC09jiddUMDoQtvxmc=@9.46.71.92:30303?discport=30301",
+        "stake": 38,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://m6_GsbmC-F_oDh0TzdDoF6gGGug=@38.31.42.62:30303?discport=30301",
+        "stake": 82,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Uw2EEB4eIASi4qojxV3YFNOGyhg=@14.36.97.10:30303?discport=30301",
+        "stake": 68,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://WmRF3-EY3kMkHU_KEaMlzi66kYA=@24.29.15.62:30303?discport=30301",
+        "stake": 37,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://YhvyQmmZ_4AZ_y0DVWT83eZ4m4I=@74.18.24.97:30303?discport=30301",
+        "stake": 92,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ezTxy-8BqoCvTsrgqV_CNzFwiYk=@47.35.15.76:30303?discport=30301",
+        "stake": 11,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4HJwmkhzZg6You-bKJJLQwII8XA=@57.86.18.76:30303?discport=30301",
+        "stake": 42,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://puXBRtADI-jUTAG4LWxJArNs5X0=@51.50.64.39:30303?discport=30301",
+        "stake": 12,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://WYfHJrUrS9DogCmZOBodftgK1L0=@31.91.26.6:30303?discport=30301",
+        "stake": 99,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://FnCcfcoXah1N8DiTjUMkYwAzc0c=@46.94.44.14:30303?discport=30301",
+        "stake": 39,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://pPDSjK-Pg67MT8PBEWgkqGta3LI=@28.72.83.64:30303?discport=30301",
+        "stake": 61,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://IAHC_ZElSLWKxrehm9VTP9jGNEU=@10.94.57.25:30303?discport=30301",
+        "stake": 86,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Ua3ffVuwULYhUP1RSdvAYDOreiY=@6.81.66.19:30303?discport=30301",
+        "stake": 12,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://GL6DYWgz-QXu38xMOT3GATBZ7bA=@91.32.71.84:30303?discport=30301",
+        "stake": 38,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://jXpiymMkX5mXSs5o5PWvvNPb_f0=@41.36.12.5:30303?discport=30301",
+        "stake": 56,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Ub4JEBZ0VmtzOb6m3T-uz8MmW5w=@22.37.35.75:30303?discport=30301",
+        "stake": 70,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://YzpfYrypXcGVoVv3XqfuO2CIxJ4=@21.25.67.76:30303?discport=30301",
+        "stake": 11,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://HTELEDs1g0zaBdYZ_qSx4UjzrrQ=@91.56.94.8:30303?discport=30301",
+        "stake": 10,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://64_x-KdoQQ3mWkP2LiRG4d-kgmk=@49.52.25.49:30303?discport=30301",
+        "stake": 92,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://3SqmToj0EhHeaEPOpZnoTabm5oY=@24.19.21.95:30303?discport=30301",
+        "stake": 5,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://HYE9mfgVd1pWcTVrahK475ypnGI=@32.75.18.43:30303?discport=30301",
+        "stake": 49,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2RWWfOz4nz8IEkzECQZZkruhhTY=@44.20.44.83:30303?discport=30301",
+        "stake": 48,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://qMOyjQh2LglrIK40NCYYiKIiEN8=@2.19.23.33:30303?discport=30301",
+        "stake": 83,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://EJC6plaVYUXsb5UvQQ6820GqcqA=@88.36.10.2:30303?discport=30301",
+        "stake": 57,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://gOz8G_x6i7fyQKDQgB3n2aYuDRY=@42.26.59.35:30303?discport=30301",
+        "stake": 64,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://68yfPuRpk9Xrlxero-ll3yc1knQ=@35.43.12.15:30303?discport=30301",
+        "stake": 85,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://3wqpXt8RBjCWJZIUy1C_QcYzSzo=@83.35.95.48:30303?discport=30301",
+        "stake": 4,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://9TNg4aoqBT-l4tKSIN-nb_hR52s=@16.56.86.25:30303?discport=30301",
+        "stake": 33,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://25w7wr1SLS72iGAwxDwpR1XbZus=@21.41.28.26:30303?discport=30301",
+        "stake": 55,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://S1bB3l7jHt_HNX8QFl4MsXTjN7w=@27.41.74.74:30303?discport=30301",
+        "stake": 69,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://34JfEbLncy8P9WDDMZ8Qo22mUTc=@42.70.64.99:30303?discport=30301",
+        "stake": 15,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://f31nawveayTz2b9io2mBDK2JImM=@7.3.95.51:30303?discport=30301",
+        "stake": 49,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7zoGAGhMpDZ4ntHjUMUPyBI_Sqo=@94.61.70.75:30303?discport=30301",
+        "stake": 10,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://C_2uljZF3Esj8yZ2BCP3DRAut1w=@28.91.6.65:30303?discport=30301",
+        "stake": 98,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://T0xCyMqxzDUkz23xo3Ij_-U3NEI=@44.94.88.37:30303?discport=30301",
+        "stake": 26,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://zGMwzmdhb8MGitaAIS7gy7olm2I=@51.96.26.17:30303?discport=30301",
+        "stake": 27,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Oy50CqNoOktvPMsq_vV5DE6ytfg=@75.89.39.82:30303?discport=30301",
+        "stake": 81,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://jmBRSZYI3WD5UDnseL20XY89PQs=@13.87.58.31:30303?discport=30301",
+        "stake": 89,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://FVSm5WBun5kwZezwqd2I9VtwbMU=@29.57.62.31:30303?discport=30301",
+        "stake": 13,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://eXFf-EUa5Fet00FFIIFM6TgkcVY=@2.82.93.88:30303?discport=30301",
+        "stake": 99,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://GUco1zHdb3yE1roOFor-RbR5zv4=@23.13.67.56:30303?discport=30301",
+        "stake": 36,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://cU-u0hkrvFaFpZ-n6wPXk9XMiEI=@92.9.20.58:30303?discport=30301",
+        "stake": 73,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://zuubdl641EURSRtD00e4JkmzN5o=@38.87.8.11:30303?discport=30301",
+        "stake": 41,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Z29RGmBnhOzr915adinF2YuQPMM=@25.30.53.40:30303?discport=30301",
+        "stake": 43,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://lZ5Y0JcL70Hqct0l_adLqk3QWLo=@37.17.49.44:30303?discport=30301",
+        "stake": 44,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://al5N9cZ94wnkSDTsQcOT91NUKQs=@98.61.64.78:30303?discport=30301",
+        "stake": 85,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://AzT26WvftCEGYoHTjJ3CANevhSg=@54.36.1.95:30303?discport=30301",
+        "stake": 60,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ghD45e2zDQDCwqvysVr_PzxEa3M=@73.45.32.98:30303?discport=30301",
+        "stake": 61,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://gTvBLpeecRaiMpIrxVQu2ev-fn4=@98.61.39.5:30303?discport=30301",
+        "stake": 58,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://gWtaT6JqaU3ZGPG-HfoEw9L6hss=@90.16.61.63:30303?discport=30301",
+        "stake": 80,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nVua81f_-f-B6OwwZ17YGBBPXZ0=@64.48.12.49:30303?discport=30301",
+        "stake": 81,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://lu84hQqKPlyUpB0ZqV_IjJhMcLM=@35.59.14.57:30303?discport=30301",
+        "stake": 29,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://FjpX2GX4oEQU8le-pxWH2UdGFdg=@18.29.65.52:30303?discport=30301",
+        "stake": 81,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://S5pCiih--K6wqgFVeQssn6sbIT0=@36.42.72.65:30303?discport=30301",
+        "stake": 70,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://bkzeCwTDn8L_6toiENDzyFxtYn0=@92.29.98.91:30303?discport=30301",
+        "stake": 79,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://c_eNgvGHwWXncbmwMT0YBot72_k=@43.28.33.58:30303?discport=30301",
+        "stake": 12,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://WmP21U_OYVa6sEIqIFISu4mbexU=@43.31.64.81:30303?discport=30301",
+        "stake": 61,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://tL7HrbqiNV2SyNH3EaRtXaNUBdk=@89.48.43.47:30303?discport=30301",
+        "stake": 50,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://phlo3GLgPpDdgSk-RVBYUdI0VPA=@51.99.77.10:30303?discport=30301",
+        "stake": 78,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2e1B3Zy6dIgakWEqiRDiEYkJTpA=@93.72.37.8:30303?discport=30301",
+        "stake": 76,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://necB4s5GS1aZgyI6h2ZPPGQRaEc=@92.24.28.47:30303?discport=30301",
+        "stake": 52,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://fLxZpiCAyccIYrM8Y9b0-2jD2BU=@31.17.16.41:30303?discport=30301",
+        "stake": 81,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://whLpY0_noFyH4Vu6rD3ensydAsY=@63.4.8.40:30303?discport=30301",
+        "stake": 65,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://20iu1TOLmCmQ_0P-7xooEDgRU6I=@1.87.39.41:30303?discport=30301",
+        "stake": 18,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://J-Q8cKhplF2jaxG4oxzFolDSsZg=@35.81.15.33:30303?discport=30301",
+        "stake": 12,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://c5Wqh7lHc3j3PCpDGgSZ-wOZFj8=@29.14.91.18:30303?discport=30301",
+        "stake": 99,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2xrhOdltWLUYl1syLtr0awIXSgA=@3.0.25.48:30303?discport=30301",
+        "stake": 41,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://z_nSiv03dreTPTLJvhRg0dwsH0E=@56.62.26.51:30303?discport=30301",
+        "stake": 57,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://31_POa6vrqbMGoa35vS_urFMdGY=@22.57.22.1:30303?discport=30301",
+        "stake": 25,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://1g5vg0dr5OD97dlVceFyi4felNw=@34.95.15.75:30303?discport=30301",
+        "stake": 96,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DCjJOvTX9qXMEkgWfci2A7lt_HQ=@48.30.76.4:30303?discport=30301",
+        "stake": 8,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://gWu0wy9xJezCsJvO23a3A27SuIs=@80.6.74.61:30303?discport=30301",
+        "stake": 62,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://tiS7a5iA466gJj9HLniWDcR0kR8=@72.50.86.49:30303?discport=30301",
+        "stake": 11,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2vfCVCvd-GbRKS7DJ83WXca2ZTA=@22.63.15.35:30303?discport=30301",
+        "stake": 90,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ZgH4mM_Q-G26SotWsCieH-i06lQ=@69.51.44.25:30303?discport=30301",
+        "stake": 50,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5nvfMaV97NE8at-xyOSo_6rARa4=@47.27.57.64:30303?discport=30301",
+        "stake": 79,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2TTsY878Is3fpNxvekWlwnVTv08=@64.30.77.19:30303?discport=30301",
+        "stake": 4,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://BXScvjqPdi9hrc4a4agI4QUjcIY=@58.29.68.52:30303?discport=30301",
+        "stake": 70,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Jke5ApL0X9vZX0TpmMky1WAwaKQ=@38.85.79.15:30303?discport=30301",
+        "stake": 23,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xwkMTB6YE67pbmn2zFWpAdmGUDA=@61.42.91.53:30303?discport=30301",
+        "stake": 52,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wPUo3SEkGfY-_Bh-s-GHTlUvrA4=@44.13.29.70:30303?discport=30301",
+        "stake": 24,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Or2wxxFW8eWcEVoYWn_bQGcIPNQ=@70.61.64.84:30303?discport=30301",
+        "stake": 11,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://QeXO1d2wKgmxN2uj-5zWMfwu9KY=@58.72.22.83:30303?discport=30301",
+        "stake": 45,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://KoJDjArbOHPtk2CnSU5tNA4-yJA=@96.75.31.5:30303?discport=30301",
+        "stake": 87,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://dD5CTODfpgG-T4QRgJMSAFhA8p4=@90.28.61.97:30303?discport=30301",
+        "stake": 9,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://PmGHLa-RggYfViXeBazX2PWccFo=@1.35.44.95:30303?discport=30301",
+        "stake": 68,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://PoYVQ-5gIGzU_Bty0V2ubamQBvU=@28.19.14.95:30303?discport=30301",
+        "stake": 19,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://6_x-biL7WLK_ykicSA-w7ZduAEY=@92.81.70.98:30303?discport=30301",
+        "stake": 33,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MP9MhhBoFL64loidCOH6L0lLYUs=@29.76.43.93:30303?discport=30301",
+        "stake": 6,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Bsd38B3oAiOw_5DUzux2sXpRyj4=@15.68.93.63:30303?discport=30301",
+        "stake": 38,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://uWpn6tuJhgIBo9uxnbFI2Ez0a64=@29.11.90.21:30303?discport=30301",
+        "stake": 58,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://RIXsynHvOJaAeGrC8sMvLCPVNK8=@44.48.89.76:30303?discport=30301",
+        "stake": 18,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://O80J-vsRurxAHsH2Pi1h6RuYvcs=@18.41.78.35:30303?discport=30301",
+        "stake": 30,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://1RlrUs5VItknCTjscyRSOF9xuw8=@84.97.66.83:30303?discport=30301",
+        "stake": 96,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://B-8vFT6kJjnGjySI3ghTuVs5ACQ=@84.56.8.28:30303?discport=30301",
+        "stake": 50,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://HsVfP3Hd9Whyo6gswrastsihKbA=@28.36.54.71:30303?discport=30301",
+        "stake": 4,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nm4bvavpWKFW2L0eFl7re7ROeyk=@80.67.3.97:30303?discport=30301",
+        "stake": 6,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CPXB--WPFUVNHavE7SXr1Yk2aig=@46.71.47.67:30303?discport=30301",
+        "stake": 21,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Okmq62lJU1VTePCXLVua1bI_3PI=@40.80.81.1:30303?discport=30301",
+        "stake": 93,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DGBH7lu2m_KLTZ7vriLaVblFSkg=@72.54.93.2:30303?discport=30301",
+        "stake": 0,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://U_LdUI98umo8kniEqILHwUG9Ko8=@31.0.90.98:30303?discport=30301",
+        "stake": 70,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://jcYurjRfu3FFcLPb-oZrzfFw6j8=@23.10.16.72:30303?discport=30301",
+        "stake": 85,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://qaO3GN1kbPIyHkVLOKwdMo7Qhww=@83.99.74.39:30303?discport=30301",
+        "stake": 10,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://P_bNnez_j68rJTalo7UDdQ0rvic=@20.2.36.51:30303?discport=30301",
+        "stake": 39,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://770q9RGzoOOdMe8s11cg80RDl30=@47.69.42.37:30303?discport=30301",
+        "stake": 79,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://zsY2EXQOsP2S_yOWVO_7KAqtlBI=@21.54.21.38:30303?discport=30301",
+        "stake": 10,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://u5KBAh6nycFOEvyfNYHLVYlNq4k=@78.51.86.59:30303?discport=30301",
+        "stake": 64,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://m2ho1XbLeKpy5O1ROsg0eTgpVAE=@33.93.30.44:30303?discport=30301",
+        "stake": 22,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://hKXvVul-FndnGi-iHd4B9ixdpf4=@74.6.56.48:30303?discport=30301",
+        "stake": 0,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://lX7c3d6xd906zPLMmY1jL2CWf1E=@95.46.8.11:30303?discport=30301",
+        "stake": 76,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://SnDAtRvi1NinvMpVjiDx5xPhm-M=@34.45.23.13:30303?discport=30301",
+        "stake": 80,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://YJ46yqX_JXF1kTWT1UCsV0z0m_w=@41.75.61.46:30303?discport=30301",
+        "stake": 35,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://h8noelywFJaeXtDE6qUmvNnvQtA=@44.90.82.86:30303?discport=30301",
+        "stake": 63,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://fNEUCNnhiYBTOMMrJNtJ_G_HaTA=@11.48.87.59:30303?discport=30301",
+        "stake": 94,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://6xsv-t87sLXssyDnJBJo6BFcGtg=@41.40.69.9:30303?discport=30301",
+        "stake": 53,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://vGs-w0XEx4jJVeIE6DOb-1TiNII=@61.98.60.1:30303?discport=30301",
+        "stake": 85,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://I1XxUg2YEIfSwQ0t7vHx0o-YWVk=@76.74.29.67:30303?discport=30301",
+        "stake": 3,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://bCbVii7SXcbi2jW_5q-UoKouXug=@89.83.81.63:30303?discport=30301",
+        "stake": 91,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_Mu49pk1G6XXPhHpU9DjEwxRpDE=@61.73.71.8:30303?discport=30301",
+        "stake": 22,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://RF3lTZyS6cCedsjKOxidtrnRePo=@51.6.41.84:30303?discport=30301",
+        "stake": 92,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ooYhIhlmHME9mm-36lteev81NhU=@62.0.29.62:30303?discport=30301",
+        "stake": 8,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://oaL8hWwYR6pA4mCEnytOGQtaJ7g=@34.14.48.87:30303?discport=30301",
+        "stake": 79,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://WG1BK4nsc_V5cnDwwGcJAOstld0=@54.39.84.20:30303?discport=30301",
+        "stake": 28,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://rwBr5DGC3Qq6AP5P1yMNvDdXJF8=@88.19.71.13:30303?discport=30301",
+        "stake": 40,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wmnDvouOpv1U8qt6zbQzavXWC-w=@42.66.5.31:30303?discport=30301",
+        "stake": 22,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://sTrPdzwWKnK7PCODYEe5anxo71A=@71.10.20.80:30303?discport=30301",
+        "stake": 49,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://aeOR62y8yGrHWRKZrDfp--BRYpI=@73.97.76.20:30303?discport=30301",
+        "stake": 44,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://E0iv_EpwxprCjMtwAG0QkdIzvTA=@54.51.8.70:30303?discport=30301",
+        "stake": 19,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://OWr6cu6rds9P4qIPwdt_DTS_yCU=@96.17.41.95:30303?discport=30301",
+        "stake": 72,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7_GQju0Aoxbra1hwfW3up0b8apc=@19.84.37.15:30303?discport=30301",
+        "stake": 61,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://0itmn5D7N5gdymH1qNzp7rDHkgw=@34.40.72.88:30303?discport=30301",
+        "stake": 9,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://9hCuvn-7Qv4txi7t1_T6r_C1fGc=@44.68.87.2:30303?discport=30301",
+        "stake": 42,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://JzIN544xlRnYUdmCxoxRTxHQack=@10.2.48.88:30303?discport=30301",
+        "stake": 94,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://NcrxpD6072M037M6y5eDP-7O-rU=@16.27.25.2:30303?discport=30301",
+        "stake": 85,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://u7ZHcayPCOvLAJtZGYnN31b-ON0=@45.39.89.42:30303?discport=30301",
+        "stake": 34,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://tcIMaCTLlHwv3JhX3SWeewgUljU=@0.33.23.11:30303?discport=30301",
+        "stake": 98,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://cEp7y-mxk_aAhg696eEjh8camt4=@52.6.69.72:30303?discport=30301",
+        "stake": 54,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://PzT0aZ1yYfEuu_zmdcTIFHz3hXM=@35.50.28.77:30303?discport=30301",
+        "stake": 51,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Ja0GvYkZaPmXFIYD1vMA4VsUl2M=@60.89.52.50:30303?discport=30301",
+        "stake": 20,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://EhHPgYD4HuWnn2gz_RZGSzAN4zM=@43.34.20.68:30303?discport=30301",
+        "stake": 8,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7O-Bs6jZUNiG8SvEjV7RAq6ZZKc=@47.20.38.69:30303?discport=30301",
+        "stake": 59,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://f_jSwBgH9npkRHWjRUOwKrFGcn4=@65.14.20.31:30303?discport=30301",
+        "stake": 63,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://a8lnwO1ca5y3T3GKhymF7DiLUjM=@38.99.99.70:30303?discport=30301",
+        "stake": 93,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ZmwB2QijyGONNeMmaURYo9jKAtc=@13.77.67.27:30303?discport=30301",
+        "stake": 65,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_Cq_DyBeVnUoIBj_lQTTIQtlS_I=@9.95.74.75:30303?discport=30301",
+        "stake": 51,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://X47EoRUfaD7cpGXOsNW8F0t2uNQ=@87.11.65.94:30303?discport=30301",
+        "stake": 67,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xDox4TXo6WNlYDZCe9jFpC0ltkw=@23.52.5.56:30303?discport=30301",
+        "stake": 21,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5M_zwA1etfWMjJ1-IqGtFJ-gEVA=@43.4.31.7:30303?discport=30301",
+        "stake": 4,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://jjbunuNpU9mx8AVkAAlg6BwPSZ4=@40.21.0.57:30303?discport=30301",
+        "stake": 38,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://e91ohhhv7qPjpwvGO46om8b8blM=@7.87.38.94:30303?discport=30301",
+        "stake": 36,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://bmQGsXXL2den2GgWJJoQRdA3dvY=@11.42.42.82:30303?discport=30301",
+        "stake": 27,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://46_f2U4gWq4PlN9sQdJtGkepYbg=@14.19.34.33:30303?discport=30301",
+        "stake": 30,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DNA7kFYbor2UxdmIWP54Il_Za_U=@6.94.15.49:30303?discport=30301",
+        "stake": 44,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://o6M1Xl1Ccs5BlXUBgQiVHqwrasI=@27.34.87.20:30303?discport=30301",
+        "stake": 70,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://zPbE3-LImL49sNB4gL9fdyX19lg=@38.49.55.90:30303?discport=30301",
+        "stake": 95,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://a2n0GjFl5yZgWO2h0ExAnP9Xi2M=@98.85.73.25:30303?discport=30301",
+        "stake": 25,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DdkJpqvp1BpmRxYz-Lg3XY4-kR0=@29.53.55.5:30303?discport=30301",
+        "stake": 7,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Vys_HmPDSYrO6LSOIvgM7IyOCfQ=@33.73.49.39:30303?discport=30301",
+        "stake": 67,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4zpqAxBzs1AoD_93Eq3bZ26eGf0=@70.11.56.77:30303?discport=30301",
+        "stake": 48,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7jkO8XGoWBmm0pF6Y72cm1ST8KU=@23.56.41.32:30303?discport=30301",
+        "stake": 40,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4rndG0cV7l8Kl6agzud5L4GMU7Q=@90.87.17.12:30303?discport=30301",
+        "stake": 66,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://fYTNvyEhpE87oSMP7ngqlpLTFf4=@53.15.48.55:30303?discport=30301",
+        "stake": 78,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wrlimKyQAd4tC6QbdiQAwy2HNes=@50.45.83.38:30303?discport=30301",
+        "stake": 96,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://WnTH5BKaOUGEBBXkSUqIZrRmJ1g=@94.44.82.57:30303?discport=30301",
+        "stake": 15,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://lbryY9pCtRJ2uOoMjZXoI7npzWQ=@4.14.86.55:30303?discport=30301",
+        "stake": 86,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://bbKLWqheVWpL2jl07A-opJGbRDg=@84.67.78.44:30303?discport=30301",
+        "stake": 11,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://q6uhjZJBE_0tSIY9WIeRjsol57I=@80.73.3.32:30303?discport=30301",
+        "stake": 79,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://zPLQQMzAxnkCTIdLIH0qchgylvk=@32.14.51.52:30303?discport=30301",
+        "stake": 76,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5I55NKsV0xq7uAaNaEMrtzA4O0U=@75.50.23.84:30303?discport=30301",
+        "stake": 16,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://1o8VcfS_mgpzTIHj7Oz8dJN31FI=@68.87.57.95:30303?discport=30301",
+        "stake": 49,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://BiCa_NNYIcEwItu58xhwk7Ie2Vg=@0.50.96.56:30303?discport=30301",
+        "stake": 63,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ytav3d5Aib_2ts1ib3fdTbQiwxM=@34.36.24.43:30303?discport=30301",
+        "stake": 51,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DCHpDwLx-VgODJ7M5_8jMrFzxi8=@64.25.4.68:30303?discport=30301",
+        "stake": 16,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://g2A_I-M1EcSiaYq-xRgmGonjp7o=@2.56.0.9:30303?discport=30301",
+        "stake": 4,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ngaRRfE0PJ-DKGweQszEbMHE7_M=@46.63.24.29:30303?discport=30301",
+        "stake": 53,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://saPkDOc1WmywVYW5KIUxWsPG7gg=@62.60.67.28:30303?discport=30301",
+        "stake": 6,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nkeldBty7DQLXzLhCBK6dubdn7c=@59.66.25.94:30303?discport=30301",
+        "stake": 48,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://t8h9lnazs9R58adwX8dqF9CNy9Q=@90.15.4.1:30303?discport=30301",
+        "stake": 60,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://8gu1NksXohNdp8EyJ73-xB4o1gQ=@27.79.1.66:30303?discport=30301",
+        "stake": 6,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://dElN4bxE1Smk08xAw0u2AhxdP3k=@16.62.95.61:30303?discport=30301",
+        "stake": 83,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xBgAGIyx9Of1mdQX_oDfio9PvBQ=@61.65.61.73:30303?discport=30301",
+        "stake": 7,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://9P-dHd8Fzny-jw2v4SKpIzOZthA=@25.75.24.13:30303?discport=30301",
+        "stake": 10,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://62YZUhgp4uleNiiR8qnij79LPGk=@51.29.60.1:30303?discport=30301",
+        "stake": 64,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://vvlwCO3No6x_JqryyEX4jqCVo6k=@56.72.49.37:30303?discport=30301",
+        "stake": 54,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://AOJLX1apQ9pvTORd7NIxv-zNSgY=@46.89.64.2:30303?discport=30301",
+        "stake": 38,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://k49HFIO5TpyRFTGAKtMJB_pQLE0=@76.52.7.70:30303?discport=30301",
+        "stake": 68,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://B3qSY-0Ae1G4hAtnM-7DiUgliWM=@92.37.19.67:30303?discport=30301",
+        "stake": 62,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://n5UsG69ED_DTZMeY_KzLGCyM7rc=@39.73.13.28:30303?discport=30301",
+        "stake": 4,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://GGd0Elu5Ol1Ecq8AXfdZbBiPK-k=@95.49.71.7:30303?discport=30301",
+        "stake": 64,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://1cQN5JxzSlmG92GlVLBmxVoLX98=@20.26.27.10:30303?discport=30301",
+        "stake": 42,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://rUgW7vFMEtD99HQMVrvRqtxXGHg=@86.70.28.49:30303?discport=30301",
+        "stake": 0,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CJUJq0dEyKATfiMVkFjCN7QPO94=@3.39.21.47:30303?discport=30301",
+        "stake": 62,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://KazqlLknmULCMBdwEsh60u49hoA=@53.39.63.17:30303?discport=30301",
+        "stake": 88,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2qZiTD4_ZculjtRwV77GTTeGNrU=@37.48.28.14:30303?discport=30301",
+        "stake": 36,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://a2lzeZb5_qUujXpf5eS1AB_QL0o=@7.44.27.85:30303?discport=30301",
+        "stake": 12,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4W5Gg_QQu2zzMxQd87A3ASRdOO0=@37.86.88.54:30303?discport=30301",
+        "stake": 0,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CSlVVT6xbKavtbP4fb8rlTRzWnM=@51.54.94.33:30303?discport=30301",
+        "stake": 3,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://RQzkhgAQxmP9ME0ldNzXrF--_88=@87.68.49.97:30303?discport=30301",
+        "stake": 9,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://F2a7F5Px5WnV0oIinvCnsx8v2gE=@20.68.67.76:30303?discport=30301",
+        "stake": 72,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://XMmiaH9BRkOj90J2_0ra9KfoJFU=@72.18.5.91:30303?discport=30301",
+        "stake": 81,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://j-2L84TWEpPAXHoq53AjGTE6haI=@87.48.20.9:30303?discport=30301",
+        "stake": 3,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xGIwbvdPukDx3DbrtMiAAlRa7Ww=@56.42.30.45:30303?discport=30301",
+        "stake": 68,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Pkxkol9-MBmkDnD0dgzKfVK7Nb0=@2.62.97.81:30303?discport=30301",
+        "stake": 81,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_gcKhgTUUX8G8LRXZ9D9ieXYpV8=@58.68.8.96:30303?discport=30301",
+        "stake": 7,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://1UoxmWqpZUeUJGDk6huLIgb9HNw=@24.82.1.41:30303?discport=30301",
+        "stake": 16,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4qGtzIj_LFeceIhScw2OwhOxu6k=@47.12.63.93:30303?discport=30301",
+        "stake": 32,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ECC09a3Q_tayEaQQggse47XKKzk=@17.43.83.44:30303?discport=30301",
+        "stake": 59,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://-z_CJCCtwLzUPjDS-Chb_QVKWEQ=@10.62.8.25:30303?discport=30301",
+        "stake": 9,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://I81wF1P7XwNaA5zEmngEMTDEnrA=@70.89.53.10:30303?discport=30301",
+        "stake": 96,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://S2gr7FC8ChZud7xR5MUVnCtEq58=@44.38.13.90:30303?discport=30301",
+        "stake": 69,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DOOsqLAoViImUtW3E_d0zhnDbaU=@36.83.19.12:30303?discport=30301",
+        "stake": 89,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4zwvYFWwXLg1u_UpD8sjUBY4sbA=@25.47.70.45:30303?discport=30301",
+        "stake": 6,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://eaWWcx4i7Fbc8kz6NCTNkCu_clM=@14.29.17.6:30303?discport=30301",
+        "stake": 33,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wXngzINerKdBPYvIkmbI3iVvAI4=@85.73.27.19:30303?discport=30301",
+        "stake": 71,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ejp2WrRxeOw14D4ByF1hTymtt-A=@14.8.58.68:30303?discport=30301",
+        "stake": 63,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://GG9pVrJnC2DVAIXb27PZq1MWsUA=@75.9.69.33:30303?discport=30301",
+        "stake": 38,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://IXN_Gsv4T5L1Wv6VqAda0bi_92U=@86.16.9.72:30303?discport=30301",
+        "stake": 36,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://JR7zM65DH5NWF_7ZE05623q1-EE=@15.39.69.74:30303?discport=30301",
+        "stake": 91,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4OY__t75Z2Ao6qqOD26duR94820=@90.84.80.62:30303?discport=30301",
+        "stake": 67,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://TTZsJv6qeA191qVjikXyARjzjBg=@89.76.42.74:30303?discport=30301",
+        "stake": 95,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://JQBAxKTGeqdvmlobuNXqX2TcA8o=@76.87.72.46:30303?discport=30301",
+        "stake": 14,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CFHlUTZYWczrznk27theWaGxsMA=@40.88.95.88:30303?discport=30301",
+        "stake": 96,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MHvTaVJn_nCBIqnhHdNpv73RSiw=@14.49.21.70:30303?discport=30301",
+        "stake": 58,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://XjzJL1Cedt06muGDu4FfzqUhHts=@3.45.8.98:30303?discport=30301",
+        "stake": 36,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://j50zYx1LBILVJQVcqTIrJ32kJEQ=@70.23.26.51:30303?discport=30301",
+        "stake": 9,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://lc9haDQDbiZQ0DStN5OKbFNzC0s=@30.78.25.97:30303?discport=30301",
+        "stake": 84,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://agDHXRtI3H4BXw9ABrfpWmJiyb8=@31.95.98.47:30303?discport=30301",
+        "stake": 96,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Z8ny7Cm1dl34jk52VzBRXs5y94U=@77.32.44.52:30303?discport=30301",
+        "stake": 11,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_ny4yH4ISJfQkn3-0TEhAYKzKek=@72.74.24.11:30303?discport=30301",
+        "stake": 48,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://iEpoYWcd1-Oz34XPObHqBIRfnEA=@34.34.95.66:30303?discport=30301",
+        "stake": 18,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CKVuN2TEArUXw6fk5Ztez4NSMV0=@98.63.89.91:30303?discport=30301",
+        "stake": 7,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Uy01qamkiZRM4Q9OACy_rQbLXLc=@75.68.0.85:30303?discport=30301",
+        "stake": 88,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://aZr39qWvalYDdcMuB-AVb3DWxyA=@93.93.78.9:30303?discport=30301",
+        "stake": 51,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://c1j4v3rf20hzPQqetsxwrlQR8-U=@28.7.33.95:30303?discport=30301",
+        "stake": 13,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://IEyIOFHChycAYI6flfiHSs-B8Yc=@90.74.20.57:30303?discport=30301",
+        "stake": 31,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MrcFpmQJ8RYsrZGX38bkouF81zE=@31.86.81.36:30303?discport=30301",
+        "stake": 25,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MllelH_GwP5qZO-daNqmkMvkaRc=@17.31.50.5:30303?discport=30301",
+        "stake": 27,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DSp-cog_1bo84AE5oA9z2WvXzck=@39.1.10.84:30303?discport=30301",
+        "stake": 75,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://qCe9piU4KuWv0Mvkos7f6-moZLE=@29.57.20.31:30303?discport=30301",
+        "stake": 71,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://8va4kRkdgd8bTLOECs3QMDT1QYw=@78.37.24.82:30303?discport=30301",
+        "stake": 32,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://-4FPdsGPhXakI5ejaL-6JuaWYyE=@25.70.75.86:30303?discport=30301",
+        "stake": 29,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://vNp-uqCEEKi2uiU0pqP5zOY30NA=@41.10.62.98:30303?discport=30301",
+        "stake": 29,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CAbAJUsN_6_bn5Cvp_2eyxDporY=@93.68.21.18:30303?discport=30301",
+        "stake": 2,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_0FqwMnxnxcJc-OrkZ1fjpMjAvU=@69.8.35.85:30303?discport=30301",
+        "stake": 24,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://GxiXEdGFeAZcbvE-r5VYY80jUB4=@13.76.83.8:30303?discport=30301",
+        "stake": 60,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://jUGkI4t4zee1VEZ7e__1jQrg8Xg=@94.67.14.43:30303?discport=30301",
+        "stake": 55,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Q3dzTjky8VooqV3W2YUttP9CrFY=@64.89.25.95:30303?discport=30301",
+        "stake": 63,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://vyhvM0Jpj9dadpss-kn1yRuMMrE=@87.22.63.96:30303?discport=30301",
+        "stake": 71,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://LS14dpwB0MPh8aiqnWasQ0b3yOM=@97.45.0.52:30303?discport=30301",
+        "stake": 24,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://RcLarUDOcLcr-AJrYAOv6EAEn_8=@6.17.16.34:30303?discport=30301",
+        "stake": 41,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://pd3A2ABIhF_JszMNqC0M6YIKQDk=@94.99.84.25:30303?discport=30301",
+        "stake": 87,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://KR9L8mIcyPJaT3PVfrj4kxia8N8=@15.66.27.76:30303?discport=30301",
+        "stake": 30,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://77v_TOwaJ1L5KZnNBN1Dq35dluE=@59.76.65.6:30303?discport=30301",
+        "stake": 21,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://hQTLTC2GqIXMAK-0O4t69tEKAQQ=@53.67.48.82:30303?discport=30301",
+        "stake": 49,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://FV1D_h6tj-9GQmvTy-xbEubN4xg=@38.63.9.91:30303?discport=30301",
+        "stake": 59,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://8hJbHj2u8B1G-YJLG-SUW1296uc=@87.7.45.93:30303?discport=30301",
+        "stake": 72,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://qvtGKbfbxvy3zWT6hkK4P6ON5pE=@0.6.24.49:30303?discport=30301",
+        "stake": 38,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7zRICraAjC-XRutbplmvaGRysgU=@59.1.49.34:30303?discport=30301",
+        "stake": 93,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CfP-qfBcg696FdqK43AMyozx5xw=@46.5.18.8:30303?discport=30301",
+        "stake": 27,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://GmDANPS7drn1lncp-fmuPN9niwc=@63.10.9.97:30303?discport=30301",
+        "stake": 75,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://52RNKktql6K9-M2Y4c0fFQFI67Q=@50.92.82.42:30303?discport=30301",
+        "stake": 63,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://R5TNVBUTX4dgIk4wyS8C5A8RTho=@89.88.85.60:30303?discport=30301",
+        "stake": 14,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xWaBrC05yqmcfO-ZbSfA-Rk40YQ=@79.93.21.34:30303?discport=30301",
+        "stake": 48,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://sM9fvJokQ-7pAz2w-vk6u68C0Mg=@29.26.15.29:30303?discport=30301",
+        "stake": 34,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://3xKjHegEp2zb9Ig-9J4PW5YiPfc=@61.11.40.50:30303?discport=30301",
+        "stake": 55,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://jOsSqZi6rJAThSIH3XWtpu_sJ_A=@80.74.27.30:30303?discport=30301",
+        "stake": 85,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://jGa_khkAky5QyHpykdciDzuj0fk=@42.25.71.45:30303?discport=30301",
+        "stake": 17,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://psxDqBB7pO5KYU_zW5X8kJjUzSQ=@78.70.1.40:30303?discport=30301",
+        "stake": 77,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ii9WTC_0kauGaLg7zk8s0QgiDeo=@36.91.28.82:30303?discport=30301",
+        "stake": 4,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://yp1RsURuurJ8i-KEMZ8yODdKFC4=@56.51.35.78:30303?discport=30301",
+        "stake": 13,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DjgNWyNj7jUabPkh0wh7mUHpykg=@43.76.21.15:30303?discport=30301",
+        "stake": 26,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://rbRSpsE3xiMagaKb-IwfOjFb0_w=@55.74.36.75:30303?discport=30301",
+        "stake": 2,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://vAg5aWmvjmuIC_8luTcE4L7TF20=@51.8.80.41:30303?discport=30301",
+        "stake": 27,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4qkeILbDUMpV97pSNkCUlqI5TaE=@56.24.38.58:30303?discport=30301",
+        "stake": 44,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_ZgzuJmzhmrS1rKDOe2QaUrAR94=@16.67.74.56:30303?discport=30301",
+        "stake": 40,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://IMXAu8OnuHPGfakrW7g_5sCiSmk=@39.2.79.61:30303?discport=30301",
+        "stake": 86,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://9zX9r9OPffc-S1ZjAwMHtLDCpms=@57.22.7.47:30303?discport=30301",
+        "stake": 63,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://B-IhoTWNrUelymPzMZvjKSaKRY8=@7.56.86.86:30303?discport=30301",
+        "stake": 32,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_rviYizJJP2PWoaheM2t6Whp6zA=@47.30.60.26:30303?discport=30301",
+        "stake": 89,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Mq_u8RYanEKGo7-DrZC5EHKGZsc=@49.75.14.69:30303?discport=30301",
+        "stake": 15,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://WnNwp-DylKjf1BUQhq5F4BfzbQo=@28.47.53.63:30303?discport=30301",
+        "stake": 29,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://XrkLV_Q0bho5N2dmQH6Y9t2E0LE=@34.62.20.60:30303?discport=30301",
+        "stake": 44,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ca2LwCWYqjdSKpQ1zznD5agdQEk=@66.69.21.47:30303?discport=30301",
+        "stake": 15,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://KI6S2JAk0thf5fJXz-EYujLAs3Q=@58.1.73.70:30303?discport=30301",
+        "stake": 49,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://YsnQL97WGUes_ZSAmDq7AFjqLd0=@57.75.75.43:30303?discport=30301",
+        "stake": 67,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5bJXchYS2Jt8nx7UqCDk1-4p2vY=@32.95.49.28:30303?discport=30301",
+        "stake": 45,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://BU1e8V-e8E-lKA45rQyIC4jZkZw=@65.67.97.22:30303?discport=30301",
+        "stake": 71,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ASQu_vs2QqQAXsaC2v3F_6Tqvdw=@24.95.5.45:30303?discport=30301",
+        "stake": 56,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nedXDSP7fgo0yPQ59E-VqkytGR0=@60.13.74.83:30303?discport=30301",
+        "stake": 83,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://M5cuIdFix-mBUDh_vkkGuQRyB6M=@38.8.34.95:30303?discport=30301",
+        "stake": 42,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xlLmGF969BQ8eVNZcWCRQPE8SRM=@32.64.93.75:30303?discport=30301",
+        "stake": 66,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://NjAoZ3jTA3oEqHHdV0uCzcKmZac=@3.66.16.43:30303?discport=30301",
+        "stake": 88,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://TWha6YCMaYd6n4GRve2ov3lV644=@63.68.99.29:30303?discport=30301",
+        "stake": 65,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://qfxewyzcHhncEZo5xFORYEeMa1E=@67.70.82.78:30303?discport=30301",
+        "stake": 18,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://jN4XA0eG1an8ZkYFpSKuqQV5z1U=@27.3.71.44:30303?discport=30301",
+        "stake": 99,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://L_NKp9mlWeDd_Sf51oxmGxn3-l8=@40.41.91.2:30303?discport=30301",
+        "stake": 49,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://9GWqcrkQsYxok_VKaFDXkBTA91s=@80.54.50.18:30303?discport=30301",
+        "stake": 99,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nnmM9Z-fJLoMybpVP6pWZ1Rusv4=@45.7.28.21:30303?discport=30301",
+        "stake": 51,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://PRQvQ92s_OkU1MFH_-0T9vkDdMA=@90.10.82.5:30303?discport=30301",
+        "stake": 87,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Yh6xM6WgHVvYTeZ6Ijp6TD1jgdY=@21.94.39.22:30303?discport=30301",
+        "stake": 49,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wJMNNqZ0OOBa54Z80RXfa-evqVk=@98.98.91.33:30303?discport=30301",
+        "stake": 0,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5pL9nJxU9V7qhmNNn_XLZYja4us=@88.19.70.31:30303?discport=30301",
+        "stake": 84,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wPoQL1X2HLW-4nLW2A7DOy7tgi8=@6.4.83.69:30303?discport=30301",
+        "stake": 65,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://KVAiHo9FaAaLRlwcMx3yJEHKaFc=@5.60.30.30:30303?discport=30301",
+        "stake": 0,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://44AI0BSfLXOvK6QtTWrqs2qOG-0=@52.40.32.97:30303?discport=30301",
+        "stake": 88,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://JCWw3tEhlA9RMafK6Ntc6lpiCsM=@85.99.69.41:30303?discport=30301",
+        "stake": 98,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://lOR0hqbRDmL-4YGwepO1gcG5HGk=@60.92.37.72:30303?discport=30301",
+        "stake": 75,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5IoH7JGlX-ZyYOJHpXjV6sgsulY=@29.35.60.35:30303?discport=30301",
+        "stake": 18,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://dh78ZB0LDaYcDffHx2JcjIU0MBg=@38.50.15.62:30303?discport=30301",
+        "stake": 4,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://PruhwynqNaOeWZg7oiyW6ogcdYI=@9.40.35.84:30303?discport=30301",
+        "stake": 76,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://LSmKEq6tJV1FLouXxi3zNvtoDX8=@72.27.29.33:30303?discport=30301",
+        "stake": 40,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2SLy_pjwM8or00NRZBbAxcMwBhQ=@88.19.9.18:30303?discport=30301",
+        "stake": 78,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://IOFYxtje_mnB4JnygdQ166MNaQU=@40.4.75.21:30303?discport=30301",
+        "stake": 49,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://U14aYkARdY-eIrbNPiFz28j50jE=@32.34.81.42:30303?discport=30301",
+        "stake": 37,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://pQiJQrJ9BsjHJb1w6qJGv422g4Y=@45.49.98.13:30303?discport=30301",
+        "stake": 37,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://zsOKhpTGwBWPgvTiXu7ysc_9w7M=@83.27.79.82:30303?discport=30301",
+        "stake": 63,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://3LKchB2l_zef6HzSUWKBWNgyjmU=@54.99.17.0:30303?discport=30301",
+        "stake": 74,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5X7Ky_LsT-3YaoAT1FAxt3_xYaw=@6.60.87.18:30303?discport=30301",
+        "stake": 47,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://B2iI36rfc_BZlVJ_7rYbAUN_XwE=@48.38.91.69:30303?discport=30301",
+        "stake": 0,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://kwEr_6MYlWle4lwM1LyK8yRCho0=@18.84.22.49:30303?discport=30301",
+        "stake": 12,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7SXxPwPyuu7YxVaLoOH3PRsTe3I=@66.54.52.88:30303?discport=30301",
+        "stake": 49,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Ixa5uDrlbqVj6ht7JP0NzL2Qqy8=@39.55.70.27:30303?discport=30301",
+        "stake": 47,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://3t7Kc0SxyEBY5khxXfVI3ZM94iE=@27.32.38.7:30303?discport=30301",
+        "stake": 97,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://67qM4LeYfTD4HFfaru89dCLBliQ=@70.20.44.22:30303?discport=30301",
+        "stake": 64,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Alp25Q2i5ZY05qGMxAXl7Kh4URk=@37.56.53.26:30303?discport=30301",
+        "stake": 14,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://vQGfG82jl7zSOO7PbfRplf6V_60=@93.87.4.69:30303?discport=30301",
+        "stake": 39,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://OedJfmTvJX_cgOY5c8jJGNsg_Jo=@53.43.34.39:30303?discport=30301",
+        "stake": 48,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://DW82WXd0Hg3UlEnaGVjEDrpIrzw=@89.93.74.50:30303?discport=30301",
+        "stake": 78,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://GASk5mZidPT2w7AiDYis2bn5HJ4=@25.31.65.93:30303?discport=30301",
+        "stake": 36,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://EYHT6tjdorSfshNFLtU8h4sLP-Q=@53.64.79.76:30303?discport=30301",
+        "stake": 23,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://55_0rc8_DGiT0BdWBmQptQ630zY=@58.84.2.71:30303?discport=30301",
+        "stake": 57,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://m6BsJlfi9wwbsFXbO4FEEdoW6kI=@92.2.54.17:30303?discport=30301",
+        "stake": 50,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://K_nCaQAmUPokNb10selHOPNTi50=@33.70.24.71:30303?discport=30301",
+        "stake": 13,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://i4sVV7PjqOfYuPRUwdYuIz7cqCY=@11.78.96.79:30303?discport=30301",
+        "stake": 70,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://YEGtjASpacx50ETjJ1v_WgeZQHM=@89.32.26.40:30303?discport=30301",
+        "stake": 56,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://tQzubmKivI_foCdNMeQK_woyGmQ=@80.82.67.80:30303?discport=30301",
+        "stake": 86,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MNTPi8UXopBvYmmtmVAcX2NdNkU=@26.96.15.17:30303?discport=30301",
+        "stake": 26,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://HF6-ReIzeqb7Ix04uFn6gCUvxOo=@73.31.20.48:30303?discport=30301",
+        "stake": 13,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7wXrIVuWlQlkFLALVEmt1s1pRPg=@47.90.12.25:30303?discport=30301",
+        "stake": 11,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://9mfVlMrw50YpP5vdIy-Slw-8ytQ=@65.87.11.92:30303?discport=30301",
+        "stake": 54,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://A7_LRA8zTxJ930z0WH5e41BOQTM=@88.64.60.90:30303?discport=30301",
+        "stake": 74,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://0YQdmFXBjEBG8oLpQOaU8_TYb1I=@18.70.93.2:30303?discport=30301",
+        "stake": 80,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://aitdFQ3Z_OxDYZ0l425VrfZAdiw=@40.96.20.45:30303?discport=30301",
+        "stake": 89,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://7B8ZTUTFiKxmpHdW_9eYqfFNs1E=@26.94.77.6:30303?discport=30301",
+        "stake": 13,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://9sIfWF1NEDZ_88iqmwhQpfXso1g=@21.88.86.22:30303?discport=30301",
+        "stake": 82,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wSU--DUhj1tMSG9tfzF1KPWA3Rk=@24.7.50.98:30303?discport=30301",
+        "stake": 60,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://0jMdHlBm9XFkjev8PgGgtuWe5yE=@95.58.83.22:30303?discport=30301",
+        "stake": 98,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://kTsjszIs4KeLvjFfYH8xSkYLRMY=@53.20.83.0:30303?discport=30301",
+        "stake": 88,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://AeUjt8pnSbRRmzBTec3CbDY1v3Q=@25.73.2.15:30303?discport=30301",
+        "stake": 12,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://a1dTa4HDxu6ndbpdIX4yJ7Q0Y34=@43.94.51.9:30303?discport=30301",
+        "stake": 18,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://sFJYgaXYLhpIK4WcKExpPJWFEl4=@6.74.81.58:30303?discport=30301",
+        "stake": 79,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://80I9M7IxLDpKje9laqLSKeJQM0k=@98.76.75.15:30303?discport=30301",
+        "stake": 21,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://T7PsI-UMZVjWhpMWKqhC0_ubEwU=@91.0.90.16:30303?discport=30301",
+        "stake": 79,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://VHjYhUeQtO8bRY-nnEXaPWug1mo=@61.59.64.61:30303?discport=30301",
+        "stake": 47,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://yLcQVNO5SizfffeA_riR78Q_9cI=@30.3.90.71:30303?discport=30301",
+        "stake": 71,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://VM7wgFuyqv5-dXijCFOVcVnkj60=@93.37.44.92:30303?discport=30301",
+        "stake": 6,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://10EPWn5u2l4u-Jh7lRIAjWIbWbo=@8.10.4.95:30303?discport=30301",
+        "stake": 43,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://F_rhahuC8pONK8y4xG-jN6Gfc8g=@18.77.71.23:30303?discport=30301",
+        "stake": 10,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MfQPaw5CXHyGbl61lUgiQPXjhhQ=@51.75.89.26:30303?discport=30301",
+        "stake": 77,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://kvJqDX7h2MHl1VBPEV4SmLMsh0c=@97.84.50.36:30303?discport=30301",
+        "stake": 17,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Ao7gaha7I9SklhCKBOAK6E4LNz8=@55.36.78.18:30303?discport=30301",
+        "stake": 13,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://sWWsJR_KkdQULDJ-ekG1D0nWFE4=@26.96.83.77:30303?discport=30301",
+        "stake": 56,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://EskanPtJXJHNW-e2i0u7ijzkNzE=@34.4.12.91:30303?discport=30301",
+        "stake": 17,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://cCeYPFBKtCI_kflr15AVwV-cEm4=@67.26.33.52:30303?discport=30301",
+        "stake": 76,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://y67luMukNGccx9142XBmp5_s20w=@26.27.64.50:30303?discport=30301",
+        "stake": 35,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nlQEC1bMcFugn_BaU_si_C-t1sk=@73.90.88.43:30303?discport=30301",
+        "stake": 69,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CD2qeSWkmZxuWGxN1hMXH1jZQCo=@88.97.21.96:30303?discport=30301",
+        "stake": 28,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://OQW8yCECTnVmmcx9u_wlvEyTKuw=@45.87.2.2:30303?discport=30301",
+        "stake": 66,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://SeNEWFAj6ngs4AXbeIJPdq6PBm8=@52.52.45.99:30303?discport=30301",
+        "stake": 33,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://NXd8IexN0HXdY7phX8TzCapeDmo=@75.15.60.62:30303?discport=30301",
+        "stake": 48,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2R4hYHfFTckBRcAeqGOpynHAabs=@59.28.33.77:30303?discport=30301",
+        "stake": 52,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://cv0mxrEjSf3FlDHoefZaY5JLeR0=@73.7.41.56:30303?discport=30301",
+        "stake": 5,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://0fCSuU0qEJuh3h6l_gdr8101rMw=@38.8.99.45:30303?discport=30301",
+        "stake": 28,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://kPoqyy_53s9nT9N0KRfJkvbjPdY=@39.99.97.65:30303?discport=30301",
+        "stake": 22,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nM-Dd8Jt3elqqIs5VBjkE_YK1F8=@39.19.3.12:30303?discport=30301",
+        "stake": 82,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Y_UIRolEY9V5KJUWEqw3BTB41dM=@19.63.47.36:30303?discport=30301",
+        "stake": 89,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://e_7OD0CfksBWsSYSx1YR0w9akbg=@17.19.66.1:30303?discport=30301",
+        "stake": 94,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://IH6wYmktl_AYafD0BqTEC3U9Rlw=@66.22.63.68:30303?discport=30301",
+        "stake": 90,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://-xhPk-FdI9g0EFVq-vM9R89ns6w=@20.51.5.66:30303?discport=30301",
+        "stake": 97,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MaSe19pGU6SjiH-CpxQvRSpHiwg=@16.14.60.15:30303?discport=30301",
+        "stake": 51,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_ofyOklJ8FmHnJIa1D0UNrrZIJw=@67.22.22.24:30303?discport=30301",
+        "stake": 46,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ZMUIQZZrMLwT3GH5fg230Qg4-U4=@63.24.57.58:30303?discport=30301",
+        "stake": 73,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://OYX6V279XLdFWI0TO98ZHeCjxLk=@64.22.60.29:30303?discport=30301",
+        "stake": 82,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://e9Elv1Cj9WJPelv3mGH5mV4pNdg=@60.80.21.85:30303?discport=30301",
+        "stake": 45,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://SHsiGRJgcnZG4JfBQ0i0PKrV7gA=@33.58.39.78:30303?discport=30301",
+        "stake": 17,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wOX_C0nf0BbdFQZUvxzdTGeLzkQ=@89.77.17.9:30303?discport=30301",
+        "stake": 6,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://cq1eGO93T2ujAyhGxLjs4VM6CFY=@80.91.42.17:30303?discport=30301",
+        "stake": 73,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://nglC1nyhnKqnBjPJyZsCHXUpP6Y=@62.14.41.31:30303?discport=30301",
+        "stake": 20,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Szr9KVmTTY8La0eWOBhj3yPV0Sc=@25.67.7.7:30303?discport=30301",
+        "stake": 48,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://TpnL1DP6nbIbWzV2ISsy61t30GE=@41.49.83.50:30303?discport=30301",
+        "stake": 68,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://RJ5Z4FKojz2O4A4ZtYpBdAEJYcs=@89.66.42.27:30303?discport=30301",
+        "stake": 59,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://JllynbvzAJr5Pn9MIlfhsDGhDko=@93.97.25.25:30303?discport=30301",
+        "stake": 70,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://s6G9nVvdNTYSzfSeMyer5Tl9uSc=@33.24.35.40:30303?discport=30301",
+        "stake": 62,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://xFMW0RlOOCeb_jZf-IYlwyoBloA=@88.33.95.10:30303?discport=30301",
+        "stake": 13,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://oKVwKVRptfdXEKTbZ_CQQKrzZLY=@79.40.85.71:30303?discport=30301",
+        "stake": 71,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5Z4WnP3eX1yyVk3E5u7zN9YxEBY=@51.95.48.18:30303?discport=30301",
+        "stake": 67,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://vE5Pkw6yixe-_ga1SfXeDNZdSMw=@37.6.69.95:30303?discport=30301",
+        "stake": 78,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://8_KOsREXk7rgInWNLH8oeGJ0Oxg=@97.39.46.68:30303?discport=30301",
+        "stake": 54,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://X0QEy7xvKIX1jnvVEHTznJpr34Y=@87.65.3.17:30303?discport=30301",
+        "stake": 89,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://NENAJovaH-WWjtAgFEfodPrEGSk=@0.81.79.11:30303?discport=30301",
+        "stake": 38,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://aXFIebPl3rtANO6YktZpcWqC8LQ=@64.46.30.94:30303?discport=30301",
+        "stake": 77,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://NEY18TtI1y-mu3xEvwERmE2LEqk=@38.92.17.77:30303?discport=30301",
+        "stake": 69,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://5nzl5nK4QZ9GM45FzF5NBtCwx1Y=@70.32.88.85:30303?discport=30301",
+        "stake": 23,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://pln5p2m5JsDySnKwsA0yfeKnFxY=@7.76.70.65:30303?discport=30301",
+        "stake": 34,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://CjKhYR4cszy3G7URZ8udqqDEPFs=@23.58.80.29:30303?discport=30301",
+        "stake": 66,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://TfLYYyMM18pzal_JaOGuzisx7SA=@10.25.11.53:30303?discport=30301",
+        "stake": 94,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ZXeu2aXW5zk1hVWfusSsSOnSqdM=@6.35.10.3:30303?discport=30301",
+        "stake": 25,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://SoPHUVcXUi8ire5rkpagN7fMwdc=@46.68.67.43:30303?discport=30301",
+        "stake": 82,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://d2wzpfxigu8k04pUHkEdCpp2INs=@18.92.48.90:30303?discport=30301",
+        "stake": 18,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://_QuqSB0iLB1Irgl-140z9oS9ACA=@94.59.53.77:30303?discport=30301",
+        "stake": 74,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://YJKPCM034aX-XaroDHlm9rRWAUM=@70.55.25.29:30303?discport=30301",
+        "stake": 57,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://ZOF5IRskSzO0lzMMuM8nzrebmao=@76.84.28.47:30303?discport=30301",
+        "stake": 74,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://pay4h_FaZ4E7QOe584ZAca_O6hw=@14.7.89.85:30303?discport=30301",
+        "stake": 14,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://uSUQ_b0hWyZNo6NLC-BFXypg_nM=@62.83.39.97:30303?discport=30301",
+        "stake": 58,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://RNow-JmO0v3NY6gbQ4ZDFDVuWhY=@55.20.77.36:30303?discport=30301",
+        "stake": 85,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wO8lNcFj_EPUXZZrwKRz4yi3f3s=@13.63.12.67:30303?discport=30301",
+        "stake": 42,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Rf6P7ElBaLnkI9_PdSao1UqZw9A=@99.92.74.91:30303?discport=30301",
+        "stake": 98,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://-bi4UpwNObR0-p9d9IrLyb81VyY=@41.96.69.84:30303?discport=30301",
+        "stake": 74,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://EF1s3Vukr1DS4mRcPe-wqFc9mu0=@54.94.14.54:30303?discport=30301",
+        "stake": 65,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Bma-8KQ-h94nfYdys3sevxjYsp0=@67.88.47.9:30303?discport=30301",
+        "stake": 62,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://dGs4uylp_Y20VsyLQ-bNs1j12ck=@23.48.93.62:30303?discport=30301",
+        "stake": 48,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://g7aCkLQJJwg4yDXtL73zJNN4o1E=@47.58.57.85:30303?discport=30301",
+        "stake": 65,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://sh6g8RKuGtyKF8p74bvS52j2xBQ=@80.61.9.18:30303?discport=30301",
+        "stake": 26,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Fo0fqbTOsXo3yhchYFYkyxyAs_s=@64.71.76.72:30303?discport=30301",
+        "stake": 29,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://Yc2IGn3fg1Z1ajajLk1VWP1ML2c=@50.12.89.62:30303?discport=30301",
+        "stake": 2,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://LR6kNAPC2i2rR9qlsjDXCF3xLyY=@20.22.83.21:30303?discport=30301",
+        "stake": 10,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://BuS0tAhpaT-k_eiKOsZRoCDQrWI=@13.44.66.28:30303?discport=30301",
+        "stake": 79,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://JgfrK5b60yOSWZAnNVSWaqSryKY=@5.77.91.37:30303?discport=30301",
+        "stake": 36,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://J4ZviqLkOeCDuBwDqnQadW6xy_c=@72.36.28.46:30303?discport=30301",
+        "stake": 32,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://2YSOm_up0jb8Nq_6fla_Zmt40wU=@53.24.2.53:30303?discport=30301",
+        "stake": 69,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wQTB_bLf3XMjZ6Hyrfyinx650ck=@91.43.1.7:30303?discport=30301",
+        "stake": 21,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://9u4y9HCZ1ZedDgF9VdrGy4fOkOs=@39.25.40.50:30303?discport=30301",
+        "stake": 98,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://400qfuJ4Lj2oR68kKQiVHtfeI_A=@83.34.85.72:30303?discport=30301",
+        "stake": 74,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://26PKUptdOIu6gvlys7uTdccD0y0=@88.75.93.87:30303?discport=30301",
+        "stake": 63,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://wJ1swwQDrtuEp3cMaW6-ysXAOag=@35.66.11.50:30303?discport=30301",
+        "stake": 41,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://o1ylUzt0HVKV2UdJcwODlUXKdBo=@55.62.91.16:30303?discport=30301",
+        "stake": 46,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://y4lHHA-GqhTGL4FZPqqjnXLcsiw=@81.47.30.55:30303?discport=30301",
+        "stake": 51,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://S1lVVGWnYltNADE0Q3TG0HERnBA=@11.8.37.58:30303?discport=30301",
+        "stake": 48,
+        "status": true,
+        "isval": true,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://MA3M1AmM9sahb93FQPUrkZ16-cI=@64.19.56.41:30303?discport=30301",
+        "stake": 34,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://RK4JUQ2hTsod-5U7ZX-6LyeIiKQ=@16.59.17.97:30303?discport=30301",
+        "stake": 49,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://0EgIcKNTSrLJ0g92AU7ifLFzqwQ=@81.43.97.87:30303?discport=30301",
+        "stake": 40,
+        "status": false,
+        "isval": false,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://4nZKx8t9HAkZCu56EfMiausSVRc=@46.89.65.37:30303?discport=30301",
+        "stake": 59,
+        "status": true,
+        "isval": false,
+        "chains": [
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://flR0anWgEWFGj_rLNkyG8mhxqOQ=@66.8.51.74:30303?discport=30301",
+        "stake": 87,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "eos",
+            "btc",
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://sULuGsP6KoXlAOXSaqB1GeEJ9lo=@10.85.59.29:30303?discport=30301",
+        "stake": 7,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "ltc",
+            "eth"
+        ]
+    },
+    {
+        "enode": "enode://vHvWMl2fZKohJmgtkCsf_R4DeCI=@71.93.63.5:30303?discport=30301",
+        "stake": 43,
+        "status": false,
+        "isval": true,
+        "chains": [
+            "aion",
+            "dash",
+            "ltc",
+            "eth"
+        ]
+    }
+]
