@@ -25,7 +25,7 @@ var _ = Describe("Session", func() {
 
 			Context("Parameters are missing or null", func() {
 
-				It("should error", func() {
+				It("should return `missing parameters` error", func() {
 					// Code goes here ...
 				})
 			})
@@ -34,7 +34,7 @@ var _ = Describe("Session", func() {
 
 				Context("Devid is incorrect format", func() {
 
-					It("should error", func() {
+					It("should return `invalid developer id` error", func() {
 						// Code goes here ...
 					})
 				})
@@ -44,7 +44,7 @@ var _ = Describe("Session", func() {
 				// n-1 block
 				Context("Not a valid block hash format", func() {
 
-					It("should error", func() {
+					It("should return `invalid block hash` error", func() {
 						// Code goes here ...
 					})
 				})
@@ -61,7 +61,7 @@ var _ = Describe("Session", func() {
 
 				Context("No nodes are associated with a blockchain in the list", func() {
 
-					It("should error", func() {
+					It("should return `invalid blockchain list` error", func() {
 						// Code goes here ...
 					})
 				})
@@ -71,7 +71,7 @@ var _ = Describe("Session", func() {
 
 				Context("Node structure is in the incorrect format", func() {
 
-					It("should error", func() {
+					It("should return `invalid node list` error", func() {
 						// Code goes here ...
 					})
 				})
