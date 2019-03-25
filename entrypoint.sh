@@ -30,6 +30,7 @@ if [  ${POCKET_CORE_S3_CONFIG_URL:-false} == false  ]; then
  	echo 'POCKET_CORE_S3_CONFIG_URL env variable not found, Using default configurations'
 	echo ${POCKET_CORE_SERVICE_WHITELIST:-[]} >  ${POCKET_PATH_DATADIR:-datadir}/service_whitelist.json
 	echo ${POCKET_CORE_DEVELOPER_WHITELIST:-[]} > ${POCKET_PATH_DATADIR:-datadir}/developer_whitelist.json
+	echo ${POCKET_CORE_CHAINS:-[]} > ${POCKET_PATH_DATADIR:-datadir}/chains.json
 
 else
  	echo 'Downloading node configurations from S3'
