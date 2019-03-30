@@ -1,10 +1,11 @@
 package main
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/common"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -16,51 +17,53 @@ var (
 	chains = [...]string{"eth", "btc", "ltc", "dash", "aion", "eos"}
 )
 
-type NodeWorldState struct {
-	Enode  string   `json:"enode"`
-	Stake  int      `json:"stake"`
-	Active bool     `json:"status"`
-	IsVal  bool     `json:"isval"`
-	Chains []string `json:"chains"`
-}
-
-func RandomChains() []string {
+func RandomChains() []common.Blockchain {
+	var res []common.Blockchain
 	rand.Shuffle(len(chains), func(i, j int) { chains[i], chains[j] = chains[j], chains[i] })
-	return chains[rand.Intn(len(chains)-1):]
+	c := chains[rand.Intn(len(chains)-1):]
+	res = make([]common.Blockchain, len(c))
+	for i, chain := range c {
+		res[i] = common.Blockchain{Name: chain, NetID: strconv.Itoa(rand.Intn(4)), Version: strconv.Itoa(rand.Intn(4))}
+	}
+	return res
 }
 
-func CreateNode(i int) NodeWorldState {
-	hasher := sha1.New()
-	hasher.Write([]byte("node"+strconv.Itoa(i)))
+func CreateNode(i int) common.NodeWorldState {
+	hasher := sha256.New()
+	hasher.Write([]byte("node" + strconv.Itoa(i)))
 	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-	return NodeWorldState{"enode://"+hash+"@" + strconv.Itoa(rand.Intn(100)) + "." + strconv.Itoa(rand.Intn(100)) + "." + strconv.Itoa(rand.Intn(100)) + "." + strconv.Itoa(rand.Intn(100)) + ":30303?discport=30301",
-		rand.Intn(100), rand.Intn(2) != 0, rand.Intn(2) != 0, RandomChains()}
+	return common.NodeWorldState{Enode: "enode://" + hash + "@" + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + ":30303?discport=30301",
+		Stake: rand.Intn(255), Active: rand.Intn(2) != 0, IsVal: rand.Intn(2) != 0, Chains: RandomChains()}
 }
 
-func CreateNodePool(amount int) []NodeWorldState {
-	var nodePool []NodeWorldState
+func CreateNodePool(amount int) []common.NodeWorldState {
+	var nodePool []common.NodeWorldState
 	for i := 0; i < amount; i++ {
 		nodePool = append(nodePool, CreateNode(i))
 	}
 	return nodePool
 }
-func init(){
+func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 func main() {
-	absPath, _ := filepath.Abs("tests/bdd/fixtures/nodepool.json")
-	nodePool := CreateNodePool(500)
-	b, err := json.MarshalIndent(nodePool, "", "    ")
-	if err != nil{
-		fmt.Println(err.Error())
-	}
-	fmt.Println(absPath)
-	f, err:=os.Create(absPath)
-	if err != nil{
-		fmt.Println(err.Error())
-	}
-	_, err=f.Write(b)
-	if err != nil{
-		fmt.Println(err.Error())
+	prefix := []string{"xsmall", "small", "medium", "large"}
+	sizes := []int{25, 500, 5000, 50000}
+	for i := 0; i < 3; i++ { // don't run the large one for now
+		absPath, _ := filepath.Abs("tests/bdd/fixtures/" + prefix[i] + "nodepool.json")
+		nodePool := CreateNodePool(sizes[i])
+		b, err := json.MarshalIndent(nodePool, "", "    ")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		fmt.Println(absPath)
+		f, err := os.Create(absPath)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		_, err = f.Write(b)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
 	}
 }
