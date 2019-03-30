@@ -1,48 +1,68 @@
-// This package is network code relating to pocket 'sessions'
 package session
 
 import (
-	"sync"
-
-	"github.com/pokt-network/pocket-core/types"
+	"crypto"
 )
 
+var HashingAlgorithm = crypto.SHA256
+
 type Session struct {
-	DevID string   `json:"devid"`
-	PL    PeerList `json:"peerlist"`
+	Key       []byte       `json:"key"`
+	DevID     []byte       `json:"devid"`
+	BlockHash []byte       `json:"blockhash"`
+	Nodes     SessionNodes `json:"node"`
+	Chain     []byte       `json:"chain"`
 }
 
-type PeerList types.List
-
-var one sync.Once
-
-// "NewSession" returns an empty session object with the devID prefilled
-func NewSession(dID string) Session {
-	return Session{DevID: dID}
+type SessionNodes struct {
+	ServiceNodes    []Node
+	ValidatorNodes  []Node
+	DelegatedMinter Node
 }
 
-// "NewPeerList" returns a sessionPeerList (similar to global peerlist but type peer[node and role])
-func NewPeerList() PeerList {
-	return *(*PeerList)(types.NewList())
-}
-
-// "Add" adds a peer to the session
-func (s *Session) AddPeer(sPeer Peer) {
-	(*types.List)(&s.PL).Add(sPeer.GID, sPeer)
-}
-
-func (s *Session) AddPeers(peers []Peer) {
-	for _, v := range peers {
-		s.AddPeer(v)
+// "NewSession" creates a new session from seed data.
+func NewSession(s Seed) (*Session, error) {
+	err := s.ErrorCheck()
+	if err != nil {
+		return nil, err
 	}
+	session := &Session{BlockHash: s.BlockHash, DevID: s.DevID, Chain: s.RequestedChain}
+	err = session.GenKey()
+	if err != nil {
+		return nil, err
+	}
+	err = session.GenNodes(s.NodeList)
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
 }
 
-// "Remove" removes a sessionPeer from the session
-func (s *Session) RemovePeer(gid string) {
-	(*types.List)(&s.PL).Remove(gid)
+// "Hash" returns the session hashing algorithm result of input
+func (s *Session) Hash(input []byte) []byte {
+	hasher := HashingAlgorithm.New()
+	hasher.Write(input)
+	return hasher.Sum(nil)
 }
 
-// "GetPeer" returns the sessionPeer from the session by peer.GID
-func (s *Session) GetPeer(gid string) Peer {
-	return (*types.List)(&s.PL).Get(gid).(Peer)
+// "GenKey" generates the session key = SessionHashingAlgo(devid+chain+blockhash)
+func (s *Session) GenKey() error {
+	if s.BlockHash == nil || s.DevID == nil || s.Chain == nil {
+		return IncompleteSession
+	}
+	var seed = s.BlockHash
+	seed = append(seed, s.DevID...)
+	seed = append(seed, s.Chain...)
+	s.Key = s.Hash(seed)
+	return nil
+}
+
+// "GenNodes" generates the nodes of the session
+func (s *Session) GenNodes(pool NodePool) error {
+	n, err := pool.GetSessionNodes(*s)
+	if err != nil {
+		return err
+	}
+	s.Nodes = n
+	return nil
 }
