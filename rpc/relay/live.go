@@ -33,7 +33,7 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	// if within white list
-	if node.EnsureWL(node.SWL(), n.GID) {
+	if node.EnsureSNWL(node.SWL(), n.GID) {
 		node.PeerList().Add(n)
 		node.DispatchPeers().Add(n)
 		if _, err := db.DB().Add(n); err != nil {

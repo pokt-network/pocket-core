@@ -13,8 +13,8 @@ import (
 
 // A structure that specifies a non-native blockchain.
 type Blockchain struct {
-	Name    string `json:"name"`
-	NetID   string `json:"netid"`
+	Name  string `json:"name"`
+	NetID string `json:"netid"`
 }
 
 // A structure that specifies a non-native blockchain client running on a port.

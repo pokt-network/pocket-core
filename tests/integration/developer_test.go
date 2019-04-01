@@ -5,7 +5,6 @@ import (
 	"github.com/pokt-network/pocket-core/config"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/const"
@@ -34,13 +33,15 @@ func init() {
 	*dispatchU = *dispatchU + "/v1/"
 }
 func requestFromFile(urlSuffix string) (string, error) {
-	const http = "http://"
-	if !strings.Contains(*dispatchU, http) {
-		*dispatchU = http + *dispatchU
+	dispatchU, err := util.URLProto(*dispatchU)
+	if err != nil {
+		return "", err
 	}
-	if !strings.Contains(*serviceU, http) {
-		*serviceU = http + *serviceU
+	serviceU, err := util.URLProto(*serviceU)
+	if err != nil {
+		return "", err
 	}
+	util.URLProto(serviceU)
 	fp, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + urlSuffix + ".json")
 	if err != nil {
 		return "", err
@@ -53,14 +54,14 @@ func requestFromFile(urlSuffix string) (string, error) {
 
 	}
 	if urlSuffix == relay {
-		return util.RPCRequ(*serviceU+urlSuffix, b, util.POST)
+		return util.RPCRequ(serviceU+urlSuffix, b, util.POST)
 	}
-	return util.RPCRequ(*dispatchU+urlSuffix, b, util.POST)
+	return util.RPCRequ(dispatchU+urlSuffix, b, util.POST)
 }
 
 func TestRelay(t *testing.T) {
-	// if service node skip
-	if !config.GlobalConfig().Dispatch{
+	// if dispatch node skip
+	if config.GlobalConfig().Dispatch {
 		t.Skip()
 	}
 	resp, err := requestFromFile(relay)
@@ -73,7 +74,7 @@ func TestRelay(t *testing.T) {
 
 func TestReport(t *testing.T) {
 	// if dispatch node skip
-	if config.GlobalConfig().Dispatch{
+	if config.GlobalConfig().Dispatch {
 		t.Skip()
 	}
 	resp, err := requestFromFile(report)
@@ -86,7 +87,7 @@ func TestReport(t *testing.T) {
 
 func TestDispatch(t *testing.T) {
 	// if dispatch node skip
-	if config.GlobalConfig().Dispatch{
+	if config.GlobalConfig().Dispatch {
 		t.Skip()
 	}
 	resp, err := requestFromFile(dispatch)

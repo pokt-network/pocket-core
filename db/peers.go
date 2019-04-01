@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/util"
 	"net/http"
 	"os"
 	"time"
@@ -83,7 +84,11 @@ func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on 
 
 // "check" tests a node by doing an HTTP GET to API.
 func check(n node.Node) (*http.Response, error) {
-	return http.Get("http://" + n.IP + ":" + n.RelayPort + "/v1/")
+	u, err := util.URLProto(n.IP + ":" + n.RelayPort + "/v1/")
+	if err != nil {
+		return nil, err
+	}
+	return http.Get(u)
 }
 
 // "CheckPeers" is a helper function to checks each service node's liveness. Runs checkPeers() in a go routine.

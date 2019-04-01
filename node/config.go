@@ -88,9 +88,7 @@ func ConfigFiles() error {
 	if err2 != nil {
 		return err2
 	}
-	if config.GlobalConfig().Dispatch {
-		go WLRefresh()
-	}
+	go WLRefresh()
 	return nil
 }
 
@@ -105,6 +103,12 @@ func WLRefresh() {
 		err = swlConfigFile()
 		if err != nil {
 			fmt.Println("Error with Developers WL " + err.Error())
+		}
+		if !config.GlobalConfig().Dispatch {
+			err := UpdateWhiteList()
+			if err != nil {
+				fmt.Println(err.Error())
+			}
 		}
 		time.Sleep(time.Duration(config.GlobalConfig().PRefresh) * time.Second)
 	}

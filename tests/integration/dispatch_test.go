@@ -23,7 +23,7 @@ func DummyNode() node.Node {
 
 func TestDB(t *testing.T) {
 	// if service node skip
-	if !config.GlobalConfig().Dispatch{
+	if !config.GlobalConfig().Dispatch {
 		t.Skip()
 	}
 	n := DummyNode()
