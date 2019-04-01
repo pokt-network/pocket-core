@@ -4,15 +4,16 @@ package rpc
 import (
 	"bytes"
 	"errors"
+	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 // "ExecuteRequest" takes in the raw json string and forwards it to the port
 func ExecuteRequest(jsonStr []byte, host string, port string) (string, error) {
-	if !strings.Contains(host, "http") {
-		host = "http://" + host
+	host, err := util.URLProto(host)
+	if err != nil {
+		return "", err
 	}
 	url := host + ":" + port
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))

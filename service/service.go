@@ -23,7 +23,7 @@ type Relay struct {
 
 // "RouteRelay" routes the relay to the specified hosted chain
 func RouteRelay(relay Relay) (string, error) {
-	if node.EnsureWL(node.DWL(), relay.DevID) {
+	if node.EnsureDWL(node.DWL(), relay.DevID) {
 		hc := node.ChainToHosted(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID})
 		port := hc.Port
 		host := hc.Host

@@ -2,8 +2,8 @@ package node
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
 	"os"
@@ -32,17 +32,11 @@ func WhiteListInit() {
 
 // "SWL" returns service node white list.
 func SWL() *Whitelist {
-	if SNWL == nil { // just in case
-		WhiteListInit()
-	}
 	return SNWL
 }
 
 // "DWL" returns developer white list.
 func DWL() *Whitelist {
-	if DevWL == nil { // just in case
-		WhiteListInit()
-	}
 	return DevWL
 }
 
@@ -125,8 +119,8 @@ func UpdateWhiteList() error {
 	}
 	// update
 	dwl := DWL()
+	dwl.Clear()
 	for _, s := range arr {
-		dwl.Clear()
 		dwl.Add(s)
 	}
 	// write devwl
@@ -151,25 +145,43 @@ func GetWhiteList() (string, []string, error) {
 }
 
 func getWhiteList() (string, error) {
-	if !config.GlobalConfig().Dispatch {
-		url := "http://" + config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort + "/v1/whitelist"
-		pl, err := Self()
-		if err != nil {
-			return "", err
-		}
-		return util.StructRPCReq(url, pl, util.POST)
+	url, err := util.URLProto(config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort + "/v1/whitelist")
+	if err != nil {
+		return "", err
 	}
-	return "", errors.New("dispatch node can't execute this call")
+	pl, err := Self()
+	if err != nil {
+		return "", err
+	}
+	return util.StructRPCReq(url, pl, util.POST)
 }
 
-// "EnsureWL" cross checks the whitelist for
-func EnsureWL(whiteList *Whitelist, query string) bool {
+// "EnsureSNWL" cross checks the whitelist for
+func EnsureSNWL(whiteList *Whitelist, query string) bool {
 	if index := strings.IndexByte(query, ':'); index > 0 { // delimited by ':'
 		query = query[:index]
 	}
 	if !whiteList.Contains(query) {
 		os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 1\n")
 		return false
+	}
+	return true
+	os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 2\n")
+	return false
+}
+
+func EnsureDWL(whiteList *Whitelist, query string) bool {
+	if !whiteList.Contains(query) {
+		err := UpdateWhiteList()
+		if err != nil {
+			os.Stderr.WriteString(err.Error())
+			logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+			return false
+		}
+		if !whiteList.Contains(query) {
+			os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 1\n")
+			return false
+		}
 	}
 	return true
 	os.Stderr.WriteString("Node: " + query + " rejected because it is not within whitelist. Code: 2\n")

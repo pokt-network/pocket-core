@@ -1,0 +1,14 @@
+{
+  "GID": "GID1:fakeextension",
+  "IP": "FAKEIP",
+  "RelayPort": "8081",
+  "ClientPort": "8080",
+  "ClientID": "pocket_core",
+  "CliVersion": "0.0.1",
+  "Blockchains": [
+    {
+      "Name": "ETH",
+      "NetID": "4"
+    }
+  ]
+}

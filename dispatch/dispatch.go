@@ -16,15 +16,15 @@ type Dispatch struct {
 }
 
 type DispatchServe struct {
-	Name    string   `json:"name"`
-	NetID   string   `json:"netid"`
-	Ips     []string `json:"ips"`
+	Name  string   `json:"name"`
+	NetID string   `json:"netid"`
+	Ips   []string `json:"ips"`
 }
 
 // NOTE: this call has been augmented for the Pocket Core MVP Centralized Dispatcher
 // "Serve" formats Dispatch PL for an API request.
 func Serve(dispatch *Dispatch) ([]byte, error, int) {
-	if node.EnsureWL(node.DWL(), dispatch.DevID) {
+	if node.EnsureDWL(node.DWL(), dispatch.DevID) {
 		var result []DispatchServe
 		for _, bc := range dispatch.Blockchains {
 			ips := make([]string, 0)

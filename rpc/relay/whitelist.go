@@ -16,7 +16,7 @@ func WhiteList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
-	if !node.EnsureWL(node.SNWL, nd.GID) {
+	if !node.EnsureSNWL(node.SNWL, nd.GID) {
 		shared.WriteErrorResponse(w, 401, "invalid authentication")
 		return
 	}
