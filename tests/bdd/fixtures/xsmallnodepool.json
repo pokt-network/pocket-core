@@ -1,736 +1,326 @@
 [
     {
-        "enode": "enode://oF1YtC8J3GUoYpiY2mMJ7Ug4RijQivKfQESBysIGo_g=@73.111.250.218:30303?discport=30301",
-        "stake": 10,
-        "status": false,
-        "isval": false,
-        "chains": [
-            {
-                "name": "aion",
-                "netid": "0",
-                "string": "3"
-            },
-            {
-                "name": "dash",
-                "netid": "2",
-                "string": "2"
-            }
-        ]
-    },
-    {
-        "enode": "enode://yhLzG4y_XyniaOpkwgo389ULU52JHbDD68fA9msfuYo=@237.247.13.104:30303?discport=30301",
-        "stake": 191,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "eth",
-                "netid": "2",
-                "string": "2"
-            },
-            {
-                "name": "dash",
-                "netid": "2",
-                "string": "2"
-            },
-            {
-                "name": "eos",
-                "netid": "1",
-                "string": "3"
-            },
-            {
-                "name": "ltc",
-                "netid": "1",
-                "string": "1"
-            },
-            {
-                "name": "aion",
-                "netid": "2",
-                "string": "0"
-            },
-            {
-                "name": "btc",
-                "netid": "0",
-                "string": "0"
-            }
-        ]
-    },
-    {
-        "enode": "enode://FbGKckMldpVwT2ajsd3JMRGU_H0uGJb0QMxRfHd6t-w=@132.61.161.231:30303?discport=30301",
-        "stake": 77,
-        "status": true,
-        "isval": true,
-        "chains": [
-            {
-                "name": "aion",
-                "netid": "3",
-                "string": "3"
-            },
-            {
-                "name": "btc",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "eth",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "ltc",
-                "netid": "3",
-                "string": "2"
-            },
-            {
-                "name": "eos",
-                "netid": "1",
-                "string": "1"
-            },
-            {
-                "name": "dash",
-                "netid": "0",
-                "string": "2"
-            }
-        ]
-    },
-    {
-        "enode": "enode://O1uxxue3bauor9iVFuJBQKZ_xr4roHHMO5fRsuCMI40=@221.129.170.27:30303?discport=30301",
-        "stake": 151,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "eth",
-                "netid": "2",
-                "string": "3"
-            },
-            {
-                "name": "aion",
-                "netid": "3",
-                "string": "3"
-            },
-            {
-                "name": "eos",
-                "netid": "3",
-                "string": "2"
-            },
-            {
-                "name": "dash",
-                "netid": "0",
-                "string": "3"
-            },
-            {
-                "name": "btc",
-                "netid": "3",
-                "string": "3"
-            },
-            {
-                "name": "ltc",
-                "netid": "1",
-                "string": "2"
-            }
-        ]
-    },
-    {
-        "enode": "enode://0rj2Kn4zW71VdshCKER2DyLsN4AJ7up5DEHk3EXyPDM=@251.48.5.93:30303?discport=30301",
-        "stake": 32,
-        "status": false,
-        "isval": false,
-        "chains": [
-            {
-                "name": "dash",
-                "netid": "0",
-                "string": "1"
-            },
-            {
-                "name": "btc",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "eth",
-                "netid": "2",
-                "string": "0"
-            },
-            {
-                "name": "aion",
-                "netid": "2",
-                "string": "2"
-            },
-            {
-                "name": "ltc",
-                "netid": "1",
-                "string": "3"
-            },
-            {
-                "name": "eos",
-                "netid": "2",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://I69AYBaZQ0eqo-iU6aggBJrONlZAb7Budja2kttWAm8=@190.58.197.206:30303?discport=30301",
-        "stake": 106,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "ltc",
-                "netid": "0",
-                "string": "2"
-            },
-            {
-                "name": "btc",
-                "netid": "1",
-                "string": "2"
-            }
-        ]
-    },
-    {
-        "enode": "enode://jiZ0ThqPmmDvmk11bm6FgZeOZuIpR0Kr8oIW9quEMcE=@98.192.212.86:30303?discport=30301",
-        "stake": 130,
+        "enode": "enode://a05d58b42f09dc6528629898da6309ed48384628d08af29f404481cac206a3f8@128.66.241.199:30303?discport=30301",
+        "stake": 189,
         "status": true,
         "isval": false,
         "chains": [
             {
-                "name": "btc",
-                "netid": "2",
-                "string": "3"
-            },
-            {
-                "name": "dash",
-                "netid": "2",
-                "string": "1"
-            },
-            {
-                "name": "aion",
-                "netid": "1",
-                "string": "3"
-            },
-            {
-                "name": "eos",
-                "netid": "3",
-                "string": "2"
-            },
-            {
                 "name": "eth",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "ltc",
-                "netid": "0",
-                "string": "2"
+                "netid": "1",
+                "string": "1"
             }
         ]
     },
     {
-        "enode": "enode://m-NebknFTt5zvLHPj8Ctojt0Zqn7rphXhEnMITsl758=@171.215.3.170:30303?discport=30301",
+        "enode": "enode://ca12f31b8cbf5f29e268ea64c20a37f3d50b539d891db0c3ebc7c0f66b1fb98a@43.145.252.1:30303?discport=30301",
+        "stake": 37,
+        "status": true,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://15b18a7243257695704f66a3b1ddc9311194fc7d2e1896f440cc517c777ab7ec@163.37.35.7:30303?discport=30301",
+        "stake": 212,
+        "status": false,
+        "isval": true,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://3b5bb1c6e7b76daba8afd89516e24140a67fc6be2ba071cc3b97d1b2e08c238d@87.116.47.109:30303?discport=30301",
+        "stake": 194,
+        "status": false,
+        "isval": true,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://d2b8f62a7e335bbd5576c8422844760f22ec378009eeea790c41e4dc45f23c33@232.93.230.122:30303?discport=30301",
+        "stake": 157,
+        "status": true,
+        "isval": true,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://23af406016994347aaa3e894e9a820049ace3656406fb06e7636b692db56026f@248.109.240.45:30303?discport=30301",
         "stake": 158,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "ltc",
-                "netid": "0",
-                "string": "2"
-            },
-            {
-                "name": "aion",
-                "netid": "0",
-                "string": "1"
-            },
-            {
-                "name": "dash",
-                "netid": "1",
-                "string": "3"
-            },
-            {
-                "name": "eth",
-                "netid": "2",
-                "string": "2"
-            },
-            {
-                "name": "eos",
-                "netid": "3",
-                "string": "1"
-            },
-            {
-                "name": "btc",
-                "netid": "0",
-                "string": "2"
-            }
-        ]
-    },
-    {
-        "enode": "enode://zozMuqBI2bqf1s5NT_1y83uxBiY2QJrUeKg2Roa7638=@88.189.229.64:30303?discport=30301",
-        "stake": 6,
-        "status": false,
-        "isval": false,
-        "chains": [
-            {
-                "name": "btc",
-                "netid": "1",
-                "string": "0"
-            },
-            {
-                "name": "dash",
-                "netid": "3",
-                "string": "3"
-            }
-        ]
-    },
-    {
-        "enode": "enode://HnsFO59DTK8kDQwFO6SrBuC4csy-1hoE0W2xA5G0hcg=@188.254.195.230:30303?discport=30301",
-        "stake": 239,
-        "status": true,
-        "isval": true,
-        "chains": [
-            {
-                "name": "ltc",
-                "netid": "1",
-                "string": "1"
-            },
-            {
-                "name": "eos",
-                "netid": "2",
-                "string": "3"
-            },
-            {
-                "name": "aion",
-                "netid": "1",
-                "string": "3"
-            },
-            {
-                "name": "dash",
-                "netid": "3",
-                "string": "2"
-            },
-            {
-                "name": "eth",
-                "netid": "3",
-                "string": "1"
-            },
-            {
-                "name": "btc",
-                "netid": "3",
-                "string": "0"
-            }
-        ]
-    },
-    {
-        "enode": "enode://nFht38e_JJc_dzOKg8yEimHiwEjmQ3rz3t0huo03XA4=@34.217.193.161:30303?discport=30301",
-        "stake": 100,
         "status": true,
         "isval": false,
         "chains": [
             {
-                "name": "dash",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "aion",
-                "netid": "3",
-                "string": "2"
-            },
-            {
-                "name": "ltc",
-                "netid": "3",
-                "string": "3"
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
             }
         ]
     },
     {
-        "enode": "enode://LLUEnSidmwP75jg2E9aAlp_vgsCS5YPoDCWLPrcCQ5k=@210.207.223.28:30303?discport=30301",
+        "enode": "enode://8e26744e1a8f9a60ef9a4d756e6e8581978e66e2294742abf28216f6ab8431c1@252.192.14.180:30303?discport=30301",
+        "stake": 44,
+        "status": false,
+        "isval": true,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://9be35e6e49c54ede73bcb1cf8fc0ada23b7466a9fbae98578449cc213b25ef9f@199.212.100.135:30303?discport=30301",
+        "stake": 165,
+        "status": false,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://ce8cccbaa048d9ba9fd6ce4d4ffd72f37bb1062636409ad478a8364686bbeb7f@218.85.226.128:30303?discport=30301",
+        "stake": 71,
+        "status": true,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://1e7b053b9f434caf240d0c053ba4ab06e0b872ccbed61a04d16db10391b485c8@46.184.211.59:30303?discport=30301",
+        "stake": 149,
+        "status": false,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://9c586ddfc7bf24973f77338a83cc848a61e2c048e6437af3dedd21ba8d375c0e@219.162.191.54:30303?discport=30301",
+        "stake": 28,
+        "status": false,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://2cb5049d289d9b03fbe6383613d680969fef82c092e583e80c258b3eb7024399@80.89.193.31:30303?discport=30301",
+        "stake": 135,
+        "status": false,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://62398966f37fbac60a5dc332dc2935aa9c655e5703ceac8f40ce80105a6aa0de@10.38.108.231:30303?discport=30301",
+        "stake": 69,
+        "status": false,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://3d6b622b7c0f19b2ce32ffe2ba48e661ac9458fb0a6a83d55abb57bb62026068@215.224.133.108:30303?discport=30301",
         "stake": 22,
         "status": true,
         "isval": true,
         "chains": [
             {
-                "name": "ltc",
-                "netid": "1",
-                "string": "3"
-            },
-            {
-                "name": "eos",
-                "netid": "3",
-                "string": "1"
-            },
-            {
-                "name": "aion",
+                "name": "eth",
                 "netid": "1",
                 "string": "1"
             }
         ]
     },
     {
-        "enode": "enode://YjmJZvN_usYKXcMy3Ck1qpxlXlcDzqyPQM6AEFpqoN4=@7.217.6.86:30303?discport=30301",
-        "stake": 87,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "eos",
-                "netid": "0",
-                "string": "2"
-            },
-            {
-                "name": "eth",
-                "netid": "2",
-                "string": "3"
-            }
-        ]
-    },
-    {
-        "enode": "enode://PWtiK3wPGbLOMv_iukjmYayUWPsKaoPVWrtXu2ICYGg=@138.13.240.180:30303?discport=30301",
-        "stake": 108,
+        "enode": "enode://94c74317ccdc87c1b366716f1ac20052af11bdd84dc4fb99d75124d9e11668ae@15.180.152.235:30303?discport=30301",
+        "stake": 195,
         "status": true,
         "isval": false,
         "chains": [
             {
-                "name": "dash",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "eos",
-                "netid": "3",
-                "string": "2"
-            },
-            {
-                "name": "aion",
-                "netid": "2",
-                "string": "0"
-            },
-            {
-                "name": "ltc",
-                "netid": "0",
-                "string": "3"
-            }
-        ]
-    },
-    {
-        "enode": "enode://lMdDF8zch8GzZnFvGsIAUq8RvdhNxPuZ11Ek2eEWaK4=@149.218.22.107:30303?discport=30301",
-        "stake": 110,
-        "status": true,
-        "isval": false,
-        "chains": [
-            {
-                "name": "aion",
-                "netid": "2",
-                "string": "1"
-            },
-            {
                 "name": "eth",
-                "netid": "3",
+                "netid": "1",
                 "string": "1"
             }
         ]
     },
     {
-        "enode": "enode://ro_FZh5J10i0O_LW6NE05VKoG_BI9IsAWPpZCJGT_Ys=@174.80.206.86:30303?discport=30301",
-        "stake": 57,
+        "enode": "enode://ae8fc5661e49d748b43bf2d6e8d134e552a81bf048f48b0058fa59089193fd8b@2.44.21.252:30303?discport=30301",
+        "stake": 90,
+        "status": true,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://e8fbf5f4a1a7b01f908e70ce259504838947588ce7348acf3a231c1166a744bb@181.12.170.191:30303?discport=30301",
+        "stake": 139,
         "status": false,
         "isval": false,
         "chains": [
             {
-                "name": "btc",
-                "netid": "1",
-                "string": "1"
-            },
-            {
-                "name": "dash",
-                "netid": "1",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://6Pv19KGnsB-QjnDOJZUEg4lHWIznNIrPOiMcEWanRLs=@51.78.91.34:30303?discport=30301",
-        "stake": 69,
-        "status": true,
-        "isval": false,
-        "chains": [
-            {
                 "name": "eth",
                 "netid": "1",
-                "string": "3"
-            },
-            {
-                "name": "btc",
-                "netid": "1",
-                "string": "0"
-            },
-            {
-                "name": "aion",
-                "netid": "1",
-                "string": "0"
-            },
-            {
-                "name": "dash",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "ltc",
-                "netid": "3",
-                "string": "3"
-            },
-            {
-                "name": "eos",
-                "netid": "2",
                 "string": "1"
             }
         ]
     },
     {
-        "enode": "enode://GJ7Rg1fEyyO8uJ2fiBGuGq1sApc_03RHL2UL0xC2wCo=@52.2.211.249:30303?discport=30301",
+        "enode": "enode://189ed18357c4cb23bcb89d9f8811ae1aad6c02973fd374472f650bd310b6c02a@246.213.3.129:30303?discport=30301",
         "stake": 94,
-        "status": true,
-        "isval": true,
-        "chains": [
-            {
-                "name": "eos",
-                "netid": "3",
-                "string": "2"
-            },
-            {
-                "name": "btc",
-                "netid": "1",
-                "string": "2"
-            },
-            {
-                "name": "eth",
-                "netid": "2",
-                "string": "3"
-            },
-            {
-                "name": "dash",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "ltc",
-                "netid": "2",
-                "string": "1"
-            },
-            {
-                "name": "aion",
-                "netid": "1",
-                "string": "0"
-            }
-        ]
-    },
-    {
-        "enode": "enode://oEfmr58WVIiawp7fhoWsSVspPBPGoFeMF70s-q6vJHg=@47.32.74.244:30303?discport=30301",
-        "stake": 124,
         "status": false,
         "isval": false,
         "chains": [
             {
-                "name": "dash",
-                "netid": "2",
-                "string": "0"
-            },
-            {
-                "name": "ltc",
-                "netid": "3",
-                "string": "3"
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
             }
         ]
     },
     {
-        "enode": "enode://8yhpMkH2-Tlz1uMWZjFru-pxxWAmbEW_cbXPeQKoxrU=@228.97.220.106:30303?discport=30301",
+        "enode": "enode://a047e6af9f1654889ac29edf8685ac495b293c13c6a0578c17bd2cfaaeaf2478@158.250.113.23:30303?discport=30301",
+        "stake": 212,
+        "status": true,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://f328693241f6f93973d6e31666316bbbea71c560266c45bf71b5cf7902a8c6b5@208.252.13.77:30303?discport=30301",
+        "stake": 74,
+        "status": false,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://402699de92fc20f3eaa1098d108a1ff2cab5245f8984d858a772572fb932dcc0@133.12.248.48:30303?discport=30301",
+        "stake": 193,
+        "status": false,
+        "isval": true,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://d5488baaacaacc7671bf0b5d4aca5bf9ce906cbe9eeebcd6ea75766045b4dc2c@251.68.118.238:30303?discport=30301",
+        "stake": 224,
+        "status": true,
+        "isval": true,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://5c61aa478f72d0d294b2d19525bf5a7fe0b0b979a539fbaa66b9bff3d8c8c3bc@110.106.68.52:30303?discport=30301",
+        "stake": 201,
+        "status": false,
+        "isval": false,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://6baebfda3ea46488d834fd0648336c9720c315020f65557776e8b409398d014b@177.209.131.66:30303?discport=30301",
         "stake": 50,
-        "status": true,
-        "isval": false,
-        "chains": [
-            {
-                "name": "ltc",
-                "netid": "2",
-                "string": "3"
-            },
-            {
-                "name": "aion",
-                "netid": "1",
-                "string": "1"
-            },
-            {
-                "name": "eth",
-                "netid": "1",
-                "string": "0"
-            },
-            {
-                "name": "btc",
-                "netid": "2",
-                "string": "1"
-            },
-            {
-                "name": "dash",
-                "netid": "3",
-                "string": "0"
-            },
-            {
-                "name": "eos",
-                "netid": "2",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://QCaZ3pL8IPPqoQmNEIof8sq1JF-JhNhYp3JXL7ky3MA=@230.144.219.164:30303?discport=30301",
-        "stake": 136,
-        "status": true,
-        "isval": true,
-        "chains": [
-            {
-                "name": "btc",
-                "netid": "1",
-                "string": "0"
-            },
-            {
-                "name": "aion",
-                "netid": "2",
-                "string": "3"
-            },
-            {
-                "name": "dash",
-                "netid": "2",
-                "string": "3"
-            },
-            {
-                "name": "ltc",
-                "netid": "3",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://1UiLqqyqzHZxvwtdSspb-c6QbL6e7rzW6nV2YEW03Cw=@11.69.231.206:30303?discport=30301",
-        "stake": 237,
         "status": false,
         "isval": false,
         "chains": [
             {
-                "name": "eos",
-                "netid": "0",
-                "string": "3"
-            },
-            {
-                "name": "btc",
-                "netid": "0",
-                "string": "1"
-            },
-            {
-                "name": "ltc",
-                "netid": "0",
-                "string": "1"
-            },
-            {
                 "name": "eth",
-                "netid": "2",
-                "string": "3"
-            },
-            {
-                "name": "dash",
-                "netid": "0",
-                "string": "2"
-            },
-            {
-                "name": "aion",
-                "netid": "2",
-                "string": "3"
+                "netid": "1",
+                "string": "1"
             }
         ]
     },
     {
-        "enode": "enode://XGGqR49y0NKUstGVJb9af-CwuXmlOfuqZrm_89jIw7w=@61.100.105.244:30303?discport=30301",
-        "stake": 223,
+        "enode": "enode://1155bb99dfe33f681567b74726fb595e9a728997f358ec09b94be1703b4502f7@17.4.155.78:30303?discport=30301",
+        "stake": 106,
         "status": true,
         "isval": false,
         "chains": [
             {
-                "name": "aion",
-                "netid": "3",
-                "string": "1"
-            },
-            {
-                "name": "eos",
-                "netid": "0",
-                "string": "0"
-            },
-            {
-                "name": "dash",
-                "netid": "0",
-                "string": "3"
-            }
-        ]
-    },
-    {
-        "enode": "enode://a66_2j6kZIjYNP0GSDNslyDDFQIPZVV3dui0CTmNAUs=@195.68.196.75:30303?discport=30301",
-        "stake": 5,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "btc",
-                "netid": "3",
-                "string": "1"
-            },
-            {
-                "name": "eos",
-                "netid": "3",
-                "string": "3"
-            },
-            {
-                "name": "aion",
-                "netid": "2",
-                "string": "2"
-            },
-            {
                 "name": "eth",
-                "netid": "3",
-                "string": "2"
-            }
-        ]
-    },
-    {
-        "enode": "enode://EVW7md_jP2gVZ7dHJvtZXppyiZfzWOwJuUvhcDtFAvc=@6.61.11.13:30303?discport=30301",
-        "stake": 164,
-        "status": false,
-        "isval": false,
-        "chains": [
-            {
-                "name": "eos",
-                "netid": "0",
-                "string": "3"
-            },
-            {
-                "name": "aion",
-                "netid": "2",
-                "string": "2"
-            },
-            {
-                "name": "eth",
-                "netid": "2",
-                "string": "0"
-            },
-            {
-                "name": "ltc",
-                "netid": "3",
-                "string": "1"
-            },
-            {
-                "name": "btc",
                 "netid": "1",
-                "string": "0"
-            },
-            {
-                "name": "dash",
-                "netid": "3",
-                "string": "2"
+                "string": "1"
             }
         ]
     }

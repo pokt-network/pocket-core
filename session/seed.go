@@ -1,6 +1,7 @@
 package session
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/pocket-core/common"
@@ -9,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 )
 
 type Seed struct {
@@ -34,11 +36,13 @@ func FileToNWSSlice(nodePoolFilePath string) []common.NodeWorldState {
 	jsonFile, err := os.Open(nodePoolFilePath)
 	if err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		fmt.Println(err.Error())
 	}
 	defer jsonFile.Close()
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		fmt.Println(err.Error())
 	}
 	var nodes []common.NodeWorldState
 	err = json.Unmarshal(byteValue, &nodes)
@@ -68,7 +72,7 @@ func nwsToNode(nws common.NodeWorldState) Node {
 	var role role
 	gid, ip, port, _ := nws.EnodeSplit()
 	for _, c := range nws.Chains {
-		chains.Add(common.SHA256FromString(fmt.Sprintf("%v", c)))
+		chains.Add(hex.EncodeToString(common.SHA256FromString(fmt.Sprintf("%v", c))))// TODO cross platform serialization
 	}
 	switch nws.IsVal {
 	case true:
@@ -88,6 +92,9 @@ func (s *Seed) ErrorCheck() error {
 	}
 	if s.NodeList == nil || len(s.NodeList) == 0 {
 		return NoNodeList
+	}
+	if reflect.DeepEqual(s.NodeList[0], Node{}) {
+		return InsufficientNodes
 	}
 	if s.RequestedChain == nil || len(s.RequestedChain) == 0 {
 		return NoReqChain
