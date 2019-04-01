@@ -1,8 +1,10 @@
 package session
 
 import (
+	"encoding/hex"
 	"errors"
 	"github.com/pokt-network/pocket-core/types"
+	"log"
 	"sort"
 )
 
@@ -18,7 +20,7 @@ const (
 )
 
 type Node struct {
-	GID    []byte    `json:"gid"`
+	GID    string    `json:"gid"`
 	IP     string    `json:"ip"`
 	Port   string    `json:"port"`
 	Role   role      `json:"role"`
@@ -30,7 +32,7 @@ type NodePool []Node
 
 // "GetSessionNodes" filters by blockchash, and returns the closest nodes to the key
 func (n NodePool) GetSessionNodes(s Session) (SessionNodes, error) {
-	n.Filter(s.BlockHash)
+	n.Filter(hex.EncodeToString(s.Chain))
 	n.XOR(s)
 	n.Sort()
 	return n.GetClosestNodes(s)
@@ -72,7 +74,11 @@ func (n NodePool) Sort() {
 // "XOR" performs xor operation on each node's gid and session key
 func (n *NodePool) XOR(s Session) {
 	for a := range *n {
-		xor((*n)[a].XOR, (*n)[a].GID, s.Key)
+		gid, err := hex.DecodeString((*n)[a].GID)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		xor((*n)[a].XOR, gid, s.Key)
 	}
 }
 
@@ -92,15 +98,15 @@ func xor(dst, a []byte, b []byte) error {
 }
 
 // "Filter" removes any nodes from the slice that do not contain the blockchainHash
-func (n *NodePool) Filter(blockchainHash []byte) {
+func (n *NodePool) Filter(blockchainHash string) {
 	// TODO possible optimizations from node slice to map
-	for i, node := range *n {
-		if !node.Chains.Contains(blockchainHash) {
-			// remove it from the list
-			(*n)[i] = (*n)[len(*n)-1]
-			*n = (*n)[:len(*n)-1]
+	tmp := (*n)[:0]
+	for _, node := range *n {
+		if node.Chains.Contains(blockchainHash) {
+			tmp = append(tmp, node)
 		}
 	}
+	*n = tmp
 }
 
 // "GetClosestNodes" returns the 'proper' closest nodes to the session key
@@ -108,9 +114,9 @@ func (n *NodePool) GetClosestNodes(s Session) (SessionNodes, error) {
 	var sessionNodes SessionNodes
 	for _, node := range *n {
 		if node.Role == VALIDATE {
-			if len(sessionNodes.ValidatorNodes)==0{
+			if len(sessionNodes.ValidatorNodes) == 0 {
 				sessionNodes.DelegatedMinter = node
-				node.Role=DELEGATEDMINTER
+				node.Role = DELEGATEDMINTER
 			}
 			if len(sessionNodes.ValidatorNodes) != MAXVALIDATORS {
 				sessionNodes.ValidatorNodes = append(sessionNodes.ValidatorNodes, node)

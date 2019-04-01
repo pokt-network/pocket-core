@@ -2,7 +2,6 @@ package common
 
 import (
 	"crypto/sha256"
-	"encoding/hex"
 	"strings"
 )
 
@@ -20,7 +19,7 @@ type Blockchain struct {
 	Version string `json:"string"`
 }
 
-func (nws NodeWorldState) EnodeSplit() (gid []byte, ip string, port string, discport string) {
+func (nws NodeWorldState) EnodeSplit() (gid string, ip string, port string, discport string) {
 	var url []string
 	e := nws.Enode
 	enodeSplit := strings.Split(e, "@")
@@ -33,7 +32,7 @@ func (nws NodeWorldState) EnodeSplit() (gid []byte, ip string, port string, disc
 	ip = url[0]
 	port = url[1]
 	hash := strings.TrimPrefix(enodeSplit[0], "enode://")
-	gid, _ = hex.DecodeString(hash)
+	gid = hash
 	return
 }
 

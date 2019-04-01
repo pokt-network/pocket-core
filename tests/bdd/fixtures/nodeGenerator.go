@@ -2,7 +2,7 @@ package main
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/pocket-core/common"
@@ -23,7 +23,7 @@ func RandomChains() []common.Blockchain {
 	c := chains[rand.Intn(len(chains)-1):]
 	res = make([]common.Blockchain, len(c))
 	for i, chain := range c {
-		res[i] = common.Blockchain{Name: chain, NetID: strconv.Itoa(rand.Intn(4)), Version: strconv.Itoa(rand.Intn(4))}
+		res[i] = common.Blockchain{Name: chain, NetID: strconv.Itoa(1), Version: strconv.Itoa(1)}
 	}
 	return res
 }
@@ -31,9 +31,9 @@ func RandomChains() []common.Blockchain {
 func CreateNode(i int) common.NodeWorldState {
 	hasher := sha256.New()
 	hasher.Write([]byte("node" + strconv.Itoa(i)))
-	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	hash := hex.EncodeToString(hasher.Sum(nil))
 	return common.NodeWorldState{Enode: "enode://" + hash + "@" + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + "." + strconv.Itoa(rand.Intn(255)) + ":30303?discport=30301",
-		Stake: rand.Intn(255), Active: rand.Intn(2) != 0, IsVal: rand.Intn(2) != 0, Chains: RandomChains()}
+		Stake: rand.Intn(255), Active: rand.Intn(2) != 0, IsVal: rand.Intn(2) != 0, Chains: []common.Blockchain{common.Blockchain{Name: "eth", NetID: strconv.Itoa(1), Version: strconv.Itoa(1)}}}
 }
 
 func CreateNodePool(amount int) []common.NodeWorldState {
