@@ -2,7 +2,9 @@ package node
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -78,6 +80,16 @@ func (w *Whitelist) Clear() {
 	(*types.Set)(w).Clear()
 }
 
+func (w *Whitelist) ToSlice() []string {
+	var res []string
+	for entry := range w.M {
+		if entry != "" {
+			res = append(res, entry.(string))
+		}
+	}
+	return res
+}
+
 // "SWLFile" builds the service white list from a file.
 func SWLFile() error {
 	return SWL().wlFile(config.GlobalConfig().SNWL)
@@ -104,6 +116,50 @@ func (w *Whitelist) wlFile(filePath string) error {
 	}
 	w.AddMulti(data)
 	return nil
+}
+
+func UpdateWhiteList() error {
+	res, arr, err := GetWhiteList()
+	if err != nil {
+		return err
+	}
+	// update
+	dwl := DWL()
+	for _, s := range arr {
+		dwl.Clear()
+		dwl.Add(s)
+	}
+	// write devwl
+	err = ioutil.WriteFile(config.GlobalConfig().DWL, []byte(res), 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetWhiteList() (string, []string, error) {
+	res, err := getWhiteList()
+	if err != nil {
+		return "", nil, err
+	}
+	var arr []string
+	err = json.Unmarshal([]byte(res), &arr)
+	if err != nil {
+		return "", nil, err
+	}
+	return res, arr, nil
+}
+
+func getWhiteList() (string, error) {
+	if !config.GlobalConfig().Dispatch {
+		url := "http://" + config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort + "/v1/whitelist"
+		pl, err := Self()
+		if err != nil {
+			return "", err
+		}
+		return util.StructRPCReq(url, pl, util.POST)
+	}
+	return "", errors.New("dispatch node can't execute this call")
 }
 
 // "EnsureWL" cross checks the whitelist for
