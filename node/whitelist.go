@@ -3,13 +3,14 @@ package node
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/types"
 )
@@ -86,12 +87,20 @@ func (w *Whitelist) ToSlice() []string {
 
 // "SWLFile" builds the service white list from a file.
 func SWLFile() error {
-	return SWL().wlFile(config.GlobalConfig().SNWL)
+	swl := config.GlobalConfig().SNWL
+	if swl == _const.SNWLFILENAMEPLACEHOLDER {
+		swl = config.GlobalConfig().DD + _const.FILESEPARATOR + "service_whitelist.json"
+	}
+	return SWL().wlFile(swl)
 }
 
 // "DWLFile" builds the develoeprs white list from a file.
 func DWLFile() error {
-	return DWL().wlFile(config.GlobalConfig().DWL)
+	dwl := config.GlobalConfig().DWL
+	if dwl == _const.DWLFILENAMEPLACEHOLDER {
+		dwl = config.GlobalConfig().DD + _const.FILESEPARATOR + "developer_whitelist.json"
+	}
+	return DWL().wlFile(dwl)
 }
 
 // "wlFile" builds a whitelist structure from a file.

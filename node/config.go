@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/const"
 	"time"
 
 	"github.com/pokt-network/pocket-core/config"
@@ -58,10 +59,14 @@ func swlConfigFile() error {
 
 func chainsConfigFile() {
 	// chains.json
-	if err := CFile(config.GlobalConfig().CFile); err != nil {
+	c := config.GlobalConfig().CFile
+	if c == _const.CHAINFILEPLACEHOLDER {
+		c = config.GlobalConfig().DD+_const.FILESEPARATOR+"chains.json"
+	}
+	if err := CFile(c); err != nil {
 		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		fileErrorMessage(ChainFile)
-		ExitGracefully(err.Error() + " " + config.GlobalConfig().CFile) // currently just exit
+		ExitGracefully(err.Error() + " " + c) // currently just exit
 	}
 }
 

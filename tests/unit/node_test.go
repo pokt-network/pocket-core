@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/node"
@@ -78,15 +78,6 @@ func TestConfigFiles(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	if err := node.ConfigFiles(); err != nil {
-		t.Fatalf(err.Error())
-	}
-}
-
-func TestChains(t *testing.T) {
-	if err := writeSampleConfigFiles(); err != nil {
-		t.Fatalf(err.Error())
-	}
-	if err := node.CFile(config.GlobalConfig().CFile); err != nil {
 		t.Fatalf(err.Error())
 	}
 }
