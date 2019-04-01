@@ -22,6 +22,7 @@ func Routes() shared.Routes {
 		shared.Route{Name: "UnRegister", Method: "POST", Path: "/v1/unregister", HandlerFunc: UnRegister},
 		shared.Route{Name: "RegisterInfo", Method: "GET", Path: "/v1/register", HandlerFunc: RegisterInfo},
 		shared.Route{Name: "UnRegisterInfo", Method: "GET", Path: "/v1/unregister", HandlerFunc: UnRegisterInfo},
+		shared.Route{Name: "WhiteList", Method: "POST", Path: "/v1/whitelist", HandlerFunc: WhiteList},
 		shared.Route{Name: "Flags", Method: "GET", Path: "/v1/flags", HandlerFunc: Flags},
 	}
 	return routes

@@ -24,7 +24,6 @@ func (m Method) String() string {
 func RPCRequ(url string, data []byte, m Method) (string, error) {
 	req, err := http.NewRequest(m.String(), url, bytes.NewBuffer(data))
 	req.Close = true
-	// handle error
 	if err != nil {
 		return "", errors.New("Cannot convert struct to json " + err.Error())
 	}
