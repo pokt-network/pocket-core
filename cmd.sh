@@ -27,57 +27,25 @@ set -o nounset
 
 # Start pocket-core
 if [ ${POCKET_CORE_NODE_TYPE:-service} = "dispatch" ]; then
-	if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == false ]; then
-		echo 'Starting pocket-core dispatch'
-		exec pocket-core --dispatch \
-		  --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
-		  --dbend ${POCKET_CORE_AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} \
-		  --dbtable ${POCKET_CORE_AWS_DYNAMODB_TABLE:-dispatch-peers-staging} \
-		  --dbregion ${POCKET_CORE_AWS_DYNAMODB_REGION:-us-east-1} \
-		  --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} \
-		  --disrport ${POCKET_CORE_DISPATCH_PORT:-8081}
-
-	else
-		echo 'Starting pocket-core dispatch'
-		nohup pocket-core --dispatch \
-		  --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
-		  --dbend ${POCKET_CORE_AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} \
-		  --dbtable ${POCKET_CORE_AWS_DYNAMODB_TABLE:-dispatch-peers-staging} \
-		  --dbregion ${POCKET_CORE_AWS_DYNAMODB_REGION:-us-east-1} \
-		  --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} \
-		  --disrport ${POCKET_CORE_DISPATCH_PORT:-8081} &
-	
-		sleep 10
-		echo 'Initializing integration testing'
-		exec go test ./tests/integration/... --dispatch --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}:${POCKET_CORE_DISPATCH_PORT:-8081} --servicetesturl ${POCKET_CORE_SERVICE_IP:-127.0.0.1}:${POCKET_CORE_SERVICE_PORT:-8081}
-
-	fi
+	echo 'Starting pocket-core dispatch'
+	exec pocket-core --dispatch \
+	  --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
+	  --dbend ${POCKET_CORE_AWS_DYNAMODB_ENDPOINT:-dynamodb.us-east-1.amazonaws.com} \
+	  --dbtable ${POCKET_CORE_AWS_DYNAMODB_TABLE:-dispatch-peers-staging} \
+	  --dbregion ${POCKET_CORE_AWS_DYNAMODB_REGION:-us-east-1} \
+	  --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} \
+	  --disrport ${POCKET_CORE_DISPATCH_PORT:-8081}
 
 elif [ ${POCKET_CORE_NODE_TYPE:-service} = "service" ]; then
-	if [ ${POCKET_CORE_INTEGRATION_TESTS:-false}  == false ]; then
-		echo 'Starting pocket-core service'
+	echo 'Starting pocket-core service'
 
-		exec pocket-core --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
-			--disip ${POCKET_CORE_DISPATCH_IP:-dispatch.pokt.network} \
-			--gid ${POCKET_CORE_SERVICE_GID:-GID2} \
-			--ip ${POCKET_CORE_SERVICE_IP:-127.0.0.1} \
-			--disrport ${POCKET_CORE_DISPATCH_PORT:-443} \
-			--port ${POCKET_CORE_SERVICE_PORT:-8081} 
+	exec pocket-core --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
+		--disip ${POCKET_CORE_DISPATCH_IP:-dispatch.pokt.network} \
+		--gid ${POCKET_CORE_SERVICE_GID:-GID2} \
+		--ip ${POCKET_CORE_SERVICE_IP:-127.0.0.1} \
+		--disrport ${POCKET_CORE_DISPATCH_PORT:-443} \
+		--port ${POCKET_CORE_SERVICE_PORT:-8081} 
 
-	else
-		echo 'Starting pocket-core service'
-		
-		nohup pocket-core --datadirectory ${POCKET_PATH_DATADIR:-datadir} \
-			--disip ${POCKET_CORE_DISPATCH_IP:-dispatch.pokt.network} \
-			--gid ${POCKET_CORE_SERVICE_GID:-GID2} \
-			--ip ${POCKET_CORE_SERVICE_IP:-127.0.0.1} \
-			--disrport ${POCKET_CORE_DISPATCH_PORT:-443} \
-			--port ${POCKET_CORE_SERVICE_PORT:-8081} &
-		
-		sleep 10
-		echo 'Initializing integration testing'
-		exec go test ./tests/integration/... --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}:${POCKET_CORE_DISPATCH_PORT:-8081} --servicetesturl ${POCKET_CORE_SERVICE_IP:-127.0.0.1}:${POCKET_CORE_SERVICE_PORT:-8081}
-	fi
 else
 	echo 'Need to specify a node type, either dispatch or service.'
 	exit 1
