@@ -2,16 +2,19 @@ package util
 
 import (
 	"errors"
-	"fmt"
+	"github.com/pokt-network/pocket-core/config"
 	"net/http"
 	"strings"
 	"time"
 )
 
 const (
-	HTTPS   = "https://"
-	HTTP    = "http://"
-	TIMEOUT = time.Duration(200 * time.Millisecond)
+	HTTPS = "https://"
+	HTTP  = "http://"
+)
+
+var (
+	TIMEOUT = time.Duration(config.GlobalConfig().RequestTimeout) * time.Millisecond
 )
 
 func URLProto(query string) (string, error) {
@@ -32,7 +35,6 @@ func URLProto(query string) (string, error) {
 func Ping(url string) (int, error) {
 	client := http.Client{}
 	client.Timeout = TIMEOUT
-	fmt.Println(url)
 	req, err := http.NewRequest("HEAD", url, nil)
 	if err != nil {
 		return 0, err

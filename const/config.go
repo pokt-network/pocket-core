@@ -12,4 +12,6 @@ const (
 	RAPIVERSION = "0.0.1"
 	// version of Pocket Core Client API
 	CAPIVERSION = "0.0.1"
+	// http timeout in ms
+	TIMEOUT = 400
 )
