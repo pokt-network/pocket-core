@@ -18,4 +18,5 @@ vendor/
 *.log
 logs/Logs
 *.idea/
+flatc
 
