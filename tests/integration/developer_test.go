@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
 )
@@ -23,7 +23,7 @@ const (
 	dispatch = "dispatch"
 )
 
-var dispatchU, serviceU *string
+var dispatchU *string
 
 func init() {
 	dispatchU = flag.String("url", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test dispatch node")

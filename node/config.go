@@ -61,7 +61,7 @@ func chainsConfigFile() {
 	// chains.json
 	c := config.GlobalConfig().CFile
 	if c == _const.CHAINFILEPLACEHOLDER {
-		c = config.GlobalConfig().DD+_const.FILESEPARATOR+"chains.json"
+		c = config.GlobalConfig().DD + _const.FILESEPARATOR + "chains.json"
 	}
 	if err := CFile(c); err != nil {
 		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
