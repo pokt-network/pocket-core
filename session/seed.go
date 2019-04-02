@@ -21,8 +21,9 @@ type Seed struct {
 }
 
 // "NewSeed" is the constructor of the sessionSeed
-func NewSeed(devID []byte, nodePoolFilePath string, requestedBlockchain []byte, blockHash []byte) Seed {
-	return Seed{DevID: devID, BlockHash: blockHash, RequestedChain: requestedBlockchain, NodeList: FileToNodes(nodePoolFilePath)}
+func NewSeed(devID []byte, nodePoolFilePath string, requestedBlockchain []byte, blockHash []byte) (Seed, error) {
+	np, err := FileToNodes(nodePoolFilePath)
+	return Seed{DevID: devID, BlockHash: blockHash, RequestedChain: requestedBlockchain, NodeList: np}, err
 }
 
 // "FileToNodes" converts the world state noodPool.json file into a slice of session.Node
