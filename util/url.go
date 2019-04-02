@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"net/http"
 	"strings"
