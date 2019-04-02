@@ -49,7 +49,7 @@ if [ ${POCKET_CORE_NODE_TYPE:-service} = "dispatch" ]; then
 	
 		sleep 10
 		echo 'Initializing integration testing'
-		exec go test ./tests/integration/... --dispatch --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}:${POCKET_CORE_DISPATCH_PORT:-8081} --servicetesturl ${POCKET_CORE_SERVICE_IP:-127.0.0.1}:${POCKET_CORE_SERVICE_IP:-8081}
+		exec go test ./tests/integration/... --dispatch --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}:${POCKET_CORE_DISPATCH_PORT:-8081} --servicetesturl ${POCKET_CORE_SERVICE_IP:-127.0.0.1}:${POCKET_CORE_SERVICE_PORT:-8081}
 
 	fi
 
@@ -76,7 +76,7 @@ elif [ ${POCKET_CORE_NODE_TYPE:-service} = "service" ]; then
 		
 		sleep 10
 		echo 'Initializing integration testing'
-		exec go test ./tests/integration/... --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}:${POCKET_CORE_DISPATCH_PORT:-8081} --servicetesturl ${POCKET_CORE_SERVICE_IP:-127.0.0.1}:${POCKET_CORE_SERVICE_IP:-8081}
+		exec go test ./tests/integration/... --dispatchtesturl ${POCKET_CORE_DISPATCH_IP:-127.0.0.1}:${POCKET_CORE_DISPATCH_PORT:-8081} --servicetesturl ${POCKET_CORE_SERVICE_IP:-127.0.0.1}:${POCKET_CORE_SERVICE_PORT:-8081}
 	fi
 else
 	echo 'Need to specify a node type, either dispatch or service.'
