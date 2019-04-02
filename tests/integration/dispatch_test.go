@@ -1,9 +1,8 @@
 package integration
 
 import (
-	"github.com/pokt-network/pocket-core/config"
 	"testing"
-
+	
 	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/node"
 )
@@ -22,10 +21,6 @@ func DummyNode() node.Node {
 }
 
 func TestDB(t *testing.T) {
-	// if service node skip
-	if !config.GlobalConfig().Dispatch {
-		t.Skip()
-	}
 	n := DummyNode()
 	_, err := db.DB().Add(n)
 	if err != nil {

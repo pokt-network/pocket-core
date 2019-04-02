@@ -11,11 +11,10 @@ import (
 
 // "ExecuteRequest" takes in the raw json string and forwards it to the port
 func ExecuteRequest(jsonStr []byte, host string, port string) (string, error) {
-	host, err := util.URLProto(host)
+	url, err := util.URLProto(host+":"+port)
 	if err != nil {
 		return "", err
 	}
-	url := host + ":" + port
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	req.Close = true
 	req.Header.Set("Content-Type", "application/json")
