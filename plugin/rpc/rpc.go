@@ -11,7 +11,7 @@ import (
 
 // "ExecuteRequest" takes in the raw json string and forwards it to the port
 func ExecuteRequest(jsonStr []byte, host string, port string) (string, error) {
-	url, err := util.URLProto(host+":"+port)
+	url, err := util.URLProto(host + ":" + port)
 	if err != nil {
 		return "", err
 	}

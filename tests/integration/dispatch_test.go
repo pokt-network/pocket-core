@@ -2,7 +2,7 @@ package integration
 
 import (
 	"testing"
-	
+
 	"github.com/pokt-network/pocket-core/db"
 	"github.com/pokt-network/pocket-core/node"
 )
