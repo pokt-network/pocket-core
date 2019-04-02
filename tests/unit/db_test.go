@@ -11,8 +11,8 @@ func DummyNode() node.Node {
 	chains := []node.Blockchain{{Name: "ethereum", NetID: "1"}}
 	n := node.Node{
 		GID:         "test",
-		IP:          "123",
-		RelayPort:   "0",
+		IP:          "ipfromintegrationtest",
+		RelayPort:   "portfromintegrationtest",
 		ClientID:    "0",
 		CliVersion:  "0",
 		Blockchains: chains,

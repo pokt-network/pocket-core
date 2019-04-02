@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ func URLProto(query string) (string, error) {
 func Ping(url string) (int, error) {
 	client := http.Client{}
 	client.Timeout = TIMEOUT
+	fmt.Println(url)
 	req, err := http.NewRequest("HEAD", url, nil)
 	if err != nil {
 		return 0, err

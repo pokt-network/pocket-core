@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
 )
@@ -26,10 +26,8 @@ const (
 var dispatchU, serviceU *string
 
 func init() {
-	dispatchU = flag.String("dispatchtesturl", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test dispatch node")
-	serviceU = flag.String("servicetesturl", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test service node")
+	dispatchU = flag.String("url", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test dispatch node")
 	flag.Parse()
-	*serviceU = *serviceU + "/v1/"
 	*dispatchU = *dispatchU + "/v1/"
 }
 func requestFromFile(urlSuffix string) (string, error) {
@@ -37,11 +35,6 @@ func requestFromFile(urlSuffix string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	serviceU, err := util.URLProto(*serviceU)
-	if err != nil {
-		return "", err
-	}
-	util.URLProto(serviceU)
 	fp, err := filepath.Abs("fixtures" + _const.FILESEPARATOR + urlSuffix + ".json")
 	if err != nil {
 		return "", err
@@ -50,20 +43,10 @@ func requestFromFile(urlSuffix string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	switch urlSuffix {
-
-	}
-	if urlSuffix == relay {
-		return util.RPCRequ(serviceU+urlSuffix, b, util.POST)
-	}
 	return util.RPCRequ(dispatchU+urlSuffix, b, util.POST)
 }
 
 func TestRelay(t *testing.T) {
-	// if dispatch node skip
-	if config.GlobalConfig().Dispatch {
-		t.Skip()
-	}
 	resp, err := requestFromFile(relay)
 	if err != nil {
 		t.Log(assumptions)
@@ -73,10 +56,6 @@ func TestRelay(t *testing.T) {
 }
 
 func TestReport(t *testing.T) {
-	// if dispatch node skip
-	if config.GlobalConfig().Dispatch {
-		t.Skip()
-	}
 	resp, err := requestFromFile(report)
 	if err != nil {
 		t.Log(assumptions)
@@ -86,10 +65,6 @@ func TestReport(t *testing.T) {
 }
 
 func TestDispatch(t *testing.T) {
-	// if dispatch node skip
-	if config.GlobalConfig().Dispatch {
-		t.Skip()
-	}
 	resp, err := requestFromFile(dispatch)
 	if err != nil {
 		t.Log(assumptions)
