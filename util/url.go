@@ -2,7 +2,6 @@ package util
 
 import (
 	"errors"
-	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"net/http"
 	"strings"
@@ -32,8 +31,6 @@ func URLProto(query string) (string, error) {
 func Ping(url string) (int, error) {
 	client := http.Client{}
 	client.Timeout = time.Duration(config.GlobalConfig().RequestTimeout) * time.Millisecond
-	fmt.Println(config.GlobalConfig())
-	fmt.Println("timeout",client.Timeout)
 	req, err := http.NewRequest("HEAD", url, nil)
 	if err != nil {
 		return 0, err
