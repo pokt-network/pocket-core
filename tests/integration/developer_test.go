@@ -6,16 +6,16 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
 )
 
 const assumptions = "Integration Testing Assumptions:\n" +
-	"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ETH | NetworkID: 4) in chains.json file\n" +
-	"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n" +
-	"3) Dispatcher is running on DispIP:DisRPort\n" +
-	"4) Dispatcher has valid aws credentials for DB test"
+"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ETH | NetworkID: 4) in chains.json file\n" +
+"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n" +
+"3) Dispatcher is running on DispIP:DisRPort\n" +
+"4) Dispatcher has valid aws credentials for DB test"
 
 const (
 	relay           = "relay"
