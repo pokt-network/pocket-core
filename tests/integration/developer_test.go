@@ -34,7 +34,7 @@ func init() {
 		*dispatchU = config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort
 	}
 	if *serviceU == urlstring {
-		*dispatchU = config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort
+		*serviceU = config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort
 	}
 	*dispatchU = *dispatchU + "/v1/"
 	*serviceU = *serviceU + "/v1/"
