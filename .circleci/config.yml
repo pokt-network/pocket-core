@@ -25,4 +25,4 @@ jobs:
       - run: dep ensure
       - run: go build cmd/pocket_core/main.go
       - run: go test ./tests/unit/...
-      - run: go test ./tests/... --dispatchurl $DISPATCH_URL --serviceurl $SERVICE_URL
+      - run: go test ./tests/... --dispatchurl $POCKET_CORE_DISPATCH_URL --serviceurl $POCKET_CORE_SERVICE_URL
