@@ -29,7 +29,7 @@ func NewSeed(devID []byte, nodePoolFilePath string, requestedBlockchain []byte, 
 // "FileToNodes" converts the world state noodPool.json file into a slice of session.Node
 func FileToNodes(nodePoolFilePath string) []Node {
 	nws := FileToNWSSlice(nodePoolFilePath)
-	return NWSToNodes(nws)
+	return nwsToNodes(nws)
 }
 
 // "FileToNWSSlice" converts a file to a slice of NodeWorldState Nodes
@@ -53,9 +53,9 @@ func FileToNWSSlice(nodePoolFilePath string) []common.NodeWorldState {
 	return nodes
 }
 
-// "NWSToNodes" converts the NodeWorldState slice of nodes from the json file
+// "nwsToNodes" converts the NodeWorldState slice of nodes from the json file
 // into a []Node which is used in our session seed
-func NWSToNodes(nws []common.NodeWorldState) []Node {
+func nwsToNodes(nws []common.NodeWorldState) ([]Node, error) {
 	var nodeList []Node
 	for _, node := range nws {
 		if !node.Active {
