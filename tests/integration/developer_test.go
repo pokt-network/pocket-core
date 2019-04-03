@@ -6,28 +6,32 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
 )
 
 const assumptions = "Integration Testing Assumptions:\n" +
-	"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ETH | NetworkID: 4) in chains.json file\n" +
-	"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n" +
-	"3) Dispatcher is running on DispIP:DisRPort\n" +
-	"4) Dispatcher has valid aws credentials for DB test"
+"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ETH | NetworkID: 4) in chains.json file\n" +
+"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n" +
+"3) Dispatcher is running on DispIP:DisRPort\n" +
+"4) Dispatcher has valid aws credentials for DB test"
 
 const (
-	relay    = "relay"
-	report   = "report"
-	dispatch = "dispatch"
+	relay           = "relay"
+	report          = "report"
+	dispatch        = "dispatch"
+	dispatchUString = "disIP:disrPort"
 )
 
 var dispatchU *string
 
 func init() {
-	dispatchU = flag.String("url", config.GlobalConfig().DisIP+":"+config.GlobalConfig().DisRPort, "the host:port for the test dispatch node")
-	flag.Parse()
+	dispatchU = flag.String("url", dispatchUString, "the host:port for the test dispatch node")
+	config.Init()
+	if *dispatchU == dispatchUString {
+		*dispatchU = config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort
+	}
 	*dispatchU = *dispatchU + "/v1/"
 }
 func requestFromFile(urlSuffix string) (string, error) {
