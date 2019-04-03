@@ -1,12 +1,25 @@
 package unit
 
 import (
+	"flag"
 	"os"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 )
+
+const (
+	urlstring = "disIP:disrPort"
+)
+
+var dispatchU, serviceU *string
+
+func init(){
+	dispatchU = flag.String("dispatchurl", urlstring, "the host:port for the test dispatch node")
+	serviceU = flag.String("serviceurl", urlstring, "the host:port for the test service node")
+	config.Init()
+}
 
 func TestGlobalConfig(t *testing.T) {
 	c := config.GlobalConfig()
