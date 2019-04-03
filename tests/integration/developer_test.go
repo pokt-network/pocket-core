@@ -6,36 +6,42 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
 )
 
 const assumptions = "Integration Testing Assumptions:\n" +
-	"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ETH | NetworkID: 4) in chains.json file\n" +
-	"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n" +
-	"3) Dispatcher is running on DispIP:DisRPort\n" +
-	"4) Dispatcher has valid aws credentials for DB test"
+"1) Dispatcher is hosting a testrpc instance that is labeled as (Blockchain: ETH | NetworkID: 4) in chains.json file\n" +
+"2) Dispatcher has white listed DEVID1 (Dev) and GID1 (SN)\n" +
+"3) Dispatcher is running on DispIP:DisRPort\n" +
+"4) Dispatcher has valid aws credentials for DB test"
 
 const (
-	relay           = "relay"
-	report          = "report"
-	dispatch        = "dispatch"
-	dispatchUString = "disIP:disrPort"
+	relay     = "relay"
+	report    = "report"
+	dispatch  = "dispatch"
+	urlstring = "disIP:disrPort"
 )
 
-var dispatchU *string
+var dispatchU, serviceU *string
 
 func init() {
-	dispatchU = flag.String("url", dispatchUString, "the host:port for the test dispatch node")
+	dispatchU = flag.String("dispatchurl", urlstring, "the host:port for the test dispatch node")
+	serviceU = flag.String("serviceurl", urlstring, "the host:port for the test service node")
 	config.Init()
-	if *dispatchU == dispatchUString {
+	if *dispatchU == urlstring {
+		*dispatchU = config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort
+	}
+	if *serviceU == urlstring {
 		*dispatchU = config.GlobalConfig().DisIP + ":" + config.GlobalConfig().DisRPort
 	}
 	*dispatchU = *dispatchU + "/v1/"
+	*serviceU = *serviceU + "/v1/"
 }
 func requestFromFile(urlSuffix string) (string, error) {
 	dispatchU, err := util.URLProto(*dispatchU)
+	serviceU, err := util.URLProto(*serviceU)
 	if err != nil {
 		return "", err
 	}
@@ -46,6 +52,10 @@ func requestFromFile(urlSuffix string) (string, error) {
 	b, err := ioutil.ReadFile(fp)
 	if err != nil {
 		return "", err
+	}
+	
+	if urlSuffix == relay {
+		return util.RPCRequ(serviceU+urlSuffix, b, util.POST)
 	}
 	return util.RPCRequ(dispatchU+urlSuffix, b, util.POST)
 }
