@@ -59,7 +59,7 @@ func (s *Session) GenKey() error {
 
 // "GenNodes" generates the nodes of the session
 func (s *Session) GenNodes(pool NodePool) error {
-	n, err := pool.GetSessionNodes(*s)
+	n, err := pool.GetNodes(*s)
 	if err != nil {
 		return err
 	}
