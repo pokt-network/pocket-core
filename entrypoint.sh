@@ -22,16 +22,23 @@ set -o nounset
 
 cmd="$@"
 
-# Loading pocket-core configurations 
+# Loading pocket-core configurations
 ## If variable POCKET_CORE_S3_CONFIG_URL is not provided, we use POCKET_CORE_SERVICE_WHITELIST and POCKET_CORE_DEVLEOPER_WHITELIST variables
 ## If variable POCKET_CORE_S3_CONFIG_URL is provided, we use only the configuration inside the S3 path
 
 if [  ${POCKET_CORE_S3_CONFIG_URL:-false} == false  ]; then
  	echo 'POCKET_CORE_S3_CONFIG_URL env variable not found, Using default configurations'
-	echo ${POCKET_CORE_SERVICE_WHITELIST:-[]} >  ${POCKET_PATH_DATADIR:-datadir}/service_whitelist.json
-	echo ${POCKET_CORE_DEVELOPER_WHITELIST:-[]} > ${POCKET_PATH_DATADIR:-datadir}/developer_whitelist.json
-	echo ${POCKET_CORE_CHAINS:-[]} > ${POCKET_PATH_DATADIR:-datadir}/chains.json
+	if [ ! -f ${POCKET_PATH_DATADIR:-datadir}/service_whitelist.json ]; then
+		echo ${POCKET_CORE_SERVICE_WHITELIST:-[]} >  ${POCKET_PATH_DATADIR:-datadir}/service_whitelist.json
+	fi
 
+	if [ ! -f ${POCKET_PATH_DATADIR:-datadir}/developer_whitelist.json ]; then
+		echo ${POCKET_CORE_DEVELOPER_WHITELIST:-[]} > ${POCKET_PATH_DATADIR:-datadir}/developer_whitelist.json
+	fi
+
+	if [ ! -f ${POCKET_PATH_DATADIR:-datadir}/chains.json ]; then
+		echo ${POCKET_CORE_CHAINS:-[]} > ${POCKET_PATH_DATADIR:-datadir}/chains.json
+	fi
 else
  	echo 'Downloading node configurations from S3'
 	aws s3 sync $POCKET_CORE_S3_CONFIG_URL ${POCKET_PATH_DATADIR:-datadir}
