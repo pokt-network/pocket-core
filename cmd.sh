@@ -13,11 +13,13 @@ set -o nounset
 # AWS_SECRET_ACCESS_KEY = aws secret key to download the S3 / connect to dynamodb (dispatch only)
 # POCKET_CORE_DISPATCH_IP = Dispatch node address (defaults to 127.0.0.1)
 # POCKET_CORE_DISPATCH_PORT = Dispatch node port (defaults to 8081)
+# POCKET_CORE_REQUEST_TIMEOUT = Default request timeout (in ms) to use when doing network requests (defaults to 400)
 
 # Dispatch only
 # AWS_DYNAMODB_ENDPOINT = AWS dynamodb endpoint (defaults to dynamodb.us-east-1.amazonaws.com)
 # AWS_DYNAMODB_TABLE = AWS dynamodb table name (defaults to dispatch-peers-staging)
 # AWS_DYNAMODB_REGION = AWS dynamodb region (defaults to us-east-1)
+# POCKET_CORE_DISPATCH_GID = The GID assigned to this dispatch instance
 
 # Service only
 # POCKET_CORE_SERVICE_GID = GID of the service node (required)
@@ -34,7 +36,9 @@ if [ ${POCKET_CORE_NODE_TYPE:-service} = "dispatch" ]; then
 	  --dbtable ${POCKET_CORE_AWS_DYNAMODB_TABLE:-dispatch-peers-staging} \
 	  --dbregion ${POCKET_CORE_AWS_DYNAMODB_REGION:-us-east-1} \
 	  --disip ${POCKET_CORE_DISPATCH_IP:-127.0.0.1} \
-	  --disrport ${POCKET_CORE_DISPATCH_PORT:-8081}
+	  --disrport ${POCKET_CORE_DISPATCH_PORT:-8081} \
+	  --gid ${POCKET_CORE_DISPATCH_GID:-GID1} \
+	  --requestTimeout ${POCKET_CORE_REQUEST_TIMEOUT:-400}
 
 elif [ ${POCKET_CORE_NODE_TYPE:-service} = "service" ]; then
 	echo 'Starting pocket-core service'
@@ -44,7 +48,8 @@ elif [ ${POCKET_CORE_NODE_TYPE:-service} = "service" ]; then
 		--gid ${POCKET_CORE_SERVICE_GID:-GID2} \
 		--ip ${POCKET_CORE_SERVICE_IP:-127.0.0.1} \
 		--disrport ${POCKET_CORE_DISPATCH_PORT:-443} \
-		--port ${POCKET_CORE_SERVICE_PORT:-8081} 
+		--port ${POCKET_CORE_SERVICE_PORT:-8081} \
+		--requestTimeout ${POCKET_CORE_REQUEST_TIMEOUT:-400}
 
 else
 	echo 'Need to specify a node type, either dispatch or service.'
