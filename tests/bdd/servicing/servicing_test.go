@@ -13,15 +13,15 @@ import (
 // What DSA?
 // Who do we send the result to? -> The client and validators
 // How are we doing writes?
+// Do clients need to sign requests?
+// How are we doing the devid / signature architecture ?
+// Signature capture in the relay response objects? What does the object look like that is going to the validators?
 // ************************************************************************************************************
 
 var _ = Describe("Servicing", func() {
 	
 	Describe("Service Configuration", func() {
-		It("should compute/retrieve blockchain hashes", func() {
-			// add code
-		})
-		It("should configure a third pary blockchain endpoint list", func() {
+		It("should configure a third party blockchain endpoint list", func() {
 			// add code
 		})
 		It("should test connection to each third party blockchain", func() {
@@ -31,29 +31,55 @@ var _ = Describe("Servicing", func() {
 	
 	Describe("Initialize servicing", func() {
 		Context("Receives a message of a relay request to service from a client", func() {
-			Describe("message validation", func() {
-				It("should be able to be unmarshalled", func() {
-					// add code
-				})
-				It("should not contain any missing fields", func() {
-					// add code
-				})
-				It("should contain a valid signature", func() {
-					// add code
-				})
-				Describe("Valid session id", func() {
-					It("should be properly formatted", func() {
-						// add code
-					})
-					It("should be valid for the specific service node", func() {
-						// add code
+			Describe("Message validation", func() {
+				Describe("Unmarshal from bytes to fbs", func() {
+					It("(the byte array) should be able to be unmarshalled into a relay flatbuffer", func() {
+					
 					})
 				})
-				It("should be for a supported blockchain", func() {
-					// add code
+				Describe("A relay must contain: a data payload, blockchainhash, devid, signature, and an http method (url param optional)", func() {
+					It("should contain a data payload", func() {
+					
+					})
+					It("should contain a blockchainhash", func() {
+					
+					})
+					It("should contain a devid", func() {
+					
+					})
+					It("should contain a signature", func() {
+						// TODO signatures
+					})
+					It("should contain an http method", func() {
+					
+					})
+				})
+				Describe("Proper Formatting", func() {
+					It("should contain a properly formatted signature", func() {
+					
+					})
+					It("should contain a properly formatted devid", func() {
+					
+					})
+				})
+				Describe("Field validation", func() {
+					It("should contain a blockchain hash that is supported by the node", func() {
+					
+					})
+					It("should contain a signature that corresponds with the devid", func() {
+					
+					})
+					It("should contain a devid that generates a session that corresponds to the service node", func() {
+					
+					})
 				})
 			})
-			It("should identify the proper endpoint to submit the relay request payload to", func() {
+		})
+	})
+	
+	Describe("Service preparation", func() {
+		Context("After the request is validated, the service node must prepare for relay execution", func() {
+			It("(the service node) should identify the proper endpoint to submit the relay request payload to", func() {
 			
 			})
 		})
@@ -87,7 +113,7 @@ var _ = Describe("Servicing", func() {
 		Describe("Websockets", func() {
 			Context("request happens successfully", func() {
 				It("should return the result", func() {
-					// add code
+					// TODO websockets
 				})
 			})
 			Context("request happens unsuccessfully", func() {
