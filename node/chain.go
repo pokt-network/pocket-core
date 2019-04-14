@@ -87,7 +87,7 @@ func ChainToHosted(b Blockchain) HostedChain {
 // "dialHC" attempts to connect to the specific host:port hosting the chain.
 func dialHC(u *url.URL) error {
 	resp, _ := http.Get(u.String())
-	if resp.StatusCode == 400 || resp.StatusCode == 200 {
+	if resp.StatusCode >= 200 {
 		return nil
 	}
 	return errors.New(strconv.Itoa(resp.StatusCode) + " : " + resp.Status)
