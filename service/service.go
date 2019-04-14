@@ -3,12 +3,11 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
+	"net/url"
 	"os"
 
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
-	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/node"
 	"github.com/pokt-network/pocket-core/plugin/rpc"
 )
@@ -25,13 +24,14 @@ type Relay struct {
 func RouteRelay(relay Relay) (string, error) {
 	if node.EnsureDWL(node.DWL(), relay.DevID) {
 		hc := node.ChainToHosted(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID})
-		port := hc.Port
-		host := hc.Host
-		if port == "" || host == "" {
-			logs.NewLog("Not a supported blockchain", logs.ErrorLevel, logs.JSONLogFormat)
-			return "This blockchain is not supported by this node", errors.New("not a supported blockchain")
+		u, err := url.ParseRequestURI(hc.Host + ":" + hc.Port)
+		if err != nil {
+			return "", err
 		}
-		return rpc.ExecuteRequest([]byte(relay.Data), host, port)
+		if hc.Path != "" {
+			u.Path = hc.Path
+		}
+		return rpc.ExecuteRequest([]byte(relay.Data), u)
 	}
 	return "Invalid credentials", nil
 }

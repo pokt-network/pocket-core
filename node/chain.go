@@ -3,12 +3,15 @@ package node
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
-	"net"
+	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 	"sync"
-	"time"
 )
 
 // A structure that specifies a non-native blockchain.
@@ -22,6 +25,7 @@ type HostedChain struct {
 	Blockchain `json:"blockchain"`
 	Port       string `json:"port"`
 	Host       string `json:"host"`
+	Path       string `json:"path"`   // url path for token based authentication
 	Medium     string `json:"medium"` // http, ws, tcp, etc.
 }
 
@@ -81,11 +85,12 @@ func ChainToHosted(b Blockchain) HostedChain {
 }
 
 // "dialHC" attempts to connect to the specific host:port hosting the chain.
-func dialHC(host string, port string) error {
-	if _, err := net.DialTimeout("tcp", host+":"+port, time.Duration(1*time.Second)); err != nil {
-		return err
+func dialHC(u *url.URL) error {
+	resp, _ := http.Get(u.String())
+	if resp.StatusCode == 400 || resp.StatusCode == 200 {
+		return nil
 	}
-	return nil
+	return errors.New(strconv.Itoa(resp.StatusCode) + " : " + resp.Status)
 }
 
 // "TestChains" tests for hosted blockchain clients.
@@ -94,10 +99,21 @@ func TestChains() {
 	mux.Lock()
 	defer mux.Unlock()
 	for _, c := range hc {
-		if err := dialHC(c.Host, c.Port); err != nil {
-			fmt.Fprint(os.Stderr, c.Name+" client is not detected @ "+c.Host+":"+c.Port+"\n")
+		s, err := util.URLProto(c.Host + ":" + c.Port)
+		if err != nil {
+			ExitGracefully(err.Error())
+		}
+		u, err := url.ParseRequestURI(s)
+		if err != nil {
+			ExitGracefully(err.Error())
+		}
+		if c.Path != "" {
+			u.Path = c.Path
+		}
+		if err := dialHC(u); err != nil {
+			fmt.Fprint(os.Stderr, c.Name+" client is not detected @ "+u.String()+"\n")
 			ExitGracefully(c.Name + " client isn't detected" + "\n")
 		}
-		fmt.Println(c.Name + " NetID:" + c.NetID + " client is active and ready for service on port " + c.Port)
+		fmt.Println(c.Name + " NetID:" + c.NetID + " client is active and ready for service @ " + u.String())
 	}
 }
