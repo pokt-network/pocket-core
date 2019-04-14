@@ -7,15 +7,16 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 // "ExecuteRequest" takes in the raw json string and forwards it to the port
-func ExecuteRequest(jsonStr []byte, host string, port string) (string, error) {
-	url, err := util.URLProto(host + ":" + port)
+func ExecuteRequest(jsonStr []byte, u *url.URL) (string, error) {
+	ur, err := util.URLProto(u.String())
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", ur, bytes.NewBuffer(jsonStr))
 	req.Close = true
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := (&http.Client{}).Do(req)
