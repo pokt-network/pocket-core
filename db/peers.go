@@ -2,10 +2,11 @@ package db
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/util"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/pokt-network/pocket-core/util"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/pokt-network/pocket-core/config"
