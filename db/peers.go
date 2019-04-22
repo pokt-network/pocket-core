@@ -77,7 +77,7 @@ func checkPeers() {
 }
 
 // "isAlive" checks a node and returns the status of that check.
-func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on the dispatch node side
+func isAlive(n node.Node) bool {
 	resp, err := check(n)
 	if err != nil {
 		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
@@ -106,6 +106,7 @@ func check(n node.Node) (*http.Response, error) {
 	client.Timeout = time.Duration(config.GlobalConfig().RequestTimeout) * time.Millisecond
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
+
 		return nil, err
 	}
 	if req != nil {
