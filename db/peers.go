@@ -59,6 +59,7 @@ func checkPeers() {
 			p := p.(node.Node)
 			if !isAlive(p) {
 				// try again
+				time.Sleep(5 * time.Second)
 				if !isAlive(p) {
 					fmt.Println("\n" + p.IP + " failed a liveness check from dispatcher at " + p.IP + ":" + p.RelayPort + "\n")
 					pl.Remove(p)
@@ -76,7 +77,8 @@ func checkPeers() {
 
 // "isAlive" checks a node and returns the status of that check.
 func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on the dispatch node side
-	if resp, err := check(n); err != nil || resp == nil || resp.StatusCode != http.StatusOK {
+	if resp, err := check(n); err != nil || resp == nil || resp.StatusCode < 200 {
+		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+resp.Status, logs.WaringLevel, logs.JSONLogFormat)
 		return false
 	}
 	return true
@@ -86,6 +88,7 @@ func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on 
 func check(n node.Node) (*http.Response, error) {
 	u, err := util.URLProto(n.IP + ":" + n.RelayPort + "/v1/")
 	if err != nil {
+		logs.NewLog(n.GID+" - "+n.IP+" lLiveness check error: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		return nil, err
 	}
 	return http.Get(u)
