@@ -39,7 +39,7 @@ func NewLog(message string, level LogLevel, format LogFormat) error {
 	}
 	// create a new log structure
 	log := Log{}
-	log.Name = currentTime.Format("2006-01-02T15-04-05")
+	log.Name = currentTime.UTC().Format("2006-01-02T15-04-05")
 	// set the name of the function
 	log.FunctionName = frame.Func.Name()
 	// set the path of the file

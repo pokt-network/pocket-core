@@ -51,3 +51,9 @@ func copyFile(src, dst string) error {
 	}
 	return nil
 }
+
+func filePaths() {
+	if *cFile == _const.CHAINSFILENAME {
+		*cFile = *dd + _const.FILESEPARATOR + "chains.json"
+	}
+}
