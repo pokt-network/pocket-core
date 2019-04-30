@@ -1,7 +1,0 @@
-namespace fbs;
-
-table HelloMessage {
-  gid:[ubyte];
-}
-
-root_type HelloMessage;

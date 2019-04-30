@@ -19,7 +19,6 @@ type config struct {
 	RRPC     bool   `json:"rrpc"`         // This variable describes if the relay rpc is running.
 	RRPCPort string `json:"rrpcport"`     // This variable holds the relay rpc port string.
 	CFile    string `json:"hostedchains"` // This variable holds the filepath to the chains.json.
-	PFile    string `json:"peerfile"`     // This variable holds the filepath to the peerFile.json.
 }
 
 var (
@@ -28,7 +27,6 @@ var (
 	dd       = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
 	rRpcPort = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
 	cFile    = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
-	pFile    = flag.String("pfile", _const.PEERFILENAME, "specifies the filepath for peers.json")
 	cRpcPort = flag.String("clientrpcport", "8080", "specified port to run client rpc")
 	cRpc     = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc     = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
@@ -38,6 +36,8 @@ var (
 func Init() {
 	// built in function to parse the flags above.
 	flag.Parse()
+	// sets up filepaths for config files
+	filePaths()
 	// returns the thread safe c of the client configuration.
 	GlobalConfig()
 }
@@ -66,6 +66,5 @@ func newConfiguration() {
 		*cRpcPort,
 		*rRpc,
 		*rRpcPort,
-		*dd + _const.FILESEPARATOR + *cFile,
-		*dd + _const.FILESEPARATOR + *pFile}
+		*cFile}
 }

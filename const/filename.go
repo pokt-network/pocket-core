@@ -1,7 +1,5 @@
 package _const
 
 var (
-	REPORTFILENAME = "reports.json"
-	PEERFILENAME   = "peers.json"
-	CHAINSFILENAME = "chains.json"
+	CHAINSFILENAME = "<Your Data Directory>/chains.json"
 )

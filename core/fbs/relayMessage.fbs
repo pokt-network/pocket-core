@@ -1,0 +1,21 @@
+namespace fbs;
+
+table Token {
+  expdate:[ubyte];
+}
+
+table Relay {
+  blockchain:[ubyte];
+  payload:[ubyte];
+  devid:[ubyte];
+  token:Token;
+  method:[ubyte];
+  url:[ubyte];
+}
+
+table RelayMessage {
+  relay:Relay;
+  signature:[ubyte];
+}
+
+root_type RelayMessage;
