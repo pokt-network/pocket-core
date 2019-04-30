@@ -2,6 +2,17 @@
 
 
 [[projects]]
+  digest = "1:34ceaa7185f6f201da27c778e5e8528e6814cdbca6133129e275248fbb822332"
+  name = "github.com/ethereum/go-ethereum"
+  packages = [
+    "common/math",
+    "crypto/secp256k1",
+  ]
+  pruneopts = "UT"
+  revision = "4bcc0a37ab70cb79b16893556cffdaad6974e7d8"
+  version = "v1.8.27"
+
+[[projects]]
   digest = "1:e02b687ade0c19c038ecce3ea326d756519adc4bba1203a9e76d620b12354892"
   name = "github.com/google/flatbuffers"
   packages = ["go"]
@@ -105,9 +116,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
+  digest = "1:e5835c61d99e8392e375b79194d15f1cbfe84bde907c5809e0778f55dd7d6a55"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = [
+    "sha3",
+    "ssh/terminal",
+  ]
   pruneopts = "UT"
   revision = "3d3f9f413869b949e48070b5bc593aa22cc2b8f2"
 
@@ -189,12 +203,15 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/ethereum/go-ethereum/common/math",
+    "github.com/ethereum/go-ethereum/crypto/secp256k1",
     "github.com/google/flatbuffers/go",
     "github.com/julienschmidt/httprouter",
     "github.com/logmatic/logmatic-go",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/sirupsen/logrus",
+    "golang.org/x/crypto/sha3",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
