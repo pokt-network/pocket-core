@@ -102,6 +102,7 @@ func dialHC(u *url.URL) error {
 	if resp.StatusCode >= 200 {
 		return nil
 	}
+	defer resp.Body.Close()
 	return errors.New(strconv.Itoa(resp.StatusCode) + " : " + resp.Status)
 }
 
