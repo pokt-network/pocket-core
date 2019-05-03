@@ -85,6 +85,7 @@ func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on 
 		if err != nil {
 			logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		}
+		defer resp.Body.Close()
 		return false
 	}
 	return true
