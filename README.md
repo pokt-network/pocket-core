@@ -81,12 +81,6 @@ Here, we break them all down by category:
   -gid string
     	set the selfNode.GID for pocket core mvp 
 	(default "GID1")
-  -ip
-  	the public ip of your service node 
-	(default uses 3rd party to find ip -> usually needs port forwarding)
-  -port
-  	the public port of the service node
-	(default uses "8081")
   -relayrpc
     	whether or not to start the rpc server 
 	(default true)
