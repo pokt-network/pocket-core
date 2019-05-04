@@ -66,6 +66,5 @@ func rpcRequ(url string, req *http.Request) (string, error) {
 	if err != nil {
 		return "", errors.New("Unable to unmarshal response: " + err.Error())
 	}
-	defer resp.Body.Close()
 	return string(body), nil
 }
