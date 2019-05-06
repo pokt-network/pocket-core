@@ -3,7 +3,7 @@ package util
 import (
 	"io/ioutil"
 	"net/http"
-
+	
 	"github.com/pokt-network/pocket-core/logs"
 )
 
@@ -13,7 +13,7 @@ func IP() (string, error) {
 	resp, err := http.Get(url)
 	logs.NewLog("Getting IP address from ipify.org...", logs.InfoLevel, logs.JSONLogFormat)
 	if err != nil {
-		return ",", err
+		return "", err
 	}
 	defer resp.Body.Close()
 	ip, err := ioutil.ReadAll(resp.Body)

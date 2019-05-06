@@ -14,15 +14,15 @@ func Register() {
 	c := config.GlobalConfig()
 	s, err := Self()
 	if err != nil {
-		ExitGracefully("error registering node " + err.Error())
+		ExitGracefully(err.Error())
 	}
 	u, err := util.URLProto(c.DisIP + ":" + c.DisRPort + "/v1/register")
 	if err != nil {
-		ExitGracefully("error registering node " + err.Error())
+		ExitGracefully(err.Error())
 	}
 	resp, err := util.StructRPCReq(u, s, util.POST)
 	if err != nil {
-		ExitGracefully("error registering node " + err.Error())
+		ExitGracefully(err.Error())
 	}
 	fmt.Println(resp)
 }
@@ -36,7 +36,7 @@ func UnRegister(count int) error {
 	}
 	u, err := util.URLProto(c.DisIP + ":" + c.DisRPort + "/v1/unregister")
 	if err != nil {
-		return errors.New("error registering node " + err.Error())
+		return errors.New(err.Error())
 	}
 	if _, err := util.StructRPCReq(u, s, util.POST); err != nil {
 		fmt.Println("Error, unable to unregister node at Pocket Incorporated's Dispatcher, trying again!")

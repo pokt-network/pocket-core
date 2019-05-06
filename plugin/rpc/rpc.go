@@ -3,7 +3,6 @@ package rpc
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
@@ -13,22 +12,25 @@ import (
 
 // "ExecuteRequest" takes in the raw json string and forwards it to the port
 func ExecuteRequest(jsonStr []byte, u *url.URL) (string, error) {
-	ur, err := util.URLProto(u.String()+u.Path)
+	ur, err := util.URLProto(u.String() + u.Path)
 	if err != nil {
 		return "", err
 	}
 	req, err := http.NewRequest("POST", ur, bytes.NewBuffer(jsonStr))
-	req.Close = true
+	if err != nil {
+		return "", err
+	}
+	defer req.Body.Close()
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := (&http.Client{}).Do(req)
 	if err != nil {
 		return "", err
 	}
-	if resp == nil {
-		return "", errors.New("500: no response error")
-	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
 	fmt.Println(resp.Status)
 	fmt.Println(resp)
 	return string(body), nil
