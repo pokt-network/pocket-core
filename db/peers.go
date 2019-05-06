@@ -77,14 +77,14 @@ func checkPeers() {
 
 // "isAlive" checks a node and returns the status of that check.
 func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on the dispatch node side
-	if resp, err := check(n); err != nil || resp == nil || resp.StatusCode < 200 {
-		if resp != nil {
-			logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+resp.Status, logs.WaringLevel, logs.JSONLogFormat)
-		}
-		if err != nil {
-			logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
-		}
-		defer resp.Body.Close()
+	resp, err := check(n)
+	if err != nil {
+		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
+		return false
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 {
+		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: no response from node", logs.WaringLevel, logs.JSONLogFormat)
 		return false
 	}
 	return true
