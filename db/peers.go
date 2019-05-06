@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"time"
-
+	
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
@@ -77,14 +77,14 @@ func checkPeers() {
 
 // "isAlive" checks a node and returns the status of that check.
 func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on the dispatch node side
-	if resp, err := check(n); err != nil || resp == nil || resp.StatusCode < 200 {
-		if resp != nil {
-			logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+resp.Status, logs.WaringLevel, logs.JSONLogFormat)
-		}
-		if err != nil {
-			logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
-		}
-		defer resp.Body.Close()
+	resp, err := check(n)
+	if err != nil {
+		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
+		return false
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 {
+		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: no response from node", logs.WaringLevel, logs.JSONLogFormat)
 		return false
 	}
 	return true
@@ -94,10 +94,17 @@ func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on 
 func check(n node.Node) (*http.Response, error) {
 	u, err := util.URLProto(n.IP + ":" + n.RelayPort + "/v1/")
 	if err != nil {
-		logs.NewLog(n.GID+" - "+n.IP+" lLiveness check error: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
+		logs.NewLog(n.GID+" - "+n.IP+" liveness check error: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		return nil, err
 	}
-	return http.Get(u)
+	client := http.Client{}
+	client.Timeout = time.Duration(config.GlobalConfig().RequestTimeout) * time.Millisecond
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer req.Body.Close()
+	return client.Do(req)
 }
 
 // "CheckPeers" is a helper function to checks each service node's liveness. Runs checkPeers() in a go routine.
