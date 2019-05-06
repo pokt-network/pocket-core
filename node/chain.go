@@ -90,15 +90,18 @@ func dialHC(u *url.URL) error {
 	if err != nil {
 		return err
 	}
+<<<<<<< 57ceb161d287776fc08ba212726bb3bf39a278c6
 	if resp != nil {
 		if resp.Body!=nil{
 			defer resp.Body.Close()
 		}
 	}
+=======
+	defer resp.Body.Close()
+>>>>>>> fixed nil pointer error
 	if resp.StatusCode >= 200 {
 		return nil
 	}
-	defer resp.Body.Close()
 	return errors.New(strconv.Itoa(resp.StatusCode) + " : " + resp.Status)
 }
 
