@@ -5,9 +5,13 @@ import (
 	"net/http"
 	"os"
 	"time"
+<<<<<<< 57ceb161d287776fc08ba212726bb3bf39a278c6
 
 	"github.com/pokt-network/pocket-core/util"
 
+=======
+	
+>>>>>>> fixed nil pointer error
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
@@ -77,17 +81,25 @@ func checkPeers() {
 }
 
 // "isAlive" checks a node and returns the status of that check.
+<<<<<<< 57ceb161d287776fc08ba212726bb3bf39a278c6
 func isAlive(n node.Node) bool {
+=======
+func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on the dispatch node side
+>>>>>>> fixed nil pointer error
 	resp, err := check(n)
 	if err != nil {
 		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		return false
 	}
+<<<<<<< 57ceb161d287776fc08ba212726bb3bf39a278c6
 	if resp != nil {
 		if resp.Body!=nil{
 			defer resp.Body.Close()
 		}
 	}
+=======
+	defer resp.Body.Close()
+>>>>>>> fixed nil pointer error
 	if resp.StatusCode < 200 {
 		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: no response from node", logs.WaringLevel, logs.JSONLogFormat)
 		return false
@@ -100,6 +112,7 @@ func check(n node.Node) (*http.Response, error) {
 	u, err := util.URLProto(n.IP + ":" + n.RelayPort + "/v1/")
 	if err != nil {
 		logs.NewLog(n.GID+" - "+n.IP+" liveness check error: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
+<<<<<<< 57ceb161d287776fc08ba212726bb3bf39a278c6
 		return nil, err
 	}
 	client := http.Client{}
@@ -114,6 +127,17 @@ func check(n node.Node) (*http.Response, error) {
 			defer req.Body.Close()
 		}
 	}
+=======
+		return nil, err
+	}
+	client := http.Client{}
+	client.Timeout = time.Duration(config.GlobalConfig().RequestTimeout) * time.Millisecond
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer req.Body.Close()
+>>>>>>> fixed nil pointer error
 	return client.Do(req)
 }
 
