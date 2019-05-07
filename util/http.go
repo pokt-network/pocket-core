@@ -26,7 +26,11 @@ func RPCRequ(url string, data []byte, m Method) (string, error) {
 	if err != nil {
 		return "", errors.New("Cannot convert struct to json " + err.Error())
 	}
-	defer req.Body.Close()
+	if req != nil {
+		if req.Body!=nil{
+			defer req.Body.Close()
+		}
+	}
 	return rpcRequ(url, req)
 }
 
@@ -44,7 +48,11 @@ func StructRPCReq(url string, data interface{}, m Method) (string, error) {
 	if err != nil {
 		return "", errors.New("Cannot create request " + err.Error())
 	}
-	defer req.Body.Close()
+	if req != nil {
+		if req.Body!=nil{
+			defer req.Body.Close()
+		}
+	}
 	return rpcRequ(url, req)
 }
 
@@ -64,7 +72,11 @@ func rpcRequ(url string, req *http.Request) (string, error) {
 	if err != nil {
 		return "", errors.New("unable to do request " + err.Error())
 	}
-	defer resp.Body.Close()
+	if resp != nil {
+		if resp.Body!=nil{
+			defer resp.Body.Close()
+		}
+	}
 	if resp.StatusCode != http.StatusOK {
 		body, _ := ioutil.ReadAll(resp.Body)
 		return "", errors.New(string(body))

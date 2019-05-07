@@ -15,7 +15,11 @@ func IP() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	if resp != nil {
+		if resp.Body!=nil{
+			defer resp.Body.Close()
+		}
+	}
 	ip, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return ",", err
