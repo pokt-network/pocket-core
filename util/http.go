@@ -26,15 +26,11 @@ func RPCRequ(url string, data []byte, m Method) (string, error) {
 	if err != nil {
 		return "", errors.New("Cannot convert struct to json " + err.Error())
 	}
-<<<<<<< 57ceb161d287776fc08ba212726bb3bf39a278c6
 	if req != nil {
 		if req.Body!=nil{
 			defer req.Body.Close()
 		}
 	}
-=======
-	defer req.Body.Close()
->>>>>>> fixed nil pointer error
 	return rpcRequ(url, req)
 }
 
@@ -52,15 +48,11 @@ func StructRPCReq(url string, data interface{}, m Method) (string, error) {
 	if err != nil {
 		return "", errors.New("Cannot create request " + err.Error())
 	}
-<<<<<<< 57ceb161d287776fc08ba212726bb3bf39a278c6
 	if req != nil {
 		if req.Body!=nil{
 			defer req.Body.Close()
 		}
 	}
-=======
-	defer req.Body.Close()
->>>>>>> fixed nil pointer error
 	return rpcRequ(url, req)
 }
 
@@ -79,16 +71,17 @@ func rpcRequ(url string, req *http.Request) (string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", errors.New("unable to do request " + err.Error())
-<<<<<<< 57ceb161d287776fc08ba212726bb3bf39a278c6
 	}
 	if resp != nil {
 		if resp.Body!=nil{
 			defer resp.Body.Close()
 		}
-=======
->>>>>>> fixed nil pointer error
 	}
-	defer resp.Body.Close()
+	if resp != nil {
+		if resp.Body!=nil{
+			defer resp.Body.Close()
+		}
+	}
 	if resp.StatusCode != http.StatusOK {
 		body, _ := ioutil.ReadAll(resp.Body)
 		return "", errors.New(string(body))
