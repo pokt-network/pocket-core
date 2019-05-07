@@ -82,7 +82,11 @@ func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on 
 		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: "+err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		return false
 	}
-	defer resp.Body.Close()
+	if resp != nil {
+		if resp.Body!=nil{
+			defer resp.Body.Close()
+		}
+	}
 	if resp.StatusCode < 200 {
 		logs.NewLog(n.GID+" - "+n.IP+" failed liveness check: no response from node", logs.WaringLevel, logs.JSONLogFormat)
 		return false
@@ -103,7 +107,11 @@ func check(n node.Node) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer req.Body.Close()
+	if req != nil {
+		if req.Body!=nil{
+			defer req.Body.Close()
+		}
+	}
 	return client.Do(req)
 }
 
