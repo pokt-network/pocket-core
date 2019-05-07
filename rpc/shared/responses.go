@@ -10,7 +10,6 @@ import (
 // "WriteJSONResponse" writes a JSON response.
 func WriteJSONResponse(w http.ResponseWriter, m string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 	b, err := json.MarshalIndent(m, "", "\t")
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -22,7 +21,6 @@ func WriteJSONResponse(w http.ResponseWriter, m string) {
 // "WriteRawJSON" writes a byte array.
 func WriteRawJSONResponse(w http.ResponseWriter, b []byte) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 	w.Write(b)
 }
 
@@ -36,7 +34,6 @@ func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.WriteHeader(http.StatusOK)
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 	} else {
