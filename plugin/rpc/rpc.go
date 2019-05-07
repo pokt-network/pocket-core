@@ -20,13 +20,21 @@ func ExecuteRequest(jsonStr []byte, u *url.URL) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer req.Body.Close()
+	if req != nil {
+		if req.Body != nil {
+			defer req.Body.Close()
+		}
+	}
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := (&http.Client{}).Do(req)
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	if resp != nil {
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err

@@ -35,11 +35,19 @@ func Ping(url string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer req.Body.Close()
+	if req!=nil {
+		if req.Body!=nil{
+			defer req.Body.Close()
+		}
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return 0, err
 	}
-	defer resp.Body.Close()
+	if resp != nil {
+		if resp.Body!=nil{
+			defer resp.Body.Close()
+		}
+	}
 	return resp.StatusCode, nil
 }
