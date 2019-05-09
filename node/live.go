@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/util"
 )
@@ -24,6 +24,7 @@ func Register() {
 	if err != nil {
 		ExitGracefully(err.Error())
 	}
+	fmt.Println(resp)
 }
 
 // "Unregister" removes a service node from the database
