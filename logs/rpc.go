@@ -3,7 +3,7 @@ package logs
 import (
 	"encoding/json"
 	"github.com/pokt-network/pocket-core/config"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 )
@@ -16,26 +16,31 @@ const (
 type RPCLog struct {
 	Type      string `json:"type"`
 	ClientIP  string `json:"clientip"`
+	URL       string `json:"path"`
 	Payload   string `json:"payload"`
 	Timestamp string `json:"timestamp"`
 }
 
-func newRPCLog(isRequest bool, ip string, body string) RPCLog {
+func newRPCLog(isRequest bool, url, ip, body string) RPCLog {
 	if isRequest {
-		return RPCLog{REQUEST, ip, body, time.Now().UTC().String()}
+		return RPCLog{REQUEST, ip, url, body, time.Now().UTC().String()}
 	}
-	return RPCLog{RESPONSE, ip, body, time.Now().UTC().String()}
+	return RPCLog{RESPONSE, ip, url, body, time.Now().UTC().String()}
 }
 
-func NewRPCLog(isRequest bool, ip string, body string) error {
+func NewRPCLog(isRequest bool, url, ip, body string) error {
 	if config.GlobalConfig().RPCLogs {
-		log := newRPCLog(isRequest, ip, body)
-		f, err := json.MarshalIndent(log, "", "  ")
+		log := newRPCLog(isRequest, url, ip, body)
+		j, err := json.MarshalIndent(log, "", "  ")
 		if err != nil {
 			return err
 		}
-		err = ioutil.WriteFile(config.GlobalConfig().DD+string(filepath.Separator)+"rpc.log", f, 0644)
+		f, err := os.OpenFile(config.GlobalConfig().DD+string(filepath.Separator)+"access.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
+			return err
+		}
+		defer f.Close()
+		if _, err = f.Write(j); err != nil {
 			return err
 		}
 	}
