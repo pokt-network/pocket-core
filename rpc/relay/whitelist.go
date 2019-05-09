@@ -25,5 +25,5 @@ func WhiteList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
-	shared.WriteRawJSONResponse(w, b)
+	shared.WriteRawJSONResponse(w, b, r.Host)
 }

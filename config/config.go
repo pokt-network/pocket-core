@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"sync"
-
+	
 	"github.com/pokt-network/pocket-core/const"
 )
 
@@ -31,6 +31,7 @@ type config struct {
 	DisRPort       string `json:"DISRPort"`       // The relay port of the centralized dispatcher
 	PRefresh       int    `json:"PREFRESH"`       // The peer refresh time for the centralized dispatcher in seconds
 	RequestTimeout int    `json:"REQUESTTIMEOUT"` // The timeout for http requests
+	RPCLogs        bool   `json:"RPCLOGS"`        // Boolean to log the rpc or not
 }
 
 var (
@@ -54,6 +55,7 @@ var (
 	disrport       = flag.String("disrport", _const.DISPATCHRELAYPORT, "specifies the relay port of the centralized dispatcher")
 	peerrefresh    = flag.Int("peerrefresh", _const.DBREFRESH, "specifies the peer refresh time for the centralized dispatcher liveness checks")
 	requestTimeout = flag.Int("requestTimeout", _const.TIMEOUT, "specifies the timeout for http requests (ms)")
+	rpclogs        = flag.Bool("logrpc", false, "help pocket network by logging and reporting rpc data")
 )
 
 // "Init" initializes the configuration object.
@@ -102,5 +104,6 @@ func newConfiguration() {
 		*disip,
 		*disrport,
 		*peerrefresh,
-		*requestTimeout}
+		*requestTimeout,
+		*rpclogs}
 }
