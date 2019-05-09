@@ -24,7 +24,6 @@ func Register() {
 	if err != nil {
 		ExitGracefully(err.Error())
 	}
-	fmt.Println(resp)
 }
 
 // "Unregister" removes a service node from the database

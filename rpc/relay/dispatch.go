@@ -3,7 +3,7 @@ package relay
 
 import (
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/dispatch"
 	"github.com/pokt-network/pocket-core/logs"
@@ -25,7 +25,7 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err != nil {
 		shared.WriteErrorResponse(w, code, err.Error())
 	}
-	shared.WriteRawJSONResponse(w, res, r.Host)
+	shared.WriteRawJSONResponse(w, res, r.URL.Path, r.Host)
 }
 
 // "DispatchInfo" handles a get request to localhost:<relay-port>/v1/dispatch/serve call.

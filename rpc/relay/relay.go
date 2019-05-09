@@ -3,7 +3,7 @@ package relay
 import (
 	"errors"
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc/shared"
@@ -28,7 +28,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}
-	shared.WriteJSONResponse(w, response, r.Host) // relay the response
+	shared.WriteJSONResponse(w, response, r.URL.Path, r.Host) // relay the response
 }
 
 // "RelayInfo" handles a get request to localhost:<relay-port>/v1/relay call.
@@ -56,7 +56,7 @@ func Report(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 	}
-	shared.WriteJSONResponse(w, response, r.Host)
+	shared.WriteJSONResponse(w, response, r.URL.Path, r.Host)
 }
 
 // "ReportInfo" provides an in-client refrence to the api
