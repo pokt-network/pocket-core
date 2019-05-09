@@ -27,7 +27,7 @@ func RPCRequ(url string, data []byte, m Method) (string, error) {
 		return "", errors.New("Cannot convert struct to json " + err.Error())
 	}
 	if req != nil {
-		if req.Body!=nil{
+		if req.Body != nil {
 			defer req.Body.Close()
 		}
 	}
@@ -49,7 +49,7 @@ func StructRPCReq(url string, data interface{}, m Method) (string, error) {
 		return "", errors.New("Cannot create request " + err.Error())
 	}
 	if req != nil {
-		if req.Body!=nil{
+		if req.Body != nil {
 			defer req.Body.Close()
 		}
 	}
@@ -73,12 +73,12 @@ func rpcRequ(url string, req *http.Request) (string, error) {
 		return "", errors.New("unable to do request " + err.Error())
 	}
 	if resp != nil {
-		if resp.Body!=nil{
+		if resp.Body != nil {
 			defer resp.Body.Close()
 		}
 	}
 	if resp != nil {
-		if resp.Body!=nil{
+		if resp.Body != nil {
 			defer resp.Body.Close()
 		}
 	}

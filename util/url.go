@@ -35,8 +35,8 @@ func Ping(url string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if req!=nil {
-		if req.Body!=nil{
+	if req != nil {
+		if req.Body != nil {
 			defer req.Body.Close()
 		}
 	}
@@ -46,7 +46,7 @@ func Ping(url string) (int, error) {
 		return 0, err
 	}
 	if resp != nil {
-		if resp.Body!=nil{
+		if resp.Body != nil {
 			defer resp.Body.Close()
 		}
 	}

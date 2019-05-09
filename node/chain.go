@@ -91,7 +91,7 @@ func dialHC(u *url.URL) error {
 		return err
 	}
 	if resp != nil {
-		if resp.Body!=nil{
+		if resp.Body != nil {
 			defer resp.Body.Close()
 		}
 	}
