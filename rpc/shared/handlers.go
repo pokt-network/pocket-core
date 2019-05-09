@@ -3,10 +3,11 @@ package shared
 
 import (
 	"encoding/json"
+	"github.com/pokt-network/pocket-core/logs"
 	"io"
 	"io/ioutil"
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -17,6 +18,9 @@ func PopModel(_ http.ResponseWriter, r *http.Request, _ httprouter.Params, model
 		return err
 	}
 	if err := r.Body.Close(); err != nil {
+		return err
+	}
+	if err := logs.NewRPCLog(true, r.Host, string(body)); err != nil {
 		return err
 	}
 	if err := json.Unmarshal(body, model); err != nil {

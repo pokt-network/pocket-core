@@ -4,23 +4,33 @@ package shared
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/logs"
 	"net/http"
 )
 
 // "WriteJSONResponse" writes a JSON response.
-func WriteJSONResponse(w http.ResponseWriter, m string) {
+func WriteJSONResponse(w http.ResponseWriter, m string, ip string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	b, err := json.MarshalIndent(m, "", "\t")
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+		if err := logs.NewRPCLog(false, ip, err.Error()); err != nil {
+			logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
+		}
 	} else {
+		if err := logs.NewRPCLog(false, ip, string(m)); err != nil {
+			logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
+		}
 		w.Write(b)
 	}
 }
 
 // "WriteRawJSON" writes a byte array.
-func WriteRawJSONResponse(w http.ResponseWriter, b []byte) {
+func WriteRawJSONResponse(w http.ResponseWriter, b []byte, ip string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err := logs.NewRPCLog(false, ip, string(b)); err != nil {
+		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
+	}
 	w.Write(b)
 }
 
