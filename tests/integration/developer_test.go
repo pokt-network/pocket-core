@@ -6,16 +6,16 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"testing"
-	
+
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/util"
 )
 
 const assumptions = "Integration Testing Assumptions:\n" +
-"1) Service node is hosting a testrpc instance that is labeled as (blockchain: ETH | netid: 4) in chains.json file\n" +
-"2) Dispatcher node has white listed DEVID1 (Dev) and GID1 (SN)\n" +
-"3) Dispatcher node is running on DispIP:DisRPort\n" +
-"4) Dispatcher node has valid aws credentials for DB test"
+	"1) Service node is hosting a testrpc instance that is labeled as (blockchain: ETH | netid: 4) in chains.json file\n" +
+	"2) Dispatcher node has white listed DEVID1 (Dev) and GID1 (SN)\n" +
+	"3) Dispatcher node is running on DispIP:DisRPort\n" +
+	"4) Dispatcher node has valid aws credentials for DB test"
 
 const (
 	relay     = "relay"
@@ -53,7 +53,7 @@ func requestFromFile(urlSuffix string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	if urlSuffix == relay {
 		return util.RPCRequ(serviceU+urlSuffix, b, util.POST)
 	}

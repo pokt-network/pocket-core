@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 	"time"
-	
+
 	"github.com/pokt-network/pocket-core/util"
-	
+
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
@@ -84,7 +84,7 @@ func isAlive(n node.Node) bool { // TODO handle scenarios where the error is on 
 		return false
 	}
 	if resp != nil {
-		if resp.Body!=nil{
+		if resp.Body != nil {
 			defer resp.Body.Close()
 		}
 	}
@@ -109,7 +109,7 @@ func check(n node.Node) (*http.Response, error) {
 		return nil, err
 	}
 	if req != nil {
-		if req.Body!=nil{
+		if req.Body != nil {
 			defer req.Body.Close()
 		}
 	}

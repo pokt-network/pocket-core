@@ -3,7 +3,7 @@ package util
 import (
 	"io/ioutil"
 	"net/http"
-	
+
 	"github.com/pokt-network/pocket-core/logs"
 )
 

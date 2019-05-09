@@ -3,7 +3,7 @@ package relay
 import (
 	"fmt"
 	"net/http"
-	
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"

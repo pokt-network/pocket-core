@@ -15,7 +15,7 @@ const (
 
 var dispatchU, serviceU *string
 
-func init(){
+func init() {
 	dispatchU = flag.String("dispatchurl", urlstring, "the host:port for the test dispatch node")
 	serviceU = flag.String("serviceurl", urlstring, "the host:port for the test service node")
 	config.Init()
