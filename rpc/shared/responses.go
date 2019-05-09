@@ -9,16 +9,16 @@ import (
 )
 
 // "WriteJSONResponse" writes a JSON response.
-func WriteJSONResponse(w http.ResponseWriter, m string, ip string) {
+func WriteJSONResponse(w http.ResponseWriter, m string, path, ip string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	b, err := json.MarshalIndent(m, "", "\t")
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-		if err := logs.NewRPCLog(false, ip, err.Error()); err != nil {
+		if err := logs.NewRPCLog(false, path, ip, err.Error()); err != nil {
 			logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		}
 	} else {
-		if err := logs.NewRPCLog(false, ip, string(m)); err != nil {
+		if err := logs.NewRPCLog(false, path, ip, string(m)); err != nil {
 			logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 		}
 		w.Write(b)
@@ -26,9 +26,9 @@ func WriteJSONResponse(w http.ResponseWriter, m string, ip string) {
 }
 
 // "WriteRawJSON" writes a byte array.
-func WriteRawJSONResponse(w http.ResponseWriter, b []byte, ip string) {
+func WriteRawJSONResponse(w http.ResponseWriter, b []byte, path, ip string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if err := logs.NewRPCLog(false, ip, string(b)); err != nil {
+	if err := logs.NewRPCLog(false, path, ip, string(b)); err != nil {
 		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 	}
 	w.Write(b)

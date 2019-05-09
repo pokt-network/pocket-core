@@ -20,7 +20,7 @@ func PopModel(_ http.ResponseWriter, r *http.Request, _ httprouter.Params, model
 	if err := r.Body.Close(); err != nil {
 		return err
 	}
-	if err := logs.NewRPCLog(true, r.Host, string(body)); err != nil {
+	if err := logs.NewRPCLog(true, r.URL.Path, r.Host, string(body)); err != nil {
 		return err
 	}
 	if err := json.Unmarshal(body, model); err != nil {

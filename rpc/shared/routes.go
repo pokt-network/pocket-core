@@ -33,5 +33,5 @@ func WriteRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params, r
 	if err != nil {
 		logs.NewLog("Unable to marshal WriteRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
 	}
-	WriteRawJSONResponse(w, j, r.Host)
+	WriteRawJSONResponse(w, j, r.URL.Path, r.Host)
 }

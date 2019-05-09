@@ -3,7 +3,6 @@ package rpc
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
 	"net/http"
@@ -39,7 +38,5 @@ func ExecuteRequest(jsonStr []byte, u *url.URL) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(resp.Status)
-	fmt.Println(resp)
 	return string(body), nil
 }

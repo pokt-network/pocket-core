@@ -3,7 +3,7 @@ package relay
 import (
 	"fmt"
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
@@ -47,10 +47,10 @@ func Register(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			if err != nil {
 				logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 			}
-			shared.WriteJSONResponse(w, "WARNING: Pocket Core is now in the Migration Phase. Please upgrade your software as this version will soon be deprecated and not supported", r.Host)
+			shared.WriteJSONResponse(w, "WARNING: Pocket Core is now in the Migration Phase. Please upgrade your software as this version will soon be deprecated and not supported", r.URL.Path, r.Host)
 			return
 		}
-		shared.WriteJSONResponse(w, "Success! Your node is now registered in the Pocket Network", r.Host)
+		shared.WriteJSONResponse(w, "Success! Your node is now registered in the Pocket Network", r.URL.Path, r.Host)
 		return
 	}
 	shared.WriteErrorResponse(w, 401, "Invalid credentials")
@@ -69,7 +69,7 @@ func UnRegister(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 500, "unable to remove peer from database")
 		return
 	}
-	shared.WriteJSONResponse(w, "Success! Your node is now unregistered from the Pocket Network", r.Host)
+	shared.WriteJSONResponse(w, "Success! Your node is now unregistered from the Pocket Network", r.URL.Path, r.Host)
 }
 
 func RegisterInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
