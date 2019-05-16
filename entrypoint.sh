@@ -60,4 +60,4 @@ if [ ${POCKET_CORE_UNIT_TESTS:-false} == true ]; then
 fi
 
 
-exec $cmd
+exec pocket-core $cmd
