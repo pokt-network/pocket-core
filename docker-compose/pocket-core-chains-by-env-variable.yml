@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  pocket-core-service:
+    image: poktnetwork/pocket-core:mvp-staging-latest
+    build: ./.. 
+    restart: always 
+    command: pocket-core  --datadirectory  ${POCKET_PATH_DATADIR} --disip ${POCKET_CORE_DISPATCH_IP:-dispatch.pokt.network} --gid ${POCKET_CORE_SERVICE_GID:-xxx} --ip ${POCKET_CORE_SERVICE_IP:-127.0.0.1} --disrport ${POCKET_CORE_DISPATCH_PORT:-443} --port ${POCKET_CORE_SERVICE_PORT:-8081} --requestTimeout ${POCKET_CORE_REQUEST_TIMEOUT:-0} 
+    ports:
+      - "8081:8081"
+    networks:
+      - pocket
+    environment:
+      POCKET_CORE_DISPATCH_IP: "dispatch.pokt.network"
+      POCKET_CORE_DISPATCH_PORT: 443
+      POCKET_PATH_DATADIR: "datadir"
+      POCKET_CORE_SERVICE_GID: "xxx"
+      POCKET_CORE_REQUEST_TIMEOUT: 0
+      POCKET_CORE_CHAINS: '[{"blockchain":{"name":"AION","netid":"256","version":"0"},"port":"8545","medium":"rpc","host":"aion-mainnet"},{"blockchain":{"name":"AION","netid":"32","version":"0"},"port":"8545","medium":"rpc","host":"aion-mastery"},{"blockchain":{"name":"ETH","netid":"1","version":"0"},"port":"80","medium":"rpc","host":"geth-mainnet"},{"blockchain":{"name":"ETH","netid":"4","version":"0"},"port":"80","medium":"rpc","host":"geth-testnet"}]'
+
+networks:
+  pocket:
+    driver: bridge
