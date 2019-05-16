@@ -13,7 +13,7 @@ It's the most simple configuration for deploying pocket-core using docker-compos
 $ docker-compose up
 
 
-#### pocket-core-chains-by-env-variable.yml  
+#### pocket-core-config-by-env-variable.yml
 
 
 It's similar to `docker-compose.yml` but here we can also inject the options via env variable.
@@ -31,7 +31,7 @@ Here we use a env variable configuration approach but we fetch the `chains.json`
 $ docker-compose -f pocket-core-config-by-s3.yml up
 
 
-#### pocket-core-chains-by-volume-mapping.yml
+#### pocket-core-config-by-volume-mapping.yml
 
 
 In this setup we just map the file `chains.json` directly to the pocket-core-service configuration folder 
