@@ -22,10 +22,12 @@ set -o nounset
 
 cmd="$@"
 
+# POCKET_CORE_START_DELAY = Delay in seconds to wait before running pocket-core. Ex. 10, defaults to 0
+sleep ${POCKET_CORE_START_DELAY:-0}
+
 # Loading pocket-core configurations
 ## If variable POCKET_CORE_S3_CONFIG_URL is not provided, we use POCKET_CORE_SERVICE_WHITELIST and POCKET_CORE_DEVLEOPER_WHITELIST variables
 ## If variable POCKET_CORE_S3_CONFIG_URL is provided, we use only the configuration inside the S3 path
-
 if [  ${POCKET_CORE_S3_CONFIG_URL:-false} == false  ]; then
  	echo 'POCKET_CORE_S3_CONFIG_URL env variable not found, Using default configurations'
 	if [ ! -f ${POCKET_PATH_DATADIR:-datadir}/service_whitelist.json ]; then
@@ -41,6 +43,12 @@ if [  ${POCKET_CORE_S3_CONFIG_URL:-false} == false  ]; then
 	fi
 else
  	echo 'Downloading node configurations from S3'
+
+	# We create empty config files here needed for pocket-core
+	echo "[]" > ${POCKET_PATH_DATADIR:-datadir}/chains.json
+	echo "[]" > ${POCKET_PATH_DATADIR:-datadir}/developer_whitelist.json
+	echo "[]" >  ${POCKET_PATH_DATADIR:-datadir}/service_whitelist.json
+
 	aws s3 sync $POCKET_CORE_S3_CONFIG_URL ${POCKET_PATH_DATADIR:-datadir}
 fi
 
