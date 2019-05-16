@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  pocket-core-service:
+    image: poktnetwork/pocket-core:mvp-staging-latest
+    build: ./.. 
+    restart: always 
+    command: pocket-core  --datadirectory datadir --disip dispatch.pokt.network --gid xxx --ip 127.0.0.1 --disrport 443 --port 8081 --requestTimeout 0
+    ports:
+      - "8081:8081"
+    networks:
+      - pocket
+    environment:
+      POCKET_CORE_CHAINS: '[ { "blockchain": { "name": "AION", "netid": "256", "version": "0" }, "port": "8545", "medium": "rpc", "host": "aion-mainnet" }, { "blockchain": { "name": "AION", "netid": "32", "version": "0" }, "port": "8545", "medium": "rpc", "host": "aion-mastery" } ]'
+
+networks:
+  pocket:
+    driver: bridge

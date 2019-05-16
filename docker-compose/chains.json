@@ -1,0 +1,42 @@
+[
+    {
+        "blockchain": {
+            "name": "AION",
+            "netid": "256",
+            "version": "0"
+        },
+        "port": "8545",
+        "medium": "rpc",
+        "host": "aion-mainnet"
+    }, 
+    {
+        "blockchain": {
+            "name": "AION",
+            "netid": "32",
+            "version": "0"
+        },
+        "port": "8545",
+        "medium": "rpc",
+        "host": "aion-mastery"
+    },
+    {
+        "blockchain": {
+            "name": "ETH",
+            "netid": "1",
+            "version": "0"
+        },
+        "port": "80",
+        "medium": "rpc",
+        "host": "geth-mainnet"
+    },
+    {
+        "blockchain": {
+            "name": "ETH",
+            "netid": "4",
+            "version": "0"
+        },
+        "port": "80",
+        "medium": "rpc",
+        "host": "geth-testnet"
+    }
+]
