@@ -3,13 +3,8 @@ version: '3'
 services:
   pocket-core-service:
     image: poktnetwork/pocket-core:mvp-staging-latest
-    restart: always
-    depends_on:
-      - aion-mainnet
-      - aion-mastery
-    build: .. 
-    restart: on-failure
-    command: pocket-core  --datadirectory ${POCKET_PATH_DATADIR:-datadir} --disip ${POCKET_CORE_DISPATCH_IP:-dispatch.pokt.network} --gid ${POCKET_CORE_SERVICE_GID:-xxx} --ip ${POCKET_CORE_SERVICE_IP:-127.0.0.1} --disrport ${POCKET_CORE_DISPATCH_PORT:-443} --port ${POCKET_CORE_SERVICE_PORT:-8081} --requestTimeout ${POCKET_CORE_REQUEST_TIMEOUT:-0} 
+    build: ./.. 
+    command:  --datadirectory ${POCKET_PATH_DATADIR:-datadir} --disip ${POCKET_CORE_DISPATCH_IP:-dispatch.pokt.network} --gid ${POCKET_CORE_SERVICE_GID:-xxx} --ip ${POCKET_CORE_SERVICE_IP:-localhost} --disrport ${POCKET_CORE_DISPATCH_PORT:-443} --port ${POCKET_CORE_SERVICE_PORT:-8081} --requestTimeout ${POCKET_CORE_REQUEST_TIMEOUT:-0} 
     ports:
       - "8081:8081"
     networks:
@@ -18,12 +13,11 @@ services:
       POCKET_CORE_DISPATCH_IP: "dispatch.pokt.network"
       POCKET_CORE_DISPATCH_PORT: 443
       POCKET_CORE_SERVICE_IP: "localhost"
-      POCKET_CORE_SERVICE_PORT: 443
+      POCKET_CORE_SERVICE_PORT: 8081
       POCKET_PATH_DATADIR: "datadir"
       POCKET_CORE_SERVICE_GID: "xxx"
     volumes:
       - ./chains.json:/go/src/github.com/pokt-network/pocket-core/${POCKET_PATH_DATADIR:-datadir}/chains.json
-
 
 networks:
   pocket:

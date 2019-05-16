@@ -4,8 +4,7 @@ services:
   pocket-core-service:
     image: poktnetwork/pocket-core:mvp-staging-latest
     build: ./.. 
-    restart: always 
-    command: pocket-core  --datadirectory datadir --disip dispatch.pokt.network --gid xxx --ip 127.0.0.1 --disrport 443 --port 8081 --requestTimeout 0
+    command: --datadirectory datadir --disip dispatch.pokt.network --gid xxx --ip localhost --disrport 443 --port 8081 --requestTimeout 0
     ports:
       - "8081:8081"
     networks:
