@@ -8,13 +8,14 @@ type SessionSeed struct {
 	DevID          []byte
 	BlockHash      []byte
 	RequestedChain []byte
+	Capacity       int
 	NodeList       []Node
 }
 
 // "NewSessionSeed" is the constructor of the sessionSeed
-func NewSessionSeed(devID []byte, nodePoolFilePath string, requestedBlockchain []byte, blockHash []byte) (SessionSeed, error) {
+func NewSessionSeed(devID []byte, nodePoolFilePath string, requestedBlockchain []byte, blockHash []byte, capacity int) (SessionSeed, error) {
 	np, err := FileToNodes(nodePoolFilePath)
-	return SessionSeed{DevID: devID, BlockHash: blockHash, RequestedChain: requestedBlockchain, NodeList: np}, err
+	return SessionSeed{DevID: devID, BlockHash: blockHash, RequestedChain: requestedBlockchain, NodeList: np, Capacity: capacity}, err
 }
 
 // "ErrorCheck()" checks all of the fields of a seed to ensure that it is considered initially valid
@@ -24,6 +25,9 @@ func (s *SessionSeed) ErrorCheck() error {
 	}
 	if s.BlockHash == nil || len(s.BlockHash) == 0 {
 		return NoBlockHash
+	}
+	if s.Capacity == 0 {
+		return NoCapacity
 	}
 	if s.NodeList == nil || len(s.NodeList) == 0 {
 		return NoNodeList
