@@ -22,11 +22,13 @@ const (
 	isMissing               = " is empty or nil"
 	isInvalid               = " is not valid"
 	isNotSupported          = " is not supported"
+	isZero                  = " is zero"
 	incompatibleSizes       = " have different sizes"
 	hexString               = " the hex string"
 	DefaultHTTPMethod       = "POST"
 	UnreachableAt           = " is not reachable at "
 	session                 = " the session"
+	capacity                = " the session capacity"
 )
 
 var (
@@ -34,6 +36,7 @@ var (
 	NoBlockHash                = errors.New(blockhash + isNotInSeed)
 	NoNodeList                 = errors.New(nodelist + isNotInSeed)
 	NoReqChain                 = errors.New(requestedchain + isNotInSeed)
+	NoCapacity                 = errors.New(capacity + isZero)
 	InvalidBlockHashFormat     = errors.New(blockhash + isInvalidFormat)
 	InvalidDevIDFormat         = errors.New(devId + isInvalidFormat)
 	InsufficientNodes          = errors.New(insufficientNodeString)

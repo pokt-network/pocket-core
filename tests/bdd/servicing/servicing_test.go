@@ -2,6 +2,11 @@ package servicing
 
 import (
 	"github.com/google/flatbuffers/go"
+<<<<<<< 55d2d9a59028703fb698c6ca9fbe399a3ac0ff65
+=======
+	"path/filepath"
+
+>>>>>>> updated session to reflect client side validation
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/core"
@@ -36,7 +41,8 @@ var (
 	gid                          = "foo"
 	blockhash                    = core.SHA3FromString("foo")
 	nodePoolfp, _                = filepath.Abs("../fixtures/mediumnodepool.json")
-	validSeed, _                 = core.NewSessionSeed(devid, nodePoolfp, chainHash, blockhash)
+	capacity=100
+	validSeed, _                 = core.NewSessionSeed(devid, nodePoolfp, chainHash, blockhash, capacity)
 	RelayMissingDevID            = core.Relay{Blockchain: chainHash, Payload: payload, Token: token, Method: httpMethod, Path: path}
 	RelayMissingPayload          = core.Relay{Blockchain: chainHash, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path}
 	RelayMissingBlockchain       = core.Relay{Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path}

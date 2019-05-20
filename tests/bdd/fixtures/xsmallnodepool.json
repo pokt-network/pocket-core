@@ -1,9 +1,9 @@
 [
     {
-        "enode": "enode://a05d58b42f09dc6528629898da6309ed48384628d08af29f404481cac206a3f8@128.66.241.199:30303?discport=30301",
-        "stake": 189,
+        "enode": "enode://8316fe25fda2bb3964ae756251b5f1fe010fafe56443978d524dc6485548be76@119.136.207.157:30303?discport=30301",
+        "stake": 61,
         "status": true,
-        "isval": false,
+        "karma": 64,
         "chains": [
             {
                 "name": "eth",
@@ -13,10 +13,23 @@
         ]
     },
     {
-        "enode": "enode://ca12f31b8cbf5f29e268ea64c20a37f3d50b539d891db0c3ebc7c0f66b1fb98a@43.145.252.1:30303?discport=30301",
-        "stake": 37,
+        "enode": "enode://f8e5a109a931973384705acaef4afae4b1ac0c6436edaab7bdf141ab706b5d7a@213.238.106.78:30303?discport=30301",
+        "stake": 121,
+        "status": false,
+        "karma": 11,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://9a410d7ee020217af7c2d948af22d1ead684438aff7dcba02dab286a09e13800@92.78.206.183:30303?discport=30301",
+        "stake": 223,
         "status": true,
-        "isval": false,
+        "karma": 43,
         "chains": [
             {
                 "name": "eth",
@@ -26,36 +39,10 @@
         ]
     },
     {
-        "enode": "enode://15b18a7243257695704f66a3b1ddc9311194fc7d2e1896f440cc517c777ab7ec@163.37.35.7:30303?discport=30301",
-        "stake": 212,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "eth",
-                "netid": "1",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://3b5bb1c6e7b76daba8afd89516e24140a67fc6be2ba071cc3b97d1b2e08c238d@87.116.47.109:30303?discport=30301",
-        "stake": 194,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "eth",
-                "netid": "1",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://d2b8f62a7e335bbd5576c8422844760f22ec378009eeea790c41e4dc45f23c33@232.93.230.122:30303?discport=30301",
-        "stake": 157,
+        "enode": "enode://0ae7fd0829340987c88208dec249e1615dccebc941105c575eb26140cd53b0a6@164.86.134.94:30303?discport=30301",
+        "stake": 64,
         "status": true,
-        "isval": true,
+        "karma": 97,
         "chains": [
             {
                 "name": "eth",
@@ -65,10 +52,23 @@
         ]
     },
     {
-        "enode": "enode://23af406016994347aaa3e894e9a820049ace3656406fb06e7636b692db56026f@248.109.240.45:30303?discport=30301",
-        "stake": 158,
+        "enode": "enode://95afa8292f3a0e18aca5dc98fee02338cd127fff35249faed0f7049d1040e741@82.184.232.23:30303?discport=30301",
+        "stake": 33,
+        "status": false,
+        "karma": 48,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://f72653d5f7bb747b777550b3c64610aaa5db0434ebba5569f6df20b3d36a956a@172.101.6.11:30303?discport=30301",
+        "stake": 185,
         "status": true,
-        "isval": false,
+        "karma": 56,
         "chains": [
             {
                 "name": "eth",
@@ -78,10 +78,10 @@
         ]
     },
     {
-        "enode": "enode://8e26744e1a8f9a60ef9a4d756e6e8581978e66e2294742abf28216f6ab8431c1@252.192.14.180:30303?discport=30301",
-        "stake": 44,
+        "enode": "enode://855a909fc0424ce728d12ee0a8d5d71d4a272eea2b582853575f56f1080dd0e4@245.214.111.86:30303?discport=30301",
+        "stake": 230,
         "status": false,
-        "isval": true,
+        "karma": 75,
         "chains": [
             {
                 "name": "eth",
@@ -91,10 +91,10 @@
         ]
     },
     {
-        "enode": "enode://9be35e6e49c54ede73bcb1cf8fc0ada23b7466a9fbae98578449cc213b25ef9f@199.212.100.135:30303?discport=30301",
-        "stake": 165,
+        "enode": "enode://a6b8d8dc43885e4bd1f3a0be75084b024108dcbfed78b58d2f7d225ebf504629@93.83.216.209:30303?discport=30301",
+        "stake": 1,
         "status": false,
-        "isval": false,
+        "karma": 38,
         "chains": [
             {
                 "name": "eth",
@@ -104,10 +104,36 @@
         ]
     },
     {
-        "enode": "enode://ce8cccbaa048d9ba9fd6ce4d4ffd72f37bb1062636409ad478a8364686bbeb7f@218.85.226.128:30303?discport=30301",
-        "stake": 71,
+        "enode": "enode://60b5bde206c3e47988610ec5f8c2e8e82cea0c7f3bc9cc7c50d966814fb674b9@200.188.244.9:30303?discport=30301",
+        "stake": 190,
+        "status": false,
+        "karma": 37,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://2109549f81912b4d1cfa81331675aa122ae1140a874f6f7e3ffab562cbc79df5@110.194.113.187:30303?discport=30301",
+        "stake": 54,
+        "status": false,
+        "karma": 38,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://9a9ef81382d4ea69d900f53daa7633df8087a9446e30ea5b39b8cfba73e2376f@21.123.109.60:30303?discport=30301",
+        "stake": 161,
         "status": true,
-        "isval": false,
+        "karma": 35,
         "chains": [
             {
                 "name": "eth",
@@ -117,10 +143,10 @@
         ]
     },
     {
-        "enode": "enode://1e7b053b9f434caf240d0c053ba4ab06e0b872ccbed61a04d16db10391b485c8@46.184.211.59:30303?discport=30301",
-        "stake": 149,
+        "enode": "enode://10f6cba08fa7141bf4575430aeefac8d5e509dffb05da68c14b2e424876a2e64@32.226.20.207:30303?discport=30301",
+        "stake": 120,
         "status": false,
-        "isval": false,
+        "karma": 69,
         "chains": [
             {
                 "name": "eth",
@@ -130,10 +156,10 @@
         ]
     },
     {
-        "enode": "enode://9c586ddfc7bf24973f77338a83cc848a61e2c048e6437af3dedd21ba8d375c0e@219.162.191.54:30303?discport=30301",
-        "stake": 28,
+        "enode": "enode://9531cff8e8d55bed7b4e585076683e9492c6998ed553327e4560ee7d613cf7b1@197.122.162.157:30303?discport=30301",
+        "stake": 148,
         "status": false,
-        "isval": false,
+        "karma": 81,
         "chains": [
             {
                 "name": "eth",
@@ -143,10 +169,10 @@
         ]
     },
     {
-        "enode": "enode://2cb5049d289d9b03fbe6383613d680969fef82c092e583e80c258b3eb7024399@80.89.193.31:30303?discport=30301",
-        "stake": 135,
+        "enode": "enode://09ffce9ac38c5f81ffe9cb9104948aa0bba26b344dc784fdc062f4f698927bb4@110.43.224.39:30303?discport=30301",
+        "stake": 38,
         "status": false,
-        "isval": false,
+        "karma": 6,
         "chains": [
             {
                 "name": "eth",
@@ -156,10 +182,10 @@
         ]
     },
     {
-        "enode": "enode://62398966f37fbac60a5dc332dc2935aa9c655e5703ceac8f40ce80105a6aa0de@10.38.108.231:30303?discport=30301",
-        "stake": 69,
+        "enode": "enode://69b6bd34f277205d7ff19cdd95a821918eea8fb25f198fe6bfa64ae57b1925c6@105.207.197.7:30303?discport=30301",
+        "stake": 250,
         "status": false,
-        "isval": false,
+        "karma": 41,
         "chains": [
             {
                 "name": "eth",
@@ -169,10 +195,23 @@
         ]
     },
     {
-        "enode": "enode://3d6b622b7c0f19b2ce32ffe2ba48e661ac9458fb0a6a83d55abb57bb62026068@215.224.133.108:30303?discport=30301",
-        "stake": 22,
+        "enode": "enode://8e8e404714cdb9824e0a1837ff694dec7e934349e16ae9e768aaf7e6dcc4625e@56.241.120.33:30303?discport=30301",
+        "stake": 92,
+        "status": false,
+        "karma": 60,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://7e62e0c79c6bc0379de4dd7f7d94b3d90a29d0c79fb5fd9aebb1e99276c21b23@95.186.93.138:30303?discport=30301",
+        "stake": 168,
         "status": true,
-        "isval": true,
+        "karma": 0,
         "chains": [
             {
                 "name": "eth",
@@ -182,10 +221,10 @@
         ]
     },
     {
-        "enode": "enode://94c74317ccdc87c1b366716f1ac20052af11bdd84dc4fb99d75124d9e11668ae@15.180.152.235:30303?discport=30301",
-        "stake": 195,
+        "enode": "enode://c05442b38da2ef08baf215eb761502952ca0e9616d141c5d8fadd10b0b6154bd@81.206.168.20:30303?discport=30301",
+        "stake": 45,
         "status": true,
-        "isval": false,
+        "karma": 62,
         "chains": [
             {
                 "name": "eth",
@@ -195,10 +234,23 @@
         ]
     },
     {
-        "enode": "enode://ae8fc5661e49d748b43bf2d6e8d134e552a81bf048f48b0058fa59089193fd8b@2.44.21.252:30303?discport=30301",
-        "stake": 90,
+        "enode": "enode://b51b1521207382e125106e22f9a2cbb9096e759b4097abb5a0e8f6a189b44f6a@156.45.78.232:30303?discport=30301",
+        "stake": 58,
+        "status": false,
+        "karma": 17,
+        "chains": [
+            {
+                "name": "eth",
+                "netid": "1",
+                "string": "1"
+            }
+        ]
+    },
+    {
+        "enode": "enode://4dc39f8bf8885a68f720e589155d7fc40473bdd278cc20699167a0eaf5b0a84a@92.121.186.44:30303?discport=30301",
+        "stake": 42,
         "status": true,
-        "isval": false,
+        "karma": 63,
         "chains": [
             {
                 "name": "eth",
@@ -208,10 +260,10 @@
         ]
     },
     {
-        "enode": "enode://e8fbf5f4a1a7b01f908e70ce259504838947588ce7348acf3a231c1166a744bb@181.12.170.191:30303?discport=30301",
-        "stake": 139,
+        "enode": "enode://5f06c00c3ebd1e1e1300b8db81c9cce42581ab24f067f3544b81b4e8a98c3c94@134.222.205.55:30303?discport=30301",
+        "stake": 237,
         "status": false,
-        "isval": false,
+        "karma": 9,
         "chains": [
             {
                 "name": "eth",
@@ -221,10 +273,10 @@
         ]
     },
     {
-        "enode": "enode://189ed18357c4cb23bcb89d9f8811ae1aad6c02973fd374472f650bd310b6c02a@246.213.3.129:30303?discport=30301",
-        "stake": 94,
+        "enode": "enode://f99c9fc7a113414e6d7274da55c54d1e5d67aad660551912e37a8f3cc6d866ad@203.44.198.138:30303?discport=30301",
+        "stake": 9,
         "status": false,
-        "isval": false,
+        "karma": 3,
         "chains": [
             {
                 "name": "eth",
@@ -234,10 +286,10 @@
         ]
     },
     {
-        "enode": "enode://a047e6af9f1654889ac29edf8685ac495b293c13c6a0578c17bd2cfaaeaf2478@158.250.113.23:30303?discport=30301",
-        "stake": 212,
+        "enode": "enode://af2bb7fa687f99ac9c12df25f7474bf5356ccd5cf7c34f6d7bc5c66dd3c4b7ae@13.7.151.68:30303?discport=30301",
+        "stake": 214,
         "status": true,
-        "isval": false,
+        "karma": 14,
         "chains": [
             {
                 "name": "eth",
@@ -247,36 +299,10 @@
         ]
     },
     {
-        "enode": "enode://f328693241f6f93973d6e31666316bbbea71c560266c45bf71b5cf7902a8c6b5@208.252.13.77:30303?discport=30301",
-        "stake": 74,
-        "status": false,
-        "isval": false,
-        "chains": [
-            {
-                "name": "eth",
-                "netid": "1",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://402699de92fc20f3eaa1098d108a1ff2cab5245f8984d858a772572fb932dcc0@133.12.248.48:30303?discport=30301",
-        "stake": 193,
-        "status": false,
-        "isval": true,
-        "chains": [
-            {
-                "name": "eth",
-                "netid": "1",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://d5488baaacaacc7671bf0b5d4aca5bf9ce906cbe9eeebcd6ea75766045b4dc2c@251.68.118.238:30303?discport=30301",
-        "stake": 224,
+        "enode": "enode://e3b9d21c957fec28a0fe84ac38378d04454084b14b0780f0f527196372f13ad7@167.115.23.213:30303?discport=30301",
+        "stake": 245,
         "status": true,
-        "isval": true,
+        "karma": 10,
         "chains": [
             {
                 "name": "eth",
@@ -286,36 +312,10 @@
         ]
     },
     {
-        "enode": "enode://5c61aa478f72d0d294b2d19525bf5a7fe0b0b979a539fbaa66b9bff3d8c8c3bc@110.106.68.52:30303?discport=30301",
-        "stake": 201,
+        "enode": "enode://7d0f9ea6b59391be0e23ac465bb179e520d5017da5e8b4c1808a5dd623852670@254.151.125.214:30303?discport=30301",
+        "stake": 92,
         "status": false,
-        "isval": false,
-        "chains": [
-            {
-                "name": "eth",
-                "netid": "1",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://6baebfda3ea46488d834fd0648336c9720c315020f65557776e8b409398d014b@177.209.131.66:30303?discport=30301",
-        "stake": 50,
-        "status": false,
-        "isval": false,
-        "chains": [
-            {
-                "name": "eth",
-                "netid": "1",
-                "string": "1"
-            }
-        ]
-    },
-    {
-        "enode": "enode://1155bb99dfe33f681567b74726fb595e9a728997f358ec09b94be1703b4502f7@17.4.155.78:30303?discport=30301",
-        "stake": 106,
-        "status": true,
-        "isval": false,
+        "karma": 60,
         "chains": [
             {
                 "name": "eth",

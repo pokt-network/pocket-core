@@ -51,7 +51,7 @@ func createNode(nodeNumber int) core.NodeWorldState {
 =======
 	return core.NodeWorldState{Enode: enodePrefix + hash + enodeDelimiter + strconv.Itoa(rand.Intn(255)) + dot +
 		strconv.Itoa(rand.Intn(255)) + dot + strconv.Itoa(rand.Intn(255)) + dot + strconv.Itoa(rand.Intn(255)) + enodeDisport,
-		Stake: rand.Intn(255), Active: rand.Intn(2) != 0, IsVal: rand.Intn(2) != 0,
+		Stake: rand.Intn(255), Active: rand.Intn(2) != 0, Karma: int8(rand.Intn(100)),
 		Chains: []core.Blockchain{{Name: eth, NetID: strconv.Itoa(1), Version: strconv.Itoa(1)}}}
 >>>>>>> servicing milestone addition
 }
