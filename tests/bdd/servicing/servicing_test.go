@@ -19,7 +19,6 @@ import (
 // Tentative Timeline (8-12 weeks)
 //
 // Unanswered Questions?
-// Who do we send the result to? -> The client and validators?
 // How are we structuring the token
 // ************************************************************************************************************
 
