@@ -11,8 +11,6 @@ import (
 // "WriteJSONResponse" writes a JSON response.
 func WriteJSONResponse(w http.ResponseWriter, m string, path, ip string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	b, err := json.MarshalIndent(m, "", "\t")
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -30,8 +28,6 @@ func WriteJSONResponse(w http.ResponseWriter, m string, path, ip string) {
 // "WriteRawJSON" writes a byte array.
 func WriteRawJSONResponse(w http.ResponseWriter, b []byte, path, ip string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	if err := logs.NewRPCLog(false, path, ip, string(b)); err != nil {
 		logs.NewLog(err.Error(), logs.WaringLevel, logs.JSONLogFormat)
 	}
@@ -58,8 +54,6 @@ func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 // "WriteErrorResponse" writes an error JSON response.
 func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.WriteHeader(errorCode)
 	json.NewEncoder(w).Encode(&JSONErrorResponse{Error: &APIError{Status: errorCode, Title: errorMsg}})
 }
