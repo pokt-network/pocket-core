@@ -12,6 +12,10 @@ import (
 
 // "Dispatch" handles the localhost:<relay-port>/v1/dispatch/serve call.
 func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	shared.SetupResponse(&w, r)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 	d := &dispatch.Dispatch{}
 	if err := shared.PopModel(w, r, ps, d); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
