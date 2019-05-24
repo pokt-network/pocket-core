@@ -13,6 +13,10 @@ import (
 // "Relay" handles the localhost:<relay-port>/v1/relaycall.
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	relay := &service.Relay{}
+	shared.SetupResponse(&w, r)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 	if err := shared.PopModel(w, r, ps, relay); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		shared.WriteErrorResponse(w, 400, err.Error())
