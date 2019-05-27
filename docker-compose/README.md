@@ -37,6 +37,4 @@ $ docker-compose -f pocket-core-config-by-s3.yml up
 In this setup we just map the file `chains.json` directly to the pocket-core-service configuration folder 
 
 
-$ docker-compose -f pocket-core-config-by-s3.yml up
-
-
+$ docker-compose -f pocket-core-config-by-volume-mapping.yml up
