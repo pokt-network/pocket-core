@@ -29,31 +29,37 @@ const (
 	UnreachableAt           = " is not reachable at "
 	session                 = " the session"
 	capacity                = " the session capacity"
+	nonce                   = " the relay nonce "
+	blkNum                  = " the block number "
+	relaySummaryCount       = " the relay summary count "
 )
 
 var (
-	NoDevID                    = errors.New(devId + isNotInSeed)
-	NoBlockHash                = errors.New(blockhash + isNotInSeed)
-	NoNodeList                 = errors.New(nodelist + isNotInSeed)
-	NoReqChain                 = errors.New(requestedchain + isNotInSeed)
-	NoCapacity                 = errors.New(capacity + isZero)
-	InvalidBlockHashFormat     = errors.New(blockhash + isInvalidFormat)
-	InvalidDevIDFormat         = errors.New(devId + isInvalidFormat)
-	InsufficientNodes          = errors.New(insufficientNodeString)
-	IncompleteSession          = errors.New(incompleteSessionString)
-	MissingBlockchainError     = errors.New(blockchainHash + isMissing)
-	MissingPayloadError        = errors.New(payload + isMissing) // TODO is it possible for a payload to be empty and it be expected behavior?
-	MissingSignatureError      = errors.New(signature + isMissing)
-	MissingDevidError          = errors.New(devId + isMissing)
-	MissingPathError           = errors.New(path + isMissing) // not used
-	InvalidTokenError          = errors.New(dToken + isInvalid)
-	InvalidDevIDError          = errors.New(devId + isInvalid)
-	UnsupportedBlockchainError = errors.New(blockchainHash + isNotSupported)
-	MismatchedByteArraysError  = errors.New(byteArrays + incompatibleSizes)
-	InvalidPublicKeyError      = errors.New(publickey + isInvalid)
-	InvalidPrivateKeyError     = errors.New(privatekey + isInvalid)
-	InvalidHexStringError      = errors.New(hexString + isInvalid)
-	InvalidSessionError        = errors.New(session + isInvalid)
+	NoDevIDError                = errors.New(devId + isNotInSeed)
+	NoBlockHashError            = errors.New(blockhash + isNotInSeed)
+	NoNodeListError             = errors.New(nodelist + isNotInSeed)
+	NoReqChainError             = errors.New(requestedchain + isNotInSeed)
+	NoCapacityError             = errors.New(capacity + isZero)
+	InvalidBlockHashFormatError = errors.New(blockhash + isInvalidFormat)
+	InvalidDevIDFormatError     = errors.New(devId + isInvalidFormat)
+	InsufficientNodesError      = errors.New(insufficientNodeString)
+	IncompleteSessionError      = errors.New(incompleteSessionString)
+	MissingBlockchainError      = errors.New(blockchainHash + isMissing)
+	MissingPayloadError         = errors.New(payload + isMissing) // TODO is it possible for a payload to be empty and it be expected behavior?
+	MissingSignatureError       = errors.New(signature + isMissing)
+	MissingDevidError           = errors.New(devId + isMissing)
+	MissingPathError            = errors.New(path + isMissing) // not used
+	InvalidTokenError           = errors.New(dToken + isInvalid)
+	InvalidDevIDError           = errors.New(devId + isInvalid)
+	UnsupportedBlockchainError  = errors.New(blockchainHash + isNotSupported)
+	MismatchedByteArraysError   = errors.New(byteArrays + incompatibleSizes)
+	InvalidPublicKeyError       = errors.New(publickey + isInvalid)
+	InvalidPrivateKeyError      = errors.New(privatekey + isInvalid)
+	InvalidHexStringError       = errors.New(hexString + isInvalid)
+	InvalidSessionError         = errors.New(session + isInvalid)
+	ZeroNonceError              = errors.New(nonce + isZero)
+	ZeroBlockError              = errors.New(blkNum + isZero)
+	ZeroRelaySummaryError       = errors.New(relaySummaryCount + isZero)
 )
 
 func UnreachableBlockchainErr(blockchainHash, url string) error {

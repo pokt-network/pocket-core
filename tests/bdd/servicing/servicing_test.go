@@ -2,15 +2,11 @@ package servicing
 
 import (
 	"github.com/google/flatbuffers/go"
-<<<<<<< 55d2d9a59028703fb698c6ca9fbe399a3ac0ff65
-=======
 	"path/filepath"
-
->>>>>>> updated session to reflect client side validation
+	
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/core"
-	"path/filepath"
 )
 
 // ************************************************************************************************************
@@ -35,21 +31,23 @@ var (
 	privateKeyBytes              = core.FromECDSA(privateKey)
 	publicKey                    = core.NewPublicKey(privateKey)
 	CompressedPublicKey          = core.CompressPublicKey(publicKey.X, publicKey.Y)
-	Relay                        = core.Relay{Blockchain: chainHash, Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path}
+	nonce                        = 1
+	Relay                        = core.Relay{Blockchain: chainHash, Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path, Nonce: nonce}
 	devid                        = []byte(core.SHA3FromString("foo"))
 	gid                          = "foo"
 	blockhash                    = core.SHA3FromString("foo")
 	nodePoolfp, _                = filepath.Abs("../fixtures/mediumnodepool.json")
-	capacity=100
+	capacity                     = 100
 	validSeed, _                 = core.NewSessionSeed(devid, nodePoolfp, chainHash, blockhash, capacity)
-	RelayMissingDevID            = core.Relay{Blockchain: chainHash, Payload: payload, Token: token, Method: httpMethod, Path: path}
-	RelayMissingPayload          = core.Relay{Blockchain: chainHash, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path}
-	RelayMissingBlockchain       = core.Relay{Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path}
-	RelayMissingToken            = core.Relay{Blockchain: chainHash, Payload: payload, DevID: CompressedPublicKey, Method: httpMethod, Path: path}
-	RelayMissingMethod           = core.Relay{Blockchain: chainHash, Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path}
-	RelayInvalidDevID            = core.Relay{Blockchain: chainHash, Payload: payload, DevID: []byte("foo"), Token: token, Method: httpMethod, Path: path}
+	RelayMissingDevID            = core.Relay{Blockchain: chainHash, Payload: payload, Token: token, Method: httpMethod, Path: path, Nonce: nonce}
+	RelayMissingPayload          = core.Relay{Blockchain: chainHash, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path, Nonce: nonce}
+	RelayMissingBlockchain       = core.Relay{Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path, Nonce: nonce}
+	RelayMissingToken            = core.Relay{Blockchain: chainHash, Payload: payload, DevID: CompressedPublicKey, Method: httpMethod, Path: path, Nonce: nonce}
+	RelayMissingMethod           = core.Relay{Blockchain: chainHash, Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path, Nonce: nonce}
+	RelayInvalidDevID            = core.Relay{Blockchain: chainHash, Payload: payload, DevID: []byte("foo"), Token: token, Method: httpMethod, Path: path, Nonce: nonce}
+	RelayMissingNonce            = core.Relay{Blockchain: chainHash, Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path}
 	rb, _                        = core.MarshalRelay(flatbuffers.NewBuilder(0), Relay)
-	RelayUnsupportedChain        = core.Relay{Blockchain: unsupportedChainHash, Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path}
+	RelayUnsupportedChain        = core.Relay{Blockchain: unsupportedChainHash, Payload: payload, DevID: CompressedPublicKey, Token: token, Method: httpMethod, Path: path, Nonce: nonce}
 	signature, _                 = core.Sign(rb, core.FromECDSA(privateKey))
 	RelayMessageMissingSignature = core.RelayMessage{Relay: Relay}
 )
@@ -58,6 +56,7 @@ var _ = Describe("Servicing", func() {
 	
 	Describe("Service Configuration", func() {
 		
+		// Contextualize this block on connection type (e.g. HTTP)
 		Describe("Configuring a third party blockchain endpoint list", func() {
 			
 			Describe("Parsing a json file", func() {
@@ -82,9 +81,10 @@ var _ = Describe("Servicing", func() {
 			})
 		})
 		
-		Describe("Testing connection to each third party blockchain", func() {
+		Describe("Testing connection to each third party blockchain via HTTP", func() {
 			
 			Context("Failed connection to a blockchain", func() {
+				
 				It("should return unreachable chain error", func() {
 					Expect(core.HostedChainsFromFile(chainsfp)).To(BeNil())
 					Expect(core.TestChains().Error()).To(ContainSubstring(core.UnreachableAt))
@@ -92,6 +92,7 @@ var _ = Describe("Servicing", func() {
 			})
 			
 			Context("Every connection succeeded", func() {
+				
 				It("should return a HostedChains object", func() {
 					// clear the chains
 					core.GetHostedChains().Clear()
@@ -180,6 +181,12 @@ var _ = Describe("Servicing", func() {
 							Expect(RelayMissingMethod.Method).To(Equal([]byte(core.DefaultHTTPMethod)))
 						})
 					})
+					
+					Context("Nonce is zero", func() {
+						It("should return a zero nonce error ", func(){
+							Expect(RelayMissingNonce.ErrorCheck()).To(Equal(core.ZeroNonceError))
+						})
+					})
 				})
 				
 				Describe("Proper Formatting", func() {
@@ -210,7 +217,7 @@ var _ = Describe("Servicing", func() {
 					})
 					
 					Context("A devid/seed that generates a session that doesn't correspond to the service node", func() {
-						It("should return an invalid session error", func(){
+						It("should return an invalid session error", func() {
 							s, err := core.NewSession(validSeed)
 							Expect(err).To(BeNil())
 							Expect(s.ValidityCheck(gid)).To(Equal(core.InvalidSessionError))
@@ -253,6 +260,7 @@ var _ = Describe("Servicing", func() {
 					Expect(signature).ToNot(BeNil())
 				})
 			})
+			
 			Context("The node is unable to sign the relay response", func() {
 				
 				It("should return a signature error", func() {
@@ -276,4 +284,5 @@ var _ = Describe("Servicing", func() {
 			})
 		})
 	})
+	
 })

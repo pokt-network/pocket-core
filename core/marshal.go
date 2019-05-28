@@ -55,6 +55,7 @@ func marshalRelay(builder *flatbuffers.Builder, relay Relay) (flatbuffers.UOffse
 	fbs.RelayAddMethod(builder, methodVector)
 	fbs.RelayAddToken(builder, t)
 	fbs.RelayAddBlockchain(builder, blockchainVector)
+	fbs.RelayAddNonce(builder, int32(relay.Nonce))
 	if relay.Path != nil && len(relay.Path) != 0 {
 		fbs.RelayAddUrl(builder, urlVector)
 	}

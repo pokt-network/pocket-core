@@ -51,6 +51,15 @@ func (rcv *Token) ExpdateBytes() []byte {
 	return nil
 }
 
+func (rcv *Token) MutateExpdate(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func TokenStart(builder *flatbuffers.Builder) {
 	builder.StartObject(1)
 }

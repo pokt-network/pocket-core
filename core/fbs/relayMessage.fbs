@@ -11,6 +11,7 @@ table Relay {
   token:Token;
   method:[ubyte];
   url:[ubyte];
+  nonce:int;
 }
 
 table RelayMessage {

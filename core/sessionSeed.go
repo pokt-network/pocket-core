@@ -21,28 +21,28 @@ func NewSessionSeed(devID []byte, nodePoolFilePath string, requestedBlockchain [
 // "ErrorCheck()" checks all of the fields of a seed to ensure that it is considered initially valid
 func (s *SessionSeed) ErrorCheck() error {
 	if s.DevID == nil || len(s.DevID) == 0 {
-		return NoDevID
+		return NoDevIDError
 	}
 	if s.BlockHash == nil || len(s.BlockHash) == 0 {
-		return NoBlockHash
+		return NoBlockHashError
 	}
 	if s.Capacity == 0 {
-		return NoCapacity
+		return NoCapacityError
 	}
 	if s.NodeList == nil || len(s.NodeList) == 0 {
-		return NoNodeList
+		return NoNodeListError
 	}
 	if reflect.DeepEqual(s.NodeList[0], Node{}) {
-		return InsufficientNodes
+		return InsufficientNodesError
 	}
 	if s.RequestedChain == nil || len(s.RequestedChain) == 0 {
-		return NoReqChain
+		return NoReqChainError
 	}
 	if len(s.BlockHash) != 32 {
-		return InvalidBlockHashFormat
+		return InvalidBlockHashFormatError
 	}
 	if len(s.DevID) != 32 {
-		return InvalidDevIDFormat
+		return InvalidDevIDFormatError
 	}
 	return nil
 }

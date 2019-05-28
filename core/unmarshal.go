@@ -13,7 +13,9 @@ func UnmarshalBlockchain(flatBuffer []byte) Blockchain {
 // TODO testing with empty URL field
 func UnmarshalRelay(flatbuffer []byte) Relay {
 	res := fbs.GetRootAsRelay(flatbuffer, 0)
-	return Relay{res.BlockchainBytes(), res.PayloadBytes(), res.DevidBytes(), Token{res.Token(&fbs.Token{}).ExpdateBytes()}, res.MethodBytes(), res.UrlBytes()}
+	return Relay{res.BlockchainBytes(), res.PayloadBytes(), res.DevidBytes(),
+		Token{res.Token(&fbs.Token{}).ExpdateBytes()}, res.MethodBytes(),
+		res.UrlBytes(), int(res.Nonce())}
 }
 
 func UnmarshalRelayMessage(flatbuffer []byte) RelayMessage {
@@ -25,6 +27,6 @@ func UnmarshalRelayMessage(flatbuffer []byte) RelayMessage {
 			res.Relay(r).PayloadBytes(), res.Relay(r).DevidBytes(),
 			Token{res.Relay(r).Token(&fbs.Token{}).ExpdateBytes()},
 			res.Relay(r).MethodBytes(),
-			res.Relay(r).UrlBytes()},
+			res.Relay(r).UrlBytes(), int(res.Relay(r).Nonce())},
 		res.SignatureBytes()}
 }

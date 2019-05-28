@@ -12,6 +12,7 @@ type Relay struct {
 	Token      Token  `json:"token"`      // the token given from the developer
 	Method     []byte `json:"method"`     // the HTTP method needed for the call (defaults to POST)
 	Path       []byte `json:"URL"`        // optional param for REST
+	Nonce      int    `json:"nonce"`      // random number to prevent double spends
 }
 
 type Token struct {
@@ -51,6 +52,9 @@ func (r *Relay) ErrorCheck() error {
 	}
 	if r.Path == nil || len(r.Path) == 0 {
 		return MissingPathError
+	}
+	if r.Nonce == 0 {
+		return ZeroNonceError
 	}
 	if len(r.DevID) != 33 {
 		return InvalidDevIDError

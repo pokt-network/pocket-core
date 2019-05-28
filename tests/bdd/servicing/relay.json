@@ -1,0 +1,11 @@
+{
+  "Relay": {
+    "Payload": "foo",
+    "BlockchainHash": "foo",
+    "Devid": "foo",
+    "Token": "foo",
+    "Method": "foo",
+    "Path": "foo",
+    "Nonce": "foo"
+  }
+}
