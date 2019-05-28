@@ -64,6 +64,15 @@ func (rcv *RelayMessage) SignatureBytes() []byte {
 	return nil
 }
 
+func (rcv *RelayMessage) MutateSignature(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func RelayMessageStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }

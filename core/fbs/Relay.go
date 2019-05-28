@@ -51,6 +51,15 @@ func (rcv *Relay) BlockchainBytes() []byte {
 	return nil
 }
 
+func (rcv *Relay) MutateBlockchain(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func (rcv *Relay) Payload(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
@@ -76,6 +85,15 @@ func (rcv *Relay) PayloadBytes() []byte {
 	return nil
 }
 
+func (rcv *Relay) MutatePayload(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func (rcv *Relay) Devid(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
@@ -99,6 +117,15 @@ func (rcv *Relay) DevidBytes() []byte {
 		return rcv._tab.ByteVector(o + rcv._tab.Pos)
 	}
 	return nil
+}
+
+func (rcv *Relay) MutateDevid(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
 }
 
 func (rcv *Relay) Token(obj *Token) *Token {
@@ -139,6 +166,15 @@ func (rcv *Relay) MethodBytes() []byte {
 	return nil
 }
 
+func (rcv *Relay) MutateMethod(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
 func (rcv *Relay) Url(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
@@ -164,8 +200,29 @@ func (rcv *Relay) UrlBytes() []byte {
 	return nil
 }
 
+func (rcv *Relay) MutateUrl(j int, n byte) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.MutateByte(a+flatbuffers.UOffsetT(j*1), n)
+	}
+	return false
+}
+
+func (rcv *Relay) Nonce() int32 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(16))
+	if o != 0 {
+		return rcv._tab.GetInt32(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Relay) MutateNonce(n int32) bool {
+	return rcv._tab.MutateInt32Slot(16, n)
+}
+
 func RelayStart(builder *flatbuffers.Builder) {
-	builder.StartObject(6)
+	builder.StartObject(7)
 }
 func RelayAddBlockchain(builder *flatbuffers.Builder, blockchain flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(blockchain), 0)
@@ -199,6 +256,9 @@ func RelayAddUrl(builder *flatbuffers.Builder, url flatbuffers.UOffsetT) {
 }
 func RelayStartUrlVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(1, numElems, 1)
+}
+func RelayAddNonce(builder *flatbuffers.Builder, nonce int32) {
+	builder.PrependInt32Slot(6, nonce, 0)
 }
 func RelayEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
