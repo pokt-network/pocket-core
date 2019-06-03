@@ -4,16 +4,17 @@ package main
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc"
 	"github.com/pokt-network/pocket-core/util"
+	"math/rand"
+	"time"
 )
 
 // "init" is a built in function that is automatically called before main.
 func init() {
 	// generates seed for randomization
-	crypto.GenerateSeed()
+	rand.Seed(time.Now().UTC().UnixNano())
 }
 
 // "main" is the starting function of the client.
