@@ -16,5 +16,5 @@ var (
 	InvalidDevIDFormat     = errors.New("devid" + IsInvalidFormat)
 	InsufficientNodes      = errors.New(" not enough nodes to fulfill session")
 	IncompleteSession      = errors.New("invalid session, missing information needed for key generation")
-	NoSessionKey = errors.New("no session key is found")
+	NoSessionKey           = errors.New("no session key is found")
 )
