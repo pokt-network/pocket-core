@@ -14,8 +14,8 @@ func RouteRelay(relay Relay) (string, error) {
 	chainURL := chain.URL
 	if relay.Path != nil && len(relay.Path) != 0 {
 		resturl := string(relay.Path)
-		strings.TrimSuffix(chainURL, "/")
-		strings.TrimPrefix(resturl, "/")
+		chainURL = strings.TrimSuffix(chainURL, "/")
+		resturl = strings.TrimPrefix(resturl, "/")
 		chainURL += "/" + resturl
 	}
 	return executeHTTPRequest(relay.Payload, chainURL, string(relay.Method))
