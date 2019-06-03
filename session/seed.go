@@ -73,7 +73,7 @@ func nwsToNode(nws common.NodeWorldState) Node {
 	var role role
 	gid, ip, port, _ := nws.EnodeSplit()
 	for _, c := range nws.Chains {
-		chains.Add(hex.EncodeToString(common.SHA256FromString(fmt.Sprintf("%v", c))))// TODO cross platform serialization
+		chains.Add(hex.EncodeToString(common.SHA256FromString(fmt.Sprintf("%v", c)))) // TODO cross platform serialization
 	}
 	switch nws.IsVal {
 	case true:

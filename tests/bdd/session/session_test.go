@@ -3,7 +3,7 @@ package session_test
 import (
 	"github.com/google/flatbuffers/go"
 	"path/filepath"
-	
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/core"
@@ -23,9 +23,9 @@ import (
 // ************************************************************************************************************
 
 var _ = Describe("Session", func() {
-	
+
 	Describe("Session Creation \\ Computing", func() {
-		
+
 		devid := []byte(core.SHA3FromString("foo"))
 		blockhash := core.SHA3FromString("foo")
 		requestedChain := core.Blockchain{Name: "eth", NetID: "1", Version: "1"}
@@ -40,11 +40,11 @@ var _ = Describe("Session", func() {
 		if err != nil {
 			Fail(err.Error())
 		}
-		
+
 		Context("Invalid SessionSeed Data", func() {
-			
+
 			Context("Parameters are missing or null", func() {
-				
+
 				Context("Missing Devid", func() {
 					NoDevIDSeed := core.SessionSeed{BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
 					It("should return missing devid error", func() {
@@ -52,7 +52,7 @@ var _ = Describe("Session", func() {
 						Expect(err).To(Equal(core.NoDevIDError))
 					})
 				})
-				
+
 				Context("Missing Blockhash", func() {
 					NoBlockhashSeed := core.SessionSeed{DevID: devid, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
 					It("should return missing blockhash error", func() {
@@ -60,7 +60,7 @@ var _ = Describe("Session", func() {
 						Expect(err).To(Equal(core.NoBlockHashError))
 					})
 				})
-				
+
 				Context("Missing Requested Chain", func() {
 					NoRequestedChain := core.SessionSeed{DevID: devid, BlockHash: blockhash, NodeList: nodelist, Capacity: capacity}
 					It("should return missing requested chain error", func() {
@@ -68,26 +68,26 @@ var _ = Describe("Session", func() {
 						Expect(err).To(Equal(core.NoReqChainError))
 					})
 				})
-				
+
 				Context("Missing Nodelist", func() {
 					NoNodeListSeed := core.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: requestedChainHash, Capacity: capacity}
-					It("should return missing nodelist error", func(){
+					It("should return missing nodelist error", func() {
 						_, err := core.NewSession(NoNodeListSeed)
 						Expect(err).To(Equal(core.NoNodeListError))
 					})
 				})
-				
+
 				Context("Missing Capacity", func() {
 					NoCapacitySeed := core.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist}
-					It("should return missing capacity error", func(){
+					It("should return missing capacity error", func() {
 						_, err := core.NewSession(NoCapacitySeed)
 						Expect(err).To(Equal(core.NoCapacityError))
 					})
 				})
 			})
-			
+
 			Context("Devid is incorrect...", func() {
-				
+
 				Context("Devid is incorrect format", func() {
 					invalidDevIDSeed := core.SessionSeed{DevID: []byte("invalidtest"), BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
 					It("should return `invalid developer id` error", func() {
@@ -95,35 +95,35 @@ var _ = Describe("Session", func() {
 						Expect(err).To(Equal(core.InvalidDevIDFormatError))
 					})
 				})
-				
+
 				Context("Devid is not found in world state", func() {
-					
+
 					PIt("should error", func() {
 						// TODO need a world state
 					})
 				})
 			})
-			
+
 			Context("Block Hash is incorrect...", func() {
-				
+
 				Context("Not a valid block hash format", func() {
-					invalidBlockHashFormatSeed := core.SessionSeed{DevID: devid, BlockHash: []byte("foo"), RequestedChain: requestedChainHash, NodeList: nodelist, Capacity:capacity}
+					invalidBlockHashFormatSeed := core.SessionSeed{DevID: devid, BlockHash: []byte("foo"), RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
 					It("should return `invalid block hash` error", func() {
 						_, err := core.NewSession(invalidBlockHashFormatSeed)
 						Expect(err).To(Equal(core.InvalidBlockHashFormatError))
 					})
 				})
-				
+
 				PContext("Block hash is expired", func() {
-					
+
 					PIt("should error", func() {
 						// TODO need a world state
 					})
 				})
 			})
-			
+
 			Context("Requested Blockchain is invalid...", func() {
-				
+
 				Context("No nodes are associated with a blockchain", func() {
 					noNodesSeed := core.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: core.SHA3FromString("foo"), NodeList: nodelist, Capacity: capacity}
 					It("should return `invalid blockchain` error", func() {
@@ -133,7 +133,7 @@ var _ = Describe("Session", func() {
 				})
 			})
 		})
-		
+
 		Context("Valid SessionSeed Data", func() {
 			absPath, _ := filepath.Abs("../fixtures/mediumnodepool.json")
 			validSeed, _ := core.NewSessionSeed(devid, absPath, requestedChainHash, blockhash, capacity)
@@ -146,13 +146,13 @@ var _ = Describe("Session", func() {
 					Expect(s.Key).ToNot(BeNil())
 					Expect(len(s.Key)).ToNot(BeZero())
 				})
-				
+
 				Describe("Node selection", func() {
-					
+
 					It("should find the core.NODECOUNT closest nodes to the session key", func() {
 						Expect(len(s.Nodes)).To(Equal(core.NODECOUNT))
 					})
-					
+
 					It("should contain no duplicated nodes", func() {
 						check := types.NewSet()
 						for _, node := range s.Nodes {
@@ -160,35 +160,35 @@ var _ = Describe("Session", func() {
 							check.Add(node.GID)
 						}
 					})
-					
+
 					Describe("SessionNodes in an evenly distributed fashion", func() {
-						
+
 						Context("Small pool of nodes, small number of trials", func() {
-							
+
 							PIt("should result in evenly distributed nodes", func() {
 								// TODO using golangs built in random
 								// TODO need crypto consideration to make truly random
 							})
 						})
-						
+
 						Context("Small pool of nodes, large number of trials", func() {
-							
+
 							PIt("should be evenly distributed", func() {
 								// TODO using golangs built in random
 								// TODO need crypto consideration to make truly random
 							})
 						})
-						
+
 						Context("Large pool of nodes, small number of trials", func() {
-							
+
 							PIt("should be evenly distributed", func() {
 								// TODO using golangs built in random
 								// TODO need crypto consideration to make truly random
 							})
 						})
-						
+
 						Context("Large pool of nodes, large number of trials", func() {
-							
+
 							PIt("should be evenly distributed", func() {
 								// TODO using golangs built in random
 								// TODO need crypto consideration to make truly random
@@ -196,9 +196,9 @@ var _ = Describe("Session", func() {
 						})
 					})
 				})
-				
+
 				Describe("Deterministic from the seed data", func() {
-					
+
 					Context("2 sessions derived from valid same seed data", func() {
 						It("should be = and valid", func() {
 							s1, _ := core.NewSession(validSeed)
@@ -210,7 +210,7 @@ var _ = Describe("Session", func() {
 							Expect(s3).To(Equal(s4))
 						})
 					})
-					
+
 					Context("2 sessions derived from different valid seed data", func() {
 						validSeed1, _ := core.NewSessionSeed(core.SHA3FromString("foo"), absPath, requestedChainHash, blockhash, capacity)
 						validSeed2, _ := core.NewSessionSeed(core.SHA3FromString("bar"), absPath, requestedChainHash, blockhash, capacity)
@@ -221,10 +221,10 @@ var _ = Describe("Session", func() {
 						})
 					})
 				})
-				
+
 				Describe("Expose session data", func() {
 					Context("Node data", func() {
-						It("should not be nil or zero value", func(){
+						It("should not be nil or zero value", func() {
 							Expect(s.Nodes).ToNot(BeNil())
 							Expect(len(s.Nodes)).ToNot(BeZero())
 						})
