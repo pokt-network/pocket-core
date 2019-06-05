@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
-	
+
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/util"
 )
