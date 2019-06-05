@@ -4,6 +4,6 @@
       "name": "ETH",
       "netid": "4"
     },
-    "URL":"localhost:8545"
+    "url":"localhost:8545"
   }
 ]
