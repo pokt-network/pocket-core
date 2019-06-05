@@ -1,1 +1,1 @@
-{"Blockchain":"POKT","NetID":"1","METHOD":"GET", "DATA":"foo", "PATH":"/v1/","DevID":"DEVID1"}
+{"Blockchain":"POKT","NetID":"1","Method":"GET", "Headers":{"content-type":"application/json"}, "Data":"foo", "Path":"/v1/","DevID":"DEVID1"}
