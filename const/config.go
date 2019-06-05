@@ -6,12 +6,8 @@ const (
 	CLIENTID = "pocket_core"
 	// version of the client
 	VERSION = "0.0.1"
-	// pocket core mvp netID
-	NETID = 0
 	// version of Pocket Core Relay API
-	RAPIVERSION = "0.0.1"
-	// version of Pocket Core Client API
-	CAPIVERSION = "0.0.1"
+	RAPIVERSION = "MVP-1.7"
 	// http timeout in ms
 	TIMEOUT = 400
 )
