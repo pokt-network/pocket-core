@@ -13,7 +13,7 @@ const (
 )
 
 // "ExecuteHTTPRequest" takes in the raw json string and forwards it to the HTTP endpoint
-func ExecuteHTTPRequest(payload []byte, u string, method string) (string, error) {
+func ExecuteHTTPRequest(payload []byte, u string, method string, headers map[string]string) (string, error) {
 	if method == "" {
 		method = POST
 	}
@@ -30,7 +30,13 @@ func ExecuteHTTPRequest(payload []byte, u string, method string) (string, error)
 			defer req.Body.Close()
 		}
 	}
-	req.Header.Set("Content-Type", "application/json")
+	if len(headers)==0 { // def to json
+		req.Header.Set("Content-Type", "application/json")
+	} else {
+		for k, v := range headers {
+			req.Header.Set(k, v)
+		}
+	}
 	resp, err := (&http.Client{}).Do(req)
 	if err != nil {
 		return "", err
