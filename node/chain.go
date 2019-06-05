@@ -23,10 +23,7 @@ type Blockchain struct {
 // A structure that specifies a non-native blockchain client running on a port.
 type HostedChain struct {
 	Blockchain `json:"blockchain"`
-	Port       string `json:"port"`
-	Host       string `json:"host"`
-	Path       string `json:"path"`   // url path for token based authentication
-	Medium     string `json:"medium"` // http, ws, tcp, etc.
+	URL        string `json:"url"`
 }
 
 var (
@@ -107,16 +104,13 @@ func TestChains() {
 	mux.Lock()
 	defer mux.Unlock()
 	for _, c := range hc {
-		s, err := util.URLProto(c.Host + ":" + c.Port)
+		s, err := util.URLProto(c.URL)
 		if err != nil {
 			ExitGracefully(err.Error())
 		}
 		u, err := url.ParseRequestURI(s)
 		if err != nil {
 			ExitGracefully(err.Error())
-		}
-		if c.Path != "" {
-			u.Path = c.Path
 		}
 		if err := dialHC(u); err != nil {
 			fmt.Fprint(os.Stderr, c.Name+" client is not detected @ "+u.String()+"\n")

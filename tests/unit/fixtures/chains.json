@@ -4,8 +4,6 @@
       "name": "ETH",
       "netid": "4"
     },
-    "host":"localhost",
-    "port": "8545",
-    "medium": "rpc"
+    "URL":"localhost:8545"
   }
 ]
