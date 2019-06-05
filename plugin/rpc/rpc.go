@@ -6,16 +6,22 @@ import (
 	"github.com/pokt-network/pocket-core/util"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 )
 
-// "ExecuteRequest" takes in the raw json string and forwards it to the port
-func ExecuteRequest(jsonStr []byte, u *url.URL) (string, error) {
-	ur, err := util.URLProto(u.String() + u.Path)
+const (
+	POST = "POST"
+)
+
+// "ExecuteHTTPRequest" takes in the raw json string and forwards it to the HTTP endpoint
+func ExecuteHTTPRequest(payload []byte, u string, method string) (string, error) {
+	if method == "" {
+		method = POST
+	}
+	ur, err := util.URLProto(u)
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequest("POST", ur, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest(method, ur, bytes.NewBuffer(payload))
 	if err != nil {
 		return "", err
 	}
@@ -34,7 +40,7 @@ func ExecuteRequest(jsonStr []byte, u *url.URL) (string, error) {
 			defer resp.Body.Close()
 		}
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
