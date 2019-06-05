@@ -13,13 +13,15 @@ import (
 )
 
 // "Relay" is a JSON structure that specifies information to complete reads and writes to other blockchains
+
 type Relay struct {
-	Blockchain string `json:"blockchain"`
-	NetworkID  string `json:"netid"`
-	Data       string `json:"data"`
-	DevID      string `json:"devid"`
-	Method     string `json:"method"`
-	Path       string `json:"path"`
+	Blockchain string            `json:"blockchain"`
+	NetworkID  string            `json:"netid"`
+	Data       string            `json:"data"`
+	DevID      string            `json:"devid"`
+	Method     string            `json:"method"`
+	Path       string            `json:"path"`
+	Headers    map[string]string `json:"headers"`
 }
 
 // "RouteRelay" routes the relay to the specified hosted chain
@@ -35,7 +37,7 @@ func RouteRelay(relay Relay) (string, error) {
 			relay.Path = strings.TrimSuffix(relay.Path, "/")
 			url += "/" + relay.Path
 		}
-		return rpc.ExecuteHTTPRequest([]byte(relay.Data), url, string(relay.Method))
+		return rpc.ExecuteHTTPRequest([]byte(relay.Data), url, string(relay.Method), relay.Headers)
 	}
 	return "Invalid credentials", nil
 }
