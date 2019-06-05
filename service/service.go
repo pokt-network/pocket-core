@@ -3,9 +3,9 @@ package service
 
 import (
 	"encoding/json"
-	"net/url"
 	"os"
-
+	"strings"
+	
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
 	"github.com/pokt-network/pocket-core/node"
@@ -18,20 +18,24 @@ type Relay struct {
 	NetworkID  string `json:"netid"`
 	Data       string `json:"data"`
 	DevID      string `json:"devid"`
+	Method     string `json:"method"`
+	Path       string `json:"path"`
 }
 
 // "RouteRelay" routes the relay to the specified hosted chain
+// This call handles REST and traditional JSON RPC
 func RouteRelay(relay Relay) (string, error) {
 	if node.EnsureDWL(node.DWL(), relay.DevID) {
+		var url string
 		hc := node.ChainToHosted(node.Blockchain{Name: relay.Blockchain, NetID: relay.NetworkID})
-		u, err := url.ParseRequestURI(hc.Host + ":" + hc.Port)
-		if err != nil {
-			return "", err
+		url = hc.URL
+		if relay.Path != "" {
+			url = strings.TrimSuffix(url, "/")
+			relay.Path = strings.TrimPrefix(relay.Path, "/")
+			relay.Path = strings.TrimSuffix(relay.Path, "/")
+			url += "/" + relay.Path
 		}
-		if hc.Path != "" {
-			u.Path = hc.Path
-		}
-		return rpc.ExecuteRequest([]byte(relay.Data), u)
+		return rpc.ExecuteHTTPRequest([]byte(relay.Data), url, string(relay.Method))
 	}
 	return "Invalid credentials", nil
 }

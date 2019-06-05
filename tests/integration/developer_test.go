@@ -12,13 +12,14 @@ import (
 )
 
 const assumptions = "Integration Testing Assumptions:\n" +
-	"1) Service node is hosting a testrpc instance that is labeled as (blockchain: ETH | netid: 4) in chains.json file\n" +
+	"1) Service node is hosting a testrpc instance that is labeled as (blockchain: ETH | netid: 4 AND (blockchain: POKT | netid: 1) in chains.json file\n" +
 	"2) Dispatcher node has white listed DEVID1 (Dev) and GID1 (SN)\n" +
 	"3) Dispatcher node is running on DispIP:DisRPort\n" +
 	"4) Dispatcher node has valid aws credentials for DB test"
 
 const (
 	relay     = "relay"
+	restRelay = "restRelay"
 	report    = "report"
 	dispatch  = "dispatch"
 	urlstring = "disIP:disrPort"
@@ -39,6 +40,7 @@ func init() {
 	*dispatchU = *dispatchU + "/v1/"
 	*serviceU = *serviceU + "/v1/"
 }
+
 func requestFromFile(urlSuffix string) (string, error) {
 	dispatchU, err := util.URLProto(*dispatchU)
 	serviceU, err := util.URLProto(*serviceU)
@@ -53,15 +55,24 @@ func requestFromFile(urlSuffix string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	if urlSuffix == relay {
-		return util.RPCRequ(serviceU+urlSuffix, b, util.POST)
+	if urlSuffix == relay || urlSuffix == restRelay {
+		return util.RPCRequ(serviceU+relay, b, util.POST)
 	}
 	return util.RPCRequ(dispatchU+urlSuffix, b, util.POST)
 }
 
 func TestRelay(t *testing.T) {
 	resp, err := requestFromFile(relay)
+	if err != nil {
+		t.Log(assumptions)
+		t.Fatalf(err.Error())
+	}
+	t.Log(resp)
+}
+
+func TestRESTRelay(t *testing.T) {
+	t.Skip()
+	resp, err := requestFromFile(restRelay)
 	if err != nil {
 		t.Log(assumptions)
 		t.Fatalf(err.Error())

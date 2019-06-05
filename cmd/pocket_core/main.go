@@ -43,7 +43,7 @@ func startClient() {
 	db.CheckPeers()
 	// sends an entry message to the centralized dispatcher
 	node.Register()
-	// logs the client starting
+	// // logs the client starting
 	logs.NewLog("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
 	// hang and wait for exit signal
 	node.WaitForExit()

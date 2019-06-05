@@ -3,7 +3,7 @@ package relay
 import (
 	"errors"
 	"net/http"
-
+	
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc/shared"
@@ -22,7 +22,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	if relay.Blockchain == "" || relay.NetworkID == "" || relay.DevID == "" || relay.Data == "" {
+	if relay.Blockchain == "" || relay.NetworkID == "" || relay.DevID == "" {
 		shared.WriteErrorResponse(w, 400, "The request was not properly formatted")
 		return
 	}
