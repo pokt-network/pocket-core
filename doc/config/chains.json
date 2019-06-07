@@ -1,18 +1,16 @@
 [
-    {
-        "blockchain": {
-            "name": "ethereum",
-            "netid": "1"
-        },
-        "port": "8545",
-        "medium": "rpc"
+  {
+    "blockchain": {
+      "name": "ethereum",
+      "netid": "1"
     },
-    {
-        "blockchain": {
-            "name": "bitcoin",
-            "netid": "1"
-        },
-        "port": "8333",
-        "medium": "rpc"
-    }
+    "url": "localhost:8545"
+  },
+  {
+    "blockchain": {
+      "name": "bitcoin",
+      "netid": "1"
+    },
+    "url": "localhost:8333"
+  }
 ]
