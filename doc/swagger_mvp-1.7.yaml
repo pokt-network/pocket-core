@@ -1,0 +1,187 @@
+swagger: "2.0"
+info:
+  description: "This simple API guide is an easy to use reference for Pocket Core (MVP). Pocket Core's API may be designed differently then API's you have seen before. It is a blend between a RESTful and a JSON RPC architecture. Using the guide below, it should be very apparent how to access the API from each endpoint"
+  version: "MVP 1.7"
+  title: "Pocket Network MVP"
+  contact:
+    email: "luis@pokt.network"
+  license:
+    name: "MIT"
+    url: "https://opensource.org/licenses/MIT"
+host: "service.pokt.network"
+basePath: "/v1"
+tags:
+- name: "relay"
+  description: "Read and write request to a non-native blockchain"
+- name: "dispatch"
+  description: "Retrieve a list of service nodes from the dispatcher"
+schemes:
+- "https"
+- "http"
+paths:
+  /relay:
+    post:
+      tags:
+      - "relay"
+      summary: "Read or write request to a non-native blockchain"
+      description: ""
+      operationId: "Relay()"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Relay object to be executed"
+        required: true
+        schema:
+          $ref: "#/definitions/Relay"
+      responses:
+        400:
+          description: "Request not properly formatted (couldn't be decoded)"
+        401:
+          description: "Invalid credentials"
+        500:
+          description: "Internal error"
+          
+  /dispatch:
+    post:
+      tags:
+      - "dispatch"
+      summary: "Retrieve a list of service nodes from the dispatcher"
+      description: "Retrieve a list of avaliable service nodes for a particullar non-native blockchain"
+      operationId: "Dispatch()"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Dispatch query"
+        required: true
+        schema:
+          $ref: "#/definitions/Dispatch"
+      responses:
+        400:
+          description: "Request not properly formatted (couldn't be decoded)"
+        401:
+          description: "Invalid credentials"
+        500:
+          description: "Internal error"
+          
+  /report:
+    post:
+      tags:
+      - "report"
+      summary: "Report a service node"
+      description: "Make a report about a particular service node"
+      operationId: "Report()"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Dispatch query"
+        required: true
+        schema:
+          $ref: "#/definitions/Report"
+      responses:
+        400:
+          description: "Request not properly formatted (couldn't be decoded)"
+      
+          
+definitions:
+  Header:
+    type: "object"
+    properties:
+      header-key:
+        type: "string"
+        example: "header-value"
+    description: "can be any http header key value pair"
+  Headers:
+    type: "array"
+    items:
+      $ref: "#/definitions/Header"
+      
+  Relay:
+    type: "object"
+    required:
+    - "blockchain"
+    - "netid"
+    - "DevID"
+    properties:
+      blockchain:
+        type: "string"
+        example: "XTZ"
+      netid:
+        type: "integer"
+        example: "1"
+      method:
+        type: "string"
+        example: "DELETE"
+      path:
+        type: "string"
+        example: "/network/connections/<peer_id>?[wait]"
+      headers:
+        $ref: "#/definitions/Headers"
+      data:
+        type: "string"
+        example: "<payload if needed for api call>"
+      devid:
+        type: "string"
+        example: "devid1"
+        description: "https://pocketnetwork.typeform.com/to/ZX6PLl"
+  
+  Blockchain:
+    type: "object"
+    required:
+    - "name"
+    - "netid"
+    properties:
+      name:
+        type: "string"
+        example: "ETH"
+        description: "Official ticker name"
+      netid:
+        type: "string"
+        example: "4"
+        description: "Network identifier"
+        
+  Dispatch:
+    type: "object"
+    required:
+    - "blockchains"
+    - "DevID"
+    properties:
+      blockchains:
+        type: "array"
+        items: 
+          $ref: "#/definitions/Blockchain"
+      devid:
+        type: "string"
+        example: "devid1"
+        description: "https://pocketnetwork.typeform.com/to/ZX6PLl"
+        
+  Report:
+    type: "object"
+    required:
+    - "ip"
+    - "message"
+    properties:
+      ip:
+        type: "string"
+        example: "8.8.8.8"
+        description: "the ip address of the service node"
+      message:
+        type: "string"
+        example: "this service node is unavailable"
+        description: "the message payload included in the report"
+        
+        
+externalDocs:
+  description: "Find out more about Pocket Network"
+  url: "https://pokt.network"
