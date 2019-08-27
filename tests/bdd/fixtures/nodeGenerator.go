@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/core"
-	"golang.org/x/crypto/sha3"
+	"github.com/pokt-network/pocket-core/types"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -21,13 +19,13 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-func randomchains() []core.Blockchain {
-	var res []core.Blockchain
+func randomchains() []types.Blockchain {
+	var res []types.Blockchain
 	rand.Shuffle(len(chains), func(i, j int) { chains[i], chains[j] = chains[j], chains[i] })
 	c := chains[rand.Intn(len(chains)-1):]
-	res = make([]core.Blockchain, len(c))
+	res = make([]types.Blockchain, len(c))
 	for i, chain := range c {
-		res[i] = core.Blockchain{Name: chain, NetID: strconv.Itoa(1), Version: strconv.Itoa(1)}
+		res[i] = types.Blockchain{Name: chain, NetID: strconv.Itoa(1), Version: strconv.Itoa(1)}
 	}
 	return res
 }
@@ -39,7 +37,7 @@ func createNode(nodeNumber int) common.NodeWorldState {
 	hasher.Write([]byte("node" + strconv.Itoa(i)))
 =======
 =======
-func createNode(nodeNumber int) core.NodeWorldState {
+func createNode(nodeNumber int) types.NodeWorldState{
 	hasher := sha3.New256()
 >>>>>>> servicing milestone addition
 	hasher.Write([]byte(node + strconv.Itoa(nodeNumber)))
@@ -56,7 +54,7 @@ func createNode(nodeNumber int) core.NodeWorldState {
 >>>>>>> servicing milestone addition
 }
 
-func CreateNodePool(amount int) []core.NodeWorldState {
+func CreateNodePool(amount int) []types.NodeWorldState{
 	var nodePool []core.NodeWorldState
 	for i := 0; i < amount; i++ {
 		nodePool = append(nodePool, createNode(i))

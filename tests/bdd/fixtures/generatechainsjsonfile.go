@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/core"
+	"github.com/pokt-network/pocket-core/types"
 	"io/ioutil"
 	"path/filepath"
 )
@@ -14,11 +14,11 @@ const (
 )
 
 var (
-	ethChain    = core.Blockchain{Name: "eth", NetID: "1", Version: "1"}
-	btcChain    = core.Blockchain{Name: "btc", NetID: "1", Version: "1"}
-	etcChain    = core.Blockchain{Name: "etc", NetID: "1", Version: "1"}
-	bchChain    = core.Blockchain{Name: "bch", NetID: "1", Version: "1"}
-	blockchains = []core.Blockchain{ethChain, btcChain, etcChain, bchChain}
+	ethChain    = types.Blockchain{Name: "eth", NetID: "1", Version: "1"}
+	btcChain    = types.Blockchain{Name: "btc", NetID: "1", Version: "1"}
+	etcChain    = types.Blockchain{Name: "etc", NetID: "1", Version: "1"}
+	bchChain    = types.Blockchain{Name: "bch", NetID: "1", Version: "1"}
+	blockchains = []types.Blockchain{ethChain, btcChain, etcChain, bchChain}
 )
 
 func main() {
@@ -34,13 +34,13 @@ func main() {
 // the Pocket Protocol Hash of the bytes
 
 func createChainsFile() error {
-	var chains []core.Chain
+	var chains []types.Chain
 	for _, chain := range blockchains {
-		ch, err := core.GenerateChainHash(chain)
+		ch, err := types.GenerateChainHash(chain)
 		if err != nil {
 			return err
 		}
-		chains = append(chains, core.Chain{Hash: hex.EncodeToString(ch), URL: "test-url"})
+		chains = append(chains, types.Chain{Hash: hex.EncodeToString(ch), URL: "test-url"})
 	}
 	absPath, err := filepath.Abs(filep)
 	if err != nil {

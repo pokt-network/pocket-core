@@ -1,4 +1,4 @@
-package core
+package types
 
 import (
 	"encoding/hex"
@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/google/flatbuffers/go"
 	"github.com/pokt-network/pocket-core/logs"
-	"github.com/pokt-network/pocket-core/types"
 	"io/ioutil"
 	"log"
 	"os"
@@ -44,12 +43,12 @@ func (nws NodeWorldState) EnodeSplit() (gid string, ip string, port string, disc
 }
 
 type Node struct {
-	GID    string    `json:"gid"`
-	IP     string    `json:"ip"`
-	Port   string    `json:"port"`
-	Karma  int8      `json:"karma"`
-	Chains types.Set `json:"chains"`
-	XOR    []byte    `json:"xor"`
+	GID    string `json:"gid"`
+	IP     string `json:"ip"`
+	Port   string `json:"port"`
+	Karma  int8   `json:"karma"`
+	Chains Set    `json:"chains"`
+	XOR    []byte `json:"xor"`
 }
 
 type NodePool []Node
@@ -186,7 +185,7 @@ func nwsToNodes(nws []NodeWorldState) ([]Node, error) {
 // "nwsToNode" is a helper function to NWSToNode which takes a NodeWorldState Node
 // and converts it to a session.Node
 func nwsToNode(nws NodeWorldState) (Node, error) {
-	chains := types.NewSet()
+	chains := NewSet()
 	gid, ip, port, _ := nws.EnodeSplit()
 	for _, c := range nws.Chains {
 		marshalChain, err := MarshalBlockchain(flatbuffers.NewBuilder(0), c)

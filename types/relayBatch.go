@@ -1,4 +1,4 @@
-package core
+package types
 
 // TODO not complete -> security problems of double spend / replay attack (consider nonce)
 
