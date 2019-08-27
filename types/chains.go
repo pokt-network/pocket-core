@@ -1,11 +1,10 @@
-package core
+package types
 
 import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/pokt-network/pocket-core/types"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -17,7 +16,7 @@ type Chain struct {
 	URL  string
 }
 
-type HostedChains types.List
+type HostedChains List
 
 var (
 	hostedChains *HostedChains // [Hex Chain Hash] -> Hosted Chain
@@ -26,41 +25,41 @@ var (
 
 func GetHostedChains() *HostedChains {
 	chainOnce.Do(func() {
-		hostedChains = (*HostedChains)(types.NewList())
+		hostedChains = (*HostedChains)(NewList())
 	})
 	return hostedChains
 }
 
 func (c *HostedChains) AddChain(chain Chain) {
-	(*types.List)(c).Add(chain.Hash, chain)
+	(*List)(c).Add(chain.Hash, chain)
 }
 
 func (c *HostedChains) RemoveChain(chain Chain) {
-	(*types.List)(c).Remove(chain.Hash)
+	(*List)(c).Remove(chain.Hash)
 }
 
 func (c *HostedChains) Len() int {
-	return (*types.List)(c).Count()
+	return (*List)(c).Count()
 }
 
 func (c *HostedChains) ContainsFromObject(chain Chain) bool {
-	return (*types.List)(c).Contains(chain.Hash)
+	return (*List)(c).Contains(chain.Hash)
 }
 
 func (c *HostedChains) ContainsFromBytes(chainHash []byte) bool {
 	h := hex.EncodeToString(chainHash)
-	return (*types.List)(c).Contains(h)
+	return (*List)(c).Contains(h)
 }
 
 func (c *HostedChains) Clear() {
-	(*types.List)(c).Clear()
+	(*List)(c).Clear()
 }
 
 func (c *HostedChains) GetChainFromHex(chainHash string) Chain {
 	if c == nil || len(c.M) == 0 {
 		return Chain{}
 	}
-	return (*types.List)(c).Get(chainHash).(Chain)
+	return (*List)(c).Get(chainHash).(Chain)
 }
 
 func (c *HostedChains) GetChainFromBytes(chainHash []byte) Chain {
@@ -68,7 +67,7 @@ func (c *HostedChains) GetChainFromBytes(chainHash []byte) Chain {
 		return Chain{}
 	}
 	h := hex.EncodeToString(chainHash)
-	return (*types.List)(c).Get(h).(Chain)
+	return (*List)(c).Get(h).(Chain)
 }
 
 // "jsonToChains" converts json into chains structure.
