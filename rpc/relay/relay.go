@@ -1,7 +1,7 @@
 package relay
 
 import (
-	"github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/legacy"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
