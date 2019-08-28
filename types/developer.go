@@ -4,6 +4,7 @@ import (
 	"github.com/pokt-network/pocket-core/legacy"
 )
 
+// "Developer" is the base structure for a Pocket Network Developer
 type Developer struct {
 	Account         `json:"routing"`
 	RequestedChains []DeveloperRequestedBlockchain `json:"requestedChains"`

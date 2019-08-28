@@ -6,4 +6,6 @@ const (
 	CLIENTID = "pocket_core"
 	// version of the client
 	VERSION = "0.0.1"
+	// api version
+	APIVERSION = "0.0.1"
 )
