@@ -12,7 +12,7 @@ import (
 // TODO E2E test on all rpc calls
 // "Relay" handles the localhost:<relay-port>/v1/relaycall.
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	relay := &types.Relay{}
+	relay := &legacy.Relay{}
 	if err := shared.PopModel(w, r, ps, relay); err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		shared.WriteErrorResponse(w, 400, err.Error())
@@ -23,7 +23,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	response, err := types.RouteRelay(*relay)
+	response, err := legacy.RouteRelay(*relay)
 	if err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		shared.WriteErrorResponse(w, 500, err.Error())
@@ -35,6 +35,6 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 // "RelayInfo" handles a get request to localhost:<relay-port>/v1/relay call.
 // And provides the developers with an in-client reference to the API call
 func RelayInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	info := shared.InfoStruct(r, "Relay", types.Relay{}, "Response from hosted chain")
+	info := shared.InfoStruct(r, "Relay", legacy.Relay{}, "Response from hosted chain")
 	shared.WriteInfoResponse(w, info)
 }

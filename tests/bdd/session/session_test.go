@@ -25,17 +25,17 @@ var _ = Describe("Session", func() {
 
 	Describe("Session Creation \\ Computing", func() {
 
-		devid := []byte(types.SHA3FromString("foo"))
-		blockhash := types.SHA3FromString("foo")
-		requestedChain := types.Blockchain{Name: "eth", NetID: "1", Version: "1"}
-		marshalBC, err := types.MarshalBlockchain(flatbuffers.NewBuilder(0), requestedChain)
+		devid := []byte(legacy.SHA3FromString("foo"))
+		blockhash := legacy.SHA3FromString("foo")
+		requestedChain := legacy.Blockchain{Name: "eth", NetID: "1", Version: "1"}
+		marshalBC, err := legacy.MarshalBlockchain(flatbuffers.NewBuilder(0), requestedChain)
 		capacity := 100
 		if err != nil {
 			Fail(err.Error())
 		}
-		requestedChainHash := types.SHA3FromBytes(marshalBC)
+		requestedChainHash := legacy.SHA3FromBytes(marshalBC)
 		absPath, _ := filepath.Abs("../fixtures/xsmallnodepool.json")
-		nodelist, err := types.FileToNodes(absPath)
+		nodelist, err := legacy.FileToNodes(absPath)
 		if err != nil {
 			Fail(err.Error())
 		}
@@ -45,42 +45,42 @@ var _ = Describe("Session", func() {
 			Context("Parameters are missing or null", func() {
 
 				Context("Missing Devid", func() {
-					NoDevIDSeed := types.SessionSeed{BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
+					NoDevIDSeed := legacy.SessionSeed{BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
 					It("should return missing devid error", func() {
-						_, err := types.NewSession(NoDevIDSeed)
-						Expect(err).To(Equal(types.NoDevIDError))
+						_, err := legacy.NewSession(NoDevIDSeed)
+						Expect(err).To(Equal(legacy.NoDevIDError))
 					})
 				})
 
 				Context("Missing Blockhash", func() {
-					NoBlockhashSeed := types.SessionSeed{DevID: devid, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
+					NoBlockhashSeed := legacy.SessionSeed{DevID: devid, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
 					It("should return missing blockhash error", func() {
-						_, err := types.NewSession(NoBlockhashSeed)
-						Expect(err).To(Equal(types.NoBlockHashError))
+						_, err := legacy.NewSession(NoBlockhashSeed)
+						Expect(err).To(Equal(legacy.NoBlockHashError))
 					})
 				})
 
 				Context("Missing Requested Chain", func() {
-					NoRequestedChain := types.SessionSeed{DevID: devid, BlockHash: blockhash, NodeList: nodelist, Capacity: capacity}
+					NoRequestedChain := legacy.SessionSeed{DevID: devid, BlockHash: blockhash, NodeList: nodelist, Capacity: capacity}
 					It("should return missing requested chain error", func() {
-						_, err := types.NewSession(NoRequestedChain)
-						Expect(err).To(Equal(types.NoReqChainError))
+						_, err := legacy.NewSession(NoRequestedChain)
+						Expect(err).To(Equal(legacy.NoReqChainError))
 					})
 				})
 
 				Context("Missing Nodelist", func() {
-					NoNodeListSeed := types.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: requestedChainHash, Capacity: capacity}
+					NoNodeListSeed := legacy.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: requestedChainHash, Capacity: capacity}
 					It("should return missing nodelist error", func() {
-						_, err := types.NewSession(NoNodeListSeed)
-						Expect(err).To(Equal(types.NoNodeListError))
+						_, err := legacy.NewSession(NoNodeListSeed)
+						Expect(err).To(Equal(legacy.NoNodeListError))
 					})
 				})
 
 				Context("Missing Capacity", func() {
-					NoCapacitySeed := types.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist}
+					NoCapacitySeed := legacy.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist}
 					It("should return missing capacity error", func() {
-						_, err := types.NewSession(NoCapacitySeed)
-						Expect(err).To(Equal(types.NoCapacityError))
+						_, err := legacy.NewSession(NoCapacitySeed)
+						Expect(err).To(Equal(legacy.NoCapacityError))
 					})
 				})
 			})
@@ -88,10 +88,10 @@ var _ = Describe("Session", func() {
 			Context("Devid is incorrect...", func() {
 
 				Context("Devid is incorrect format", func() {
-					invalidDevIDSeed := types.SessionSeed{DevID: []byte("invalidtest"), BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
+					invalidDevIDSeed := legacy.SessionSeed{DevID: []byte("invalidtest"), BlockHash: blockhash, RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
 					It("should return `invalid developer id` error", func() {
-						_, err := types.NewSession(invalidDevIDSeed)
-						Expect(err).To(Equal(types.InvalidDevIDFormatError))
+						_, err := legacy.NewSession(invalidDevIDSeed)
+						Expect(err).To(Equal(legacy.InvalidDevIDFormatError))
 					})
 				})
 
@@ -106,10 +106,10 @@ var _ = Describe("Session", func() {
 			Context("Block Hash is incorrect...", func() {
 
 				Context("Not a valid block hash format", func() {
-					invalidBlockHashFormatSeed := types.SessionSeed{DevID: devid, BlockHash: []byte("foo"), RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
+					invalidBlockHashFormatSeed := legacy.SessionSeed{DevID: devid, BlockHash: []byte("foo"), RequestedChain: requestedChainHash, NodeList: nodelist, Capacity: capacity}
 					It("should return `invalid block hash` error", func() {
-						_, err := types.NewSession(invalidBlockHashFormatSeed)
-						Expect(err).To(Equal(types.InvalidBlockHashFormatError))
+						_, err := legacy.NewSession(invalidBlockHashFormatSeed)
+						Expect(err).To(Equal(legacy.InvalidBlockHashFormatError))
 					})
 				})
 
@@ -124,10 +124,10 @@ var _ = Describe("Session", func() {
 			Context("Requested Blockchain is invalid...", func() {
 
 				Context("No nodes are associated with a blockchain", func() {
-					noNodesSeed := types.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: types.SHA3FromString("foo"), NodeList: nodelist, Capacity: capacity}
+					noNodesSeed := legacy.SessionSeed{DevID: devid, BlockHash: blockhash, RequestedChain: legacy.SHA3FromString("foo"), NodeList: nodelist, Capacity: capacity}
 					It("should return `invalid blockchain` error", func() {
-						_, err := types.NewSession(noNodesSeed)
-						Expect(err).To(Equal(types.InsufficientNodesError))
+						_, err := legacy.NewSession(noNodesSeed)
+						Expect(err).To(Equal(legacy.InsufficientNodesError))
 					})
 				})
 			})
@@ -135,8 +135,8 @@ var _ = Describe("Session", func() {
 
 		Context("Valid SessionSeed Data", func() {
 			absPath, _ := filepath.Abs("../fixtures/mediumnodepool.json")
-			validSeed, _ := types.NewSessionSeed(devid, absPath, requestedChainHash, blockhash, capacity)
-			s, err := types.NewSession(validSeed)
+			validSeed, _ := legacy.NewSessionSeed(devid, absPath, requestedChainHash, blockhash, capacity)
+			s, err := legacy.NewSession(validSeed)
 			It("should not have returned any error", func() {
 				Expect(err).To(BeNil())
 			})
@@ -149,11 +149,11 @@ var _ = Describe("Session", func() {
 				Describe("Node selection", func() {
 
 					It("should find the core.NODECOUNT closest nodes to the session key", func() {
-						Expect(len(s.Nodes)).To(Equal(types.NODECOUNT))
+						Expect(len(s.Nodes)).To(Equal(legacy.NODECOUNT))
 					})
 
 					It("should contain no duplicated nodes", func() {
-						check := types.NewSet()
+						check := legacy.NewSet()
 						for _, node := range s.Nodes {
 							Expect(check.Contains(node.GID)).To(BeFalse())
 							check.Add(node.GID)
@@ -200,10 +200,10 @@ var _ = Describe("Session", func() {
 
 					Context("2 sessions derived from valid same seed data", func() {
 						It("should be = and valid", func() {
-							s1, _ := types.NewSession(validSeed)
-							s2, _ := types.NewSession(validSeed)
-							s3, _ := types.NewSession(validSeed)
-							s4, _ := types.NewSession(validSeed)
+							s1, _ := legacy.NewSession(validSeed)
+							s2, _ := legacy.NewSession(validSeed)
+							s3, _ := legacy.NewSession(validSeed)
+							s4, _ := legacy.NewSession(validSeed)
 							Expect(s1).To(Equal(s2))
 							Expect(s2).To(Equal(s3))
 							Expect(s3).To(Equal(s4))
@@ -211,11 +211,11 @@ var _ = Describe("Session", func() {
 					})
 
 					Context("2 sessions derived from different valid seed data", func() {
-						validSeed1, _ := types.NewSessionSeed(types.SHA3FromString("foo"), absPath, requestedChainHash, blockhash, capacity)
-						validSeed2, _ := types.NewSessionSeed(types.SHA3FromString("bar"), absPath, requestedChainHash, blockhash, capacity)
+						validSeed1, _ := legacy.NewSessionSeed(legacy.SHA3FromString("foo"), absPath, requestedChainHash, blockhash, capacity)
+						validSeed2, _ := legacy.NewSessionSeed(legacy.SHA3FromString("bar"), absPath, requestedChainHash, blockhash, capacity)
 						It("should be != and valid", func() {
-							s1, _ := types.NewSession(validSeed1)
-							s2, _ := types.NewSession(validSeed2)
+							s1, _ := legacy.NewSession(validSeed1)
+							s2, _ := legacy.NewSession(validSeed2)
 							Expect(s1).ToNot(Equal(s2))
 						})
 					})
