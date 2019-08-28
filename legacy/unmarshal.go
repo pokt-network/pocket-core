@@ -1,4 +1,4 @@
-package types
+package legacy
 
 import (
 	"github.com/pokt-network/pocket-core/types/fbs"

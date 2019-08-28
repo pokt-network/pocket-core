@@ -1,5 +1,5 @@
 // The core package implements the 'core' functionality of the Pocket Network (routing, servicing and validating relays)
-package types
+package legacy
 
 import "github.com/google/flatbuffers/go"
 

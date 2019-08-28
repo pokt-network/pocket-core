@@ -14,11 +14,11 @@ const (
 )
 
 var (
-	ethChain    = types.Blockchain{Name: "eth", NetID: "1", Version: "1"}
-	btcChain    = types.Blockchain{Name: "btc", NetID: "1", Version: "1"}
-	etcChain    = types.Blockchain{Name: "etc", NetID: "1", Version: "1"}
-	bchChain    = types.Blockchain{Name: "bch", NetID: "1", Version: "1"}
-	blockchains = []types.Blockchain{ethChain, btcChain, etcChain, bchChain}
+	ethChain    = legacy.Blockchain{Name: "eth", NetID: "1", Version: "1"}
+	btcChain    = legacy.Blockchain{Name: "btc", NetID: "1", Version: "1"}
+	etcChain    = legacy.Blockchain{Name: "etc", NetID: "1", Version: "1"}
+	bchChain    = legacy.Blockchain{Name: "bch", NetID: "1", Version: "1"}
+	blockchains = []legacy.Blockchain{ethChain, btcChain, etcChain, bchChain}
 )
 
 func main() {
@@ -34,13 +34,13 @@ func main() {
 // the Pocket Protocol Hash of the bytes
 
 func createChainsFile() error {
-	var chains []types.Chain
+	var chains []legacy.Chain
 	for _, chain := range blockchains {
-		ch, err := types.GenerateChainHash(chain)
+		ch, err := legacy.GenerateChainHash(chain)
 		if err != nil {
 			return err
 		}
-		chains = append(chains, types.Chain{Hash: hex.EncodeToString(ch), URL: "test-url"})
+		chains = append(chains, legacy.Chain{Hash: hex.EncodeToString(ch), URL: "test-url"})
 	}
 	absPath, err := filepath.Abs(filep)
 	if err != nil {
