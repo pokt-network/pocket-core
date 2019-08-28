@@ -1,7 +1,7 @@
 package servicing
 
 import (
-	"github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/legacy"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"

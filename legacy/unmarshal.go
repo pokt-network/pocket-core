@@ -1,7 +1,7 @@
 package legacy
 
 import (
-	"github.com/pokt-network/pocket-core/types/fbs"
+	"github.com/pokt-network/pocket-core/legacy/fbs"
 	"strconv"
 )
 
