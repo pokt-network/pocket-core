@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/legacy"
 )
 
 // ************************************************************************************************************

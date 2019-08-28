@@ -2,7 +2,7 @@ package legacy
 
 import (
 	"github.com/google/flatbuffers/go"
-	"github.com/pokt-network/pocket-core/types/fbs"
+	"github.com/pokt-network/pocket-core/legacy/fbs"
 	"strconv"
 )
 
