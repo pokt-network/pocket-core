@@ -8,10 +8,18 @@ import (
 type Node struct {
 	Account         `json:"routing"`
 	URL             []byte               `json:"url"`
-	SupportedChains []NodeSupportedChain `json:"supportedChains"`
+	SupportedChains NodeSupportedChains `json:"supportedChains"`
 	IsAlive         bool
 }
 
 type NodeSupportedChain struct {
 	legacy.Blockchain `json:"blockchain"`
 }
+
+type NodeSupportedChains map[string] NodeSupportedChain // [hex]->Blockchain
+
+func (nsc NodeSupportedChains) Contains(hexBlockchainHash string) bool{
+	_, contains := nsc[hexBlockchainHash]
+	return contains
+}
+

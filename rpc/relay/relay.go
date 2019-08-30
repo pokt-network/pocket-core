@@ -9,7 +9,6 @@ import (
 	"github.com/pokt-network/pocket-core/rpc/shared"
 )
 
-// TODO E2E test on all rpc calls
 // "Relay" handles the localhost:<relay-port>/v1/relaycall.
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	relay := &legacy.Relay{}
