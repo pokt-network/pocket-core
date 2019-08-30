@@ -1,18 +1,25 @@
 package session
 
-import (
-	"github.com/pokt-network/pocket-core/legacy"
-	types "github.com/pokt-network/pocket-core/types"
-)
-
 type Session struct {
-	SessionKey      SessionKey        `json:"sessionkey"`
-	Developer       types.Developer   `json:"developer"`
-	NonNativeChain  legacy.Blockchain `json:"nonnativechain"`
-	LatestBlockID SessionBlock     `json:"latestBlock"`
-	Nodes           SessionNodes      `json:"sessionNodes"`
+	SessionKey     SessionKey        `json:"sessionkey"`
+	Developer      SessionDeveloper  `json:"developer"`
+	NonNativeChain SessionBlockchain `json:"nonnativechain"`
+	BlockID        SessionBlockID    `json:"latestBlock"`
+	Nodes          SessionNodes      `json:"sessionNodes"`
 }
 
-func NewSession() {
-
+// Create a new session from seed data
+func NewSession(developer SessionDeveloper, nonNativeChain SessionBlockchain, blockID SessionBlockID) (*Session, error) {
+	// first generate session key
+	sessionKey, err := NewSessionKey(developer, nonNativeChain, blockID)
+	if err != nil {
+		return nil, err
+	}
+	// then generate the service nodes for that session
+	sessionNodes, err := NewSessionNodes(nonNativeChain, sessionKey)
+	if err != nil {
+		return nil, err
+	}
+	// then populate the structure and return
+	return &Session{SessionKey: sessionKey, Developer: developer, NonNativeChain: nonNativeChain, BlockID: blockID, Nodes: sessionNodes}, nil
 }

@@ -4,5 +4,5 @@ import (
 	"github.com/pokt-network/pocket-core/types"
 )
 
-// wrapper around tendermint block structure
-type SessionBlock types.BlockID
+// wrapper around blockID type for session module
+type SessionBlockID types.BlockID
