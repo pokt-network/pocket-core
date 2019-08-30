@@ -3,7 +3,7 @@ package session
 import (
 	"encoding/hex"
 	"github.com/pokt-network/pocket-core/crypto"
-	types "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/types"
 	"sort"
 )
 
@@ -27,7 +27,9 @@ type NodeDistance struct {
 
 type NodeDistances []NodeDistance
 
-func NewSessionNodes(allActiveNodes AllActiveNodes, nonNativeChain types.AminoBuffer, sessionKey SessionKey) (SessionNodes, error) {
+func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (SessionNodes, error) {
+	// TODO query for all active nodes from the world state
+	allActiveNodes := make(AllActiveNodes, 5)
 	// session nodes are just a wrapper around node slice
 	var result SessionNodes
 	// node distance is just a node with a computational field attached to it
@@ -48,12 +50,13 @@ func NewSessionNodes(allActiveNodes AllActiveNodes, nonNativeChain types.AminoBu
 		return nil, err
 	}
 	// sort the nodes based off of distance
-	result = sorty(xorResult)
+	result = revSort(xorResult)
 
 	// return the top 5 nodes
 	return result[0:5], nil
 }
 
+// filter the nodes by non native chain
 func filter(allActiveNodes AllActiveNodes, nonNativeChainHash []byte) (SessionNodes, error) {
 	var result SessionNodes
 	for _, node := range allActiveNodes {
@@ -62,17 +65,19 @@ func filter(allActiveNodes AllActiveNodes, nonNativeChainHash []byte) (SessionNo
 		}
 		result = append(result, node)
 	}
-	if len(result)==0 {
+	if len(result) == 0 {
 		return nil, InsufficientNodesError
 	}
 	return result, nil
 }
 
-func xor(sessionNodes SessionNodes, sessionkey SessionKey) (NodeDistances, error){
+// xor the sessionNodes.publicKey against the sessionKey to find the computationally
+// closest nodes
+func xor(sessionNodes SessionNodes, sessionkey SessionKey) (NodeDistances, error) {
 	var keyLength = len(sessionkey)
 	result := make([]NodeDistance, keyLength)
 	// for every node, find the distance between it's pubkey and the sesskey
-	for index, node := range sessionNodes{
+	for index, node := range sessionNodes {
 		pubKey := node.PubKey.Bytes()
 		if len(pubKey) != keyLength {
 			return nil, MismatchedByteArraysError
@@ -85,17 +90,23 @@ func xor(sessionNodes SessionNodes, sessionkey SessionKey) (NodeDistances, error
 	return result, nil
 }
 
-func sorty(sessionNodes NodeDistances) SessionNodes {
+// sort the nodes by shortest computational distance
+func revSort(sessionNodes NodeDistances) SessionNodes {
+	result := make(SessionNodes, len(sessionNodes))
 	sort.Sort(sort.Reverse(sessionNodes))
+	for _, node := range sessionNodes {
+		result = append(result, node.Node)
+	}
+	return result
 }
 
-// "Len" returns the length of the node pool -> needed for sort.Sort() interface
+// returns the length of the node pool -> needed for sort.Sort() interface
 func (n NodeDistances) Len() int { return len(n) }
 
-// "Swap" swaps two elements in the node pool -> needed for sort.Sort() interface
+// swaps two elements in the node pool -> needed for sort.Sort() interface
 func (n NodeDistances) Swap(i, j int) { n[i], n[j] = n[j], n[i] }
 
-// "Less" returns if node i is less than node j by XOR value
+// returns if node i is less than node j by XOR value
 // it assumes big endian encoding
 func (n NodeDistances) Less(i, j int) bool {
 	// compare size of byte arrays

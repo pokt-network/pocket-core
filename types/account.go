@@ -8,6 +8,6 @@ import (
 type Account struct {
 	Address     Address          `json:"address"`
 	PubKey      crypto.PublicKey `json:"publicKey"`
-	Balance     Coins            `json:"balance"`
-	StakeAmount Coins            `json:"stakeamount"`
+	Balance     POKT             `json:"balance"`
+	StakeAmount POKT             `json:"stakeamount"`
 }
