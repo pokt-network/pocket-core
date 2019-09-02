@@ -1,0 +1,9 @@
+syntax = "proto3";
+import "application_auth_token_message.proto";
+
+message ApplicationAuthToken {
+	string version = 1;
+	ApplicationAuthTokenMessage message = 2;
+	string appPubKey = 3;
+	string signature = 4;
+}
