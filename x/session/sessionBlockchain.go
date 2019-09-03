@@ -5,5 +5,5 @@ import (
 )
 
 // extension/wrapper of legacy.Blockchain for session
-// TODO should be refactored to remove legacy
+// TODO non native chains need to be defined by config, for now will be hash
 type SessionBlockchain types.AminoBuffer

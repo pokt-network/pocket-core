@@ -20,3 +20,5 @@ func NewKeypair() (privateKey PrivateKey, publicKey PublicKey) {
 func NewPrivateKey() PrivateKey {
 	return secp256k1.GenPrivKey()
 }
+
+// todo need function to convert hex string or bytes into public key

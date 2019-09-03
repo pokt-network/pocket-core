@@ -10,7 +10,10 @@ type SessionKey []byte
 // Generates the session key = SessionHashingAlgo(devid+chain+blockhash)
 func NewSessionKey(developer SessionDeveloper, nonNativeChain SessionBlockchain, blockID SessionBlockID) (SessionKey, error) {
 	// get the public key from the developer structure
-	devPubKey := developer.PubKey.Bytes()
+	devPubKey, err := developer.PubKey.Bytes()
+	if err != nil {
+		return nil, err
+	}
 	// check for empty params
 	if len(devPubKey) == 0 {
 		return nil, EmptyDevPubKeyError

@@ -10,6 +10,20 @@ type Developer struct {
 	RequestedChains []DeveloperRequestedBlockchain `json:"requestedChains"`
 }
 
+type Developers []Developer
+
+func NewDeveloper(address Address, publicKey AccountPublicKey, balance POKT, stakeAmount POKT, requestedChains []DeveloperRequestedBlockchain) Developer {
+	return Developer{
+		Account: Account{
+			Address:     address,
+			PubKey:      publicKey,
+			Balance:     balance,
+			StakeAmount: stakeAmount,
+		},
+		RequestedChains: requestedChains,
+	}
+}
+
 type DeveloperRequestedBlockchain struct {
 	legacy.Blockchain    `json:"blockchain"`
 	AllocationPercentage uint8 `json:"allocationPercentage"`

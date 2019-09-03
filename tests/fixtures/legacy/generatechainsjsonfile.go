@@ -1,10 +1,10 @@
-package main
+package legacy
 
 import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/legacy"
 	"io/ioutil"
 	"path/filepath"
 )
