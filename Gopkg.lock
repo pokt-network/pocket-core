@@ -567,6 +567,8 @@
     "github.com/onsi/gomega",
     "github.com/sirupsen/logrus",
     "github.com/tendermint/tendermint/crypto",
+    "github.com/tendermint/tendermint/crypto/secp256k1",
+    "github.com/tendermint/tendermint/types",
     "golang.org/x/crypto/sha3",
   ]
   solver-name = "gps-cdcl"

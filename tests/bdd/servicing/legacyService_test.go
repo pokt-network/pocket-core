@@ -18,8 +18,8 @@ import (
 // ************************************************************************************************************
 
 var (
-	chainsfp, _                  = filepath.Abs("../fixtures/chains.json")
-	brokenchainsfp, _            = filepath.Abs("../fixtures/brokenChains.json")
+	chainsfp, _                  = filepath.Abs("../../fixtures/legacy/chains.json")
+	brokenchainsfp, _            = filepath.Abs("../../fixtures/legacy/brokenChains.json")
 	chainHash, _                 = legacy.GenerateChainHash(legacy.Blockchain{Name: "eth", NetID: "1", Version: "1"})
 	unsupportedChainHash, _      = legacy.GenerateChainHash(legacy.Blockchain{Name: "foo", NetID: "1", Version: "1"})
 	payload                      = []byte("{\"jsonrpc\":\"2.0\",\"method\":\"net_version\",\"params\":[],\"id\":67}")
@@ -35,7 +35,7 @@ var (
 	devid                        = []byte(legacy.SHA3FromString("foo"))
 	gid                          = "foo"
 	blockhash                    = legacy.SHA3FromString("foo")
-	nodePoolfp, _                = filepath.Abs("../fixtures/mediumnodepool.json")
+	nodePoolfp, _                = filepath.Abs("../../fixtures/legacy/mediumnodepool.json")
 	capacity                     = 100
 	validSeed, _                 = legacy.NewSessionSeed(devid, nodePoolfp, chainHash, blockhash, capacity)
 	RelayMissingDevID            = legacy.Relay{Blockchain: chainHash, Payload: payload, Token: token, Method: httpMethod, Path: path, Nonce: nonce}

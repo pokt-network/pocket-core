@@ -3,6 +3,7 @@ package session
 import (
 	"encoding/hex"
 	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/tests/fixtures"
 	"github.com/pokt-network/pocket-core/types"
 	"sort"
 )
@@ -28,18 +29,27 @@ type NodeDistance struct {
 type NodeDistances []NodeDistance
 
 func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (SessionNodes, error) {
-	// TODO query for all active nodes from the world state
-	allActiveNodes := make(AllActiveNodes, 5)
+	if len(sessionKey) == 0 {
+		return nil, EmptySessionKeyError
+	}
+	if len(nonNativeChain) == 0 {
+		return nil, EmptyNonNativeChainError
+	}
+	// using mock world state
+	allActiveNodes, err := fixtures.GetNodes()
+	if err != nil {
+		return nil, err
+	}
 	// session nodes are just a wrapper around node slice
 	var result SessionNodes
 	// node distance is just a node with a computational field attached to it
 	var xorResult []NodeDistance
 	// ensure there is atleast the minimum amount of nodes
-	if len(allActiveNodes) < SESSIONNODECOUNT {
+	if len(*allActiveNodes) < SESSIONNODECOUNT {
 		return nil, InsufficientNodesError
 	}
 	// filter `allActiveNodes` by the HASH(nonNativeChain)
-	result, err := filter(allActiveNodes, crypto.Hash(nonNativeChain))
+	result, err = filter(AllActiveNodes(*allActiveNodes), nonNativeChain)
 	if err != nil {
 		return nil, err
 	}
@@ -75,16 +85,21 @@ func filter(allActiveNodes AllActiveNodes, nonNativeChainHash []byte) (SessionNo
 // closest nodes
 func xor(sessionNodes SessionNodes, sessionkey SessionKey) (NodeDistances, error) {
 	var keyLength = len(sessionkey)
-	result := make([]NodeDistance, keyLength)
+	result := make([]NodeDistance, len(sessionNodes))
 	// for every node, find the distance between it's pubkey and the sesskey
 	for index, node := range sessionNodes {
-		pubKey := node.PubKey.Bytes()
-		if len(pubKey) != keyLength {
+		pubKey, err := node.PubKey.Bytes()
+		pubKeyHash := crypto.Hash(pubKey) // currently hashing public key but could easily just take the first n bytes to compare
+		if err != nil {
+			return nil, err
+		}
+		if len(pubKeyHash) != keyLength {
 			return nil, MismatchedByteArraysError
 		}
 		result[index].Node = node
+		result[index].distance = make([]byte, keyLength)
 		for i := 0; i < keyLength; i++ {
-			result[index].distance[i] = pubKey[i] ^ sessionkey[i]
+			result[index].distance[i] = pubKeyHash[i] ^ sessionkey[i]
 		}
 	}
 	return result, nil
