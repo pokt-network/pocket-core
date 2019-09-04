@@ -8,5 +8,5 @@ func main() {
 
 func GenerateAccounts() {
 	fixtures.GenerateAliveNodes()
-	fixtures.GenerateDevelopers()
+	fixtures.GenerateApplications()
 }

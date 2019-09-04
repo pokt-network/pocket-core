@@ -13,9 +13,9 @@ var (
 		string(os.PathSeparator) + "fixtures" + string(os.PathSeparator) + "JSON" + string(os.PathSeparator)
 )
 
-func GetDevelopers() (*types.Developers, error) {
-	result := &types.Developers{}
-	jsonFile, err := os.Open(source + "randomDeveloperPool.json")
+func GetApplications() (*types.Applications, error) {
+	result := &types.Applications{}
+	jsonFile, err := os.Open(source + "randomApplicationPool.json")
 	if err != nil {
 		return nil, err
 	}

@@ -63,7 +63,7 @@ func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (S
 	result = revSort(xorResult)
 
 	// return the top 5 nodes
-	return result[0:5], nil
+	return result[0:SESSIONNODECOUNT], nil
 }
 
 // filter the nodes by non native chain
@@ -75,7 +75,7 @@ func filter(allActiveNodes AllActiveNodes, nonNativeChainHash []byte) (SessionNo
 		}
 		result = append(result, node)
 	}
-	if len(result) == 0 {
+	if len(result) < SESSIONNODECOUNT {
 		return nil, InsufficientNodesError
 	}
 	return result, nil

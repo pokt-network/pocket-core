@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	numberOfNodes      = 50
-	numberOfDevelopers = 50
+	numberOfNodes        = 50
+	numberOfApplications = 50
 )
 
 var (
@@ -66,32 +66,32 @@ func GenerateAliveNode() (node types.Node) {
 }
 
 // writes json nodepool for testing
-func GenerateDevelopers() {
+func GenerateApplications() {
 	RegisterPOKT()
-	var result types.Developers
+	var result types.Applications
 	fmt.Println()
-	for i := 0; i < numberOfDevelopers; i++ {
-		result = append(result, GenerateDeveloper())
+	for i := 0; i < numberOfApplications; i++ {
+		result = append(result, GenerateApplication())
 	}
 	output, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	err = ioutil.WriteFile("tests/fixtures/JSON/randomDeveloperPool.json", output, 0644)
+	err = ioutil.WriteFile("tests/fixtures/JSON/randomApplicationPool.json", output, 0644)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 }
 
-func GenerateDeveloper() (node types.Developer) {
+func GenerateApplication() (node types.Application) {
 	randomSource := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(randomSource)
 	balance := GeneratePOKT(random.Int63())
 	stakeAmount := GeneratePOKT(random.Int63())
 	_, pubKey := crypto.NewKeypair()
 	hexPubKey := types.AccountPublicKey(hex.EncodeToString(pubKey.Bytes()))
-	node = types.Developer{
+	node = types.Application{
 		Account: types.Account{
 			Address:     nil, // todo
 			PubKey:      hexPubKey,
