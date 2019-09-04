@@ -13,8 +13,8 @@ func TestGetNodes(t *testing.T) {
 	fmt.Println(res)
 }
 
-func TestGetDevelopers(t *testing.T) {
-	res, err := GetDevelopers()
+func TestGetApplications(t *testing.T) {
+	res, err := GetApplications()
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

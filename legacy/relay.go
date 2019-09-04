@@ -9,7 +9,7 @@ type Relay struct {
 	Blockchain []byte `json:"blockchain"` // blockchain Hash (includes the version and the netid)
 	Payload    []byte `json:"data"`       // the data payload
 	DevID      []byte `json:"devid"`      // the id needed to confirm servicing
-	Token      Token  `json:"token"`      // the token given from the developer
+	Token      Token  `json:"token"`      // the token given from the application
 	Method     []byte `json:"method"`     // the HTTP method needed for the call (defaults to POST)
 	Path       []byte `json:"URL"`        // optional param for REST
 	Nonce      int    `json:"nonce"`      // random number to prevent double spends
