@@ -1,6 +1,6 @@
 syntax = "proto3";
 
 message ApplicationAuthTokenMessage {
-	string applicationAddress = 1;
+	string applicationPublicKey = 1;
 	string clientAddress = 2;
 }
