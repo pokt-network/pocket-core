@@ -13,11 +13,6 @@ func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development")
 }
 
-// "IsAccountActive" handles the localhost:<client-port>/v1/account/active call.
-func IsAccountActive(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development")
-}
-
 // "Balance" handles the localhost:<client-port>/v1/account/balance call.
 func Balance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development")

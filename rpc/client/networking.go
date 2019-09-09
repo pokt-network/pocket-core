@@ -12,11 +12,6 @@ func NetInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-// "NetID" handles the localhost:<client-port>/v1/network/id call.
-func NetID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
-}
-
 // "PeerCount" handles the localhost:<client-port>/v1/network/peer_count call.
 func PeerCount(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")

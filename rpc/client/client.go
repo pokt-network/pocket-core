@@ -12,11 +12,6 @@ func CliInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
 }
 
-// "CliID" handles the localhost:<client-port>/v1/client/id call.
-func CliID(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
-}
-
 // "CliVersion" handles the localhost:<client-port>/v1/client/version call.
 func CliVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	shared.WriteJSONResponse(w, "Hello! This endpoint is currently in development!")
