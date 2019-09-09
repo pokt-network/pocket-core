@@ -10,11 +10,9 @@ import (
 // "Routes" is a function that returns all of the routes of the API.
 func Routes() shared.Routes {
 	routes := shared.Routes{
-		shared.Route{Name: "Flags", Method: "GET", Path: "/v1/flags", HandlerFunc: Flags},
 		shared.Route{Name: "Routes", Method: "GET", Path: "/v1/routes", HandlerFunc: WriteRoutes},
 		shared.Route{Name: "Version", Method: "GET", Path: "/v1", HandlerFunc: Version},
 		shared.Route{Name: "Account", Method: "POST", Path: "/v1/account", HandlerFunc: Account},
-		shared.Route{Name: "IsAccountActive", Method: "POST", Path: "/v1/account/active", HandlerFunc: IsAccountActive},
 		shared.Route{Name: "Balance", Method: "POST", Path: "/v1/account/balance", HandlerFunc: Balance},
 		shared.Route{Name: "DateJoined", Method: "POST", Path: "/v1/account/joined", HandlerFunc: DateJoined},
 		shared.Route{Name: "AcountKarma", Method: "POST", Path: "/v1/account/karma", HandlerFunc: AcountKarma},
@@ -23,11 +21,9 @@ func Routes() shared.Routes {
 		shared.Route{Name: "AccSessCount", Method: "POST", Path: "/v1/account/session_count", HandlerFunc: AccSessCount},
 		shared.Route{Name: "AccStatus", Method: "POST", Path: "/v1/account/status", HandlerFunc: AccStatus},
 		shared.Route{Name: "CliInfo", Method: "POST", Path: "/v1/client", HandlerFunc: CliInfo},
-		shared.Route{Name: "CliID", Method: "POST", Path: "/v1/client/id", HandlerFunc: CliID},
 		shared.Route{Name: "CliVersion", Method: "POST", Path: "/v1/client/version", HandlerFunc: CliVersion},
 		shared.Route{Name: "CliSyncStatus", Method: "POST", Path: "/v1/client/syncing", HandlerFunc: CliSyncStatus},
 		shared.Route{Name: "NetInfo", Method: "POST", Path: "/v1/network", HandlerFunc: NetInfo},
-		shared.Route{Name: "NetID", Method: "POST", Path: "/v1/network/id", HandlerFunc: NetID},
 		shared.Route{Name: "PeerCount", Method: "POST", Path: "/v1/network/peer_count", HandlerFunc: PeerCount},
 		shared.Route{Name: "PeerList", Method: "POST", Path: "/v1/network/peer_list", HandlerFunc: PeerList},
 		shared.Route{Name: "PersonalInfo", Method: "POST", Path: "/v1/personal", HandlerFunc: PersonalInfo},
