@@ -55,15 +55,15 @@
   version = "v1.3.3"
 
 [[projects]]
-  digest = "1:0631a081a3e12ba4d579824fe27c857ded2d9c4e50fc568326889e1ebd2cb4e2"
+  digest = "1:257bbb7644f00d30fb2982b70fe78807edab60fe73cb344d2dc0b9e4da226876"
   name = "github.com/ethereum/go-ethereum"
   packages = [
     "common/math",
     "crypto/secp256k1",
   ]
   pruneopts = "NT"
-  revision = "4bcc0a37ab70cb79b16893556cffdaad6974e7d8"
-  version = "v1.8.27"
+  revision = "cfbb969da803d4cc92e1a64fc1b3c06db299b564"
+  version = "v1.9.3"
 
 [[projects]]
   digest = "1:00750dc0af101a4a59edc13410b8e04f89edbb18d2c9c07bffb45a012021aed6"
@@ -566,8 +566,6 @@
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/sirupsen/logrus",
-    "github.com/tendermint/tendermint/crypto",
-    "github.com/tendermint/tendermint/crypto/secp256k1",
     "github.com/tendermint/tendermint/types",
     "golang.org/x/crypto/sha3",
   ]
