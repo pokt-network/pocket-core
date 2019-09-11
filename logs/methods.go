@@ -3,10 +3,10 @@ package logs
 
 import (
 	"os"
+	"reflect"
 	"runtime"
 	"strconv"
 	"time"
-	"reflect"
 
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
@@ -81,7 +81,7 @@ func Logger(l log, format LogFormat) error {
 				"FilePath":     l.FilePath,     // the path of the file the log was called from
 				"LineNumber":   l.LineNumber,   // the line number of the file the log was called from
 				"FunctionName": l.FunctionName, // the function name of the file the log was called
-		})
+			})
 		logrus.SetOutput(f)
 
 	}
