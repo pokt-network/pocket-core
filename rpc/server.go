@@ -25,11 +25,11 @@ func StartServers() {
 // "startClientRPC" starts the client RPC/REST API server at a specific port.
 func StartClientRPC(port string) {
 	log.Fatal(http.ListenAndServe(":"+port, shared.Router(client.Routes()))) // This starts the client RPC API.
-	logs.NewLog("Started client server", logs.InfoLevel, logs.JSONLogFormat)
+	logs.Log("Started client server", logs.InfoLevel, logs.JSONLogFormat)
 }
 
 // "startRelayRPC" starts the client RPC/REST API server at a specific port.
 func StartRelayRPC(port string) {
 	log.Fatal(http.ListenAndServe(":"+port, shared.Router(relay.Routes()))) // This starts the relay RPC API.
-	logs.NewLog("Started relay server", logs.InfoLevel, logs.JSONLogFormat)
+	logs.Log("Started relay server", logs.InfoLevel, logs.JSONLogFormat)
 }

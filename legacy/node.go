@@ -147,15 +147,15 @@ func FileToNodes(nodePoolFilePath string) ([]Node, error) {
 func FileToNWSSlice(nodePoolFilePath string) []NodeWorldState {
 	jsonFile, err := os.Open(nodePoolFilePath)
 	if err != nil {
-		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
-		logs.NewLog(err.Error(), logs.ErrorLevel, logs.TextLogFormatter)
+		logs.Log(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		logs.Log(err.Error(), logs.ErrorLevel, logs.TextLogFormatter)
 
 	}
 	defer jsonFile.Close()
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
-		logs.NewLog(err.Error(), logs.ErrorLevel, logs.TextLogFormatter)
+		logs.Log(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		logs.Log(err.Error(), logs.ErrorLevel, logs.TextLogFormatter)
 
 	}
 	var nodes []NodeWorldState

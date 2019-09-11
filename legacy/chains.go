@@ -92,7 +92,7 @@ func HostedChainsFromFile(filepath string) error {
 	file, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		err_log := fmt.Sprintf("%v", err)
-		logs.NewLog(err_log, logs.ErrorLevel, logs.TextLogFormatter)
+		logs.Log(err_log, logs.ErrorLevel, logs.TextLogFormatter)
 		return err
 	}
 	return jsonToChains(file)

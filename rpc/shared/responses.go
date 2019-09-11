@@ -32,7 +32,7 @@ func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 	b, err := json.MarshalIndent(information, "", "\t")
 	if err != nil {
 		error_data := fmt.Sprintf("%s",err)
-		logs.NewLog(error_data, logs.ErrorLevel, logs.TextLogFormatter)
+		logs.Log(error_data, logs.ErrorLevel, logs.TextLogFormatter)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
