@@ -3,7 +3,6 @@ package legacy
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"github.com/google/flatbuffers/go"
 	"github.com/pokt-network/pocket-core/logs"
 	"io/ioutil"
@@ -149,13 +148,15 @@ func FileToNWSSlice(nodePoolFilePath string) []NodeWorldState {
 	jsonFile, err := os.Open(nodePoolFilePath)
 	if err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
-		fmt.Println(err.Error())
+		logs.NewLog(err.Error(), logs.ErrorLevel, logs.TextLogFormatter)
+
 	}
 	defer jsonFile.Close()
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
 		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
-		fmt.Println(err.Error())
+		logs.NewLog(err.Error(), logs.ErrorLevel, logs.TextLogFormatter)
+
 	}
 	var nodes []NodeWorldState
 	err = json.Unmarshal(byteValue, &nodes)
