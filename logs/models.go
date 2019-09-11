@@ -1,7 +1,6 @@
 package logs
 
 import (
-	"github.com/logmatic/logmatic-go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,7 +12,29 @@ var (
 	FatalLevel    = LogLevel{logrus.FatalLevel} // package.
 	ErrorLevel    = LogLevel{logrus.ErrorLevel}
 	TraceLevel    = LogLevel{logrus.TraceLevel}
-	JSONLogFormat = LogFormat{&logmatic.JSONFormatter{}}
+	JSONLogFormat = LogFormat{&logrus.JSONFormatter{
+			DisableTimestamp:			false,
+			TimestampFormat:			"2006-01-02 15:04:05",
+			DataKey:					"",
+			FieldMap:					nil,
+			CallerPrettyfier:			nil,
+			PrettyPrint:				false,
+	}}
+	TextLogFormatter = LogFormat{&logrus.TextFormatter{
+			ForceColors:               false,
+			DisableColors:             false,
+			EnvironmentOverrideColors: false,
+			DisableTimestamp:          false,
+			FullTimestamp:             true,
+			TimestampFormat:           "2006-01-02 15:04:05",
+			DisableSorting:            false,
+			SortingFunc:               nil,
+			DisableLevelTruncation:    false,
+			QuoteEmptyFields:          false,
+			FieldMap:                  nil,
+			CallerPrettyfier:          nil,
+	}}
+
 )
 
 // "Log" model holds the structure for the log properties.

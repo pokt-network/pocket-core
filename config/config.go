@@ -1,10 +1,12 @@
 package config
 
 import (
-	"encoding/json"
-	"flag"
-	"fmt"
-	"sync"
+    "encoding/json"
+    "flag"
+    "os"
+    "fmt"
+    log "github.com/sirupsen/logrus"
+    "sync"
 
 	"github.com/pokt-network/pocket-core/const"
 )
@@ -41,10 +43,26 @@ func Init() {
 	GlobalConfig()
 }
 
+// A simple log for showing the pocket configuration
+func logger(output string) {
+
+  Formatter := new(log.TextFormatter)
+  Formatter.TimestampFormat = "02-01-2006 15:04:05"
+  Formatter.FullTimestamp = true
+
+  log.SetFormatter(Formatter)
+
+  log.SetOutput(os.Stdout)
+  // Only log the warning severity or above.
+  log.SetLevel(log.InfoLevel)
+  log.Info(output)
+
+}
 // "Print()" prints the client configuration information to the CLI.
 func Print() {
 	data, _ := json.MarshalIndent(c, "", "    ")
-	fmt.Println("Pocket Core Configuration:\n", string(data))
+    var output = fmt.Sprintf("%s", string(data))
+	logger(output)
 }
 
 // "GlobalConfig()" returns the configuration object in a thread safe manner.
