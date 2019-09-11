@@ -31,5 +31,5 @@ func NewSessionKey(app SessionApplication, nonNativeChain SessionBlockchain, blo
 	seed = append(seed, blockID.Hash.Bytes()...)
 
 	// return the hash of the result
-	return crypto.Hash(seed), nil
+	return crypto.SHA3FromBytes(seed), nil
 }
