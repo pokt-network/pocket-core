@@ -30,9 +30,9 @@ func startClient() {
 	// runs the server endpoints for client and relay api
 	rpc.StartServers()
 	// logs the client starting
-	logs.NewLog("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
+	logs.Log("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
 	// logs start message to stdout
-	logs.NewLog("Started Pocket Core", logs.InfoLevel, logs.TextLogFormatter)
+	logs.Log("Started Pocket Core", logs.InfoLevel, logs.TextLogFormatter)
 	// print the configuration
 	config.Print()
 	// wait for the interrupt command

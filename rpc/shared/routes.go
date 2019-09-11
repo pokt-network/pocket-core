@@ -31,7 +31,7 @@ func WriteRoutes(w http.ResponseWriter, r *http.Request, ps httprouter.Params, r
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	j, err := json.MarshalIndent(paths, "", "    ")
 	if err != nil {
-		logs.NewLog("Unable to marshal WriteRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
+		logs.Log("Unable to marshal WriteRoutes to JSON", logs.ErrorLevel, logs.JSONLogFormat)
 	}
 	WriteRawJSONResponse(w, j)
 }
