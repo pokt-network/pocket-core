@@ -26,17 +26,18 @@
   revision = "9e5f4b9a998d263e3ce9c56664a7816001ac8000"
 
 [[projects]]
-  digest = "1:31c5999393d5073622078fd6595c6adaf3a30fcd493ad26258db69e094d85eba"
+  branch = "master"
+  digest = "1:54dba1e4a96c83e548e02913710822b18c5bcc8e2f8fe685dcf105e3604a2a8c"
   name = "github.com/cosmos/cosmos-sdk"
   packages = [
     "codec",
     "store/gaskv",
     "store/types",
     "types",
+    "types/errors",
   ]
   pruneopts = "NT"
-  revision = "93f61a9012520f6ed5e069d532a7a79547eb358d"
-  version = "v0.37.0"
+  revision = "5bcab79e8aefa5d369a09830bff64b407c049036"
 
 [[projects]]
   digest = "1:4b8b5811da6970495e04d1f4e98bb89518cc3cfc3b3f456bdb876ed7b6c74049"
