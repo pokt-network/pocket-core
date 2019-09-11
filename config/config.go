@@ -1,12 +1,12 @@
 package config
 
 import (
-    "encoding/json"
-    "flag"
-    "os"
-    "fmt"
-    log "github.com/sirupsen/logrus"
-    "sync"
+	"encoding/json"
+	"flag"
+	"fmt"
+	log "github.com/sirupsen/logrus"
+	"os"
+	"sync"
 
 	"github.com/pokt-network/pocket-core/const"
 )
@@ -46,22 +46,23 @@ func Init() {
 // A simple log for showing the pocket configuration
 func logger(output string) {
 
-  Formatter := new(log.TextFormatter)
-  Formatter.TimestampFormat = "02-01-2006 15:04:05"
-  Formatter.FullTimestamp = true
+	Formatter := new(log.TextFormatter)
+	Formatter.TimestampFormat = "02-01-2006 15:04:05"
+	Formatter.FullTimestamp = true
 
-  log.SetFormatter(Formatter)
+	log.SetFormatter(Formatter)
 
-  log.SetOutput(os.Stdout)
-  // Only log the warning severity or above.
-  log.SetLevel(log.InfoLevel)
-  log.Info(output)
+	log.SetOutput(os.Stdout)
+	// Only log the warning severity or above.
+	log.SetLevel(log.InfoLevel)
+	log.Info(output)
 
 }
+
 // "Print()" prints the client configuration information to the CLI.
 func Print() {
 	data, _ := json.MarshalIndent(c, "", "    ")
-    var output = fmt.Sprintf("%s", string(data))
+	var output = fmt.Sprintf("%s", string(data))
 	logger(output)
 }
 
