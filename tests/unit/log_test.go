@@ -7,7 +7,7 @@ import (
 )
 
 func TestLogs(t *testing.T) {
-	if err := logs.NewLog("Unit test for the log functionality", logs.InfoLevel, logs.JSONLogFormat); err != nil {
+	if err := logs.Log("Unit test for the log functionality", logs.InfoLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
 	}
 }
