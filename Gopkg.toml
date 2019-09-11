@@ -7,10 +7,6 @@
   version = "1.2.0"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/logmatic/logmatic-go"
-
-[[constraint]]
   name = "github.com/onsi/ginkgo"
   version = "1.8.0"
 
