@@ -1,12 +1,19 @@
 package crypto
 
 import (
-	"crypto"
+	"golang.org/x/crypto/sha3"
 )
 
-// TODO convert to standard crypto library
-func Hash(input []byte) []byte {
-	hasher := crypto.SHA3_256.New()
-	hasher.Write(input)
+// Converts []byte to SHA3-256 hashed []byte
+func SHA3FromBytes(b []byte) []byte {
+	hasher := sha3.New256()
+	hasher.Write(b)
+	return hasher.Sum(nil)
+}
+
+// Converts string to SHA3-256 hashed []byte
+func SHA3FromString(s string) []byte {
+	hasher := sha3.New256()
+	hasher.Write([]byte(s))
 	return hasher.Sum(nil)
 }
