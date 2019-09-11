@@ -31,7 +31,7 @@ func caller() *runtime.Frame {
 }
 
 // "NewLog" creates a custom log and calls the logger function.
-func NewLog(message string, level LogLevel, format LogFormat) error {
+func Log(message string, level LogLevel, format LogFormat) error {
 	currentTime := time.Now()
 	// get the caller from util
 	frame := caller()
@@ -39,7 +39,7 @@ func NewLog(message string, level LogLevel, format LogFormat) error {
 		panic("Frame from new log was nil")
 	}
 	// create a new log structure
-	log := Log{}
+	log := log{}
 	log.Name = currentTime.UTC().Format("2006-01-02T15-04-05")
 	// set the name of the function
 	log.FunctionName = frame.Func.Name()
@@ -58,7 +58,7 @@ func NewLog(message string, level LogLevel, format LogFormat) error {
 }
 
 // "Logger" prints the log to data directory
-func Logger(l Log, format LogFormat) error {
+func Logger(l log, format LogFormat) error {
 	// open/create the new log file
 	f, err := os.OpenFile(config.GlobalConfig().DD+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
