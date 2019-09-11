@@ -189,14 +189,6 @@
   version = "v0.0.2"
 
 [[projects]]
-  branch = "master"
-  digest = "1:1273088344adca06b84f4907eb260f41ccf73b5016fed5e7cea9eb519df1a21b"
-  name = "github.com/logmatic/logmatic-go"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "9eb00af17b4c3c788c9b88a476c98fec79dd39df"
-
-[[projects]]
   digest = "1:ea1db000388d88b31db7531c83016bef0d6db0d908a07794bfc36aca16fbf935"
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
@@ -562,7 +554,6 @@
     "github.com/ethereum/go-ethereum/crypto/secp256k1",
     "github.com/google/flatbuffers/go",
     "github.com/julienschmidt/httprouter",
-    "github.com/logmatic/logmatic-go",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/sirupsen/logrus",
