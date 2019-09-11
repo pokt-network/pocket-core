@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+	"reflect"
 
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/const"
@@ -50,28 +51,40 @@ func NewLog(message string, level LogLevel, format LogFormat) error {
 	// set the line number
 	log.LineNumber = strconv.Itoa(frame.Line)
 	log.Message = message
-	if err := Logger(log); err != nil {
+	if err := Logger(log, format); err != nil {
 		return err
 	}
 	return nil
 }
 
 // "Logger" prints the log to data directory
-func Logger(l Log) error {
+func Logger(l Log, format LogFormat) error {
 	// open/create the new log file
 	f, err := os.OpenFile(config.GlobalConfig().DD+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
+
 	logrus.SetFormatter(l.Fmt.format)
-	logrus.SetOutput(f)
-	lg := logrus.WithFields(
-		logrus.Fields{
-			"FilePath":     l.FilePath,     // the path of the file the log was called from
-			"LineNumber":   l.LineNumber,   // the line number of the file the log was called from
-			"FunctionName": l.FunctionName, // the function name of the file the log was called
+
+	// We create empty log fields by default
+	lg := logrus.WithFields(logrus.Fields{})
+
+	// If using textformatter, we output to stdout, in case of json we output to json
+	if reflect.TypeOf(format.format) == reflect.TypeOf(&logrus.TextFormatter{}) {
+		logrus.SetOutput(os.Stdout)
+
+	} else if reflect.TypeOf(format.format) == reflect.TypeOf(&logrus.JSONFormatter{}) {
+		lg = logrus.WithFields(
+			logrus.Fields{
+				"FilePath":     l.FilePath,     // the path of the file the log was called from
+				"LineNumber":   l.LineNumber,   // the line number of the file the log was called from
+				"FunctionName": l.FunctionName, // the function name of the file the log was called
 		})
+		logrus.SetOutput(f)
+
+	}
 
 	switch l.Lev.level {
 	case logrus.InfoLevel:
