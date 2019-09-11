@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/pokt-network/pocket-core/crypto"
+	//"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/legacy"
 	"github.com/pokt-network/pocket-core/types"
 	tdmnt "github.com/tendermint/tendermint/types"
 	"io/ioutil"
@@ -48,8 +49,10 @@ func GenerateAliveNode() (node types.Node) {
 	stakeAmount := GeneratePOKT(random.Int63())
 	nsc := types.NodeSupportedChains{}
 	nsc.Add(hex.EncodeToString(GenerateNonNativeBlockchain()), types.NodeSupportedChain{})
-	_, pubKey := crypto.NewKeypair()
-	hexPubKey := types.AccountPublicKey(hex.EncodeToString(pubKey.Bytes()))
+	privateKey, _ := legacy.NewPrivateKey()
+	pubKey := legacy.NewPublicKey(privateKey)
+	pubKeyBytes := legacy.FromECDSAPub(pubKey)
+	hexPubKey := types.AccountPublicKey(hex.EncodeToString(pubKeyBytes))
 	node = types.Node{
 		Account: types.Account{
 			Address:     nil, // todo
@@ -89,8 +92,10 @@ func GenerateApplication() (node types.Application) {
 	random := rand.New(randomSource)
 	balance := GeneratePOKT(random.Int63())
 	stakeAmount := GeneratePOKT(random.Int63())
-	_, pubKey := crypto.NewKeypair()
-	hexPubKey := types.AccountPublicKey(hex.EncodeToString(pubKey.Bytes()))
+	privateKey, _ := legacy.NewPrivateKey()
+	pubKey := legacy.NewPublicKey(privateKey)
+	pubKeyBytes := legacy.FromECDSAPub(pubKey)
+	hexPubKey := types.AccountPublicKey(hex.EncodeToString(pubKeyBytes))
 	node = types.Application{
 		Account: types.Account{
 			Address:     nil, // todo
@@ -119,7 +124,7 @@ func GeneratePOKT(numberOf int64) types.POKT {
 func GenerateBlockHash() types.BlockID {
 	seed := make([]byte, 10)
 	rand.Read(seed)
-	ranHash := crypto.Hash(seed)
+	ranHash := legacy.SHA3FromBytes(seed)
 	return types.BlockID(tdmnt.BlockID{
 		Hash:        ranHash,
 		PartsHeader: tdmnt.PartSetHeader{},
@@ -129,5 +134,5 @@ func GenerateBlockHash() types.BlockID {
 func GenerateNonNativeBlockchain() []byte {
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
-	return crypto.Hash([]byte(tickers[r1.Intn(3)]))
+	return legacy.SHA3FromBytes([]byte(tickers[r1.Intn(3)]))
 }
