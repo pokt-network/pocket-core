@@ -11,7 +11,7 @@ type IncrementCounter struct {
 	Signature crypto.Signature `json:"signature"`
 }
 
-func (ic IncrementCounter) IsValid(clientPubKey string, messageHash []byte) error {
+func (ic IncrementCounter) Validate(clientPubKey string, messageHash []byte) error {
 	// check if counter is valid
 	// todo
 	if ic.Counter < 0 {

@@ -22,10 +22,10 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 	if r.Payload.Data.Bytes() == nil || len(r.Payload.Data.Bytes()) == 0 {
 		return EmptyPayloadDataError
 	}
-	if err := r.ServiceToken.IsValid(); err != nil {
+	if err := r.ServiceToken.Validate(); err != nil {
 		return errors.New(InvalidTokenError.Error() + " : " + err.Error())
 	}
-	if err := r.IncrementCounter.IsValid(r.ServiceToken.AATMessage.ClientPublicKey, r.ServiceToken.Hash()); err != nil {
+	if err := r.IncrementCounter.Validate(r.ServiceToken.AATMessage.ClientPublicKey, r.ServiceToken.Hash()); err != nil {
 		return errors.New(InvalidIncrementCounterError.Error() + " : " + err.Error())
 	}
 	if !types.Blockchains(hostedBlockchains).Contains(r.Blockchain.String()) {

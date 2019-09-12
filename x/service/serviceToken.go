@@ -8,14 +8,14 @@ import (
 
 type ServiceToken types.AAT
 
-func (st ServiceToken) IsValid() error {
-	if err := st.VersionIsValid(); err != nil {
+func (st ServiceToken) Validate() error {
+	if err := st.ValidateVersion(); err != nil {
 		return err
 	}
-	if err := st.MessageIsValid(); err != nil {
+	if err := st.ValidateMessage(); err != nil {
 		return err
 	}
-	if err := st.SignatureIsValid(); err != nil {
+	if err := st.ValidateSignature(); err != nil {
 		return err
 	}
 	// run session algorithm to authenticate service
@@ -28,10 +28,10 @@ func (st ServiceToken) IsValid() error {
 
 func (st ServiceToken) Hash() []byte {
 	// TODO return hash of the amino encoding of service token
-	return crypto.Hash([]byte(st.AATMessage.ApplicationPublicKey + st.AATMessage.ClientPublicKey)) // temporary
+	return crypto.SHA3FromString(st.AATMessage.ApplicationPublicKey + st.AATMessage.ClientPublicKey) // temporary
 }
 
-func (st ServiceToken) VersionIsValid() error{
+func (st ServiceToken) ValidateVersion() error {
 	// check for valid version
 	if !st.Version.IsIncluded() {
 		return MissingTokenVersionError
@@ -42,7 +42,7 @@ func (st ServiceToken) VersionIsValid() error{
 	return nil
 }
 
-func (st ServiceToken) MessageIsValid() error {
+func (st ServiceToken) ValidateMessage() error {
 	// check for valid application public key
 	// todo pub key format verification
 	if len(st.AATMessage.ApplicationPublicKey) == 0 {
@@ -55,7 +55,7 @@ func (st ServiceToken) MessageIsValid() error {
 	return nil
 }
 
-func (st ServiceToken) SignatureIsValid() error {
+func (st ServiceToken) ValidateSignature() error {
 	// check for valid signature
 	messageHash := st.Hash()
 	publicKeyBytes, err := hex.DecodeString(st.AATMessage.ApplicationPublicKey)

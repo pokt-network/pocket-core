@@ -8,13 +8,17 @@ import (
 )
 
 var (
-	hostedBlockchains = map[string]struct{}{"eth":{}}
+	hostedBlockchains = map[string]struct{}{"eth": {}}
 
 	validTokenVersion = "0.0.1"
 
-	validAppPubKey = hex.EncodeToString(crypto.NewPrivateKey().PubKey().Bytes())
+	_, appPubKey, _ = crypto.NewKeypair()
 
-	validClientPublicKey = hex.EncodeToString(crypto.NewPrivateKey().PubKey().Bytes())
+	_, cliPubKey, _ = crypto.NewKeypair()
+
+	validAppPubKey = hex.EncodeToString(appPubKey.Bytes())
+
+	validClientPublicKey = hex.EncodeToString(cliPubKey.Bytes())
 
 	invalidAppSignature = crypto.Signature{}
 
