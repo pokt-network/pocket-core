@@ -87,7 +87,7 @@ func NewKeypair() (PrivateKey, PublicKey, error) {
 
 // Signature Functions
 
-// "GetPublicKeyFromSignature" confirms the public key from the signature.
+// "GetPublicKeyBytesFromSignature" confirms the public key from the signature.
 func GetPublicKeyBytesFromSignature(messageHash, signature []byte) ([]byte, error) {
 	// RecoverPubkey returns the public key of the signer.
 	// msg must be the 32-byte Hash of the message to be signed.
