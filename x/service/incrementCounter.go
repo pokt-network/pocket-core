@@ -1,6 +1,8 @@
 package service
 
 import (
+	"encoding/hex"
+	"errors"
 	"github.com/pokt-network/pocket-core/crypto"
 )
 
@@ -9,7 +11,18 @@ type IncrementCounter struct {
 	Signature crypto.Signature `json:"signature"`
 }
 
-func (ic IncrementCounter) IsValid(applicationPubKey crypto.PublicKey) bool {
-	// todo need signature verification crypto function
-	return true
+func (ic IncrementCounter) IsValid(clientPubKey string, messageHash []byte) error {
+	// check if counter is valid
+	// todo
+	if ic.Counter < 0 {
+		return NegativeICCounterError
+	}
+	cpkBytes, err := hex.DecodeString(clientPubKey)
+	if err != nil {
+		return errors.New(ClientPubKeyDecodeError.Error() + " : " + err.Error())
+	}
+	if !crypto.MockVerifySignature(cpkBytes, messageHash, ic.Signature) {
+		return InvalidICSignatureError
+	}
+	return nil
 }

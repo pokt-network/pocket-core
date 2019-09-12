@@ -2,5 +2,5 @@ syntax = "proto3";
 
 message ApplicationAuthTokenMessage {
 	string applicationPublicKey = 1;
-	string clientAddress = 2;
+	string clientPublicKey = 2;
 }

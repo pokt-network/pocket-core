@@ -23,11 +23,6 @@ An AAT must contain the following fields:
 > The message which will be used by the Service Node to configure service to the bearer of this token.
 > The schema of the message is represented below by the `AATMessage` data structure.
 
-#### appPubKey (required)
-> type: `string`
->
-> The hexadecimal representation of the application public key which was used to sign the `message`
-
 #### signature (required)
 > type: `string`
 >
@@ -36,15 +31,15 @@ An AAT must contain the following fields:
 ### The `AATMessage` Structure Schema
 The AAT data structure contains the information that will be first encoded to the Amino format and then signed using the protocol wide ECDSA. It contains the fields described below:
 
-#### applicationAddress (required)
+#### applicationPublicKey (required)
 > type: `string`
 >
-> The hexadecimal address of the Application
+> The hexadecimal publicKey of the Application
 
-#### clientAddress (optional)
+#### clientPublicKey (required)
 > type: `string`
 >
-> Optionally for added security the application can sign the hexadecimal address of each individual client allowing for granular control of who can use the ATT
+> Required for signature verification, the hexadecimal public of each individual client allowing for granular control of who can use the ATT
 
 ### Encoding/Decoding
 An ATT token will always be represented using the [Amino encoding.](https://github.com/tendermint/go-amino)
