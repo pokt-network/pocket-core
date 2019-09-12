@@ -43,7 +43,7 @@ var _ = Describe("Session", func() {
 				It("should return nil error", func() {
 					gomega.Expect(err).To(gomega.BeNil())
 				})
-				It("should return non-nil error", func(){
+				It("should return non-nil error", func() {
 					gomega.Expect(sessionkey).ToNot(gomega.BeNil())
 				})
 			})
@@ -69,7 +69,7 @@ var _ = Describe("Session", func() {
 				It("should return nil error", func() {
 					gomega.Expect(err).To(gomega.BeNil())
 				})
-				It("should return non-nil sessionNodes", func(){
+				It("should return non-nil sessionNodes", func() {
 					gomega.Expect(sessNodes).ToNot(gomega.BeNil())
 				})
 			})
@@ -79,7 +79,7 @@ var _ = Describe("Session", func() {
 			It("should return nil error", func() {
 				gomega.Expect(err).To(gomega.BeNil())
 			})
-			It("should return non-nil session", func(){
+			It("should return non-nil session", func() {
 				gomega.Expect(sess).ToNot(gomega.BeNil())
 			})
 		})
