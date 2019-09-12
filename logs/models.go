@@ -36,7 +36,7 @@ var (
 	}}
 )
 
-// "Log" model holds the structure for the log properties.
+// "log" model holds the structure for the log properties.
 type log struct {
 	Name         string    `json:"filename"`     // name of the log file
 	Fmt          LogFormat `json:"format"`       // format of the log

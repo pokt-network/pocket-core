@@ -87,9 +87,11 @@ var (
 	}
 
 	validPayload = service.ServicePayload{
-		Data:   service.ServiceData(validData),
-		Method: "",
-		Path:   "",
+		Data: service.ServiceData(validData),
+		HttpServicePayload: service.HttpServicePayload{
+			Method: "",
+			Path:   "",
+		},
 	}
 
 	validIncrementCounter = service.IncrementCounter{
