@@ -31,7 +31,7 @@ func WriteRawJSONResponse(w http.ResponseWriter, b []byte) {
 func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 	b, err := json.MarshalIndent(information, "", "\t")
 	if err != nil {
-		error_data := fmt.Sprintf("%s",err)
+		error_data := fmt.Sprintf("%s", err)
 		logs.Log(error_data, logs.ErrorLevel, logs.TextLogFormatter)
 		return
 	}
