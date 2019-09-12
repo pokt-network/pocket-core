@@ -15,7 +15,7 @@ type Relay struct {
 	IncrementCounter IncrementCounter  `json:"incrementCounter"`
 }
 
-func (r Relay) IsValid(hostedBlockchains ServiceBlockchains) error {
+func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 	if r.Blockchain == nil || len(r.Blockchain) == 0 {
 		return EmptyBlockchainError
 	}
@@ -31,14 +31,16 @@ func (r Relay) IsValid(hostedBlockchains ServiceBlockchains) error {
 	if !types.Blockchains(hostedBlockchains).Contains(r.Blockchain.String()) {
 		return UnsupportedBlockchainError
 	}
-	if len(r.Payload.Method) == 0 {
-		r.Payload.Method = DEFAULTHTTPMETHOD
+	if r.Payload.HttpServicePayload != (HttpServicePayload{}) {
+		if len((r.Payload).Method) == 0 {
+			r.Payload.Method = DEFAULTHTTPMETHOD
+		}
 	}
 	return nil
 }
 
 func (r Relay) Execute(hostedBlockchains ServiceBlockchains) (string, error) {
-	if err := r.IsValid(hostedBlockchains); err != nil {
+	if err := r.Validate(hostedBlockchains); err != nil {
 		return "", err
 	}
 	chainURL, err := hostedBlockchains.GetChainURL(r.Blockchain.String())

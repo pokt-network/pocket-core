@@ -3,13 +3,13 @@ package logs
 
 import (
 	"os"
+	"path/filepath"
 	"reflect"
 	"runtime"
 	"strconv"
 	"time"
 
 	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/const"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,7 +30,7 @@ func caller() *runtime.Frame {
 	return &info
 }
 
-// "NewLog" creates a custom log and calls the logger function.
+// "Log" creates a custom log and calls the logger function.
 func Log(message string, level LogLevel, format LogFormat) error {
 	currentTime := time.Now()
 	// get the caller from util
@@ -51,16 +51,17 @@ func Log(message string, level LogLevel, format LogFormat) error {
 	// set the line number
 	log.LineNumber = strconv.Itoa(frame.Line)
 	log.Message = message
-	if err := Logger(log, format); err != nil {
+	if err := logger(log, format); err != nil {
 		return err
 	}
 	return nil
 }
 
-// "Logger" prints the log to data directory
-func Logger(l log, format LogFormat) error {
+// "logger" prints the log to data directory
+func logger(l log, format LogFormat) error {
 	// open/create the new log file
-	f, err := os.OpenFile(config.GlobalConfig().DD+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	f, err := os.OpenFile(config.GlobalConfig().DD+string(filepath.Separator)+"logs"+
+		string(filepath.Separator)+l.Name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		return err
 	}
