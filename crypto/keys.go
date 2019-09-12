@@ -5,7 +5,6 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
-	errors "github.com/pokt-network/pocket-core/error"
 )
 
 // wrapper around go-secp256k1 public key
@@ -46,7 +45,7 @@ func (privKey *PrivateKey) Bytes() []byte {
 // Signs a message, the message has to be [32]byte
 func (privKey *PrivateKey) Sign(message []byte) ([]byte, error) {
 	if privKey == nil {
-		return nil, errors.InvalidPrivateKeyError
+		return nil, InvalidPrivateKeyError
 	}
 	return secp256k1.Sign(message, privKey.Bytes())
 }
