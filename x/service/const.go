@@ -1,5 +1,5 @@
 package service
 
-const(
+const (
 	DEFAULTHTTPMETHOD = "POST"
 )

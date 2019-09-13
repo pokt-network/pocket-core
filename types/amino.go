@@ -10,7 +10,7 @@ func (a AminoBuffer) Append(aminoBuffers ...AminoBuffer) AminoBuffer {
 	return result
 }
 
-func (a AminoBuffer) String() string{
+func (a AminoBuffer) String() string {
 	//todo
 	return string(a)
 }
