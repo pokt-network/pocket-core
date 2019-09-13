@@ -43,7 +43,7 @@ var _ = Describe("Session", func() {
 				It("should return nil error", func() {
 					Expect(err).To(BeNil())
 				})
-				It("should return non-nil error", func(){
+				It("should return non-nil error", func() {
 					Expect(sessionkey).ToNot(BeNil())
 				})
 			})
@@ -69,7 +69,7 @@ var _ = Describe("Session", func() {
 				It("should return nil error", func() {
 					Expect(err).To(BeNil())
 				})
-				It("should return non-nil sessionNodes", func(){
+				It("should return non-nil sessionNodes", func() {
 					Expect(sessNodes).ToNot(BeNil())
 				})
 			})
@@ -79,7 +79,7 @@ var _ = Describe("Session", func() {
 			It("should return nil error", func() {
 				Expect(err).To(BeNil())
 			})
-			It("should return non-nil session", func(){
+			It("should return non-nil session", func() {
 				Expect(sess).ToNot(BeNil())
 			})
 		})
