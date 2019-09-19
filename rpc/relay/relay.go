@@ -13,18 +13,18 @@ import (
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	relay := &legacy.Relay{}
 	if err := shared.PopModel(w, r, ps, relay); err != nil {
-		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		logs.Log(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
 	if err := relay.ErrorCheck(); err != nil {
-		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		logs.Log(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		shared.WriteErrorResponse(w, 400, err.Error())
 		return
 	}
 	response, err := legacy.RouteRelay(*relay)
 	if err != nil {
-		logs.NewLog(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
+		logs.Log(err.Error(), logs.ErrorLevel, logs.JSONLogFormat)
 		shared.WriteErrorResponse(w, 500, err.Error())
 		return
 	}

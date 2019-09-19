@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 
@@ -9,8 +8,9 @@ import (
 )
 
 func ExitGracefully(message string) {
-	logs.NewLog("Shutting down Pocket Core: "+message, logs.InfoLevel, logs.JSONLogFormat)
-	fmt.Fprint(os.Stdout, "Shutting down Pocket Core: "+message)
+	logs.Log("Shutting down Pocket Core: "+message, logs.InfoLevel, logs.JSONLogFormat)
+	logs.Log("Shutting down Pocket Core: "+message, logs.InfoLevel, logs.TextLogFormatter)
+
 	os.Exit(0)
 }
 

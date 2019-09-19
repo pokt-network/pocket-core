@@ -26,17 +26,18 @@
   revision = "9e5f4b9a998d263e3ce9c56664a7816001ac8000"
 
 [[projects]]
-  digest = "1:31c5999393d5073622078fd6595c6adaf3a30fcd493ad26258db69e094d85eba"
+  branch = "master"
+  digest = "1:54dba1e4a96c83e548e02913710822b18c5bcc8e2f8fe685dcf105e3604a2a8c"
   name = "github.com/cosmos/cosmos-sdk"
   packages = [
     "codec",
     "store/gaskv",
     "store/types",
     "types",
+    "types/errors",
   ]
   pruneopts = "NT"
-  revision = "93f61a9012520f6ed5e069d532a7a79547eb358d"
-  version = "v0.37.0"
+  revision = "5bcab79e8aefa5d369a09830bff64b407c049036"
 
 [[projects]]
   digest = "1:4b8b5811da6970495e04d1f4e98bb89518cc3cfc3b3f456bdb876ed7b6c74049"
@@ -55,15 +56,15 @@
   version = "v1.3.3"
 
 [[projects]]
-  digest = "1:0631a081a3e12ba4d579824fe27c857ded2d9c4e50fc568326889e1ebd2cb4e2"
+  digest = "1:257bbb7644f00d30fb2982b70fe78807edab60fe73cb344d2dc0b9e4da226876"
   name = "github.com/ethereum/go-ethereum"
   packages = [
     "common/math",
     "crypto/secp256k1",
   ]
   pruneopts = "NT"
-  revision = "4bcc0a37ab70cb79b16893556cffdaad6974e7d8"
-  version = "v1.8.27"
+  revision = "cfbb969da803d4cc92e1a64fc1b3c06db299b564"
+  version = "v1.9.3"
 
 [[projects]]
   digest = "1:00750dc0af101a4a59edc13410b8e04f89edbb18d2c9c07bffb45a012021aed6"
@@ -187,14 +188,6 @@
   pruneopts = "NT"
   revision = "c4a5988a1e475884367015e1a2d0bd5fa4c491f4"
   version = "v0.0.2"
-
-[[projects]]
-  branch = "master"
-  digest = "1:1273088344adca06b84f4907eb260f41ccf73b5016fed5e7cea9eb519df1a21b"
-  name = "github.com/logmatic/logmatic-go"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "9eb00af17b4c3c788c9b88a476c98fec79dd39df"
 
 [[projects]]
   digest = "1:ea1db000388d88b31db7531c83016bef0d6db0d908a07794bfc36aca16fbf935"
@@ -562,12 +555,9 @@
     "github.com/ethereum/go-ethereum/crypto/secp256k1",
     "github.com/google/flatbuffers/go",
     "github.com/julienschmidt/httprouter",
-    "github.com/logmatic/logmatic-go",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/sirupsen/logrus",
-    "github.com/tendermint/tendermint/crypto",
-    "github.com/tendermint/tendermint/crypto/secp256k1",
     "github.com/tendermint/tendermint/types",
     "golang.org/x/crypto/sha3",
   ]

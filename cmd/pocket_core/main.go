@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc"
@@ -31,9 +30,9 @@ func startClient() {
 	// runs the server endpoints for client and relay api
 	rpc.StartServers()
 	// logs the client starting
-	logs.NewLog("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
-	// print start message
-	fmt.Println("Started Pocket Core")
+	logs.Log("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
+	// logs start message to stdout
+	logs.Log("Started Pocket Core", logs.InfoLevel, logs.TextLogFormatter)
 	// print the configuration
 	config.Print()
 	// wait for the interrupt command

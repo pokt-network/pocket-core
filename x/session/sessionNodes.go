@@ -89,7 +89,7 @@ func xor(sessionNodes SessionNodes, sessionkey SessionKey) (NodeDistances, error
 	// for every node, find the distance between it's pubkey and the sesskey
 	for index, node := range sessionNodes {
 		pubKey, err := node.PubKey.Bytes()
-		pubKeyHash := crypto.Hash(pubKey) // currently hashing public key but could easily just take the first n bytes to compare
+		pubKeyHash := crypto.SHA3FromBytes(pubKey) // currently hashing public key but could easily just take the first n bytes to compare
 		if err != nil {
 			return nil, err
 		}

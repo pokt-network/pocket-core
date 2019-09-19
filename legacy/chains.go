@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/pokt-network/pocket-core/logs"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -90,7 +91,8 @@ func jsonToChains(b []byte) error {
 func HostedChainsFromFile(filepath string) error {
 	file, err := ioutil.ReadFile(filepath)
 	if err != nil {
-		fmt.Println(err)
+		err_log := fmt.Sprintf("%v", err)
+		logs.Log(err_log, logs.ErrorLevel, logs.TextLogFormatter)
 		return err
 	}
 	return jsonToChains(file)

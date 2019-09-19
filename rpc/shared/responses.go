@@ -4,6 +4,7 @@ package shared
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/logs"
 	"net/http"
 )
 
@@ -30,7 +31,8 @@ func WriteRawJSONResponse(w http.ResponseWriter, b []byte) {
 func WriteInfoResponse(w http.ResponseWriter, information APIReference) {
 	b, err := json.MarshalIndent(information, "", "\t")
 	if err != nil {
-		fmt.Println(err)
+		error_data := fmt.Sprintf("%s", err)
+		logs.Log(error_data, logs.ErrorLevel, logs.TextLogFormatter)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
