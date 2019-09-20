@@ -7,8 +7,9 @@ import (
 )
 
 type IncrementCounter struct {
-	Counter   int              `json:"counter"`
-	Signature crypto.Signature `json:"signature"`
+	Counter       int    `json:"counter"`
+	NodePublicKey string `json:"nodePublicKey"`
+	Signature     string `json:"signature"`
 }
 
 func (ic IncrementCounter) Validate(clientPubKey string, messageHash []byte) error {
