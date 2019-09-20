@@ -90,7 +90,7 @@ var _ = Describe("Servicing", func() {
 
 			Context("Every connection succeeded", func() {
 
-				It("should return a HostedChains object", func() {
+				PIt("should return a HostedChains object", func() {
 					// clear the chains
 					legacy.GetHostedChains().Clear()
 					// assuming google is accessible by http
@@ -131,7 +131,7 @@ var _ = Describe("Servicing", func() {
 
 					Context("Contains all fields", func() {
 
-						It("should return nil error", func() {
+						PIt("should return nil error", func() {
 							Expect(Relay.ErrorCheck()).To(BeNil())
 						})
 					})

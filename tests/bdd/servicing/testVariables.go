@@ -3,12 +3,34 @@ package servicing
 import (
 	"encoding/hex"
 	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/tests/fixtures"
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/service"
+	"path/filepath"
+)
+
+const (
+	GOODENDPOINT = "http://a.fake"
+	BADENDPOINT  = "http://b.fake"
+	GOODRESULT   = "Mist/v0.9.3/darwin/go1.4.1"
 )
 
 var (
-	hostedBlockchains = map[string]struct{}{"eth": {}}
+	chainsfile, _       = filepath.Abs("../../fixtures/chains.json")
+	brokenchainsfile, _ = filepath.Abs("../../fixtures/legacy/brokenChains.json")
+	hc                  = types.HostedBlockchains{M: map[interface{}]interface{}{
+		hex.EncodeToString(validBlockchain):
+		types.HostedBlockchain{
+			Hash: hex.EncodeToString(validBlockchain),
+			URL:  GOODENDPOINT,
+		},
+		hex.EncodeToString(validBlockchain2):
+		types.HostedBlockchain{
+			Hash: hex.EncodeToString(validBlockchain2),
+			URL:  BADENDPOINT,
+		}}}
+
+	hostedBlockchains = service.ServiceBlockchains(hc)
 
 	validTokenVersion = "0.0.1"
 
@@ -18,19 +40,25 @@ var (
 
 	validAppPubKey = hex.EncodeToString(appPubKey.Bytes())
 
+	validNodePubKey = "" //todo
+
+	invalidNodePubKey = "" //todo
+
 	validClientPublicKey = hex.EncodeToString(cliPubKey.Bytes())
 
 	invalidAppSignature = crypto.Signature{}
 
-	invalidClientSignature = crypto.Signature{}
+	invalidClientSignature = "" // todo
 
 	validAppSignature = []byte("todosignature") // todo
 
-	validClientSignature = []byte("todosignature") // todo
+	validClientSignature = "todosignature" // todo
 
-	validBlockchain = []byte("eth") //todo change to amino
+	validBlockchain = fixtures.GenerateNonNativeBlockchainFromTicker("eth")
 
-	unsupportedBlockchain = []byte("btc") // todo change to amino
+	validBlockchain2 = fixtures.GenerateNonNativeBlockchainFromTicker("btc")
+
+	unsupportedBlockchain = []byte("aion") // todo change to amino
 
 	unsupportedVersion = "0.0.0"
 
@@ -38,7 +66,7 @@ var (
 
 	invalidICCount = -1
 
-	validData = "jsonrpc\":\"2.0\",\"method\":\"net_peerCount\",\"params\":[],\"id\":74\""
+	validData = `"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":67`
 
 	validTokenMessage = types.AATMessage{
 		ApplicationPublicKey: validAppPubKey,
@@ -54,34 +82,59 @@ var (
 		ClientPublicKey:      "",
 	}
 
-	unsupportedTokenVersion = service.ServiceToken{
-		Version:    types.AATVersion(unsupportedVersion),
-		AATMessage: validTokenMessage,
-		Signature:  validAppSignature,
-	}
+	unsupportedTokenVersion = service.ServiceCertificate{
+		Signature: validClientSignature,
+		ServiceCertificatePayload: service.ServiceCertificatePayload{
+			Counter:       validICCount,
+			NodePublicKey: validNodePubKey,
+			ServiceToken: service.ServiceToken{
+				Version:    types.AATVersion(unsupportedVersion),
+				AATMessage: validTokenMessage,
+				Signature:  validAppSignature,
+			}}}
 
-	missingTokenVersion = service.ServiceToken{
-		Version:    "",
-		AATMessage: validTokenMessage,
-		Signature:  validAppSignature,
-	}
+	missingTokenVersion = service.ServiceCertificate{
+		Signature: validClientSignature,
+		ServiceCertificatePayload: service.ServiceCertificatePayload{
+			Counter:       validICCount,
+			NodePublicKey: validNodePubKey,
+			ServiceToken: service.ServiceToken{
+				Version:    "",
+				AATMessage: validTokenMessage,
+				Signature:  validAppSignature,
+			}}}
 
-	missingApplicationPublicKeyTokenMessage = service.ServiceToken{
-		Version:    types.AATVersion(validTokenVersion),
-		AATMessage: missingAppPublicKeyMessage,
-		Signature:  validAppSignature,
-	}
+	missingApplicationPublicKeyTokenMessage = service.ServiceCertificate{
+		Signature: validClientSignature,
+		ServiceCertificatePayload: service.ServiceCertificatePayload{
+			Counter:       validICCount,
+			NodePublicKey: validNodePubKey,
+			ServiceToken: service.ServiceToken{
+				Version:    types.AATVersion(validTokenVersion),
+				AATMessage: missingAppPublicKeyMessage,
+				Signature:  validAppSignature,
+			}}}
 
-	missingClientPublicKeyTokenMessage = service.ServiceToken{
-		Version:    types.AATVersion(validTokenVersion),
-		AATMessage: missingClientPubKeyMessage,
-		Signature:  validAppSignature,
-	}
+	missingClientPublicKeyTokenMessage = service.ServiceCertificate{
+		Signature: validClientSignature,
+		ServiceCertificatePayload: service.ServiceCertificatePayload{
+			Counter:       validICCount,
+			NodePublicKey: validNodePubKey,
+			ServiceToken: service.ServiceToken{
+				Version:    types.AATVersion(validTokenVersion),
+				AATMessage: missingClientPubKeyMessage,
+				Signature:  validAppSignature,
+			}}}
 
-	invalidTokenSignature = service.ServiceToken{
-		Version:    types.AATVersion(validTokenVersion),
-		AATMessage: validTokenMessage,
-		Signature:  invalidAppSignature,
+	invalidTokenSignature = service.ServiceCertificate{
+		ServiceCertificatePayload: service.ServiceCertificatePayload{
+			Counter:       validICCount,
+			NodePublicKey: validNodePubKey,
+			ServiceToken: service.ServiceToken{
+				Version:    types.AATVersion(validTokenVersion),
+				AATMessage: validTokenMessage,
+				Signature:  invalidAppSignature,
+			}}, Signature: validClientSignature,
 	}
 
 	validToken = service.ServiceToken{
@@ -98,95 +151,102 @@ var (
 		},
 	}
 
-	validIncrementCounter = service.IncrementCounter{
-		Counter:   validICCount,
+	validServiceAuthentication = service.ServiceCertificate{
+		ServiceCertificatePayload: service.ServiceCertificatePayload{
+			Counter:       validICCount,
+			NodePublicKey: validNodePubKey,
+			ServiceToken:  validToken,
+		},
 		Signature: validClientSignature,
 	}
 
-	invalidIncrementCounterCount = service.IncrementCounter{
-		Counter:   invalidICCount,
+	invalidServiceAuthenticationCounter = service.ServiceCertificate{
+		ServiceCertificatePayload: service.ServiceCertificatePayload{
+			Counter:       invalidICCount,
+			NodePublicKey: validNodePubKey,
+			ServiceToken:  validToken,
+		},
 		Signature: validClientSignature,
 	}
 
-	invalidIncrementCounterSignature = service.IncrementCounter{
-		Counter:   validICCount,
+	invalidServiceAuthenticationSignature = service.ServiceCertificate{
+		ServiceCertificatePayload: service.ServiceCertificatePayload{
+			Counter:       validICCount,
+			NodePublicKey: validNodePubKey,
+			ServiceToken:  validToken,
+		},
 		Signature: invalidClientSignature,
 	}
 
 	relayMissingBlockchain = service.Relay{
-		Blockchain:       nil,
-		Payload:          validPayload,
-		ServiceToken:     validToken,
-		IncrementCounter: validIncrementCounter,
+		Blockchain:         nil,
+		Payload:            validPayload,
+		ServiceCertificate: validServiceAuthentication,
 	}
 
 	relayMissingPayload = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          service.ServicePayload{},
-		ServiceToken:     validToken,
-		IncrementCounter: validIncrementCounter,
+		Blockchain:         validBlockchain,
+		Payload:            service.ServicePayload{},
+		ServiceCertificate: validServiceAuthentication,
 	}
 
 	relayUnsupportedBlockchain = service.Relay{
-		Blockchain:       unsupportedBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     validToken,
-		IncrementCounter: validIncrementCounter,
+		Blockchain:         unsupportedBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: validServiceAuthentication,
 	}
 
 	relayUnsupportedTokenVersion = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     unsupportedTokenVersion,
-		IncrementCounter: validIncrementCounter,
+		Blockchain:         validBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: unsupportedTokenVersion,
 	}
 
 	relayMissingTokenVersion = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     missingTokenVersion,
-		IncrementCounter: validIncrementCounter,
+		Blockchain:         validBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: missingTokenVersion,
 	}
 
 	relayMissingTokenAppPubKey = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     missingApplicationPublicKeyTokenMessage,
-		IncrementCounter: validIncrementCounter,
+		Blockchain:         validBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: missingApplicationPublicKeyTokenMessage,
 	}
 
 	relayMissingTokenCliPubKey = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     missingClientPublicKeyTokenMessage,
-		IncrementCounter: validIncrementCounter,
+		Blockchain:         validBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: missingClientPublicKeyTokenMessage,
 	}
 
 	relayInvalidTokenSignature = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     invalidTokenSignature,
-		IncrementCounter: validIncrementCounter,
+		Blockchain:         validBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: invalidTokenSignature,
 	}
 
 	relayInvalidICCount = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     validToken,
-		IncrementCounter: invalidIncrementCounterCount,
+		Blockchain:         validBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: invalidServiceAuthenticationCounter,
 	}
 
 	relayInvalidICSignature = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     validToken,
-		IncrementCounter: invalidIncrementCounterSignature,
+		Blockchain:         validBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: invalidServiceAuthenticationSignature,
 	}
 
-	validRelay = service.Relay{
-		Blockchain:       validBlockchain,
-		Payload:          validPayload,
-		ServiceToken:     validToken,
-		IncrementCounter: validIncrementCounter,
+	validEthRelay = service.Relay{
+		Blockchain:         validBlockchain,
+		Payload:            validPayload,
+		ServiceCertificate: validServiceAuthentication,
+	}
+
+	validBtcRelay = service.Relay{
+		Blockchain:         validBlockchain2,
+		Payload:            validPayload,
+		ServiceCertificate: validServiceAuthentication,
 	}
 )
