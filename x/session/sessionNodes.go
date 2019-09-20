@@ -1,10 +1,11 @@
 package session
 
 import (
+	"bytes"
 	"encoding/hex"
 	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/tests/fixtures"
 	"github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/blockchain"
 	"sort"
 )
 
@@ -28,15 +29,43 @@ type NodeDistance struct {
 
 type NodeDistances []NodeDistance
 
-func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (SessionNodes, error) {
-	if len(sessionKey) == 0 {
-		return nil, EmptySessionKeyError
+func (sn SessionNodes) Validate() error {
+	if len(sn) < SESSIONNODECOUNT {
+		return InsufficientNodesError
 	}
-	if len(nonNativeChain) == 0 {
+	return nil
+}
+
+func (sn SessionNodes) Contains(n types.Node) bool { // todo use a map instead of a slice to save time
+	err := sn.Validate()
+	if err != nil {
+		return false
+	}
+	// todo o(n) is too slow, see above
+	for _, node := range sn {
+		npkb, err := node.PubKey.Bytes()
+		if err != nil {
+			return false
+		}
+		npkb2, err := node.PubKey.Bytes()
+		if bytes.Equal(npkb, npkb2) {
+			return true
+		}
+	}
+	return false
+}
+
+func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (SessionNodes, error) {
+	// validate params
+	if err := nonNativeChain.Validate(); err != nil {
 		return nil, EmptyNonNativeChainError
 	}
+	// validate params
+	if err := sessionKey.Validate(); err != nil {
+		return nil, err
+	}
 	// using mock world state
-	allActiveNodes, err := fixtures.GetNodes()
+	allActiveNodes, err := blockchain.GetNodes()
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +104,8 @@ func filter(allActiveNodes AllActiveNodes, nonNativeChainHash []byte) (SessionNo
 		}
 		result = append(result, node)
 	}
-	if len(result) < SESSIONNODECOUNT {
-		return nil, InsufficientNodesError
+	if err := result.Validate(); err != nil {
+		return nil, err
 	}
 	return result, nil
 }
