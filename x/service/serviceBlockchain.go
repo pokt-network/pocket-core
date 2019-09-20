@@ -1,19 +1,22 @@
 package service
 
-import "github.com/pokt-network/pocket-core/types"
+import (
+	"github.com/pokt-network/pocket-core/types"
+)
 
 type ServiceBlockchain types.Blockchain
 
-type ServiceBlockchains types.Blockchains
+type ServiceBlockchains types.HostedBlockchains
 
-func (sbc ServiceBlockchain) String() string {
-	return types.Blockchain(sbc).String()
+func (s ServiceBlockchains) Contains(hash string) bool {
+	hbc := types.HostedBlockchains(s)
+	return hbc.ContainsFromString(hash)
 }
 
-func (sbcs ServiceBlockchains) GetChainURL(blockchainHex string) (string, error) {
-	return types.Blockchains(sbcs).GetChainURL(blockchainHex)
-}
-
-func (sbcs ServiceBlockchains) Contains(blockchainHex string) bool {
-	return types.Blockchains(sbcs).Contains(blockchainHex)
+func (s ServiceBlockchain) GetHostedChainURL(hostChains ServiceBlockchains) (string, error) {
+	hc := types.HostedBlockchains(hostChains)
+	if hc.Len() == 0 {
+		return "", EmptyHostedChainsError
+	}
+	return hc.GetChainFromBytes(s).URL, nil
 }

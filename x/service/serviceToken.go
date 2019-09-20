@@ -18,11 +18,6 @@ func (st ServiceToken) Validate() error {
 	if err := st.ValidateSignature(); err != nil {
 		return err
 	}
-	// run session algorithm to authenticate service
-	// todo 'how should dependencies work here?
-	// if (not part of session){
-	//    return InvalidSessionError
-	// }
 	return nil
 }
 
