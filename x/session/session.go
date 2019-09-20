@@ -1,15 +1,15 @@
 package session
 
 type Session struct {
-	SessionKey     SessionKey         `json:"sessionkey"`
-	Application    SessionApplication `json:"application"`
-	NonNativeChain SessionBlockchain  `json:"nonnativechain"`
-	BlockID        SessionBlockID     `json:"latestBlock"`
-	Nodes          SessionNodes       `json:"sessionNodes"`
+	SessionKey     SessionKey        `json:"sessionkey"`
+	Application    SessionAppPubKey  `json:"appPubKey"`
+	NonNativeChain SessionBlockchain `json:"nonnativechain"`
+	BlockID        SessionBlockID    `json:"latestBlock"`
+	Nodes          SessionNodes      `json:"sessionNodes"`
 }
 
 // Create a new session from seed data
-func NewSession(app SessionApplication, nonNativeChain SessionBlockchain, blockID SessionBlockID) (*Session, error) {
+func NewSession(app SessionAppPubKey, nonNativeChain SessionBlockchain, blockID SessionBlockID) (*Session, error) { // todo possibly convert block id to block hash
 	// first generate session key
 	sessionKey, err := NewSessionKey(app, nonNativeChain, blockID)
 	if err != nil {

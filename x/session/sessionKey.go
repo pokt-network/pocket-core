@@ -8,21 +8,21 @@ import (
 type SessionKey []byte
 
 // Generates the session key = SessionHashingAlgo(devid+chain+blockhash)
-func NewSessionKey(app SessionApplication, nonNativeChain SessionBlockchain, blockID SessionBlockID) (SessionKey, error) {
+func NewSessionKey(app SessionAppPubKey, nonNativeChain SessionBlockchain, blockID SessionBlockID) (SessionKey, error) {
+	// validate session application
+	if err := app.Validate(); err != nil {
+		return nil, err
+	}
 	// get the public key from the app structure
-	appPubKey, err := app.PubKey.Bytes()
+	appPubKey, err := app.Bytes()
 	if err != nil {
 		return nil, err
 	}
-	// check for empty params
-	if len(appPubKey) == 0 {
-		return nil, EmptyAppPubKeyError
+	if err = nonNativeChain.Validate(); err != nil {
+		return nil, err
 	}
-	if len(nonNativeChain) == 0 {
-		return nil, EmptyNonNativeChainError
-	}
-	if len(blockID.Hash.Bytes()) == 0 {
-		return nil, EmptyBlockIDError
+	if err = blockID.Validate(); err != nil {
+		return nil, err
 	}
 	// append them all together
 	// in the order of appPubKey - > nonnativeChain -> blockID
@@ -32,4 +32,12 @@ func NewSessionKey(app SessionApplication, nonNativeChain SessionBlockchain, blo
 
 	// return the hash of the result
 	return crypto.SHA3FromBytes(seed), nil
+}
+
+func (sk SessionKey) Validate() error {
+	// todo more validation
+	if len(sk) == 0 {
+		return EmptySessionKeyError
+	}
+	return nil
 }
