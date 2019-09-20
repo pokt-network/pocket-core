@@ -2,14 +2,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721027cc214c24fd00bcd141d6157c9762e397fe4d0bb8e39862c1653e6a58c890d4b",
+      "publicKey": "04e432e2bf64e541f663e44c87538b1004b03c9d4a2b2e06ca255204a3d8fa5af1fab30cfff1710c4374d295893405cd42c8f26c0f34bf6ab5f1270f86c23b5520",
       "balance": {
         "denom": "pokt",
-        "amount": "4551392081800353352"
+        "amount": "3662091550295693137"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "2048937488540431379"
+        "amount": "5416992757248348900"
       }
     },
     "requestedChains": null
@@ -17,14 +17,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102adbe923bb47e48cab3265352455e92862cc56d76722ecc3dd668bccdd1db72e4",
+      "publicKey": "04d07a1d24cd54e81309a2750c6372fec9d5e69e07e8ae09168441e4f89492aa7ae3ad31a31b049cffa1445996e470142cc6514ec17d3c512b95d9f8e4420c1832",
       "balance": {
         "denom": "pokt",
-        "amount": "3010573714920024607"
+        "amount": "2949055865318626735"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "1810645538514818875"
+        "amount": "8139651321156358597"
       }
     },
     "requestedChains": null
@@ -32,14 +32,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721027683062a82fc4e305dee68f4dfb4fbdfc6671303958d450fb44d60cc00af66b8",
+      "publicKey": "04096c6dd9f000e985b7465b7784cae062c43cadc53c19d82774dff9e61987bd0c4532c0905341c5158cb1267e55d975ba15ddee50ca33bf2c914f573c77511c64",
       "balance": {
         "denom": "pokt",
-        "amount": "3722598245836331044"
+        "amount": "6126903779085173684"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "7259697102060905415"
+        "amount": "9025827780116317524"
       }
     },
     "requestedChains": null
@@ -47,14 +47,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721038a5a48955b64a2ff0d189c49b18db688810118e34f54af72db9ab37b77b298ad",
+      "publicKey": "040cb134e586382f304a12e39bd8d48f30a30328ab0391da75068de6c5dc2e0ba3388500bc6c1d08e8a20e5e1f54181ac2c04e40470a52384cde8ea1adf2391be0",
       "balance": {
         "denom": "pokt",
-        "amount": "2732576521202337865"
+        "amount": "7624131724193158703"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "8582089176902629754"
+        "amount": "3381475935098947863"
       }
     },
     "requestedChains": null
@@ -62,14 +62,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103e073d4601146a80ceda5036c8e376e5772ffc58f8141ae26022bcba6e58a9186",
+      "publicKey": "0431e982cb21101e222fb8c91830ee0872a64ae6698967cab8958d6c8d515ea3fdef2b9fab56b0ff2669baed0c69d9d142b79196dfe27575c3b522cfc010dd3134",
       "balance": {
         "denom": "pokt",
-        "amount": "6470795296092614509"
+        "amount": "1576920108739591228"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "4538810264728303740"
+        "amount": "5132548605114717606"
       }
     },
     "requestedChains": null
@@ -77,14 +77,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103e66bec5a0cb0951abffd60ec65540ce077de9d9b828c27a528e1c7b21486cd1c",
+      "publicKey": "0439c3c1f372cf34972e5fe124dfb676814f8b763e7b8881698760455aaf36498181601efaf123a8e33b867782d9ae8115644520310c6e700ba49f5600a4c06ec4",
       "balance": {
         "denom": "pokt",
-        "amount": "3239673801402166075"
+        "amount": "8143209579882817240"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "1605301741439062881"
+        "amount": "4036693275627669262"
       }
     },
     "requestedChains": null
@@ -92,14 +92,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210325aa317ca87e7aa7bb5f8c96de37466f5837758a35678770c4cf0094de40232a",
+      "publicKey": "04866445b67641e02d342c617043732b61749312cda3850e41485810beee7df2751f16c4181c3f4add24cfeb290fb8225dc1eff00c34d06859c369a68ed41a75a7",
       "balance": {
         "denom": "pokt",
-        "amount": "6733487134997295500"
+        "amount": "5486566928005822042"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "5276044316504965810"
+        "amount": "6420550041656240153"
       }
     },
     "requestedChains": null
@@ -107,14 +107,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210349478410cb2feb0fad336eae3a54a148bf3f76a9c72bf5f8c0cc0c316603858e",
+      "publicKey": "0406743c3a16684743d78dba442e98a730bd6111784df544b0d90944dbd5019a9cdbed399ea4694e5121621d5bed113b49399767d47013b4c451d480e7870be5f6",
       "balance": {
         "denom": "pokt",
-        "amount": "5568608467418109032"
+        "amount": "8662783158533874791"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "6546441501457483212"
+        "amount": "7882212557604879032"
       }
     },
     "requestedChains": null
@@ -122,14 +122,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721035ee0328084140710725bb4ff8052ff147879065c353e12fc6e0c7e5b7a1aeea8",
+      "publicKey": "040b414b36fe9f788aadfc85f4adfd58421d88a980ff37ba2593e6c286d6d9c0dcef29a9557aaba5e54c60b2d546e98fdfa9b8790799292d2f78c58d26d0802e2b",
       "balance": {
         "denom": "pokt",
-        "amount": "3217700386652683206"
+        "amount": "1090404564358217046"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "7613888882471719621"
+        "amount": "6068992545142481644"
       }
     },
     "requestedChains": null
@@ -137,14 +137,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102e2790302c89019b7f15c6a8675be90b757064ff3bbcfe4275665fa0a8da59b82",
+      "publicKey": "0497acda5cd7c54a6dbb23d1901d016f903da5fb0e0e736e20ed61476d15f08857b53679ca321e75061c35bc576ca545460b203b81b287381014b79b7d9beeccfd",
       "balance": {
         "denom": "pokt",
-        "amount": "6665509880301371934"
+        "amount": "1864157794619168224"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "2600929156325761142"
+        "amount": "6470727975441490263"
       }
     },
     "requestedChains": null
@@ -152,14 +152,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721030c4367daf137fcf5da14634b0d64ed8d266965cd2a92505e7eef891b5999aca4",
+      "publicKey": "0433876f9d97a3b23d3c39e1560d2730413f42a410ba0260239a8d41cacc7779fa083ca6f96bdc462038d95bc2a86ac10cefc6af3cf0d379fbf069fbb37f0714fa",
       "balance": {
         "denom": "pokt",
-        "amount": "1824393823175404417"
+        "amount": "8106658609947904113"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "2309652118923581514"
+        "amount": "4793483875288749062"
       }
     },
     "requestedChains": null
@@ -167,14 +167,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103666f4fdd806fd3802328f5a5157b123f8b8cedb015cdaca3843662e287f17861",
+      "publicKey": "04a0dce01199e07f1fbd3471de5bdbb660319cb2a5c98e854ec5abc2b684cdd9ffd62f370d1a825365abc7a2a179b7dfee427f6377256400f8c17cb69015d49290",
       "balance": {
         "denom": "pokt",
-        "amount": "1997178820054811607"
+        "amount": "2060139778563925630"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "5511968267920052312"
+        "amount": "6551229762359484293"
       }
     },
     "requestedChains": null
@@ -182,14 +182,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721027274dd06f30fecc3d0478cdb83edb985568c877986bdaac2d9485f3104942109",
+      "publicKey": "04a23ab904bd6bf5bcc0f764b13b215237ea03721cdb866361a25d7567a22227e4ac6ac937ce9b3d07378c466e2dfa043da1d82d121593fb6f0423191b0f7f517b",
       "balance": {
         "denom": "pokt",
-        "amount": "798498963867083571"
+        "amount": "7706425563413132813"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "6558807226747205104"
+        "amount": "428395298338809952"
       }
     },
     "requestedChains": null
@@ -197,14 +197,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721034ad8388a11eb0bc7c60bd917b3ba42b32fb112845d2fcb18e165b402c4a7db00",
+      "publicKey": "04d0d3655380179b81cdacf64d138790e11df2736589e89455be9eb273cb692cc85b01421f2f29ce235928023e3b726775a48c81d623a48cefa7a4f56075b0b4bb",
       "balance": {
         "denom": "pokt",
-        "amount": "6401604727565775777"
+        "amount": "5877475622887665948"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "5961634907596260709"
+        "amount": "7912658089265811592"
       }
     },
     "requestedChains": null
@@ -212,14 +212,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103f0392c0f2f2c06a3e77be305f86e29f7d76e3da3ad3506aa2a8c5f67208eae31",
+      "publicKey": "043f1336a9f4ea233ca5a26eb29e2e25578c3a45c13a9b11f6345f6e5e62564fedda4b794a98a34ae53ef19e1fecc3fac6531f630fddf2eff9d381db2e3edc3f7c",
       "balance": {
         "denom": "pokt",
-        "amount": "8348441614442784789"
+        "amount": "971288791992060186"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "4103321956634594805"
+        "amount": "3400152731355359599"
       }
     },
     "requestedChains": null
@@ -227,14 +227,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721025eda50d5086de2fc6dd205401956a130978cc9630c38478435f6ecd740868fcd",
+      "publicKey": "046c7ad8ad995b13ffb97bfc4dd706ea4a73f281ec3c5bf762427ae91cc66dc438de1fb22b64fafed0983eb78f7b53aa561e51f9b4843fbd0ef80ac3a00bf9856a",
       "balance": {
         "denom": "pokt",
-        "amount": "4099742668699870460"
+        "amount": "3842560466201362357"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "7665698971584099678"
+        "amount": "8126219633633593613"
       }
     },
     "requestedChains": null
@@ -242,14 +242,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210337df177ca4906ae0cd1c470c726d1bbb37f67b6bcd49774a91a25992db068e2e",
+      "publicKey": "0456fa942f61d7c0b53b147ce9a07b9be1b8e09b426948676fab1e999e57b0d4e34f084809b746acb88e60ad57cff7a01b92dc6c522541bc5592ce9c89a842c17b",
       "balance": {
         "denom": "pokt",
-        "amount": "8170847059770456946"
+        "amount": "7645633522519177422"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "701732586508917058"
+        "amount": "4976519037014215992"
       }
     },
     "requestedChains": null
@@ -257,14 +257,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103be19fdfead0089ab23d8c6bba813fcdf5fba3b1149631896add669a4e8dc2be5",
+      "publicKey": "04ff76cde2cd21d675a71850363e9da1b8f58fc053f02c86bd6b1ee6884482f46d652cc62ce5695931e25a7de30ca26a8b8261ca0826ae15b5ebde3d2d3e791a9b",
       "balance": {
         "denom": "pokt",
-        "amount": "6062220016207432678"
+        "amount": "5869501584779815007"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "29246906831866181"
+        "amount": "3515234437958088607"
       }
     },
     "requestedChains": null
@@ -272,14 +272,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103c9f542bb013c4e60140cc49c72687f33e4891b307551af788d5c419cffba8fb4",
+      "publicKey": "0404aea179bd9b6598845b0568a9ab165a00861238202fd3e1d1bfcdea3ebbd796a9462a8ce161228d5bcc8852f55a0719949bab3e176e0dd9867ff30ed5601207",
       "balance": {
         "denom": "pokt",
-        "amount": "6783933928449032275"
+        "amount": "5513380780767367166"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "7108175970374382358"
+        "amount": "5190136415465555397"
       }
     },
     "requestedChains": null
@@ -287,14 +287,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102f8d1809a257c18ab5d6c70c7f544a3dbe31a330e1c9923d5cb76b631a9b807b9",
+      "publicKey": "0404eaa3e84005f11f48e4cc18e448906f1c1258e04799e88aeece56e132f3cc31f718b76036a9fe422ef223b7c8a6b9d16a89f7a294e8e80f7f37a7ad4defba4e",
       "balance": {
         "denom": "pokt",
-        "amount": "5169619238902367194"
+        "amount": "9197824033217323976"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "3770578156326810633"
+        "amount": "2396601030746315258"
       }
     },
     "requestedChains": null
@@ -302,14 +302,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721029a9b8fac5a085073e664280c37add23120d36ed967d340e170b6c2822a34c01e",
+      "publicKey": "0498d9be0bc991716b366dc84967b3c0e610adb71b13d3e71a6a081cdd35e204b79ed3f73ee02e351e6a4ab4c1bec6418825eda8b11fdc3f2e8c747817ffa9e269",
       "balance": {
         "denom": "pokt",
-        "amount": "8764848263236427797"
+        "amount": "5605545907974107991"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "7217279481041026536"
+        "amount": "5781281613226531550"
       }
     },
     "requestedChains": null
@@ -317,14 +317,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103a4541d13a57193b58282e256db6d75a1132366aa21e8df595ae8a7a143c62d8b",
+      "publicKey": "0417c5df3525e26f4386b993fa6cb2523296fbf5e8b828af7c930b7cce371beca6bf66a642c55c28210a7b84da6ac5bacce1c4057b8b3dd15e4391dc2bdc2083b2",
       "balance": {
         "denom": "pokt",
-        "amount": "1131535461451494680"
+        "amount": "1811863612927990488"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "8407283048566961071"
+        "amount": "115606710942235506"
       }
     },
     "requestedChains": null
@@ -332,14 +332,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210203517ff20e126c74f29ebc603c98ad30e399509c2e57f7b06b89f57fea0be0c7",
+      "publicKey": "04e72dadbd56b4ceb74f20034d93058c3d85f021fa6b5463643590e993cbfee4e27f3411a0901ca948574228fed4f9040a5104aee75b30a27f600038dfc1d645e2",
       "balance": {
         "denom": "pokt",
-        "amount": "965227487802138261"
+        "amount": "2717602086461831020"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "4725267682639003915"
+        "amount": "8660880303700966236"
       }
     },
     "requestedChains": null
@@ -347,14 +347,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103104ec6b1f3314cd53d3c10c26664233573f45c517f1f1c2a0d464c28bfd3d454",
+      "publicKey": "0441f608ab0ece210fb6301acf85406a56c1819bd61d4235302c384414b42722c0d0c0dddaa3b35590397d060d594a971220414dcf148fad30c90eef430547652d",
       "balance": {
         "denom": "pokt",
-        "amount": "4326948661719827237"
+        "amount": "8881421235284363318"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "717914094295746366"
+        "amount": "8083069344271811381"
       }
     },
     "requestedChains": null
@@ -362,14 +362,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721035603924c8aad78f0fa17ed33686c692ce75903f6ee08d289b5e74c5e9895ac8a",
+      "publicKey": "04f0ae3c2de5ebc3d2dd5eade94253c27f31e86141f856b7d6ebd01991253a3af5cd31ae2bee17dbb08287fedd025fd3ae7a099fdb0da72e1e679e3c1b65b29c8c",
       "balance": {
         "denom": "pokt",
-        "amount": "251582696833640683"
+        "amount": "3498858056758595009"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "7574773953639629028"
+        "amount": "4911446659482378361"
       }
     },
     "requestedChains": null
@@ -377,14 +377,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103044566932894c02bd19164c6ecd382e7edd5a14024c61984bde5b7ccb4de1d22",
+      "publicKey": "04be26ed5cdec28ac004de9eedd6c48fae3e885f4604af3dc4aad51ad75620d62084be41286b8d229d7655c5e01b3e19a797489600a07b394b1be45e24fbade645",
       "balance": {
         "denom": "pokt",
-        "amount": "8233019250683188626"
+        "amount": "8203167635945662060"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "8972423743598197918"
+        "amount": "6393967556566666543"
       }
     },
     "requestedChains": null
@@ -392,14 +392,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210361a4185b78db286362a9639311921fbd8acb220e38b1358a8fa863f66bb1d51c",
+      "publicKey": "0443e0dd72f7091a3c613f64a8c42d099f0b2ceb429738a5514aaaede95f4de5bb49cc1b837f7a0144433e226ed63cb4f7ea4bb462b9b85f7a75027af7e1210195",
       "balance": {
         "denom": "pokt",
-        "amount": "5255524876963614944"
+        "amount": "3647746677159356701"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "6179445160192710756"
+        "amount": "6651836184067235153"
       }
     },
     "requestedChains": null
@@ -407,14 +407,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102411e4c5a5ef40dfb78d2dd65987cf311ed09a0f6f9dbe43b2daa8a95c2b72f4c",
+      "publicKey": "04ced45fe7749617580119d67ce0c1a53897fd57f1b0dbb23a7bd489727a9143e19b652954c7dc6c78373cc46d895cbf48bde30b29e2be661f6ded685743314a12",
       "balance": {
         "denom": "pokt",
-        "amount": "5629396318463938098"
+        "amount": "2157390823825617980"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "4266806218000329357"
+        "amount": "7680006849880632411"
       }
     },
     "requestedChains": null
@@ -422,14 +422,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102fb950f65d8375c695f0cc72bc2e71afe7411f9035957c19c99765dea9390e7b1",
+      "publicKey": "04f26589ade9c946071300ef3e3297d3c2f80bc180531ae768e1b7c5107944575abab56edf365f3d22e3ae8ee45fc1ddec79b787673cd8490b4151631eca3376a9",
       "balance": {
         "denom": "pokt",
-        "amount": "3315655597268069774"
+        "amount": "1374136789553402681"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "5538915334791933318"
+        "amount": "3859636757558730562"
       }
     },
     "requestedChains": null
@@ -437,14 +437,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102651381db21f327fa9aeb409c3202e01efdf216a6c5a2f2c1cfd9bf308de37689",
+      "publicKey": "040319bdd8df4c5d188bd004a37b4e9cf18568c337f2858f3ab1c67e5b5119ab8bdda1058ffe66f16eafc03662a578549aef52febced2c933081d5d23d7c541ded",
       "balance": {
         "denom": "pokt",
-        "amount": "963365418106622058"
+        "amount": "4223396799219566044"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "6027357512874654303"
+        "amount": "7666368035047122800"
       }
     },
     "requestedChains": null
@@ -452,14 +452,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210203c318688f49e373562d09fda740342e68bca1ec18c75a34bd2c6ccc7ccbe404",
+      "publicKey": "04334d6f1ca4847d0f8188778123784474934b18ca4f7b118194934e790af06800d9bedfffdc1b9763e9067b382f94ef9be01136e7f2d4160d9d9e7ca8d4b31d9d",
       "balance": {
         "denom": "pokt",
-        "amount": "3417499235187966608"
+        "amount": "565940789211504387"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "913966846704804701"
+        "amount": "317180434517855495"
       }
     },
     "requestedChains": null
@@ -467,14 +467,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721030f074b6d8d573997c26273b576958045936d8f2f26a5524e6abb3a6031f05391",
+      "publicKey": "04b828ea11d8baecd866e86cccdc9e54818537c2db2d28c71438b8d038f625fd44e8e1069afd9b4db96f60b6f95705fcd39282e75b6327fd28c342f5b118fd83fa",
       "balance": {
         "denom": "pokt",
-        "amount": "6182577752782880296"
+        "amount": "3418483889697300910"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "1450640320521409076"
+        "amount": "4187305707058894005"
       }
     },
     "requestedChains": null
@@ -482,14 +482,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102048b90876aade512e472b3ddc3ea4963c30a9b1e69fffe0fbd5a7ae4751eed63",
+      "publicKey": "0481fea3dc7e5f667506372594df33ad6cbdd1a19e54b2acdf6ca4f47c6c0db4b3b6941022e191ef2a7db78b134c03c6ce385061f23b569725b0a27598491339e1",
       "balance": {
         "denom": "pokt",
-        "amount": "123191629582058062"
+        "amount": "4985784731558407622"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "1441177324733106467"
+        "amount": "8606770766072799908"
       }
     },
     "requestedChains": null
@@ -497,14 +497,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210253488dfc6dc6ada9743c96dacd36d9961d9cb7e70f63a5c6e9fc92fa77d51e20",
+      "publicKey": "04d03977a8681b06be521cbdd1fc4a4d750b7db7af34ebfe0461a1619253f64bf5f56b1a33bf9abe0feb02f5b1f72a385ce91da74907e3d14969c0a566db3984b1",
       "balance": {
         "denom": "pokt",
-        "amount": "8142950101316004266"
+        "amount": "3827970616414646372"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "3147043896006069788"
+        "amount": "2292675941562588583"
       }
     },
     "requestedChains": null
@@ -512,14 +512,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721023bf01c1b052daf553f9afbd28b4f51af348f31d26c8842a4f3f2b4161bef3306",
+      "publicKey": "040c6f4fd3c6cd808818288aeb5f9776cc931723c783d96b02cb880420f9e100a1ed06eb75eb352a96a03406d6836aaa6bb2868578bd973ff0b22d652532ae7a05",
       "balance": {
         "denom": "pokt",
-        "amount": "5320236485027111218"
+        "amount": "8529252140851479804"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "8337639795402725119"
+        "amount": "3663332292946403909"
       }
     },
     "requestedChains": null
@@ -527,14 +527,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102085d4d3d28b6f9e17883aa50972e57dc651392c4dad27e55554066605c00d3d2",
+      "publicKey": "0447d205fbb86e4f3d824bbbc4a879e40b1e9e7fcd889c2a67992be8c43ca72a9d7d217023097e13c2336b3b5b356b90720a9bcd04a5b6764191dd747877b1809b",
       "balance": {
         "denom": "pokt",
-        "amount": "4750139651375306636"
+        "amount": "692608700811989140"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "4710136860572592820"
+        "amount": "8634444599885000764"
       }
     },
     "requestedChains": null
@@ -542,14 +542,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102e1d10035864bb5158394f9935e586e4d9cdaafd60c10b6559df7e0a7eb320c91",
+      "publicKey": "04df91e0786b46ca504e8185abdd8535be0838df0f6a0288d517ee82dae76990ae5e05651de9c4fccffbaf332d13004d388b6d691cbd94ccb4a3c9b021e73be186",
       "balance": {
         "denom": "pokt",
-        "amount": "5506478197935948792"
+        "amount": "7857843483148198705"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "2999898680687504437"
+        "amount": "1975492475009460919"
       }
     },
     "requestedChains": null
@@ -557,14 +557,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102f6431c3091ecf88dad9c8c12ca02192b1f06eef2be840b1fbae55e74d0eae935",
+      "publicKey": "048431ff701ef3291058e0d48d219088a7ee77975fb6c87ce18db17721b25296311ddf30ba4962237fc730f258253cf2bbbc7d55e7bd4d0e06219ca4c9c14ecd33",
       "balance": {
         "denom": "pokt",
-        "amount": "4609885259781167864"
+        "amount": "711603558692198673"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "2775520318909142496"
+        "amount": "2728324827605310027"
       }
     },
     "requestedChains": null
@@ -572,14 +572,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103db97d1214ba09bc3ab0270e94431d13250d220108de0e8edfa2f06cd00de96d3",
+      "publicKey": "048f5a766b6c3207f0c6208b00820e0f8344d0a662a81bb58b163366e8b84327e103dc45923fc858243df2e7acfe4e85763e52e4e51bb64d70e10a9b559c7ff54a",
       "balance": {
         "denom": "pokt",
-        "amount": "2275515485420387925"
+        "amount": "2646787352605242415"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "3832418740575903993"
+        "amount": "2566252933508665685"
       }
     },
     "requestedChains": null
@@ -587,14 +587,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721026e8afb54107438906dfaed84b564376bd391cf1e4ac6c28f393fae1809c55961",
+      "publicKey": "043ae1cd6c1351f9d3ad64b75e166729fb90c3cc80465555ca0b4dd1bbc2ba2476ad2522420ec1e523bee79d3d6c81db41c5162ffda7cb2af1ea84b85b7985d693",
       "balance": {
         "denom": "pokt",
-        "amount": "5714994218959127597"
+        "amount": "4285430555863351367"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "7934673153711179834"
+        "amount": "6986774008630632268"
       }
     },
     "requestedChains": null
@@ -602,14 +602,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103cbe56d68522bbf23a349507466184ccaa1653a884dc63c6723878280a8d36287",
+      "publicKey": "049451bcc53868d9ac43f0663689ea623fe4c7600f71194bc17b34e741fdba69a76d3e866cd4bd156cf937f48fb30504f2d95dc49b8d6e526a8ea7d4f7e9eedafd",
       "balance": {
         "denom": "pokt",
-        "amount": "8288418341680420891"
+        "amount": "6224877303218775012"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "1250172194167143007"
+        "amount": "6649057527078164455"
       }
     },
     "requestedChains": null
@@ -617,14 +617,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210343749316650664f8c3c4688dce0322a002650e43e685ed96d220043c2b412122",
+      "publicKey": "0487792ed0518b81213d121088d2fe36c2d8ca0bf3bd38f888b114c00fdc530db5fc20c74b9368a0f8490f14cbaa56ce006df7df0189c618f62bede3c11014914a",
       "balance": {
         "denom": "pokt",
-        "amount": "7088708783324740340"
+        "amount": "1743382959144549516"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "2512799095366976888"
+        "amount": "8560716748720522134"
       }
     },
     "requestedChains": null
@@ -632,14 +632,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210209635039d8dd4a55503753ab6a5d39531ec8c45987e13e12e4c66b81ee541121",
+      "publicKey": "046b6164037fba13c3f79ac0a1e2a6c1ee54a8c227f261fd96ca9c5996a035b6a1731404346df7e449c5a97ac378fc67c709470b72460e598d073745123670c709",
       "balance": {
         "denom": "pokt",
-        "amount": "7263034205080615878"
+        "amount": "6418209768092061992"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "4637114370246336501"
+        "amount": "856733848582146164"
       }
     },
     "requestedChains": null
@@ -647,14 +647,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae98721031d36892b9214f46dba8087eb43c787e7fc81ac7d5a91e0e5fff9a66396d42b2c",
+      "publicKey": "04d380f730b05788ef53ffe5b594f094679c85a8740a81cdf3eab1c7761a422b42fd26da6363fbbb9b66587fcc168d47f8a26d7590693df1ab8d39be85f4d6463a",
       "balance": {
         "denom": "pokt",
-        "amount": "488797720339860280"
+        "amount": "8651072573285180621"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "7095255314850591313"
+        "amount": "707748276934910078"
       }
     },
     "requestedChains": null
@@ -662,14 +662,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102b7fa87b798d00cf2bd4954702be636e4949458579c01854fabad45167d189d41",
+      "publicKey": "044adc2c13d0ef7df8dd1f80c4525bb03f48e239f4fe3b4ae59ee247dae6e067ea074f076a5ae115990329d839147431474deaf14c1373cf902beb854437ee9791",
       "balance": {
         "denom": "pokt",
-        "amount": "2469490302820256676"
+        "amount": "5038630096869736820"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "4949987423542360850"
+        "amount": "1901094324842081565"
       }
     },
     "requestedChains": null
@@ -677,14 +677,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872103d0a222ce9e88a2a8dc2db951b0981a73c6a1b7fbd4c0ac3310b2f01b08d9a331",
+      "publicKey": "040898beae4b328e4374fb1e7bf73c34487cd3dc72e37320b9567916f1c223bfd2b41bf665e3ea1d36912ccb80badfb51330e16d7fd93db41ec779469f8d0465d3",
       "balance": {
         "denom": "pokt",
-        "amount": "116478309966097024"
+        "amount": "3006947701239599106"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "6283576091866234891"
+        "amount": "4752837662361593367"
       }
     },
     "requestedChains": null
@@ -692,14 +692,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102e63a130c1a08b07a9e3b6f4a9cc3510c816ccddd08a4f3539cec78831bdd12f7",
+      "publicKey": "0429cdf3907fde673426c469db4f4acf04f799cb4414aba13dcf102f3feb37426865aab1948742c30d32f60cf64ceb574141baf93518cae72923f00545a3b0e309",
       "balance": {
         "denom": "pokt",
-        "amount": "7779323186824405619"
+        "amount": "278496473993379895"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "1462125548486410002"
+        "amount": "1477841814629341922"
       }
     },
     "requestedChains": null
@@ -707,14 +707,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102d729830a0722cd4beac698825418989e771c5fc54fbfdaa8c3ecdcf83dd88535",
+      "publicKey": "0421c7e136895fb560461fe6b51316933025cf98239555f0a8ecca3f8e9eabcf74d918eb5ce93bd5b09c5e437c315dd44bdf9852a5d385688a212eb28c4ee369d1",
       "balance": {
         "denom": "pokt",
-        "amount": "5104368190697375055"
+        "amount": "2176280936381606876"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "1947425129660457971"
+        "amount": "563043349723263852"
       }
     },
     "requestedChains": null
@@ -722,14 +722,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae987210256e6bcb68dc795a3e2db8d70d927fb57788c1a6d654ff39168d1897bedc52e37",
+      "publicKey": "04fdb0d6fb4f2397896b9cde907fc60893f41add458f9c759b18ce88f541bcf3dec4352567b5c047d6f97093519ce760c519157801b5f06391d11e6852c8345a64",
       "balance": {
         "denom": "pokt",
-        "amount": "1809883874560877417"
+        "amount": "6879920446282974325"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "156312326139190882"
+        "amount": "2761749013505261322"
       }
     },
     "requestedChains": null
@@ -737,14 +737,14 @@
   {
     "routing": {
       "address": null,
-      "publicKey": "eb5ae9872102bc861713cbb198d8e474dff0a26db3b31d18259a24c60ce737f78217da3f8888",
+      "publicKey": "0408aeb73f6e13cac421fcd72f04b0401675989ff000ac35a90023c8a868bfb7c245898192a5b9ce82f97c4fc16eac20656f79ca0adfe2bb191ad433ceb49f0459",
       "balance": {
         "denom": "pokt",
-        "amount": "5225761967396653649"
+        "amount": "4740018155223696427"
       },
       "stakeamount": {
         "denom": "pokt",
-        "amount": "6634891788444555851"
+        "amount": "3352922508098919816"
       }
     },
     "requestedChains": null
