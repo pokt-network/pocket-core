@@ -29,8 +29,7 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 	// verify that node (self) is of this session
 	if err := SessionSelfVerification(FAKEAPPPUBKEY,
 		r.Blockchain,
-		blockchain.GetLatestSessionBlock().Hash.String());
-		err != nil {
+		blockchain.GetLatestSessionBlock().Hash.String()); err != nil {
 		return err
 	}
 	// check to see if the service certificate is valid

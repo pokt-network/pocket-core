@@ -25,7 +25,7 @@ func GetApplications() (*types.Applications, error) {
 	return fixtures.GetApplications()
 }
 
-func GetMaxNumberOfRelaysForApp(applicationPubKey string) int{
+func GetMaxNumberOfRelaysForApp(applicationPubKey string) int {
 	// todo
 	return 5000
 }
