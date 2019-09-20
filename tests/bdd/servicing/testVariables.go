@@ -19,13 +19,11 @@ var (
 	chainsfile, _       = filepath.Abs("../../fixtures/chains.json")
 	brokenchainsfile, _ = filepath.Abs("../../fixtures/legacy/brokenChains.json")
 	hc                  = types.HostedBlockchains{M: map[interface{}]interface{}{
-		hex.EncodeToString(validBlockchain):
-		types.HostedBlockchain{
+		hex.EncodeToString(validBlockchain): types.HostedBlockchain{
 			Hash: hex.EncodeToString(validBlockchain),
 			URL:  GOODENDPOINT,
 		},
-		hex.EncodeToString(validBlockchain2):
-		types.HostedBlockchain{
+		hex.EncodeToString(validBlockchain2): types.HostedBlockchain{
 			Hash: hex.EncodeToString(validBlockchain2),
 			URL:  BADENDPOINT,
 		}}}
