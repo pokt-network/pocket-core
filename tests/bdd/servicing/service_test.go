@@ -1,13 +1,41 @@
 package servicing
 
 import (
+	"fmt"
+	"github.com/h2non/gock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/service"
 )
 
 var _ = Describe("Service", func() {
-	PDescribe("Service Configuration", func() {})
+	Describe("Service Configuration", func() {
+		// Contextualize this block on connection type (e.g. HTTP)
+		Describe("Configuring a third party blockchain endpoint list", func() {
+
+			Describe("Parsing a json file", func() {
+
+				Context("Able to unmarshal the blockchain list into chain objects", func() {
+
+					It("should return a nil error", func() {
+						Expect(types.HostedChainsFromFile(chainsfile)).To(BeNil())
+					})
+
+					It("should have created a globally accessible list of blockchains", func() {
+						Expect(types.GetHostedChains().Len()).ToNot(BeZero())
+					})
+				})
+
+				Context("Unable to unmarshal the blockchain list into a slice of chain objects", func() {
+
+					It("should return unparsable json error", func() {
+						Expect(types.HostedChainsFromFile(brokenchainsfile)).ToNot(BeNil())
+					})
+				})
+			})
+		})
+	})
 	Describe("Relay request validation", func() {
 		Context("Invalid blockchain", func() {
 			Context("Missing blockchain", func() {
@@ -75,10 +103,69 @@ var _ = Describe("Service", func() {
 		})
 		Context("Valid relay data", func() {
 			It("should return no error", func() {
-				Expect(validRelay.Validate(hostedBlockchains)).To(BeNil())
+				Expect(validEthRelay.Validate(hostedBlockchains)).To(BeNil())
 			})
 		})
 	})
-	PDescribe("Relay execution", func() {})
+
+	Describe("RelayExecution", func() {
+		Describe("HTTP", func() {
+
+			Context("request happens successfully", func() {
+
+				It("should return the result", func() {
+					// two different endpoints for testing
+					defer gock.Off()
+					gock.New(GOODENDPOINT).Persist().Get("/").Reply(200).
+						JSON(map[string]string{"id": "67", "jsonrpc": "2.0", "result": GOODRESULT})
+					goodEndpointResponse, err := validEthRelay.Execute(hostedBlockchains)
+					Expect(err).To(BeNil())
+					Expect(goodEndpointResponse).To(ContainSubstring(GOODRESULT))
+				})
+			})
+
+			Context("request happens unsuccessfully", func() {
+
+				It("should return HTTP execute error", func() {
+					gock.New(BADENDPOINT).Get("/").Reply(500).
+						JSON(map[string]string{})
+					resp, err := validBtcRelay.Execute(hostedBlockchains)
+					fmt.Println(resp)
+					Expect(err).ToNot(BeNil())
+				})
+			})
+		})
+
+		Describe("Responding", func() {
+
+			Context("The node is able to sign the relay response", func() {
+
+				It("should return nil error", func() {
+					goodEndpointResponse, err := validEthRelay.Execute(hostedBlockchains)
+					rr := service.RelayResponse{
+						Signature:   "",
+						Response:    goodEndpointResponse, // todo amino encoding
+						ServiceAuth: service.ServiceCertificate{ServiceCertificatePayload: service.ServiceCertificatePayload{Counter: 0}},
+					}
+					err = rr.Sign()
+					Expect(err).To(BeNil())
+				})
+			})
+
+			Context("The node did not sign the relay response", func() {
+
+				It("should return a signature error", func() {
+					goodEndpointResponse, err := validEthRelay.Execute(hostedBlockchains)
+					rr := service.RelayResponse{
+						Signature:   "",
+						Response:    goodEndpointResponse, // todo amino encoding
+						ServiceAuth: service.ServiceCertificate{ServiceCertificatePayload: service.ServiceCertificatePayload{Counter: 0}},
+					}
+					err = rr.Validate()
+					Expect(err).ToNot(BeNil())
+				})
+			})
+		})
+	})
 	PDescribe("Relay batching", func() {})
 })
