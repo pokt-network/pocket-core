@@ -136,6 +136,22 @@
   version = "1.11.0"
 
 [[projects]]
+  digest = "1:721323966f12bfa5186e02ad807424f78a28b04606970105dbf6a5e9b62205e7"
+  name = "github.com/h2non/gock"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "3ffff9b1aa8200275a5eb219c5f9c62bd27acb31"
+  version = "v1.0.15"
+
+[[projects]]
+  digest = "1:7313d6b9095eb86581402557bbf3871620cf82adf41853c5b9bee04b894290c7"
+  name = "github.com/h2non/parth"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "b4df798d65426f8c8ab5ca5f9987aec5575d26c9"
+  version = "v2.0.1"
+
+[[projects]]
   branch = "master"
   digest = "1:5c3c08bda43e2c1a1c6abfd8f9cdcc25410e5486b592a82b6354ebb0e533c1ff"
   name = "github.com/hpcloud/tail"
@@ -554,6 +570,7 @@
     "github.com/ethereum/go-ethereum/common/math",
     "github.com/ethereum/go-ethereum/crypto/secp256k1",
     "github.com/google/flatbuffers/go",
+    "github.com/h2non/gock",
     "github.com/julienschmidt/httprouter",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",

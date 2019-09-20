@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	//"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/legacy"
 	"github.com/pokt-network/pocket-core/types"
 	tdmnt "github.com/tendermint/tendermint/types"
@@ -135,4 +134,8 @@ func GenerateNonNativeBlockchain() []byte {
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 	return legacy.SHA3FromBytes([]byte(tickers[r1.Intn(3)]))
+}
+
+func GenerateNonNativeBlockchainFromTicker(ticker string) []byte {
+	return legacy.SHA3FromBytes([]byte(ticker))
 }
