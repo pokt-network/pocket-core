@@ -4,21 +4,19 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/tests/fixtures"
-	"github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/blockchain"
 	"github.com/pokt-network/pocket-core/x/session"
 )
 
 var _ = Describe("Session", func() {
-	// validate the incoming request
-	PDescribe("Validation", func() {})
 	// generate the session
 	Describe("Generation", func() {
-		validApplication := session.SessionApplication(fixtures.GenerateApplication())
+		validApplication := session.SessionAppPubKey(fixtures.GenerateApplication().PubKey)
 		validNonNativeChain := fixtures.GenerateNonNativeBlockchain()
-		validBlockID := session.SessionBlockID(fixtures.GenerateBlockHash())
+		validBlockID := session.SessionBlockID(blockchain.GetLatestSessionBlock())
 		Describe("SessionKey Generation", func() {
 			Context("Empty Application seed", func() {
-				emptyApplication := session.SessionApplication(types.Application{}) // empty Application
+				emptyApplication := session.SessionAppPubKey("") // empty Application
 				It("should return empty Application public key error", func() {
 					_, err := session.NewSessionKey(emptyApplication, validNonNativeChain, validBlockID)
 					Expect(err).To(Equal(session.EmptyAppPubKeyError))
@@ -84,8 +82,4 @@ var _ = Describe("Session", func() {
 			})
 		})
 	})
-	// abide by the session 'rules'
-	PDescribe("Rules", func() {})
-	// gracefully terminate the session
-	PDescribe("Termination", func() {})
 })
