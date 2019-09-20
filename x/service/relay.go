@@ -1,37 +1,43 @@
 package service
 
 import (
-	"bytes"
-	"errors"
-	"github.com/pokt-network/pocket-core/types"
-	"io/ioutil"
-	"net/http"
+	"encoding/hex"
+	"github.com/pokt-network/pocket-core/x/blockchain"
 )
 
+// a read / write API request from a hosted (non native) blockchain
 type Relay struct {
-	Blockchain       ServiceBlockchain `json:"blockchain"`
-	Payload          ServicePayload    `json:"payload"`
-	ServiceToken     ServiceToken      `json:"token"`
-	IncrementCounter IncrementCounter  `json:"incrementCounter"`
+	Blockchain         ServiceBlockchain  `json:"blockchain"`       // the non-native blockchain needed to service
+	Payload            ServicePayload     `json:"payload"`          // the data payload of the request
+	ServiceCertificate ServiceCertificate `json:"incrementCounter"` // the authentication scheme needed for work
 }
 
 func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
+	// check to see if the blockchain is empty
 	if r.Blockchain == nil || len(r.Blockchain) == 0 {
 		return EmptyBlockchainError
 	}
+	// check to see if the payload is empty
 	if r.Payload.Data.Bytes() == nil || len(r.Payload.Data.Bytes()) == 0 {
 		return EmptyPayloadDataError
 	}
-	if err := r.ServiceToken.Validate(); err != nil {
-		return errors.New(InvalidTokenError.Error() + " : " + err.Error())
-	}
-	if err := r.IncrementCounter.Validate(r.ServiceToken.AATMessage.ClientPublicKey, r.ServiceToken.Hash()); err != nil {
-		return errors.New(InvalidIncrementCounterError.Error() + " : " + err.Error())
-	}
-	if !types.Blockchains(hostedBlockchains).Contains(r.Blockchain.String()) {
+	// ensure the blockchain is supported
+	if !hostedBlockchains.Contains(hex.EncodeToString(r.Blockchain)) {
 		return UnsupportedBlockchainError
 	}
-	if r.Payload.HttpServicePayload != (HttpServicePayload{}) {
+	// todo check to see if non native blockchain is staked for by the developer
+	// verify that node (self) is of this session
+	if err := SessionSelfVerification(FAKEAPPPUBKEY,
+		r.Blockchain,
+		blockchain.GetLatestSessionBlock().Hash.String());
+		err != nil {
+		return err
+	}
+	// check to see if the service certificate is valid
+	if err := r.ServiceCertificate.Validate(); err != nil {
+		return NewServiceCertificateError(err)
+	}
+	if r.Payload.Type() == REST {
 		if len((r.Payload).Method) == 0 {
 			r.Payload.Method = DEFAULTHTTPMETHOD
 		}
@@ -39,31 +45,33 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 	return nil
 }
 
+// store the evidence of work done for the relay batch
+func (r Relay) StoreEvidence() error {
+	// grab the relay batch container
+	rbs := GetGlobalRelayBatches()
+	// add the evidence to the proper batch
+	return rbs.AddEvidence(r.ServiceCertificate)
+}
+
+// executes the relay on the non-native blockchain specified
 func (r Relay) Execute(hostedBlockchains ServiceBlockchains) (string, error) {
 	if err := r.Validate(hostedBlockchains); err != nil {
 		return "", err
 	}
-	chainURL, err := hostedBlockchains.GetChainURL(r.Blockchain.String())
-	if err != nil {
-		return "", err
+	// handle the relay payload based on the type
+	switch r.Payload.Type() {
+	case REST:
+		url, err := r.Blockchain.GetHostedChainURL(hostedBlockchains)
+		if err != nil {
+			return "", err
+		}
+		return executeHTTPRequest(r.Payload.Data.Bytes(), url, r.Payload.Method)
+	case RPC:
+		url, err := r.Blockchain.GetHostedChainURL(hostedBlockchains)
+		if err != nil {
+			return "", err
+		}
+		return executeHTTPRequest(r.Payload.Data.Bytes(), url, r.Payload.Method)
 	}
-	result, err := executeHTTPRequest(r.Payload.Data.Bytes(), chainURL, r.Payload.Method)
-	return result, err
-}
-
-// "executeHTTPRequest" takes in the raw json string and forwards it to the HTTP endpoint
-func executeHTTPRequest(payload []byte, url string, method string) (string, error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(payload))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := (&http.Client{}).Do(req)
-	if err != nil {
-		return "", err
-	}
-	// todo inspect unhandled error
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	return string(body), nil
+	return "", UnsupportedPayloadTypeError
 }
