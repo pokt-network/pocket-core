@@ -28,7 +28,7 @@ var _ = Describe("Dispatch", func() {
 	Describe("Dispatch Session Generation", func() {
 		Context("Invalid application", func() {
 			It("should return DispatchSessionGeneration error", func() {
-				_, err := dispatch.DispatchSession(invalidApplication, validNonNativeChain)
+				_, err := dispatch.DispatchSession(session.SessionAppPubKey(invalidApplication), validNonNativeChain)
 				Expect(err).ToNot(BeNil())
 				Expect(err.Error()).To(ContainSubstring(dispatch.SessionGenerationError.Error()))
 			})
