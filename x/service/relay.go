@@ -36,7 +36,7 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 	if err := r.ServiceCertificate.Validate(); err != nil {
 		return NewServiceCertificateError(err)
 	}
-	if r.Payload.Type() == REST {
+	if r.Payload.Type() == HTTP {
 		if len((r.Payload).Method) == 0 {
 			r.Payload.Method = DEFAULTHTTPMETHOD
 		}
@@ -59,13 +59,7 @@ func (r Relay) Execute(hostedBlockchains ServiceBlockchains) (string, error) {
 	}
 	// handle the relay payload based on the type
 	switch r.Payload.Type() {
-	case REST:
-		url, err := r.Blockchain.GetHostedChainURL(hostedBlockchains)
-		if err != nil {
-			return "", err
-		}
-		return executeHTTPRequest(r.Payload.Data.Bytes(), url, r.Payload.Method)
-	case RPC:
+	case HTTP:
 		url, err := r.Blockchain.GetHostedChainURL(hostedBlockchains)
 		if err != nil {
 			return "", err
