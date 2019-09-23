@@ -24,6 +24,7 @@ var _ = Describe("Service", func() {
 
 					It("should have created a globally accessible list of blockchains", func() {
 						Expect(types.GetHostedChains().Len()).ToNot(BeZero())
+						Expect(types.GetHostedChains().Validate()).To(BeNil())
 					})
 				})
 
