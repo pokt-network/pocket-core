@@ -67,6 +67,17 @@ func (c *HostedBlockchains) GetChainFromBytes(chainHash []byte) HostedBlockchain
 	return res.(HostedBlockchain)
 }
 
+func (c *HostedBlockchains) Validate() error {
+	c.Mux.Lock()
+	defer c.Mux.Unlock()
+	for _, chain := range c.M {
+		if chain.(HostedBlockchain).Hash == "" || chain.(HostedBlockchain).URL == "" {
+			return InvalidHostedChainError
+		}
+	}
+	return nil
+}
+
 // "HostedChainsFromFile" reads a file into the hosted chains object.
 func HostedChainsFromFile(filepath string) error {
 	file, err := ioutil.ReadFile(filepath)
