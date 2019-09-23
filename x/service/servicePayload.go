@@ -1,7 +1,5 @@
 package service
 
-import "reflect"
-
 type ServicePayload struct {
 	Data ServiceData `json:"data"` // the payload data for the non native chain
 	HttpServicePayload
@@ -22,8 +20,5 @@ func (sd ServiceData) Bytes() []byte {
 }
 
 func (sp ServicePayload) Type() ServiceType {
-	if reflect.TypeOf(sp.HttpServicePayload) == reflect.TypeOf((HttpServicePayload{})) {
-		return REST
-	}
-	return RPC
+	return HTTP
 }
