@@ -28,7 +28,7 @@ func main() {
 // "startClient" Starts the client with the given initial configuration.
 func startClient() {
 
-	// We trap kill $signals (2,3,15,9)
+	// We trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
 		syscall.SIGTERM,
@@ -63,7 +63,7 @@ func startClient() {
 	// Capture signal
 	<-signalChannel
 
-	// Exit gracefully printing the exit signal
+	// Exits gracefully printing the exit signal
 	defer func() {
 		message := fmt.Sprintf("Exit signal %v received\n", signalChannel)
 		node.WaitForExit(message)
