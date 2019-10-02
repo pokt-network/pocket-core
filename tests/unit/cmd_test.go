@@ -10,14 +10,30 @@ import (
 	"time"
 )
 
+func TestBuildClient(t *testing.T) {
+	// Build the pocket_core binary in workdir
+	build := exec.Command("go", "build", "../../cmd/pocket_core")
+	err := build.Run()
+	if err != nil {
+		t.Fatalf("Error building pocket_core binary")
+	}
+}
+
 func TestStartClientTerminateSignal(t *testing.T) {
 	// Starts pocket core and sends kill signal signal (15)
-	StartKillPocketCore("../../cmd/pocket_core/pocket_core", 15, "terminated", 500, t)
+	StartKillPocketCore("./pocket_core", 15, "terminated", 500, t)
 }
 
 func TestStartClientInterruptSignal(t *testing.T) {
 	// Starts pocket core and sends kill signal signal (2)
-	StartKillPocketCore("../../cmd/pocket_core/pocket_core", 2, "interrupt", 500, t)
+	StartKillPocketCore("./pocket_core", 2, "interrupt", 500, t)
+
+	// Deletes the pocket_core binary in workdir
+	build := exec.Command("rm", "./pocket_core")
+	err := build.Run()
+	if err != nil {
+		t.Fatalf("Error deleting pocket_core binary")
+	}
 
 }
 
