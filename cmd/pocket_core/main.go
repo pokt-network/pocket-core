@@ -49,12 +49,11 @@ func startClient() {
 	logs.Log("Started Pocket Core", logs.InfoLevel, logs.TextLogFormatter)
 	// print the configuration
 	config.Print()
-	// Capture signal
-	<-signalChannel
-
 	// Exits gracefully printing the exit signal
 	defer func() {
-		message := fmt.Sprintf("Exit signal %v received\n", signalChannel)
+		sig := <-signalChannel
+
+		message := fmt.Sprintf("Exit signal %s received\n", sig)
 		util.ExitGracefully(message)
 	}()
 }
