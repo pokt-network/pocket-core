@@ -1,9 +1,10 @@
 # Golang CircleCI 2.0 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-go/ for more details
-version: 2
+# Changed from 2.0 to 2.1 so orbs can be used.
+version: 2.1
 orbs:
-  anchore: anchore/anchore_engine
+  anchore: anchore/anchore_engine@1.6.0
 jobs:
   build:
     docker:
