@@ -4,7 +4,7 @@
 # Changed from 2.0 to 2.1 so orbs can be used.
 version: 2.1
 orbs:
-  anchore: anchore/anchore_engine@1.6.0
+  anchore: anchore/anchore-engine@1.6.0
 jobs:
   build:
     docker:
@@ -37,6 +37,6 @@ jobs:
               name: Building Poket Container
               command: docker build -t ${CIRCLE_PROJECT_REPONAME}:ci .
           - anchore/analyze_local_image:
+              dockerfile_path: ./Dockerfile
               image_name: ${CIRCLE_PROJECT_REPONAME}:ci
               timeout: '500'
-              analysis_fail: True
