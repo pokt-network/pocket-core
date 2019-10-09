@@ -2,6 +2,8 @@
 #
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
+orbs:
+  anchore: anchore/anchore_engine
 jobs:
   build:
     docker:
@@ -26,3 +28,14 @@ jobs:
       - run: go build cmd/pocket_core/main.go
       - run: go test ./tests/unit/...
       - run: go test ./tests/bdd/...
+  local_image_scan:
+      executor: anchore/anchore_engine
+      steps:
+          - checkout
+          - run:
+              name: Building Poket Container
+              command: docker build -t ${CIRCLE_PROJECT_REPONAME}:ci .
+          - anchore/analyze_local_image:
+              image_name: ${CIRCLE_PROJECT_REPONAME}:ci
+              timeout: '500'
+              analysis_fail: True
