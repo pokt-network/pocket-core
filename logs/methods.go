@@ -11,6 +11,7 @@ import (
 
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/sirupsen/logrus"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 // "Caller" returns the caller of the function that called it
@@ -59,13 +60,14 @@ func Log(message string, level LogLevel, format LogFormat) error {
 
 // "logger" prints the log to data directory
 func logger(l log, format LogFormat) error {
-	// open/create the new log file
-	f, err := os.OpenFile(config.GlobalConfig().DD+string(filepath.Separator)+"logs"+
-		string(filepath.Separator)+l.Name+string(*config.Logformat), os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+	filename := config.GlobalConfig().DD + string(filepath.Separator) + "logs" + string(filepath.Separator) + "pocket_core" + config.GlobalConfig().LogFormat
+
+	f := &lumberjack.Logger{
+		Filename:   filename,
+		MaxSize:    config.GlobalConfig().LogSize, // megabytes
+		MaxBackups: config.GlobalConfig().LogBackups,
+		MaxAge:     config.GlobalConfig().LogAge, //days
+		Compress:   config.GlobalConfig().LogCompress}
 
 	logrus.SetFormatter(l.Fmt.format)
 
@@ -78,15 +80,17 @@ func logger(l log, format LogFormat) error {
 
 	// If we are using json, we just log to file .log or .json depending of logformat
 	} else if reflect.TypeOf(format.format) == reflect.TypeOf(&logrus.JSONFormatter{}) {
-		if *config.Logformat == ".json" {
+		if config.GlobalConfig().LogFormat == ".json" {
 			lg = logrus.WithFields(
 				logrus.Fields{
 					"FilePath":     l.FilePath,     // the path of the file the log was called from
 					"LineNumber":   l.LineNumber,   // the line number of the file the log was called from
 					"FunctionName": l.FunctionName, // the function name of the file the log was called
 				})
+
 			logrus.SetOutput(f)
-		} else if *config.Logformat == ".log" {
+
+		} else if config.GlobalConfig().LogFormat == ".log" {
 			Textformatter := new(logrus.TextFormatter)
 			Textformatter.TimestampFormat = "02-01-2006 15:04:05"
 			Textformatter.FullTimestamp = true
@@ -99,6 +103,7 @@ func logger(l log, format LogFormat) error {
 				})
 
 			logrus.SetFormatter(Textformatter)
+
 			logrus.SetOutput(f)
 		}
 
@@ -127,4 +132,4 @@ func writeToLog(l log, lg *logrus.Entry) error {
 		lg.Info(l.Message)
 	}
 	return nil
-}
+
