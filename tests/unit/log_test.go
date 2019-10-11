@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/user"
 	"testing"
-	"time"
 
 	"github.com/pokt-network/pocket-core/logs"
 )
@@ -76,8 +75,7 @@ func fileExistsOpen(filename string) bool {
 }
 
 func generateFilePath(t *testing.T, prefix string) string {
-	currentTime := time.Now()
-	logName := currentTime.UTC().Format("2006-01-02T15-04-05")
+	logName := "pocket_core"
 
 	homeFolder, err := user.Current()
 	if err != nil {
