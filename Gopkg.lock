@@ -34,7 +34,7 @@
     "store/gaskv",
     "store/types",
     "types",
-    "types/errors",
+    "types/errors"
   ]
   pruneopts = "NT"
   revision = "5bcab79e8aefa5d369a09830bff64b407c049036"
@@ -60,7 +60,7 @@
   name = "github.com/ethereum/go-ethereum"
   packages = [
     "common/math",
-    "crypto/secp256k1",
+    "crypto/secp256k1"
   ]
   pruneopts = "NT"
   revision = "cfbb969da803d4cc92e1a64fc1b3c06db299b564"
@@ -76,7 +76,7 @@
     "metrics",
     "metrics/discard",
     "metrics/internal/lv",
-    "metrics/prometheus",
+    "metrics/prometheus"
   ]
   pruneopts = "NT"
   revision = "150a65a7ec6156b4b640c1fd55f26fd3d475d656"
@@ -99,7 +99,7 @@
     "proto",
     "protoc-gen-gogo/descriptor",
     "sortkeys",
-    "types",
+    "types"
   ]
   pruneopts = "NT"
   revision = "ba06b47c162d49f2af050fb4c75bcbc86a159d5c"
@@ -113,7 +113,7 @@
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
-    "ptypes/timestamp",
+    "ptypes/timestamp"
   ]
   pruneopts = "NT"
   revision = "6c65a5562fc06764971b7c5d05c76c75e84bdbf7"
@@ -160,7 +160,7 @@
     "ratelimiter",
     "util",
     "watch",
-    "winfile",
+    "winfile"
   ]
   pruneopts = "NT"
   revision = "a1dbeea552b7c8df4b542c66073e393de198a800"
@@ -234,7 +234,7 @@
     "reporters/stenographer",
     "reporters/stenographer/support/go-colorable",
     "reporters/stenographer/support/go-isatty",
-    "types",
+    "types"
   ]
   pruneopts = "NT"
   revision = "eea6ad008b96acdaa524f5b409513bf062b500ad"
@@ -255,7 +255,7 @@
     "matchers/support/goraph/edge",
     "matchers/support/goraph/node",
     "matchers/support/goraph/util",
-    "types",
+    "types"
   ]
   pruneopts = "NT"
   revision = "90e289841c1ed79b7a598a7cd9959750cb5e89e2"
@@ -274,7 +274,7 @@
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
-    "prometheus/internal",
+    "prometheus/internal"
   ]
   pruneopts = "NT"
   revision = "170205fb58decfd011f1550d4cfb737230d7ae4f"
@@ -294,7 +294,7 @@
   packages = [
     "expfmt",
     "internal/bitbucket.org/ww/goautoneg",
-    "model",
+    "model"
   ]
   pruneopts = "NT"
   revision = "31bed53e4047fd6c510e43a941f90cb31be0972a"
@@ -306,7 +306,7 @@
   packages = [
     ".",
     "internal/fs",
-    "internal/util",
+    "internal/util"
   ]
   pruneopts = "NT"
   revision = "00ec24a6a2d86e7074629c8384715dbb05adccd8"
@@ -335,7 +335,7 @@
     "leveldb/opt",
     "leveldb/storage",
     "leveldb/table",
-    "leveldb/util",
+    "leveldb/util"
   ]
   pruneopts = "NT"
   revision = "9d007e481048296f09f59bd19bb7ae584563cd95"
@@ -385,7 +385,7 @@
     "state",
     "types",
     "types/time",
-    "version",
+    "version"
   ]
   pruneopts = "NT"
   revision = "0ad70fb69aa39b20f35d127c25573c4e169f6f90"
@@ -416,7 +416,7 @@
     "poly1305",
     "ripemd160",
     "salsa20/salsa",
-    "sha3",
+    "sha3"
   ]
   pruneopts = "NT"
   revision = "a29dc8fdc73485234dbef99ebedb95d2eced08de"
@@ -435,7 +435,7 @@
     "http2/hpack",
     "idna",
     "internal/timeseries",
-    "trace",
+    "trace"
   ]
   pruneopts = "NT"
   revision = "4829fb13d2c62012c17688fa7f629f371014946d"
@@ -447,7 +447,7 @@
   packages = [
     "cpu",
     "unix",
-    "windows",
+    "windows"
   ]
   pruneopts = "NT"
   revision = "d89cdac9e8725f2aefce25fcbfef41134c9ad412"
@@ -483,7 +483,7 @@
     "unicode/bidi",
     "unicode/cldr",
     "unicode/norm",
-    "unicode/rangetable",
+    "unicode/rangetable"
   ]
   pruneopts = "NT"
   revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
@@ -533,7 +533,7 @@
     "serviceconfig",
     "stats",
     "status",
-    "tap",
+    "tap"
   ]
   pruneopts = "NT"
   revision = "6eaf6f47437a6b4e2153a190160ef39a92c7eceb"
@@ -546,6 +546,14 @@
   pruneopts = "NT"
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
+
+[[projects]]
+  digest = "1:80c34337e8a734e190f2d1b716cae774cca74db98315166f92074434e9af0227"
+  name = "gopkg.in/natefinch/lumberjack.v2"
+  packages = ["."]
+  pruneopts = "NT"
+  revision = "a96e63847dc3c67d17befa69c303767e2f84e54f"
+  version = "v2.1"
 
 [[projects]]
   digest = "1:63119d850a4a2aea8370aa74537a7d50923131ed207fc9aa12ddaf0b9ee94773"
@@ -577,6 +585,7 @@
     "github.com/sirupsen/logrus",
     "github.com/tendermint/tendermint/types",
     "golang.org/x/crypto/sha3",
+    "gopkg.in/natefinch/lumberjack.v2"
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
