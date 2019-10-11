@@ -50,7 +50,7 @@ func Init() {
 func logger(output string) {
 
 	Formatter := new(log.TextFormatter)
-	Formatter.TimestampFormat = "02-01-2006 15:04:05"
+	Formatter.TimestampFormat = "2006-01-02 15:04:05"
 	Formatter.FullTimestamp = true
 
 	log.SetFormatter(Formatter)
