@@ -132,4 +132,4 @@ func writeToLog(l log, lg *logrus.Entry) error {
 		lg.Info(l.Message)
 	}
 	return nil
-
+}
