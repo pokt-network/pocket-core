@@ -1,12 +1,12 @@
 package unit
 
 import (
-	"flag"
 	"os"
 	"os/user"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/logs"
+	utils "github.com/pokt-network/pocket-core/tests/unit/utils"
 )
 
 func TestJSONLogs(t *testing.T) {
@@ -39,10 +39,8 @@ func TestJSONLogsFileGeneration(t *testing.T) {
 }
 
 func TestTextLogsFileGeneration(t *testing.T) {
-
-	// defines flag for logformat .log
-	flag.Set("logformat", ".log")
-	flag.Parse()
+	args := []string{"./pocket_core", "--logformat", ".log"}
+	utils.StartKillPocketCore(args, 15, "terminated", 500, t)
 
 	if err := logs.Log("Unit test for the .log file generation", logs.InfoLevel, logs.TextLogFormatter); err != nil {
 		t.Fatalf(err.Error())
@@ -56,6 +54,8 @@ func TestTextLogsFileGeneration(t *testing.T) {
 	} else {
 		t.Fatalf("Error .log file %s not being created", filepath)
 	}
+
+	utils.DeleteTestBinary(t)
 }
 
 func fileExists(filename string) bool {
