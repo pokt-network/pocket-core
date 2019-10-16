@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/tests/fixtures"
-	"github.com/pokt-network/pocket-core/x/pocketcore/blockchain"
+	"github.com/pokt-network/pocket-core/x/pocketcore/blockchainMock"
 	"github.com/pokt-network/pocket-core/x/pocketcore/session"
 )
 
@@ -13,7 +13,7 @@ var _ = Describe("Session", func() {
 	Describe("Generation", func() {
 		validApplication := session.SessionAppPubKey(fixtures.GenerateApplication().PubKey)
 		validNonNativeChain := fixtures.GenerateNonNativeBlockchain()
-		validBlockID := session.SessionBlockID(blockchain.GetLatestSessionBlock())
+		validBlockID := session.SessionBlockID(blockchainMock.GetLatestSessionBlockID())
 		Describe("SessionKey Generation", func() {
 			Context("Empty Application seed", func() {
 				emptyApplication := session.SessionAppPubKey("") // empty Application
