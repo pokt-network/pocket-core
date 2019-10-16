@@ -10,6 +10,8 @@ jobs:
     docker:
       # specify the version
       - image: circleci/golang:1.11
+        environment:
+          GO111MODULE: "on"
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -25,7 +27,7 @@ jobs:
       - checkout
 
       # specify any bash command here prefixed with `run: `
-      - run: dep ensure
+      - run: go mod vendor
       - run: go build cmd/pocket_core/main.go
       - run: go test ./tests/unit/...
       - run: go test ./tests/bdd/...
