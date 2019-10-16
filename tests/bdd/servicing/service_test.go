@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/service"
+	"github.com/pokt-network/pocket-core/x/pocketcore/service"
 )
 
 var _ = Describe("Service", func() {

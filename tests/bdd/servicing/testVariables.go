@@ -5,7 +5,7 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/tests/fixtures"
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/service"
+	"github.com/pokt-network/pocket-core/x/pocketcore/service"
 	"path/filepath"
 )
 
