@@ -2,7 +2,7 @@ package service
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/x/pocketcore/blockchain"
+	"github.com/pokt-network/pocket-core/x/pocketcore/blockchainMock"
 )
 
 // a read / write API request from a hosted (non native) blockchain
@@ -29,7 +29,7 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 	// verify that node (self) is of this session
 	if err := SessionSelfVerification(FAKEAPPPUBKEY,
 		r.Blockchain,
-		blockchain.GetLatestSessionBlock().HashHex()); err != nil {
+		blockchainMock.GetLatestSessionBlockID().HashHex()); err != nil {
 		return err
 	}
 	// check to see if the service certificate is valid

@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/pocketcore/blockchain"
+	"github.com/pokt-network/pocket-core/x/pocketcore/blockchainMock"
 	"sort"
 )
 
@@ -65,7 +65,7 @@ func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (S
 		return nil, err
 	}
 	// using mock world state
-	allActiveNodes, err := blockchain.GetNodes()
+	allActiveNodes, err := blockchainMock.GetNodes()
 	if err != nil {
 		return nil, err
 	}
