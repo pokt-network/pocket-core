@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pokt-network/pocket-core/legacy"
 	"github.com/pokt-network/pocket-core/types"
-	tdmnt "github.com/tendermint/tendermint/types"
+	tdmnt "github.com/tendermint/tendermint/abci/types"
 	"io/ioutil"
 	"math/rand"
 	"time"

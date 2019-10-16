@@ -28,7 +28,7 @@ func NewSessionKey(app SessionAppPubKey, nonNativeChain SessionBlockchain, block
 	// in the order of appPubKey - > nonnativeChain -> blockID
 	// TODO consider using amino buffer to find the session key
 	seed := append(appPubKey, nonNativeChain...)
-	seed = append(seed, blockID.Hash.Bytes()...)
+	seed = append(seed, blockID.Hash...)
 
 	// return the hash of the result
 	return crypto.SHA3FromBytes(seed), nil
