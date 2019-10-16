@@ -30,7 +30,7 @@ func (rbs *RelayBatches) AddEvidence(authentication ServiceCertificate) error {
 	(*types.List)(rbs).Mux.Lock()
 	defer (*types.List)(rbs).Mux.Unlock()
 	rbh := EvidenceHeader{
-		SessionHash:       blockchain.GetLatestSessionBlock().Hash.String(),
+		SessionHash:       blockchain.GetLatestSessionBlock().HashHex(),
 		ApplicationPubKey: authentication.ServiceToken.AATMessage.ApplicationPublicKey,
 	}
 	if relayBatch, contains := rbs.M[rbh]; contains {
@@ -43,7 +43,7 @@ func (rbs *RelayBatches) AddEvidence(authentication ServiceCertificate) error {
 func (rbs *RelayBatches) NewRelayBatch(authentication ServiceCertificate) error {
 	rb := RelayBatch{
 		EvidenceHeader: EvidenceHeader{
-			SessionHash:       blockchain.GetLatestSessionBlock().Hash.String(),
+			SessionHash:       blockchain.GetLatestSessionBlock().HashHex(),
 			ApplicationPubKey: authentication.ServiceToken.AATMessage.ApplicationPublicKey,
 		},
 		Evidence: make([]ServiceCertificate, blockchain.GetMaxNumberOfRelaysForApp(authentication.ServiceToken.AATMessage.ApplicationPublicKey)),
