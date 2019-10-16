@@ -4,8 +4,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/tests/fixtures"
-	"github.com/pokt-network/pocket-core/x/blockchain"
-	"github.com/pokt-network/pocket-core/x/session"
+	"github.com/pokt-network/pocket-core/x/pocketcore/blockchain"
+	"github.com/pokt-network/pocket-core/x/pocketcore/session"
 )
 
 var _ = Describe("Session", func() {
