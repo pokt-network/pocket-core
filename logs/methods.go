@@ -59,7 +59,7 @@ func Log(message string, level LogLevel, format LogFormat) error {
 
 // "logger" prints the log to data directory
 func logger(l log, format LogFormat) error {
-	f, err := os.OpenFile(config.GlobalConfig().DD + string(filepath.Separator) + "logs" + string(filepath.Separator) + "pocket_core" + config.GlobalConfig().LogFormat, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	f, err := os.OpenFile(config.GlobalConfig().LogDir + string(filepath.Separator) + string(filepath.Separator) + "pocket_core" + config.GlobalConfig().LogFormat, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		return err
 	}

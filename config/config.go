@@ -20,7 +20,9 @@ type config struct {
 	RRPC        bool   `json:"rrpc"`         // This variable describes if the relay rpc is running.
 	RRPCPort    string `json:"rrpcport"`     // This variable holds the relay rpc port string.
 	CFile       string `json:"hostedchains"` // This variable holds the filepath to the chains.json.
-	LogFormat   string `json:"logformat"`    // This variable changes the log storage format
+	LogFormat   string `json:"logformat"`    // This variable changes the log storage format.
+	LogDir	    string `json:"logdir"`       // This variable changes the log storage dir. 
+
 
 }
 
@@ -34,6 +36,8 @@ var (
 	cRpc        = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc        = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	logFormat   = flag.String("logformat", ".json", "Log format for storing logs.  ex.:[.json, .log] ('.json' is used by default)")
+	logDir      = flag.String("logdir", _const.DATADIR + "/logs", "setup the log directory.  ex.:['/var/log/'] ('~/.pocket/logs' is used by default)")
+
 )
 
 // "Init" initializes the configuration object.
@@ -88,5 +92,6 @@ func newConfiguration() {
 		*rRpc,
 		*rRpcPort,
 		*cFile,
-		*logFormat}
+		*logFormat,
+		*logDir}
 }
