@@ -21,10 +21,6 @@ type config struct {
 	RRPCPort    string `json:"rrpcport"`     // This variable holds the relay rpc port string.
 	CFile       string `json:"hostedchains"` // This variable holds the filepath to the chains.json.
 	LogFormat   string `json:"logformat"`    // This variable changes the log storage format
-	LogSize     int    `json:"logsize"`      // This variable sets the log file size specified in megabytes.
-	LogAge      int    `json:"logage"`       // This variable sets the log file age specified in days.
-	LogBackups  int    `json:"logbackups"`   // This variable sets the log file backup quantity.
-	LogCompress bool   `json:"logcompress"`  // This variable enabled the log compression.
 
 }
 
@@ -38,10 +34,6 @@ var (
 	cRpc        = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc        = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	logFormat   = flag.String("logformat", ".json", "Log format for storing logs.  ex.:[.json, .log] ('.json' is used by default)")
-	logSize     = flag.Int("logsize", 500, "Log size of logs before rotating. Size is given in Megabytes. ex.: [500 = 500MB] ('500' used by default)")
-	logAge      = flag.Int("logage", 15, "Log rotate age. Age is given in days. ex.: [20 = 20 days] ('15' used by default)")
-	logBackups  = flag.Int("logbackups", 10, "Log backup quantity. Quantity of logfiles to keep before deleting. ex.: [20 = 20 backups files] ('15' used by default)")
-	logCompress = flag.Bool("logcompress", true, "Enables log compress. Quantity of logfiles to keep before deleting. ex.: [20 = 20 backups files] ('15' used by default)")
 )
 
 // "Init" initializes the configuration object.
@@ -96,9 +88,5 @@ func newConfiguration() {
 		*rRpc,
 		*rRpcPort,
 		*cFile,
-		*logFormat,
-		*logSize,
-		*logAge,
-		*logBackups,
-		*logCompress}
+		*logFormat}
 }
