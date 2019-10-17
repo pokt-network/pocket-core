@@ -11,7 +11,6 @@ import (
 
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/sirupsen/logrus"
-	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 // "Caller" returns the caller of the function that called it
@@ -60,14 +59,11 @@ func Log(message string, level LogLevel, format LogFormat) error {
 
 // "logger" prints the log to data directory
 func logger(l log, format LogFormat) error {
-	filename := config.GlobalConfig().DD + string(filepath.Separator) + "logs" + string(filepath.Separator) + "pocket_core" + config.GlobalConfig().LogFormat
-
-	f := &lumberjack.Logger{
-		Filename:   filename,
-		MaxSize:    config.GlobalConfig().LogSize, // megabytes
-		MaxBackups: config.GlobalConfig().LogBackups,
-		MaxAge:     config.GlobalConfig().LogAge, //days
-		Compress:   config.GlobalConfig().LogCompress}
+	f, err := os.OpenFile(config.GlobalConfig().DD + string(filepath.Separator) + "logs" + string(filepath.Separator) + "pocket_core" + config.GlobalConfig().LogFormat, os.O_WRONLY|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 
 	logrus.SetFormatter(l.Fmt.format)
 

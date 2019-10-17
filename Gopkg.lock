@@ -548,14 +548,6 @@
   version = "v1.4.7"
 
 [[projects]]
-  digest = "1:80c34337e8a734e190f2d1b716cae774cca74db98315166f92074434e9af0227"
-  name = "gopkg.in/natefinch/lumberjack.v2"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "a96e63847dc3c67d17befa69c303767e2f84e54f"
-  version = "v2.1"
-
-[[projects]]
   digest = "1:63119d850a4a2aea8370aa74537a7d50923131ed207fc9aa12ddaf0b9ee94773"
   name = "gopkg.in/tomb.v1"
   packages = ["."]
@@ -584,8 +576,7 @@
     "github.com/onsi/gomega",
     "github.com/sirupsen/logrus",
     "github.com/tendermint/tendermint/types",
-    "golang.org/x/crypto/sha3",
-    "gopkg.in/natefinch/lumberjack.v2"
+    "golang.org/x/crypto/sha3"
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
