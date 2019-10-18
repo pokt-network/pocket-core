@@ -29,7 +29,26 @@ func TestJSONLogsFileGeneration(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	filepath := generateFilePath(t, ".json")
+	filepath := generateFilePath(t, ".json", "")
+
+	if fileExists(filepath) {
+		t.Logf("JSON log file %s exists", filepath)
+
+	} else {
+		t.Fatalf("Error JSON log file %s not being created", filepath)
+	}
+
+}
+
+func TestJSONLogsFileGenerationCustomLogDir(t *testing.T) {
+	args := []string{"./pocket_core", "--logformat", ".json", "--logdir", "./"}
+	utils.StartKillPocketCore(args, 15, "terminated", 500, t)
+
+	if err := logs.Log("Unit test for the .json log file generation", logs.InfoLevel, logs.JSONLogFormat); err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	filepath := generateFilePath(t, ".json", "./")
 
 	if fileExists(filepath) {
 		t.Logf("JSON log file %s exists", filepath)
@@ -48,7 +67,25 @@ func TestTextLogsFileGeneration(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	filepath := generateFilePath(t, ".log")
+	filepath := generateFilePath(t, ".log", "")
+
+	if fileExists(filepath) {
+		t.Logf("Log file %s exists", filepath)
+
+	} else {
+		t.Fatalf("Error .log file %s not being created", filepath)
+	}
+}
+
+func TestTextLogsFileGenerationCustomLogDir(t *testing.T) {
+	args := []string{"./pocket_core", "--logformat", ".log", "--logdir", "./"}
+	utils.StartKillPocketCore(args, 15, "terminated", 500, t)
+
+	if err := logs.Log("Unit test for the .log file generation", logs.InfoLevel, logs.TextLogFormatter); err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	filepath := generateFilePath(t, ".log", "./")
 
 	if fileExists(filepath) {
 		t.Logf("Log file %s exists", filepath)
@@ -76,15 +113,21 @@ func fileExistsOpen(filename string) bool {
 	return true
 }
 
-func generateFilePath(t *testing.T, prefix string) string {
+func generateFilePath(t *testing.T, prefix string, logdir string) string {
 	logName := "pocket_core"
 
-	homeFolder, err := user.Current()
-	if err != nil {
-		t.Fatalf(err.Error())
+	filepath := logdir + logName + prefix
+
+	// If no logdir given, we assume logdir is on our default datadir of pocket config
+	if len(logdir) == 0 {
+		homeFolder, err := user.Current()
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+		filepath = homeFolder.HomeDir + "/.pocket/logs/" + logName + prefix
+
 	}
 
-	filepath := homeFolder.HomeDir + "/.pocket/logs/" + logName + prefix
 	return filepath
 }
 
