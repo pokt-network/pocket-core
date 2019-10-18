@@ -2,9 +2,9 @@ package pocketcore
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
-	"strings"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/pocketcore"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -19,24 +19,28 @@ func (r QueryResResolve) String() string {
 }
 
 // QueryResNames Queries Result Payload for a names query
-type QueryResNames []string
+type QueryResNodes []types.Node
 
-// implement fmt.Stringer
-func (n QueryResNames) String() string {
-	return strings.Join(n[:], "\n")
-}
-
-// query endpoints supported by the pocketCore Querier
+// query endpoints supported by the blockchain Querier
 const (
-	QueryStruct = "struct"
+	QueryNode         = "node"
+	QueryNodes        = "nodes"
+	QueryApplication  = "application"
+	QueryApplications = "applications"
 )
 
 // NewQuerier is the module level router for state queries
 func NewQuerier(keeper PocketCoreKeeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
-		case QueryStruct:
-			return queryStruct(ctx, path[1:], req, keeper)
+		case QueryNode:
+			return queryNode(ctx, path[1:], req, keeper.NodeKeeper)
+		case QueryNodes:
+			return queryNodes(ctx, req, keeper.NodeKeeper)
+		case QueryApplication:
+			return queryApplication(ctx, path[1:], req, keeper.ApplicationKeeper)
+		case QueryApplications:
+			return queryApplications(ctx, req, keeper.ApplicationKeeper)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown nameservice query endpoint")
 		}
@@ -44,10 +48,51 @@ func NewQuerier(keeper PocketCoreKeeper) sdk.Querier {
 }
 
 // nolint: unparam
-func queryStruct(ctx sdk.Context, path []string, req abci.RequestQuery, keeper PocketCoreKeeper) ([]byte, sdk.Error) {
-	whois := keeper.GetStruct(ctx, path[0])
+func queryNode(ctx sdk.Context, path []string, _ abci.RequestQuery, keeper pocketcore.nodeKeeper) ([]byte, sdk.Error) {
+	whois := keeper.GetNode(ctx, path[0])
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, whois)
+	if err != nil {
+		panic("could not marshal result to JSON")
+	}
+
+	return res, nil
+}
+
+func queryNodes(ctx sdk.Context, _ abci.RequestQuery, keeper pocketcore.nodeKeeper) ([]byte, sdk.Error) {
+	appList, sdkError := keeper.GetAllNodes(ctx)
+
+	if sdkError != nil {
+		return nil, sdkError
+	}
+
+	res, err := codec.MarshalJSONIndent(keeper.cdc, appList)
+	if err != nil {
+		panic("could not marshal result to JSON")
+	}
+
+	return res, nil
+}
+
+func queryApplication(ctx sdk.Context, path []string, _ abci.RequestQuery, keeper pocketcore.applicationKeeper) ([]byte, sdk.Error) {
+	application := keeper.GetApplication(ctx, path[0])
+
+	res, err := codec.MarshalJSONIndent(keeper.cdc, application)
+	if err != nil {
+		panic("could not marshal result to JSON")
+	}
+
+	return res, nil
+}
+
+func queryApplications(ctx sdk.Context, _ abci.RequestQuery, keeper pocketcore.applicationKeeper) ([]byte, sdk.Error) {
+	appList, sdkError := keeper.GetAllApplications(ctx)
+
+	if sdkError != nil {
+		return nil, sdkError
+	}
+
+	res, err := codec.MarshalJSONIndent(keeper.cdc, appList)
 	if err != nil {
 		panic("could not marshal result to JSON")
 	}
