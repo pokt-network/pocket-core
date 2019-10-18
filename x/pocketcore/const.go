@@ -1,4 +1,4 @@
-package blockchain
+package pocketcore
 
 const (
 	SESSIONBLOCKFREQUENCY = 25
