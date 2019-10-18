@@ -25,7 +25,7 @@ func GetGlobalRelayBatches() *RelayBatches {
 	return globalRelayBatches
 }
 
-func (rbs *RelayBatches) AddEvidence(authentication ServiceCertificate, sessionBlockIDHex string) error {
+func (rbs *RelayBatches) AddEvidence(authentication ServiceCertificate, sessionBlockIDHex string, maxNumberOfRelays int) error {
 	(*types.List)(rbs).Mux.Lock()
 	defer (*types.List)(rbs).Mux.Unlock()
 	rbh := EvidenceHeader{
@@ -35,17 +35,17 @@ func (rbs *RelayBatches) AddEvidence(authentication ServiceCertificate, sessionB
 	if relayBatch, contains := rbs.M[rbh]; contains {
 		return relayBatch.(RelayBatch).Evidence.AddEvidence(authentication)
 	} else {
-		return rbs.NewRelayBatch(authentication, sessionBlockIDHex)
+		return rbs.NewRelayBatch(authentication, sessionBlockIDHex, maxNumberOfRelays)
 	}
 }
 
-func (rbs *RelayBatches) NewRelayBatch(authentication ServiceCertificate, latestSessionBlockHex string) error {
+func (rbs *RelayBatches) NewRelayBatch(authentication ServiceCertificate, latestSessionBlockHex string, maxNumberOfRelays int) error {
 	rb := RelayBatch{
 		EvidenceHeader: EvidenceHeader{
 			SessionHash:       latestSessionBlockHex,
 			ApplicationPubKey: authentication.ServiceToken.AATMessage.ApplicationPublicKey,
 		},
-		Evidence: make([]ServiceCertificate, 5000), // todo replace 5000 with max number of relays for that specific application
+		Evidence: make([]ServiceCertificate, maxNumberOfRelays),
 	}
 	err := rb.AddEvidence(authentication)
 	if err != nil {
