@@ -1,6 +1,7 @@
 package session
 
 import (
+	"encoding/hex"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/tests/fixtures"
@@ -11,7 +12,7 @@ var _ = Describe("Session", func() {
 	// generate the session
 	Describe("Generation", func() {
 		validApplication := session.SessionAppPubKey(fixtures.GenerateApplication().PubKey)
-		validNonNativeChain := fixtures.GenerateNonNativeBlockchain()
+		validNonNativeChain := session.SessionBlockchain(hex.EncodeToString(fixtures.GenerateNonNativeBlockchain()))
 		validBlockID := session.SessionBlockID(fixtures.GenerateBlockHash())
 		nodesPointer, err := fixtures.GetNodes()
 		if err != nil {
@@ -27,7 +28,7 @@ var _ = Describe("Session", func() {
 				})
 			})
 			Context("Empty NonNativeChain", func() {
-				emptyNonNativeChain := session.SessionBlockchain{}
+				emptyNonNativeChain := session.SessionBlockchain("")
 				It("should return empty nonNativeChain error", func() {
 					_, err := session.NewSessionKey(validApplication, emptyNonNativeChain, validBlockID)
 					Expect(err).To(Equal(session.EmptyNonNativeChainError))
@@ -53,7 +54,7 @@ var _ = Describe("Session", func() {
 		Describe("Service Node Generation", func() {
 			validSessionKey, _ := session.NewSessionKey(validApplication, validNonNativeChain, validBlockID)
 			Context("Empty NonNativeChain", func() {
-				emptyNonNativeChain := session.SessionBlockchain{}
+				emptyNonNativeChain := session.SessionBlockchain("")
 				It("should return empty nonNativeChain error", func() {
 					_, err := session.NewSessionNodes(emptyNonNativeChain, validSessionKey, allActiveNodes)
 					Expect(err).To(Equal(session.EmptyNonNativeChainError))

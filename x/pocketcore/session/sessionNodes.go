@@ -2,7 +2,6 @@ package session
 
 import (
 	"bytes"
-	"encoding/hex"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/types"
 	"sort"
@@ -86,10 +85,10 @@ func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey, al
 }
 
 // filter the nodes by non native chain
-func filter(allActiveNodes  types.Nodes, nonNativeChainHash []byte) (SessionNodes, error) {
+func filter(allActiveNodes types.Nodes, nonNativeChainHash SessionBlockchain) (SessionNodes, error) {
 	var result SessionNodes
 	for _, node := range allActiveNodes {
-		if !node.SupportedChains.Contains(hex.EncodeToString(nonNativeChainHash)) {
+		if !node.SupportedChains.Contains(string(nonNativeChainHash)) {
 			continue
 		}
 		result = append(result, node)

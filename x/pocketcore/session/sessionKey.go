@@ -24,10 +24,14 @@ func NewSessionKey(app SessionAppPubKey, nonNativeChain SessionBlockchain, block
 	if err = blockID.Validate(); err != nil {
 		return nil, err
 	}
+	nnBytes, err := nonNativeChain.Bytes()
+	if err != nil {
+		return nil, err
+	}
 	// append them all together
 	// in the order of appPubKey - > nonnativeChain -> blockID
 	// TODO consider using amino buffer to find the session key
-	seed := append(appPubKey, nonNativeChain...)
+	seed := append(appPubKey, nnBytes...)
 	seed = append(seed, blockID.Hash...)
 
 	// return the hash of the result
