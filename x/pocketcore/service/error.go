@@ -34,6 +34,7 @@ var (
 	InvalidEvidenceSizeError         = errors.New("the size of the evidence container is less than the counter")
 	DuplicateEvidenceError           = errors.New("DuplicateEvidenceError: the evidence is already recorded for that increment counter")
 	RelayBatchCreationError          = errors.New("there was a problem creating a new relay batch: ")
+	UnstakedBlockchainError          = errors.New("the blockchain requested by the client was not staked for by the application")
 )
 
 func NewRelayBatchCreationError(err error) error {

@@ -18,5 +18,5 @@ func (s ServiceBlockchain) GetHostedChainURL(hostChains ServiceBlockchains) (str
 	if hc.Len() == 0 {
 		return "", EmptyHostedChainsError
 	}
-	return hc.GetChainFromBytes(s).URL, nil
+	return hc.GetChainFromHexString(string(s)).URL, nil
 }
