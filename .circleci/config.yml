@@ -42,13 +42,9 @@ jobs:
     executor: core-executor
     steps:
       - build-pocket-image
+      - local-image-scan
       - slack-notification
     working_directory: /go/src/github.com/pokt-network/pocket-core
-  image_scan:
-    executor: anchore/anchore_engine
-    steps:
-      - local_image_scan
-      - slack-notification
 
 orbs:
   anchore: anchore/anchore-engine@1.6.0
@@ -59,4 +55,3 @@ workflows:
   build_and_scan:
     jobs:
       - build
-      - image_scan
