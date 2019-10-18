@@ -5,8 +5,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// NewHandler returns a handler for "nameservice" type messages.
-func NewHandler(keeper Keeper) sdk.Handler {
+// NewHandler returns a handler for "pocketCore" type messages.
+func NewHandler(keeper PocketCoreKeeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
 		case MsgRelayBatch:
@@ -19,6 +19,6 @@ func NewHandler(keeper Keeper) sdk.Handler {
 }
 
 // Handle a message to set name
-func handleRelayBatchMessage(ctx sdk.Context, keeper Keeper, msg MsgRelayBatch) sdk.Result {
+func handleRelayBatchMessage(ctx sdk.Context, keeper PocketCoreKeeper, msg MsgRelayBatch) sdk.Result {
 	return sdk.Result{} // return
 }

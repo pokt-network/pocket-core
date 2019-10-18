@@ -52,7 +52,7 @@ type Node struct {
 
 type NodePool []Node
 
-// "GetNodes" filters by blockchash, and returns the closest nodes to the key
+// "GetNode" filters by blockchash, and returns the closest nodes to the key
 func (n NodePool) GetNodes(s Session) (SessionNodes, error) {
 	n.Filter(hex.EncodeToString(s.Chain))
 	n.XOR(s)

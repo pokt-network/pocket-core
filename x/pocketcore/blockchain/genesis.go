@@ -1,4 +1,4 @@
-package pocketcore
+package blockchain
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,10 +22,10 @@ func DefaultGenesisState() GenesisState {
 	return GenesisState{}
 }
 
-func InitGenesis(ctx sdk.Context, keeper PocketCoreKeeper, data GenesisState) []abci.ValidatorUpdate {
+func InitGenesis(ctx sdk.Context, nk NodeKeeper, ak ApplicationKeeper, data GenesisState) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
-func ExportGenesis(ctx sdk.Context, k PocketCoreKeeper) GenesisState {
+func ExportGenesis(ctx sdk.Context, nk NodeKeeper, ak ApplicationKeeper) GenesisState {
 	return GenesisState{}
 }
