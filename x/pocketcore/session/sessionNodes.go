@@ -5,13 +5,8 @@ import (
 	"encoding/hex"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/pocketcore/blockchainMock"
 	"sort"
 )
-
-// A simple slice abstraction of type `Node`
-// All of the active nodes on the Pocket Network
-type AllActiveNodes []types.Node
 
 // The computational distance between two byte arrays
 // this is judged by XORing the two
@@ -55,7 +50,7 @@ func (sn SessionNodes) Contains(n types.Node) bool { // todo use a map instead o
 	return false
 }
 
-func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (SessionNodes, error) {
+func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey, allActiveNodes types.Nodes) (SessionNodes, error) {
 	// validate params
 	if err := nonNativeChain.Validate(); err != nil {
 		return nil, EmptyNonNativeChainError
@@ -64,21 +59,16 @@ func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (S
 	if err := sessionKey.Validate(); err != nil {
 		return nil, err
 	}
-	// using mock world state
-	allActiveNodes, err := blockchainMock.GetNodes()
-	if err != nil {
-		return nil, err
-	}
 	// session nodes are just a wrapper around node slice
 	var result SessionNodes
 	// node distance is just a node with a computational field attached to it
 	var xorResult []NodeDistance
 	// ensure there is atleast the minimum amount of nodes
-	if len(*allActiveNodes) < SESSIONNODECOUNT {
+	if len(allActiveNodes) < SESSIONNODECOUNT {
 		return nil, InsufficientNodesError
 	}
 	// filter `allActiveNodes` by the HASH(nonNativeChain)
-	result, err = filter(AllActiveNodes(*allActiveNodes), nonNativeChain)
+	result, err := filter(allActiveNodes, nonNativeChain)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +86,7 @@ func NewSessionNodes(nonNativeChain SessionBlockchain, sessionKey SessionKey) (S
 }
 
 // filter the nodes by non native chain
-func filter(allActiveNodes AllActiveNodes, nonNativeChainHash []byte) (SessionNodes, error) {
+func filter(allActiveNodes  types.Nodes, nonNativeChainHash []byte) (SessionNodes, error) {
 	var result SessionNodes
 	for _, node := range allActiveNodes {
 		if !node.SupportedChains.Contains(hex.EncodeToString(nonNativeChainHash)) {

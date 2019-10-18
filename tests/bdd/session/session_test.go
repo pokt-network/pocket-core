@@ -4,7 +4,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pokt-network/pocket-core/tests/fixtures"
-	"github.com/pokt-network/pocket-core/x/pocketcore/blockchainMock"
 	"github.com/pokt-network/pocket-core/x/pocketcore/session"
 )
 
@@ -13,7 +12,12 @@ var _ = Describe("Session", func() {
 	Describe("Generation", func() {
 		validApplication := session.SessionAppPubKey(fixtures.GenerateApplication().PubKey)
 		validNonNativeChain := fixtures.GenerateNonNativeBlockchain()
-		validBlockID := session.SessionBlockID(blockchainMock.GetLatestSessionBlockID())
+		validBlockID := session.SessionBlockID(fixtures.GenerateBlockHash())
+		nodesPointer, err := fixtures.GetNodes()
+		if err != nil {
+			Fail("Could not retrieve mock nodesPointer for testing")
+		}
+		allActiveNodes := *nodesPointer
 		Describe("SessionKey Generation", func() {
 			Context("Empty Application seed", func() {
 				emptyApplication := session.SessionAppPubKey("") // empty Application
@@ -51,19 +55,19 @@ var _ = Describe("Session", func() {
 			Context("Empty NonNativeChain", func() {
 				emptyNonNativeChain := session.SessionBlockchain{}
 				It("should return empty nonNativeChain error", func() {
-					_, err := session.NewSessionNodes(emptyNonNativeChain, validSessionKey)
+					_, err := session.NewSessionNodes(emptyNonNativeChain, validSessionKey, allActiveNodes)
 					Expect(err).To(Equal(session.EmptyNonNativeChainError))
 				})
 			})
 			Context("Empty SessionKey", func() {
 				invalidSessionKey := session.SessionKey{}
 				It("should return invalid SessionKey error", func() {
-					_, err := session.NewSessionNodes(validNonNativeChain, invalidSessionKey)
+					_, err := session.NewSessionNodes(validNonNativeChain, invalidSessionKey, allActiveNodes)
 					Expect(err).To(Equal(session.EmptySessionKeyError))
 				})
 			})
 			Context("Valid Seed data", func() {
-				sessNodes, err := session.NewSessionNodes(validNonNativeChain, validSessionKey)
+				sessNodes, err := session.NewSessionNodes(validNonNativeChain, validSessionKey, allActiveNodes)
 				It("should return nil error", func() {
 					Expect(err).To(BeNil())
 				})
@@ -73,7 +77,7 @@ var _ = Describe("Session", func() {
 			})
 		})
 		Context("Valid seed data for the session", func() {
-			sess, err := session.NewSession(validApplication, validNonNativeChain, validBlockID)
+			sess, err := session.NewSession(validApplication, validNonNativeChain, validBlockID, allActiveNodes)
 			It("should return nil error", func() {
 				Expect(err).To(BeNil())
 			})
