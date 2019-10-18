@@ -22,6 +22,8 @@ func TestTextLogs(t *testing.T) {
 }
 
 func TestJSONLogsFileGeneration(t *testing.T) {
+	args := []string{"./pocket_core", "--logformat", ".json"}
+	utils.StartKillPocketCore(args, 15, "terminated", 500, t)
 
 	if err := logs.Log("Unit test for the .json log file generation", logs.InfoLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
