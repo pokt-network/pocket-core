@@ -5,7 +5,7 @@ import (
 )
 
 // extension/wrapper of types.Application specific to the session module
-//type SessionAppPubKey types.Application // todo convert to just public key string
+//type SessionAppPubKey types.Application
 type SessionAppPubKey string // todo convert to just public key string
 
 func (s SessionAppPubKey) Bytes() ([]byte, error) {

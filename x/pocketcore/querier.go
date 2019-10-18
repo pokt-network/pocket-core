@@ -26,13 +26,13 @@ func (n QueryResNames) String() string {
 	return strings.Join(n[:], "\n")
 }
 
-// query endpoints supported by the nameservice Querier
+// query endpoints supported by the pocketCore Querier
 const (
 	QueryStruct = "struct"
 )
 
 // NewQuerier is the module level router for state queries
-func NewQuerier(keeper Keeper) sdk.Querier {
+func NewQuerier(keeper PocketCoreKeeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
 		case QueryStruct:
@@ -44,7 +44,7 @@ func NewQuerier(keeper Keeper) sdk.Querier {
 }
 
 // nolint: unparam
-func queryStruct(ctx sdk.Context, path []string, req abci.RequestQuery, keeper Keeper) ([]byte, sdk.Error) {
+func queryStruct(ctx sdk.Context, path []string, req abci.RequestQuery, keeper PocketCoreKeeper) ([]byte, sdk.Error) {
 	whois := keeper.GetStruct(ctx, path[0])
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, whois)

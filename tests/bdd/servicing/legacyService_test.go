@@ -129,7 +129,7 @@ var _ = Describe("Servicing", func() {
 
 				Describe("Message contents", func() {
 
-					Context("Contains all fields", func() {
+					Context("ContainsNode all fields", func() {
 
 						PIt("should return nil error", func() {
 							Expect(Relay.ErrorCheck()).To(BeNil())
@@ -198,14 +198,14 @@ var _ = Describe("Servicing", func() {
 
 				Describe("Field validation", func() {
 
-					Context("Contains a blockchain hash that is not supported by the node", func() {
+					Context("ContainsNode a blockchain hash that is not supported by the node", func() {
 
 						It("should return unsupported chain error", func() {
 							Expect(RelayUnsupportedChain.ErrorCheck()).To(Equal(legacy.UnsupportedBlockchainError))
 						})
 					})
 
-					PContext("Contains an invalid token", func() {
+					PContext("ContainsNode an invalid token", func() {
 
 						PIt("should return an invalid token error", func() {
 							// todo figure out what constitutes an invalid token

@@ -1,4 +1,4 @@
-package pocketcore
+package blockchain
 
 import (
 	"encoding/json"
@@ -67,16 +67,18 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 type AppModule struct {
 	AppModuleBasic
-	keeper     PocketCoreKeeper
-	coinKeeper bank.Keeper
+	nodeKeeper        NodeKeeper
+	applicationKeeper ApplicationKeeper
+	coinKeeper        bank.Keeper
 }
 
 // NewAppModule creates a new AppModule Object
-func NewAppModule(k PocketCoreKeeper, bankKeeper bank.Keeper) AppModule {
+func NewAppModule(nk NodeKeeper, ak ApplicationKeeper, bankKeeper bank.Keeper) AppModule {
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{},
-		keeper:         k,
-		coinKeeper:     bankKeeper,
+		AppModuleBasic:    AppModuleBasic{},
+		nodeKeeper:        nk,
+		applicationKeeper: ak,
+		coinKeeper:        bankKeeper,
 	}
 }
 
@@ -91,14 +93,14 @@ func (am AppModule) Route() string {
 }
 
 func (am AppModule) NewHandler() sdk.Handler {
-	return NewHandler(am.keeper)
+	return NewHandler(am.nodeKeeper, am.applicationKeeper)
 }
 func (am AppModule) QuerierRoute() string {
 	return ModuleName
 }
 
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(am.keeper)
+	return NewQuerier(am.nodeKeeper, am.applicationKeeper)
 }
 
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
@@ -110,10 +112,10 @@ func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.Validator
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState GenesisState
 	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	return InitGenesis(ctx, am.keeper, genesisState)
+	return InitGenesis(ctx, am.nodeKeeper, am.applicationKeeper, genesisState)
 }
 
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	gs := ExportGenesis(ctx, am.keeper)
+	gs := ExportGenesis(ctx, am.nodeKeeper, am.applicationKeeper)
 	return ModuleCdc.MustMarshalJSON(gs)
 }

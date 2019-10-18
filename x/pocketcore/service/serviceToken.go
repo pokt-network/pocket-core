@@ -22,7 +22,7 @@ func (st ServiceToken) Validate() error {
 }
 
 func (st ServiceToken) Hash() []byte {
-	// TODO return hash of the amino encoding of service token
+	// TODO possibly return hash of the amino encoding of service token
 	return crypto.SHA3FromString(st.AATMessage.ApplicationPublicKey + st.AATMessage.ClientPublicKey) // temporary
 }
 

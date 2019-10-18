@@ -84,7 +84,7 @@ type pocketCoreApp struct {
 	distrKeeper    distr.Keeper
 	supplyKeeper   supply.Keeper
 	paramsKeeper   params.Keeper
-	pcKeeper       pocketcore.Keeper
+	pcKeeper       pocketcore.PocketCoreKeeper
 
 	// Module Manager
 	mm *module.Manager
@@ -185,9 +185,9 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 			app.slashingKeeper.Hooks()),
 	)
 
-	// The PocketCoreeKeeper is the Keeper from the module
+	// The PocketCoreeKeeper is the PocketCoreKeeper from the module
 	// It handles interactions with the pocketCore
-	app.pcKeeper = pocketcore.NewKeeper(
+	app.pcKeeper = pocketcore.NewPocketCoreKeeper(
 		app.bankKeeper,
 		keys[pocketcore.StoreKey],
 		app.cdc,

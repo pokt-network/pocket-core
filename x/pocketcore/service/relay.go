@@ -26,6 +26,7 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 		return UnsupportedBlockchainError
 	}
 	// todo check to see if non native blockchain is staked for by the developer
+	// getApplication().GetStakedBlockchains()
 	// verify that node (self) is of this session
 	if err := SessionSelfVerification(FAKEAPPPUBKEY,
 		r.Blockchain,
