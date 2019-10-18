@@ -4,7 +4,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/pocketcore"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -48,7 +47,7 @@ func NewQuerier(keeper PocketCoreKeeper) sdk.Querier {
 }
 
 // nolint: unparam
-func queryNode(ctx sdk.Context, path []string, _ abci.RequestQuery, keeper pocketcore.nodeKeeper) ([]byte, sdk.Error) {
+func queryNode(ctx sdk.Context, path []string, _ abci.RequestQuery, keeper nodeKeeper) ([]byte, sdk.Error) {
 	whois := keeper.GetNode(ctx, path[0])
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, whois)
@@ -59,7 +58,7 @@ func queryNode(ctx sdk.Context, path []string, _ abci.RequestQuery, keeper pocke
 	return res, nil
 }
 
-func queryNodes(ctx sdk.Context, _ abci.RequestQuery, keeper pocketcore.nodeKeeper) ([]byte, sdk.Error) {
+func queryNodes(ctx sdk.Context, _ abci.RequestQuery, keeper nodeKeeper) ([]byte, sdk.Error) {
 	appList, sdkError := keeper.GetAllNodes(ctx)
 
 	if sdkError != nil {
@@ -74,7 +73,7 @@ func queryNodes(ctx sdk.Context, _ abci.RequestQuery, keeper pocketcore.nodeKeep
 	return res, nil
 }
 
-func queryApplication(ctx sdk.Context, path []string, _ abci.RequestQuery, keeper pocketcore.applicationKeeper) ([]byte, sdk.Error) {
+func queryApplication(ctx sdk.Context, path []string, _ abci.RequestQuery, keeper applicationKeeper) ([]byte, sdk.Error) {
 	application := keeper.GetApplication(ctx, path[0])
 
 	res, err := codec.MarshalJSONIndent(keeper.cdc, application)
@@ -85,7 +84,7 @@ func queryApplication(ctx sdk.Context, path []string, _ abci.RequestQuery, keepe
 	return res, nil
 }
 
-func queryApplications(ctx sdk.Context, _ abci.RequestQuery, keeper pocketcore.applicationKeeper) ([]byte, sdk.Error) {
+func queryApplications(ctx sdk.Context, _ abci.RequestQuery, keeper applicationKeeper) ([]byte, sdk.Error) {
 	appList, sdkError := keeper.GetAllApplications(ctx)
 
 	if sdkError != nil {
