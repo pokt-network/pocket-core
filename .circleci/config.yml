@@ -19,12 +19,9 @@ commands:
   local_image_scan:
     steps:
        - checkout
-       - run:
-          name: Building Pocket Container 
-          command: docker build -t ${CIRCLE_PROJECT_REPONAME}:ci .
        - anchore/analyze_local_image:
           dockerfile_path: ./Dockerfile
-          image_name: ${CIRCLE_PROJECT_REPONAME}:ci
+          image_name: 'poktnetwork/pocket-core:mvp-staging-latest'
           timeout: '500'
           policy_failure: true
   # Sends a slack notification if build fails
