@@ -42,7 +42,7 @@ jobs:
     executor: core-executor
     steps:
       - build-pocket-image
-      - local-image-scan
+      - local_image_scan
       - slack-notification
     working_directory: /go/src/github.com/pokt-network/pocket-core
 
