@@ -35,7 +35,7 @@ var (
 	cRpcPort    = flag.String("clientrpcport", "8080", "specified port to run client rpc")
 	cRpc        = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc        = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
-	logFormat   = flag.String("logformat", ".json", "Log format for storing logs.  ex.:[.json, .log] ('.json' is used by default)")
+	logFormat   = flag.String("logformat", "", "Log format for storing logs.  ex.:[.json, .log] ('.json' is used by default)")
 	logDir      = flag.String("logdir", _const.DATADIR + "/logs", "setup the log directory.  ex.:['/var/log/'] ('~/.pocket/logs' is used by default)")
 
 )
