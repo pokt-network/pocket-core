@@ -23,7 +23,6 @@ commands:
           dockerfile_path: ./Dockerfile
           image_name: 'poktnetwork/pocket-core:mvp-staging-latest'
           timeout: '500'
-          policy_failure: true
   # Sends a slack notification if build fails
   # For more information on Slack Orb: https://github.com/CircleCI-Public/slack-orb
   slack-notification:
