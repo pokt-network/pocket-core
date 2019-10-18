@@ -19,20 +19,22 @@ var (
 	chainsfile, _       = filepath.Abs("../../fixtures/chains.json")
 	brokenchainsfile, _ = filepath.Abs("../../fixtures/legacy/brokenChains.json")
 	hc                  = types.HostedBlockchains{M: map[interface{}]interface{}{
-		hex.EncodeToString(validBlockchain): types.HostedBlockchain{
-			Hash: hex.EncodeToString(validBlockchain),
+		validBlockchain: types.HostedBlockchain{
+			Hash: validBlockchain,
 			URL:  GOODENDPOINT,
 		},
-		hex.EncodeToString(validBlockchain2): types.HostedBlockchain{
-			Hash: hex.EncodeToString(validBlockchain2),
+		validBlockchain2: types.HostedBlockchain{
+			Hash: validBlockchain2,
 			URL:  BADENDPOINT,
 		}}}
 
 	hostedBlockchains = service.ServiceBlockchains(hc)
 
-	nodesPointer, _  = fixtures.GetNodes()
+	nodesPointer, _ = fixtures.GetNodes()
 
 	allActiveNodes = *nodesPointer
+
+	appStakedBlockchains = []types.Blockchain{types.Blockchain(validBlockchain), types.Blockchain(validBlockchain2)}
 
 	latestSessionBlock = fixtures.GenerateBlockHash()
 
@@ -58,11 +60,11 @@ var (
 
 	validClientSignature = "todosignature" // todo
 
-	validBlockchain = fixtures.GenerateNonNativeBlockchainFromTicker("eth")
+	validBlockchain = hex.EncodeToString(fixtures.GenerateNonNativeBlockchainFromTicker("eth"))
 
-	validBlockchain2 = fixtures.GenerateNonNativeBlockchainFromTicker("btc")
+	validBlockchain2 = hex.EncodeToString(fixtures.GenerateNonNativeBlockchainFromTicker("btc"))
 
-	unsupportedBlockchain = []byte("aion") // todo change to amino
+	unsupportedBlockchain = "aion"
 
 	unsupportedVersion = "0.0.0"
 
@@ -183,73 +185,73 @@ var (
 	}
 
 	relayMissingBlockchain = service.Relay{
-		Blockchain:         nil,
+		Blockchain:         "",
 		Payload:            validPayload,
 		ServiceCertificate: validServiceAuthentication,
 	}
 
 	relayMissingPayload = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            service.ServicePayload{},
 		ServiceCertificate: validServiceAuthentication,
 	}
 
 	relayUnsupportedBlockchain = service.Relay{
-		Blockchain:         unsupportedBlockchain,
+		Blockchain:         service.ServiceBlockchain(unsupportedBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: validServiceAuthentication,
 	}
 
 	relayUnsupportedTokenVersion = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: unsupportedTokenVersion,
 	}
 
 	relayMissingTokenVersion = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: missingTokenVersion,
 	}
 
 	relayMissingTokenAppPubKey = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: missingApplicationPublicKeyTokenMessage,
 	}
 
 	relayMissingTokenCliPubKey = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: missingClientPublicKeyTokenMessage,
 	}
 
 	relayInvalidTokenSignature = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: invalidTokenSignature,
 	}
 
 	relayInvalidICCount = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: invalidServiceAuthenticationCounter,
 	}
 
 	relayInvalidICSignature = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: invalidServiceAuthenticationSignature,
 	}
 
 	validEthRelay = service.Relay{
-		Blockchain:         validBlockchain,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: validServiceAuthentication,
 	}
 
 	validBtcRelay = service.Relay{
-		Blockchain:         validBlockchain2,
+		Blockchain:         service.ServiceBlockchain(validBlockchain),
 		Payload:            validPayload,
 		ServiceCertificate: validServiceAuthentication,
 	}

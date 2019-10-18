@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/hex"
 	"github.com/pokt-network/pocket-core/types"
 )
 
@@ -12,9 +11,9 @@ type Relay struct {
 	ServiceCertificate ServiceCertificate `json:"incrementCounter"` // the authentication scheme needed for work
 }
 
-func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes) error {
+func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes, appStakedBlockchains types.Blockchains) error {
 	// check to see if the blockchain is empty
-	if r.Blockchain == nil || len(r.Blockchain) == 0 {
+	if len(r.Blockchain) == 0 {
 		return EmptyBlockchainError
 	}
 	// check to see if the payload is empty
@@ -22,11 +21,13 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex 
 		return EmptyPayloadDataError
 	}
 	// ensure the blockchain is supported
-	if !hostedBlockchains.Contains(hex.EncodeToString(r.Blockchain)) {
+	if !hostedBlockchains.Contains(string(r.Blockchain)) {
 		return UnsupportedBlockchainError
 	}
-	// todo check to see if non native blockchain is staked for by the developer
-	// getApplication().GetStakedBlockchains()
+	// check to see if non native blockchain is staked for by the developer
+	if !appStakedBlockchains.Contains(types.Blockchain(r.Blockchain)) {
+		return UnstakedBlockchainError
+	}
 	// verify that node (self) is of this session
 	if err := SessionSelfVerification(FAKEAPPPUBKEY,
 		r.Blockchain,
@@ -55,8 +56,8 @@ func (r Relay) StoreEvidence(sessionBlockIDHex string, maxNumberOfRelays int) er
 }
 
 // executes the relay on the non-native blockchain specified
-func (r Relay) Execute(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes) (string, error) {
-	if err := r.Validate(hostedBlockchains, sessionBlockIDHex, allActiveNodes); err != nil {
+func (r Relay) Execute(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes, appStakedChains types.Blockchains) (string, error) {
+	if err := r.Validate(hostedBlockchains, sessionBlockIDHex, allActiveNodes, appStakedChains); err != nil {
 		return "", err
 	}
 	// handle the relay payload based on the type

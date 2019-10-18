@@ -67,6 +67,14 @@ func (c *HostedBlockchains) GetChainFromBytes(chainHash []byte) HostedBlockchain
 	return res.(HostedBlockchain)
 }
 
+func (c *HostedBlockchains) GetChainFromHexString(chainHash string) HostedBlockchain {
+	res := (*List)(c).Get(chainHash)
+	if res == nil {
+		return HostedBlockchain{}
+	}
+	return res.(HostedBlockchain)
+}
+
 func (c *HostedBlockchains) Validate() error {
 	c.Mux.Lock()
 	defer c.Mux.Unlock()
