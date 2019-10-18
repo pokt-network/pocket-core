@@ -47,11 +47,11 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex 
 }
 
 // store the evidence of work done for the relay batch
-func (r Relay) StoreEvidence(sessionBlockIDHex string) error {
+func (r Relay) StoreEvidence(sessionBlockIDHex string, maxNumberOfRelays int) error {
 	// grab the relay batch container
 	rbs := GetGlobalRelayBatches()
 	// add the evidence to the proper batch
-	return rbs.AddEvidence(r.ServiceCertificate, sessionBlockIDHex)
+	return rbs.AddEvidence(r.ServiceCertificate, sessionBlockIDHex, maxNumberOfRelays)
 }
 
 // executes the relay on the non-native blockchain specified
