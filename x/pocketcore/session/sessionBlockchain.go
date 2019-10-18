@@ -1,12 +1,10 @@
 package session
 
-import (
-	"github.com/pokt-network/pocket-core/types"
-)
+import "encoding/hex"
 
 // extension/wrapper of legacy.Blockchain for session
 // TODO non native chains need to be defined by config, for now will be hash
-type SessionBlockchain types.AminoBuffer
+type SessionBlockchain string
 
 func (sbc SessionBlockchain) Validate() error {
 	// todo more validation
@@ -14,4 +12,8 @@ func (sbc SessionBlockchain) Validate() error {
 		return EmptyNonNativeChainError
 	}
 	return nil
+}
+
+func (sbc SessionBlockchain) Bytes() ([]byte, error) {
+	return hex.DecodeString(string(sbc))
 }
