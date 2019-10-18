@@ -1,42 +1,62 @@
-# Golang CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-go/ for more details
-# Changed from 2.0 to 2.1 so orbs can be used.
+# Configuration file Version: 2.1.
 version: 2.1
-orbs:
-  anchore: anchore/anchore-engine@1.6.0
-jobs:
-  build:
-    docker:
-      # specify the version
-      - image: circleci/golang:1.11
 
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+executors:
+  core-executor:
+      docker:
+        - image: circleci/golang:1.11        
 
-    #### TEMPLATE_NOTE: go expects specific checkout path representing url
-    #### expecting it in the form of
-    ####   /go/src/github.com/circleci/go-tool
-    ####   /go/src/bitbucket.org/circleci/go-tool
-    working_directory: /go/src/github.com/pokt-network/pocket-core
+# Commands are sets of steps that can be reutilized 
+commands:
+  build-pocket-image:
     steps:
       - checkout
-
-      # specify any bash command here prefixed with `run: `
       - run: dep ensure
       - run: go build cmd/pocket_core/main.go
       - run: go test ./tests/unit/...
       - run: go test ./tests/bdd/...
+  # Proceeds to scan pocket-core image to see if it finds vulnerabilities in it.
   local_image_scan:
-      executor: anchore/anchore_engine
-      steps:
-          - checkout
-          - run:
-              name: Building Pocket Container 
-              command: docker build -t ${CIRCLE_PROJECT_REPONAME}:ci .
-          - anchore/analyze_local_image:
-              dockerfile_path: ./Dockerfile
-              image_name: ${CIRCLE_PROJECT_REPONAME}:ci
-              timeout: '500'
+    steps:
+       - checkout
+       - run:
+          name: Building Pocket Container 
+          command: docker build -t ${CIRCLE_PROJECT_REPONAME}:ci .
+       - anchore/analyze_local_image:
+          dockerfile_path: ./Dockerfile
+          image_name: ${CIRCLE_PROJECT_REPONAME}:ci
+          timeout: '500'
+          policy_failure: true
+  # Sends a slack notification if build fails
+  # For more information on Slack Orb: https://github.com/CircleCI-Public/slack-orb
+  slack-notification:
+    steps:
+      - run: exit 0
+      - slack/status:
+          fail_only: true
+          webhook: "https://hooks.slack.com/services/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"
+          failure_message: "A ${CIRCLE_JOB} job has failed!"
+
+jobs:
+  build:
+    executor: core-executor
+    steps:
+      - build-pocket-image
+      - slack-notification
+    working_directory: /go/src/github.com/pokt-network/pocket-core
+  image_scan:
+    executor: anchore/anchore_engine
+    steps:
+      - local_image_scan
+      - slack-notification
+
+orbs:
+  anchore: anchore/anchore-engine@1.6.0
+  slack: circleci/slack@3.4.0
+
+workflows:
+  version: 2.1
+  build_and_scan:
+    jobs:
+      - build
+      - image_scan
