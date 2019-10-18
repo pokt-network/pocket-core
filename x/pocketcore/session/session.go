@@ -1,5 +1,7 @@
 package session
 
+import "github.com/pokt-network/pocket-core/types"
+
 type Session struct {
 	SessionKey     SessionKey        `json:"sessionkey"`
 	Application    SessionAppPubKey  `json:"appPubKey"`
@@ -9,14 +11,14 @@ type Session struct {
 }
 
 // Create a new session from seed data
-func NewSession(app SessionAppPubKey, nonNativeChain SessionBlockchain, blockID SessionBlockID) (*Session, error) { // todo possibly convert block id to block hash
+func NewSession(app SessionAppPubKey, nonNativeChain SessionBlockchain, blockID SessionBlockID, allActiveNodes types.Nodes) (*Session, error) { // todo possibly convert block id to block hash
 	// first generate session key
 	sessionKey, err := NewSessionKey(app, nonNativeChain, blockID)
 	if err != nil {
 		return nil, err
 	}
 	// then generate the service nodes for that session
-	sessionNodes, err := NewSessionNodes(nonNativeChain, sessionKey)
+	sessionNodes, err := NewSessionNodes(nonNativeChain, sessionKey, allActiveNodes)
 	if err != nil {
 		return nil, err
 	}

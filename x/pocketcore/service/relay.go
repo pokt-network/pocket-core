@@ -2,7 +2,7 @@ package service
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/x/pocketcore/blockchainMock"
+	"github.com/pokt-network/pocket-core/types"
 )
 
 // a read / write API request from a hosted (non native) blockchain
@@ -12,7 +12,7 @@ type Relay struct {
 	ServiceCertificate ServiceCertificate `json:"incrementCounter"` // the authentication scheme needed for work
 }
 
-func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
+func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes) error {
 	// check to see if the blockchain is empty
 	if r.Blockchain == nil || len(r.Blockchain) == 0 {
 		return EmptyBlockchainError
@@ -30,7 +30,8 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 	// verify that node (self) is of this session
 	if err := SessionSelfVerification(FAKEAPPPUBKEY,
 		r.Blockchain,
-		blockchainMock.GetLatestSessionBlockID().HashHex()); err != nil {
+		sessionBlockIDHex,
+		allActiveNodes); err != nil {
 		return err
 	}
 	// check to see if the service certificate is valid
@@ -46,16 +47,16 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains) error {
 }
 
 // store the evidence of work done for the relay batch
-func (r Relay) StoreEvidence() error {
+func (r Relay) StoreEvidence(sessionBlockIDHex string) error {
 	// grab the relay batch container
 	rbs := GetGlobalRelayBatches()
 	// add the evidence to the proper batch
-	return rbs.AddEvidence(r.ServiceCertificate)
+	return rbs.AddEvidence(r.ServiceCertificate, sessionBlockIDHex)
 }
 
 // executes the relay on the non-native blockchain specified
-func (r Relay) Execute(hostedBlockchains ServiceBlockchains) (string, error) {
-	if err := r.Validate(hostedBlockchains); err != nil {
+func (r Relay) Execute(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes) (string, error) {
+	if err := r.Validate(hostedBlockchains, sessionBlockIDHex, allActiveNodes); err != nil {
 		return "", err
 	}
 	// handle the relay payload based on the type

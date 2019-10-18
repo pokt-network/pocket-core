@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/pocketcore/blockchainMock"
 	"sync"
 )
 
@@ -26,27 +25,27 @@ func GetGlobalRelayBatches() *RelayBatches {
 	return globalRelayBatches
 }
 
-func (rbs *RelayBatches) AddEvidence(authentication ServiceCertificate) error {
+func (rbs *RelayBatches) AddEvidence(authentication ServiceCertificate, sessionBlockIDHex string) error {
 	(*types.List)(rbs).Mux.Lock()
 	defer (*types.List)(rbs).Mux.Unlock()
 	rbh := EvidenceHeader{
-		SessionHash:       blockchainMock.GetLatestSessionBlockID().HashHex(),
+		SessionHash:       sessionBlockIDHex,
 		ApplicationPubKey: authentication.ServiceToken.AATMessage.ApplicationPublicKey,
 	}
 	if relayBatch, contains := rbs.M[rbh]; contains {
 		return relayBatch.(RelayBatch).Evidence.AddEvidence(authentication)
 	} else {
-		return rbs.NewRelayBatch(authentication)
+		return rbs.NewRelayBatch(authentication, sessionBlockIDHex)
 	}
 }
 
-func (rbs *RelayBatches) NewRelayBatch(authentication ServiceCertificate) error {
+func (rbs *RelayBatches) NewRelayBatch(authentication ServiceCertificate, latestSessionBlockHex string) error {
 	rb := RelayBatch{
 		EvidenceHeader: EvidenceHeader{
-			SessionHash:       blockchainMock.GetLatestSessionBlockID().HashHex(),
+			SessionHash:       latestSessionBlockHex,
 			ApplicationPubKey: authentication.ServiceToken.AATMessage.ApplicationPublicKey,
 		},
-		Evidence: make([]ServiceCertificate, blockchainMock.GetMaxNumberOfRelaysForApp(authentication.ServiceToken.AATMessage.ApplicationPublicKey)),
+		Evidence: make([]ServiceCertificate, 5000), // todo replace 5000 with max number of relays for that specific application
 	}
 	err := rb.AddEvidence(authentication)
 	if err != nil {

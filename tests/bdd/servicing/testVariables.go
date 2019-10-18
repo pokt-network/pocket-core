@@ -30,6 +30,12 @@ var (
 
 	hostedBlockchains = service.ServiceBlockchains(hc)
 
+	nodesPointer, _  = fixtures.GetNodes()
+
+	allActiveNodes = *nodesPointer
+
+	latestSessionBlock = fixtures.GenerateBlockHash()
+
 	validTokenVersion = "0.0.1"
 
 	_, appPubKey, _ = crypto.NewKeypair()
