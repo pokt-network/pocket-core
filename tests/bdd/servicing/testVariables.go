@@ -33,8 +33,12 @@ var (
 	nodesPointer, _ = fixtures.GetNodes()
 
 	allActiveNodes = *nodesPointer
-
-	appStakedBlockchains = []types.Blockchain{types.Blockchain(validBlockchain), types.Blockchain(validBlockchain2)}
+	
+	application = types.Application{
+		Account:               types.Account{PubKey:types.AccountPublicKey(validAppPubKey)},
+		LegacyRequestedChains: nil,
+		RequestedBlockchains:  []types.ApplicationRequestedBlockchain{{Blockchain: types.Blockchain(validBlockchain)}, {Blockchain: types.Blockchain(validBlockchain2)}},
+	}
 
 	latestSessionBlock = fixtures.GenerateBlockHash()
 

@@ -9,7 +9,7 @@ import (
 
 // accountKeeper handles all account based state access/modifier
 type accountKeeper struct {
-	accKeeper auth.AccountKeeper
+	accKeeper  auth.AccountKeeper
 	CoinKeeper bank.Keeper
 	storeKey   sdk.StoreKey // Unexposed key to access store from sdk.Context
 	cdc        *codec.Codec // The wire codec for binary encoding/decoding.

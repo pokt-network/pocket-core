@@ -11,9 +11,6 @@ const (
 	DEFAULTHTTPMETHOD = "POST"
 	// HTTP Service Types
 	HTTP ServiceType = iota + 1
-
-	// TODO remove and get from world state
-	FAKEAPPPUBKEY = "043bcf236d393dc09e9526d01d295e898ab771550dce52d4bd806d03e7b7fc3b8684a5f5ac7532a8fb2e6b4b58b9cc78d2dd528eebbd43dd26035ba3364c7f47d4"
 )
 
 var (
