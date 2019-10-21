@@ -19,10 +19,13 @@ commands:
   local_image_scan:
     steps:
        - checkout
+       - run: docker build -t "${CIRCLE_PROJECT_REPONAME}:ci" -f ./Dockerfile .
        - anchore/analyze_local_image:
+          image_name: ${CIRCLE_PROJECT_REPONAME}:ci
           dockerfile_path: ./Dockerfile
-          image_name: 'poktnetwork/pocket-core:mvp-staging-latest'
-          timeout: '500'
+       - anchore/parse_reports
+       - store_artifacts:
+           path: anchore-reports
   # Sends a slack notification if build fails
   # For more information on Slack Orb: https://github.com/CircleCI-Public/slack-orb
   slack-notification:
@@ -31,13 +34,18 @@ commands:
       - slack/status:
           fail_only: true
           webhook: "https://hooks.slack.com/services/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"
-          failure_message: "A ${CIRCLE_JOB} job has failed!"
+          failure_message: "Failed: ${CIRCLE_JOB} job has failed!"
 
 jobs:
   build:
     executor: core-executor
     steps:
       - build-pocket-image
+      - slack-notification
+    working_directory: /go/src/github.com/pokt-network/pocket-core
+  image_scan:
+    executor: anchore/anchore_engine
+    steps:
       - local_image_scan
       - slack-notification
     working_directory: /go/src/github.com/pokt-network/pocket-core
