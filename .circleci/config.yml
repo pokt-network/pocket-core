@@ -18,6 +18,7 @@ commands:
   # Proceeds to scan pocket-core image to see if it finds vulnerabilities in it.
   local_image_scan:
     steps:
+       - setup_remote_docker
        - checkout
        - run: docker build -t "${CIRCLE_PROJECT_REPONAME}:ci" -f ./Dockerfile .
        - anchore/analyze_local_image:
