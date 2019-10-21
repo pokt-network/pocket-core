@@ -27,7 +27,10 @@ jobs:
       - checkout
 
       # specify any bash command here prefixed with `run: `
+      - run: go get -u github.com/goware/modvendor
       - run: go mod vendor
+      - run: go mod download
+      - run: modvendor -copy="**/*.c **/*.h" -v
       - run: go build cmd/pocket_core/main.go
       - run: go test ./tests/unit/...
       - run: go test ./tests/bdd/...
