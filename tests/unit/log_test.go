@@ -2,9 +2,9 @@ package unit
 
 import (
 	"os"
-	"os/user"
 	"testing"
 
+	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
 	utils "github.com/pokt-network/pocket-core/tests/unit/utils"
 )
@@ -120,11 +120,8 @@ func generateFilePath(t *testing.T, prefix string, logdir string) string {
 
 	// If no logdir given, we assume logdir is on our default datadir of pocket config
 	if len(logdir) == 0 {
-		homeFolder, err := user.Current()
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
-		filepath = homeFolder.HomeDir + "/.pocket/logs/" + logName + prefix
+		homedir := config.GlobalConfig().LogDir
+		filepath = homedir + logName + prefix
 
 	}
 
