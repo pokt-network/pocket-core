@@ -24,6 +24,7 @@ commands:
        - anchore/analyze_local_image:
           image_name: ${CIRCLE_PROJECT_REPONAME}:ci
           dockerfile_path: ./Dockerfile
+          timeout: '600'
        - anchore/parse_reports
        - store_artifacts:
            path: anchore-reports
@@ -60,4 +61,6 @@ workflows:
   build_and_scan:
     jobs:
       - build
-      - image_scan
+      - image_scan:
+          requires:
+            - build
