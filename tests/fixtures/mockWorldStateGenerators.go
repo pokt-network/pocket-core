@@ -102,7 +102,7 @@ func GenerateApplication() (node types.Application) {
 			Balance:     balance,
 			StakeAmount: stakeAmount,
 		},
-		RequestedChains: nil, //todo
+		LegacyRequestedChains: nil, //todo
 	}
 
 	return

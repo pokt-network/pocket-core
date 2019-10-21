@@ -91,7 +91,7 @@ type pocketCoreApp struct {
 }
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
-func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp), ) *pocketCoreApp {
+func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
 
 	// First define the top level codec that will be shared by the different modules
 	cdc := MakeCodec()

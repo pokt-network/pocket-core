@@ -1,4 +1,4 @@
 package service
 
-// simple wrapper around application type for servie package
+// simple wrapper around application type for service package
 type ServiceAppPubKey string

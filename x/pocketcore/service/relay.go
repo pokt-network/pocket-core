@@ -11,7 +11,7 @@ type Relay struct {
 	ServiceCertificate ServiceCertificate `json:"incrementCounter"` // the authentication scheme needed for work
 }
 
-func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes, appStakedBlockchains types.Blockchains) error {
+func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes, app types.Application) error {
 	// check to see if the blockchain is empty
 	if len(r.Blockchain) == 0 {
 		return EmptyBlockchainError
@@ -25,11 +25,11 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex 
 		return UnsupportedBlockchainError
 	}
 	// check to see if non native blockchain is staked for by the developer
-	if !appStakedBlockchains.Contains(types.Blockchain(r.Blockchain)) {
+	if !app.RequestedBlockchains.Contains(types.Blockchain(r.Blockchain)) {
 		return UnstakedBlockchainError
 	}
 	// verify that node (self) is of this session
-	if err := SessionSelfVerification(FAKEAPPPUBKEY,
+	if err := SessionSelfVerification(ServiceAppPubKey(app.PubKey),
 		r.Blockchain,
 		sessionBlockIDHex,
 		allActiveNodes); err != nil {
@@ -47,17 +47,17 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex 
 	return nil
 }
 
-// store the evidence of work done for the relay batch
-func (r Relay) StoreEvidence(sessionBlockIDHex string, maxNumberOfRelays int) error {
+// store the certificates of work done for the relay batch
+func (r Relay) StoreCertificates(sessionBlockIDHex string, maxNumberOfRelays int) error {
 	// grab the relay batch container
 	rbs := GetGlobalRelayBatches()
-	// add the evidence to the proper batch
-	return rbs.AddEvidence(r.ServiceCertificate, sessionBlockIDHex, maxNumberOfRelays)
+	// add the certificate to the proper batch
+	return rbs.AddCertificate(r.ServiceCertificate, sessionBlockIDHex, maxNumberOfRelays)
 }
 
 // executes the relay on the non-native blockchain specified
-func (r Relay) Execute(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes, appStakedChains types.Blockchains) (string, error) {
-	if err := r.Validate(hostedBlockchains, sessionBlockIDHex, allActiveNodes, appStakedChains); err != nil {
+func (r Relay) Execute(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes, app types.Application) (string, error) {
+	if err := r.Validate(hostedBlockchains, sessionBlockIDHex, allActiveNodes, app); err != nil {
 		return "", err
 	}
 	// handle the relay payload based on the type

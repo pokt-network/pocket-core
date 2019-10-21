@@ -10,10 +10,11 @@ import (
 const RouterKey = ModuleName // this was defined in your key.go file
 
 // MsgRelayBatch defines a SetName message
-type MsgRelayBatch struct{}
+type MsgRelayBatch struct {
+}
 
 // NewMsgSetName is a constructor function for MsgRelayBatch
-func NewMsgSetName() MsgRelayBatch {
+func NewMsgSetRelayBatch() MsgRelayBatch {
 	return MsgRelayBatch{}
 }
 
