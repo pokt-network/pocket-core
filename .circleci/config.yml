@@ -57,7 +57,6 @@ orbs:
   slack: circleci/slack@3.4.0
 
 workflows:
-  version: 2.1
   build_and_scan:
     jobs:
       - build
