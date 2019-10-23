@@ -33,9 +33,9 @@ var (
 	nodesPointer, _ = fixtures.GetNodes()
 
 	allActiveNodes = *nodesPointer
-	
+
 	application = types.Application{
-		Account:               types.Account{PubKey:types.AccountPublicKey(validAppPubKey)},
+		Account:               types.Account{PubKey: types.AccountPublicKey(validAppPubKey)},
 		LegacyRequestedChains: nil,
 		RequestedBlockchains:  []types.ApplicationRequestedBlockchain{{Blockchain: types.Blockchain(validBlockchain)}, {Blockchain: types.Blockchain(validBlockchain2)}},
 	}
