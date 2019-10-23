@@ -189,6 +189,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	// It handles interactions with the pocketCore
 	app.pcKeeper = pocketcore.NewPocketCoreKeeper(
 		app.bankKeeper,
+		app.supplyKeeper,
 		keys[pocketcore.StoreKey],
 		app.cdc,
 	)
