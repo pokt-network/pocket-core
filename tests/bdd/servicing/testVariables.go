@@ -92,9 +92,9 @@ var (
 		ClientPublicKey:      "",
 	}
 
-	unsupportedTokenVersion = service.ServiceCertificate{
+	unsupportedTokenVersion = service.ServiceProof{
 		Signature: validClientSignature,
-		ServiceCertificatePayload: service.ServiceCertificatePayload{
+		ServiceProofPayload: service.ServiceProofPayload{
 			Counter:       validICCount,
 			NodePublicKey: validNodePubKey,
 			ServiceToken: service.ServiceToken{
@@ -103,9 +103,9 @@ var (
 				Signature:  validAppSignature,
 			}}}
 
-	missingTokenVersion = service.ServiceCertificate{
+	missingTokenVersion = service.ServiceProof{
 		Signature: validClientSignature,
-		ServiceCertificatePayload: service.ServiceCertificatePayload{
+		ServiceProofPayload: service.ServiceProofPayload{
 			Counter:       validICCount,
 			NodePublicKey: validNodePubKey,
 			ServiceToken: service.ServiceToken{
@@ -114,9 +114,9 @@ var (
 				Signature:  validAppSignature,
 			}}}
 
-	missingApplicationPublicKeyTokenMessage = service.ServiceCertificate{
+	missingApplicationPublicKeyTokenMessage = service.ServiceProof{
 		Signature: validClientSignature,
-		ServiceCertificatePayload: service.ServiceCertificatePayload{
+		ServiceProofPayload: service.ServiceProofPayload{
 			Counter:       validICCount,
 			NodePublicKey: validNodePubKey,
 			ServiceToken: service.ServiceToken{
@@ -125,9 +125,9 @@ var (
 				Signature:  validAppSignature,
 			}}}
 
-	missingClientPublicKeyTokenMessage = service.ServiceCertificate{
+	missingClientPublicKeyTokenMessage = service.ServiceProof{
 		Signature: validClientSignature,
-		ServiceCertificatePayload: service.ServiceCertificatePayload{
+		ServiceProofPayload: service.ServiceProofPayload{
 			Counter:       validICCount,
 			NodePublicKey: validNodePubKey,
 			ServiceToken: service.ServiceToken{
@@ -136,8 +136,8 @@ var (
 				Signature:  validAppSignature,
 			}}}
 
-	invalidTokenSignature = service.ServiceCertificate{
-		ServiceCertificatePayload: service.ServiceCertificatePayload{
+	invalidTokenSignature = service.ServiceProof{
+		ServiceProofPayload: service.ServiceProofPayload{
 			Counter:       validICCount,
 			NodePublicKey: validNodePubKey,
 			ServiceToken: service.ServiceToken{
@@ -161,8 +161,8 @@ var (
 		},
 	}
 
-	validServiceAuthentication = service.ServiceCertificate{
-		ServiceCertificatePayload: service.ServiceCertificatePayload{
+	validServiceAuthentication = service.ServiceProof{
+		ServiceProofPayload: service.ServiceProofPayload{
 			Counter:       validICCount,
 			NodePublicKey: validNodePubKey,
 			ServiceToken:  validToken,
@@ -170,8 +170,8 @@ var (
 		Signature: validClientSignature,
 	}
 
-	invalidServiceAuthenticationCounter = service.ServiceCertificate{
-		ServiceCertificatePayload: service.ServiceCertificatePayload{
+	invalidServiceAuthenticationCounter = service.ServiceProof{
+		ServiceProofPayload: service.ServiceProofPayload{
 			Counter:       invalidICCount,
 			NodePublicKey: validNodePubKey,
 			ServiceToken:  validToken,
@@ -179,8 +179,8 @@ var (
 		Signature: validClientSignature,
 	}
 
-	invalidServiceAuthenticationSignature = service.ServiceCertificate{
-		ServiceCertificatePayload: service.ServiceCertificatePayload{
+	invalidServiceAuthenticationSignature = service.ServiceProof{
+		ServiceProofPayload: service.ServiceProofPayload{
 			Counter:       validICCount,
 			NodePublicKey: validNodePubKey,
 			ServiceToken:  validToken,
@@ -189,74 +189,74 @@ var (
 	}
 
 	relayMissingBlockchain = service.Relay{
-		Blockchain:         "",
-		Payload:            validPayload,
-		ServiceCertificate: validServiceAuthentication,
+		Blockchain:   "",
+		Payload:      validPayload,
+		ServiceProof: validServiceAuthentication,
 	}
 
 	relayMissingPayload = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            service.ServicePayload{},
-		ServiceCertificate: validServiceAuthentication,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      service.ServicePayload{},
+		ServiceProof: validServiceAuthentication,
 	}
 
 	relayUnsupportedBlockchain = service.Relay{
-		Blockchain:         service.ServiceBlockchain(unsupportedBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: validServiceAuthentication,
+		Blockchain:   service.ServiceBlockchain(unsupportedBlockchain),
+		Payload:      validPayload,
+		ServiceProof: validServiceAuthentication,
 	}
 
 	relayUnsupportedTokenVersion = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: unsupportedTokenVersion,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: unsupportedTokenVersion,
 	}
 
 	relayMissingTokenVersion = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: missingTokenVersion,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: missingTokenVersion,
 	}
 
 	relayMissingTokenAppPubKey = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: missingApplicationPublicKeyTokenMessage,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: missingApplicationPublicKeyTokenMessage,
 	}
 
 	relayMissingTokenCliPubKey = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: missingClientPublicKeyTokenMessage,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: missingClientPublicKeyTokenMessage,
 	}
 
 	relayInvalidTokenSignature = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: invalidTokenSignature,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: invalidTokenSignature,
 	}
 
 	relayInvalidICCount = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: invalidServiceAuthenticationCounter,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: invalidServiceAuthenticationCounter,
 	}
 
 	relayInvalidICSignature = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: invalidServiceAuthenticationSignature,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: invalidServiceAuthenticationSignature,
 	}
 
 	validEthRelay = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: validServiceAuthentication,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: validServiceAuthentication,
 	}
 
 	validBtcRelay = service.Relay{
-		Blockchain:         service.ServiceBlockchain(validBlockchain),
-		Payload:            validPayload,
-		ServiceCertificate: validServiceAuthentication,
+		Blockchain:   service.ServiceBlockchain(validBlockchain),
+		Payload:      validPayload,
+		ServiceProof: validServiceAuthentication,
 	}
 )

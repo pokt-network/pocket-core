@@ -23,6 +23,7 @@ func newPoktKeeper(sk supply.Keeper, storeKey sdk.StoreKey, cdc *codec.Codec) po
 }
 
 // Mints sdk.Coins from pocket core module
+// todo mint as a result of the relay batch message
 func (pk poktKeeper) Mint(ctx sdk.Context, amount sdk.Coins, address sdk.AccAddress) sdk.Result {
 	mintErr := pk.supplyKeeper.MintCoins(ctx, ModuleName, amount)
 	if mintErr != nil {

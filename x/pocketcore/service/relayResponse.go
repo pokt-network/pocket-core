@@ -6,9 +6,9 @@ import (
 )
 
 type RelayResponse struct {
-	Signature   string             // signature from the node in hex
-	Response    string             // response to relay
-	ServiceAuth ServiceCertificate // to be signed by the client
+	Signature   string       // signature from the node in hex
+	Response    string       // response to relay
+	ServiceAuth ServiceProof // to be signed by the client
 }
 
 // node validates the response after signing
