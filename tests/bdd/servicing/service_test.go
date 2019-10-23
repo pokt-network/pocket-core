@@ -146,7 +146,7 @@ var _ = Describe("Service", func() {
 					rr := service.RelayResponse{
 						Signature:   "",
 						Response:    goodEndpointResponse, // todo amino encoding
-						ServiceAuth: service.ServiceCertificate{ServiceCertificatePayload: service.ServiceCertificatePayload{Counter: 0}},
+						ServiceAuth: service.ServiceProof{ServiceProofPayload: service.ServiceProofPayload{Counter: 0}},
 					}
 					err = rr.Sign()
 					Expect(err).To(BeNil())
@@ -160,7 +160,7 @@ var _ = Describe("Service", func() {
 					rr := service.RelayResponse{
 						Signature:   "",
 						Response:    goodEndpointResponse, // todo amino encoding
-						ServiceAuth: service.ServiceCertificate{ServiceCertificatePayload: service.ServiceCertificatePayload{Counter: 0}},
+						ServiceAuth: service.ServiceProof{ServiceProofPayload: service.ServiceProofPayload{Counter: 0}},
 					}
 					err = rr.Validate()
 					Expect(err).ToNot(BeNil())

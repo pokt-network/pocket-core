@@ -17,5 +17,5 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(types.Node{}, "pocketcore/Node", nil)
 	cdc.RegisterConcrete(types.Application{}, "pocketcore/Application", nil)
 	cdc.RegisterConcrete(MsgRelayBatch{}, "pocketcore/RelayBatch", nil)
-	cdc.RegisterConcrete(types.AAT{}, "pocketcore/aat", nil)
+	cdc.RegisterConcrete(types.AAT{}, "pocketcore/AAT", nil)
 }

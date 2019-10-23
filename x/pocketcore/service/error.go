@@ -24,15 +24,15 @@ var (
 	ResponseSignatureError           = errors.New("response signing errored out: ")
 	EmptyHostedChainsError           = errors.New("the hosted chains object is of length 0")
 	HttpStatusCodeError              = errors.New("HTTP status code returned not okay: ")
-	InvalidNodePubKeyError           = errors.New("the node public key in the service certificate does not match this nodes public key")
-	ServiceCertificateHashError      = errors.New("the service certificate object was unable to be hashed: ")
+	InvalidNodePubKeyError           = errors.New("the node public key in the service proof does not match this nodes public key")
+	ServiceProofHashError            = errors.New("the service proof object was unable to be hashed: ")
 	InvalidSessionError              = errors.New("this node (self) is not responsible for this session provided by the client")
 	ServiceSessionGenerationError    = errors.New("unable to generate a session for the seed data: ")
 	BlockHashHexDecodeError          = errors.New("the block hash was unable to be decoded into hex format")
-	ServiceCertificateError          = errors.New("the service is unauthorized: ")
-	EmptyCertificatesError           = errors.New("the certificates object type([]ServiceCertificate) is nil or empty")
-	InvalidCertificateSizeError      = errors.New("the size of the certificate container is less than the counter")
-	DuplicateCertificateError        = errors.New("DuplicateCertificateError: the certificate is already recorded for that increment counter")
+	ServiceProofError                = errors.New("the service is unauthorized: ")
+	EmptyProofsError                 = errors.New("the proofs object type([]ServiceProof) is nil or empty")
+	InvalidProofSizeError            = errors.New("the size of the proof container is less than the counter")
+	DuplicateProofError              = errors.New("DuplicateProofError: the proof is already recorded for that increment counter")
 	RelayBatchCreationError          = errors.New("there was a problem creating a new relay batch: ")
 	UnstakedBlockchainError          = errors.New("the blockchain requested by the client was not staked for by the application")
 )
@@ -41,8 +41,8 @@ func NewRelayBatchCreationError(err error) error {
 	return errors.New(RelayBatchCreationError.Error() + err.Error())
 }
 
-func NewServiceCertificateError(err error) error {
-	return errors.New(ServiceCertificateError.Error() + err.Error())
+func NewServiceProofError(err error) error {
+	return errors.New(ServiceProofError.Error() + err.Error())
 }
 func NewBlockHashHexDecodeError(err error) error {
 	return errors.New(BlockHashHexDecodeError.Error() + err.Error())
@@ -64,8 +64,8 @@ func NewInvalidTokenError(err error) error {
 	return errors.New(InvalidTokenError.Error() + " : " + err.Error())
 }
 
-func NewServiceCertificateHashError(err error) error {
-	return errors.New(ServiceCertificateHashError.Error() + err.Error())
+func NewServiceProofHashError(err error) error {
+	return errors.New(ServiceProofHashError.Error() + err.Error())
 }
 
 func NewClientPubKeyDecodeError(err error) error {

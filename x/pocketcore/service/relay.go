@@ -6,9 +6,9 @@ import (
 
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
-	Blockchain         ServiceBlockchain  `json:"blockchain"`       // the non-native blockchain needed to service
-	Payload            ServicePayload     `json:"payload"`          // the data payload of the request
-	ServiceCertificate ServiceCertificate `json:"incrementCounter"` // the authentication scheme needed for work
+	Blockchain   ServiceBlockchain `json:"blockchain"`       // the non-native blockchain needed to service
+	Payload      ServicePayload    `json:"payload"`          // the data payload of the request
+	ServiceProof ServiceProof      `json:"incrementCounter"` // the authentication scheme needed for work
 }
 
 func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex string, allActiveNodes types.Nodes, app types.Application) error {
@@ -35,9 +35,9 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex 
 		allActiveNodes); err != nil {
 		return err
 	}
-	// check to see if the service certificate is valid
-	if err := r.ServiceCertificate.Validate(); err != nil {
-		return NewServiceCertificateError(err)
+	// check to see if the service proof is valid
+	if err := r.ServiceProof.Validate(); err != nil {
+		return NewServiceProofError(err)
 	}
 	if r.Payload.Type() == HTTP {
 		if len((r.Payload).Method) == 0 {
@@ -47,12 +47,12 @@ func (r Relay) Validate(hostedBlockchains ServiceBlockchains, sessionBlockIDHex 
 	return nil
 }
 
-// store the certificates of work done for the relay batch
-func (r Relay) StoreCertificates(sessionBlockIDHex string, maxNumberOfRelays int) error {
+// store the proofs of work done for the relay batch
+func (r Relay) StoreProofs(sessionBlockIDHex string, maxNumberOfRelays int) error {
 	// grab the relay batch container
 	rbs := GetGlobalRelayBatches()
-	// add the certificate to the proper batch
-	return rbs.AddCertificate(r.ServiceCertificate, sessionBlockIDHex, maxNumberOfRelays)
+	// add the proof to the proper batch
+	return rbs.AddProof(r.ServiceProof, sessionBlockIDHex, maxNumberOfRelays)
 }
 
 // executes the relay on the non-native blockchain specified

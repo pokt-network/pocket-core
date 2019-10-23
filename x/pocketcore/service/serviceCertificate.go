@@ -5,52 +5,52 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 )
 
-// Certificates is a slice of type `ServiceCertificate`
+// Proofs is a slice of type `ServiceProof`
 // which are individual proofs of work completed
-type Certificates []ServiceCertificate
+type Proofs []ServiceProof
 
 // the header of the relay batch that is used
 // to identify the relay batch in the global map
-type CertificatesHeader struct {
+type ProofsHeader struct {
 	SessionHash       string
 	ApplicationPubKey string
 }
 
-// add proof of work completed (type service certificate) to the certificate structure
-func (e Certificates) AddCertificate(sc ServiceCertificate) error {
+// add proof of work completed (type service proof) to the proof structure
+func (e Proofs) AddProof(sc ServiceProof) error {
 	if e == nil || len(e) == 0 {
-		return EmptyCertificatesError
+		return EmptyProofsError
 	}
-	// if the increment counter is less than the certificate slice
+	// if the increment counter is less than the proof slice
 	if len(e) < sc.Counter {
-		return InvalidCertificateSizeError
+		return InvalidProofSizeError
 	}
-	// if the certificate at index[increment counter] is not empty
+	// if the proof at index[increment counter] is not empty
 	if e[sc.Counter].Signature != "" {
-		return DuplicateCertificateError
+		return DuplicateProofError
 	}
-	// set certificate at index[service certificate] = proof of work completed (Service Certificate)
+	// set proof at index[service proof] = proof of work completed (Service Proof)
 	e[sc.Counter] = sc
 	return nil
 }
 
 // Type that signifies work completed
-type ServiceCertificate struct {
-	ServiceCertificatePayload
+type ServiceProof struct {
+	ServiceProofPayload
 	Signature string `json:"signature"` // client's signature for the service in hex
 }
 
-type ServiceCertificatePayload struct {
-	Counter       int          `json:"counter"`       // needed for pseudorandom certificate selection
+type ServiceProofPayload struct {
+	Counter       int          `json:"counter"`       // needed for pseudorandom proof selection
 	NodePublicKey string       `json:"nodePublicKey"` // needed to prove the node was the servicer
 	ServiceToken  ServiceToken `json:"serviceToken"`  // needed to prove the client is authorized to use developers throughput
 }
 
-func (sap ServiceCertificatePayload) Hash() ([]byte, error) { // TODO true hash with amino encoding of payload
+func (sap ServiceProofPayload) Hash() ([]byte, error) { // TODO true hash with amino encoding of payload
 	return crypto.SHA3FromBytes(append([]byte(sap.NodePublicKey))), nil
 }
 
-func (sa ServiceCertificate) Validate() error {
+func (sa ServiceProof) Validate() error {
 	// check for negative counter
 	if sa.Counter < 0 {
 		return NegativeICCounterError
@@ -66,13 +66,13 @@ func (sa ServiceCertificate) Validate() error {
 	if err := sa.ServiceToken.Validate(); err != nil {
 		return NewInvalidTokenError(err)
 	}
-	// validate the public key correctness // todo consider abstraction so that this function can also be used for external service certificate(s)
+	// validate the public key correctness // todo consider abstraction so that this function can also be used for external service proof(s)
 	if sa.NodePublicKey != "" { // TODO check for current public key
 		return InvalidNodePubKeyError // the public key is not this nodes, so they would not get paid
 	}
-	hash, err := sa.ServiceCertificatePayload.Hash()
+	hash, err := sa.ServiceProofPayload.Hash()
 	if err != nil {
-		return NewServiceCertificateHashError(err)
+		return NewServiceProofHashError(err)
 	}
 	if !crypto.MockVerifySignature(cpkBytes, hash, []byte(sa.Signature)) { //todo change to real sig verification
 		return InvalidICSignatureError
