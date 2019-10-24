@@ -35,7 +35,7 @@ var (
 	cRpc      = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc      = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	logFormat = flag.String("logformat", "", "Log format for storing logs.  ex.:[.json, .log] ('.json' is used by default)")
-	logDir    = flag.String("logdir", _const.DATADIR + _const.FILESEPARATOR + "logs" + _const.FILESEPARATOR, "setup the log directory.  ex.:['/var/log/'] ('~/.pocket/logs/' is used by default)")
+	logDir    = flag.String("logdir", _const.DATADIR+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR, "setup the log directory.  ex.:['/var/log/'] ('~/.pocket/logs/' is used by default)")
 )
 
 // "Init" initializes the configuration object.
