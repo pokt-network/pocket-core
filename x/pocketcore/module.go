@@ -2,6 +2,7 @@ package pocketcore
 
 import (
 	"encoding/json"
+	"github.com/cosmos/cosmos-sdk/x/supply"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -67,16 +68,18 @@ func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
 
 type AppModule struct {
 	AppModuleBasic
-	keeper     PocketCoreKeeper
-	coinKeeper bank.Keeper
+	keeper       PocketCoreKeeper
+	coinKeeper   bank.Keeper
+	supplyKeeper supply.Keeper
 }
 
 // NewAppModule creates a new AppModule Object
-func NewAppModule(keeper PocketCoreKeeper, bankKeeper bank.Keeper) AppModule {
+func NewAppModule(keeper PocketCoreKeeper, bankKeeper bank.Keeper, supplyKeeper supply.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
 		coinKeeper:     bankKeeper,
+		supplyKeeper:   supplyKeeper,
 	}
 }
 
