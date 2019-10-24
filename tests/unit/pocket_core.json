@@ -1,0 +1,2 @@
+{"FilePath":"/Users/andrew/go/src/github.com/pokt-network/pocket-core/cmd/pocket_core/main.go","FunctionName":"main.startClient","LineNumber":"47","level":"info","msg":"Started Pocket Core","time":"2019-10-24 09:38:13"}
+{"FilePath":"/Users/andrew/go/src/github.com/pokt-network/pocket-core/util/exit.go","FunctionName":"github.com/pokt-network/pocket-core/util.ExitGracefully","LineNumber":"10","level":"info","msg":"Shutting down Pocket Core: Exit signal terminated received\n","time":"2019-10-24 09:38:14"}
