@@ -3,6 +3,7 @@ package types
 import "encoding/hex"
 
 // "Account" is the base structure for actors in the Pocket Network
+// todo consider adding exported.Account instead of individual fields
 type Account struct {
 	Address     Address          `json:"address"`
 	PubKey      AccountPublicKey `json:"publicKey"`
