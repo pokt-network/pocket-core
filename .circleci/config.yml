@@ -11,7 +11,8 @@ commands:
   build-pocket-image:
     steps:
       - checkout
-      - run: dep ensure
+      # specify any bash command here prefixed with `run: `
+      - run: ./deps.sh
       - run: go build cmd/pocket_core/main.go
       - run: go test ./tests/unit/...
       - run: go test ./tests/bdd/...
@@ -45,6 +46,8 @@ jobs:
       - build-pocket-image
       - slack-notification
     working_directory: /go/src/github.com/pokt-network/pocket-core
+    environment:
+          GO111MODULE: "on"
   image_scan:
     executor: anchore/anchore_engine
     steps:
