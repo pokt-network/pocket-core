@@ -2,16 +2,16 @@
 package main
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc"
 	"github.com/pokt-network/pocket-core/util"
 	"math/rand"
-	"time"
 	"os"
-	"fmt"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 // "init" is a built in function that is automatically called before main.
@@ -27,7 +27,7 @@ func main() {
 
 // "startClient" Starts the client with the given initial configuration.
 func startClient() {
-	
+
 	// We trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,

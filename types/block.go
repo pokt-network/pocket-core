@@ -1,11 +1,13 @@
 package types
 
 import (
-	tndmt "github.com/tendermint/tendermint/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	tndmt "github.com/tendermint/tendermint/abci/types"
 )
-
-// wrapper around tendermint block structure
-type Block tndmt.Block
 
 // wrapper around tendermints block id
 type BlockID tndmt.BlockID
+
+func (blkid BlockID) HashHex() string {
+	return crypto.HexEncodeToString(blkid.Hash)
+}

@@ -18,5 +18,7 @@ vendor/
 *.log
 logs/Logs
 *.idea/
-flatc
 
+go.sum
+tests/unit/*.log
+tests/unit/*.json
