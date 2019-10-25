@@ -3,12 +3,9 @@
 # is part of the $PATH
 
 # Base image
-FROM golang:1.11-alpine
+FROM golang:1.12-alpine
 
-# Environment and system dependencies setup
-ENV POCKET_PATH=/go/src/github.com/pokt-network/pocket-core/
-RUN mkdir -p ${POCKET_PATH}
-COPY . $POCKET_PATH
+# Install dependencies
 RUN apk -v --update --no-cache add \
 	curl \
 	git \
@@ -25,11 +22,26 @@ RUN apk -v --update --no-cache add \
 	apk -v --purge del py-pip && \
 	rm /var/cache/apk/* || true
 
-# Install project dependencies and builds the binary
-RUN cd ${POCKET_PATH} && dep ensure && go build -o ${GOBIN}/bin/pocket-core ./cmd/pocket_core/main.go
+# Environment and system dependencies setup
+ENV POCKET_PATH=/go/src/github.com/pokt-network/pocket-core/
+ENV GO111MODULE="on"
+
+# Create node root directory
+RUN mkdir -p ${POCKET_PATH}
+WORKDIR $POCKET_PATH
+
+#Install node dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Install rest of source code
+COPY . .
 
 # Run tests
-RUN cd ${POCKET_PATH} && go test ./tests/...
+RUN go test ./tests/...
+
+# Install project dependencies and builds the binary
+RUN go build -o ${GOBIN}/bin/pocket-core ./cmd/pocket_core/main.go
 
 # Create app user and add permissions
 RUN addgroup -S app \
@@ -38,7 +50,6 @@ RUN chown -R app /go
 
 # Setup the WORKDIR with app user
 USER app
-WORKDIR $POCKET_PATH
 
 # Entrypoint
 ENTRYPOINT ["pocket-core"]
