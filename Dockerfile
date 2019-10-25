@@ -2,8 +2,8 @@
 # The result of this Dockerfile will put the pocket-core executable in the $GOBIN/bin, which in turn
 # is part of the $PATH
 
-# Base image
-FROM golang:1.12-alpine
+# First build step to build the app binary
+FROM golang:1.12-alpine AS builder
 
 # Install dependencies
 RUN apk -v --update --no-cache add \
@@ -14,7 +14,6 @@ RUN apk -v --update --no-cache add \
 	groff \
 	less \
 	mailcap \
-	dep \
 	gcc \
 	libc-dev \
 	bash && \
@@ -43,13 +42,17 @@ RUN go test ./tests/...
 # Install project dependencies and builds the binary
 RUN go build -o ${GOBIN}/bin/pocket-core ./cmd/pocket_core/main.go
 
+# Second build step: reduce image size to only use app binary
+FROM alpine:3.10
+
+COPY --from=builder /bin/pocket-core /bin/pocket-core
+
 # Create app user and add permissions
 RUN addgroup -S app \
 	&& adduser -S -G app app
-RUN chown -R app /go
-
-# Setup the WORKDIR with app user
+RUN chown -R app /bin/pocket-core
 USER app
 
-# Entrypoint
+# Setup the WORKDIR with app user
 ENTRYPOINT ["pocket-core"]
+
