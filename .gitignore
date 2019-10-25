@@ -19,6 +19,5 @@ vendor/
 logs/Logs
 *.idea/
 
-go.sum
 tests/unit/*.log
 tests/unit/*.json
