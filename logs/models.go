@@ -7,7 +7,7 @@ import (
 var (
 	InfoLevel     = LogLevel{logrus.InfoLevel}  // wrappers for each level
 	DebugLevel    = LogLevel{logrus.DebugLevel} // this is necessary to ensure
-	WaringLevel   = LogLevel{logrus.WarnLevel}  // the logrus dependency
+	WarnLevel     = LogLevel{logrus.WarnLevel}  // the logrus dependency
 	PanicLevel    = LogLevel{logrus.PanicLevel} // exists only within the logs
 	FatalLevel    = LogLevel{logrus.FatalLevel} // package.
 	ErrorLevel    = LogLevel{logrus.ErrorLevel}
