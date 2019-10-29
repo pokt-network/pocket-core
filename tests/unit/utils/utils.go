@@ -29,6 +29,7 @@ func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal
 
 	// We assume that we have the wrong signal until the opposite is confirmed
 	correctSignal := false
+
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	// Configure pipes for analyzing the process output later in a goroutine
@@ -49,9 +50,9 @@ func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal
 			fmt.Printf("\t%s\n", scanner.Text())
 
 			// Checks if the output of pocket-core is receiving the kill signal
-			textSearch := fmt.Sprintf(`msg="Shutting down Pocket Core: Exit signal %s received`, textSignal)
-			if strings.Contains(scanner.Text(), textSearch) {
+			if strings.Contains(scanner.Text(), textSignal) {
 				correctSignal = true
+				break
 			}
 		}
 
@@ -60,10 +61,13 @@ func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal
 		}
 
 		if correctSignal == true {
-			t.Logf("Graceful shutdown completed with signal %s", textSignal)
+			msg := fmt.Sprintf("Found string %s on command execution", textSignal)
+			t.Logf(msg)
 		} else {
-			t.Fatalf("Graceful shutdown failed")
+			msg := fmt.Sprintf("Could not find string %s on command execution", textSignal)
+			t.Fatalf(msg)
 		}
+
 	}()
 
 	// Run pocket core command in background
@@ -92,5 +96,4 @@ func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal
 			t.Fatalf("process finished with error")
 		}
 	}
-
 }
