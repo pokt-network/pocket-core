@@ -104,7 +104,7 @@ func logger(l log, format LogFormat) error {
 			if config.GlobalConfig().LogFormat == ".json" {
 				logrus.SetOutput(f)
 
-				// If using .log we create the .log file with textformatter as format
+			// If using .log we create the .log file with textformatter as format
 			} else if config.GlobalConfig().LogFormat == ".log" {
 				Textformatter := new(logrus.TextFormatter)
 				Textformatter.TimestampFormat = "02-01-2006 15:04:05"

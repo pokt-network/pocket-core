@@ -51,6 +51,16 @@ func Init() {
 			flag.Set("logformat", ".json")
 		}
 	}
+	// Check if valid loglevel is passed 
+	if isFlagPassed("loglevel") == true {
+		loglevel := fmt.Sprintf("%s", flag.Lookup("loglevel").Value)
+		_, err := log.ParseLevel(loglevel)
+
+		// Throw fatal error and exit if invalid loglevel is received
+		if err != nil {
+			logger("loglevel flag not valid", log.FatalLevel)
+		}
+	}
 	// sets up filepaths for config files
 	filePaths()
 	// returns the thread safe c of the client configuration.
@@ -58,7 +68,7 @@ func Init() {
 }
 
 // A simple log for showing the pocket configuration
-func logger(output string) {
+func logger(output string, level log.Level) {
 
 	Formatter := new(log.TextFormatter)
 	Formatter.TimestampFormat = "2006-01-02 15:04:05"
@@ -67,8 +77,21 @@ func logger(output string) {
 	log.SetFormatter(Formatter)
 
 	log.SetOutput(os.Stdout)
+
 	// Only log the warning severity or above.
-	log.Info(output)
+	switch level {
+	case log.InfoLevel:
+		log.Info(output)
+	case log.DebugLevel:
+		log.Debug(output)
+	case log.FatalLevel:
+		log.Fatal(output)
+	case log.PanicLevel:
+		log.Panic(output)
+	default:
+		log.Info(output)
+	}
+
 
 }
 
@@ -76,7 +99,7 @@ func logger(output string) {
 func Print() {
 	data, _ := json.MarshalIndent(c, "", "    ")
 	var output = fmt.Sprintf("%s", string(data))
-	logger(output)
+	logger(output, log.InfoLevel)
 }
 
 // Validate if a flag has value
