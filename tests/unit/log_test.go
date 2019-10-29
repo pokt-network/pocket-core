@@ -9,16 +9,58 @@ import (
 	utils "github.com/pokt-network/pocket-core/tests/unit/utils"
 )
 
+func TestTextLogs(t *testing.T) {
+	if err := logs.Log("Unit test for the json log functionality", logs.InfoLevel, logs.TextLogFormatter); err != nil {
+		t.Fatalf(err.Error())
+	}
+}
+
 func TestJSONLogs(t *testing.T) {
 	if err := logs.Log("Unit test for the json log functionality", logs.InfoLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
 	}
 }
 
-func TestTextLogs(t *testing.T) {
-	if err := logs.Log("Unit test for the text log functionality", logs.InfoLevel, logs.TextLogFormatter); err != nil {
+func TestJSONLogLevel(t *testing.T) {
+	if err := logs.Log("Unit test for the trace log functionality", logs.TraceLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
 	}
+	if err := logs.Log("Unit test for the debug log functionality", logs.DebugLevel, logs.JSONLogFormat); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if err := logs.Log("Unit test for the warn log functionality", logs.WarnLevel, logs.JSONLogFormat); err != nil {
+		t.Fatalf(err.Error())
+	}
+
+}
+
+func TestTextLogLevel(t *testing.T) {
+
+	if err := logs.Log("Unit test for the trace log functionality", logs.TraceLevel, logs.TextLogFormatter); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if err := logs.Log("Unit test for the debug log functionality", logs.DebugLevel, logs.TextLogFormatter); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if err := logs.Log("Unit test for the warn log functionality", logs.WarnLevel, logs.TextLogFormatter); err != nil {
+		t.Fatalf(err.Error())
+	}
+
+}
+
+func TestLoglevelFlag(t *testing.T) {
+	// Testing TRACE
+	args := []string{"./pocket_core", "--loglevel", "TRACE"}
+	utils.StartKillPocketCore(args, 15, "TRACE", 500, t)
+
+	// Testing DEBUG
+	args = []string{"./pocket_core", "--loglevel", "DEBUG"}
+	utils.StartKillPocketCore(args, 15, "DEBUG", 500, t)
+
+	// Testing INFO
+	args = []string{"./pocket_core", "--loglevel", "INFO"}
+	utils.StartKillPocketCore(args, 15, "INFO", 500, t)
+
 }
 
 func TestJSONLogsFileGeneration(t *testing.T) {
@@ -33,7 +75,6 @@ func TestJSONLogsFileGeneration(t *testing.T) {
 
 	if fileExists(filepath) {
 		t.Logf("JSON log file %s exists", filepath)
-
 	} else {
 		t.Fatalf("Error JSON log file %s not being created", filepath)
 	}
@@ -52,7 +93,6 @@ func TestJSONLogsFileGenerationCustomLogDir(t *testing.T) {
 
 	if fileExists(filepath) {
 		t.Logf("JSON log file %s exists", filepath)
-
 	} else {
 		t.Fatalf("Error JSON log file %s not being created", filepath)
 	}
@@ -71,7 +111,6 @@ func TestTextLogsFileGeneration(t *testing.T) {
 
 	if fileExists(filepath) {
 		t.Logf("Log file %s exists", filepath)
-
 	} else {
 		t.Fatalf("Error .log file %s not being created", filepath)
 	}
@@ -89,7 +128,6 @@ func TestTextLogsFileGenerationCustomLogDir(t *testing.T) {
 
 	if fileExists(filepath) {
 		t.Logf("Log file %s exists", filepath)
-
 	} else {
 		t.Fatalf("Error .log file %s not being created", filepath)
 	}

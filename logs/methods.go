@@ -50,6 +50,13 @@ func Log(message string, level LogLevel, format LogFormat) error {
 	log.Fmt = format
 	// set the line number
 	log.LineNumber = strconv.Itoa(frame.Line)
+	// set logs level
+	lv, err := logrus.ParseLevel(config.GlobalConfig().LogLevel)
+	if err != nil {
+		return err
+	}
+	logrus.SetLevel(lv)
+
 	log.Message = message
 	if err := logger(log, format); err != nil {
 		return err
