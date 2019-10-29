@@ -21,6 +21,7 @@ type config struct {
 	RRPCPort  string `json:"rrpcport"`     // This variable holds the relay rpc port string.
 	CFile     string `json:"hostedchains"` // This variable holds the filepath to the chains.json.
 	LogFormat string `json:"logformat"`    // This variable changes the log storage format.
+	LogLevel  string `json:"loglevel"`     // This variable changes the log level.
 	LogDir    string `json:"logdir"`       // This variable changes the log storage dir.
 
 }
@@ -35,6 +36,7 @@ var (
 	cRpc      = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc      = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	logFormat = flag.String("logformat", "", "Log format for storing logs.  ex.:[.json, .log] ('.json' is used by default)")
+	logLevel  = flag.String("loglevel", "INFO", "Log level.  ex.:[TRACE, DEBUG, INFO, ERROR, FATAL, PANIC] ('INFO' is used by default)")
 	logDir    = flag.String("logdir", _const.DATADIR+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR, "setup the log directory.  ex.:['/var/log/'] ('~/.pocket/logs/' is used by default)")
 )
 
@@ -66,7 +68,6 @@ func logger(output string) {
 
 	log.SetOutput(os.Stdout)
 	// Only log the warning severity or above.
-	log.SetLevel(log.InfoLevel)
 	log.Info(output)
 
 }
@@ -109,5 +110,6 @@ func newConfiguration() {
 		*rRpcPort,
 		*cFile,
 		*logFormat,
+		*logLevel,
 		*logDir}
 }
