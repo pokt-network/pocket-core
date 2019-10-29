@@ -19,12 +19,12 @@ func TestBuildClient(t *testing.T) {
 func TestStartClientTerminateSignal(t *testing.T) {
 	// Starts pocket core and sends kill signal signal (15)
 	args := []string{"./pocket_core"}
-	utils.StartKillPocketCore(args, 15, "terminated", 500, t)
+	utils.StartKillPocketCore(args, 15, "terminated", 500, false, t)
 }
 
 func TestStartClientInterruptSignal(t *testing.T) {
 	// Starts pocket core and sends kill signal signal (2)
 	args := []string{"./pocket_core"}
-	utils.StartKillPocketCore(args, 2, "interrupt", 500, t)
+	utils.StartKillPocketCore(args, 2, "interrupt", 500, false, t)
 
 }

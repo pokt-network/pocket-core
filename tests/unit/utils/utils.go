@@ -18,7 +18,7 @@ func DeleteTestBinary(t *testing.T) {
 	}
 }
 
-func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal string, millisecondsTimeout time.Duration, t *testing.T) {
+func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal string, millisecondsTimeout time.Duration, shouldFail bool, t *testing.T) {
 	// Test when the pocket_core start and fails with no chains
 	// Run the pocket-core command
 	cmd := exec.Command(command[0])
@@ -65,7 +65,13 @@ func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal
 			t.Logf(msg)
 		} else {
 			msg := fmt.Sprintf("Could not find string %s on command execution", textSignal)
-			t.Fatalf(msg)
+
+			if shouldFail == false {
+				t.Fatalf(msg) // if we dont need to fail, thow err
+			} else {
+				t.Infof(msg) // If we need to fail, just log
+			}
+
 		}
 
 	}()
