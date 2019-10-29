@@ -69,7 +69,7 @@ func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal
 			if shouldFail == false {
 				t.Fatalf(msg) // if we dont need to fail, thow err
 			} else {
-				t.Infof(msg) // If we need to fail, just log
+				t.Logf(msg) // If we need to fail, just log
 			}
 
 		}
