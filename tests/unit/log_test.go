@@ -69,7 +69,7 @@ func TestLoglevelFlag(t *testing.T) {
 
 func TestJSONLogsFileGeneration(t *testing.T) {
 	args := []string{"./pocket_core", "--logformat", ".json"}
-	utils.StartKillPocketCore(args, 15, "terminated", 500, "false", t)
+	utils.StartKillPocketCore(args, 15, "terminated", 500, false, t)
 
 	if err := logs.Log("Unit test for the .json log file generation", logs.InfoLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
@@ -87,7 +87,7 @@ func TestJSONLogsFileGeneration(t *testing.T) {
 
 func TestJSONLogsFileGenerationCustomLogDir(t *testing.T) {
 	args := []string{"./pocket_core", "--logformat", ".json", "--logdir", "./"}
-	utils.StartKillPocketCore(args, 15, "terminated", 500, "false", t)
+	utils.StartKillPocketCore(args, 15, "terminated", 500, false, t)
 
 	if err := logs.Log("Unit test for the .json log file generation", logs.InfoLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
@@ -105,7 +105,7 @@ func TestJSONLogsFileGenerationCustomLogDir(t *testing.T) {
 
 func TestTextLogsFileGeneration(t *testing.T) {
 	args := []string{"./pocket_core", "--logformat", ".log"}
-	utils.StartKillPocketCore(args, 15, "terminated", 500, "false", t)
+	utils.StartKillPocketCore(args, 15, "terminated", 500, false, t)
 
 	if err := logs.Log("Unit test for the .log file generation", logs.InfoLevel, logs.TextLogFormatter); err != nil {
 		t.Fatalf(err.Error())
@@ -122,7 +122,7 @@ func TestTextLogsFileGeneration(t *testing.T) {
 
 func TestTextLogsFileGenerationCustomLogDir(t *testing.T) {
 	args := []string{"./pocket_core", "--logformat", ".log", "--logdir", "./"}
-	utils.StartKillPocketCore(args, 15, "terminated", 500, "false", t)
+	utils.StartKillPocketCore(args, 15, "terminated", 500, false, t)
 
 	if err := logs.Log("Unit test for the .log file generation", logs.InfoLevel, logs.TextLogFormatter); err != nil {
 		t.Fatalf(err.Error())

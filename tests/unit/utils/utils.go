@@ -99,7 +99,11 @@ func StartKillPocketCore(command []string, killSignal syscall.Signal, textSignal
 		}
 	case err := <-done:
 		if err != nil {
-			t.Fatalf("process finished with error")
+			if shouldFail == false {
+				t.Fatalf("Process finished with error") // if we dont need to fail, thow err
+			} else {
+				t.Logf("Process finished with error correctly") // If we need to fail, just log
+			}
 		}
 	}
 }
