@@ -22,13 +22,13 @@ func TestJSONLogs(t *testing.T) {
 }
 
 func TestJSONLogLevel(t *testing.T) {
-	if err := logs.Log("Unit test for the trace JSON log functionality", logs.TraceLevel, logs.JSONLogFormat); err != nil {
+	if err := logs.Log("Unit test for the loglevel trace and log type JSON", logs.TraceLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
 	}
-	if err := logs.Log("Unit test for the debug JSON log functionality", logs.DebugLevel, logs.JSONLogFormat); err != nil {
+	if err := logs.Log("Unit test for the loglevel debug and log type JSON", logs.DebugLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
 	}
-	if err := logs.Log("Unit test for the warn JSON log functionality", logs.WarnLevel, logs.JSONLogFormat); err != nil {
+	if err := logs.Log("Unit test for the loglevel warn and log type JSON", logs.WarnLevel, logs.JSONLogFormat); err != nil {
 		t.Fatalf(err.Error())
 	}
 
@@ -36,13 +36,13 @@ func TestJSONLogLevel(t *testing.T) {
 
 func TestTextLogLevel(t *testing.T) {
 
-	if err := logs.Log("Unit test for the trace text log functionality", logs.TraceLevel, logs.TextLogFormatter); err != nil {
+	if err := logs.Log("Unit test for the loglevel trace and log type text", logs.TraceLevel, logs.TextLogFormatter); err != nil {
 		t.Fatalf(err.Error())
 	}
-	if err := logs.Log("Unit test for the debug text log functionality", logs.DebugLevel, logs.TextLogFormatter); err != nil {
+	if err := logs.Log("Unit test for the loglevel debug and log type text", logs.DebugLevel, logs.TextLogFormatter); err != nil {
 		t.Fatalf(err.Error())
 	}
-	if err := logs.Log("Unit test for the warn text log functionality", logs.WarnLevel, logs.TextLogFormatter); err != nil {
+	if err := logs.Log("Unit test for the loglevel warn and log type text", logs.WarnLevel, logs.TextLogFormatter); err != nil {
 		t.Fatalf(err.Error())
 	}
 
