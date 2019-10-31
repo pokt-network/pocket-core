@@ -54,7 +54,6 @@ jobs:
     steps:
       - local_image_scan
       - slack-notification
-    working_directory: /go/src/github.com/pokt-network/pocket-core
 
 orbs:
   anchore: anchore/anchore-engine@1.6.0
