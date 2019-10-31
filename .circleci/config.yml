@@ -23,7 +23,6 @@ commands:
     steps:
        - setup_remote_docker
        - checkout
-       - run: ./deps.sh
        - run: docker build -t "${CIRCLE_PROJECT_REPONAME}:ci" -f ./Dockerfile .
        - anchore/analyze_local_image:
           image_name: ${CIRCLE_PROJECT_REPONAME}:ci
