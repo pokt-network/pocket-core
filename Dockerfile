@@ -26,7 +26,7 @@ RUN apk -v --update --no-cache add \
 	rm /var/cache/apk/* || true
 
 # Install project dependencies and builds the binary
-RUN cd ${POCKET_PATH} && dep init && dep ensure && go build -o ${GOBIN}/bin/pocket-core ./cmd/pocket_core/main.go
+RUN cd ${POCKET_PATH} && dep ensure && go build -o ${GOBIN}/bin/pocket-core ./cmd/pocket_core/main.go
 
 # Run tests
 RUN cd ${POCKET_PATH} && go test ./tests/...

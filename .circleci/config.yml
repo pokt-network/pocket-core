@@ -6,7 +6,7 @@ executors:
       docker:
         - image: circleci/golang:1.11
           environment:
-            GO111MODULE: "on"     
+            GO111MODULE: "on"
 
 # Commands are sets of steps that can be reutilized 
 commands:
@@ -23,6 +23,8 @@ commands:
     steps:
        - setup_remote_docker
        - checkout
+       - run: GO111MODULE= on
+       - run: /bin/bash deps.sh       
        - run: docker build -t "${CIRCLE_PROJECT_REPONAME}:ci" -f ./Dockerfile .
        - anchore/analyze_local_image:
           image_name: ${CIRCLE_PROJECT_REPONAME}:ci
