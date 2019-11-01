@@ -23,8 +23,16 @@ commands:
     steps:
        - setup_remote_docker
        - checkout
+       - run: apt-get remove golang 
+       - run: apt install -y wget 
+       - run: wget 'https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz'
+       - run: tar -C /usr/local -xzf
+       - run: export GOROOT="/usr/local/go"
+       - run: export GOBIN="$HOME/go/bin"
+       - run: mkdir -p $GOBIN
+       - run: export PATH=$PATH:$GOROOT/bin:$GOBIN
        - run: GO111MODULE=on
-       - run: /bin/bash deps.sh       
+       - run: ./deps.sh       
        - run: docker build -t "${CIRCLE_PROJECT_REPONAME}:ci" -f ./Dockerfile .
        - anchore/analyze_local_image:
           image_name: ${CIRCLE_PROJECT_REPONAME}:ci
