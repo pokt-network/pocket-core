@@ -13,34 +13,17 @@ commands:
   build-pocket-image:
     steps:
       - checkout
+      - setup_remote_docker
       # specify any bash command here prefixed with `run: `
       - run: ./deps.sh
       - run: go build cmd/pocket_core/main.go
       - run: go test ./tests/unit/...
       - run: go test ./tests/bdd/...
-  # Proceeds to scan pocket-core image to see if it finds vulnerabilities in it.
-  local_image_scan:
-    steps:
-       - setup_remote_docker
-       - checkout
-       - run: apt-get remove golang 
-       - run: apt install -y wget 
-       - run: wget 'https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz'
-       - run: tar -C /usr/local -xzf
-       - run: export GOROOT="/usr/local/go"
-       - run: export GOBIN="$HOME/go/bin"
-       - run: mkdir -p $GOBIN
-       - run: export PATH=$PATH:$GOROOT/bin:$GOBIN
-       - run: GO111MODULE=on
-       - run: ./deps.sh       
-       - run: docker build -t "${CIRCLE_PROJECT_REPONAME}:ci" -f ./Dockerfile .
-       - anchore/analyze_local_image:
+      - run: docker build -t "${CIRCLE_PROJECT_REPONAME}:ci" -f ./Dockerfile .
+      - anchore/analyze_local_image:
           image_name: ${CIRCLE_PROJECT_REPONAME}:ci
           dockerfile_path: ./Dockerfile
-          timeout: '600'
-       - anchore/parse_reports
-       - store_artifacts:
-           path: anchore-reports
+          timeout: '600'  
   # Sends a slack notification if build fails
   # For more information on Slack Orb: https://github.com/CircleCI-Public/slack-orb
   slack-notification:
@@ -58,11 +41,6 @@ jobs:
       - build-pocket-image
       - slack-notification
     working_directory: /go/src/github.com/pokt-network/pocket-core
-  image_scan:
-    executor: anchore/anchore_engine
-    steps:
-      - local_image_scan
-      - slack-notification
 
 orbs:
   anchore: anchore/anchore-engine@1.6.0
@@ -72,6 +50,3 @@ workflows:
   build_and_scan:
     jobs:
       - build
-      - image_scan:
-          requires:
-            - build
