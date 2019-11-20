@@ -2,6 +2,8 @@ package app
 
 import (
 	"encoding/json"
+	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"os"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -84,7 +86,7 @@ type pocketCoreApp struct {
 	distrKeeper    distr.Keeper
 	supplyKeeper   supply.Keeper
 	paramsKeeper   params.Keeper
-	pcKeeper       pocketcore.PocketCoreKeeper
+	pcKeeper       keeper.Keeper
 
 	// Module Manager
 	mm *module.Manager
@@ -102,7 +104,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	bApp.SetAppVersion(version.Version)
 
 	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, staking.StoreKey,
-		supply.StoreKey, distr.StoreKey, slashing.StoreKey, params.StoreKey, pocketcore.StoreKey)
+		supply.StoreKey, distr.StoreKey, slashing.StoreKey, params.StoreKey, types.StoreKey)
 
 	tkeys := sdk.NewTransientStoreKeys(staking.TStoreKey, params.TStoreKey)
 
@@ -185,12 +187,12 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 			app.slashingKeeper.Hooks()),
 	)
 
-	// The PocketCoreeKeeper is the PocketCoreKeeper from the module
+	// The PocketCoreeKeeper is the Keeper from the module
 	// It handles interactions with the pocketCore
-	app.pcKeeper = pocketcore.NewPocketCoreKeeper(
+	app.pcKeeper = keeper.NewPocketCoreKeeper(
 		app.bankKeeper,
 		app.supplyKeeper,
-		keys[pocketcore.StoreKey],
+		keys[types.StoreKey],
 		app.cdc,
 	)
 
@@ -219,7 +221,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		auth.ModuleName,
 		bank.ModuleName,
 		slashing.ModuleName,
-		pocketcore.ModuleName,
+		types.ModuleName,
 		supply.ModuleName,
 		genutil.ModuleName,
 	)

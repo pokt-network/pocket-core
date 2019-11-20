@@ -2,15 +2,17 @@ package pocketcore
 
 import (
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	sdk "github.com/pokt-network/posmint/types"
 )
 
 // TODO
 // NewHandler returns a handler for "pocketCore" type messages.
-func NewHandler(keeper PocketCoreKeeper) sdk.Handler {
+func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
-		case MsgRelayBatch:
+		case types.MsgRelayBatch:
 			return handleRelayBatchMessage(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized pocketcore Msg type: %v", msg.Type())
@@ -20,6 +22,6 @@ func NewHandler(keeper PocketCoreKeeper) sdk.Handler {
 }
 
 // Handle a message to set name
-func handleRelayBatchMessage(ctx sdk.Context, keeper PocketCoreKeeper, msg MsgRelayBatch) sdk.Result {
+func handleRelayBatchMessage(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgRelayBatch) sdk.Result {
 	return sdk.Result{} // return
 }
