@@ -1,0 +1,80 @@
+package keeper
+
+import (
+	"github.com/pokt-network/pocket-core/x/apps/exported"
+	"github.com/pokt-network/pocket-core/x/apps/types"
+	sdk "github.com/pokt-network/posmint/types"
+)
+
+// set staked application
+func (k Keeper) SetStakedApplication(ctx sdk.Context, application types.Application) {
+	if application.Jailed {
+		return // jailed applications are not kept in the power index
+	}
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.KeyForAppInStakingSet(application), application.Address)
+}
+
+func (k Keeper) StakeDenom(ctx sdk.Context) string {
+	return k.posKeeper.StakeDenom(ctx)
+}
+
+// delete application from staked set
+func (k Keeper) deleteApplicationFromStakingSet(ctx sdk.Context, application types.Application) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyForAppInStakingSet(application))
+}
+
+// Update the staked tokens of an existing application, update the applications power index key
+func (k Keeper) removeApplicationTokens(ctx sdk.Context, v types.Application, tokensToRemove sdk.Int) types.Application {
+	k.deleteApplicationFromStakingSet(ctx, v)
+	v = v.RemoveStakedTokens(tokensToRemove)
+	k.SetApplication(ctx, v)
+	k.SetStakedApplication(ctx, v)
+	return v
+}
+
+// get the current staked applications sorted by power-rank
+func (k Keeper) getStakedApplications(ctx sdk.Context) types.Applications {
+	maxApplications := k.MaxApplications(ctx)
+	applications := make([]types.Application, maxApplications)
+	iterator := k.stakedAppsIterator(ctx)
+	defer iterator.Close()
+	i := 0
+	for ; iterator.Valid() && i < int(maxApplications); iterator.Next() {
+		address := iterator.Value()
+		application := k.mustGetApplication(ctx, address)
+		if application.IsStaked() {
+			applications[i] = application
+			i++
+		}
+	}
+	return applications[:i] // trim
+}
+
+// returns an iterator for the current staked applications
+func (k Keeper) stakedAppsIterator(ctx sdk.Context) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStoreReversePrefixIterator(store, types.StakedAppsKey)
+}
+
+// iterate through the staked application set and perform the provided function
+func (k Keeper) IterateAndExecuteOverStakedApps(
+	ctx sdk.Context, fn func(index int64, application exported.ApplicationI) (stop bool)) {
+	store := ctx.KVStore(k.storeKey)
+	maxApplications := k.MaxApplications(ctx)
+	iterator := sdk.KVStoreReversePrefixIterator(store, types.StakedAppsKey)
+	defer iterator.Close()
+	i := int64(0)
+	for ; iterator.Valid() && i < int64(maxApplications); iterator.Next() {
+		address := iterator.Value()
+		application := k.mustGetApplication(ctx, address)
+		if application.IsStaked() {
+			stop := fn(i, application) // XXX is this safe will the application unexposed fields be able to get written to?
+			if stop {
+				break
+			}
+			i++
+		}
+	}
+}

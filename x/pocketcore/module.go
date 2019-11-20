@@ -2,17 +2,14 @@ package pocketcore
 
 import (
 	"encoding/json"
-	"github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/crypto/keys"
+	"github.com/tendermint/tendermint/node"
 
-	"github.com/gorilla/mux"
-	"github.com/spf13/cobra"
-
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-
-	"github.com/cosmos/cosmos-sdk/client/context"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/pokt-network/posmint/codec"
+	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -26,82 +23,74 @@ var (
 type AppModuleBasic struct{}
 
 func (AppModuleBasic) Name() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
-	RegisterCodec(cdc)
+	types.RegisterCodec(cdc)
 }
 
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
-	return ModuleCdc.MustMarshalJSON(DefaultGenesisState())
+	return types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
 // Validation check of the Genesis
 func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
-	var data GenesisState
-	err := ModuleCdc.UnmarshalJSON(bytes, &data)
+	var data types.GenesisState
+	err := types.ModuleCdc.UnmarshalJSON(bytes, &data)
 	if err != nil {
 		return err
 	}
 	// Once json successfully marshalled, passes along to genesis.go
-	return ValidateGenesis(data)
+	return types.ValidateGenesis(data)
 }
 
-// Register rest routes
-func (AppModuleBasic) RegisterRESTRoutes(ctx context.CLIContext, rtr *mux.Router) {
-	// todo
-	// rest.RegisterRoutes(ctx, rtr, StoreKey)
+func (am AppModule) GetTendermintNode() *node.Node {
+	return am.node
 }
 
-// Get the root query command of this module
-func (AppModuleBasic) GetQueryCmd(cdc *codec.Codec) *cobra.Command {
-	// todo
-	return nil
-}
-
-// Get the root tx command of this module
-func (AppModuleBasic) GetTxCmd(cdc *codec.Codec) *cobra.Command {
-	// todo
-	return nil
+func (am AppModule) GetKeybase() keys.Keybase {
+	return am.keybase
 }
 
 type AppModule struct {
 	AppModuleBasic
-	keeper       PocketCoreKeeper
-	coinKeeper   bank.Keeper
-	supplyKeeper supply.Keeper
+	keeper     keeper.Keeper
+	posKeeper  types.PosKeeper
+	appsKeeper types.AppsKeeper
+	node       *node.Node
+	keybase    keys.Keybase
 }
 
 // NewAppModule creates a new AppModule Object
-func NewAppModule(keeper PocketCoreKeeper, bankKeeper bank.Keeper, supplyKeeper supply.Keeper) AppModule {
+func NewAppModule(keeper keeper.Keeper, posKeeper types.PosKeeper, appsKeeper types.AppsKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-		coinKeeper:     bankKeeper,
-		supplyKeeper:   supplyKeeper,
+		posKeeper:      posKeeper,
+		appsKeeper:     appsKeeper,
 	}
 }
 
 func (AppModule) Name() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
 func (am AppModule) Route() string {
-	return RouterKey
+	return types.RouterKey
 }
 
 func (am AppModule) NewHandler() sdk.Handler {
 	return NewHandler(am.keeper)
 }
 func (am AppModule) QuerierRoute() string {
-	return ModuleName
+	return types.ModuleName
 }
 
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return NewQuerier(am.keeper)
+	return types.NewQuerier(am.keeper)
 }
 
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
@@ -111,12 +100,12 @@ func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.Validator
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState GenesisState
-	ModuleCdc.MustUnmarshalJSON(data, &genesisState)
-	return InitGenesis(ctx, am.keeper, genesisState)
+	var genesisState types.GenesisState
+	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	return types.InitGenesis(ctx, am.keeper, genesisState)
 }
 
 func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
-	gs := ExportGenesis(ctx, am.keeper)
-	return ModuleCdc.MustMarshalJSON(gs)
+	gs := types.ExportGenesis(ctx, am.keeper)
+	return types.ModuleCdc.MustMarshalJSON(gs)
 }
