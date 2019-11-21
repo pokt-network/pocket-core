@@ -16,6 +16,7 @@ type Application struct {
 	Status                  sdk.BondStatus      `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
 	Chains                  map[string]struct{} `json:"chains" yaml:"chains"`                 // requested chains
 	StakedTokens            sdk.Int             `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
+	MaxRelays               sdk.Int             `json:"max_relays" yaml:"max_relays"`         // maximum number of relays allowed
 	UnstakingCompletionTime time.Time           `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }
 
@@ -94,3 +95,4 @@ func (a Application) GetConsPubKey() crypto.PubKey   { return a.ConsPubKey }
 func (a Application) GetConsAddr() sdk.ConsAddress   { return sdk.ConsAddress(a.ConsPubKey.Address()) }
 func (a Application) GetTokens() sdk.Int             { return a.StakedTokens }
 func (a Application) GetConsensusPower() int64       { return a.ConsensusPower() }
+func (a Application) GetMaxRelays() sdk.Int          { return a.MaxRelays }

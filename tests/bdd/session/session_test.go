@@ -20,9 +20,9 @@ var _ = Describe("Session", func() {
 		}
 		allActiveNodes := *nodesPointer
 		Describe("SessionKey Generation", func() {
-			Context("Empty Application seed", func() {
-				emptyApplication := session.SessionAppPubKey("") // empty Application
-				It("should return empty Application public key error", func() {
+			Context("Empty AppPubKey seed", func() {
+				emptyApplication := session.SessionAppPubKey("") // empty AppPubKey
+				It("should return empty AppPubKey public key error", func() {
 					_, err := session.NewSessionKey(emptyApplication, validNonNativeChain, validBlockID)
 					Expect(err).To(Equal(session.EmptyAppPubKeyError))
 				})

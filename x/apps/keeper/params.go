@@ -3,9 +3,9 @@ package keeper
 import (
 	"time"
 
+	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/params"
-	"github.com/pokt-network/pocket-core/x/apps/types"
 )
 
 // Default parameter namespace
@@ -24,12 +24,16 @@ func (k Keeper) UnStakingTime(ctx sdk.Context) (res time.Duration) {
 	return
 }
 
+func (k Keeper) RelayCoefficient(ctx sdk.Context) (coefficient uint8) {
+	k.Paramstore.Get(ctx, types.KeyRelayCoefficientPercentage, &coefficient)
+	return
+}
+
 // MaxApplications - Maximum number of applications
 func (k Keeper) MaxApplications(ctx sdk.Context) (res uint64) {
 	k.Paramstore.Get(ctx, types.KeyMaxApplications, &res)
 	return
 }
-
 
 func (k Keeper) MinimumStake(ctx sdk.Context) (res int64) {
 	k.Paramstore.Get(ctx, types.KeyApplicationMinStake, &res)
@@ -39,9 +43,10 @@ func (k Keeper) MinimumStake(ctx sdk.Context) (res int64) {
 // Get all parameteras as types.Params
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.Params{
-		UnstakingTime:            k.UnStakingTime(ctx),
+		UnstakingTime:              k.UnStakingTime(ctx),
 		MaxApplications:            k.MaxApplications(ctx),
-		AppStakeMin:             k.MinimumStake(ctx),
+		AppStakeMin:                k.MinimumStake(ctx),
+		RelayCoefficientPercentage: k.RelayCoefficient(ctx),
 	}
 }
 

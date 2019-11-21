@@ -38,6 +38,8 @@ func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application,
 	k.coinsFromUnstakedToStaked(ctx, application, amount)
 	// add coins to the staked field
 	application.AddStakedTokens(amount)
+	// calculate relays
+	application.MaxRelays = k.CalculateAppRelays(ctx, application)
 	// set the status to staked
 	application = application.UpdateStatus(sdk.Bonded)
 	// save in the application store
@@ -107,6 +109,8 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 	k.coinsFromStakedToUnstaked(ctx, application)
 	// update the status to unstaked
 	application = application.UpdateStatus(sdk.Unbonded)
+	// reset app relays
+	application.MaxRelays = sdk.ZeroInt()
 	// update the application in the main store
 	k.SetApplication(ctx, application)
 	// call the after hook
@@ -142,6 +146,8 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Appli
 	application = application.RemoveStakedTokens(application.StakedTokens)
 	// update their status to unstaked
 	application = application.UpdateStatus(sdk.Unbonded)
+	// reset app relays
+	application.MaxRelays = sdk.ZeroInt()
 	// set the application in store
 	k.SetApplication(ctx, application)
 	// call after hook

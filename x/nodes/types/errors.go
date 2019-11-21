@@ -11,7 +11,6 @@ type CodeType = sdk.CodeType
 
 const (
 	DefaultCodespace          sdk.CodespaceType = ModuleName
-	CodeUnauthorized          CodeType          = sdk.CodeUnauthorized
 	CodeInvalidValidator      CodeType          = 101
 	CodeInvalidDelegation     CodeType          = 102
 	CodeInvalidInput          CodeType          = 103
@@ -27,7 +26,12 @@ const (
 	CodeCantHandleEvidence    CodeType          = 114
 	CodeNoChains              CodeType          = 115
 	CodeNoServiceURL          CodeType          = 116
+	CodeWaitingValidator      CodeType          = 117
 )
+
+func ErrValidatorWaitingToUnstake(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeWaitingValidator, "validator is currently waiting to unstake")
+}
 
 func ErrNoServiceURL(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeNoServiceURL, "validator must stake with a serviceurl")

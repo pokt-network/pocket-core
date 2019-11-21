@@ -4,7 +4,7 @@ import (
 	"github.com/pokt-network/pocket-core/legacy"
 )
 
-// "Application" is the base structure for a Pocket Network Application
+// "AppPubKey" is the base structure for a Pocket Network AppPubKey
 type Application struct {
 	Account               `json:"routing"`
 	LegacyRequestedChains []LegacyApplicationRequestedBlockchain `json:"legacyRequestedChains"` // todo phase out

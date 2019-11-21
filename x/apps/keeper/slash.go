@@ -15,7 +15,7 @@ func (k Keeper) BurnApplication(ctx sdk.Context, address sdk.ValAddress, severit
 
 // slash a application for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight, power int64, slashFactor sdk.Dec) {
+func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight, power int64, slashFactor sdk.Dec) { // todo!!! slashing for app max relays
 	// error check slash
 	application := k.validateSlash(ctx, consAddr, infractionHeight, power, slashFactor)
 	if application.Address == nil {
@@ -29,6 +29,7 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 	// cannot decrease balance below zero
 	tokensToBurn := sdk.MinInt(slashAmount, application.StakedTokens)
 	tokensToBurn = sdk.MaxInt(tokensToBurn, sdk.ZeroInt()) // defensive.
+	burnRatio := tokensToBurn.ToDec().Quo(application.StakedTokens.ToDec())
 	// Deduct from application's staked tokens and update the application.
 	// Burn the slashed tokens from the pool account and decrease the total supply.
 	application = k.removeApplicationTokens(ctx, application, tokensToBurn)
@@ -36,6 +37,10 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 	if err != nil {
 		panic(err)
 	}
+	// do the same for the maxRelays
+	// todo confirm/audit these two lines
+	relaysToBurn := application.MaxRelays.ToDec().Mul(burnRatio).TruncateInt()
+	application = k.removeApplicationRelays(ctx, application, relaysToBurn)
 	// if falls below minimum force burn all of the stake
 	if application.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		err := k.ForceApplicationUnstake(ctx, application)

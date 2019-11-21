@@ -3,9 +3,9 @@ package keeper
 import (
 	"time"
 
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/params"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 // Default parameter namespace
@@ -16,6 +16,11 @@ const (
 // ParamTable for staking module
 func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&types.Params{})
+}
+
+func (k Keeper) SessionBlock(ctx sdk.Context) (res uint) {
+	k.Paramstore.Get(ctx, types.KeySessionBlock, &res)
+	return
 }
 
 // UnstakingTime
