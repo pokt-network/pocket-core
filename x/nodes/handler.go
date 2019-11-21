@@ -93,7 +93,14 @@ func stakeRegisteredValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keep
 	if !found {
 		return types.ErrNoValidatorFound(k.Codespace()).Result()
 	}
-	err := k.StakeValidator(ctx, validator, msg.Value)
+	err := k.ValidateValidatorStaking(ctx, validator, msg.Value)
+	if err != nil {
+		return err.Result()
+	}
+	if k.IsWaitingValidator(ctx, validator.Address) {
+		return types.ErrValidatorWaitingToUnstake(types.DefaultCodespace).Result()
+	}
+	err = k.StakeValidator(ctx, validator, msg.Value)
 	if err != nil {
 		return err.Result()
 	}
@@ -124,13 +131,13 @@ func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginUnstake, k keeper.
 	if err := k.ValidateValidatorBeginUnstaking(ctx, validator); err != nil {
 		return err.Result()
 	}
-	if err := k.BeginUnstakingValidator(ctx, validator); err != nil {
+	if err := k.WaitToBeginUnstakingValidator(ctx, validator); err != nil {
 		return err.Result()
 	}
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeBeginUnstake,
+			types.EventTypeWaitingToBeginUnstaking,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
 		),

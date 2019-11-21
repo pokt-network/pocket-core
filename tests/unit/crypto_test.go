@@ -145,7 +145,7 @@ func TestPrivateKey_Sign(t *testing.T) {
 		name         string
 		wantedLength int
 	}{
-		{"Test Private Key Signature Length of 65 bytes", 65},
+		{"Test Private Key ApplicationSignature Length of 65 bytes", 65},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -189,7 +189,7 @@ func TestGetPublicKeyBytesFromSignature(t *testing.T) {
 		name         string
 		wantedLength int
 	}{
-		{"Test Public Key Retrieval From Signature", 65},
+		{"Test Public Key Retrieval From ApplicationSignature", 65},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -225,7 +225,7 @@ func TestVerifySignature(t *testing.T) {
 		wantedLength             int
 		wantedVerificationResult bool
 	}{
-		{"Test Public Key Retrieval From Signature", 65, true},
+		{"Test Public Key Retrieval From ApplicationSignature", 65, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -266,7 +266,7 @@ func TestVerifySignatureWithPubKeyBytes(t *testing.T) {
 		wantedLength             int
 		wantedVerificationResult bool
 	}{
-		{"Test Public Key Retrieval From Signature", 65, true},
+		{"Test Public Key Retrieval From ApplicationSignature", 65, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

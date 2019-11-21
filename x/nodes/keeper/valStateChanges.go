@@ -6,8 +6,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"time"
 
-	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	sdk "github.com/pokt-network/posmint/types"
 )
 
 // Apply and return accumulated updates to the staked validator set
@@ -16,6 +16,10 @@ import (
 func (k Keeper) UpdateTendermintValidators(ctx sdk.Context) (updates []abci.ValidatorUpdate) {
 	// get the world state
 	store := ctx.KVStore(k.storeKey)
+	// allow all waiting to begin unstaking to begin unstaking
+	if ctx.BlockHeight()%int64(k.SessionBlock(ctx)) == 0 { // one block before new session (mod 1 would be session block)
+		k.ReleaseWaitingValidators(ctx)
+	}
 	maxValidators := k.GetParams(ctx).MaxValidators
 	totalPower := sdk.ZeroInt()
 	// Retrieve the prevState validator set addresses mapped to their respective staking power
@@ -136,6 +140,37 @@ func (k Keeper) ValidateValidatorBeginUnstaking(ctx sdk.Context, validator types
 		panic("should not happen: validator trying to begin unstaking has less than the minimum stake")
 	}
 	return nil
+}
+
+func (k Keeper) WaitToBeginUnstakingValidator(ctx sdk.Context, validator types.Validator) sdk.Error {
+	k.SetWaitingValidator(ctx, validator) // todo could add hooks
+	return nil
+}
+
+func (k Keeper) ReleaseWaitingValidators(ctx sdk.Context) {
+	vals := k.GetWaitingValidators(ctx)
+	for _, val := range vals {
+		if err := k.ValidateValidatorBeginUnstaking(ctx, val); err == nil {
+			// if able to begin unstaking
+			if err := k.BeginUnstakingValidator(ctx, val); err != nil {
+				panic("error releasing waiting validators: " + err.Error())
+			}
+			// create the event
+			ctx.EventManager().EmitEvents(sdk.Events{
+				sdk.NewEvent(
+					types.EventTypeBeginUnstake,
+					sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+					sdk.NewAttribute(sdk.AttributeKeySender, val.Address.String()),
+				),
+				sdk.NewEvent(
+					sdk.EventTypeMessage,
+					sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+					sdk.NewAttribute(sdk.AttributeKeySender, val.Address.String()),
+				),
+			})
+		}
+		k.DeleteWaitingValidator(ctx, val.Address)
+	}
 }
 
 // store ops when validator begins to unstake -> starts the unbonding timer

@@ -15,6 +15,7 @@ type PosKeeper interface {
 	BurnValidator(ctx sdk.Context, address sdk.ValAddress, severityPercentage sdk.Dec)
 	JailValidator(ctx sdk.Context, addr sdk.ConsAddress)
 	GetAllValidators(ctx sdk.Context) (validators []posexported.ValidatorI)
+	SessionBlock(ctx sdk.Context) (res uint)
 }
 
 type AppsKeeper interface {

@@ -19,6 +19,7 @@ const (
 	DefaultMaxEvidenceAge                     = 60 * 2 * time.Second
 	DefaultSignedBlocksWindow                 = int64(100)
 	DefaultDowntimeJailDuration               = 60 * 10 * time.Second
+	DefaultSessionBlocktime                   = 25
 )
 
 // nolint - Keys for parameter access
@@ -34,6 +35,7 @@ var (
 	KeyDowntimeJailDuration        = []byte("DowntimeJailDuration")
 	KeySlashFractionDoubleSign     = []byte("SlashFractionDoubleSign")
 	KeySlashFractionDowntime       = []byte("SlashFractionDowntime")
+	KeySessionBlock                = []byte("SessionBlock")
 	DoubleSignJailEndTime          = time.Unix(253402300799, 0) // forever
 	DefaultMinSignedPerWindow      = sdk.NewDecWithPrec(5, 1)
 	DefaultSlashFractionDoubleSign = sdk.NewDec(1).Quo(sdk.NewDec(20))
@@ -49,6 +51,7 @@ type Params struct {
 	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                 // bondable coin denomination
 	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`             // minimum amount needed to stake
 	ProposerRewardPercentage int8          `json:"base_proposer_award" yaml:"base_proposer_award"` // minimum award for the proposer
+	SessionBlock             uint          `json:"session_block" yaml:"session_block"`
 	// slashing params
 	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`
 	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`
@@ -71,6 +74,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeyDowntimeJailDuration, Value: &p.DowntimeJailDuration},
 		{Key: KeySlashFractionDoubleSign, Value: &p.SlashFractionDoubleSign},
 		{Key: KeySlashFractionDowntime, Value: &p.SlashFractionDowntime},
+		{Key: KeySessionBlock, Value: &p.SessionBlock},
 	}
 }
 
@@ -88,6 +92,7 @@ func DefaultParams() Params {
 		DowntimeJailDuration:     DefaultDowntimeJailDuration,
 		SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
 		SlashFractionDowntime:    DefaultSlashFractionDowntime,
+		SessionBlock:             DefaultSessionBlocktime,
 	}
 }
 
@@ -104,6 +109,9 @@ func (p Params) Validate() error {
 	}
 	if p.ProposerRewardPercentage < 0 || p.ProposerRewardPercentage > 100 {
 		return fmt.Errorf("base proposer award is a percentage and must be between 0 and 100")
+	}
+	if p.SessionBlock < 1 {
+		return fmt.Errorf("session block must be greater than 1")
 	}
 	return nil
 }
@@ -128,7 +136,8 @@ func (p Params) String() string {
   MinSignedPerWindow:      %s
   DowntimeJailDuration:    %s
   SlashFractionDoubleSign: %s
-  SlashFractionDowntime:   %s`,
+  SlashFractionDowntime:   %s
+  SessionBlock %s`,
 		p.UnstakingTime,
 		p.MaxValidators,
 		p.StakeDenom,
@@ -139,7 +148,8 @@ func (p Params) String() string {
 		p.MinSignedPerWindow,
 		p.DowntimeJailDuration,
 		p.SlashFractionDoubleSign,
-		p.SlashFractionDowntime)
+		p.SlashFractionDowntime,
+		p.SessionBlock)
 }
 
 // unmarshal the current pos params value from store key or panic

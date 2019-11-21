@@ -34,6 +34,15 @@ func (k Keeper) removeApplicationTokens(ctx sdk.Context, v types.Application, to
 	return v
 }
 
+// Update the staked tokens of an existing application, update the applications power index key
+func (k Keeper) removeApplicationRelays(ctx sdk.Context, v types.Application, relaysToRemove sdk.Int) types.Application {
+	k.deleteApplicationFromStakingSet(ctx, v)
+	v.MaxRelays = v.MaxRelays.Sub(relaysToRemove)
+	k.SetApplication(ctx, v)
+	k.SetStakedApplication(ctx, v)
+	return v
+}
+
 // get the current staked applications sorted by power-rank
 func (k Keeper) getStakedApplications(ctx sdk.Context) types.Applications {
 	maxApplications := k.MaxApplications(ctx)

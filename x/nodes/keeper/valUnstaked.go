@@ -2,10 +2,42 @@ package keeper
 
 import (
 	"bytes"
-	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	sdk "github.com/pokt-network/posmint/types"
 	"time"
 )
+
+func (k Keeper) SetWaitingValidator(ctx sdk.Context, val types.Validator) {
+	store := ctx.KVStore(k.storeKey)
+	bz := types.MustMarshalValidator(k.cdc, val)
+	store.Set(types.KeyForValWaitingToBeginUnstaking(val.Address), bz)
+}
+
+func (k Keeper) IsWaitingValidator(ctx sdk.Context, valAddr sdk.ValAddress) bool {
+	store := ctx.KVStore(k.storeKey)
+	value := store.Get(types.KeyForValWaitingToBeginUnstaking(valAddr))
+	if value == nil {
+		return false
+	}
+	return true
+}
+
+func (k Keeper) GetWaitingValidators(ctx sdk.Context) (validators []types.Validator) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.WaitingToBeginUnstakingKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		validators = append(validators, validator)
+	}
+	return validators
+}
+
+func (k Keeper) DeleteWaitingValidator(ctx sdk.Context, valAddr sdk.ValAddress) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyForValWaitingToBeginUnstaking(valAddr))
+}
 
 // Insert a validator address to the appropriate position in the unstaking queue
 func (k Keeper) SetUnstakingValidator(ctx sdk.Context, val types.Validator) {

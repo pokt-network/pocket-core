@@ -28,7 +28,12 @@ var ( // Keys for store prefixes
 	UnstakedValidatorsKey           = []byte{0x42} // prefix for unstaked validators
 	AwardValidatorKey               = []byte{0x51} // prefix for awarding validators
 	BurnValidatorKey                = []byte{0x52} // prefix for awarding validators
+	WaitingToBeginUnstakingKey      = []byte{0x43}
 )
+
+func KeyForValWaitingToBeginUnstaking(addr sdk.ValAddress) []byte {
+	return append(WaitingToBeginUnstakingKey, addr.Bytes()...)
+}
 
 // generates the key for the validator with address
 func KeyForValByAllVals(addr sdk.ValAddress) []byte {

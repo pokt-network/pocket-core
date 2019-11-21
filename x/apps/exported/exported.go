@@ -17,4 +17,5 @@ type ApplicationI interface {
 	GetConsPubKey() crypto.PubKey   // validation consensus pubkey
 	GetConsAddr() sdk.ConsAddress   // validation consensus address
 	GetTokens() sdk.Int             // validation tokens
+	GetMaxRelays() sdk.Int          // maximum relays
 }

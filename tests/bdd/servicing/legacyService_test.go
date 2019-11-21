@@ -116,7 +116,7 @@ var _ = Describe("Servicing", func() {
 				//
 				//		It("should return a relay object", func() {
 				//			// marshal and unmarshal a relay message object
-				//			rm := types.RelayMessage{Relay: Relay, Signature: signature}
+				//			rm := types.RelayMessage{Relay: Relay, ApplicationSignature: signature}
 				//			b, err := core.MarshalRelayMessage(flatbuffers.NewBuilder(0), rm)
 				//			Expect(err).To(BeNil())
 				//			Expect(b).ToNot(BeNil())

@@ -1,8 +1,8 @@
 package types
 
 import (
-	"encoding/hex"
 	"encoding/json"
+	sdk "github.com/pokt-network/posmint/types"
 	"io/ioutil"
 	"sync"
 )
@@ -55,24 +55,20 @@ func (c *HostedBlockchains) Clear() {
 	(*List)(c).Clear()
 }
 
-func (c *HostedBlockchains) GetChainFromBytes(chainHash []byte) HostedBlockchain {
-	if c == nil || len(c.M) == 0 {
-		return HostedBlockchain{}
-	}
-	h := hex.EncodeToString(chainHash)
-	res := (*List)(c).Get(h)
+func (c *HostedBlockchains) GetChain(hexString string) (HostedBlockchain, sdk.Error) {
+	res := (*List)(c).Get(hexString)
 	if res == nil {
-		return HostedBlockchain{}
+		return HostedBlockchain{}, NewErrorChainNotHostedError()
 	}
-	return res.(HostedBlockchain)
+	return res.(HostedBlockchain), nil
 }
 
-func (c *HostedBlockchains) GetChainFromHexString(chainHash string) HostedBlockchain {
-	res := (*List)(c).Get(chainHash)
+func (c *HostedBlockchains) GetChainURL(hexString string) (url string, err sdk.Error) {
+	res := (*List)(c).Get(hexString)
 	if res == nil {
-		return HostedBlockchain{}
+		return "", NewErrorChainNotHostedError()
 	}
-	return res.(HostedBlockchain)
+	return res.(HostedBlockchain).URL, nil
 }
 
 func (c *HostedBlockchains) Validate() error {

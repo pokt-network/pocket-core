@@ -87,3 +87,7 @@ func (k Keeper) SetAppByConsAddr(ctx sdk.Context, application types.Application)
 	consAddr := sdk.ConsAddress(application.ConsPubKey.Address())
 	store.Set(types.KeyForAppByConsAddr(consAddr), application.Address)
 }
+
+func (k Keeper) CalculateAppRelays(ctx sdk.Context, application types.Application) sdk.Int {
+	return application.StakedTokens.MulRaw(int64(k.RelayCoefficient(ctx))).Quo(sdk.NewInt(100))
+}

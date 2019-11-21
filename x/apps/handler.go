@@ -91,7 +91,11 @@ func stakeRegisteredApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper
 	if !found {
 		return types.ErrNoApplicationFound(k.Codespace()).Result()
 	}
-	err := k.StakeApplication(ctx, application, msg.Value)
+	err := k.ValidateApplicationStaking(ctx, application, msg.Value)
+	if err != nil {
+		return err.Result()
+	}
+	err = k.StakeApplication(ctx, application, msg.Value)
 	if err != nil {
 		return err.Result()
 	}

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Applications is a collection of Application
+// Applications is a collection of AppPubKey
 type Applications []Application
 
 func (v Applications) String() (out string) {
@@ -44,9 +44,9 @@ func (a Application) String() string {
 	if err != nil {
 		panic(err)
 	}
-	return fmt.Sprintf(`Application
+	return fmt.Sprintf(`AppPubKey
   Address:           		  %s
-  Application Cons Pubkey: %s
+  AppPubKey Cons Pubkey: %s
   Jailed:                     %a
   Status:                     %s
   Tokens:               	  %s
