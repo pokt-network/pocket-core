@@ -18,7 +18,12 @@ func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&types.Params{})
 }
 
-func (k Keeper) SessionBlock(ctx sdk.Context) (res uint) {
+func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Context) (res sdk.Dec) {
+	k.Paramstore.Get(ctx, types.KeyRelaysToTokens, &res)
+	return
+}
+
+func (k Keeper) SessionBlockFrequency(ctx sdk.Context) (res int64) {
 	k.Paramstore.Get(ctx, types.KeySessionBlock, &res)
 	return
 }

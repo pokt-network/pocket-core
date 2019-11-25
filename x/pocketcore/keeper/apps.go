@@ -13,6 +13,14 @@ func (k Keeper) GetApp(ctx sdk.Context, address sdk.ValAddress) (node exported.A
 	return k.appKeeper.GetApplication(ctx, address)
 }
 
+func (k Keeper) GetAppFromPublicKey(ctx sdk.Context, pubKey string) (app exported.ApplicationI, found bool) {
+	appAddr, err := k.AddressFromPubKeyString(pubKey)
+	if err != nil {
+		return nil, false
+	}
+	return k.GetApp(ctx, appAddr)
+}
+
 func (k Keeper) GetAppChains(ctx sdk.Context, address sdk.ValAddress) (chains map[string]struct{}, found bool) {
 	node, found := k.GetApp(ctx, address)
 	if !found {

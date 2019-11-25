@@ -20,6 +20,7 @@ const (
 	DefaultSignedBlocksWindow                 = int64(100)
 	DefaultDowntimeJailDuration               = 60 * 10 * time.Second
 	DefaultSessionBlocktime                   = 25
+	DefaultRelaysToTokens                     = .0001
 )
 
 // nolint - Keys for parameter access
@@ -35,7 +36,8 @@ var (
 	KeyDowntimeJailDuration        = []byte("DowntimeJailDuration")
 	KeySlashFractionDoubleSign     = []byte("SlashFractionDoubleSign")
 	KeySlashFractionDowntime       = []byte("SlashFractionDowntime")
-	KeySessionBlock                = []byte("SessionBlock")
+	KeySessionBlock                = []byte("SessionBlockFrequency")
+	KeyRelaysToTokens              = []byte("RelaysToTokens")
 	DoubleSignJailEndTime          = time.Unix(253402300799, 0) // forever
 	DefaultMinSignedPerWindow      = sdk.NewDecWithPrec(5, 1)
 	DefaultSlashFractionDoubleSign = sdk.NewDec(1).Quo(sdk.NewDec(20))
@@ -51,7 +53,8 @@ type Params struct {
 	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                 // bondable coin denomination
 	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`             // minimum amount needed to stake
 	ProposerRewardPercentage int8          `json:"base_proposer_award" yaml:"base_proposer_award"` // minimum award for the proposer
-	SessionBlock             uint          `json:"session_block" yaml:"session_block"`
+	SessionBlock             int64         `json:"session_block" yaml:"session_block"`
+	RelaysToTokens           sdk.Dec       `json:"relays_to_tokens" yaml:"relays_to_tokens"`
 	// slashing params
 	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`
 	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`
@@ -75,6 +78,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeySlashFractionDoubleSign, Value: &p.SlashFractionDoubleSign},
 		{Key: KeySlashFractionDowntime, Value: &p.SlashFractionDowntime},
 		{Key: KeySessionBlock, Value: &p.SessionBlock},
+		{Key: KeyRelaysToTokens, Value: &p.RelaysToTokens},
 	}
 }
 
@@ -93,6 +97,7 @@ func DefaultParams() Params {
 		SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
 		SlashFractionDowntime:    DefaultSlashFractionDowntime,
 		SessionBlock:             DefaultSessionBlocktime,
+		RelaysToTokens:           sdk.NewDec(DefaultRelaysToTokens),
 	}
 }
 
@@ -112,6 +117,9 @@ func (p Params) Validate() error {
 	}
 	if p.SessionBlock < 1 {
 		return fmt.Errorf("session block must be greater than 1")
+	}
+	if p.RelaysToTokens.GT(sdk.OneDec()) || p.RelaysToTokens.LTE(sdk.ZeroDec()) {
+		return fmt.Errorf("relays to tokens must be a decimal <= 1 and > 0")
 	}
 	return nil
 }
@@ -137,7 +145,7 @@ func (p Params) String() string {
   DowntimeJailDuration:    %s
   SlashFractionDoubleSign: %s
   SlashFractionDowntime:   %s
-  SessionBlock %s`,
+  SessionBlockFrequency %s`,
 		p.UnstakingTime,
 		p.MaxValidators,
 		p.StakeDenom,

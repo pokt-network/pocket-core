@@ -29,6 +29,10 @@ func (k Keeper) RelayCoefficient(ctx sdk.Context) (coefficient uint8) {
 	return
 }
 
+func (k Keeper) SetRelayCoefficient(ctx sdk.Context, newCoefficient int){
+	k.Paramstore.Set(ctx, types.KeyRelayCoefficientPercentage, uint8(newCoefficient))
+}
+
 // MaxApplications - Maximum number of applications
 func (k Keeper) MaxApplications(ctx sdk.Context) (res uint64) {
 	k.Paramstore.Get(ctx, types.KeyMaxApplications, &res)

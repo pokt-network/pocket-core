@@ -16,7 +16,7 @@ func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&types.Params{})
 }
 
-func (k Keeper) SessionNodeCount(ctx sdk.Context) (res uint) {
+func (k Keeper) SessionNodeCount(ctx sdk.Context) (res int64) {
 	k.Paramstore.Get(ctx, types.KeySessionNodeCount, &res)
 	return
 }

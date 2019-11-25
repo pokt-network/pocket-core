@@ -2,16 +2,17 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/tendermint/go-amino"
 )
 
 // award coins to an address (will be called at the beginning of the next block)
-func (k Keeper) AwardCoinsTo(ctx sdk.Context, amount sdk.Int, address sdk.ValAddress) {
+func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.ValAddress) {
 	award, _ := k.getValidatorAward(ctx, address)
-	k.setValidatorAward(ctx, award.Add(amount), address)
+	coins := k.RelaysToTokensMultiplier(ctx).MulInt(relays).TruncateInt() // round down
+	k.setValidatorAward(ctx, award.Add(coins), address)
 }
 
 // rewardFromFees handles distribution of the collected fees
@@ -27,8 +28,8 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress
 	if err != nil {
 		panic(err)
 	}
-	// calculate the total reward by adding relays to the
-	totalReward := feesCollected.AmountOf(k.StakeDenom(ctx))
+	// calculate the total reward by adding relays to the fees
+	totalReward := feesCollected.AmountOf(k.StakeDenom(ctx)).Add(k.GetTotalCusomValidatorAwards(ctx))
 	// calculate previous proposer reward
 	baseProposerRewardPercentage := k.getProposerRewardPercentage(ctx)
 	// divide up the reward from the proposer reward and the dao reward
@@ -85,6 +86,19 @@ func (k Keeper) mintValidatorAwards(ctx sdk.Context) {
 		// remove from the award store
 		store.Delete(iterator.Key())
 	}
+}
+
+func (k Keeper) GetTotalCusomValidatorAwards(ctx sdk.Context) sdk.Int {
+	total := sdk.ZeroInt()
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		amount := sdk.Int{}
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &amount)
+		total = total.Add(amount)
+	}
+	return total
 }
 
 // store functions used to keep track of a validator award
