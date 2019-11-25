@@ -9,7 +9,6 @@ const (
 	// The http method defaults to POST for Relays
 	// because JSON RPC uses POST for all calls
 	DEFAULTHTTPMETHOD = "POST"
-	SESSIONNODECOUNT = 5 // todo parameterize
 )
 
 var (

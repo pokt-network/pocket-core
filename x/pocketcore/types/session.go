@@ -10,13 +10,14 @@ import (
 type Session struct {
 	SessionKey     SessionKey                `json:"sessionkey"`
 	AppPubKey      string                    `json:"appPubKey"`
-	NonNativeChain string                    `json:"nonnativechain"`
-	BlockHash      string                    `json:"blockhash"`
+	NonNativeChain string                    `json:"chain"`
+	BlockHash      string                    `json:"blockHash"`
+	BlockHeight    int64                     `json:"blockHeight"`
 	Nodes          []nodeexported.ValidatorI `json:"nodes"`
 }
 
 // Create a new session from seed data
-func NewSession(appPubKey string, nonNativeChain string, blockID string, allActiveNodes []nodeexported.ValidatorI, sessionNodesCount int) (*Session, error) { // todo possibly convert block id to block hash
+func NewSession(appPubKey string, nonNativeChain string, blockID string, blockHeight int64, allActiveNodes []nodeexported.ValidatorI, sessionNodesCount int) (*Session, error) { // todo possibly convert block id to block hash
 	// first generate session key
 	sessionKey, err := NewSessionKey(appPubKey, nonNativeChain, blockID)
 	if err != nil {
@@ -28,7 +29,7 @@ func NewSession(appPubKey string, nonNativeChain string, blockID string, allActi
 		return nil, err
 	}
 	// then populate the structure and return
-	return &Session{SessionKey: sessionKey, AppPubKey: appPubKey, NonNativeChain: nonNativeChain, BlockHash: blockID, Nodes: sessionNodes}, nil
+	return &Session{SessionKey: sessionKey, AppPubKey: appPubKey, BlockHeight: blockHeight, NonNativeChain: nonNativeChain, BlockHash: blockID, Nodes: sessionNodes}, nil
 }
 
 // A simple slice abstraction of type `Node`

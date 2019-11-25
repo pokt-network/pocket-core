@@ -8,13 +8,10 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) TODOTx(cdc *codec.Codec, txBuilder auth.TxBuilder, address sdk.ValAddress, passphrase string, amount sdk.Int) error {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), sdk.AccAddress(address), passphrase).WithCodec(cdc)
-	kb, err := am.keybase.Get(sdk.AccAddress(address))
-	if err != nil {
-		return err
+func (am AppModule) ProofBatchTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, proofSummary types.ProofSummary, proofBatch types.ProofBatch) error {
+	msg := types.MsgProofOfRelays{
+		ProofBatch:   proofBatch,
+		ProofSummary: proofSummary,
 	}
-	kb = kb
-	msg := types.MsgRelayBatch{}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }

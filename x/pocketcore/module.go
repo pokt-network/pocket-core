@@ -5,6 +5,8 @@ import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto/keys"
+	"github.com/pokt-network/posmint/x/auth"
+	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/tendermint/tendermint/node"
 
 	"github.com/pokt-network/posmint/codec"
@@ -90,10 +92,48 @@ func (am AppModule) QuerierRoute() string {
 }
 
 func (am AppModule) NewQuerierHandler() sdk.Querier {
-	return types.NewQuerier(am.keeper)
+	return keeper.NewQuerier(am.keeper)
 }
 
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
+	// auto send the proofBatch transaction
+	if am.keeper.IsSessionBlock(ctx) { // todo possible congestion if sending all at the same block
+		stakeDenom := am.keeper.StakeDenom(ctx)
+		n := am.GetTendermintNode()
+		chainID := n.GenesisDoc().ChainID
+		fromAddr := sdk.AccAddress(n.PrivValidator().GetPubKey().Address())
+		fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin(stakeDenom, 0)))
+		cliCtx := util.NewCLIContext(n, fromAddr, passphrase).WithCodec(cdc)
+		accGetter := auth.NewAccountRetriever(cliCtx)
+		err := accGetter.EnsureExists(fromAddr)
+		account, err := accGetter.GetAccount(fromAddr)
+		if err != nil {
+			panic(err)
+		}
+		txBuilder := auth.TxBuilder{
+			auth.DefaultTxEncoder(cdc),
+			am.keybase,
+			account.GetAccountNumber(),
+			account.GetSequence(),
+			fee.Gas,
+			1,
+			false,
+			chainID,
+			"",
+			fee.Amount,
+			fee.GasPrices(),
+		}
+		pbs := am.keeper.GetProofBatches()
+		for ps, pb := range pbs.M {
+			pb := pb.(types.ProofBatch)
+			err := am.ProofBatchTx(cdc, cliCtx, txBuilder, ps, pb)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+	keeper.BeginBlocker(ctx, req, am.keeper)
+}
 
 func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}

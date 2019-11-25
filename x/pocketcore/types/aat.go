@@ -11,9 +11,9 @@ const (
 
 type AAT struct {
 	Version              string `json:"version"`
-	ApplicationSignature string `json:"signature"`
 	ApplicationPublicKey string `json:"ApplicaitonAddress"`
 	ClientPublicKey      string `json:"ClientPublicKey"`
+	ApplicationSignature string `json:"signature"`
 }
 
 func (a AAT) VersionIsIncluded() bool {
@@ -45,6 +45,10 @@ func (a AAT) Validate() error {
 
 func (a AAT) Hash() []byte {
 	return crypto.SHA3FromString(a.ApplicationPublicKey + a.ClientPublicKey) // todo standardize
+}
+
+func (a AAT) HashString() string {
+	return hex.EncodeToString(a.Hash())
 }
 
 func (a AAT) ValidateVersion() error {

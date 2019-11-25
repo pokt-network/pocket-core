@@ -9,14 +9,10 @@ import (
 )
 
 func (am AppModule) StakeTx(cdc *codec.Codec, txBuilder auth.TxBuilder, chains map[string]struct{}, amount sdk.Int, address sdk.ValAddress, passphrase string) error {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), sdk.AccAddress(address), passphrase).WithCodec(cdc)
-	kb, err := am.keybase.Get(sdk.AccAddress(address))
-	if err != nil {
-		return err
-	}
+	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgAppStake{
 		Address: address,
-		PubKey:  kb.PubKey, // needed for validator creation
+		PubKey:  am.node.PrivValidator().GetPubKey(),
 		Value:   amount,
 		Chains:  chains, // non native blockchains
 	}
@@ -24,13 +20,34 @@ func (am AppModule) StakeTx(cdc *codec.Codec, txBuilder auth.TxBuilder, chains m
 }
 
 func (am AppModule) UnstakeTx(cdc *codec.Codec, txBuilder auth.TxBuilder, address sdk.ValAddress, passphrase string) error {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), sdk.AccAddress(address), passphrase).WithCodec(cdc)
+	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgBeginAppUnstake{Address: address}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-//func (am AppModule) UnjailTx(cdc *codec.Codec, txBuilder auth.TxBuilder, address sdk.ValAddress, passphrase string) error {
-//	cliCtx := util.NewCLIContext(am.GetTendermintNode(), sdk.AccAddress(address), passphrase).WithCodec(cdc)
-//	msg := types.MsgAppUnjail{AppAddr: address}
-//	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
-//}
+func newTx(cdc *codec.Codec, am AppModule, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+	chainID := am.node.GenesisDoc().ChainID
+	fromAddr := sdk.AccAddress(am.node.PrivValidator().GetPubKey().Address())
+	cliCtx = util.NewCLIContext(am.node, fromAddr, passphrase).WithCodec(cdc)
+	accGetter := auth.NewAccountRetriever(cliCtx)
+	err := accGetter.EnsureExists(fromAddr)
+	account, err := accGetter.GetAccount(fromAddr)
+	if err != nil {
+		panic(err)
+	}
+	fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin("pokt", 0))) // todo need to get bond denom
+	txBuilder = auth.TxBuilder{
+		auth.DefaultTxEncoder(cdc),
+		am.keybase,
+		account.GetAccountNumber(),
+		account.GetSequence(),
+		fee.Gas,
+		1,
+		false,
+		chainID,
+		"",
+		fee.Amount,
+		fee.GasPrices(),
+	}
+	return
+}

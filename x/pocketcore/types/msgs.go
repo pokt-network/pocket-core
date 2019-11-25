@@ -5,34 +5,54 @@ import (
 )
 
 // RouterKey is the module name router key
-const RouterKey = ModuleName // this was defined in your key.go file
+const RouterKey = ModuleName
 
-// MsgRelayBatch defines a SetName message
-type MsgRelayBatch struct {
+// MsgProofOfRelays defines a SetName message
+type MsgProofOfRelays struct {
+	ProofSummary
+	ProofBatch
 }
 
-// NewMsgSetName is a constructor function for MsgRelayBatch
-func NewMsgSetRelayBatch() MsgRelayBatch {
-	return MsgRelayBatch{}
+// NewMsgSetName is a constructor function for MsgProofOfRelays
+func NewMsgProofBatch(pb ProofBatch, ps ProofSummary) MsgProofOfRelays {
+	return MsgProofOfRelays{
+		ProofSummary: ps,
+		ProofBatch:   pb,
+	}
 }
 
 // Route should return the name of the module
-func (msg MsgRelayBatch) Route() string { return RouterKey }
+func (msg MsgProofOfRelays) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgRelayBatch) Type() string { return "relay_batch" }
+func (msg MsgProofOfRelays) Type() string { return "relay_batch" }
 
 // ValidateBasic runs stateless checks on the message
-func (msg MsgRelayBatch) ValidateBasic() sdk.Error {
+func (msg MsgProofOfRelays) ValidateBasic() sdk.Error {
+	if msg.ProofsHeader.Chain == "" {
+		return NewEmptyChainError(ModuleName)
+	}
+	if msg.ProofsHeader.SessionBlockHash == "" {
+		return NewEmptyBlockIDError(ModuleName)
+	}
+	if msg.ProofsHeader.ApplicationPubKey == "" {
+		return NewEmptyAppPubKeyError(ModuleName)
+	}
+	if len(msg.Proofs) == 0 {
+		return NewEmptyProofsError(ModuleName)
+	}
+	if msg.RelaysCompleted < 1 {
+		return NewInvalidRelaysCompletedError(ModuleName)
+	}
 	return nil
 }
 
 // GetSignBytes encodes the message for signing
-func (msg MsgRelayBatch) GetSignBytes() []byte {
+func (msg MsgProofOfRelays) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgRelayBatch) GetSigners() []sdk.AccAddress {
+func (msg MsgProofOfRelays) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{}
 }

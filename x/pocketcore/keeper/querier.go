@@ -1,6 +1,9 @@
 package keeper
 
 import (
+	"fmt"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
@@ -9,12 +12,56 @@ import (
 func NewQuerier(k Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
+		case types.QueryProofsSummary:
+			return queryProofSummary(ctx, req, k)
+		case types.QueryProofsSummaries:
+			return queryProofSummaries(ctx, req, k)
+		case types.QueryProofsSummariesForApp:
+			return queryProofSummariesForApp(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown staking query endpoint")
 		}
 	}
 }
 
-//func queryTODO(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-//
-//}
+func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryProofSummaryParams
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
+	}
+	proofSummary := k.GetProofsSummary(ctx, params.Address, params.Header)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
+	if err != nil {
+		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
+	}
+	return res, nil
+}
+
+func queryProofSummaries(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryProofSummariesParams
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
+	}
+	proofSummary := k.GetAllProofSummaries(ctx, params.Address)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
+	if err != nil {
+		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
+	}
+	return res, nil
+}
+
+func queryProofSummariesForApp(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryProofSummariesForAppParams
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
+	}
+	proofSummary := k.GetAllProofSummariesForApp(ctx, params.Address, params.AppPubKey)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
+	if err != nil {
+		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
+	}
+	return res, nil
+}
