@@ -22,34 +22,32 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 
 // Handle a message to set name
 func handleProofBatchMessage(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProofOfRelays) sdk.Result {
-	sessionContext := ctx.WithBlockHeight(msg.ProofsHeader.SessionBlockHeight)
-	// get the node at the session context
-	node, found := keeper.GetNodeFromPublicKey(sessionContext, msg.Proofs[0].NodePublicKey)
+	sessionContext := ctx.WithBlockHeight(msg.SessionBlockHeight)
+	nPubKey := msg.ProofOfRelay.Proofs[0].ServicerPubKey
+	node, found := keeper.GetNodeFromPublicKey(sessionContext, nPubKey)
 	if !found {
 		return NodeNotFoundErr.Result()
 	}
 	// get the application at the session context
-	app, found := keeper.GetAppFromPublicKey(sessionContext, msg.Proofs[0].Token.ApplicationPublicKey)
+	app, found := keeper.GetAppFromPublicKey(sessionContext, msg.ProofOfRelay.Proofs[0].Token.ApplicationPublicKey)
 	if !found {
 		return AppNotFoundErr.Result()
 	}
 	// get all the available session nodes at the time
 	allNodes := keeper.GetAllNodes(sessionContext)
 	// verify session
-	session, err := keeper.SessionVerification(ctx, node, app,
-		msg.ProofsHeader.Chain, msg.SessionBlockHash, msg.SessionBlockHeight, allNodes)
+	_, err := keeper.SessionVerification(ctx, node, app, msg.Chain, msg.SessionBlockHeight, allNodes)
 	if err != nil {
 		return err
 	}
 	// generate reqProofsIndex to compare
-	proofsIndex := keeper.GenerateProofs(ctx, msg.SessionBlockHeight, msg.RelaysCompleted, string(session.SessionKey))
-	if !keeper.AreProofsValid(sessionContext, proofsIndex, msg.Proofs) {
+	if !keeper.AreProofsValid(sessionContext, nPubKey, msg.ProofOfRelay) {
 		return InvalidProofsError.Result()
 	}
 	// store proofs summary into state
-	keeper.SetProofSummary(ctx, msg.NodeAddress, msg.ProofSummary)
+	keeper.SetProofOfRelay(ctx, node.GetAddress(), msg.ProofOfRelay)
 	// Award the coins for the batch
-	keeper.AwardCoinsForRelays(ctx, msg.RelaysCompleted, node.GetAddress())
+	keeper.AwardCoinsForRelays(ctx, msg.TotalRelays, node.GetAddress())
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
