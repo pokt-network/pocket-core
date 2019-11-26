@@ -16,7 +16,6 @@ import (
 func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse, error) {
 	// get the latest session block
 	sessionBlock := k.GetLatestSessionBlock(ctx)
-	sessionBlockHash := hex.EncodeToString(sessionBlock.BlockHeader().GetLastBlockId().Hash)
 	sessionBlockHeight := sessionBlock.BlockHeight()
 	// retrieve all nodes available
 	allNodes := k.GetAllNodes(ctx)
@@ -30,13 +29,13 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 		return nil, errors.New("no app found for addr")
 	}
 	// validate the next relay
-	if err := Relay(relay).Validate(k, ctx, selfNode, hb, sessionBlockHash, sessionBlockHeight, allNodes, app); err != nil {
+	if err := Relay(relay).Validate(k, ctx, selfNode, hb, sessionBlockHeight, allNodes, app); err != nil {
 		return nil, err
 	}
 	// get proofs for this session
 
 	// store the previous proof
-	if err := Relay(relay).StoreProofs(k, ctx, sessionBlockHash, sessionBlockHeight, int(app.GetMaxRelays().Int64())); err != nil {
+	if err := Relay(relay).StoreProofs(k, ctx, sessionBlockHeight, int(app.GetMaxRelays().Int64())); err != nil {
 		return nil, err
 	}
 	// attempt to execute
@@ -48,7 +47,7 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 	resp := &pc.RelayResponse{
 		Response: respPayload,
 		ServiceAuth: pc.Proof{
-			Counter: 0, // todo
+			Index: 0, // todo
 		},
 	}
 	// sign the response
@@ -79,7 +78,7 @@ func (r Relay) Execute(hostedBlockchains types.HostedBlockchains) (string, error
 	return "", pc.UnsupportedPayloadTypeError
 }
 
-func (r Relay) Validate(keeper Keeper, ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hostedBlockchains types.HostedBlockchains, sessionBlockIDHex string, sessionBlockHeight int64, allActiveNodes []nodeexported.ValidatorI, app appexported.ApplicationI) error {
+func (r Relay) Validate(keeper Keeper, ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hostedBlockchains types.HostedBlockchains, sessionBlockHeight int64, allActiveNodes []nodeexported.ValidatorI, app appexported.ApplicationI) error {
 	// check to see if the blockchain is empty
 	if len(r.Blockchain) == 0 {
 		return pc.EmptyBlockchainError
@@ -100,13 +99,12 @@ func (r Relay) Validate(keeper Keeper, ctx sdk.Context, nodeVerify nodeexported.
 	if _, err := keeper.SessionVerification(ctx, nodeVerify,
 		app,
 		r.Blockchain,
-		sessionBlockIDHex,
 		sessionBlockHeight,
 		allActiveNodes); err != nil {
 		return err
 	}
 	// check to see if the service proof is valid
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64()); err != nil {
+	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), hex.EncodeToString(nodeVerify.GetConsPubKey().Bytes())); err != nil {
 		return pc.NewServiceProofError(err)
 	}
 	if r.Payload.Type() == pc.HTTP {
@@ -118,11 +116,16 @@ func (r Relay) Validate(keeper Keeper, ctx sdk.Context, nodeVerify nodeexported.
 }
 
 // store the proofs of work done for the relay batch
-func (r Relay) StoreProofs(k Keeper, ctx sdk.Context, sessionBlockIDHex string, sessionBlockHeight int64, maxNumberOfRelays int) error {
+func (r Relay) StoreProofs(k Keeper, ctx sdk.Context, sessionBlockHeight int64, maxNumberOfRelays int) error {
 	// grab the relay batch container
-	rbs := k.GetProofBatches()
+	rbs := k.GetAllProofs()
+	header := pc.PORHeader{
+		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
+		Chain:              r.Blockchain,
+		SessionBlockHeight: sessionBlockHeight,
+	}
 	// add the proof to the proper batch
-	return rbs.AddProof(r.Proof, sessionBlockIDHex, r.Blockchain, sessionBlockHeight, maxNumberOfRelays)
+	return rbs.AddProof(header, r.Proof, maxNumberOfRelays)
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint

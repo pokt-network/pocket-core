@@ -27,15 +27,15 @@ func (p Payload) Type() PayloadType {
 }
 
 type RelayResponse struct {
-	Signature   string       // signature from the node in hex
-	Response    string       // response to relay
-	ServiceAuth Proof // to be signed by the client
+	Signature   string // signature from the node in hex
+	Response    string // response to relay
+	ServiceAuth Proof  // to be signed by the client
 }
 
 // node validates the response after signing
 func (rr RelayResponse) Validate() error {
 	// the counter for the authorization must be >=0
-	if rr.ServiceAuth.Counter < 0 {
+	if rr.ServiceAuth.Index < 0 {
 		return InvalidIncrementCounterError
 	}
 	// cannot contain empty response

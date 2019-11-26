@@ -8,7 +8,7 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) QueryProofSummary(cdc *codec.Codec, addr sdk.ValAddress, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.ProofOfRelay, error) {
+func (am AppModule) QueryProofOfRelay(cdc *codec.Codec, addr sdk.ValAddress, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.ProofOfRelay, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
 	params := types.QueryPORParams{
 		Address: addr,
@@ -31,7 +31,7 @@ func (am AppModule) QueryProofSummary(cdc *codec.Codec, addr sdk.ValAddress, blo
 	return &ps, nil
 }
 
-func (am AppModule) QueryAllProofSummaries(cdc *codec.Codec, addr sdk.ValAddress, height int64) ([]types.ProofOfRelay, error) {
+func (am AppModule) QueryAllPORs(cdc *codec.Codec, addr sdk.ValAddress, height int64) ([]types.ProofOfRelay, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryPORsParams{
 		Address: addr,
@@ -49,7 +49,7 @@ func (am AppModule) QueryAllProofSummaries(cdc *codec.Codec, addr sdk.ValAddress
 	return ps, nil
 }
 
-func (am AppModule) QueryAllProofSummariesForApp(cdc *codec.Codec, addr sdk.ValAddress, appPubKey string, height int64) ([]types.ProofOfRelay, error) {
+func (am AppModule) QueryAllPORsForApp(cdc *codec.Codec, addr sdk.ValAddress, appPubKey string, height int64) ([]types.ProofOfRelay, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryPORsAppParams{
 		Address:   addr,
