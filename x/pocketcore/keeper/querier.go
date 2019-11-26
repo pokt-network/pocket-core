@@ -25,7 +25,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 }
 
 func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryProofSummaryParams
+	var params types.QueryPORParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
@@ -39,7 +39,7 @@ func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte
 }
 
 func queryProofSummaries(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryProofSummariesParams
+	var params types.QueryPORsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
@@ -53,7 +53,7 @@ func queryProofSummaries(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]by
 }
 
 func queryProofSummariesForApp(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryProofSummariesForAppParams
+	var params types.QueryPORsAppParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))

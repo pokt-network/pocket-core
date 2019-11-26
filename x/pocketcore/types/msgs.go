@@ -9,15 +9,13 @@ const RouterKey = ModuleName
 
 // MsgProofOfRelays defines a SetName message
 type MsgProofOfRelays struct {
-	ProofSummary
-	ProofBatch
+	ProofOfRelay
 }
 
 // NewMsgSetName is a constructor function for MsgProofOfRelays
-func NewMsgProofBatch(pb ProofBatch, ps ProofSummary) MsgProofOfRelays {
+func NewMsgProofBatch(truncatedProof ProofOfRelay) MsgProofOfRelays {
 	return MsgProofOfRelays{
-		ProofSummary: ps,
-		ProofBatch:   pb,
+		ProofOfRelay: truncatedProof,
 	}
 }
 
@@ -29,20 +27,17 @@ func (msg MsgProofOfRelays) Type() string { return "relay_batch" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgProofOfRelays) ValidateBasic() sdk.Error {
-	if msg.ProofsHeader.Chain == "" {
+	if msg.Chain == "" {
 		return NewEmptyChainError(ModuleName)
 	}
-	if msg.ProofsHeader.SessionBlockHash == "" {
+	if msg.SessionBlockHeight <= 1 {
 		return NewEmptyBlockIDError(ModuleName)
 	}
-	if msg.ProofsHeader.ApplicationPubKey == "" {
+	if msg.ApplicationPubKey == "" {
 		return NewEmptyAppPubKeyError(ModuleName)
 	}
-	if len(msg.Proofs) == 0 {
+	if len(msg.ProofOfRelay.Proofs) != 1 {
 		return NewEmptyProofsError(ModuleName)
-	}
-	if msg.RelaysCompleted < 1 {
-		return NewInvalidRelaysCompletedError(ModuleName)
 	}
 	return nil
 }

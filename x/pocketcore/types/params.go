@@ -10,33 +10,37 @@ import (
 
 // POS params default values
 const (
-	DefaultSessionNodeCount = 5
-	MaxSessionNodes         = 25
+	DefaultSessionNodeCount   = 5
+	DefaultProofWaitingPeriod = 3
 )
 
 // nolint - Keys for parameter access
 var (
-	KeySessionNodeCount = []byte("SessionNodeCount")
+	KeySessionNodeCount   = []byte("SessionNodeCount")
+	KeyProofWaitingPeriod = []byte("ProofWaitingPeriod")
 )
 
 var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	SessionNodeCount uint
+	SessionNodeCount   uint
+	ProofWaitingPeriod uint
 }
 
 // Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		{Key: KeySessionNodeCount, Value: &p.SessionNodeCount},
+		{Key: KeyProofWaitingPeriod, Value: &p.ProofWaitingPeriod},
 	}
 }
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		SessionNodeCount: DefaultSessionNodeCount,
+		SessionNodeCount:   DefaultSessionNodeCount,
+		ProofWaitingPeriod: DefaultProofWaitingPeriod,
 	}
 }
 
@@ -44,6 +48,9 @@ func DefaultParams() Params {
 func (p Params) Validate() error {
 	if p.SessionNodeCount > 25 {
 		return errors.New("too many nodes per session, maximum is 5")
+	}
+	if p.ProofWaitingPeriod < 1 {
+		return errors.New("no waiting period is subject to attack")
 	}
 	return nil
 }
@@ -58,8 +65,11 @@ func (p Params) Equal(p2 Params) bool {
 // String returns a human readable string representation of the parameters.
 func (p Params) String() string {
 	return fmt.Sprintf(`Params:
-  SessionNodeCount:          %s`,
-		p.SessionNodeCount)
+  SessionNodeCount:          %s
+  ProofWaitingPeriod:        %s
+`,
+		p.SessionNodeCount,
+		p.ProofWaitingPeriod)
 }
 
 // unmarshal the current pos params value from store key or panic

@@ -103,7 +103,7 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 		chainID := n.GenesisDoc().ChainID
 		fromAddr := sdk.AccAddress(n.PrivValidator().GetPubKey().Address())
 		fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin(stakeDenom, 0)))
-		cliCtx := util.NewCLIContext(n, fromAddr, passphrase).WithCodec(cdc)
+		cliCtx := util.NewCLIContext(n, fromAddr, passphrase).WithCodec(cdc) // todo get codec and passphrase
 		accGetter := auth.NewAccountRetriever(cliCtx)
 		err := accGetter.EnsureExists(fromAddr)
 		account, err := accGetter.GetAccount(fromAddr)
@@ -123,12 +123,16 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 			fee.Amount,
 			fee.GasPrices(),
 		}
-		pbs := am.keeper.GetProofBatches()
-		for ps, pb := range pbs.M {
-			pb := pb.(types.ProofBatch)
-			err := am.ProofBatchTx(cdc, cliCtx, txBuilder, ps, pb)
-			if err != nil {
-				panic(err)
+		proofs := am.keeper.GetAllProofs()
+		for _, por := range *proofs {
+			// if proof mature!
+			if por.SessionBlockHeight == (ctx.BlockHeight() - (int64(am.keeper.ProofWaitingPeriod(ctx)) * am.keeper.SessionFrequency(ctx))) {
+				porReq := am.keeper.GenerateProofs(ctx, por.TotalRelays, por.PORHeader) // gen proofs
+				truncatedResult := am.keeper.TrucateUnnecessaryProofs(int(porReq), por)
+				err := am.ProofBatchTx(cdc, cliCtx, txBuilder, truncatedResult)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}

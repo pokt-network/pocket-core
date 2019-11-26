@@ -11,16 +11,16 @@ const (
 	QueryProofsSummariesForApp = "proof_summaries_for_app"
 )
 
-type QueryProofSummaryParams struct {
+type QueryPORParams struct {
 	Address sdk.ValAddress
-	Header  ProofsHeader
+	Header  PORHeader
 }
 
-type QueryProofSummariesParams struct {
-	Address   sdk.ValAddress
+type QueryPORsParams struct {
+	Address sdk.ValAddress
 }
 
-type QueryProofSummariesForAppParams struct {
+type QueryPORsAppParams struct {
 	Address   sdk.ValAddress
 	AppPubKey string
 }

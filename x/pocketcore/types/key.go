@@ -17,23 +17,24 @@ var (
 	ProofSummaryKey = []byte{0x01} // key for the proofSummary
 )
 
-func KeyForNodeProofSummary(addr sdk.ValAddress, header ProofsHeader) []byte {
+func KeyForPOR(appPubKey, chain, sessionHeight string) string {
+	return appPubKey + chain + sessionHeight
+}
+
+func KeyForProofOfRelay(ctx sdk.Context, addr sdk.ValAddress, header PORHeader) []byte {
 	appPubKey, err := hex.DecodeString(header.ApplicationPubKey)
 	if err != nil {
 		panic(err)
 	}
-	sessionHash, err := hex.DecodeString(header.SessionBlockHash)
-	if err != nil {
-		panic(err)
-	}
+	sessionHash := ctx.WithBlockHeight(header.SessionBlockHeight).BlockHeader().GetLastBlockId().Hash
 	return append(append(append(ProofSummaryKey, addr.Bytes()...), appPubKey...), sessionHash...)
 }
 
-func KeyForNodeProofSummaries(addr sdk.ValAddress) []byte {
+func KeyForProofOfRelays(addr sdk.ValAddress) []byte {
 	return append(ProofSummaryKey, addr.Bytes()...)
 }
 
-func KeyForNodeProofSummariesForApp(addr sdk.ValAddress, appPubKeyHex string) []byte {
+func KeyForProofOfRelaysApp(addr sdk.ValAddress, appPubKeyHex string) []byte {
 	appPubKey, err := hex.DecodeString(appPubKeyHex)
 	if err != nil {
 		panic(err)

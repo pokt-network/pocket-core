@@ -8,10 +8,9 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) ProofBatchTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, proofSummary types.ProofSummary, proofBatch types.ProofBatch) error {
+func (am AppModule) ProofBatchTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, truncatedPOR types.ProofOfRelay) error {
 	msg := types.MsgProofOfRelays{
-		ProofBatch:   proofBatch,
-		ProofSummary: proofSummary,
+		ProofOfRelay: truncatedPOR,
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }

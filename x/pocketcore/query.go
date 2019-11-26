@@ -8,14 +8,14 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) QueryProofSummary(cdc *codec.Codec, addr sdk.ValAddress, blockchain, sessionBlockHash, appPubKey string, heightOfQuery int64) (*types.ProofSummary, error) {
+func (am AppModule) QueryProofSummary(cdc *codec.Codec, addr sdk.ValAddress, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.ProofOfRelay, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
-	params := types.QueryProofSummaryParams{
+	params := types.QueryPORParams{
 		Address: addr,
-		Header: types.ProofsHeader{
-			Chain:             blockchain,
-			SessionBlockHash:  sessionBlockHash,
-			ApplicationPubKey: appPubKey,
+		Header: types.PORHeader{
+			Chain:              blockchain,
+			SessionBlockHeight: sessionBlockHeight,
+			ApplicationPubKey:  appPubKey,
 		},
 	}
 	bz, err := cdc.MarshalBinaryBare(params)
@@ -23,7 +23,7 @@ func (am AppModule) QueryProofSummary(cdc *codec.Codec, addr sdk.ValAddress, blo
 		return nil, err
 	}
 	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryProofsSummary), bz)
-	var ps types.ProofSummary
+	var ps types.ProofOfRelay
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err
@@ -31,9 +31,9 @@ func (am AppModule) QueryProofSummary(cdc *codec.Codec, addr sdk.ValAddress, blo
 	return &ps, nil
 }
 
-func (am AppModule) QueryAllProofSummaries(cdc *codec.Codec, addr sdk.ValAddress, height int64) ([]types.ProofSummary, error) {
+func (am AppModule) QueryAllProofSummaries(cdc *codec.Codec, addr sdk.ValAddress, height int64) ([]types.ProofOfRelay, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryProofSummariesParams{
+	params := types.QueryPORsParams{
 		Address: addr,
 	}
 	bz, err := cdc.MarshalBinaryBare(params)
@@ -41,7 +41,7 @@ func (am AppModule) QueryAllProofSummaries(cdc *codec.Codec, addr sdk.ValAddress
 		return nil, err
 	}
 	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryProofsSummaries), bz)
-	var ps []types.ProofSummary
+	var ps []types.ProofOfRelay
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err
@@ -49,9 +49,9 @@ func (am AppModule) QueryAllProofSummaries(cdc *codec.Codec, addr sdk.ValAddress
 	return ps, nil
 }
 
-func (am AppModule) QueryAllProofSummariesForApp(cdc *codec.Codec, addr sdk.ValAddress, appPubKey string, height int64) ([]types.ProofSummary, error) {
+func (am AppModule) QueryAllProofSummariesForApp(cdc *codec.Codec, addr sdk.ValAddress, appPubKey string, height int64) ([]types.ProofOfRelay, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryProofSummariesForAppParams{
+	params := types.QueryPORsAppParams{
 		Address:   addr,
 		AppPubKey: appPubKey,
 	}
@@ -60,7 +60,7 @@ func (am AppModule) QueryAllProofSummariesForApp(cdc *codec.Codec, addr sdk.ValA
 		return nil, err
 	}
 	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryProofsSummariesForApp), bz)
-	var ps []types.ProofSummary
+	var ps []types.ProofOfRelay
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err
