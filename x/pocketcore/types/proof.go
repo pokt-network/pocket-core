@@ -25,7 +25,7 @@ type PORHeader struct {
 type ProofOfRelay struct {
 	PORHeader
 	TotalRelays int64
-	Proofs      []Proof // map[clientPubKey] -> Proofs
+	Proofs      []Proof // map[index] -> Proofs
 }
 
 // structure to map out all proofs
