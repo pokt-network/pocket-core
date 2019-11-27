@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/x/apps/exported"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 )
 
@@ -14,11 +15,11 @@ func (k Keeper) GetApp(ctx sdk.Context, address sdk.ValAddress) (node exported.A
 }
 
 func (k Keeper) GetAppFromPublicKey(ctx sdk.Context, pubKey string) (app exported.ApplicationI, found bool) {
-	appAddr, err := k.AddressFromPubKeyString(pubKey)
+	pk, err := crypto.NewPublicKey(pubKey)
 	if err != nil {
 		return nil, false
 	}
-	return k.GetApp(ctx, appAddr)
+	return k.GetApp(ctx, pk.Address())
 }
 
 func (k Keeper) GetAppChains(ctx sdk.Context, address sdk.ValAddress) (chains map[string]struct{}, found bool) {

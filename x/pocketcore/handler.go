@@ -33,7 +33,7 @@ func handleProofBatchMessage(ctx sdk.Context, keeper keeper.Keeper, msg types.Ms
 	if !found {
 		return AppNotFoundErr.Result()
 	}
-	// get all the available session nodes at the time
+	// get all the available service nodes at the time of the session
 	allNodes := keeper.GetAllNodes(sessionContext)
 	// verify session
 	_, err := keeper.SessionVerification(ctx, node, app, msg.Chain, msg.SessionBlockHeight, allNodes)

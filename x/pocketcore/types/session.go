@@ -2,8 +2,10 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/crypto"
+	"errors"
+	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
+	sdk "github.com/pokt-network/posmint/types"
 	"sort"
 )
 
@@ -30,6 +32,33 @@ func NewSession(appPubKey string, nonNativeChain string, blockID string, blockHe
 	}
 	// then populate the structure and return
 	return &Session{SessionKey: sessionKey, AppPubKey: appPubKey, BlockHeight: blockHeight, NonNativeChain: nonNativeChain, BlockHash: blockID, Nodes: sessionNodes}, nil
+}
+
+// verifies the session for a node
+func SessionVerification(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, app appexported.ApplicationI, blockchain string,
+	blockHeight int64, sessionNodeCount int, allActiveNodes []nodeexported.ValidatorI) (session *Session, er error) {
+	// validate that app staked for chain
+	if _, found := app.GetChains()[blockchain]; !found { // todo is it possible for application information to change while this is being called?
+		return nil, errors.New("app not staked for chain")
+	}
+	blockHash := hex.EncodeToString(ctx.WithBlockHeight(blockHeight).BlockHeader().GetLastBlockId().Hash)
+	sess, err := NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), blockchain, blockHash, blockHeight, allActiveNodes, sessionNodeCount)
+	if err != nil {
+		return sess, NewSessionGenerationError(err)
+	}
+	if !contains(sess.Nodes, nodeVerify) {
+		return sess, InvalidSessionError
+	}
+	return sess, nil
+}
+
+func contains(nodes []nodeexported.ValidatorI, node nodeexported.ValidatorI) bool {
+	for _, n := range nodes {
+		if n == node {
+			return true
+		}
+	}
+	return false
 }
 
 // A simple slice abstraction of type `Node`
@@ -204,7 +233,7 @@ func NewSessionKey(appPublicKey string, nonNativeChain string, blockHash string)
 	seed = append(seed, blockHash...)
 
 	// return the hash of the result
-	return crypto.SHA3FromBytes(seed), nil
+	return SHA3FromBytes(seed), nil
 }
 
 func (sk SessionKey) Validate() error {
