@@ -1,9 +1,0 @@
-namespace fbs;
-
-table Blockchain {
-  name:[ubyte]
-  netid:uint;
-  version:uint;
-}
-
-root_type Blockchain;

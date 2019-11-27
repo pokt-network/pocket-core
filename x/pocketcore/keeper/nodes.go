@@ -3,6 +3,7 @@ package keeper
 import (
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 )
 
@@ -12,11 +13,11 @@ func (k Keeper) GetAllNodes(ctx sdk.Context) []exported.ValidatorI {
 
 func (k Keeper) GetNodeFromPublicKey(ctx sdk.Context, pubKey string) (node exported.ValidatorI, found bool) {
 	// get the node at the session context
-	nodeAddr, err := k.AddressFromPubKeyString(pubKey)
+	pk, err := crypto.NewPublicKey(pubKey)
 	if err != nil {
 		return nil, false
 	}
-	return k.GetNode(ctx, nodeAddr)
+	return k.GetNode(ctx, pk.Address())
 }
 
 func (k Keeper) GetNode(ctx sdk.Context, address sdk.ValAddress) (node exported.ValidatorI, found bool) {
@@ -44,12 +45,20 @@ func (k Keeper) GetAllNodesForChain(ctx sdk.Context, chain string) (nodes []expo
 	return nil
 }
 
-func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI) {
-	return nil // todo
+func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, err error) {
+	keypairs, err := k.keybase.List()
+	if err != nil || len(keypairs) < 1 {
+		return nil, KeybaseError + err.Error()
+	}
+	self, found := k.GetNode(ctx, sdk.ValAddress(keypairs[0].GetAddress())) // todo need to verify that this is the validator key we want
+	if !found {
+		return nil, SelfNotFoundError
+	}
+	return self, nil
 }
 
 func (k Keeper) GetHostedBlockchains(ctx sdk.Context) types.HostedBlockchains {
-	return types.HostedBlockchains{} // todo
+	return k.hostedBlockchains
 }
 
 func (k Keeper) AwardCoinsForRelays(ctx sdk.Context, relays int64, toAddr sdk.ValAddress) {

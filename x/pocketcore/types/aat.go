@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/crypto"
 )
 
 const (
@@ -44,7 +43,7 @@ func (a AAT) Validate() error {
 }
 
 func (a AAT) Hash() []byte {
-	return crypto.SHA3FromString(a.ApplicationPublicKey + a.ClientPublicKey) // todo standardize
+	return SHA3FromString(a.ApplicationPublicKey + a.ClientPublicKey + a.Version) // todo standardize
 }
 
 func (a AAT) HashString() string {
@@ -64,27 +63,25 @@ func (a AAT) ValidateVersion() error {
 
 func (a AAT) ValidateMessage() error {
 	// check for valid application public key
-	// todo pub key format verification
 	if len(a.ApplicationPublicKey) == 0 {
 		return MissingApplicationPublicKeyError
 	}
-	// todo pub key format verification
+	if err := PubKeyVerification(a.ApplicationPublicKey); err != nil {
+		return err
+	}
 	if len(a.ClientPublicKey) == 0 {
 		return MissingClientPublicKeyError
+	}
+	if err := PubKeyVerification(a.ClientPublicKey); err != nil {
+		return err
 	}
 	return nil
 }
 
 func (a AAT) ValidateSignature() error {
 	// check for valid signature
-	messageHash := a.Hash()
-	publicKeyBytes, err := hex.DecodeString(a.ApplicationPublicKey)
-	if err != nil {
-		return err
-	}
-	sig, err := hex.DecodeString(a.ApplicationSignature)
-	// todo crypto signature validation
-	if !crypto.MockVerifySignature(publicKeyBytes, messageHash, sig) {
+	messageHash := a.HashString()
+	if err := SignatureVerification(a.ApplicationPublicKey, messageHash, a.ApplicationSignature); err != nil {
 		return InvalidTokenSignatureErorr
 	}
 	return nil

@@ -2,8 +2,9 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/crypto"
 	"strconv"
+	"sync"
+	"time"
 )
 
 // Proof per relay
@@ -29,14 +30,33 @@ type ProofOfRelay struct {
 }
 
 // structure to map out all proofs
-type AllProofs map[string]ProofOfRelay // map[appPubKey+chain+blockheight] -> ProofOfRelay
+type AllProofs struct {
+	M map[string]ProofOfRelay // map[appPubKey+chain+blockheight] -> ProofOfRelay
+	l sync.Mutex
+}
 
-func (ap AllProofs) AddProof(header PORHeader, p Proof, maxRelays int) error { // todo need mutex
+var (
+	globalAllProofs *AllProofs
+	apOnce          sync.Once
+)
+
+func GetAllProofs() *AllProofs {
+	apOnce.Do(func() {
+		if globalAllProofs == nil {
+			*globalAllProofs = AllProofs{M: make(map[string]ProofOfRelay)}
+		}
+	})
+	return globalAllProofs
+}
+
+func (ap AllProofs) AddProof(header PORHeader, p Proof, maxRelays int) error {
 	var por = ProofOfRelay{}
 	porKey := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(p.SessionBlockHeight)))
 	// first check to see if all proofs contain a proof of relay for that specific application and session
-	if _, found := ap[porKey]; found {
-		por = ap[porKey]
+	ap.l.Lock()
+	defer ap.l.Unlock()
+	if _, found := ap.M[porKey]; found {
+		por = ap.M[porKey]
 	} else {
 		// if not found fill in the header info
 		por.SessionBlockHeight = header.SessionBlockHeight
@@ -45,7 +65,7 @@ func (ap AllProofs) AddProof(header PORHeader, p Proof, maxRelays int) error { /
 		por.Proofs = make([]Proof, maxRelays)
 		por.TotalRelays = 0
 	}
-	// check to see if ticket was already punched
+	// check to see if evidence was already stored
 	if pf := por.Proofs[p.Index]; pf.Signature != "" {
 		return DuplicateProofError
 	}
@@ -54,12 +74,19 @@ func (ap AllProofs) AddProof(header PORHeader, p Proof, maxRelays int) error { /
 	// increment total relay count
 	por.TotalRelays = por.TotalRelays + 1
 	// update POR
-	ap[porKey] = por
+	ap.M[porKey] = por
+	// punch their ticket
+	err := GetAllTix().PunchTicket(header, p.Index)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (ap AllProofs) GetProof(header PORHeader, index int) *Proof {
-	por := ap[KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))].Proofs
+	ap.l.Lock()
+	defer ap.l.Unlock()
+	por := ap.M[KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))].Proofs
 	if por == nil {
 		return nil
 	}
@@ -67,8 +94,10 @@ func (ap AllProofs) GetProof(header PORHeader, index int) *Proof {
 }
 
 func (ap AllProofs) ClearProofs(header PORHeader, maxRelays int) {
+	ap.l.Lock()
+	defer ap.l.Unlock()
 	porKey := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
-	ap[porKey] = ProofOfRelay{
+	ap.M[porKey] = ProofOfRelay{
 		PORHeader:   header,
 		Proofs:      make([]Proof, maxRelays),
 		TotalRelays: 0,
@@ -91,20 +120,112 @@ func (p Proof) Validate(maxRelays int64, servicerVerifyPubKey string) error {
 	if p.ServicerPubKey != servicerVerifyPubKey {
 		return InvalidNodePubKeyError // the public key is not this nodes, so they would not get paid
 	}
-	hash, err := p.Hash()
-	if err != nil {
-		return NewServiceProofHashError(ModuleName, err)
-	}
-	if !crypto.MockVerifySignature(p.Token.ClientPublicKey, hex.EncodeToString(hash), p.Signature) { // todo real signature verification
-		return InvalidICSignatureError
-	}
-	return nil
+	return SignatureVerification(p.Token.ClientPublicKey, p.HashString(), p.Signature)
 }
-
-func (p Proof) Hash() ([]byte, error) {
-	return crypto.SHA3FromBytes(append([]byte(p.ServicerPubKey))), nil // !!!!todo this needs to hash everything in this message for sig verification (need byte representation of token)
+func (p Proof) HashString() string {
+	return hex.EncodeToString(SHA3FromString(p.ServicerPubKey + p.Token.HashString() + strconv.Itoa(p.Index) + strconv.Itoa(int(p.SessionBlockHeight)))) // todo standardize
+}
+func (p Proof) Hash() []byte {
+	return SHA3FromString(p.ServicerPubKey + p.Token.HashString() + strconv.Itoa(p.Index) + strconv.Itoa(int(p.SessionBlockHeight))) // todo standardize
 }
 
 func (ph PORHeader) String() string {
 	return strconv.Itoa(int(ph.SessionBlockHeight)) + ph.ApplicationPubKey + ph.Chain // todo standardize
+}
+
+// Tickets are used to order the relays
+type Ticket struct {
+	IsTaken    bool
+	lastAccess int64
+}
+
+type Tickets struct {
+	T []Ticket
+	l sync.Mutex
+}
+
+const Timeout = 10000 // ms todo parameterize
+
+type AllTickets map[string]Tickets // map[keyforPORHeaeer] -> Tickets
+
+var (
+	globalAllTickets *AllTickets
+	ticketsonce      sync.Once
+)
+
+func GetAllTix() *AllTickets {
+	ticketsonce.Do(func() {
+		if globalAllTickets == nil {
+			*globalAllTickets = make(map[string]Tickets)
+		}
+	})
+	return globalAllTickets
+}
+
+func (at *AllTickets) GetNextTicket(header PORHeader, maxRelays int) int {
+	key := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
+	tix, found := (*at)[key]
+	if !found {
+		// create a new tickets
+		tix = *NewTickets(maxRelays, Timeout)
+	}
+	res := tix.GetNextTicket()
+	(*at)[key] = tix // persist it to the allTix structure
+	return res
+}
+
+func (at *AllTickets) PunchTicket(header PORHeader, ticketNumber int) error {
+	key := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
+	tix, found := (*at)[key]
+	if !found {
+		return TicketsNotFoundError // should not happen
+	}
+	err := tix.PunchTicket(ticketNumber)
+	if err != nil {
+		return err
+	}
+	(*at)[key] = tix
+	return nil
+}
+
+func NewTickets(maxRelays, timeout int) (tix *Tickets) {
+	tix = &Tickets{T: make([]Ticket, maxRelays)}
+	go func() {
+		for now := range time.Tick(time.Second) {
+			tix.l.Lock()
+			for _, ticket := range tix.T {
+				if now.Unix()-ticket.lastAccess > int64(timeout) && ticket.lastAccess != -1 {
+					ticket.IsTaken = false
+				}
+			}
+			tix.l.Unlock()
+		}
+	}()
+	return
+}
+
+func (tix *Tickets) GetNextTicket() int {
+	tix.l.Lock()
+	defer tix.l.Unlock()
+	for i, ticket := range tix.T {
+		if !ticket.IsTaken && ticket.lastAccess != -1 {
+			ticket.lastAccess = time.Now().Unix()
+			ticket.IsTaken = true
+			tix.T[i] = ticket
+			return i
+		}
+	}
+	return -1 // out of tickets
+}
+
+func (tix *Tickets) PunchTicket(ticketNumber int) error { // todo collisions possible
+	tix.l.Lock()
+	defer tix.l.Unlock()
+	ticket := tix.T[ticketNumber]
+	if ticket.lastAccess == -1 {
+		return DuplicateTicketError
+	}
+	ticket.lastAccess = -1
+	tix.T[ticketNumber] = ticket
+	return nil
 }

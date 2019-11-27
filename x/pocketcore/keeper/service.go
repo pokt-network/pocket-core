@@ -1,26 +1,23 @@
 package keeper
 
 import (
-	"bytes"
 	"encoding/hex"
 	"errors"
-	"github.com/pokt-network/pocket-core/types"
-	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
-	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
-	"io/ioutil"
-	"net/http"
 )
 
+// this is the main call for a service node handling a relay request
 func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse, error) {
-	// get the latest session block
-	sessionBlock := k.GetLatestSessionBlock(ctx)
-	sessionBlockHeight := sessionBlock.BlockHeight()
-	// retrieve all nodes available
+	// get the latest session block height
+	sessionBlockHeight := k.GetLatestSessionBlock(ctx).BlockHeight()
+	// retrieve all service nodes available from world state
 	allNodes := k.GetAllNodes(ctx)
-	// get self node
-	selfNode := k.GetSelfNode(ctx)
+	// get self node (your validator) from world state
+	selfNode, err := k.GetSelfNode(ctx)
+	if err != nil {
+		return nil, err
+	}
 	// get hosted blockchains
 	hb := k.GetHostedBlockchains(ctx)
 	// get application that staked for client
@@ -29,121 +26,35 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 		return nil, errors.New("no app found for addr")
 	}
 	// validate the next relay
-	if err := Relay(relay).Validate(k, ctx, selfNode, hb, sessionBlockHeight, allNodes, app); err != nil {
+	if err := relay.Validate(ctx, selfNode, hb, sessionBlockHeight, int(k.SessionNodeCount(ctx)), allNodes, app); err != nil {
 		return nil, err
 	}
-	// get proofs for this session
-
 	// store the previous proof
-	if err := Relay(relay).StoreProofs(k, ctx, sessionBlockHeight, int(app.GetMaxRelays().Int64())); err != nil {
+	if err := relay.HandleProof(ctx, sessionBlockHeight, int(app.GetMaxRelays().Int64())); err != nil {
 		return nil, err
+	}
+	header := pc.PORHeader{
+		ApplicationPubKey:  relay.Proof.Token.ApplicationPublicKey,
+		Chain:              relay.Blockchain,
+		SessionBlockHeight: sessionBlockHeight,
 	}
 	// attempt to execute
-	respPayload, err := Relay(relay).Execute(hb)
+	respPayload, err := relay.Execute(hb)
 	if err != nil {
 		return nil, err
 	}
 	// generate response object
 	resp := &pc.RelayResponse{
 		Response: respPayload,
-		ServiceAuth: pc.Proof{
-			Index: 0, // todo
+		Proof: pc.Proof{
+			Index:              pc.GetAllTix().GetNextTicket(header, int(app.GetMaxRelays().Int64())),
+			SessionBlockHeight: sessionBlockHeight,
+			ServicerPubKey:     hex.EncodeToString(selfNode.GetConsPubKey().Bytes()),
+			Token:              relay.Proof.Token,
 		},
 	}
 	// sign the response
-	err = resp.Sign()
-	if err != nil {
-		return nil, err
-	}
-	// complete
+	sig, _, err := k.keybase.Sign(sdk.AccAddress(selfNode.GetAddress()), k.coinbasePassphrase, resp.Hash())
+	resp.Signature = hex.EncodeToString(sig)
 	return resp, nil
-}
-
-// a read / write API request from a hosted (non native) blockchain
-type Relay pc.Relay
-
-// executes the relay on the non-native blockchain specified
-func (r Relay) Execute(hostedBlockchains types.HostedBlockchains) (string, error) {
-	// next check to see what type of payload it has
-	switch r.Payload.Type() {
-	case pc.HTTP:
-		// retrieve the hosted blockchain url requested
-		url, err := hostedBlockchains.GetChainURL(r.Blockchain)
-		if err != nil {
-			return "", err
-		}
-		// do basic http request on the relay
-		return executeHTTPRequest(r.Payload.Data, url, r.Payload.Method)
-	}
-	return "", pc.UnsupportedPayloadTypeError
-}
-
-func (r Relay) Validate(keeper Keeper, ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hostedBlockchains types.HostedBlockchains, sessionBlockHeight int64, allActiveNodes []nodeexported.ValidatorI, app appexported.ApplicationI) error {
-	// check to see if the blockchain is empty
-	if len(r.Blockchain) == 0 {
-		return pc.EmptyBlockchainError
-	}
-	// check to see if the payload is empty
-	if r.Payload.Data == "" || len(r.Payload.Data) == 0 {
-		return pc.EmptyPayloadDataError
-	}
-	// ensure the blockchain is supported
-	if !hostedBlockchains.ContainsFromString(r.Blockchain) {
-		return pc.UnsupportedBlockchainError
-	}
-	// check to see if non native blockchain is staked for by the developer
-	if _, contains := app.GetChains()[r.Blockchain]; !contains {
-		return pc.NotStakedBlockchainError
-	}
-	// verify that node (self) is of this session
-	if _, err := keeper.SessionVerification(ctx, nodeVerify,
-		app,
-		r.Blockchain,
-		sessionBlockHeight,
-		allActiveNodes); err != nil {
-		return err
-	}
-	// check to see if the service proof is valid
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), hex.EncodeToString(nodeVerify.GetConsPubKey().Bytes())); err != nil {
-		return pc.NewServiceProofError(err)
-	}
-	if r.Payload.Type() == pc.HTTP {
-		if len((r.Payload).Method) == 0 {
-			r.Payload.Method = pc.DEFAULTHTTPMETHOD
-		}
-	}
-	return nil
-}
-
-// store the proofs of work done for the relay batch
-func (r Relay) StoreProofs(k Keeper, ctx sdk.Context, sessionBlockHeight int64, maxNumberOfRelays int) error {
-	// grab the relay batch container
-	rbs := k.GetAllProofs()
-	header := pc.PORHeader{
-		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
-		Chain:              r.Blockchain,
-		SessionBlockHeight: sessionBlockHeight,
-	}
-	// add the proof to the proper batch
-	return rbs.AddProof(header, r.Proof, maxNumberOfRelays)
-}
-
-// "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
-// todo improved http responses
-func executeHTTPRequest(payload string, url string, method string) (string, error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(payload)))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := (&http.Client{}).Do(req)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != 200 {
-		return "", pc.NewHTTPStatusCodeError(resp.StatusCode)
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	return string(body), nil
 }
