@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/hex"
-	"errors"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	sdk "github.com/pokt-network/posmint/types"
@@ -19,9 +18,9 @@ type Session struct {
 }
 
 // Create a new session from seed data
-func NewSession(appPubKey string, nonNativeChain string, blockID string, blockHeight int64, allActiveNodes []nodeexported.ValidatorI, sessionNodesCount int) (*Session, error) { // todo possibly convert block id to block hash
+func NewSession(appPubKey string, nonNativeChain string, blockHash string, blockHeight int64, allActiveNodes []nodeexported.ValidatorI, sessionNodesCount int) (*Session, sdk.Error) {
 	// first generate session key
-	sessionKey, err := NewSessionKey(appPubKey, nonNativeChain, blockID)
+	sessionKey, err := NewSessionKey(appPubKey, nonNativeChain, blockHash)
 	if err != nil {
 		return nil, err
 	}
@@ -31,23 +30,23 @@ func NewSession(appPubKey string, nonNativeChain string, blockID string, blockHe
 		return nil, err
 	}
 	// then populate the structure and return
-	return &Session{SessionKey: sessionKey, AppPubKey: appPubKey, BlockHeight: blockHeight, NonNativeChain: nonNativeChain, BlockHash: blockID, Nodes: sessionNodes}, nil
+	return &Session{SessionKey: sessionKey, AppPubKey: appPubKey, BlockHeight: blockHeight, NonNativeChain: nonNativeChain, BlockHash: blockHash, Nodes: sessionNodes}, nil
 }
 
 // verifies the session for a node
 func SessionVerification(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, app appexported.ApplicationI, blockchain string,
-	blockHeight int64, sessionNodeCount int, allActiveNodes []nodeexported.ValidatorI) (session *Session, er error) {
+	blockHeight int64, sessionNodeCount int, allActiveNodes []nodeexported.ValidatorI) (*Session, sdk.Error) {
 	// validate that app staked for chain
 	if _, found := app.GetChains()[blockchain]; !found { // todo is it possible for application information to change while this is being called?
-		return nil, errors.New("app not staked for chain")
+		return nil, NewUnsupportedBlockchainAppError(ModuleName)
 	}
 	blockHash := hex.EncodeToString(ctx.WithBlockHeight(blockHeight).BlockHeader().GetLastBlockId().Hash)
 	sess, err := NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), blockchain, blockHash, blockHeight, allActiveNodes, sessionNodeCount)
 	if err != nil {
-		return sess, NewSessionGenerationError(err)
+		return sess, NewSessionGenerationError(ModuleName, err)
 	}
 	if !contains(sess.Nodes, nodeVerify) {
-		return sess, InvalidSessionError
+		return sess, NewInvalidSessionError(ModuleName)
 	}
 	return sess, nil
 }
@@ -73,9 +72,9 @@ type NodeDistance struct {
 
 type NodeDistances []NodeDistance
 
-func (sn SessionNodes) Validate(sessionNodesCount int) error {
+func (sn SessionNodes) Validate(sessionNodesCount int) sdk.Error {
 	if len(sn) < sessionNodesCount {
-		return InsufficientNodesError
+		return NewInsufficientNodesError(ModuleName)
 	}
 	return nil
 }
@@ -97,14 +96,14 @@ func (sn SessionNodes) Contains(nodeVerify nodeexported.ValidatorI, sessionNodes
 	return false
 }
 
-func NewSessionNodes(nonNativeChain string, sessionKey SessionKey, allActiveNodes []nodeexported.ValidatorI, sessionNodesCount int) (SessionNodes, error) {
+func NewSessionNodes(nonNativeChain string, sessionKey SessionKey, allActiveNodes []nodeexported.ValidatorI, sessionNodesCount int) (SessionNodes, sdk.Error) {
 	// validate params
 	if len(nonNativeChain) == 0 {
-		return nil, EmptyNonNativeChainError
+		return nil, NewEmptyNonNativeChainError(ModuleName)
 	}
-	// validate params
+	// validate sessionKey
 	if err := sessionKey.Validate(); err != nil {
-		return nil, err
+		return nil, NewInvalidSessionKeyError(ModuleName, err)
 	}
 	// session nodes are just a wrapper around node slice
 	var result SessionNodes
@@ -112,18 +111,18 @@ func NewSessionNodes(nonNativeChain string, sessionKey SessionKey, allActiveNode
 	var xorResult []NodeDistance
 	// ensure there is atleast the minimum amount of nodes
 	if len(allActiveNodes) < sessionNodesCount {
-		return nil, InsufficientNodesError
+		return nil, NewInsufficientNodesError(ModuleName)
 	}
 	// filter `allActiveNodes` by the HASH(nonNativeChain)
 	result, err := filter(allActiveNodes, nonNativeChain, sessionNodesCount)
 	if err != nil {
-		return nil, err
+		return nil, NewFilterNodesError(ModuleName, err)
 	}
 	// xor each node's public key and session key
 	// return NodeDistance array to be ordered
 	xorResult, err = xor(result, sessionKey)
 	if err != nil {
-		return nil, err
+		return nil, NewXORError(ModuleName, err)
 	}
 	// sort the nodes based off of distance
 	result = revSort(xorResult)
@@ -155,7 +154,7 @@ func xor(sessionNodes SessionNodes, sessionkey SessionKey) (NodeDistances, error
 	// for every node, find the distance between it's pubkey and the sesskey
 	for index, node := range sessionNodes {
 		pubKey := node.GetConsPubKey()
-		pubKeyHash := crypto.SHA3FromBytes(pubKey.Bytes()) // currently hashing public key but could easily just take the first n bytes to compare
+		pubKeyHash := SHA3FromBytes(pubKey.Bytes()) // currently hashing public key but could easily just take the first n bytes to compare
 		if len(pubKeyHash) != keyLength {
 			return nil, MismatchedByteArraysError
 		}
@@ -206,31 +205,28 @@ func (n NodeDistances) Less(i, j int) bool {
 type SessionKey []byte
 
 // Generates the session key = SessionHashingAlgo(devid+chain+blockhash)
-func NewSessionKey(appPublicKey string, nonNativeChain string, blockHash string) (SessionKey, error) {
+func NewSessionKey(appPublicKey string, nonNativeChain string, blockHash string) (SessionKey, sdk.Error) {
 	// validate session application
 	if len(appPublicKey) == 0 {
-		return nil, EmptyAppPubKeyError
+		return nil, NewEmptyAppPubKeyError(ModuleName)
 	}
 	// get the public key from the appPublicKey structure
 	appPubKey, err := hex.DecodeString(appPublicKey)
 	if err != nil {
-		return nil, err
+		return nil, NewPubKeyDecodeError(ModuleName)
 	}
 	if len(nonNativeChain) == 0 {
-		return nil, EmptyNonNativeChainError
+		return nil, NewEmptyNonNativeChainError(ModuleName)
 	}
 	if len(blockHash) == 0 {
-		return nil, EmptyBlockIDError
+		return nil, NewEmptyBlockHashError(ModuleName)
 	}
 	nnBytes, err := hex.DecodeString(nonNativeChain)
 	if err != nil {
-		return nil, err
+		return nil, NewInvalidBlockHashError(ModuleName, err)
 	}
 	// append them all together
-	// in the order of appPubKey - > nonnativeChain -> blockHash
-	// TODO consider using amino buffer to find the session key
-	seed := append(appPubKey, nnBytes...)
-	seed = append(seed, blockHash...)
+	seed := append(append(appPubKey, nnBytes...), blockHash...) // todo standardize
 
 	// return the hash of the result
 	return SHA3FromBytes(seed), nil

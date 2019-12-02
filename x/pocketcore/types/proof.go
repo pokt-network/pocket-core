@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	sdk "github.com/pokt-network/posmint/types"
 	"strconv"
 	"sync"
 	"time"
@@ -49,7 +50,7 @@ func GetAllProofs() *AllProofs {
 	return globalAllProofs
 }
 
-func (ap AllProofs) AddProof(header PORHeader, p Proof, maxRelays int) error {
+func (ap AllProofs) AddProof(header PORHeader, p Proof, maxRelays int) sdk.Error {
 	var por = ProofOfRelay{}
 	porKey := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(p.SessionBlockHeight)))
 	// first check to see if all proofs contain a proof of relay for that specific application and session
@@ -67,7 +68,7 @@ func (ap AllProofs) AddProof(header PORHeader, p Proof, maxRelays int) error {
 	}
 	// check to see if evidence was already stored
 	if pf := por.Proofs[p.Index]; pf.Signature != "" {
-		return DuplicateProofError
+		return NewDuplicateProofError(ModuleName)
 	}
 	// else add the proof to the slice
 	por.Proofs[p.Index] = p
@@ -104,13 +105,13 @@ func (ap AllProofs) ClearProofs(header PORHeader, maxRelays int) {
 	}
 }
 
-func (p Proof) Validate(maxRelays int64, servicerVerifyPubKey string) error {
+func (p Proof) Validate(maxRelays int64, servicerVerifyPubKey string) sdk.Error {
 	// check for negative counter
 	if p.Index < 0 {
-		return NegativeICCounterError
+		return NewNegativeICCounterError(ModuleName)
 	}
 	if int64(p.Index) > maxRelays {
-		return MaximumIncrementCounterError
+		return NewMaximumIncrementCounterError(ModuleName)
 	}
 	// validate the service token
 	if err := p.Token.Validate(); err != nil {
@@ -118,7 +119,7 @@ func (p Proof) Validate(maxRelays int64, servicerVerifyPubKey string) error {
 	}
 	// validate the public key correctness
 	if p.ServicerPubKey != servicerVerifyPubKey {
-		return InvalidNodePubKeyError // the public key is not this nodes, so they would not get paid
+		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
 	}
 	return SignatureVerification(p.Token.ClientPublicKey, p.HashString(), p.Signature)
 }
@@ -174,11 +175,11 @@ func (at *AllTickets) GetNextTicket(header PORHeader, maxRelays int) int {
 	return res
 }
 
-func (at *AllTickets) PunchTicket(header PORHeader, ticketNumber int) error {
+func (at *AllTickets) PunchTicket(header PORHeader, ticketNumber int) sdk.Error {
 	key := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
 	tix, found := (*at)[key]
 	if !found {
-		return TicketsNotFoundError // should not happen
+		return NewTicketsNotFoundError(ModuleName) // should not happen
 	}
 	err := tix.PunchTicket(ticketNumber)
 	if err != nil {
@@ -218,12 +219,12 @@ func (tix *Tickets) GetNextTicket() int {
 	return -1 // out of tickets
 }
 
-func (tix *Tickets) PunchTicket(ticketNumber int) error { // todo collisions possible
+func (tix *Tickets) PunchTicket(ticketNumber int) sdk.Error { // todo collisions possible
 	tix.l.Lock()
 	defer tix.l.Unlock()
 	ticket := tix.T[ticketNumber]
 	if ticket.lastAccess == -1 {
-		return DuplicateTicketError
+		return NewDuplicateTicketError(ModuleName)
 	}
 	ticket.lastAccess = -1
 	tix.T[ticketNumber] = ticket

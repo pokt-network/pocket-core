@@ -4,8 +4,6 @@ package config
 import (
 	"log"
 	"os"
-
-	"github.com/pokt-network/pocket-core/const"
 )
 
 // "Build" builds the configuration structure needed for the client.
@@ -30,7 +28,7 @@ func dataDir() {
 // "logsDir" builds the directory for logs.
 func logsDir() {
 	// attempts to make the logs directory
-	if err := os.MkdirAll(GlobalConfig().DD+_const.FILESEPARATOR+"logs", os.ModePerm); err != nil {
+	if err := os.MkdirAll(GlobalConfig().DD+FILESEPARATOR+"logs", os.ModePerm); err != nil {
 		log.Fatal(err.Error())
 	}
 }

@@ -7,8 +7,14 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"sync"
+)
+const (
+	// client identifier
+	CLIENTID = "pocket_core"
+	// version of the client
+	VERSION = "0.0.1"
 
-	"github.com/pokt-network/pocket-core/const"
+	CHAINSFILENAME = "<Your Data Directory>/chains.json"
 )
 
 type config struct {
@@ -29,15 +35,15 @@ type config struct {
 var (
 	c         *config
 	once      sync.Once
-	dd        = flag.String("datadirectory", _const.DATADIR, "setup the data directory for the DB and keystore")
+	dd        = flag.String("datadirectory", DATADIR, "setup the data directory for the DB and keystore")
 	rRpcPort  = flag.String("relayrpcport", "8081", "specified port to run relay rpc")
-	cFile     = flag.String("cfile", _const.CHAINSFILENAME, "specifies the filepath for chains.json")
+	cFile     = flag.String("cfile", CHAINSFILENAME, "specifies the filepath for chains.json")
 	cRpcPort  = flag.String("clientrpcport", "8080", "specified port to run client rpc")
 	cRpc      = flag.Bool("clientrpc", true, "whether or not to start the rpc server")
 	rRpc      = flag.Bool("relayrpc", true, "whether or not to start the rpc server")
 	logFormat = flag.String("logformat", "", "Log format for storing logs.  ex.:[.json, .log] ('.json' is used by default)")
 	logLevel  = flag.String("loglevel", "INFO", "Log level.  ex.:[TRACE, DEBUG, INFO, ERROR, FATAL, PANIC] ('INFO' is used by default)")
-	logDir    = flag.String("logdir", _const.DATADIR+_const.FILESEPARATOR+"logs"+_const.FILESEPARATOR, "setup the log directory.  ex.:['/var/log/'] ('~/.pocket/logs/' is used by default)")
+	logDir    = flag.String("logdir", DATADIR+FILESEPARATOR+"logs"+FILESEPARATOR, "setup the log directory.  ex.:['/var/log/'] ('~/.pocket/logs/' is used by default)")
 )
 
 // "Init" initializes the configuration object.
@@ -51,7 +57,7 @@ func Init() {
 			flag.Set("logformat", ".json")
 		}
 	}
-	// Check if valid loglevel is passed 
+	// Check if valid loglevel is passed
 	if isFlagPassed("loglevel") == true {
 		loglevel := fmt.Sprintf("%s", flag.Lookup("loglevel").Value)
 		_, err := log.ParseLevel(loglevel)
@@ -124,8 +130,8 @@ func GlobalConfig() *config { // singleton structure to return the configuration
 // "newConfiguration() is a constructor function of the configuration type.
 func newConfiguration() {
 	c = &config{
-		_const.CLIENTID,
-		_const.VERSION,
+		CLIENTID,
+		VERSION,
 		*dd,
 		*cRpc,
 		*cRpcPort,

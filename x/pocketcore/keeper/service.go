@@ -2,13 +2,12 @@ package keeper
 
 import (
 	"encoding/hex"
-	"errors"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 )
 
 // this is the main call for a service node handling a relay request
-func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse, error) {
+func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
 	// get the latest session block height
 	sessionBlockHeight := k.GetLatestSessionBlock(ctx).BlockHeight()
 	// retrieve all service nodes available from world state
@@ -23,7 +22,7 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 	// get application that staked for client
 	app, found := k.GetAppFromPublicKey(ctx, relay.Proof.Token.ApplicationPublicKey)
 	if !found {
-		return nil, errors.New("no app found for addr")
+		return nil, pc.NewAppNotFoundError(pc.ModuleName)
 	}
 	// validate the next relay
 	if err := relay.Validate(ctx, selfNode, hb, sessionBlockHeight, int(k.SessionNodeCount(ctx)), allNodes, app); err != nil {
@@ -54,7 +53,10 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 		},
 	}
 	// sign the response
-	sig, _, err := k.keybase.Sign(sdk.AccAddress(selfNode.GetAddress()), k.coinbasePassphrase, resp.Hash())
+	sig, _, er := k.keybase.Sign(sdk.AccAddress(selfNode.GetAddress()), k.coinbasePassphrase, resp.Hash())
+	if er != nil {
+		return nil, pc.NewKeybaseError(pc.ModuleName, er)
+	}
 	resp.Signature = hex.EncodeToString(sig)
 	return resp, nil
 }

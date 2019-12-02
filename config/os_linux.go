@@ -1,6 +1,6 @@
 // +build linux
 
-package _const
+package config
 
 import "os"
 

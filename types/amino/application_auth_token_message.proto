@@ -1,6 +1,0 @@
-syntax = "proto3";
-
-message ApplicationAuthTokenMessage {
-	string applicationPublicKey = 1;
-	string clientPublicKey = 2;
-}
