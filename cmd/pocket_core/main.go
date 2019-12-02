@@ -6,7 +6,6 @@ import (
 	"github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/logs"
 	"github.com/pokt-network/pocket-core/rpc"
-	"github.com/pokt-network/pocket-core/util"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -54,6 +53,9 @@ func startClient() {
 		sig := <-signalChannel
 
 		message := fmt.Sprintf("Exit signal %s received\n", sig)
-		util.ExitGracefully(message)
+		logs.Log("Shutting down Pocket Core: "+message, logs.InfoLevel, logs.JSONLogFormat)
+		logs.Log("Shutting down Pocket Core: "+message, logs.InfoLevel, logs.TextLogFormatter)
+
+		os.Exit(3)
 	}()
 }

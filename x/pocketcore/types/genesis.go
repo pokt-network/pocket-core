@@ -1,30 +1,21 @@
 package types
 
-import (
-	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
-	sdk "github.com/pokt-network/posmint/types"
-	abci "github.com/tendermint/tendermint/abci/types"
-)
-
 type GenesisState struct {
+	Params Params `json:"params" yaml:"params"`
 }
 
-func NewGenesisState() GenesisState {
-	return GenesisState{}
+func NewGenesisState(params Params) GenesisState {
+	return GenesisState{
+		Params: params,
+	}
 }
 
 func ValidateGenesis(data GenesisState) error {
-	return nil
+	return data.Params.Validate()
 }
 
 func DefaultGenesisState() GenesisState {
-	return GenesisState{}
-}
-
-func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data GenesisState) []abci.ValidatorUpdate {
-	return []abci.ValidatorUpdate{}
-}
-
-func ExportGenesis(ctx sdk.Context, k keeper.Keeper) GenesisState {
-	return GenesisState{}
+	return GenesisState{
+		Params: DefaultParams(),
+	}
 }

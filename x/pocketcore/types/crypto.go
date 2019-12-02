@@ -3,38 +3,39 @@ package types
 import (
 	"encoding/hex"
 	"github.com/pokt-network/posmint/crypto"
+	sdk "github.com/pokt-network/posmint/types"
 	"golang.org/x/crypto/sha3"
 )
 
-func SignatureVerification(publicKey, msgHex, sigHex string) error {
+func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
 	sig, err := hex.DecodeString(sigHex)
 	if err != nil {
-		return err
+		return NewSigDecodeError(ModuleName)
 	}
 	if len(sig) != crypto.SignatureSize {
-		return InvalidSignatureSizeError
+		return NewInvalidSignatureSizeError(ModuleName)
 	}
 	pk, err := crypto.NewPublicKey(publicKey)
 	if err != nil {
-		return err
+		return NewPubKeyDecodeError(ModuleName)
 	}
 	msg, err := hex.DecodeString(msgHex)
 	if err != nil {
-		return err
+		return NewMsgDecodeError(ModuleName)
 	}
 	if ok := pk.VerifySignature(msg, sig); !ok {
-		return InvalidSignatureError
+		return NewInvalidSignatureError(ModuleName)
 	}
 	return nil
 }
 
-func PubKeyVerification(pk string) error {
+func PubKeyVerification(pk string) sdk.Error {
 	pkBz, err := hex.DecodeString(pk)
 	if err != nil {
-		return err
+		return NewPubKeyDecodeError(ModuleName)
 	}
 	if len(pkBz) != crypto.PubKeySize {
-		return PubKeySizeError
+		return NewPubKeySizeError(ModuleName)
 	}
 	return nil
 }

@@ -3,14 +3,15 @@ package types
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"io/ioutil"
 	"net/http"
 )
+
+const DEFAULTHTTPMETHOD = "POST"
 
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
@@ -25,23 +26,23 @@ type Payload struct {
 	Path   string `json:"path"`
 }
 
-func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hostedBlockchains types.HostedBlockchains,
-	sessionBlockHeight int64, sessionNodeCount int, allActiveNodes []nodeexported.ValidatorI, app appexported.ApplicationI) error {
+func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hostedBlockchains HostedBlockchains,
+	sessionBlockHeight int64, sessionNodeCount int, allActiveNodes []nodeexported.ValidatorI, app appexported.ApplicationI) sdk.Error {
 	// check to see if the blockchain is empty
 	if len(r.Blockchain) == 0 {
-		return EmptyBlockchainError
+		return NewEmptyBlockchainError(ModuleName)
 	}
 	// check to see if the payload is empty
 	if r.Payload.Data == "" || len(r.Payload.Data) == 0 {
-		return EmptyPayloadDataError
+		return NewEmptyPayloadDataError(ModuleName)
 	}
 	// ensure the blockchain is supported
 	if !hostedBlockchains.ContainsFromString(r.Blockchain) {
-		return UnsupportedBlockchainError
+		return NewUnsupportedBlockchainNodeError(ModuleName)
 	}
 	// check to see if non-native blockchain is staked for by the developer
 	if _, contains := app.GetChains()[r.Blockchain]; !contains {
-		return NotStakedBlockchainError
+		return NewNotStakedBlockchainError(ModuleName)
 	}
 	// verify that node verify is of this session
 	if _, err := SessionVerification(ctx, nodeVerify, app, r.Blockchain, sessionBlockHeight, sessionNodeCount, allActiveNodes); err != nil {
@@ -49,7 +50,7 @@ func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hos
 	}
 	// check to see if the service proof is valid
 	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), hex.EncodeToString(nodeVerify.GetConsPubKey().Bytes())); err != nil {
-		return NewServiceProofError(err)
+		return err
 	}
 	// payload type to handle correctly
 	if len((r.Payload).Method) == 0 {
@@ -59,14 +60,15 @@ func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hos
 }
 
 // executes the relay on the non-native blockchain specified
-func (r Relay) Execute(hostedBlockchains types.HostedBlockchains) (string, error) {
+func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) {
 	// retrieve the hosted blockchain url requested
 	url, err := hostedBlockchains.GetChainURL(r.Blockchain)
 	if err != nil {
 		return "", err
 	}
 	// do basic http request on the relay
-	return executeHTTPRequest(r.Payload.Data, url, r.Payload.Method)
+	res, er := executeHTTPRequest(r.Payload.Data, url, r.Payload.Method)
+	return res, NewHTTPExecutionError(ModuleName, er)
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
@@ -82,7 +84,7 @@ func executeHTTPRequest(payload string, url string, method string) (string, erro
 		return "", err
 	}
 	if resp.StatusCode != 200 {
-		return "", NewHTTPStatusCodeError(resp.StatusCode)
+		return "", NewHTTPStatusCodeError(ModuleName, resp.StatusCode)
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -90,7 +92,7 @@ func executeHTTPRequest(payload string, url string, method string) (string, erro
 }
 
 // store the proofs of work done for the relay batch
-func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64, maxNumberOfRelays int) error {
+func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64, maxNumberOfRelays int) sdk.Error {
 	// grab the relay batch container
 	rbs := GetAllProofs()
 	header := PORHeader{
@@ -109,18 +111,18 @@ type RelayResponse struct {
 }
 
 // node validates the response after signing
-func (rr RelayResponse) Validate() error {
+func (rr RelayResponse) Validate() sdk.Error {
 	// the counter for the authorization must be >=0
 	if rr.Proof.Index < 0 {
-		return InvalidIncrementCounterError
+		return NewInvalidIncrementCounterError(ModuleName)
 	}
 	// cannot contain empty response
 	if rr.Response == "" {
-		return EmptyResponseError
+		return NewEmptyResponseError(ModuleName)
 	}
 	// cannot contain empty signature (nodes must be accountable)
-	if rr.Signature == "" {
-		return ResponseSignatureError
+	if rr.Signature == "" || len(rr.Signature) == crypto.SignatureSize {
+		return NewResponseSignatureError(ModuleName)
 	}
 	return nil
 }

@@ -1,6 +1,6 @@
 // +build windows
 
-package _const
+package config
 
 import "os"
 

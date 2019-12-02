@@ -4,17 +4,15 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-
-	"github.com/pokt-network/pocket-core/const"
 )
 
 func WriteFixtures() error {
-	datadirectory := GlobalConfig().DD + _const.FILESEPARATOR
-	cFile, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "chains.json")
+	datadirectory := GlobalConfig().DD + FILESEPARATOR
+	cFile, err := filepath.Abs("config" + FILESEPARATOR + "fixtures" + FILESEPARATOR + "chains.json")
 	if err != nil {
 		return err
 	}
-	pFile, err := filepath.Abs("config" + _const.FILESEPARATOR + "fixtures" + _const.FILESEPARATOR + "peers.json")
+	pFile, err := filepath.Abs("config" + FILESEPARATOR + "fixtures" + FILESEPARATOR + "peers.json")
 	if err != nil {
 		return err
 	}
@@ -53,7 +51,7 @@ func copyFile(src, dst string) error {
 }
 
 func filePaths() {
-	if *cFile == _const.CHAINSFILENAME {
-		*cFile = *dd + _const.FILESEPARATOR + "chains.json"
+	if *cFile == CHAINSFILENAME {
+		*cFile = *dd + FILESEPARATOR + "chains.json"
 	}
 }

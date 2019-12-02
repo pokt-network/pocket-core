@@ -35,27 +35,27 @@ func (k Keeper) TrucateUnnecessaryProofs(porReq int, por pc.ProofOfRelay) pc.Pro
 	return por
 }
 
-func (k Keeper) AreProofsValid(ctx sdk.Context, verifyServicerPubKey string, por pc.ProofOfRelay) bool {
+func (k Keeper) ValidateProofs(ctx sdk.Context, verifyServicerPubKey string, por pc.ProofOfRelay) error {
 	if 1 != len(por.Proofs) {
-		return false
+		return pc.NewEmptyProofsError(pc.ModuleName)
 	}
 	reqProof := k.GenerateProofs(ctx, por.TotalRelays, por.PORHeader)
 	proof := por.Proofs[0]
 	if proof.Index != int(reqProof) {
-		return false
+		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	if proof.ServicerPubKey != verifyServicerPubKey {
-		return false
+		return pc.NewInconsistentPubKeyError(pc.ModuleName)
 	}
 	if err := proof.Token.Validate(); err != nil {
-		return false
+		return err
 	}
 	messageHash := hex.EncodeToString(pc.SHA3FromString(strconv.Itoa(proof.Index) + proof.ServicerPubKey + proof.Token.HashString() + strconv.Itoa(int(proof.SessionBlockHeight)))) // todo standardize
 	if err := pc.SignatureVerification(por.Proofs[0].Token.ClientPublicKey, messageHash, proof.Signature); err != nil {
-		return false
+		return err
 
 	}
-	return true
+	return nil
 }
 
 func (k Keeper) SendProofs(ctx sdk.Context, n *node.Node, pbTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, truncatedPOR pc.ProofOfRelay) error) { // todo should move tx to keeper?

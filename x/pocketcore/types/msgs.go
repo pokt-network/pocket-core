@@ -12,13 +12,6 @@ type MsgProofOfRelays struct {
 	ProofOfRelay
 }
 
-// NewMsgSetName is a constructor function for MsgProofOfRelays
-func NewMsgProofBatch(truncatedProof ProofOfRelay) MsgProofOfRelays {
-	return MsgProofOfRelays{
-		ProofOfRelay: truncatedProof,
-	}
-}
-
 // Route should return the name of the module
 func (msg MsgProofOfRelays) Route() string { return RouterKey }
 

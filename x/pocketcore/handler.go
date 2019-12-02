@@ -26,23 +26,23 @@ func handleProofBatchMessage(ctx sdk.Context, keeper keeper.Keeper, msg types.Ms
 	nPubKey := msg.ProofOfRelay.Proofs[0].ServicerPubKey
 	node, found := keeper.GetNodeFromPublicKey(sessionContext, nPubKey)
 	if !found {
-		return NodeNotFoundErr.Result()
+		return types.NewNodeNotFoundErr(types.ModuleName).Result()
 	}
 	// get the application at the session context
 	app, found := keeper.GetAppFromPublicKey(sessionContext, msg.ProofOfRelay.Proofs[0].Token.ApplicationPublicKey)
 	if !found {
-		return AppNotFoundErr.Result()
+		return types.NewAppNotFoundError(types.ModuleName).Result()
 	}
 	// get all the available service nodes at the time of the session
 	allNodes := keeper.GetAllNodes(sessionContext)
 	// verify session
-	_, err := keeper.SessionVerification(ctx, node, app, msg.Chain, msg.SessionBlockHeight, allNodes)
+	_, err := types.SessionVerification(ctx, node, app, msg.Chain, msg.SessionBlockHeight, int(keeper.SessionNodeCount(ctx)), allNodes)
 	if err != nil {
-		return err
+		return err.Result()
 	}
 	// generate reqProofsIndex to compare
-	if !keeper.AreProofsValid(sessionContext, nPubKey, msg.ProofOfRelay) {
-		return InvalidProofsError.Result()
+	if err := keeper.ValidateProofs(sessionContext, nPubKey, msg.ProofOfRelay); err != nil {
+		return types.NewInvalidProofsError(types.ModuleName).Result()
 	}
 	// store proofs summary into state
 	keeper.SetProofOfRelay(ctx, node.GetAddress(), msg.ProofOfRelay)

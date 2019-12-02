@@ -14,18 +14,24 @@ const (
 	DefaultProofWaitingPeriod = 3
 )
 
+var (
+	DefaultSupportedBlockchains []string // todo add defaults
+)
+
 // nolint - Keys for parameter access
 var (
-	KeySessionNodeCount   = []byte("SessionNodeCount")
-	KeyProofWaitingPeriod = []byte("ProofWaitingPeriod")
+	KeySessionNodeCount     = []byte("SessionNodeCount")
+	KeyProofWaitingPeriod   = []byte("ProofWaitingPeriod")
+	KeySupportedBlockchains = []byte("SupportedBlockchains")
 )
 
 var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	SessionNodeCount   uint
-	ProofWaitingPeriod uint
+	SessionNodeCount     uint
+	ProofWaitingPeriod   uint
+	SupportedBlockchains []string
 }
 
 // Implements params.ParamSet
@@ -33,14 +39,16 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		{Key: KeySessionNodeCount, Value: &p.SessionNodeCount},
 		{Key: KeyProofWaitingPeriod, Value: &p.ProofWaitingPeriod},
+		{Key: KeySupportedBlockchains, Value: &p.SupportedBlockchains},
 	}
 }
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		SessionNodeCount:   DefaultSessionNodeCount,
-		ProofWaitingPeriod: DefaultProofWaitingPeriod,
+		SessionNodeCount:     DefaultSessionNodeCount,
+		ProofWaitingPeriod:   DefaultProofWaitingPeriod,
+		SupportedBlockchains: DefaultSupportedBlockchains,
 	}
 }
 
@@ -51,6 +59,9 @@ func (p Params) Validate() error {
 	}
 	if p.ProofWaitingPeriod < 1 {
 		return errors.New("no waiting period is subject to attack")
+	}
+	if len(p.SupportedBlockchains) == 0 {
+		return errors.New("no supported blockchains")
 	}
 	return nil
 }
@@ -67,9 +78,11 @@ func (p Params) String() string {
 	return fmt.Sprintf(`Params:
   SessionNodeCount:          %s
   ProofWaitingPeriod:        %s
+  Supported Blockchains      %v
 `,
 		p.SessionNodeCount,
-		p.ProofWaitingPeriod)
+		p.ProofWaitingPeriod,
+		p.SupportedBlockchains)
 }
 
 // unmarshal the current pos params value from store key or panic
