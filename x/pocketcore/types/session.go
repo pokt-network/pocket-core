@@ -209,6 +209,11 @@ func (n NodeDistances) Less(i, j int) bool {
 }
 
 type SessionKey []byte
+type sessionKey struct {
+	AppPublicKey   []byte
+	NonNativeChain []byte
+	BlockHash      []byte
+}
 
 // Generates the session key = SessionHashingAlgo(devid+chain+blockhash)
 func NewSessionKey(appPublicKey string, nonNativeChain string, blockHash string) (SessionKey, sdk.Error) {
@@ -234,11 +239,6 @@ func NewSessionKey(appPublicKey string, nonNativeChain string, blockHash string)
 	bhBytes, err := hex.DecodeString(ModuleName)
 	if err != nil {
 		return nil, NewInvalidBlockHashError(ModuleName, err)
-	}
-	type sessionKey struct {
-		AppPublicKey   []byte
-		NonNativeChain []byte
-		BlockHash      []byte
 	}
 	seed, err := json.Marshal(sessionKey{
 		AppPublicKey:   appPubKey,

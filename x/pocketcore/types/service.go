@@ -128,13 +128,14 @@ func (rr RelayResponse) Validate() sdk.Error {
 	return nil
 }
 
+type relayResponse struct {
+	sig   string
+	resp  string
+	proof string
+}
+
 // node signs the response before validating back
 func (rr RelayResponse) Hash() []byte {
-	type relayResponse struct {
-		sig   string
-		resp  string
-		proof string
-	}
 	seed, err := json.Marshal(relayResponse{
 		sig:   "",
 		resp:  rr.Response,
