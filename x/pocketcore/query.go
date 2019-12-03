@@ -67,3 +67,14 @@ func (am AppModule) QueryAllPORsForApp(cdc *codec.Codec, addr sdk.ValAddress, ap
 	}
 	return ps, nil
 }
+
+func (am AppModule) QueryPocketSupportedBlockchains(cdc *codec.Codec, height int64) ([]string, error) {
+	var chains []string
+	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+	res, _, err := cliCtx.Query(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QuerySupportedBlockchains))
+	if err != nil {
+		return nil, err
+	}
+	err = cdc.UnmarshalJSON(res, &chains)
+	return chains, nil
+}

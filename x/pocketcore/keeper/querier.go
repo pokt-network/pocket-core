@@ -18,10 +18,20 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryProofSummaries(ctx, req, k)
 		case types.QueryProofsSummariesForApp:
 			return queryProofSummariesForApp(ctx, req, k)
+		case types.QuerySupportedBlockchains:
+			return querySupportedBlockchains(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown staking query endpoint")
 		}
 	}
+}
+
+func querySupportedBlockchains(ctx sdk.Context, _ abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, k.SupportedBlockchains(ctx))
+	if err != nil {
+		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
+	}
+	return res, nil
 }
 
 func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
