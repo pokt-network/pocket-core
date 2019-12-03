@@ -18,11 +18,11 @@ type HostedBlockchains struct {
 }
 
 var (
-	globalHostedChains *HostedBlockchains // [HostedBlockchain Hash] -> Hosted HostedBlockchain
+	globalHostedChains *HostedBlockchains // [HostedBlockchain HashString] -> Hosted HostedBlockchain
 	chainOnce          sync.Once
 )
 
-func GetHostedChains() *HostedBlockchains {
+func GetHostedChains() *HostedBlockchains { // todo getHostedChains never called!
 	chainOnce.Do(func() {
 		(*globalHostedChains).M = make(map[string]HostedBlockchain)
 	})

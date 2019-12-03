@@ -26,6 +26,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 	}
 }
 
+// query the supported blockchains
 func querySupportedBlockchains(ctx sdk.Context, _ abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, k.SupportedBlockchains(ctx))
 	if err != nil {
@@ -34,6 +35,7 @@ func querySupportedBlockchains(ctx sdk.Context, _ abci.RequestQuery, k Keeper) (
 	return res, nil
 }
 
+// query the proof summary for a particular node address and session header
 func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryPORParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
@@ -48,6 +50,7 @@ func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte
 	return res, nil
 }
 
+// query the proof summaries for a particular node address
 func queryProofSummaries(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryPORsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)

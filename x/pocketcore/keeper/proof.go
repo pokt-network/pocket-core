@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
@@ -12,9 +13,20 @@ import (
 )
 
 func (k Keeper) GenerateProofs(ctx sdk.Context, totalRelays int64, header pc.PORHeader) int64 {
+	type proofs struct {
+		blockHash string
+		header    string
+	}
 	proofSessBlockContext := ctx.WithBlockHeight(header.SessionBlockHeight + int64(k.ProofWaitingPeriod(ctx))*k.SessionFrequency(ctx)) // next session block hash
 	blockHash := hex.EncodeToString(proofSessBlockContext.BlockHeader().GetLastBlockId().Hash)
-	proofsHash := hex.EncodeToString(pc.SHA3FromString(blockHash + header.String()))[:16] // makes it unique for each session!
+	r, err := json.Marshal(proofs{
+		blockHash: blockHash,
+		header:    header.HashString(),
+	})
+	if err != nil {
+		panic(err)
+	}
+	proofsHash := hex.EncodeToString(r)[:16] // makes it unique for each session!
 	length := len(proofsHash)
 	for i := 0; i < length; i++ {
 		res, err := strconv.ParseInt(proofsHash[i:], 16, 64)
@@ -50,8 +62,7 @@ func (k Keeper) ValidateProofs(ctx sdk.Context, verifyServicerPubKey string, por
 	if err := proof.Token.Validate(); err != nil {
 		return err
 	}
-	messageHash := hex.EncodeToString(pc.SHA3FromString(strconv.Itoa(proof.Index) + proof.ServicerPubKey + proof.Token.HashString() + strconv.Itoa(int(proof.SessionBlockHeight)))) // todo standardize
-	if err := pc.SignatureVerification(por.Proofs[0].Token.ClientPublicKey, messageHash, proof.Signature); err != nil {
+	if err := pc.SignatureVerification(por.Proofs[0].Token.ClientPublicKey, proof.HashString(), proof.Signature); err != nil {
 		return err
 
 	}

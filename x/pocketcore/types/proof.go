@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	sdk "github.com/pokt-network/posmint/types"
 	"strconv"
 	"sync"
@@ -119,15 +120,40 @@ func (p Proof) Validate(maxRelays int64, servicerVerifyPubKey string) sdk.Error 
 	}
 	return SignatureVerification(p.Token.ClientPublicKey, p.HashString(), p.Signature)
 }
-func (p Proof) HashString() string {
-	return hex.EncodeToString(SHA3FromString(p.ServicerPubKey + p.Token.HashString() + strconv.Itoa(p.Index) + strconv.Itoa(int(p.SessionBlockHeight)))) // todo standardize
-}
+
 func (p Proof) Hash() []byte {
-	return SHA3FromString(p.ServicerPubKey + p.Token.HashString() + strconv.Itoa(p.Index) + strconv.Itoa(int(p.SessionBlockHeight))) // todo standardize
+	type proof struct {
+		SessionBlockHeight int64
+		Signature          string
+		Token              string
+		Index              int
+	}
+	res, err := json.Marshal(proof{
+		SessionBlockHeight: p.SessionBlockHeight,
+		Signature:          p.Signature,
+		Token:              p.Token.HashString(),
+		Index:              p.Index,
+	})
+	if err != nil {
+		panic(err)
+	}
+	return SHA3FromBytes(res)
 }
 
-func (ph PORHeader) String() string {
-	return strconv.Itoa(int(ph.SessionBlockHeight)) + ph.ApplicationPubKey + ph.Chain // todo standardize
+func (p Proof) HashString() string {
+	return hex.EncodeToString(p.Hash())
+}
+
+func (ph PORHeader) Hash() []byte {
+	res, err := json.Marshal(ph)
+	if err != nil {
+		panic(err)
+	}
+	return SHA3FromBytes(res)
+}
+
+func (ph PORHeader) HashString() string {
+	return hex.EncodeToString(ph.Hash())
 }
 
 // Tickets are used to order the relays

@@ -45,11 +45,14 @@ func (k Keeper) GetAllNodesForChain(ctx sdk.Context, chain string) (nodes []expo
 	return nil
 }
 
+// self node is needed to verify that self node is part of a session
 func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.Error) {
+	// get the keybase addr list
 	keypairs, err := k.keybase.List()
 	if err != nil || len(keypairs) < 1 {
 		return nil, pc.NewKeybaseError(pc.ModuleName, err)
 	}
+	// get the node from the world state
 	self, found := k.GetNode(ctx, sdk.ValAddress(keypairs[0].GetAddress())) // todo need to verify that this is the validator key we want
 	if !found {
 		return nil, pc.NewSelfNotFoundError(pc.ModuleName)
@@ -57,7 +60,7 @@ func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.E
 	return self, nil
 }
 
-func (k Keeper) GetHostedBlockchains(ctx sdk.Context) pc.HostedBlockchains {
+func (k Keeper) GetHostedBlockchains() pc.HostedBlockchains {
 	return k.hostedBlockchains
 }
 

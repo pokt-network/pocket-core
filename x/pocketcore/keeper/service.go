@@ -8,9 +8,9 @@ import (
 
 // this is the main call for a service node handling a relay request
 func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
-	// get the latest session block height
+	// get the latest session block height because this relay will correspond with the latest session
 	sessionBlockHeight := k.GetLatestSessionBlock(ctx).BlockHeight()
-	// retrieve all service nodes available from world state
+	// retrieve all service nodes available from world state to do session generation
 	allNodes := k.GetAllNodes(ctx)
 	// get self node (your validator) from world state
 	selfNode, err := k.GetSelfNode(ctx)
@@ -18,14 +18,14 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 		return nil, err
 	}
 	// get hosted blockchains
-	hb := k.GetHostedBlockchains(ctx)
+	hostedBlockchains := k.GetHostedBlockchains()
 	// get application that staked for client
 	app, found := k.GetAppFromPublicKey(ctx, relay.Proof.Token.ApplicationPublicKey)
 	if !found {
 		return nil, pc.NewAppNotFoundError(pc.ModuleName)
 	}
-	// validate the next relay
-	if err := relay.Validate(ctx, selfNode, hb, sessionBlockHeight, int(k.SessionNodeCount(ctx)), allNodes, app); err != nil {
+	// validate the relay
+	if err := relay.Validate(ctx, selfNode, hostedBlockchains, sessionBlockHeight, int(k.SessionNodeCount(ctx)), allNodes, app); err != nil {
 		return nil, err
 	}
 	// store the previous proof
@@ -38,7 +38,7 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 		SessionBlockHeight: sessionBlockHeight,
 	}
 	// attempt to execute
-	respPayload, err := relay.Execute(hb)
+	respPayload, err := relay.Execute(hostedBlockchains)
 	if err != nil {
 		return nil, err
 	}
@@ -59,13 +59,4 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 	}
 	resp.Signature = hex.EncodeToString(sig)
 	return resp, nil
-}
-
-func (k Keeper) IsPocketSupportedBlockchain(ctx sdk.Context, chain string) bool {
-	for _, c := range k.SupportedBlockchains(ctx) {
-		if c == chain {
-			return true
-		}
-	}
-	return false
 }
