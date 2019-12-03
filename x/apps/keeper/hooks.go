@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
+	sdk "github.com/pokt-network/posmint/types"
 )
 
 // Implements AppHooks interface

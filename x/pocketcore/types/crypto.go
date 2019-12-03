@@ -1,10 +1,15 @@
 package types
 
 import (
+	sha "crypto"
 	"encoding/hex"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"golang.org/x/crypto/sha3"
+)
+
+var (
+	HashLength = sha.SHA3_256.Size()
 )
 
 func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {

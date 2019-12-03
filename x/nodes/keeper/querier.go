@@ -2,10 +2,10 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/util"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

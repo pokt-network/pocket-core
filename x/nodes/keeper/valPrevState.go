@@ -2,9 +2,9 @@ package keeper
 
 import (
 	"fmt"
-	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	sdk "github.com/pokt-network/posmint/types"
 )
 
 // get the staked validators from the previous state

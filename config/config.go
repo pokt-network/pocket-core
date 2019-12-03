@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 )
+
 const (
 	// client identifier
 	CLIENTID = "pocket_core"
@@ -29,7 +30,6 @@ type config struct {
 	LogFormat string `json:"logformat"`    // This variable changes the log storage format.
 	LogLevel  string `json:"loglevel"`     // This variable changes the log level.
 	LogDir    string `json:"logdir"`       // This variable changes the log storage dir.
-
 }
 
 var (
@@ -97,7 +97,6 @@ func logger(output string, level log.Level) {
 	default:
 		log.Info(output)
 	}
-
 
 }
 
