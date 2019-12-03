@@ -73,7 +73,7 @@ func (p Params) Equal(p2 Params) bool {
 	return bytes.Equal(bz1, bz2)
 }
 
-// String returns a human readable string representation of the parameters.
+// HashString returns a human readable string representation of the parameters.
 func (p Params) String() string {
 	return fmt.Sprintf(`Params:
   SessionNodeCount:          %s

@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"encoding/json"
 )
 
 const (
@@ -43,7 +44,11 @@ func (a AAT) Validate() error {
 }
 
 func (a AAT) Hash() []byte {
-	return SHA3FromString(a.ApplicationPublicKey + a.ClientPublicKey + a.Version) // todo standardize
+	r, err := json.Marshal(a)
+	if err != nil {
+		panic(err)
+	}
+	return SHA3FromBytes(r)
 }
 
 func (a AAT) HashString() string {

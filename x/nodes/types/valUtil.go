@@ -39,7 +39,7 @@ func UnmarshalValidator(cdc *codec.Codec, valBytes []byte) (validator Validator,
 	return validator, err
 }
 
-// String returns a human readable string representation of a validator.
+// HashString returns a human readable string representation of a validator.
 func (v Validator) String() string {
 	bechConsPubKey, err := sdk.Bech32ifyConsPub(v.ConsPubKey)
 	if err != nil {

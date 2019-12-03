@@ -56,6 +56,8 @@ const ( // todo re-number
 	CodeChainNotSupportedErr           = 1163
 	CodePubKeyError                    = 1164
 	CodeSignatureError                 = 1165
+	CodeInvalidChainError              = 1166
+	CodeJSONMarshalError               = 1167
 )
 
 var (
@@ -112,7 +114,17 @@ var (
 	ChainNotSupportedErr             = errors.New("the chain is not pocket supported")
 	PubKeyError                      = errors.New("could not convert hex string to pub key: ")
 	SignatureError                   = errors.New("there was a problem signing the message: ")
+	InvalidChainError                = errors.New("the non native chain passed was invalid: ")
+	JSONMarshalError                 = errors.New("unable to marshal object into json: ")
 )
+
+func NewJSONMarshalError(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeJSONMarshalError, JSONMarshalError.Error()+err.Error())
+}
+
+func NewInvalidChainError(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidChainError, InvalidChainError.Error()+err.Error())
+}
 
 func NewSignatureError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodeSignatureError, SignatureError.Error()+err.Error())

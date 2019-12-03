@@ -38,7 +38,7 @@ func UnmarshalApplication(cdc *codec.Codec, appBytes []byte) (application Applic
 	return application, err
 }
 
-// String returns a human readable string representation of a application.
+// HashString returns a human readable string representation of a application.
 func (a Application) String() string {
 	bechConsPubKey, err := sdk.Bech32ifyConsPub(a.ConsPubKey)
 	if err != nil {

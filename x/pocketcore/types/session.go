@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	sdk "github.com/pokt-network/posmint/types"
@@ -9,12 +10,9 @@ import (
 )
 
 type Session struct {
-	SessionKey     SessionKey                `json:"sessionkey"`
-	AppPubKey      string                    `json:"appPubKey"`
-	NonNativeChain string                    `json:"chain"`
-	BlockHash      string                    `json:"blockHash"`
-	BlockHeight    int64                     `json:"blockHeight"`
-	Nodes          []nodeexported.ValidatorI `json:"nodes"`
+	SessionKey `json:"sessionkey"`
+	PORHeader  `json:"proof_of_relay_header"`
+	Nodes      []nodeexported.ValidatorI `json:"nodes"`
 }
 
 // Create a new session from seed data
@@ -30,7 +28,15 @@ func NewSession(appPubKey string, nonNativeChain string, blockHash string, block
 		return nil, err
 	}
 	// then populate the structure and return
-	return &Session{SessionKey: sessionKey, AppPubKey: appPubKey, BlockHeight: blockHeight, NonNativeChain: nonNativeChain, BlockHash: blockHash, Nodes: sessionNodes}, nil
+	return &Session{
+		SessionKey: sessionKey,
+		PORHeader: PORHeader{
+			ApplicationPubKey:  appPubKey,
+			Chain:              nonNativeChain,
+			SessionBlockHeight: blockHeight,
+		},
+		Nodes: sessionNodes,
+	}, nil
 }
 
 // verifies the session for a node
@@ -218,16 +224,30 @@ func NewSessionKey(appPublicKey string, nonNativeChain string, blockHash string)
 	if len(nonNativeChain) == 0 {
 		return nil, NewEmptyNonNativeChainError(ModuleName)
 	}
+	nnBytes, err := hex.DecodeString(nonNativeChain)
+	if err != nil {
+		return nil, NewInvalidChainError(ModuleName, err)
+	}
 	if len(blockHash) == 0 {
 		return nil, NewEmptyBlockHashError(ModuleName)
 	}
-	nnBytes, err := hex.DecodeString(nonNativeChain)
+	bhBytes, err := hex.DecodeString(ModuleName)
 	if err != nil {
 		return nil, NewInvalidBlockHashError(ModuleName, err)
 	}
-	// append them all together
-	seed := append(append(appPubKey, nnBytes...), blockHash...) // todo standardize
-
+	type sessionKey struct {
+		AppPublicKey   []byte
+		NonNativeChain []byte
+		BlockHash      []byte
+	}
+	seed, err := json.Marshal(sessionKey{
+		AppPublicKey:   appPubKey,
+		NonNativeChain: nnBytes,
+		BlockHash:      bhBytes,
+	})
+	if err != nil {
+		return nil, NewJSONMarshalError(ModuleName, err)
+	}
 	// return the hash of the result
 	return SHA3FromBytes(seed), nil
 }

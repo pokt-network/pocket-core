@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"encoding/hex"
+	"encoding/json"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/posmint/crypto"
@@ -129,10 +130,23 @@ func (rr RelayResponse) Validate() sdk.Error {
 
 // node signs the response before validating back
 func (rr RelayResponse) Hash() []byte {
-	return SHA3FromString(rr.Response + rr.Proof.HashString()) // todo standardize
+	type relayResponse struct {
+		sig   string
+		resp  string
+		proof string
+	}
+	seed, err := json.Marshal(relayResponse{
+		sig:   "",
+		resp:  rr.Response,
+		proof: rr.Proof.HashString(),
+	})
+	if err != nil {
+		panic(err)
+	}
+	return SHA3FromBytes(seed)
 }
 
 // node signs the response before validating back
 func (rr RelayResponse) HashString() string {
-	return hex.EncodeToString(SHA3FromString(rr.Response + rr.Proof.HashString())) // todo standardize
+	return hex.EncodeToString(rr.Hash())
 }
