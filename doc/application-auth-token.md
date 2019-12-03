@@ -30,7 +30,7 @@ An AAT must contain the following fields:
 #### clientPublicKey
 > type: `string`
 >
-> Required for signature verification, the hexadecimal public of each individual client allowing for granular control of who can use the ATT
+> Required for signature verification, the hexadecimal public of each individual client allowing for granular control of who can use the AAT
 
 ### ECDSA ed25519 Signature Scheme
 The protocol wide ed25519 ECDSA will be used for any signatures and verifications that are used within this specification.
@@ -52,7 +52,7 @@ AAT {
 
 ````
 
-`AATBytes = JSON.Encode(ATT)`
+`AATBytes = JSON.Encode(AAT)`
 
 `Message = SHA3-256(AATBytes)`
 
