@@ -10,6 +10,6 @@ func (k Keeper) IsSessionBlock(ctx sdk.Context) bool {
 }
 
 func (k Keeper) GetLatestSessionBlock(ctx sdk.Context) sdk.Context {
-	sessionBlockHeight := (ctx.BlockHeight() % int64(k.posKeeper.SessionBlockFrequency(ctx))) + 1
+	sessionBlockHeight := (ctx.BlockHeight() % k.posKeeper.SessionBlockFrequency(ctx)) + 1
 	return ctx.WithBlockHeight(sessionBlockHeight)
 }

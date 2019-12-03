@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	SUPPORTEDTOKENVERSIONS = "0.0.1" // todo
+	SUPPORTEDTOKENVERSION = "0.0.1" // todo
 )
 
 type AAT struct {
@@ -23,7 +23,7 @@ func (a AAT) VersionIsIncluded() bool {
 }
 
 func (a AAT) VersionIsSupported() bool {
-	if a.Version == SUPPORTEDTOKENVERSIONS {
+	if a.Version == SUPPORTEDTOKENVERSION {
 		return true
 	}
 	return false

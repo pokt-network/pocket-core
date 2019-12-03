@@ -14,3 +14,11 @@ func (am AppModule) ProofBatchTx(cdc *codec.Codec, cliCtx util.CLIContext, txBui
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
+
+func (am AppModule) GenerateChain(ticker, netid, version, client, inter string) (string, error) {
+	return am.keeper.GenerateChain(ticker, netid, version, client, inter)
+}
+
+func (am AppModule) GenerateAAT(appPubKey, cliPubKey, passphrase string) (types.AAT, error) {
+	return am.keeper.AATGeneration(appPubKey, cliPubKey, passphrase, am.keybase)
+}

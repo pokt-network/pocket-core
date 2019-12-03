@@ -51,6 +51,11 @@ const ( // todo re-number
 	CodeNodeNotFoundError              = 1158
 	CodeInvalidProofsError             = 1159
 	CodeInconsistentPubKeyError        = 1160
+	CodeInvalidChainParamsError        = 1161
+	CodeNewHexDecodeError              = 1162
+	CodeChainNotSupportedErr           = 1163
+	CodePubKeyError                    = 1164
+	CodeSignatureError                 = 1165
 )
 
 var (
@@ -102,7 +107,32 @@ var (
 	NodeNotFoundErr                  = errors.New("the node is not found in world state")
 	InvalidProofsError               = errors.New("the proofs provided are invalid")
 	InconsistentPubKeyError          = errors.New("the public keys in the proofs are inconsistent")
+	InvalidChainParamsError          = errors.New("the required params for a nonNative blockchain are invalid")
+	HexDecodeError                   = errors.New("the hex string could not be decoded: ")
+	ChainNotSupportedErr             = errors.New("the chain is not pocket supported")
+	PubKeyError                      = errors.New("could not convert hex string to pub key: ")
+	SignatureError                   = errors.New("there was a problem signing the message: ")
 )
+
+func NewSignatureError(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeSignatureError, SignatureError.Error()+err.Error())
+}
+
+func NewPubKeyError(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodePubKeyError, PubKeyError.Error()+err.Error())
+}
+
+func NewChainNotSupportedErr(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeChainNotSupportedErr, ChainNotSupportedErr.Error())
+}
+
+func NewHexDecodeError(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeNewHexDecodeError, HexDecodeError.Error()+err.Error())
+}
+
+func NewInvalidChainParamsError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidChainParamsError, InvalidChainParamsError.Error())
+}
 
 func NewInconsistentPubKeyError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInconsistentPubKeyError, InconsistentPubKeyError.Error())
