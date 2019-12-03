@@ -44,7 +44,18 @@ func (a AAT) Validate() error {
 }
 
 func (a AAT) Hash() []byte {
-	r, err := json.Marshal(a)
+	type aat struct {
+		ApplicationSignature string
+		AppPubKey            string
+		ClientPubKey         string
+		Version              string
+	}
+	r, err := json.Marshal(aat{
+		ApplicationSignature: "",
+		AppPubKey:            a.ApplicationPublicKey,
+		ClientPubKey:         a.ClientPublicKey,
+		Version:              a.Version,
+	})
 	if err != nil {
 		panic(err)
 	}
