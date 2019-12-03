@@ -52,10 +52,6 @@ func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hos
 	if !hostedBlockchains.ContainsFromString(r.Blockchain) {
 		return NewUnsupportedBlockchainNodeError(ModuleName)
 	}
-	// check to see if non-native blockchain is staked for by the developer
-	if _, contains := app.GetChains()[r.Blockchain]; !contains {
-		return NewNotStakedBlockchainError(ModuleName)
-	}
 	// verify that node verify is of this session
 	if _, err := SessionVerification(ctx, nodeVerify, app, r.Blockchain, sessionBlockHeight, sessionNodeCount, allActiveNodes); err != nil {
 		return err
