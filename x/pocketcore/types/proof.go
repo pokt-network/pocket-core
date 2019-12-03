@@ -130,7 +130,7 @@ func (p Proof) Hash() []byte {
 	}
 	res, err := json.Marshal(proof{
 		SessionBlockHeight: p.SessionBlockHeight,
-		Signature:          p.Signature,
+		Signature:          "",
 		Token:              p.Token.HashString(),
 		Index:              p.Index,
 	})
