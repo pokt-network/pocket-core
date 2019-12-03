@@ -9,6 +9,7 @@ const (
 	QueryProofsSummary         = "proof_summary"
 	QueryProofsSummaries       = "proof_summaries"
 	QueryProofsSummariesForApp = "proof_summaries_for_app"
+	QuerySupportedBlockchains  = "supportedBlockchains"
 )
 
 type QueryPORParams struct {
