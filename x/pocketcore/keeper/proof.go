@@ -65,34 +65,37 @@ func (k Keeper) SendProofs(ctx sdk.Context, n *node.Node, pbTx func(cdc *codec.C
 		for _, por := range (*proofs).M {
 			// if proof mature!
 			if por.SessionBlockHeight == (ctx.BlockHeight() - (int64(k.ProofWaitingPeriod(ctx)) * k.SessionFrequency(ctx))) {
-				porReq := k.GenerateProofs(ctx, por.TotalRelays, por.PORHeader) // gen proofs
-				truncatedResult := k.TrucateUnnecessaryProofs(int(porReq), por)
-				chainID := n.GenesisDoc().ChainID
-				fromAddr := sdk.AccAddress(n.PrivValidator().GetPubKey().Address())
-				fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin(k.StakeDenom(ctx), 0))) // todo gas
-				cliCtx := util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
-				accGetter := auth.NewAccountRetriever(cliCtx)
-				err := accGetter.EnsureExists(fromAddr)
-				account, err := accGetter.GetAccount(fromAddr)
-				if err != nil {
-					panic(err)
+				if k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(por.SessionBlockHeight), por.Chain) {
+					porReq := k.GenerateProofs(ctx, por.TotalRelays, por.PORHeader) // gen proofs
+					truncatedResult := k.TrucateUnnecessaryProofs(int(porReq), por)
+					chainID := n.GenesisDoc().ChainID
+					fromAddr := sdk.AccAddress(n.PrivValidator().GetPubKey().Address())
+					fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin(k.StakeDenom(ctx), 0))) // todo gas
+					cliCtx := util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
+					accGetter := auth.NewAccountRetriever(cliCtx)
+					err := accGetter.EnsureExists(fromAddr)
+					account, err := accGetter.GetAccount(fromAddr)
+					if err != nil {
+						panic(err)
+					}
+					txBuilder := auth.TxBuilder{
+						auth.DefaultTxEncoder(k.cdc),
+						k.keybase,
+						account.GetAccountNumber(),
+						account.GetSequence(),
+						fee.Gas,
+						1,
+						false,
+						chainID,
+						"",
+						fee.Amount,
+						fee.GasPrices(),
+					}
+					if err = pbTx(k.cdc, cliCtx, txBuilder, truncatedResult); err != nil {
+						panic(err)
+					}
 				}
-				txBuilder := auth.TxBuilder{
-					auth.DefaultTxEncoder(k.cdc),
-					k.keybase,
-					account.GetAccountNumber(),
-					account.GetSequence(),
-					fee.Gas,
-					1,
-					false,
-					chainID,
-					"",
-					fee.Amount,
-					fee.GasPrices(),
-				}
-				if err = pbTx(k.cdc, cliCtx, txBuilder, truncatedResult); err != nil {
-					panic(err)
-				}
+				pc.GetAllProofs().DeleteProofs(por.PORHeader)
 			}
 		}
 	}

@@ -60,3 +60,12 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 	resp.Signature = hex.EncodeToString(sig)
 	return resp, nil
 }
+
+func (k Keeper) IsPocketSupportedBlockchain(ctx sdk.Context, chain string) bool {
+	for _, c := range k.SupportedBlockchains(ctx) {
+		if c == chain {
+			return true
+		}
+	}
+	return false
+}

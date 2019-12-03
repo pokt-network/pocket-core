@@ -94,15 +94,11 @@ func (ap AllProofs) GetProof(header PORHeader, index int) *Proof {
 	return &por[index]
 }
 
-func (ap AllProofs) ClearProofs(header PORHeader, maxRelays int) {
+func (ap AllProofs) DeleteProofs(header PORHeader) {
 	ap.l.Lock()
 	defer ap.l.Unlock()
 	porKey := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
-	ap.M[porKey] = ProofOfRelay{
-		PORHeader:   header,
-		Proofs:      make([]Proof, maxRelays),
-		TotalRelays: 0,
-	}
+	delete(ap.M, porKey)
 }
 
 func (p Proof) Validate(maxRelays int64, servicerVerifyPubKey string) sdk.Error {
@@ -191,7 +187,7 @@ func (at *AllTickets) PunchTicket(header PORHeader, ticketNumber int) sdk.Error 
 
 func NewTickets(maxRelays, timeout int) (tix *Tickets) {
 	tix = &Tickets{T: make([]Ticket, maxRelays)}
-	go func() {
+	go func() { // todo are tickets closed upon deletion of tickets structure?
 		for now := range time.Tick(time.Second) {
 			tix.l.Lock()
 			for _, ticket := range tix.T {

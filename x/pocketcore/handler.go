@@ -22,6 +22,9 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 
 // Handle a message to set name
 func handleProofBatchMessage(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProofOfRelays) sdk.Result {
+	if keeper.IsPocketSupportedBlockchain(ctx.WithBlockHeight(msg.SessionBlockHeight), msg.Chain) {
+		return types.NewChainNotSupportedErr(types.ModuleName).Result()
+	}
 	sessionContext := ctx.WithBlockHeight(msg.SessionBlockHeight)
 	nPubKey := msg.ProofOfRelay.Proofs[0].ServicerPubKey
 	node, found := keeper.GetNodeFromPublicKey(sessionContext, nPubKey)

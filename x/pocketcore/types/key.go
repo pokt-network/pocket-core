@@ -17,6 +17,41 @@ var (
 	ProofSummaryKey = []byte{0x01} // key for the proofSummary
 )
 
+func KeyForChain(ticker, netid, version, client, inter string) (string, sdk.Error) {
+	if ticker == "" || netid == "" || version == "" {
+		return "", NewInvalidChainParamsError(ModuleName)
+	}
+	tickerBz, err := hex.DecodeString(ticker)
+	if err != nil {
+		return "", NewHexDecodeError(ModuleName, err)
+	}
+	netIDBz, err := hex.DecodeString(netid)
+	if err != nil {
+		return "", NewHexDecodeError(ModuleName, err)
+	}
+	versionBz, err := hex.DecodeString(version)
+	if err != nil {
+		return "", NewHexDecodeError(ModuleName, err)
+	}
+	res := append(append(tickerBz, netIDBz...), versionBz...)
+	// optional params
+	if client != "" {
+		clientBz, err := hex.DecodeString(client)
+		if err != nil {
+			return "", NewHexDecodeError(ModuleName, err)
+		}
+		res = append(res, clientBz...)
+	}
+	if inter != "" {
+		interBz, err := hex.DecodeString(inter)
+		if err != nil {
+			return "", NewHexDecodeError(ModuleName, err)
+		}
+		res = append(res, interBz...)
+	}
+	return hex.EncodeToString(SHA3FromBytes(res)), nil
+}
+
 func KeyForPOR(appPubKey, chain, sessionHeight string) string {
 	return appPubKey + chain + sessionHeight
 }
