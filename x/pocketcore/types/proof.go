@@ -121,13 +121,14 @@ func (p Proof) Validate(maxRelays int64, servicerVerifyPubKey string) sdk.Error 
 	return SignatureVerification(p.Token.ClientPublicKey, p.HashString(), p.Signature)
 }
 
+type proof struct {
+	SessionBlockHeight int64
+	Signature          string
+	Token              string
+	Index              int
+}
+
 func (p Proof) Hash() []byte {
-	type proof struct {
-		SessionBlockHeight int64
-		Signature          string
-		Token              string
-		Index              int
-	}
 	res, err := json.Marshal(proof{
 		SessionBlockHeight: p.SessionBlockHeight,
 		Signature:          "",
