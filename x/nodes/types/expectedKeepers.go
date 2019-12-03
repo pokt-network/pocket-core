@@ -1,9 +1,9 @@
 package types
 
 import (
+	posexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	sdk "github.com/pokt-network/posmint/types"
 	authexported "github.com/pokt-network/posmint/x/auth/exported"
-	posexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	supplyexported "github.com/pokt-network/posmint/x/supply/exported"
 )
 

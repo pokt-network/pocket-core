@@ -27,14 +27,25 @@ type Payload struct {
 	Path   string `json:"path"`
 }
 
+func (p Payload) Validate() sdk.Error {
+	if p.Data == "" && p.Path == "" {
+		return NewEmptyPayloadDataError(ModuleName)
+	}
+	return nil
+}
+
 func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hostedBlockchains HostedBlockchains,
 	sessionBlockHeight int64, sessionNodeCount int, allActiveNodes []nodeexported.ValidatorI, app appexported.ApplicationI) sdk.Error {
 	// check to see if the blockchain is empty
-	if len(r.Blockchain) == 0 {
+	bcLen := len(r.Blockchain)
+	if bcLen == 0 {
 		return NewEmptyBlockchainError(ModuleName)
 	}
+	if bcLen != HashLength {
+		return NewInvalidBlockchainLengthError(ModuleName)
+	}
 	// check to see if the payload is empty
-	if r.Payload.Data == "" || len(r.Payload.Data) == 0 {
+	if err := r.Payload.Validate(); err != nil {
 		return NewEmptyPayloadDataError(ModuleName)
 	}
 	// ensure the blockchain is supported

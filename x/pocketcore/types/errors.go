@@ -7,57 +7,58 @@ import (
 )
 
 const ( // todo re-number
-	CodeSessionGenerationError         = 1111
-	CodeHttpStatusCodeError            = 1112
-	CodeInvalidTokenError              = 1114
-	CodePublKeyDecodeError             = 1116
-	CodeEmptyChainError                = 1118
-	CodeEmptyBlockIDError              = 1119
-	CodeAppPubKeyError                 = 1120
-	CodeEmptyProofsError               = 1121
-	CodeUnsupportedBlockchainAppError  = 1123
-	CodeInvalidSessionError            = 1124
-	CodeInsufficientNodesError         = 1127
-	CodeEmptyNonNativeChainError       = 1128
-	CodeInvalidSessionKeyError         = 1129
-	CodeFilterNodesError               = 1130
-	CodeXORError                       = 1131
-	CodeInvalidBlockHashError          = 1132
-	CodeEmptyBlockHashError            = 1133
-	CodeEmptyBlockchainError           = 1134
-	CodeEmptyPayloadDataError          = 1135
-	CodeUnsupportedBlockchainNodeError = 1136
-	CodeNotStakedBlockchainError       = 1137
-	CodeHTTPExecutionError             = 1138
-	CodeInvalidIncrementCounterError   = 1139
-	CodeEmptyResponseError             = 1140
-	CodeResponseSignatureError         = 1141
-	CodeNegativeICCounterError         = 1142
-	CodeMaximumIncrementCounterError   = 1143
-	CodeInvalidNodePubKeyError         = 1144
-	CodeTicketsNotFoundError           = 1145
-	CodeDuplicateTicketError           = 1146
-	CodeDuplicateProofError            = 1147
-	CodeInvalidSignatureSizeError      = 1148
-	CodeSigDecodeError                 = 1149
-	CodeMsgDecodeError                 = 1150
-	CodeInvalidSigError                = 1151
-	CodePubKeySizeError                = 1152
-	CodeEmptyKeybaseError              = 1153
-	CodeSelfNotFoundError              = 1154
-	CodeAppNotFoundError               = 1155
-	CodeChainNotHostedError            = 1156
-	CodeInvalidHostedChainsError       = 1157
-	CodeNodeNotFoundError              = 1158
-	CodeInvalidProofsError             = 1159
-	CodeInconsistentPubKeyError        = 1160
-	CodeInvalidChainParamsError        = 1161
-	CodeNewHexDecodeError              = 1162
-	CodeChainNotSupportedErr           = 1163
-	CodePubKeyError                    = 1164
-	CodeSignatureError                 = 1165
-	CodeInvalidChainError              = 1166
-	CodeJSONMarshalError               = 1167
+	CodeSessionGenerationError           = 1111
+	CodeHttpStatusCodeError              = 1112
+	CodeInvalidTokenError                = 1114
+	CodePublKeyDecodeError               = 1116
+	CodeEmptyChainError                  = 1118
+	CodeEmptyBlockIDError                = 1119
+	CodeAppPubKeyError                   = 1120
+	CodeEmptyProofsError                 = 1121
+	CodeUnsupportedBlockchainAppError    = 1123
+	CodeInvalidSessionError              = 1124
+	CodeInsufficientNodesError           = 1127
+	CodeEmptyNonNativeChainError         = 1128
+	CodeInvalidSessionKeyError           = 1129
+	CodeFilterNodesError                 = 1130
+	CodeXORError                         = 1131
+	CodeInvalidBlockHashError            = 1132
+	CodeEmptyBlockHashError              = 1133
+	CodeEmptyBlockchainError             = 1134
+	CodeEmptyPayloadDataError            = 1135
+	CodeUnsupportedBlockchainNodeError   = 1136
+	CodeNotStakedBlockchainError         = 1137
+	CodeHTTPExecutionError               = 1138
+	CodeInvalidIncrementCounterError     = 1139
+	CodeEmptyResponseError               = 1140
+	CodeResponseSignatureError           = 1141
+	CodeNegativeICCounterError           = 1142
+	CodeMaximumIncrementCounterError     = 1143
+	CodeInvalidNodePubKeyError           = 1144
+	CodeTicketsNotFoundError             = 1145
+	CodeDuplicateTicketError             = 1146
+	CodeDuplicateProofError              = 1147
+	CodeInvalidSignatureSizeError        = 1148
+	CodeSigDecodeError                   = 1149
+	CodeMsgDecodeError                   = 1150
+	CodeInvalidSigError                  = 1151
+	CodePubKeySizeError                  = 1152
+	CodeEmptyKeybaseError                = 1153
+	CodeSelfNotFoundError                = 1154
+	CodeAppNotFoundError                 = 1155
+	CodeChainNotHostedError              = 1156
+	CodeInvalidHostedChainsError         = 1157
+	CodeNodeNotFoundError                = 1158
+	CodeInvalidProofsError               = 1159
+	CodeInconsistentPubKeyError          = 1160
+	CodeInvalidChainParamsError          = 1161
+	CodeNewHexDecodeError                = 1162
+	CodeChainNotSupportedErr             = 1163
+	CodePubKeyError                      = 1164
+	CodeSignatureError                   = 1165
+	CodeInvalidChainError                = 1166
+	CodeJSONMarshalError                 = 1167
+	CodeInvalidBlockchainHashLengthError = 1168
 )
 
 var (
@@ -116,7 +117,12 @@ var (
 	SignatureError                   = errors.New("there was a problem signing the message: ")
 	InvalidChainError                = errors.New("the non native chain passed was invalid: ")
 	JSONMarshalError                 = errors.New("unable to marshal object into json: ")
+	InvalidBlockchainHashLength      = errors.New("the hash length is invalid")
 )
+
+func NewInvalidBlockchainLengthError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidBlockchainHashLengthError, InvalidBlockchainHashLength.Error())
+}
 
 func NewJSONMarshalError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodeJSONMarshalError, JSONMarshalError.Error()+err.Error())

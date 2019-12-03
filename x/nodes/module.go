@@ -2,14 +2,14 @@ package nodes
 
 import (
 	"encoding/json"
-	"github.com/pokt-network/posmint/crypto/keys"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
+	"github.com/pokt-network/posmint/crypto/keys"
 	"github.com/tendermint/tendermint/node"
 
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

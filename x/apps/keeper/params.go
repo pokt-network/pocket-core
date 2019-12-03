@@ -29,7 +29,7 @@ func (k Keeper) RelayCoefficient(ctx sdk.Context) (coefficient uint8) {
 	return
 }
 
-func (k Keeper) SetRelayCoefficient(ctx sdk.Context, newCoefficient int){
+func (k Keeper) SetRelayCoefficient(ctx sdk.Context, newCoefficient int) {
 	k.Paramstore.Set(ctx, types.KeyRelayCoefficientPercentage, uint8(newCoefficient))
 }
 

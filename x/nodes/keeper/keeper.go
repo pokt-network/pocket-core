@@ -3,11 +3,11 @@ package keeper
 import (
 	"container/list"
 	"fmt"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/params"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
