@@ -241,3 +241,7 @@ func NewSessionKey(appPubKey string, chain string, blockHash string) (SessionKey
 func (sk SessionKey) Validate() sdk.Error {
 	return HashVerification(hex.EncodeToString(sk))
 }
+
+func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
+	return hex.EncodeToString(ctx.WithBlockHeight(height).BlockHeader().LastBlockId.Hash)
+}
