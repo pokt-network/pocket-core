@@ -53,7 +53,7 @@ func KeyForChain(ticker, netid, version, client, inter string) (string, sdk.Erro
 }
 
 func KeyForPOR(appPubKey, chain, sessionHeight string) string {
-	return appPubKey + chain + sessionHeight
+	return appPubKey + chain + sessionHeight // todo standardize
 }
 
 func KeyForProofOfRelay(ctx sdk.Context, addr sdk.ValAddress, header PORHeader) []byte {

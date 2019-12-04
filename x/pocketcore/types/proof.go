@@ -164,8 +164,9 @@ type Ticket struct {
 }
 
 type Tickets struct {
-	T []Ticket
-	l sync.Mutex
+	T    []Ticket
+	l    sync.Mutex
+	Quit chan struct{}
 }
 
 const Timeout = 10000 // ms todo parameterize
@@ -202,7 +203,7 @@ func (at *AllTickets) PunchTicket(header PORHeader, ticketNumber int) sdk.Error 
 	key := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
 	tix, found := (*at)[key]
 	if !found {
-		return NewTicketsNotFoundError(ModuleName) // should not happen
+		return NewTicketsNotFoundError(ModuleName)
 	}
 	err := tix.PunchTicket(ticketNumber)
 	if err != nil {
@@ -212,17 +213,38 @@ func (at *AllTickets) PunchTicket(header PORHeader, ticketNumber int) sdk.Error 
 	return nil
 }
 
+func (at *AllTickets) DeleteTickets(header PORHeader) sdk.Error {
+	key := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
+	tix, found := (*at)[key]
+	if !found {
+		return NewTicketsNotFoundError(ModuleName)
+	}
+	tix.Quit <- struct{}{}
+	delete(*at, key)
+	return nil
+}
+
 func NewTickets(maxRelays, timeout int) (tix *Tickets) {
-	tix = &Tickets{T: make([]Ticket, maxRelays)}
-	go func() { // todo are tickets closed upon deletion of tickets structure?
-		for now := range time.Tick(time.Second) {
-			tix.l.Lock()
-			for _, ticket := range tix.T {
-				if now.Unix()-ticket.lastAccess > int64(timeout) && ticket.lastAccess != -1 {
-					ticket.IsTaken = false
+	tix = &Tickets{T: make([]Ticket, maxRelays), Quit: make(chan struct{})}
+	go func() {
+		for {
+			select {
+			case <-tix.Quit:
+				return
+			default:
+				for now := range time.Tick(time.Second) {
+					if tix == nil {
+						return
+					}
+					tix.l.Lock()
+					for _, ticket := range tix.T {
+						if now.Unix()-ticket.lastAccess > int64(timeout) && ticket.lastAccess != -1 {
+							ticket.IsTaken = false
+						}
+					}
+					tix.l.Unlock()
 				}
 			}
-			tix.l.Unlock()
 		}
 	}()
 	return

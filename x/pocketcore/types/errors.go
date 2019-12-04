@@ -59,6 +59,10 @@ const ( // todo re-number
 	CodeInvalidChainError                = 1166
 	CodeJSONMarshalError                 = 1167
 	CodeInvalidBlockchainHashLengthError = 1168
+	CodeEmptySessionKeyError             = 1169
+	CodeInvalidBlockHeightError          = 1170
+	CodeInvalidAppPubKeyError            = 1171
+	CodeInvalidHashLengthError           = 1172
 )
 
 var (
@@ -118,8 +122,24 @@ var (
 	InvalidChainError                = errors.New("the non native chain passed was invalid: ")
 	JSONMarshalError                 = errors.New("unable to marshal object into json: ")
 	InvalidBlockchainHashLength      = errors.New("the hash length is invalid")
+	InvalidBlockHeightError          = errors.New("the block height passed has been invalid")
+	InvalidAppPubKeyError            = errors.New("the app public key is invalid")
+	InvalidHashLengthError           = errors.New("the hash length is not valid")
 )
 
+func NewInvalidHashLengthError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidHashLengthError, InvalidHashLengthError.Error())
+}
+func NewInvalidAppPubKeyError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidAppPubKeyError, InvalidAppPubKeyError.Error())
+}
+
+func NewInvalidBlockHeightError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidBlockHeightError, InvalidBlockHeightError.Error())
+}
+func NewEmptySessionKeyError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeEmptySessionKeyError, EmptySessionKeyError.Error())
+}
 func NewInvalidBlockchainLengthError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidBlockchainHashLengthError, InvalidBlockchainHashLength.Error())
 }
@@ -264,7 +284,7 @@ func NewInvalidBlockHashError(codespace sdk.CodespaceType, err error) sdk.Error 
 	return sdk.NewError(codespace, CodeInvalidBlockHashError, InvalidBlockHashError.Error()+err.Error())
 }
 
-func NewEmptyBlockHashError(codespace sdk.CodespaceType) sdk.Error {
+func NewEmptyHashError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyBlockHashError, InvalidBlockHashError.Error())
 }
 
