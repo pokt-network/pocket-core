@@ -12,8 +12,6 @@ import (
 	"net/http"
 )
 
-const DEFAULTHTTPMETHOD = "POST"
-
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
 	Blockchain string  `json:"blockchain"`       // the non-native blockchain needed to service
@@ -21,52 +19,32 @@ type Relay struct {
 	Proof      Proof   `json:"incrementCounter"` // the authentication scheme needed for work
 }
 
-type Payload struct {
-	Data   string `json:"data"`
-	Method string `json:"method"`
-	Path   string `json:"path"`
-}
-
-func (p Payload) Validate() sdk.Error {
-	if p.Data == "" && p.Path == "" {
-		return NewEmptyPayloadDataError(ModuleName)
+func (r Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
+	sessionNodeCount int, allNodes []nodeexported.ValidatorI, app appexported.ApplicationI) sdk.Error {
+	// validate blockchain
+	if err := HashVerification(r.Blockchain); err != nil {
+		return err
 	}
-	return nil
-}
-
-func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hostedBlockchains HostedBlockchains,
-	sessionBlockHeight int64, sessionNodeCount int, allActiveNodes []nodeexported.ValidatorI, app appexported.ApplicationI) sdk.Error {
-	// check to see if the blockchain is empty
-	bcLen := len(r.Blockchain)
-	if bcLen == 0 {
-		return NewEmptyBlockchainError(ModuleName)
-	}
-	if bcLen != HashLength {
-		return NewInvalidBlockchainLengthError(ModuleName)
-	}
-	// check to see if the payload is empty
+	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return NewEmptyPayloadDataError(ModuleName)
 	}
+	// validate the proof
+	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), hex.EncodeToString(node.GetConsPubKey().Bytes())); err != nil {
+		return err
+	}
 	// ensure the blockchain is supported
-	if !hostedBlockchains.ContainsFromString(r.Blockchain) {
+	if !hb.ContainsFromString(r.Blockchain) {
 		return NewUnsupportedBlockchainNodeError(ModuleName)
 	}
 	// generate the session
-	session, err := NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), r.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allActiveNodes, sessionNodeCount)
+	session, err := NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), r.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allNodes, sessionNodeCount)
 	if err != nil {
 		return err
 	}
 	// validate the session
-	err = session.Validate(ctx, nodeVerify, app, sessionNodeCount)
+	err = session.Validate(ctx, node, app, sessionNodeCount)
 	if err != nil {
-		return err
-	}
-	if _, err := SessionVerification(ctx, nodeVerify, app, r.Blockchain, sessionBlockHeight, sessionNodeCount, allActiveNodes); err != nil {
-		return err
-	}
-	// check to see if the service proof is valid
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), hex.EncodeToString(nodeVerify.GetConsPubKey().Bytes())); err != nil {
 		return err
 	}
 	// payload type to handle correctly
@@ -75,6 +53,8 @@ func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hos
 	}
 	return nil
 }
+
+const DEFAULTHTTPMETHOD = "POST"
 
 // executes the relay on the non-native blockchain specified
 func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) {
@@ -85,27 +65,10 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 	}
 	// do basic http request on the relay
 	res, er := executeHTTPRequest(r.Payload.Data, url, r.Payload.Method)
-	return res, NewHTTPExecutionError(ModuleName, er)
-}
-
-// "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
-// todo improved http responses
-func executeHTTPRequest(payload string, url string, method string) (string, error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(payload)))
-	if err != nil {
-		return "", err
+	if er != nil {
+		return res, NewHTTPExecutionError(ModuleName, er)
 	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := (&http.Client{}).Do(req)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != 200 {
-		return "", NewHTTPStatusCodeError(ModuleName, resp.StatusCode)
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	return string(body), nil
+	return res, nil
 }
 
 // store the proofs of work done for the relay batch
@@ -121,10 +84,31 @@ func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64, maxNumberO
 	return rbs.AddProof(header, r.Proof, maxNumberOfRelays)
 }
 
+// the payload of the relay
+type Payload struct {
+	Data   string `json:"data"`   // the actual data string for the external chain
+	Method string `json:"method"` // the http CRUD method
+	Path   string `json:"path"`   // the REST Pathx
+}
+
+func (p Payload) Validate() sdk.Error {
+	if p.Data == "" && p.Path == "" {
+		return NewEmptyPayloadDataError(ModuleName)
+	}
+	return nil
+}
+
+// response structure for the relay
 type RelayResponse struct {
 	Signature string // signature from the node in hex
 	Response  string // response to relay
 	Proof     Proof  // to be signed by the client
+}
+
+type relayResponse struct {
+	sig   string
+	resp  string
+	proof string
 }
 
 // node validates the response after signing
@@ -142,12 +126,6 @@ func (rr RelayResponse) Validate() sdk.Error {
 		return NewResponseSignatureError(ModuleName)
 	}
 	return nil
-}
-
-type relayResponse struct {
-	sig   string
-	resp  string
-	proof string
 }
 
 // node signs the response before validating back
@@ -168,6 +146,21 @@ func (rr RelayResponse) HashString() string {
 	return hex.EncodeToString(rr.Hash())
 }
 
-func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
-	return hex.EncodeToString(ctx.WithBlockHeight(height).BlockHeader().LastBlockId.Hash)
+// "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
+func executeHTTPRequest(payload string, url string, method string) (string, error) { // todo improved http responses
+	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(payload)))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != 200 {
+		return "", NewHTTPStatusCodeError(ModuleName, resp.StatusCode)
+	}
+	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	return string(body), nil
 }
