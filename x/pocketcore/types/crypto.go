@@ -45,6 +45,15 @@ func PubKeyVerification(pk string) sdk.Error {
 	return nil
 }
 
+func HashVerification(hash string) sdk.Error {
+	if len(hash)==0 {
+		return NewEmptyHashError(ModuleName)
+	}
+	if len(hash)!= HashLength {
+		return NewInvalidHashLengthError(ModuleName)
+	}
+}
+
 // Converts []byte to SHA3-256 hashed []byte
 func SHA3FromBytes(b []byte) []byte {
 	hasher := sha3.New256()

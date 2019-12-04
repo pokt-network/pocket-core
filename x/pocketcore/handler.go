@@ -1,6 +1,7 @@
 package pocketcore
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -38,8 +39,14 @@ func handleProofBatchMessage(ctx sdk.Context, keeper keeper.Keeper, msg types.Ms
 	}
 	// get all the available service nodes at the time of the session
 	allNodes := keeper.GetAllNodes(sessionContext)
-	// verify session
-	_, err := types.SessionVerification(ctx, node, app, msg.Chain, msg.SessionBlockHeight, int(keeper.SessionNodeCount(ctx)), allNodes)
+	sessionNodeCount := int(keeper.SessionNodeCount(ctx))
+	// generate the session
+	session, err := types.NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), msg.Chain, types.BlockHashFromBlockHeight(ctx, msg.SessionBlockHeight), msg.SessionBlockHeight, allNodes, sessionNodeCount)
+	if err != nil {
+		return err.Result()
+	}
+	// validate the session
+	err = session.Validate(ctx, node, app, sessionNodeCount)
 	if err != nil {
 		return err.Result()
 	}

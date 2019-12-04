@@ -52,7 +52,16 @@ func (r Relay) Validate(ctx sdk.Context, nodeVerify nodeexported.ValidatorI, hos
 	if !hostedBlockchains.ContainsFromString(r.Blockchain) {
 		return NewUnsupportedBlockchainNodeError(ModuleName)
 	}
-	// verify that node verify is of this session
+	// generate the session
+	session, err := NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), r.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allActiveNodes, sessionNodeCount)
+	if err != nil {
+		return err
+	}
+	// validate the session
+	err = session.Validate(ctx, nodeVerify, app, sessionNodeCount)
+	if err != nil {
+		return err
+	}
 	if _, err := SessionVerification(ctx, nodeVerify, app, r.Blockchain, sessionBlockHeight, sessionNodeCount, allActiveNodes); err != nil {
 		return err
 	}
@@ -157,4 +166,8 @@ func (rr RelayResponse) Hash() []byte {
 // node signs the response before validating back
 func (rr RelayResponse) HashString() string {
 	return hex.EncodeToString(rr.Hash())
+}
+
+func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
+	return hex.EncodeToString(ctx.WithBlockHeight(height).BlockHeader().LastBlockId.Hash)
 }

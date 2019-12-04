@@ -107,6 +107,10 @@ func (k Keeper) SendProofs(ctx sdk.Context, n *node.Node, pbTx func(cdc *codec.C
 					}
 				}
 				pc.GetAllProofs().DeleteProofs(por.PORHeader)
+				err := pc.GetAllTix().DeleteTickets(por.PORHeader)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}
