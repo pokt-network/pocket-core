@@ -14,7 +14,8 @@ const (
 )
 
 var (
-	ProofSummaryKey = []byte{0x01} // key for the proofSummary
+	ProofKey           = []byte{0x01} // key for the verified proofs
+	UnverifiedProofKey = []byte{0x02} // key for non-verified proofs
 )
 
 func KeyForChain(ticker, netid, version, client, inter string) (string, sdk.Error) {
@@ -52,27 +53,36 @@ func KeyForChain(ticker, netid, version, client, inter string) (string, sdk.Erro
 	return hex.EncodeToString(SHA3FromBytes(res)), nil
 }
 
-func KeyForPOR(appPubKey, chain, sessionHeight string) string {
-	return appPubKey + chain + sessionHeight // todo standardize
-}
-
-func KeyForProofOfRelay(ctx sdk.Context, addr sdk.ValAddress, header PORHeader) []byte {
+func KeyForProof(ctx sdk.Context, addr sdk.ValAddress, header Header) []byte {
 	appPubKey, err := hex.DecodeString(header.ApplicationPubKey)
 	if err != nil {
 		panic(err)
 	}
 	sessionHash := ctx.WithBlockHeight(header.SessionBlockHeight).BlockHeader().GetLastBlockId().Hash
-	return append(append(append(ProofSummaryKey, addr.Bytes()...), appPubKey...), sessionHash...)
+	return append(append(append(ProofKey, addr.Bytes()...), appPubKey...), sessionHash...)
 }
 
-func KeyForProofOfRelays(addr sdk.ValAddress) []byte {
-	return append(ProofSummaryKey, addr.Bytes()...)
+func KeyForProofs(addr sdk.ValAddress) []byte {
+	return append(ProofKey, addr.Bytes()...)
 }
 
-func KeyForProofOfRelaysApp(addr sdk.ValAddress, appPubKeyHex string) []byte {
+func KeyForProofsByApp(addr sdk.ValAddress, appPubKeyHex string) []byte {
 	appPubKey, err := hex.DecodeString(appPubKeyHex)
 	if err != nil {
 		panic(err)
 	}
-	return append(append(ProofSummaryKey, addr.Bytes()...), appPubKey...)
+	return append(append(ProofKey, addr.Bytes()...), appPubKey...)
+}
+
+func KeyForUnverifiedProof(ctx sdk.Context, addr sdk.ValAddress, header Header) []byte {
+	appPubKey, err := hex.DecodeString(header.ApplicationPubKey)
+	if err != nil {
+		panic(err)
+	}
+	sessionHash := ctx.WithBlockHeight(header.SessionBlockHeight).BlockHeader().GetLastBlockId().Hash
+	return append(append(append(UnverifiedProofKey, addr.Bytes()...), appPubKey...), sessionHash...)
+}
+
+func KeyForUnverifiedProofs(addr sdk.ValAddress) []byte {
+	return append(UnverifiedProofKey, addr.Bytes()...)
 }

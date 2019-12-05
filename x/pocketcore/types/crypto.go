@@ -46,10 +46,10 @@ func PubKeyVerification(pk string) sdk.Error {
 }
 
 func HashVerification(hash string) sdk.Error {
-	if len(hash)==0 {
+	if len(hash) == 0 {
 		return NewEmptyHashError(ModuleName)
 	}
-	if len(hash)!= HashLength {
+	if len(hash) != HashLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
 }

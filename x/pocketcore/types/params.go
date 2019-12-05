@@ -10,8 +10,9 @@ import (
 
 // POS params default values
 const (
-	DefaultSessionNodeCount   = 5
-	DefaultProofWaitingPeriod = 3
+	DefaultSessionNodeCount          = 5
+	DefaultProofWaitingPeriod        = 3
+	DefaultUnverifiedProofExpiration = 25 // sessions
 )
 
 var (
@@ -20,18 +21,20 @@ var (
 
 // nolint - Keys for parameter access
 var (
-	KeySessionNodeCount     = []byte("SessionNodeCount")
-	KeyProofWaitingPeriod   = []byte("ProofWaitingPeriod")
-	KeySupportedBlockchains = []byte("SupportedBlockchains")
+	KeySessionNodeCount          = []byte("SessionNodeCount")
+	KeyProofWaitingPeriod        = []byte("ProofWaitingPeriod")
+	KeySupportedBlockchains      = []byte("SupportedBlockchains")
+	KeyUnverifiedProofExpiration = []byte("UnverifiedProofExpiration")
 )
 
 var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	SessionNodeCount     uint
-	ProofWaitingPeriod   uint
-	SupportedBlockchains []string
+	SessionNodeCount          uint
+	ProofWaitingPeriod        uint
+	SupportedBlockchains      []string
+	UnverifiedProofExpiration uint // per session
 }
 
 // Implements params.ParamSet
@@ -40,15 +43,17 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeySessionNodeCount, Value: &p.SessionNodeCount},
 		{Key: KeyProofWaitingPeriod, Value: &p.ProofWaitingPeriod},
 		{Key: KeySupportedBlockchains, Value: &p.SupportedBlockchains},
+		{Key: KeyUnverifiedProofExpiration, Value: &p.UnverifiedProofExpiration},
 	}
 }
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		SessionNodeCount:     DefaultSessionNodeCount,
-		ProofWaitingPeriod:   DefaultProofWaitingPeriod,
-		SupportedBlockchains: DefaultSupportedBlockchains,
+		SessionNodeCount:          DefaultSessionNodeCount,
+		ProofWaitingPeriod:        DefaultProofWaitingPeriod,
+		SupportedBlockchains:      DefaultSupportedBlockchains,
+		UnverifiedProofExpiration: DefaultUnverifiedProofExpiration,
 	}
 }
 
@@ -62,6 +67,9 @@ func (p Params) Validate() error {
 	}
 	if len(p.SupportedBlockchains) == 0 {
 		return errors.New("no supported blockchains")
+	}
+	if p.UnverifiedProofExpiration < p.ProofWaitingPeriod {
+		return errors.New("unverified proof expiration is far too short, must be greater than proof waiting period")
 	}
 	return nil
 }
@@ -79,10 +87,12 @@ func (p Params) String() string {
   SessionNodeCount:          %s
   ProofWaitingPeriod:        %s
   Supported Blockchains      %v
+  UnverifiedProofExpiration  %s
 `,
 		p.SessionNodeCount,
 		p.ProofWaitingPeriod,
-		p.SupportedBlockchains)
+		p.SupportedBlockchains,
+		p.UnverifiedProofExpiration)
 }
 
 // unmarshal the current pos params value from store key or panic

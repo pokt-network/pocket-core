@@ -10,32 +10,27 @@ import (
 func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
 	// get the latest session block height because this relay will correspond with the latest session
 	sessionBlockHeight := k.GetLatestSessionBlock(ctx).BlockHeight()
-	// retrieve all service nodes available from world state to do session generation
+	// retrieve all service nodes available from world state to do session generation (the session data is needed to service)
 	allNodes := k.GetAllNodes(ctx)
-	// get self node (your validator) from world state
+	// get self node (your validator) from the current state
 	selfNode, err := k.GetSelfNode(ctx)
 	if err != nil {
 		return nil, err
 	}
-	// get hosted blockchains
+	// retrieve the nonNative blockchains your node is hosting
 	hostedBlockchains := k.GetHostedBlockchains()
-	// get application that staked for client
+	// get the application that staked on behalf of the client
 	app, found := k.GetAppFromPublicKey(ctx, relay.Proof.Token.ApplicationPublicKey)
 	if !found {
 		return nil, pc.NewAppNotFoundError(pc.ModuleName)
 	}
-	// validate the relay
+	// ensure the validity of the relay
 	if err := relay.Validate(ctx, selfNode, hostedBlockchains, sessionBlockHeight, int(k.SessionNodeCount(ctx)), allNodes, app); err != nil {
 		return nil, err
 	}
-	// store the previous proof
-	if err := relay.HandleProof(ctx, sessionBlockHeight, int(app.GetMaxRelays().Int64())); err != nil {
+	// store the proof before execution, because the proof corresponds to the previous relay
+	if err := relay.HandleProof(ctx, sessionBlockHeight, app.GetMaxRelays().Int64()); err != nil {
 		return nil, err
-	}
-	header := pc.PORHeader{
-		ApplicationPubKey:  relay.Proof.Token.ApplicationPublicKey,
-		Chain:              relay.Blockchain,
-		SessionBlockHeight: sessionBlockHeight,
 	}
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains)
@@ -46,7 +41,7 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 	resp := &pc.RelayResponse{
 		Response: respPayload,
 		Proof: pc.Proof{
-			Index:              pc.GetAllTix().GetNextTicket(header, int(app.GetMaxRelays().Int64())),
+			Blockchain:         relay.Proof.Blockchain,
 			SessionBlockHeight: sessionBlockHeight,
 			ServicerPubKey:     hex.EncodeToString(selfNode.GetConsPubKey().Bytes()),
 			Token:              relay.Proof.Token,

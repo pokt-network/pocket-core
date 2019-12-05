@@ -7,7 +7,7 @@ import (
 )
 
 type PosKeeper interface {
-	AwardCoinsTo(ctx sdk.Context, amount sdk.Int, address sdk.ValAddress)
+	AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.ValAddress)
 	GetStakedTokens(ctx sdk.Context) sdk.Int
 	GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator posexported.ValidatorI, found bool)
 	TotalTokens(ctx sdk.Context) sdk.Int

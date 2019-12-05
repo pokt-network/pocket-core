@@ -12,7 +12,7 @@ func (am AppModule) QueryProofOfRelay(cdc *codec.Codec, addr sdk.ValAddress, blo
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
 	params := types.QueryPORParams{
 		Address: addr,
-		Header: types.PORHeader{
+		Header: types.Header{
 			Chain:              blockchain,
 			SessionBlockHeight: sessionBlockHeight,
 			ApplicationPubKey:  appPubKey,

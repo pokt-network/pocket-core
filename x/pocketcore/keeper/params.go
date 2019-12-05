@@ -6,11 +6,6 @@ import (
 	"github.com/pokt-network/posmint/x/params"
 )
 
-// Default parameter namespace
-const (
-	DefaultParamspace = types.ModuleName
-)
-
 // ParamTable for staking module
 func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&types.Params{})
@@ -18,6 +13,11 @@ func ParamKeyTable() params.KeyTable {
 
 func (k Keeper) SessionNodeCount(ctx sdk.Context) (res uint) {
 	k.Paramstore.Get(ctx, types.KeySessionNodeCount, &res)
+	return
+}
+
+func (k Keeper) UnverifiedProofExpiration(ctx sdk.Context) (res uint) {
+	k.Paramstore.Get(ctx, types.KeyUnverifiedProofExpiration, &res)
 	return
 }
 
