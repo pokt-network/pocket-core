@@ -6,9 +6,6 @@ import (
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/util"
-
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
-	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 func (am AppModule) QueryApplication(cdc *codec.Codec, addr sdk.ValAddress, height int64) (types.Application, error) {
@@ -106,33 +103,4 @@ func (am AppModule) QueryPOSParams(cdc *codec.Codec, height int64) (types.Params
 	var params types.Params
 	cdc.MustUnmarshalJSON(bz, &params)
 	return params, nil
-}
-
-func (am AppModule) QueryBlock(height *int64) ([]byte, error) {
-	res, err := rpcclient.NewLocal(am.node).Block(height)
-	if err != nil {
-		return nil, err
-	}
-
-	return codec.Cdc.MarshalJSONIndent(res, "", "  ")
-}
-
-// get the current blockchain height
-func (am AppModule) QueryChainHeight() (int64, error) {
-	client := rpcclient.NewLocal(am.node)
-	status, err := client.Status()
-	if err != nil {
-		return -1, err
-	}
-
-	height := status.SyncInfo.LatestBlockHeight
-	return height, nil
-}
-
-func (am AppModule) QueryNodeStatus() (*ctypes.ResultStatus, error) {
-	res, err := rpcclient.NewLocal(am.GetTendermintNode()).Status()
-	if err != nil {
-		return nil, nil
-	}
-	return res, nil
 }

@@ -14,7 +14,7 @@ const (
 
 type QueryPORParams struct {
 	Address sdk.ValAddress
-	Header  PORHeader
+	Header  Header
 }
 
 type QueryPORsParams struct {

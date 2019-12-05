@@ -11,7 +11,7 @@ import (
 
 // a session is the relationship between an application and the pocket network
 type Session struct {
-	PORHeader    `json:"proof_of_relay_header"`
+	Header       `json:"proof_of_relay_header"`
 	SessionKey   `json:"sessionkey"`
 	SessionNodes `json:"nodes"`
 }
@@ -31,7 +31,7 @@ func NewSession(appPubKey string, nonNativeChain string, blockHash string, block
 	// then populate the structure and return
 	return &Session{
 		SessionKey: sessionKey,
-		PORHeader: PORHeader{
+		Header: Header{
 			ApplicationPubKey:  appPubKey,
 			Chain:              nonNativeChain,
 			SessionBlockHeight: blockHeight,

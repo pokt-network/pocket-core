@@ -14,31 +14,22 @@ import (
 
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
-	Blockchain string  `json:"blockchain"`       // the non-native blockchain needed to service
-	Payload    Payload `json:"payload"`          // the data payload of the request
-	Proof      Proof   `json:"incrementCounter"` // the authentication scheme needed for work
+	Payload Payload `json:"payload"`          // the data payload of the request
+	Proof   Proof   `json:"incrementCounter"` // the authentication scheme needed for work
 }
 
 func (r Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
 	sessionNodeCount int, allNodes []nodeexported.ValidatorI, app appexported.ApplicationI) sdk.Error {
-	// validate blockchain
-	if err := HashVerification(r.Blockchain); err != nil {
-		return err
-	}
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return NewEmptyPayloadDataError(ModuleName)
 	}
 	// validate the proof
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), hex.EncodeToString(node.GetConsPubKey().Bytes())); err != nil {
+	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), hb, hex.EncodeToString(node.GetConsPubKey().Bytes())); err != nil {
 		return err
 	}
-	// ensure the blockchain is supported
-	if !hb.ContainsFromString(r.Blockchain) {
-		return NewUnsupportedBlockchainNodeError(ModuleName)
-	}
 	// generate the session
-	session, err := NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), r.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allNodes, sessionNodeCount)
+	session, err := NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), r.Proof.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allNodes, sessionNodeCount)
 	if err != nil {
 		return err
 	}
@@ -47,7 +38,7 @@ func (r Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb Hosted
 	if err != nil {
 		return err
 	}
-	// payload type to handle correctly
+	// if the payload method is empty, set it to the default
 	if len((r.Payload).Method) == 0 {
 		r.Payload.Method = DEFAULTHTTPMETHOD
 	}
@@ -59,7 +50,7 @@ const DEFAULTHTTPMETHOD = "POST"
 // executes the relay on the non-native blockchain specified
 func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) {
 	// retrieve the hosted blockchain url requested
-	url, err := hostedBlockchains.GetChainURL(r.Blockchain)
+	url, err := hostedBlockchains.GetChainURL(r.Proof.Blockchain)
 	if err != nil {
 		return "", err
 	}
@@ -72,16 +63,13 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 }
 
 // store the proofs of work done for the relay batch
-func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64, maxNumberOfRelays int) sdk.Error {
-	// grab the relay batch container
-	rbs := GetAllProofs()
-	header := PORHeader{
+func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64, maxNumberOfRelays int64) sdk.Error {
+	// add the proof to the global (in memory) collection of proofs
+	return GetAllProofs().AddProof(Header{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
-		Chain:              r.Blockchain,
+		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: sessionBlockHeight,
-	}
-	// add the proof to the proper batch
-	return rbs.AddProof(header, r.Proof, maxNumberOfRelays)
+	}, r.Proof, maxNumberOfRelays)
 }
 
 // the payload of the relay
@@ -112,11 +100,7 @@ type relayResponse struct {
 }
 
 // node validates the response after signing
-func (rr RelayResponse) Validate() sdk.Error {
-	// the counter for the authorization must be >=0
-	if rr.Proof.Index < 0 {
-		return NewInvalidIncrementCounterError(ModuleName)
-	}
+func (rr RelayResponse) Validate() sdk.Error { // todo more validaton
 	// cannot contain empty response
 	if rr.Response == "" {
 		return NewEmptyResponseError(ModuleName)

@@ -1,47 +1,85 @@
 package types
 
 import (
+	"crypto"
 	"encoding/hex"
 	"encoding/json"
+	merkle "github.com/pokt-network/merkle"
 	sdk "github.com/pokt-network/posmint/types"
-	"strconv"
 	"sync"
-	"time"
 )
 
-// Proof per relay
-type Proof struct {
-	Index              int
-	SessionBlockHeight int64
-	ServicerPubKey     string
-	Token              AAT
-	Signature          string
-}
-
-type PORHeader struct {
-	ApplicationPubKey  string
-	Chain              string
-	SessionBlockHeight int64
-}
-
-// ProofOfRelay per application
+// proof of relay per application
 type ProofOfRelay struct {
-	PORHeader
+	Header
 	TotalRelays int64
-	Proofs      []Proof // map[index] -> Proofs
+	Proofs      []Proof // slice[index] -> Proofs
+	Tree        Tree
 }
 
-// structure to map out all proofs
+func (por *ProofOfRelay) GenerateMerkleTree() {
+	var data [][]byte
+	// create a merkle tree using SHA3_256 Hashing algorithm
+	tree := merkle.NewTree(crypto.SHA3_256.New())
+	// for each proof in proofs
+	for i, proof := range por.Proofs {
+		por.Proofs[i].Index = int64(i)
+		data = append(data, proof.Hash())
+	}
+	// add the data to the tree
+	tree.AddData(data...)
+	// generate the tree
+	err := tree.Generate()
+	if err != nil {
+		panic(err)
+	}
+	// set the tree in the por structure
+	por.Tree = Tree(tree)
+}
+
+type Tree merkle.Tree
+
+func (t Tree) GetMerkleRoot() ([]byte, error) {
+	// check for empty tree
+	if len(t.Nodes) == 0 {
+		return nil, NewEmptyMerkleTreeError(ModuleName)
+	}
+	// get the merkle root of the tree
+	root := merkle.Tree(t).Root()
+	// if the root is empty
+	if root == nil || len(root) == 0 {
+		return nil, NewNodeNotFoundErr(ModuleName)
+	}
+	return root, nil
+}
+
+// get the proof needed to prove index
+func (t Tree) GetMerkleProof(index int) (MerkleProof, error) {
+	// check for empty tree
+	if len(t.Nodes) == 0 {
+		return nil, NewEmptyMerkleTreeError(ModuleName)
+	}
+	// get the proof from the tree
+	proof := merkle.Tree(t).GetProof(index)
+	if proof == nil || len(proof) == 0 {
+		return nil, NewNodeNotFoundErr(ModuleName)
+	}
+	// return the proof object
+	return MerkleProof(proof), nil
+}
+
+// every proof the node holds
 type AllProofs struct {
-	M map[string]ProofOfRelay // map[appPubKey+chain+blockheight] -> ProofOfRelay
+	M map[string]ProofOfRelay // map[porkey] -> ProofOfRelay
 	l sync.Mutex
 }
 
 var (
-	globalAllProofs *AllProofs
-	apOnce          sync.Once
+	globalAllProofs *AllProofs // holds every proof of the node
+	apOnce          sync.Once  // ensure only made once
 )
 
+// get all proofs
 func GetAllProofs() *AllProofs {
 	apOnce.Do(func() {
 		if globalAllProofs == nil {
@@ -51,93 +89,119 @@ func GetAllProofs() *AllProofs {
 	return globalAllProofs
 }
 
-func (ap AllProofs) AddProof(header PORHeader, p Proof, maxRelays int) sdk.Error {
+// add the proof to the AllProofs object
+func (ap AllProofs) AddProof(header Header, p Proof, maxRelays int64) sdk.Error {
 	var por = ProofOfRelay{}
-	porKey := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(p.SessionBlockHeight)))
-	// first check to see if all proofs contain a proof of relay for that specific application and session
+	// generate the key for this specific proof
+	key := header.HashString()
+	// lock the shared data
 	ap.l.Lock()
 	defer ap.l.Unlock()
-	if _, found := ap.M[porKey]; found {
-		por = ap.M[porKey]
+	if _, found := ap.M[key]; found {
+		// if proof already stored in allProofs
+		por = ap.M[key]
 	} else {
-		// if not found fill in the header info
-		por.SessionBlockHeight = header.SessionBlockHeight
-		por.ApplicationPubKey = header.ApplicationPubKey
-		por.Chain = header.Chain
+		// if proof is not already stored, initialize all
+		por.Header = header
 		por.Proofs = make([]Proof, maxRelays)
 		por.TotalRelays = 0
 	}
-	// check to see if evidence was already stored
-	if pf := por.Proofs[p.Index]; pf.Signature != "" {
-		return NewDuplicateProofError(ModuleName)
-	}
-	// else add the proof to the slice
-	por.Proofs[p.Index] = p
+	// add proof to the proofs object
+	por.Proofs = append(por.Proofs, p)
 	// increment total relay count
 	por.TotalRelays = por.TotalRelays + 1
 	// update POR
-	ap.M[porKey] = por
-	// punch their ticket
-	err := GetAllTix().PunchTicket(header, p.Index)
-	if err != nil {
-		return err
-	}
+	ap.M[key] = por
 	return nil
 }
 
-func (ap AllProofs) GetProof(header PORHeader, index int) *Proof {
+// retrieve the single proof from the all proofs object
+func (ap AllProofs) GetProof(header Header, index int) *Proof {
+	// lock the shared data
 	ap.l.Lock()
 	defer ap.l.Unlock()
-	por := ap.M[KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))].Proofs
+	// return the proofs object, corresponding to the header
+	por := ap.M[header.HashString()].Proofs
+	// do a nil check before indexing
 	if por == nil {
 		return nil
 	}
+	// return the proof at specific index
 	return &por[index]
 }
 
-func (ap AllProofs) DeleteProofs(header PORHeader) {
+// retrieve the proofs from the all proofs object
+func (ap AllProofs) GetProofs(header Header) []Proof {
+	// lock the shared data
 	ap.l.Lock()
 	defer ap.l.Unlock()
-	porKey := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
-	delete(ap.M, porKey)
+	// return the proofs object, corresponding to the header
+	return ap.M[header.HashString()].Proofs
 }
 
-func (p Proof) Validate(maxRelays int64, servicerVerifyPubKey string) sdk.Error {
-	// check for negative counter
-	if p.Index < 0 {
-		return NewNegativeICCounterError(ModuleName)
+// delete proofs from the all proofs object
+func (ap AllProofs) DeleteProofs(header Header) {
+	// lock the shared data
+	ap.l.Lock()
+	defer ap.l.Unlock()
+	// delete the value corresponding to the header
+	delete(ap.M, header.HashString())
+}
+
+// proof per relay
+type Proof struct {
+	Index              int64
+	SessionBlockHeight int64
+	ServicerPubKey     string
+	Blockchain         string
+	Token              AAT
+	Signature          string
+}
+
+func (p Proof) Validate(maxRelays int64, hb HostedBlockchains, verifyPubKey string) sdk.Error {
+	// validate the session block height
+	if p.SessionBlockHeight < 0 {
+		return NewInvalidBlockHeightError(ModuleName)
 	}
-	if int64(p.Index) > maxRelays {
-		return NewMaximumIncrementCounterError(ModuleName)
+	// validate blockchain
+	if err := HashVerification(p.Blockchain); err != nil {
+		return err
+	}
+	// validate the public key correctness
+	if p.ServicerPubKey != verifyPubKey {
+		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
+	}
+	// ensure the blockchain is supported
+	if !hb.ContainsFromString(p.Blockchain) {
+		return NewUnsupportedBlockchainNodeError(ModuleName)
+	}
+	// validate the proof public key format
+	if err := PubKeyVerification(p.ServicerPubKey); err != nil {
+		return NewInvalidNodePubKeyError(ModuleName)
+	}
+	// validate the verify public key format
+	if err := PubKeyVerification(verifyPubKey); err != nil {
+		return NewInvalidNodePubKeyError(ModuleName)
 	}
 	// validate the service token
 	if err := p.Token.Validate(); err != nil {
 		return NewInvalidTokenError(ModuleName, err)
 	}
-	// validate the public key correctness
-	if p.ServicerPubKey != servicerVerifyPubKey {
-		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
-	}
 	return SignatureVerification(p.Token.ClientPublicKey, p.HashString(), p.Signature)
 }
 
+// structure used to json marshal the proof
 type proof struct {
+	Index              int64
 	SessionBlockHeight int64
+	ServicerPubKey     string
+	Blockchain         string
 	Signature          string
 	Token              string
-	Index              int
 }
 
 func (p Proof) Hash() []byte {
-	res, err := json.Marshal(proof{
-		SessionBlockHeight: p.SessionBlockHeight,
-		Signature:          "",
-		Token:              p.Token.HashString(),
-		Index:              p.Index,
-	})
-	if err != nil {
-		panic(err)
-	}
+	res := p.Bytes()
 	return SHA3FromBytes(res)
 }
 
@@ -145,133 +209,43 @@ func (p Proof) HashString() string {
 	return hex.EncodeToString(p.Hash())
 }
 
-func (ph PORHeader) Hash() []byte {
+func (p Proof) Bytes() []byte {
+	res, err := json.Marshal(proof{
+		Index:              p.Index,
+		ServicerPubKey:     p.ServicerPubKey,
+		Blockchain:         p.Blockchain,
+		SessionBlockHeight: p.SessionBlockHeight,
+		Signature:          "",
+		Token:              p.Token.HashString(),
+	})
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
+// proof of relay header
+type Header struct {
+	ApplicationPubKey  string
+	Chain              string
+	SessionBlockHeight int64
+}
+
+func (ph Header) Hash() []byte {
+	res := ph.Bytes()
+	return SHA3FromBytes(res)
+}
+
+func (ph Header) HashString() string {
+	return hex.EncodeToString(ph.Hash())
+}
+
+func (ph Header) Bytes() []byte {
 	res, err := json.Marshal(ph)
 	if err != nil {
 		panic(err)
 	}
-	return SHA3FromBytes(res)
-}
-
-func (ph PORHeader) HashString() string {
-	return hex.EncodeToString(ph.Hash())
-}
-
-// Tickets are used to order the relays
-type Ticket struct {
-	IsTaken    bool
-	lastAccess int64
-}
-
-type Tickets struct {
-	T    []Ticket
-	l    sync.Mutex
-	Quit chan struct{}
-}
-
-const Timeout = 10000 // ms todo parameterize
-
-type AllTickets map[string]Tickets // map[keyforPORHeaeer] -> Tickets
-
-var (
-	globalAllTickets *AllTickets
-	ticketsonce      sync.Once
-)
-
-func GetAllTix() *AllTickets {
-	ticketsonce.Do(func() {
-		if globalAllTickets == nil {
-			*globalAllTickets = make(map[string]Tickets)
-		}
-	})
-	return globalAllTickets
-}
-
-func (at *AllTickets) GetNextTicket(header PORHeader, maxRelays int) int {
-	key := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
-	tix, found := (*at)[key]
-	if !found {
-		// create a new tickets
-		tix = *NewTickets(maxRelays, Timeout)
-	}
-	res := tix.GetNextTicket()
-	(*at)[key] = tix // persist it to the allTix structure
 	return res
 }
 
-func (at *AllTickets) PunchTicket(header PORHeader, ticketNumber int) sdk.Error {
-	key := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
-	tix, found := (*at)[key]
-	if !found {
-		return NewTicketsNotFoundError(ModuleName)
-	}
-	err := tix.PunchTicket(ticketNumber)
-	if err != nil {
-		return err
-	}
-	(*at)[key] = tix
-	return nil
-}
-
-func (at *AllTickets) DeleteTickets(header PORHeader) sdk.Error {
-	key := KeyForPOR(header.ApplicationPubKey, header.Chain, strconv.Itoa(int(header.SessionBlockHeight)))
-	tix, found := (*at)[key]
-	if !found {
-		return NewTicketsNotFoundError(ModuleName)
-	}
-	tix.Quit <- struct{}{}
-	delete(*at, key)
-	return nil
-}
-
-func NewTickets(maxRelays, timeout int) (tix *Tickets) {
-	tix = &Tickets{T: make([]Ticket, maxRelays), Quit: make(chan struct{})}
-	go func() {
-		for {
-			select {
-			case <-tix.Quit:
-				return
-			default:
-				for now := range time.Tick(time.Second) {
-					if tix == nil {
-						return
-					}
-					tix.l.Lock()
-					for _, ticket := range tix.T {
-						if now.Unix()-ticket.lastAccess > int64(timeout) && ticket.lastAccess != -1 {
-							ticket.IsTaken = false
-						}
-					}
-					tix.l.Unlock()
-				}
-			}
-		}
-	}()
-	return
-}
-
-func (tix *Tickets) GetNextTicket() int {
-	tix.l.Lock()
-	defer tix.l.Unlock()
-	for i, ticket := range tix.T {
-		if !ticket.IsTaken && ticket.lastAccess != -1 {
-			ticket.lastAccess = time.Now().Unix()
-			ticket.IsTaken = true
-			tix.T[i] = ticket
-			return i
-		}
-	}
-	return -1 // out of tickets
-}
-
-func (tix *Tickets) PunchTicket(ticketNumber int) sdk.Error { // todo collisions possible
-	tix.l.Lock()
-	defer tix.l.Unlock()
-	ticket := tix.T[ticketNumber]
-	if ticket.lastAccess == -1 {
-		return NewDuplicateTicketError(ModuleName)
-	}
-	ticket.lastAccess = -1
-	tix.T[ticketNumber] = ticket
-	return nil
-}
+type MerkleProof merkle.Proof

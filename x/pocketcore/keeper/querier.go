@@ -42,7 +42,7 @@ func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	proofSummary := k.GetProofsSummary(ctx, params.Address, params.Header)
+	proofSummary, _ := k.GetProof(ctx, params.Address, params.Header)
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -57,7 +57,7 @@ func queryProofSummaries(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]by
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	proofSummary := k.GetAllProofSummaries(ctx, params.Address)
+	proofSummary := k.GetAllProofs(ctx, params.Address)
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -71,7 +71,7 @@ func queryProofSummariesForApp(ctx sdk.Context, req abci.RequestQuery, k Keeper)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	proofSummary := k.GetAllProofSummariesForApp(ctx, params.Address, params.AppPubKey)
+	proofSummary := k.GetAllProofsByApp(ctx, params.Address, params.AppPubKey)
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
