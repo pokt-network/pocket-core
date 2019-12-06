@@ -107,7 +107,7 @@ func Print() {
 	logger(output, log.InfoLevel)
 }
 
-// Validate if a flag has value
+// ValidateHeader if a flag has value
 func isFlagPassed(name string) bool {
 	found := false
 	flag.Visit(func(f *flag.Flag) {

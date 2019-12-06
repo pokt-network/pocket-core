@@ -145,37 +145,86 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 	}
 }
 
-// structure used to store the proof after verification
-type StoredProof struct {
-	pc.SessionHeader
-	TotalRelays int64
-}
-
 // retrieve the verified proof
-func (k Keeper) GetProof(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) (proof StoredProof, found bool) {
+func (k Keeper) GetProof(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) (proof pc.StoredProof, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(pc.KeyForProof(ctx, address, header))
 	if res == nil {
-		return StoredProof{}, false
+		return pc.StoredProof{}, false
 	}
 	k.cdc.MustUnmarshalBinaryBare(res, &proof)
 	return proof, true
 }
 
 // set the verified proof
-func (k Keeper) SetProof(ctx sdk.Context, address sdk.ValAddress, p StoredProof) {
+func (k Keeper) SetProof(ctx sdk.Context, address sdk.ValAddress, p pc.StoredProof) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
 	store.Set(pc.KeyForProof(ctx, address, p.SessionHeader), bz)
 }
 
+func (k Keeper) SetAllProofs(ctx sdk.Context, proofs []pc.StoredProof) {
+	store := ctx.KVStore(k.storeKey)
+	for _, proof := range proofs {
+		bz := k.cdc.MustMarshalBinaryBare(proof)
+		store.Set(pc.KeyForProof(ctx, sdk.ValAddress(proof.ServicerAddress), proof.SessionHeader), bz)
+	}
+}
+
 // get all verified proofs for this address
-func (k Keeper) GetAllProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []StoredProof) {
+func (k Keeper) GetAllProofs(ctx sdk.Context) (proofs []pc.StoredProof) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, pc.ProofKey)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var summary pc.StoredProof
+		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
+		proofs = append(proofs, summary)
+	}
+	return
+}
+
+// get all verified proofs for this address
+func (k Keeper) GetProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []pc.StoredProof) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForProofs(address))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		var summary StoredProof
+		var summary pc.StoredProof
+		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
+		proofs = append(proofs, summary)
+	}
+	return
+}
+
+func (k Keeper) SetAllUnverifiedProofs(ctx sdk.Context, claims []pc.MsgClaim) {
+	store := ctx.KVStore(k.storeKey)
+	for _, msg := range claims {
+		bz := k.cdc.MustMarshalBinaryBare(msg)
+		store.Set(pc.KeyForUnverifiedProof(ctx, msg.FromAddress, msg.SessionHeader), bz)
+	}
+}
+
+// get all verified proofs
+func (k Keeper) GetAllUnverifiedProofs(ctx sdk.Context) (proofs []pc.MsgClaim) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, pc.UnverifiedProofKey)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var summary pc.MsgClaim
+		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
+		proofs = append(proofs, summary)
+	}
+	return
+}
+
+// get all verified proofs for this address
+func (k Keeper) GetUnverifiedProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []pc.MsgClaim) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForUnverifiedProofs(address))
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var summary pc.MsgClaim
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
 		proofs = append(proofs, summary)
 	}

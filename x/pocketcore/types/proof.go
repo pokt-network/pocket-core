@@ -12,7 +12,7 @@ import (
 type ProofOfRelay struct {
 	SessionHeader
 	TotalRelays int64
-	Proofs      []Proof // slice[index] -> Proofs
+	Proofs      []Proof // slice[index] -> ProofsMap
 	Tree        Tree
 }
 
@@ -230,3 +230,10 @@ func (p Proof) Bytes() []byte {
 }
 
 type MerkleProof merkle.Proof
+
+// structure used to store the proof after verification
+type StoredProof struct {
+	SessionHeader
+	ServicerAddress string
+	TotalRelays     int64
+}

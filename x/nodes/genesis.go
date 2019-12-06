@@ -15,17 +15,21 @@ import (
 // First TM block is at height 1, so state updates applied from
 // genesis.json are in block 0.
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.SupplyKeeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+	// zero out a staked tokens variable for traking the number of staked tokens
 	stakedTokens := sdk.ZeroInt()
+	// set the context
 	ctx = ctx.WithBlockHeight(1 - sdk.ValidatorUpdateDelay)
 	// set the parameters from the data
 	keeper.SetParams(ctx, data.Params)
 	// set the 'previous state total power' from the data
 	keeper.SetPrevStateValidatorsPower(ctx, data.PrevStateTotalPower)
+	// for each validator in validators, setup based on genesis file
 	for _, validator := range data.Validators {
+		// if the validator is unstaked, then panic because, we shouldn't have unstaked validators in the genesis file
 		if validator.IsUnstaked() {
 			panic(fmt.Sprintf("%v the validators must be staked or unstaking at genesis", validator))
 		}
-		// Call the registration hook if not exported
+		// Call the registration hook if not exported (exported means the data came from another node, meaning the val already exist in mem)
 		if !data.Exported {
 			keeper.BeforeValidatorRegistered(ctx, validator.Address)
 		}
@@ -39,16 +43,19 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 		}
 		// update unstaking validators if necessary
 		if validator.IsUnstaking() {
+			// setup the unstaking validator
 			keeper.SetUnstakingValidator(ctx, validator)
 		}
-
+		// if the validator is staked then add their tokens to the staked pool
 		if validator.IsStaked() {
 			stakedTokens = stakedTokens.Add(validator.GetTokens())
 		}
 	}
+	// take the staked amount and create the corresponding coins object
 	stakedCoins := sdk.NewCoins(sdk.NewCoin(data.Params.StakeDenom, stakedTokens))
 	// check if the staked pool accounts exists
 	stakedPool := keeper.GetStakedPool(ctx)
+	// if the stakedPool is nil
 	if stakedPool == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
 	}
@@ -57,18 +64,21 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 	if daoPool == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.DAOPoolName))
 	}
-	// add coins if not provided on genesis
+	// add coins if not provided on genesis (there's an option to provide the coins in genesis)
 	if stakedPool.GetCoins().IsZero() {
 		if err := stakedPool.SetCoins(stakedCoins); err != nil {
 			panic(err)
 		}
 		supplyKeeper.SetModuleAccount(ctx, stakedPool)
 	} else {
+		// if it is provided in the genesis file then ensure the two are equal
 		if !stakedPool.GetCoins().IsEqual(stakedCoins) {
 			panic(fmt.Sprintf("%s module account total does not equal the amount in each validator account", types.StakedPoolName))
 		}
 	}
+	// if the dao pool has zero tokens (not provided in genesis file)
 	if daoPool.GetCoins().IsZero() {
+		// ad the coins
 		if err := daoPool.SetCoins(sdk.NewCoins(sdk.NewCoin(data.Params.StakeDenom, data.DAO.Tokens))); err != nil {
 			panic(err)
 		}

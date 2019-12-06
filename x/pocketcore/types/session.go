@@ -253,20 +253,32 @@ type SessionHeader struct {
 	SessionBlockHeight int64
 }
 
+func (sh SessionHeader) ValidateHeader() sdk.Error {
+	if err := PubKeyVerification(sh.ApplicationPubKey); err != nil {
+		return err
+	}
+	if err := HashVerification(sh.Chain); err != nil {
+		return err
+	}
+	if sh.SessionBlockHeight <= 1 {
+		return NewInvalidBlockHeightError(ModuleName)
+	}
+}
+
 // hash the header bytes
-func (ph SessionHeader) Hash() []byte {
-	res := ph.Bytes()
+func (sh SessionHeader) Hash() []byte {
+	res := sh.Bytes()
 	return Hash(res)
 }
 
 // hex encode the header hash
-func (ph SessionHeader) HashString() string {
-	return hex.EncodeToString(ph.Hash())
+func (sh SessionHeader) HashString() string {
+	return hex.EncodeToString(sh.Hash())
 }
 
 // get the bytes of the header structure
-func (ph SessionHeader) Bytes() []byte {
-	res, err := json.Marshal(ph)
+func (sh SessionHeader) Bytes() []byte {
+	res, err := json.Marshal(sh)
 	if err != nil {
 		panic(err)
 	}
