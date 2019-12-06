@@ -6,5 +6,11 @@ import (
 )
 
 func (k Keeper) GenerateChain(ticker, netid, version, client, inter string) (string, sdk.Error) {
-	return pc.KeyForChain(ticker, netid, version, client, inter)
+	return pc.NonNativeChain{
+		Ticker:  ticker,
+		Netid:   netid,
+		Version: version,
+		Client:  client,
+		Inter:   inter,
+	}.HashString()
 }

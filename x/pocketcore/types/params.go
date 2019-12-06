@@ -31,10 +31,10 @@ var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	SessionNodeCount          uint
-	ProofWaitingPeriod        uint
+	SessionNodeCount          int64
+	ProofWaitingPeriod        int64
 	SupportedBlockchains      []string
-	UnverifiedProofExpiration uint // per session
+	UnverifiedProofExpiration int64 // per session
 }
 
 // Implements params.ParamSet
