@@ -2,14 +2,13 @@ package pocketcore
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) QueryProof(cdc *codec.Codec, addr sdk.ValAddress, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*keeper.StoredProof, error) {
+func (am AppModule) QueryProof(cdc *codec.Codec, addr sdk.ValAddress, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.StoredProof, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
 	params := types.QueryPORParams{
 		Address: addr,
@@ -24,7 +23,7 @@ func (am AppModule) QueryProof(cdc *codec.Codec, addr sdk.ValAddress, blockchain
 		return nil, err
 	}
 	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryProof), bz)
-	var ps keeper.StoredProof
+	var ps types.StoredProof
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err
@@ -32,7 +31,7 @@ func (am AppModule) QueryProof(cdc *codec.Codec, addr sdk.ValAddress, blockchain
 	return &ps, nil
 }
 
-func (am AppModule) QueryProofs(cdc *codec.Codec, addr sdk.ValAddress, height int64) ([]keeper.StoredProof, error) {
+func (am AppModule) QueryProofs(cdc *codec.Codec, addr sdk.ValAddress, height int64) ([]types.StoredProof, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryPORsParams{
 		Address: addr,
@@ -42,7 +41,7 @@ func (am AppModule) QueryProofs(cdc *codec.Codec, addr sdk.ValAddress, height in
 		return nil, err
 	}
 	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryProofs), bz)
-	var ps []keeper.StoredProof
+	var ps []types.StoredProof
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err
