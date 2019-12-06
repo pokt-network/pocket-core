@@ -6,6 +6,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
+// strucutre used to identify a non native (external) blockchain on the pocket network
 type NonNativeChain struct {
 	Ticker  string
 	Netid   string
@@ -14,6 +15,7 @@ type NonNativeChain struct {
 	Inter   string
 }
 
+// converts the non native chains to bytes
 func (c NonNativeChain) Bytes() ([]byte, sdk.Error) {
 	if c.Ticker == "" || c.Netid == "" || c.Version == "" {
 		return nil, NewInvalidChainParamsError(ModuleName)
@@ -25,14 +27,16 @@ func (c NonNativeChain) Bytes() ([]byte, sdk.Error) {
 	return res, nil
 }
 
+// hashes the bytes of the non native hcain
 func (c NonNativeChain) Hash() ([]byte, sdk.Error) {
 	res, err := c.Bytes()
 	if err != nil {
 		return nil, err
 	}
-	return SHA3FromBytes(res), nil
+	return Hash(res), nil
 }
 
+// returns a hex string of the non native chain hash
 func (c NonNativeChain) HashString() (string, sdk.Error) {
 	res, err := c.Hash()
 	if err != nil {

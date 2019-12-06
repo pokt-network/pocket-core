@@ -1,7 +1,6 @@
 package types
 
 import (
-	"crypto"
 	"encoding/hex"
 	"encoding/json"
 	merkle "github.com/pokt-network/merkle"
@@ -11,16 +10,17 @@ import (
 
 // proof of relay per application
 type ProofOfRelay struct {
-	Header
+	SessionHeader
 	TotalRelays int64
 	Proofs      []Proof // slice[index] -> Proofs
 	Tree        Tree
 }
 
+// generates the corresponding merkle tree for the proof of relay
 func (por *ProofOfRelay) GenerateMerkleTree() {
 	var data [][]byte
 	// create a merkle tree using SHA3_256 Hashing algorithm
-	tree := merkle.NewTree(crypto.SHA3_256.New())
+	tree := merkle.NewTree(Hasher.New())
 	// for each proof in proofs
 	for i, proof := range por.Proofs {
 		por.Proofs[i].Index = int64(i)
@@ -37,9 +37,11 @@ func (por *ProofOfRelay) GenerateMerkleTree() {
 	por.Tree = Tree(tree)
 }
 
+// extended the merkle.Tree structure to return sdk.Errors
 type Tree merkle.Tree
 
-func (t Tree) GetMerkleRoot() ([]byte, error) {
+// get the root of the merkle tree
+func (t Tree) GetMerkleRoot() ([]byte, sdk.Error) {
 	// check for empty tree
 	if len(t.Nodes) == 0 {
 		return nil, NewEmptyMerkleTreeError(ModuleName)
@@ -54,7 +56,7 @@ func (t Tree) GetMerkleRoot() ([]byte, error) {
 }
 
 // get the proof needed to prove index
-func (t Tree) GetMerkleProof(index int) (MerkleProof, error) {
+func (t Tree) GetMerkleProof(index int) (MerkleProof, sdk.Error) {
 	// check for empty tree
 	if len(t.Nodes) == 0 {
 		return nil, NewEmptyMerkleTreeError(ModuleName)
@@ -90,7 +92,7 @@ func GetAllProofs() *AllProofs {
 }
 
 // add the proof to the AllProofs object
-func (ap AllProofs) AddProof(header Header, p Proof, maxRelays int64) sdk.Error {
+func (ap AllProofs) AddProof(header SessionHeader, p Proof, maxRelays int64) sdk.Error {
 	var por = ProofOfRelay{}
 	// generate the key for this specific proof
 	key := header.HashString()
@@ -102,7 +104,7 @@ func (ap AllProofs) AddProof(header Header, p Proof, maxRelays int64) sdk.Error 
 		por = ap.M[key]
 	} else {
 		// if proof is not already stored, initialize all
-		por.Header = header
+		por.SessionHeader = header
 		por.Proofs = make([]Proof, maxRelays)
 		por.TotalRelays = 0
 	}
@@ -116,7 +118,7 @@ func (ap AllProofs) AddProof(header Header, p Proof, maxRelays int64) sdk.Error 
 }
 
 // retrieve the single proof from the all proofs object
-func (ap AllProofs) GetProof(header Header, index int) *Proof {
+func (ap AllProofs) GetProof(header SessionHeader, index int) *Proof {
 	// lock the shared data
 	ap.l.Lock()
 	defer ap.l.Unlock()
@@ -131,7 +133,7 @@ func (ap AllProofs) GetProof(header Header, index int) *Proof {
 }
 
 // retrieve the proofs from the all proofs object
-func (ap AllProofs) GetProofs(header Header) []Proof {
+func (ap AllProofs) GetProofs(header SessionHeader) []Proof {
 	// lock the shared data
 	ap.l.Lock()
 	defer ap.l.Unlock()
@@ -140,7 +142,7 @@ func (ap AllProofs) GetProofs(header Header) []Proof {
 }
 
 // delete proofs from the all proofs object
-func (ap AllProofs) DeleteProofs(header Header) {
+func (ap AllProofs) DeleteProofs(header SessionHeader) {
 	// lock the shared data
 	ap.l.Lock()
 	defer ap.l.Unlock()
@@ -200,48 +202,27 @@ type proof struct {
 	Token              string
 }
 
+// hash the proof bytes
 func (p Proof) Hash() []byte {
 	res := p.Bytes()
-	return SHA3FromBytes(res)
+	return Hash(res)
 }
 
+// hex encode the proof hash
 func (p Proof) HashString() string {
 	return hex.EncodeToString(p.Hash())
 }
 
+// convert the proof to bytes
 func (p Proof) Bytes() []byte {
 	res, err := json.Marshal(proof{
 		Index:              p.Index,
 		ServicerPubKey:     p.ServicerPubKey,
 		Blockchain:         p.Blockchain,
 		SessionBlockHeight: p.SessionBlockHeight,
-		Signature:          "",
+		Signature:          "", // omit the signature
 		Token:              p.Token.HashString(),
 	})
-	if err != nil {
-		panic(err)
-	}
-	return res
-}
-
-// proof of relay header
-type Header struct {
-	ApplicationPubKey  string
-	Chain              string
-	SessionBlockHeight int64
-}
-
-func (ph Header) Hash() []byte {
-	res := ph.Bytes()
-	return SHA3FromBytes(res)
-}
-
-func (ph Header) HashString() string {
-	return hex.EncodeToString(ph.Hash())
-}
-
-func (ph Header) Bytes() []byte {
-	res, err := json.Marshal(ph)
 	if err != nil {
 		panic(err)
 	}

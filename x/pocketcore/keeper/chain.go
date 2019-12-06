@@ -5,6 +5,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
+// generate the network identifier for the non native chain
 func (k Keeper) GenerateChain(ticker, netid, version, client, inter string) (string, sdk.Error) {
 	return pc.NonNativeChain{
 		Ticker:  ticker,

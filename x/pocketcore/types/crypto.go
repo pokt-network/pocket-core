@@ -5,14 +5,16 @@ import (
 	"encoding/hex"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
-	"golang.org/x/crypto/sha3"
+	"github.com/tendermint/tendermint/crypto/tmhash"
 )
 
 var (
-	Hash       = sha.SHA3_256
+	Hasher     = sha.SHA3_256
 	HashLength = sha.SHA3_256.Size()
+	AddrLength = tmhash.TruncatedSize
 )
 
+// verify the signature using strings
 func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
 	sig, err := hex.DecodeString(sigHex)
 	if err != nil {
@@ -35,6 +37,7 @@ func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
 	return nil
 }
 
+// verify the public key format
 func PubKeyVerification(pk string) sdk.Error {
 	pkBz, err := hex.DecodeString(pk)
 	if err != nil {
@@ -46,6 +49,7 @@ func PubKeyVerification(pk string) sdk.Error {
 	return nil
 }
 
+// verify the hash format
 func HashVerification(hash string) sdk.Error {
 	if len(hash) == 0 {
 		return NewEmptyHashError(ModuleName)
@@ -56,16 +60,19 @@ func HashVerification(hash string) sdk.Error {
 	return nil
 }
 
-// Converts []byte to SHA3-256 hashed []byte
-func SHA3FromBytes(b []byte) []byte {
-	hasher := sha3.New256()
-	hasher.Write(b)
-	return hasher.Sum(nil)
+func AddressVerification(address string) sdk.Error {
+	if len(address) == 0 {
+		return NewEmptyAddressError(ModuleName)
+	}
+	if len(address) != AddrLength {
+		return NewAddressInvalidLengthError(ModuleName)
+	}
+	return nil
 }
 
-// Converts string to SHA3-256 hashed []byte
-func SHA3FromString(s string) []byte {
-	hasher := sha3.New256()
-	hasher.Write([]byte(s))
+// Converts []byte to SHA3-256 hashed []byte
+func Hash(b []byte) []byte {
+	hasher := Hasher.New()
+	hasher.Write(b)
 	return hasher.Sum(nil)
 }

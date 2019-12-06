@@ -11,9 +11,9 @@ import (
 
 // a session is the relationship between an application and the pocket network
 type Session struct {
-	Header       `json:"proof_of_relay_header"`
-	SessionKey   `json:"sessionkey"`
-	SessionNodes `json:"nodes"`
+	SessionHeader `json:"proof_of_relay_header"`
+	SessionKey    `json:"sessionkey"`
+	SessionNodes  `json:"nodes"`
 }
 
 // create a new session from seed data
@@ -31,7 +31,7 @@ func NewSession(appPubKey string, nonNativeChain string, blockHash string, block
 	// then populate the structure and return
 	return &Session{
 		SessionKey: sessionKey,
-		Header: Header{
+		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              nonNativeChain,
 			SessionBlockHeight: blockHeight,
@@ -155,7 +155,7 @@ func xor(sessionNodes SessionNodes, sessionkey SessionKey) (nodeDistances, error
 	// for every node, find the distance between it's pubkey and the sesskey
 	for index, node := range sessionNodes {
 		pubKey := node.GetConsPubKey()
-		pubKeyHash := SHA3FromBytes(pubKey.Bytes()) // currently hashing public key but could easily just take the first n bytes to compare
+		pubKeyHash := Hash(pubKey.Bytes()) // currently hashing public key but could easily just take the first n bytes to compare
 		if len(pubKeyHash) != keyLength {
 			return nil, MismatchedByteArraysError
 		}
@@ -235,7 +235,7 @@ func NewSessionKey(appPubKey string, chain string, blockHash string) (SessionKey
 		return nil, NewJSONMarshalError(ModuleName, err)
 	}
 	// return the hash of the result
-	return SHA3FromBytes(seed), nil
+	return Hash(seed), nil
 }
 
 func (sk SessionKey) Validate() sdk.Error {
@@ -244,4 +244,31 @@ func (sk SessionKey) Validate() sdk.Error {
 
 func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
 	return hex.EncodeToString(ctx.WithBlockHeight(height).BlockHeader().LastBlockId.Hash)
+}
+
+// proof of relay header
+type SessionHeader struct {
+	ApplicationPubKey  string
+	Chain              string
+	SessionBlockHeight int64
+}
+
+// hash the header bytes
+func (ph SessionHeader) Hash() []byte {
+	res := ph.Bytes()
+	return Hash(res)
+}
+
+// hex encode the header hash
+func (ph SessionHeader) HashString() string {
+	return hex.EncodeToString(ph.Hash())
+}
+
+// get the bytes of the header structure
+func (ph SessionHeader) Bytes() []byte {
+	res, err := json.Marshal(ph)
+	if err != nil {
+		panic(err)
+	}
+	return res
 }

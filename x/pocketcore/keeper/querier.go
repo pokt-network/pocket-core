@@ -33,7 +33,7 @@ func querySupportedBlockchains(ctx sdk.Context, _ abci.RequestQuery, k Keeper) (
 	return res, nil
 }
 
-// query the proof summary for a particular node address and session header
+// query the verified proof object for a specific address and header combination
 func queryProof(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryPORParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
@@ -48,7 +48,7 @@ func queryProof(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.E
 	return res, nil
 }
 
-// query the proof summaries for a particular node address
+// query the verified proof object for a particular node address
 func queryProofs(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryPORsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)

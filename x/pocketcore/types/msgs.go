@@ -11,10 +11,10 @@ const RouterKey = ModuleName
 
 // MsgClaim claims that you completed `TotalRelays` and provides the merkle root for data integrity
 type MsgClaim struct {
-	Header                     // header information for identification
-	Root        []byte         // merkle root for data integrity
-	TotalRelays int64          // total number of relays
-	FromAddress sdk.ValAddress // claimant
+	SessionHeader                // header information for identification
+	Root          []byte         // merkle root for data integrity
+	TotalRelays   int64          // total number of relays
+	FromAddress   sdk.ValAddress // claimant
 }
 
 func (msg MsgClaim) Route() string { return RouterKey }
@@ -37,7 +37,7 @@ func (msg MsgClaim) ValidateBasic() sdk.Error {
 		return NewPubKeyError(ModuleName, err)
 	}
 	// validate the address format
-	if err := HashVerification(msg.FromAddress.String()); err != nil {
+	if err := AddressVerification(msg.FromAddress.String()); err != nil {
 		return NewInvalidHashError(ModuleName, err)
 	}
 	// validate the root format
@@ -61,12 +61,12 @@ func (msg MsgClaim) GetSigners() []sdk.AccAddress {
 
 // MsgProof proves the previous claim by providing the merkle proof and the leaf node
 type MsgProof struct {
-	MerkleProof    // the branch needed to verify the proofs
-	LeafNode Proof // the needed to verify the proof
+	MerkleProof       // the branch needed to verify the proofs
+	LeafNode    Proof // the needed to verify the proof
 }
 
 func (msg MsgProof) Route() string { return RouterKey }
-func (msg MsgProof) Type() string { return "claim" }
+func (msg MsgProof) Type() string  { return "claim" }
 func (msg MsgProof) ValidateBasic() sdk.Error {
 	// verify non empty merkle proof
 	if len(msg.MerkleProof) == 0 {

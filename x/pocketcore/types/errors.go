@@ -70,6 +70,7 @@ const ( // todo re-number
 	CodeEmptyMerkleTreeError             = 1177
 	CodeMerkleNodeNotFoundError          = 1178
 	CodeExpiredProofsSubmissionError     = 1179
+	CodeAddressError                     = 1180
 )
 
 var (
@@ -139,7 +140,12 @@ var (
 	EmptyMerkleTreeError             = errors.New("the merkle tree is empty")
 	NodeNotFoundError                = errors.New("the node of the merkle tree requested is not found")
 	ExpiredProofsSubmissionError     = errors.New("the opportunity of window to submit the proof has closed because the secret has been revealed")
+	AddressError                     = errors.New("the address is invalid")
 )
+
+func NewAddressInvalidLengthError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeAddressError, AddressError.Error())
+}
 
 func NewExpiredProofsSubmissionError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeExpiredProofsSubmissionError, ExpiredProofsSubmissionError.Error())

@@ -13,7 +13,7 @@ func (am AppModule) QueryProof(cdc *codec.Codec, addr sdk.ValAddress, blockchain
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
 	params := types.QueryPORParams{
 		Address: addr,
-		Header: types.Header{
+		Header: types.SessionHeader{
 			Chain:              blockchain,
 			SessionBlockHeight: sessionBlockHeight,
 			ApplicationPubKey:  appPubKey,

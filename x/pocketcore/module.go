@@ -96,9 +96,9 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	if am.keeper.IsSessionBlock(ctx) {
 		// auto send the proofs
-		am.keeper.SendUnverifiedProofs(ctx, am.GetTendermintNode(), am.ClaimTx)
+		am.keeper.SendClaimTx(ctx, am.GetTendermintNode(), am.ClaimTx)
 		// auto claim the proofs
-		am.keeper.ClaimProofs(ctx, am.GetTendermintNode(), am.ProofTx)
+		am.keeper.SendProofTx(ctx, am.GetTendermintNode(), am.ProofTx)
 	}
 	keeper.BeginBlocker(ctx, req, am.keeper)
 }

@@ -7,7 +7,7 @@ import (
 
 const (
 	ModuleName = "pocketcore"
-	StoreKey = ModuleName
+	StoreKey   = ModuleName
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 	UnverifiedProofKey = []byte{0x02} // key for non-verified proofs
 )
 
-func KeyForProof(ctx sdk.Context, addr sdk.ValAddress, header Header) []byte {
+func KeyForProof(ctx sdk.Context, addr sdk.ValAddress, header SessionHeader) []byte {
 	appPubKey, err := hex.DecodeString(header.ApplicationPubKey)
 	if err != nil {
 		panic(err)
@@ -28,7 +28,7 @@ func KeyForProofs(addr sdk.ValAddress) []byte {
 	return append(ProofKey, addr.Bytes()...)
 }
 
-func KeyForUnverifiedProof(ctx sdk.Context, addr sdk.ValAddress, header Header) []byte {
+func KeyForUnverifiedProof(ctx sdk.Context, addr sdk.ValAddress, header SessionHeader) []byte {
 	appPubKey, err := hex.DecodeString(header.ApplicationPubKey)
 	if err != nil {
 		panic(err)

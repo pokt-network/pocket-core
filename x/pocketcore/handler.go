@@ -49,8 +49,8 @@ func handleClaimProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) s
 	}
 	// set the proof in the world state
 	k.SetProof(ctx, addr, keeper.StoredProof{
-		Header:      proof.Header,
-		TotalRelays: proof.TotalRelays,
+		SessionHeader: proof.SessionHeader,
+		TotalRelays:   proof.TotalRelays,
 	})
 	// valid claim so award coins for relays
 	k.AwardCoinsForRelays(ctx, proof.TotalRelays, addr)
@@ -112,7 +112,7 @@ func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgP
 	}
 	addr := pk.Address()
 	// get the unverified proof for the address
-	proof, found := keeper.GetUnverfiedProof(ctx, addr, types.Header{
+	proof, found := keeper.GetUnverfiedProof(ctx, addr, types.SessionHeader{
 		ApplicationPubKey:  msg.LeafNode.Token.ApplicationPublicKey,
 		Chain:              msg.LeafNode.Blockchain,
 		SessionBlockHeight: msg.LeafNode.SessionBlockHeight,
