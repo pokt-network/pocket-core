@@ -16,8 +16,8 @@ func (k Keeper) SessionNodeCount(ctx sdk.Context) (res int64) {
 	return
 }
 
-func (k Keeper) UnverifiedProofExpiration(ctx sdk.Context) (res int64) {
-	k.Paramstore.Get(ctx, types.KeyUnverifiedProofExpiration, &res)
+func (k Keeper) ClaimExpiration(ctx sdk.Context) (res int64) {
+	k.Paramstore.Get(ctx, types.KeyClaimExpiration, &res)
 	return
 }
 

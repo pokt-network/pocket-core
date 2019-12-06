@@ -29,12 +29,12 @@ func handleProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim) s
 	if err := validateProofMsg(ctx, keeper, msg); err != nil {
 		return err.Result()
 	}
-	// set the unverified proof in the world state
-	keeper.SetUnverifiedProof(ctx, msg)
+	// set the claim in the world state
+	keeper.SetClaim(ctx, msg)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeUnverifiedProof,
+			types.EventTypeClaim,
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.FromAddress.String()),
 		),
 	})
@@ -99,7 +99,7 @@ func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim)
 		return err
 	}
 	// check if the proof is ready to be claimed, if it's already ready to be claimed, then it's too late to submit cause the secret is revealed
-	if keeper.ProofIsReadyToClaim(ctx, msg.SessionBlockHeight) {
+	if keeper.ClaimIsMature(ctx, msg.SessionBlockHeight) {
 		return types.NewExpiredProofsSubmissionError(types.ModuleName)
 	}
 	return nil
@@ -120,7 +120,7 @@ func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgP
 	})
 	// if the proof is not found for this claim
 	if !found {
-		return nil, types.MsgClaim{}, types.NewUnverifiedProofNotFoundError(types.ModuleName)
+		return nil, types.MsgClaim{}, types.NewClaimNotFoundError(types.ModuleName)
 	}
 	// validate the proof sent
 	err = keeper.ValidateProof(ctx, proof, msg)

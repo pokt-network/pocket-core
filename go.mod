@@ -8,7 +8,7 @@ require (
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/pokt-network/merkle v0.0.0-20191205184834-b246208bcb85
-	github.com/pokt-network/posmint v0.0.0-20191127151045-9ac58acd4caf
+	github.com/pokt-network/posmint v0.0.0-20191206190611-4226a0903a3e
 	github.com/prometheus/client_golang v1.1.0 // indirect
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/prometheus/procfs v0.0.4 // indirect

@@ -106,7 +106,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 	// get the self address
 	addr := sdk.ValAddress(n.PrivValidator().GetPubKey().Address())
 	// get all mature (waiting period has passed) proofs for your address
-	proofs := k.GetMatureUnverifiedProofs(ctx, addr)
+	proofs := k.GetMatureClaims(ctx, addr)
 	// for every proof of the mature set
 	for _, proof := range proofs {
 		// if the proof is found to be verified in the world state, you can delete it from the cache and not send again
@@ -114,7 +114,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 			// remove from the local cache
 			pc.GetAllProofs().DeleteProofs(proof.SessionHeader)
 			// remove from the temporary world state
-			k.DeleteUnverifiedProof(ctx, addr, proof.SessionHeader)
+			k.DeleteClaim(ctx, addr, proof.SessionHeader)
 			continue
 		}
 		// generate the auto txbuilder and clictx
@@ -197,18 +197,18 @@ func (k Keeper) GetProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []pc.
 	return
 }
 
-func (k Keeper) SetAllUnverifiedProofs(ctx sdk.Context, claims []pc.MsgClaim) {
+func (k Keeper) SetAllClaims(ctx sdk.Context, claims []pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	for _, msg := range claims {
 		bz := k.cdc.MustMarshalBinaryBare(msg)
-		store.Set(pc.KeyForUnverifiedProof(ctx, msg.FromAddress, msg.SessionHeader), bz)
+		store.Set(pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader), bz)
 	}
 }
 
 // get all verified proofs
-func (k Keeper) GetAllUnverifiedProofs(ctx sdk.Context) (proofs []pc.MsgClaim) {
+func (k Keeper) GetAllClaims(ctx sdk.Context) (proofs []pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.UnverifiedProofKey)
+	iterator := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var summary pc.MsgClaim
@@ -219,9 +219,9 @@ func (k Keeper) GetAllUnverifiedProofs(ctx sdk.Context) (proofs []pc.MsgClaim) {
 }
 
 // get all verified proofs for this address
-func (k Keeper) GetUnverifiedProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []pc.MsgClaim) {
+func (k Keeper) GetClaims(ctx sdk.Context, address sdk.ValAddress) (proofs []pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForUnverifiedProofs(address))
+	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForClaims(address))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var summary pc.MsgClaim
@@ -234,7 +234,7 @@ func (k Keeper) GetUnverifiedProofs(ctx sdk.Context, address sdk.ValAddress) (pr
 // get the unverified proof for this address
 func (k Keeper) GetUnverfiedProof(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	res := store.Get(pc.KeyForUnverifiedProof(ctx, address, header))
+	res := store.Get(pc.KeyForClaim(ctx, address, header))
 	if res == nil {
 		return pc.MsgClaim{}, false
 	}
@@ -243,26 +243,26 @@ func (k Keeper) GetUnverfiedProof(ctx sdk.Context, address sdk.ValAddress, heade
 }
 
 // set the unverified proof
-func (k Keeper) SetUnverifiedProof(ctx sdk.Context, msg pc.MsgClaim) {
+func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(msg)
-	store.Set(pc.KeyForUnverifiedProof(ctx, msg.FromAddress, msg.SessionHeader), bz)
+	store.Set(pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader), bz)
 }
 
-func (k Keeper) DeleteUnverifiedProof(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) {
+func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(pc.KeyForUnverifiedProof(ctx, address, header))
+	store.Delete(pc.KeyForClaim(ctx, address, header))
 }
 
 // get the mature unverified proofs for this address
-func (k Keeper) GetMatureUnverifiedProofs(ctx sdk.Context, address sdk.ValAddress) (matureProofs []pc.MsgClaim) {
+func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.ValAddress) (matureProofs []pc.MsgClaim) {
 	var msg = pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForUnverifiedProofs(address))
+	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForClaims(address))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), msg)
-		if k.ProofIsReadyToClaim(ctx, msg.SessionBlockHeight) {
+		if k.ClaimIsMature(ctx, msg.SessionBlockHeight) {
 			matureProofs = append(matureProofs, msg)
 		}
 	}
@@ -270,24 +270,24 @@ func (k Keeper) GetMatureUnverifiedProofs(ctx sdk.Context, address sdk.ValAddres
 }
 
 // delete expired unverified proofs
-func (k Keeper) DeleteExpiredUnverifiedProofs(ctx sdk.Context) {
+func (k Keeper) DeleteExpiredClaims(ctx sdk.Context) {
 	var msg = pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.UnverifiedProofKey)
+	iterator := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), msg)
 		sessionContext := ctx.WithBlockHeight(msg.SessionBlockHeight)
 		// if more sessions has passed than the expiration of unverified pseudorandomGenerator, delete from set
-		if (ctx.BlockHeight()-msg.SessionBlockHeight)/k.SessionFrequency(sessionContext) >= int64(k.UnverifiedProofExpiration(sessionContext)) { // todo confirm these contexts should be now and not when submitted
+		if (ctx.BlockHeight()-msg.SessionBlockHeight)/k.SessionFrequency(sessionContext) >= int64(k.ClaimExpiration(sessionContext)) { // todo confirm these contexts should be now and not when submitted
 			store.Delete(iterator.Key())
 		}
 	}
 }
 
 // is the proof mature? able to be claimed because the `waiting period` has passed since the sessionBlock
-func (k Keeper) ProofIsReadyToClaim(ctx sdk.Context, sessionBlockHeight int64) bool {
-	waitingPeriodInBlocks := int64(k.ProofWaitingPeriod(ctx)) * k.SessionFrequency(ctx)
+func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
+	waitingPeriodInBlocks := k.ProofWaitingPeriod(ctx) * k.SessionFrequency(ctx)
 	if ctx.BlockHeight() >= waitingPeriodInBlocks+sessionBlockHeight {
 		return true
 	}
