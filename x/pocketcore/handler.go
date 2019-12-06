@@ -41,14 +41,19 @@ func handleProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) s
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func handleClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaimProof) sdk.Result {
+func handleClaimProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgClaimProof) sdk.Result {
 	// validate the claim proof
-	addr, totalRelays, err := validateClaimProofMsg(ctx, keeper, msg)
+	addr, proof, err := validateClaimProofMsg(ctx, k, msg)
 	if err != nil {
 		return err.Result()
 	}
+	// set the proof in the world state
+	k.SetProof(ctx, addr, keeper.StoredProof{
+		Header:      proof.Header,
+		TotalRelays: proof.TotalRelays,
+	})
 	// valid claim so award coins for relays
-	keeper.AwardCoinsForRelays(ctx, totalRelays, addr)
+	k.AwardCoinsForRelays(ctx, proof.TotalRelays, addr)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -99,11 +104,11 @@ func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof)
 	return nil
 }
 
-func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaimProof) (servicerAddr sdk.ValAddress, totalRelays int64, sdkError sdk.Error) {
+func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaimProof) (servicerAddr sdk.ValAddress, proof types.MsgProof, sdkError sdk.Error) {
 	// get the public key from the proof
 	pk, err := crypto.NewPublicKey(msg.LeafNode.ServicerPubKey)
 	if err != nil {
-		return nil, 0, types.NewPubKeyError(types.ModuleName, err)
+		return nil, types.MsgProof{}, types.NewPubKeyError(types.ModuleName, err)
 	}
 	addr := pk.Address()
 	// get the unverified proof for the address
@@ -114,13 +119,13 @@ func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgC
 	})
 	// if the proof is not found for this claim
 	if !found {
-		return nil, 0, types.NewUnverifiedProofNotFoundError(types.ModuleName)
+		return nil, types.MsgProof{}, types.NewUnverifiedProofNotFoundError(types.ModuleName)
 	}
 	// validate the proof sent
 	err = keeper.ValidateProof(ctx, proof, msg)
 	if err != nil {
-		return nil, 0, types.NewInvalidProofsError(types.ModuleName)
+		return nil, types.MsgProof{}, types.NewInvalidProofsError(types.ModuleName)
 	}
 	// seems good, so return the needed info to the handler
-	return addr, proof.TotalRelays, nil
+	return addr, proof, nil
 }
