@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"crypto"
 	"encoding/hex"
 	"encoding/json"
 	merkle "github.com/pokt-network/merkle"
@@ -17,13 +16,13 @@ import (
 // validate the zero knowledge range proof using the proof message and the claim message
 func (k Keeper) ValidateProof(ctx sdk.Context, proof pc.MsgClaim, claim pc.MsgProof) error {
 	// generate the needed pseudorandom proof index
-	reqProof := k.GeneratePseudoRandomProof(ctx, proof.TotalRelays, proof.Header)
+	reqProof := k.GeneratePseudoRandomProof(ctx, proof.TotalRelays, proof.SessionHeader)
 	// if the required proof index does not match the claim leafNode index
 	if reqProof != claim.LeafNode.Index {
 		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// do a merkle proof using the merkle proof, the previously submitted root, and the leafNode to ensure validity of the claim
-	if !(merkle.NewTree(crypto.SHA3_256.New()).VerifyProof(merkle.Proof(claim.MerkleProof), proof.Root, claim.LeafNode.Hash())) {
+	if !(merkle.NewTree(pc.Hasher.New()).VerifyProof(merkle.Proof(claim.MerkleProof), proof.Root, claim.LeafNode.Hash())) {
 		return pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// check the validity of the token
@@ -38,7 +37,7 @@ func (k Keeper) ValidateProof(ctx sdk.Context, proof pc.MsgClaim, claim pc.MsgPr
 }
 
 // generates the required pseudorandom index for the zero knowledge proof
-func (k Keeper) GeneratePseudoRandomProof(ctx sdk.Context, totalRelays int64, header pc.Header) int64 {
+func (k Keeper) GeneratePseudoRandomProof(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) int64 {
 	// get the context for the proof (the proof context is X sessions after the session began)
 	proofContext := ctx.WithBlockHeight(header.SessionBlockHeight + int64(k.ProofWaitingPeriod(ctx))*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
@@ -50,7 +49,7 @@ func (k Keeper) GeneratePseudoRandomProof(ctx sdk.Context, totalRelays int64, he
 		panic(err)
 	}
 	// hash the bytes and take the first 16 bytes of the string
-	proofsHash := hex.EncodeToString(pc.SHA3FromBytes(r))[:16]
+	proofsHash := hex.EncodeToString(pc.Hash(r))[:16]
 	// for each hex character of the hash
 	for i := 0; i < 16; i++ {
 		// parse the integer from this point of the hex string onward
@@ -73,37 +72,37 @@ type pseudorandomGenerator struct {
 	header    string
 }
 
-// auto sends stored proofs
-func (k Keeper) SendUnverifiedProofs(ctx sdk.Context, n *node.Node, proofTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.Header, totalRelays int64, root []byte) error) { // todo should move tx to keeper?
+// auto sends a claim of work based on relays completed
+func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root []byte) error) { // todo should move tx to keeper?
 	// get all the proofs held in memory
 	proofs := pc.GetAllProofs()
 	// for every proof in AllProofs
 	for _, proof := range (*proofs).M {
 		// if the blockchain in the proof is not supported then delete it because nodes don't get paid for unsupported blockchains
 		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(proof.SessionBlockHeight), proof.Chain) && proof.TotalRelays > 0 {
-			proofs.DeleteProofs(proof.Header)
+			proofs.DeleteProofs(proof.SessionHeader)
 			continue
 		}
 		// check the current state to see if the unverified proof has already been sent and processed (if so, then skip this proof)
-		if _, found := k.GetUnverfiedProof(ctx, sdk.ValAddress(n.PrivValidator().GetPubKey().Address()), proof.Header); found {
+		if _, found := k.GetUnverfiedProof(ctx, sdk.ValAddress(n.PrivValidator().GetPubKey().Address()), proof.SessionHeader); found {
 			continue
 		}
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, k)
 		// generate the merkle root for this proof
-		root, err := proof.Tree.GetMerkleRoot()
-		if err != nil {
-			panic(err)
+		root, sdkErr := proof.Tree.GetMerkleRoot()
+		if sdkErr != nil {
+			panic(sdkErr)
 		}
 		// send in the proof header, the total relays completed, and the merkle root (ensures data integrity)
-		if err = proofTx(k.cdc, cliCtx, txBuilder, proof.Header, proof.TotalRelays, root); err != nil {
+		if err := proofTx(k.cdc, cliCtx, txBuilder, proof.SessionHeader, proof.TotalRelays, root); err != nil {
 			panic(err)
 		}
 	}
 }
 
-// auto claims proofs
-func (k Keeper) ClaimProofs(ctx sdk.Context, n *node.Node, claimTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch pc.MerkleProof, leafNode pc.Proof) error) {
+// auto sends a proof transaction for the claim
+func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch pc.MerkleProof, leafNode pc.Proof) error) {
 	// get the self address
 	addr := sdk.ValAddress(n.PrivValidator().GetPubKey().Address())
 	// get all mature (waiting period has passed) proofs for your address
@@ -111,32 +110,35 @@ func (k Keeper) ClaimProofs(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 	// for every proof of the mature set
 	for _, proof := range proofs {
 		// if the proof is found to be verified in the world state, you can delete it from the cache and not send again
-		if _, found := k.GetProof(ctx, addr, proof.Header); found {
-			pc.GetAllProofs().DeleteProofs(proof.Header)
+		if _, found := k.GetProof(ctx, addr, proof.SessionHeader); found {
+			// remove from the local cache
+			pc.GetAllProofs().DeleteProofs(proof.SessionHeader)
+			// remove from the temporary world state
+			k.DeleteUnverifiedProof(ctx, addr, proof.SessionHeader)
 			continue
 		}
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, k)
 		// generate the proof of relay object using the found proof and local cache
 		por := pc.ProofOfRelay{
-			Header:      proof.Header,
-			TotalRelays: proof.TotalRelays,
-			Proofs:      pc.GetAllProofs().GetProofs(proof.Header),
-			Tree:        pc.Tree(merkle.NewTree(crypto.SHA3_256.New())),
+			SessionHeader: proof.SessionHeader,
+			TotalRelays:   proof.TotalRelays,
+			Proofs:        pc.GetAllProofs().GetProofs(proof.SessionHeader),
+			Tree:          pc.Tree(merkle.NewTree(pc.Hasher.New())),
 		}
 		// generate the needed pseudorandom proof using the information found in the first transaction
-		reqProof := int(k.GeneratePseudoRandomProof(ctx, proof.TotalRelays, proof.Header))
+		reqProof := int(k.GeneratePseudoRandomProof(ctx, proof.TotalRelays, proof.SessionHeader))
 		// generate the merkle tree from the por structure
 		por.GenerateMerkleTree()
 		// get the merkle proof object for the pseudorandom proof index
-		branch, err := por.Tree.GetMerkleProof(reqProof)
-		if err != nil {
-			panic(err)
+		branch, sdkErr := por.Tree.GetMerkleProof(reqProof)
+		if sdkErr != nil {
+			panic(sdkErr)
 		}
 		// get the leaf for the required pseudorandom proof index
-		leaf := pc.GetAllProofs().GetProof(proof.Header, reqProof)
+		leaf := pc.GetAllProofs().GetProof(proof.SessionHeader, reqProof)
 		// send the claim TX
-		err = claimTx(k.cdc, cliCtx, txBuilder, branch, *leaf)
+		err := claimTx(k.cdc, cliCtx, txBuilder, branch, *leaf)
 		if err != nil {
 			panic(err)
 		}
@@ -145,12 +147,12 @@ func (k Keeper) ClaimProofs(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 
 // structure used to store the proof after verification
 type StoredProof struct {
-	pc.Header
+	pc.SessionHeader
 	TotalRelays int64
 }
 
 // retrieve the verified proof
-func (k Keeper) GetProof(ctx sdk.Context, address sdk.ValAddress, header pc.Header) (proof StoredProof, found bool) {
+func (k Keeper) GetProof(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) (proof StoredProof, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(pc.KeyForProof(ctx, address, header))
 	if res == nil {
@@ -164,7 +166,7 @@ func (k Keeper) GetProof(ctx sdk.Context, address sdk.ValAddress, header pc.Head
 func (k Keeper) SetProof(ctx sdk.Context, address sdk.ValAddress, p StoredProof) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
-	store.Set(pc.KeyForProof(ctx, address, p.Header), bz)
+	store.Set(pc.KeyForProof(ctx, address, p.SessionHeader), bz)
 }
 
 // get all verified proofs for this address
@@ -181,7 +183,7 @@ func (k Keeper) GetAllProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []
 }
 
 // get the unverified proof for this address
-func (k Keeper) GetUnverfiedProof(ctx sdk.Context, address sdk.ValAddress, header pc.Header) (msg pc.MsgClaim, found bool) {
+func (k Keeper) GetUnverfiedProof(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(pc.KeyForUnverifiedProof(ctx, address, header))
 	if res == nil {
@@ -195,7 +197,12 @@ func (k Keeper) GetUnverfiedProof(ctx sdk.Context, address sdk.ValAddress, heade
 func (k Keeper) SetUnverifiedProof(ctx sdk.Context, msg pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(msg)
-	store.Set(pc.KeyForUnverifiedProof(ctx, msg.FromAddress, msg.Header), bz)
+	store.Set(pc.KeyForUnverifiedProof(ctx, msg.FromAddress, msg.SessionHeader), bz)
+}
+
+func (k Keeper) DeleteUnverifiedProof(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(pc.KeyForUnverifiedProof(ctx, address, header))
 }
 
 // get the mature unverified proofs for this address

@@ -53,7 +53,7 @@ func (a AAT) Hash() []byte {
 	if err != nil {
 		panic(err)
 	}
-	return SHA3FromBytes(r)
+	return Hash(r)
 }
 
 func (a AAT) HashString() string {

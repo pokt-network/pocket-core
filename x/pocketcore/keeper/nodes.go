@@ -7,10 +7,17 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
+// get all nodes from the world state
 func (k Keeper) GetAllNodes(ctx sdk.Context) []exported.ValidatorI {
 	return k.posKeeper.GetAllValidators(ctx)
 }
 
+// get a node from the world state
+func (k Keeper) GetNode(ctx sdk.Context, address sdk.ValAddress) (node exported.ValidatorI, found bool) {
+	return k.posKeeper.GetValidator(ctx, address)
+}
+
+// get the node from the public key string
 func (k Keeper) GetNodeFromPublicKey(ctx sdk.Context, pubKey string) (node exported.ValidatorI, found bool) {
 	// get the node at the session context
 	pk, err := crypto.NewPublicKey(pubKey)
@@ -18,26 +25,6 @@ func (k Keeper) GetNodeFromPublicKey(ctx sdk.Context, pubKey string) (node expor
 		return nil, false
 	}
 	return k.GetNode(ctx, pk.Address())
-}
-
-func (k Keeper) GetNode(ctx sdk.Context, address sdk.ValAddress) (node exported.ValidatorI, found bool) {
-	return k.posKeeper.GetValidator(ctx, address)
-}
-
-func (k Keeper) GetNodeChains(ctx sdk.Context, address sdk.ValAddress) (chains map[string]struct{}, found bool) {
-	node, found := k.posKeeper.GetValidator(ctx, address)
-	if !found {
-		return nil, false
-	}
-	return node.GetChains(), true
-}
-
-func (k Keeper) GetNodeServiceURL(ctx sdk.Context, address sdk.ValAddress) (serviceURL string, found bool) {
-	node, found := k.posKeeper.GetValidator(ctx, address)
-	if !found {
-		return "", false
-	}
-	return node.GetServiceURL(), true
 }
 
 // todo create store in pos module for efficiency
@@ -60,10 +47,12 @@ func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.E
 	return self, nil
 }
 
+// get the non native chains hosted locally on this node
 func (k Keeper) GetHostedBlockchains() pc.HostedBlockchains {
 	return k.hostedBlockchains
 }
 
+// award coins to nodes for relays completed
 func (k Keeper) AwardCoinsForRelays(ctx sdk.Context, relays int64, toAddr sdk.ValAddress) {
 	k.posKeeper.AwardCoinsTo(ctx, sdk.NewInt(relays), toAddr)
 }

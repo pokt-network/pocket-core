@@ -6,7 +6,7 @@ import (
 	"github.com/pokt-network/posmint/x/params"
 )
 
-// ParamTable for staking module
+// this file contains getters for all pocket core params
 func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&types.Params{})
 }
@@ -35,7 +35,6 @@ func (k Keeper) SupportedBlockchains(ctx sdk.Context) (res []string) {
 	return
 }
 
-// Get all parameteras as types.Params
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.Params{
 		SessionNodeCount:     k.SessionNodeCount(ctx),
@@ -44,7 +43,7 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	}
 }
 
-// set the params
+// set the params object all at once
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.Paramstore.SetParamSet(ctx, &params)
 }

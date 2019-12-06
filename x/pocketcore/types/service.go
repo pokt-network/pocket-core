@@ -65,7 +65,7 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 // store the proofs of work done for the relay batch
 func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64, maxNumberOfRelays int64) sdk.Error {
 	// add the proof to the global (in memory) collection of proofs
-	return GetAllProofs().AddProof(Header{
+	return GetAllProofs().AddProof(SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
 		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: sessionBlockHeight,
@@ -122,7 +122,7 @@ func (rr RelayResponse) Hash() []byte {
 	if err != nil {
 		panic(err)
 	}
-	return SHA3FromBytes(seed)
+	return Hash(seed)
 }
 
 // node signs the response before validating back

@@ -9,12 +9,12 @@ import (
 )
 
 // transaction that sends the total number of relays (claim), the merkle root (for data integrity), and the header (for identification)
-func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.Header, totalRelays int64, root []byte) error {
+func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root []byte) error {
 	msg := types.MsgClaim{
-		Header:      header,
-		TotalRelays: totalRelays,
-		Root:        root,
-		FromAddress: sdk.ValAddress(am.node.PrivValidator().GetPubKey().Address()),
+		SessionHeader: header,
+		TotalRelays:   totalRelays,
+		Root:          root,
+		FromAddress:   sdk.ValAddress(am.node.PrivValidator().GetPubKey().Address()),
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
