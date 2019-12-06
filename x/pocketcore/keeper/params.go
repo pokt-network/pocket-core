@@ -11,12 +11,12 @@ func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&types.Params{})
 }
 
-func (k Keeper) SessionNodeCount(ctx sdk.Context) (res uint) {
+func (k Keeper) SessionNodeCount(ctx sdk.Context) (res int64) {
 	k.Paramstore.Get(ctx, types.KeySessionNodeCount, &res)
 	return
 }
 
-func (k Keeper) UnverifiedProofExpiration(ctx sdk.Context) (res uint) {
+func (k Keeper) UnverifiedProofExpiration(ctx sdk.Context) (res int64) {
 	k.Paramstore.Get(ctx, types.KeyUnverifiedProofExpiration, &res)
 	return
 }
@@ -25,7 +25,7 @@ func (k Keeper) SessionFrequency(ctx sdk.Context) int64 {
 	return k.posKeeper.SessionBlockFrequency(ctx)
 }
 
-func (k Keeper) ProofWaitingPeriod(ctx sdk.Context) (res uint) {
+func (k Keeper) ProofWaitingPeriod(ctx sdk.Context) (res int64) {
 	k.Paramstore.Get(ctx, types.KeyProofWaitingPeriod, &res)
 	return
 }

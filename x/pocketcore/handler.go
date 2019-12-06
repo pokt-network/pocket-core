@@ -13,9 +13,9 @@ import (
 func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
-		case types.MsgProof:
+		case types.MsgClaim:
 			return handleProofMsg(ctx, keeper, msg)
-		case types.MsgClaimProof:
+		case types.MsgProof:
 			return handleClaimProofMsg(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized pocketcore Msg type: %v", msg.Type())
@@ -24,7 +24,7 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	}
 }
 
-func handleProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) sdk.Result {
+func handleProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim) sdk.Result {
 	// validate the proof message
 	if err := validateProofMsg(ctx, keeper, msg); err != nil {
 		return err.Result()
@@ -41,7 +41,7 @@ func handleProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) s
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func handleClaimProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgClaimProof) sdk.Result {
+func handleClaimProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) sdk.Result {
 	// validate the claim proof
 	addr, proof, err := validateClaimProofMsg(ctx, k, msg)
 	if err != nil {
@@ -64,7 +64,7 @@ func handleClaimProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgClaimPro
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) sdk.Error {
+func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim) sdk.Error {
 	// if is not a pocket supported blockchain then return not supported error
 	if !keeper.IsPocketSupportedBlockchain(ctx.WithBlockHeight(msg.SessionBlockHeight), msg.Chain) {
 		return types.NewChainNotSupportedErr(types.ModuleName)
@@ -104,11 +104,11 @@ func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof)
 	return nil
 }
 
-func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaimProof) (servicerAddr sdk.ValAddress, proof types.MsgProof, sdkError sdk.Error) {
+func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) (servicerAddr sdk.ValAddress, proof types.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the proof
 	pk, err := crypto.NewPublicKey(msg.LeafNode.ServicerPubKey)
 	if err != nil {
-		return nil, types.MsgProof{}, types.NewPubKeyError(types.ModuleName, err)
+		return nil, types.MsgClaim{}, types.NewPubKeyError(types.ModuleName, err)
 	}
 	addr := pk.Address()
 	// get the unverified proof for the address
@@ -119,12 +119,12 @@ func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgC
 	})
 	// if the proof is not found for this claim
 	if !found {
-		return nil, types.MsgProof{}, types.NewUnverifiedProofNotFoundError(types.ModuleName)
+		return nil, types.MsgClaim{}, types.NewUnverifiedProofNotFoundError(types.ModuleName)
 	}
 	// validate the proof sent
 	err = keeper.ValidateProof(ctx, proof, msg)
 	if err != nil {
-		return nil, types.MsgProof{}, types.NewInvalidProofsError(types.ModuleName)
+		return nil, types.MsgClaim{}, types.NewInvalidProofsError(types.ModuleName)
 	}
 	// seems good, so return the needed info to the handler
 	return addr, proof, nil

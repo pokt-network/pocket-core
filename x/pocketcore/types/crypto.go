@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	Hash       = sha.SHA3_256
 	HashLength = sha.SHA3_256.Size()
 )
 
@@ -52,6 +53,7 @@ func HashVerification(hash string) sdk.Error {
 	if len(hash) != HashLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
+	return nil
 }
 
 // Converts []byte to SHA3-256 hashed []byte

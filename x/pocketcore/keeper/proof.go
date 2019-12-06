@@ -15,7 +15,7 @@ import (
 )
 
 // validate the zero knowledge range proof using the proof message and the claim message
-func (k Keeper) ValidateProof(ctx sdk.Context, proof pc.MsgProof, claim pc.MsgClaimProof) error {
+func (k Keeper) ValidateProof(ctx sdk.Context, proof pc.MsgClaim, claim pc.MsgProof) error {
 	// generate the needed pseudorandom proof index
 	reqProof := k.GeneratePseudoRandomProof(ctx, proof.TotalRelays, proof.Header)
 	// if the required proof index does not match the claim leafNode index
@@ -181,26 +181,26 @@ func (k Keeper) GetAllProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []
 }
 
 // get the unverified proof for this address
-func (k Keeper) GetUnverfiedProof(ctx sdk.Context, address sdk.ValAddress, header pc.Header) (msg pc.MsgProof, found bool) {
+func (k Keeper) GetUnverfiedProof(ctx sdk.Context, address sdk.ValAddress, header pc.Header) (msg pc.MsgClaim, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(pc.KeyForUnverifiedProof(ctx, address, header))
 	if res == nil {
-		return pc.MsgProof{}, false
+		return pc.MsgClaim{}, false
 	}
 	k.cdc.MustUnmarshalBinaryBare(res, &msg)
 	return msg, true
 }
 
 // set the unverified proof
-func (k Keeper) SetUnverifiedProof(ctx sdk.Context, msg pc.MsgProof) {
+func (k Keeper) SetUnverifiedProof(ctx sdk.Context, msg pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(msg)
 	store.Set(pc.KeyForUnverifiedProof(ctx, msg.FromAddress, msg.Header), bz)
 }
 
 // get the mature unverified proofs for this address
-func (k Keeper) GetMatureUnverifiedProofs(ctx sdk.Context, address sdk.ValAddress) (matureProofs []pc.MsgProof) {
-	var msg = pc.MsgProof{}
+func (k Keeper) GetMatureUnverifiedProofs(ctx sdk.Context, address sdk.ValAddress) (matureProofs []pc.MsgClaim) {
+	var msg = pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForUnverifiedProofs(address))
 	defer iterator.Close()
@@ -215,7 +215,7 @@ func (k Keeper) GetMatureUnverifiedProofs(ctx sdk.Context, address sdk.ValAddres
 
 // delete expired unverified proofs
 func (k Keeper) DeleteExpiredUnverifiedProofs(ctx sdk.Context) {
-	var msg = pc.MsgProof{}
+	var msg = pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.UnverifiedProofKey)
 	defer iterator.Close()

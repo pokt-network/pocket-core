@@ -22,7 +22,7 @@ const ( // todo re-number
 	CodeInvalidSessionKeyError           = 1129
 	CodeFilterNodesError                 = 1130
 	CodeXORError                         = 1131
-	CodeInvalidBlockHashError            = 1132
+	CodeInvalidHashError                 = 1132
 	CodeEmptyBlockHashError              = 1133
 	CodeEmptyBlockchainError             = 1134
 	CodeEmptyPayloadDataError            = 1135
@@ -104,7 +104,7 @@ var (
 	FilterNodesError                 = errors.New("unable to filter nodes: ")
 	XORError                         = errors.New("error XORing the keys: ")
 	PubKeyDecodeError                = errors.New("error decoding the string into hex bytes")
-	InvalidBlockHashError            = errors.New("the block hash is invalid: ")
+	InvalidHashError                 = errors.New("the hash is invalid: ")
 	HTTPExecutionError               = errors.New("error executing the http request: ")
 	TicketsNotFoundError             = errors.New("the tickets requested could not be found")
 	DuplicateTicketError             = errors.New("the ticket is a duplicate")
@@ -321,12 +321,12 @@ func NewEmptyBlockchainError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyBlockchainError, EmptyBlockchainError.Error())
 }
 
-func NewInvalidBlockHashError(codespace sdk.CodespaceType, err error) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidBlockHashError, InvalidBlockHashError.Error()+err.Error())
+func NewInvalidHashError(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidHashError, InvalidHashError.Error()+err.Error())
 }
 
 func NewEmptyHashError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeEmptyBlockHashError, InvalidBlockHashError.Error())
+	return sdk.NewError(codespace, CodeEmptyBlockHashError, InvalidHashError.Error())
 }
 
 func NewPubKeyDecodeError(codespace sdk.CodespaceType) sdk.Error {

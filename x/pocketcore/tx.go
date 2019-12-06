@@ -8,8 +8,9 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.Header, totalRelays int64, root []byte) error {
-	msg := types.MsgProof{
+// transaction that sends the total number of relays (claim), the merkle root (for data integrity), and the header (for identification)
+func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.Header, totalRelays int64, root []byte) error {
+	msg := types.MsgClaim{
 		Header:      header,
 		TotalRelays: totalRelays,
 		Root:        root,
@@ -18,8 +19,9 @@ func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder 
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) ProofClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch types.MerkleProof, leafNode types.Proof) error {
-	msg := types.MsgClaimProof{
+// transaction to prove the
+func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch types.MerkleProof, leafNode types.Proof) error {
+	msg := types.MsgProof{
 		MerkleProof: porBranch,
 		LeafNode:    leafNode,
 	}
