@@ -20,7 +20,7 @@ type MsgProof struct {
 func (msg MsgProof) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgProof) Type() string { return "relay_batch" }
+func (msg MsgProof) Type() string { return "proof" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgProof) ValidateBasic() sdk.Error {
@@ -53,15 +53,15 @@ func (msg MsgProof) GetSigners() []sdk.AccAddress {
 
 // MsgProof defines a SetName message
 type MsgClaimProof struct {
-	MerkleProof       // the branch needed to verify the proofs
-	LeafNode    Proof // the needed to verify the proof
+	MerkleProof    // the branch needed to verify the proofs
+	LeafNode Proof // the needed to verify the proof
 }
 
 // Route should return the name of the module
 func (msg MsgClaimProof) Route() string { return RouterKey }
 
 // Type should return the action
-func (msg MsgClaimProof) Type() string { return "relay_batch" }
+func (msg MsgClaimProof) Type() string { return "claim" }
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgClaimProof) ValidateBasic() sdk.Error {

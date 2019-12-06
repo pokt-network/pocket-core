@@ -12,12 +12,10 @@ import (
 func NewQuerier(k Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
-		case types.QueryProofsSummary:
-			return queryProofSummary(ctx, req, k)
-		case types.QueryProofsSummaries:
-			return queryProofSummaries(ctx, req, k)
-		case types.QueryProofsSummariesForApp:
-			return queryProofSummariesForApp(ctx, req, k)
+		case types.QueryProof:
+			return queryProof(ctx, req, k)
+		case types.QueryProofs:
+			return queryProofs(ctx, req, k)
 		case types.QuerySupportedBlockchains:
 			return querySupportedBlockchains(ctx, req, k)
 		default:
@@ -36,7 +34,7 @@ func querySupportedBlockchains(ctx sdk.Context, _ abci.RequestQuery, k Keeper) (
 }
 
 // query the proof summary for a particular node address and session header
-func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryProof(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryPORParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
@@ -51,27 +49,13 @@ func queryProofSummary(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte
 }
 
 // query the proof summaries for a particular node address
-func queryProofSummaries(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryProofs(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryPORsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 	proofSummary := k.GetAllProofs(ctx, params.Address)
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
-	if err != nil {
-		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
-	}
-	return res, nil
-}
-
-func queryProofSummariesForApp(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryPORsAppParams
-	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
-	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
-	}
-	proofSummary := k.GetAllProofsByApp(ctx, params.Address, params.AppPubKey)
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))

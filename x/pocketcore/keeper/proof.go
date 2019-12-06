@@ -143,44 +143,37 @@ func (k Keeper) ClaimProofs(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 	}
 }
 
+// structure used to store the proof after verification
+type StoredProof struct {
+	pc.Header
+	TotalRelays int64
+}
+
 // retrieve the verified proof
-func (k Keeper) GetProof(ctx sdk.Context, address sdk.ValAddress, header pc.Header) (proof pc.ProofOfRelay, found bool) {
+func (k Keeper) GetProof(ctx sdk.Context, address sdk.ValAddress, header pc.Header) (proof StoredProof, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(pc.KeyForProof(ctx, address, header))
 	if res == nil {
-		return pc.ProofOfRelay{}, false
+		return StoredProof{}, false
 	}
 	k.cdc.MustUnmarshalBinaryBare(res, &proof)
 	return proof, true
 }
 
 // set the verified proof
-func (k Keeper) SetProof(ctx sdk.Context, address sdk.ValAddress, p pc.ProofOfRelay) {
+func (k Keeper) SetProof(ctx sdk.Context, address sdk.ValAddress, p StoredProof) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
 	store.Set(pc.KeyForProof(ctx, address, p.Header), bz)
 }
 
 // get all verified proofs for this address
-func (k Keeper) GetAllProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []pc.ProofOfRelay) {
+func (k Keeper) GetAllProofs(ctx sdk.Context, address sdk.ValAddress) (proofs []StoredProof) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForProofs(address))
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		var summary pc.ProofOfRelay
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
-		proofs = append(proofs, summary)
-	}
-	return
-}
-
-// get all verified proofs for this address for this app
-func (k Keeper) GetAllProofsByApp(ctx sdk.Context, address sdk.ValAddress, appPubKeyHex string) (proofs []pc.ProofOfRelay) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForProofsByApp(address, appPubKeyHex))
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var summary pc.ProofOfRelay
+		var summary StoredProof
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
 		proofs = append(proofs, summary)
 	}
