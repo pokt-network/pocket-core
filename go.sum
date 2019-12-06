@@ -158,8 +158,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pokt-network/merkle v0.0.0-20191205184834-b246208bcb85 h1:dNsPZJMNYdCl7vEUfrfBgpvyvBl+jmV2lg2d6s8LUYY=
 github.com/pokt-network/merkle v0.0.0-20191205184834-b246208bcb85/go.mod h1:V3UW1xvNztGfY8Y5uW6LTu18inPNYbgsckgfH0qF7vk=
-github.com/pokt-network/posmint v0.0.0-20191127151045-9ac58acd4caf h1:uSbI47j5sRPyap8Slc8uRux0V642p0Cavc2bLW/+zkg=
-github.com/pokt-network/posmint v0.0.0-20191127151045-9ac58acd4caf/go.mod h1:Oi3V1mN1Xc/9bIF4ZbHp7XDWQVaLuhnn0w1tY0scQYo=
+github.com/pokt-network/posmint v0.0.0-20191206190611-4226a0903a3e h1:wC/I2TqPzgl4CN+cWakS44KK/5h6pAneOAJo5fTlI+A=
+github.com/pokt-network/posmint v0.0.0-20191206190611-4226a0903a3e/go.mod h1:Oi3V1mN1Xc/9bIF4ZbHp7XDWQVaLuhnn0w1tY0scQYo=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.3/go.mod h1:/TN21ttK/J9q6uSwhBd54HahCDft0ttaMvbicHlPoso=
 github.com/prometheus/client_golang v1.0.0/go.mod h1:db9x61etRT2tGnBNRi70OPL5FsnadC4Ky3P0J6CfImo=
