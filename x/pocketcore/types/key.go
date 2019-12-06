@@ -20,7 +20,9 @@ func KeyForProof(ctx sdk.Context, addr sdk.ValAddress, header SessionHeader) []b
 	if err != nil {
 		panic(err)
 	}
-	sessionHash := ctx.WithBlockHeight(header.SessionBlockHeight).BlockHeader().GetLastBlockId().Hash
+	sessionCtx := ctx.WithBlockHeight(header.SessionBlockHeight)
+	sessionBlockHeader := sessionCtx.BlockHeader()
+	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
 	return append(append(append(ProofKey, addr.Bytes()...), appPubKey...), sessionHash...)
 }
 
@@ -33,7 +35,9 @@ func KeyForClaim(ctx sdk.Context, addr sdk.ValAddress, header SessionHeader) []b
 	if err != nil {
 		panic(err)
 	}
-	sessionHash := ctx.WithBlockHeight(header.SessionBlockHeight).BlockHeader().GetLastBlockId().Hash
+	sessionCtx := ctx.WithBlockHeight(header.SessionBlockHeight)
+	sessionBlockHeader := sessionCtx.BlockHeader()
+	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
 	return append(append(append(ClaimKey, addr.Bytes()...), appPubKey...), sessionHash...)
 }
 

@@ -46,11 +46,11 @@ func (a Application) String() string {
 	}
 	return fmt.Sprintf(`AppPubKey
   Address:           		  %s
-  AppPubKey Cons Pubkey: %s
-  Jailed:                     %a
+  AppPubKey Cons Pubkey: 	  %s
+  Jailed:                     %v
   Status:                     %s
   Tokens:               	  %s
-  Unstakeing Completion Time:  %a`,
+  Unstakeing Completion Time: %v`,
 		a.Address, bechConsPubKey, a.Jailed, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
 	)
 }

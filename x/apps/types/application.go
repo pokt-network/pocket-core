@@ -50,10 +50,10 @@ func (a Application) PotentialConsensusPower() int64 {
 // RemoveStakedTokens removes tokens from a application
 func (a Application) RemoveStakedTokens(tokens sdk.Int) Application {
 	if tokens.IsNegative() {
-		panic(fmt.Sprintf("should not happen: trying to remove negative tokens %a", tokens))
+		panic(fmt.Sprintf("should not happen: trying to remove negative tokens %v", tokens))
 	}
 	if a.StakedTokens.LT(tokens) {
-		panic(fmt.Sprintf("should not happen: only have %a tokens, trying to remove %a", a.StakedTokens, tokens))
+		panic(fmt.Sprintf("should not happen: only have %v tokens, trying to remove %v", a.StakedTokens, tokens))
 	}
 	a.StakedTokens = a.StakedTokens.Sub(tokens)
 	return a
@@ -62,7 +62,7 @@ func (a Application) RemoveStakedTokens(tokens sdk.Int) Application {
 // AddStakedTokens tokens to staked field for a application
 func (a Application) AddStakedTokens(tokens sdk.Int) Application {
 	if tokens.IsNegative() {
-		panic(fmt.Sprintf("should not happen: trying to add negative tokens %a", tokens))
+		panic(fmt.Sprintf("should not happen: trying to add negative tokens %v", tokens))
 	}
 	a.StakedTokens = a.StakedTokens.Add(tokens)
 	return a

@@ -20,7 +20,10 @@ const (
 	DefaultSignedBlocksWindow                 = int64(100)
 	DefaultDowntimeJailDuration               = 60 * 10 * time.Second
 	DefaultSessionBlocktime                   = 25
-	DefaultRelaysToTokens                     = .0001
+)
+
+var (
+	DefaultRelaysToTokens = sdk.NewDec(1).Quo(sdk.NewDec(10000)) // .0001
 )
 
 // nolint - Keys for parameter access
@@ -97,7 +100,7 @@ func DefaultParams() Params {
 		SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
 		SlashFractionDowntime:    DefaultSlashFractionDowntime,
 		SessionBlock:             DefaultSessionBlocktime,
-		RelaysToTokens:           sdk.NewDec(DefaultRelaysToTokens),
+		RelaysToTokens:           DefaultRelaysToTokens,
 	}
 }
 
@@ -145,7 +148,7 @@ func (p Params) String() string {
   DowntimeJailDuration:    %s
   SlashFractionDoubleSign: %s
   SlashFractionDowntime:   %s
-  SessionBlockFrequency %s`,
+  SessionBlockFrequency    %d`,
 		p.UnstakingTime,
 		p.MaxValidators,
 		p.StakeDenom,

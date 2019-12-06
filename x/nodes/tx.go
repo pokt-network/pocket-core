@@ -57,9 +57,8 @@ func newTx(cdc *codec.Codec, am AppModule, passphrase string) (txBuilder auth.Tx
 		panic(err)
 	}
 	fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin(params.StakeDenom, 0)))
-	txBuilder = auth.TxBuilder{
+	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(cdc),
-		am.keybase,
 		account.GetAccountNumber(),
 		account.GetSequence(),
 		fee.Gas,
@@ -69,6 +68,6 @@ func newTx(cdc *codec.Codec, am AppModule, passphrase string) (txBuilder auth.Tx
 		"",
 		fee.Amount,
 		fee.GasPrices(),
-	}
+	).WithKeybase(am.keybase)
 	return
 }

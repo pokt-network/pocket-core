@@ -47,7 +47,8 @@ func (t Tree) GetMerkleRoot() ([]byte, sdk.Error) {
 		return nil, NewEmptyMerkleTreeError(ModuleName)
 	}
 	// get the merkle root of the tree
-	root := merkle.Tree(t).Root()
+	tree := merkle.Tree(t)
+	root := tree.Root()
 	// if the root is empty
 	if root == nil || len(root) == 0 {
 		return nil, NewNodeNotFoundErr(ModuleName)
@@ -62,7 +63,8 @@ func (t Tree) GetMerkleProof(index int) (MerkleProof, sdk.Error) {
 		return nil, NewEmptyMerkleTreeError(ModuleName)
 	}
 	// get the proof from the tree
-	proof := merkle.Tree(t).GetProof(index)
+	tree := merkle.Tree(t)
+	proof := tree.GetProof(index)
 	if proof == nil || len(proof) == 0 {
 		return nil, NewNodeNotFoundErr(ModuleName)
 	}

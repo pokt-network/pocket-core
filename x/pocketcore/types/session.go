@@ -263,6 +263,7 @@ func (sh SessionHeader) ValidateHeader() sdk.Error {
 	if sh.SessionBlockHeight <= 1 {
 		return NewInvalidBlockHeightError(ModuleName)
 	}
+	return nil
 }
 
 // hash the header bytes

@@ -22,7 +22,7 @@ func (k Keeper) ValidateProof(ctx sdk.Context, proof pc.MsgClaim, claim pc.MsgPr
 		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// do a merkle proof using the merkle proof, the previously submitted root, and the leafNode to ensure validity of the claim
-	if !(merkle.NewTree(pc.Hasher.New()).VerifyProof(merkle.Proof(claim.MerkleProof), proof.Root, claim.LeafNode.Hash())) {
+	if tree := merkle.NewTree(pc.Hasher.New()); !tree.VerifyProof(merkle.Proof(claim.MerkleProof), proof.Root, claim.LeafNode.Hash()) {
 		return pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// check the validity of the token
@@ -41,9 +41,10 @@ func (k Keeper) GeneratePseudoRandomProof(ctx sdk.Context, totalRelays int64, he
 	// get the context for the proof (the proof context is X sessions after the session began)
 	proofContext := ctx.WithBlockHeight(header.SessionBlockHeight + int64(k.ProofWaitingPeriod(ctx))*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
+	proofBlockHeader := proofContext.BlockHeader()
 	r, err := json.Marshal(pseudorandomGenerator{
-		blockHash: hex.EncodeToString(proofContext.BlockHeader().GetLastBlockId().Hash), // block hash
-		header:    header.HashString(),                                                  // header hashstring
+		blockHash: hex.EncodeToString(proofBlockHeader.GetLastBlockId().Hash), // block hash
+		header:    header.HashString(),                                        // header hashstring
 	})
 	if err != nil {
 		panic(err)
@@ -308,9 +309,8 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, n *node.Node, k Keeper) (txBuilder a
 	if err != nil {
 		panic(err)
 	}
-	txBuilder = auth.TxBuilder{
+	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(k.cdc),
-		k.keybase,
 		account.GetAccountNumber(),
 		account.GetSequence(),
 		fee.Gas,
@@ -320,6 +320,6 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, n *node.Node, k Keeper) (txBuilder a
 		"",
 		fee.Amount,
 		fee.GasPrices(),
-	}
+	).WithKeybase(k.keybase)
 	return
 }

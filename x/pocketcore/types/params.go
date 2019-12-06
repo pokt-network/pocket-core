@@ -84,10 +84,10 @@ func (p Params) Equal(p2 Params) bool {
 // HashString returns a human readable string representation of the parameters.
 func (p Params) String() string {
 	return fmt.Sprintf(`Params:
-  SessionNodeCount:          %s
-  ProofWaitingPeriod:        %s
+  SessionNodeCount:          %d
+  ProofWaitingPeriod:        %d
   Supported Blockchains      %v
-  ClaimExpiration  %s
+  ClaimExpiration  			 %d
 `,
 		p.SessionNodeCount,
 		p.ProofWaitingPeriod,
