@@ -48,9 +48,10 @@ func handleClaimProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) s
 		return err.Result()
 	}
 	// set the proof in the world state
-	k.SetProof(ctx, addr, keeper.StoredProof{
-		SessionHeader: proof.SessionHeader,
-		TotalRelays:   proof.TotalRelays,
+	k.SetProof(ctx, addr, types.StoredProof{
+		SessionHeader:   proof.SessionHeader,
+		TotalRelays:     proof.TotalRelays,
+		ServicerAddress: addr.String(),
 	})
 	// valid claim so award coins for relays
 	k.AwardCoinsForRelays(ctx, proof.TotalRelays, addr)

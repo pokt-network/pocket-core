@@ -55,7 +55,7 @@ func queryProofs(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	proofSummary := k.GetAllProofs(ctx, params.Address)
+	proofSummary := k.GetProofs(ctx, params.Address)
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
