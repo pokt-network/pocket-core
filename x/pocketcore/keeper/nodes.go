@@ -9,12 +9,16 @@ import (
 
 // get all nodes from the world state
 func (k Keeper) GetAllNodes(ctx sdk.Context) []exported.ValidatorI {
-	return k.posKeeper.GetAllValidators(ctx)
+	return k.posKeeper.AllValidators(ctx)
 }
 
 // get a node from the world state
-func (k Keeper) GetNode(ctx sdk.Context, address sdk.ValAddress) (node exported.ValidatorI, found bool) {
-	return k.posKeeper.GetValidator(ctx, address)
+func (k Keeper) GetNode(ctx sdk.Context, address sdk.ValAddress) (n exported.ValidatorI, found bool) {
+	n = k.posKeeper.Validator(ctx, address)
+	if n == nil {
+		return n, false
+	}
+	return n, true
 }
 
 // get the node from the public key string

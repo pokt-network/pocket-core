@@ -6,6 +6,10 @@ import (
 
 type MultiPOSHooks []POSHooks
 
+func NewMultiStakingHooks(hooks ...POSHooks) MultiPOSHooks {
+	return hooks
+}
+
 func (h MultiPOSHooks) BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.ValAddress) {
 	for i := range h {
 		h[i].BeforeValidatorRegistered(ctx, valAddr)

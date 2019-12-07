@@ -79,3 +79,15 @@ func (k Keeper) applicationByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) exp
 	}
 	return app
 }
+
+func (k Keeper) AllApplications(ctx sdk.Context) (apps []exported.ApplicationI) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		app := types.MustUnmarshalApplication(k.cdc, iterator.Value())
+		apps = append(apps, app)
+	}
+	return apps
+}

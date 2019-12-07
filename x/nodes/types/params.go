@@ -12,6 +12,8 @@ import (
 
 // POS params default values
 const (
+	// DefaultParamspace for params keeper
+	DefaultParamspace                         = ModuleName
 	DefaultUnstakingTime                      = time.Hour * 24 * 7 * 3
 	DefaultMaxValidators               uint64 = 100000
 	DefaultMinStake                    int64  = 1

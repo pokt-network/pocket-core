@@ -10,6 +10,8 @@ import (
 
 // POS params default values
 const (
+	// DefaultParamspace for params keeper
+	DefaultParamspace         = ModuleName
 	DefaultSessionNodeCount   = 5
 	DefaultProofWaitingPeriod = 3
 	DefaultClaimExpiration    = 25 // sessions
