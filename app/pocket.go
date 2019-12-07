@@ -38,7 +38,7 @@ type pocketCoreApp struct {
 }
 
 func (app *pocketCoreApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	genesisState := cfg.GenesisStateFromFile(app.cdc, GetGenesisFile())
+	genesisState := cfg.GenesisStateFromFile(app.cdc, GenesisFile("")) // todo
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 

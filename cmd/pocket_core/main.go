@@ -3,8 +3,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/config"
-	"github.com/pokt-network/pocket-core/logs"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -35,24 +33,10 @@ func startClient() {
 		os.Kill,
 		os.Interrupt)
 
-	// initializes the configuration from flags and defaults
-	config.Init()
-	// builds the proper structure on pc for core client to operate
-	config.Build()
-	// logs the client starting
-	logs.Log("Started Pocket Core", logs.InfoLevel, logs.JSONLogFormat)
-	// logs start message to stdout
-	logs.Log("Started Pocket Core", logs.InfoLevel, logs.TextLogFormatter)
-	// print the configuration
-	config.Print()
-	// Exits gracefully printing the exit signal
 	defer func() {
 		sig := <-signalChannel
-
 		message := fmt.Sprintf("Exit signal %s received\n", sig)
-		logs.Log("Shutting down Pocket Core: "+message, logs.InfoLevel, logs.JSONLogFormat)
-		logs.Log("Shutting down Pocket Core: "+message, logs.InfoLevel, logs.TextLogFormatter)
-
+		fmt.Println(message)
 		os.Exit(3)
 	}()
 }
