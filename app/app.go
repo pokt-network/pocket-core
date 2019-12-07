@@ -116,10 +116,10 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		appsTypes.DefaultCodespace,
 	)
 
-	keybase := GetKeybase()
-	tendermintNode := GetTendermintNode()
-	hostedBlockchains := GetHostedChains()
-	passphrase := GetCoinbasePassphrase()
+	keybase := GetKeybase("", "")                // todo
+	tendermintNode := TendermintNode("", "", "") // todo
+	hostedBlockchains := GetHostedChains("")     // todo
+	passphrase := CoinbasePassphrase("")         // todo
 
 	// The NameserviceKeeper is the Keeper from the module for this tutorial
 	// It handles interactions with the namestore
