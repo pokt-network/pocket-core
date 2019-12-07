@@ -65,7 +65,7 @@ const ( // todo re-number
 	CodeInvalidHashLengthError           = 1172
 	CodeEmtpyBranchError                 = 1173
 	CodeEmptyAddressError                = 1174
-	CodeClaimNotFoundError     = 1175
+	CodeClaimNotFoundError               = 1175
 	CodeInvalidMerkleVerifyError         = 1176
 	CodeEmptyMerkleTreeError             = 1177
 	CodeMerkleNodeNotFoundError          = 1178
@@ -135,7 +135,7 @@ var (
 	InvalidHashLengthError           = errors.New("the hash length is not valid")
 	EmtpyBranchError                 = errors.New("the proof of relay branch is empty")
 	EmptyAddressError                = errors.New("the address provided is empty")
-	ClaimNotFoundError     = errors.New("the unverified proof was not found for the key given")
+	ClaimNotFoundError               = errors.New("the unverified proof was not found for the key given")
 	InvalidMerkleVerifyError         = errors.New("claim resulted in an invalid merkle proof")
 	EmptyMerkleTreeError             = errors.New("the merkle tree is empty")
 	NodeNotFoundError                = errors.New("the node of the merkle tree requested is not found")

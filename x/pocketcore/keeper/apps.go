@@ -8,12 +8,16 @@ import (
 
 // get all the apps from the world state
 func (k Keeper) GetAllApps(ctx sdk.Context) []exported.ApplicationI {
-	return k.appKeeper.GetAllApplications(ctx)
+	return k.appKeeper.AllApplications(ctx)
 }
 
 // get an app from the world state
-func (k Keeper) GetApp(ctx sdk.Context, address sdk.ValAddress) (node exported.ApplicationI, found bool) {
-	return k.appKeeper.GetApplication(ctx, address)
+func (k Keeper) GetApp(ctx sdk.Context, address sdk.ValAddress) (a exported.ApplicationI, found bool) {
+	a = k.appKeeper.Application(ctx, address)
+	if a == nil {
+		return a, false
+	}
+	return a, true
 }
 
 // get an app from a public key string
