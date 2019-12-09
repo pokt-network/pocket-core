@@ -49,7 +49,7 @@ func (k Keeper) GeneratePseudoRandomProof(ctx sdk.Context, totalRelays int64, he
 	if err != nil {
 		panic(err)
 	}
-	// hash the bytes and take the first 16 bytes of the string
+	// hash the bytes and take the first 16 characters of the string
 	proofsHash := hex.EncodeToString(pc.Hash(r))[:16]
 	// for each hex character of the hash
 	for i := 0; i < 16; i++ {

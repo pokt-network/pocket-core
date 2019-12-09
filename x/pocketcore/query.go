@@ -49,6 +49,18 @@ func (am AppModule) QueryProofs(cdc *codec.Codec, addr sdk.ValAddress, height in
 	return ps, nil
 }
 
+func (am AppModule) QueryParams(cdc *codec.Codec, height int64) (types.Params, error) {
+	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+	route := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryParameters)
+	bz, _, err := cliCtx.QueryWithData(route, nil)
+	if err != nil {
+		return types.Params{}, err
+	}
+	var params types.Params
+	cdc.MustUnmarshalJSON(bz, &params)
+	return params, nil
+}
+
 func (am AppModule) QueryPocketSupportedBlockchains(cdc *codec.Codec, height int64) ([]string, error) {
 	var chains []string
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)

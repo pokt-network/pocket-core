@@ -91,7 +91,7 @@ func (am AppModule) QueryUnstakingValidators(cdc *codec.Codec, height int64) (ty
 	return validators, nil
 }
 
-func (am AppModule) QuerySigningInfo(cdc *codec.Codec, height int64, ctx sdk.Context, consAddr sdk.ConsAddress) (types.ValidatorSigningInfo, error) {
+func (am AppModule) QuerySigningInfo(cdc *codec.Codec, height int64, consAddr sdk.ConsAddress) (types.ValidatorSigningInfo, error) {
 	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
 	key := types.GetValidatorSigningInfoKey(consAddr)
 	res, _, err := cliCtx.QueryStore(key, types.StoreKey)

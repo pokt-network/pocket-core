@@ -41,12 +41,18 @@ var (
 	moduleAccountPermissions = map[string][]string{
 		auth.FeeCollectorName: nil,
 	}
+	// expose coded to app module
+	cdc *codec.Codec
+	// expose nodes, apps, and core module for tx
+	nodesModule  *nodes.AppModule
+	appsModule   *apps.AppModule
+	pocketModule *pocket.AppModule
 )
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
 func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
 	// First define the top level codec that will be shared by the different modules
-	cdc := MakeCodec()
+	cdc = MakeCodec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
 	bApp.SetAppVersion("0.0.1")
@@ -133,14 +139,19 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		pocketSubspace,
 		passphrase,
 	)
+	// modules with transactions and queries
+	*nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, tendermintNode, keybase)
+	*appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, tendermintNode, keybase)
+	*pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, tendermintNode, keybase)
 
+	// setup module manager
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper, tendermintNode, keybase),
 		bank.NewAppModule(app.bankKeeper, app.accountKeeper, tendermintNode, keybase),
 		supply.NewAppModule(app.supplyKeeper, app.accountKeeper, tendermintNode, keybase),
-		nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, tendermintNode, keybase),
-		apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, tendermintNode, keybase),
-		pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper),
+		nodesModule,
+		appsModule,
+		pocketModule,
 	)
 
 	app.mm.SetOrderBeginBlockers(appsTypes.ModuleName, nodesTypes.ModuleName, pocketTypes.ModuleName)

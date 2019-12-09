@@ -1,10 +1,10 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto"
 	"strings"
 	"time"
 )
@@ -17,6 +17,15 @@ func (v Validators) String() (out string) {
 		out += val.String() + "\n"
 	}
 	return strings.TrimSpace(out)
+}
+
+func (v Validators) JSON() (out []byte, err error) {
+	var result []string
+	for _, val := range v {
+		r := val.String()
+		result = append(result, r)
+	}
+	return json.Marshal(result)
 }
 
 // MUST return the amino encoded version of this validator
@@ -45,14 +54,20 @@ func (v Validator) String() string {
 	if err != nil {
 		panic(err)
 	}
+	var chains string
+	for chain := range v.Chains {
+		chains += chain + "\n"
+	}
 	return fmt.Sprintf(`Validator
   Address:           		  %s
-  Validator Cons Pubkey: %s
+  Validator Cons Pubkey:      %s
   Jailed:                     %v
   Status:                     %s
   Tokens:               	  %s
-  Unstakeing Completion Time:  %v`,
-		v.Address, bechConsPubKey, v.Jailed, v.Status, v.StakedTokens, v.UnstakingCompletionTime,
+  ServiceURL:                 %s
+  Chains:                     %s
+  Unstaking Completion Time:  %v`,
+		v.Address, bechConsPubKey, v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, chains, v.UnstakingCompletionTime,
 	)
 }
 
@@ -63,7 +78,9 @@ type bechValidator struct {
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                     // has the validator been jailed from staked status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`                     // validator status (bonded/unbonding/unbonded)
 	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"`         // how many staked tokens
-	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"`     // if unstaking, min time for the validator to complete unstaking
+	ServiceURL              string         `json:"serviceUrl" yaml:"serviceURL"`
+	Chains                  []string       `json:"chains" yaml:"chains"`
+	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 }
 
 // MarshalJSON marshals the validator to JSON using Bech32
@@ -72,11 +89,17 @@ func (v Validator) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	var chains []string
+	for chain := range v.Chains {
+		chains = append(chains, chain)
+	}
 	return codec.Cdc.MarshalJSON(bechValidator{
 		Address:                 v.Address,
 		ConsPubKey:              bechConsPubKey,
 		Jailed:                  v.Jailed,
 		Status:                  v.Status,
+		ServiceURL:              v.ServiceURL,
+		Chains:                  chains,
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
 	})
@@ -92,24 +115,19 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+	c := make(map[string]struct{})
+	for _, chain := range bv.Chains {
+		c[chain] = struct{}{}
+	}
 	*v = Validator{
 		Address:                 bv.Address,
 		ConsPubKey:              consPubKey,
 		Jailed:                  bv.Jailed,
+		Chains:                  c,
+		ServiceURL:              bv.ServiceURL,
 		StakedTokens:            bv.StakedTokens,
 		Status:                  bv.Status,
 		UnstakingCompletionTime: bv.UnstakingCompletionTime,
 	}
 	return nil
-}
-
-// convienence so that the user can see all of the node params + the non staked coins balance
-type ValidatorWithBalance struct {
-	Address                 sdk.ValAddress `json:"address" yaml:"address"`               // address of the validator; bech encoded in JSON
-	ConsPubKey              crypto.PubKey  `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
-	Jailed                  bool           `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from bonded status?
-	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // validator status (bonded/unbonding/unbonded)
-	StakedTokens            sdk.Int        `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
-	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
-	Balance                 sdk.Int
 }

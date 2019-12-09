@@ -16,6 +16,10 @@ func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder 
 		Root:          root,
 		FromAddress:   sdk.ValAddress(am.node.PrivValidator().GetPubKey().Address()),
 	}
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
@@ -24,6 +28,10 @@ func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder 
 	msg := types.MsgProof{
 		MerkleProof: porBranch,
 		LeafNode:    leafNode,
+	}
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }

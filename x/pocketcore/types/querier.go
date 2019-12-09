@@ -9,6 +9,7 @@ const (
 	QueryProof                = "proof"
 	QueryProofs               = "proofs"
 	QuerySupportedBlockchains = "supportedBlockchains"
+	QueryParameters           = "parameters"
 )
 
 type QueryPORParams struct {
