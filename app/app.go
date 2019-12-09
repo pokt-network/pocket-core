@@ -13,6 +13,7 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	bam "github.com/pokt-network/posmint/baseapp"
 	"github.com/pokt-network/posmint/codec"
+	kb "github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
@@ -21,6 +22,7 @@ import (
 	"github.com/pokt-network/posmint/x/supply"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/node"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -47,6 +49,11 @@ var (
 	nodesModule  *nodes.AppModule
 	appsModule   *apps.AppModule
 	pocketModule *pocket.AppModule
+	// config variables
+	TMNode            *node.Node
+	Keybase           kb.Keybase
+	HostedBlockchains pocketTypes.HostedBlockchains
+	Passphrase        string
 )
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
@@ -122,11 +129,6 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		appsTypes.DefaultCodespace,
 	)
 
-	keybase := GetKeybase("", "")                // todo
-	tendermintNode := TendermintNode("", "", "") // todo
-	hostedBlockchains := GetHostedChains("")     // todo
-	passphrase := CoinbasePassphrase("")         // todo
-
 	// The NameserviceKeeper is the Keeper from the module for this tutorial
 	// It handles interactions with the namestore
 	app.pocketKeeper = pocketKeeper.NewPocketCoreKeeper(
@@ -134,21 +136,21 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.cdc,
 		n,
 		a,
-		keybase,
-		hostedBlockchains,
+		Keybase,
+		HostedBlockchains,
 		pocketSubspace,
-		passphrase,
+		Passphrase,
 	)
 	// modules with transactions and queries
-	*nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, tendermintNode, keybase)
-	*appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, tendermintNode, keybase)
-	*pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, tendermintNode, keybase)
+	*nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, TMNode, Keybase)
+	*appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, TMNode, Keybase)
+	*pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, TMNode, Keybase)
 
 	// setup module manager
 	app.mm = module.NewManager(
-		auth.NewAppModule(app.accountKeeper, tendermintNode, keybase),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper, tendermintNode, keybase),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper, tendermintNode, keybase),
+		auth.NewAppModule(app.accountKeeper, TMNode, Keybase),
+		bank.NewAppModule(app.bankKeeper, app.accountKeeper, TMNode, Keybase),
+		supply.NewAppModule(app.supplyKeeper, app.accountKeeper, TMNode, Keybase),
 		nodesModule,
 		appsModule,
 		pocketModule,

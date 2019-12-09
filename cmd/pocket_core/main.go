@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/app"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -23,7 +24,14 @@ func main() {
 
 // "startClient" Starts the client with the given initial configuration.
 func startClient() {
-
+	app.TMNode = app.TendermintNode("", "", "")     // todo
+	app.Keybase = app.GetKeybase("", "")            // todo
+	app.HostedBlockchains = app.GetHostedChains("") // todo
+	app.Passphrase = app.CoinbasePassphrase("")     // todo
+	err := app.TMNode.Start()
+	if err != nil {
+		panic(err)
+	}
 	// We trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
@@ -35,6 +43,7 @@ func startClient() {
 
 	defer func() {
 		sig := <-signalChannel
+		app.TMNode.Stop()
 		message := fmt.Sprintf("Exit signal %s received\n", sig)
 		fmt.Println(message)
 		os.Exit(3)

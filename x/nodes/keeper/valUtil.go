@@ -135,16 +135,3 @@ func sortNoLongerStakedValidators(prevState valPowerMap) [][]byte {
 	})
 	return noLongerStaked
 }
-
-func (k Keeper) ValidatorToValidatorWithBalance(ctx sdk.Context, val types.Validator) types.ValidatorWithBalance {
-	balance := k.GetBalance(ctx, val.Address)
-	return types.ValidatorWithBalance{
-		Address:                 val.Address,
-		ConsPubKey:              val.ConsPubKey,
-		Jailed:                  val.Jailed,
-		Status:                  val.Status,
-		StakedTokens:            val.StakedTokens,
-		UnstakingCompletionTime: val.UnstakingCompletionTime,
-		Balance:                 balance,
-	}
-}
