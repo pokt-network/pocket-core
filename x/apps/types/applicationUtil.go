@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
@@ -16,6 +17,15 @@ func (v Applications) String() (out string) {
 		out += val.String() + "\n"
 	}
 	return strings.TrimSpace(out)
+}
+
+func (v Applications) JSON() (out []byte, err error) {
+	var result []string
+	for _, val := range v {
+		r := val.String()
+		result = append(result, r)
+	}
+	return json.Marshal(result)
 }
 
 // MUST return the amino encoded version of this application
@@ -44,14 +54,20 @@ func (a Application) String() string {
 	if err != nil {
 		panic(err)
 	}
+	var c []string
+	for chain := range a.Chains {
+		c = append(c, chain)
+	}
 	return fmt.Sprintf(`AppPubKey
   Address:           		  %s
   AppPubKey Cons Pubkey: 	  %s
   Jailed:                     %v
+  Chains:                     %v
+  MaxRelays:                  %d
   Status:                     %s
   Tokens:               	  %s
   Unstakeing Completion Time: %v`,
-		a.Address, bechConsPubKey, a.Jailed, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
+		a.Address, bechConsPubKey, a.Jailed, c, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
 	)
 }
 
@@ -60,9 +76,11 @@ type bechApplication struct {
 	Address                 sdk.ValAddress `json:"operator_address" yaml:"operator_address"` // the bech32 address of the application
 	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`           // the bech32 consensus public key of the application
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
-	Status                  sdk.BondStatus `json:"status" yaml:"status"`                     // application status (bonded/unbonding/unbonded)
-	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"`         // how many staked tokens
-	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"`     // if unstaking, min time for the application to complete unstaking
+	Chains                  []string       `json:"chains" yaml:"chains"`
+	MaxRelays               sdk.Int
+	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
+	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"`     // how many staked tokens
+	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }
 
 // MarshalJSON marshals the application to JSON using Bech32
@@ -71,11 +89,17 @@ func (a Application) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	var c []string
+	for chain := range a.Chains {
+		c = append(c, chain)
+	}
 	return codec.Cdc.MarshalJSON(bechApplication{
 		Address:                 a.Address,
 		ConsPubKey:              bechConsPubKey,
 		Jailed:                  a.Jailed,
 		Status:                  a.Status,
+		Chains:                  c,
+		MaxRelays:               a.MaxRelays,
 		StakedTokens:            a.StakedTokens,
 		UnstakingCompletionTime: a.UnstakingCompletionTime,
 	})
@@ -87,6 +111,10 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
 		return err
 	}
+	c := make(map[string]struct{})
+	for chain := range a.Chains {
+		c[chain] = struct{}{}
+	}
 	consPubKey, err := sdk.GetConsPubKeyBech32(bv.ConsPubKey)
 	if err != nil {
 		return err
@@ -94,6 +122,8 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 	*a = Application{
 		Address:                 bv.Address,
 		ConsPubKey:              consPubKey,
+		Chains:                  c,
+		MaxRelays:               a.MaxRelays,
 		Jailed:                  bv.Jailed,
 		StakedTokens:            bv.StakedTokens,
 		Status:                  bv.Status,

@@ -17,18 +17,30 @@ func (am AppModule) StakeTx(cdc *codec.Codec, chains map[string]struct{}, servic
 		ServiceURL: serviceURL, // url where pocket service api is hosted
 		Chains:     chains,     // non native blockchains
 	}
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
 func (am AppModule) UnstakeTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) error {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgBeginUnstake{Address: address}
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
 func (am AppModule) UnjailTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) error {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgUnjail{ValidatorAddr: address}
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
@@ -38,6 +50,10 @@ func (am AppModule) Send(cdc *codec.Codec, fromAddr, toAddr sdk.ValAddress, pass
 		FromAddress: fromAddr,
 		ToAddress:   toAddr,
 		Amount:      amount,
+	}
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
@@ -52,11 +68,7 @@ func newTx(cdc *codec.Codec, am AppModule, passphrase string) (txBuilder auth.Tx
 	if err != nil {
 		panic(err)
 	}
-	params, err := am.QueryPOSParams(cdc, 1) // todo better way to get stake denom
-	if err != nil {
-		panic(err)
-	}
-	fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin(params.StakeDenom, 0)))
+	fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin("pokt", 0))) // todo get stake denom
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(cdc),
 		account.GetAccountNumber(),

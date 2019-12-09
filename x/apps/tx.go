@@ -8,7 +8,7 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) StakeTx(cdc *codec.Codec, txBuilder auth.TxBuilder, chains map[string]struct{}, amount sdk.Int, address sdk.ValAddress, passphrase string) error {
+func (am AppModule) StakeTx(cdc *codec.Codec, chains map[string]struct{}, amount sdk.Int, address sdk.ValAddress, passphrase string) error {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgAppStake{
 		Address: address,
@@ -16,12 +16,20 @@ func (am AppModule) StakeTx(cdc *codec.Codec, txBuilder auth.TxBuilder, chains m
 		Value:   amount,
 		Chains:  chains, // non native blockchains
 	}
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) UnstakeTx(cdc *codec.Codec, txBuilder auth.TxBuilder, address sdk.ValAddress, passphrase string) error {
+func (am AppModule) UnstakeTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) error {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgBeginAppUnstake{Address: address}
+	err := msg.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
