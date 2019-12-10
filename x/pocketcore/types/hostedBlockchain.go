@@ -7,12 +7,12 @@ import (
 )
 
 type HostedBlockchain struct {
-	Hash string
-	URL  string
+	Hash string `json:"hash"`
+	URL  string `json:"url"`
 }
 
 type HostedBlockchains struct {
-	M map[string]HostedBlockchain
+	M map[string]HostedBlockchain // m[hash] -> hash, url
 	l sync.Mutex
 	o sync.Once
 }

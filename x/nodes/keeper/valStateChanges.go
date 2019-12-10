@@ -17,7 +17,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Context) (updates []abci.Vali
 	// get the world state
 	store := ctx.KVStore(k.storeKey)
 	// allow all waiting to begin unstaking to begin unstaking
-	if ctx.BlockHeight()%int64(k.SessionBlockFrequency(ctx)) == 0 { // one block before new session (mod 1 would be session block)
+	if ctx.BlockHeight()%k.SessionBlockFrequency(ctx) == 0 { // one block before new session (mod 1 would be session block)
 		k.ReleaseWaitingValidators(ctx)
 	}
 	maxValidators := k.GetParams(ctx).MaxValidators

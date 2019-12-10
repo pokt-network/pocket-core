@@ -41,35 +41,37 @@ var (
 	)
 	// module account permissions
 	moduleAccountPermissions = map[string][]string{
-		auth.FeeCollectorName: nil,
+		auth.FeeCollectorName:     nil,
+		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
+		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
+		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
 	}
 	// expose coded to app module
-	cdc *codec.Codec
+	Cdc *codec.Codec
 	// expose nodes, apps, and core module for tx
-	nodesModule  *nodes.AppModule
-	appsModule   *apps.AppModule
-	pocketModule *pocket.AppModule
+	nodesModule  nodes.AppModule
+	appsModule   apps.AppModule
+	pocketModule pocket.AppModule
 	// config variables
 	TMNode            *node.Node
 	Keybase           kb.Keybase
 	HostedBlockchains pocketTypes.HostedBlockchains
 	Passphrase        string
+	GenesisFilepath   string
 )
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
 func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
-	// First define the top level codec that will be shared by the different modules
-	cdc = MakeCodec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), baseAppOptions...)
+	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(Cdc), baseAppOptions...)
 	bApp.SetAppVersion("0.0.1")
-	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.TStoreKey, supply.StoreKey, params.StoreKey, pocketTypes.StoreKey)
-	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, params.TStoreKey)
+	keys := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, params.StoreKey, pocketTypes.StoreKey)
+	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, params.TStoreKey)
 
 	// Here you initialize your application with the store keys it requires
 	var app = &pocketCoreApp{
 		BaseApp: bApp,
-		cdc:     cdc,
+		cdc:     Cdc,
 		keys:    keys,
 		tkeys:   tkeys,
 	}
@@ -117,6 +119,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		nodesSubspace,
 		nodesTypes.DefaultCodespace,
 	)
+	app.nodesKeeper = n
 
 	// The apps keeper
 	a := appsKeeper.NewKeeper(
@@ -128,6 +131,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		appsSubspace,
 		appsTypes.DefaultCodespace,
 	)
+	app.appsKeeper = a
 
 	// The NameserviceKeeper is the Keeper from the module for this tutorial
 	// It handles interactions with the namestore
@@ -142,9 +146,9 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		Passphrase,
 	)
 	// modules with transactions and queries
-	*nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, TMNode, Keybase)
-	*appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, TMNode, Keybase)
-	*pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, TMNode, Keybase)
+	nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, TMNode, Keybase)
+	appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, TMNode, Keybase)
+	pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, TMNode, Keybase)
 
 	// setup module manager
 	app.mm = module.NewManager(

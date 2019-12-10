@@ -8,6 +8,7 @@ import (
 const (
 	ModuleName = "pocketcore"
 	StoreKey   = ModuleName
+	TStoreKey  = "transient_" + StoreKey
 )
 
 var (

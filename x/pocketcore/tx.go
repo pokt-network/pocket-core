@@ -9,7 +9,7 @@ import (
 )
 
 // transaction that sends the total number of relays (claim), the merkle root (for data integrity), and the header (for identification)
-func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root []byte) error {
+func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error) {
 	msg := types.MsgClaim{
 		SessionHeader: header,
 		TotalRelays:   totalRelays,
@@ -18,20 +18,20 @@ func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder 
 	}
 	err := msg.ValidateBasic()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
 // transaction to prove the
-func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch types.MerkleProof, leafNode types.Proof) error {
+func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch types.MerkleProof, leafNode types.Proof) (*sdk.TxResponse, error) {
 	msg := types.MsgProof{
 		MerkleProof: porBranch,
 		LeafNode:    leafNode,
 	}
 	err := msg.ValidateBasic()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
