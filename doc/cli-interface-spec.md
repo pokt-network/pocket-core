@@ -21,7 +21,17 @@ Each CLI Function will be in the following format:
 - Function Name: The name of the actual function to be called: `create`
 - (Optional): Space separated function arguments, e.g.: `pocket accounts create <passphrase>`
 
+### Default Namespace
+The default namespace contains functions that are pertinent to the execution of the Pocket Node.
+
+- `pocket start <datadir>`
+> Starts the Pocket Node, picks up the config from the assigned `<datadir>`.
+>
+> Arguments:
+> - `<datadir>`: The data directory where the configuration files for this node are specified.
+
 ### Accounts Namespace Functions
+The `accounts` namespace handles all account related interactions, from creating and deleting accounts, to importing and exporting accounts.
 
 - `pocket accounts list`
 > Lists all the account addresses stored in the keybase.
@@ -117,7 +127,7 @@ Exported account: <armored string>
 ```
 
 - `pocket accounts export-raw <address>`
-> Exports the raw private key in hex format. Will prompt the user for the account passphrase. *NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.*
+> Exports the raw private key in hex format. Will prompt the user for the account passphrase. ***NOTE***: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.*
 >
 > Arguments:
 > - `<address>`: The address of the account to be exported.
@@ -125,6 +135,245 @@ Exported account: <armored string>
 ```
 Exported account: 0x...
 ```
+
+- `pocket accounts send-tx <fromAddr> <toAddr> <amount>`
+> Sends `<amount>` POKT `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
+>
+> Arguments:
+> - `<fromAddr>`: The address of the sender.
+> - `<toAddr>`: The address of the receiver.
+> - `<amount>`: The amount of POKT to be sent.
+> Example output:
+```
+Transaction submitted with hash: <Transaction Hash>
+```
+
+### Node Namespace
+Functions for Node management.
+
+- `pocket node stake <fromAddr> <amount> <chains> <serviceURI>`
+> Stakes the Node into the network, making it available for service. Prompts the user for the `<fromAddr>` account passphrase.
+>
+> Arguments:
+> - `<fromAddr>`: The address of the sender.
+> - `<amount>`: The amount of POKT to stake. Must be higher than the current minimum amount of Node Stake parameter.
+> - `<chains>`: A comma separated list of chain Network Identifiers.
+> - `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
+> Example output:
+```
+Transaction submitted with hash: <Transaction Hash>
+```
+
+- `pocket node unstake <fromAddr>`
+> Unstakes a Node from the network, changing it's status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
+>
+> Arguments:
+> - `<fromAddr>`: The address of the sender.
+> Example output:
+```
+Transaction submitted with hash: <Transaction Hash>
+```
+
+- `pocket node unjail <fromAddr>`
+> Unjails a Node from the network, allowing it to participate in service and consensus again. Prompts the user for the `<fromAddr>` account passphrase.
+>
+> Arguments:
+> - `<fromAddr>`: The address of the sender.
+> Example output:
+```
+Transaction submitted with hash: <Transaction Hash>
+```
+
+### Pocket App Namespace
+Functions for Application management.
+
+- `pocket app stake <fromAddr> <amount> <chains>`
+> Stakes the Application into the network, making it available to receive service. Prompts the user for the `<fromAddr>` account passphrase.
+>
+> Arguments:
+> - `<fromAddr>`: The address of the sender.
+> - `<amount>`: The amount of POKT to stake. Must be higher than the current minimum amount of Application Stake parameter.
+> - `<chains>`: A comma separated list of chain Network Identifiers.
+> Example output:
+```
+Transaction submitted with hash: <Transaction Hash>
+```
+
+- `pocket app unstake <fromAddr>`
+> Unstakes an Application from the network, changing it's status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
+>
+> Arguments:
+> - `<fromAddr>`: The address of the sender.
+> Example output:
+```
+Transaction submitted with hash: <Transaction Hash>
+```
+
+- `pocket app create-aat <appAddr> <clientPubKey>`
+> Creates a signed application authentication token (version `0.0.1` of the AAT spec), that can be embedded into application software for Relay servicing. Will prompt the user for the `<appAddr>` account passphrase. Read the Application Authentication Token documentation [here](application-auth-token.md). ***NOTE***: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES IN ORDER TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION:
+>
+> Arguments:
+> - `<appAddr>`: The address of the Application account to use to produce this AAT.
+> - `<clientPubKey>`: The account public key of the clien that will be signing and sending Relays sent to the Pocket Network.
+> Example output:
+```json
+{
+	"version": "0.0.1",
+	"applicationPublicKey": "0x...",
+	"clientPublicKey": "0x...",
+	"signature": "0x..."
+}
+```
+
+### Pocket Util Namespace
+Generic utility functions for diverse use cases.
+
+- `pocket util generate-chain <ticker> <netid> <client> <version> <interface>`
+> Creates a Network Identifier hash, used as a parameter for both Node and App stake.
+>
+> Arguments:
+> - `<ticker>`: The ticker of the blockchain that will be accessed, e.g. `ETH`, `BTC`, `AION`.
+> - `<netid>`: The network identifier for the blockchain that will be access, `ETH` e.g. `1`, `4`.
+> - `<client>`: The node client for the specified blockchain that will be accessed, `ETH` e.g.: `geth`, `parity`.
+> - `<version>`: The version of the aforementioned node client, e.g.: `1.9.2`.
+> - `<interface>`: The interface used to talk to the aforementioned node client, e.g.: `wss://`, `https://`.
+> Example output:
+```
+Network Identifier: 0x...
+```
+
+### Pocket Query Namespace
+Queries the current world state built on the Pocket node.
+
+- `pocket query block <height>`
+> Returns the block at the specified height.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query block-height`
+> Returns the current block height known by this node.
+>
+> Example output:
+```
+Block Height: <current block height>
+```
+
+- `pocket query node-status`
+> Returns the current node status.
+
+- `pocket query balance <accAddr> <height>`
+> Returns the balance of the specified `<accAddr>` at the specified `<height>`.
+>
+> Arguments:
+> - `<accAddr>`: The address of the account to query.
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+> Example output:
+```
+Account balance: <balance of the account>
+```
+
+- `pocket query all-nodes --staking-status=<stakingStatus> <height>`
+> Returns the list of all nodes known at the specified `<height>`.
+>
+> Options:
+> - `--staking-status`: Filters the node list with a comma separated list of staking status. Supported statuses are: `STAKED`, `UNSTAKED` and `UNSTAKING`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query node <nodeAddr> <height>`
+> Returns the node at the specified `<height>`.
+>
+> Arguments:
+> - `<nodeAddr>`: The node address to be queried.
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query node-params <height>`
+> Returns the list of node params specified in the `<height>`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query signing-info <nodeAddr> <height>`
+> Returns the signing info of the node with `<nodeAddr>` at `<height>`.
+>
+> Arguments:
+> - `<nodeAddr>`: The node address to be queried.
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query total-node-stake <height>`
+> Returns the total amount of POKT staked by nodes at the specified `<height>`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query dao-balance <height>`
+> Returns the total amount of POKT owned by the DAO account at the specified `<height>`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query all-apps --staking-status=<stakingStatus> <height>`
+> Returns the list of all applications known at the specified `<height>`.
+>
+> Options:
+> - `--staking-status`: Filters the node list with a comma separated list of staking status. Supported statuses are: `STAKED`, `UNSTAKED` and `UNSTAKING`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query app <appAddr> <height>`
+> Returns the application at the specified `<height>`.
+>
+> Arguments:
+> - `<appAddr>`: The application address to be queried.
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query total-app-stake <height>`
+> Returns the total amount of POKT staked by applications at the specified `<height>`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query app-params <height>`
+> Returns the list of node params specified in the `<height>`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query node-proofs <nodeAddr> <height>`
+> Returns the list of all Relay Batch proofs submitted by `<nodeAddr>`.
+>
+> Arguments:
+> - `<nodeAddr>`: The node address to be queried.
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query node-proof <nodeAddr> <appPubKey> <networkId> <sessionHeight> <height>`
+> Returns the Relay Batch proof specific to the arguments.
+>
+> Arguments:
+> - `<nodeAddr>`: The address of the node that submitted the proof.
+> - `<appPubKey>`: The public key of the application the Node serviced.
+> - `<networkId>`: The Network Identifier of the blockchain that was serviced.
+> - `<sessionHeight>`: The session block for which the proof was submitted.
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query supported-networks <height>`
+> Returns the list Network Identifiers supported by the network at the specified `<height>`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query pocket-params <height>`
+> Returns the list of Pocket Network params specified in the `<height>`.
+>
+> Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+
+
+
 
 
 
