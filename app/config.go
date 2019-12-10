@@ -18,7 +18,22 @@ import (
 )
 
 func GetKeybase(keybaseName, keybaseDirectory string) keys.Keybase {
-	return keys.New(keybaseName, keybaseDirectory)
+	kb := keys.New(keybaseName, keybaseDirectory)
+	keypairs, err := kb.List()
+	if err != nil {
+		panic(err)
+	}
+	if len(keypairs) == 0 {
+		kp, _, err := kb.CreateMnemonic("", "") // todo remove
+		if err != nil {
+			panic(err)
+		}
+		err = kb.ImportPrivKey(kp.PrivKeyArmor, "", "") // todo remove
+		if err != nil {
+			panic(err)
+		}
+	}
+	return kb
 }
 
 func GetHostedChains(filepath string) (chains types.HostedBlockchains) {
@@ -31,14 +46,17 @@ func GetHostedChains(filepath string) (chains types.HostedBlockchains) {
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(bz, &chains)
+	m := map[string]types.HostedBlockchain{}
+	err = json.Unmarshal(bz, &m)
 	if err != nil {
 		panic(err)
 	}
-	return
+	return types.HostedBlockchains{
+		M: m,
+	}
 }
 
-func TendermintNode(persistentPeers, seeds, listenAddr string) *node.Node {
+func TendermintNode(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr string) *node.Node {
 	// Color by level value
 	colorFn := func(keyvals ...interface{}) term.FgBgColor {
 		if keyvals[0] != kitlevel.Key() {
@@ -56,7 +74,7 @@ func TendermintNode(persistentPeers, seeds, listenAddr string) *node.Node {
 		}
 	}
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
-	cfg := *config.NewConfig(persistentPeers, seeds, listenAddr, false, 0, 40, 10, logger, "")
+	cfg := *config.NewConfig(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr, false, 0, 40, 10, logger, "")
 	n, err := config.NewClient(cfg, newApp)
 	if err != nil {
 		panic(err)

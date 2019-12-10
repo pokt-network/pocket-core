@@ -8,7 +8,7 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) StakeTx(cdc *codec.Codec, chains map[string]struct{}, serviceURL string, amount sdk.Int, address sdk.ValAddress, passphrase string) error {
+func (am AppModule) StakeTx(cdc *codec.Codec, chains map[string]struct{}, serviceURL string, amount sdk.Int, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgStake{
 		Address:    address,
@@ -19,32 +19,32 @@ func (am AppModule) StakeTx(cdc *codec.Codec, chains map[string]struct{}, servic
 	}
 	err := msg.ValidateBasic()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) UnstakeTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) error {
+func (am AppModule) UnstakeTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgBeginUnstake{Address: address}
 	err := msg.ValidateBasic()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) UnjailTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) error {
+func (am AppModule) UnjailTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgUnjail{ValidatorAddr: address}
 	err := msg.ValidateBasic()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) Send(cdc *codec.Codec, fromAddr, toAddr sdk.ValAddress, passphrase string, amount sdk.Int) error {
+func (am AppModule) Send(cdc *codec.Codec, fromAddr, toAddr sdk.ValAddress, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgSend{
 		FromAddress: fromAddr,
@@ -53,7 +53,7 @@ func (am AppModule) Send(cdc *codec.Codec, fromAddr, toAddr sdk.ValAddress, pass
 	}
 	err := msg.ValidateBasic()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }

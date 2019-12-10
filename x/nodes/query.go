@@ -1,6 +1,7 @@
 package nodes
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
@@ -150,6 +151,18 @@ func (am AppModule) QueryPOSParams(cdc *codec.Codec, height int64) (types.Params
 	var params types.Params
 	cdc.MustUnmarshalJSON(bz, &params)
 	return params, nil
+}
+
+func (am AppModule) QueryTransaction(hash string) (*ctypes.ResultTx, error) {
+	res, err := hex.DecodeString(hash)
+	if err != nil {
+		return nil, err
+	}
+	tx, err := rpcclient.NewLocal(am.node).Tx(res, false)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 func (am AppModule) QueryBlock(height *int64) ([]byte, error) {

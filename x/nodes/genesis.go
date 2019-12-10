@@ -52,7 +52,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 		}
 	}
 	// take the staked amount and create the corresponding coins object
-	stakedCoins := sdk.NewCoins(sdk.NewCoin(data.Params.StakeDenom, stakedTokens))
+	stakedCoins := sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(ctx), stakedTokens))
 	// check if the staked pool accounts exists
 	stakedPool := keeper.GetStakedPool(ctx)
 	// if the stakedPool is nil
@@ -79,7 +79,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 	// if the dao pool has zero tokens (not provided in genesis file)
 	if daoPool.GetCoins().IsZero() {
 		// ad the coins
-		if err := daoPool.SetCoins(sdk.NewCoins(sdk.NewCoin(data.Params.StakeDenom, data.DAO.Tokens))); err != nil {
+		if err := daoPool.SetCoins(sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(ctx), data.DAO.Tokens))); err != nil {
 			panic(err)
 		}
 	}

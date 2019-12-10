@@ -14,7 +14,7 @@ const (
 )
 
 type Pool struct {
-	Tokens sdk.Int
+	Tokens sdk.Int `json:"tokens"`
 }
 
 // Tokens - tracking staked token supply

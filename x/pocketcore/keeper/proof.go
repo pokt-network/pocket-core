@@ -74,7 +74,7 @@ type pseudorandomGenerator struct {
 }
 
 // auto sends a claim of work based on relays completed
-func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root []byte) error) { // todo should move tx to keeper?
+func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error)) { // todo should move tx to keeper?
 	// get all the proofs held in memory
 	proofs := pc.GetAllProofs()
 	// for every proof in AllProofs
@@ -96,14 +96,14 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *cod
 			panic(sdkErr)
 		}
 		// send in the proof header, the total relays completed, and the merkle root (ensures data integrity)
-		if err := proofTx(k.cdc, cliCtx, txBuilder, proof.SessionHeader, proof.TotalRelays, root); err != nil {
+		if _, err := proofTx(k.cdc, cliCtx, txBuilder, proof.SessionHeader, proof.TotalRelays, root); err != nil {
 			panic(err)
 		}
 	}
 }
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch pc.MerkleProof, leafNode pc.Proof) error) {
+func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch pc.MerkleProof, leafNode pc.Proof) (*sdk.TxResponse, error)) {
 	// get the self address
 	addr := sdk.ValAddress(n.PrivValidator().GetPubKey().Address())
 	// get all mature (waiting period has passed) proofs for your address
@@ -139,7 +139,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 		// get the leaf for the required pseudorandom proof index
 		leaf := pc.GetAllProofs().GetProof(proof.SessionHeader, reqProof)
 		// send the claim TX
-		err := claimTx(k.cdc, cliCtx, txBuilder, branch, *leaf)
+		_, err := claimTx(k.cdc, cliCtx, txBuilder, branch, *leaf)
 		if err != nil {
 			panic(err)
 		}
