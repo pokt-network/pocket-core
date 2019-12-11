@@ -41,12 +41,12 @@ func startClient() {
 	config.LoadOrGenFilePV(rootDir+string(os.PathSeparator)+vKFP, rootDir+string(os.PathSeparator)+sFP)
 	app.Keybase = app.GetKeybase("lazy_keybase", rootDir+"keybase")
 	kp, err := app.Keybase.List()
-	k:=kp[0]
+	k := kp[0]
 	fmt.Println(types.Bech32ifyConsPub(k.PubKey))
 	fmt.Println(types.ValAddress(k.PubKey.Address()).String())
-	app.HostedBlockchains = app.GetHostedChains(rootDir+"config/chains.json")                         // todo
-	app.Passphrase = app.CoinbasePassphrase("")                             // todo
-	app.GenesisFilepath = app.GenesisFile(rootDir +"config/genesis.json")
+	app.HostedBlockchains = app.GetHostedChains(rootDir + "config/chains.json") // todo
+	app.Passphrase = app.CoinbasePassphrase("")                                 // todo
+	app.GenesisFilepath = app.GenesisFile(rootDir + "config/genesis.json")
 	app.TMNode = app.TendermintNode(rootDir, "", nk, vKFP, sFP, "84153F412E8148C8545FAD7173CB0BC2D87102C2@localhost:26656", "84153F412E8148C8545FAD7173CB0BC2D87102C2@localhost:26656", "localhost:26656") // todo
 	// We trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
