@@ -28,22 +28,3 @@ func (k Keeper) GetAppFromPublicKey(ctx sdk.Context, pubKey string) (app exporte
 	}
 	return k.GetApp(ctx, pk.Address())
 }
-
-// get the chains of an application
-func (k Keeper) GetAppChains(ctx sdk.Context, address sdk.ValAddress) (chains map[string]struct{}, found bool) {
-	node, found := k.GetApp(ctx, address)
-	if !found {
-		return nil, false
-	}
-	return node.GetChains(), true
-}
-
-// see if the app has staked for a specific chain
-func (k Keeper) AppChainsContains(ctx sdk.Context, address sdk.ValAddress, chain string) (contains bool, found bool) {
-	chains, found := k.GetAppChains(ctx, address)
-	if !found {
-		return false, false
-	}
-	_, contains = chains[chain]
-	return contains, true
-}

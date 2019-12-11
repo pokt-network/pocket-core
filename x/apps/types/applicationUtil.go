@@ -54,10 +54,6 @@ func (a Application) String() string {
 	if err != nil {
 		panic(err)
 	}
-	var c []string
-	for chain := range a.Chains {
-		c = append(c, chain)
-	}
 	return fmt.Sprintf(`AppPubKey
   Address:           		  %s
   AppPubKey Cons Pubkey: 	  %s
@@ -67,7 +63,7 @@ func (a Application) String() string {
   Status:                     %s
   Tokens:               	  %s
   Unstakeing Completion Time: %v`,
-		a.Address, bechConsPubKey, a.Jailed, c, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
+		a.Address, bechConsPubKey, a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
 	)
 }
 
@@ -89,16 +85,12 @@ func (a Application) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	var c []string
-	for chain := range a.Chains {
-		c = append(c, chain)
-	}
 	return codec.Cdc.MarshalJSON(bechApplication{
 		Address:                 a.Address,
 		ConsPubKey:              bechConsPubKey,
 		Jailed:                  a.Jailed,
 		Status:                  a.Status,
-		Chains:                  c,
+		Chains:                  a.Chains,
 		MaxRelays:               a.MaxRelays,
 		StakedTokens:            a.StakedTokens,
 		UnstakingCompletionTime: a.UnstakingCompletionTime,
@@ -111,10 +103,6 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
 		return err
 	}
-	c := make(map[string]struct{})
-	for chain := range a.Chains {
-		c[chain] = struct{}{}
-	}
 	consPubKey, err := sdk.GetConsPubKeyBech32(bv.ConsPubKey)
 	if err != nil {
 		return err
@@ -122,8 +110,8 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 	*a = Application{
 		Address:                 bv.Address,
 		ConsPubKey:              consPubKey,
-		Chains:                  c,
-		MaxRelays:               a.MaxRelays,
+		Chains:                  bv.Chains,
+		MaxRelays:               bv.MaxRelays,
 		Jailed:                  bv.Jailed,
 		StakedTokens:            bv.StakedTokens,
 		Status:                  bv.Status,
