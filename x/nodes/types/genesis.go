@@ -9,7 +9,7 @@ type GenesisState struct {
 	Params                   Params                          `json:"params" yaml:"params"`
 	PrevStateTotalPower      sdk.Int                         `json:"prevState_total_power" yaml:"prevState_total_power"`
 	PrevStateValidatorPowers []PrevStatePowerMapping         `json:"prevState_validator_powers" yaml:"prevState_validator_powers"`
-	Validators               []Validator                      `json:"validators" yaml:"validators"`
+	Validators               []Validator                     `json:"validators" yaml:"validators"`
 	Exported                 bool                            `json:"exported" yaml:"exported"`
 	DAO                      DAOPool                         `json:"dao" yaml:"dao"`
 	SigningInfos             map[string]ValidatorSigningInfo `json:"signing_infos" yaml:"signing_infos"`
