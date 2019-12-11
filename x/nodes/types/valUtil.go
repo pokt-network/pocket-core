@@ -54,10 +54,6 @@ func (v Validator) String() string {
 	if err != nil {
 		panic(err)
 	}
-	var chains string
-	for chain := range v.Chains {
-		chains += chain + "\n"
-	}
 	return fmt.Sprintf(`Validator
   Address:           		  %s
   Validator Cons Pubkey:      %s
@@ -65,20 +61,20 @@ func (v Validator) String() string {
   Status:                     %s
   Tokens:               	  %s
   ServiceURL:                 %s
-  Chains:                     %s
+  Chains:                     %v
   Unstaking Completion Time:  %v`,
-		v.Address, bechConsPubKey, v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, chains, v.UnstakingCompletionTime,
+		v.Address, bechConsPubKey, v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
 	)
 }
 
 // this is a helper struct used for JSON de- and encoding only
 type bechValidator struct {
-	Address                 sdk.ValAddress `json:"operator_address" yaml:"operator_address"` // the bech32 address of the validator
+	Address                 sdk.ValAddress `json:"address" yaml:"address"` // the bech32 address of the validator
 	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`           // the bech32 consensus public key of the validator
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                     // has the validator been jailed from staked status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`                     // validator status (bonded/unbonding/unbonded)
 	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"`         // how many staked tokens
-	ServiceURL              string         `json:"serviceUrl" yaml:"serviceURL"`
+	ServiceURL              string         `json:"serviceurl" yaml:"serviceuRL"`
 	Chains                  []string       `json:"chains" yaml:"chains"`
 	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 }
@@ -89,17 +85,13 @@ func (v Validator) MarshalJSON() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	var chains []string
-	for chain := range v.Chains {
-		chains = append(chains, chain)
-	}
 	return codec.Cdc.MarshalJSON(bechValidator{
 		Address:                 v.Address,
 		ConsPubKey:              bechConsPubKey,
 		Jailed:                  v.Jailed,
 		Status:                  v.Status,
 		ServiceURL:              v.ServiceURL,
-		Chains:                  chains,
+		Chains:                  v.Chains,
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
 	})
@@ -115,15 +107,11 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	c := make(map[string]struct{})
-	for _, chain := range bv.Chains {
-		c[chain] = struct{}{}
-	}
 	*v = Validator{
 		Address:                 bv.Address,
 		ConsPubKey:              consPubKey,
 		Jailed:                  bv.Jailed,
-		Chains:                  c,
+		Chains:                  bv.Chains,
 		ServiceURL:              bv.ServiceURL,
 		StakedTokens:            bv.StakedTokens,
 		Status:                  bv.Status,

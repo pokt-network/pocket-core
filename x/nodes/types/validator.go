@@ -12,18 +12,18 @@ import (
 )
 
 type Validator struct {
-	Address                 sdk.ValAddress      `json:"address" yaml:"address"`               // address of the validator; bech encoded in JSON
-	ConsPubKey              crypto.PubKey       `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
-	Jailed                  bool                `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from bonded status?
-	Status                  sdk.BondStatus      `json:"status" yaml:"status"`                 // validator status (bonded/unbonding/unbonded)
-	Chains                  map[string]struct{} `json:"chains" yaml:"chains"`                 // validator non native blockchains
-	ServiceURL              string              `json:"serviceurl" yaml:"serviceurl"`         // url where the pocket service api is hosted
-	StakedTokens            sdk.Int             `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
-	UnstakingCompletionTime time.Time           `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
+	Address                 sdk.ValAddress `json:"address" yaml:"address"`               // address of the validator; bech encoded in JSON
+	ConsPubKey              crypto.PubKey  `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
+	Jailed                  bool           `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from bonded status?
+	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // validator status (bonded/unbonding/unbonded)
+	Chains                  []string       `json:"chains" yaml:"chains"`                 // validator non native blockchains
+	ServiceURL              string         `json:"serviceurl" yaml:"serviceurl"`         // url where the pocket service api is hosted
+	StakedTokens            sdk.Int        `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
+	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 }
 
 // NewValidator - initialize a new validator
-func NewValidator(addr sdk.ValAddress, consPubKey crypto.PubKey, chains map[string]struct{}, serviceURL string, tokensToStake sdk.Int) Validator {
+func NewValidator(addr sdk.ValAddress, consPubKey crypto.PubKey, chains []string, serviceURL string, tokensToStake sdk.Int) Validator {
 	return Validator{
 		Address:                 addr,
 		ConsPubKey:              consPubKey,
@@ -104,16 +104,16 @@ func (v Validator) UpdateStatus(newStatus sdk.BondStatus) Validator {
 }
 
 // return the TM validator address
-func (v Validator) ConsAddress() sdk.ConsAddress   { return sdk.ConsAddress(v.ConsPubKey.Address()) }
-func (v Validator) GetChains() map[string]struct{} { return v.Chains }
-func (v Validator) GetServiceURL() string          { return v.ServiceURL }
-func (v Validator) IsStaked() bool                 { return v.GetStatus().Equal(sdk.Bonded) }
-func (v Validator) IsUnstaked() bool               { return v.GetStatus().Equal(sdk.Unbonded) }
-func (v Validator) IsUnstaking() bool              { return v.GetStatus().Equal(sdk.Unbonding) }
-func (v Validator) IsJailed() bool                 { return v.Jailed }
-func (v Validator) GetStatus() sdk.BondStatus      { return v.Status }
-func (v Validator) GetAddress() sdk.ValAddress     { return v.Address }
-func (v Validator) GetConsPubKey() crypto.PubKey   { return v.ConsPubKey }
-func (v Validator) GetConsAddr() sdk.ConsAddress   { return sdk.ConsAddress(v.ConsPubKey.Address()) }
-func (v Validator) GetTokens() sdk.Int             { return v.StakedTokens }
-func (v Validator) GetConsensusPower() int64       { return v.ConsensusPower() }
+func (v Validator) ConsAddress() sdk.ConsAddress { return sdk.ConsAddress(v.ConsPubKey.Address()) }
+func (v Validator) GetChains() []string          { return v.Chains }
+func (v Validator) GetServiceURL() string        { return v.ServiceURL }
+func (v Validator) IsStaked() bool               { return v.GetStatus().Equal(sdk.Bonded) }
+func (v Validator) IsUnstaked() bool             { return v.GetStatus().Equal(sdk.Unbonded) }
+func (v Validator) IsUnstaking() bool            { return v.GetStatus().Equal(sdk.Unbonding) }
+func (v Validator) IsJailed() bool               { return v.Jailed }
+func (v Validator) GetStatus() sdk.BondStatus    { return v.Status }
+func (v Validator) GetAddress() sdk.ValAddress   { return v.Address }
+func (v Validator) GetConsPubKey() crypto.PubKey { return v.ConsPubKey }
+func (v Validator) GetConsAddr() sdk.ConsAddress { return sdk.ConsAddress(v.ConsPubKey.Address()) }
+func (v Validator) GetTokens() sdk.Int           { return v.StakedTokens }
+func (v Validator) GetConsensusPower() int64     { return v.ConsensusPower() }

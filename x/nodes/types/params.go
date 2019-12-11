@@ -80,6 +80,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeySignedBlocksWindow, Value: &p.SignedBlocksWindow},
 		{Key: KeyMinSignedPerWindow, Value: &p.MinSignedPerWindow},
 		{Key: KeyDowntimeJailDuration, Value: &p.DowntimeJailDuration},
+		{Key: KeyProposerRewardPercentage, Value: &p.ProposerRewardPercentage},
 		{Key: KeySlashFractionDoubleSign, Value: &p.SlashFractionDoubleSign},
 		{Key: KeySlashFractionDowntime, Value: &p.SlashFractionDowntime},
 		{Key: KeySessionBlock, Value: &p.SessionBlock},

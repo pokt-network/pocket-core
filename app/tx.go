@@ -16,7 +16,7 @@ func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.
 	return nodesModule.Send(Cdc, fa, ta, passphrase, amount)
 }
 
-func StakeNode(chains map[string]struct{}, serviceUrl, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
+func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
 	fa, err := sdk.ValAddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func UnjailNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 	return nodesModule.UnjailTx(Cdc, fa, passphrase)
 }
 
-func StakeApp(chains map[string]struct{}, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
+func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
 	fa, err := sdk.ValAddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err

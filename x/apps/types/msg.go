@@ -17,10 +17,10 @@ var (
 //----------------------------------------------------------------------------------------------------------------------
 // MsgAppStake - struct for staking transactions
 type MsgAppStake struct {
-	Address sdk.ValAddress      `json:"application_address" yaml:"application_address"`
-	PubKey  crypto.PubKey       `json:"pubkey" yaml:"pubkey"`
-	Chains  map[string]struct{} `json:"chains" yaml:"chains"`
-	Value   sdk.Int             `json:"value" yaml:"value"`
+	Address sdk.ValAddress `json:"application_address" yaml:"application_address"`
+	PubKey  crypto.PubKey  `json:"pubkey" yaml:"pubkey"`
+	Chains  []string       `json:"chains" yaml:"chains"`
+	Value   sdk.Int        `json:"value" yaml:"value"`
 }
 
 // Return address(es) that must sign over msg.GetSignBytes()
@@ -46,7 +46,7 @@ func (msg MsgAppStake) ValidateBasic() sdk.Error {
 	if len(msg.Chains) == 0 {
 		return ErrNoChains(DefaultCodespace)
 	}
-	for chain := range msg.Chains {
+	for _, chain := range msg.Chains {
 		if err := types.HashVerification(chain); err != nil {
 			return err
 		}

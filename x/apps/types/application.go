@@ -10,18 +10,18 @@ import (
 )
 
 type Application struct {
-	Address                 sdk.ValAddress      `json:"address" yaml:"address"`               // address of the application; bech encoded in JSON
-	ConsPubKey              crypto.PubKey       `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the application; bech encoded in JSON
-	Jailed                  bool                `json:"jailed" yaml:"jailed"`                 // has the application been jailed from bonded status?
-	Status                  sdk.BondStatus      `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
-	Chains                  map[string]struct{} `json:"chains" yaml:"chains"`                 // requested chains
-	StakedTokens            sdk.Int             `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
-	MaxRelays               sdk.Int             `json:"max_relays" yaml:"max_relays"`         // maximum number of relays allowed
-	UnstakingCompletionTime time.Time           `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
+	Address                 sdk.ValAddress `json:"address" yaml:"address"`               // address of the application; bech encoded in JSON
+	ConsPubKey              crypto.PubKey  `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the application; bech encoded in JSON
+	Jailed                  bool           `json:"jailed" yaml:"jailed"`                 // has the application been jailed from bonded status?
+	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
+	Chains                  []string       `json:"chains" yaml:"chains"`                 // requested chains
+	StakedTokens            sdk.Int        `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
+	MaxRelays               sdk.Int        `json:"max_relays" yaml:"max_relays"`         // maximum number of relays allowed
+	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }
 
 // NewApplication - initialize a new application
-func NewApplication(addr sdk.ValAddress, consPubKey crypto.PubKey, chains map[string]struct{}, tokensToStake sdk.Int) Application {
+func NewApplication(addr sdk.ValAddress, consPubKey crypto.PubKey, chains []string, tokensToStake sdk.Int) Application {
 	return Application{
 		Address:                 addr,
 		ConsPubKey:              consPubKey,
@@ -83,16 +83,16 @@ func (a Application) UpdateStatus(newStatus sdk.BondStatus) Application {
 }
 
 // return the TM application address
-func (a Application) ConsAddress() sdk.ConsAddress   { return sdk.ConsAddress(a.ConsPubKey.Address()) }
-func (a Application) GetChains() map[string]struct{} { return a.Chains }
-func (a Application) IsStaked() bool                 { return a.GetStatus().Equal(sdk.Bonded) }
-func (a Application) IsUnstaked() bool               { return a.GetStatus().Equal(sdk.Unbonded) }
-func (a Application) IsUnstaking() bool              { return a.GetStatus().Equal(sdk.Unbonding) }
-func (a Application) IsJailed() bool                 { return a.Jailed }
-func (a Application) GetStatus() sdk.BondStatus      { return a.Status }
-func (a Application) GetAddress() sdk.ValAddress     { return a.Address }
-func (a Application) GetConsPubKey() crypto.PubKey   { return a.ConsPubKey }
-func (a Application) GetConsAddr() sdk.ConsAddress   { return sdk.ConsAddress(a.ConsPubKey.Address()) }
-func (a Application) GetTokens() sdk.Int             { return a.StakedTokens }
-func (a Application) GetConsensusPower() int64       { return a.ConsensusPower() }
-func (a Application) GetMaxRelays() sdk.Int          { return a.MaxRelays }
+func (a Application) ConsAddress() sdk.ConsAddress { return sdk.ConsAddress(a.ConsPubKey.Address()) }
+func (a Application) GetChains() []string          { return a.Chains }
+func (a Application) IsStaked() bool               { return a.GetStatus().Equal(sdk.Bonded) }
+func (a Application) IsUnstaked() bool             { return a.GetStatus().Equal(sdk.Unbonded) }
+func (a Application) IsUnstaking() bool            { return a.GetStatus().Equal(sdk.Unbonding) }
+func (a Application) IsJailed() bool               { return a.Jailed }
+func (a Application) GetStatus() sdk.BondStatus    { return a.Status }
+func (a Application) GetAddress() sdk.ValAddress   { return a.Address }
+func (a Application) GetConsPubKey() crypto.PubKey { return a.ConsPubKey }
+func (a Application) GetConsAddr() sdk.ConsAddress { return sdk.ConsAddress(a.ConsPubKey.Address()) }
+func (a Application) GetTokens() sdk.Int           { return a.StakedTokens }
+func (a Application) GetConsensusPower() int64     { return a.ConsensusPower() }
+func (a Application) GetMaxRelays() sdk.Int        { return a.MaxRelays }

@@ -57,8 +57,16 @@ func (s Session) Validate(ctx sdk.Context, node nodeexported.ValidatorI, app app
 	if hex.EncodeToString(app.GetConsPubKey().Bytes()) != s.ApplicationPubKey {
 		return NewInvalidAppPubKeyError(ModuleName)
 	}
-	// validate app
-	if _, found := app.GetChains()[s.Chain]; !found {
+	// validate app chains
+	chains := app.GetChains()
+	found := false
+	for _, c := range chains {
+		if c == s.Chain {
+			found = true
+			break
+		}
+	}
+	if !found {
 		return NewUnsupportedBlockchainAppError(ModuleName)
 	}
 	// validate sessionNodes
@@ -129,7 +137,15 @@ func NewSessionNodes(chain string, sessionKey SessionKey, allNodes []nodeexporte
 func filter(allActiveNodes []nodeexported.ValidatorI, nonNativeChainHash string, sessionNodesCount int) (SessionNodes, error) {
 	var result SessionNodes
 	for _, node := range allActiveNodes {
-		if _, contains := node.GetChains()[nonNativeChainHash]; !contains {
+		chains := node.GetChains()
+		contains := false
+		// todo get rid of slice and use map (amino doesn't support map encoding so custom struct to encode and decode)
+		for _, chain := range chains {
+			if chain == nonNativeChainHash {
+				contains = true
+			}
+		}
+		if !contains {
 			continue
 		}
 		result = append(result, node)

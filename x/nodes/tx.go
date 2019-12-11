@@ -8,7 +8,7 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
-func (am AppModule) StakeTx(cdc *codec.Codec, chains map[string]struct{}, serviceURL string, amount sdk.Int, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
+func (am AppModule) StakeTx(cdc *codec.Codec, chains []string, serviceURL string, amount sdk.Int, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
 	txBuilder, cliCtx := newTx(cdc, am, passphrase)
 	msg := types.MsgStake{
 		Address:    address,
