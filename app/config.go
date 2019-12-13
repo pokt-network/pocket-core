@@ -2,13 +2,14 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/config"
 	"github.com/pokt-network/posmint/crypto/keys"
-	abci "github.com/tendermint/tendermint/abci/types"
+	kb "github.com/pokt-network/posmint/crypto/keys"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
 	dbm "github.com/tendermint/tm-db"
@@ -17,26 +18,45 @@ import (
 	"os"
 )
 
-func GetKeybase(keybaseName, keybaseDirectory string) keys.Keybase {
-	kb := keys.New(keybaseName, keybaseDirectory)
-	keypairs, err := kb.List()
+var (
+	pocketCoreInstance *pocketCoreApp
+	// config variables
+	tmNode            *node.Node
+	keybase           *kb.Keybase
+	hostedBlockchains *types.HostedBlockchains
+	passphrase        string
+	genesisFP         string
+)
+
+func GetKeybase() (keys.Keybase, error) {
+	kp, err := (*keybase).List()
+	if err != nil {
+		return nil, err
+	}
+	if len(kp) < 1 {
+		return nil, errors.New("uninitialized keybase")
+	}
+	return *keybase, nil
+}
+
+func InitKeybase(dataDirectoryPath, coinbasePassphrase string) keys.Keybase {
+	k := keys.New("pocket-keybase", dataDirectoryPath+string(os.PathSeparator)+"keybase"+string(os.PathSeparator))
+	_, _, err := k.CreateMnemonic(coinbasePassphrase, coinbasePassphrase)
 	if err != nil {
 		panic(err)
 	}
-	if len(keypairs) == 0 {
-		kp, _, err := kb.CreateMnemonic("", "") // todo remove
-		if err != nil {
-			panic(err)
-		}
-		err = kb.ImportPrivKey(kp.PrivKeyArmor, "", "") // todo remove
-		if err != nil {
-			panic(err)
-		}
-	}
-	return kb
+	keybase = &k
+	return k
 }
 
-func GetHostedChains(filepath string) (chains types.HostedBlockchains) {
+func GetHostedChains() (types.HostedBlockchains, error) {
+	if hostedBlockchains == nil || len(hostedBlockchains.M) == 0 {
+		return types.HostedBlockchains{}, errors.New("nil or empty hosted chains object")
+	}
+	return *hostedBlockchains, nil
+}
+
+func InitHostedChains(filepath string) (chains types.HostedBlockchains) {
 	jsonFile, err := os.Open(filepath)
 	if err != nil {
 		panic(err)
@@ -51,12 +71,13 @@ func GetHostedChains(filepath string) (chains types.HostedBlockchains) {
 	if err != nil {
 		panic(err)
 	}
-	return types.HostedBlockchains{
+	hostedBlockchains = &types.HostedBlockchains{
 		M: m,
 	}
+	return *hostedBlockchains
 }
 
-func TendermintNode(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr string) *node.Node {
+func InitTendermintNode(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr string) *node.Node {
 	// Color by level value
 	colorFn := func(keyvals ...interface{}) term.FgBgColor {
 		if keyvals[0] != kitlevel.Key() {
@@ -75,21 +96,41 @@ func TendermintNode(rootDir, dataDir, nodeKey, privValKey, privValState, persist
 	}
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
 	cfg := *config.NewConfig(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr, false, 0, 40, 10, logger, "")
-	n, err := config.NewClient(cfg, newApp)
+	var err error
+	tmNode, pocketCoreInstance, err = NewClient(Config(cfg), newApp)
 	if err != nil {
 		panic(err)
 	}
-	return n
+	return tmNode
 }
 
-func CoinbasePassphrase(passphrase string) string {
+func GetTendermintNode() (*node.Node, error) {
+	if tmNode == nil {
+		return nil, errors.New("uninitialized tendermint node")
+	}
+	return tmNode, nil
+}
+
+func SetCoinbasePassphrase(pass string) {
+	passphrase = pass
+}
+
+func GetCoinbasePassphrase() string {
 	return passphrase
 }
 
-func GenesisFile(filepath string) string {
-	return filepath
+func SetGenesisFilepath(filepath string) {
+	genesisFP = filepath
 }
 
-func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) abci.Application {
+func GetGenesisFilePath() string {
+	return genesisFP
+}
+
+func GetApp() *pocketCoreApp {
+	return pocketCoreInstance
+}
+
+func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) *pocketCoreApp {
 	return NewPocketCoreApp(logger, db)
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/pokt-network/posmint/x/params"
 	"github.com/pokt-network/posmint/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/node"
 )
 
 type pocketCoreApp struct {
@@ -38,7 +39,7 @@ type pocketCoreApp struct {
 }
 
 func (app *pocketCoreApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	genesisState := cfg.GenesisStateFromFile(app.cdc, GenesisFilepath)
+	genesisState := cfg.GenesisStateFromFile(app.cdc, GetGenesisFilePath())
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
@@ -60,6 +61,10 @@ func (app *pocketCoreApp) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
+}
+
+func (app *pocketCoreApp) SetTendermintNode(tmNode *node.Node) {
+	// todo
 }
 
 func (app *pocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {

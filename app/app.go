@@ -13,7 +13,6 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	bam "github.com/pokt-network/posmint/baseapp"
 	"github.com/pokt-network/posmint/codec"
-	kb "github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
@@ -22,7 +21,6 @@ import (
 	"github.com/pokt-network/posmint/x/supply"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/node"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -52,16 +50,22 @@ var (
 	nodesModule  nodes.AppModule
 	appsModule   apps.AppModule
 	pocketModule pocket.AppModule
-	// config variables
-	TMNode            *node.Node
-	Keybase           kb.Keybase
-	HostedBlockchains pocketTypes.HostedBlockchains
-	Passphrase        string
-	GenesisFilepath   string
 )
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
 func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
+	keybase, err := GetKeybase()
+	if err != nil {
+		panic(err)
+	}
+	hostedBlockchains, err := GetHostedChains()
+	if err != nil {
+		panic(err)
+	}
+	//tmNode, err := GetTendermintNode()
+	//if err != nil {
+	//	panic(err)
+	//}
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(Cdc), baseAppOptions...)
 	bApp.SetAppVersion("0.0.1")
@@ -140,21 +144,21 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.cdc,
 		n,
 		a,
-		Keybase,
-		HostedBlockchains,
+		keybase,
+		hostedBlockchains,
 		pocketSubspace,
-		Passphrase,
+		GetCoinbasePassphrase(),
 	)
 	// modules with transactions and queries
-	nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, TMNode, Keybase)
-	appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, TMNode, Keybase)
-	pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, TMNode, Keybase)
+	nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, tmNode, keybase)
+	appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, tmNode, keybase)
+	pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, tmNode, keybase)
 
 	// setup module manager
 	app.mm = module.NewManager(
-		auth.NewAppModule(app.accountKeeper, TMNode, Keybase),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper, TMNode, Keybase),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper, TMNode, Keybase),
+		auth.NewAppModule(app.accountKeeper, tmNode, keybase),
+		bank.NewAppModule(app.bankKeeper, app.accountKeeper, tmNode, keybase),
+		supply.NewAppModule(app.supplyKeeper, app.accountKeeper, tmNode, keybase),
 		nodesModule,
 		appsModule,
 		pocketModule,
@@ -196,7 +200,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	app.MountKVStores(keys)
 	app.MountTransientStores(tkeys)
 
-	err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
+	err = app.LoadLatestVersion(app.keys[bam.MainStoreKey])
 	if err != nil {
 		cmn.Exit(err.Error())
 	}

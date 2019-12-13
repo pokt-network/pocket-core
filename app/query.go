@@ -105,7 +105,7 @@ func QueryTotalAppCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err err
 	return appsModule.QuerySupply(Cdc, height)
 }
 
-func QuerAppParams(height int64) (params appsTypes.Params, err error) {
+func QueryAppParams(height int64) (params appsTypes.Params, err error) {
 	return appsModule.QueryPOSParams(Cdc, height)
 }
 
