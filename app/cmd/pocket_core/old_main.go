@@ -27,7 +27,7 @@ func main() {
 
 // "startClient" Starts the client with the given initial configuration.
 func startClient() {
-	rootDir := "cmd/pocket_core/test/"
+	rootDir := "app/cmd/pocket_core/test/"
 	vKFP := "val_priv_key.json"
 	sFP := "val_state_fp.json"
 	nk := "node_key.json"
@@ -39,15 +39,23 @@ func startClient() {
 	}
 	app.Cdc.RegisterConcrete(types.ValAddress{}, "validatorAddr", &amino.ConcreteOptions{})
 	config.LoadOrGenFilePV(rootDir+string(os.PathSeparator)+vKFP, rootDir+string(os.PathSeparator)+sFP)
-	app.Keybase = app.GetKeybase("lazy_keybase", rootDir+"keybase")
-	kp, err := app.Keybase.List()
+	app.InitKeybase(rootDir, "")
+	keybase, err := app.GetKeybase()
+	if err != nil {
+		panic(err)
+	}
+	kp, err := keybase.List()
 	k := kp[0]
 	fmt.Println(types.Bech32ifyConsPub(k.PubKey))
 	fmt.Println(types.ValAddress(k.PubKey.Address()).String())
-	app.HostedBlockchains = app.GetHostedChains(rootDir + "config/chains.json") // todo
-	app.Passphrase = app.CoinbasePassphrase("")                                 // todo
-	app.GenesisFilepath = app.GenesisFile(rootDir + "config/genesis.json")
-	app.TMNode = app.TendermintNode(rootDir, "", nk, vKFP, sFP, "84153F412E8148C8545FAD7173CB0BC2D87102C2@localhost:26656", "84153F412E8148C8545FAD7173CB0BC2D87102C2@localhost:26656", "localhost:26656") // todo
+	app.InitHostedChains(rootDir + "config/chains.json") // todo
+	app.SetCoinbasePassphrase("")                        // todo
+	app.SetGenesisFilepath(rootDir + "config/genesis.json")
+	tmNode := app.InitTendermintNode(rootDir, "", nk, vKFP, sFP, "84153F412E8148C8545FAD7173CB0BC2D87102C2@localhost:26656", "84153F412E8148C8545FAD7173CB0BC2D87102C2@localhost:26656", "localhost:26656") // todo
+	err := tmNode.Start()
+	if err != nil {
+		panic(err)
+	}
 	// We trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
@@ -59,7 +67,8 @@ func startClient() {
 
 	defer func() {
 		sig := <-signalChannel
-		app.TMNode.Stop()
+		tmNode, _ := app.GetTendermintNode()
+		tmNode.Stop()
 		message := fmt.Sprintf("Exit signal %s received\n", sig)
 		fmt.Println(message)
 		os.Exit(3)

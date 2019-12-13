@@ -277,7 +277,7 @@ Account balance: <balance of the account>
 > Returns the list of all nodes known at the specified `<height>`.
 >
 > Options:
-> - `--staking-status`: Filters the node list with a comma separated list of staking status. Supported statuses are: `STAKED`, `UNSTAKED` and `UNSTAKING`.
+> - `--staking-status`: Filters the node list with a staking status. Supported statuses are: `STAKED`, `UNSTAKED` and `UNSTAKING`.
 >
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
@@ -302,14 +302,8 @@ Account balance: <balance of the account>
 > - `<nodeAddr>`: The node address to be queried.
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
-- `pocket query total-node-stake <height>`
-> Returns the total amount of POKT staked by nodes at the specified `<height>`.
->
-> Arguments:
-> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
-
-- `pocket query dao-balance <height>`
-> Returns the total amount of POKT owned by the DAO account at the specified `<height>`.
+- `pocket query supply <height>`
+> Returns the total amount of POKT staked/unstaked by nodes, apps, dao, and totals at the specified `<height>`.
 >
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
@@ -318,7 +312,7 @@ Account balance: <balance of the account>
 > Returns the list of all applications known at the specified `<height>`.
 >
 > Options:
-> - `--staking-status`: Filters the node list with a comma separated list of staking status. Supported statuses are: `STAKED`, `UNSTAKED` and `UNSTAKING`.
+> - `--staking-status`: Filters the node list with a staking status. Supported statuses are: `STAKED`, `UNSTAKED` and `UNSTAKING`.
 >
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
@@ -328,12 +322,6 @@ Account balance: <balance of the account>
 >
 > Arguments:
 > - `<appAddr>`: The application address to be queried.
-> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
-
-- `pocket query total-app-stake <height>`
-> Returns the total amount of POKT staked by applications at the specified `<height>`.
->
-> Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
 - `pocket query app-params <height>`

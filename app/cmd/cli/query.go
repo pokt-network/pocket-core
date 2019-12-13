@@ -1,0 +1,436 @@
+package cli
+
+import (
+	"fmt"
+	"github.com/pokt-network/pocket-core/app"
+	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
+	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	"github.com/spf13/cobra"
+	"strconv"
+	"strings"
+)
+
+func init() {
+	rootCmd.AddCommand(queryCmd)
+	queryCmd.AddCommand(queryBlock)
+	queryCmd.AddCommand(queryHeight)
+	queryCmd.AddCommand(queryTx)
+	queryCmd.AddCommand(queryNodes)
+	queryCmd.AddCommand(queryBalance)
+	queryCmd.AddCommand(queryNode)
+	queryCmd.AddCommand(queryApps)
+	queryCmd.AddCommand(queryApp)
+	queryCmd.AddCommand(queryNodeParams)
+	queryCmd.AddCommand(queryAppParams)
+	queryCmd.AddCommand(queryNodeProofs)
+	queryCmd.AddCommand(queryNodeProof)
+	queryCmd.AddCommand(queryPocketParams)
+	queryCmd.AddCommand(queryPocketSupportedChains)
+	queryCmd.AddCommand(querySupply)
+}
+
+var queryCmd = &cobra.Command{
+	Use:   "query",
+	Short: "Queries the current world state built on the Pocket node.",
+	Long:  ``,
+}
+
+var queryBlock = &cobra.Command{
+	Use:   "block <height>",
+	Short: "Get block at height",
+	Long:  `Returns the block structure at the specified height.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryBlock(int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(res)
+	},
+}
+
+var queryTx = &cobra.Command{
+	Use:   "tx <height>",
+	Short: "Get the transaction by the hash",
+	Long:  `Returns the transaction by the hash`,
+	Run: func(cmd *cobra.Command, args []string) {
+		res, err := app.QueryTx(args[0])
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(res)
+	},
+}
+
+var queryHeight = &cobra.Command{
+	Use:   "height",
+	Short: "Get current height",
+	Long:  `Returns the current height`,
+	Run: func(cmd *cobra.Command, args []string) {
+		res, err := app.QueryHeight()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Block Height: %d", res)
+	},
+}
+
+var queryBalance = &cobra.Command{
+	Use:   "balance <accAddr> <height>",
+	Short: "Gets account balance",
+	Long:  `Returns the balance of the specified <accAddr> at the specified <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 1 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[1])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryBalance(args[0], int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Account Balance: %v", res)
+	},
+}
+
+var nodeStakingStatus string
+
+func init() {
+	queryNodes.LocalNonPersistentFlags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
+}
+
+var queryNodes = &cobra.Command{
+	Use:   "nodes --staking-status=<nodeStakingStatus> <height>",
+	Short: "Gets nodes",
+	Long:  `Returns the list of all nodes known at the specified <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+		}
+		var res nodeTypes.Validators
+		var err error
+		switch strings.ToLower(nodeStakingStatus) {
+		case "":
+			// no status passed
+			res, err = app.QueryAllNodes(int64(height))
+		case "staked":
+			// staked nodes
+			res, err = app.QueryStakedNodes(int64(height))
+		case "unstaked":
+			// unstaked nodes
+			res, err = app.QueryUnstakedNodes(int64(height))
+		case "unstaking":
+			// unstaking nodes
+			res, err = app.QueryUnstakingNodes(int64(height))
+		default:
+			panic("invalid staking status, can be staked, unstaked, unstaking, or empty")
+		}
+		if err != nil {
+			panic(err)
+		}
+		if res == nil {
+			panic("nil nodes result")
+		}
+		fmt.Printf("Nodes %s", res.String())
+	},
+}
+
+var queryNode = &cobra.Command{
+	Use:   "node <address> <height>",
+	Short: "Gets node from address",
+	Long:  `Returns the node at the specified <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 1 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[1])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryNode(args[0], int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf(res.String())
+	},
+}
+
+var queryNodeParams = &cobra.Command{
+	Use:   "node-params <height>",
+	Short: "Gets node parameters",
+	Long:  `Returns the node parameters at the specified <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryNodeParams(int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf(res.String())
+	},
+}
+
+var appStakingStatus string
+
+func init() {
+	queryApps.LocalNonPersistentFlags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
+}
+
+var queryApps = &cobra.Command{
+	Use:   "apps --staking-status=<nodeStakingStatus> <height>",
+	Short: "Gets apps",
+	Long:  `Returns the list of all applications known at the specified <height>`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+		}
+		var res appTypes.Applications
+		var err error
+		switch strings.ToLower(appStakingStatus) {
+		case "":
+			// no status passed
+			res, err = app.QueryAllApps(int64(height))
+		case "staked":
+			// staked nodes
+			res, err = app.QueryStakedApps(int64(height))
+		case "unstaked":
+			// unstaked nodes
+			res, err = app.QueryUnstakedApps(int64(height))
+		case "unstaking":
+			// unstaking nodes
+			res, err = app.QueryUnstakingApps(int64(height))
+		default:
+			panic("invalid staking status, can be staked, unstaked, unstaking, or empty")
+		}
+		if err != nil {
+			panic(err)
+		}
+		if res == nil {
+			panic("nil Apps result")
+		}
+		fmt.Printf("Apps %s", res.String())
+	},
+}
+
+var queryApp = &cobra.Command{
+	Use:   "app <address> <height>",
+	Short: "Gets app from address",
+	Long:  `Returns the app at the specified <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 1 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[1])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryApp(args[0], int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf(res.String())
+	},
+}
+
+var queryAppParams = &cobra.Command{
+	Use:   "app-params <height>",
+	Short: "Gets app parameters",
+	Long:  `Returns the app parameters at the specified <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryAppParams(int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf(res.String())
+	},
+}
+
+var queryNodeProofs = &cobra.Command{
+	Use:   "node-proofs <nodeAddr> <height>",
+	Short: "Gets node proofs",
+	Long:  `Returns the list of all Relay Batch proofs submitted by <nodeAddr> at <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 1 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[1])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryProofs(args[0], int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Proofs:")
+		for _, p := range res {
+			fmt.Printf("%v\n", p)
+		}
+	},
+}
+
+var queryNodeProof = &cobra.Command{
+	Use:   "node-proof <nodeAddr> <appPubKey> <networkId> <sessionHeight> <height>`",
+	Short: "Gets node proof",
+	Long:  `Gets node proof for specific session`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 4 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[4])
+			if err != nil {
+				panic(err)
+			}
+		}
+		sessionheight, err := strconv.Atoi(args[3])
+		if err != nil {
+			panic(err)
+		}
+		res, err := app.QueryProof(args[2], args[1], args[0], int64(sessionheight), int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("%v", res)
+	},
+}
+
+var queryPocketParams = &cobra.Command{
+	Use:   "pocket-params <height>",
+	Short: "Gets pocket parameters",
+	Long:  `Returns the pocket parameters at the specified <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryPocketParams(int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf(res.String())
+	},
+}
+
+var queryPocketSupportedChains = &cobra.Command{
+	Use:   "supported-networks <height>",
+	Short: "Gets pocket supported networks",
+	Long:  `Returns the list Network Identifiers supported by the network at the specified <height>`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryPocketSupportedBlockchains(int64(height))
+		if err != nil {
+			panic(err)
+		}
+		for i, chain := range res {
+			fmt.Printf("(%d) %s", i, chain)
+		}
+	},
+}
+
+var querySupply = &cobra.Command{
+	Use:   "supply <height>",
+	Short: "Returns",
+	Long:  `Returns the list of node params specified in the <height>`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				panic(err)
+			}
+		}
+		nodesStake, nodesUnstaked, err := app.QueryTotalNodeCoins(int64(height))
+		if err != nil {
+			panic(err)
+		}
+		appsStaked, appsUnstaked, err := app.QueryTotalAppCoins(int64(height))
+		if err != nil {
+			panic(err)
+		}
+		dao, err := app.QueryDaoBalance(int64(height))
+		if err != nil {
+			panic(err)
+		}
+		totalStaked := nodesStake.Add(appsStaked)
+		totalUnstaked := nodesUnstaked.Add(appsUnstaked).Add(dao)
+		total := totalStaked.Add(totalUnstaked)
+		fmt.Printf("Nodes Staked:\t%v\nNodes Unstaked:\t%v\n\nApps Staked:\t%v\nApps Unstaked:\t%v\n\n"+
+			"Dao Supply:\t%v\n\nTotal Staked:\t%v\nTotalUnstaked:\t%v\nTotal Supply:\t%v\n\n",
+			nodesStake, nodesUnstaked, appsStaked, appsUnstaked, dao, totalStaked, totalUnstaked, total,
+		)
+	},
+}
