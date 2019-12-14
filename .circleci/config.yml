@@ -28,7 +28,7 @@ jobs:
 
       # specify any bash command here prefixed with `run: `
       - run: ./deps.sh
-      - run: go build cmd/pocket_core/main.go
+      - run: go build app/cmd/pocket_core/main.go
       - run: go test ./...
   local_image_scan:
       executor: anchore/anchore_engine
