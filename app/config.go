@@ -41,7 +41,7 @@ func GetKeybase() (keys.Keybase, error) {
 
 func InitKeybase(dataDirectoryPath, coinbasePassphrase string) keys.Keybase {
 	k := keys.New("pocket-keybase", dataDirectoryPath+string(os.PathSeparator)+"keybase"+string(os.PathSeparator))
-	_, _, err := k.CreateMnemonic(coinbasePassphrase, coinbasePassphrase)
+	_, err := k.Create(coinbasePassphrase)
 	if err != nil {
 		panic(err)
 	}

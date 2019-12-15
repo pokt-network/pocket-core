@@ -59,7 +59,6 @@ func NewClient(ctx Config, creator AppCreator) (*node.Node, *pocketCoreApp, erro
 	return tmNode, app, nil
 }
 
-
 type (
 	AppCreator func(log.Logger, dbm.DB, io.Writer) *pocketCoreApp
 )
@@ -91,7 +90,6 @@ func UpgradeOldPrivValFile(config *cfg.Config) {
 		}
 	}
 }
-
 
 type Config struct {
 	TmConfig    *cfg.Config
