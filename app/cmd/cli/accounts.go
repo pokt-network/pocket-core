@@ -48,8 +48,7 @@ var createCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Print("Enter Password: ")
-		pswrd := credentials()
-		kp, _, err := kb.CreateMnemonic(pswrd, pswrd)
+		kp, err := kb.Create(credentials())
 		if err != nil {
 			panic(err)
 		}
@@ -72,7 +71,7 @@ var deleteCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Print("Enter Password: ")
-		err = kb.Delete(addr, credentials(), false)
+		err = kb.Delete(addr, credentials())
 		if err != nil {
 			panic(err)
 		}
@@ -191,11 +190,11 @@ var importArmoredCmd = &cobra.Command{
 		dPass := credentials()
 		fmt.Println("Enter encrypt pass")
 		ePass := credentials()
-		err = kb.ImportPrivKey(args[0], dPass, ePass)
+		kp, err := kb.ImportPrivKey(args[0], dPass, ePass)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Account imported succesfully")
+		fmt.Printf("Account imported succesfully:\nPublic Key: %s", hex.EncodeToString(kp.PubKey.Bytes()))
 	},
 }
 
@@ -289,8 +288,13 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		}
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := credentials()
-		kb.ImportRaw(pkBytes, ePass) // todo
-		fmt.Println("Account imported succesfully.")
+		var pk [64]byte
+		copy(pk[:], pkBytes)
+		kp, err := kb.ImportPrivateKeyObject(pk, ePass)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Account imported succesfully:\nPublic Key: %s", hex.EncodeToString(kp.PubKey.Bytes()))
 	},
 }
 
