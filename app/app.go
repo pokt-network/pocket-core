@@ -54,9 +54,9 @@ var (
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
 func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
-	keybase, err := GetKeybase()
-	if err != nil {
-		panic(err)
+	keybase := GetKeybase()
+	if keybase == nil {
+		panic("Uninitialized keybase")
 	}
 	hostedBlockchains, err := GetHostedChains()
 	if err != nil {
@@ -144,21 +144,21 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.cdc,
 		n,
 		a,
-		keybase,
+		*keybase,
 		hostedBlockchains,
 		pocketSubspace,
 		GetCoinbasePassphrase(),
 	)
 	// modules with transactions and queries
-	nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, tmNode, keybase)
-	appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, tmNode, keybase)
-	pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, tmNode, keybase)
+	nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, tmNode, *keybase)
+	appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, tmNode, *keybase)
+	pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, tmNode, *keybase)
 
 	// setup module manager
 	app.mm = module.NewManager(
-		auth.NewAppModule(app.accountKeeper, tmNode, keybase),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper, tmNode, keybase),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper, tmNode, keybase),
+		auth.NewAppModule(app.accountKeeper, tmNode, *keybase),
+		bank.NewAppModule(app.bankKeeper, app.accountKeeper, tmNode, *keybase),
+		supply.NewAppModule(app.supplyKeeper, app.accountKeeper, tmNode, *keybase),
 		nodesModule,
 		appsModule,
 		pocketModule,

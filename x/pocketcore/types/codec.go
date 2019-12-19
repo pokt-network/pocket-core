@@ -15,4 +15,7 @@ func init() {
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgClaim{}, "pocketcore/claim", nil)
 	cdc.RegisterConcrete(MsgProof{}, "pocketcore/proof", nil)
+	cdc.RegisterConcrete(Relay{}, "pocketcore/relay", nil)
+	cdc.RegisterConcrete(Session{}, "pocketcore/session", nil)
+	cdc.RegisterConcrete(RelayResponse{}, "pocketcore/relay_response", nil)
 }

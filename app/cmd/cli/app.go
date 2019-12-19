@@ -67,15 +67,15 @@ Read the Application Authentication Token documentation for more.
 NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES IN ORDER TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION:`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		kb, err := app.GetKeybase()
-		if err != nil {
-			panic(err)
+		kb := app.GetKeybase()
+		if kb == nil {
+			panic("uninitialized keybase")
 		}
 		addr, err := types.AccAddressFromHex(args[0])
 		if err != nil {
 			panic(err)
 		}
-		res, err := kb.Get(addr)
+		res, err := (*kb).Get(addr)
 		if err != nil {
 			panic(err)
 		}

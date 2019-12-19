@@ -71,3 +71,45 @@ func (am AppModule) QueryPocketSupportedBlockchains(cdc *codec.Codec, height int
 	err = cdc.UnmarshalJSON(res, &chains)
 	return chains, nil
 }
+
+func (am AppModule) QueryRelay(cdc *codec.Codec, relay types.Relay) (*types.RelayResponse, error) {
+	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(0)
+	params := types.QueryRelayParams{
+		Relay: relay,
+	}
+	bz, err := cdc.MarshalBinaryBare(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryRelay), bz)
+	if err != nil {
+		return nil, err
+	}
+	var response *types.RelayResponse
+	err = cdc.UnmarshalJSON(res, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (am AppModule) QueryDispatch(cdc *codec.Codec, header types.SessionHeader) (*types.Session, error) {
+	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(0)
+	params := types.QueryDispatchParams{
+		SessionHeader: header,
+	}
+	bz, err := cdc.MarshalBinaryBare(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryDispatch), bz)
+	if err != nil {
+		return nil, err
+	}
+	var response *types.Session
+	err = cdc.UnmarshalJSON(res, response)
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}

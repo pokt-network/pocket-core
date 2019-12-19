@@ -5,9 +5,9 @@ import (
 )
 
 type GenesisState struct {
-	Params Params `json:"params" yaml:"params"`
-	Proofs []StoredProof
-	Claims []MsgClaim
+	Params Params        `json:"params" yaml:"params"`
+	Proofs []StoredProof `json:"proofs"`
+	Claims []MsgClaim    `json:"claims"`
 }
 
 func ValidateGenesis(data GenesisState) error {

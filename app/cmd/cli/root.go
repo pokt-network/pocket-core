@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/posmint/types"
 	"github.com/spf13/viper"
+	"github.com/tendermint/tendermint/p2p"
+	"github.com/tendermint/tendermint/privval"
 	"log"
 	"os"
 	"os/signal"
@@ -13,6 +16,11 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+)
+
+const (
+	pubKeytype  = "tendermint/PubKeyEd25519"
+	privKeyType = "tendermint/PrivKeyEd25519"
 )
 
 var (
@@ -44,9 +52,8 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.AddCommand(initCmd)
+	startCmd.PersistentFlags().StringVar(&datadir, "data_dir", "", "data directory (default is $HOME/.pocket/")
 	rootCmd.AddCommand(startCmd)
-	initCmd.PersistentFlags().StringVar(&datadir, "data_dir", "", "data directory (default is $HOME/.pocket/")
 }
 
 // startCmd represents the start command
@@ -63,6 +70,19 @@ var startCmd = &cobra.Command{
 			syscall.SIGQUIT,
 			os.Kill,
 			os.Interrupt)
+		setCodec()
+		initDataDirectory()
+		initKeybase()
+		setGenesisFile()
+		initChains()
+		// remove below
+		kps, _ := (*app.GetKeybase()).List()
+		kp := kps[0]
+		j, _ := app.Cdc.MarshalJSON(types.ValAddress(kp.PubKey.Address()))
+		j2, _ := types.Bech32ifyConsPub(kp.PubKey)
+		fmt.Println("ADDR" + string(j))
+		fmt.Println("PUBKEY" + j2)
+		// remove above
 		fmt.Println("Pocket core needs your passphrase to start")
 		app.SetCoinbasePassphrase(credentials())
 		initTendermint()
@@ -80,22 +100,62 @@ var startCmd = &cobra.Command{
 	},
 }
 
-// initCmd represents the init command
-var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		initDataDirectory()
-		initKeybase()
-		setGenesisFile()
-		initChains()
-	},
+func initKeyfiles(passphrase string) {
+	kb := app.GetKeybase()
+	keypairs, err := (*kb).List()
+	if err != nil {
+		panic(err)
+	}
+	coinbaseKeypair := keypairs[0]
+	res, err := (*kb).ExportPrivateKeyObject(coinbaseKeypair.GetAddress(), passphrase)
+	if err != nil {
+		panic(err)
+	}
+	privValKey := privval.FilePVKey{
+		Address: res.PubKey().Address(),
+		PubKey:  res.PubKey(),
+		PrivKey: res,
+	}
+	privValState := privval.FilePVLastSignState{}
+	nodeKey := p2p.NodeKey{
+		PrivKey: res,
+	}
+	pvkBz, err := app.Cdc.MarshalJSONIndent(privValKey, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	nkBz, err := app.Cdc.MarshalJSONIndent(nodeKey, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	pvsBz, err := app.Cdc.MarshalJSONIndent(privValState, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	pvFile, err := os.OpenFile(datadir+fs+"priv_val_key.json", os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	}
+	_, err = pvFile.Write(pvkBz)
+	if err != nil {
+		panic(err)
+	}
+	pvStateFile, err := os.OpenFile(datadir+fs+"priv_val_state.json", os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	}
+	_, err = pvStateFile.Write(pvsBz)
+	if err != nil {
+		panic(err)
+	}
+	nkFile, err := os.OpenFile(datadir+fs+"node_key.json", os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	}
+	_, err = nkFile.Write(nkBz)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func initDataDirectory() {
@@ -108,7 +168,7 @@ func initDataDirectory() {
 			os.Exit(1)
 		}
 		// set the default data directory
-		datadir = home + fs + ".pocket" + fs
+		datadir = home + fs + ".pocket"
 	}
 
 	// setup config file
@@ -126,8 +186,12 @@ func initDataDirectory() {
 	}
 }
 
+func setCodec() {
+	app.SetCodec()
+}
+
 func initChains() {
-	app.InitHostedChains(datadir + fs + "config" + fs + "chains.json")
+	app.InitHostedChains(datadir + fs + "config")
 }
 
 func setGenesisFile() {
@@ -135,15 +199,20 @@ func setGenesisFile() {
 }
 
 func initKeybase() {
-	if _, err := app.GetKeybase(); err != nil {
+	if err := app.InitKeybase(datadir); err != nil {
 		fmt.Println("Initializing keybase: enter coinbase passphrase")
 		password := credentials()
-		app.InitKeybase(datadir, password)
+		err := app.CreateKeybase(datadir, password)
+		if err != nil {
+			panic(err)
+		}
+		initKeyfiles(password)
 	}
 }
 
 func initTendermint() {
-	tmNode := app.InitTendermintNode(datadir, "", "", "", "", persistentPeers, seeds, "")
+	tmNode := app.InitTendermintNode(datadir, "", "node_key.json", "priv_val_key.json",
+		"priv_val_state.json", persistentPeers, seeds, "0.0.0.0:46656")
 	if err := tmNode.Start(); err != nil {
 		panic(err)
 	}

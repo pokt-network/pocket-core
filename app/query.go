@@ -132,3 +132,11 @@ func QueryPocketSupportedBlockchains(height int64) ([]string, error) {
 func QueryPocketParams(height int64) (pocketTypes.Params, error) {
 	return pocketModule.QueryParams(Cdc, height)
 }
+
+func QueryRelay(r pocketTypes.Relay) (*pocketTypes.RelayResponse, error) {
+	return pocketModule.QueryRelay(Cdc, r)
+}
+
+func QueryDispatch(header pocketTypes.SessionHeader) (*pocketTypes.Session, error) {
+	return pocketModule.QueryDispatch(Cdc, header)
+}

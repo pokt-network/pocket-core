@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/crypto"
 
 	sdk "github.com/pokt-network/posmint/types"
@@ -49,8 +48,8 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 		return ErrNoChains(DefaultCodespace)
 	}
 	for _, chain := range msg.Chains {
-		if err := types.HashVerification(chain); err != nil {
-			return err
+		if len(chain) != 0 {
+			return ErrNoChains(DefaultCodespace)
 		}
 	}
 	if len(msg.ServiceURL) == 0 {

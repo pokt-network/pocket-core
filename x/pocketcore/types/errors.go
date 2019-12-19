@@ -71,6 +71,7 @@ const ( // todo re-number
 	CodeMerkleNodeNotFoundError          = 1178
 	CodeExpiredProofsSubmissionError     = 1179
 	CodeAddressError                     = 1180
+	CodeOverServiceError                 = 1181
 )
 
 var (
@@ -141,7 +142,12 @@ var (
 	NodeNotFoundError                = errors.New("the node of the merkle tree requested is not found")
 	ExpiredProofsSubmissionError     = errors.New("the opportunity of window to submit the proof has closed because the secret has been revealed")
 	AddressError                     = errors.New("the address is invalid")
+	OverServiceError                 = errors.New("the max number of relays serviced for this node is exceeded")
 )
+
+func NewOverServiceError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeOverServiceError, OverServiceError.Error())
+}
 
 func NewAddressInvalidLengthError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeAddressError, AddressError.Error())

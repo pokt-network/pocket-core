@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"github.com/pokt-network/merkle"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 )
@@ -11,10 +12,10 @@ const RouterKey = ModuleName
 
 // MsgClaim claims that you completed `TotalRelays` and provides the merkle root for data integrity
 type MsgClaim struct {
-	SessionHeader                // header information for identification
-	Root          []byte         // merkle root for data integrity
-	TotalRelays   int64          // total number of relays
-	FromAddress   sdk.ValAddress // claimant
+	SessionHeader `json:"header"`                      // header information for identification
+	Root          []byte         `json:"root"`         // merkle root for data integrity
+	TotalRelays   int64          `json:"total_relays"` // total number of relays
+	FromAddress   sdk.ValAddress `json:"from_address"` // claimant
 }
 
 func (msg MsgClaim) Route() string { return RouterKey }
@@ -61,15 +62,15 @@ func (msg MsgClaim) GetSigners() []sdk.AccAddress {
 
 // MsgProof proves the previous claim by providing the merkle proof and the leaf node
 type MsgProof struct {
-	MerkleProof       // the branch needed to verify the proofs
-	LeafNode    Proof // the needed to verify the proof
+	merkle.Proof `json:"proof"`      // the branch needed to verify the proofs
+	LeafNode     Proof `json:"leaf"` // the needed to verify the proof
 }
 
 func (msg MsgProof) Route() string { return RouterKey }
 func (msg MsgProof) Type() string  { return "claim" }
 func (msg MsgProof) ValidateBasic() sdk.Error {
 	// verify non empty merkle proof
-	if len(msg.MerkleProof) == 0 {
+	if len(msg.Proof.Hashes) == 0 {
 		return NewEmtpyBranchError(ModuleName)
 	}
 	// verify the session block height is positive
