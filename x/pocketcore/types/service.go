@@ -14,8 +14,8 @@ import (
 
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
-	Payload Payload `json:"payload"`          // the data payload of the request
-	Proof   Proof   `json:"incrementCounter"` // the authentication scheme needed for work
+	Payload Payload `json:"payload"` // the data payload of the request
+	Proof   Proof   `json:"proof"`   // the authentication scheme needed for work
 }
 
 func (r Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
@@ -25,7 +25,7 @@ func (r Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb Hosted
 		return NewEmptyPayloadDataError(ModuleName)
 	}
 	// validate the proof
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), hb, hex.EncodeToString(node.GetConsPubKey().Bytes())); err != nil {
+	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, hb, hex.EncodeToString(node.GetConsPubKey().Bytes())); err != nil {
 		return err
 	}
 	// generate the session
@@ -88,15 +88,15 @@ func (p Payload) Validate() sdk.Error {
 
 // response structure for the relay
 type RelayResponse struct {
-	Signature string // signature from the node in hex
-	Response  string // response to relay
-	Proof     Proof  // to be signed by the client
+	Signature string `json:"signature"` // signature from the node in hex
+	Response  string `json:"payload"`   // response to relay
+	Proof     Proof  `json:"proof"`     // to be signed by the client
 }
 
 type relayResponse struct {
-	sig   string
-	resp  string
-	proof string
+	sig   string `json:"signature"`
+	resp  string `json:"payload"`
+	proof string `json:"proof"`
 }
 
 // node validates the response after signing

@@ -8,11 +8,11 @@ import (
 
 // strucutre used to identify a non native (external) blockchain on the pocket network
 type NonNativeChain struct {
-	Ticker  string
-	Netid   string
-	Version string
-	Client  string
-	Inter   string
+	Ticker  string `json:"ticker"`
+	Netid   string `json:"netid"`
+	Version string `json:"version"`
+	Client  string `json:"client"`
+	Inter   string `json:"interface"`
 }
 
 // converts the non native chains to bytes

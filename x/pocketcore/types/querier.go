@@ -9,14 +9,24 @@ const (
 	QueryProof                = "proof"
 	QueryProofs               = "proofs"
 	QuerySupportedBlockchains = "supportedBlockchains"
+	QueryRelay                = "relay"
+	QueryDispatch             = "dispatch"
 	QueryParameters           = "parameters"
 )
 
+type QueryRelayParams struct {
+	Relay `json:"relay"`
+}
+
+type QueryDispatchParams struct {
+	SessionHeader `json:"header"`
+}
+
 type QueryPORParams struct {
-	Address sdk.ValAddress
-	Header  SessionHeader
+	Address sdk.ValAddress `json:"address"`
+	Header  SessionHeader  `json:"header"`
 }
 
 type QueryPORsParams struct {
-	Address sdk.ValAddress
+	Address sdk.ValAddress `json:"address"`
 }

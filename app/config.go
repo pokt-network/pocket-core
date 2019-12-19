@@ -8,7 +8,6 @@ import (
 	"github.com/go-kit/kit/log/term"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/config"
-	"github.com/pokt-network/posmint/crypto/keys"
 	kb "github.com/pokt-network/posmint/crypto/keys"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
@@ -16,6 +15,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	filepath2 "path/filepath"
 )
 
 var (
@@ -28,25 +28,39 @@ var (
 	genesisFP         string
 )
 
-func GetKeybase() (keys.Keybase, error) {
-	kp, err := (*keybase).List()
-	if err != nil {
-		return nil, err
-	}
-	if len(kp) < 1 {
-		return nil, errors.New("uninitialized keybase")
-	}
-	return *keybase, nil
+var (
+	fs = string(filepath2.Separator)
+)
+
+func GetKeybase() *kb.Keybase {
+	return keybase
 }
 
-func InitKeybase(dataDirectoryPath, coinbasePassphrase string) keys.Keybase {
-	k := keys.New("pocket-keybase", dataDirectoryPath+string(os.PathSeparator)+"keybase"+string(os.PathSeparator))
-	_, err := k.Create(coinbasePassphrase)
+func SetKeybase(k *kb.Keybase) {
+	keybase = k
+}
+
+func InitKeybase(datadir string) error {
+	keys := kb.New("pocket-keybase", datadir+fs+"keybase")
+	kps, err := keys.List()
 	if err != nil {
-		panic(err)
+		return err
 	}
-	keybase = &k
-	return k
+	if len(kps) == 0 {
+		return errors.New("uninitialized keybase")
+	}
+	SetKeybase(&keys)
+	return nil
+}
+
+func CreateKeybase(datadir, passphrase string) error {
+	keys := kb.New("pocket-keybase", datadir+fs+"keybase")
+	_, err := keys.Create(passphrase)
+	if err != nil {
+		return err
+	}
+	SetKeybase(&keys)
+	return nil
 }
 
 func GetHostedChains() (types.HostedBlockchains, error) {
@@ -57,7 +71,11 @@ func GetHostedChains() (types.HostedBlockchains, error) {
 }
 
 func InitHostedChains(filepath string) (chains types.HostedBlockchains) {
-	jsonFile, err := os.Open(filepath)
+	err := os.MkdirAll(filepath, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	jsonFile, err := os.OpenFile(filepath+fs+"chains.json", os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +87,7 @@ func InitHostedChains(filepath string) (chains types.HostedBlockchains) {
 	m := map[string]types.HostedBlockchain{}
 	err = json.Unmarshal(bz, &m)
 	if err != nil {
-		panic(err)
+		panic("invalid chains.json: " + err.Error())
 	}
 	hostedBlockchains = &types.HostedBlockchains{
 		M: m,
@@ -95,7 +113,7 @@ func InitTendermintNode(rootDir, dataDir, nodeKey, privValKey, privValState, per
 		}
 	}
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
-	cfg := *config.NewConfig(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr, false, 0, 40, 10, logger, "")
+	cfg := *config.NewConfig(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr, true, 0, 40, 10, logger, "")
 	var err error
 	tmNode, pocketCoreInstance, err = NewClient(Config(cfg), newApp)
 	if err != nil {
@@ -133,4 +151,8 @@ func GetApp() *pocketCoreApp {
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) *pocketCoreApp {
 	return NewPocketCoreApp(logger, db)
+}
+
+func SetCodec(){
+	Cdc = MakeCodec()
 }

@@ -1,6 +1,7 @@
 package pocketcore
 
 import (
+	"github.com/pokt-network/merkle"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
@@ -24,10 +25,10 @@ func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder 
 }
 
 // transaction to prove the
-func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch types.MerkleProof, leafNode types.Proof) (*sdk.TxResponse, error) {
+func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode types.Proof) (*sdk.TxResponse, error) {
 	msg := types.MsgProof{
-		MerkleProof: porBranch,
-		LeafNode:    leafNode,
+		Proof:    porBranch,
+		LeafNode: leafNode,
 	}
 	err := msg.ValidateBasic()
 	if err != nil {

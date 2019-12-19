@@ -3,13 +3,14 @@ package keeper
 import (
 	"encoding/hex"
 	"encoding/json"
-	merkle "github.com/pokt-network/merkle"
+	"github.com/pokt-network/merkle"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/tendermint/tendermint/node"
+	"math"
 	"strconv"
 )
 
@@ -21,8 +22,12 @@ func (k Keeper) ValidateProof(ctx sdk.Context, proof pc.MsgClaim, claim pc.MsgPr
 	if reqProof != claim.LeafNode.Index {
 		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
+	// validate level count on proof by total relays
+	if len(claim.Proof.Hashes) != int(math.Ceil(math.Log2(float64(proof.TotalRelays)))-2) { // -2 doesn't include root or leaf
+		return pc.NewInvalidProofsError(pc.ModuleName)
+	}
 	// do a merkle proof using the merkle proof, the previously submitted root, and the leafNode to ensure validity of the claim
-	if tree := merkle.NewTree(pc.Hasher.New()); !tree.VerifyProof(merkle.Proof(claim.MerkleProof), proof.Root, claim.LeafNode.Hash()) {
+	if !merkle.VerifyProof(proof.Root, claim.LeafNode.Bytes(), claim.Proof) {
 		return pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// check the validity of the token
@@ -91,10 +96,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *cod
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, k)
 		// generate the merkle root for this proof
-		root, sdkErr := proof.Tree.GetMerkleRoot()
-		if sdkErr != nil {
-			panic(sdkErr)
-		}
+		root := proof.GenerateMerkleRoot()
 		// send in the proof header, the total relays completed, and the merkle root (ensures data integrity)
 		if _, err := proofTx(k.cdc, cliCtx, txBuilder, proof.SessionHeader, proof.TotalRelays, root); err != nil {
 			panic(err)
@@ -103,7 +105,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *cod
 }
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch pc.MerkleProof, leafNode pc.Proof) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode pc.Proof) (*sdk.TxResponse, error)) {
 	// get the self address
 	addr := sdk.ValAddress(n.PrivValidator().GetPubKey().Address())
 	// get all mature (waiting period has passed) proofs for your address
@@ -125,17 +127,11 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 			SessionHeader: proof.SessionHeader,
 			TotalRelays:   proof.TotalRelays,
 			Proofs:        pc.GetAllProofs().GetProofs(proof.SessionHeader),
-			Tree:          pc.Tree(merkle.NewTree(pc.Hasher.New())),
 		}
 		// generate the needed pseudorandom proof using the information found in the first transaction
 		reqProof := int(k.GeneratePseudoRandomProof(ctx, proof.TotalRelays, proof.SessionHeader))
-		// generate the merkle tree from the por structure
-		por.GenerateMerkleTree()
 		// get the merkle proof object for the pseudorandom proof index
-		branch, sdkErr := por.Tree.GetMerkleProof(reqProof)
-		if sdkErr != nil {
-			panic(sdkErr)
-		}
+		branch := por.GenerateProof(reqProof)
 		// get the leaf for the required pseudorandom proof index
 		leaf := pc.GetAllProofs().GetProof(proof.SessionHeader, reqProof)
 		// send the claim TX

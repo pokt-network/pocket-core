@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
+	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"sort"
 )
 
 // a session is the relationship between an application and the pocket network
 type Session struct {
-	SessionHeader `json:"proof_of_relay_header"`
-	SessionKey    `json:"sessionkey"`
+	SessionHeader `json:"header"`
+	SessionKey    `json:"key"`
 	SessionNodes  `json:"nodes"`
 }
 
@@ -101,6 +103,34 @@ func (sn SessionNodes) Contains(nodeVerify nodeexported.ValidatorI) bool { // to
 		}
 	}
 	return false
+}
+
+func (sn *SessionNodes) MarshalJSON() ([]byte, error) {
+	var marshable types.Validators
+	marshable = make(types.Validators, len(*sn))
+	for i, expNode := range *sn {
+		marshable[i] = types.Validator{ // todo depends on nodes.Types()
+			Address:      expNode.GetAddress(),
+			ConsPubKey:   expNode.GetConsPubKey(),
+			Jailed:       expNode.IsJailed(),
+			Status:       expNode.GetStatus(),
+			Chains:       expNode.GetChains(),
+			ServiceURL:   expNode.GetServiceURL(),
+			StakedTokens: expNode.GetTokens()}
+	}
+	return codec.Cdc.MarshalJSON(marshable)
+}
+
+// UnmarshalJSON unmarshals the validator from JSON // todo test if function needed
+func (sn *SessionNodes) UnmarshalJSON(data []byte) error {
+	v := &types.Validators{} // todo depends on nodes.Types()
+	if err := codec.Cdc.UnmarshalJSON(data, v); err != nil {
+		return err
+	}
+	for _, nonExNode := range *v {
+		*sn = append(*sn, nonExNode)
+	}
+	return nil
 }
 
 // generates nodes for the session
@@ -222,9 +252,9 @@ func (n nodeDistances) Less(i, j int) bool {
 type SessionKey []byte
 
 type sessionKey struct {
-	AppPublicKey   string
-	NonNativeChain string
-	BlockHash      string
+	AppPublicKey   string `json:"app_pub_key"`
+	NonNativeChain string `json:"chain"`
+	BlockHash      string `json:"blockchain"`
 }
 
 // generates the session key
@@ -264,9 +294,9 @@ func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
 
 // proof of relay header
 type SessionHeader struct {
-	ApplicationPubKey  string
-	Chain              string
-	SessionBlockHeight int64
+	ApplicationPubKey  string `json:"app_pub_key"`
+	Chain              string `json:"chain"`
+	SessionBlockHeight int64  `json:"session_height"`
 }
 
 func (sh SessionHeader) ValidateHeader() sdk.Error {
