@@ -153,6 +153,6 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) *pocketCoreApp {
 	return NewPocketCoreApp(logger, db)
 }
 
-func SetCodec(){
+func SetCodec() {
 	Cdc = MakeCodec()
 }
