@@ -37,6 +37,16 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 		keeper.SetValidator(ctx, validator)
 		keeper.SetValidatorByConsAddr(ctx, validator)
 		keeper.SetStakedValidator(ctx, validator)
+		// ensure there's a signing info entry for the validator (used in slashing)
+		_, found := keeper.GetValidatorSigningInfo(ctx, validator.ConsAddress())
+		if !found {
+			signingInfo := types.ValidatorSigningInfo{
+				Address:     validator.ConsAddress(),
+				StartHeight: ctx.BlockHeight(),
+				JailedUntil: time.Unix(0, 0),
+			}
+			keeper.SetValidatorSigningInfo(ctx, validator.ConsAddress(), signingInfo)
+		}
 		// Call the creation hook if not exported
 		if !data.Exported {
 			keeper.AfterValidatorRegistered(ctx, validator.Address)
