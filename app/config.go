@@ -7,6 +7,7 @@ import (
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/config"
 	kb "github.com/pokt-network/posmint/crypto/keys"
 	"github.com/tendermint/tendermint/libs/log"
@@ -19,13 +20,16 @@ import (
 )
 
 var (
-	pocketCoreInstance *pocketCoreApp
+	app *pocketCoreApp
 	// config variables
 	tmNode            *node.Node
 	keybase           *kb.Keybase
 	hostedBlockchains *types.HostedBlockchains
-	passphrase        string
-	genesisFP         string
+	// expose coded to app module
+	Cdc *codec.Codec
+	// expose nodes, apps, and core module for tx
+	passphrase string
+	genesisFP  string
 )
 
 var (
@@ -71,15 +75,45 @@ func GetHostedChains() (types.HostedBlockchains, error) {
 }
 
 func InitHostedChains(filepath string) (chains types.HostedBlockchains) {
+	var chainsPath = filepath + fs + "chains.json"
 	err := os.MkdirAll(filepath, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
-	jsonFile, err := os.OpenFile(filepath+fs+"chains.json", os.O_RDONLY|os.O_CREATE, 0666)
-	if err != nil {
-		panic(err)
+	var jsonFile *os.File
+	if _, err := os.Stat(chainsPath); err == nil {
+		// if file exists
+		jsonFile, err = os.OpenFile(filepath+fs+"chains.json", os.O_RDWR|os.O_CREATE, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+	} else if os.IsNotExist(err) {
+		// if does not exist create one
+		jsonFile, err = os.OpenFile(filepath+fs+"chains.json", os.O_RDWR|os.O_CREATE, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+		res, err := json.MarshalIndent(map[string]types.HostedBlockchain{"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80": {
+			Hash: "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80",
+			URL:  "ttps://foo.bar:8080/lolo?token=lolo",
+		},
+		}, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		_, err = jsonFile.Write(res)
+		if err != nil {
+			panic(err)
+		}
+		err = jsonFile.Close()
+		if err != nil {
+			panic(err)
+		}
+		jsonFile, err = os.OpenFile(filepath+fs+"chains.json", os.O_RDWR|os.O_CREATE, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
 	}
-	defer jsonFile.Close()
 	bz, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
 		panic(err)
@@ -92,6 +126,7 @@ func InitHostedChains(filepath string) (chains types.HostedBlockchains) {
 	hostedBlockchains = &types.HostedBlockchains{
 		M: m,
 	}
+	jsonFile.Close()
 	return *hostedBlockchains
 }
 
@@ -115,7 +150,7 @@ func InitTendermintNode(rootDir, dataDir, nodeKey, privValKey, privValState, per
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), colorFn)
 	cfg := *config.NewConfig(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr, true, 0, 40, 10, logger, "")
 	var err error
-	tmNode, pocketCoreInstance, err = NewClient(Config(cfg), newApp)
+	tmNode, app, err = NewClient(Config(cfg), newApp)
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +181,7 @@ func GetGenesisFilePath() string {
 }
 
 func GetApp() *pocketCoreApp {
-	return pocketCoreInstance
+	return app
 }
 
 func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) *pocketCoreApp {

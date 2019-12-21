@@ -48,7 +48,7 @@ func NewClient(ctx Config, creator AppCreator) (*node.Node, *pocketCoreApp, erro
 		node.DefaultMetricsProvider(config.Instrumentation),
 		ctx.Logger.With("module", "node"),
 	)
-	app.SetTendermintNode(tmNode) // todo
+	app.SetNodeAndKeybase(tmNode, keybase)
 	if err != nil {
 		return nil, app, err
 	}

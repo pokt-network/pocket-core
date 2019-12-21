@@ -12,7 +12,7 @@ import (
 type Keeper struct {
 	posKeeper          types.PosKeeper
 	appKeeper          types.AppsKeeper
-	keybase            keys.Keybase
+	Keybase            *keys.Keybase
 	coinbasePassphrase string // todo is this safe??
 	hostedBlockchains  types.HostedBlockchains
 	Paramstore         params.Subspace
@@ -21,13 +21,12 @@ type Keeper struct {
 }
 
 // NewPocketCoreKeeper creates new instances of the pocketcore Keeper
-func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, kb keys.Keybase, hostedChains types.HostedBlockchains, paramstore params.Subspace, passphrase string) Keeper {
+func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains types.HostedBlockchains, paramstore params.Subspace, passphrase string) Keeper {
 	return Keeper{
 		storeKey:           storeKey,
 		cdc:                cdc,
 		posKeeper:          posKeeper,
 		appKeeper:          appKeeper,
-		keybase:            kb,
 		coinbasePassphrase: passphrase,
 		hostedBlockchains:  hostedChains,
 		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),

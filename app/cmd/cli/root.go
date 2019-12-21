@@ -79,9 +79,11 @@ var startCmd = &cobra.Command{
 		kps, _ := (*app.GetKeybase()).List()
 		kp := kps[0]
 		j, _ := app.Cdc.MarshalJSON(types.ValAddress(kp.PubKey.Address()))
+		j3, _ := app.Cdc.MarshalJSON(types.ConsAddress(kp.PubKey.Address()))
 		j2, _ := types.Bech32ifyConsPub(kp.PubKey)
-		fmt.Println("ADDR" + string(j))
-		fmt.Println("PUBKEY" + j2)
+		fmt.Println("VAL ADDR: -> " + string(j))
+		fmt.Println("Cons ADDR: -> " + string(j3))
+		fmt.Println("PUBKEY -> " + j2)
 		// remove above
 		fmt.Println("Pocket core needs your passphrase to start")
 		app.SetCoinbasePassphrase(credentials())

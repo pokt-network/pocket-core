@@ -1,13 +1,17 @@
 package app
 
-import "encoding/json"
+import (
+	"encoding/json"
+	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+)
 
 func GenerateChain(ticker, netid, version, client, inter string) (chain string, err error) {
-	chain, err = pocketModule.GenerateChain(ticker, netid, version, client, inter)
+	chain, err = (*app.mm.GetModule(pocketTypes.ModuleName)).(pocket.AppModule).GenerateChain(ticker, netid, version, client, inter)
 	return
 }
 
 func GenerateAAT(appPubKey, clientPubKey, passphrase string) (aatjson []byte, err error) {
-	aat, err := pocketModule.GenerateAAT(appPubKey, clientPubKey, passphrase)
+	aat, err := (*app.mm.GetModule(pocketTypes.ModuleName)).(pocket.AppModule).GenerateAAT(appPubKey, clientPubKey, passphrase)
 	return json.MarshalIndent(aat, "", "  ")
 }

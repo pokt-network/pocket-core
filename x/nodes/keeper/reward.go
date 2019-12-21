@@ -24,7 +24,7 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress
 	feeCollector := k.getFeePool(ctx)
 	feesCollected := feeCollector.GetCoins()
 	// transfer collected fees to the pos module account
-	err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, auth.FeeCollectorName, types.ModuleName, feesCollected)
+	err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, auth.FeeCollectorName, types.StakedPoolName, feesCollected)
 	if err != nil {
 		panic(err)
 	}
@@ -41,12 +41,12 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress
 		propRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), proposerReward))
 		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
 		// send to validator
-		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName,
+		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName,
 			sdk.AccAddress(proposerValidator.GetAddress()), propRewardCoins); err != nil {
 			panic(err)
 		}
 		// send to rest dao
-		if err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, types.DAOPoolName, daoRewardCoins); err != nil {
+		if err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.StakedPoolName, types.DAOPoolName, daoRewardCoins); err != nil {
 			panic(err)
 		}
 		ctx.EventManager().EmitEvent(
@@ -125,11 +125,11 @@ func (k Keeper) deleteValidatorAward(ctx sdk.Context, address sdk.ValAddress) {
 // Mints sdk.Coins
 func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.ValAddress) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	mintErr := k.supplyKeeper.MintCoins(ctx, types.ModuleName, coins.Add(coins))
+	mintErr := k.supplyKeeper.MintCoins(ctx, types.StakedPoolName, coins.Add(coins))
 	if mintErr != nil {
 		return mintErr.Result()
 	}
-	sendErr := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, sdk.AccAddress(address), coins)
+	sendErr := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.AccAddress(address), coins)
 	if sendErr != nil {
 		return sendErr.Result()
 	}

@@ -143,6 +143,7 @@ var (
 	ExpiredProofsSubmissionError     = errors.New("the opportunity of window to submit the proof has closed because the secret has been revealed")
 	AddressError                     = errors.New("the address is invalid")
 	OverServiceError                 = errors.New("the max number of relays serviced for this node is exceeded")
+	UninitializedKeybaseError        = errors.New("the keybase is nil")
 )
 
 func NewOverServiceError(codespace sdk.CodespaceType) sdk.Error {
