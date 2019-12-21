@@ -8,6 +8,7 @@ import (
 	bam "github.com/pokt-network/posmint/baseapp"
 	"github.com/pokt-network/posmint/codec"
 	cfg "github.com/pokt-network/posmint/config"
+	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
@@ -63,8 +64,12 @@ func (app *pocketCoreApp) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-func (app *pocketCoreApp) SetTendermintNode(tmNode *node.Node) {
-	// todo
+func (app *pocketCoreApp) SetNodeAndKeybase(tmNode *node.Node, kb *keys.Keybase) {
+	for _, m := range app.mm.Modules {
+		m.SetTendermintNode(tmNode)
+		m.SetKeybase(kb)
+		app.mm.SetModule(m.Name(), m)
+	}
 }
 
 func (app *pocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {

@@ -51,7 +51,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 // AppModule implements an application module for the staking module.
 type AppModule struct {
 	AppModuleBasic
-	keybase      keys.Keybase
+	keybase      *keys.Keybase
 	node         *node.Node
 	keeper       keeper.Keeper
 	supplyKeeper types.SupplyKeeper
@@ -59,15 +59,12 @@ type AppModule struct {
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.Keeper, supplyKeeper types.SupplyKeeper, posKeeper types.PosKeeper,
-	node *node.Node, keybase keys.Keybase) AppModule {
+func NewAppModule(keeper keeper.Keeper, supplyKeeper types.SupplyKeeper, posKeeper types.PosKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
 		supplyKeeper:   supplyKeeper,
 		posKeeper:      posKeeper,
-		node:           node,
-		keybase:        keybase,
 	}
 }
 
@@ -81,11 +78,19 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 	keeper.RegisterInvariants(ir, am.keeper)
 }
 
+func (am AppModule) SetTendermintNode(n *node.Node) {
+	am.node = n
+}
+
 func (am AppModule) GetTendermintNode() *node.Node {
 	return am.node
 }
 
-func (am AppModule) GetKeybase() keys.Keybase {
+func (am AppModule) SetKeybase(k *keys.Keybase) {
+	am.keybase = k
+}
+
+func (am AppModule) GetKeybase() *keys.Keybase {
 	return am.keybase
 }
 
@@ -113,7 +118,11 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 // no application updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
-	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	if data == nil {
+		genesisState = types.DefaultGenesisState()
+	} else {
+		types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	}
 	InitGenesis(ctx, am.keeper, am.supplyKeeper, am.posKeeper, genesisState)
 	return []abci.ValidatorUpdate{}
 }

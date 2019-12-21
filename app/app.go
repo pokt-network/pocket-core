@@ -44,12 +44,6 @@ var (
 		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
 		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
 	}
-	// expose coded to app module
-	Cdc *codec.Codec
-	// expose nodes, apps, and core module for tx
-	nodesModule  nodes.AppModule
-	appsModule   apps.AppModule
-	pocketModule pocket.AppModule
 )
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
@@ -144,38 +138,34 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.cdc,
 		n,
 		a,
-		*keybase,
 		hostedBlockchains,
 		pocketSubspace,
 		GetCoinbasePassphrase(),
 	)
-	// modules with transactions and queries
-	nodesModule = nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper, tmNode, *keybase)
-	appsModule = apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper, tmNode, *keybase)
-	pocketModule = pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper, tmNode, *keybase)
+	app.pocketKeeper.Keybase = keybase
 
 	// setup module manager
 	app.mm = module.NewManager(
-		auth.NewAppModule(app.accountKeeper, tmNode, *keybase),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper, tmNode, *keybase),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper, tmNode, *keybase),
-		nodesModule,
-		appsModule,
-		pocketModule,
+		auth.NewAppModule(app.accountKeeper),
+		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
+		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
+		nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper),
+		apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper),
+		pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper),
 	)
 
-	app.mm.SetOrderBeginBlockers(appsTypes.ModuleName, nodesTypes.ModuleName, pocketTypes.ModuleName)
-	app.mm.SetOrderEndBlockers(appsTypes.ModuleName, nodesTypes.ModuleName)
+	app.mm.SetOrderBeginBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName)
+	app.mm.SetOrderEndBlockers(nodesTypes.ModuleName, appsTypes.ModuleName)
 
 	// Sets the order of Genesis - Order matters, genutil is to always come last
 	// NOTE: The genutils moodule must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
 	app.mm.SetOrderInitGenesis(
+		auth.ModuleName,
+		bank.ModuleName,
 		nodesTypes.ModuleName,
 		appsTypes.ModuleName,
 		pocketTypes.ModuleName,
-		auth.ModuleName,
-		bank.ModuleName,
 		supply.ModuleName,
 	)
 
@@ -186,15 +176,6 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
-
-	// The AnteHandler handles signature verification and transaction pre-processing
-	app.SetAnteHandler(
-		auth.NewAnteHandler(
-			app.accountKeeper,
-			app.supplyKeeper,
-			auth.DefaultSigVerificationGasConsumer,
-		),
-	)
 
 	// initialize stores
 	app.MountKVStores(keys)

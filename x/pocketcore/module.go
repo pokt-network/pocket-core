@@ -45,11 +45,20 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 	return types.ValidateGenesis(data)
 }
 
+func (am AppModule) SetTendermintNode(n *node.Node) {
+	am.node = n
+}
+
 func (am AppModule) GetTendermintNode() *node.Node {
 	return am.node
 }
 
-func (am AppModule) GetKeybase() keys.Keybase {
+func (am AppModule) SetKeybase(k *keys.Keybase) {
+	am.keybase = k
+	am.keeper.Keybase = k
+}
+
+func (am AppModule) GetKeybase() *keys.Keybase {
 	return am.keybase
 }
 
@@ -59,18 +68,16 @@ type AppModule struct {
 	posKeeper  types.PosKeeper
 	appsKeeper types.AppsKeeper
 	node       *node.Node
-	keybase    keys.Keybase
+	keybase    *keys.Keybase
 }
 
 // NewAppModule creates a new AppModule Object
-func NewAppModule(keeper keeper.Keeper, posKeeper types.PosKeeper, appsKeeper types.AppsKeeper, node *node.Node, keybase keys.Keybase) AppModule {
+func NewAppModule(keeper keeper.Keeper, posKeeper types.PosKeeper, appsKeeper types.AppsKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
 		posKeeper:      posKeeper,
 		appsKeeper:     appsKeeper,
-		node:           node,
-		keybase:        keybase,
 	}
 }
 
@@ -111,7 +118,11 @@ func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.Validator
 
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
-	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	if data == nil {
+		genesisState = types.DefaultGenesisState()
+	} else {
+		types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	}
 	return InitGenesis(ctx, am.keeper, genesisState)
 }
 

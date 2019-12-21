@@ -68,18 +68,12 @@ func newTx(cdc *codec.Codec, am AppModule, passphrase string) (txBuilder auth.Tx
 	if err != nil {
 		panic(err)
 	}
-	fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin("pokt", 0))) // todo get stake denom
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(cdc),
 		account.GetAccountNumber(),
 		account.GetSequence(),
-		fee.Gas,
-		1,
-		false,
 		chainID,
 		"",
-		fee.Amount,
-		fee.GasPrices(),
-	).WithKeybase(am.keybase)
+		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(10)))).WithKeybase(*am.GetKeybase())
 	return
 }

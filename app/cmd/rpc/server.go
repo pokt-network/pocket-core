@@ -14,7 +14,7 @@ const (
 )
 
 func StartRPC(port string) {
-	go log.Fatal(http.ListenAndServe(":"+port, Router(GetRoutes())))
+	log.Fatal(http.ListenAndServe(":"+port, Router(GetRoutes())))
 }
 
 func Router(routes Routes) *httprouter.Router {

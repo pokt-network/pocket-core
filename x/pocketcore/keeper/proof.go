@@ -106,8 +106,12 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *cod
 
 // auto sends a proof transaction for the claim
 func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode pc.Proof) (*sdk.TxResponse, error)) {
+	kp, err := k.GetCoinbaseKeypair(ctx)
+	if err != nil {
+		panic(err)
+	}
 	// get the self address
-	addr := sdk.ValAddress(n.PrivValidator().GetPubKey().Address())
+	addr := sdk.ValAddress(kp.GetAddress())
 	// get all mature (waiting period has passed) proofs for your address
 	proofs := k.GetMatureClaims(ctx, addr)
 	// for every proof of the mature set
@@ -294,7 +298,6 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 // todo this auto tx needs to be fixed
 func newTxBuilderAndCliCtx(ctx sdk.Context, n *node.Node, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
 	fromAddr := sdk.AccAddress(n.PrivValidator().GetPubKey().Address())
-	fee := auth.NewStdFee(9000, sdk.NewCoins(sdk.NewInt64Coin(k.StakeDenom(ctx), 0)))
 	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
 	accGetter := auth.NewAccountRetriever(cliCtx)
 	err := accGetter.EnsureExists(fromAddr)
@@ -309,13 +312,9 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, n *node.Node, k Keeper) (txBuilder a
 		auth.DefaultTxEncoder(k.cdc),
 		account.GetAccountNumber(),
 		account.GetSequence(),
-		fee.Gas,
-		1,
-		false,
 		n.GenesisDoc().ChainID,
 		"",
-		fee.Amount,
-		fee.GasPrices(),
-	).WithKeybase(k.keybase)
+		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(10))),
+	).WithKeybase(*k.Keybase)
 	return
 }

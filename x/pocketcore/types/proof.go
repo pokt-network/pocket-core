@@ -31,7 +31,8 @@ var (
 func GetAllProofs() *AllProofs {
 	apOnce.Do(func() {
 		if globalAllProofs == nil {
-			*globalAllProofs = AllProofs{M: make(map[string]ProofOfRelay)}
+			ap := AllProofs{M: make(map[string]ProofOfRelay)}
+			globalAllProofs = &ap
 		}
 	})
 	return globalAllProofs

@@ -52,7 +52,7 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 // AppModule implements an application module for the staking module.
 type AppModule struct {
 	AppModuleBasic
-	keybase       keys.Keybase
+	keybase       *keys.Keybase
 	node          *node.Node
 	keeper        keeper.Keeper
 	accountKeeper types.AccountKeeper
@@ -60,14 +60,12 @@ type AppModule struct {
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.Keeper, accountKeeper types.AccountKeeper, supplyKeeper types.SupplyKeeper, node *node.Node, keybase keys.Keybase) AppModule {
+func NewAppModule(keeper keeper.Keeper, accountKeeper types.AccountKeeper, supplyKeeper types.SupplyKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
 		accountKeeper:  accountKeeper,
 		supplyKeeper:   supplyKeeper,
-		node:           node,
-		keybase:        keybase,
 	}
 }
 
@@ -81,11 +79,19 @@ func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 	keeper.RegisterInvariants(ir, am.keeper)
 }
 
+func (am AppModule) SetTendermintNode(n *node.Node) {
+	am.node = n
+}
+
 func (am AppModule) GetTendermintNode() *node.Node {
 	return am.node
 }
 
-func (am AppModule) GetKeybase() keys.Keybase {
+func (am AppModule) SetKeybase(k *keys.Keybase) {
+	am.keybase = k
+}
+
+func (am AppModule) GetKeybase() *keys.Keybase {
 	return am.keybase
 }
 
@@ -113,10 +119,11 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
-	//var result map[string]interface{}
-	//err := json.Unmarshal(data, &result)
-	//panic(err)
-	types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	if data == nil {
+		genesisState = types.DefaultGenesisState()
+	} else {
+		types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
+	}
 	genesisState.Params = types.DefaultParams()
 	return InitGenesis(ctx, am.keeper, am.supplyKeeper, genesisState)
 }
