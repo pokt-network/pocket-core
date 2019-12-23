@@ -5,6 +5,7 @@ import (
 	"fmt"
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
+	"github.com/mitchellh/go-homedir"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
@@ -22,12 +23,18 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/p2p"
+	"github.com/tendermint/tendermint/privval"
 	tmTypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"io/ioutil"
 	"os"
+	"os/signal"
 	filepath2 "path/filepath"
+	"strings"
+	"syscall"
 	"time"
 )
 
@@ -218,56 +225,65 @@ func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
 	return j
 }
 
-func InitDefaultGenesisFile(filepath string, publicKey crypto.PubKey) {
-	// ensure directory path made
-	err := os.MkdirAll(filepath, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	defaultGenesis := tmTypes.GenesisDoc{
-		GenesisTime: time.Time{},
-		ChainID:     "pocket-test",
-		ConsensusParams: &tmTypes.ConsensusParams{
-			Block: tmTypes.BlockParams{
-				MaxBytes:   15000,
-				MaxGas:     -1,
-				TimeIotaMs: 1,
-			},
-			Evidence: tmTypes.EvidenceParams{
-				MaxAge: 1000000,
-			},
-			Validator: tmTypes.ValidatorParams{
-				PubKeyTypes: []string{"ed25519"},
-			},
-		},
-		Validators: nil,
-		AppHash:    nil,
-		AppState:   newDefaultGenesisState(publicKey),
-	}
-	// create the genesis path
-	var genFP = GetGenesisFilePath()
-	// if file exists open, else create and open
-	if _, err := os.Stat(genFP); err == nil {
-		return
-	} else if os.IsNotExist(err) {
-		// if does not exist create one
-		jsonFile, err := os.OpenFile(genFP, os.O_RDWR|os.O_CREATE, os.ModePerm)
+func InitGenesis(filepath string) {
+	SetGenesisFilepath(filepath + fs + "genesis.json")
+	if _, err := os.Stat(GetGenesisFilePath()); os.IsNotExist(err) {
+		kb := GetKeybase()
+		kps, err := (*kb).List()
 		if err != nil {
 			panic(err)
 		}
-		bz, err := Cdc.MarshalJSONIndent(defaultGenesis, "", "    ")
+		publicKey := kps[0].PubKey
+		// ensure directory path made
+		err = os.MkdirAll(filepath, os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
-		// write to the file
-		_, err = jsonFile.Write(bz)
-		if err != nil {
-			panic(err)
+		defaultGenesis := tmTypes.GenesisDoc{
+			GenesisTime: time.Time{},
+			ChainID:     "pocket-test",
+			ConsensusParams: &tmTypes.ConsensusParams{
+				Block: tmTypes.BlockParams{
+					MaxBytes:   15000,
+					MaxGas:     -1,
+					TimeIotaMs: 1,
+				},
+				Evidence: tmTypes.EvidenceParams{
+					MaxAge: 1000000,
+				},
+				Validator: tmTypes.ValidatorParams{
+					PubKeyTypes: []string{"ed25519"},
+				},
+			},
+			Validators: nil,
+			AppHash:    nil,
+			AppState:   newDefaultGenesisState(publicKey),
 		}
-		// close the file
-		err = jsonFile.Close()
-		if err != nil {
-			panic(err)
+		// create the genesis path
+		var genFP = GetGenesisFilePath()
+		// if file exists open, else create and open
+		if _, err := os.Stat(genFP); err == nil {
+			return
+		} else if os.IsNotExist(err) {
+			// if does not exist create one
+			jsonFile, err := os.OpenFile(genFP, os.O_RDWR|os.O_CREATE, os.ModePerm)
+			if err != nil {
+				panic(err)
+			}
+			bz, err := Cdc.MarshalJSONIndent(defaultGenesis, "", "    ")
+			if err != nil {
+				panic(err)
+			}
+			// write to the file
+			_, err = jsonFile.Write(bz)
+			if err != nil {
+				panic(err)
+			}
+			// close the file
+			err = jsonFile.Close()
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }
@@ -300,6 +316,122 @@ func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) *pocketCoreApp {
 	return NewPocketCoreApp(logger, db)
 }
 
+func InitTendermint(datadir, persistentPeers, seeds string) {
+	tmNode := InitTendermintNode(datadir, "", "node_key.json", "priv_val_key.json",
+		"priv_val_state.json", persistentPeers, seeds, "0.0.0.0:46656")
+	if err := tmNode.Start(); err != nil {
+		panic(err)
+	}
+	// We trap kill signals (2,3,15,9)
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel,
+		syscall.SIGTERM,
+		syscall.SIGINT,
+		syscall.SIGQUIT,
+		os.Kill,
+		os.Interrupt)
+
+	defer func() {
+		sig := <-signalChannel
+		tmNode, _ := GetTendermintNode()
+		err := tmNode.Stop()
+		if err != nil {
+			panic(err)
+		}
+		message := fmt.Sprintf("Exit signal %s received\n", sig)
+		fmt.Println(message)
+		os.Exit(3)
+	}()
+}
+
+func InitDataDirectory(datadir string) string {
+	// check for empty data_dir
+	if datadir == "" {
+		// Find home directory.
+		home, err := homedir.Dir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		// set the default data directory
+		datadir = home + fs + ".pocket"
+	}
+	// create the folder if not already created
+	err := os.MkdirAll(datadir, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	return datadir
+}
+
+func InitKeyfiles(datadir string) string {
+	var password string
+	if err := InitKeybase(datadir); err != nil {
+		fmt.Println("Initializing keybase: enter coinbase passphrase")
+		password = Credentials()
+		err := CreateKeybase(datadir, password)
+		if err != nil {
+			panic(err)
+		}
+		kb := GetKeybase()
+		keypairs, err := (*kb).List()
+		if err != nil {
+			panic(err)
+		}
+		coinbaseKeypair := keypairs[0]
+		res, err := (*kb).ExportPrivateKeyObject(coinbaseKeypair.GetAddress(), password)
+		if err != nil {
+			panic(err)
+		}
+		privValKey := privval.FilePVKey{
+			Address: res.PubKey().Address(),
+			PubKey:  res.PubKey(),
+			PrivKey: res,
+		}
+		privValState := privval.FilePVLastSignState{}
+		nodeKey := p2p.NodeKey{
+			PrivKey: res,
+		}
+		pvkBz, err := Cdc.MarshalJSONIndent(privValKey, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		nkBz, err := Cdc.MarshalJSONIndent(nodeKey, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		pvsBz, err := Cdc.MarshalJSONIndent(privValState, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		pvFile, err := os.OpenFile(datadir+fs+"priv_val_key.json", os.O_RDWR|os.O_CREATE, 0666)
+		if err != nil {
+			panic(err)
+		}
+		_, err = pvFile.Write(pvkBz)
+		if err != nil {
+			panic(err)
+		}
+		pvStateFile, err := os.OpenFile(datadir+fs+"priv_val_state.json", os.O_RDWR|os.O_CREATE, 0666)
+		if err != nil {
+			panic(err)
+		}
+		_, err = pvStateFile.Write(pvsBz)
+		if err != nil {
+			panic(err)
+		}
+		nkFile, err := os.OpenFile(datadir+fs+"node_key.json", os.O_RDWR|os.O_CREATE, 0666)
+		if err != nil {
+			panic(err)
+		}
+		_, err = nkFile.Write(nkBz)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return password
+}
+
 func SetCodec() {
 	// create a new codec
 	Cdc = codec.New()
@@ -317,4 +449,12 @@ func SetCodec() {
 	sdk.RegisterCodec(Cdc)
 	// register the crypto types
 	codec.RegisterCrypto(Cdc)
+}
+
+func Credentials() string {
+	bytePassword, err := terminal.ReadPassword(syscall.Stdin)
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(string(bytePassword))
 }

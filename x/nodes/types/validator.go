@@ -12,8 +12,8 @@ import (
 )
 
 type Validator struct {
-	Address                 sdk.ValAddress `json:"address" yaml:"address"`               // address of the validator; bech encoded in JSON
-	ConsPubKey              crypto.PubKey  `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
+	Address                 sdk.ValAddress `json:"address" yaml:"address"`               // address of the validator; hex encoded in JSON
+	ConsPubKey              crypto.PubKey  `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the validator; hex encoded in JSON
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from bonded status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // validator status (bonded/unbonding/unbonded)
 	Chains                  []string       `json:"chains" yaml:"chains"`                 // validator non native blockchains

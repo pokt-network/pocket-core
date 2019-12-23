@@ -10,8 +10,8 @@ import (
 )
 
 type Application struct {
-	Address                 sdk.ValAddress `json:"address" yaml:"address"`               // address of the application; bech encoded in JSON
-	ConsPubKey              crypto.PubKey  `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the application; bech encoded in JSON
+	Address                 sdk.ValAddress `json:"address" yaml:"address"`               // address of the application; hex encoded in JSON
+	ConsPubKey              crypto.PubKey  `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the application; hex encoded in JSON
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                 // has the application been jailed from bonded status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
 	Chains                  []string       `json:"chains" yaml:"chains"`                 // requested chains

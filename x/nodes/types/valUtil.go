@@ -50,10 +50,6 @@ func UnmarshalValidator(cdc *codec.Codec, valBytes []byte) (validator Validator,
 
 // HashString returns a human readable string representation of a validator.
 func (v Validator) String() string {
-	bechConsPubKey, err := sdk.Bech32ifyConsPub(v.ConsPubKey)
-	if err != nil {
-		panic(err)
-	}
 	return fmt.Sprintf(`Validator
   Address:           		  %s
   Validator Cons Pubkey:      %s
@@ -63,14 +59,14 @@ func (v Validator) String() string {
   ServiceURL:                 %s
   Chains:                     %v
   Unstaking Completion Time:  %v`,
-		v.Address, bechConsPubKey, v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
+		v.Address, sdk.HexConsPub(v.ConsPubKey), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
 	)
 }
 
 // this is a helper struct used for JSON de- and encoding only
-type bechValidator struct {
-	Address                 sdk.ValAddress `json:"address" yaml:"address"`           // the bech32 address of the validator
-	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`   // the bech32 consensus public key of the validator
+type hexValidator struct {
+	Address                 sdk.ValAddress `json:"address" yaml:"address"`           // the hex address of the validator
+	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`   // the hex consensus public key of the validator
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`             // has the validator been jailed from staked status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`             // validator status (bonded/unbonding/unbonded)
 	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"` // how many staked tokens
@@ -79,15 +75,11 @@ type bechValidator struct {
 	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 }
 
-// MarshalJSON marshals the validator to JSON using Bech32
+// MarshalJSON marshals the validator to JSON using Hex
 func (v Validator) MarshalJSON() ([]byte, error) {
-	bechConsPubKey, err := sdk.Bech32ifyConsPub(v.ConsPubKey)
-	if err != nil {
-		return nil, err
-	}
-	return codec.Cdc.MarshalJSON(bechValidator{
+	return codec.Cdc.MarshalJSON(hexValidator{
 		Address:                 v.Address,
-		ConsPubKey:              bechConsPubKey,
+		ConsPubKey:              sdk.HexConsPub(v.ConsPubKey),
 		Jailed:                  v.Jailed,
 		Status:                  v.Status,
 		ServiceURL:              v.ServiceURL,
@@ -97,13 +89,13 @@ func (v Validator) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON unmarshals the validator from JSON using Bech32
+// UnmarshalJSON unmarshals the validator from JSON using Hex
 func (v *Validator) UnmarshalJSON(data []byte) error {
-	bv := &bechValidator{}
+	bv := &hexValidator{}
 	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
 		return err
 	}
-	consPubKey, err := sdk.GetConsPubKeyBech32(bv.ConsPubKey)
+	consPubKey, err := sdk.GetConsPubKeyHex(bv.ConsPubKey)
 	if err != nil {
 		return err
 	}
