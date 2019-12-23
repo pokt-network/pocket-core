@@ -123,8 +123,7 @@ func InitHostedChains(filepath string) {
 			panic(err)
 		}
 		// create dummy input for the file
-		res, err := json.MarshalIndent(map[string]types.HostedBlockchain{dummyChainsHash:
-		{Hash: dummyChainsHash, URL: dummyChainsURL,},}, "", "  ")
+		res, err := json.MarshalIndent(map[string]types.HostedBlockchain{dummyChainsHash: {Hash: dummyChainsHash, URL: dummyChainsURL}}, "", "  ")
 		if err != nil {
 			panic(err)
 		}
@@ -212,8 +211,7 @@ func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
 	var posGenesisState nodesTypes.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(rawPOS, &posGenesisState)
 	posGenesisState.Validators = append(posGenesisState.Validators,
-		nodesTypes.Validator{Address:
-		sdk.ValAddress(pubKey.Address()),
+		nodesTypes.Validator{Address: sdk.ValAddress(pubKey.Address()),
 			ConsPubKey:   pubKey,
 			Status:       sdk.Bonded,
 			Chains:       []string{dummyChainsHash},
