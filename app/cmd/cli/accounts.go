@@ -6,10 +6,7 @@ import (
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/posmint/types"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh/terminal"
 	"strconv"
-	"strings"
-	"syscall"
 )
 
 func init() {
@@ -46,7 +43,7 @@ var createCmd = &cobra.Command{
 			panic(app.UninitializedKeybaseError)
 		}
 		fmt.Print("Enter Password: ")
-		kp, err := (*kb).Create(credentials())
+		kp, err := (*kb).Create(app.Credentials())
 		if err != nil {
 			panic(err)
 		}
@@ -69,7 +66,7 @@ var deleteCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Print("Enter Password: ")
-		err = (*kb).Delete(addr, credentials())
+		err = (*kb).Delete(addr, app.Credentials())
 		if err != nil {
 			panic(err)
 		}
@@ -136,9 +133,9 @@ var updatePassphraseCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Print("Enter Password: ")
-		oldpass := credentials()
+		oldpass := app.Credentials()
 		fmt.Print("Enter New Password: ")
-		newpass := credentials()
+		newpass := app.Credentials()
 		err = (*kb).Update(addr, oldpass, newpass)
 		if err != nil {
 			panic(err)
@@ -166,7 +163,7 @@ var signCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		sig, _, err := (*kb).Sign(addr, credentials(), msg)
+		sig, _, err := (*kb).Sign(addr, app.Credentials(), msg)
 		if err != nil {
 			panic(err)
 		}
@@ -185,9 +182,9 @@ var importArmoredCmd = &cobra.Command{
 			panic(app.UninitializedKeybaseError)
 		}
 		fmt.Println("Enter decrypt pass")
-		dPass := credentials()
+		dPass := app.Credentials()
 		fmt.Println("Enter encrypt pass")
-		ePass := credentials()
+		ePass := app.Credentials()
 		kp, err := (*kb).ImportPrivKey(args[0], dPass, ePass)
 		if err != nil {
 			panic(err)
@@ -213,9 +210,9 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 			panic(err)
 		}
 		fmt.Println("Enter Decrypt Passphrase")
-		dPass := credentials()
+		dPass := app.Credentials()
 		fmt.Println("Enter Encrypt Passphrase")
-		ePass := credentials()
+		ePass := app.Credentials()
 		pk, err := (*kb).ExportPrivKeyEncryptedArmor(addr, dPass, ePass)
 		if err != nil {
 			panic(err)
@@ -241,7 +238,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 			panic(err)
 		}
 		fmt.Println("Enter Decrypt Passphrase")
-		dPass := credentials()
+		dPass := app.Credentials()
 		pk, err := (*kb).ExportPrivateKeyObject(addr, dPass)
 		if err != nil {
 			panic(err)
@@ -261,7 +258,7 @@ var sendTxCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		res, err := app.SendTransaction(args[0], args[1], credentials(), types.NewInt(int64(amount)))
+		res, err := app.SendTransaction(args[0], args[1], app.Credentials(), types.NewInt(int64(amount)))
 		if err != nil {
 			panic(err)
 		}
@@ -285,7 +282,7 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 			panic(app.UninitializedKeybaseError)
 		}
 		fmt.Println("Enter Encrypt Passphrase")
-		ePass := credentials()
+		ePass := app.Credentials()
 		var pk [64]byte
 		copy(pk[:], pkBytes)
 		kp, err := (*kb).ImportPrivateKeyObject(pk, ePass)
@@ -294,12 +291,4 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		}
 		fmt.Printf("Account imported succesfully:\nPublic Key: %s", hex.EncodeToString(kp.PubKey.Bytes()))
 	},
-}
-
-func credentials() string {
-	bytePassword, err := terminal.ReadPassword(syscall.Stdin)
-	if err != nil {
-		panic(err)
-	}
-	return strings.TrimSpace(string(bytePassword))
 }

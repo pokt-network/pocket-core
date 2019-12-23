@@ -50,10 +50,6 @@ func UnmarshalApplication(cdc *codec.Codec, appBytes []byte) (application Applic
 
 // HashString returns a human readable string representation of a application.
 func (a Application) String() string {
-	bechConsPubKey, err := sdk.Bech32ifyConsPub(a.ConsPubKey)
-	if err != nil {
-		panic(err)
-	}
 	return fmt.Sprintf(`AppPubKey
   Address:           		  %s
   AppPubKey Cons Pubkey: 	  %s
@@ -63,14 +59,14 @@ func (a Application) String() string {
   Status:                     %s
   Tokens:               	  %s
   Unstakeing Completion Time: %v`,
-		a.Address, bechConsPubKey, a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
+		a.Address, sdk.HexConsPub(a.ConsPubKey), a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
 	)
 }
 
 // this is a helper struct used for JSON de- and encoding only
-type bechApplication struct {
-	Address                 sdk.ValAddress `json:"operator_address" yaml:"operator_address"` // the bech32 address of the application
-	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`           // the bech32 consensus public key of the application
+type hexApplication struct {
+	Address                 sdk.ValAddress `json:"operator_address" yaml:"operator_address"` // the hex address of the application
+	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`           // the hex consensus public key of the application
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
 	Chains                  []string       `json:"chains" yaml:"chains"`
 	MaxRelays               sdk.Int
@@ -79,15 +75,11 @@ type bechApplication struct {
 	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }
 
-// MarshalJSON marshals the application to JSON using Bech32
+// MarshalJSON marshals the application to JSON using Hex
 func (a Application) MarshalJSON() ([]byte, error) {
-	bechConsPubKey, err := sdk.Bech32ifyConsPub(a.ConsPubKey)
-	if err != nil {
-		return nil, err
-	}
-	return codec.Cdc.MarshalJSON(bechApplication{
+	return codec.Cdc.MarshalJSON(hexApplication{
 		Address:                 a.Address,
-		ConsPubKey:              bechConsPubKey,
+		ConsPubKey:              sdk.HexConsPub(a.ConsPubKey),
 		Jailed:                  a.Jailed,
 		Status:                  a.Status,
 		Chains:                  a.Chains,
@@ -97,13 +89,13 @@ func (a Application) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON unmarshals the application from JSON using Bech32
+// UnmarshalJSON unmarshals the application from JSON using Hex
 func (a *Application) UnmarshalJSON(data []byte) error {
-	bv := &bechApplication{}
+	bv := &hexApplication{}
 	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
 		return err
 	}
-	consPubKey, err := sdk.GetConsPubKeyBech32(bv.ConsPubKey)
+	consPubKey, err := sdk.GetConsPubKeyHex(bv.ConsPubKey)
 	if err != nil {
 		return err
 	}

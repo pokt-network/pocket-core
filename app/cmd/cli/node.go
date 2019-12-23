@@ -36,7 +36,7 @@ var nodeStakeCmd = &cobra.Command{
 		chains := strings.Split(args[2], ",")
 		serviceURI := args[3]
 		fmt.Println("Enter Password: ")
-		res, err := app.StakeNode(chains, serviceURI, fromAddr, credentials(), types.NewInt(int64(amount)))
+		res, err := app.StakeNode(chains, serviceURI, fromAddr, app.Credentials(), types.NewInt(int64(amount)))
 		if err != nil {
 			panic(err)
 		}
@@ -50,7 +50,7 @@ var nodeUnstakeCmd = &cobra.Command{
 	Long:  `Unstakes a node from the network, changing it's status to Unstaking. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		res, err := app.UnstakeNode(args[0], credentials())
+		res, err := app.UnstakeNode(args[0], app.Credentials())
 		if err != nil {
 			panic(err)
 		}
@@ -64,7 +64,7 @@ var nodeUnjailCmd = &cobra.Command{
 	Long:  `Unjails a node from the network, allowing it to participate in service and consensus again. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		res, err := app.UnjailNode(args[0], credentials())
+		res, err := app.UnjailNode(args[0], app.Credentials())
 		if err != nil {
 			panic(err)
 		}

@@ -36,7 +36,7 @@ var appStakeCmd = &cobra.Command{
 		}
 		chains := strings.Split(args[2], ",")
 		fmt.Println("Enter Password: ")
-		res, err := app.StakeApp(chains, fromAddr, credentials(), types.NewInt(int64(amount)))
+		res, err := app.StakeApp(chains, fromAddr, app.Credentials(), types.NewInt(int64(amount)))
 		if err != nil {
 			panic(err)
 		}
@@ -50,7 +50,7 @@ var appUnstakeCmd = &cobra.Command{
 	Long:  `Unstakes an app from the network, changing it's status to Unstaking. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		res, err := app.UnstakeApp(args[0], credentials())
+		res, err := app.UnstakeApp(args[0], app.Credentials())
 		if err != nil {
 			panic(err)
 		}
@@ -80,7 +80,7 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 			panic(err)
 		}
 		fmt.Println("Enter Password: ")
-		aatBytes, err := app.GenerateAAT(hex.EncodeToString(res.PubKey.Bytes()), args[1], credentials())
+		aatBytes, err := app.GenerateAAT(hex.EncodeToString(res.PubKey.Bytes()), args[1], app.Credentials())
 		fmt.Println(string(aatBytes))
 	},
 }
