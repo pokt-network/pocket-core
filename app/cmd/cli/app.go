@@ -69,7 +69,7 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.GetKeybase()
 		if kb == nil {
-			panic("uninitialized keybase")
+			panic(app.UninitializedKeybaseError)
 		}
 		addr, err := types.AccAddressFromHex(args[0])
 		if err != nil {
