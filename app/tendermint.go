@@ -12,56 +12,48 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 )
 
+type AppCreator func(log.Logger, dbm.DB, io.Writer) *pocketCoreApp
+
 func NewClient(ctx Config, creator AppCreator) (*node.Node, *pocketCoreApp, error) {
-	config := ctx.TmConfig
-	home := config.RootDir
-	db, err := openDB(home)
+	// setup the database
+	db, err := openDB(ctx.TmConfig.RootDir)
 	if err != nil {
 		return nil, nil, err
 	}
-
+	// open the tracewriter
 	traceWriter, err := openTraceWriter(ctx.TraceWriter)
 	if err != nil {
 		return nil, nil, err
 	}
-
+	// create the instance
 	app := creator(ctx.Logger, db, traceWriter)
-
-	nodeKey, err := p2p.LoadOrGenNodeKey(config.NodeKeyFile())
+	// load the node key
+	nodeKey, err := p2p.LoadOrGenNodeKey(ctx.TmConfig.NodeKeyFile())
 	if err != nil {
 		return nil, nil, err
 	}
-
-	UpgradeOldPrivValFile(config)
-
+	// upgrade the privVal file
+	UpgradeOldPrivValFile(ctx.TmConfig)
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
-		config,
-		pvm.LoadOrGenFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile()),
+		ctx.TmConfig,
+		pvm.LoadOrGenFilePV(ctx.TmConfig.PrivValidatorKeyFile(), ctx.TmConfig.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
-		node.DefaultGenesisDocProviderFunc(config),
+		node.DefaultGenesisDocProviderFunc(ctx.TmConfig),
 		node.DefaultDBProvider,
-		node.DefaultMetricsProvider(config.Instrumentation),
+		node.DefaultMetricsProvider(ctx.TmConfig.Instrumentation),
 		ctx.Logger.With("module", "node"),
 	)
+	// setup the keybase and tendermint node for the proxy app
 	app.SetNodeAndKeybase(tmNode, keybase)
 	if err != nil {
 		return nil, app, err
 	}
-
-	//if err := tmNode.Start(); err != nil {
-	//	return nil, err
-	//}
 	return tmNode, app, nil
 }
-
-type (
-	AppCreator func(log.Logger, dbm.DB, io.Writer) *pocketCoreApp
-)
 
 func openDB(rootDir string) (dbm.DB, error) {
 	dataDir := filepath.Join(rootDir, "data")
@@ -95,32 +87,4 @@ type Config struct {
 	TmConfig    *cfg.Config
 	Logger      log.Logger
 	TraceWriter string
-}
-
-func NewDefaultConfig() *Config {
-	return &Config{
-		cfg.DefaultConfig(),
-		log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
-		"",
-	}
-}
-
-func NewConfig(rootDir, datadir, nodekey, privValKey, privValState, persistentPeers, seeds, listenAddr string, createEmptyBlocks bool, createEmptyBlocksInterval time.Duration,
-	MaxNumberInboundPeers, MaxNumberOutboundPeers int, logger log.Logger, traceWriterPath string) *Config {
-	// setup tendermint node config
-	newTMConfig := cfg.DefaultConfig()
-	newTMConfig.RootDir = rootDir
-	newTMConfig.DBPath = datadir
-	newTMConfig.NodeKey = nodekey
-	newTMConfig.PrivValidatorKey = privValKey
-	newTMConfig.PrivValidatorState = privValState
-	newTMConfig.P2P.ListenAddress = listenAddr                  // node listen address. (0.0.0.0:0 means any interface, any port)
-	newTMConfig.P2P.PersistentPeers = persistentPeers           // Comma-delimited ID@host:port persistent peers
-	newTMConfig.P2P.Seeds = seeds                               // Comma-delimited ID@host:port seed nodes
-	newTMConfig.Consensus.CreateEmptyBlocks = createEmptyBlocks // Set this to false to only produce blocks when there are txs or when the AppHash changes
-	newTMConfig.Consensus.CreateEmptyBlocksInterval = createEmptyBlocksInterval
-	newTMConfig.P2P.MaxNumInboundPeers = MaxNumberInboundPeers
-	newTMConfig.P2P.MaxNumOutboundPeers = MaxNumberOutboundPeers
-
-	return &Config{newTMConfig, logger, traceWriterPath}
 }

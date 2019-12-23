@@ -17,7 +17,7 @@ func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.
 	if err != nil {
 		return nil, err
 	}
-	return (*app.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).Send(Cdc, fa, ta, passphrase, amount)
+	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).Send(Cdc, fa, ta, passphrase, amount)
 }
 
 func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
@@ -25,7 +25,7 @@ func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount 
 	if err != nil {
 		return nil, err
 	}
-	return (*app.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).StakeTx(Cdc, chains, serviceUrl, amount, fa, passphrase)
+	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).StakeTx(Cdc, chains, serviceUrl, amount, fa, passphrase)
 }
 
 func UnstakeNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
@@ -33,7 +33,7 @@ func UnstakeNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return (*app.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).UnstakeTx(Cdc, fa, passphrase)
+	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).UnstakeTx(Cdc, fa, passphrase)
 }
 
 func UnjailNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
@@ -41,7 +41,7 @@ func UnjailNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return (*app.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).UnjailTx(Cdc, fa, passphrase)
+	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).UnjailTx(Cdc, fa, passphrase)
 }
 
 func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
@@ -49,7 +49,7 @@ func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sd
 	if err != nil {
 		return nil, err
 	}
-	return (*app.mm.GetModule(appTypes.ModuleName)).(apps.AppModule).StakeTx(Cdc, chains, amount, fa, passphrase)
+	return (*pcInstance.mm.GetModule(appTypes.ModuleName)).(apps.AppModule).StakeTx(Cdc, chains, amount, fa, passphrase)
 }
 
 func UnstakeApp(fromAddr, passphrase string) (*sdk.TxResponse, error) {
@@ -57,5 +57,5 @@ func UnstakeApp(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return (*app.mm.GetModule(appTypes.ModuleName)).(apps.AppModule).UnstakeTx(Cdc, fa, passphrase)
+	return (*pcInstance.mm.GetModule(appTypes.ModuleName)).(apps.AppModule).UnstakeTx(Cdc, fa, passphrase)
 }

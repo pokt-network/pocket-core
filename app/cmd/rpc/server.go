@@ -53,6 +53,17 @@ func GetRoutes() Routes {
 		Route{Name: "QueryTX", Method: "POST", Path: "/v1/query/tx", HandlerFunc: Tx},
 		Route{Name: "QueryHeight", Method: "POST", Path: "/v1/query/height", HandlerFunc: Height},
 		Route{Name: "QueryBalance", Method: "POST", Path: "/v1/query/balance", HandlerFunc: Balance},
+		Route{Name: "QueryNodes", Method: "POST", Path: "/v1/query/nodes", HandlerFunc: Nodes},
+		Route{Name: "QueryNode", Method: "POST", Path: "/v1/query/node", HandlerFunc: Node},
+		Route{Name: "QueryNodeParams", Method: "POST", Path: "/v1/query/nodeparams", HandlerFunc: NodeParams},
+		Route{Name: "QueryNodeProofs", Method: "POST", Path: "/v1/query/nodeproofs", HandlerFunc: NodeProofs},
+		Route{Name: "QueryNodeProof", Method: "POST", Path: "/v1/query/nodeproof", HandlerFunc: NodeProof},
+		Route{Name: "QueryApps", Method: "POST", Path: "/v1/query/apps", HandlerFunc: Apps},
+		Route{Name: "QueryApp", Method: "POST", Path: "/v1/query/app", HandlerFunc: App},
+		Route{Name: "QueryAppParams", Method: "POST", Path: "/v1/query/appparams", HandlerFunc: AppParams},
+		Route{Name: "QueryPocketParams", Method: "POST", Path: "/v1/query/pocketparams", HandlerFunc: PocketParams},
+		Route{Name: "QuerySupportedChains", Method: "POST", Path: "/v1/query/supportedchains", HandlerFunc: SupportedChains},
+		Route{Name: "QuerySupply", Method: "POST", Path: "/v1/query/supply", HandlerFunc: Supply},
 	}
 	return routes
 }

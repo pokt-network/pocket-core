@@ -1,11 +1,9 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/posmint/types"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
@@ -16,11 +14,6 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
-)
-
-const (
-	pubKeytype  = "tendermint/PubKeyEd25519"
-	privKeyType = "tendermint/PrivKeyEd25519"
 )
 
 var (
@@ -70,24 +63,26 @@ var startCmd = &cobra.Command{
 			syscall.SIGQUIT,
 			os.Kill,
 			os.Interrupt)
+		// setup the codec
 		setCodec()
+		// setup the data directory
 		initDataDirectory()
-		initKeybase()
-		setGenesisFile()
+		// setup the keybase
+		pswrd := initKeybase()
+		// setup the genesis.json
+		initGenesis()
+		// setup the chains.json
 		initChains()
-		// remove below
-		kps, _ := (*app.GetKeybase()).List()
-		kp := kps[0]
-		j, _ := app.Cdc.MarshalJSON(types.ValAddress(kp.PubKey.Address()))
-		j3, _ := app.Cdc.MarshalJSON(types.ConsAddress(kp.PubKey.Address()))
-		j2, _ := types.Bech32ifyConsPub(kp.PubKey)
-		fmt.Println("VAL ADDR: -> " + string(j))
-		fmt.Println("Cons ADDR: -> " + string(j3))
-		fmt.Println("PUBKEY -> " + j2)
-		// remove above
-		fmt.Println("Pocket core needs your passphrase to start")
-		app.SetCoinbasePassphrase(credentials())
+		// setup coinbase password
+		if pswrd == "" {
+			fmt.Println("Pocket core needs your passphrase to start")
+			app.SetCoinbasePassphrase(credentials())
+		} else {
+			app.SetCoinbasePassphrase(pswrd)
+		}
+		// init the tendermint node
 		initTendermint()
+		// catch end signal
 		defer func() {
 			sig := <-signalChannel
 			tmNode, _ := app.GetTendermintNode()
@@ -196,20 +191,30 @@ func initChains() {
 	app.InitHostedChains(datadir + fs + "config")
 }
 
-func setGenesisFile() {
+func initGenesis() {
 	app.SetGenesisFilepath(datadir + fs + "config" + fs + "genesis.json")
+	if _, err := os.Stat(app.GetGenesisFilePath()); os.IsNotExist(err) {
+		kb := app.GetKeybase()
+		kps, err := (*kb).List()
+		if err != nil {
+			panic(err)
+		}
+		app.InitDefaultGenesisFile(datadir+fs+"config", kps[0].PubKey)
+	}
 }
 
-func initKeybase() {
+func initKeybase() string {
+	var password string
 	if err := app.InitKeybase(datadir); err != nil {
 		fmt.Println("Initializing keybase: enter coinbase passphrase")
-		password := credentials()
+		password = credentials()
 		err := app.CreateKeybase(datadir, password)
 		if err != nil {
 			panic(err)
 		}
 		initKeyfiles(password)
 	}
+	return password
 }
 
 func initTendermint() {
@@ -238,12 +243,4 @@ func initTendermint() {
 		fmt.Println(message)
 		os.Exit(3)
 	}()
-}
-
-var (
-	InitError = errors.New(" -> must run init command before any other")
-)
-
-func NewBeforeInitError(err error) error {
-	return errors.New(err.Error() + InitError.Error())
 }
