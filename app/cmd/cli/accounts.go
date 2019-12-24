@@ -269,9 +269,9 @@ var sendTxCmd = &cobra.Command{
 
 // sendRawTxCmd represents the sendTx command
 var sendRawTxCmd = &cobra.Command{
-	Use:   "send-raw-tx <fromAddr> <txBytex>",
-	Short: "Send POKT",
-	Long:  `Sends <amount> POKT <fromAddr> to <toAddr>. Prompts the user for <fromAddr> account passphrase.`,
+	Use:   "send-raw-tx <fromAddr> <txBytes>",
+	Short: "Send raw transaction from signed bytes",
+	Long:  `Sends presigned transaction through the tendermint node`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		bz, err := hex.DecodeString(args[1])
