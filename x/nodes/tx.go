@@ -6,6 +6,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
+	"github.com/tendermint/tendermint/rpc/client"
 )
 
 func (am AppModule) StakeTx(cdc *codec.Codec, chains []string, serviceURL string, amount sdk.Int, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
@@ -56,6 +57,14 @@ func (am AppModule) Send(cdc *codec.Codec, fromAddr, toAddr sdk.ValAddress, pass
 		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
+}
+
+func (am AppModule) RawTx(cdc *codec.Codec, fromAddr sdk.ValAddress, txBytes []byte) (sdk.TxResponse, error) {
+	return util.CLIContext{
+		Codec:       cdc,
+		Client:      client.NewLocal(am.node),
+		FromAddress: sdk.AccAddress(fromAddr),
+	}.BroadcastTx(txBytes)
 }
 
 func newTx(cdc *codec.Codec, am AppModule, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {

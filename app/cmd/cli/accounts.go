@@ -22,6 +22,7 @@ func init() {
 	accountsCmd.AddCommand(exportCmd)
 	accountsCmd.AddCommand(exportRawCmd)
 	accountsCmd.AddCommand(sendTxCmd)
+	accountsCmd.AddCommand(sendRawTxCmd)
 }
 
 // accountsCmd represents the accounts namespace command
@@ -259,6 +260,25 @@ var sendTxCmd = &cobra.Command{
 			panic(err)
 		}
 		res, err := app.SendTransaction(args[0], args[1], app.Credentials(), types.NewInt(int64(amount)))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Transaction Submitted: %s", res.TxHash)
+	},
+}
+
+// sendRawTxCmd represents the sendTx command
+var sendRawTxCmd = &cobra.Command{
+	Use:   "send-raw-tx <fromAddr> <txBytex>",
+	Short: "Send POKT",
+	Long:  `Sends <amount> POKT <fromAddr> to <toAddr>. Prompts the user for <fromAddr> account passphrase.`,
+	Args:  cobra.ExactArgs(2),
+	Run: func(cmd *cobra.Command, args []string) {
+		bz, err := hex.DecodeString(args[1])
+		if err != nil {
+			panic(err)
+		}
+		res, err := app.SendRawTx(args[0], bz)
 		if err != nil {
 			panic(err)
 		}
