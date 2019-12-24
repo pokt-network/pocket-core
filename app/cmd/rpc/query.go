@@ -84,7 +84,7 @@ func Balance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	s, err := app.Cdc.MarshalJSON(res)
+	s, err := app.GetCodec().MarshalJSON(res)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -157,7 +157,7 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, err := app.Cdc.MarshalJSON(res)
+	j, err := app.GetCodec().MarshalJSON(res)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -176,7 +176,7 @@ func NodeProofs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, err := app.Cdc.MarshalJSON(res)
+	j, err := app.GetCodec().MarshalJSON(res)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -203,7 +203,7 @@ func NodeProof(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, err := app.Cdc.MarshalJSON(res)
+	j, err := app.GetCodec().MarshalJSON(res)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -276,7 +276,7 @@ func AppParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, err := app.Cdc.MarshalJSON(res)
+	j, err := app.GetCodec().MarshalJSON(res)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -295,7 +295,7 @@ func PocketParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, err := app.Cdc.MarshalJSON(res)
+	j, err := app.GetCodec().MarshalJSON(res)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -314,7 +314,7 @@ func SupportedChains(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, err := app.Cdc.MarshalJSON(res)
+	j, err := app.GetCodec().MarshalJSON(res)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

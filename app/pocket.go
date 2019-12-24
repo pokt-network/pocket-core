@@ -24,11 +24,7 @@ import (
 	db "github.com/tendermint/tm-db"
 )
 
-const (
-	appName    = "pocket-core"
-	appVersion = "0.0.1"
-)
-
+// pocket core is an extension of baseapp
 type pocketCoreApp struct {
 	// extends baseapp
 	*bam.BaseApp
@@ -49,9 +45,10 @@ type pocketCoreApp struct {
 	mm *module.Manager
 }
 
+// new pocket core base
 func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)) *pocketCoreApp {
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(Cdc), options...)
+	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), options...)
 	// set version of the baseapp
 	bApp.SetAppVersion(appVersion)
 	// setup the key value store keys
@@ -61,23 +58,29 @@ func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 	// Create the application
 	return &pocketCoreApp{
 		BaseApp: bApp,
-		cdc:     Cdc,
+		cdc:     cdc,
 		keys:    k,
 		tkeys:   tkeys,
 	}
 }
 
+// inits from genesis
 func (app *pocketCoreApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	genesisState := cfg.GenesisStateFromFile(app.cdc, GetGenesisFilePath())
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
+// setups all of the begin blockers for each module
 func (app *pocketCoreApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
+
+// setups all of the end blockers for each module
 func (app *pocketCoreApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
+
+// loads the hight from the store
 func (app *pocketCoreApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
@@ -92,6 +95,7 @@ func (app *pocketCoreApp) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
+// sets the tenermint node and keybase in the abci app
 func (app *pocketCoreApp) SetNodeAndKeybase(tmNode *node.Node, kb *keys.Keybase) {
 	for _, m := range app.mm.Modules {
 		m.SetTendermintNode(tmNode)
@@ -100,6 +104,7 @@ func (app *pocketCoreApp) SetNodeAndKeybase(tmNode *node.Node, kb *keys.Keybase)
 	}
 }
 
+// exports the app state to json
 func (app *pocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
 	// as if they could withdraw from the start of the next block
 	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
@@ -110,3 +115,18 @@ func (app *pocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []str
 	}
 	return appState, nil
 }
+
+var (
+	// module account permissions
+	moduleAccountPermissions = map[string][]string{
+		auth.FeeCollectorName:     nil,
+		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
+		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
+		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
+	}
+)
+
+const (
+	appName    = "pocket-core"
+	appVersion = "0.0.1"
+)

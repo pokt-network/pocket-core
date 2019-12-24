@@ -21,16 +21,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-var (
-	// module account permissions
-	moduleAccountPermissions = map[string][]string{
-		auth.FeeCollectorName:     nil,
-		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
-		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
-		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
-	}
-)
-
 // NewPocketCoreApp is a constructor function for pocketCoreApp
 func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
 	app := newPocketBaseApp(logger, db, baseAppOptions...)
