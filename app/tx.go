@@ -20,6 +20,14 @@ func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.
 	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).Send(Cdc, fa, ta, passphrase, amount)
 }
 
+func SendRawTx(fromAddr string, txBytes []byte) (sdk.TxResponse, error) {
+	fa, err := sdk.ValAddressFromHex(fromAddr)
+	if err != nil {
+		return sdk.TxResponse{}, err
+	}
+	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).RawTx(Cdc, fa, txBytes)
+}
+
 func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
 	fa, err := sdk.ValAddressFromHex(fromAddr)
 	if err != nil {

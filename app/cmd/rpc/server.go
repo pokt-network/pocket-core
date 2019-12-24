@@ -49,6 +49,7 @@ func GetRoutes() Routes {
 		Route{Name: "Version", Method: "GET", Path: "/v1", HandlerFunc: Version},
 		Route{Name: "Dispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
 		Route{Name: "Service", Method: "POST", Path: "/v1/client/relay", HandlerFunc: Relay},
+		Route{Name: "SendRawTx", Method: "POST", Path: "/v1/client/rawtx", HandlerFunc: SendRawTx},
 		Route{Name: "QueryBlock", Method: "POST", Path: "/v1/query/block", HandlerFunc: Block},
 		Route{Name: "QueryTX", Method: "POST", Path: "/v1/query/tx", HandlerFunc: Tx},
 		Route{Name: "QueryHeight", Method: "POST", Path: "/v1/query/height", HandlerFunc: Height},
