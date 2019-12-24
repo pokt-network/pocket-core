@@ -226,8 +226,8 @@ func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
 func InitGenesis(filepath string) {
 	SetGenesisFilepath(filepath + fs + "genesis.json")
 	if _, err := os.Stat(GetGenesisFilePath()); os.IsNotExist(err) {
-		kb := GetKeybase()
-		kps, err := (*kb).List()
+		keys := GetKeybase()
+		kps, err := (*keys).List()
 		if err != nil {
 			panic(err)
 		}
@@ -284,6 +284,20 @@ func InitGenesis(filepath string) {
 			}
 		}
 	}
+}
+
+func ConfirmCoinbasePassword(pswrd string) error {
+	keys := GetKeybase()
+	kps, err := (*keys).List()
+	if err != nil {
+		panic(err)
+	}
+	kp := kps[0]
+	err = (*keys).Update(kp.GetAddress(), pswrd, pswrd)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // get the in process tendermint node

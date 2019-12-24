@@ -71,10 +71,13 @@ var startCmd = &cobra.Command{
 		// setup coinbase password
 		if pswrd == "" {
 			fmt.Println("Pocket core needs your passphrase to start")
-			app.SetCoinbasePassphrase(app.Credentials())
-		} else {
-			app.SetCoinbasePassphrase(pswrd)
+			pswrd = app.Credentials()
+			err := app.ConfirmCoinbasePassword(pswrd)
+			if err != nil {
+				panic("Coinbase Password could not be verified: " + err.Error())
+			}
 		}
+		app.SetCoinbasePassphrase(pswrd)
 		// init the tendermint node
 		app.InitTendermint(datadir, persistentPeers, seeds)
 		// catch end signal
