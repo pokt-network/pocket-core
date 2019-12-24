@@ -53,8 +53,8 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 type sendRawTxParams struct {
-	Addr        string
-	RawHexBytes string
+	Addr        string `json:"address"`
+	RawHexBytes string `json:"raw_hex_bytes"`
 }
 
 func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
