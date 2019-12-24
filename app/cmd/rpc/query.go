@@ -19,7 +19,7 @@ type heightParams struct {
 }
 
 type hashParams struct {
-	Hash string `json:"string"`
+	Hash string `json:"hash"`
 }
 
 type heightAddrParams struct {
@@ -28,8 +28,8 @@ type heightAddrParams struct {
 }
 
 type heightAndStakingStatusParams struct {
-	Height        int64
-	StakingStatus string
+	Height        int64  `json:"height"`
+	StakingStatus string `json:"staking_status"`
 }
 
 func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

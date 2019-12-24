@@ -97,8 +97,8 @@ func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 }
 
 type rpcError struct {
-	Code    int
-	Message string
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 func PopModel(_ http.ResponseWriter, r *http.Request, _ httprouter.Params, model interface{}) error {
