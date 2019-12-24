@@ -12,7 +12,7 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/config"
+	cfg "github.com/pokt-network/posmint/config"
 	kb "github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
@@ -57,7 +57,7 @@ var (
 	// global hosted blockchains instance
 	hostedBlockchains *types.HostedBlockchains
 	// expose coded to pcInstance module
-	Cdc *codec.Codec
+	cdc *codec.Codec
 	// passphrase needed for pocket core module
 	passphrase string
 	// the filepath to the genesis.json
@@ -66,30 +66,8 @@ var (
 	fs = string(filepath2.Separator)
 )
 
-// keybase creation
-func CreateKeybase(datadir, passphrase string) error {
-	keys := kb.New(keybaseName, datadir+fs+kbDirName)
-	_, err := keys.Create(passphrase)
-	if err != nil {
-		return err
-	}
-	SetKeybase(&keys)
-	return nil
-}
-
-// keybase initialization
-func InitKeybase(datadir string) error {
-	keys := kb.New(keybaseName, datadir+fs+kbDirName)
-	kps, err := keys.List()
-	if err != nil {
-		return err
-	}
-	if len(kps) == 0 {
-		return UninitializedKeybaseError
-	}
-	SetKeybase(&keys)
-	return nil
-}
+// set the global keybase
+func SetKeybase(k *kb.Keybase) { keybase = k }
 
 // get the global keybase
 func GetKeybase() *kb.Keybase {
@@ -98,9 +76,6 @@ func GetKeybase() *kb.Keybase {
 	}
 	return keybase
 }
-
-// set the global keybase
-func SetKeybase(k *kb.Keybase) { keybase = k }
 
 // initialize the hosted chains
 func InitHostedChains(filepath string) {
@@ -170,57 +145,12 @@ func GetHostedChains() types.HostedBlockchains {
 	return *hostedBlockchains
 }
 
-// init the tendermint node with a logger and configruation
-func InitTendermintNode(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr string) *node.Node {
-	// setup the logger
-	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
-		if keyvals[0] != kitlevel.Key() {
-			panic(fmt.Sprintf("expected level key to be first, got %v", keyvals[0]))
-		}
-		switch keyvals[1].(kitlevel.Value).String() {
-		case "info":
-			return term.FgBgColor{Fg: term.Green}
-		case "debug":
-			return term.FgBgColor{Fg: term.DarkBlue}
-		case "error":
-			return term.FgBgColor{Fg: term.Red}
-		default:
-			return term.FgBgColor{}
-		}
-	})
-	cfg := *config.NewConfig(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr, true, 0, 40, 10, logger, "")
-	var err error
-	tmNode, pcInstance, err = NewClient(Config(cfg), newApp)
-	if err != nil {
-		panic(err)
+// get the in process tendermint node
+func GetTendermintNode() (*node.Node, error) {
+	if tmNode == nil {
+		return nil, UninitializedTendermintError
 	}
-	return tmNode
-}
-
-func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
-	defaultGenesis := module.NewBasicManager(
-		apps.AppModuleBasic{},
-		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
-		nodes.AppModuleBasic{},
-		supply.AppModuleBasic{},
-		pocket.AppModuleBasic{},
-	).DefaultGenesis()
-	rawPOS := defaultGenesis[nodesTypes.ModuleName]
-	var posGenesisState nodesTypes.GenesisState
-	types.ModuleCdc.MustUnmarshalJSON(rawPOS, &posGenesisState)
-	posGenesisState.Validators = append(posGenesisState.Validators,
-		nodesTypes.Validator{Address: sdk.ValAddress(pubKey.Address()),
-			ConsPubKey:   pubKey,
-			Status:       sdk.Bonded,
-			Chains:       []string{dummyChainsHash},
-			ServiceURL:   dummyServiceURL,
-			StakedTokens: sdk.NewInt(10000000)})
-	res := types.ModuleCdc.MustMarshalJSON(posGenesisState)
-	defaultGenesis[nodesTypes.ModuleName] = res
-	j, _ := types.ModuleCdc.MarshalJSONIndent(defaultGenesis, "", "    ")
-	return j
+	return tmNode, nil
 }
 
 func InitGenesis(filepath string) {
@@ -268,7 +198,7 @@ func InitGenesis(filepath string) {
 			if err != nil {
 				panic(err)
 			}
-			bz, err := Cdc.MarshalJSONIndent(defaultGenesis, "", "    ")
+			bz, err := cdc.MarshalJSONIndent(defaultGenesis, "", "    ")
 			if err != nil {
 				panic(err)
 			}
@@ -300,36 +230,8 @@ func ConfirmCoinbasePassword(pswrd string) error {
 	return nil
 }
 
-// get the in process tendermint node
-func GetTendermintNode() (*node.Node, error) {
-	if tmNode == nil {
-		return nil, UninitializedTendermintError
-	}
-	return tmNode, nil
-}
-
-func SetCoinbasePassphrase(pass string) {
-	passphrase = pass
-}
-
-func GetCoinbasePassphrase() string {
-	return passphrase
-}
-
-func SetGenesisFilepath(filepath string) {
-	genesisFP = filepath
-}
-
-func GetGenesisFilePath() string {
-	return genesisFP
-}
-
-func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer) *pocketCoreApp {
-	return NewPocketCoreApp(logger, db)
-}
-
 func InitTendermint(datadir, persistentPeers, seeds string) {
-	tmNode := InitTendermintNode(datadir, "", "node_key.json", "priv_val_key.json",
+	tmNode := initTendermint(datadir, "", "node_key.json", "priv_val_key.json",
 		"priv_val_state.json", persistentPeers, seeds, "0.0.0.0:46656")
 	if err := tmNode.Start(); err != nil {
 		panic(err)
@@ -378,10 +280,10 @@ func InitDataDirectory(datadir string) string {
 
 func InitKeyfiles(datadir string) string {
 	var password string
-	if err := InitKeybase(datadir); err != nil {
+	if err := initKeybase(datadir); err != nil {
 		fmt.Println("Initializing keybase: enter coinbase passphrase")
 		password = Credentials()
-		err := CreateKeybase(datadir, password)
+		err := newKeybase(datadir, password)
 		if err != nil {
 			panic(err)
 		}
@@ -404,15 +306,15 @@ func InitKeyfiles(datadir string) string {
 		nodeKey := p2p.NodeKey{
 			PrivKey: res,
 		}
-		pvkBz, err := Cdc.MarshalJSONIndent(privValKey, "", "  ")
+		pvkBz, err := cdc.MarshalJSONIndent(privValKey, "", "  ")
 		if err != nil {
 			panic(err)
 		}
-		nkBz, err := Cdc.MarshalJSONIndent(nodeKey, "", "  ")
+		nkBz, err := cdc.MarshalJSONIndent(nodeKey, "", "  ")
 		if err != nil {
 			panic(err)
 		}
-		pvsBz, err := Cdc.MarshalJSONIndent(privValState, "", "  ")
+		pvsBz, err := cdc.MarshalJSONIndent(privValState, "", "  ")
 		if err != nil {
 			panic(err)
 		}
@@ -446,7 +348,7 @@ func InitKeyfiles(datadir string) string {
 
 func SetCodec() {
 	// create a new codec
-	Cdc = codec.New()
+	cdc = codec.New()
 	// register all of the app module types
 	module.NewBasicManager(
 		apps.AppModuleBasic{},
@@ -456,11 +358,31 @@ func SetCodec() {
 		nodes.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
-	).RegisterCodec(Cdc)
+	).RegisterCodec(cdc)
 	// register the sdk types
-	sdk.RegisterCodec(Cdc)
+	sdk.RegisterCodec(cdc)
 	// register the crypto types
-	codec.RegisterCrypto(Cdc)
+	codec.RegisterCrypto(cdc)
+}
+
+func GetCodec() *codec.Codec {
+	return cdc
+}
+
+func SetCoinbasePassphrase(pass string) {
+	passphrase = pass
+}
+
+func GetCoinbasePassphrase() string {
+	return passphrase
+}
+
+func SetGenesisFilepath(filepath string) {
+	genesisFP = filepath
+}
+
+func GetGenesisFilePath() string {
+	return genesisFP
 }
 
 func Credentials() string {
@@ -469,4 +391,86 @@ func Credentials() string {
 		panic(err)
 	}
 	return strings.TrimSpace(string(bytePassword))
+}
+
+func newApp(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
+	return NewPocketCoreApp(logger, db)
+}
+
+// init the tendermint node with a logger and configruation
+func initTendermint(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr string) *node.Node {
+	// setup the logger
+	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
+		if keyvals[0] != kitlevel.Key() {
+			panic(fmt.Sprintf("expected level key to be first, got %v", keyvals[0]))
+		}
+		switch keyvals[1].(kitlevel.Value).String() {
+		case "info":
+			return term.FgBgColor{Fg: term.Green}
+		case "debug":
+			return term.FgBgColor{Fg: term.DarkBlue}
+		case "error":
+			return term.FgBgColor{Fg: term.Red}
+		default:
+			return term.FgBgColor{}
+		}
+	})
+	c := *cfg.NewConfig(rootDir, dataDir, nodeKey, privValKey, privValState, persistentPeers, seeds, listenAddr, true, 0, 40, 10, logger, "")
+	var err error
+	tmNode, pcInstance, err = NewClient(config(c), newApp)
+	if err != nil {
+		panic(err)
+	}
+	return tmNode
+}
+
+// keybase creation
+func newKeybase(datadir, passphrase string) error {
+	keys := kb.New(keybaseName, datadir+fs+kbDirName)
+	_, err := keys.Create(passphrase)
+	if err != nil {
+		return err
+	}
+	SetKeybase(&keys)
+	return nil
+}
+
+// keybase initialization
+func initKeybase(datadir string) error {
+	keys := kb.New(keybaseName, datadir+fs+kbDirName)
+	kps, err := keys.List()
+	if err != nil {
+		return err
+	}
+	if len(kps) == 0 {
+		return UninitializedKeybaseError
+	}
+	SetKeybase(&keys)
+	return nil
+}
+
+func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
+	defaultGenesis := module.NewBasicManager(
+		apps.AppModuleBasic{},
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		params.AppModuleBasic{},
+		nodes.AppModuleBasic{},
+		supply.AppModuleBasic{},
+		pocket.AppModuleBasic{},
+	).DefaultGenesis()
+	rawPOS := defaultGenesis[nodesTypes.ModuleName]
+	var posGenesisState nodesTypes.GenesisState
+	types.ModuleCdc.MustUnmarshalJSON(rawPOS, &posGenesisState)
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{Address: sdk.ValAddress(pubKey.Address()),
+			ConsPubKey:   pubKey,
+			Status:       sdk.Bonded,
+			Chains:       []string{dummyChainsHash},
+			ServiceURL:   dummyServiceURL,
+			StakedTokens: sdk.NewInt(10000000)})
+	res := types.ModuleCdc.MustMarshalJSON(posGenesisState)
+	defaultGenesis[nodesTypes.ModuleName] = res
+	j, _ := types.ModuleCdc.MarshalJSONIndent(defaultGenesis, "", "    ")
+	return j
 }

@@ -16,7 +16,7 @@ import (
 
 type AppCreator func(log.Logger, dbm.DB, io.Writer) *pocketCoreApp
 
-func NewClient(ctx Config, creator AppCreator) (*node.Node, *pocketCoreApp, error) {
+func NewClient(ctx config, creator AppCreator) (*node.Node, *pocketCoreApp, error) {
 	// setup the database
 	db, err := openDB(ctx.TmConfig.RootDir)
 	if err != nil {
@@ -35,7 +35,7 @@ func NewClient(ctx Config, creator AppCreator) (*node.Node, *pocketCoreApp, erro
 		return nil, nil, err
 	}
 	// upgrade the privVal file
-	UpgradeOldPrivValFile(ctx.TmConfig)
+	upgradePrivVal(ctx.TmConfig)
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
 		ctx.TmConfig,
@@ -73,9 +73,9 @@ func openTraceWriter(traceWriterFile string) (w io.Writer, err error) {
 	return
 }
 
-// UpgradeOldPrivValFile converts old priv_validator.json file (prior to Tendermint 0.28)
+// upgradePrivVal converts old priv_validator.json file (prior to Tendermint 0.28)
 // to the new priv_validator_key.json and priv_validator_state.json files.
-func UpgradeOldPrivValFile(config *cfg.Config) {
+func upgradePrivVal(config *cfg.Config) {
 	if _, err := os.Stat(config.OldPrivValidatorFile()); !os.IsNotExist(err) {
 		if oldFilePV, err := pvm.LoadOldFilePV(config.OldPrivValidatorFile()); err == nil {
 			oldFilePV.Upgrade(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
@@ -83,7 +83,7 @@ func UpgradeOldPrivValFile(config *cfg.Config) {
 	}
 }
 
-type Config struct {
+type config struct {
 	TmConfig    *cfg.Config
 	Logger      log.Logger
 	TraceWriter string
