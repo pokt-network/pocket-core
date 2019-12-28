@@ -6,10 +6,11 @@ import (
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/util"
+	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func (am AppModule) QueryProof(cdc *codec.Codec, addr sdk.ValAddress, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.StoredProof, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
+func QueryProof(cdc *codec.Codec, addr sdk.ValAddress, tmNode client.Client, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.StoredProof, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
 	params := types.QueryPORParams{
 		Address: addr,
 		Header: types.SessionHeader{
@@ -31,8 +32,8 @@ func (am AppModule) QueryProof(cdc *codec.Codec, addr sdk.ValAddress, blockchain
 	return &ps, nil
 }
 
-func (am AppModule) QueryProofs(cdc *codec.Codec, addr sdk.ValAddress, height int64) ([]types.StoredProof, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryProofs(cdc *codec.Codec, tmNode client.Client, addr sdk.ValAddress, height int64) ([]types.StoredProof, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryPORsParams{
 		Address: addr,
 	}
@@ -49,8 +50,8 @@ func (am AppModule) QueryProofs(cdc *codec.Codec, addr sdk.ValAddress, height in
 	return ps, nil
 }
 
-func (am AppModule) QueryParams(cdc *codec.Codec, height int64) (types.Params, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryParams(cdc *codec.Codec, tmNode client.Client, height int64) (types.Params, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	route := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryParameters)
 	bz, _, err := cliCtx.QueryWithData(route, nil)
 	if err != nil {
@@ -61,9 +62,9 @@ func (am AppModule) QueryParams(cdc *codec.Codec, height int64) (types.Params, e
 	return params, nil
 }
 
-func (am AppModule) QueryPocketSupportedBlockchains(cdc *codec.Codec, height int64) ([]string, error) {
+func QueryPocketSupportedBlockchains(cdc *codec.Codec, tmNode client.Client, height int64) ([]string, error) {
 	var chains []string
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	res, _, err := cliCtx.Query(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QuerySupportedBlockchains))
 	if err != nil {
 		return nil, err
@@ -72,8 +73,8 @@ func (am AppModule) QueryPocketSupportedBlockchains(cdc *codec.Codec, height int
 	return chains, nil
 }
 
-func (am AppModule) QueryRelay(cdc *codec.Codec, relay types.Relay) (*types.RelayResponse, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(0)
+func QueryRelay(cdc *codec.Codec, tmNode client.Client, relay types.Relay) (*types.RelayResponse, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(0)
 	params := types.QueryRelayParams{
 		Relay: relay,
 	}
@@ -93,8 +94,8 @@ func (am AppModule) QueryRelay(cdc *codec.Codec, relay types.Relay) (*types.Rela
 	return response, nil
 }
 
-func (am AppModule) QueryDispatch(cdc *codec.Codec, header types.SessionHeader) (*types.Session, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(0)
+func QueryDispatch(cdc *codec.Codec, tmNode client.Client, header types.SessionHeader) (*types.Session, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(0)
 	params := types.QueryDispatchParams{
 		SessionHeader: header,
 	}

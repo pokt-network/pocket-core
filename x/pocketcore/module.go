@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/crypto/keys"
-	"github.com/tendermint/tendermint/node"
-
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
@@ -45,30 +42,11 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 	return types.ValidateGenesis(data)
 }
 
-func (am AppModule) SetTendermintNode(n *node.Node) {
-	am.node = n
-}
-
-func (am AppModule) GetTendermintNode() *node.Node {
-	return am.node
-}
-
-func (am AppModule) SetKeybase(k *keys.Keybase) {
-	am.keybase = k
-	am.keeper.Keybase = k
-}
-
-func (am AppModule) GetKeybase() *keys.Keybase {
-	return am.keybase
-}
-
 type AppModule struct {
 	AppModuleBasic
 	keeper     keeper.Keeper
 	posKeeper  types.PosKeeper
 	appsKeeper types.AppsKeeper
-	node       *node.Node
-	keybase    *keys.Keybase
 }
 
 // NewAppModule creates a new AppModule Object
@@ -105,9 +83,9 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	if am.keeper.IsSessionBlock(ctx) {
 		// auto send the proofs
-		am.keeper.SendClaimTx(ctx, am.GetTendermintNode(), am.ClaimTx)
+		am.keeper.SendClaimTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ClaimTx)
 		// auto claim the proofs
-		am.keeper.SendProofTx(ctx, am.GetTendermintNode(), am.ProofTx)
+		am.keeper.SendProofTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ProofTx)
 	}
 	keeper.BeginBlocker(ctx, req, am.keeper)
 }

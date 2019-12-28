@@ -11,7 +11,6 @@ import (
 	bam "github.com/pokt-network/posmint/baseapp"
 	"github.com/pokt-network/posmint/codec"
 	cfg "github.com/pokt-network/posmint/config"
-	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
@@ -20,7 +19,6 @@ import (
 	"github.com/pokt-network/posmint/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/node"
 	db "github.com/tendermint/tm-db"
 )
 
@@ -93,15 +91,6 @@ func (app *pocketCoreApp) ModuleAccountAddrs() map[string]bool {
 	}
 
 	return modAccAddrs
-}
-
-// sets the tenermint node and keybase in the abci app
-func (app *pocketCoreApp) SetNodeAndKeybase(tmNode *node.Node, kb *keys.Keybase) {
-	for _, m := range app.mm.Modules {
-		m.SetTendermintNode(tmNode)
-		m.SetKeybase(kb)
-		app.mm.SetModule(m.Name(), m)
-	}
 }
 
 // exports the app state to json

@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"github.com/pokt-network/merkle"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
-	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/rpc/client"
 	"math"
 	"strconv"
 )
@@ -79,7 +79,11 @@ type pseudorandomGenerator struct {
 }
 
 // auto sends a claim of work based on relays completed
-func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error)) { // todo should move tx to keeper?
+func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error)) {
+	kp, err := keybase.List()
+	if err != nil {
+		panic(err)
+	}
 	// get all the proofs held in memory
 	proofs := pc.GetAllProofs()
 	// for every proof in AllProofs
@@ -90,22 +94,22 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n *node.Node, proofTx func(cdc *cod
 			continue
 		}
 		// check the current state to see if the unverified proof has already been sent and processed (if so, then skip this proof)
-		if _, found := k.GetUnverfiedProof(ctx, sdk.ValAddress(n.PrivValidator().GetPubKey().Address()), proof.SessionHeader); found {
+		if _, found := k.GetUnverfiedProof(ctx, sdk.ValAddress(kp[0].GetAddress()), proof.SessionHeader); found {
 			continue
 		}
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, k)
+		txBuilder, cliCtx := newTxBuilderAndCliCtx(n, keybase, k)
 		// generate the merkle root for this proof
 		root := proof.GenerateMerkleRoot()
 		// send in the proof header, the total relays completed, and the merkle root (ensures data integrity)
-		if _, err := proofTx(k.cdc, cliCtx, txBuilder, proof.SessionHeader, proof.TotalRelays, root); err != nil {
+		if _, err := proofTx(keybase, cliCtx, txBuilder, proof.SessionHeader, proof.TotalRelays, root); err != nil {
 			panic(err)
 		}
 	}
 }
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode pc.Proof) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, claimTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode pc.Proof) (*sdk.TxResponse, error)) {
 	kp, err := k.GetCoinbaseKeypair(ctx)
 	if err != nil {
 		panic(err)
@@ -125,7 +129,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 			continue
 		}
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, k)
+		txBuilder, cliCtx := newTxBuilderAndCliCtx(n, keybase, k)
 		// generate the proof of relay object using the found proof and local cache
 		por := pc.ProofOfRelay{
 			SessionHeader: proof.SessionHeader,
@@ -139,7 +143,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n *node.Node, claimTx func(cdc *cod
 		// get the leaf for the required pseudorandom proof index
 		leaf := pc.GetAllProofs().GetProof(proof.SessionHeader, reqProof)
 		// send the claim TX
-		_, err := claimTx(k.cdc, cliCtx, txBuilder, branch, *leaf)
+		_, err := claimTx(cliCtx, txBuilder, branch, *leaf)
 		if err != nil {
 			panic(err)
 		}
@@ -296,11 +300,20 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 }
 
 // todo this auto tx needs to be fixed
-func newTxBuilderAndCliCtx(ctx sdk.Context, n *node.Node, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
-	fromAddr := sdk.AccAddress(n.PrivValidator().GetPubKey().Address())
+func newTxBuilderAndCliCtx(n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+	kp, err := keybase.List()
+	if err != nil {
+		panic(err)
+	}
+	genDoc, err := n.Genesis()
+	if err != nil {
+		panic(err)
+	}
+	pubKey := kp[0].PubKey
+	fromAddr := sdk.AccAddress(pubKey.Bytes())
 	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
 	accGetter := auth.NewAccountRetriever(cliCtx)
-	err := accGetter.EnsureExists(fromAddr)
+	err = accGetter.EnsureExists(fromAddr)
 	if err != nil {
 		panic(err)
 	}
@@ -312,9 +325,9 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, n *node.Node, k Keeper) (txBuilder a
 		auth.DefaultTxEncoder(k.cdc),
 		account.GetAccountNumber(),
 		account.GetSequence(),
-		n.GenesisDoc().ChainID,
+		genDoc.Genesis.ChainID,
 		"",
 		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(10))),
-	).WithKeybase(*k.Keybase)
+	).WithKeybase(keybase)
 	return
 }

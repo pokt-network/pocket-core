@@ -3,9 +3,8 @@ package app
 import "errors"
 
 var (
-	UninitializedKeybaseError    = errors.New("uninitialized keybase")
-	InvalidChainsError           = errors.New("invalid chains.json")
-	UninitializedTendermintError = errors.New("uninitialized tendermint node")
+	UninitializedKeybaseError = errors.New("uninitialized keybase")
+	InvalidChainsError        = errors.New("invalid chains.json")
 )
 
 func NewInvalidChainsError(err error) error {

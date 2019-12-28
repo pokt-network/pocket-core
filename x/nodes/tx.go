@@ -3,17 +3,18 @@ package nodes
 import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func (am AppModule) StakeTx(cdc *codec.Codec, chains []string, serviceURL string, amount sdk.Int, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, am, passphrase)
+func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, serviceURL string, amount sdk.Int, kp keys.KeyPair, passphrase string) (*sdk.TxResponse, error) {
+	txBuilder, cliCtx := newTx(cdc, tmNode, keybase, passphrase)
 	msg := types.MsgStake{
-		Address:    address,
-		PubKey:     am.node.PrivValidator().GetPubKey(),
+		Address:    sdk.ValAddress(kp.GetAddress()),
+		PubKey:     kp.PubKey,
 		Value:      amount,
 		ServiceURL: serviceURL, // url where pocket service api is hosted
 		Chains:     chains,     // non native blockchains
@@ -25,8 +26,8 @@ func (am AppModule) StakeTx(cdc *codec.Codec, chains []string, serviceURL string
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) UnstakeTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, am, passphrase)
+func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
+	txBuilder, cliCtx := newTx(cdc, tmNode, keybase, passphrase)
 	msg := types.MsgBeginUnstake{Address: address}
 	err := msg.ValidateBasic()
 	if err != nil {
@@ -35,8 +36,8 @@ func (am AppModule) UnstakeTx(cdc *codec.Codec, address sdk.ValAddress, passphra
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) UnjailTx(cdc *codec.Codec, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, am, passphrase)
+func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
+	txBuilder, cliCtx := newTx(cdc, tmNode, keybase, passphrase)
 	msg := types.MsgUnjail{ValidatorAddr: address}
 	err := msg.ValidateBasic()
 	if err != nil {
@@ -45,8 +46,8 @@ func (am AppModule) UnjailTx(cdc *codec.Codec, address sdk.ValAddress, passphras
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) Send(cdc *codec.Codec, fromAddr, toAddr sdk.ValAddress, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, am, passphrase)
+func Send(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddr, toAddr sdk.ValAddress, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
+	txBuilder, cliCtx := newTx(cdc, tmNode, keybase, passphrase)
 	msg := types.MsgSend{
 		FromAddress: fromAddr,
 		ToAddress:   toAddr,
@@ -59,20 +60,28 @@ func (am AppModule) Send(cdc *codec.Codec, fromAddr, toAddr sdk.ValAddress, pass
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) RawTx(cdc *codec.Codec, fromAddr sdk.ValAddress, txBytes []byte) (sdk.TxResponse, error) {
+func RawTx(cdc *codec.Codec, tmNode client.Client, fromAddr sdk.ValAddress, txBytes []byte) (sdk.TxResponse, error) {
 	return util.CLIContext{
 		Codec:       cdc,
-		Client:      client.NewLocal(am.node),
+		Client:      tmNode,
 		FromAddress: sdk.AccAddress(fromAddr),
 	}.BroadcastTx(txBytes)
 }
 
-func newTx(cdc *codec.Codec, am AppModule, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
-	chainID := am.node.GenesisDoc().ChainID
-	fromAddr := sdk.AccAddress(am.node.PrivValidator().GetPubKey().Address())
-	cliCtx = util.NewCLIContext(am.node, fromAddr, passphrase).WithCodec(cdc)
+func newTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+	genDoc, err := tmNode.Genesis()
+	if err != nil {
+		panic(err)
+	}
+	kp, err := keybase.List()
+	if err != nil {
+		panic(err)
+	}
+	chainID := genDoc.Genesis.ChainID
+	fromAddr := kp[0].GetAddress()
+	cliCtx = util.NewCLIContext(tmNode, fromAddr, passphrase).WithCodec(cdc)
 	accGetter := auth.NewAccountRetriever(cliCtx)
-	err := accGetter.EnsureExists(fromAddr)
+	err = accGetter.EnsureExists(fromAddr)
 	account, err := accGetter.GetAccount(fromAddr)
 	if err != nil {
 		panic(err)
@@ -83,6 +92,6 @@ func newTx(cdc *codec.Codec, am AppModule, passphrase string) (txBuilder auth.Tx
 		account.GetSequence(),
 		chainID,
 		"",
-		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(10)))).WithKeybase(*am.GetKeybase())
+		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(10)))).WithKeybase(keybase)
 	return
 }

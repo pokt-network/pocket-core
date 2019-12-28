@@ -6,10 +6,11 @@ import (
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/util"
+	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func (am AppModule) QueryApplication(cdc *codec.Codec, addr sdk.ValAddress, height int64) (types.Application, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryApplication(cdc *codec.Codec, tmNode client.Client, addr sdk.ValAddress, height int64) (types.Application, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	res, _, err := cliCtx.QueryStore(types.KeyForAppByAllApps(addr), types.StoreKey)
 	if err != nil {
 		return types.Application{}, err
@@ -20,8 +21,8 @@ func (am AppModule) QueryApplication(cdc *codec.Codec, addr sdk.ValAddress, heig
 	return types.MustUnmarshalApplication(cdc, res), nil
 }
 
-func (am AppModule) QueryApplications(cdc *codec.Codec, height int64) (types.Applications, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryApplications(cdc *codec.Codec, tmNode client.Client, height int64) (types.Applications, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	resKVs, _, err := cliCtx.QuerySubspace(types.AllApplicationsKey, types.StoreKey)
 	if err != nil {
 		return types.Applications{}, err
@@ -33,8 +34,8 @@ func (am AppModule) QueryApplications(cdc *codec.Codec, height int64) (types.App
 	return applications, nil
 }
 
-func (am AppModule) QueryStakedApplications(cdc *codec.Codec, height int64) (types.Applications, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryStakedApplications(cdc *codec.Codec, tmNode client.Client, height int64) (types.Applications, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	resKVs, _, err := cliCtx.QuerySubspace(types.StakedAppsKey, types.StoreKey)
 	if err != nil {
 		return types.Applications{}, err
@@ -46,8 +47,8 @@ func (am AppModule) QueryStakedApplications(cdc *codec.Codec, height int64) (typ
 	return applications, nil
 }
 
-func (am AppModule) QueryUnstakedApplications(cdc *codec.Codec, height int64) (types.Applications, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryUnstakedApplications(cdc *codec.Codec, tmNode client.Client, height int64) (types.Applications, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	resKVs, _, err := cliCtx.QuerySubspace(types.UnstakedAppsKey, types.StoreKey)
 	if err != nil {
 		return types.Applications{}, err
@@ -59,8 +60,8 @@ func (am AppModule) QueryUnstakedApplications(cdc *codec.Codec, height int64) (t
 	return applications, nil
 }
 
-func (am AppModule) QueryUnstakingApplications(cdc *codec.Codec, height int64) (types.Applications, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryUnstakingApplications(cdc *codec.Codec, tmNode client.Client, height int64) (types.Applications, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	resKVs, _, err := cliCtx.QuerySubspace(types.UnstakingAppsKey, types.StoreKey)
 	if err != nil {
 		return types.Applications{}, err
@@ -72,8 +73,8 @@ func (am AppModule) QueryUnstakingApplications(cdc *codec.Codec, height int64) (
 	return applications, nil
 }
 
-func (am AppModule) QuerySupply(cdc *codec.Codec, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QuerySupply(cdc *codec.Codec, tmNode client.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/appStakedPool", types.StoreKey), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
@@ -93,8 +94,8 @@ func (am AppModule) QuerySupply(cdc *codec.Codec, height int64) (stakedCoins sdk
 	return stakedPool.Tokens, unstakedPool.Tokens, nil
 }
 
-func (am AppModule) QueryPOSParams(cdc *codec.Codec, height int64) (types.Params, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryPOSParams(cdc *codec.Codec, tmNode client.Client, height int64) (types.Params, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	route := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryParameters)
 	bz, _, err := cliCtx.QueryWithData(route, nil)
 	if err != nil {

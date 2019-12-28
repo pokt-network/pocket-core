@@ -5,11 +5,9 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/keeper"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/node"
 )
 
 var (
@@ -51,8 +49,6 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 // AppModule implements an application module for the staking module.
 type AppModule struct {
 	AppModuleBasic
-	keybase      *keys.Keybase
-	node         *node.Node
 	keeper       keeper.Keeper
 	supplyKeeper types.SupplyKeeper
 	posKeeper    types.PosKeeper
@@ -76,22 +72,6 @@ func (AppModule) Name() string {
 // RegisterInvariants registers the staking module invariants.
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
 	keeper.RegisterInvariants(ir, am.keeper)
-}
-
-func (am AppModule) SetTendermintNode(n *node.Node) {
-	am.node = n
-}
-
-func (am AppModule) GetTendermintNode() *node.Node {
-	return am.node
-}
-
-func (am AppModule) SetKeybase(k *keys.Keybase) {
-	am.keybase = k
-}
-
-func (am AppModule) GetKeybase() *keys.Keybase {
-	return am.keybase
 }
 
 // Route returns the message routing key for the staking module.

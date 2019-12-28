@@ -7,13 +7,12 @@ import (
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/util"
-
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
-func (am AppModule) QueryAccountBalance(cdc *codec.Codec, addr sdk.ValAddress, height int64) (sdk.Int, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.ValAddress, height int64) (sdk.Int, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryAccountBalanceParams{ValAddress: addr}
 	bz, err := cdc.MarshalBinaryBare(params)
 	if err != nil {
@@ -28,8 +27,8 @@ func (am AppModule) QueryAccountBalance(cdc *codec.Codec, addr sdk.ValAddress, h
 	return balance, nil
 }
 
-func (am AppModule) QueryValidator(cdc *codec.Codec, addr sdk.ValAddress, height int64) (types.Validator, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryValidator(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.ValAddress, height int64) (types.Validator, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	res, _, err := cliCtx.QueryStore(types.KeyForValByAllVals(addr), types.StoreKey)
 	if err != nil {
 		return types.Validator{}, err
@@ -40,8 +39,8 @@ func (am AppModule) QueryValidator(cdc *codec.Codec, addr sdk.ValAddress, height
 	return types.MustUnmarshalValidator(cdc, res), nil
 }
 
-func (am AppModule) QueryValidators(cdc *codec.Codec, height int64) (types.Validators, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	resKVs, _, err := cliCtx.QuerySubspace(types.AllValidatorsKey, types.StoreKey)
 	if err != nil {
 		return types.Validators{}, err
@@ -53,8 +52,8 @@ func (am AppModule) QueryValidators(cdc *codec.Codec, height int64) (types.Valid
 	return validators, nil
 }
 
-func (am AppModule) QueryStakedValidators(cdc *codec.Codec, height int64) (types.Validators, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryStakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	resKVs, _, err := cliCtx.QuerySubspace(types.StakedValidatorsKey, types.StoreKey)
 	if err != nil {
 		return types.Validators{}, err
@@ -66,8 +65,8 @@ func (am AppModule) QueryStakedValidators(cdc *codec.Codec, height int64) (types
 	return validators, nil
 }
 
-func (am AppModule) QueryUnstakedValidators(cdc *codec.Codec, height int64) (types.Validators, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryUnstakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	resKVs, _, err := cliCtx.QuerySubspace(types.UnstakedValidatorsKey, types.StoreKey)
 	if err != nil {
 		return types.Validators{}, err
@@ -79,8 +78,8 @@ func (am AppModule) QueryUnstakedValidators(cdc *codec.Codec, height int64) (typ
 	return validators, nil
 }
 
-func (am AppModule) QueryUnstakingValidators(cdc *codec.Codec, height int64) (types.Validators, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryUnstakingValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	resKVs, _, err := cliCtx.QuerySubspace(types.UnstakingValidatorsKey, types.StoreKey)
 	if err != nil {
 		return types.Validators{}, err
@@ -92,8 +91,8 @@ func (am AppModule) QueryUnstakingValidators(cdc *codec.Codec, height int64) (ty
 	return validators, nil
 }
 
-func (am AppModule) QuerySigningInfo(cdc *codec.Codec, height int64, consAddr sdk.ConsAddress) (types.ValidatorSigningInfo, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QuerySigningInfo(cdc *codec.Codec, tmNode rpcclient.Client, height int64, consAddr sdk.ConsAddress) (types.ValidatorSigningInfo, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	key := types.GetValidatorSigningInfoKey(consAddr)
 	res, _, err := cliCtx.QueryStore(key, types.StoreKey)
 	if err != nil {
@@ -107,8 +106,8 @@ func (am AppModule) QuerySigningInfo(cdc *codec.Codec, height int64, consAddr sd
 	return types.ValidatorSigningInfo{}, nil
 }
 
-func (am AppModule) QuerySupply(cdc *codec.Codec, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QuerySupply(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/stakedPool", types.StoreKey), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
@@ -128,8 +127,8 @@ func (am AppModule) QuerySupply(cdc *codec.Codec, height int64) (stakedCoins sdk
 	return stakedPool.Tokens, unstakedPool.Tokens, nil
 }
 
-func (am AppModule) QueryDAO(cdc *codec.Codec, height int64) (daoCoins sdk.Int, err error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryDAO(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (daoCoins sdk.Int, err error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	daoPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/dao", types.StoreKey), nil)
 	if err != nil {
 		return sdk.Int{}, err
@@ -141,8 +140,8 @@ func (am AppModule) QueryDAO(cdc *codec.Codec, height int64) (daoCoins sdk.Int, 
 	return daoPool.Tokens, err
 }
 
-func (am AppModule) QueryPOSParams(cdc *codec.Codec, height int64) (types.Params, error) {
-	cliCtx := util.NewCLIContext(am.GetTendermintNode(), nil, "").WithCodec(cdc).WithHeight(height)
+func QueryPOSParams(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Params, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	route := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryParameters)
 	bz, _, err := cliCtx.QueryWithData(route, nil)
 	if err != nil {
@@ -153,20 +152,20 @@ func (am AppModule) QueryPOSParams(cdc *codec.Codec, height int64) (types.Params
 	return params, nil
 }
 
-func (am AppModule) QueryTransaction(hash string) (*ctypes.ResultTx, error) {
+func QueryTransaction(tmNode rpcclient.Client, hash string) (*ctypes.ResultTx, error) {
 	res, err := hex.DecodeString(hash)
 	if err != nil {
 		return nil, err
 	}
-	tx, err := rpcclient.NewLocal(am.node).Tx(res, false)
+	tx, err := (tmNode).Tx(res, false)
 	if err != nil {
 		return nil, err
 	}
 	return tx, nil
 }
 
-func (am AppModule) QueryBlock(height *int64) ([]byte, error) {
-	res, err := rpcclient.NewLocal(am.node).Block(height)
+func QueryBlock(tmNode rpcclient.Client, height *int64) ([]byte, error) {
+	res, err := (tmNode).Block(height)
 	if err != nil {
 		return nil, err
 	}
@@ -175,8 +174,8 @@ func (am AppModule) QueryBlock(height *int64) ([]byte, error) {
 }
 
 // get the current blockchain height
-func (am AppModule) QueryChainHeight() (int64, error) {
-	client := rpcclient.NewLocal(am.node)
+func QueryChainHeight(tmNode rpcclient.Client) (int64, error) {
+	client := (tmNode)
 	status, err := client.Status()
 	if err != nil {
 		return -1, err
@@ -186,8 +185,8 @@ func (am AppModule) QueryChainHeight() (int64, error) {
 	return height, nil
 }
 
-func (am AppModule) QueryNodeStatus() (*ctypes.ResultStatus, error) {
-	res, err := rpcclient.NewLocal(am.GetTendermintNode()).Status()
+func QueryNodeStatus(tmNode rpcclient.Client) (*ctypes.ResultStatus, error) {
+	res, err := (tmNode).Status()
 	if err != nil {
 		return nil, nil
 	}
