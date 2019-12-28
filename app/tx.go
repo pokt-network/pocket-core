@@ -2,9 +2,7 @@ package app
 
 import (
 	apps "github.com/pokt-network/pocket-core/x/apps"
-	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
-	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 )
 
@@ -17,7 +15,7 @@ func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.
 	if err != nil {
 		return nil, err
 	}
-	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).Send(cdc, fa, ta, passphrase, amount)
+	return nodes.Send(GetCodec(), GetTendermintClient(), GetKeybase(), fa, ta, passphrase, amount)
 }
 
 func SendRawTx(fromAddr string, txBytes []byte) (sdk.TxResponse, error) {
@@ -25,7 +23,7 @@ func SendRawTx(fromAddr string, txBytes []byte) (sdk.TxResponse, error) {
 	if err != nil {
 		return sdk.TxResponse{}, err
 	}
-	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).RawTx(cdc, fa, txBytes)
+	return nodes.RawTx(GetCodec(), GetTendermintClient(), fa, txBytes)
 }
 
 func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
@@ -33,7 +31,11 @@ func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount 
 	if err != nil {
 		return nil, err
 	}
-	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).StakeTx(cdc, chains, serviceUrl, amount, fa, passphrase)
+	kp, err := (GetKeybase()).Get(sdk.AccAddress(fa))
+	if err != nil {
+		return nil, err
+	}
+	return nodes.StakeTx(GetCodec(), GetTendermintClient(), GetKeybase(), chains, serviceUrl, amount, kp, passphrase)
 }
 
 func UnstakeNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
@@ -41,7 +43,7 @@ func UnstakeNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).UnstakeTx(cdc, fa, passphrase)
+	return nodes.UnstakeTx(GetCodec(), GetTendermintClient(), GetKeybase(), fa, passphrase)
 }
 
 func UnjailNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
@@ -49,7 +51,7 @@ func UnjailNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return (*pcInstance.mm.GetModule(nodeTypes.ModuleName)).(nodes.AppModule).UnjailTx(cdc, fa, passphrase)
+	return nodes.UnjailTx(GetCodec(), GetTendermintClient(), GetKeybase(), fa, passphrase)
 }
 
 func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
@@ -57,7 +59,11 @@ func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sd
 	if err != nil {
 		return nil, err
 	}
-	return (*pcInstance.mm.GetModule(appTypes.ModuleName)).(apps.AppModule).StakeTx(cdc, chains, amount, fa, passphrase)
+	kp, err := (GetKeybase()).Get(sdk.AccAddress(fa))
+	if err != nil {
+		return nil, err
+	}
+	return apps.StakeTx(GetCodec(), GetTendermintClient(), GetKeybase(), chains, amount, kp, passphrase)
 }
 
 func UnstakeApp(fromAddr, passphrase string) (*sdk.TxResponse, error) {
@@ -65,5 +71,5 @@ func UnstakeApp(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	return (*pcInstance.mm.GetModule(appTypes.ModuleName)).(apps.AppModule).UnstakeTx(cdc, fa, passphrase)
+	return apps.UnstakeTx(GetCodec(), GetTendermintClient(), GetKeybase(), fa, passphrase)
 }

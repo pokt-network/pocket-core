@@ -3,16 +3,15 @@ package cli
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	fs              = string(filepath.Separator)
 	datadir         string
 	persistentPeers = "" // todo pull from file
 	seeds           = "" // todo pull from file
@@ -50,24 +49,15 @@ var startCmd = &cobra.Command{
 	Short: "Starts the pocket-core client",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// We trap kill signals (2,3,15,9)
-		signalChannel := make(chan os.Signal, 1)
-		signal.Notify(signalChannel,
-			syscall.SIGTERM,
-			syscall.SIGINT,
-			syscall.SIGQUIT,
-			os.Kill,
-			os.Interrupt)
+		go rpc.StartRPC("8081")
 		// setup the codec
-		app.SetCodec()
+		app.MakeCodec()
 		// setup the data directory
-		datadir = app.InitDataDirectory(datadir)
+		app.InitDataDirectory(datadir)
 		// setup the keybase
-		pswrd := app.InitKeyfiles(datadir)
+		pswrd := app.InitKeyfiles()
 		// setup the genesis.json
-		app.InitGenesis(datadir + fs + "config")
-		// setup the chains.json
-		app.InitHostedChains(datadir + fs + "config")
+		app.InitGenesis()
 		// setup coinbase password
 		if pswrd == "" {
 			fmt.Println("Pocket core needs your passphrase to start")
@@ -79,14 +69,21 @@ var startCmd = &cobra.Command{
 		}
 		app.SetCoinbasePassphrase(pswrd)
 		// init the tendermint node
-		app.InitTendermint(datadir, persistentPeers, seeds)
-		// catch end signal
+		tmNode := app.InitTendermint(persistentPeers, seeds)
+		// We trap kill signals (2,3,15,9)
+		signalChannel := make(chan os.Signal, 1)
+		signal.Notify(signalChannel,
+			syscall.SIGTERM,
+			syscall.SIGINT,
+			syscall.SIGQUIT,
+			os.Kill,
+			os.Interrupt)
+
 		defer func() {
 			sig := <-signalChannel
-			tmNode, _ := app.GetTendermintNode()
 			err := tmNode.Stop()
 			if err != nil {
-				panic("unable to stop Tendermint node: " + err.Error())
+				panic(err)
 			}
 			message := fmt.Sprintf("Exit signal %s received\n", sig)
 			fmt.Println(message)

@@ -40,7 +40,7 @@ func (k Keeper) GetAllNodesForChain(ctx sdk.Context, chain string) (nodes []expo
 // self node is needed to verify that self node is part of a session
 func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.Error) {
 	// get the Keybase addr list
-	keypairs, err := (*k.Keybase).List()
+	keypairs, err := (k.Keybase).List()
 	if err != nil || len(keypairs) < 1 {
 		return nil, pc.NewKeybaseError(pc.ModuleName, err)
 	}
@@ -66,7 +66,7 @@ func (k Keeper) GetCoinbaseKeypair(ctx sdk.Context) (*keys.KeyPair, sdk.Error) {
 	if k.Keybase == nil {
 		return nil, pc.NewKeybaseError(pc.ModuleName, pc.UninitializedKeybaseError)
 	}
-	kps, err := (*k.Keybase).List()
+	kps, err := (k.Keybase).List()
 	if err != nil {
 		return nil, pc.NewKeybaseError(pc.ModuleName, err)
 	}

@@ -44,7 +44,7 @@ var createCmd = &cobra.Command{
 			panic(app.UninitializedKeybaseError)
 		}
 		fmt.Print("Enter Password: ")
-		kp, err := (*kb).Create(app.Credentials())
+		kp, err := kb.Create(app.Credentials())
 		if err != nil {
 			panic(err)
 		}
@@ -67,7 +67,7 @@ var deleteCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Print("Enter Password: ")
-		err = (*kb).Delete(addr, app.Credentials())
+		err = kb.Delete(addr, app.Credentials())
 		if err != nil {
 			panic(err)
 		}
@@ -85,7 +85,7 @@ var listCmd = &cobra.Command{
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
-		kp, err := (*kb).List()
+		kp, err := kb.List()
 		if err != nil {
 			panic(err)
 		}
@@ -110,7 +110,7 @@ var showCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		kp, err := (*kb).Get(addr)
+		kp, err := kb.Get(addr)
 		if err != nil {
 			panic(err)
 		}
@@ -137,7 +137,7 @@ var updatePassphraseCmd = &cobra.Command{
 		oldpass := app.Credentials()
 		fmt.Print("Enter New Password: ")
 		newpass := app.Credentials()
-		err = (*kb).Update(addr, oldpass, newpass)
+		err = kb.Update(addr, oldpass, newpass)
 		if err != nil {
 			panic(err)
 		}
@@ -147,7 +147,7 @@ var updatePassphraseCmd = &cobra.Command{
 
 // signCmd represents the sign command
 var signCmd = &cobra.Command{
-	Use:   "pocket accounts sign <address> <msg>",
+	Use:   "sign <address> <msg>",
 	Short: "Sign a message with an account",
 	Long:  `Digitally signs the specified <msg> using the specified <address> account credentials. Will prompt the user for the account passphrase.`,
 	Args:  cobra.ExactArgs(2),
@@ -164,7 +164,7 @@ var signCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		sig, _, err := (*kb).Sign(addr, app.Credentials(), msg)
+		sig, _, err := kb.Sign(addr, app.Credentials(), msg)
 		if err != nil {
 			panic(err)
 		}
@@ -186,7 +186,7 @@ var importArmoredCmd = &cobra.Command{
 		dPass := app.Credentials()
 		fmt.Println("Enter encrypt pass")
 		ePass := app.Credentials()
-		kp, err := (*kb).ImportPrivKey(args[0], dPass, ePass)
+		kp, err := kb.ImportPrivKey(args[0], dPass, ePass)
 		if err != nil {
 			panic(err)
 		}
@@ -214,7 +214,7 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 		dPass := app.Credentials()
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()
-		pk, err := (*kb).ExportPrivKeyEncryptedArmor(addr, dPass, ePass)
+		pk, err := kb.ExportPrivKeyEncryptedArmor(addr, dPass, ePass)
 		if err != nil {
 			panic(err)
 		}
@@ -240,7 +240,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 		}
 		fmt.Println("Enter Decrypt Passphrase")
 		dPass := app.Credentials()
-		pk, err := (*kb).ExportPrivateKeyObject(addr, dPass)
+		pk, err := kb.ExportPrivateKeyObject(addr, dPass)
 		if err != nil {
 			panic(err)
 		}
@@ -305,7 +305,7 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		ePass := app.Credentials()
 		var pk [64]byte
 		copy(pk[:], pkBytes)
-		kp, err := (*kb).ImportPrivateKeyObject(pk, ePass)
+		kp, err := kb.ImportPrivateKeyObject(pk, ePass)
 		if err != nil {
 			panic(err)
 		}

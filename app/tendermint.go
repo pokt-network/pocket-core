@@ -16,23 +16,21 @@ import (
 
 type AppCreator func(log.Logger, dbm.DB, io.Writer) *pocketCoreApp
 
-func NewClient(ctx config, creator AppCreator) (*node.Node, *pocketCoreApp, error) {
+func NewClient(ctx config, creator AppCreator) (*node.Node, error) {
 	// setup the database
 	db, err := openDB(ctx.TmConfig.RootDir)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// open the tracewriter
 	traceWriter, err := openTraceWriter(ctx.TraceWriter)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	// create the instance
-	app := creator(ctx.Logger, db, traceWriter)
 	// load the node key
 	nodeKey, err := p2p.LoadOrGenNodeKey(ctx.TmConfig.NodeKeyFile())
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	// upgrade the privVal file
 	upgradePrivVal(ctx.TmConfig)
@@ -41,18 +39,17 @@ func NewClient(ctx config, creator AppCreator) (*node.Node, *pocketCoreApp, erro
 		ctx.TmConfig,
 		pvm.LoadOrGenFilePV(ctx.TmConfig.PrivValidatorKeyFile(), ctx.TmConfig.PrivValidatorStateFile()),
 		nodeKey,
-		proxy.NewLocalClientCreator(app),
+		proxy.NewLocalClientCreator(creator(ctx.Logger, db, traceWriter)),
 		node.DefaultGenesisDocProviderFunc(ctx.TmConfig),
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(ctx.TmConfig.Instrumentation),
 		ctx.Logger.With("module", "node"),
 	)
-	// setup the keybase and tendermint node for the proxy app
-	app.SetNodeAndKeybase(tmNode, keybase)
+
 	if err != nil {
-		return nil, app, err
+		return nil, err
 	}
-	return tmNode, app, nil
+	return tmNode, nil
 }
 
 func openDB(rootDir string) (dbm.DB, error) {

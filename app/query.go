@@ -13,19 +13,19 @@ import (
 
 // zero for height = latest
 func QueryBlock(height int64) (blockJSON []byte, err error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryBlock(&height)
+	return nodes.QueryBlock(GetTendermintClient(), &height)
 }
 
 func QueryTx(hash string) (*core_types.ResultTx, error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryTransaction(hash)
+	return nodes.QueryTransaction(GetTendermintClient(), hash)
 }
 
 func QueryHeight() (chainHeight int64, err error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryChainHeight()
+	return nodes.QueryChainHeight(GetTendermintClient())
 }
 
 func QueryNodeStatus() (*core_types.ResultStatus, error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryNodeStatus()
+	return nodes.QueryNodeStatus(GetTendermintClient())
 }
 
 func QueryBalance(addr string, height int64) (balance sdk.Int, err error) {
@@ -33,11 +33,11 @@ func QueryBalance(addr string, height int64) (balance sdk.Int, err error) {
 	if err != nil {
 		return sdk.NewInt(0), err
 	}
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryAccountBalance(cdc, a, height)
+	return nodes.QueryAccountBalance(cdc, GetTendermintClient(), a, height)
 }
 
 func QueryAllNodes(height int64) (nodesTypes.Validators, error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryValidators(cdc, height)
+	return nodes.QueryValidators(cdc, GetTendermintClient(), height)
 }
 
 func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err error) {
@@ -45,23 +45,23 @@ func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err e
 	if err != nil {
 		return validator, err
 	}
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryValidator(cdc, a, height)
+	return nodes.QueryValidator(cdc, GetTendermintClient(), a, height)
 }
 
 func QueryUnstakingNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryUnstakingValidators(cdc, height)
+	return nodes.QueryUnstakingValidators(cdc, GetTendermintClient(), height)
 }
 
 func QueryStakedNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryStakedValidators(cdc, height)
+	return nodes.QueryStakedValidators(cdc, GetTendermintClient(), height)
 }
 
 func QueryUnstakedNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryUnstakedValidators(cdc, height)
+	return nodes.QueryUnstakedValidators(cdc, GetTendermintClient(), height)
 }
 
 func QueryNodeParams(height int64) (params nodesTypes.Params, err error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryPOSParams(cdc, height)
+	return nodes.QueryPOSParams(cdc, GetTendermintClient(), height)
 }
 
 func QuerySigningInfo(height int64, addr string) (nodesTypes.ValidatorSigningInfo, error) {
@@ -69,19 +69,19 @@ func QuerySigningInfo(height int64, addr string) (nodesTypes.ValidatorSigningInf
 	if err != nil {
 		return nodesTypes.ValidatorSigningInfo{}, err
 	}
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QuerySigningInfo(cdc, height, sdk.ConsAddress(a))
+	return nodes.QuerySigningInfo(cdc, GetTendermintClient(), height, sdk.ConsAddress(a))
 }
 
 func QueryTotalNodeCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QuerySupply(cdc, height)
+	return nodes.QuerySupply(cdc, GetTendermintClient(), height)
 }
 
 func QueryDaoBalance(height int64) (daoCoins sdk.Int, err error) {
-	return (*pcInstance.mm.GetModule(nodesTypes.ModuleName)).(nodes.AppModule).QueryDAO(cdc, height)
+	return nodes.QueryDAO(cdc, GetTendermintClient(), height)
 }
 
 func QueryAllApps(height int64) (appsTypes.Applications, error) {
-	return (*pcInstance.mm.GetModule(appsTypes.ModuleName)).(apps.AppModule).QueryApplications(cdc, height)
+	return apps.QueryApplications(cdc, GetTendermintClient(), height)
 }
 
 func QueryApp(addr string, height int64) (validator appsTypes.Application, err error) {
@@ -89,27 +89,27 @@ func QueryApp(addr string, height int64) (validator appsTypes.Application, err e
 	if err != nil {
 		return validator, err
 	}
-	return (*pcInstance.mm.GetModule(appsTypes.ModuleName)).(apps.AppModule).QueryApplication(cdc, a, height)
+	return apps.QueryApplication(cdc, GetTendermintClient(), a, height)
 }
 
 func QueryUnstakingApps(height int64) (validators appsTypes.Applications, err error) {
-	return (*pcInstance.mm.GetModule(appsTypes.ModuleName)).(apps.AppModule).QueryUnstakingApplications(cdc, height)
+	return apps.QueryUnstakingApplications(cdc, GetTendermintClient(), height)
 }
 
 func QueryStakedApps(height int64) (validators appsTypes.Applications, err error) {
-	return (*pcInstance.mm.GetModule(appsTypes.ModuleName)).(apps.AppModule).QueryStakedApplications(cdc, height)
+	return apps.QueryStakedApplications(cdc, GetTendermintClient(), height)
 }
 
 func QueryUnstakedApps(height int64) (validators appsTypes.Applications, err error) {
-	return (*pcInstance.mm.GetModule(appsTypes.ModuleName)).(apps.AppModule).QueryUnstakedApplications(cdc, height)
+	return apps.QueryUnstakedApplications(cdc, GetTendermintClient(), height)
 }
 
 func QueryTotalAppCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {
-	return (*pcInstance.mm.GetModule(appsTypes.ModuleName)).(apps.AppModule).QuerySupply(cdc, height)
+	return apps.QuerySupply(cdc, GetTendermintClient(), height)
 }
 
 func QueryAppParams(height int64) (params appsTypes.Params, err error) {
-	return (*pcInstance.mm.GetModule(appsTypes.ModuleName)).(apps.AppModule).QueryPOSParams(cdc, height)
+	return apps.QueryPOSParams(cdc, GetTendermintClient(), height)
 }
 
 func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredProof, err error) {
@@ -117,7 +117,7 @@ func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredProof, e
 	if err != nil {
 		return nil, err
 	}
-	return (*pcInstance.mm.GetModule(pocketTypes.ModuleName)).(pocket.AppModule).QueryProofs(cdc, a, height)
+	return pocket.QueryProofs(cdc, GetTendermintClient(), a, height)
 }
 
 func QueryProof(blockchain, appPubKey, addr string, sessionblockHeight, height int64) (proof *pocketTypes.StoredProof, err error) {
@@ -125,21 +125,21 @@ func QueryProof(blockchain, appPubKey, addr string, sessionblockHeight, height i
 	if err != nil {
 		return nil, err
 	}
-	return (*pcInstance.mm.GetModule(pocketTypes.ModuleName)).(pocket.AppModule).QueryProof(cdc, a, blockchain, appPubKey, sessionblockHeight, height)
+	return pocket.QueryProof(cdc, a, GetTendermintClient(), blockchain, appPubKey, sessionblockHeight, height)
 }
 
 func QueryPocketSupportedBlockchains(height int64) ([]string, error) {
-	return (*pcInstance.mm.GetModule(pocketTypes.ModuleName)).(pocket.AppModule).QueryPocketSupportedBlockchains(cdc, height)
+	return pocket.QueryPocketSupportedBlockchains(cdc, GetTendermintClient(), height)
 }
 
 func QueryPocketParams(height int64) (pocketTypes.Params, error) {
-	return (*pcInstance.mm.GetModule(pocketTypes.ModuleName)).(pocket.AppModule).QueryParams(cdc, height)
+	return pocket.QueryParams(cdc, GetTendermintClient(), height)
 }
 
 func QueryRelay(r pocketTypes.Relay) (*pocketTypes.RelayResponse, error) {
-	return (*pcInstance.mm.GetModule(pocketTypes.ModuleName)).(pocket.AppModule).QueryRelay(cdc, r)
+	return pocket.QueryRelay(cdc, GetTendermintClient(), r)
 }
 
 func QueryDispatch(header pocketTypes.SessionHeader) (*pocketTypes.Session, error) {
-	return (*pcInstance.mm.GetModule(pocketTypes.ModuleName)).(pocket.AppModule).QueryDispatch(cdc, header)
+	return pocket.QueryDispatch(cdc, GetTendermintClient(), header)
 }

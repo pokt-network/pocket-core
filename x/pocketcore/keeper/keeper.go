@@ -6,13 +6,15 @@ import (
 	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/params"
+	"github.com/tendermint/tendermint/rpc/client"
 )
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
 	posKeeper          types.PosKeeper
 	appKeeper          types.AppsKeeper
-	Keybase            *keys.Keybase
+	Keybase            keys.Keybase
+	TmNode             client.Client
 	coinbasePassphrase string // todo is this safe??
 	hostedBlockchains  types.HostedBlockchains
 	Paramstore         params.Subspace

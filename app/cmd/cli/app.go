@@ -26,7 +26,7 @@ var appCmd = &cobra.Command{
 var appStakeCmd = &cobra.Command{
 	Use:   "stake <fromAddr> <amount> <chains>",
 	Short: "Stake an app in the network",
-	Long:  `Stakes the app into the network, making it have network throughjput. Prompts the user for the <fromAddr> account passphrase.`,
+	Long:  `Stakes the app into the network, making it have network throughput. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		fromAddr := args[0]
@@ -75,7 +75,7 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 		if err != nil {
 			panic(err)
 		}
-		res, err := (*kb).Get(addr)
+		res, err := kb.Get(addr)
 		if err != nil {
 			panic(err)
 		}

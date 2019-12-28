@@ -2,22 +2,27 @@ package pocketcore
 
 import (
 	"github.com/pokt-network/merkle"
+	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
 )
 
 // transaction that sends the total number of relays (claim), the merkle root (for data integrity), and the header (for identification)
-func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error) {
+func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error) {
+	kp, err := keybase.List()
+	if err != nil {
+		panic(err)
+	}
 	msg := types.MsgClaim{
 		SessionHeader: header,
 		TotalRelays:   totalRelays,
 		Root:          root,
-		FromAddress:   sdk.ValAddress(am.node.PrivValidator().GetPubKey().Address()),
+		FromAddress:   sdk.ValAddress(kp[0].GetAddress()),
 	}
-	err := msg.ValidateBasic()
+	err = msg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +30,7 @@ func (am AppModule) ClaimTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder 
 }
 
 // transaction to prove the
-func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode types.Proof) (*sdk.TxResponse, error) {
+func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode types.Proof) (*sdk.TxResponse, error) {
 	msg := types.MsgProof{
 		Proof:    porBranch,
 		LeafNode: leafNode,
@@ -37,10 +42,10 @@ func (am AppModule) ProofTx(cdc *codec.Codec, cliCtx util.CLIContext, txBuilder 
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func (am AppModule) GenerateChain(ticker, netid, version, client, inter string) (string, error) {
-	return am.keeper.GenerateChain(ticker, netid, version, client, inter)
+func GenerateChain(ticker, netid, version, client, inter string) (string, error) {
+	return keeper.GenerateChain(ticker, netid, version, client, inter)
 }
 
-func (am AppModule) GenerateAAT(appPubKey, cliPubKey, passphrase string) (types.AAT, error) {
-	return am.keeper.AATGeneration(appPubKey, cliPubKey, passphrase, am.keybase)
+func GenerateAAT(keybase keys.Keybase, appPubKey, cliPubKey, passphrase string) (types.AAT, error) {
+	return keeper.AATGeneration(appPubKey, cliPubKey, passphrase, keybase)
 }
