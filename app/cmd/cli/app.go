@@ -26,7 +26,7 @@ var appCmd = &cobra.Command{
 var appStakeCmd = &cobra.Command{
 	Use:   "stake <fromAddr> <amount> <chains>",
 	Short: "Stake an app in the network",
-	Long:  `Stakes the app into the network, making it have network throughput. Prompts the user for the <fromAddr> account passphrase.`,
+	Long:  `Stake the app into the network, making it have network throughput. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		fromAddr := args[0]
@@ -40,21 +40,21 @@ var appStakeCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Transaction Submitted %s", res.TxHash)
+		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
 }
 
 var appUnstakeCmd = &cobra.Command{
 	Use:   "unstake <fromAddr>",
 	Short: "Unstake an app in the network",
-	Long:  `Unstakes an app from the network, changing it's status to Unstaking. Prompts the user for the <fromAddr> account passphrase.`,
+	Long:  `Unstake an app from the network, changing it's status to Unstaking. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := app.UnstakeApp(args[0], app.Credentials())
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Transaction Submitted %s", res.TxHash)
+		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
 }
 
