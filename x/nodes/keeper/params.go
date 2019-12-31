@@ -18,16 +18,6 @@ func ParamKeyTable() params.KeyTable {
 	return params.NewKeyTable().RegisterParamSet(&types.Params{})
 }
 
-func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Context) (res sdk.Dec) {
-	k.Paramstore.Get(ctx, types.KeyRelaysToTokens, &res)
-	return
-}
-
-func (k Keeper) SessionBlockFrequency(ctx sdk.Context) (res int64) {
-	k.Paramstore.Get(ctx, types.KeySessionBlock, &res)
-	return
-}
-
 // UnstakingTime
 func (k Keeper) UnStakingTime(ctx sdk.Context) (res time.Duration) {
 	k.Paramstore.Get(ctx, types.KeyUnstakingTime, &res)
@@ -94,6 +84,16 @@ func (k Keeper) SlashFractionDoubleSign(ctx sdk.Context) (res sdk.Dec) {
 // SlashFractionDowntime
 func (k Keeper) SlashFractionDowntime(ctx sdk.Context) (res sdk.Dec) {
 	k.Paramstore.Get(ctx, types.KeySlashFractionDowntime, &res)
+	return
+}
+
+func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Context) (res sdk.Dec) {
+	k.Paramstore.Get(ctx, types.KeyRelaysToTokens, &res)
+	return
+}
+
+func (k Keeper) SessionBlockFrequency(ctx sdk.Context) (res int64) {
+	k.Paramstore.Get(ctx, types.KeySessionBlock, &res)
 	return
 }
 

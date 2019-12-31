@@ -28,6 +28,8 @@ type SupplyKeeper interface {
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) sdk.Error
 	// burn coins
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) sdk.Error
+	// mint coins for testing
+	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) sdk.Error
 }
 
 // ApplicationSet expected properties for the set of all applications (noalias)

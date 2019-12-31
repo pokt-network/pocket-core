@@ -15,7 +15,7 @@ func (k Keeper) BurnApplication(ctx sdk.Context, address sdk.ValAddress, severit
 
 // slash a application for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight, power int64, slashFactor sdk.Dec) { // todo!!! slashing for app max relays
+func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight, power int64, slashFactor sdk.Dec) {
 	// error check slash
 	application := k.validateSlash(ctx, consAddr, infractionHeight, power, slashFactor)
 	if application.Address == nil {
@@ -29,7 +29,6 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 	// cannot decrease balance below zero
 	tokensToBurn := sdk.MinInt(slashAmount, application.StakedTokens)
 	tokensToBurn = sdk.MaxInt(tokensToBurn, sdk.ZeroInt()) // defensive.
-	burnRatio := tokensToBurn.ToDec().Quo(application.StakedTokens.ToDec())
 	// Deduct from application's staked tokens and update the application.
 	// Burn the slashed tokens from the pool account and decrease the total supply.
 	application = k.removeApplicationTokens(ctx, application, tokensToBurn)
@@ -37,10 +36,6 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 	if err != nil {
 		panic(err)
 	}
-	// do the same for the maxRelays
-	// todo confirm/audit these two lines
-	relaysToBurn := application.MaxRelays.ToDec().Mul(burnRatio).TruncateInt()
-	application = k.removeApplicationRelays(ctx, application, relaysToBurn)
 	// if falls below minimum force burn all of the stake
 	if application.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		err := k.ForceApplicationUnstake(ctx, application)
@@ -60,7 +55,7 @@ func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.ConsAddress, infract
 		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
 	}
 	if infractionHeight > ctx.BlockHeight() {
-		panic(fmt.Sprintf( // Can't slash infractions in the future
+		panic(fmt.Errorf( // Can't slash infractions in the future
 			"impossible attempt to slash future infraction at height %d but we are at height %d",
 			infractionHeight, ctx.BlockHeight()))
 	}
@@ -81,7 +76,7 @@ func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.ConsAddress, infract
 	}
 	// should not be slashing an unstaked application
 	if application.IsUnstaked() {
-		panic(fmt.Sprintf("should not be slashing unstaked application: %s", application.GetAddress()))
+		panic(fmt.Errorf("should not be slashing unstaked application: %s", application.GetAddress()))
 	}
 	return application
 }
@@ -100,9 +95,8 @@ func (k Keeper) burnApplications(ctx sdk.Context) {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		severity := sdk.Dec{}
-		address := sdk.ValAddress{}
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &severity)
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Key(), address)
+		address := sdk.ValAddress(types.AddressFromKey(iterator.Key()))
+		amino.MustUnmarshalBinaryBare(iterator.Value(), &severity)
 		val := k.mustGetApplication(ctx, address)
 		k.slash(ctx, sdk.ConsAddress(address), ctx.BlockHeight(), val.ConsensusPower(), severity)
 		// remove from the burn store
@@ -122,7 +116,8 @@ func (k Keeper) getApplicationBurn(ctx sdk.Context, address sdk.ValAddress) (coi
 	if value == nil {
 		return coins, false
 	}
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(value, &coins)
+	found = true
+	k.cdc.MustUnmarshalBinaryBare(value, &coins)
 	return
 }
 
