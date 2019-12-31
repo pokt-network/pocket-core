@@ -168,7 +168,7 @@ var signCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Enter Password: ")
+		fmt.Println("Enter Password: \n")
 		sig, _, err := kb.Sign(addr, app.Credentials(), msg)
 		if err != nil {
 			panic(err)
