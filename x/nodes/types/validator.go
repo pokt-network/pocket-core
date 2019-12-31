@@ -17,8 +17,8 @@ type Validator struct {
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from bonded status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // validator status (bonded/unbonding/unbonded)
 	Chains                  []string       `json:"chains" yaml:"chains"`                 // validator non native blockchains
-	ServiceURL              string         `json:"serviceurl" yaml:"serviceurl"`         // url where the pocket service api is hosted
-	StakedTokens            sdk.Int        `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
+	ServiceURL              string         `json:"service_url" yaml:"service_url"`         // url where the pocket service api is hosted
+	StakedTokens            sdk.Int        `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 }
 

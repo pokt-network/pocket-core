@@ -25,7 +25,7 @@ var nodesCmd = &cobra.Command{
 var nodeStakeCmd = &cobra.Command{
 	Use:   "stake <fromAddr> <amount> <chains> <serviceURI>",
 	Short: "Stake a node in the network",
-	Long:  `Stakes the node into the network, making it available for service. Prompts the user for the <fromAddr> account passphrase.`,
+	Long:  `Stake the node into the network, making it available for service. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		fromAddr := args[0]
@@ -40,26 +40,26 @@ var nodeStakeCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Transaction Submitted %s", res.TxHash)
+		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
 }
 
 var nodeUnstakeCmd = &cobra.Command{
 	Use:   "unstake <fromAddr>",
 	Short: "Unstake a node in the network",
-	Long:  `Unstakes a node from the network, changing it's status to Unstaking. Prompts the user for the <fromAddr> account passphrase.`,
+	Long:  `Unstake a node from the network, changing it's status to Unstaking. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := app.UnstakeNode(args[0], app.Credentials())
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Transaction Submitted %s", res.TxHash)
+		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
 }
 
 var nodeUnjailCmd = &cobra.Command{
-	Use:   "unstake <fromAddr>",
+	Use:   "unjail <fromAddr>",
 	Short: "Unjails a node in the network",
 	Long:  `Unjails a node from the network, allowing it to participate in service and consensus again. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(1),
@@ -68,6 +68,6 @@ var nodeUnjailCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Transaction Submitted %s", res.TxHash)
+		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
 }

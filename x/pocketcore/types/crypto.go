@@ -6,6 +6,7 @@ import (
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
+	_ "golang.org/x/crypto/sha3"
 )
 
 var (

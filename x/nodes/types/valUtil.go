@@ -65,12 +65,12 @@ func (v Validator) String() string {
 
 // this is a helper struct used for JSON de- and encoding only
 type hexValidator struct {
-	Address                 sdk.ValAddress `json:"address" yaml:"address"`           // the hex address of the validator
-	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`   // the hex consensus public key of the validator
-	Jailed                  bool           `json:"jailed" yaml:"jailed"`             // has the validator been jailed from staked status?
-	Status                  sdk.BondStatus `json:"status" yaml:"status"`             // validator status (bonded/unbonding/unbonded)
-	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"` // how many staked tokens
-	ServiceURL              string         `json:"serviceurl" yaml:"serviceuRL"`
+	Address                 sdk.ValAddress `json:"address" yaml:"address"`         // the hex address of the validator
+	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"` // the hex consensus public key of the validator
+	Jailed                  bool           `json:"jailed" yaml:"jailed"`           // has the validator been jailed from staked status?
+	Status                  sdk.BondStatus `json:"status" yaml:"status"`           // validator status (bonded/unbonding/unbonded)
+	StakedTokens            sdk.Int        `json:"tokens" yaml:"tokens"`           // how many staked tokens
+	ServiceURL              string         `json:"service_url" yaml:"service_uRL"`
 	Chains                  []string       `json:"chains" yaml:"chains"`
 	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 }

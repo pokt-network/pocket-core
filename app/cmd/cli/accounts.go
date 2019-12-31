@@ -7,6 +7,7 @@ import (
 	"github.com/pokt-network/posmint/types"
 	"github.com/spf13/cobra"
 	"strconv"
+	"strings"
 )
 
 func init() {
@@ -43,12 +44,12 @@ var createCmd = &cobra.Command{
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
-		fmt.Print("Enter Password: ")
+		fmt.Print("Enter Password: \n")
 		kp, err := kb.Create(app.Credentials())
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account generated succesfully:\nPublic Key: %s", hex.EncodeToString(kp.PubKey.Bytes()))
+		fmt.Printf("Account generated succesfully:\nAddress: %s\n", kp.GetAddress())
 	},
 }
 
@@ -66,11 +67,12 @@ var deleteCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Print("Enter Password: ")
+		fmt.Print("Enter Password: \n")
 		err = kb.Delete(addr, app.Credentials())
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("Account deleted successfully")
 	},
 }
 
@@ -78,8 +80,8 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all accounts",
 	Long: `Lists all the account addresses stored in the keybase. Example output:
-(0) 0xb3746D30F2A579a2efe7F2F6E8E06277a78054C1
-(1) 0xab514F27e98DE7E3ecE3789b511dA955C3F09Bbc`,
+(0) b3746D30F2A579a2efe7F2F6E8E06277a78054C1
+(1) ab514F27e98DE7E3ecE3789b511dA955C3F09Bbc`,
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.GetKeybase()
 		if kb == nil {
@@ -90,7 +92,7 @@ var listCmd = &cobra.Command{
 			panic(err)
 		}
 		for i, key := range kp {
-			fmt.Printf("(%d) %s", i, key)
+			fmt.Printf("(%d) %s\n", i, strings.ToUpper(key.GetAddress().String()))
 		}
 	},
 }
@@ -114,13 +116,15 @@ var showCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Address: %s\nPublic Key: %s\n", kp.GetAddress().String(), hex.EncodeToString(kp.PubKey.Bytes()))
+		fmt.Printf("Address:\t%s\nPublic Key:\t%s\n",
+			strings.ToUpper(kp.GetAddress().String()),
+			strings.ToUpper(hex.EncodeToString(kp.PubKey.Bytes())))
 	},
 }
 
 // updatePassphraseCmd represents the updatePassphrase command
 var updatePassphraseCmd = &cobra.Command{
-	Use:   "updatePassphrase <address>",
+	Use:   "update-passphrase <address>",
 	Short: "Update account passphrase",
 	Long:  `Updates the passphrase for the indicated account. Will prompt the user for the current account passphrase and the new account passphrase.`,
 	Args:  cobra.ExactArgs(1),
@@ -133,9 +137,9 @@ var updatePassphraseCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Print("Enter Password: ")
+		fmt.Println("Enter Password: ")
 		oldpass := app.Credentials()
-		fmt.Print("Enter New Password: ")
+		fmt.Println("Enter New Password: ")
 		newpass := app.Credentials()
 		err = kb.Update(addr, oldpass, newpass)
 		if err != nil {
@@ -164,11 +168,12 @@ var signCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("Enter Password: ")
 		sig, _, err := kb.Sign(addr, app.Credentials(), msg)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Original Message: %s\n Signature: %s", args[1], sig)
+		fmt.Printf("Original Message:\t%s\nSignature:\t%s\n", strings.ToUpper(args[1]), strings.ToUpper(hex.EncodeToString(sig)))
 	},
 }
 
@@ -190,7 +195,7 @@ var importArmoredCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account imported succesfully:\nPublic Key: %s", hex.EncodeToString(kp.PubKey.Bytes()))
+		fmt.Printf("Account imported succesfully:\n%s", strings.ToUpper(kp.GetAddress().String()))
 	},
 }
 
@@ -218,7 +223,7 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Exported account: %s", pk)
+		fmt.Printf("Exported Armor Private Key:\n%s\n", pk)
 	},
 }
 
@@ -244,7 +249,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Exported account: %s", hex.EncodeToString(pk.Bytes()))
+		fmt.Printf("Exported Raw Private Key:\n%s\n", strings.ToUpper(hex.EncodeToString(pk.Bytes())))
 	},
 }
 
@@ -309,6 +314,6 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account imported succesfully:\nPublic Key: %s", hex.EncodeToString(kp.PubKey.Bytes()))
+		fmt.Printf("Account imported succesfully:\n%s\n", strings.ToUpper(kp.GetAddress().String()))
 	},
 }

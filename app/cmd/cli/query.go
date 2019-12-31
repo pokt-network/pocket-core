@@ -80,7 +80,7 @@ var queryHeight = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Block Height: %d", res)
+		fmt.Printf("Block Height: %d\n", res)
 	},
 }
 
@@ -103,7 +103,7 @@ var queryBalance = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account Balance: %v", res)
+		fmt.Printf("Account Balance: %v\n", res)
 	},
 }
 
@@ -152,7 +152,7 @@ var queryNodes = &cobra.Command{
 		if res == nil {
 			panic("nil nodes result")
 		}
-		fmt.Printf("Nodes %s", res.String())
+		fmt.Printf("Nodes\n%s\n", res.String())
 	},
 }
 
@@ -175,7 +175,7 @@ var queryNode = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf(res.String())
+		fmt.Println(res.String())
 	},
 }
 
@@ -198,7 +198,7 @@ var queryNodeParams = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf(res.String())
+		fmt.Println(res.String())
 	},
 }
 
@@ -247,7 +247,7 @@ var queryApps = &cobra.Command{
 		if res == nil {
 			panic("nil Apps result")
 		}
-		fmt.Printf("Apps %s", res.String())
+		fmt.Printf("Apps:\n%s\n", res.String())
 	},
 }
 
@@ -270,7 +270,7 @@ var queryApp = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf(res.String())
+		fmt.Println(res.String())
 	},
 }
 
@@ -293,7 +293,7 @@ var queryAppParams = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf(res.String())
+		fmt.Println(res.String())
 	},
 }
 
@@ -346,7 +346,7 @@ var queryNodeProof = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("%v", res)
+		fmt.Printf("%v\n", res)
 	},
 }
 
@@ -369,7 +369,7 @@ var queryPocketParams = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf(res.String())
+		fmt.Println(res.String())
 	},
 }
 
@@ -393,7 +393,7 @@ var queryPocketSupportedChains = &cobra.Command{
 			panic(err)
 		}
 		for i, chain := range res {
-			fmt.Printf("(%d) %s", i, chain)
+			fmt.Printf("(%d)\t%s\n", i, chain)
 		}
 	},
 }

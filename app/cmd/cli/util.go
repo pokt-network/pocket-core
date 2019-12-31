@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 func init() {
@@ -19,15 +20,15 @@ var utilCmd = &cobra.Command{
 }
 
 var generateChainCmd = &cobra.Command{
-	Use:   "util generate-chain <ticker> <netid> <client> <version> <interface>",
-	Short: "Stake an app in the network",
+	Use:   "generate-chain <ticker> <netid> <version> <client> <interface>",
+	Short: "generate a chain identifier",
 	Long:  `Creates a Network Identifier hash, used as a parameter for both node and App stake.`,
-	Args:  cobra.MinimumNArgs(3),
+	Args:  cobra.MinimumNArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
-		res, err := app.GenerateChain(args[0], args[1], args[3], args[2], args[4])
+		res, err := app.GenerateChain(args[0], args[1], args[2], args[3], args[4])
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Pocket Network Identifier: %s", res)
+		fmt.Printf("Pocket Network Identifier: %s\n", strings.ToUpper(res))
 	},
 }

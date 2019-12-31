@@ -55,7 +55,7 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 		return "", err
 	}
 	// do basic http request on the relay
-	res, er := executeHTTPRequest(r.Payload.Data, url, r.Payload.Method)
+	res, er := executeHTTPRequest(r.Payload.Data, url, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
 		return res, NewHTTPExecutionError(ModuleName, er)
 	}
@@ -74,9 +74,10 @@ func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64, maxNumberO
 
 // the payload of the relay
 type Payload struct {
-	Data   string `json:"data"`   // the actual data string for the external chain
-	Method string `json:"method"` // the http CRUD method
-	Path   string `json:"path"`   // the REST Pathx
+	Data    string            `json:"data"`    // the actual data string for the external chain
+	Method  string            `json:"method"`  // the http CRUD method
+	Path    string            `json:"path"`    // the REST Pathx
+	Headers map[string]string `json:"headers"` // http headers
 }
 
 func (p Payload) Validate() sdk.Error {
@@ -131,12 +132,18 @@ func (rr RelayResponse) HashString() string {
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
-func executeHTTPRequest(payload string, url string, method string) (string, error) { // todo improved http responses
+func executeHTTPRequest(payload string, url string, method string, headers map[string]string) (string, error) { // todo improved http responses
 	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	if len(headers) == 0 { // def to json
+		req.Header.Set("Content-Type", "application/json")
+	} else {
+		for k, v := range headers {
+			req.Header.Set(k, v)
+		}
+	}
 	resp, err := (&http.Client{}).Do(req)
 	if err != nil {
 		return "", err
