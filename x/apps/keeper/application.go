@@ -84,7 +84,7 @@ func (k Keeper) GetAppByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (app
 // set a application in the consensus store
 func (k Keeper) SetAppByConsAddr(ctx sdk.Context, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
-	consAddr := sdk.ConsAddress(application.ConsPubKey.Address())
+	consAddr := application.GetConsAddr()
 	store.Set(types.KeyForAppByConsAddr(consAddr), application.Address)
 }
 

@@ -24,16 +24,16 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress
 	feeCollector := k.getFeePool(ctx)
 	feesCollected := feeCollector.GetCoins()
 	// transfer collected fees to the pos module account
-	err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, auth.FeeCollectorName, types.StakedPoolName, feesCollected)
+	err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, auth.FeeCollectorName, types.ModuleName, feesCollected)
 	if err != nil {
 		panic(err)
 	}
-	// calculate the total reward by adding relays to the fees
-	totalReward := feesCollected.AmountOf(k.StakeDenom(ctx)).Add(k.GetTotalCusomValidatorAwards(ctx))
+	// calculate the total reward by adding relays to the
+	totalReward := feesCollected.AmountOf(k.StakeDenom(ctx))
 	// calculate previous proposer reward
 	baseProposerRewardPercentage := k.getProposerRewardPercentage(ctx)
 	// divide up the reward from the proposer reward and the dao reward
-	proposerReward := baseProposerRewardPercentage.Mul(totalReward)
+	proposerReward := baseProposerRewardPercentage.Mul(totalReward).Quo(sdk.NewInt(100))
 	daoReward := totalReward.Sub(proposerReward)
 	// get the validator structure
 	proposerValidator := k.validatorByConsAddr(ctx, previousProposer)
@@ -41,12 +41,12 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress
 		propRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), proposerReward))
 		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
 		// send to validator
-		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName,
+		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName,
 			sdk.AccAddress(proposerValidator.GetAddress()), propRewardCoins); err != nil {
 			panic(err)
 		}
 		// send to rest dao
-		if err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.StakedPoolName, types.DAOPoolName, daoRewardCoins); err != nil {
+		if err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, types.DAOPoolName, daoRewardCoins); err != nil {
 			panic(err)
 		}
 		ctx.EventManager().EmitEvent(
@@ -72,22 +72,6 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress
 	}
 }
 
-// called on begin blocker
-func (k Keeper) mintValidatorAwards(ctx sdk.Context) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		amount := sdk.Int{}
-		address := sdk.ValAddress{}
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &amount)
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Key(), address)
-		k.mint(ctx, amount, address)
-		// remove from the award store
-		store.Delete(iterator.Key())
-	}
-}
-
 func (k Keeper) GetTotalCusomValidatorAwards(ctx sdk.Context) sdk.Int {
 	total := sdk.ZeroInt()
 	store := ctx.KVStore(k.storeKey)
@@ -95,7 +79,7 @@ func (k Keeper) GetTotalCusomValidatorAwards(ctx sdk.Context) sdk.Int {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		amount := sdk.Int{}
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &amount)
+		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &amount)
 		total = total.Add(amount)
 	}
 	return total
@@ -104,7 +88,9 @@ func (k Keeper) GetTotalCusomValidatorAwards(ctx sdk.Context) sdk.Int {
 // store functions used to keep track of a validator award
 func (k Keeper) setValidatorAward(ctx sdk.Context, amount sdk.Int, address sdk.ValAddress) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyForValidatorAward(address), amino.MustMarshalBinaryBare(amount))
+	key := types.KeyForValidatorAward(address)
+	val := amino.MustMarshalBinaryBare(amount)
+	store.Set(key, val)
 }
 
 func (k Keeper) getValidatorAward(ctx sdk.Context, address sdk.ValAddress) (coins sdk.Int, found bool) {
@@ -113,7 +99,8 @@ func (k Keeper) getValidatorAward(ctx sdk.Context, address sdk.ValAddress) (coin
 	if value == nil {
 		return coins, false
 	}
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(value, &coins)
+	k.cdc.MustUnmarshalBinaryBare(value, &coins)
+	found = true
 	return
 }
 
@@ -122,7 +109,22 @@ func (k Keeper) deleteValidatorAward(ctx sdk.Context, address sdk.ValAddress) {
 	store.Delete(types.KeyForValidatorAward(address))
 }
 
-// Mints sdk.Coins
+// called on begin blocker
+func (k Keeper) mintValidatorAwards(ctx sdk.Context) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		amount := sdk.Int{}
+		address := sdk.ValAddress(types.AddressFromKey(iterator.Key()))
+		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &amount)
+		k.mint(ctx, amount, address)
+		// remove from the award store
+		store.Delete(iterator.Key())
+	}
+}
+
+// Mints sdk.Coins and sends them to an address
 func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.ValAddress) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	mintErr := k.supplyKeeper.MintCoins(ctx, types.StakedPoolName, coins.Add(coins))
@@ -161,5 +163,5 @@ func (k Keeper) SetPreviousProposer(ctx sdk.Context, consAddr sdk.ConsAddress) {
 // returns the current BaseProposerReward rate from the global param store
 // nolint: errcheck
 func (k Keeper) getProposerRewardPercentage(ctx sdk.Context) sdk.Int {
-	return sdk.NewInt(int64(k.ProposerRewardPercentage(ctx))).Quo(sdk.NewInt(100))
+	return sdk.NewInt(int64(k.ProposerRewardPercentage(ctx)))
 }

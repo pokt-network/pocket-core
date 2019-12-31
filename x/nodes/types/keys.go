@@ -74,7 +74,7 @@ func KeyForValidatorBurn(address sdk.ValAddress) []byte {
 }
 
 // Removes the prefix bytes from a key to expose true address
-func AddressFromPrevStateValidatorPowerKey(key []byte) []byte {
+func AddressFromKey(key []byte) []byte {
 	return key[1:] // remove prefix bytes
 }
 

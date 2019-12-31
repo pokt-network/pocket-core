@@ -84,6 +84,6 @@ func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress
 // set a validator in the consensus store
 func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
-	consAddr := sdk.ConsAddress(validator.ConsPubKey.Address())
+	consAddr := validator.GetConsAddr()
 	store.Set(types.KeyForValidatorByConsAddr(consAddr), validator.Address)
 }

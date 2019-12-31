@@ -25,6 +25,11 @@ var ( // Keys for store prefixes
 	BurnApplicationKey                = []byte{0x06} // prefix for awarding applications
 )
 
+// Removes the prefix bytes from a key to expose true address
+func AddressFromKey(key []byte) []byte {
+	return key[1:] // remove prefix bytes
+}
+
 // generates the key for the application with address
 func KeyForAppByAllApps(addr sdk.ValAddress) []byte {
 	return append(AllApplicationsKey, addr.Bytes()...)
