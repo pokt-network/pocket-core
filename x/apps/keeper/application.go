@@ -89,5 +89,16 @@ func (k Keeper) SetAppByConsAddr(ctx sdk.Context, application types.Application)
 }
 
 func (k Keeper) CalculateAppRelays(ctx sdk.Context, application types.Application) sdk.Int {
-	return application.StakedTokens.MulRaw(int64(k.RelayCoefficient(ctx))).Quo(sdk.NewInt(100))
+	stakingAdjustment := sdk.NewDec(k.StakingAdjustment(ctx))
+	participationRate := sdk.NewDec(1)
+	baseRate := sdk.NewInt(k.BaselineThroughputStakeRate(ctx))
+	if k.ParticipationRateOn(ctx) {
+		appStakedCoins := k.GetStakedTokens(ctx)
+		nodeStakedCoins := k.posKeeper.GetStakedTokens(ctx)
+		totalTokens := k.TotalTokens(ctx)
+		participationRate = appStakedCoins.Add(nodeStakedCoins).ToDec().Quo(totalTokens.ToDec())
+	}
+	basePercentage := baseRate.ToDec().Quo(sdk.NewDec(100))
+	baselineThroughput := basePercentage.Mul(application.StakedTokens.ToDec())
+	return participationRate.Mul(baselineThroughput).Add(stakingAdjustment).TruncateInt()
 }

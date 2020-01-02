@@ -8,6 +8,8 @@ import (
 
 type PosKeeper interface {
 	StakeDenom(ctx sdk.Context) (res string)
+	// GetStakedTokens total staking tokens supply which is staked
+	GetStakedTokens(ctx sdk.Context) sdk.Int
 }
 
 // SupplyKeeper defines the expected supply Keeper (noalias)
