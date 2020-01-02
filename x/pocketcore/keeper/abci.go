@@ -6,8 +6,6 @@ import (
 )
 
 func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
-	// set new developer relays coefficient
-	k.appKeeper.SetRelayCoefficient(ctx, int(k.GetStakedRatio(ctx).MulInt(sdk.NewInt(100)).TruncateInt().Int64()))
 	// delete the proofs held within the world state for too long
 	k.DeleteExpiredClaims(ctx)
 }
