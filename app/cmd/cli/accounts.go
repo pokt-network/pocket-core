@@ -13,6 +13,7 @@ import (
 func init() {
 	rootCmd.AddCommand(accountsCmd)
 	accountsCmd.AddCommand(createCmd)
+	accountsCmd.AddCommand(getCoinbase)
 	accountsCmd.AddCommand(deleteCmd)
 	accountsCmd.AddCommand(listCmd)
 	accountsCmd.AddCommand(showCmd)
@@ -50,6 +51,23 @@ var createCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Printf("Account generated succesfully:\nAddress: %s\n", kp.GetAddress())
+	},
+}
+
+var getCoinbase = &cobra.Command{
+	Use:   "get-coinbase",
+	Short: "Gets the coinbase account from the keybase",
+	Long:  `Retrieves the coinbase account from the pocket core keybase`,
+	Run: func(cmd *cobra.Command, args []string) {
+		kb := app.GetKeybase()
+		if kb == nil {
+			panic(app.UninitializedKeybaseError)
+		}
+		coinbase, err := kb.GetCoinbase()
+		if err != nil {
+			panic(app.UninitializedKeybaseError)
+		}
+		fmt.Printf("Coinbase Account:%s\n", coinbase.GetAddress())
 	},
 }
 

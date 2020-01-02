@@ -25,5 +25,4 @@ type AppsKeeper interface {
 	TotalTokens(ctx sdk.Context) sdk.Int
 	BurnApplication(ctx sdk.Context, address sdk.ValAddress, severityPercentage sdk.Dec)
 	JailApplication(ctx sdk.Context, addr sdk.ConsAddress)
-	SetRelayCoefficient(ctx sdk.Context, newCoefficient int)
 }

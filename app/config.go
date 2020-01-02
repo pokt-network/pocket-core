@@ -70,11 +70,11 @@ func InitGenesis() {
 	SetGenesisFilepath(getDataDir() + fs + "config" + fs + "genesis.json")
 	if _, err := os.Stat(GetGenesisFilePath()); os.IsNotExist(err) {
 		keys := GetKeybase()
-		kps, err := (keys).List()
+		coinbaseKeypair, err := keys.GetCoinbase()
 		if err != nil {
 			panic(err)
 		}
-		publicKey := kps[0].PubKey
+		publicKey := coinbaseKeypair.PubKey
 		// ensure directory path made
 		err = os.MkdirAll(datadir+fs+"config", os.ModePerm)
 		if err != nil {
@@ -193,11 +193,10 @@ func InitKeyfiles() string {
 			panic(err)
 		}
 		keys := GetKeybase()
-		keypairs, err := (keys).List()
+		coinbaseKeypair, err := keys.GetCoinbase()
 		if err != nil {
 			panic(err)
 		}
-		coinbaseKeypair := keypairs[0]
 		res, err := (keys).ExportPrivateKeyObject(coinbaseKeypair.GetAddress(), password)
 		if err != nil {
 			panic(err)
@@ -334,11 +333,10 @@ func GetHostedChains() types.HostedBlockchains {
 
 func ConfirmCoinbasePassword(pswrd string) error {
 	keys := GetKeybase()
-	kps, err := (keys).List()
+	kp, err := keys.GetCoinbase()
 	if err != nil {
-		panic(err)
+		return err
 	}
-	kp := kps[0]
 	err = (keys).Update(kp.GetAddress(), pswrd, pswrd)
 	if err != nil {
 		return err
