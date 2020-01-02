@@ -12,7 +12,7 @@ import (
 
 // transaction that sends the total number of relays (claim), the merkle root (for data integrity), and the header (for identification)
 func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error) {
-	kp, err := keybase.List()
+	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		panic(err)
 	}
@@ -20,7 +20,7 @@ func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuil
 		SessionHeader: header,
 		TotalRelays:   totalRelays,
 		Root:          root,
-		FromAddress:   sdk.ValAddress(kp[0].GetAddress()),
+		FromAddress:   sdk.ValAddress(kp.GetAddress()),
 	}
 	err = msg.ValidateBasic()
 	if err != nil {

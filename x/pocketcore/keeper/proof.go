@@ -80,7 +80,7 @@ type pseudorandomGenerator struct {
 
 // auto sends a claim of work based on relays completed
 func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error)) {
-	kp, err := keybase.List()
+	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		panic(err)
 	}
@@ -94,7 +94,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			continue
 		}
 		// check the current state to see if the unverified proof has already been sent and processed (if so, then skip this proof)
-		if _, found := k.GetUnverfiedProof(ctx, sdk.ValAddress(kp[0].GetAddress()), proof.SessionHeader); found {
+		if _, found := k.GetUnverfiedProof(ctx, sdk.ValAddress(kp.GetAddress()), proof.SessionHeader); found {
 			continue
 		}
 		// generate the auto txbuilder and clictx
@@ -110,7 +110,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 
 // auto sends a proof transaction for the claim
 func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, claimTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode pc.Proof) (*sdk.TxResponse, error)) {
-	kp, err := k.GetCoinbaseKeypair(ctx)
+	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		panic(err)
 	}
@@ -301,7 +301,7 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 
 // todo this auto tx needs to be fixed
 func newTxBuilderAndCliCtx(n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
-	kp, err := keybase.List()
+	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		panic(err)
 	}
@@ -309,7 +309,7 @@ func newTxBuilderAndCliCtx(n client.Client, keybase keys.Keybase, k Keeper) (txB
 	if err != nil {
 		panic(err)
 	}
-	pubKey := kp[0].PubKey
+	pubKey := kp.PubKey
 	fromAddr := sdk.AccAddress(pubKey.Bytes())
 	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
 	accGetter := auth.NewAccountRetriever(cliCtx)
