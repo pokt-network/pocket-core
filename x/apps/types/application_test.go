@@ -948,3 +948,73 @@ func TestApplication_UpdateStatus(t *testing.T) {
 		})
 	}
 }
+
+func TestApplication_GetChains(t *testing.T) {
+	type args struct {
+		addr          sdk.ValAddress
+		consPubKey    crypto.PubKey
+		tokensToStake sdk.Int
+		chains        []string
+		serviceURL    string
+	}
+	var pub ed25519.PubKeyEd25519
+	rand.Read(pub[:])
+
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			"defaultApplication",
+			args{sdk.ValAddress(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com"},
+			[]string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := NewApplication(tt.args.addr, tt.args.consPubKey, tt.args.chains, tt.args.tokensToStake)
+			if got := app.GetChains(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewApplication() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestApplication_GetMaxRelays(t *testing.T) {
+	type args struct {
+		addr          sdk.ValAddress
+		consPubKey    crypto.PubKey
+		tokensToStake sdk.Int
+		chains        []string
+		serviceURL    string
+		maxRelays sdk.Int
+	}
+	var pub ed25519.PubKeyEd25519
+	rand.Read(pub[:])
+
+	tests := []struct {
+		name string
+		args args
+		want sdk.Int
+	}{
+		{
+			"defaultApplication",
+			args{sdk.ValAddress(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com", sdk.NewInt(1)},
+			sdk.NewInt(1),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := Application{
+				Address: tt.args.addr,
+				ConsPubKey: tt.args.consPubKey,
+				Chains: tt.args.chains,
+				MaxRelays: tt.args.maxRelays,
+			}
+			if got := app.GetMaxRelays(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewApplication() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
