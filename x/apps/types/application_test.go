@@ -975,7 +975,7 @@ func TestApplication_GetChains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			app := NewApplication(tt.args.addr, tt.args.consPubKey, tt.args.chains, tt.args.tokensToStake)
 			if got := app.GetChains(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewApplication() = %v, want %v", got, tt.want)
+				t.Errorf("GetChains() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -1013,8 +1013,9 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 				MaxRelays: tt.args.maxRelays,
 			}
 			if got := app.GetMaxRelays(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewApplication() = %v, want %v", got, tt.want)
+				t.Errorf("GetMaxRelays() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
+
