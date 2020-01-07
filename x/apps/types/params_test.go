@@ -136,13 +136,13 @@ func TestParams_Validate(t *testing.T) {
 }
 
 func TestParams_MustMarshalMarshal(t *testing.T) {
-	type args struct{
+	type args struct {
 		bz []byte
 	}
 	tests := []struct {
-		name string
+		name   string
 		panics bool
-		want interface{}
+		want   interface{}
 		args
 	}{
 		{
@@ -167,17 +167,41 @@ func TestParams_MustMarshalMarshal(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			switch tt.panics {
 			case true:
-				defer func(){
+				defer func() {
 					err := recover().(error)
 					if !reflect.DeepEqual(fmt.Sprintf("%v", err), tt.want) {
-						t.Errorf("DefaultParams() = %v, want %v", err, tt.want)
+						t.Errorf("MustUnmarshalParams() = %v, want %v", err, tt.want)
 					}
 				}()
 				_ = MustUnmarshalParams(moduleCdc, tt.args.bz)
 			default:
 				if got := MustUnmarshalParams(moduleCdc, tt.args.bz); !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("DefaultParams() = %v, want %v", got, tt.want)
+					t.Errorf("MustUnmarshalParams() = %v, want %v", got, tt.want)
 				}
+			}
+		})
+	}
+}
+func TestParams_String(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			"Default Test",
+			fmt.Sprintf(`Params:
+  Unstaking Time:              %s
+  Max Applications:            %d
+  Minimum Stake:     	       %d
+  Relay Coefficient Percentage %d,`,
+				DefaultUnstakingTime, DefaultMaxApplications, DefaultMinStake, DefaultRelayCoefficient),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if got := DefaultParams().String(); got != tt.want{
+				t.Errorf("Params.String() = %v, want %v", got, tt.want)
 			}
 		})
 	}
