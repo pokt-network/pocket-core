@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -118,6 +119,18 @@ func TestParams_Validate(t *testing.T) {
 			StakingAdjustment:          0,
 			ParticipationRateOn:        false,
 		}, true},
+		{"Default Validation Test / Wrong Appstake", fields{
+			UnstakingTime:              0,
+			MaxApplications:            2,
+			AppStakeMin:                0,
+			RelayCoefficientPercentage: 0,
+		}, true},
+		{"Default Validation Test / Wrong RelayCoeficcientPercentage", fields{
+			UnstakingTime:              10000,
+			MaxApplications:            2,
+			AppStakeMin:                1,
+			RelayCoefficientPercentage: 190,
+		}, true},
 		{"Default Validation Test / Valid", fields{
 			UnstakingTime:              10000,
 			MaxApplications:            2,
@@ -139,6 +152,54 @@ func TestParams_Validate(t *testing.T) {
 			}
 			if err := p.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestParams_MustMarshalMarshal(t *testing.T) {
+	type args struct{
+		bz []byte
+	}
+	tests := []struct {
+		name string
+		panics bool
+		want interface{}
+		args
+	}{
+		{
+			"panics if empty bytes",
+			true,
+			"UnmarshalBinaryLengthPrefixed cannot decode empty bytes",
+			args{},
+		},
+		{
+			"Unmarshal application",
+			false,
+			Params{
+				UnstakingTime:              DefaultUnstakingTime,
+				MaxApplications:            DefaultMaxApplications,
+				AppStakeMin:                DefaultMinStake,
+				RelayCoefficientPercentage: DefaultRelayCoefficient,
+			},
+			args{moduleCdc.MustMarshalBinaryLengthPrefixed(DefaultParams())},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			switch tt.panics {
+			case true:
+				defer func(){
+					err := recover().(error)
+					if !reflect.DeepEqual(fmt.Sprintf("%v", err), tt.want) {
+						t.Errorf("DefaultParams() = %v, want %v", err, tt.want)
+					}
+				}()
+				_ = MustUnmarshalParams(moduleCdc, tt.args.bz)
+			default:
+				if got := MustUnmarshalParams(moduleCdc, tt.args.bz); !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("DefaultParams() = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
