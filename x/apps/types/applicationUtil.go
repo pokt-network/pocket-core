@@ -36,7 +36,7 @@ func MustMarshalApplication(cdc *codec.Codec, application Application) []byte {
 // MUST decode the app from the bytes
 func MustUnmarshalApplication(cdc *codec.Codec, valBytes []byte) Application {
 	application, err := UnmarshalApplication(cdc, valBytes)
-	if err != nil {
+	if err != nil { // todo test panic!!
 		panic(err)
 	}
 	return application

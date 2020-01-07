@@ -29,7 +29,7 @@ func init() {
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		StakedTokens:            sdk.NewInt(100),
-		MaxRelays: sdk.NewInt(1000),
+		MaxRelays:               sdk.NewInt(1000),
 		UnstakingCompletionTime: time.Time{},
 	}
 }
@@ -37,7 +37,7 @@ func init() {
 func TestApplicationUtil_MarshalJSON(t *testing.T) {
 	type args struct {
 		application Application
-		codec *codec.Codec
+		codec       *codec.Codec
 	}
 	hexApp := hexApplication{
 		Address:                 application.Address,
@@ -46,24 +46,25 @@ func TestApplicationUtil_MarshalJSON(t *testing.T) {
 		Status:                  application.Status,
 		StakedTokens:            application.StakedTokens,
 		UnstakingCompletionTime: application.UnstakingCompletionTime,
+		MaxRelays:               application.MaxRelays,
 	}
-	bz, _ :=  codec.Cdc.MarshalJSON(hexApp)
+	bz, _ := codec.Cdc.MarshalJSON(hexApp)
 
-	tests := []struct{
+	tests := []struct {
 		name string
 		args
 		want []byte
 	}{
 		{
 			name: "marshals application",
-			args: args{ application: application, codec: moduleCdc },
-			want:  bz,
+			args: args{application: application, codec: moduleCdc},
+			want: bz,
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func(t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			if got, _ := tt.args.application.MarshalJSON(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MmashalJSON() = %v, want %v", got,tt.want)
+				t.Errorf("MmashalJSON() = %s, want %s", got, tt.want)
 			}
 		})
 	}
@@ -73,19 +74,19 @@ func TestApplicationUtil_UnmarshalJSON(t *testing.T) {
 	type args struct {
 		application Application
 	}
-	tests := []struct{
+	tests := []struct {
 		name string
 		args
 		want Application
 	}{
 		{
 			name: "marshals application",
-			args: args{ application: application },
+			args: args{application: application},
 			want: application,
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func(t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			marshaled, err := tt.args.application.MarshalJSON()
 			if err != nil {
 				t.Error("Cannot marshal application")
@@ -98,15 +99,15 @@ func TestApplicationUtil_UnmarshalJSON(t *testing.T) {
 			//  assigned a new memory address overwriting the previous reference to application
 			// separate them and assert absolute value rather than deep equal
 
-			gotStaked :=  tt.args.application.StakedTokens
+			gotStaked := tt.args.application.StakedTokens
 			wantStaked := tt.want.StakedTokens
-			gotRelays :=  tt.args.application.StakedTokens
+			gotRelays := tt.args.application.StakedTokens
 			wantRelays := tt.want.StakedTokens
 
 			tt.args.application.StakedTokens = tt.want.StakedTokens
 			tt.args.application.MaxRelays = tt.want.MaxRelays
 
-			if !reflect.DeepEqual(tt.args.application ,tt.want) {
+			if !reflect.DeepEqual(tt.args.application, tt.want) {
 				t.Errorf("got %v but want %v", tt.args.application, tt.want)
 			}
 			if !gotStaked.Equal(wantStaked) {
@@ -122,22 +123,22 @@ func TestApplicationUtil_UnmarshalJSON(t *testing.T) {
 func TestApplicationUtil_MustMarshalApplication(t *testing.T) {
 	type args struct {
 		application Application
-		codec *codec.Codec
+		codec       *codec.Codec
 	}
-	tests := []struct{
+	tests := []struct {
 		name string
 		args
 		want []byte
 	}{
 		{
 			name: "marshals application",
-			args: args{ application: application, codec: moduleCdc },
+			args: args{application: application, codec: moduleCdc},
 			want: moduleCdc.MustMarshalBinaryLengthPrefixed(application),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func(t *testing.T){
-			if got := MustMarshalApplication(tt.args.codec, tt.args.application); !reflect.DeepEqual(got, tt.want){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MustMarshalApplication(tt.args.codec, tt.args.application); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MustMarshalApplication()= returns %v but want %v", got, tt.want)
 			}
 		})
@@ -147,21 +148,21 @@ func TestApplicationUtil_MustMarshalApplication(t *testing.T) {
 func TestApplicationUtil_MustUnMarshalApplication(t *testing.T) {
 	type args struct {
 		application Application
-		codec *codec.Codec
+		codec       *codec.Codec
 	}
-	tests := []struct{
+	tests := []struct {
 		name string
 		args
 		want Application
 	}{
 		{
 			name: "can unmarshal application",
-			args: args{ application: application, codec: moduleCdc },
+			args: args{application: application, codec: moduleCdc},
 			want: application,
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func(t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			bz := MustMarshalApplication(tt.args.codec, tt.args.application)
 			if unmarshaledApp := MustUnmarshalApplication(tt.args.codec, bz); !reflect.DeepEqual(unmarshaledApp, tt.want) {
 				t.Errorf("got %v but want %v", unmarshaledApp, tt.want)
@@ -173,29 +174,29 @@ func TestApplicationUtil_MustUnMarshalApplication(t *testing.T) {
 func TestApplicationUtil_UnMarshalApplication(t *testing.T) {
 	type args struct {
 		application Application
-		codec *codec.Codec
+		codec       *codec.Codec
 	}
-	tests := []struct{
+	tests := []struct {
 		name string
 		args
 		want Application
 	}{
 		{
 			name: "can unmarshal application",
-			args: args{ application: application, codec: moduleCdc },
+			args: args{application: application, codec: moduleCdc},
 			want: application,
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func(t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			bz := MustMarshalApplication(tt.args.codec, tt.args.application)
-			unmarshaledApp, err := UnmarshalApplication(tt.args.codec, bz);
+			unmarshaledApp, err := UnmarshalApplication(tt.args.codec, bz)
 			if err != nil {
 				t.Error("could not unmarshal app")
 			}
 
 			if !reflect.DeepEqual(unmarshaledApp, tt.want) {
-				t.Errorf("got %v but want %v",  unmarshaledApp, unmarshaledApp)
+				t.Errorf("got %v but want %v", unmarshaledApp, unmarshaledApp)
 			}
 		})
 	}
