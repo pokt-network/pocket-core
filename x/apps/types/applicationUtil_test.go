@@ -1,10 +1,13 @@
 package types
 
 import (
+	"encoding/json"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"strings"
 
+	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -70,6 +73,86 @@ func TestApplicationUtil_MarshalJSON(t *testing.T) {
 	}
 }
 
+func TestApplicationUtil_String(t *testing.T) {
+	tests := []struct {
+		name string
+		args Applications
+		want string
+	}{
+		{
+			name: "serializes applicaitons into string",
+			args: Applications{application},
+			want: fmt.Sprintf(`AppPubKey
+  Address:           		  %s
+  AppPubKey Cons Pubkey: 	  %s
+  Jailed:                     %v
+  Chains:                     %v
+  MaxRelays:                  %d
+  Status:                     %s
+  Tokens:               	  %s
+  Unstakeing Completion Time: %v `,
+				application.Address,
+				sdk.HexConsPub(application.ConsPubKey),
+				application.Jailed,
+				application.Chains,
+				application.MaxRelays,
+				application.Status,
+				application.StakedTokens,
+				application.UnstakingCompletionTime,
+			),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.args.String(); got != strings.TrimSpace(fmt.Sprintf("%s\n", tt.want)) {
+				t.Errorf("String() = %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestApplicationUtil_JSON(t *testing.T) {
+	tests := []struct {
+		name string
+		args Applications
+		want string
+	}{
+		{
+			name: "serializes applicaitons into string",
+			args: Applications{application},
+			want: fmt.Sprintf(`AppPubKey
+  Address:           		  %s
+  AppPubKey Cons Pubkey: 	  %s
+  Jailed:                     %v
+  Chains:                     %v
+  MaxRelays:                  %d
+  Status:                     %s
+  Tokens:               	  %s
+  Unstakeing Completion Time: %v`,
+				application.Address,
+				sdk.HexConsPub(application.ConsPubKey),
+				application.Jailed,
+				application.Chains,
+				application.MaxRelays,
+				application.Status,
+				application.StakedTokens,
+				application.UnstakingCompletionTime,
+			),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			want, err := json.Marshal([]string{tt.want})
+			if err != nil {
+				t.Errorf("could not marshal want %s", err)
+			}
+			if got, _ := tt.args.JSON(); !reflect.DeepEqual(got, want) {
+				t.Errorf("JSON() = %s", got)
+				t.Errorf("JSON() = %s", want)
+			}
+		})
+	}
+}
 func TestApplicationUtil_UnmarshalJSON(t *testing.T) {
 	type args struct {
 		application Application
@@ -149,23 +232,41 @@ func TestApplicationUtil_MustUnMarshalApplication(t *testing.T) {
 	type args struct {
 		application Application
 		codec       *codec.Codec
+		bz []byte
 	}
 	tests := []struct {
 		name string
+		panics bool
 		args
-		want Application
+		want interface{}
 	}{
 		{
 			name: "can unmarshal application",
-			args: args{application: application, codec: moduleCdc},
+			panics: true,
+			args: args{bz: []byte{}, codec:moduleCdc},
+			want: "UnmarshalBinaryLengthPrefixed cannot decode empty bytes",
+		},
+		{
+			name: "can unmarshal application",
+			args: args{bz: MustMarshalApplication(moduleCdc, application), codec:moduleCdc},
 			want: application,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bz := MustMarshalApplication(tt.args.codec, tt.args.application)
-			if unmarshaledApp := MustUnmarshalApplication(tt.args.codec, bz); !reflect.DeepEqual(unmarshaledApp, tt.want) {
-				t.Errorf("got %v but want %v", unmarshaledApp, tt.want)
+			switch tt.panics{
+			case true:
+				defer func(){
+					err := recover().(error)
+					if !reflect.DeepEqual(fmt.Sprintf("%s", err), tt.want){
+						t.Errorf("got %v but want %v", err, tt.want)
+					}
+				}()
+				_ = MustUnmarshalApplication(tt.args.codec, tt.args.bz)
+			default:
+				if unmarshaledApp := MustUnmarshalApplication(tt.args.codec, tt.args.bz); !reflect.DeepEqual(unmarshaledApp, tt.want) {
+					t.Errorf("got %v but want %v", unmarshaledApp, tt.want)
+				}
 			}
 		})
 	}

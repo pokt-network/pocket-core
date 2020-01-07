@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
@@ -47,7 +48,6 @@ func TestNewApplication(t *testing.T) {
 }
 
 func TestApplication_AddStakedTokens(t *testing.T) {
-	// todo add a negative value test
 	type fields struct {
 		Address                 sdk.ValAddress
 		ConsPubKey              crypto.PubKey
@@ -64,18 +64,25 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 	}
 	tests := []struct {
 		name   string
+		panics bool
 		fields fields
 		args   args
-		want   Application
+		want  interface{}
 	}{
-		{"Default Add Token Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
-			ConsPubKey:              pub,
-			Jailed:                  false,
-			Status:                  sdk.Bonded,
-			StakedTokens:            sdk.ZeroInt(),
-			UnstakingCompletionTime: time.Time{},
-		}, args{tokens: sdk.NewInt(100)},
+		{
+			"Default Add Token Test",
+			false,
+			fields{
+				Address:                 sdk.ValAddress(pub.Address()),
+				ConsPubKey:              pub,
+				Jailed:                  false,
+				Status:                  sdk.Bonded,
+				StakedTokens:            sdk.ZeroInt(),
+				UnstakingCompletionTime: time.Time{},
+			},
+			args{
+					tokens: sdk.NewInt(100),
+			},
 			Application{
 				Address:                 sdk.ValAddress(pub.Address()),
 				ConsPubKey:              pub,
@@ -83,7 +90,24 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 				Status:                  sdk.Bonded,
 				StakedTokens:            sdk.NewInt(100),
 				UnstakingCompletionTime: time.Time{},
-			}},
+			},
+		},
+		{
+			" panics Add negative amount",
+			true,
+			fields{
+				Address:                 sdk.ValAddress(pub.Address()),
+				ConsPubKey:              pub,
+				Jailed:                  false,
+				Status:                  sdk.Bonded,
+				StakedTokens:            sdk.ZeroInt(),
+				UnstakingCompletionTime: time.Time{},
+			},
+			args{
+				tokens: sdk.NewInt(-1),
+			},
+			fmt.Sprint("should not happen: trying to add negative tokens -1"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -95,8 +119,19 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			if got := v.AddStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AddStakedTokens() = %v, want %v", got, tt.want)
+			switch tt.panics{
+			case true:
+				defer func(){
+					err := recover()
+					if !reflect.DeepEqual(fmt.Sprintf("%v", err), tt.want) {
+						t.Errorf("AddStakedTokens() = %v, want %v", err, tt.want)
+					}
+				}()
+				_ = v.AddStakedTokens(tt.args.tokens)
+			default:
+				if got := v.AddStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("AddStakedTokens() = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
