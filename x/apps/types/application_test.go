@@ -47,6 +47,7 @@ func TestNewApplication(t *testing.T) {
 }
 
 func TestApplication_AddStakedTokens(t *testing.T) {
+	// todo add a negative value test
 	type fields struct {
 		Address                 sdk.ValAddress
 		ConsPubKey              crypto.PubKey
@@ -988,7 +989,7 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 		tokensToStake sdk.Int
 		chains        []string
 		serviceURL    string
-		maxRelays sdk.Int
+		maxRelays     sdk.Int
 	}
 	var pub ed25519.PubKeyEd25519
 	rand.Read(pub[:])
@@ -1007,10 +1008,10 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			app := Application{
-				Address: tt.args.addr,
+				Address:    tt.args.addr,
 				ConsPubKey: tt.args.consPubKey,
-				Chains: tt.args.chains,
-				MaxRelays: tt.args.maxRelays,
+				Chains:     tt.args.chains,
+				MaxRelays:  tt.args.maxRelays,
 			}
 			if got := app.GetMaxRelays(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetMaxRelays() = %v, want %v", got, tt.want)
@@ -1018,4 +1019,3 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 		})
 	}
 }
-
