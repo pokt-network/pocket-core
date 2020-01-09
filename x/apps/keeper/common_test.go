@@ -197,3 +197,27 @@ func getUnbondingApplication() types.Application {
 	v := getApplication()
 	return v.UpdateStatus(sdk.Unbonding)
 }
+type AppHooks struct{}
+
+func (ah AppHooks) BeforeApplicationRegistered(ctx sdk.Context, valAddr sdk.ValAddress) {}
+func (ah AppHooks) AfterApplicationRegistered(ctx sdk.Context, valAddr sdk.ValAddress)  {}
+func (ah AppHooks) BeforeApplicationRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+}
+func (ah AppHooks) AfterApplicationRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+}
+func (ah AppHooks) BeforeApplicationStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+}
+func (ah AppHooks) AfterApplicationStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+}
+func (ah AppHooks) BeforeApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+}
+func (ah AppHooks) AfterApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+}
+func (ah AppHooks) BeforeApplicationUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+}
+func (ah AppHooks) AfterApplicationUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+}
+func (ah AppHooks) BeforeApplicationSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
+}
+func (ah AppHooks) AfterApplicationSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
+}
