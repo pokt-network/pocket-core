@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/stretchr/testify/assert"
+	"github.com/pokt-network/posmint/x/supply/exported"
 	"strings"
 	"testing"
 )
 
-func TestCoinsFromUnstakedToStaked(t *testing.T) {
+func TestPool_CoinsFromUnstakedToStaked(t *testing.T) {
 	application := getBondedApplication()
 	applicationAddress := application.Address
 
 	tests := []struct {
 		name        string
-		expected    string
+		want    string
 		application types.Application
 		amount      sdk.Int
 		panics      bool
@@ -30,50 +30,52 @@ func TestCoinsFromUnstakedToStaked(t *testing.T) {
 			name:        "panics if negative ammount",
 			application: types.Application{Address: applicationAddress},
 			amount:      sdk.NewInt(-1),
-			expected:    fmt.Sprintf("negative coin amount: -1"),
+			want:    fmt.Sprintf("negative coin amount: -1"),
 			panics:      true,
 		},
 		{name: "panics if no supply is set",
 			application: types.Application{Address: applicationAddress},
-			expected:    fmt.Sprintf("insufficient account funds"),
+			want:    fmt.Sprintf("insufficient account funds"),
 			amount:      sdk.NewInt(10),
 			panics:      true,
 		},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 
-			switch test.panics {
+			switch tt.panics {
 			case true:
 				defer func() {
-					err := recover().(error)
-					assert.Contains(t, err.Error(), test.expected)
+					if err := recover().(error); !strings.Contains(err.Error(), tt.want) {
+						t.Errorf("KeeperCoins.FromUnstakedToStaked()= %v, want %v", err.Error(), tt.want)
+					}
 				}()
-				if strings.Contains(test.name, "setup") {
+				if strings.Contains(tt.name, "setup") {
 					addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.application.Address, sdk.NewInt(100000000000))
+					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
 				}
-				keeper.coinsFromUnstakedToStaked(context, test.application, test.amount)
+				keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.application.Address, sdk.NewInt(100000000000))
-				keeper.coinsFromUnstakedToStaked(context, test.application, test.amount)
-				staked := keeper.GetStakedTokens(context)
-				assert.True(t, test.amount.Add(sdk.NewInt(100000000000)).Equal(staked), "values do not match")
+				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
+				keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
+				if got := keeper.GetStakedTokens(context);!tt.amount.Add(sdk.NewInt(100000000000)).Equal(got) {
+					t.Errorf("KeeperCoins.FromUnstakedToStaked()= %v, want %v", got, tt.amount.Add(sdk.NewInt(100000000000)))
+				}
 			}
 		})
 	}
 }
 
-func TestCoinsFromStakedToUnstaked(t *testing.T) {
+func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
 	application := getBondedApplication()
 	applicationAddress := application.Address
 
 	tests := []struct {
 		name        string
 		amount      sdk.Int
-		expected    string
+		want    string
 		application types.Application
 		panics      bool
 	}{
@@ -87,37 +89,39 @@ func TestCoinsFromStakedToUnstaked(t *testing.T) {
 			name:        "panics if negative ammount",
 			application: types.Application{Address: applicationAddress, StakedTokens: sdk.NewInt(-1)},
 			amount:      sdk.NewInt(-1),
-			expected:    fmt.Sprintf("negative coin amount: -1"),
+			want:    fmt.Sprintf("negative coin amount: -1"),
 			panics:      true,
 		},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 
-			switch test.panics {
+			switch tt.panics {
 			case true:
 				defer func() {
-					err := recover().(error)
-					assert.Contains(t, err.Error(), test.expected)
+					if err := recover().(error); !strings.Contains(err.Error(), tt.want) {
+						t.Errorf("KeeperCoins.FromStakedToUnstaked()= %v, want %v", err.Error(), tt.want)
+					}
 				}()
-				if strings.Contains(test.name, "setup") {
+				if strings.Contains(tt.name, "setup") {
 					addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.application.Address, sdk.NewInt(100))
+					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100))
 				}
-				keeper.coinsFromStakedToUnstaked(context, test.application)
+				keeper.coinsFromStakedToUnstaked(context, tt.application)
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.application.Address, sdk.NewInt(100))
-				keeper.coinsFromStakedToUnstaked(context, test.application)
-				unstaked := keeper.GetUnstakedTokens(context)
-				assert.True(t, test.amount.Equal(unstaked), "values do not match")
+				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100))
+				keeper.coinsFromStakedToUnstaked(context, tt.application)
+				if got := keeper.GetUnstakedTokens(context); !tt.amount.Equal(got) {
+					t.Errorf("KeeperCoins.FromStakedToUnstaked()= %v, want %v", got, tt.amount)
+				}
 			}
 		})
 	}
 }
 
-func TestBurnStakedTokens(t *testing.T) {
+func TestPool_BurnStakedTokens(t *testing.T) {
 	application := getBondedApplication()
 	applicationAddress := application.Address
 
@@ -145,27 +149,76 @@ func TestBurnStakedTokens(t *testing.T) {
 			errs:        true,
 		},
 	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 
-			switch test.errs {
+			switch tt.errs {
 			case true:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.application.Address, supplySize)
-				keeper.coinsFromUnstakedToStaked(context, test.application, test.amount)
-				err := keeper.burnStakedTokens(context, test.burnAmount)
-				assert.Nil(t, err, "error is not nil")
+				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, supplySize)
+				keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
+				if err := keeper.burnStakedTokens(context, tt.burnAmount); err != nil {
+					t.Errorf("KeeperCoins.BurnStakedTokens()= %v, want nil", err)
+				}
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.application.Address, supplySize)
-				keeper.coinsFromUnstakedToStaked(context, test.application, test.amount)
-				err := keeper.burnStakedTokens(context, test.burnAmount)
+				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, supplySize)
+				keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
+				err := keeper.burnStakedTokens(context, tt.burnAmount)
 				if err != nil {
 					t.Fail()
 				}
-				staked := keeper.GetStakedTokens(context)
-				assert.True(t, test.amount.Sub(test.burnAmount).Add(supplySize).Equal(staked), "values do not match")
+				if got := keeper.GetStakedTokens(context); !tt.amount.Sub(tt.burnAmount).Add(supplySize).Equal(got) {
+					t.Errorf("KeeperCoins.BurnStakedTokens()= %v, want %v", got, tt.amount.Sub(tt.burnAmount).Add(supplySize))
+				}
+			}
+		})
+	}
+}
+
+func TestPool_GetFeePool(t *testing.T) {
+	tests := []struct{
+		name string
+	}{
+		{
+			"gets fee pool",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T){
+			context, _, keeper := createTestInput(t, true)
+			got := keeper.getFeePool(context)
+
+			if _, ok := got.(exported.ModuleAccountI); !ok {
+				t.Errorf("KeeperPool.getFeePool()= %v", ok)
+			}
+		})
+	}
+}
+
+func TestPool_StakedRatio(t *testing.T) {
+	application := getBondedApplication()
+	applicationAddress := application.Address
+
+	tests := []struct{
+		name string
+		amount sdk.Dec
+		address sdk.ValAddress
+	}{
+		{"return 0 if stake supply is lower than 0", sdk.ZeroDec(), applicationAddress},
+		{"return supply", sdk.NewDec(1), applicationAddress},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T){
+			context, _, keeper := createTestInput(t, true)
+			if !tt.amount.Equal(sdk.ZeroDec()) {
+				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
+			}
+
+			if got := keeper.StakedRatio(context); !got.Equal(tt.amount) {
+				t.Errorf("KeeperPool.StakedRatio()= %v, %v", got.String(), tt.amount.String())
 			}
 		})
 	}
