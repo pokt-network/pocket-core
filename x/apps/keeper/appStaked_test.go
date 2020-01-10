@@ -10,8 +10,10 @@ import (
 func TestGetAndSetStakedApplication(t *testing.T) {
 	boundedApplication := getBondedApplication()
 	unboundedApplication := getUnbondedApplication()
+	jailedApp := getBondedApplication()
+	jailedApp.Jailed = true
 
-	type expected struct {
+	type want struct {
 		applications []types.Application
 		length       int
 	}
@@ -19,22 +21,27 @@ func TestGetAndSetStakedApplication(t *testing.T) {
 		name         string
 		application  types.Application
 		applications []types.Application
-		expected     expected
+		want         want
 	}{
 		{
 			name:         "gets applications",
 			applications: []types.Application{boundedApplication},
-			expected:     expected{applications: []types.Application{boundedApplication}, length: 1},
+			want:         want{applications: []types.Application{boundedApplication}, length: 1},
 		},
 		{
 			name:         "gets emtpy slice of applications",
 			applications: []types.Application{unboundedApplication},
-			expected:     expected{applications: []types.Application{}, length: 0},
+			want:         want{applications: []types.Application{}, length: 0},
+		},
+		{
+			name:         "gets emtpy slice of applications",
+			applications: []types.Application{jailedApp},
+			want:         want{applications: []types.Application{}, length: 0},
 		},
 		{
 			name:         "only gets bounded applications",
 			applications: []types.Application{boundedApplication, unboundedApplication},
-			expected:     expected{applications: []types.Application{boundedApplication}, length: 1},
+			want:         want{applications: []types.Application{boundedApplication}, length: 1},
 		},
 	}
 
@@ -47,10 +54,10 @@ func TestGetAndSetStakedApplication(t *testing.T) {
 			}
 			applications := keeper.getStakedApplications(context)
 
-			if equal := assert.ObjectsAreEqualValues(applications, test.expected.applications); !equal { // note ObjectsAreEqualValues does not assert, manual verification is required
+			if equal := assert.ObjectsAreEqualValues(applications, test.want.applications); !equal { // note ObjectsAreEqualValues does not assert, manual verification is required
 				t.FailNow()
 			}
-			assert.Equalf(t, len(applications), test.expected.length, "length of the applications does not match expected on %v", test.name)
+			assert.Equalf(t, len(applications), test.want.length, "length of the applications does not match want on %v", test.name)
 		})
 	}
 }
@@ -58,7 +65,7 @@ func TestGetAndSetStakedApplication(t *testing.T) {
 func TestRemoveStakedApplicationTokens(t *testing.T) {
 	boundedApplication := getBondedApplication()
 
-	type expected struct {
+	type want struct {
 		tokens       sdk.Int
 		applications []types.Application
 		errorMessage string
@@ -68,21 +75,21 @@ func TestRemoveStakedApplicationTokens(t *testing.T) {
 		application types.Application
 		panics      bool
 		amount      sdk.Int
-		expected
+		want
 	}{
 		{
 			name:        "removes tokens from application applications",
 			application: boundedApplication,
 			amount:      sdk.NewInt(5),
 			panics:      false,
-			expected:    expected{tokens: sdk.NewInt(99999999995), applications: []types.Application{}},
+			want:        want{tokens: sdk.NewInt(99999999995), applications: []types.Application{}},
 		},
 		{
 			name:        "removes tokens from application applications",
 			application: boundedApplication,
 			amount:      sdk.NewInt(-5),
 			panics:      true,
-			expected:    expected{tokens: sdk.NewInt(99999999995), applications: []types.Application{}, errorMessage: "trying to remove negative tokens"},
+			want:        want{tokens: sdk.NewInt(99999999995), applications: []types.Application{}, errorMessage: "trying to remove negative tokens"},
 		},
 	}
 
@@ -95,12 +102,12 @@ func TestRemoveStakedApplicationTokens(t *testing.T) {
 			case true:
 				defer func() {
 					err := recover()
-					assert.Contains(t, err, test.expected.errorMessage)
+					assert.Contains(t, err, test.want.errorMessage)
 				}()
 				_ = keeper.removeApplicationTokens(context, test.application, test.amount)
 			default:
 				application := keeper.removeApplicationTokens(context, test.application, test.amount)
-				assert.True(t, application.StakedTokens.Equal(test.expected.tokens), "application staked tokens is not as expected")
+				assert.True(t, application.StakedTokens.Equal(test.want.tokens), "application staked tokens is not as want")
 
 				store := context.KVStore(keeper.storeKey)
 				assert.NotNil(t, store.Get(types.KeyForAppInStakingSet(application)))
@@ -170,6 +177,71 @@ func TestGetValsIterator(t *testing.T) {
 
 			it := keeper.stakedAppsIterator(context)
 			assert.Implements(t, (*sdk.Iterator)(nil), it, "does not implement interface")
+		})
+	}
+}
+
+func TestApplicationStaked_IterateAndExecuteOverStakedApps(t *testing.T) {
+	boundedApplication := getBondedApplication()
+	secondBoundedApplication := getBondedApplication()
+
+	tests := []struct {
+		name         string
+		application  types.Application
+		applications []types.Application
+		want         int
+	}{
+		{
+			name:         "iterates over applications",
+			applications: []types.Application{boundedApplication, secondBoundedApplication},
+			want:         2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			for _, application := range tt.applications {
+				keeper.SetApplication(context, application)
+				keeper.SetStakedApplication(context, application)
+			}
+			got := 0
+			fn := modifyFn(&got)
+
+			keeper.IterateAndExecuteOverStakedApps(context, fn)
+
+			if got != tt.want {
+				t.Errorf("appStaked.IterateAndExecuteOverApps() = got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+func TestApplicationStaked_RemoveApplicationRelays(t *testing.T) {
+	boundedApplication := getBondedApplication()
+
+	tests := []struct {
+		name        string
+		application types.Application
+		remove      sdk.Int
+		want        sdk.Int
+	}{
+		{
+			name:        "iterates over applications",
+			application: boundedApplication,
+			remove:      sdk.NewInt(100000000000 / 2),
+			want:        sdk.NewInt(100000000000 / 2),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			keeper.SetApplication(context, tt.application)
+			keeper.SetStakedApplication(context, tt.application)
+
+			if got := keeper.removeApplicationRelays(context, tt.application, tt.remove); !got.MaxRelays.Equal(tt.want) {
+				t.Errorf("appStaked.RemoveApplicationRelays() = got %v, want %v", got.MaxRelays, tt.want)
+			}
 		})
 	}
 }
