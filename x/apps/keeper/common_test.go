@@ -6,6 +6,7 @@ import (
 	nodestypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/supply"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/log"
@@ -197,27 +198,43 @@ func getUnbondingApplication() types.Application {
 	v := getApplication()
 	return v.UpdateStatus(sdk.Unbonding)
 }
-type AppHooks struct{}
+type AppHooks struct{
+	mock.Mock
+}
 
-func (ah AppHooks) BeforeApplicationRegistered(ctx sdk.Context, valAddr sdk.ValAddress) {}
-func (ah AppHooks) AfterApplicationRegistered(ctx sdk.Context, valAddr sdk.ValAddress)  {}
-func (ah AppHooks) BeforeApplicationRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ah *AppHooks) BeforeApplicationRegistered(ctx sdk.Context, valAddr sdk.ValAddress) {
+	ah.Called(ctx, valAddr)
 }
-func (ah AppHooks) AfterApplicationRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ah *AppHooks) AfterApplicationRegistered(ctx sdk.Context, valAddr sdk.ValAddress)  {
+	ah.Called(ctx, valAddr)
 }
-func (ah AppHooks) BeforeApplicationStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ah *AppHooks) BeforeApplicationRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+	ah.Called(ctx, consAddr, valAddr)
 }
-func (ah AppHooks) AfterApplicationStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ah *AppHooks) AfterApplicationRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+	ah.Called(ctx, consAddr, valAddr)
 }
-func (ah AppHooks) BeforeApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ah *AppHooks) BeforeApplicationStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+	ah.Called(ctx, consAddr, valAddr)
 }
-func (ah AppHooks) AfterApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ah *AppHooks) AfterApplicationStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+	ah.Called(ctx, consAddr, valAddr)
 }
-func (ah AppHooks) BeforeApplicationUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ah *AppHooks) BeforeApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+	ah.Called(ctx, consAddr, valAddr)
 }
-func (ah AppHooks) AfterApplicationUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ah *AppHooks) AfterApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+	ah.Called(ctx, consAddr, valAddr)
 }
-func (ah AppHooks) BeforeApplicationSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
+func (ah *AppHooks) BeforeApplicationUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+	ah.Called(ctx, consAddr, valAddr)
 }
-func (ah AppHooks) AfterApplicationSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
+func (ah *AppHooks) AfterApplicationUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+	ah.Called(ctx, consAddr, valAddr)
+}
+func (ah *AppHooks) BeforeApplicationSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
+	ah.Called(ctx, valAddr, fraction)
+}
+func (ah *AppHooks) AfterApplicationSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
+	ah.Called(ctx, valAddr, fraction)
 }

@@ -55,10 +55,10 @@ func TestKeeper_SetHooks(t *testing.T) {
 						t.Error("SetHooks(): got nil want err")
 					}
 				}()
-				_ = keeper.SetHooks(tt.args)
-				_ = keeper.SetHooks(tt.args)
+				_ = keeper.SetHooks(&tt.args)
+				_ = keeper.SetHooks(&tt.args)
 			default:
-				if got := keeper.SetHooks(tt.args); got != &keeper {
+				if got := keeper.SetHooks(&tt.args); got != &keeper {
 					t.Errorf("SetHooks(): got %v want %v", got, &keeper)
 				}
 			}
