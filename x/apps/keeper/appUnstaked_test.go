@@ -7,12 +7,12 @@ import (
 	"testing"
 )
 
-func TestGetAndSetlUnstaking(t *testing.T) {
+func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 	boundedApplication := getBondedApplication()
 	secondaryBoundedApplication := getBondedApplication()
 	stakedApplication := getBondedApplication()
 
-	type expected struct {
+	type want struct {
 		applications       []types.Application
 		stakedApplications bool
 		length             int
@@ -26,52 +26,57 @@ func TestGetAndSetlUnstaking(t *testing.T) {
 		name         string
 		application  types.Application
 		applications []types.Application
-		expected
+		want
 		args
 	}{
 		{
 			name:     "gets applications",
 			args:     args{applications: []types.Application{boundedApplication}},
-			expected: expected{applications: []types.Application{boundedApplication}, length: 1, stakedApplications: false},
+			want: want{applications: []types.Application{boundedApplication}, length: 1, stakedApplications: false},
 		},
 		{
 			name:     "gets emtpy slice of applications",
-			expected: expected{length: 0, stakedApplications: true},
+			want: want{length: 0, stakedApplications: true},
 			args:     args{stakedApplication: stakedApplication},
 		},
 		{
 			name:         "only gets unstakedbounded applications",
 			applications: []types.Application{boundedApplication, secondaryBoundedApplication},
-			expected:     expected{length: 1, stakedApplications: true},
+			want:     want{length: 1, stakedApplications: true},
 			args:         args{stakedApplication: stakedApplication, applications: []types.Application{boundedApplication}},
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			for _, application := range test.args.applications {
+			for _, application := range tt.args.applications {
 				keeper.SetApplication(context, application)
 				keeper.SetUnstakingApplication(context, application)
 			}
-			if test.expected.stakedApplications {
-				keeper.SetApplication(context, test.args.stakedApplication)
-				keeper.SetStakedApplication(context, test.args.stakedApplication)
+			if tt.want.stakedApplications {
+				keeper.SetApplication(context, tt.args.stakedApplication)
+				keeper.SetStakedApplication(context, tt.args.stakedApplication)
 			}
 			applications := keeper.getAllUnstakingApplications(context)
 
 			for _, application := range applications {
-				assert.True(t, application.Status.Equal(sdk.Unbonded))
+				if !application.Status.Equal(sdk.Unbonded) {
+					t.Errorf("appUnstaked.GetApplications application = %v, want %v", application.Status, sdk.Unbonded)
+				}
 			}
-			assert.Equalf(t, test.expected.length, len(applications), "length of the applications does not match expected on %v", test.name)
+			if len(applications) != tt.want.length {
+				t.Errorf("appUnstaked.GetApplications() = %v, want %v", len(applications), tt.want.length)
+			}
 		})
 	}
 }
 
-func TestDeleteUnstakingApplication(t *testing.T) {
+func TestAppUnstaked_DeleteUnstakingApplication(t *testing.T) {
 	boundedApplication := getBondedApplication()
+	secondBoundedApp := getBondedApplication()
 
-	type expected struct {
+	type want struct {
 		applications       []types.Application
 		stakedApplications bool
 		length             int
@@ -85,41 +90,40 @@ func TestDeleteUnstakingApplication(t *testing.T) {
 		name         string
 		application  types.Application
 		applications []types.Application
-		expected
+		sets bool
+		want
 		args
 	}{
 		{
-			name:     "deletes application",
-			args:     args{applications: []types.Application{boundedApplication}},
-			expected: expected{length: 0, stakedApplications: false},
+			name:     "deletes",
+			args:     args{applications: []types.Application{boundedApplication, secondBoundedApp}},
+			sets: false,
+			want: want{length: 1, stakedApplications: false},
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			for _, application := range test.args.applications {
+			for _, application := range tt.args.applications {
 				keeper.SetApplication(context, application)
-				keeper.SetUnstakingApplication(context, application)
-				keeper.deleteUnstakingApplication(context, application)
 			}
-			if test.expected.stakedApplications {
-				keeper.SetApplication(context, test.args.stakedApplication)
-				keeper.SetStakedApplication(context, test.args.stakedApplication)
+			keeper.SetUnstakingApplication(context, tt.args.applications[0])
+			got := keeper.getAllUnstakingApplications(context)
+
+			keeper.deleteUnstakingApplication(context, tt.args.applications[1])
+
+			if got = keeper.getAllUnstakingApplications(context); len(got) != tt.want.length {
+				t.Errorf("KeeperCoins.BurnStakedTokens()= %v, want %v", len(got), tt.want.length)
 			}
-
-			applications := keeper.getAllUnstakingApplications(context)
-
-			assert.Equalf(t, test.expected.length, len(applications), "length of the applications does not match expected on %v", test.name)
 		})
 	}
 }
 
-func TestDeleteUnstakingApplications(t *testing.T) {
-	boundedApplication := getBondedApplication()
-	secondaryBoundedApplication := getBondedApplication()
+func TestAppUnstaked_GetAllUnstakedApplications(t *testing.T) {
+	unboundingApplication := getUnbondingApplication()
 
-	type expected struct {
+	type want struct {
 		applications       []types.Application
 		stakedApplications bool
 		length             int
@@ -133,13 +137,56 @@ func TestDeleteUnstakingApplications(t *testing.T) {
 		name         string
 		application  types.Application
 		applications []types.Application
-		expected
+		want
+		args
+	}{
+		{
+			name:     "gets all unstaked applications",
+			args:     args{applications: []types.Application{unboundingApplication}},
+			want: want{applications: []types.Application{unboundingApplication}, length: 1, stakedApplications: false},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			for _, application := range tt.args.applications {
+				keeper.SetApplication(context, application)
+				keeper.SetUnstakingApplication(context, application)
+			}
+			got := keeper.getAllUnstakedApplications(context);
+			if len(got) !=  tt.want.length {
+				t.Errorf("appUnstaked.unstakeAllMatureApplications()= %v, want %v", len(got), tt.want.length)
+			}
+		})
+	}
+}
+
+func TestAppUnstaked_DeleteUnstakingApplications(t *testing.T) {
+	boundedApplication := getBondedApplication()
+	secondaryBoundedApplication := getBondedApplication()
+
+	type want struct {
+		applications       []types.Application
+		stakedApplications bool
+		length             int
+	}
+	type args struct {
+		boundedVal        types.Application
+		applications      []types.Application
+		stakedApplication types.Application
+	}
+	tests := []struct {
+		name         string
+		application  types.Application
+		applications []types.Application
+		want
 		args
 	}{
 		{
 			name:     "deletes all unstaking application",
 			args:     args{applications: []types.Application{boundedApplication, secondaryBoundedApplication}},
-			expected: expected{length: 0, stakedApplications: false},
+			want: want{length: 0, stakedApplications: false},
 		},
 	}
 
@@ -154,15 +201,15 @@ func TestDeleteUnstakingApplications(t *testing.T) {
 
 			applications := keeper.getAllUnstakingApplications(context)
 
-			assert.Equalf(t, test.expected.length, len(applications), "length of the applications does not match expected on %v", test.name)
+			assert.Equalf(t, test.want.length, len(applications), "length of the applications does not match want on %v", test.name)
 		})
 	}
 }
 
-func TestGetAllMatureApplications(t *testing.T) {
+func TestAppUnstaked_GetAllMatureApplications(t *testing.T) {
 	unboundingApplication := getUnbondingApplication()
 
-	type expected struct {
+	type want struct {
 		applications       []types.Application
 		stakedApplications bool
 		length             int
@@ -176,38 +223,39 @@ func TestGetAllMatureApplications(t *testing.T) {
 		name         string
 		application  types.Application
 		applications []types.Application
-		expected
+		want
 		args
 	}{
 		{
 			name:     "gets all mature applications",
 			args:     args{applications: []types.Application{unboundingApplication}},
-			expected: expected{applications: []types.Application{unboundingApplication}, length: 1, stakedApplications: false},
+			want: want{applications: []types.Application{unboundingApplication}, length: 1, stakedApplications: false},
 		},
 		{
 			name:     "gets empty slice if no mature applications",
 			args:     args{applications: []types.Application{}},
-			expected: expected{applications: []types.Application{unboundingApplication}, length: 0, stakedApplications: false},
+			want: want{applications: []types.Application{unboundingApplication}, length: 0, stakedApplications: false},
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			for _, application := range test.args.applications {
+			for _, application := range tt.args.applications {
 				keeper.SetApplication(context, application)
 				keeper.SetUnstakingApplication(context, application)
 			}
-			matureApplications := keeper.getMatureApplications(context)
-			assert.Equalf(t, test.expected.length, len(matureApplications), "length of the applications does not match expected on %v", test.name)
+			if got := keeper.getMatureApplications(context); len(got) !=  tt.want.length {
+				t.Errorf("appUnstaked.unstakeAllMatureApplications()= %v, want %v", len(got), tt.want.length)
+			}
 		})
 	}
 }
 
-func TestUnstakeAllMatureApplications(t *testing.T) {
+func TestAppUnstaked_UnstakeAllMatureApplications(t *testing.T) {
 	unboundingApplication := getUnbondingApplication()
 
-	type expected struct {
+	type want struct {
 		applications       []types.Application
 		stakedApplications bool
 		length             int
@@ -221,32 +269,32 @@ func TestUnstakeAllMatureApplications(t *testing.T) {
 		name         string
 		application  types.Application
 		applications []types.Application
-		expected
+		want
 		args
 	}{
 		{
 			name:     "unstake mature applications",
 			args:     args{applications: []types.Application{unboundingApplication}},
-			expected: expected{applications: []types.Application{unboundingApplication}, length: 0, stakedApplications: false},
+			want: want{applications: []types.Application{unboundingApplication}, length: 0, stakedApplications: false},
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			for _, application := range test.args.applications {
+			for _, application := range tt.args.applications {
 				keeper.SetApplication(context, application)
 				keeper.SetUnstakingApplication(context, application)
 			}
 			keeper.unstakeAllMatureApplications(context)
-			applications := keeper.getAllUnstakingApplications(context)
-
-			assert.Equalf(t, test.expected.length, len(applications), "length of the applications does not match expected on %v", test.name)
+			if got := keeper.getAllUnstakingApplications(context); len(got) != tt.want.length {
+				t.Errorf("appUnstaked.unstakeAllMatureApplications()= %v, want %v", len(got), tt.want.length)
+			}
 		})
 	}
 }
 
-func TestUnstakingApplicationsIterator(t *testing.T) {
+func TestAppUnstaked_UnstakingApplicationsIterator(t *testing.T) {
 	boundedApplication := getBondedApplication()
 	unboundedApplication := getUnbondedApplication()
 
@@ -263,16 +311,18 @@ func TestUnstakingApplicationsIterator(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			for _, application := range test.applications {
+			for _, application := range tt.applications {
 				keeper.SetApplication(context, application)
 				keeper.SetStakedApplication(context, application)
 			}
 
 			it := keeper.unstakingApplicationsIterator(context, context.BlockHeader().Time)
-			assert.Implements(t, (*sdk.Iterator)(nil), it, "does not implement interface")
+			if v, ok := it.(sdk.Iterator); !ok {
+				t.Errorf("appUnstaked.UnstakingApplicationsIterator()= %v does not implement sdk.Iterator", v)
+			}
 		})
 	}
 }
