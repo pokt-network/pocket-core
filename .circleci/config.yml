@@ -50,7 +50,7 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build.
-          command: "curl -u ${CIRCLE_API_USER_TOKEN}: -X POST -H \"Content-Type: application/json\" \
+          command: "curl -u ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY}: -X POST -H \"Content-Type: application/json\" \
           -d \"'{
             \"parameters\":{
               \"branch-name\":\"${CIRCLE_BRANCH}\",
@@ -66,7 +66,7 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build.
-          command: "curl -u ${CIRCLE_API_USER_TOKEN}: -X POST -H \"Content-Type: application/json\" \
+          command: "curl -u ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY}: -X POST -H \"Content-Type: application/json\" \
           -d \"'{
             \"parameters\":{
               \"branch-name\":\"${CIRCLE_TAG}\",
@@ -97,6 +97,8 @@ workflows:
             - test
           filters:
             tags:
-              only: /.*/
+              only:
+                - /^rc-.*/
+                - /^stable-.*/
 
 
