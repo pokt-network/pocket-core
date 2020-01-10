@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodeskeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
 	nodestypes "github.com/pokt-network/pocket-core/x/nodes/types"
@@ -198,6 +199,19 @@ func getUnbondingApplication() types.Application {
 	v := getApplication()
 	return v.UpdateStatus(sdk.Unbonding)
 }
+
+func modifyFn(i *int) func (index int64, application exported.ApplicationI) (stop bool){
+	return func(index int64, application exported.ApplicationI) (stop bool) {
+		app := application.(types.Application)
+		app.StakedTokens = sdk.NewInt(100)
+		if index == 1 {
+			stop = true
+		}
+		*i++
+		return
+	}
+}
+
 type AppHooks struct{
 	mock.Mock
 }

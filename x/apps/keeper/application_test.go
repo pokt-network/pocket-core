@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"reflect"
@@ -146,24 +145,13 @@ func TestApplication_IterateAndExecuteOverApps(t *testing.T) {
 
 			keeper.SetApplication(context, tt.application)
 			keeper.SetApplication(context, tt.secondApplication)
-			n := 0
-			fn := modifyStakedTokens(&n)
+			got := 0
+			fn := modifyFn(&got)
 			keeper.IterateAndExecuteOverApps(context, fn)
-			if n != tt.want {
-				t.Errorf("Applicaiton.IterateAndExecuteOverApps() = got %v, want %v", n, tt.want)
+			if got != tt.want {
+				t.Errorf("Application.IterateAndExecuteOverApps() = got %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func modifyStakedTokens(i *int) func (index int64, application exported.ApplicationI) (stop bool){
-	return func(index int64, application exported.ApplicationI) (stop bool) {
-		app := application.(types.Application)
-		app.StakedTokens = sdk.NewInt(100)
-		if index == 1 {
-			stop = true
-		}
-		*i++
-		return
-	}
-}
