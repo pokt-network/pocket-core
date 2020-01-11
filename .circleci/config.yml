@@ -46,7 +46,13 @@ jobs:
   trigger-pocket-core-deployments-branches:
     docker:
       - image: circleci/golang:1.13
+        environment:
+          GO111MODULE: "on"
+    working_directory: /go/src/github.com/pokt-network/pocket-core
     steps:
+      # Restore build cache
+      - restore_cache:
+          key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
       # Show the current branch
       - run: # test what branch we're on.
           name: "Current Branch"
@@ -54,12 +60,18 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build using branch.
-          command: "curl -u ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY}: -X POST -H \"Content-Type: application/json\" -d '{\"branch\": \"master\",\"parameters\":{\"branch-name\":\"${CIRCLE_BRANCH}\",\"golang-version\":\"1.13\"}}' https://circleci.com/api/v2/project/github/pokt-network/pocket-core-deployments/pipeline"
+          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_BRANCH} 1.13 master"
   # Job to trigger the Pocket Core deployments CI with a specific tag
   trigger-pocket-core-deployments-tags:
     docker:
       - image: circleci/golang:1.13
+        environment:
+          GO111MODULE: "on"
+    working_directory: /go/src/github.com/pokt-network/pocket-core
     steps:
+      # Restore build cache
+      - restore_cache:
+          key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
       # Show the current Tag
       - run: # test what tag we're on.
           name: "Current Tag"
@@ -67,7 +79,7 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build using tags.
-          command: "curl -u ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY}: -X POST -H \"Content-Type: application/json\" -d '{\"branch\": \"master\",\"parameters\":{\"branch-name\":\"${CIRCLE_TAG}\",\"golang-version\":\"1.13\"}}' https://circleci.com/api/v2/project/github/pokt-network/pocket-core-deployments/pipeline"
+          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_TAG} 1.13 master"
 
 # Workflow definitions
 workflows:
@@ -84,20 +96,20 @@ workflows:
       - trigger-pocket-core-deployments-tags:
           requires:
             - test
-          # filters:
-          #   branches:
-          #     only:
-          #       - staging
-          #       - master
-      # - trigger-pocket-core-deployments-tags:
-      #     requires:
-      #       - test
-      #     filters:
-      #       tags:
-      #         only:
-      #           - /^rc-.*/
-      #           - /^stable-.*/
-      #       branches:
-      #         ignore: /.*/
+          filters:
+            branches:
+              only:
+                - staging
+                - master
+      - trigger-pocket-core-deployments-tags:
+          requires:
+            - test
+          filters:
+            tags:
+              only:
+                - /^rc-.*/
+                - /^stable-.*/
+            branches:
+              ignore: /.*/
 
 
