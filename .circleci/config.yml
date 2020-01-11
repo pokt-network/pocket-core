@@ -93,9 +93,6 @@ workflows:
       - trigger-pocket-core-deployments-branches:
           requires:
             - test
-      - trigger-pocket-core-deployments-tags:
-          requires:
-            - test
           filters:
             branches:
               only:
