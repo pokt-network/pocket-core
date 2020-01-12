@@ -34,3 +34,8 @@ func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper type
 		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),
 	}
 }
+
+// get the non native chains hosted locally on this node
+func (k Keeper) GetHostedBlockchains() types.HostedBlockchains {
+	return k.hostedBlockchains
+}

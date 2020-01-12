@@ -14,7 +14,7 @@ func (k Keeper) SetUnstakingApplication(ctx sdk.Context, val types.Application) 
 	k.setUnstakingApplications(ctx, val.UnstakingCompletionTime, applications)
 }
 
-// Delete a application address from the unstaking queue
+// DeleteInvoice a application address from the unstaking queue
 func (k Keeper) deleteUnstakingApplication(ctx sdk.Context, val types.Application) {
 	applications := k.getUnstakingApplications(ctx, val.UnstakingCompletionTime)
 	var newApplications []sdk.ValAddress

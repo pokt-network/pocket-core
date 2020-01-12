@@ -31,10 +31,10 @@ func (k Keeper) GetNodeFromPublicKey(ctx sdk.Context, pubKey string) (node expor
 	return k.GetNode(ctx, pk.Address())
 }
 
-// todo create store in pos module for efficiency
-func (k Keeper) GetAllNodesForChain(ctx sdk.Context, chain string) (nodes []exported.ValidatorI) {
-	return nil
-}
+//// todo create store in pos module for efficiency
+//func (k Keeper) GetAllNodesForChain(ctx sdk.Context, chain string) (nodes []exported.ValidatorI) {
+//	return nil
+//}
 
 // self node is needed to verify that self node is part of a session
 func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.Error) {
@@ -44,16 +44,11 @@ func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.E
 		return nil, pc.NewKeybaseError(pc.ModuleName, err)
 	}
 	// get the node from the world state
-	self, found := k.GetNode(ctx, sdk.ValAddress(keypairs.GetAddress())) // todo need to verify that this is the validator key we want
+	self, found := k.GetNode(ctx, sdk.ValAddress(keypairs.GetAddress()))
 	if !found {
 		return nil, pc.NewSelfNotFoundError(pc.ModuleName)
 	}
 	return self, nil
-}
-
-// get the non native chains hosted locally on this node
-func (k Keeper) GetHostedBlockchains() pc.HostedBlockchains {
-	return k.hostedBlockchains
 }
 
 // award coins to nodes for relays completed

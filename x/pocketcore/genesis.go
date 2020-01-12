@@ -9,15 +9,15 @@ import (
 
 func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, data types.GenesisState) []abci.ValidatorUpdate {
 	keeper.SetParams(ctx, data.Params)
-	keeper.SetAllProofs(ctx, data.Proofs)
-	keeper.SetAllClaims(ctx, data.Claims)
+	keeper.SetInvoices(ctx, data.Proofs)
+	keeper.SetClaims(ctx, data.Claims)
 	return []abci.ValidatorUpdate{}
 }
 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) types.GenesisState {
 	return types.GenesisState{
 		Params: k.GetParams(ctx),
-		Proofs: k.GetAllProofs(ctx),
+		Proofs: k.GetAllInvoices(ctx),
 		Claims: k.GetAllClaims(ctx),
 	}
 }

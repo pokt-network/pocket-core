@@ -63,7 +63,7 @@ const ( // todo re-number
 	CodeInvalidBlockHeightError          = 1170
 	CodeInvalidAppPubKeyError            = 1171
 	CodeInvalidHashLengthError           = 1172
-	CodeEmtpyBranchError                 = 1173
+	CodeInvalidLeafCousinProofsCombo     = 1173
 	CodeEmptyAddressError                = 1174
 	CodeClaimNotFoundError               = 1175
 	CodeInvalidMerkleVerifyError         = 1176
@@ -72,6 +72,8 @@ const ( // todo re-number
 	CodeExpiredProofsSubmissionError     = 1179
 	CodeAddressError                     = 1180
 	CodeOverServiceError                 = 1181
+	CodeCousinLeafEquivalentError        = 1182
+	CodeInvalidRootError                 = 1183
 )
 
 var (
@@ -82,10 +84,10 @@ var (
 	InvalidTokenSignatureErorr       = errors.New("the application signature on the AAT is not valid")
 	NegativeICCounterError           = errors.New("the IC counter is less than 0")
 	MaximumIncrementCounterError     = errors.New("the increment counter exceeds the maximum allowed relays")
-	InvalidNodePubKeyError           = errors.New("the node public key in the service proof does not match this nodes public key")
+	InvalidNodePubKeyError           = errors.New("the node public key in the service RelayProof does not match this nodes public key")
 	InvalidTokenError                = errors.New("the application authentication token is invalid")
 	EmptyProofsError                 = errors.New("the service proofs object is empty")
-	DuplicateProofError              = errors.New("the proof at index[increment counter] is not empty")
+	DuplicateProofError              = errors.New("the RelayProof at index[increment counter] is not empty")
 	InvalidIncrementCounterError     = errors.New("the increment counter included in the relay request is invalid")
 	EmptyResponseError               = errors.New("the relay response payload is empty")
 	ResponseSignatureError           = errors.New("response signing errored out: ")
@@ -99,7 +101,7 @@ var (
 	NotStakedBlockchainError         = errors.New("the blockchain is not staked for this application")
 	EmptyAppPubKeyError              = errors.New("the public key of the application is of length 0")
 	EmptyNonNativeChainError         = errors.New("the non-native chain is of length 0")
-	EmptyBlockIDError                = errors.New("the block hash is of length 0")
+	EmptyBlockIDError                = errors.New("the block addr is of length 0")
 	InsufficientNodesError           = errors.New("there are less than the minimum session nodes found")
 	EmptySessionKeyError             = errors.New("the session key passed is of length 0")
 	MismatchedByteArraysError        = errors.New("the byte arrays are not of the same length")
@@ -130,20 +132,23 @@ var (
 	SignatureError                   = errors.New("there was a problem signing the message: ")
 	InvalidChainError                = errors.New("the non native chain passed was invalid: ")
 	JSONMarshalError                 = errors.New("unable to marshal object into json: ")
-	InvalidBlockchainHashLength      = errors.New("the hash length is invalid")
+	InvalidBlockchainHashLength      = errors.New("the addr length is invalid")
 	InvalidBlockHeightError          = errors.New("the block height passed has been invalid")
 	InvalidAppPubKeyError            = errors.New("the app public key is invalid")
-	InvalidHashLengthError           = errors.New("the hash length is not valid")
-	EmtpyBranchError                 = errors.New("the proof of relay branch is empty")
+	InvalidHashLengthError           = errors.New("the addr length is not valid")
+	InvalidLeafCousinProofsCombo     = errors.New("the merkle relayProof combo for the cousin and leaf is invalid")
 	EmptyAddressError                = errors.New("the address provided is empty")
-	ClaimNotFoundError               = errors.New("the unverified proof was not found for the key given")
-	InvalidMerkleVerifyError         = errors.New("claim resulted in an invalid merkle proof")
+	ClaimNotFoundError               = errors.New("the unverified RelayProof was not found for the key given")
+	InvalidMerkleVerifyError         = errors.New("claim resulted in an invalid merkle RelayProof")
 	EmptyMerkleTreeError             = errors.New("the merkle tree is empty")
 	NodeNotFoundError                = errors.New("the node of the merkle tree requested is not found")
-	ExpiredProofsSubmissionError     = errors.New("the opportunity of window to submit the proof has closed because the secret has been revealed")
+	ExpiredProofsSubmissionError     = errors.New("the opportunity of window to submit the RelayProof has closed because the secret has been revealed")
 	AddressError                     = errors.New("the address is invalid")
 	OverServiceError                 = errors.New("the max number of relays serviced for this node is exceeded")
 	UninitializedKeybaseError        = errors.New("the keybase is nil")
+	CousinLeafEquivalentError        = errors.New("the cousin and leaf cannot be equal")
+	InvalidRootError                 = errors.New("the merkle root passed is invalid")
+	MerkleNodeNotFoundError          = errors.New("the merkle node cannot be found")
 )
 
 func NewOverServiceError(codespace sdk.CodespaceType) sdk.Error {
@@ -159,7 +164,7 @@ func NewExpiredProofsSubmissionError(codespace sdk.CodespaceType) sdk.Error {
 }
 
 func NewMerkleNodeNotFoundError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeMerkleNodeNotFoundError, EmptyMerkleTreeError.Error())
+	return sdk.NewError(codespace, CodeMerkleNodeNotFoundError, MerkleNodeNotFoundError.Error())
 }
 
 func NewEmptyMerkleTreeError(codespace sdk.CodespaceType) sdk.Error {
@@ -178,9 +183,18 @@ func NewEmptyAddressError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyAddressError, EmptyAddressError.Error())
 }
 
-func NewEmtpyBranchError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeEmtpyBranchError, EmtpyBranchError.Error())
+func NewCousinLeafEquivalentError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeCousinLeafEquivalentError, CousinLeafEquivalentError.Error())
 }
+
+func NewInvalidLeafCousinProofsComboError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidLeafCousinProofsCombo, InvalidLeafCousinProofsCombo.Error())
+}
+
+func NewInvalidRootError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidRootError, InvalidRootError.Error())
+}
+
 func NewInvalidHashLengthError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidHashLengthError, InvalidHashLengthError.Error())
 }
@@ -191,19 +205,9 @@ func NewInvalidAppPubKeyError(codespace sdk.CodespaceType) sdk.Error {
 func NewInvalidBlockHeightError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidBlockHeightError, InvalidBlockHeightError.Error())
 }
-func NewEmptySessionKeyError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeEmptySessionKeyError, EmptySessionKeyError.Error())
-}
-func NewInvalidBlockchainLengthError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidBlockchainHashLengthError, InvalidBlockchainHashLength.Error())
-}
 
 func NewJSONMarshalError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodeJSONMarshalError, JSONMarshalError.Error()+err.Error())
-}
-
-func NewInvalidChainError(codespace sdk.CodespaceType, err error) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidChainError, InvalidChainError.Error()+err.Error())
 }
 
 func NewSignatureError(codespace sdk.CodespaceType, err error) sdk.Error {
@@ -224,10 +228,6 @@ func NewHexDecodeError(codespace sdk.CodespaceType, err error) sdk.Error {
 
 func NewInvalidChainParamsError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidChainParamsError, InvalidChainParamsError.Error())
-}
-
-func NewInconsistentPubKeyError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeInconsistentPubKeyError, InconsistentPubKeyError.Error())
 }
 
 func NewInvalidProofsError(codespace sdk.CodespaceType) sdk.Error {
@@ -282,24 +282,8 @@ func NewDuplicateProofError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeDuplicateProofError, DuplicateProofError.Error())
 }
 
-func NewDuplicateTicketError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeDuplicateTicketError, DuplicateTicketError.Error())
-}
-
-func NewTicketsNotFoundError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeTicketsNotFoundError, TicketsNotFoundError.Error())
-}
-
 func NewInvalidNodePubKeyError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidNodePubKeyError, InvalidNodePubKeyError.Error())
-}
-
-func NewMaximumIncrementCounterError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeMaximumIncrementCounterError, MaximumIncrementCounterError.Error())
-}
-
-func NewNegativeICCounterError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeNegativeICCounterError, NegativeICCounterError.Error())
 }
 
 func NewResponseSignatureError(codespace sdk.CodespaceType) sdk.Error {
@@ -318,20 +302,12 @@ func NewHTTPExecutionError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodeHTTPExecutionError, HTTPExecutionError.Error()+err.Error())
 }
 
-func NewNotStakedBlockchainError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeNotStakedBlockchainError, NotStakedBlockchainError.Error())
-}
-
 func NewUnsupportedBlockchainNodeError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeUnsupportedBlockchainNodeError, UnsupportedBlockchainNodeError.Error())
 }
 
 func NewEmptyPayloadDataError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyPayloadDataError, EmptyPayloadDataError.Error())
-}
-
-func NewEmptyBlockchainError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeEmptyBlockchainError, EmptyBlockchainError.Error())
 }
 
 func NewInvalidHashError(codespace sdk.CodespaceType, err error) sdk.Error {
@@ -381,14 +357,8 @@ func NewEmptyProofsError(codespace sdk.CodespaceType) sdk.Error {
 func NewEmptyBlockIDError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyBlockIDError, EmptyBlockIDError.Error())
 }
-func NewEmptyAppPubKeyError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeAppPubKeyError, EmptyAppPubKeyError.Error())
-}
 func NewEmptyChainError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyChainError, EmptyNonNativeChainError.Error())
-}
-func NewSessionGenerationError(codespace sdk.CodespaceType, err error) sdk.Error {
-	return sdk.NewError(codespace, CodeSessionGenerationError, ServiceSessionGenerationError.Error()+err.Error())
 }
 
 func NewHTTPStatusCodeError(codespace sdk.CodespaceType, statusCode int) sdk.Error {

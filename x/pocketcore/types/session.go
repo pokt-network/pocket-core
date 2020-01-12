@@ -7,7 +7,9 @@ import (
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"sort"
 )
 
@@ -56,7 +58,7 @@ func (s Session) Validate(ctx sdk.Context, node nodeexported.ValidatorI, app app
 		return err
 	}
 	// validate app corresponds to appPubKey
-	if hex.EncodeToString(app.GetConsPubKey().Bytes()) != s.ApplicationPubKey {
+	if crypto.PublicKey(app.GetConsPubKey().(ed25519.PubKeyEd25519)).String() != s.ApplicationPubKey {
 		return NewInvalidAppPubKeyError(ModuleName)
 	}
 	// validate app chains
@@ -86,8 +88,61 @@ func (s Session) Validate(ctx sdk.Context, node nodeexported.ValidatorI, app app
 // service nodes in a session
 type SessionNodes []nodeexported.ValidatorI
 
+// generates nodes for the session
+func NewSessionNodes(chain string, sessionKey SessionKey, allNodes []nodeexported.ValidatorI, sessionNodesCount int) (SessionNodes, sdk.Error) {
+	// validate chain
+	if len(chain) == 0 {
+		return nil, NewEmptyNonNativeChainError(ModuleName)
+	}
+	// validate sessionKey
+	if err := sessionKey.Validate(); err != nil {
+		return nil, NewInvalidSessionKeyError(ModuleName, err)
+	}
+	// validate allNodes
+	if len(allNodes) < sessionNodesCount {
+		return nil, NewInsufficientNodesError(ModuleName)
+	}
+	// filter `allNodes` by the HASH(chain)
+	sessionNodes, err := filter(allNodes, chain, sessionNodesCount)
+	if err != nil {
+		return nil, NewFilterNodesError(ModuleName, err)
+	}
+	// xor each node's public key and session key
+	nodeDistances, err := xor(sessionNodes, sessionKey)
+	if err != nil {
+		return nil, NewXORError(ModuleName, err)
+	}
+	// sort the nodes based off of distance
+	sessionNodes = revSort(nodeDistances)
+	// return the top 5 nodes
+	return sessionNodes[:sessionNodesCount], nil
+}
+
+// filter the nodes by non native chain
+func filter(allActiveNodes []nodeexported.ValidatorI, nonNativeChainHash string, sessionNodesCount int) (SessionNodes, error) {
+	var result SessionNodes
+	for _, node := range allActiveNodes {
+		chains := node.GetChains()
+		contains := false
+		// todo get rid of slice and use map (amino doesn't support map encoding so custom struct to encode and decode)
+		for _, chain := range chains {
+			if chain == nonNativeChainHash {
+				contains = true
+			}
+		}
+		if !contains {
+			continue
+		}
+		result = append(result, node)
+	}
+	if err := result.Validate(sessionNodesCount); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (sn SessionNodes) Validate(sessionNodesCount int) sdk.Error {
-	if len(sn) < sessionNodesCount {
+	if len(sn) < sessionNodesCount || sn[0] == nil {
 		return NewInsufficientNodesError(ModuleName)
 	}
 	return nil
@@ -122,68 +177,15 @@ func (sn *SessionNodes) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON unmarshals the validator from JSON // todo test if function needed
-func (sn *SessionNodes) UnmarshalJSON(data []byte) error {
+func (sn SessionNodes) UnmarshalJSON(data []byte) (temp SessionNodes, err error) {
 	v := &types.Validators{} // todo depends on nodes.Types()
 	if err := codec.Cdc.UnmarshalJSON(data, v); err != nil {
-		return err
+		return SessionNodes{}, err
 	}
 	for _, nonExNode := range *v {
-		*sn = append(*sn, nonExNode)
+		temp = append(temp, nonExNode)
 	}
-	return nil
-}
-
-// generates nodes for the session
-func NewSessionNodes(chain string, sessionKey SessionKey, allNodes []nodeexported.ValidatorI, sessionNodesCount int) (SessionNodes, sdk.Error) {
-	// validate chain
-	if len(chain) == 0 {
-		return nil, NewEmptyNonNativeChainError(ModuleName)
-	}
-	// validate sessionKey
-	if err := sessionKey.Validate(); err != nil {
-		return nil, NewInvalidSessionKeyError(ModuleName, err)
-	}
-	// validate allNodes
-	if len(allNodes) < sessionNodesCount {
-		return nil, NewInsufficientNodesError(ModuleName)
-	}
-	// filter `allNodes` by the HASH(chain)
-	sortedNodeDistances, err := filter(allNodes, chain, sessionNodesCount)
-	if err != nil {
-		return nil, NewFilterNodesError(ModuleName, err)
-	}
-	// xor each node's public key and session key
-	nodeDistances, err := xor(sortedNodeDistances, sessionKey)
-	if err != nil {
-		return nil, NewXORError(ModuleName, err)
-	}
-	// sort the nodes based off of distance
-	sortedNodeDistances = revSort(nodeDistances)
-	// return the top 5 nodes
-	return sortedNodeDistances[0:sessionNodesCount], nil
-}
-
-// filter the nodes by non native chain
-func filter(allActiveNodes []nodeexported.ValidatorI, nonNativeChainHash string, sessionNodesCount int) (SessionNodes, error) {
-	var result SessionNodes
-	for _, node := range allActiveNodes {
-		chains := node.GetChains()
-		contains := false
-		// todo get rid of slice and use map (amino doesn't support map encoding so custom struct to encode and decode)
-		for _, chain := range chains {
-			if chain == nonNativeChainHash {
-				contains = true
-			}
-		}
-		if !contains {
-			continue
-		}
-		result = append(result, node)
-	}
-	if err := result.Validate(sessionNodesCount); err != nil {
-		return nil, err
-	}
-	return result, nil
+	return
 }
 
 // A node linked to it's computational distance
@@ -200,15 +202,14 @@ func xor(sessionNodes SessionNodes, sessionkey SessionKey) (nodeDistances, error
 	result := make([]nodeDistance, len(sessionNodes))
 	// for every node, find the distance between it's pubkey and the sesskey
 	for index, node := range sessionNodes {
-		pubKey := node.GetConsPubKey()
-		pubKeyHash := Hash(pubKey.Bytes()) // currently hashing public key but could easily just take the first n bytes to compare
-		if len(pubKeyHash) != keyLength {
+		pubKeyBz := crypto.PublicKey(node.GetConsPubKey().(ed25519.PubKeyEd25519)).Bytes() // currently hashing public key but could easily just take the first n bytes to compare
+		if len(pubKeyBz) != keyLength {
 			return nil, MismatchedByteArraysError
 		}
 		result[index].Node = node
 		result[index].distance = make([]byte, keyLength)
 		for i := 0; i < keyLength; i++ {
-			result[index].distance[i] = pubKeyHash[i] ^ sessionkey[i]
+			result[index].distance[i] = pubKeyBz[i] ^ sessionkey[i]
 		}
 	}
 	return result, nil
@@ -217,9 +218,9 @@ func xor(sessionNodes SessionNodes, sessionkey SessionKey) (nodeDistances, error
 // sort the nodes by shortest computational distance
 func revSort(sessionNodes nodeDistances) SessionNodes {
 	result := make(SessionNodes, len(sessionNodes))
-	sort.Sort(sort.Reverse(sessionNodes))
-	for _, node := range sessionNodes {
-		result = append(result, node.Node)
+	sort.Sort(sessionNodes)
+	for i, node := range sessionNodes {
+		result[i] = node.Node
 	}
 	return result
 }
@@ -248,7 +249,7 @@ func (n nodeDistances) Less(i, j int) bool {
 	return false
 }
 
-// the hash identifier of the session
+// the addr identifier of the session
 type SessionKey []byte
 
 type sessionKey struct {
@@ -267,7 +268,7 @@ func NewSessionKey(appPubKey string, chain string, blockHash string) (SessionKey
 	if err := HashVerification(chain); err != nil {
 		return nil, NewEmptyChainError(ModuleName)
 	}
-	// validate block hash
+	// validate block addr
 	if err := HashVerification(blockHash); err != nil {
 		return nil, err
 	}
@@ -280,7 +281,7 @@ func NewSessionKey(appPubKey string, chain string, blockHash string) (SessionKey
 	if err != nil {
 		return nil, NewJSONMarshalError(ModuleName, err)
 	}
-	// return the hash of the result
+	// return the addr of the result
 	return Hash(seed), nil
 }
 
@@ -288,11 +289,7 @@ func (sk SessionKey) Validate() sdk.Error {
 	return HashVerification(hex.EncodeToString(sk))
 }
 
-func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
-	return hex.EncodeToString(ctx.WithBlockHeight(height).BlockHeader().LastBlockId.Hash)
-}
-
-// proof of relay header
+// RelayProof of relay header
 type SessionHeader struct {
 	ApplicationPubKey  string `json:"app_pub_key"`
 	Chain              string `json:"chain"`
@@ -306,19 +303,19 @@ func (sh SessionHeader) ValidateHeader() sdk.Error {
 	if err := HashVerification(sh.Chain); err != nil {
 		return err
 	}
-	if sh.SessionBlockHeight <= 1 {
+	if sh.SessionBlockHeight < 1 {
 		return NewInvalidBlockHeightError(ModuleName)
 	}
 	return nil
 }
 
-// hash the header bytes
+// addr the header bytes
 func (sh SessionHeader) Hash() []byte {
 	res := sh.Bytes()
 	return Hash(res)
 }
 
-// hex encode the header hash
+// hex encode the header addr
 func (sh SessionHeader) HashString() string {
 	return hex.EncodeToString(sh.Hash())
 }
@@ -330,4 +327,8 @@ func (sh SessionHeader) Bytes() []byte {
 		panic(err)
 	}
 	return res
+}
+
+func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
+	return hex.EncodeToString(ctx.WithBlockHeight(height).BlockHeader().LastBlockId.Hash)
 }

@@ -48,7 +48,7 @@ func handleClaimProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) s
 		return err.Result()
 	}
 	// set the proof in the world state
-	k.SetProof(ctx, addr, types.StoredProof{
+	k.SetInvoice(ctx, addr, types.StoredInvoice{
 		SessionHeader:   proof.SessionHeader,
 		TotalRelays:     proof.TotalRelays,
 		ServicerAddress: addr.String(),
@@ -107,16 +107,16 @@ func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim)
 
 func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) (servicerAddr sdk.ValAddress, proof types.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the proof
-	pk, err := crypto.NewPublicKey(msg.LeafNode.ServicerPubKey)
+	pk, err := crypto.NewPublicKey(msg.Leaf.ServicerPubKey)
 	if err != nil {
 		return nil, types.MsgClaim{}, types.NewPubKeyError(types.ModuleName, err)
 	}
 	addr := pk.Address()
 	// get the unverified proof for the address
-	proof, found := keeper.GetUnverfiedProof(ctx, addr, types.SessionHeader{
-		ApplicationPubKey:  msg.LeafNode.Token.ApplicationPublicKey,
-		Chain:              msg.LeafNode.Blockchain,
-		SessionBlockHeight: msg.LeafNode.SessionBlockHeight,
+	proof, found := keeper.GetClaim(ctx, addr, types.SessionHeader{
+		ApplicationPubKey:  msg.Leaf.Token.ApplicationPublicKey,
+		Chain:              msg.Leaf.Blockchain,
+		SessionBlockHeight: msg.Leaf.SessionBlockHeight,
 	})
 	// if the proof is not found for this claim
 	if !found {

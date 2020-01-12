@@ -9,9 +9,9 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func QueryProof(cdc *codec.Codec, addr sdk.ValAddress, tmNode client.Client, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.StoredProof, error) {
+func QueryProof(cdc *codec.Codec, addr sdk.ValAddress, tmNode client.Client, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.StoredInvoice, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
-	params := types.QueryPORParams{
+	params := types.QueryInvoiceParams{
 		Address: addr,
 		Header: types.SessionHeader{
 			Chain:              blockchain,
@@ -23,8 +23,8 @@ func QueryProof(cdc *codec.Codec, addr sdk.ValAddress, tmNode client.Client, blo
 	if err != nil {
 		return nil, err
 	}
-	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryProof), bz)
-	var ps types.StoredProof
+	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryInvoice), bz)
+	var ps types.StoredInvoice
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err
@@ -32,17 +32,17 @@ func QueryProof(cdc *codec.Codec, addr sdk.ValAddress, tmNode client.Client, blo
 	return &ps, nil
 }
 
-func QueryProofs(cdc *codec.Codec, tmNode client.Client, addr sdk.ValAddress, height int64) ([]types.StoredProof, error) {
+func QueryProofs(cdc *codec.Codec, tmNode client.Client, addr sdk.ValAddress, height int64) ([]types.StoredInvoice, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryPORsParams{
+	params := types.QueryInvoicesParams{
 		Address: addr,
 	}
 	bz, err := cdc.MarshalBinaryBare(params)
 	if err != nil {
 		return nil, err
 	}
-	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryProofs), bz)
-	var ps []types.StoredProof
+	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryInvoices), bz)
+	var ps []types.StoredInvoice
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err

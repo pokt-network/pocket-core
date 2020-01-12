@@ -1,7 +1,6 @@
 package pocketcore
 
 import (
-	"github.com/pokt-network/merkle"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -11,7 +10,7 @@ import (
 )
 
 // transaction that sends the total number of relays (claim), the merkle root (for data integrity), and the header (for identification)
-func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root []byte) (*sdk.TxResponse, error) {
+func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root types.HashSum) (*sdk.TxResponse, error) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		panic(err)
@@ -19,7 +18,7 @@ func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuil
 	msg := types.MsgClaim{
 		SessionHeader: header,
 		TotalRelays:   totalRelays,
-		Root:          root,
+		MerkleRoot:    root,
 		FromAddress:   sdk.ValAddress(kp.GetAddress()),
 	}
 	err = msg.ValidateBasic()
@@ -30,10 +29,11 @@ func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuil
 }
 
 // transaction to prove the
-func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, porBranch merkle.Proof, leafNode types.Proof) (*sdk.TxResponse, error) {
+func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]types.MerkleProof, leafNode, cousinNode types.RelayProof) (*sdk.TxResponse, error) {
 	msg := types.MsgProof{
-		Proof:    porBranch,
-		LeafNode: leafNode,
+		MerkleProofs: branches,
+		Leaf:         leafNode,
+		Cousin:       cousinNode,
 	}
 	err := msg.ValidateBasic()
 	if err != nil {

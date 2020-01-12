@@ -19,13 +19,17 @@ func (k Keeper) Dispatch(ctx sdk.Context, header types.SessionHeader) (*types.Se
 
 // is the context block a session block?
 func (k Keeper) IsSessionBlock(ctx sdk.Context) bool {
-	frequency := k.posKeeper.SessionBlockFrequency(ctx)
-	return ctx.BlockHeight()%frequency == 1
+	return ctx.BlockHeight()%k.posKeeper.SessionBlockFrequency(ctx) == 1
 }
 
 // get the most recent session block from the cont
 func (k Keeper) GetLatestSessionBlock(ctx sdk.Context) sdk.Context {
-	sessionBlockHeight := (ctx.BlockHeight() % k.posKeeper.SessionBlockFrequency(ctx)) + 1
+	var sessionBlockHeight int64
+	if ctx.BlockHeight()%k.posKeeper.SessionBlockFrequency(ctx) == 0 {
+		sessionBlockHeight = ctx.BlockHeight() - k.posKeeper.SessionBlockFrequency(ctx) + 1
+	} else {
+		sessionBlockHeight = (ctx.BlockHeight()/k.posKeeper.SessionBlockFrequency(ctx))*k.posKeeper.SessionBlockFrequency(ctx) + 1
+	}
 	return ctx.WithBlockHeight(sessionBlockHeight)
 }
 

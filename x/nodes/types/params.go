@@ -58,7 +58,7 @@ type Params struct {
 	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                 // bondable coin denomination
 	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`             // minimum amount needed to stake
 	ProposerRewardPercentage int8          `json:"base_proposer_award" yaml:"base_proposer_award"` // minimum award for the proposer
-	SessionBlock             int64         `json:"session_block" yaml:"session_block"`
+	SessionBlockFrequency    int64         `json:"session_block_frequency" yaml:"session_block_frequency"`
 	RelaysToTokens           sdk.Dec       `json:"relays_to_tokens" yaml:"relays_to_tokens"`
 	// slashing params
 	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`
@@ -83,7 +83,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeyProposerRewardPercentage, Value: &p.ProposerRewardPercentage},
 		{Key: KeySlashFractionDoubleSign, Value: &p.SlashFractionDoubleSign},
 		{Key: KeySlashFractionDowntime, Value: &p.SlashFractionDowntime},
-		{Key: KeySessionBlock, Value: &p.SessionBlock},
+		{Key: KeySessionBlock, Value: &p.SessionBlockFrequency},
 		{Key: KeyRelaysToTokens, Value: &p.RelaysToTokens},
 	}
 }
@@ -102,7 +102,7 @@ func DefaultParams() Params {
 		DowntimeJailDuration:     DefaultDowntimeJailDuration,
 		SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
 		SlashFractionDowntime:    DefaultSlashFractionDowntime,
-		SessionBlock:             DefaultSessionBlocktime,
+		SessionBlockFrequency:    DefaultSessionBlocktime,
 		RelaysToTokens:           DefaultRelaysToTokens,
 	}
 }
@@ -121,7 +121,7 @@ func (p Params) Validate() error {
 	if p.ProposerRewardPercentage < 0 || p.ProposerRewardPercentage > 100 {
 		return fmt.Errorf("base proposer award is a percentage and must be between 0 and 100")
 	}
-	if p.SessionBlock < 1 {
+	if p.SessionBlockFrequency < 2 {
 		return fmt.Errorf("session block must be greater than 1")
 	}
 	if p.RelaysToTokens.GT(sdk.OneDec()) || p.RelaysToTokens.LTE(sdk.ZeroDec()) {
@@ -163,7 +163,7 @@ func (p Params) String() string {
 		p.DowntimeJailDuration,
 		p.SlashFractionDoubleSign,
 		p.SlashFractionDowntime,
-		p.SessionBlock)
+		p.SessionBlockFrequency)
 }
 
 // unmarshal the current pos params value from store key or panic
