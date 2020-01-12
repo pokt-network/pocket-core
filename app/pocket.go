@@ -112,6 +112,8 @@ var (
 		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
 		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
 		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
+		nodesTypes.ModuleName:     nil,
+		appsTypes.ModuleName:      nil,
 	}
 )
 

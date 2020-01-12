@@ -25,7 +25,7 @@ func TestDefaultParams(t *testing.T) {
 				DowntimeJailDuration:     DefaultDowntimeJailDuration,
 				SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
 				SlashFractionDowntime:    DefaultSlashFractionDowntime,
-				SessionBlock:             DefaultSessionBlocktime,
+				SessionBlockFrequency:    DefaultSessionBlocktime,
 				RelaysToTokens:           DefaultRelaysToTokens,
 			},
 		}}
@@ -208,7 +208,7 @@ func TestParams_Validate(t *testing.T) {
 				StakeDenom:               tt.fields.StakeDenom,
 				StakeMinimum:             tt.fields.StakeMinimum,
 				ProposerRewardPercentage: tt.fields.ProposerRewardPercentage,
-				SessionBlock:             tt.fields.SessionBlock,
+				SessionBlockFrequency:    tt.fields.SessionBlock,
 				RelaysToTokens:           tt.fields.RelaysToTokens,
 				MaxEvidenceAge:           tt.fields.MaxEvidenceAge,
 				SignedBlocksWindow:       tt.fields.SignedBlocksWindow,

@@ -12,10 +12,10 @@ import (
 func NewQuerier(k Keeper) sdk.Querier {
 	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
-		case types.QueryProof:
-			return queryProof(ctx, req, k)
-		case types.QueryProofs:
-			return queryProofs(ctx, req, k)
+		case types.QueryInvoice:
+			return queryInvoice(ctx, req, k)
+		case types.QueryInvoices:
+			return queryInvoices(ctx, req, k)
 		case types.QuerySupportedBlockchains:
 			return querySupportedBlockchains(ctx, req, k)
 		case types.QueryParameters:
@@ -77,14 +77,14 @@ func querySupportedBlockchains(ctx sdk.Context, _ abci.RequestQuery, k Keeper) (
 }
 
 // query the verified proof object for a specific address and header combination
-func queryProof(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryPORParams
+func queryInvoice(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryInvoiceParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	proofSummary, _ := k.GetProof(ctx, params.Address, params.Header)
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
+	invoice, _ := k.GetInvoice(ctx, params.Address, params.Header)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, invoice)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
@@ -92,14 +92,14 @@ func queryProof(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.E
 }
 
 // query the verified proof object for a particular node address
-func queryProofs(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryPORsParams
+func queryInvoices(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryInvoicesParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	proofSummary := k.GetProofs(ctx, params.Address)
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, proofSummary)
+	invoices := k.GetInvoices(ctx, params.Address)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, invoices)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}

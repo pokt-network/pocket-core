@@ -8,28 +8,31 @@ import (
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"io/ioutil"
 	"net/http"
 )
 
+const DEFAULTHTTPMETHOD = "POST"
+
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
-	Payload Payload `json:"payload"` // the data payload of the request
-	Proof   Proof   `json:"proof"`   // the authentication scheme needed for work
+	Payload Payload    `json:"payload"`    // the data payload of the request
+	Proof   RelayProof `json:"relayProof"` // the authentication scheme needed for work
 }
 
-func (r Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
+func (r *Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
 	sessionNodeCount int, allNodes []nodeexported.ValidatorI, app appexported.ApplicationI) sdk.Error {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return NewEmptyPayloadDataError(ModuleName)
 	}
-	// validate the proof
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, hb, hex.EncodeToString(node.GetConsPubKey().Bytes())); err != nil {
+	// validate the RelayProof
+	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, hb, hex.EncodeToString(crypto.PublicKey(node.GetConsPubKey().(ed25519.PubKeyEd25519)).Bytes())); err != nil {
 		return err
 	}
 	// generate the session
-	session, err := NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), r.Proof.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allNodes, sessionNodeCount)
+	session, err := NewSession(hex.EncodeToString(crypto.PublicKey(app.GetConsPubKey().(ed25519.PubKeyEd25519)).Bytes()), r.Proof.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allNodes, sessionNodeCount)
 	if err != nil {
 		return err
 	}
@@ -39,13 +42,11 @@ func (r Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb Hosted
 		return err
 	}
 	// if the payload method is empty, set it to the default
-	if len((r.Payload).Method) == 0 {
+	if r.Payload.Method == "" {
 		r.Payload.Method = DEFAULTHTTPMETHOD
 	}
 	return nil
 }
-
-const DEFAULTHTTPMETHOD = "POST"
 
 // executes the relay on the non-native blockchain specified
 func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) {
@@ -63,13 +64,13 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 }
 
 // store the proofs of work done for the relay batch
-func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64, maxNumberOfRelays int64) sdk.Error {
-	// add the proof to the global (in memory) collection of proofs
-	return GetAllProofs().AddProof(SessionHeader{
+func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64) sdk.Error {
+	// add the RelayProof to the global (in memory) collection of proofs
+	return GetAllInvoices().AddToInvoice(SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
 		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: sessionBlockHeight,
-	}, r.Proof, maxNumberOfRelays)
+	}, r.Proof)
 }
 
 // the payload of the relay
@@ -89,15 +90,9 @@ func (p Payload) Validate() sdk.Error {
 
 // response structure for the relay
 type RelayResponse struct {
-	Signature string `json:"signature"` // signature from the node in hex
-	Response  string `json:"payload"`   // response to relay
-	Proof     Proof  `json:"proof"`     // to be signed by the client
-}
-
-type relayResponse struct {
-	sig   string `json:"signature"`
-	resp  string `json:"payload"`
-	proof string `json:"proof"`
+	Signature string     `json:"signature"`  // signature from the node in hex
+	Response  string     `json:"payload"`    // response to relay
+	Proof     RelayProof `json:"RelayProof"` // to be signed by the client
 }
 
 // node validates the response after signing
@@ -116,9 +111,9 @@ func (rr RelayResponse) Validate() sdk.Error { // todo more validaton
 // node signs the response before validating back
 func (rr RelayResponse) Hash() []byte {
 	seed, err := json.Marshal(relayResponse{
-		sig:   "",
-		resp:  rr.Response,
-		proof: rr.Proof.HashString(),
+		Signature: "",
+		Response:  rr.Response,
+		Proof:     rr.Proof.HashString(),
 	})
 	if err != nil {
 		panic(err)
@@ -129,6 +124,12 @@ func (rr RelayResponse) Hash() []byte {
 // node signs the response before validating back
 func (rr RelayResponse) HashString() string {
 	return hex.EncodeToString(rr.Hash())
+}
+
+type relayResponse struct {
+	Signature string `json:"signature"`
+	Response  string `json:"payload"`
+	Proof     string `json:"RelayProof"`
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint

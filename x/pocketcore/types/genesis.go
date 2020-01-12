@@ -5,9 +5,9 @@ import (
 )
 
 type GenesisState struct {
-	Params Params        `json:"params" yaml:"params"`
-	Proofs []StoredProof `json:"proofs"`
-	Claims []MsgClaim    `json:"claims"`
+	Params Params          `json:"params" yaml:"params"`
+	Proofs []StoredInvoice `json:"proofs"`
+	Claims []MsgClaim      `json:"claims"`
 }
 
 func ValidateGenesis(data GenesisState) error {
@@ -23,8 +23,8 @@ func ValidateGenesis(data GenesisState) error {
 		if err := proof.ValidateHeader(); err != nil {
 			return err
 		}
-		if proof.TotalRelays == 0 {
-			return errors.New("total relays for proof is 0")
+		if proof.TotalRelays <= 0 {
+			return errors.New("total relays for RelayProof is negative")
 		}
 	}
 	// validate each claim

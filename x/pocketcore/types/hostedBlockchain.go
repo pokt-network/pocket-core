@@ -1,18 +1,17 @@
 package types
 
 import (
-	"encoding/hex"
 	sdk "github.com/pokt-network/posmint/types"
 	"sync"
 )
 
 type HostedBlockchain struct {
-	Hash string `json:"hash"`
+	Hash string `json:"addr"`
 	URL  string `json:"url"`
 }
 
 type HostedBlockchains struct {
-	M map[string]HostedBlockchain // m[hash] -> hash, url
+	M map[string]HostedBlockchain // m[addr] -> addr, url
 	l sync.Mutex
 	o sync.Once
 }
@@ -24,7 +23,9 @@ var (
 
 func GetHostedChains() *HostedBlockchains { // todo getHostedChains never called!
 	chainOnce.Do(func() {
-		(*globalHostedChains).M = make(map[string]HostedBlockchain)
+		globalHostedChains = &HostedBlockchains{
+			M: make(map[string]HostedBlockchain),
+		}
 	})
 	return globalHostedChains
 }
@@ -45,14 +46,6 @@ func (c *HostedBlockchains) Len() int {
 	c.l.Lock()
 	defer c.l.Unlock()
 	return len(c.M)
-}
-
-func (c *HostedBlockchains) ContainsFromBytes(chainHash []byte) bool {
-	c.l.Lock()
-	defer c.l.Unlock()
-	h := hex.EncodeToString(chainHash)
-	_, found := c.M[h]
-	return found
 }
 
 func (c *HostedBlockchains) ContainsFromString(chainHash string) bool {
@@ -94,6 +87,9 @@ func (c *HostedBlockchains) Validate() error {
 	for _, chain := range c.M {
 		if chain.Hash == "" || chain.URL == "" {
 			return NewInvalidHostedChainError(ModuleName)
+		}
+		if err := HashVerification(chain.Hash); err != nil {
+			return err
 		}
 	}
 	return nil

@@ -316,7 +316,7 @@ var queryNodeProofs = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Proofs:")
+		fmt.Println("MerkleProofs:")
 		for _, p := range res {
 			fmt.Printf("%v\n", p)
 		}

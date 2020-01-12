@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/x/params"
 )
 
@@ -12,9 +11,9 @@ import (
 const (
 	// DefaultParamspace for params keeper
 	DefaultParamspace         = ModuleName
-	DefaultSessionNodeCount   = 5
-	DefaultProofWaitingPeriod = 3
-	DefaultClaimExpiration    = 25 // sessions
+	DefaultSessionNodeCount   = int64(5)
+	DefaultProofWaitingPeriod = int64(3)
+	DefaultClaimExpiration    = int64(25) // sessions
 )
 
 var (
@@ -61,8 +60,8 @@ func DefaultParams() Params {
 
 // validate a set of params
 func (p Params) Validate() error {
-	if p.SessionNodeCount > 25 {
-		return errors.New("too many nodes per session, maximum is 5")
+	if p.SessionNodeCount > 25 || p.SessionNodeCount < 1 {
+		return errors.New("Invalid session node count")
 	}
 	if p.ProofWaitingPeriod < 1 {
 		return errors.New("no waiting period is subject to attack")
@@ -70,8 +69,16 @@ func (p Params) Validate() error {
 	if len(p.SupportedBlockchains) == 0 {
 		return errors.New("no supported blockchains")
 	}
+	for _, chain := range p.SupportedBlockchains {
+		if err := HashVerification(chain); err != nil {
+			return err
+		}
+	}
+	if p.ClaimExpiration < 0 {
+		return errors.New("invalid claim expiration")
+	}
 	if p.ClaimExpiration < p.ProofWaitingPeriod {
-		return errors.New("unverified proof expiration is far too short, must be greater than proof waiting period")
+		return errors.New("unverified RelayProof expiration is far too short, must be greater than RelayProof waiting period")
 	}
 	return nil
 }
@@ -95,22 +102,4 @@ func (p Params) String() string {
 		p.ProofWaitingPeriod,
 		p.SupportedBlockchains,
 		p.ClaimExpiration)
-}
-
-// unmarshal the current pos params value from store key or panic
-func MustUnmarshalParams(cdc *codec.Codec, value []byte) Params {
-	p, err := UnmarshalParams(cdc, value)
-	if err != nil {
-		panic(err)
-	}
-	return p
-}
-
-// unmarshal the current pos params value from store key
-func UnmarshalParams(cdc *codec.Codec, value []byte) (params Params, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(value, &params)
-	if err != nil {
-		return
-	}
-	return
 }

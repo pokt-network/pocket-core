@@ -112,7 +112,7 @@ func QueryAppParams(height int64) (params appsTypes.Params, err error) {
 	return apps.QueryPOSParams(cdc, GetTendermintClient(), height)
 }
 
-func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredProof, err error) {
+func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredInvoice, err error) {
 	a, err := sdk.ValAddressFromHex(addr)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredProof, e
 	return pocket.QueryProofs(cdc, GetTendermintClient(), a, height)
 }
 
-func QueryProof(blockchain, appPubKey, addr string, sessionblockHeight, height int64) (proof *pocketTypes.StoredProof, err error) {
+func QueryProof(blockchain, appPubKey, addr string, sessionblockHeight, height int64) (proof *pocketTypes.StoredInvoice, err error) {
 	a, err := sdk.ValAddressFromHex(addr)
 	if err != nil {
 		return nil, err

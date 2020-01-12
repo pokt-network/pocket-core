@@ -36,7 +36,7 @@ func (c NonNativeChain) Hash() ([]byte, sdk.Error) {
 	return Hash(res), nil
 }
 
-// returns a hex string of the non native chain hash
+// returns a hex string of the non native chain addr
 func (c NonNativeChain) HashString() (string, sdk.Error) {
 	res, err := c.Hash()
 	if err != nil {

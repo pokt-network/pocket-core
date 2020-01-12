@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -23,12 +22,7 @@ func AATGeneration(appPubKey string, clientPubKey string, passphrase string, key
 		ApplicationSignature: "",
 	}
 	// marshal aat using json
-	res, err := json.Marshal(aat)
-	if err != nil {
-		return pc.AAT{}, pc.NewJSONMarshalError(pc.ModuleName, err)
-	}
-	// sign the aat
-	sig, _, err := (keybase).Sign(sdk.AccAddress(pk.Address()), passphrase, res)
+	sig, _, err := (keybase).Sign(sdk.AccAddress(pk.Address()), passphrase, aat.Hash())
 	if err != nil {
 		return pc.AAT{}, pc.NewSignatureError(pc.ModuleName, err)
 	}

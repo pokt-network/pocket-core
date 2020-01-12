@@ -3,7 +3,9 @@ package keeper
 import (
 	"encoding/hex"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 )
 
 // this is the main call for a service node handling a relay request
@@ -29,7 +31,7 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
-	if err := relay.HandleProof(ctx, sessionBlockHeight, app.GetMaxRelays().Int64()); err != nil {
+	if err := relay.HandleProof(ctx, sessionBlockHeight); err != nil {
 		return nil, err
 	}
 	// attempt to execute
@@ -40,10 +42,10 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 	// generate response object
 	resp := &pc.RelayResponse{
 		Response: respPayload,
-		Proof: pc.Proof{
+		Proof: pc.RelayProof{
 			Blockchain:         relay.Proof.Blockchain,
 			SessionBlockHeight: sessionBlockHeight,
-			ServicerPubKey:     hex.EncodeToString(selfNode.GetConsPubKey().Bytes()),
+			ServicerPubKey:     hex.EncodeToString(crypto.PublicKey(selfNode.GetConsPubKey().(ed25519.PubKeyEd25519)).Bytes()),
 			Token:              relay.Proof.Token,
 		},
 	}

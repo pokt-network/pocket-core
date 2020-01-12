@@ -50,18 +50,26 @@ func PubKeyVerification(pk string) sdk.Error {
 	return nil
 }
 
-// verify the hash format
+// verify the addr format
 func HashVerification(hash string) sdk.Error {
-	if len(hash) == 0 {
+	h, err := hex.DecodeString(hash)
+	if err != nil {
+		return NewHexDecodeError(ModuleName, err)
+	}
+	if len(h) == 0 {
 		return NewEmptyHashError(ModuleName)
 	}
-	if len(hash) != HashLength {
+	if len(h) != HashLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
 	return nil
 }
 
-func AddressVerification(address string) sdk.Error {
+func AddressVerification(addr string) sdk.Error {
+	address, err := hex.DecodeString(addr)
+	if err != nil {
+		return NewHexDecodeError(ModuleName, err)
+	}
 	if len(address) == 0 {
 		return NewEmptyAddressError(ModuleName)
 	}
