@@ -50,7 +50,7 @@ var createCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account generated succesfully:\nAddress: %s\n", kp.GetAddress())
+		fmt.Printf("Account generated successfully:\nAddress: %s\n", kp.GetAddress())
 	},
 }
 
@@ -213,7 +213,7 @@ var importArmoredCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account imported succesfully:\n%s", strings.ToUpper(kp.GetAddress().String()))
+		fmt.Printf("Account imported successfully:\n%s", strings.ToUpper(kp.GetAddress().String()))
 	},
 }
 
@@ -332,6 +332,6 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account imported succesfully:\n%s\n", strings.ToUpper(kp.GetAddress().String()))
+		fmt.Printf("Account imported successfully:\n%s\n", strings.ToUpper(kp.GetAddress().String()))
 	},
 }
