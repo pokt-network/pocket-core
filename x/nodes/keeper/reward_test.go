@@ -4,6 +4,7 @@ import (
 	"fmt"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
 
@@ -198,6 +199,103 @@ func TestMintValidatorAwards(t *testing.T) {
 			keeper.mintValidatorAwards(context)
 			coins := keeper.coinKeeper.GetCoins(context, sdk.AccAddress(test.address))
 			assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), test.amount)).IsEqual(coins), "coins should match")
+		})
+	}
+}
+
+func TestKeeper_GetTotalCustomValidatorAwards(t *testing.T) {
+	type fields struct {
+		keeper Keeper
+	}
+	type args struct {
+		ctx sdk.Context
+	}
+
+	context, _, keeper := createTestInput(t, true)
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   sdk.Int
+	}{
+		{"Test GetTotalCustomValidatorAwards", fields{keeper: keeper},
+			args{ctx: context}, sdk.ZeroInt()},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := tt.fields.keeper
+			if got := k.GetTotalCustomValidatorAwards(tt.args.ctx); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetTotalCustomValidatorAwards() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestKeeper_AwardCoinsTo(t *testing.T) {
+	type fields struct {
+		keeper Keeper
+	}
+	type args struct {
+		ctx     sdk.Context
+		relays  sdk.Int
+		address sdk.ValAddress
+	}
+	context, _, keeper := createTestInput(t, true)
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{"Test AwardCoinsTo", fields{keeper: keeper},
+			args{
+				ctx:     context,
+				relays:  sdk.ZeroInt(),
+				address: getRandomValidatorAddress(),
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := tt.fields.keeper
+
+			k.setValidatorAward(tt.args.ctx, sdk.ZeroInt(), tt.args.address)
+			k.AwardCoinsTo(tt.args.ctx, tt.args.relays, tt.args.address)
+
+		})
+	}
+}
+
+func TestKeeper_rewardFromFees(t *testing.T) {
+	type fields struct {
+		keeper Keeper
+	}
+	type args struct {
+		ctx              sdk.Context
+		previousProposer sdk.ConsAddress
+	}
+	bondedValidator := getBondedValidator()
+
+	context, _, keeper := createTestInput(t, true)
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{"Test rewardFromFees", fields{keeper: keeper},
+			args{
+				ctx:              context,
+				previousProposer: bondedValidator.GetConsAddr(),
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := tt.fields.keeper
+
+			k.rewardFromFees(tt.args.ctx, tt.args.previousProposer)
+
 		})
 	}
 }

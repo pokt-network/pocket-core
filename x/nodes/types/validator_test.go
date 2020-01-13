@@ -1065,3 +1065,103 @@ func TestValidator_UpdateStatus(t *testing.T) {
 		})
 	}
 }
+
+func TestValidator_GetServiceURL(t *testing.T) {
+	type fields struct {
+		Address                 sdk.ValAddress
+		ConsPubKey              crypto.PubKey
+		Jailed                  bool
+		Status                  sdk.BondStatus
+		Chains                  []string
+		ServiceURL              string
+		StakedTokens            sdk.Int
+		UnstakingCompletionTime time.Time
+	}
+
+	var pub ed25519.PubKeyEd25519
+	rand.Read(pub[:])
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{"Test Service URL", fields{
+			Address:                 sdk.ValAddress(pub.Address()),
+			ConsPubKey:              pub,
+			Jailed:                  false,
+			Status:                  sdk.Bonded,
+			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+			ServiceURL:              "www.pokt.network",
+			StakedTokens:            sdk.ZeroInt(),
+			UnstakingCompletionTime: time.Time{},
+		}, "www.pokt.network"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := Validator{
+				Address:                 tt.fields.Address,
+				ConsPubKey:              tt.fields.ConsPubKey,
+				Jailed:                  tt.fields.Jailed,
+				Status:                  tt.fields.Status,
+				Chains:                  tt.fields.Chains,
+				ServiceURL:              tt.fields.ServiceURL,
+				StakedTokens:            tt.fields.StakedTokens,
+				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
+			}
+			if got := v.GetServiceURL(); got != tt.want {
+				t.Errorf("GetServiceURL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidator_GetChains(t *testing.T) {
+	type fields struct {
+		Address                 sdk.ValAddress
+		ConsPubKey              crypto.PubKey
+		Jailed                  bool
+		Status                  sdk.BondStatus
+		Chains                  []string
+		ServiceURL              string
+		StakedTokens            sdk.Int
+		UnstakingCompletionTime time.Time
+	}
+
+	var pub ed25519.PubKeyEd25519
+	rand.Read(pub[:])
+
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{"Test Service URL", fields{
+			Address:                 sdk.ValAddress(pub.Address()),
+			ConsPubKey:              pub,
+			Jailed:                  false,
+			Status:                  sdk.Bonded,
+			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+			ServiceURL:              "www.pokt.network",
+			StakedTokens:            sdk.ZeroInt(),
+			UnstakingCompletionTime: time.Time{},
+		}, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := Validator{
+				Address:                 tt.fields.Address,
+				ConsPubKey:              tt.fields.ConsPubKey,
+				Jailed:                  tt.fields.Jailed,
+				Status:                  tt.fields.Status,
+				Chains:                  tt.fields.Chains,
+				ServiceURL:              tt.fields.ServiceURL,
+				StakedTokens:            tt.fields.StakedTokens,
+				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
+			}
+			if got := v.GetChains(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetChains() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

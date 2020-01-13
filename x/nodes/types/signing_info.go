@@ -22,7 +22,7 @@ func (i ValidatorSigningInfo) String() string {
 	return fmt.Sprintf(`Validator Signing Info:
   Address:               %s
   Start Height:          %d
-  Entropy Offset:          %d
+  Entropy Offset:        %d
   Jailed Until:          %v
   Tombstoned:            %t
   Missed Blocks Counter: %d`,

@@ -48,7 +48,7 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 		return ErrNoChains(DefaultCodespace)
 	}
 	for _, chain := range msg.Chains {
-		if len(chain) != 0 {
+		if len(chain) == 0 {
 			return ErrNoChains(DefaultCodespace)
 		}
 	}
