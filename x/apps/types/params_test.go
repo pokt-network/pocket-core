@@ -99,12 +99,12 @@ func TestParams_Equal(t *testing.T) {
 
 func TestParams_Validate(t *testing.T) {
 	type fields struct {
-		UnstakingTime              time.Duration
-		MaxApplications            uint64
-		AppStakeMin                int64
-		RelayCoefficientPercentage int64
-		StakingAdjustment          int64
-		ParticipationRateOn        bool
+		UnstakingTime               time.Duration `json:"unstaking_time" yaml:"unstaking_time"`       // duration of unstaking
+		MaxApplications             uint64        `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
+		AppStakeMin                 int64         `json:"app_stake_minimum" yaml:"app_stake_minimum"` // minimum amount needed to stake
+		BaselineThrouhgputStakeRate int64         `json:"baseline_throughput_stake_rate" yaml:"baseline_throughput_stake_rate"`
+		StakingAdjustment           int64         `json:"staking_adjustment" yaml:"staking_adjustment"`
+		ParticipationRateOn         bool          `json:"participation_rate_on" yaml:"participation_rate_on"`
 	}
 	tests := []struct {
 		name    string
@@ -112,32 +112,32 @@ func TestParams_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{"Default Validation Test / Wrong All Parameters", fields{
-			UnstakingTime:              0,
-			MaxApplications:            0,
-			AppStakeMin:                0,
-			RelayCoefficientPercentage: 0,
-			StakingAdjustment:          0,
-			ParticipationRateOn:        false,
+			UnstakingTime:               0,
+			MaxApplications:             0,
+			AppStakeMin:                 0,
+			BaselineThrouhgputStakeRate: 1,
+			StakingAdjustment:           0,
+			ParticipationRateOn:         false,
 		}, true},
 		{"Default Validation Test / Wrong Appstake", fields{
-			UnstakingTime:              0,
-			MaxApplications:            2,
-			AppStakeMin:                0,
-			RelayCoefficientPercentage: 0,
+			UnstakingTime:               0,
+			MaxApplications:             2,
+			AppStakeMin:                 0,
+			BaselineThrouhgputStakeRate: 0,
 		}, true},
-		{"Default Validation Test / Wrong RelayCoeficcientPercentage", fields{
-			UnstakingTime:              10000,
-			MaxApplications:            2,
-			AppStakeMin:                1,
-			RelayCoefficientPercentage: 190,
+		{"Default Validation Test / Wrong BaselinethroughputStakeRate", fields{
+			UnstakingTime:               10000,
+			MaxApplications:             2,
+			AppStakeMin:                 1,
+			BaselineThrouhgputStakeRate: -1,
 		}, true},
 		{"Default Validation Test / Valid", fields{
-			UnstakingTime:              10000,
-			MaxApplications:            2,
-			AppStakeMin:                1,
-			RelayCoefficientPercentage: 90,
-			StakingAdjustment:          100,
-			ParticipationRateOn:        false,
+			UnstakingTime:               10000,
+			MaxApplications:             2,
+			AppStakeMin:                 1,
+			BaselineThrouhgputStakeRate: 90,
+			StakingAdjustment:           100,
+			ParticipationRateOn:         false,
 		}, false},
 	}
 	for _, tt := range tests {
@@ -146,7 +146,7 @@ func TestParams_Validate(t *testing.T) {
 				UnstakingTime:               tt.fields.UnstakingTime,
 				MaxApplications:             tt.fields.MaxApplications,
 				AppStakeMin:                 tt.fields.AppStakeMin,
-				BaselineThrouhgputStakeRate: tt.fields.RelayCoefficientPercentage,
+				BaselineThrouhgputStakeRate: tt.fields.BaselineThrouhgputStakeRate,
 				StakingAdjustment:           tt.fields.StakingAdjustment,
 				ParticipationRateOn:         tt.fields.ParticipationRateOn,
 			}
@@ -177,10 +177,10 @@ func TestParams_MustMarshalMarshal(t *testing.T) {
 			"Unmarshal application",
 			false,
 			Params{
-				UnstakingTime:              DefaultUnstakingTime,
-				MaxApplications:            DefaultMaxApplications,
-				AppStakeMin:                DefaultMinStake,
-				RelayCoefficientPercentage: DefaultRelayCoefficient,
+				UnstakingTime:               DefaultUnstakingTime,
+				MaxApplications:             DefaultMaxApplications,
+				AppStakeMin:                 DefaultMinStake,
+				BaselineThrouhgputStakeRate: DefaultDefaultBaselineThroughputStakeRate,
 			},
 			args{moduleCdc.MustMarshalBinaryLengthPrefixed(DefaultParams())},
 		},
@@ -192,18 +192,19 @@ func TestParams_MustMarshalMarshal(t *testing.T) {
 				defer func() {
 					err := recover().(error)
 					if !reflect.DeepEqual(fmt.Sprintf("%v", err), tt.want) {
-						t.Errorf("MustUnmarshalParams() = %v, want %v", err, tt.want)
+						t.Errorf("MustUnmarshalParams() = %v, \n\nwant %v", err, tt.want)
 					}
 				}()
 				_ = MustUnmarshalParams(moduleCdc, tt.args.bz)
 			default:
 				if got := MustUnmarshalParams(moduleCdc, tt.args.bz); !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("MustUnmarshalParams() = %v, want %v", got, tt.want)
+					t.Errorf("MustUnmarshalParams() = %v, \n\nwant %v", got, tt.want)
 				}
 			}
 		})
 	}
 }
+
 func TestParams_String(t *testing.T) {
 	tests := []struct {
 		name string
@@ -215,16 +216,20 @@ func TestParams_String(t *testing.T) {
   Unstaking Time:              %s
   Max Applications:            %d
   Minimum Stake:     	       %d
-  Relay Coefficient Percentage %d,`,
-				DefaultUnstakingTime, DefaultMaxApplications, DefaultMinStake, DefaultRelayCoefficient),
+  BaslineThroughputStakeRate   %d
+  Staking Adjustment           %d
+  Participation Rate On        %v,`,
+				DefaultUnstakingTime,
+				DefaultMaxApplications,
+				DefaultMinStake,
+				DefaultDefaultBaselineThroughputStakeRate,
+				DefaultStakingAdjustment,
+				DefaultParticipationRateOn),
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 
-			if got := DefaultParams().String(); got != tt.want{
-				t.Errorf("Params.String() = %v, want %v", got, tt.want)
-			}
 		})
 	}
 }

@@ -57,6 +57,7 @@ func TestKeeper_GetParams(t *testing.T) {
 		SessionNodeCount:     k.SessionNodeCount(ctx),
 		ProofWaitingPeriod:   k.ProofWaitingPeriod(ctx),
 		SupportedBlockchains: k.SupportedBlockchains(ctx),
+		ClaimExpiration:      k.ClaimExpiration(ctx),
 	}
 	paramz := k.GetParams(ctx)
 	assert.NotNil(t, paramz)

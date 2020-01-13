@@ -75,6 +75,9 @@ func (p Params) Validate() error {
 	if p.AppStakeMin < DefaultMinStake {
 		return fmt.Errorf("staking parameter StakeMimimum must be a positive integer")
 	}
+	if p.BaselineThrouhgputStakeRate < 0 {
+		return fmt.Errorf("invalid baseline throughput stake rate, must be above 0")
+	}
 	// todo
 	return nil
 }

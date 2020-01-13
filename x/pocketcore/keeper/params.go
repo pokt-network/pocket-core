@@ -40,6 +40,7 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 		SessionNodeCount:     k.SessionNodeCount(ctx),
 		ProofWaitingPeriod:   k.ProofWaitingPeriod(ctx),
 		SupportedBlockchains: k.SupportedBlockchains(ctx),
+		ClaimExpiration:      k.ClaimExpiration(ctx),
 	}
 }
 
