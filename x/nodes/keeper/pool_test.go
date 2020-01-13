@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/supply/exported"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -166,6 +167,53 @@ func TestBurnStakedTokens(t *testing.T) {
 				}
 				staked := keeper.GetStakedTokens(context)
 				assert.True(t, test.amount.Sub(test.burnAmount).Add(supplySize).Equal(staked), "values do not match")
+			}
+		})
+	}
+}
+
+func TestPool_GetFeePool(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"gets fee pool",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			got := keeper.getFeePool(context)
+
+			if _, ok := got.(exported.ModuleAccountI); !ok {
+				t.Errorf("KeeperPool.getFeePool()= %v", ok)
+			}
+		})
+	}
+}
+
+func TestPool_StakedRatio(t *testing.T) {
+	validator := getBondedValidator()
+	validatorAddress := validator.Address
+
+	tests := []struct {
+		name    string
+		amount  sdk.Dec
+		address sdk.ValAddress
+	}{
+		{"return 0 if stake supply is lower than 0", sdk.ZeroDec(), validatorAddress},
+		{"return supply", sdk.NewDec(1), validatorAddress},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			if !tt.amount.Equal(sdk.ZeroDec()) {
+				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
+			}
+
+			if got := keeper.StakedRatio(context); !got.Equal(tt.amount) {
+				t.Errorf("KeeperPool.StakedRatio()= %v, %v", got.String(), tt.amount.String())
 			}
 		})
 	}

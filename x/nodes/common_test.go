@@ -1,12 +1,14 @@
-package keeper
+package nodes
 
 import (
-	"github.com/pokt-network/pocket-core/x/nodes/exported"
+	"fmt"
+	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/supply"
-	"github.com/stretchr/testify/mock"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/rpc/client"
 	"math/rand"
+	fp "path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -38,6 +40,10 @@ var (
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 	)
+	keybaseName = "pocket-keybase"
+	kbDirName   = "keybase"
+	fs          = string(fp.Separator)
+	datadir     string
 )
 
 // nolint: deadcode unused
@@ -55,8 +61,18 @@ func makeTestCodec() *codec.Codec {
 	return cdc
 }
 
+func GetTestTendermintClient() client.Client {
+	var tmNodeURI string
+	var defaultTMURI = "tcp://localhost:26657"
+
+	if tmNodeURI == "" {
+		return client.NewHTTP(defaultTMURI, "/websocket")
+	}
+	return client.NewHTTP(tmNodeURI, "/websocket")
+}
+
 // nolint: deadcode unused
-func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account, Keeper) {
+func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account, keeper.Keeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(4)
 
@@ -88,8 +104,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 		auth.FeeCollectorName: nil,
 		types.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
 		types.DAOPoolName:     {supply.Burner, supply.Staking, supply.Minter},
-		//ADDED THIS CHECK
-		types.ModuleName: {supply.Burner, supply.Staking, supply.Minter},
 	}
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
@@ -111,11 +125,11 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	genesisState := ModuleBasics.DefaultGenesis()
 	moduleManager.InitGenesis(ctx, genesisState)
 
-	posSubSpace := pk.Subspace(DefaultParamspace)
+	posSubSpace := pk.Subspace(keeper.DefaultParamspace)
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
-	keeper := NewKeeper(cdc, keySupply, bk, sk, posSubSpace, sdk.CodespaceType("pos"))
+	keeper := keeper.NewKeeper(cdc, keySupply, bk, sk, posSubSpace, sdk.CodespaceType("pos"))
 
 	params := types.DefaultParams()
 	keeper.SetParams(ctx, params)
@@ -138,21 +152,21 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 	return
 }
 
-func addMintedCoinsToModule(t *testing.T, ctx sdk.Context, k *Keeper, module string) {
-	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), sdk.NewInt(100000000000)))
-	mintErr := k.supplyKeeper.MintCoins(ctx, module, coins.Add(coins))
-	if mintErr != nil {
-		t.Fail()
-	}
-}
-
-func sendFromModuleToAccount(t *testing.T, ctx sdk.Context, k *Keeper, module string, address sdk.ValAddress, amount sdk.Int) {
-	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, module, sdk.AccAddress(address), coins)
-	if err != nil {
-		t.Fail()
-	}
-}
+//func addMintedCoinsToModule(t *testing.T, ctx sdk.Context, k *keeper.Keeper, module string) {
+//	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), sdk.NewInt(100000000000)))
+//	mintErr := k.supplyKeeper.MintCoins(ctx, module, coins.Add(coins))
+//	if mintErr != nil {
+//		t.Fail()
+//	}
+//}
+//
+//func sendFromModuleToAccount(t *testing.T, ctx sdk.Context, k *keeper.Keeper, module string, address sdk.ValAddress, amount sdk.Int) {
+//	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
+//	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, module, sdk.AccAddress(address), coins)
+//	if err != nil {
+//		t.Fail()
+//	}
+//}
 
 func getRandomPubKey() ed25519.PubKeyEd25519 {
 	var pub ed25519.PubKeyEd25519
@@ -190,55 +204,96 @@ func getUnbondingValidator() types.Validator {
 	v := getValidator()
 	return v.UpdateStatus(sdk.Unbonding)
 }
-func modifyFn(i *int) func(index int64, Validator exported.ValidatorI) (stop bool) {
-	return func(index int64, validator exported.ValidatorI) (stop bool) {
-		val := validator.(types.Validator)
-		val.StakedTokens = sdk.NewInt(100)
-		if index == 1 {
-			stop = true
-		}
-		*i++
-		return
+
+func getGenesisStateForTest(ctx sdk.Context, keeper keeper.Keeper, defaultparams bool) types.GenesisState {
+	keeper.SetPreviousProposer(ctx, sdk.GetConsAddress(getRandomPubKey()))
+	var prm = types.DefaultParams()
+
+	if !defaultparams {
+		prm = keeper.GetParams(ctx)
 	}
+	prevStateTotalPower := keeper.PrevStateValidatorsPower(ctx)
+	validators := keeper.GetAllValidators(ctx)
+	var prevStateValidatorPowers []types.PrevStatePowerMapping
+	keeper.IterateAndExecuteOverPrevStateValsByPower(ctx, func(addr sdk.ValAddress, power int64) (stop bool) {
+		prevStateValidatorPowers = append(prevStateValidatorPowers, types.PrevStatePowerMapping{Address: addr, Power: power})
+		return false
+	})
+	signingInfos := make(map[string]types.ValidatorSigningInfo)
+	missedBlocks := make(map[string][]types.MissedBlock)
+	keeper.IterateAndExecuteOverValSigningInfo(ctx, func(address sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
+		addrstring := address.String()
+		signingInfos[addrstring] = info
+		localMissedBlocks := []types.MissedBlock{}
+
+		keeper.IterateAndExecuteOverMissedArray(ctx, address, func(index int64, missed bool) (stop bool) {
+			localMissedBlocks = append(localMissedBlocks, types.MissedBlock{index, missed})
+			return false
+		})
+		missedBlocks[addrstring] = localMissedBlocks
+
+		return false
+	})
+	daoTokens := keeper.GetDAOTokens(ctx)
+	daoPool := types.DAOPool{Tokens: daoTokens}
+	prevProposer := keeper.GetPreviousProposer(ctx)
+
+	return types.GenesisState{
+		Params:                   prm,
+		PrevStateTotalPower:      prevStateTotalPower,
+		PrevStateValidatorPowers: prevStateValidatorPowers,
+		Validators:               validators,
+		Exported:                 true,
+		DAO:                      daoPool,
+		SigningInfos:             signingInfos,
+		MissedBlocks:             missedBlocks,
+		PreviousProposer:         prevProposer,
+	}
+
 }
 
-type POSHooks struct {
-	mock.Mock
-}
+func getSupplyKeeperForTest() supply.Keeper {
 
-func (ph *POSHooks) BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.ValAddress) {
-	ph.Called(ctx, valAddr)
-}
-func (ph *POSHooks) AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.ValAddress) {
-	ph.Called(ctx, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) AfterValidatorStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) AfterValidatorUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
-	ph.Called(ctx, valAddr, fraction)
-}
-func (ph *POSHooks) AfterValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
-	ph.Called(ctx, valAddr, fraction)
+	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
+	keyParams := sdk.NewKVStoreKey(params.StoreKey)
+	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
+	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
+
+	db := dbm.NewMemDB()
+	ms := store.NewCommitMultiStore(db)
+	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+	err := ms.LoadLatestVersion()
+	if err != nil {
+		fmt.Print("lol")
+	}
+
+	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, true, log.NewNopLogger())
+	ctx = ctx.WithConsensusParams(
+		&abci.ConsensusParams{
+			Validator: &abci.ValidatorParams{
+				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
+			},
+		},
+	)
+	cdc := makeTestCodec()
+
+	maccPerms := map[string][]string{
+		auth.FeeCollectorName: nil,
+		types.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
+		types.DAOPoolName:     {supply.Burner, supply.Staking, supply.Minter},
+	}
+	modAccAddrs := make(map[string]bool)
+	for acc := range maccPerms {
+		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
+	}
+
+	pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
+	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
+	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
+	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
+
+	return sk
 }

@@ -173,3 +173,34 @@ func TestGetValsIterator(t *testing.T) {
 		})
 	}
 }
+func TestApplicationStaked_IterateAndExecuteOverStakedApps(t *testing.T) {
+	boundedValidator := getBondedValidator()
+	secondBoundedValidator := getBondedValidator()
+	tests := []struct {
+		name         string
+		application  types.Validator
+		applications []types.Validator
+		want         int
+	}{
+		{
+			name:         "iterates over applications",
+			applications: []types.Validator{boundedValidator, secondBoundedValidator},
+			want:         2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			for _, application := range tt.applications {
+				keeper.SetValidator(context, application)
+				keeper.SetStakedValidator(context, application)
+			}
+			got := 0
+			fn := modifyFn(&got)
+			keeper.IterateAndExecuteOverStakedVals(context, fn)
+			if got != tt.want {
+				t.Errorf("appStaked.IterateAndExecuteOverApps() = got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

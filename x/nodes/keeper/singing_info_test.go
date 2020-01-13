@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -60,6 +61,45 @@ func TestClearMissedArray(t *testing.T) {
 			keeper.clearMissedArray(context, test.address)
 			missed := keeper.getMissedBlockArray(context, test.address, 1)
 			assert.Equal(t, missed, test.expected, "found does not match")
+		})
+	}
+}
+
+func TestKeeper_IterateAndExecuteOverMissedArray(t *testing.T) {
+	type fields struct {
+		Keeper Keeper
+	}
+	type args struct {
+		ctx     sdk.Context
+		address sdk.ConsAddress
+		handler func(index int64, missed bool) (stop bool)
+	}
+
+	context, _, keeper := createTestInput(t, true)
+
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{"Test IterateAndExecuteOverMissedArray", fields{Keeper: keeper},
+			args{
+				ctx:     context,
+				address: sdk.ConsAddress(getRandomPubKey().Address()),
+				handler: func(index int64, missed bool) (stop bool) {
+					localMissedBlocks := []types.MissedBlock{}
+
+					localMissedBlocks = append(localMissedBlocks, types.MissedBlock{index, missed})
+					return false
+				},
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := tt.fields.Keeper
+
+			k.IterateAndExecuteOverMissedArray(tt.args.ctx, tt.args.address, tt.args.handler)
+
 		})
 	}
 }

@@ -5,6 +5,8 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/tendermint/crypto"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -770,6 +772,117 @@ func TestBurnValidators(t *testing.T) {
 				t.Fail()
 			}
 			assert.True(t, test.expected.amount.Equal(primaryValidator.StakedTokens.ToDec()))
+		})
+	}
+}
+
+func TestKeeper_getBurnFromSeverity(t *testing.T) {
+	type fields struct {
+		Keeper Keeper
+	}
+
+	context, _, keeper := createTestInput(t, true)
+	primaryBoundedValidator := getBondedValidator()
+
+	type args struct {
+		ctx                sdk.Context
+		address            sdk.ValAddress
+		severityPercentage sdk.Dec
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   sdk.Int
+	}{
+		{"Test getBurnFromSeverity", fields{keeper},
+			args{
+				ctx:                context,
+				address:            primaryBoundedValidator.Address,
+				severityPercentage: sdk.OneDec(),
+			}, sdk.NewInt(100000000000)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := tt.fields.Keeper
+			k.SetValidator(context, primaryBoundedValidator)
+			k.SetValidatorByConsAddr(context, primaryBoundedValidator)
+
+			if got := k.getBurnFromSeverity(tt.args.ctx, tt.args.address, tt.args.severityPercentage); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getBurnFromSeverity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestKeeper_AddPubKeyRelation(t *testing.T) {
+	type fields struct {
+		Keeper Keeper
+	}
+	context, _, keeper := createTestInput(t, true)
+
+	pub := getRandomPubKey()
+
+	type args struct {
+		ctx    sdk.Context
+		pubkey crypto.PubKey
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{"Test Add PubKeyRelation", fields{Keeper: keeper}, args{
+			ctx:    context,
+			pubkey: pub,
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := tt.fields.Keeper
+
+			k.AddPubKeyRelation(tt.args.ctx, tt.args.pubkey)
+		})
+	}
+}
+
+func TestKeeper_BurnValidator(t *testing.T) {
+	type fields struct {
+		Keeper Keeper
+	}
+
+	primaryBoundedValidator := getBondedValidator()
+
+	context, _, keeper := createTestInput(t, true)
+
+	type args struct {
+		ctx                sdk.Context
+		address            sdk.ValAddress
+		severityPercentage sdk.Dec
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{"Test BurnValidator", fields{Keeper: keeper},
+			args{
+				ctx:                context,
+				address:            primaryBoundedValidator.Address,
+				severityPercentage: sdk.ZeroDec(),
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := tt.fields.Keeper
+			k.SetValidator(context, primaryBoundedValidator)
+			k.SetValidatorByConsAddr(context, primaryBoundedValidator)
+
+			store := tt.args.ctx.KVStore(k.storeKey)
+			store.Set(types.KeyForValidatorBurn(tt.args.address), k.cdc.MustMarshalBinaryBare(sdk.NewDec(1)))
+
+			k.BurnValidator(tt.args.ctx, tt.args.address, tt.args.severityPercentage)
+
 		})
 	}
 }

@@ -72,7 +72,7 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress
 	}
 }
 
-func (k Keeper) GetTotalCusomValidatorAwards(ctx sdk.Context) sdk.Int {
+func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Context) sdk.Int {
 	total := sdk.ZeroInt()
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)

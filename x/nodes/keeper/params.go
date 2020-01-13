@@ -106,7 +106,7 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 		StakeMinimum:             k.MinimumStake(ctx),
 		ProposerRewardPercentage: k.ProposerRewardPercentage(ctx),
 		SessionBlockFrequency:    k.SessionBlockFrequency(ctx),
-		RelaysToTokens:           sdk.Dec{},
+		RelaysToTokens:           k.RelaysToTokensMultiplier(ctx),
 		MaxEvidenceAge:           k.MaxEvidenceAge(ctx),
 		SignedBlocksWindow:       k.SignedBlocksWindow(ctx),
 		MinSignedPerWindow:       sdk.NewDec(k.MinSignedPerWindow(ctx)),

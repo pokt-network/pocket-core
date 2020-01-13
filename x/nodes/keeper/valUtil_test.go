@@ -5,6 +5,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	"reflect"
 	"testing"
 )
 
@@ -240,6 +241,26 @@ func TestNewValidatorCaching(t *testing.T) {
 				bz := make([]byte, len(test.args.validator.Address))
 				copy(bz, test.args.validator.Address)
 				assert.Equal(t, bz, value, "key is not correct")
+			}
+		})
+	}
+}
+
+func Test_sortNoLongerStakedValidators(t *testing.T) {
+	type args struct {
+		prevState valPowerMap
+	}
+	tests := []struct {
+		name string
+		args args
+		want [][]byte
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := sortNoLongerStakedValidators(tt.args.prevState); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("sortNoLongerStakedValidators() = %v, want %v", got, tt.want)
 			}
 		})
 	}
