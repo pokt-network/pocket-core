@@ -49,10 +49,10 @@ func TestGetAddrPubkeyRelationKey(t *testing.T) {
 
 func TestGetValMissedBlockKey(t *testing.T) {
 	type args struct {
-		v types.ConsAddress
+		v types.Address
 		i int64
 	}
-	ca, _ := types.ConsAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, uint64(1))
@@ -76,9 +76,9 @@ func TestGetValMissedBlockKey(t *testing.T) {
 
 func TestGetValMissedBlockPrefixKey(t *testing.T) {
 	type args struct {
-		v types.ConsAddress
+		v types.Address
 	}
-	ca, _ := types.ConsAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string
@@ -102,12 +102,12 @@ func TestGetValidatorSigningInfoAddress(t *testing.T) {
 	}
 	var pub ed25519.PubKeyEd25519
 	rand.Read(pub[:])
-	ca := types.ConsAddress(pub.Address())
+	ca := types.Address(pub.Address())
 
 	tests := []struct {
 		name  string
 		args  args
-		wantV types.ConsAddress
+		wantV types.Address
 	}{
 		{"sampleByteArray", args{append([]byte{0x11}, ca.Bytes()...)}, append(ca.Bytes())},
 	}
@@ -122,9 +122,9 @@ func TestGetValidatorSigningInfoAddress(t *testing.T) {
 
 func TestGetValidatorSigningInfoKey(t *testing.T) {
 	type args struct {
-		v types.ConsAddress
+		v types.Address
 	}
-	ca, _ := types.ConsAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string
@@ -232,9 +232,9 @@ func TestKeyForValidatorBurn(t *testing.T) {
 
 func TestKeyForValidatorByConsAddr(t *testing.T) {
 	type args struct {
-		addr types.ConsAddress
+		addr types.Address
 	}
-	ca, _ := types.ConsAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string

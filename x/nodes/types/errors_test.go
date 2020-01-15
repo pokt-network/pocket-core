@@ -216,11 +216,11 @@ func TestErrNoServiceURL(t *testing.T) {
 func TestErrNoSigningInfoFound(t *testing.T) {
 	type args struct {
 		codespace types.CodespaceType
-		consAddr  types.ConsAddress
+		consAddr  types.Address
 	}
 	var pub ed25519.PubKeyEd25519
 	rand.Read(pub[:])
-	ca := types.ConsAddress(pub.Address())
+	ca := types.Address(pub.Address())
 
 	tests := []struct {
 		name string

@@ -31,11 +31,11 @@ func TestNewGenesisState(t *testing.T) {
 		params           Params
 		validators       []Validator
 		dao              DAOPool
-		previousProposer types.ConsAddress
+		previousProposer types.Address
 		signingInfos     map[string]ValidatorSigningInfo
 		missedBlocks     map[string][]MissedBlock
 	}
-	ca, _ := types.ConsAddressFromHex("ABCDEFGHIJK")
+	ca, _ := types.AddressFromHex("ABCDEFGHIJK")
 
 	tests := []struct {
 		name string
