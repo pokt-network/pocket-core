@@ -12,7 +12,7 @@ func (k Keeper) GetAllApps(ctx sdk.Context) []exported.ApplicationI {
 }
 
 // get an app from the world state
-func (k Keeper) GetApp(ctx sdk.Context, address sdk.ValAddress) (a exported.ApplicationI, found bool) {
+func (k Keeper) GetApp(ctx sdk.Context, address sdk.Address) (a exported.ApplicationI, found bool) {
 	a = k.appKeeper.Application(ctx, address)
 	if a == nil {
 		return a, false

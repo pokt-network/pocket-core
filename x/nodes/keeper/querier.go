@@ -76,7 +76,7 @@ func queryAccountBalance(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]by
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 
-	balance := k.GetBalance(ctx, params.ValAddress)
+	balance := k.GetBalance(ctx, params.Address)
 
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, balance)
 	if err != nil {
@@ -263,7 +263,7 @@ func querySigningInfos(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte
 
 	var signingInfos []types.ValidatorSigningInfo
 
-	k.IterateAndExecuteOverValSigningInfo(ctx, func(consAddr sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
+	k.IterateAndExecuteOverValSigningInfo(ctx, func(consAddr sdk.Address, info types.ValidatorSigningInfo) (stop bool) {
 		signingInfos = append(signingInfos, info)
 		return false
 	})

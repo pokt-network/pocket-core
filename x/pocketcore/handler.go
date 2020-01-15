@@ -105,7 +105,7 @@ func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim)
 	return nil
 }
 
-func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) (servicerAddr sdk.ValAddress, proof types.MsgClaim, sdkError sdk.Error) {
+func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) (servicerAddr sdk.Address, proof types.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the proof
 	pk, err := crypto.NewPublicKey(msg.Leaf.ServicerPubKey)
 	if err != nil {

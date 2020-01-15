@@ -13,9 +13,9 @@ type ApplicationI interface {
 	IsUnstaked() bool             // check if has status unbonded
 	IsUnstaking() bool            // check if has status unbonding
 	GetChains() []string          // retrieve the staked chains
-	GetAddress() sdk.ValAddress   // operator address to receive/return applications coins
+	GetAddress() sdk.Address      // operator address to receive/return applications coins
 	GetConsPubKey() crypto.PubKey // validation consensus pubkey
-	GetConsAddr() sdk.ConsAddress // validation consensus address
+	GetConsAddr() sdk.Address     // validation consensus address
 	GetTokens() sdk.Int           // validation tokens
 	GetMaxRelays() sdk.Int        // maximum relays
 }

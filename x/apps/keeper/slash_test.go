@@ -204,9 +204,9 @@ func TestValidateSlash(t *testing.T) {
 					updatedContext := context.WithBlockHeight(100)
 					infractionHeight = updatedContext.BlockHeight()
 				}
-				_ = keeper.validateSlash(context, sdk.ConsAddress(cryptoAddr), infractionHeight, test.args.power, fraction)
+				_ = keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
 			default:
-				val := keeper.validateSlash(context, sdk.ConsAddress(cryptoAddr), infractionHeight, test.args.power, fraction)
+				val := keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
 				if test.expected.found {
 					assert.Equal(t, test.expected.application, val)
 				} else {
@@ -266,7 +266,7 @@ func TestSlash(t *testing.T) {
 				keeper.SetAppByConsAddr(context, test.args.application)
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.application.Address, supplySize)
-				v, found := keeper.GetAppByConsAddr(context, sdk.ConsAddress(cryptoAddr))
+				v, found := keeper.GetAppByConsAddr(context, sdk.Address(cryptoAddr))
 				if !found {
 					t.FailNow()
 				}
@@ -276,8 +276,8 @@ func TestSlash(t *testing.T) {
 			infractionHeight := context.BlockHeight()
 			fraction := test.args.slashFraction
 
-			keeper.slash(context, sdk.ConsAddress(cryptoAddr), infractionHeight, test.args.power, fraction)
-			application, found := keeper.GetAppByConsAddr(context, sdk.ConsAddress(cryptoAddr))
+			keeper.slash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
+			application, found := keeper.GetAppByConsAddr(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.Fail()
 			}

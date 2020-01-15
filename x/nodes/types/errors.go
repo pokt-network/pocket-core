@@ -110,6 +110,6 @@ func ErrSelfDelegationTooLowToUnjail(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeValidatorNotJailed, "validator's self delegation less than MinSelfDelegation, cannot be unjailed")
 }
 
-func ErrNoSigningInfoFound(codespace sdk.CodespaceType, consAddr sdk.ConsAddress) sdk.Error {
+func ErrNoSigningInfoFound(codespace sdk.CodespaceType, consAddr sdk.Address) sdk.Error {
 	return sdk.NewError(codespace, CodeMissingSigningInfo, fmt.Sprintf("no signing info found for address: %s", consAddr))
 }

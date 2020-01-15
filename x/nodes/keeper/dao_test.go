@@ -16,7 +16,7 @@ func TestCoinsFromDAOToValidator(t *testing.T) {
 		name     string
 		amount   sdk.Int
 		expected string
-		address  sdk.ValAddress
+		address  sdk.Address
 		panics   bool
 	}{
 		{
@@ -48,7 +48,7 @@ func TestCoinsFromDAOToValidator(t *testing.T) {
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.DAOPoolName)
 				keeper.coinsFromDAOToValidator(context, types.Validator{Address: test.address}, test.amount)
-				coins := keeper.coinKeeper.GetCoins(context, sdk.AccAddress(test.address))
+				coins := keeper.coinKeeper.GetCoins(context, sdk.Address(test.address))
 				assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), test.amount)).IsEqual(coins), "coins should match")
 			}
 		})

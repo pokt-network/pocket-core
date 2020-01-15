@@ -16,15 +16,15 @@ var (
 //----------------------------------------------------------------------------------------------------------------------
 // MsgAppStake - struct for staking transactions
 type MsgAppStake struct {
-	Address sdk.ValAddress `json:"application_address" yaml:"application_address"`
+	Address sdk.Address `json:"application_address" yaml:"application_address"`
 	PubKey  crypto.PubKey  `json:"pubkey" yaml:"pubkey"`
 	Chains  []string       `json:"chains" yaml:"chains"`
 	Value   sdk.Int        `json:"value" yaml:"value"`
 }
 
 // Return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgAppStake) GetSigners() []sdk.AccAddress {
-	addrs := []sdk.AccAddress{sdk.AccAddress(msg.Address)}
+func (msg MsgAppStake) GetSigners() []sdk.Address {
+	addrs := []sdk.Address{sdk.Address(msg.Address)}
 	return addrs
 }
 
@@ -60,11 +60,11 @@ func (msg MsgAppStake) Type() string  { return "stake_application" }
 //----------------------------------------------------------------------------------------------------------------------
 // MsgBeginAppUnstake - struct for unstaking transaciton
 type MsgBeginAppUnstake struct {
-	Address sdk.ValAddress `json:"application_address" yaml:"application_address"`
+	Address sdk.Address `json:"application_address" yaml:"application_address"`
 }
 
-func (msg MsgBeginAppUnstake) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.Address)}
+func (msg MsgBeginAppUnstake) GetSigners() []sdk.Address {
+	return []sdk.Address{sdk.Address(msg.Address)}
 }
 
 func (msg MsgBeginAppUnstake) GetSignBytes() []byte {
@@ -86,14 +86,14 @@ func (msg MsgBeginAppUnstake) Type() string  { return "begin_unstaking_applicati
 //----------------------------------------------------------------------------------------------------------------------
 // MsgAppUnjail - struct for unjailing jailed application
 type MsgAppUnjail struct {
-	AppAddr sdk.ValAddress `json:"address" yaml:"address"` // address of the application operator
+	AppAddr sdk.Address `json:"address" yaml:"address"` // address of the application operator
 }
 
 //nolint
 func (msg MsgAppUnjail) Route() string { return RouterKey }
 func (msg MsgAppUnjail) Type() string  { return "unjail" }
-func (msg MsgAppUnjail) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.AppAddr)}
+func (msg MsgAppUnjail) GetSigners() []sdk.Address {
+	return []sdk.Address{sdk.Address(msg.AppAddr)}
 }
 
 func (msg MsgAppUnjail) GetSignBytes() []byte {

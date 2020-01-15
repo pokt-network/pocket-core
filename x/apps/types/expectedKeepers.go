@@ -17,7 +17,7 @@ type SupplyKeeper interface {
 	// get total supply of tokens
 	GetSupply(ctx sdk.Context) supplyexported.SupplyI
 	// get the address of a module account
-	GetModuleAddress(name string) sdk.AccAddress
+	GetModuleAddress(name string) sdk.Address
 	// get the module account structure
 	GetModuleAccount(ctx sdk.Context, moduleName string) supplyexported.ModuleAccountI
 	// set module account structure
@@ -25,9 +25,9 @@ type SupplyKeeper interface {
 	// send coins to/from module accounts
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) sdk.Error
 	// send coins from module to application
-	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) sdk.Error
+	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.Address, amt sdk.Coins) sdk.Error
 	// send coins from application to module
-	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) sdk.Error
+	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.Address, recipientModule string, amt sdk.Coins) sdk.Error
 	// burn coins
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) sdk.Error
 	// mint coins for testing
@@ -41,13 +41,13 @@ type ApplicationSet interface {
 	// iterate through staked applications by address, execute func for each application
 	IterateAndExecuteOverStakedApps(sdk.Context, func(index int64, application appexported.ApplicationI) (stop bool))
 	// get a particular application by address
-	Application(sdk.Context, sdk.ValAddress) appexported.ApplicationI
+	Application(sdk.Context, sdk.Address) appexported.ApplicationI
 	// total staked tokens within the application set
 	TotalTokens(sdk.Context) sdk.Int
 	// jail a application
-	JailApplication(sdk.Context, sdk.ConsAddress)
+	JailApplication(sdk.Context, sdk.Address)
 	// unjail a application
-	UnjailApplication(sdk.Context, sdk.ConsAddress)
+	UnjailApplication(sdk.Context, sdk.Address)
 	// MaxApplications returns the maximum amount of staked applications
 	MaxApplications(sdk.Context) uint64
 }
@@ -61,16 +61,16 @@ type ApplicationSet interface {
 
 // AppHooks event hooks for staking application object (noalias)
 type AppHooks interface {
-	BeforeApplicationRegistered(ctx sdk.Context, valAddr sdk.ValAddress)
-	AfterApplicationRegistered(ctx sdk.Context, valAddr sdk.ValAddress)
-	BeforeApplicationRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	AfterApplicationRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	BeforeApplicationStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	AfterApplicationStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	BeforeApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	AfterApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	BeforeApplicationUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	AfterApplicationUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	BeforeApplicationSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec)
-	AfterApplicationSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec)
+	BeforeApplicationRegistered(ctx sdk.Context, valAddr sdk.Address)
+	AfterApplicationRegistered(ctx sdk.Context, valAddr sdk.Address)
+	BeforeApplicationRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	AfterApplicationRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	BeforeApplicationStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	AfterApplicationStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	BeforeApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	AfterApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	BeforeApplicationUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	AfterApplicationUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	BeforeApplicationSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec)
+	AfterApplicationSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec)
 }

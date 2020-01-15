@@ -13,8 +13,8 @@ func TestKeeper_SendCoins(t *testing.T) {
 	}
 	type args struct {
 		ctx         sdk.Context
-		fromAddress sdk.ValAddress
-		toAddress   sdk.ValAddress
+		fromAddress sdk.Address
+		toAddress   sdk.Address
 		amount      sdk.Int
 	}
 

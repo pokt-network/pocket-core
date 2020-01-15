@@ -179,7 +179,7 @@ func TestAppModule_ExportGenesis(t *testing.T) {
 	}
 	context, _, k := createTestInput(t, true)
 
-	k.SetPreviousProposer(context, sdk.GetConsAddress(getRandomPubKey()))
+	k.SetPreviousProposer(context, sdk.GetAddress(getRandomPubKey()))
 	type args struct {
 		ctx sdk.Context
 	}

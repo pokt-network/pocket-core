@@ -11,9 +11,9 @@ import (
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
-func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.ValAddress, height int64) (sdk.Int, error) {
+func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (sdk.Int, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryAccountBalanceParams{ValAddress: addr}
+	params := types.QueryAccountBalanceParams{Address: addr}
 	bz, err := cdc.MarshalBinaryBare(params)
 	if err != nil {
 		return sdk.ZeroInt(), err
@@ -27,7 +27,7 @@ func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Val
 	return balance, nil
 }
 
-func QueryValidator(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.ValAddress, height int64) (types.Validator, error) {
+func QueryValidator(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (types.Validator, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	res, _, err := cliCtx.QueryStore(types.KeyForValByAllVals(addr), types.StoreKey)
 	if err != nil {
@@ -91,7 +91,7 @@ func QueryUnstakingValidators(cdc *codec.Codec, tmNode rpcclient.Client, height 
 	return validators, nil
 }
 
-func QuerySigningInfo(cdc *codec.Codec, tmNode rpcclient.Client, height int64, consAddr sdk.ConsAddress) (types.ValidatorSigningInfo, error) {
+func QuerySigningInfo(cdc *codec.Codec, tmNode rpcclient.Client, height int64, consAddr sdk.Address) (types.ValidatorSigningInfo, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	key := types.GetValidatorSigningInfoKey(consAddr)
 	res, _, err := cliCtx.QueryStore(key, types.StoreKey)

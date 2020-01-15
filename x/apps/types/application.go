@@ -10,7 +10,7 @@ import (
 )
 
 type Application struct {
-	Address                 sdk.ValAddress `json:"address" yaml:"address"`               // address of the application; hex encoded in JSON
+	Address                 sdk.Address `json:"address" yaml:"address"`               // address of the application; hex encoded in JSON
 	ConsPubKey              crypto.PubKey  `json:"cons_pubkey" yaml:"cons_pubkey"`       // the consensus public key of the application; hex encoded in JSON
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                 // has the application been jailed from bonded status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
@@ -21,7 +21,7 @@ type Application struct {
 }
 
 // NewApplication - initialize a new application
-func NewApplication(addr sdk.ValAddress, consPubKey crypto.PubKey, chains []string, tokensToStake sdk.Int) Application {
+func NewApplication(addr sdk.Address, consPubKey crypto.PubKey, chains []string, tokensToStake sdk.Int) Application {
 	return Application{
 		Address:                 addr,
 		ConsPubKey:              consPubKey,
@@ -83,16 +83,16 @@ func (a Application) UpdateStatus(newStatus sdk.BondStatus) Application {
 }
 
 // return the TM application address
-func (a Application) ConsAddress() sdk.ConsAddress { return sdk.ConsAddress(a.ConsPubKey.Address()) }
+func (a Application) ConsAddress() sdk.Address { return sdk.Address(a.ConsPubKey.Address()) }
 func (a Application) GetChains() []string          { return a.Chains }
 func (a Application) IsStaked() bool               { return a.GetStatus().Equal(sdk.Bonded) }
 func (a Application) IsUnstaked() bool             { return a.GetStatus().Equal(sdk.Unbonded) }
 func (a Application) IsUnstaking() bool            { return a.GetStatus().Equal(sdk.Unbonding) }
 func (a Application) IsJailed() bool               { return a.Jailed }
 func (a Application) GetStatus() sdk.BondStatus    { return a.Status }
-func (a Application) GetAddress() sdk.ValAddress   { return a.Address }
+func (a Application) GetAddress() sdk.Address   { return a.Address }
 func (a Application) GetConsPubKey() crypto.PubKey { return a.ConsPubKey }
-func (a Application) GetConsAddr() sdk.ConsAddress { return sdk.ConsAddress(a.ConsPubKey.Address()) }
+func (a Application) GetConsAddr() sdk.Address { return sdk.Address(a.ConsPubKey.Address()) }
 func (a Application) GetTokens() sdk.Int           { return a.StakedTokens }
 func (a Application) GetConsensusPower() int64     { return a.ConsensusPower() }
 func (a Application) GetMaxRelays() sdk.Int        { return a.MaxRelays }

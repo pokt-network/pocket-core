@@ -80,7 +80,7 @@ func TestKeeper_JailValidator(t *testing.T) {
 	}
 	type args struct {
 		ctx  sdk.Context
-		addr sdk.ConsAddress
+		addr sdk.Address
 	}
 
 	validator := getBondedValidator()
@@ -204,7 +204,7 @@ func TestKeeper_UnjailValidator(t *testing.T) {
 	}
 	type args struct {
 		ctx  sdk.Context
-		addr sdk.ConsAddress
+		addr sdk.Address
 	}
 	validator := getBondedValidator()
 	context, _, keeper := createTestInput(t, true)

@@ -59,13 +59,13 @@ func (a Application) String() string {
   Status:                     %s
   Tokens:               	  %s
   Unstakeing Completion Time: %v`,
-		a.Address, sdk.HexConsPub(a.ConsPubKey), a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
+		a.Address, sdk.HexAddressPubKey(a.ConsPubKey), a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
 	)
 }
 
 // this is a helper struct used for JSON de- and encoding only
 type hexApplication struct {
-	Address                 sdk.ValAddress `json:"operator_address" yaml:"operator_address"` // the hex address of the application
+	Address                 sdk.Address `json:"operator_address" yaml:"operator_address"` // the hex address of the application
 	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`           // the hex consensus public key of the application
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
 	Chains                  []string       `json:"chains" yaml:"chains"`
@@ -79,7 +79,7 @@ type hexApplication struct {
 func (a Application) MarshalJSON() ([]byte, error) {
 	return codec.Cdc.MarshalJSON(hexApplication{
 		Address:                 a.Address,
-		ConsPubKey:              sdk.HexConsPub(a.ConsPubKey),
+		ConsPubKey:              sdk.HexAddressPubKey(a.ConsPubKey),
 		Jailed:                  a.Jailed,
 		Status:                  a.Status,
 		Chains:                  a.Chains,

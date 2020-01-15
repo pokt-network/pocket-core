@@ -35,7 +35,7 @@ func TestNewGenesisState(t *testing.T) {
 	var pub ed25519.PubKeyEd25519
 	rand.Read(pub[:])
 	defaultApp := Application{
-		Address:                 types.ValAddress(pub.Address()),
+		Address:                 types.Address(pub.Address()),
 		ConsPubKey:              pub,
 		Jailed:                  false,
 		Status:                  0,

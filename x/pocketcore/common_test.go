@@ -212,7 +212,7 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 	for i := 0; i < numAccs; i++ {
 		privKey := ed25519.GenPrivKey()
 		pubKey := privKey.PubKey()
-		addr := sdk.AccAddress(pubKey.Address())
+		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
 		acc.Coins = initialCoins
 		acc.PubKey = pubKey
@@ -237,7 +237,7 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 	for i := 0; i < numAccs-1; i++ {
 		privKey := ed25519.GenPrivKey()
 		pubKey := privKey.PubKey()
-		addr := sdk.ValAddress(pubKey.Address())
+		addr := sdk.Address(pubKey.Address())
 		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com", valCoins)
 		// set the vals from the data
 		nk.SetValidator(ctx, val)
@@ -260,7 +260,7 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 	if er != nil {
 		panic(err)
 	}
-	val := nodesTypes.NewValidator(sdk.ValAddress(kp.GetAddress()), kp.PubKey, []string{ethereum}, "https://www.google.com", valCoins)
+	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PubKey, []string{ethereum}, "https://www.google.com", valCoins)
 	// set the vals from the data
 	nk.SetValidator(ctx, val)
 	nk.SetValidatorByConsAddr(ctx, val)
@@ -327,7 +327,7 @@ func createTestApps(ctx sdk.Context, numAccs int, valCoins sdk.Int, ak appsKeepe
 	for i := 0; i < numAccs; i++ {
 		privKey := ed25519.GenPrivKey()
 		pubKey := privKey.PubKey()
-		addr := sdk.ValAddress(pubKey.Address())
+		addr := sdk.Address(pubKey.Address())
 		app := appsTypes.NewApplication(addr, pubKey, []string{ethereum}, valCoins)
 		// set the vals from the data
 		// calculate relays
@@ -370,6 +370,6 @@ func getRandomPubKey() ed25519.PubKeyEd25519 {
 	return pk.PubKey().(ed25519.PubKeyEd25519)
 }
 
-func getRandomValidatorAddress() sdk.ValAddress {
-	return sdk.ValAddress(getRandomPubKey().Address())
+func getRandomValidatorAddress() sdk.Address {
+	return sdk.Address(getRandomPubKey().Address())
 }

@@ -13,7 +13,7 @@ func (k Keeper) GetAllNodes(ctx sdk.Context) []exported.ValidatorI {
 }
 
 // get a node from the world state
-func (k Keeper) GetNode(ctx sdk.Context, address sdk.ValAddress) (n exported.ValidatorI, found bool) {
+func (k Keeper) GetNode(ctx sdk.Context, address sdk.Address) (n exported.ValidatorI, found bool) {
 	n = k.posKeeper.Validator(ctx, address)
 	if n == nil {
 		return n, false
@@ -44,7 +44,7 @@ func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.E
 		return nil, pc.NewKeybaseError(pc.ModuleName, err)
 	}
 	// get the node from the world state
-	self, found := k.GetNode(ctx, sdk.ValAddress(keypairs.GetAddress()))
+	self, found := k.GetNode(ctx, sdk.Address(keypairs.GetAddress()))
 	if !found {
 		return nil, pc.NewSelfNotFoundError(pc.ModuleName)
 	}
@@ -52,6 +52,6 @@ func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.E
 }
 
 // award coins to nodes for relays completed
-func (k Keeper) AwardCoinsForRelays(ctx sdk.Context, relays int64, toAddr sdk.ValAddress) {
+func (k Keeper) AwardCoinsForRelays(ctx sdk.Context, relays int64, toAddr sdk.Address) {
 	k.posKeeper.AwardCoinsTo(ctx, sdk.NewInt(relays), toAddr)
 }

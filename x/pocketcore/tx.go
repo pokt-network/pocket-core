@@ -19,7 +19,7 @@ func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuil
 		SessionHeader: header,
 		TotalRelays:   totalRelays,
 		MerkleRoot:    root,
-		FromAddress:   sdk.ValAddress(kp.GetAddress()),
+		FromAddress:   sdk.Address(kp.GetAddress()),
 	}
 	err = msg.ValidateBasic()
 	if err != nil {

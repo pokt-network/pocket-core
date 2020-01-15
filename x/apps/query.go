@@ -9,7 +9,7 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func QueryApplication(cdc *codec.Codec, tmNode client.Client, addr sdk.ValAddress, height int64) (types.Application, error) {
+func QueryApplication(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, height int64) (types.Application, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	res, _, err := cliCtx.QueryStore(types.KeyForAppByAllApps(addr), types.StoreKey)
 	if err != nil {

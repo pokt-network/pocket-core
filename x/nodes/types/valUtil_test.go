@@ -19,7 +19,7 @@ func TestValidators_JSON(t *testing.T) {
 	rand.Read(pub[:])
 
 	testvalidator := Validator{
-		Address:                 sdk.ValAddress(pub.Address()),
+		Address:                 sdk.Address(pub.Address()),
 		ConsPubKey:              pub,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
@@ -63,7 +63,7 @@ func TestValidators_String(t *testing.T) {
 
 	v := Validators{
 		Validator{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -87,7 +87,7 @@ func TestValidators_String(t *testing.T) {
   ServiceURL:                 %s
   Chains:                     %v
   Unstaking Completion Time:  %v`,
-			sdk.ValAddress(pub.Address()), sdk.HexConsPub(pub), false, sdk.Bonded, sdk.ZeroInt(), "google.com", []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, time.Unix(0, 0).UTC(),
+			sdk.Address(pub.Address()), sdk.HexAddressPubKey(pub), false, sdk.Bonded, sdk.ZeroInt(), "google.com", []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, time.Unix(0, 0).UTC(),
 		)},
 	}
 	for _, tt := range tests {
@@ -101,7 +101,7 @@ func TestValidators_String(t *testing.T) {
 
 func TestValidator_MarshalJSON(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -115,7 +115,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 	rand.Read(pub[:])
 
 	want, _ := amino.MarshalJSON(Validator{
-		Address:                 sdk.ValAddress(pub.Address()),
+		Address:                 sdk.Address(pub.Address()),
 		ConsPubKey:              pub,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
@@ -132,7 +132,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"Marshall JSON Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -168,7 +168,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 
 func TestValidator_UnmarshalJSON(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -182,7 +182,7 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 	rand.Read(pub[:])
 
 	marshal, _ := amino.MarshalJSON(Validator{
-		Address:                 sdk.ValAddress(pub.Address()),
+		Address:                 sdk.Address(pub.Address()),
 		ConsPubKey:              pub,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
@@ -204,7 +204,7 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{"Unmarshal JSON Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,

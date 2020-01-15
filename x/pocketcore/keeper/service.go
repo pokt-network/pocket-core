@@ -50,7 +50,7 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 		},
 	}
 	// sign the response
-	sig, _, er := (k.Keybase).Sign(sdk.AccAddress(selfNode.GetAddress()), k.coinbasePassphrase, resp.Hash())
+	sig, _, er := (k.Keybase).Sign(sdk.Address(selfNode.GetAddress()), k.coinbasePassphrase, resp.Hash())
 	if er != nil {
 		return nil, pc.NewKeybaseError(pc.ModuleName, er)
 	}

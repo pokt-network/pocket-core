@@ -27,7 +27,7 @@ func init() {
 	moduleCdc.Seal()
 
 	application = Application{
-		Address:                 sdk.ValAddress(pub.Address()),
+		Address:                 sdk.Address(pub.Address()),
 		ConsPubKey:              pub,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
@@ -44,7 +44,7 @@ func TestApplicationUtil_MarshalJSON(t *testing.T) {
 	}
 	hexApp := hexApplication{
 		Address:                 application.Address,
-		ConsPubKey:              sdk.HexConsPub(application.ConsPubKey),
+		ConsPubKey:              sdk.HexAddressPubKey(application.ConsPubKey),
 		Jailed:                  application.Jailed,
 		Status:                  application.Status,
 		StakedTokens:            application.StakedTokens,
@@ -92,7 +92,7 @@ func TestApplicationUtil_String(t *testing.T) {
   Tokens:               	  %s
   Unstakeing Completion Time: %v `,
 				application.Address,
-				sdk.HexConsPub(application.ConsPubKey),
+				sdk.HexAddressPubKey(application.ConsPubKey),
 				application.Jailed,
 				application.Chains,
 				application.MaxRelays,
@@ -130,7 +130,7 @@ func TestApplicationUtil_JSON(t *testing.T) {
   Tokens:               	  %s
   Unstakeing Completion Time: %v`,
 				application.Address,
-				sdk.HexConsPub(application.ConsPubKey),
+				sdk.HexAddressPubKey(application.ConsPubKey),
 				application.Jailed,
 				application.Chains,
 				application.MaxRelays,

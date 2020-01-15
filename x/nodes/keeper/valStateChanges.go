@@ -29,7 +29,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Context) (updates []abci.Vali
 	defer iterator.Close()
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
 		// get the validator address
-		valAddr := sdk.ValAddress(iterator.Value())
+		valAddr := sdk.Address(iterator.Value())
 		// return the validator from the current store
 		validator := k.mustGetValidator(ctx, valAddr)
 		// sanity check for no jailed validators
@@ -95,7 +95,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Context, validator types.Valida
 	if amount.LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		return types.ErrMinimumStake(k.codespace)
 	}
-	if !k.coinKeeper.HasCoins(ctx, sdk.AccAddress(validator.Address), coin) {
+	if !k.coinKeeper.HasCoins(ctx, sdk.Address(validator.Address), coin) {
 		return types.ErrNotEnoughCoins(k.codespace)
 	}
 	return nil
@@ -275,7 +275,7 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Context, validator types.Validator
 }
 
 // send a validator to jail
-func (k Keeper) JailValidator(ctx sdk.Context, addr sdk.ConsAddress) {
+func (k Keeper) JailValidator(ctx sdk.Context, addr sdk.Address) {
 	validator := k.mustGetValidatorByConsAddr(ctx, addr)
 	if validator.Jailed {
 		panic(fmt.Sprintf("cannot jail already jailed validator, validator: %v\n", validator))
@@ -288,7 +288,7 @@ func (k Keeper) JailValidator(ctx sdk.Context, addr sdk.ConsAddress) {
 }
 
 // remove a validator from jail
-func (k Keeper) UnjailValidator(ctx sdk.Context, addr sdk.ConsAddress) {
+func (k Keeper) UnjailValidator(ctx sdk.Context, addr sdk.Address) {
 	validator := k.mustGetValidatorByConsAddr(ctx, addr)
 	if !validator.Jailed {
 		panic(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v\n", validator))

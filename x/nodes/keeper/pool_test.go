@@ -199,7 +199,7 @@ func TestPool_StakedRatio(t *testing.T) {
 	tests := []struct {
 		name    string
 		amount  sdk.Dec
-		address sdk.ValAddress
+		address sdk.Address
 	}{
 		{"return 0 if stake supply is lower than 0", sdk.ZeroDec(), validatorAddress},
 		{"return supply", sdk.NewDec(1), validatorAddress},

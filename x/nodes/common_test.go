@@ -142,7 +142,7 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 
 		privKey := ed25519.GenPrivKey()
 		pubKey := privKey.PubKey()
-		addr := sdk.AccAddress(pubKey.Address())
+		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
 		acc.Coins = initialCoins
 		acc.PubKey = pubKey
@@ -160,9 +160,9 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 //	}
 //}
 //
-//func sendFromModuleToAccount(t *testing.T, ctx sdk.Context, k *keeper.Keeper, module string, address sdk.ValAddress, amount sdk.Int) {
+//func sendFromModuleToAccount(t *testing.T, ctx sdk.Context, k *keeper.Keeper, module string, address sdk.Address, amount sdk.Int) {
 //	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-//	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, module, sdk.AccAddress(address), coins)
+//	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, module, sdk.Address(address), coins)
 //	if err != nil {
 //		t.Fail()
 //	}
@@ -174,14 +174,14 @@ func getRandomPubKey() ed25519.PubKeyEd25519 {
 	return pub
 }
 
-func getRandomValidatorAddress() sdk.ValAddress {
-	return sdk.ValAddress(getRandomPubKey().Address())
+func getRandomValidatorAddress() sdk.Address {
+	return sdk.Address(getRandomPubKey().Address())
 }
 
 func getValidator() types.Validator {
 	pub := getRandomPubKey()
 	return types.Validator{
-		Address:      sdk.ValAddress(pub.Address()),
+		Address:      sdk.Address(pub.Address()),
 		StakedTokens: sdk.NewInt(100000000000),
 		ConsPubKey:   pub,
 		Jailed:       false,
@@ -206,7 +206,7 @@ func getUnbondingValidator() types.Validator {
 }
 
 func getGenesisStateForTest(ctx sdk.Context, keeper keeper.Keeper, defaultparams bool) types.GenesisState {
-	keeper.SetPreviousProposer(ctx, sdk.GetConsAddress(getRandomPubKey()))
+	keeper.SetPreviousProposer(ctx, sdk.GetAddress(getRandomPubKey()))
 	var prm = types.DefaultParams()
 
 	if !defaultparams {
@@ -215,13 +215,13 @@ func getGenesisStateForTest(ctx sdk.Context, keeper keeper.Keeper, defaultparams
 	prevStateTotalPower := keeper.PrevStateValidatorsPower(ctx)
 	validators := keeper.GetAllValidators(ctx)
 	var prevStateValidatorPowers []types.PrevStatePowerMapping
-	keeper.IterateAndExecuteOverPrevStateValsByPower(ctx, func(addr sdk.ValAddress, power int64) (stop bool) {
+	keeper.IterateAndExecuteOverPrevStateValsByPower(ctx, func(addr sdk.Address, power int64) (stop bool) {
 		prevStateValidatorPowers = append(prevStateValidatorPowers, types.PrevStatePowerMapping{Address: addr, Power: power})
 		return false
 	})
 	signingInfos := make(map[string]types.ValidatorSigningInfo)
 	missedBlocks := make(map[string][]types.MissedBlock)
-	keeper.IterateAndExecuteOverValSigningInfo(ctx, func(address sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
+	keeper.IterateAndExecuteOverValSigningInfo(ctx, func(address sdk.Address, info types.ValidatorSigningInfo) (stop bool) {
 		addrstring := address.String()
 		signingInfos[addrstring] = info
 		localMissedBlocks := []types.MissedBlock{}

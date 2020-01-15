@@ -99,11 +99,11 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			continue
 		}
 		// check the current state to see if the unverified invoice has already been sent and processed (if so, then skip this invoice)
-		if _, found := k.GetClaim(ctx, sdk.ValAddress(kp.GetAddress()), invoice.SessionHeader); found {
+		if _, found := k.GetClaim(ctx, sdk.Address(kp.GetAddress()), invoice.SessionHeader); found {
 			continue
 		}
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx := newTxBuilderAndCliCtx(n, keybase, k)
+		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
 		// generate the merkle root for this invoice
 		root := invoice.GenerateMerkleRoot()
 		// send in the invoice header, the total relays completed, and the merkle root (ensures data integrity)
@@ -120,7 +120,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		panic(err)
 	}
 	// get the self address
-	addr := sdk.ValAddress(kp.GetAddress())
+	addr := sdk.Address(kp.GetAddress())
 	// get all mature (waiting period has passed) proofs for your address
 	proofs := k.GetMatureClaims(ctx, addr)
 	// for every proof of the mature set
@@ -134,7 +134,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			continue
 		}
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx := newTxBuilderAndCliCtx(n, keybase, k)
+		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
 		// generate the proof of relay object using the found proof and local cache
 		inv := pc.Invoice{
 			SessionHeader: proof.SessionHeader,
@@ -159,14 +159,14 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 // stored invoices (already proved)
 
 // set the verified invoice
-func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.ValAddress, p pc.StoredInvoice) {
+func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.Address, p pc.StoredInvoice) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
 	store.Set(pc.KeyForInvoice(ctx, address, p.SessionHeader), bz)
 }
 
 // retrieve the verified invoice
-func (k Keeper) GetInvoice(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) (invoice pc.StoredInvoice, found bool) {
+func (k Keeper) GetInvoice(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (invoice pc.StoredInvoice, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(pc.KeyForInvoice(ctx, address, header))
 	if res == nil {
@@ -189,7 +189,7 @@ func (k Keeper) SetInvoices(ctx sdk.Context, invoices []pc.StoredInvoice) {
 }
 
 // get all verified invoices for this address
-func (k Keeper) GetInvoices(ctx sdk.Context, address sdk.ValAddress) (invoices []pc.StoredInvoice) {
+func (k Keeper) GetInvoices(ctx sdk.Context, address sdk.Address) (invoices []pc.StoredInvoice) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForInvoices(address))
 	defer iterator.Close()
@@ -220,7 +220,7 @@ func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) {
 	bz := k.cdc.MustMarshalBinaryBare(msg)
 	store.Set(pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader), bz)
 }
-func (k Keeper) GetClaim(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
+func (k Keeper) GetClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	res := store.Get(pc.KeyForClaim(ctx, address, header))
 	if res == nil {
@@ -238,7 +238,7 @@ func (k Keeper) SetClaims(ctx sdk.Context, claims []pc.MsgClaim) {
 	}
 }
 
-func (k Keeper) GetClaims(ctx sdk.Context, address sdk.ValAddress) (proofs []pc.MsgClaim) {
+func (k Keeper) GetClaims(ctx sdk.Context, address sdk.Address) (proofs []pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForClaims(address))
 	defer iterator.Close()
@@ -262,13 +262,13 @@ func (k Keeper) GetAllClaims(ctx sdk.Context) (proofs []pc.MsgClaim) {
 	return
 }
 
-func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.ValAddress, header pc.SessionHeader) {
+func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(pc.KeyForClaim(ctx, address, header))
 }
 
 // get the mature unverified proofs for this address
-func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.ValAddress) (matureProofs []pc.MsgClaim) {
+func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.Address) (matureProofs []pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForClaims(address))
 	defer iterator.Close()
@@ -308,7 +308,7 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 }
 
 // todo this auto tx needs to be fixed
-func newTxBuilderAndCliCtx(n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		panic(err)
@@ -318,7 +318,7 @@ func newTxBuilderAndCliCtx(n client.Client, keybase keys.Keybase, k Keeper) (txB
 		panic(err)
 	}
 	pubKey := kp.PubKey
-	fromAddr := sdk.AccAddress(pubKey.Bytes())
+	fromAddr := sdk.Address(pubKey.Bytes())
 	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
 	accGetter := auth.NewAccountRetriever(cliCtx)
 	err = accGetter.EnsureExists(fromAddr)
@@ -335,7 +335,7 @@ func newTxBuilderAndCliCtx(n client.Client, keybase keys.Keybase, k Keeper) (txB
 		account.GetSequence(),
 		genDoc.Genesis.ChainID,
 		"",
-		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(10))),
+		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), sdk.NewInt(10))),
 	).WithKeybase(keybase)
 	return
 }

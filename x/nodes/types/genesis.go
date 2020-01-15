@@ -14,16 +14,16 @@ type GenesisState struct {
 	DAO                      DAOPool                         `json:"dao" yaml:"dao"`
 	SigningInfos             map[string]ValidatorSigningInfo `json:"signing_infos" yaml:"signing_infos"`
 	MissedBlocks             map[string][]MissedBlock        `json:"missed_blocks" yaml:"missed_blocks"`
-	PreviousProposer         sdk.ConsAddress                 `json:"previous_proposer" yaml:"previous_proposer"`
+	PreviousProposer         sdk.Address                 `json:"previous_proposer" yaml:"previous_proposer"`
 }
 
 // PrevState validator power, needed for validator set update logic
 type PrevStatePowerMapping struct {
-	Address sdk.ValAddress
+	Address sdk.Address
 	Power   int64
 }
 
-func NewGenesisState(params Params, validators []Validator, dao DAOPool, previousProposer sdk.ConsAddress,
+func NewGenesisState(params Params, validators []Validator, dao DAOPool, previousProposer sdk.Address,
 	signingInfos map[string]ValidatorSigningInfo, missedBlocks map[string][]MissedBlock) GenesisState {
 	return GenesisState{
 		Params:           params,

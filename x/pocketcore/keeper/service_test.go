@@ -32,7 +32,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	apk := appPrivateKey.PubKey().(ed25519.PubKeyEd25519)
 	appPubKey := crypto.PublicKey(apk).String()
 	// add app to world state
-	app := appsTypes.NewApplication(sdk.ValAddress(apk.Address()), apk, []string{ethereum}, sdk.NewInt(10000000))
+	app := appsTypes.NewApplication(sdk.Address(apk.Address()), apk, []string{ethereum}, sdk.NewInt(10000000))
 	// calculate relays
 	app.MaxRelays = ak.CalculateAppRelays(ctx, app)
 	// set the vals from the data

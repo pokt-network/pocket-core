@@ -21,10 +21,10 @@ const (
 )
 
 type QueryValidatorParams struct {
-	Address sdk.ValAddress
+	Address sdk.Address
 }
 
-func NewQueryValidatorParams(validatorAddr sdk.ValAddress) QueryValidatorParams {
+func NewQueryValidatorParams(validatorAddr sdk.Address) QueryValidatorParams {
 	return QueryValidatorParams{
 		Address: validatorAddr,
 	}
@@ -39,7 +39,7 @@ func NewQueryValidatorsParams(page, limit int) QueryValidatorsParams {
 }
 
 type QueryAccountBalanceParams struct {
-	sdk.ValAddress
+	sdk.Address
 }
 
 type QueryUnstakingValidatorsParams struct {
@@ -69,10 +69,10 @@ func NewQueryUnstakedValidatorsParams(page, limit int) QueryUnstakedValidatorsPa
 // QuerySigningInfoParams defines the params for the following queries:
 // - 'custom/slashing/signingInfo'
 type QuerySigningInfoParams struct {
-	ConsAddress sdk.ConsAddress
+	ConsAddress sdk.Address
 }
 
-func NewQuerySigningInfoParams(consAddr sdk.ConsAddress) QuerySigningInfoParams {
+func NewQuerySigningInfoParams(consAddr sdk.Address) QuerySigningInfoParams {
 	return QuerySigningInfoParams{consAddr}
 }
 

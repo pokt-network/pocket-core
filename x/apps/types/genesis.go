@@ -13,7 +13,7 @@ type GenesisState struct {
 
 // PrevState application power, needed for application set update logic
 type PrevStatePowerMapping struct {
-	Address sdk.ValAddress
+	Address sdk.Address
 	Power   int64
 }
 

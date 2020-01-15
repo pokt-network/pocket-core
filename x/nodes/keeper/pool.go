@@ -41,7 +41,7 @@ func (k Keeper) GetStakedPool(ctx sdk.Context) (stakedPool exported.ModuleAccoun
 // moves coins from the module account to the validator -> used in unstaking
 func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Context, validator types.Validator) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), validator.StakedTokens))
-	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.AccAddress(validator.Address), coins)
+	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.Address(validator.Address), coins)
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +50,7 @@ func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Context, validator types.Valid
 // moves coins from the module account to validator -> used in staking
 func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Context, validator types.Validator, amount sdk.Int) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, sdk.AccAddress(validator.Address), types.StakedPoolName, coins)
+	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, sdk.Address(validator.Address), types.StakedPoolName, coins)
 	if err != nil {
 		panic(err)
 	}

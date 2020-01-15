@@ -15,7 +15,7 @@ func TestKeeper_DeletePrevStateValPower(t *testing.T) {
 
 	type args struct {
 		ctx  sdk.Context
-		addr sdk.ValAddress
+		addr sdk.Address
 	}
 
 	context, _, keeper := createTestInput(t, true)
@@ -76,7 +76,7 @@ func TestKeeper_IterateAndExecuteOverPrevStateValsByPower(t *testing.T) {
 	}
 	type args struct {
 		ctx     sdk.Context
-		handler func(address sdk.ValAddress, power int64) (stop bool)
+		handler func(address sdk.Address, power int64) (stop bool)
 	}
 	context, _, keeper := createTestInput(t, true)
 
@@ -87,7 +87,7 @@ func TestKeeper_IterateAndExecuteOverPrevStateValsByPower(t *testing.T) {
 	}{
 		{"Test IterateAndExecuteOverPrevStateValsByPower", fields{keeper: keeper}, args{
 			ctx: context,
-			handler: func(address sdk.ValAddress, power int64) (stop bool) {
+			handler: func(address sdk.Address, power int64) (stop bool) {
 				return true
 			},
 		}},
@@ -106,7 +106,7 @@ func TestKeeper_PrevStateValidatorPower(t *testing.T) {
 	}
 	type args struct {
 		ctx  sdk.Context
-		addr sdk.ValAddress
+		addr sdk.Address
 	}
 
 	context, _, keeper := createTestInput(t, true)
@@ -166,7 +166,7 @@ func TestKeeper_SetPrevStateValPower(t *testing.T) {
 	}
 	type args struct {
 		ctx   sdk.Context
-		addr  sdk.ValAddress
+		addr  sdk.Address
 		power int64
 	}
 

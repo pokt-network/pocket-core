@@ -128,7 +128,7 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 
 		privKey := ed25519.GenPrivKey()
 		pubKey := privKey.PubKey()
-		addr := sdk.AccAddress(pubKey.Address())
+		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
 		acc.Coins = initialCoins
 		acc.PubKey = pubKey
@@ -146,9 +146,9 @@ func addMintedCoinsToModule(t *testing.T, ctx sdk.Context, k *Keeper, module str
 	}
 }
 
-func sendFromModuleToAccount(t *testing.T, ctx sdk.Context, k *Keeper, module string, address sdk.ValAddress, amount sdk.Int) {
+func sendFromModuleToAccount(t *testing.T, ctx sdk.Context, k *Keeper, module string, address sdk.Address, amount sdk.Int) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, module, sdk.AccAddress(address), coins)
+	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, module, sdk.Address(address), coins)
 	if err != nil {
 		t.Fail()
 	}
@@ -160,14 +160,14 @@ func getRandomPubKey() ed25519.PubKeyEd25519 {
 	return pub
 }
 
-func getRandomValidatorAddress() sdk.ValAddress {
-	return sdk.ValAddress(getRandomPubKey().Address())
+func getRandomValidatorAddress() sdk.Address {
+	return sdk.Address(getRandomPubKey().Address())
 }
 
 func getValidator() types.Validator {
 	pub := getRandomPubKey()
 	return types.Validator{
-		Address:      sdk.ValAddress(pub.Address()),
+		Address:      sdk.Address(pub.Address()),
 		StakedTokens: sdk.NewInt(100000000000),
 		ConsPubKey:   pub,
 		Jailed:       false,
@@ -206,39 +206,39 @@ type POSHooks struct {
 	mock.Mock
 }
 
-func (ph *POSHooks) BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.ValAddress) {
+func (ph *POSHooks) BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.Address) {
 	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.ValAddress) {
+func (ph *POSHooks) AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.Address) {
 	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ph *POSHooks) BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	ph.Called(ctx, consAddr, valAddr)
 }
-func (ph *POSHooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ph *POSHooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	ph.Called(ctx, consAddr, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ph *POSHooks) BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	ph.Called(ctx, consAddr, valAddr)
 }
-func (ph *POSHooks) AfterValidatorStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ph *POSHooks) AfterValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	ph.Called(ctx, consAddr, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ph *POSHooks) BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	ph.Called(ctx, consAddr, valAddr)
 }
-func (ph *POSHooks) AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ph *POSHooks) AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	ph.Called(ctx, consAddr, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ph *POSHooks) BeforeValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	ph.Called(ctx, consAddr, valAddr)
 }
-func (ph *POSHooks) AfterValidatorUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) {
+func (ph *POSHooks) AfterValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	ph.Called(ctx, consAddr, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
+func (ph *POSHooks) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec) {
 	ph.Called(ctx, valAddr, fraction)
 }
-func (ph *POSHooks) AfterValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec) {
+func (ph *POSHooks) AfterValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec) {
 	ph.Called(ctx, valAddr, fraction)
 }

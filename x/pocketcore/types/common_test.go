@@ -90,6 +90,6 @@ func getRandomPubKey() ed25519.PubKeyEd25519 {
 	return pk.PubKey().(ed25519.PubKeyEd25519)
 }
 
-func getRandomValidatorAddress() sdk.ValAddress {
-	return sdk.ValAddress(getRandomPubKey().Address())
+func getRandomValidatorAddress() sdk.Address {
+	return sdk.Address(getRandomPubKey().Address())
 }

@@ -64,9 +64,9 @@ func TestQueryInvoice(t *testing.T) {
 		ServicerAddress: npk.Address().String(),
 		TotalRelays:     2000,
 	}
-	k.SetInvoice(ctx, sdk.ValAddress(npk.Address()), storedInvoice)
+	k.SetInvoice(ctx, sdk.Address(npk.Address()), storedInvoice)
 	bz, er := types.ModuleCdc.MarshalJSON(types.QueryInvoiceParams{
-		Address: sdk.ValAddress(npk.Address()),
+		Address: sdk.Address(npk.Address()),
 		Header: types.SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,
@@ -92,7 +92,7 @@ func TestQueryInvoice(t *testing.T) {
 	// invoices query
 	var stored2 []types.StoredInvoice
 	bz2, er2 := types.ModuleCdc.MarshalJSON(types.QueryInvoicesParams{
-		Address: sdk.ValAddress(npk.Address()),
+		Address: sdk.Address(npk.Address()),
 	})
 	assert.Nil(t, er2)
 	request2 := abci.RequestQuery{

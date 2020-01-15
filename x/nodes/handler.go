@@ -40,7 +40,7 @@ func handleStake(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Resul
 
 func stakeNewValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Result {
 	// check to see if teh public key has already been register for that validator
-	if _, found := k.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(msg.PubKey)); found {
+	if _, found := k.GetValidatorByConsAddr(ctx, sdk.GetAddress(msg.PubKey)); found {
 		return types.ErrValidatorPubKeyExists(k.Codespace()).Result()
 	}
 	// check the consensus params
@@ -168,7 +168,7 @@ func handleMsgUnjail(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper) sdk.
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func validateUnjailMessage(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper) (consAddr sdk.ConsAddress, err sdk.Error) {
+func validateUnjailMessage(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper) (consAddr sdk.Address, err sdk.Error) {
 	validator := k.Validator(ctx, msg.ValidatorAddr)
 	if validator == nil {
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())
@@ -185,7 +185,7 @@ func validateUnjailMessage(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper
 	if !validator.IsJailed() {
 		return nil, types.ErrValidatorNotJailed(k.Codespace())
 	}
-	consAddr = sdk.ConsAddress(validator.GetConsPubKey().Address())
+	consAddr = sdk.Address(validator.GetConsPubKey().Address())
 	info, found := k.GetValidatorSigningInfo(ctx, consAddr)
 	if !found {
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())

@@ -25,7 +25,7 @@ func newCachedValidator(val types.Validator, marshalled string) cachedValidator 
 	}
 }
 
-func (k Keeper) validatorCaching(value []byte, addr sdk.ValAddress) types.Validator {
+func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator {
 	// If these amino encoded bytes are in the cache, return the cached validator
 	strValue := string(value)
 	if val, ok := k.validatorCache[strValue]; ok {
@@ -48,7 +48,7 @@ func (k Keeper) validatorCaching(value []byte, addr sdk.ValAddress) types.Valida
 	return validator
 }
 
-func (k Keeper) mustGetValidator(ctx sdk.Context, addr sdk.ValAddress) types.Validator {
+func (k Keeper) mustGetValidator(ctx sdk.Context, addr sdk.Address) types.Validator {
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
 		panic(fmt.Sprintf("validator record not found for address: %X\n", addr))
@@ -56,7 +56,7 @@ func (k Keeper) mustGetValidator(ctx sdk.Context, addr sdk.ValAddress) types.Val
 	return validator
 }
 
-func (k Keeper) mustGetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) types.Validator {
+func (k Keeper) mustGetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.Address) types.Validator {
 	validator, found := k.GetValidatorByConsAddr(ctx, consAddr)
 	if !found {
 		panic(fmt.Errorf("validator with consensus-Address %s not found", consAddr))
@@ -65,7 +65,7 @@ func (k Keeper) mustGetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAdd
 }
 
 // wrapper for GetValidator call
-func (k Keeper) Validator(ctx sdk.Context, address sdk.ValAddress) exported.ValidatorI {
+func (k Keeper) Validator(ctx sdk.Context, address sdk.Address) exported.ValidatorI {
 	val, found := k.GetValidator(ctx, address)
 	if !found {
 		return nil
@@ -86,7 +86,7 @@ func (k Keeper) AllValidators(ctx sdk.Context) (validators []exported.ValidatorI
 }
 
 // wrapper for GetValidatorByConsAddress call
-func (k Keeper) validatorByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) exported.ValidatorI {
+func (k Keeper) validatorByConsAddr(ctx sdk.Context, addr sdk.Address) exported.ValidatorI {
 	val, found := k.GetValidatorByConsAddr(ctx, addr)
 	if !found {
 		return nil

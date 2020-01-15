@@ -24,8 +24,8 @@ func (k Keeper) UnStakingTime(ctx sdk.Context) (res time.Duration) {
 	return
 }
 
-func (k Keeper) BaselineThroughputStakeRate(ctx sdk.Context) (coefficient int64) {
-	k.Paramstore.Get(ctx, types.BaselineThroughputStakeRate, &coefficient)
+func (k Keeper) BaselineThroughputStakeRate(ctx sdk.Context) (base int64) {
+	k.Paramstore.Get(ctx, types.BaselineThroughputPerPokt, &base)
 	return
 }
 
@@ -53,12 +53,12 @@ func (k Keeper) MinimumStake(ctx sdk.Context) (res int64) {
 // Get all parameteras as types.Params
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.Params{
-		UnstakingTime:               k.UnStakingTime(ctx),
-		MaxApplications:             k.MaxApplications(ctx),
-		AppStakeMin:                 k.MinimumStake(ctx),
-		BaselineThrouhgputStakeRate: k.BaselineThroughputStakeRate(ctx),
-		ParticipationRateOn:         k.ParticipationRateOn(ctx),
-		StakingAdjustment:           k.StakingAdjustment(ctx),
+		UnstakingTime:             k.UnStakingTime(ctx),
+		MaxApplications:           k.MaxApplications(ctx),
+		AppStakeMin:               k.MinimumStake(ctx),
+		BaselineThroughputPerPokt: k.BaselineThroughputStakeRate(ctx),
+		ParticipationRateOn:       k.ParticipationRateOn(ctx),
+		StakingAdjustment:         k.StakingAdjustment(ctx),
 	}
 }
 
