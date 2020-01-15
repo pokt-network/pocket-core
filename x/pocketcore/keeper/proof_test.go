@@ -29,7 +29,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 		FromAddress:   npk.Address(),
 	}
 	// generate the pseudorandom proof
-	neededLeafIndex := keeper.GeneratePseudoRandomProof(ctx, totalRelays, validHeader)
+	neededLeafIndex := keeper.GetPseudorandomIndex(ctx, totalRelays, validHeader)
 	// create the proof message
 	inv, found := types.GetAllInvoices().GetInvoice(validHeader)
 	if !found {
@@ -51,6 +51,27 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	if eror != nil {
 		t.Fatalf(eror.Error())
 	}
+}
+
+func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
+	ctx, _, _, _, keeper := createTestInput(t, false)
+	_, validHeader := simulateRelays(t, 999)
+	totalRelays := 10
+	// generate the pseudorandom proof
+	neededLeafIndex := keeper.GetPseudorandomIndex(ctx, int64(totalRelays), validHeader)
+	assert.LessOrEqual(t, neededLeafIndex, int64(totalRelays))
+	ctx2, _, _, _, keeper2 := createTestInput(t, false)
+	_, validHeader2 := simulateRelays(t, 999)
+	totalRelays2 := 1000
+	// generate the pseudorandom proof
+	neededLeafIndex2 := keeper2.GetPseudorandomIndex(ctx2, int64(totalRelays2), validHeader2)
+	assert.LessOrEqual(t, neededLeafIndex2, int64(totalRelays2))
+	ctx3, _, _, _, keeper3 := createTestInput(t, false)
+	_, validHeader3 := simulateRelays(t, 999)
+	totalRelays3 := 10000000
+	// generate the pseudorandom proof
+	neededLeafIndex3 := keeper3.GetPseudorandomIndex(ctx3, int64(totalRelays3), validHeader3)
+	assert.LessOrEqual(t, neededLeafIndex3, int64(totalRelays3))
 }
 
 func simulateRelays(t *testing.T, blockHeight int64) (nodePublicKey crypto.PublicKey, validHeader types.SessionHeader) {
