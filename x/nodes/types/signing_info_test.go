@@ -11,7 +11,7 @@ import (
 
 func TestValidatorSigningInfo_String(t *testing.T) {
 	type fields struct {
-		Address             types.ConsAddress
+		Address             types.Address
 		StartHeight         int64
 		IndexOffset         int64
 		JailedUntil         time.Time
@@ -20,7 +20,7 @@ func TestValidatorSigningInfo_String(t *testing.T) {
 	}
 	var pub ed25519.PubKeyEd25519
 	rand.Read(pub[:])
-	ca := types.ConsAddress(pub.Address())
+	ca := types.Address(pub.Address())
 
 	until := time.Now()
 

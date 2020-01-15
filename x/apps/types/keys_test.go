@@ -95,7 +95,7 @@ func TestKeyForApplicationBurn(t *testing.T) {
 
 func TestKeyForApplicationByConsAddr(t *testing.T) {
 	type args struct {
-		addr types.ConsAddress
+		addr types.Address
 	}
 	ca, _ := types.ConsAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
