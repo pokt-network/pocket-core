@@ -65,7 +65,7 @@ To run the Pocket Core unit tests, use the go testing tools and the `go test ./.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on contributions and the process of submitting pull requests.
+Please read [CONTRIBUTING.md](https://github.com/pokt-network/pocket-core/blob/master/README.md) for details on contributions and the process of submitting pull requests.
 
 ## Support & Contact
 
