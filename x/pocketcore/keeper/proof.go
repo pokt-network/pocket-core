@@ -22,7 +22,7 @@ func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
 // validate the zero knowledge range proof using the proof message and the claim message
 func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc.MsgProof) error {
 	// generate the needed pseudorandom claimMsg index
-	reqProof := k.GeneratePseudoRandomProof(ctx, claimMsg.TotalRelays, claimMsg.SessionHeader)
+	reqProof := k.GetPseudorandomIndex(ctx, claimMsg.TotalRelays, claimMsg.SessionHeader)
 	// if the required claimMsg index does not match the proofMsg leafNode index
 	if reqProof != int64(proofMsg.MerkleProofs[0].Index) {
 		return pc.NewInvalidProofsError(pc.ModuleName)
@@ -47,7 +47,7 @@ func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc
 }
 
 // generates the required pseudorandom index for the zero knowledge proof
-func (k Keeper) GeneratePseudoRandomProof(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) int64 {
+func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) int64 {
 	// get the context for the proof (the proof context is X sessions after the session began)
 	proofContext := ctx.WithBlockHeight(header.SessionBlockHeight + k.ProofWaitingPeriod(ctx)*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
@@ -61,17 +61,28 @@ func (k Keeper) GeneratePseudoRandomProof(ctx sdk.Context, totalRelays int64, he
 	}
 	// hash the bytes and take the first 15 characters of the string
 	proofsHash := hex.EncodeToString(pc.Hash(r))[:15]
+	var maxValue int64
 	// for each hex character of the hash
-	for i := 0; i < 15; i++ {
+	for i := 15; i > 0; i-- {
 		// parse the integer from this point of the hex string onward
-		res, err := strconv.ParseInt(proofsHash[i:], 15, 64)
+		maxValue, err = strconv.ParseInt(string(proofsHash[:i]), 16, 64)
 		if err != nil {
 			panic(err)
+
 		}
 		// if the total relays is greater than the resulting integer, this is the pseudorandom chosen proof
-		if totalRelays > res {
-			// todo this leans towards the end
-			return res
+		if totalRelays >= maxValue {
+			firstCharacter, err := strconv.ParseInt(string(proofsHash[0]), 16, 64)
+			if err != nil {
+				panic(err)
+			}
+			selection := firstCharacter%int64(i) + 1
+			// parse the integer from this point of the hex string onward
+			index, err := strconv.ParseInt(proofsHash[:selection], 16, 64)
+			if err != nil {
+				panic(err)
+			}
+			return index
 		}
 	}
 	return 0
@@ -142,7 +153,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			Proofs:        pc.GetAllInvoices().GetProofs(proof.SessionHeader),
 		}
 		// generate the needed pseudorandom proof using the information found in the first transaction
-		reqProof := int(k.GeneratePseudoRandomProof(ctx, proof.TotalRelays, proof.SessionHeader))
+		reqProof := int(k.GetPseudorandomIndex(ctx, proof.TotalRelays, proof.SessionHeader))
 		// get the merkle proof object for the pseudorandom proof index
 		branch, cousinIndex := inv.GenerateMerkleProof(reqProof)
 		// get the leaf for the required pseudorandom proof index
