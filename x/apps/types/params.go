@@ -12,35 +12,35 @@ import (
 // POS params default values
 const (
 	// DefaultParamspace for params keeper
-	DefaultParamspace                                = ModuleName
-	DefaultUnstakingTime                             = time.Hour * 24 * 7 * 3
-	DefaultMaxApplications                    uint64 = 100000
-	DefaultMinStake                           int64  = 1
-	DefaultDefaultBaselineThroughputStakeRate int64  = 100
-	DefaultStakingAdjustment                  int64  = 0
-	DefaultParticipationRateOn                bool   = false
+	DefaultParamspace                       = ModuleName
+	DefaultUnstakingTime                    = time.Hour * 24 * 7 * 3
+	DefaultMaxApplications           uint64 = 100000
+	DefaultMinStake                  int64  = 1
+	DefaultBaselineThroughputPerPokt int64  = 100
+	DefaultStakingAdjustment         int64  = 0
+	DefaultParticipationRateOn       bool   = false
 )
 
 // nolint - Keys for parameter access
 var (
-	KeyUnstakingTime            = []byte("AppUnstakingTime")
-	KeyMaxApplications          = []byte("MaxApplications")
-	KeyApplicationMinStake      = []byte("ApplicationStakeMinimum")
-	BaselineThroughputStakeRate = []byte("BaselineThroughputStakeRate")
-	StakingAdjustment           = []byte("StakingAdjustment")
-	ParticipationRateOn         = []byte("ParticipationRateOn")
+	KeyUnstakingTime          = []byte("AppUnstakingTime")
+	KeyMaxApplications        = []byte("MaxApplications")
+	KeyApplicationMinStake    = []byte("ApplicationStakeMinimum")
+	BaselineThroughputPerPokt = []byte("BaselineThroughputPerPokt")
+	StakingAdjustment         = []byte("StakingAdjustment")
+	ParticipationRateOn       = []byte("ParticipationRateOn")
 )
 
 var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	UnstakingTime               time.Duration `json:"unstaking_time" yaml:"unstaking_time"`       // duration of unstaking
-	MaxApplications             uint64        `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
-	AppStakeMin                 int64         `json:"app_stake_minimum" yaml:"app_stake_minimum"` // minimum amount needed to stake
-	BaselineThrouhgputStakeRate int64         `json:"baseline_throughput_stake_rate" yaml:"baseline_throughput_stake_rate"`
-	StakingAdjustment           int64         `json:"staking_adjustment" yaml:"staking_adjustment"`
-	ParticipationRateOn         bool          `json:"participation_rate_on" yaml:"participation_rate_on"`
+	UnstakingTime             time.Duration `json:"unstaking_time" yaml:"unstaking_time"`       // duration of unstaking
+	MaxApplications           uint64        `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
+	AppStakeMin               int64         `json:"app_stake_minimum" yaml:"app_stake_minimum"` // minimum amount needed to stake
+	BaselineThroughputPerPokt int64         `json:"baseline_thoughput_per_pokt" yaml:"baseline_thoughput_per_pokt"`
+	StakingAdjustment         int64         `json:"staking_adjustment" yaml:"staking_adjustment"`
+	ParticipationRateOn       bool          `json:"participation_rate_on" yaml:"participation_rate_on"`
 }
 
 // Implements params.ParamSet
@@ -49,7 +49,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeyUnstakingTime, Value: &p.UnstakingTime},
 		{Key: KeyMaxApplications, Value: &p.MaxApplications},
 		{Key: KeyApplicationMinStake, Value: &p.AppStakeMin},
-		{Key: BaselineThroughputStakeRate, Value: &p.BaselineThrouhgputStakeRate},
+		{Key: BaselineThroughputPerPokt, Value: &p.BaselineThroughputPerPokt},
 		{Key: StakingAdjustment, Value: &p.StakingAdjustment},
 		{Key: ParticipationRateOn, Value: &p.ParticipationRateOn},
 	}
@@ -58,12 +58,12 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		UnstakingTime:               DefaultUnstakingTime,
-		MaxApplications:             DefaultMaxApplications,
-		AppStakeMin:                 DefaultMinStake,
-		BaselineThrouhgputStakeRate: DefaultDefaultBaselineThroughputStakeRate,
-		StakingAdjustment:           DefaultStakingAdjustment,
-		ParticipationRateOn:         DefaultParticipationRateOn,
+		UnstakingTime:             DefaultUnstakingTime,
+		MaxApplications:           DefaultMaxApplications,
+		AppStakeMin:               DefaultMinStake,
+		BaselineThroughputPerPokt: DefaultBaselineThroughputPerPokt,
+		StakingAdjustment:         DefaultStakingAdjustment,
+		ParticipationRateOn:       DefaultParticipationRateOn,
 	}
 }
 
@@ -75,7 +75,7 @@ func (p Params) Validate() error {
 	if p.AppStakeMin < DefaultMinStake {
 		return fmt.Errorf("staking parameter StakeMimimum must be a positive integer")
 	}
-	if p.BaselineThrouhgputStakeRate < 0 {
+	if p.BaselineThroughputPerPokt < 0 {
 		return fmt.Errorf("invalid baseline throughput stake rate, must be above 0")
 	}
 	// todo
@@ -101,7 +101,7 @@ func (p Params) String() string {
 		p.UnstakingTime,
 		p.MaxApplications,
 		p.AppStakeMin,
-		p.BaselineThrouhgputStakeRate,
+		p.BaselineThroughputPerPokt,
 		p.StakingAdjustment,
 		p.ParticipationRateOn)
 }

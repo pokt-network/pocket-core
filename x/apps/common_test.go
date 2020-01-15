@@ -136,7 +136,7 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 	for i := 0; i < numAccs; i++ {
 		privKey := ed25519.GenPrivKey()
 		pubKey := privKey.PubKey()
-		addr := sdk.AccAddress(pubKey.Address())
+		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
 		acc.Coins = initialCoins
 		acc.PubKey = pubKey
@@ -155,7 +155,7 @@ func getRandomPubKey() ed25519.PubKeyEd25519 {
 func getApplication() types.Application {
 	pub := getRandomPubKey()
 	return types.Application{
-		Address:      sdk.ValAddress(pub.Address()),
+		Address:      sdk.Address(pub.Address()),
 		StakedTokens: sdk.NewInt(100000000000),
 		ConsPubKey:   pub,
 		Jailed:       false,

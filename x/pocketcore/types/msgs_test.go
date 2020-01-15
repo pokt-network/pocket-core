@@ -27,7 +27,7 @@ func TestMsgClaim_GetSigners(t *testing.T) {
 		FromAddress:   addr,
 	}.GetSigners()
 	assert.Len(t, signers, 1)
-	assert.Equal(t, types.ValAddress(signers[0]), addr)
+	assert.Equal(t, types.Address(signers[0]), addr)
 }
 
 func TestMsgClaim_ValidateBasic(t *testing.T) {
@@ -90,7 +90,7 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 		},
 		MerkleRoot:  root,
 		TotalRelays: -1,
-		FromAddress: types.ValAddress{},
+		FromAddress: types.Address{},
 	}
 	validClaimMessage := MsgClaim{
 		SessionHeader: SessionHeader{
@@ -154,7 +154,7 @@ func TestMsgProof_Type(t *testing.T) {
 
 func TestMsgProof_GetSigners(t *testing.T) {
 	pk := getRandomPubKey()
-	addr := types.AccAddress(pk.Address())
+	addr := types.Address(pk.Address())
 	signers := MsgProof{
 		MerkleProofs: [2]MerkleProof{},
 		Leaf: RelayProof{

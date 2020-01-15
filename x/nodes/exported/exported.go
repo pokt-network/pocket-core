@@ -14,9 +14,9 @@ type ValidatorI interface {
 	IsUnstaking() bool            // check if has status unbonding
 	GetChains() []string          // retrieve the staked chains
 	GetServiceURL() string        // retrieve the url for pocket core service api
-	GetAddress() sdk.ValAddress   // operator address to receive/return validators coins
+	GetAddress() sdk.Address      // address to receive/return validators coins
 	GetConsPubKey() crypto.PubKey // validation consensus pubkey
-	GetConsAddr() sdk.ConsAddress // validation consensus address
+	GetConsAddr() sdk.Address // validation consensus address
 	GetTokens() sdk.Int           // validation tokens
 	GetConsensusPower() int64     // validation power in tendermint
 }

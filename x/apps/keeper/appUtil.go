@@ -23,7 +23,7 @@ func newCachedApplication(val types.Application, marshalled string) cachedApplic
 	}
 }
 
-func (k Keeper) appCaching(value []byte, addr sdk.ValAddress) types.Application {
+func (k Keeper) appCaching(value []byte, addr sdk.Address) types.Application {
 	// If these amino encoded bytes are in the cache, return the cached application
 	strValue := string(value)
 	if val, ok := k.applicationCache[strValue]; ok {
@@ -46,7 +46,7 @@ func (k Keeper) appCaching(value []byte, addr sdk.ValAddress) types.Application 
 	return application
 }
 
-func (k Keeper) mustGetApplication(ctx sdk.Context, addr sdk.ValAddress) types.Application {
+func (k Keeper) mustGetApplication(ctx sdk.Context, addr sdk.Address) types.Application {
 	application, found := k.GetApplication(ctx, addr)
 	if !found {
 		panic(fmt.Sprintf("application record not found for address: %X\n", addr))
@@ -54,7 +54,7 @@ func (k Keeper) mustGetApplication(ctx sdk.Context, addr sdk.ValAddress) types.A
 	return application
 }
 
-func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) types.Application {
+func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Context, consAddr sdk.Address) types.Application {
 	application, found := k.GetAppByConsAddr(ctx, consAddr)
 	if !found {
 		panic(fmt.Errorf("application with consensus-Address %s not found", consAddr))
@@ -63,7 +63,7 @@ func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Context, consAddr sdk.ConsA
 }
 
 // wrapper for GetApplication call
-func (k Keeper) Application(ctx sdk.Context, address sdk.ValAddress) exported.ApplicationI {
+func (k Keeper) Application(ctx sdk.Context, address sdk.Address) exported.ApplicationI {
 	app, found := k.GetApplication(ctx, address)
 	if !found {
 		return nil
@@ -72,7 +72,7 @@ func (k Keeper) Application(ctx sdk.Context, address sdk.ValAddress) exported.Ap
 }
 
 // wrapper for GetApplicationByConsAddress call
-func (k Keeper) applicationByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) exported.ApplicationI {
+func (k Keeper) applicationByConsAddr(ctx sdk.Context, addr sdk.Address) exported.ApplicationI {
 	app, found := k.GetAppByConsAddr(ctx, addr)
 	if !found {
 		return nil

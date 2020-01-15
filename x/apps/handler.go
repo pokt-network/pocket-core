@@ -38,7 +38,7 @@ func handleStake(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Re
 
 func stakeNewApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Result {
 	// check to see if teh public key has already been register for that application
-	if _, found := k.GetAppByConsAddr(ctx, sdk.GetConsAddress(msg.PubKey)); found {
+	if _, found := k.GetAppByConsAddr(ctx, sdk.GetAddress(msg.PubKey)); found {
 		return types.ErrApplicationPubKeyExists(k.Codespace()).Result()
 	}
 	// check the consensus params
@@ -163,7 +163,7 @@ func handleMsgUnjail(ctx sdk.Context, msg types.MsgAppUnjail, k keeper.Keeper) s
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func validateUnjailMessage(ctx sdk.Context, msg types.MsgAppUnjail, k keeper.Keeper) (consAddr sdk.ConsAddress, err sdk.Error) {
+func validateUnjailMessage(ctx sdk.Context, msg types.MsgAppUnjail, k keeper.Keeper) (consAddr sdk.Address, err sdk.Error) {
 	application := k.Application(ctx, msg.AppAddr)
 	if application == nil {
 		return nil, types.ErrNoApplicationForAddress(k.Codespace())

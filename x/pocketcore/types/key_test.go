@@ -33,7 +33,7 @@ func TestKeyForClaim(t *testing.T) {
 	}
 	assert.Panics(t, func() { KeyForClaim(ctx, getRandomValidatorAddress(), invalidSessHeader) })
 	// invalid address
-	invalidAddr := types.ValAddress{}
+	invalidAddr := types.Address{}
 	assert.Panics(t, func() { KeyForClaim(ctx, invalidAddr, sh) })
 	key := KeyForClaim(ctx, getRandomValidatorAddress(), sh)
 	assert.NotNil(t, key)
@@ -42,7 +42,7 @@ func TestKeyForClaim(t *testing.T) {
 
 func TestKeyForClaims(t *testing.T) {
 	// invalid address
-	invalidAddr := types.ValAddress{}
+	invalidAddr := types.Address{}
 	assert.Panics(t, func() { KeyForClaims(invalidAddr) })
 	key := KeyForClaims(getRandomValidatorAddress())
 	assert.NotNil(t, key)
@@ -76,7 +76,7 @@ func TestKeyForProof(t *testing.T) {
 	}
 	assert.Panics(t, func() { KeyForInvoice(ctx, getRandomValidatorAddress(), invalidSessHeader) })
 	// invalid address
-	invalidAddr := types.ValAddress{}
+	invalidAddr := types.Address{}
 	assert.Panics(t, func() { KeyForInvoice(ctx, invalidAddr, sh) })
 	key := KeyForInvoice(ctx, getRandomValidatorAddress(), sh)
 	assert.NotNil(t, key)
@@ -85,7 +85,7 @@ func TestKeyForProof(t *testing.T) {
 
 func TestKeyForProofs(t *testing.T) {
 	// invalid address
-	invalidAddr := types.ValAddress{}
+	invalidAddr := types.Address{}
 	assert.Panics(t, func() { KeyForInvoices(invalidAddr) })
 	key := KeyForInvoices(getRandomValidatorAddress())
 	assert.NotNil(t, key)

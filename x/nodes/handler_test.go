@@ -169,7 +169,7 @@ func Test_validateUnjailMessage(t *testing.T) {
 	tests := []struct {
 		name         string
 		args         args
-		wantConsAddr sdk.ConsAddress
+		wantConsAddr sdk.Address
 		wantErr      sdk.Error
 	}{
 		// TODO: Add test cases.

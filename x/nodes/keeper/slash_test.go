@@ -120,7 +120,7 @@ func TestGetAndSetAddrPubKeyRelation(t *testing.T) {
 			expected: expected{
 				validator: boundedValidator,
 				set:       false,
-				message:   fmt.Sprintf("address %s not found", sdk.ConsAddress(boundedValidator.GetConsPubKey().Address())),
+				message:   fmt.Sprintf("address %s not found", sdk.Address(boundedValidator.GetConsPubKey().Address())),
 			},
 		},
 	}
@@ -162,7 +162,7 @@ func TestDeleteAddrPubKeyRelation(t *testing.T) {
 			expected: expected{
 				validator: boundedValidator,
 				set:       true,
-				message:   fmt.Sprintf("address %s not found", sdk.ConsAddress(boundedValidator.GetConsPubKey().Address())),
+				message:   fmt.Sprintf("address %s not found", sdk.Address(boundedValidator.GetConsPubKey().Address())),
 			},
 		},
 	}
@@ -227,7 +227,7 @@ func TestHandleValidatorSignature(t *testing.T) {
 			panics: true,
 			args:   args{validator: boundedValidator, power: int64(10), signed: false},
 			expected: expected{
-				message:        fmt.Sprintf("Validator consensus-address %s not found", sdk.ConsAddress(boundedValidator.GetConsPubKey().Address())),
+				message:        fmt.Sprintf("Validator consensus-address %s not found", sdk.Address(boundedValidator.GetConsPubKey().Address())),
 				pubKeyRelation: false,
 			},
 		},
@@ -236,7 +236,7 @@ func TestHandleValidatorSignature(t *testing.T) {
 			panics: true,
 			args:   args{validator: boundedValidator, power: int64(10), signed: false},
 			expected: expected{
-				message:        fmt.Sprintf("Expected signing info for validator %s but not found", sdk.ConsAddress(boundedValidator.GetConsPubKey().Address())),
+				message:        fmt.Sprintf("Expected signing info for validator %s but not found", sdk.Address(boundedValidator.GetConsPubKey().Address())),
 				pubKeyRelation: true,
 			},
 		},
@@ -269,16 +269,16 @@ func TestHandleValidatorSignature(t *testing.T) {
 					signingInfo.MissedBlocksCounter = test.args.maxMissed
 				}
 				keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetConsPubKey())
-				keeper.SetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr), signingInfo)
+				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 				keeper.handleValidatorSignature(context, cryptoAddr, test.args.power, test.args.signed)
-				signedInfo, found := keeper.GetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr))
+				signedInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 				if !found {
 					t.FailNow()
 				}
 				assert.Equal(t, test.expected.tombstoned, signedInfo.Tombstoned)
 				assert.Equal(t, test.expected.missedBlocksCounter, signedInfo.MissedBlocksCounter)
 				if test.expected.jail {
-					validator, found := keeper.GetValidatorByConsAddr(context, sdk.ConsAddress(cryptoAddr))
+					validator, found := keeper.GetValidatorByConsAddr(context, sdk.Address(cryptoAddr))
 					if !found {
 						t.FailNow()
 					}
@@ -361,8 +361,8 @@ func TestValidateDoubleSign(t *testing.T) {
 			if test.expected.pubKeyRelation {
 				keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetConsPubKey())
 			}
-			keeper.SetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr), signingInfo)
-			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr))
+			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
+			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.FailNow()
 			}
@@ -371,7 +371,7 @@ func TestValidateDoubleSign(t *testing.T) {
 			if err != nil {
 				assert.Equal(t, test.expected.message, err.Error())
 			} else {
-				assert.Equal(t, sdk.ConsAddress(cryptoAddr), consAddr, "addresses do not match")
+				assert.Equal(t, sdk.Address(cryptoAddr), consAddr, "addresses do not match")
 				assert.Equal(t, signedInfo, signingInfo, "signed Info do not match")
 				assert.Equal(t, test.expected.validator, validator, "validators do not match")
 			}
@@ -461,7 +461,7 @@ func TestHandleDoubleSign(t *testing.T) {
 				if test.expected.pubKeyRelation {
 					keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetConsPubKey())
 				}
-				keeper.SetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr), signingInfo)
+				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 				keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
 			default:
 				if test.expected.tombstoned {
@@ -471,10 +471,10 @@ func TestHandleDoubleSign(t *testing.T) {
 				if test.expected.pubKeyRelation {
 					keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetConsPubKey())
 				}
-				keeper.SetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr), signingInfo)
+				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 				keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
 
-				signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr))
+				signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 				if !found {
 					t.FailNow()
 				}
@@ -599,8 +599,8 @@ func TestValidateSlash(t *testing.T) {
 				keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetConsPubKey())
 			}
 
-			keeper.SetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr), signingInfo)
-			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr))
+			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
+			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.FailNow()
 			}
@@ -621,9 +621,9 @@ func TestValidateSlash(t *testing.T) {
 					updatedContext := context.WithBlockHeight(100)
 					infractionHeight = updatedContext.BlockHeight()
 				}
-				_ = keeper.validateSlash(context, sdk.ConsAddress(cryptoAddr), infractionHeight, test.args.power, fraction)
+				_ = keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
 			default:
-				val := keeper.validateSlash(context, sdk.ConsAddress(cryptoAddr), infractionHeight, test.args.power, fraction)
+				val := keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
 				if test.expected.found {
 					assert.Equal(t, test.expected.validator, val)
 				} else {
@@ -683,7 +683,7 @@ func TestSlash(t *testing.T) {
 				keeper.SetValidatorByConsAddr(context, test.args.validator)
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.validator.Address, supplySize)
-				v, found := keeper.GetValidatorByConsAddr(context, sdk.ConsAddress(cryptoAddr))
+				v, found := keeper.GetValidatorByConsAddr(context, sdk.Address(cryptoAddr))
 				if !found {
 					t.FailNow()
 				}
@@ -703,8 +703,8 @@ func TestSlash(t *testing.T) {
 				keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetConsPubKey())
 			}
 
-			keeper.SetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr), signingInfo)
-			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.ConsAddress(cryptoAddr))
+			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
+			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.FailNow()
 			}
@@ -715,8 +715,8 @@ func TestSlash(t *testing.T) {
 				fraction = keeper.SlashFractionDoubleSign(context)
 			}
 
-			keeper.slash(context, sdk.ConsAddress(cryptoAddr), infractionHeight, test.args.power, fraction)
-			validator, found := keeper.GetValidatorByConsAddr(context, sdk.ConsAddress(cryptoAddr))
+			keeper.slash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
+			validator, found := keeper.GetValidatorByConsAddr(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.Fail()
 			}
@@ -786,7 +786,7 @@ func TestKeeper_getBurnFromSeverity(t *testing.T) {
 
 	type args struct {
 		ctx                sdk.Context
-		address            sdk.ValAddress
+		address            sdk.Address
 		severityPercentage sdk.Dec
 	}
 	tests := []struct {
@@ -857,7 +857,7 @@ func TestKeeper_BurnValidator(t *testing.T) {
 
 	type args struct {
 		ctx                sdk.Context
-		address            sdk.ValAddress
+		address            sdk.Address
 		severityPercentage sdk.Dec
 	}
 	tests := []struct {

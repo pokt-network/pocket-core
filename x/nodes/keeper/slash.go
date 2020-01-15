@@ -11,7 +11,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-func (k Keeper) BurnValidator(ctx sdk.Context, address sdk.ValAddress, severityPercentage sdk.Dec) {
+func (k Keeper) BurnValidator(ctx sdk.Context, address sdk.Address, severityPercentage sdk.Dec) {
 	curBurn, _ := k.getValidatorBurn(ctx, address)
 	newSeverity := curBurn.Add(severityPercentage)
 	k.setValidatorBurn(ctx, newSeverity, address)
@@ -19,7 +19,7 @@ func (k Keeper) BurnValidator(ctx sdk.Context, address sdk.ValAddress, severityP
 
 // slash a validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight, power int64, slashFactor sdk.Dec) {
+func (k Keeper) slash(ctx sdk.Context, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
 	// error check slash
 	validator := k.validateSlash(ctx, consAddr, infractionHeight, power, slashFactor)
 	if validator.Address == nil {
@@ -53,7 +53,7 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 	k.AfterValidatorSlashed(ctx, validator.Address, slashFactor)
 }
 
-func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
+func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
 	logger := k.Logger(ctx)
 	if slashFactor.LT(sdk.ZeroDec()) {
 		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
@@ -139,10 +139,10 @@ func (k Keeper) handleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	k.SetValidatorSigningInfo(ctx, consAddr, signInfo)
 }
 
-func (k Keeper) validateDoubleSign(ctx sdk.Context, addr crypto.Address, infractionHeight int64, timestamp time.Time) (consAddr sdk.ConsAddress, signInfo types.ValidatorSigningInfo, validator exported.ValidatorI, err sdk.Error) {
+func (k Keeper) validateDoubleSign(ctx sdk.Context, addr crypto.Address, infractionHeight int64, timestamp time.Time) (consAddr sdk.Address, signInfo types.ValidatorSigningInfo, validator exported.ValidatorI, err sdk.Error) {
 	logger := k.Logger(ctx)
 	// fetch the validator public key
-	consAddr = sdk.ConsAddress(addr)
+	consAddr = sdk.Address(addr)
 	pubkey, er := k.getPubKeyRelation(ctx, addr)
 	if er != nil {
 		// Ignore evidence that cannot be handled.
@@ -155,7 +155,7 @@ func (k Keeper) validateDoubleSign(ctx sdk.Context, addr crypto.Address, infract
 	// Reject evidence if the double-sign is too old
 	if age > k.MaxEvidenceAge(ctx) {
 		logger.Info(fmt.Sprintf("Ignored double sign from %s at height %d, age of %d past max age of %d",
-			sdk.ConsAddress(pubkey.Address()), infractionHeight, age, k.MaxEvidenceAge(ctx)))
+			sdk.Address(pubkey.Address()), infractionHeight, age, k.MaxEvidenceAge(ctx)))
 		return
 	}
 	// Get validator and signing info
@@ -171,12 +171,12 @@ func (k Keeper) validateDoubleSign(ctx sdk.Context, addr crypto.Address, infract
 	}
 	// validator is already tombstoned
 	if signInfo.Tombstoned {
-		logger.Info(fmt.Sprintf("Ignored double sign from %s at height %d, validator already tombstoned", sdk.ConsAddress(pubkey.Address()), infractionHeight))
+		logger.Info(fmt.Sprintf("Ignored double sign from %s at height %d, validator already tombstoned", sdk.Address(pubkey.Address()), infractionHeight))
 		err = types.ErrValidatorTombstoned(k.Codespace())
 		return
 	}
 	// double sign confirmed
-	logger.Info(fmt.Sprintf("Confirmed double sign from %s at height %d, age of %d", sdk.ConsAddress(pubkey.Address()), infractionHeight, age))
+	logger.Info(fmt.Sprintf("Confirmed double sign from %s at height %d, age of %d", sdk.Address(pubkey.Address()), infractionHeight, age))
 	return
 }
 
@@ -184,7 +184,7 @@ func (k Keeper) validateDoubleSign(ctx sdk.Context, addr crypto.Address, infract
 func (k Keeper) handleValidatorSignature(ctx sdk.Context, addr crypto.Address, power int64, signed bool) {
 	logger := k.Logger(ctx)
 	height := ctx.BlockHeight()
-	consAddr := sdk.ConsAddress(addr)
+	consAddr := sdk.Address(addr)
 	pubkey, err := k.getPubKeyRelation(ctx, addr)
 	if err != nil {
 		panic(fmt.Sprintf("Validator consensus-address %s not found", consAddr))
@@ -278,7 +278,7 @@ func (k Keeper) getPubKeyRelation(ctx sdk.Context, address crypto.Address) (cryp
 	var pubkey crypto.PubKey
 	err := k.cdc.UnmarshalBinaryLengthPrefixed(store.Get(types.GetAddrPubkeyRelationKey(address)), &pubkey)
 	if err != nil {
-		return nil, fmt.Errorf("address %s not found", sdk.ConsAddress(address))
+		return nil, fmt.Errorf("address %s not found", sdk.Address(address))
 	}
 	return pubkey, nil
 }
@@ -294,7 +294,7 @@ func (k Keeper) deleteAddrPubkeyRelation(ctx sdk.Context, addr crypto.Address) {
 	store.Delete(types.GetAddrPubkeyRelationKey(addr))
 }
 
-func (k Keeper) getBurnFromSeverity(ctx sdk.Context, address sdk.ValAddress, severityPercentage sdk.Dec) sdk.Int {
+func (k Keeper) getBurnFromSeverity(ctx sdk.Context, address sdk.Address, severityPercentage sdk.Dec) sdk.Int {
 	val := k.mustGetValidator(ctx, address)
 	amount := sdk.TokensFromConsensusPower(val.ConsensusPower())
 	slashAmount := amount.ToDec().Mul(severityPercentage).TruncateInt()
@@ -308,22 +308,22 @@ func (k Keeper) burnValidators(ctx sdk.Context) {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		severity := sdk.Dec{}
-		address := sdk.ValAddress(types.AddressFromKey(iterator.Key()))
+		address := sdk.Address(types.AddressFromKey(iterator.Key()))
 		amino.MustUnmarshalBinaryBare(iterator.Value(), &severity)
 		val := k.mustGetValidator(ctx, address)
-		k.slash(ctx, sdk.ConsAddress(address), ctx.BlockHeight(), val.ConsensusPower(), severity)
+		k.slash(ctx, sdk.Address(address), ctx.BlockHeight(), val.ConsensusPower(), severity)
 		// remove from the burn store
 		store.Delete(iterator.Key())
 	}
 }
 
 // store functions used to keep track of a validator burn
-func (k Keeper) setValidatorBurn(ctx sdk.Context, amount sdk.Dec, address sdk.ValAddress) {
+func (k Keeper) setValidatorBurn(ctx sdk.Context, amount sdk.Dec, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForValidatorBurn(address), amino.MustMarshalBinaryBare(amount))
 }
 
-func (k Keeper) getValidatorBurn(ctx sdk.Context, address sdk.ValAddress) (coins sdk.Dec, found bool) {
+func (k Keeper) getValidatorBurn(ctx sdk.Context, address sdk.Address) (coins sdk.Dec, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValidatorBurn(address))
 	if value == nil {
@@ -334,7 +334,7 @@ func (k Keeper) getValidatorBurn(ctx sdk.Context, address sdk.ValAddress) (coins
 	return
 }
 
-func (k Keeper) deleteValidatorBurn(ctx sdk.Context, address sdk.ValAddress) {
+func (k Keeper) deleteValidatorBurn(ctx sdk.Context, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorBurn(address))
 }

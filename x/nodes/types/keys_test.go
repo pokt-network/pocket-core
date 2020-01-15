@@ -166,9 +166,9 @@ func TestKeyForUnstakingValidators(t *testing.T) {
 
 func TestKeyForValByAllVals(t *testing.T) {
 	type args struct {
-		addr types.ValAddress
+		addr types.Address
 	}
-	ca, _ := types.ValAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string
@@ -188,9 +188,9 @@ func TestKeyForValByAllVals(t *testing.T) {
 
 func TestKeyForValidatorAward(t *testing.T) {
 	type args struct {
-		address types.ValAddress
+		address types.Address
 	}
-	ca, _ := types.ValAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string
@@ -210,9 +210,9 @@ func TestKeyForValidatorAward(t *testing.T) {
 
 func TestKeyForValidatorBurn(t *testing.T) {
 	type args struct {
-		address types.ValAddress
+		address types.Address
 	}
-	ca, _ := types.ValAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string
@@ -269,7 +269,7 @@ func TestKeyForValidatorInStakingSet(t *testing.T) {
 		args args
 		want []byte
 	}{
-		{"NewValidator", args{validator: NewValidator(types.ValAddress(pub.Address()), pub, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com", types.ZeroInt())}, append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
+		{"NewValidator", args{validator: NewValidator(types.Address(pub.Address()), pub, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com", types.ZeroInt())}, append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -282,9 +282,9 @@ func TestKeyForValidatorInStakingSet(t *testing.T) {
 
 func TestKeyForValidatorPrevStateStateByPower(t *testing.T) {
 	type args struct {
-		address types.ValAddress
+		address types.Address
 	}
-	ca, _ := types.ValAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string
@@ -354,7 +354,7 @@ func Test_getStakedValPowerRankKey(t *testing.T) {
 		args args
 		want []byte
 	}{
-		{"NewValidator", args{validator: NewValidator(types.ValAddress(pub.Address()), pub, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com", types.ZeroInt())}, append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
+		{"NewValidator", args{validator: NewValidator(types.Address(pub.Address()), pub, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com", types.ZeroInt())}, append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -367,10 +367,10 @@ func Test_getStakedValPowerRankKey(t *testing.T) {
 
 func TestKeyForValWaitingToBeginUnstaking(t *testing.T) {
 	type args struct {
-		addr types.ValAddress
+		addr types.Address
 	}
 
-	ca, _ := types.ValAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string

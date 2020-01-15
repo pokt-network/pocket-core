@@ -7,7 +7,7 @@ import (
 )
 
 // get a single validator from the main store
-func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator types.Validator, found bool) {
+func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.Address) (validator types.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValByAllVals(addr))
 	if value == nil {
@@ -72,7 +72,7 @@ func (k Keeper) IterateAndExecuteOverVals(
 }
 
 // get a validator in the consensus store
-func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator types.Validator, found bool) {
+func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.Address) (validator types.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	addr := store.Get(types.KeyForValidatorByConsAddr(consAddr))
 	if addr == nil {

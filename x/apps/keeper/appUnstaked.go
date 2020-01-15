@@ -17,7 +17,7 @@ func (k Keeper) SetUnstakingApplication(ctx sdk.Context, val types.Application) 
 // DeleteInvoice a application address from the unstaking queue
 func (k Keeper) deleteUnstakingApplication(ctx sdk.Context, val types.Application) {
 	applications := k.getUnstakingApplications(ctx, val.UnstakingCompletionTime)
-	var newApplications []sdk.ValAddress
+	var newApplications []sdk.Address
 	for _, addr := range applications {
 		if !bytes.Equal(addr, val.Address) {
 			newApplications = append(newApplications, addr)
@@ -56,18 +56,18 @@ func (k Keeper) getAllUnstakedApplications(ctx sdk.Context) (applications []type
 }
 
 // gets all of the applications who will be unstaked at exactly this time
-func (k Keeper) getUnstakingApplications(ctx sdk.Context, unstakingTime time.Time) (valAddrs []sdk.ValAddress) {
+func (k Keeper) getUnstakingApplications(ctx sdk.Context, unstakingTime time.Time) (valAddrs []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.KeyForUnstakingApps(unstakingTime))
 	if bz == nil {
-		return []sdk.ValAddress{}
+		return []sdk.Address{}
 	}
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &valAddrs)
 	return valAddrs
 }
 
 // Sets applications in unstaking queue at a certain unstaking time
-func (k Keeper) setUnstakingApplications(ctx sdk.Context, unstakingTime time.Time, keys []sdk.ValAddress) {
+func (k Keeper) setUnstakingApplications(ctx sdk.Context, unstakingTime time.Time, keys []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(keys)
 	store.Set(types.KeyForUnstakingApps(unstakingTime), bz)
@@ -86,11 +86,11 @@ func (k Keeper) unstakingApplicationsIterator(ctx sdk.Context, endTime time.Time
 }
 
 // Returns a list of all the mature applications
-func (k Keeper) getMatureApplications(ctx sdk.Context) (matureValsAddrs []sdk.ValAddress) {
+func (k Keeper) getMatureApplications(ctx sdk.Context) (matureValsAddrs []sdk.Address) {
 	unstakingValsIterator := k.unstakingApplicationsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValsIterator.Close()
 	for ; unstakingValsIterator.Valid(); unstakingValsIterator.Next() {
-		var applications []sdk.ValAddress
+		var applications []sdk.Address
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &applications)
 		matureValsAddrs = append(matureValsAddrs, applications...)
 	}
@@ -103,7 +103,7 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Context) {
 	unstakingApplicationsIterator := k.unstakingApplicationsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingApplicationsIterator.Close()
 	for ; unstakingApplicationsIterator.Valid(); unstakingApplicationsIterator.Next() {
-		var unstakingVals []sdk.ValAddress
+		var unstakingVals []sdk.Address
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(unstakingApplicationsIterator.Value(), &unstakingVals)
 		for _, valAddr := range unstakingVals {
 			val, found := k.GetApplication(ctx, valAddr)

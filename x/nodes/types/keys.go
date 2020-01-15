@@ -33,17 +33,17 @@ var ( // Keys for store prefixes
 	WaitingToBeginUnstakingKey      = []byte{0x43}
 )
 
-func KeyForValWaitingToBeginUnstaking(addr sdk.ValAddress) []byte {
+func KeyForValWaitingToBeginUnstaking(addr sdk.Address) []byte {
 	return append(WaitingToBeginUnstakingKey, addr.Bytes()...)
 }
 
 // generates the key for the validator with address
-func KeyForValByAllVals(addr sdk.ValAddress) []byte {
+func KeyForValByAllVals(addr sdk.Address) []byte {
 	return append(AllValidatorsKey, addr.Bytes()...)
 }
 
 // generates the key for the validator with consensus address
-func KeyForValidatorByConsAddr(addr sdk.ConsAddress) []byte {
+func KeyForValidatorByConsAddr(addr sdk.Address) []byte {
 	return append(AllValidatorsByConsensusAddrKey, addr.Bytes()...)
 }
 
@@ -60,16 +60,16 @@ func KeyForValidatorInStakingSet(validator Validator) []byte {
 }
 
 // generates the key for a validator in the prevState state
-func KeyForValidatorPrevStateStateByPower(address sdk.ValAddress) []byte {
+func KeyForValidatorPrevStateStateByPower(address sdk.Address) []byte {
 	return append(PrevStateValidatorsPowerKey, address...)
 }
 
 // generates the award key for a validator in the current state
-func KeyForValidatorAward(address sdk.ValAddress) []byte {
+func KeyForValidatorAward(address sdk.Address) []byte {
 	return append(AwardValidatorKey, address...)
 }
 
-func KeyForValidatorBurn(address sdk.ValAddress) []byte {
+func KeyForValidatorBurn(address sdk.Address) []byte {
 	return append(BurnValidatorKey, address...)
 }
 
@@ -118,12 +118,12 @@ func ParseValidatorPowerRankKey(key []byte) (operAddr []byte) {
 }
 
 // generates the key for validator signing information by consensus addr
-func GetValidatorSigningInfoKey(v sdk.ConsAddress) []byte {
+func GetValidatorSigningInfoKey(v sdk.Address) []byte {
 	return append(ValidatorSigningInfoKey, v.Bytes()...)
 }
 
 // extract the address from a validator signing info key
-func GetValidatorSigningInfoAddress(key []byte) (v sdk.ConsAddress) {
+func GetValidatorSigningInfoAddress(key []byte) (v sdk.Address) {
 	addr := key[1:]
 	if len(addr) != sdk.AddrLen {
 		panic("unexpected key length")
@@ -132,12 +132,12 @@ func GetValidatorSigningInfoAddress(key []byte) (v sdk.ConsAddress) {
 }
 
 // generates the prefix key for missing val who missed block through consensus addr
-func GetValMissedBlockPrefixKey(v sdk.ConsAddress) []byte {
+func GetValMissedBlockPrefixKey(v sdk.Address) []byte {
 	return append(ValidatorMissedBlockBitArrayKey, v.Bytes()...)
 }
 
 // generates the key for missing val who missed block through consensus addr
-func GetValMissedBlockKey(v sdk.ConsAddress, i int64) []byte {
+func GetValMissedBlockKey(v sdk.Address, i int64) []byte {
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, uint64(i))
 	return append(GetValMissedBlockPrefixKey(v), b...)

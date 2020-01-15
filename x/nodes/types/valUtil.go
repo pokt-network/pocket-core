@@ -59,13 +59,13 @@ func (v Validator) String() string {
   ServiceURL:                 %s
   Chains:                     %v
   Unstaking Completion Time:  %v`,
-		v.Address, sdk.HexConsPub(v.ConsPubKey), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
+		v.Address, sdk.HexAddressPubKey(v.ConsPubKey), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
 	)
 }
 
 // this is a helper struct used for JSON de- and encoding only
 type hexValidator struct {
-	Address                 sdk.ValAddress `json:"address" yaml:"address"`         // the hex address of the validator
+	Address                 sdk.Address `json:"address" yaml:"address"`         // the hex address of the validator
 	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"` // the hex consensus public key of the validator
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`           // has the validator been jailed from staked status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`           // validator status (bonded/unbonding/unbonded)
@@ -79,7 +79,7 @@ type hexValidator struct {
 func (v Validator) MarshalJSON() ([]byte, error) {
 	return codec.Cdc.MarshalJSON(hexValidator{
 		Address:                 v.Address,
-		ConsPubKey:              sdk.HexConsPub(v.ConsPubKey),
+		ConsPubKey:              sdk.HexAddressPubKey(v.ConsPubKey),
 		Jailed:                  v.Jailed,
 		Status:                  v.Status,
 		ServiceURL:              v.ServiceURL,

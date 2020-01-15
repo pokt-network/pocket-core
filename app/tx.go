@@ -31,7 +31,7 @@ func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount 
 	if err != nil {
 		return nil, err
 	}
-	kp, err := (GetKeybase()).Get(sdk.AccAddress(fa))
+	kp, err := (GetKeybase()).Get(fa)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sd
 	if err != nil {
 		return nil, err
 	}
-	kp, err := (GetKeybase()).Get(sdk.AccAddress(fa))
+	kp, err := (GetKeybase()).Get(fa)
 	if err != nil {
 		return nil, err
 	}

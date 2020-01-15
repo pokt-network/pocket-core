@@ -14,7 +14,7 @@ func TestGetMissedArray(t *testing.T) {
 	tests := []struct {
 		name     string
 		expected bool
-		address  sdk.ConsAddress
+		address  sdk.Address
 	}{
 		{
 			name:     "gets missed block array",
@@ -45,7 +45,7 @@ func TestClearMissedArray(t *testing.T) {
 	tests := []struct {
 		name     string
 		expected bool
-		address  sdk.ConsAddress
+		address  sdk.Address
 	}{
 		{
 			name:     "gets missed block array",
@@ -71,7 +71,7 @@ func TestKeeper_IterateAndExecuteOverMissedArray(t *testing.T) {
 	}
 	type args struct {
 		ctx     sdk.Context
-		address sdk.ConsAddress
+		address sdk.Address
 		handler func(index int64, missed bool) (stop bool)
 	}
 
@@ -85,7 +85,7 @@ func TestKeeper_IterateAndExecuteOverMissedArray(t *testing.T) {
 		{"Test IterateAndExecuteOverMissedArray", fields{Keeper: keeper},
 			args{
 				ctx:     context,
-				address: sdk.ConsAddress(getRandomPubKey().Address()),
+				address: sdk.Address(getRandomPubKey().Address()),
 				handler: func(index int64, missed bool) (stop bool) {
 					localMissedBlocks := []types.MissedBlock{}
 

@@ -161,6 +161,10 @@ func InitTendermint(persistentPeers, seeds string) *node.Node {
 	return tmNode
 }
 
+func newApp(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
+	return NewPocketCoreApp(logger, db)
+}
+
 func InitDataDirectory(d string) string {
 	// check for empty data_dir
 	if d == "" {
@@ -363,10 +367,6 @@ func MakeCodec() {
 	codec.RegisterCrypto(cdc)
 }
 
-func SetTenderminttURI(uri string) {
-	tmNodeURI = uri
-}
-
 func GetCodec() *codec.Codec {
 	if cdc == nil {
 		MakeCodec()
@@ -380,6 +380,10 @@ func SetCoinbasePassphrase(pass string) {
 
 func GetCoinbasePassphrase() string {
 	return passphrase
+}
+
+func SetTendermintNode(n string) {
+	tmNodeURI = n
 }
 
 func SetGenesisFilepath(filepath string) {
@@ -396,10 +400,6 @@ func Credentials() string {
 		panic(err)
 	}
 	return strings.TrimSpace(string(bytePassword))
-}
-
-func newApp(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
-	return NewPocketCoreApp(logger, db)
 }
 
 func getDataDir() string {
@@ -444,7 +444,7 @@ func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
 	var posGenesisState nodesTypes.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(rawPOS, &posGenesisState)
 	posGenesisState.Validators = append(posGenesisState.Validators,
-		nodesTypes.Validator{Address: sdk.ValAddress(pubKey.Address()),
+		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
 			ConsPubKey:   pubKey,
 			Status:       sdk.Bonded,
 			Chains:       []string{dummyChainsHash},

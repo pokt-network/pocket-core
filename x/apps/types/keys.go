@@ -31,12 +31,12 @@ func AddressFromKey(key []byte) []byte {
 }
 
 // generates the key for the application with address
-func KeyForAppByAllApps(addr sdk.ValAddress) []byte {
+func KeyForAppByAllApps(addr sdk.Address) []byte {
 	return append(AllApplicationsKey, addr.Bytes()...)
 }
 
 // generates the key for the application with consensus address
-func KeyForAppByConsAddr(addr sdk.ConsAddress) []byte {
+func KeyForAppByConsAddr(addr sdk.Address) []byte {
 	return append(AllApplicationsByConsensusAddrKey, addr.Bytes()...)
 }
 
@@ -52,7 +52,7 @@ func KeyForAppInStakingSet(app Application) []byte {
 	return getStakedValPowerRankKey(app)
 }
 
-func KeyForAppBurn(address sdk.ValAddress) []byte {
+func KeyForAppBurn(address sdk.Address) []byte {
 	return append(BurnApplicationKey, address...)
 }
 

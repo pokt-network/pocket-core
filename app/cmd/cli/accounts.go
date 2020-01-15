@@ -322,7 +322,11 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		pkBytes, err := hex.DecodeString(args[0])
 		kb := app.GetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			app.InitKeyfiles()
+			kb = app.GetKeybase()
+			if kb == nil {
+				panic("nil kb after initialization")
+			}
 		}
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()

@@ -118,11 +118,11 @@ func TestNewQueryUnstakingValidatorsParams(t *testing.T) {
 
 func TestNewQueryValidatorParams(t *testing.T) {
 	type args struct {
-		validatorAddr types.ValAddress
+		validatorAddr types.Address
 	}
 	var pub ed25519.PubKeyEd25519
 	rand.Read(pub[:])
-	va := types.ValAddress(pub.Address())
+	va := types.Address(pub.Address())
 
 	tests := []struct {
 		name string

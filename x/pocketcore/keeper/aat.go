@@ -22,7 +22,7 @@ func AATGeneration(appPubKey string, clientPubKey string, passphrase string, key
 		ApplicationSignature: "",
 	}
 	// marshal aat using json
-	sig, _, err := (keybase).Sign(sdk.AccAddress(pk.Address()), passphrase, aat.Hash())
+	sig, _, err := (keybase).Sign(sdk.Address(pk.Address()), passphrase, aat.Hash())
 	if err != nil {
 		return pc.AAT{}, pc.NewSignatureError(pc.ModuleName, err)
 	}

@@ -9,14 +9,14 @@ import (
 )
 
 // award coins to an address (will be called at the beginning of the next block)
-func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.ValAddress) {
+func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.Address) {
 	award, _ := k.getValidatorAward(ctx, address)
 	coins := k.RelaysToTokensMultiplier(ctx).MulInt(relays).TruncateInt() // round down
 	k.setValidatorAward(ctx, award.Add(coins), address)
 }
 
 // rewardFromFees handles distribution of the collected fees
-func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress) {
+func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
 	logger := k.Logger(ctx)
 	// fetch and clear the collected fees for distribution, since this is
 	// called in BeginBlock, collected fees will be from the previous block
@@ -42,7 +42,7 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.ConsAddress
 		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
 		// send to validator
 		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName,
-			sdk.AccAddress(proposerValidator.GetAddress()), propRewardCoins); err != nil {
+			sdk.Address(proposerValidator.GetAddress()), propRewardCoins); err != nil {
 			panic(err)
 		}
 		// send to rest dao
@@ -86,14 +86,14 @@ func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Context) sdk.Int {
 }
 
 // store functions used to keep track of a validator award
-func (k Keeper) setValidatorAward(ctx sdk.Context, amount sdk.Int, address sdk.ValAddress) {
+func (k Keeper) setValidatorAward(ctx sdk.Context, amount sdk.Int, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.KeyForValidatorAward(address)
 	val := amino.MustMarshalBinaryBare(amount)
 	store.Set(key, val)
 }
 
-func (k Keeper) getValidatorAward(ctx sdk.Context, address sdk.ValAddress) (coins sdk.Int, found bool) {
+func (k Keeper) getValidatorAward(ctx sdk.Context, address sdk.Address) (coins sdk.Int, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValidatorAward(address))
 	if value == nil {
@@ -104,7 +104,7 @@ func (k Keeper) getValidatorAward(ctx sdk.Context, address sdk.ValAddress) (coin
 	return
 }
 
-func (k Keeper) deleteValidatorAward(ctx sdk.Context, address sdk.ValAddress) {
+func (k Keeper) deleteValidatorAward(ctx sdk.Context, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorAward(address))
 }
@@ -116,7 +116,7 @@ func (k Keeper) mintValidatorAwards(ctx sdk.Context) {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		amount := sdk.Int{}
-		address := sdk.ValAddress(types.AddressFromKey(iterator.Key()))
+		address := sdk.Address(types.AddressFromKey(iterator.Key()))
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &amount)
 		k.mint(ctx, amount, address)
 		// remove from the award store
@@ -125,13 +125,13 @@ func (k Keeper) mintValidatorAwards(ctx sdk.Context) {
 }
 
 // Mints sdk.Coins and sends them to an address
-func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.ValAddress) sdk.Result {
+func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.Address) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	mintErr := k.supplyKeeper.MintCoins(ctx, types.StakedPoolName, coins.Add(coins))
 	if mintErr != nil {
 		return mintErr.Result()
 	}
-	sendErr := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.AccAddress(address), coins)
+	sendErr := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.Address(address), coins)
 	if sendErr != nil {
 		return sendErr.Result()
 	}
@@ -143,7 +143,7 @@ func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.ValAddress) sd
 }
 
 // get the proposer public key for this block
-func (k Keeper) GetPreviousProposer(ctx sdk.Context) (consAddr sdk.ConsAddress) {
+func (k Keeper) GetPreviousProposer(ctx sdk.Context) (consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.ProposerKey)
 	if b == nil {
@@ -154,7 +154,7 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Context) (consAddr sdk.ConsAddress) 
 }
 
 // set the proposer public key for this block
-func (k Keeper) SetPreviousProposer(ctx sdk.Context, consAddr sdk.ConsAddress) {
+func (k Keeper) SetPreviousProposer(ctx sdk.Context, consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(consAddr)
 	store.Set(types.ProposerKey, b)

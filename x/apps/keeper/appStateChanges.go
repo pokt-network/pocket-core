@@ -24,7 +24,7 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Context, application types.Ap
 	if amount.LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		return types.ErrMinimumStake(k.codespace)
 	}
-	if !k.coinKeeper.HasCoins(ctx, sdk.AccAddress(application.Address), coin) {
+	if !k.coinKeeper.HasCoins(ctx, sdk.Address(application.Address), coin) {
 		return types.ErrNotEnoughCoins(k.codespace)
 	}
 	return nil
@@ -169,7 +169,7 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Appli
 }
 
 // send a application to jail
-func (k Keeper) JailApplication(ctx sdk.Context, addr sdk.ConsAddress) {
+func (k Keeper) JailApplication(ctx sdk.Context, addr sdk.Address) {
 	application := k.mustGetApplicationByConsAddr(ctx, addr)
 	if application.Jailed {
 		panic(fmt.Sprintf("cannot jail already jailed application, application: %v\n", application))
@@ -182,7 +182,7 @@ func (k Keeper) JailApplication(ctx sdk.Context, addr sdk.ConsAddress) {
 }
 
 // remove a application from jail
-func (k Keeper) UnjailApplication(ctx sdk.Context, addr sdk.ConsAddress) {
+func (k Keeper) UnjailApplication(ctx sdk.Context, addr sdk.Address) {
 	application := k.mustGetApplicationByConsAddr(ctx, addr)
 	if !application.Jailed {
 		panic(fmt.Sprintf("cannot unjail already unjailed application, application: %v\n", application))

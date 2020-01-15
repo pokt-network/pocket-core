@@ -24,13 +24,13 @@ func init() {
 	moduleCdc.Seal()
 
 	msgAppStake = MsgAppStake{
-		Address: sdk.ValAddress(pub.Address()),
+		Address: sdk.Address(pub.Address()),
 		PubKey:  pub,
 		Chains:  []string{"886ba5bcb77e1064530052fed1a3f145"},
 		Value:   sdk.NewInt(10),
 	}
-	msgAppUnjail = MsgAppUnjail{sdk.ValAddress(pub.Address())}
-	msgBeginAppUnstake = MsgBeginAppUnstake{sdk.ValAddress(pub.Address())}
+	msgAppUnjail = MsgAppUnjail{sdk.Address(pub.Address())}
+	msgBeginAppUnstake = MsgBeginAppUnstake{sdk.Address(pub.Address())}
 }
 
 func TestMsgApp_GetSigners(t *testing.T) {
@@ -40,12 +40,12 @@ func TestMsgApp_GetSigners(t *testing.T) {
 	tests := []struct {
 		name string
 		args
-		want []sdk.AccAddress
+		want []sdk.Address
 	}{
 		{
 			name: "return signers",
 			args: args{msgAppStake},
-			want: []sdk.AccAddress{sdk.AccAddress(msgAppStake.Address)},
+			want: []sdk.Address{sdk.Address(msgAppStake.Address)},
 		},
 	}
 	for _, tt := range tests {
@@ -178,12 +178,12 @@ func TestMsgBeginAppUnstake_GetSigners(t *testing.T) {
 	tests := []struct {
 		name string
 		args
-		want []sdk.AccAddress
+		want []sdk.Address
 	}{
 		{
 			name: "return signers",
 			args: args{msgBeginAppUnstake},
-			want: []sdk.AccAddress{sdk.AccAddress(msgAppStake.Address)},
+			want: []sdk.Address{sdk.Address(msgAppStake.Address)},
 		},
 	}
 	for _, tt := range tests {
@@ -347,12 +347,12 @@ func TestMsgAppUnjail_GetSigners(t *testing.T) {
 	tests := []struct {
 		name string
 		args
-		want []sdk.AccAddress
+		want []sdk.Address
 	}{
 		{
 			name: "return signers",
 			args: args{msgAppUnjail},
-			want: []sdk.AccAddress{sdk.AccAddress(msgAppUnjail.AppAddr)},
+			want: []sdk.Address{sdk.Address(msgAppUnjail.AppAddr)},
 		},
 	}
 	for _, tt := range tests {

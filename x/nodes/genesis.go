@@ -119,7 +119,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 	)
 	// update signing information from genesis state
 	for addr, info := range data.SigningInfos {
-		address, err := sdk.ConsAddressFromHex(addr)
+		address, err := sdk.AddressFromHex(addr)
 		if err != nil {
 			panic(err)
 		}
@@ -127,7 +127,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 	}
 	// update missed block information from genesis state
 	for addr, array := range data.MissedBlocks {
-		address, err := sdk.ConsAddressFromHex(addr)
+		address, err := sdk.AddressFromHex(addr)
 		if err != nil {
 			panic(err)
 		}
@@ -149,13 +149,13 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) types.GenesisState {
 	prevStateTotalPower := keeper.PrevStateValidatorsPower(ctx)
 	validators := keeper.GetAllValidators(ctx)
 	var prevStateValidatorPowers []types.PrevStatePowerMapping
-	keeper.IterateAndExecuteOverPrevStateValsByPower(ctx, func(addr sdk.ValAddress, power int64) (stop bool) {
+	keeper.IterateAndExecuteOverPrevStateValsByPower(ctx, func(addr sdk.Address, power int64) (stop bool) {
 		prevStateValidatorPowers = append(prevStateValidatorPowers, types.PrevStatePowerMapping{Address: addr, Power: power})
 		return false
 	})
 	signingInfos := make(map[string]types.ValidatorSigningInfo)
 	missedBlocks := make(map[string][]types.MissedBlock)
-	keeper.IterateAndExecuteOverValSigningInfo(ctx, func(address sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
+	keeper.IterateAndExecuteOverValSigningInfo(ctx, func(address sdk.Address, info types.ValidatorSigningInfo) (stop bool) {
 		addrstring := address.String()
 		signingInfos[addrstring] = info
 		localMissedBlocks := []types.MissedBlock{}

@@ -17,7 +17,7 @@ type SupplyKeeper interface {
 	// get total supply of tokens
 	GetSupply(ctx sdk.Context) supplyexported.SupplyI
 	// get the address of a module account
-	GetModuleAddress(name string) sdk.AccAddress
+	GetModuleAddress(name string) sdk.Address
 	// get the module account structure
 	GetModuleAccount(ctx sdk.Context, moduleName string) supplyexported.ModuleAccountI
 	// set module account structure
@@ -25,9 +25,9 @@ type SupplyKeeper interface {
 	// send coins to/from module accounts
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) sdk.Error
 	// send coins from module to validator
-	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) sdk.Error
+	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.Address, amt sdk.Coins) sdk.Error
 	// send coins from validator to module
-	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) sdk.Error
+	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.Address, recipientModule string, amt sdk.Coins) sdk.Error
 	// mint coins
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) sdk.Error
 	// burn coins
@@ -44,13 +44,13 @@ type ValidatorSet interface {
 	// iterate through the validator set of the prevState block by address, execute func for each validator
 	IterateAndExecuteOverPrevStateVals(sdk.Context, func(index int64, validator posexported.ValidatorI) (stop bool))
 	// get a particular validator by address
-	Validator(sdk.Context, sdk.ValAddress) posexported.ValidatorI
+	Validator(sdk.Context, sdk.Address) posexported.ValidatorI
 	// total staked tokens within the validator set
 	TotalTokens(sdk.Context) sdk.Int
 	// jail a validator
-	JailValidator(sdk.Context, sdk.ConsAddress)
+	JailValidator(sdk.Context, sdk.Address)
 	// unjail a validator
-	UnjailValidator(sdk.Context, sdk.ConsAddress)
+	UnjailValidator(sdk.Context, sdk.Address)
 	// MaxValidators returns the maximum amount of staked validators
 	MaxValidators(sdk.Context) uint64
 }
@@ -64,16 +64,16 @@ type ValidatorSet interface {
 
 // POSHooks event hooks for staking validator object (noalias)
 type POSHooks interface {
-	BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.ValAddress)
-	AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.ValAddress)
-	BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	AfterValidatorStaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	BeforeValidatorUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	AfterValidatorUnstaked(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress)
-	BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec)
-	AfterValidatorSlashed(ctx sdk.Context, valAddr sdk.ValAddress, fraction sdk.Dec)
+	BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.Address)
+	AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.Address)
+	BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	AfterValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	BeforeValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	AfterValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
+	BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec)
+	AfterValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec)
 }

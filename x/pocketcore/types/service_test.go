@@ -77,7 +77,7 @@ func TestRelay_Validate(t *testing.T) {
 	invalidPayloadEmpty := validRelay
 	invalidPayloadEmpty.Payload.Data = ""
 	selfNode := nodesTypes.Validator{
-		Address:                 sdk.ValAddress(npk.Address()),
+		Address:                 sdk.Address(npk.Address()),
 		ConsPubKey:              npk,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
@@ -90,7 +90,7 @@ func TestRelay_Validate(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		pubKey := getRandomPubKey()
 		allNodes = append(allNodes, nodesTypes.Validator{
-			Address:                 sdk.ValAddress(pubKey.Address()),
+			Address:                 sdk.Address(pubKey.Address()),
 			ConsPubKey:              pubKey,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -104,7 +104,7 @@ func TestRelay_Validate(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		pubKey := getRandomPubKey()
 		noEthereumNodes = append(noEthereumNodes, nodesTypes.Validator{
-			Address:                 sdk.ValAddress(pubKey.Address()),
+			Address:                 sdk.Address(pubKey.Address()),
 			ConsPubKey:              pubKey,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -130,7 +130,7 @@ func TestRelay_Validate(t *testing.T) {
 	}
 	pubKey := getRandomPubKey()
 	app := appsType.Application{
-		Address:                 sdk.ValAddress(pubKey.Address()),
+		Address:                 sdk.Address(pubKey.Address()),
 		ConsPubKey:              pubKey,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,

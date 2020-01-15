@@ -10,8 +10,8 @@ import (
 
 type args struct {
 	amount      sdk.Int
-	valAddress  sdk.ValAddress
-	consAddress sdk.ConsAddress
+	address  sdk.Address
+	consAddress sdk.Address
 }
 
 func TestSetandGetValidatorAward(t *testing.T) {
@@ -28,21 +28,21 @@ func TestSetandGetValidatorAward(t *testing.T) {
 			name:          "can set award",
 			expectedCoins: sdk.NewInt(1),
 			expectedFind:  true,
-			args:          args{amount: sdk.NewInt(int64(1)), valAddress: validatorAddress},
+			args:          args{amount: sdk.NewInt(int64(1)), address: validatorAddress},
 		},
 		{
 			name:          "can get award",
 			expectedCoins: sdk.NewInt(2),
 			expectedFind:  true,
-			args:          args{amount: sdk.NewInt(int64(2)), valAddress: validatorAddress},
+			args:          args{amount: sdk.NewInt(int64(2)), address: validatorAddress},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 
-			keeper.setValidatorAward(context, test.args.amount, test.args.valAddress)
-			coins, found := keeper.getValidatorAward(context, test.args.valAddress)
+			keeper.setValidatorAward(context, test.args.amount, test.args.address)
+			coins, found := keeper.getValidatorAward(context, test.args.address)
 			assert.True(t, test.expectedCoins.Equal(coins), "coins don't match")
 			assert.Equal(t, test.expectedFind, found, "finds don't match")
 
@@ -57,7 +57,7 @@ func TestSetAndGetProposer(t *testing.T) {
 	tests := []struct {
 		name            string
 		args            args
-		expectedAddress sdk.ConsAddress
+		expectedAddress sdk.Address
 	}{
 		{
 			name:            "can set the preivous proposer",
@@ -91,16 +91,16 @@ func TestDeleteValidatorAward(t *testing.T) {
 			name:          "can delete award",
 			expectedCoins: sdk.NewInt(0),
 			expectedFind:  false,
-			args:          args{amount: sdk.NewInt(int64(1)), valAddress: validatorAddress},
+			args:          args{amount: sdk.NewInt(int64(1)), address: validatorAddress},
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 
-			keeper.setValidatorAward(context, test.args.amount, test.args.valAddress)
-			keeper.deleteValidatorAward(context, test.args.valAddress)
-			_, found := keeper.getValidatorAward(context, test.args.valAddress)
+			keeper.setValidatorAward(context, test.args.amount, test.args.address)
+			keeper.deleteValidatorAward(context, test.args.address)
+			_, found := keeper.getValidatorAward(context, test.args.address)
 			assert.Equal(t, test.expectedFind, found, "finds do not match")
 
 		})
@@ -135,7 +135,7 @@ func TestMint(t *testing.T) {
 		name     string
 		amount   sdk.Int
 		expected string
-		address  sdk.ValAddress
+		address  sdk.Address
 		panics   bool
 	}{
 		{
@@ -167,7 +167,7 @@ func TestMint(t *testing.T) {
 			default:
 				result := keeper.mint(context, test.amount, test.address)
 				assert.Contains(t, result.Log, test.expected, "does not contain message")
-				coins := keeper.coinKeeper.GetCoins(context, sdk.AccAddress(test.address))
+				coins := keeper.coinKeeper.GetCoins(context, sdk.Address(test.address))
 				assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), test.amount)).IsEqual(coins), "coins should match")
 			}
 		})
@@ -180,7 +180,7 @@ func TestMintValidatorAwards(t *testing.T) {
 		name     string
 		amount   sdk.Int
 		expected string
-		address  sdk.ValAddress
+		address  sdk.Address
 		panics   bool
 	}{
 		{
@@ -197,7 +197,7 @@ func TestMintValidatorAwards(t *testing.T) {
 			keeper.setValidatorAward(context, test.amount, test.address)
 
 			keeper.mintValidatorAwards(context)
-			coins := keeper.coinKeeper.GetCoins(context, sdk.AccAddress(test.address))
+			coins := keeper.coinKeeper.GetCoins(context, sdk.Address(test.address))
 			assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), test.amount)).IsEqual(coins), "coins should match")
 		})
 	}
@@ -240,7 +240,7 @@ func TestKeeper_AwardCoinsTo(t *testing.T) {
 	type args struct {
 		ctx     sdk.Context
 		relays  sdk.Int
-		address sdk.ValAddress
+		address sdk.Address
 	}
 	context, _, keeper := createTestInput(t, true)
 
@@ -273,7 +273,7 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 	}
 	type args struct {
 		ctx              sdk.Context
-		previousProposer sdk.ConsAddress
+		previousProposer sdk.Address
 	}
 	bondedValidator := getBondedValidator()
 

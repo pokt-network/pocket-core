@@ -14,7 +14,7 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 	fromAddr := kp.GetAddress()
 	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgAppStake{
-		Address: sdk.ValAddress(fromAddr),
+		Address: sdk.Address(fromAddr),
 		PubKey:  kp.PubKey,
 		Value:   amount,
 		Chains:  chains, // non native blockchains
@@ -26,8 +26,8 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.ValAddress, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, sdk.AccAddress(address), tmNode, keybase, passphrase)
+func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
+	txBuilder, cliCtx := newTx(cdc, sdk.Address(address), tmNode, keybase, passphrase)
 	msg := types.MsgBeginAppUnstake{Address: address}
 	err := msg.ValidateBasic()
 	if err != nil {
@@ -36,7 +36,7 @@ func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, add
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func newTx(cdc *codec.Codec, fromAddr sdk.AccAddress, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+func newTx(cdc *codec.Codec, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		panic(err)

@@ -73,11 +73,11 @@ func TestNewQueryUnstakingApplicationsParams(t *testing.T) {
 
 func TestNewQueryApplicationParams(t *testing.T) {
 	type args struct {
-		applicationAddr types.ValAddress
+		applicationAddr types.Address
 	}
 	var pub ed25519.PubKeyEd25519
 	rand.Read(pub[:])
-	va := types.ValAddress(pub.Address())
+	va := types.Address(pub.Address())
 
 	tests := []struct {
 		name string

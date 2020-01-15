@@ -13,6 +13,7 @@ import (
 
 var (
 	datadir         string
+	tmNode          string
 	persistentPeers = "" // todo pull from file
 	seeds           = "" // todo pull from file
 )
@@ -40,6 +41,7 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	startCmd.PersistentFlags().StringVar(&datadir, "data_dir", "", "data directory (default is $HOME/.pocket/")
+	startCmd.PersistentFlags().StringVar(&datadir, "node", "", "takes a remote endpoint in the form <protocol>://<host>:<port>")
 	rootCmd.AddCommand(startCmd)
 }
 
@@ -68,6 +70,8 @@ var startCmd = &cobra.Command{
 			}
 		}
 		app.SetCoinbasePassphrase(pswrd)
+		// set tendermint node
+		app.SetTendermintNode(tmNode)
 		// init the tendermint node
 		tmNode := app.InitTendermint(persistentPeers, seeds)
 		// We trap kill signals (2,3,15,9)

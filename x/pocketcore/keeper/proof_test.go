@@ -236,8 +236,8 @@ func TestKeeper_GetSetInvoice(t *testing.T) {
 		ServicerAddress: npk.Address().String(),
 		TotalRelays:     2000,
 	}
-	keeper.SetInvoice(ctx, sdk.ValAddress(npk.Address()), storedInvoice)
-	inv, found := keeper.GetInvoice(ctx, sdk.ValAddress(npk.Address()), validHeader)
+	keeper.SetInvoice(ctx, sdk.Address(npk.Address()), storedInvoice)
+	inv, found := keeper.GetInvoice(ctx, sdk.Address(npk.Address()), validHeader)
 	assert.True(t, found)
 	assert.Equal(t, inv, storedInvoice)
 }

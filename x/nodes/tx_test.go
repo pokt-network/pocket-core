@@ -14,7 +14,7 @@ func TestRawTx(t *testing.T) {
 	type args struct {
 		cdc      *codec.Codec
 		tmNode   client.Client
-		fromAddr sdk.ValAddress
+		fromAddr sdk.Address
 		txBytes  []byte
 	}
 	tests := []struct {
@@ -49,8 +49,8 @@ func TestSend(t *testing.T) {
 		cdc        *codec.Codec
 		tmNode     client.Client
 		keybase    keys.Keybase
-		fromAddr   sdk.ValAddress
-		toAddr     sdk.ValAddress
+		fromAddr   sdk.Address
+		toAddr     sdk.Address
 		passphrase string
 		amount     sdk.Int
 	}
@@ -92,7 +92,7 @@ func TestSend(t *testing.T) {
 //func Test_newTx(t *testing.T) {
 //	type args struct {
 //		cdc        *codec.Codec
-//		fromAddr   sdk.AccAddress
+//		fromAddr   sdk.Address
 //		tmNode     client.Client
 //		keybase    keys.Keybase
 //		passphrase string
@@ -105,7 +105,7 @@ func TestSend(t *testing.T) {
 //	}{
 //		{"test newTx", args{
 //			cdc:        makeTestCodec(),
-//			fromAddr:   sdk.AccAddress(getRandomPubKey().Address()),
+//			fromAddr:   sdk.Address(getRandomPubKey().Address()),
 //			tmNode:     mock.Client{
 //				ABCIClient:     mock.ABCIMock{},
 //				SignClient:     mock.ABCIMock{},

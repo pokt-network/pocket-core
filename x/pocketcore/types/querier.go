@@ -23,10 +23,10 @@ type QueryDispatchParams struct {
 }
 
 type QueryInvoiceParams struct {
-	Address sdk.ValAddress `json:"address"`
+	Address sdk.Address `json:"address"`
 	Header  SessionHeader  `json:"header"`
 }
 
 type QueryInvoicesParams struct {
-	Address sdk.ValAddress `json:"address"`
+	Address sdk.Address `json:"address"`
 }

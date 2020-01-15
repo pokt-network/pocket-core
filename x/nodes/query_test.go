@@ -14,7 +14,7 @@ func TestQueryAccountBalance(t *testing.T) {
 	type args struct {
 		cdc    *codec.Codec
 		tmNode client.Client
-		addr   sdk.ValAddress
+		addr   sdk.Address
 		height int64
 	}
 	tests := []struct {
@@ -212,7 +212,7 @@ func TestQuerySigningInfo(t *testing.T) {
 		cdc      *codec.Codec
 		tmNode   client.Client
 		height   int64
-		consAddr sdk.ConsAddress
+		consAddr sdk.Address
 	}
 	tests := []struct {
 		name    string
@@ -224,7 +224,7 @@ func TestQuerySigningInfo(t *testing.T) {
 			cdc:      makeTestCodec(),
 			tmNode:   GetTestTendermintClient(),
 			height:   0,
-			consAddr: sdk.ConsAddress(getRandomPubKey().Address()),
+			consAddr: sdk.Address(getRandomPubKey().Address()),
 		}, types.ValidatorSigningInfo{}, true},
 	}
 	for _, tt := range tests {
@@ -407,7 +407,7 @@ func TestQueryValidator(t *testing.T) {
 	type args struct {
 		cdc    *codec.Codec
 		tmNode client.Client
-		addr   sdk.ValAddress
+		addr   sdk.Address
 		height int64
 	}
 	tests := []struct {

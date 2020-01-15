@@ -9,7 +9,7 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func QueryProof(cdc *codec.Codec, addr sdk.ValAddress, tmNode client.Client, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.StoredInvoice, error) {
+func QueryProof(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.StoredInvoice, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
 	params := types.QueryInvoiceParams{
 		Address: addr,
@@ -32,7 +32,7 @@ func QueryProof(cdc *codec.Codec, addr sdk.ValAddress, tmNode client.Client, blo
 	return &ps, nil
 }
 
-func QueryProofs(cdc *codec.Codec, tmNode client.Client, addr sdk.ValAddress, height int64) ([]types.StoredInvoice, error) {
+func QueryProofs(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, height int64) ([]types.StoredInvoice, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryInvoicesParams{
 		Address: addr,

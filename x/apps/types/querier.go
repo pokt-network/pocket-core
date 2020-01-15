@@ -17,10 +17,10 @@ const (
 )
 
 type QueryAppParams struct {
-	Address sdk.ValAddress
+	Address sdk.Address
 }
 
-func NewQueryAppParams(applicationAddr sdk.ValAddress) QueryAppParams {
+func NewQueryAppParams(applicationAddr sdk.Address) QueryAppParams {
 	return QueryAppParams{
 		Address: applicationAddr,
 	}

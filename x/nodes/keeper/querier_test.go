@@ -23,7 +23,7 @@ func Test_NewQuerier(t *testing.T) {
 	})
 	jsondataValidatorAddr, _ := amino.MarshalJSON(getRandomValidatorAddress())
 
-	conAddress := sdk.ConsAddress(getRandomPubKey().Address())
+	conAddress := sdk.Address(getRandomPubKey().Address())
 	jsondatasigninfo, _ := amino.MarshalJSON(types.QuerySigningInfoParams{
 		ConsAddress: conAddress,
 	})
@@ -303,7 +303,7 @@ func Test_querySigningInfo(t *testing.T) {
 		k   Keeper
 	}
 
-	conAddress := sdk.ConsAddress(getRandomPubKey().Address())
+	conAddress := sdk.Address(getRandomPubKey().Address())
 	context, _, keeper := createTestInput(t, true)
 	jsondata, _ := amino.MarshalJSON(types.QuerySigningInfoParams{ConsAddress: conAddress})
 	var jsonresponse []byte
@@ -574,12 +574,12 @@ func Test_queryValidator(t *testing.T) {
 		k   Keeper
 	}
 
-	ranValAddress := getRandomValidatorAddress()
+	ranAddress := getRandomValidatorAddress()
 	context, _, keeper := createTestInput(t, true)
 	jsondata, _ := amino.MarshalJSON(types.QueryValidatorParams{
-		Address: ranValAddress,
+		Address: ranAddress,
 	})
-	//jsonresponse,_:= keeper.GetValidator(context,ranValAddress)
+	//jsonresponse,_:= keeper.GetValidator(context,ranAddress)
 
 	tests := []struct {
 		name  string

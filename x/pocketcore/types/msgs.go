@@ -19,7 +19,7 @@ type MsgClaim struct {
 	SessionHeader `json:"header"` // header information for identification
 	MerkleRoot    HashSum         `json:"merkle_root"`  // merkle root for data integrity
 	TotalRelays   int64           `json:"total_relays"` // total number of relays
-	FromAddress   sdk.ValAddress  `json:"from_address"` // claimant
+	FromAddress   sdk.Address  `json:"from_address"` // claimant
 }
 
 func (msg MsgClaim) Route() string { return RouterKey }
@@ -62,8 +62,8 @@ func (msg MsgClaim) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgClaim) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.AccAddress(msg.FromAddress)}
+func (msg MsgClaim) GetSigners() []sdk.Address {
+	return []sdk.Address{sdk.Address(msg.FromAddress)}
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -147,10 +147,10 @@ func (msg MsgProof) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgProof) GetSigners() []sdk.AccAddress {
+func (msg MsgProof) GetSigners() []sdk.Address {
 	pk, err := crypto.NewPublicKey(msg.Leaf.ServicerPubKey)
 	if err != nil {
 		panic(err)
 	}
-	return []sdk.AccAddress{sdk.AccAddress(pk.Address())}
+	return []sdk.Address{sdk.Address(pk.Address())}
 }

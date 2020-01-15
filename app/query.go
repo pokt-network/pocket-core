@@ -69,7 +69,7 @@ func QuerySigningInfo(height int64, addr string) (nodesTypes.ValidatorSigningInf
 	if err != nil {
 		return nodesTypes.ValidatorSigningInfo{}, err
 	}
-	return nodes.QuerySigningInfo(cdc, GetTendermintClient(), height, sdk.ConsAddress(a))
+	return nodes.QuerySigningInfo(cdc, GetTendermintClient(), height, a)
 }
 
 func QueryTotalNodeCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {

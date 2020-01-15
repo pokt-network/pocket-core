@@ -54,12 +54,12 @@ func (k Keeper) prevStateValidatorsIterator(ctx sdk.Context) (iterator sdk.Itera
 
 // Iterate over prevState validator powers and perform a function on each validator.
 func (k Keeper) IterateAndExecuteOverPrevStateValsByPower(
-	ctx sdk.Context, handler func(address sdk.ValAddress, power int64) (stop bool)) {
+	ctx sdk.Context, handler func(address sdk.Address, power int64) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	iter := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
-		addr := sdk.ValAddress(iter.Key()[len(types.PrevStateValidatorsPowerKey):])
+		addr := sdk.Address(iter.Key()[len(types.PrevStateValidatorsPowerKey):])
 		var power int64
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &power)
 		if handler(addr, power) {
@@ -89,7 +89,7 @@ func (k Keeper) IterateAndExecuteOverPrevStateVals(
 }
 
 // get the power of a SINGLE staked validator from the previous state
-func (k Keeper) PrevStateValidatorPower(ctx sdk.Context, addr sdk.ValAddress) (power int64) {
+func (k Keeper) PrevStateValidatorPower(ctx sdk.Context, addr sdk.Address) (power int64) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.KeyForValidatorPrevStateStateByPower(addr))
 	if bz == nil {
@@ -100,14 +100,14 @@ func (k Keeper) PrevStateValidatorPower(ctx sdk.Context, addr sdk.ValAddress) (p
 }
 
 // set the power of a SINGLE staked validator from the previous state
-func (k Keeper) SetPrevStateValPower(ctx sdk.Context, addr sdk.ValAddress, power int64) {
+func (k Keeper) SetPrevStateValPower(ctx sdk.Context, addr sdk.Address, power int64) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(power)
 	store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
 }
 
 // DeleteInvoice the power of a SINGLE staked validator from the previous state
-func (k Keeper) DeletePrevStateValPower(ctx sdk.Context, addr sdk.ValAddress) {
+func (k Keeper) DeletePrevStateValPower(ctx sdk.Context, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorPrevStateStateByPower(addr))
 }

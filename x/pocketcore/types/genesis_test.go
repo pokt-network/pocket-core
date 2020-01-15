@@ -54,7 +54,7 @@ func TestValidateGenesis(t *testing.T) {
 			},
 			MerkleRoot:  root,
 			TotalRelays: 1000,
-			FromAddress: types.ValAddress(servicerAddr),
+			FromAddress: types.Address(servicerAddr),
 		}},
 	}
 	invalidProofs := GenesisState{
@@ -81,7 +81,7 @@ func TestValidateGenesis(t *testing.T) {
 			},
 			MerkleRoot:  root,
 			TotalRelays: 1000,
-			FromAddress: types.ValAddress(servicerAddr),
+			FromAddress: types.Address(servicerAddr),
 		}},
 	}
 	invalidClaims := GenesisState{
@@ -108,7 +108,7 @@ func TestValidateGenesis(t *testing.T) {
 			},
 			MerkleRoot:  root,
 			TotalRelays: -1000,
-			FromAddress: types.ValAddress(servicerAddr),
+			FromAddress: types.Address(servicerAddr),
 		}},
 	}
 	validGenesisState := GenesisState{
@@ -135,7 +135,7 @@ func TestValidateGenesis(t *testing.T) {
 			},
 			MerkleRoot:  root,
 			TotalRelays: 1000,
-			FromAddress: types.ValAddress(servicerAddr),
+			FromAddress: types.Address(servicerAddr),
 		}},
 	}
 	tests := []struct {
@@ -216,7 +216,7 @@ func TestDefaultGenesisState(t *testing.T) {
 			},
 			MerkleRoot:  root,
 			TotalRelays: 1000,
-			FromAddress: types.ValAddress(servicerAddr),
+			FromAddress: types.Address(servicerAddr),
 		}},
 	}
 	DefaultGenState := GenesisState{Params: Params{

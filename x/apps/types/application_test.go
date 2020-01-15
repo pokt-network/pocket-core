@@ -13,7 +13,7 @@ import (
 
 func TestNewApplication(t *testing.T) {
 	type args struct {
-		addr          sdk.ValAddress
+		addr          sdk.Address
 		consPubKey    crypto.PubKey
 		tokensToStake sdk.Int
 		chains        []string
@@ -27,9 +27,9 @@ func TestNewApplication(t *testing.T) {
 		args args
 		want Application
 	}{
-		{"defaultApplication", args{sdk.ValAddress(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com"},
+		{"defaultApplication", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com"},
 			Application{
-				Address:                 sdk.ValAddress(pub.Address()),
+				Address:                 sdk.Address(pub.Address()),
 				ConsPubKey:              pub,
 				Jailed:                  false,
 				Status:                  sdk.Bonded,
@@ -49,7 +49,7 @@ func TestNewApplication(t *testing.T) {
 
 func TestApplication_AddStakedTokens(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -73,7 +73,7 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 			"Default Add Token Test",
 			false,
 			fields{
-				Address:                 sdk.ValAddress(pub.Address()),
+				Address:                 sdk.Address(pub.Address()),
 				ConsPubKey:              pub,
 				Jailed:                  false,
 				Status:                  sdk.Bonded,
@@ -84,7 +84,7 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 					tokens: sdk.NewInt(100),
 			},
 			Application{
-				Address:                 sdk.ValAddress(pub.Address()),
+				Address:                 sdk.Address(pub.Address()),
 				ConsPubKey:              pub,
 				Jailed:                  false,
 				Status:                  sdk.Bonded,
@@ -96,7 +96,7 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 			" panics Add negative amount",
 			true,
 			fields{
-				Address:                 sdk.ValAddress(pub.Address()),
+				Address:                 sdk.Address(pub.Address()),
 				ConsPubKey:              pub,
 				Jailed:                  false,
 				Status:                  sdk.Bonded,
@@ -139,7 +139,7 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 
 func TestApplication_ConsAddress(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -152,16 +152,16 @@ func TestApplication_ConsAddress(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   sdk.ConsAddress
+		want   sdk.Address
 	}{
 		{"Default Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, sdk.ConsAddress(pub.Address())},
+		}, sdk.Address(pub.Address())},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -182,7 +182,7 @@ func TestApplication_ConsAddress(t *testing.T) {
 
 func TestApplication_ConsensusPower(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -198,7 +198,7 @@ func TestApplication_ConsensusPower(t *testing.T) {
 		want   int64
 	}{
 		{"Default Test / 0 power", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -206,7 +206,7 @@ func TestApplication_ConsensusPower(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}, 0},
 		{"Default Test / 1 power", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -233,7 +233,7 @@ func TestApplication_ConsensusPower(t *testing.T) {
 
 func TestApplication_Equals(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -253,14 +253,14 @@ func TestApplication_Equals(t *testing.T) {
 		want   bool
 	}{
 		{"Default Test Equal", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{Application{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -268,14 +268,14 @@ func TestApplication_Equals(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}}, true},
 		{"Default Test Not Equal", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{Application{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonded,
@@ -302,7 +302,7 @@ func TestApplication_Equals(t *testing.T) {
 
 func TestApplication_GetAddress(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -316,16 +316,16 @@ func TestApplication_GetAddress(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   sdk.ValAddress
+		want   sdk.Address
 	}{
 		{"Default Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, sdk.ValAddress(pub.Address())},
+		}, sdk.Address(pub.Address())},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -346,7 +346,7 @@ func TestApplication_GetAddress(t *testing.T) {
 
 func TestApplication_GetConsAddr(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -359,16 +359,16 @@ func TestApplication_GetConsAddr(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   sdk.ConsAddress
+		want   sdk.Address
 	}{
 		{"Default Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, sdk.ConsAddress(pub.Address())},
+		}, sdk.Address(pub.Address())},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -389,7 +389,7 @@ func TestApplication_GetConsAddr(t *testing.T) {
 
 func TestApplication_GetConsPubKey(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -405,7 +405,7 @@ func TestApplication_GetConsPubKey(t *testing.T) {
 		want   crypto.PubKey
 	}{
 		{"Default Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -432,7 +432,7 @@ func TestApplication_GetConsPubKey(t *testing.T) {
 
 func TestApplication_GetConsensusPower(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -449,7 +449,7 @@ func TestApplication_GetConsensusPower(t *testing.T) {
 		want   int64
 	}{
 		{"Default Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -476,7 +476,7 @@ func TestApplication_GetConsensusPower(t *testing.T) {
 
 func TestApplication_GetStatus(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -493,7 +493,7 @@ func TestApplication_GetStatus(t *testing.T) {
 		want   sdk.BondStatus
 	}{
 		{"Default Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -520,7 +520,7 @@ func TestApplication_GetStatus(t *testing.T) {
 
 func TestApplication_GetTokens(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -537,7 +537,7 @@ func TestApplication_GetTokens(t *testing.T) {
 		want   sdk.Int
 	}{
 		{"Default Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -564,7 +564,7 @@ func TestApplication_GetTokens(t *testing.T) {
 
 func TestApplication_IsJailed(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -581,7 +581,7 @@ func TestApplication_IsJailed(t *testing.T) {
 		want   bool
 	}{
 		{"Default Test", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -608,7 +608,7 @@ func TestApplication_IsJailed(t *testing.T) {
 
 func TestApplication_IsStaked(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -625,7 +625,7 @@ func TestApplication_IsStaked(t *testing.T) {
 		want   bool
 	}{
 		{"Default Test / bonded true", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -633,7 +633,7 @@ func TestApplication_IsStaked(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}, true},
 		{"Default Test / Unbonding false", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonding,
@@ -641,7 +641,7 @@ func TestApplication_IsStaked(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}, false},
 		{"Default Test / Unbonded false", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonded,
@@ -668,7 +668,7 @@ func TestApplication_IsStaked(t *testing.T) {
 
 func TestApplication_IsUnstaked(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -685,7 +685,7 @@ func TestApplication_IsUnstaked(t *testing.T) {
 		want   bool
 	}{
 		{"Default Test / bonded false", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -693,7 +693,7 @@ func TestApplication_IsUnstaked(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}, false},
 		{"Default Test / Unbonding false", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonding,
@@ -701,7 +701,7 @@ func TestApplication_IsUnstaked(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}, false},
 		{"Default Test / Unbonded true", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonded,
@@ -728,7 +728,7 @@ func TestApplication_IsUnstaked(t *testing.T) {
 
 func TestApplication_IsUnstaking(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -745,7 +745,7 @@ func TestApplication_IsUnstaking(t *testing.T) {
 		want   bool
 	}{
 		{"Default Test / bonded false", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -753,7 +753,7 @@ func TestApplication_IsUnstaking(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}, false},
 		{"Default Test / Unbonding true", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonding,
@@ -761,7 +761,7 @@ func TestApplication_IsUnstaking(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}, true},
 		{"Default Test / Unbonded false", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonded,
@@ -788,7 +788,7 @@ func TestApplication_IsUnstaking(t *testing.T) {
 
 func TestApplication_PotentialConsensusPower(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -805,7 +805,7 @@ func TestApplication_PotentialConsensusPower(t *testing.T) {
 		want   int64
 	}{
 		{"Default Test / potential power 0", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -832,7 +832,7 @@ func TestApplication_PotentialConsensusPower(t *testing.T) {
 
 func TestApplication_RemoveStakedTokens(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -853,14 +853,14 @@ func TestApplication_RemoveStakedTokens(t *testing.T) {
 		want   Application
 	}{
 		{"Remove 0 tokens having 0 tokens ", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{tokens: sdk.ZeroInt()}, Application{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -868,14 +868,14 @@ func TestApplication_RemoveStakedTokens(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}},
 		{"Remove 99 tokens having 100 tokens ", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.NewInt(100),
 			UnstakingCompletionTime: time.Time{},
 		}, args{tokens: sdk.NewInt(99)}, Application{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -902,7 +902,7 @@ func TestApplication_RemoveStakedTokens(t *testing.T) {
 
 func TestApplication_UpdateStatus(t *testing.T) {
 	type fields struct {
-		Address                 sdk.ValAddress
+		Address                 sdk.Address
 		ConsPubKey              crypto.PubKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
@@ -923,14 +923,14 @@ func TestApplication_UpdateStatus(t *testing.T) {
 		want   Application
 	}{
 		{"Test Bonded -> Unbonding", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{newStatus: sdk.Unbonding}, Application{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonding,
@@ -938,14 +938,14 @@ func TestApplication_UpdateStatus(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}},
 		{"Test Unbonding -> Unbonded", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonding,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{newStatus: sdk.Unbonded}, Application{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonded,
@@ -953,14 +953,14 @@ func TestApplication_UpdateStatus(t *testing.T) {
 			UnstakingCompletionTime: time.Time{},
 		}},
 		{"Test Unbonded -> Bonded", fields{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Unbonded,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{newStatus: sdk.Bonded}, Application{
-			Address:                 sdk.ValAddress(pub.Address()),
+			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
@@ -987,7 +987,7 @@ func TestApplication_UpdateStatus(t *testing.T) {
 
 func TestApplication_GetChains(t *testing.T) {
 	type args struct {
-		addr          sdk.ValAddress
+		addr          sdk.Address
 		consPubKey    crypto.PubKey
 		tokensToStake sdk.Int
 		chains        []string
@@ -1003,7 +1003,7 @@ func TestApplication_GetChains(t *testing.T) {
 	}{
 		{
 			"defaultApplication",
-			args{sdk.ValAddress(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com"},
+			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com"},
 			[]string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 		},
 	}
@@ -1019,7 +1019,7 @@ func TestApplication_GetChains(t *testing.T) {
 
 func TestApplication_GetMaxRelays(t *testing.T) {
 	type args struct {
-		addr          sdk.ValAddress
+		addr          sdk.Address
 		consPubKey    crypto.PubKey
 		tokensToStake sdk.Int
 		chains        []string
@@ -1036,7 +1036,7 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 	}{
 		{
 			"defaultApplication",
-			args{sdk.ValAddress(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com", sdk.NewInt(1)},
+			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com", sdk.NewInt(1)},
 			sdk.NewInt(1),
 		},
 	}

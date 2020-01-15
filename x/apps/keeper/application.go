@@ -7,7 +7,7 @@ import (
 )
 
 // get a single application from the main store
-func (k Keeper) GetApplication(ctx sdk.Context, addr sdk.ValAddress) (application types.Application, found bool) {
+func (k Keeper) GetApplication(ctx sdk.Context, addr sdk.Address) (application types.Application, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForAppByAllApps(addr))
 	if value == nil {
@@ -72,7 +72,7 @@ func (k Keeper) IterateAndExecuteOverApps(
 }
 
 // get a application in the consensus store
-func (k Keeper) GetAppByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (application types.Application, found bool) {
+func (k Keeper) GetAppByConsAddr(ctx sdk.Context, consAddr sdk.Address) (application types.Application, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	addr := store.Get(types.KeyForAppByConsAddr(consAddr))
 	if addr == nil {
