@@ -3,7 +3,6 @@ package app
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/posmint/crypto/keys"
 	"github.com/tendermint/tendermint/node"
 )
@@ -24,13 +23,13 @@ var _ = Describe("App", func() {
 		if err != nil {
 			panic(err)
 		}
-		app.MakeCodec()
+		MakeCodec()
 
-		app.InitGenesis()
+		InitGenesis()
 
-		app.SetCoinbasePassphrase(pswrd)
-		app.SetTendermintNode(nodeUri)
-		tmNode = app.InitTendermint("", "")
+		setcoinbasePassphrase(pswrd)
+		setTmNode(nodeUri)
+		tmNode = InitTendermint("", "")
 	})
 	Describe("Query block", func() {
 		It("Gets node height", func() {
