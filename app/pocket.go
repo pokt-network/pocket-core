@@ -64,7 +64,7 @@ func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 
 // inits from genesis
 func (app *pocketCoreApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	genesisState := cfg.GenesisStateFromFile(app.cdc, GetGenesisFilePath())
+	genesisState := cfg.GenesisStateFromFile(app.cdc, genesisPath())
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 

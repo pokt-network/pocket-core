@@ -4,8 +4,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/posmint/crypto"
+	"github.com/pokt-network/posmint/crypto/keys"
 	"github.com/pokt-network/posmint/types"
 	"github.com/spf13/cobra"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -41,10 +44,7 @@ var createCmd = &cobra.Command{
 	Short: "Create a new account",
 	Long:  `Creates and persists a new account in the Keybase. Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
-		if kb == nil {
-			panic(app.UninitializedKeybaseError)
-		}
+		kb := keys.New(app.KeybaseName, app.InitDataDirectory(datadir)+string(filepath.Separator)+app.KBDirectoryName)
 		fmt.Print("Enter Password: \n")
 		kp, err := kb.Create(app.Credentials())
 		if err != nil {
@@ -59,7 +59,7 @@ var getCoinbase = &cobra.Command{
 	Short: "Gets the coinbase account from the keybase",
 	Long:  `Retrieves the coinbase account from the pocket core keybase`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
@@ -77,7 +77,7 @@ var deleteCmd = &cobra.Command{
 	Short: "DeleteInvoice an account",
 	Long:  `Deletes a keypair from the keybase. Will prompt the user for the account passphrase`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic("Uninitialized Kebyase")
 		}
@@ -101,7 +101,7 @@ var listCmd = &cobra.Command{
 (0) b3746D30F2A579a2efe7F2F6E8E06277a78054C1
 (1) ab514F27e98DE7E3ecE3789b511dA955C3F09Bbc`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
@@ -122,7 +122,7 @@ var showCmd = &cobra.Command{
 	Long:  `Lists an account address and public key`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
@@ -147,7 +147,7 @@ var updatePassphraseCmd = &cobra.Command{
 	Long:  `Updates the passphrase for the indicated account. Will prompt the user for the current account passphrase and the new account passphrase.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
@@ -174,7 +174,7 @@ var signCmd = &cobra.Command{
 	Long:  `Digitally signs the specified <msg> using the specified <address> account credentials. Will prompt the user for the account passphrase.`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
@@ -201,7 +201,7 @@ var importArmoredCmd = &cobra.Command{
 	Long:  `Imports an account using the Encrypted ASCII armored <armor> string. Will prompt the user for a decryption passphrase of the <armor> string and for an encryption passphrase to store in the Keybase.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
@@ -225,7 +225,7 @@ var exportCmd = &cobra.Command{
 Will prompt the user for the account passphrase and for an encryption passphrase for the exported account.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
@@ -253,7 +253,7 @@ var exportRawCmd = &cobra.Command{
 	Long: `Exports the raw private key in hex format. Will prompt the user for the account passphrase. 
 NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.*`,
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
@@ -320,22 +320,16 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		pkBytes, err := hex.DecodeString(args[0])
-		kb := app.GetKeybase()
-		if kb == nil {
-			app.InitKeyfiles()
-			kb = app.GetKeybase()
-			if kb == nil {
-				panic("nil kb after initialization")
-			}
-		}
+		kb := keys.New(app.KeybaseName, app.InitDataDirectory(datadir)+string(filepath.Separator)+app.KBDirectoryName)
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()
-		var pk [64]byte
+		var pk [crypto.PrivKeySize]byte
 		copy(pk[:], pkBytes)
 		kp, err := kb.ImportPrivateKeyObject(pk, ePass)
 		if err != nil {
 			panic(err)
 		}
+
 		fmt.Printf("Account imported successfully:\n%s\n", strings.ToUpper(kp.GetAddress().String()))
 	},
 }

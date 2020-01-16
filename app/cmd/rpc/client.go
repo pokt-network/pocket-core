@@ -22,7 +22,7 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, er := app.GetCodec().MarshalJSON(res)
+	j, er := app.Codec().MarshalJSON(res)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
@@ -44,7 +44,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, er := app.GetCodec().MarshalJSON(res)
+	j, er := app.Codec().MarshalJSON(res)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
@@ -76,7 +76,7 @@ func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, er := app.GetCodec().MarshalJSON(res)
+	j, er := app.Codec().MarshalJSON(res)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return

@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
+	"github.com/spf13/cobra"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -40,8 +39,8 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	startCmd.PersistentFlags().StringVar(&datadir, "data_dir", "", "data directory (default is $HOME/.pocket/")
-	startCmd.PersistentFlags().StringVar(&datadir, "node", "", "takes a remote endpoint in the form <protocol>://<host>:<port>")
+	rootCmd.PersistentFlags().StringVar(&datadir, "datadir", "", "data directory (default is $HOME/.pocket/")
+	rootCmd.PersistentFlags().StringVar(&tmNode, "node", "", "takes a remote endpoint in the form <protocol>://<host>:<port>")
 	rootCmd.AddCommand(startCmd)
 }
 
@@ -52,28 +51,7 @@ var startCmd = &cobra.Command{
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		go rpc.StartRPC("8081")
-		// setup the codec
-		app.MakeCodec()
-		// setup the data directory
-		app.InitDataDirectory(datadir)
-		// setup the keybase
-		pswrd := app.InitKeyfiles()
-		// setup the genesis.json
-		app.InitGenesis()
-		// setup coinbase password
-		if pswrd == "" {
-			fmt.Println("Pocket core needs your passphrase to start")
-			pswrd = app.Credentials()
-			err := app.ConfirmCoinbasePassword(pswrd)
-			if err != nil {
-				panic("Coinbase Password could not be verified: " + err.Error())
-			}
-		}
-		app.SetCoinbasePassphrase(pswrd)
-		// set tendermint node
-		app.SetTendermintNode(tmNode)
-		// init the tendermint node
-		tmNode := app.InitTendermint(persistentPeers, seeds)
+		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds)
 		// We trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel,

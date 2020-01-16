@@ -11,6 +11,6 @@ func GenerateChain(ticker, netid, version, client, inter string) (chain string, 
 }
 
 func GenerateAAT(appPubKey, clientPubKey, passphrase string) (aatjson []byte, err error) {
-	aat, err := pocket.GenerateAAT(GetKeybase(), appPubKey, clientPubKey, passphrase)
+	aat, err := pocket.GenerateAAT(MustGetKeybase(), appPubKey, clientPubKey, passphrase)
 	return json.MarshalIndent(aat, "", "  ")
 }

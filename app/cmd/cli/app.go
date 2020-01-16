@@ -67,7 +67,7 @@ Read the Application Authentication Token documentation for more.
 NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES IN ORDER TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION:`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		kb := app.GetKeybase()
+		kb := app.MustGetKeybase()
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}

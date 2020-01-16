@@ -39,8 +39,11 @@ import (
 )
 
 const (
-	keybaseName       = "pocket-keybase"
-	kbDirName         = "keybase"
+	KeybaseName       = "pocket-keybase"
+	privValKeyName    = "priv_val_key.json"
+	privValStateName  = "priv_val_state.json"
+	nodeKeyName       = "node_key.json"
+	KBDirectoryName   = "keybase"
 	chainsName        = "chains.json"
 	dummyChainsHash   = "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
 	dummyChainsURL    = "https://foo.bar:8080"
@@ -66,10 +69,40 @@ var (
 	fs = string(fp.Separator)
 )
 
+func InitApp(datadir, tmNode, persistentPeers, seeds string) *node.Node {
+	pswrd := InitConfig(datadir)
+	// setup coinbase password
+	if pswrd == "" {
+		fmt.Println("Pocket core needs your passphrase to start")
+		pswrd = Credentials()
+	}
+	err := confirmCoinbasePassphrase(pswrd)
+	if err != nil {
+		panic("Coinbase Password could not be verified: " + err.Error())
+	}
+	setcoinbasePassphrase(pswrd)
+	// set tendermint node
+	setTmNode(tmNode)
+	// init the tendermint node
+	return InitTendermint(persistentPeers, seeds)
+}
+
+func InitConfig(datadir string) string {
+	// setup the codec
+	MakeCodec()
+	// setup data directory
+	InitDataDirectory(datadir)
+	// init the keyfiles
+	pswrd := InitKeyfiles()
+	// init genesis
+	InitGenesis()
+	return pswrd
+}
+
 func InitGenesis() {
-	SetGenesisFilepath(getDataDir() + fs + "config" + fs + "genesis.json")
-	if _, err := os.Stat(GetGenesisFilePath()); os.IsNotExist(err) {
-		keys := GetKeybase()
+	setGenesisPath(getDataDir() + fs + "config" + fs + "genesis.json")
+	if _, err := os.Stat(genesisPath()); os.IsNotExist(err) {
+		keys := MustGetKeybase()
 		coinbaseKeypair, err := keys.GetCoinbase()
 		if err != nil {
 			panic(err)
@@ -101,7 +134,7 @@ func InitGenesis() {
 			AppState:   newDefaultGenesisState(publicKey),
 		}
 		// create the genesis path
-		var genFP = GetGenesisFilePath()
+		var genFP = genesisPath()
 		// if file exists open, else create and open
 		if _, err := os.Stat(genFP); err == nil {
 			return
@@ -150,7 +183,9 @@ func InitTendermint(persistentPeers, seeds string) *node.Node {
 	c := *cfg.NewConfig(datadir, "", defaultNodeKey, defaultValKey, defaultValState, persistentPeers, seeds, defaultListenAddr,
 		true, 0, 40, 10, logger, "")
 	var err error
-	tmNode, err := NewClient(config(c), newApp)
+	tmNode, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
+		return NewPocketCoreApp(logger, db)
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -159,10 +194,6 @@ func InitTendermint(persistentPeers, seeds string) *node.Node {
 		panic(err)
 	}
 	return tmNode
-}
-
-func newApp(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
-	return NewPocketCoreApp(logger, db)
 }
 
 func InitDataDirectory(d string) string {
@@ -189,93 +220,150 @@ func InitDataDirectory(d string) string {
 func InitKeyfiles() string {
 	var password string
 	datadir := getDataDir()
-	if err := initKeybase(datadir); err != nil {
+
+	if _, err := GetKeybase(); err != nil {
 		fmt.Println("Initializing keybase: enter coinbase passphrase")
 		password = Credentials()
+		if password == "" {
+			panic("you must have a coinbase password")
+		}
 		err := newKeybase(password)
 		if err != nil {
 			panic(err)
 		}
-		keys := GetKeybase()
-		coinbaseKeypair, err := keys.GetCoinbase()
-		if err != nil {
+	}
+	if _, err := os.Stat(datadir + fs + privValKeyName); err != nil {
+		if os.IsNotExist(err) {
+			password = privValKey(password)
+		} else {
 			panic(err)
 		}
-		res, err := (keys).ExportPrivateKeyObject(coinbaseKeypair.GetAddress(), password)
-		if err != nil {
+	}
+	if _, err := os.Stat(datadir + fs + privValStateName); err != nil {
+		if os.IsNotExist(err) {
+			privValState()
+		} else {
 			panic(err)
 		}
-		privValKey := privval.FilePVKey{
-			Address: res.PubKey().Address(),
-			PubKey:  res.PubKey(),
-			PrivKey: res,
-		}
-		privValState := privval.FilePVLastSignState{}
-		nodeKey := p2p.NodeKey{
-			PrivKey: res,
-		}
-		pvkBz, err := cdc.MarshalJSONIndent(privValKey, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-		nkBz, err := cdc.MarshalJSONIndent(nodeKey, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-		pvsBz, err := cdc.MarshalJSONIndent(privValState, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-		pvFile, err := os.OpenFile(datadir+fs+"priv_val_key.json", os.O_RDWR|os.O_CREATE, 0666)
-		if err != nil {
-			panic(err)
-		}
-		_, err = pvFile.Write(pvkBz)
-		if err != nil {
-			panic(err)
-		}
-		pvStateFile, err := os.OpenFile(datadir+fs+"priv_val_state.json", os.O_RDWR|os.O_CREATE, 0666)
-		if err != nil {
-			panic(err)
-		}
-		_, err = pvStateFile.Write(pvsBz)
-		if err != nil {
-			panic(err)
-		}
-		nkFile, err := os.OpenFile(datadir+fs+"node_key.json", os.O_RDWR|os.O_CREATE, 0666)
-		if err != nil {
-			panic(err)
-		}
-		_, err = nkFile.Write(nkBz)
-		if err != nil {
+	}
+	if _, err := os.Stat(datadir + fs + nodeKeyName); err != nil {
+		if os.IsNotExist(err) {
+			nodeKey(password)
+		} else {
 			panic(err)
 		}
 	}
 	return password
 }
 
-func GetTendermintClient() client.Client {
+// get the global keybase
+func MustGetKeybase() kb.Keybase {
+	keys, err := GetKeybase()
+	if err != nil {
+		panic(err)
+	}
+	return keys
+}
+
+// get the global keybase
+func GetKeybase() (kb.Keybase, error) {
+	keys := kb.New(KeybaseName, getDataDir()+fs+KBDirectoryName)
+	kps, err := keys.List()
+	if err != nil {
+		return nil, err
+	}
+	if len(kps) == 0 {
+		return nil, UninitializedKeybaseError
+	}
+	return keys, nil
+}
+
+func privValKey(password string) string {
+	keys := MustGetKeybase()
+	coinbaseKeypair, err := keys.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	if password == "" {
+		fmt.Println("Initializing keyfiles: enter coinbase passphrase")
+		password = Credentials()
+	}
+	res, err := (keys).ExportPrivateKeyObject(coinbaseKeypair.GetAddress(), password)
+	if err != nil {
+		panic(err)
+	}
+	privValKey := privval.FilePVKey{
+		Address: res.PubKey().Address(),
+		PubKey:  res.PubKey(),
+		PrivKey: res,
+	}
+	pvkBz, err := cdc.MarshalJSONIndent(privValKey, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	pvFile, err := os.OpenFile(datadir+fs+privValKeyName, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	}
+	_, err = pvFile.Write(pvkBz)
+	if err != nil {
+		panic(err)
+	}
+	return password
+}
+
+func nodeKey(password string) {
+	keys := MustGetKeybase()
+	coinbaseKeypair, err := keys.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	res, err := (keys).ExportPrivateKeyObject(coinbaseKeypair.GetAddress(), password)
+	if err != nil {
+		panic(err)
+	}
+	nodeKey := p2p.NodeKey{
+		PrivKey: res,
+	}
+	pvkBz, err := cdc.MarshalJSONIndent(nodeKey, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	pvFile, err := os.OpenFile(datadir+fs+nodeKeyName, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	}
+	_, err = pvFile.Write(pvkBz)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func privValState() {
+	privValState := privval.FilePVLastSignState{}
+	pvkBz, err := cdc.MarshalJSONIndent(privValState, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	pvFile, err := os.OpenFile(datadir+fs+privValStateName, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	}
+	_, err = pvFile.Write(pvkBz)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func getTMClient() client.Client {
 	if tmNodeURI == "" {
 		return client.NewHTTP(defaultTMURI, "/websocket")
 	}
 	return client.NewHTTP(tmNodeURI, "/websocket")
 }
 
-// get the global keybase
-func GetKeybase() kb.Keybase {
-	keys := kb.New(keybaseName, getDataDir()+fs+kbDirName)
-	kps, err := keys.List()
-	if err != nil {
-		panic(err)
-	}
-	if len(kps) == 0 {
-		panic(UninitializedKeybaseError)
-	}
-	return keys
-}
-
 // get the hosted chains variable
-func GetHostedChains() types.HostedBlockchains {
+func getHostedChains() types.HostedBlockchains {
 	filepath := getDataDir() + fs + "config"
 	// create the chains path
 	var chainsPath = filepath + fs + chainsName
@@ -335,8 +423,8 @@ func GetHostedChains() types.HostedBlockchains {
 	return types.HostedBlockchains{M: m}
 }
 
-func ConfirmCoinbasePassword(pswrd string) error {
-	keys := GetKeybase()
+func confirmCoinbasePassphrase(pswrd string) error {
+	keys := MustGetKeybase()
 	kp, err := keys.GetCoinbase()
 	if err != nil {
 		return err
@@ -346,6 +434,33 @@ func ConfirmCoinbasePassword(pswrd string) error {
 		return err
 	}
 	return nil
+}
+
+func setcoinbasePassphrase(pass string) {
+	passphrase = pass
+}
+
+func getCoinbasePassphrase() string {
+	return passphrase
+}
+
+func setTmNode(n string) {
+	tmNodeURI = n
+}
+
+func setGenesisPath(filepath string) {
+	genesisFP = filepath
+}
+
+func genesisPath() string {
+	return genesisFP
+}
+
+func Codec() *codec.Codec {
+	if cdc == nil {
+		MakeCodec()
+	}
+	return cdc
 }
 
 func MakeCodec() {
@@ -367,33 +482,6 @@ func MakeCodec() {
 	codec.RegisterCrypto(cdc)
 }
 
-func GetCodec() *codec.Codec {
-	if cdc == nil {
-		MakeCodec()
-	}
-	return cdc
-}
-
-func SetCoinbasePassphrase(pass string) {
-	passphrase = pass
-}
-
-func GetCoinbasePassphrase() string {
-	return passphrase
-}
-
-func SetTendermintNode(n string) {
-	tmNodeURI = n
-}
-
-func SetGenesisFilepath(filepath string) {
-	genesisFP = filepath
-}
-
-func GetGenesisFilePath() string {
-	return genesisFP
-}
-
 func Credentials() string {
 	bytePassword, err := terminal.ReadPassword(syscall.Stdin)
 	if err != nil {
@@ -409,23 +497,10 @@ func getDataDir() string {
 
 // keybase creation
 func newKeybase(passphrase string) error {
-	keys := kb.New(keybaseName, getDataDir()+fs+kbDirName)
+	keys := kb.New(KeybaseName, getDataDir()+fs+KBDirectoryName)
 	_, err := keys.Create(passphrase)
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-// keybase initialization
-func initKeybase(datadir string) error {
-	keys := kb.New(keybaseName, datadir+fs+kbDirName)
-	kps, err := keys.List()
-	if err != nil {
-		return err
-	}
-	if len(kps) == 0 {
-		return UninitializedKeybaseError
 	}
 	return nil
 }
