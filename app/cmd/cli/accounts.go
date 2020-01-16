@@ -34,7 +34,7 @@ func init() {
 var accountsCmd = &cobra.Command{
 	Use:   "accounts",
 	Short: "The accounts namespace",
-	Long: `The accounts namespace handles all account related interactions, 
+	Long: `The accounts namespace handles all account related interactions,
 from creating and deleting accounts, to importing and exporting accounts.`,
 }
 
@@ -221,7 +221,7 @@ var exportCmd = &cobra.Command{
 	Use:   "export <address>",
 	Short: "Export an account",
 	Args:  cobra.ExactArgs(1),
-	Long: `Exports the account with <address>, encrypted and ASCII armored. 
+	Long: `Exports the account with <address>, encrypted and ASCII armored.
 Will prompt the user for the account passphrase and for an encryption passphrase for the exported account.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -250,7 +250,7 @@ var exportRawCmd = &cobra.Command{
 	Use:   "export-raw <address>",
 	Short: "Export Plaintext Privkey",
 	Args:  cobra.ExactArgs(1),
-	Long: `Exports the raw private key in hex format. Will prompt the user for the account passphrase. 
+	Long: `Exports the raw private key in hex format. Will prompt the user for the account passphrase.
 NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.*`,
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
