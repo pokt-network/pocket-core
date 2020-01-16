@@ -73,13 +73,13 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.cdc,
 		app.nodesKeeper,
 		app.appsKeeper,
-		GetHostedChains(),
+		getHostedChains(),
 		app.paramsKeeper.Subspace(pocketTypes.DefaultParamspace),
-		GetCoinbasePassphrase(),
+		getCoinbasePassphrase(),
 	)
 	// add the keybase to the pocket core keeper
-	app.pocketKeeper.Keybase = GetKeybase()
-	app.pocketKeeper.TmNode = GetTendermintClient()
+	app.pocketKeeper.Keybase = MustGetKeybase()
+	app.pocketKeeper.TmNode = getTMClient()
 	// setup module manager
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper),
