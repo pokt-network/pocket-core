@@ -189,7 +189,6 @@ func InitTendermint(persistentPeers, seeds string) *node.Node {
 	if err != nil {
 		panic(err)
 	}
-
 	if err := tmNode.Start(); err != nil {
 		panic(err)
 	}
@@ -340,7 +339,6 @@ func nodeKey(password string) {
 }
 
 func privValState() {
-	privValState := privval.FilePVLastSignState{}
 	pvkBz, err := cdc.MarshalJSONIndent(privValState, "", "  ")
 	if err != nil {
 		panic(err)
@@ -527,6 +525,7 @@ func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
 			StakedTokens: sdk.NewInt(10000000)})
 	res := types.ModuleCdc.MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
+
 	j, _ := types.ModuleCdc.MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j
 }
