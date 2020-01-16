@@ -21,7 +21,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "pocket",
 	Short: "Pocket provides a trustless API Layer, allowing easy access to any blockchain.",
-	Long: `Pocket is a distributed network that relays data requests and responses to and from any blockchain system. 
+	Long: `Pocket is a distributed network that relays data requests and responses to and from any blockchain system.
 Pocket verifies all relayed data and proportionally rewards the participating nodes with native cryptographic tokens.
 `,
 }
