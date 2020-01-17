@@ -4,19 +4,15 @@ go 1.13
 
 require (
 	github.com/btcsuite/btcd v0.0.0-20190824003749-130ea5bddde3 // indirect
-	github.com/glacjay/goini v0.0.0-20161120062552-fd3024d87ee2 // indirect
 	github.com/go-kit/kit v0.9.0
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
-	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/pokt-network/posmint v0.0.0-20200120165129-2c4304f36eca
 	github.com/prometheus/client_golang v1.1.0 // indirect
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/prometheus/procfs v0.0.4 // indirect
-	github.com/spf13/afero v1.2.2 // indirect
-	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
