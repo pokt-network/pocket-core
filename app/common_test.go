@@ -31,6 +31,7 @@ import (
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
+	"github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"io"
@@ -133,13 +134,13 @@ func NewMemoryPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.Ba
 		app.cdc,
 		app.nodesKeeper,
 		app.appsKeeper,
-		getHostedChains(),
+		getInMemHostedChains(),
 		app.paramsKeeper.Subspace(pocketTypes.DefaultParamspace),
-		getCoinbasePassphrase(),
+		"test",
 	)
 	// add the keybase to the pocket core keeper
-	app.pocketKeeper.Keybase = MustGetKeybase()
-	app.pocketKeeper.TmNode = getTMClient()
+	app.pocketKeeper.Keybase = inMemKeybase
+	app.pocketKeeper.TmNode = getInMemoryTMClient()
 	// setup module manager
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper),
@@ -232,11 +233,15 @@ var (
 	}
 )
 
-var genState cfg.GenesisState
+var (
+	genState     cfg.GenesisState
+	inMemKeybase keys.Keybase
+)
 
 func InMemoryTendermintNode() (*node.Node, keys.Keybase) {
 	pk := ed25519.GenPrivKey()
 	kb := keys.NewInMemory()
+	inMemKeybase = kb
 	kp, err := kb.ImportPrivateKeyObject(pk, "test")
 	if err != nil {
 		panic(err)
@@ -363,14 +368,27 @@ func MakeMemCodec() {
 	codec.RegisterCrypto(memCDC)
 }
 
-func TestNewInMemoryTest(t *testing.T) {
+func getInMemoryTMClient() client.Client {
+	if tmNodeURI == "" {
+		return client.NewHTTP(defaultTMURI, "/websocket")
+	}
+	return client.NewHTTP(tmNodeURI, "/websocket")
+}
+
+func getInMemHostedChains() pocketTypes.HostedBlockchains {
+	return pocketTypes.HostedBlockchains{
+		M: map[string]pocketTypes.HostedBlockchain{dummyChainsHash: {Hash: dummyChainsHash, URL: dummyChainsURL}},
+	}
+}
+
+func TestNewInMemory(t *testing.T) {
 	MakeMemCodec()
 	tmNode, kb := InMemoryTendermintNode()
 	assert.NotNil(t, tmNode)
 	assert.NotNil(t, kb)
 	err := tmNode.Start()
 	assert.Nil(t, err)
-	time.Sleep(2*time.Second)
+	time.Sleep(2 * time.Second)
 	err = tmNode.Stop()
 	if err != nil {
 		panic(err)
