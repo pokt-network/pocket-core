@@ -75,12 +75,12 @@ func TestPos_ValidateGeneis(t *testing.T) {
 		{
 			name: "errs if dupplicate application in geneiss state",
 			apps: types.Applications{application, application},
-			want: fmt.Errorf("duplicate application in genesis state: address %v", application.ConsAddress()),
+			want: fmt.Errorf("duplicate application in genesis state: address %v", application.GetAddress()),
 		},
 		{
 			name: "errs if jailed app staked",
 			apps: types.Applications{jailedApp},
-			want: fmt.Errorf("application is staked and jailed in genesis state: address %v", jailedApp.ConsAddress()),
+			want: fmt.Errorf("application is staked and jailed in genesis state: address %v", jailedApp.GetAddress()),
 		},
 		{
 			name: "errs if staked with zero tokens",

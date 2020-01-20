@@ -243,14 +243,14 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 		nk.SetValidatorByConsAddr(ctx, val)
 		nk.SetStakedValidator(ctx, val)
 		// ensure there's a signing info entry for the val (used in slashing)
-		_, found := nk.GetValidatorSigningInfo(ctx, val.ConsAddress())
+		_, found := nk.GetValidatorSigningInfo(ctx, val.GetAddress())
 		if !found {
 			signingInfo := nodesTypes.ValidatorSigningInfo{
-				Address:     val.ConsAddress(),
+				Address:     val.GetAddress(),
 				StartHeight: ctx.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
 			}
-			nk.SetValidatorSigningInfo(ctx, val.ConsAddress(), signingInfo)
+			nk.SetValidatorSigningInfo(ctx, val.GetAddress(), signingInfo)
 		}
 		accs = append(accs, val)
 	}
@@ -265,14 +265,14 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 	nk.SetValidatorByConsAddr(ctx, val)
 	nk.SetStakedValidator(ctx, val)
 	// ensure there's a signing info entry for the val (used in slashing)
-	_, found := nk.GetValidatorSigningInfo(ctx, val.ConsAddress())
+	_, found := nk.GetValidatorSigningInfo(ctx, val.GetAddress())
 	if !found {
 		signingInfo := nodesTypes.ValidatorSigningInfo{
-			Address:     val.ConsAddress(),
+			Address:     val.GetAddress(),
 			StartHeight: ctx.BlockHeight(),
 			JailedUntil: time.Unix(0, 0),
 		}
-		nk.SetValidatorSigningInfo(ctx, val.ConsAddress(), signingInfo)
+		nk.SetValidatorSigningInfo(ctx, val.GetAddress(), signingInfo)
 	}
 	accs = append(accs, val)
 	// end self node logic

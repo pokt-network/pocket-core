@@ -113,17 +113,21 @@ func queryUnstakedApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
-	applications := k.getAllUnstakedApplications(ctx)
-
-	start, end := util.Paginate(len(applications), params.Page, params.Limit, int(k.GetParams(ctx).MaxApplications))
+	apps := k.GetAllApplications(ctx)
+	var unstakedApps types.Applications
+	for _, app := range apps {
+		if app.Status == sdk.Unbonded {
+			unstakedApps = append(unstakedApps, app)
+		}
+	}
+	start, end := util.Paginate(len(unstakedApps), params.Page, params.Limit, int(k.GetParams(ctx).MaxApplications))
 	if start < 0 || end < 0 {
-		applications = []types.Application{}
+		unstakedApps = []types.Application{}
 	} else {
-		applications = applications[start:end]
+		unstakedApps = unstakedApps[start:end]
 	}
 
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applications)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, unstakedApps)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}

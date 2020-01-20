@@ -260,7 +260,7 @@ func TestHandleValidatorSignature(t *testing.T) {
 				keeper.handleValidatorSignature(context, cryptoAddr, test.args.power, test.args.signed)
 			default:
 				signingInfo := types.ValidatorSigningInfo{
-					Address:     test.args.validator.ConsAddress(),
+					Address:     test.args.validator.GetAddress(),
 					StartHeight: context.BlockHeight(),
 					JailedUntil: time.Unix(0, 0),
 				}
@@ -350,7 +350,7 @@ func TestValidateDoubleSign(t *testing.T) {
 			keeper.SetValidator(context, test.args.validator)
 			keeper.SetValidatorByConsAddr(context, test.args.validator)
 			signingInfo := types.ValidatorSigningInfo{
-				Address:     test.args.validator.ConsAddress(),
+				Address:     test.args.validator.GetAddress(),
 				StartHeight: context.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
 			}
@@ -443,7 +443,7 @@ func TestHandleDoubleSign(t *testing.T) {
 			addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.validator.Address, supplySize)
 			signingInfo := types.ValidatorSigningInfo{
-				Address:     test.args.validator.ConsAddress(),
+				Address:     test.args.validator.GetAddress(),
 				StartHeight: context.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
 			}
@@ -587,7 +587,7 @@ func TestValidateSlash(t *testing.T) {
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.validator.Address, supplySize)
 			}
 			signingInfo := types.ValidatorSigningInfo{
-				Address:     test.args.validator.ConsAddress(),
+				Address:     test.args.validator.GetAddress(),
 				StartHeight: context.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
 			}
@@ -691,7 +691,7 @@ func TestSlash(t *testing.T) {
 				fmt.Println(v)
 			}
 			signingInfo := types.ValidatorSigningInfo{
-				Address:     test.args.validator.ConsAddress(),
+				Address:     test.args.validator.GetAddress(),
 				StartHeight: context.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
 			}
@@ -765,7 +765,7 @@ func TestBurnValidators(t *testing.T) {
 			keeper.setValidatorBurn(context, test.args.amount, test.args.validator.Address)
 			keeper.burnValidators(context)
 
-			primaryCryptoAddr := test.args.validator.ConsAddress()
+			primaryCryptoAddr := test.args.validator.GetAddress()
 
 			primaryValidator, found := keeper.GetValidatorByConsAddr(context, primaryCryptoAddr)
 			if !found {

@@ -82,8 +82,6 @@ func (a Application) UpdateStatus(newStatus sdk.BondStatus) Application {
 	return a
 }
 
-// return the TM application address
-func (a Application) ConsAddress() sdk.Address       { return sdk.Address(a.PublicKey.Address()) }
 func (a Application) GetChains() []string            { return a.Chains }
 func (a Application) IsStaked() bool                 { return a.GetStatus().Equal(sdk.Bonded) }
 func (a Application) IsUnstaked() bool               { return a.GetStatus().Equal(sdk.Unbonded) }

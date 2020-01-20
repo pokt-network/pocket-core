@@ -33,7 +33,7 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Context, application types.Ap
 // store ops when a application stakes
 func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application, amount sdk.Int) sdk.Error {
 	// call the before hook
-	k.BeforeApplicationStaked(ctx, application.ConsAddress(), application.Address)
+	k.BeforeApplicationStaked(ctx, application.GetAddress(), application.Address)
 	// send the coins from address to staked module account
 	k.coinsFromUnstakedToStaked(ctx, application, amount)
 	// add coins to the staked field
@@ -47,7 +47,7 @@ func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application,
 	// save in the staked store
 	k.SetStakedApplication(ctx, application)
 	// call the after hook
-	k.AfterApplicationStaked(ctx, application.ConsAddress(), application.Address)
+	k.AfterApplicationStaked(ctx, application.GetAddress(), application.Address)
 	return nil
 }
 
@@ -66,7 +66,7 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Context, application t
 // store ops when application begins to unstake -> starts the unbonding timer
 func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.Application) sdk.Error {
 	// call before unstaking hook
-	k.BeforeApplicationBeginUnstaking(ctx, application.ConsAddress(), application.Address)
+	k.BeforeApplicationBeginUnstaking(ctx, application.GetAddress(), application.Address)
 	// get params
 	params := k.GetParams(ctx)
 	// delete the application from the staking set, as it is technically staked but not going to participate
@@ -80,7 +80,7 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.App
 	// Adds to unstaking application queue
 	k.SetUnstakingApplication(ctx, application)
 	// call after hook
-	k.AfterApplicationBeginUnstaking(ctx, application.ConsAddress(), application.Address)
+	k.AfterApplicationBeginUnstaking(ctx, application.GetAddress(), application.Address)
 	return nil
 }
 
@@ -98,7 +98,7 @@ func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Context, application 
 // store ops to unstake a application -> called after unbonding time is up
 func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Application) sdk.Error {
 	// call the before hook
-	k.BeforeApplicationUnstaked(ctx, application.ConsAddress(), application.Address)
+	k.BeforeApplicationUnstaked(ctx, application.GetAddress(), application.Address)
 	// delete the application from the unstaking queue
 	k.deleteUnstakingApplication(ctx, application)
 	// amount unstaked = stakedTokens
@@ -114,7 +114,7 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 	// update the application in the main store
 	k.SetApplication(ctx, application)
 	// call the after hook
-	k.AfterApplicationUnstaked(ctx, application.ConsAddress(), application.Address)
+	k.AfterApplicationUnstaked(ctx, application.GetAddress(), application.Address)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -134,7 +134,7 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 // force unstake (called when slashed below the minimum)
 func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Application) sdk.Error {
 	// call the before unstaked hook
-	k.BeforeApplicationUnstaked(ctx, application.ConsAddress(), application.Address)
+	k.BeforeApplicationUnstaked(ctx, application.GetAddress(), application.Address)
 	// delete the application from staking set as they are unstaked
 	k.deleteApplicationFromStakingSet(ctx, application)
 	// amount unstaked = stakedTokens
@@ -151,7 +151,7 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Appli
 	// set the application in store
 	k.SetApplication(ctx, application)
 	// call after hook
-	k.AfterApplicationUnstaked(ctx, application.ConsAddress(), application.Address)
+	k.AfterApplicationUnstaked(ctx, application.GetAddress(), application.Address)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

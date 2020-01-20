@@ -92,10 +92,10 @@ func validateGenesisStateApplications(applications []types.Application, minimumS
 		app := applications[i]
 		strKey := app.PublicKey.RawString()
 		if _, ok := addrMap[strKey]; ok {
-			return fmt.Errorf("duplicate application in genesis state: address %v", app.ConsAddress())
+			return fmt.Errorf("duplicate application in genesis state: address %v", app.GetAddress())
 		}
 		if app.Jailed && app.IsStaked() {
-			return fmt.Errorf("application is staked and jailed in genesis state: address %v", app.ConsAddress())
+			return fmt.Errorf("application is staked and jailed in genesis state: address %v", app.GetAddress())
 		}
 		if app.StakedTokens.IsZero() && !app.IsUnstaked() {
 			return fmt.Errorf("staked/unstaked genesis application cannot have zero stake, application: %v", app)

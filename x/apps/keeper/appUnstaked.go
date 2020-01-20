@@ -42,19 +42,6 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Context) (applications []typ
 	return applications
 }
 
-// retrieve all unstaked applications with no limits
-func (k Keeper) getAllUnstakedApplications(ctx sdk.Context) (applications []types.Application) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.UnstakingAppsKey)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
-		applications = append(applications, application)
-	}
-	return applications
-}
-
 // gets all of the applications who will be unstaked at exactly this time
 func (k Keeper) getUnstakingApplications(ctx sdk.Context, unstakingTime time.Time) (valAddrs []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)

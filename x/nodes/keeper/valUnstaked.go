@@ -74,19 +74,6 @@ func (k Keeper) getAllUnstakingValidators(ctx sdk.Context) (validators []types.V
 	return validators
 }
 
-// retrieve all unstaked validators with no limits
-func (k Keeper) getAllUnstakedValidators(ctx sdk.Context) (validators []types.Validator) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.UnstakedValidatorsKey)
-	defer iterator.Close()
-
-	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		validators = append(validators, validator)
-	}
-	return validators
-}
-
 // gets all of the validators who will be unstaked at exactly this time
 func (k Keeper) getUnstakingValidators(ctx sdk.Context, unstakingTime time.Time) (valAddrs []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)

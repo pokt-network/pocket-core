@@ -136,7 +136,7 @@ func TestAppUtil_MustGetApplicationByConsAddr(t *testing.T) {
 			name:   "panics if no application",
 			panics: true,
 			args:   args{application: boundedApplication},
-			want:   want{message: fmt.Sprintf("application with consensus-Address %s not found", boundedApplication.ConsAddress())},
+			want:   want{message: fmt.Sprintf("application with consensus-Address %s not found", boundedApplication.GetAddress())},
 		},
 	}
 
@@ -150,12 +150,12 @@ func TestAppUtil_MustGetApplicationByConsAddr(t *testing.T) {
 						t.Errorf("keeperAppUtil.MustGetApplicationByConsAddr()= %v, want %v", err, tt.want.application)
 					}
 				}()
-				_ = keeper.mustGetApplicationByConsAddr(context, tt.args.application.ConsAddress())
+				_ = keeper.mustGetApplicationByConsAddr(context, tt.args.application.GetAddress())
 			default:
 				keeper.SetApplication(context, tt.args.application)
 				keeper.SetAppByConsAddr(context, tt.args.application)
 				keeper.SetStakedApplication(context, tt.args.application)
-				if got := keeper.mustGetApplicationByConsAddr(context, tt.args.application.ConsAddress()); !got.Equals(tt.want.application) {
+				if got := keeper.mustGetApplicationByConsAddr(context, tt.args.application.GetAddress()); !got.Equals(tt.want.application) {
 					t.Errorf("keeperAppUtil.MustGetApplicationByConsAddr()= %v, want %v", got, tt.want.application)
 				}
 			}
@@ -198,7 +198,7 @@ func TestAppUtil_ApplicationByConsAddr(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			switch tt.want {
 			case nil:
-				if got := keeper.applicationByConsAddr(context, tt.args.application.ConsAddress()); !reflect.DeepEqual(got, tt.want) {
+				if got := keeper.applicationByConsAddr(context, tt.args.application.GetAddress()); !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("keeperAppUtil.ApplicationByConsAddr()= %v, want %v", got, tt.want)
 				}
 
@@ -206,7 +206,7 @@ func TestAppUtil_ApplicationByConsAddr(t *testing.T) {
 				keeper.SetApplication(context, tt.args.application)
 				keeper.SetAppByConsAddr(context, tt.args.application)
 				keeper.SetStakedApplication(context, tt.args.application)
-				if got := keeper.applicationByConsAddr(context, tt.args.application.ConsAddress()); !reflect.DeepEqual(got, tt.want) {
+				if got := keeper.applicationByConsAddr(context, tt.args.application.GetAddress()); !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("keeperAppUtil.ApplicationByConsAddr()= %v, want %v", got, tt.want)
 				}
 			}
