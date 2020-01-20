@@ -16,7 +16,6 @@ var (
 //----------------------------------------------------------------------------------------------------------------------
 // MsgStake - struct for staking transactions
 type MsgStake struct {
-	Address    sdk.Address      `json:"validator_address" yaml:"validator_address"`
 	PublicKey  crypto.PublicKey `json:"public_key" yaml:"public_key"`
 	Chains     []string         `json:"chains" yaml:"chains"`
 	Value      sdk.Int          `json:"value" yaml:"value"`
@@ -25,7 +24,7 @@ type MsgStake struct {
 
 // Return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgStake) GetSigners() []sdk.Address {
-	addrs := []sdk.Address{sdk.Address(msg.Address)}
+	addrs := []sdk.Address{sdk.Address(msg.PublicKey.Address())}
 	return addrs
 }
 
@@ -37,7 +36,7 @@ func (msg MsgStake) GetSignBytes() []byte {
 
 // quick validity check
 func (msg MsgStake) ValidateBasic() sdk.Error {
-	if msg.Address.Empty() {
+	if msg.PublicKey == nil || msg.PublicKey.RawString() == "" {
 		return ErrNilValidatorAddr(DefaultCodespace)
 	}
 	if msg.Value.LTE(sdk.ZeroInt()) {

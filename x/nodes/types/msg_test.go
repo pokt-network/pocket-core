@@ -378,13 +378,11 @@ func TestMsgStake_GetSignBytes(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
 	mesg := MsgStake{
-		Address:    va,
 		PublicKey:  pub,
 		Chains:     chains,
 		Value:      value,
@@ -397,7 +395,6 @@ func TestMsgStake_GetSignBytes(t *testing.T) {
 		want   []byte
 	}{
 		{"Test SignBytes", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     chains,
 			Value:      value,
@@ -407,7 +404,6 @@ func TestMsgStake_GetSignBytes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
-				Address:    tt.fields.Address,
 				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
@@ -431,7 +427,6 @@ func TestMsgStake_GetSigners(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
@@ -442,17 +437,15 @@ func TestMsgStake_GetSigners(t *testing.T) {
 		want   []sdk.Address
 	}{
 		{"Test GetSigners", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     chains,
 			Value:      value,
 			ServiceURL: surl,
-		}, []sdk.Address{sdk.Address(va)}},
+		}, []sdk.Address{sdk.Address(pub.Address())}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
-				Address:    tt.fields.Address,
 				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
@@ -476,7 +469,6 @@ func TestMsgStake_Route(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
@@ -487,7 +479,6 @@ func TestMsgStake_Route(t *testing.T) {
 		want   string
 	}{
 		{"Test Route", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     chains,
 			Value:      value,
@@ -497,7 +488,6 @@ func TestMsgStake_Route(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
-				Address:    tt.fields.Address,
 				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
@@ -521,7 +511,6 @@ func TestMsgStake_Type(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
@@ -532,7 +521,6 @@ func TestMsgStake_Type(t *testing.T) {
 		want   string
 	}{
 		{"Test Type", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     chains,
 			Value:      value,
@@ -542,7 +530,6 @@ func TestMsgStake_Type(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
-				Address:    tt.fields.Address,
 				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
@@ -566,7 +553,6 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
@@ -577,42 +563,30 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 		want   sdk.Error
 	}{
 		{"Test Validate Basic ok", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     chains,
 			Value:      value,
 			ServiceURL: surl,
 		}, nil},
-		{"Test Validate Basic bad address", fields{
-			Address:    nil,
-			PubKey:     pub,
-			Chains:     chains,
-			Value:      value,
-			ServiceURL: surl,
-		}, ErrNilValidatorAddr(DefaultCodespace)},
 		{"Test Validate Basic bad value", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     chains,
 			Value:      sdk.NewInt(-1),
 			ServiceURL: surl,
 		}, ErrBadDelegationAmount(DefaultCodespace)},
 		{"Test Validate Basic bad Chains", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     []string{},
 			Value:      value,
 			ServiceURL: surl,
 		}, ErrNoChains(DefaultCodespace)},
 		{"Test Validate Basic bad chain in Chains", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     []string{""},
 			Value:      value,
 			ServiceURL: surl,
 		}, ErrNoChains(DefaultCodespace)},
 		{"Test Validate Basic bad serviceURL", fields{
-			Address:    va,
 			PubKey:     pub,
 			Chains:     chains,
 			Value:      value,
@@ -622,7 +596,6 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
-				Address:    tt.fields.Address,
 				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,

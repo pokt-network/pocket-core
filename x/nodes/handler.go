@@ -31,7 +31,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 // These functions assume everything has been authenticated,
 // now we just perform action and save
 func handleStake(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Result {
-	if _, found := k.GetValidator(ctx, msg.Address); found {
+	if _, found := k.GetValidator(ctx, sdk.Address(msg.PublicKey.Address())); found {
 		return stakeRegisteredValidator(ctx, msg, k)
 	} else {
 		return stakeNewValidator(ctx, msg, k)
@@ -53,7 +53,7 @@ func stakeNewValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk
 		}
 	}
 	// create validator object using the message fields
-	validator := types.NewValidator(msg.Address, msg.PublicKey, msg.Chains, msg.ServiceURL, msg.Value)
+	validator := types.NewValidator(sdk.Address(msg.PublicKey.Address()), msg.PublicKey, msg.Chains, msg.ServiceURL, msg.Value)
 	// check if they can stake
 	if err := k.ValidateValidatorStaking(ctx, validator, msg.Value); err != nil {
 		return err.Result()
@@ -69,18 +69,18 @@ func stakeNewValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCreateValidator,
-			sdk.NewAttribute(types.AttributeKeyValidator, msg.Address.String()),
+			sdk.NewAttribute(types.AttributeKeyValidator, sdk.Address(msg.PublicKey.Address()).String()),
 		),
 		sdk.NewEvent(
 			types.EventTypeStake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PublicKey.Address()).String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PublicKey.Address()).String()),
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}
@@ -89,7 +89,7 @@ func stakeNewValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk
 func stakeRegisteredValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Result {
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the validator account and global shares are updated within here
-	validator, found := k.GetValidator(ctx, msg.Address)
+	validator, found := k.GetValidator(ctx, sdk.Address(msg.PublicKey.Address()))
 	if !found {
 		return types.ErrNoValidatorFound(k.Codespace()).Result()
 	}
@@ -109,13 +109,13 @@ func stakeRegisteredValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keep
 		sdk.NewEvent(
 			types.EventTypeStake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PublicKey.Address()).String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PublicKey.Address()).String()),
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}
