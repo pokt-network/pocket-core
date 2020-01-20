@@ -186,7 +186,6 @@ func TestValidateSlash(t *testing.T) {
 			cryptoAddr := test.args.application.GetPublicKey().Address()
 			if test.expected.found {
 				keeper.SetApplication(context, test.args.application)
-				keeper.SetAppByConsAddr(context, test.args.application)
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.application.Address, supplySize)
 			}
@@ -263,10 +262,9 @@ func TestSlash(t *testing.T) {
 			cryptoAddr := test.args.application.GetPublicKey().Address()
 			if test.expected.found {
 				keeper.SetApplication(context, test.args.application)
-				keeper.SetAppByConsAddr(context, test.args.application)
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.application.Address, supplySize)
-				v, found := keeper.GetAppByConsAddr(context, sdk.Address(cryptoAddr))
+				v, found := keeper.GetApplication(context, sdk.Address(cryptoAddr))
 				if !found {
 					t.FailNow()
 				}
@@ -277,7 +275,7 @@ func TestSlash(t *testing.T) {
 			fraction := test.args.slashFraction
 
 			keeper.slash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
-			application, found := keeper.GetAppByConsAddr(context, sdk.Address(cryptoAddr))
+			application, found := keeper.GetApplication(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.Fail()
 			}
@@ -320,7 +318,6 @@ func TestBurnApplications(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetApplication(context, test.args.application)
-			keeper.SetAppByConsAddr(context, test.args.application)
 			addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.application.Address, test.args.application.StakedTokens)
 			keeper.setApplicationBurn(context, test.args.amount, test.args.application.Address)
@@ -328,7 +325,7 @@ func TestBurnApplications(t *testing.T) {
 
 			primaryCryptoAddr := test.args.application.GetAddress()
 
-			primaryApplication, found := keeper.GetAppByConsAddr(context, primaryCryptoAddr)
+			primaryApplication, found := keeper.GetApplication(context, primaryCryptoAddr)
 			if !found {
 				t.Fail()
 			}

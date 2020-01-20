@@ -40,7 +40,7 @@ func handleStake(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Resul
 
 func stakeNewValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Result {
 	// check to see if teh public key has already been register for that validator
-	if _, found := k.GetValidatorByConsAddr(ctx, sdk.GetAddress(msg.PublicKey)); found {
+	if _, found := k.GetValidator(ctx, sdk.Address(msg.PublicKey.Address())); found {
 		return types.ErrValidatorPubKeyExists(k.Codespace()).Result()
 	}
 	// check the consensus params

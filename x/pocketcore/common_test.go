@@ -241,7 +241,6 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com", valCoins)
 		// set the vals from the data
 		nk.SetValidator(ctx, val)
-		nk.SetValidatorByConsAddr(ctx, val)
 		nk.SetStakedValidator(ctx, val)
 		// ensure there's a signing info entry for the val (used in slashing)
 		_, found := nk.GetValidatorSigningInfo(ctx, val.GetAddress())
@@ -263,7 +262,6 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com", valCoins)
 	// set the vals from the data
 	nk.SetValidator(ctx, val)
-	nk.SetValidatorByConsAddr(ctx, val)
 	nk.SetStakedValidator(ctx, val)
 	// ensure there's a signing info entry for the val (used in slashing)
 	_, found := nk.GetValidatorSigningInfo(ctx, val.GetAddress())
@@ -333,7 +331,6 @@ func createTestApps(ctx sdk.Context, numAccs int, valCoins sdk.Int, ak appsKeepe
 		// calculate relays
 		app.MaxRelays = ak.CalculateAppRelays(ctx, app)
 		ak.SetApplication(ctx, app)
-		ak.SetAppByConsAddr(ctx, app)
 		ak.SetStakedApplication(ctx, app)
 		accs = append(accs, app)
 	}

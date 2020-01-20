@@ -25,7 +25,6 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 		}
 		// set the applications from the data
 		keeper.SetApplication(ctx, application)
-		keeper.SetAppByConsAddr(ctx, application)
 		keeper.SetStakedApplication(ctx, application)
 		// Call the creation hook if not exported
 		if !data.Exported {

@@ -93,28 +93,6 @@ func TestKeyForApplicationBurn(t *testing.T) {
 	}
 }
 
-func TestKeyForApplicationByConsAddr(t *testing.T) {
-	type args struct {
-		addr types.Address
-	}
-	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
-
-	tests := []struct {
-		name string
-		args args
-		want []byte
-	}{
-		{"sampleByteArray", args{ca}, append(AllApplicationsByConsensusAddrKey, ca.Bytes()...)},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := KeyForAppByConsAddr(tt.args.addr); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("KeyForApplicationByConsAddr() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestKeyForApplicationInStakingSet(t *testing.T) {
 	type args struct {
 		application Application

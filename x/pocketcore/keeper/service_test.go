@@ -35,7 +35,6 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	app.MaxRelays = ak.CalculateAppRelays(ctx, app)
 	// set the vals from the data
 	ak.SetApplication(ctx, app)
-	ak.SetAppByConsAddr(ctx, app)
 	ak.SetStakedApplication(ctx, app)
 	kp, _ := keeper.Keybase.GetCoinbase()
 	npk := kp.PublicKey

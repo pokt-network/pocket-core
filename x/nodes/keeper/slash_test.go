@@ -278,7 +278,7 @@ func TestHandleValidatorSignature(t *testing.T) {
 				assert.Equal(t, test.expected.tombstoned, signedInfo.Tombstoned)
 				assert.Equal(t, test.expected.missedBlocksCounter, signedInfo.MissedBlocksCounter)
 				if test.expected.jail {
-					validator, found := keeper.GetValidatorByConsAddr(context, sdk.Address(cryptoAddr))
+					validator, found := keeper.GetValidator(context, sdk.Address(cryptoAddr))
 					if !found {
 						t.FailNow()
 					}
@@ -348,7 +348,6 @@ func TestValidateDoubleSign(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			cryptoAddr := test.args.validator.GetPublicKey().Address()
 			keeper.SetValidator(context, test.args.validator)
-			keeper.SetValidatorByConsAddr(context, test.args.validator)
 			signingInfo := types.ValidatorSigningInfo{
 				Address:     test.args.validator.GetAddress(),
 				StartHeight: context.BlockHeight(),
@@ -439,7 +438,6 @@ func TestHandleDoubleSign(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			cryptoAddr := test.args.validator.GetPublicKey().Address()
 			keeper.SetValidator(context, test.args.validator)
-			keeper.SetValidatorByConsAddr(context, test.args.validator)
 			addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.validator.Address, supplySize)
 			signingInfo := types.ValidatorSigningInfo{
@@ -582,7 +580,6 @@ func TestValidateSlash(t *testing.T) {
 			cryptoAddr := test.args.validator.GetPublicKey().Address()
 			if test.expected.found {
 				keeper.SetValidator(context, test.args.validator)
-				keeper.SetValidatorByConsAddr(context, test.args.validator)
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.validator.Address, supplySize)
 			}
@@ -680,10 +677,9 @@ func TestSlash(t *testing.T) {
 			cryptoAddr := test.args.validator.GetPublicKey().Address()
 			if test.expected.found {
 				keeper.SetValidator(context, test.args.validator)
-				keeper.SetValidatorByConsAddr(context, test.args.validator)
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.validator.Address, supplySize)
-				v, found := keeper.GetValidatorByConsAddr(context, sdk.Address(cryptoAddr))
+				v, found := keeper.GetValidator(context, sdk.Address(cryptoAddr))
 				if !found {
 					t.FailNow()
 				}
@@ -716,7 +712,7 @@ func TestSlash(t *testing.T) {
 			}
 
 			keeper.slash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
-			validator, found := keeper.GetValidatorByConsAddr(context, sdk.Address(cryptoAddr))
+			validator, found := keeper.GetValidator(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.Fail()
 			}
@@ -759,7 +755,6 @@ func TestBurnValidators(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetValidator(context, test.args.validator)
-			keeper.SetValidatorByConsAddr(context, test.args.validator)
 			addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.validator.Address, test.args.validator.StakedTokens)
 			keeper.setValidatorBurn(context, test.args.amount, test.args.validator.Address)
@@ -767,7 +762,7 @@ func TestBurnValidators(t *testing.T) {
 
 			primaryCryptoAddr := test.args.validator.GetAddress()
 
-			primaryValidator, found := keeper.GetValidatorByConsAddr(context, primaryCryptoAddr)
+			primaryValidator, found := keeper.GetValidator(context, primaryCryptoAddr)
 			if !found {
 				t.Fail()
 			}
@@ -806,7 +801,6 @@ func TestKeeper_getBurnFromSeverity(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.Keeper
 			k.SetValidator(context, primaryBoundedValidator)
-			k.SetValidatorByConsAddr(context, primaryBoundedValidator)
 
 			if got := k.getBurnFromSeverity(tt.args.ctx, tt.args.address, tt.args.severityPercentage); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getBurnFromSeverity() = %v, want %v", got, tt.want)
@@ -876,7 +870,6 @@ func TestKeeper_BurnValidator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.Keeper
 			k.SetValidator(context, primaryBoundedValidator)
-			k.SetValidatorByConsAddr(context, primaryBoundedValidator)
 
 			store := tt.args.ctx.KVStore(k.storeKey)
 			store.Set(types.KeyForValidatorBurn(tt.args.address), k.cdc.MustMarshalBinaryBare(sdk.NewDec(1)))

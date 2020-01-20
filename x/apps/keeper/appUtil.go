@@ -55,7 +55,7 @@ func (k Keeper) mustGetApplication(ctx sdk.Context, addr sdk.Address) types.Appl
 }
 
 func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Context, consAddr sdk.Address) types.Application {
-	application, found := k.GetAppByConsAddr(ctx, consAddr)
+	application, found := k.GetApplication(ctx, consAddr)
 	if !found {
 		panic(fmt.Errorf("application with consensus-Address %s not found", consAddr))
 	}
@@ -73,7 +73,7 @@ func (k Keeper) Application(ctx sdk.Context, address sdk.Address) exported.Appli
 
 // wrapper for GetApplicationByConsAddress call
 func (k Keeper) applicationByConsAddr(ctx sdk.Context, addr sdk.Address) exported.ApplicationI {
-	app, found := k.GetAppByConsAddr(ctx, addr)
+	app, found := k.GetApplication(ctx, addr)
 	if !found {
 		return nil
 	}

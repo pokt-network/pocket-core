@@ -17,12 +17,11 @@ const (
 
 //nolint
 var ( // Keys for store prefixes
-	AllApplicationsKey                = []byte{0x01} // prefix for each key to a application
-	AllApplicationsByConsensusAddrKey = []byte{0x02} // prefix for each key to a application index, by pubkey
-	StakedAppsKey                     = []byte{0x03} // prefix for each key to a staked application index, sorted by power
-	UnstakingAppsKey                  = []byte{0x04} // prefix for unstaking application
-	UnstakedAppsKey                   = []byte{0x05} // prefix for unstaked applications
-	BurnApplicationKey                = []byte{0x06} // prefix for awarding applications
+	AllApplicationsKey = []byte{0x01} // prefix for each key to a application
+	StakedAppsKey      = []byte{0x03} // prefix for each key to a staked application index, sorted by power
+	UnstakingAppsKey   = []byte{0x04} // prefix for unstaking application
+	UnstakedAppsKey    = []byte{0x05} // prefix for unstaked applications
+	BurnApplicationKey = []byte{0x06} // prefix for awarding applications
 )
 
 // Removes the prefix bytes from a key to expose true address
@@ -33,11 +32,6 @@ func AddressFromKey(key []byte) []byte {
 // generates the key for the application with address
 func KeyForAppByAllApps(addr sdk.Address) []byte {
 	return append(AllApplicationsKey, addr.Bytes()...)
-}
-
-// generates the key for the application with consensus address
-func KeyForAppByConsAddr(addr sdk.Address) []byte {
-	return append(AllApplicationsByConsensusAddrKey, addr.Bytes()...)
 }
 
 // generates the key for unstaking applications by the unstakingtime

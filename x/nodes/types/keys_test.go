@@ -230,28 +230,6 @@ func TestKeyForValidatorBurn(t *testing.T) {
 	}
 }
 
-func TestKeyForValidatorByConsAddr(t *testing.T) {
-	type args struct {
-		addr types.Address
-	}
-	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
-
-	tests := []struct {
-		name string
-		args args
-		want []byte
-	}{
-		{"sampleByteArray", args{ca}, append([]byte{0x22}, ca.Bytes()...)},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := KeyForValidatorByConsAddr(tt.args.addr); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("KeyForValidatorByConsAddr() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestKeyForValidatorInStakingSet(t *testing.T) {
 	type args struct {
 		validator Validator

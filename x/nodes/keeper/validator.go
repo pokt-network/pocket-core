@@ -70,20 +70,3 @@ func (k Keeper) IterateAndExecuteOverVals(
 		i++
 	}
 }
-
-// get a validator in the consensus store
-func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.Address) (validator types.Validator, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	addr := store.Get(types.KeyForValidatorByConsAddr(consAddr))
-	if addr == nil {
-		return validator, false
-	}
-	return k.GetValidator(ctx, addr)
-}
-
-// set a validator in the consensus store
-func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator types.Validator) {
-	store := ctx.KVStore(k.storeKey)
-	consAddr := validator.GetAddress()
-	store.Set(types.KeyForValidatorByConsAddr(consAddr), validator.Address)
-}
