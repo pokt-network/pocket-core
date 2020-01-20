@@ -183,7 +183,7 @@ func TestValidateSlash(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			cryptoAddr := test.args.application.GetConsPubKey().Address()
+			cryptoAddr := test.args.application.GetPublicKey().Address()
 			if test.expected.found {
 				keeper.SetApplication(context, test.args.application)
 				keeper.SetAppByConsAddr(context, test.args.application)
@@ -260,7 +260,7 @@ func TestSlash(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			cryptoAddr := test.args.application.GetConsPubKey().Address()
+			cryptoAddr := test.args.application.GetPublicKey().Address()
 			if test.expected.found {
 				keeper.SetApplication(context, test.args.application)
 				keeper.SetAppByConsAddr(context, test.args.application)

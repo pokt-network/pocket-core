@@ -79,11 +79,11 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Context) (updates []abci.Vali
 // register the validator in the necessary stores in the world state
 func (k Keeper) RegisterValidator(ctx sdk.Context, validator types.Validator) {
 	k.BeforeValidatorRegistered(ctx, validator.Address)
-	k.SetValidator(ctx, validator)                      // store validator here (master list)
-	k.SetValidatorByConsAddr(ctx, validator)            // store validator here too (by cons address)
-	k.SetStakedValidator(ctx, validator)                // store validator here too (curr staked)
-	k.AddPubKeyRelation(ctx, validator.GetConsPubKey()) // store relationshiop between consAddr and consPub key
-	k.AfterValidatorRegistered(ctx, validator.Address)  // call after hook
+	k.SetValidator(ctx, validator)                     // store validator here (master list)
+	k.SetValidatorByConsAddr(ctx, validator)           // store validator here too (by cons address)
+	k.SetStakedValidator(ctx, validator)               // store validator here too (curr staked)
+	k.AddPubKeyRelation(ctx, validator.GetPublicKey()) // store relationshiop between consAddr and consPub key
+	k.AfterValidatorRegistered(ctx, validator.Address) // call after hook
 }
 
 // validate check called before staking

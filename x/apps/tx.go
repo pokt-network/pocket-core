@@ -14,8 +14,8 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 	fromAddr := kp.GetAddress()
 	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgAppStake{
-		Address: sdk.Address(fromAddr),
-		PubKey:  kp.PubKey,
+		Address: fromAddr,
+		PubKey:  kp.PublicKey,
 		Value:   amount,
 		Chains:  chains, // non native blockchains
 	}
@@ -27,7 +27,7 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 }
 
 func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, sdk.Address(address), tmNode, keybase, passphrase)
+	txBuilder, cliCtx := newTx(cdc, address, tmNode, keybase, passphrase)
 	msg := types.MsgBeginAppUnstake{Address: address}
 	err := msg.ValidateBasic()
 	if err != nil {

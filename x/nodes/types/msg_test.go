@@ -1,9 +1,8 @@
 package types
 
 import (
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -13,7 +12,7 @@ func TestMsgBeginUnstake_GetSignBytes(t *testing.T) {
 	type fields struct {
 		Address sdk.Address
 	}
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -45,7 +44,7 @@ func TestMsgBeginUnstake_GetSigners(t *testing.T) {
 		Address sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -77,7 +76,7 @@ func TestMsgBeginUnstake_Route(t *testing.T) {
 		Address sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -105,7 +104,7 @@ func TestMsgBeginUnstake_Type(t *testing.T) {
 		Address sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -133,7 +132,7 @@ func TestMsgBeginUnstake_ValidateBasic(t *testing.T) {
 		Address sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -164,7 +163,7 @@ func TestMsgSend_GetSignBytes(t *testing.T) {
 		Amount      sdk.Int
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	rand.Read(pub[:])
@@ -208,7 +207,7 @@ func TestMsgSend_GetSigners(t *testing.T) {
 		Amount      sdk.Int
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	rand.Read(pub[:])
@@ -246,7 +245,7 @@ func TestMsgSend_Route(t *testing.T) {
 		Amount      sdk.Int
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	rand.Read(pub[:])
@@ -284,7 +283,7 @@ func TestMsgSend_Type(t *testing.T) {
 		Amount      sdk.Int
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	rand.Read(pub[:])
@@ -322,7 +321,7 @@ func TestMsgSend_ValidateBasic(t *testing.T) {
 		Amount      sdk.Int
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	rand.Read(pub[:])
@@ -371,13 +370,13 @@ func TestMsgSend_ValidateBasic(t *testing.T) {
 func TestMsgStake_GetSignBytes(t *testing.T) {
 	type fields struct {
 		Address    sdk.Address
-		PubKey     crypto.PubKey
+		PubKey     crypto.PublicKey
 		Chains     []string
 		Value      sdk.Int
 		ServiceURL string
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
@@ -386,7 +385,7 @@ func TestMsgStake_GetSignBytes(t *testing.T) {
 
 	mesg := MsgStake{
 		Address:    va,
-		PubKey:     pub,
+		PublicKey:  pub,
 		Chains:     chains,
 		Value:      value,
 		ServiceURL: surl,
@@ -409,7 +408,7 @@ func TestMsgStake_GetSignBytes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
 				Address:    tt.fields.Address,
-				PubKey:     tt.fields.PubKey,
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceURL: tt.fields.ServiceURL,
@@ -424,13 +423,13 @@ func TestMsgStake_GetSignBytes(t *testing.T) {
 func TestMsgStake_GetSigners(t *testing.T) {
 	type fields struct {
 		Address    sdk.Address
-		PubKey     crypto.PubKey
+		PubKey     crypto.PublicKey
 		Chains     []string
 		Value      sdk.Int
 		ServiceURL string
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
@@ -454,7 +453,7 @@ func TestMsgStake_GetSigners(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
 				Address:    tt.fields.Address,
-				PubKey:     tt.fields.PubKey,
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceURL: tt.fields.ServiceURL,
@@ -469,13 +468,13 @@ func TestMsgStake_GetSigners(t *testing.T) {
 func TestMsgStake_Route(t *testing.T) {
 	type fields struct {
 		Address    sdk.Address
-		PubKey     crypto.PubKey
+		PubKey     crypto.PublicKey
 		Chains     []string
 		Value      sdk.Int
 		ServiceURL string
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
@@ -499,7 +498,7 @@ func TestMsgStake_Route(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
 				Address:    tt.fields.Address,
-				PubKey:     tt.fields.PubKey,
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceURL: tt.fields.ServiceURL,
@@ -514,13 +513,13 @@ func TestMsgStake_Route(t *testing.T) {
 func TestMsgStake_Type(t *testing.T) {
 	type fields struct {
 		Address    sdk.Address
-		PubKey     crypto.PubKey
+		PubKey     crypto.PublicKey
 		Chains     []string
 		Value      sdk.Int
 		ServiceURL string
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
@@ -544,7 +543,7 @@ func TestMsgStake_Type(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
 				Address:    tt.fields.Address,
-				PubKey:     tt.fields.PubKey,
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceURL: tt.fields.ServiceURL,
@@ -559,13 +558,13 @@ func TestMsgStake_Type(t *testing.T) {
 func TestMsgStake_ValidateBasic(t *testing.T) {
 	type fields struct {
 		Address    sdk.Address
-		PubKey     crypto.PubKey
+		PubKey     crypto.PublicKey
 		Chains     []string
 		Value      sdk.Int
 		ServiceURL string
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
@@ -624,7 +623,7 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			msg := MsgStake{
 				Address:    tt.fields.Address,
-				PubKey:     tt.fields.PubKey,
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceURL: tt.fields.ServiceURL,
@@ -641,7 +640,7 @@ func TestMsgUnjail_GetSignBytes(t *testing.T) {
 		ValidatorAddr sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -673,7 +672,7 @@ func TestMsgUnjail_GetSigners(t *testing.T) {
 		ValidatorAddr sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -701,7 +700,7 @@ func TestMsgUnjail_Route(t *testing.T) {
 		ValidatorAddr sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -729,7 +728,7 @@ func TestMsgUnjail_Type(t *testing.T) {
 		ValidatorAddr sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 
@@ -757,7 +756,7 @@ func TestMsgUnjail_ValidateBasic(t *testing.T) {
 		ValidatorAddr sdk.Address
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := sdk.Address(pub.Address())
 

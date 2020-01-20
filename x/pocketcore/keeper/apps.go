@@ -26,5 +26,5 @@ func (k Keeper) GetAppFromPublicKey(ctx sdk.Context, pubKey string) (app exporte
 	if err != nil {
 		return nil, false
 	}
-	return k.GetApp(ctx, pk.Address())
+	return k.GetApp(ctx, sdk.Address(pk.Address()))
 }

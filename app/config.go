@@ -13,6 +13,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
 	cfg "github.com/pokt-network/posmint/config"
+	"github.com/pokt-network/posmint/crypto"
 	kb "github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
@@ -20,7 +21,6 @@ import (
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/params"
 	"github.com/pokt-network/posmint/x/supply"
-	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
@@ -107,7 +107,7 @@ func InitGenesis() {
 		if err != nil {
 			panic(err)
 		}
-		publicKey := coinbaseKeypair.PubKey
+		publicKey := coinbaseKeypair.PublicKey
 		// ensure directory path made
 		err = os.MkdirAll(datadir+fs+"config", os.ModePerm)
 		if err != nil {
@@ -294,7 +294,7 @@ func privValKey(password string) string {
 	privValKey := privval.FilePVKey{
 		Address: res.PubKey().Address(),
 		PubKey:  res.PubKey(),
-		PrivKey: res,
+		PrivKey: res.PrivKey(),
 	}
 	pvkBz, err := cdc.MarshalJSONIndent(privValKey, "", "  ")
 	if err != nil {
@@ -322,7 +322,7 @@ func nodeKey(password string) {
 		panic(err)
 	}
 	nodeKey := p2p.NodeKey{
-		PrivKey: res,
+		PrivKey: res.PrivKey(),
 	}
 	pvkBz, err := cdc.MarshalJSONIndent(nodeKey, "", "  ")
 	if err != nil {
@@ -339,7 +339,7 @@ func nodeKey(password string) {
 }
 
 func privValState() {
-	pvkBz, err := cdc.MarshalJSONIndent(privValState, "", "  ")
+	pvkBz, err := cdc.MarshalJSONIndent(privval.FilePVLastSignState{}, "", "  ")
 	if err != nil {
 		panic(err)
 	}
@@ -503,7 +503,7 @@ func newKeybase(passphrase string) error {
 	return nil
 }
 
-func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
+func newDefaultGenesisState(pubKey crypto.PublicKey) []byte {
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
@@ -518,7 +518,7 @@ func newDefaultGenesisState(pubKey crypto.PubKey) []byte {
 	types.ModuleCdc.MustUnmarshalJSON(rawPOS, &posGenesisState)
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
-			ConsPubKey:   pubKey,
+			PublicKey:    pubKey,
 			Status:       sdk.Bonded,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,

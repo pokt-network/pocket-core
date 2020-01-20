@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"strings"
 	"time"
@@ -59,14 +60,14 @@ func (v Validator) String() string {
   ServiceURL:                 %s
   Chains:                     %v
   Unstaking Completion Time:  %v`,
-		v.Address, sdk.HexAddressPubKey(v.ConsPubKey), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
+		v.Address, v.PublicKey.RawString(), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
 	)
 }
 
 // this is a helper struct used for JSON de- and encoding only
 type hexValidator struct {
-	Address                 sdk.Address `json:"address" yaml:"address"`         // the hex address of the validator
-	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"` // the hex consensus public key of the validator
+	Address                 sdk.Address    `json:"address" yaml:"address"`         // the hex address of the validator
+	PublicKey               string         `json:"cons_pubkey" yaml:"cons_pubkey"` // the hex consensus public key of the validator
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`           // has the validator been jailed from staked status?
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`           // validator status (bonded/unbonding/unbonded)
 	StakedTokens            sdk.Int        `json:"tokens" yaml:"tokens"`           // how many staked tokens
@@ -79,7 +80,7 @@ type hexValidator struct {
 func (v Validator) MarshalJSON() ([]byte, error) {
 	return codec.Cdc.MarshalJSON(hexValidator{
 		Address:                 v.Address,
-		ConsPubKey:              sdk.HexAddressPubKey(v.ConsPubKey),
+		PublicKey:               v.PublicKey.RawString(),
 		Jailed:                  v.Jailed,
 		Status:                  v.Status,
 		ServiceURL:              v.ServiceURL,
@@ -95,13 +96,13 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
 		return err
 	}
-	consPubKey, err := sdk.GetConsPubKeyHex(bv.ConsPubKey)
+	publicKey, err := crypto.NewPublicKey(bv.PublicKey)
 	if err != nil {
 		return err
 	}
 	*v = Validator{
 		Address:                 bv.Address,
-		ConsPubKey:              consPubKey,
+		PublicKey:               publicKey,
 		Jailed:                  bv.Jailed,
 		Chains:                  bv.Chains,
 		ServiceURL:              bv.ServiceURL,

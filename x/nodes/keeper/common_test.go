@@ -2,10 +2,10 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/mock"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"testing"
 
@@ -126,8 +126,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
 
-		privKey := ed25519.GenPrivKey()
-		pubKey := privKey.PubKey()
+		privKey := crypto.GenerateEd25519PrivKey()
+		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
 		acc.Coins = initialCoins
@@ -154,8 +154,8 @@ func sendFromModuleToAccount(t *testing.T, ctx sdk.Context, k *Keeper, module st
 	}
 }
 
-func getRandomPubKey() ed25519.PubKeyEd25519 {
-	var pub ed25519.PubKeyEd25519
+func getRandomPubKey() crypto.Ed25519PublicKey {
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	return pub
 }
@@ -169,7 +169,7 @@ func getValidator() types.Validator {
 	return types.Validator{
 		Address:      sdk.Address(pub.Address()),
 		StakedTokens: sdk.NewInt(100000000000),
-		ConsPubKey:   pub,
+		PublicKey:    pub,
 		Jailed:       false,
 		Status:       sdk.Bonded,
 		ServiceURL:   "google.com",

@@ -5,10 +5,8 @@ import (
 	appsType "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"gopkg.in/h2non/gock.v1"
 	"reflect"
 	"testing"
@@ -17,11 +15,11 @@ import (
 
 func TestRelay_Validate(t *testing.T) {
 	clientPrivateKey := getRandomPrivateKey()
-	clientPubKey := crypto.PublicKey(clientPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	clientPubKey := clientPrivateKey.PublicKey().RawString()
 	appPrivateKey := getRandomPrivateKey()
-	appPubKey := crypto.PublicKey(appPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
-	nodePubKey := hex.EncodeToString(crypto.PublicKey(npk).Bytes())
+	nodePubKey := npk.RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -78,7 +76,7 @@ func TestRelay_Validate(t *testing.T) {
 	invalidPayloadEmpty.Payload.Data = ""
 	selfNode := nodesTypes.Validator{
 		Address:                 sdk.Address(npk.Address()),
-		ConsPubKey:              npk,
+		PublicKey:               npk,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum, bitcoin},
@@ -91,7 +89,7 @@ func TestRelay_Validate(t *testing.T) {
 		pubKey := getRandomPubKey()
 		allNodes = append(allNodes, nodesTypes.Validator{
 			Address:                 sdk.Address(pubKey.Address()),
-			ConsPubKey:              pubKey,
+			PublicKey:               pubKey,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			Chains:                  []string{ethereum, bitcoin},
@@ -105,7 +103,7 @@ func TestRelay_Validate(t *testing.T) {
 		pubKey := getRandomPubKey()
 		noEthereumNodes = append(noEthereumNodes, nodesTypes.Validator{
 			Address:                 sdk.Address(pubKey.Address()),
-			ConsPubKey:              pubKey,
+			PublicKey:               pubKey,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			Chains:                  []string{bitcoin},
@@ -131,7 +129,7 @@ func TestRelay_Validate(t *testing.T) {
 	pubKey := getRandomPubKey()
 	app := appsType.Application{
 		Address:                 sdk.Address(pubKey.Address()),
-		ConsPubKey:              pubKey,
+		PublicKey:               pubKey,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -195,11 +193,11 @@ func TestRelay_Validate(t *testing.T) {
 
 func TestRelay_Execute(t *testing.T) {
 	clientPrivateKey := getRandomPrivateKey()
-	clientPubKey := crypto.PublicKey(clientPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	clientPubKey := clientPrivateKey.PublicKey().RawString()
 	appPrivateKey := getRandomPrivateKey()
-	appPubKey := crypto.PublicKey(appPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
-	nodePubKey := hex.EncodeToString(crypto.PublicKey(npk).Bytes())
+	nodePubKey := npk.RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -251,11 +249,11 @@ func TestRelay_Execute(t *testing.T) {
 
 func TestRelay_HandleProof(t *testing.T) {
 	clientPrivateKey := getRandomPrivateKey()
-	clientPubKey := crypto.PublicKey(clientPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	clientPubKey := clientPrivateKey.PublicKey().RawString()
 	appPrivateKey := getRandomPrivateKey()
-	appPubKey := crypto.PublicKey(appPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
-	nodePubKey := hex.EncodeToString(crypto.PublicKey(npk).Bytes())
+	nodePubKey := npk.RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -299,23 +297,23 @@ func TestRelay_HandleProof(t *testing.T) {
 
 func TestRelayResponse_BytesAndHash(t *testing.T) {
 	nodePrivKey := getRandomPrivateKey()
-	nodePubKey := crypto.PublicKey(nodePrivKey.PubKey().(ed25519.PubKeyEd25519))
+	nodePubKey := nodePrivKey.PublicKey().RawString()
 	appPrivKey := getRandomPrivateKey()
-	appPublicKey := crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519))
+	appPublicKey := appPrivKey.PublicKey().RawString()
 	cliPrivKey := getRandomPrivateKey()
-	cliPublicKey := crypto.PublicKey(cliPrivKey.PubKey().(ed25519.PubKeyEd25519))
+	cliPublicKey := cliPrivKey.PublicKey().RawString()
 	relayResp := RelayResponse{
 		Signature: "",
 		Response:  "foo",
 		Proof: RelayProof{
 			Entropy:            230942034,
 			SessionBlockHeight: 1,
-			ServicerPubKey:     nodePubKey.String(),
+			ServicerPubKey:     nodePubKey,
 			Blockchain:         hex.EncodeToString(hash([]byte("foo"))),
 			Token: AAT{
 				Version:              "0.0.1",
-				ApplicationPublicKey: appPublicKey.String(),
-				ClientPublicKey:      cliPublicKey.String(),
+				ApplicationPublicKey: appPublicKey,
+				ClientPublicKey:      cliPublicKey,
 				ApplicationSignature: "",
 			},
 			Signature: "",

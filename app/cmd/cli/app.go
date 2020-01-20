@@ -71,7 +71,7 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
-		addr, err := types.AccAddressFromHex(args[0])
+		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
 			panic(err)
 		}
@@ -80,7 +80,7 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 			panic(err)
 		}
 		fmt.Println("Enter Password: ")
-		aatBytes, err := app.GenerateAAT(hex.EncodeToString(res.PubKey.Bytes()), args[1], app.Credentials())
+		aatBytes, err := app.GenerateAAT(hex.EncodeToString(res.PublicKey.RawBytes()), args[1], app.Credentials())
 		fmt.Println(string(aatBytes))
 	},
 }

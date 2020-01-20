@@ -10,6 +10,7 @@ import (
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
 	"github.com/pokt-network/posmint/store"
 	sdk "github.com/pokt-network/posmint/types"
@@ -21,7 +22,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -209,8 +209,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []nodesTypes.Va
 // nolint: unparam deadcode unused
 func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.BaseAccount) {
 	for i := 0; i < numAccs; i++ {
-		privKey := ed25519.GenPrivKey()
-		pubKey := privKey.PubKey()
+		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
 		acc.Coins = initialCoins
@@ -234,8 +234,8 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 		panic(err)
 	}
 	for i := 0; i < numAccs-1; i++ {
-		privKey := ed25519.GenPrivKey()
-		pubKey := privKey.PubKey()
+		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
 		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com", valCoins)
 		// set the vals from the data
@@ -259,7 +259,7 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 	if er != nil {
 		panic(err)
 	}
-	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PubKey, []string{ethereum}, "https://www.google.com", valCoins)
+	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com", valCoins)
 	// set the vals from the data
 	nk.SetValidator(ctx, val)
 	nk.SetValidatorByConsAddr(ctx, val)
@@ -324,8 +324,8 @@ func createTestApps(ctx sdk.Context, numAccs int, valCoins sdk.Int, ak appsKeepe
 		panic(err)
 	}
 	for i := 0; i < numAccs; i++ {
-		privKey := ed25519.GenPrivKey()
-		pubKey := privKey.PubKey()
+		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
 		app := appsTypes.NewApplication(addr, pubKey, []string{ethereum}, valCoins)
 		// set the vals from the data
@@ -360,13 +360,13 @@ func createTestApps(ctx sdk.Context, numAccs int, valCoins sdk.Int, ak appsKeepe
 	return
 }
 
-func getRandomPrivateKey() ed25519.PrivKeyEd25519 {
-	return ed25519.GenPrivKey()
+func getRandomPrivateKey() crypto.Ed25519PrivateKey {
+	return crypto.Ed25519PrivateKey{}.GenPrivateKey().(crypto.Ed25519PrivateKey)
 }
 
-func getRandomPubKey() ed25519.PubKeyEd25519 {
-	pk := ed25519.GenPrivKey()
-	return pk.PubKey().(ed25519.PubKeyEd25519)
+func getRandomPubKey() crypto.Ed25519PublicKey {
+	pk := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+	return pk.PublicKey().(crypto.Ed25519PublicKey)
 }
 
 func getRandomValidatorAddress() sdk.Address {

@@ -1,8 +1,7 @@
 package types
 
 import (
-	"github.com/tendermint/tendermint/crypto"
-
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 )
 
@@ -16,10 +15,10 @@ var (
 //----------------------------------------------------------------------------------------------------------------------
 // MsgAppStake - struct for staking transactions
 type MsgAppStake struct {
-	Address sdk.Address `json:"application_address" yaml:"application_address"`
-	PubKey  crypto.PubKey  `json:"pubkey" yaml:"pubkey"`
-	Chains  []string       `json:"chains" yaml:"chains"`
-	Value   sdk.Int        `json:"value" yaml:"value"`
+	Address sdk.Address      `json:"application_address" yaml:"application_address"`
+	PubKey  crypto.PublicKey `json:"pubkey" yaml:"pubkey"`
+	Chains  []string         `json:"chains" yaml:"chains"`
+	Value   sdk.Int          `json:"value" yaml:"value"`
 }
 
 // Return address(es) that must sign over msg.GetSignBytes()

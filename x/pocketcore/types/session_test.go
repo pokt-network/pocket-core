@@ -7,13 +7,12 @@ import (
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"testing"
 	"time"
 )
 
 func TestNewSessionKey(t *testing.T) {
-	appPubKey := crypto.PublicKey(getRandomPubKey())
+	appPubKey := getRandomPubKey()
 	ctx := newContext(t, false)
 	blockhash := hex.EncodeToString(ctx.BlockHeader().LastBlockId.Hash)
 	ethereum, err := NonNativeChain{
@@ -33,12 +32,12 @@ func TestNewSessionKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	key1, err := NewSessionKey(appPubKey.String(), ethereum, blockhash)
+	key1, err := NewSessionKey(appPubKey.RawString(), ethereum, blockhash)
 	assert.Nil(t, err)
 	assert.NotNil(t, key1)
 	assert.NotEmpty(t, key1)
 	assert.Nil(t, HashVerification(hex.EncodeToString(key1)))
-	key2, err := NewSessionKey(appPubKey.String(), bitcoin, blockhash)
+	key2, err := NewSessionKey(appPubKey.RawString(), bitcoin, blockhash)
 	assert.Nil(t, err)
 	assert.NotNil(t, key2)
 	assert.NotEmpty(t, key2)
@@ -122,8 +121,8 @@ func TestNewSessionNodes(t *testing.T) {
 	}
 	var allNodes []exported.ValidatorI
 	node12 := nodesTypes.Validator{
-		Address:                 fakePubKey12.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey12),
+		Address:                 sdk.Address(fakePubKey12.Address()),
+		PublicKey:               fakePubKey12,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -132,8 +131,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node1 := nodesTypes.Validator{
-		Address:                 fakePubKey1.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey1),
+		Address:                 sdk.Address(fakePubKey1.Address()),
+		PublicKey:               (fakePubKey1),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -142,8 +141,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node2 := nodesTypes.Validator{
-		Address:                 fakePubKey2.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey2),
+		Address:                 sdk.Address(fakePubKey2.Address()),
+		PublicKey:               (fakePubKey2),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -152,8 +151,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node3 := nodesTypes.Validator{
-		Address:                 fakePubKey3.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey3),
+		Address:                 sdk.Address(fakePubKey3.Address()),
+		PublicKey:               (fakePubKey3),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -162,8 +161,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node4 := nodesTypes.Validator{
-		Address:                 fakePubKey4.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey4),
+		Address:                 sdk.Address(fakePubKey4.Address()),
+		PublicKey:               (fakePubKey4),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -172,8 +171,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node5 := nodesTypes.Validator{
-		Address:                 fakePubKey5.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey5),
+		Address:                 sdk.Address(fakePubKey5.Address()),
+		PublicKey:               (fakePubKey5),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -182,8 +181,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node6 := nodesTypes.Validator{
-		Address:                 fakePubKey6.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey6),
+		Address:                 sdk.Address(fakePubKey6.Address()),
+		PublicKey:               (fakePubKey6),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -192,8 +191,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node7 := nodesTypes.Validator{
-		Address:                 fakePubKey7.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey7),
+		Address:                 sdk.Address(fakePubKey7.Address()),
+		PublicKey:               (fakePubKey7),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -202,8 +201,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node8 := nodesTypes.Validator{
-		Address:                 fakePubKey8.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey8),
+		Address:                 sdk.Address(fakePubKey8.Address()),
+		PublicKey:               (fakePubKey8),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -212,8 +211,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node9 := nodesTypes.Validator{
-		Address:                 fakePubKey9.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey9),
+		Address:                 sdk.Address(fakePubKey9.Address()),
+		PublicKey:               (fakePubKey9),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -222,8 +221,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node10 := nodesTypes.Validator{
-		Address:                 fakePubKey10.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey10),
+		Address:                 sdk.Address(fakePubKey10.Address()),
+		PublicKey:               (fakePubKey10),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},
@@ -232,8 +231,8 @@ func TestNewSessionNodes(t *testing.T) {
 		UnstakingCompletionTime: time.Time{},
 	}
 	node11 := nodesTypes.Validator{
-		Address:                 fakePubKey11.Address(),
-		ConsPubKey:              ed25519.PubKeyEd25519(fakePubKey11),
+		Address:                 sdk.Address(fakePubKey11.Address()),
+		PublicKey:               (fakePubKey11),
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{ethereum},

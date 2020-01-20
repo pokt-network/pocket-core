@@ -21,7 +21,7 @@ func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
 	if err != nil {
 		return NewSigDecodeError(ModuleName)
 	}
-	if len(sig) != crypto.SignatureSize {
+	if len(sig) != crypto.Ed25519SignatureSize {
 		return NewInvalidSignatureSizeError(ModuleName)
 	}
 	pk, err := crypto.NewPublicKey(publicKey)
@@ -32,7 +32,7 @@ func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
 	if err != nil {
 		return NewMsgDecodeError(ModuleName)
 	}
-	if ok := pk.VerifySignature(msg, sig); !ok {
+	if ok := pk.VerifyBytes(msg, sig); !ok {
 		return NewInvalidSignatureError(ModuleName)
 	}
 	return nil
@@ -44,7 +44,7 @@ func PubKeyVerification(pk string) sdk.Error {
 	if err != nil {
 		return NewPubKeyDecodeError(ModuleName)
 	}
-	if len(pkBz) != crypto.PubKeySize {
+	if len(pkBz) != crypto.Ed25519PubKeySize {
 		return NewPubKeySizeError(ModuleName)
 	}
 	return nil

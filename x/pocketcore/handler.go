@@ -89,7 +89,7 @@ func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim)
 	// get the session node count for the time of thesession
 	sessionNodeCount := int(keeper.SessionNodeCount(sessionContext))
 	// generate the session
-	session, err := types.NewSession(hex.EncodeToString(app.GetConsPubKey().Bytes()), msg.Chain, types.BlockHashFromBlockHeight(ctx, msg.SessionBlockHeight), msg.SessionBlockHeight, allNodes, sessionNodeCount)
+	session, err := types.NewSession(hex.EncodeToString(app.GetPublicKey().Bytes()), msg.Chain, types.BlockHashFromBlockHeight(ctx, msg.SessionBlockHeight), msg.SessionBlockHeight, allNodes, sessionNodeCount)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgP
 	}
 	addr := pk.Address()
 	// get the unverified proof for the address
-	proof, found := keeper.GetClaim(ctx, addr, types.SessionHeader{
+	proof, found := keeper.GetClaim(ctx, sdk.Address(addr), types.SessionHeader{
 		ApplicationPubKey:  msg.Leaf.Token.ApplicationPublicKey,
 		Chain:              msg.Leaf.Blockchain,
 		SessionBlockHeight: msg.Leaf.SessionBlockHeight,
@@ -128,5 +128,5 @@ func validateClaimProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgP
 		return nil, types.MsgClaim{}, types.NewInvalidProofsError(types.ModuleName)
 	}
 	// seems good, so return the needed info to the handler
-	return addr, proof, nil
+	return sdk.Address(addr), proof, nil
 }

@@ -3,8 +3,8 @@ package types
 import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -15,7 +15,7 @@ var msgBeginAppUnstake MsgBeginAppUnstake
 var msgAppUnjail MsgAppUnjail
 
 func init() {
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	moduleCdc = codec.New()

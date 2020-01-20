@@ -14,8 +14,8 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 	fromAddr := kp.GetAddress()
 	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgStake{
-		Address:    sdk.Address(fromAddr),
-		PubKey:     kp.PubKey,
+		Address:    fromAddr,
+		PublicKey:  kp.PublicKey,
 		Value:      amount,
 		ServiceURL: serviceURL, // url where pocket service api is hosted
 		Chains:     chains,     // non native blockchains
@@ -28,7 +28,7 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 }
 
 func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, sdk.Address(address), tmNode, keybase, passphrase)
+	txBuilder, cliCtx := newTx(cdc, address, tmNode, keybase, passphrase)
 	msg := types.MsgBeginUnstake{Address: address}
 	err := msg.ValidateBasic()
 	if err != nil {
@@ -38,7 +38,7 @@ func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, add
 }
 
 func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, sdk.Address(address), tmNode, keybase, passphrase)
+	txBuilder, cliCtx := newTx(cdc, address, tmNode, keybase, passphrase)
 	msg := types.MsgUnjail{ValidatorAddr: address}
 	err := msg.ValidateBasic()
 	if err != nil {
@@ -48,7 +48,7 @@ func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, addr
 }
 
 func Send(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddr, toAddr sdk.Address, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, sdk.Address(fromAddr), tmNode, keybase, passphrase)
+	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgSend{
 		FromAddress: fromAddr,
 		ToAddress:   toAddr,
@@ -65,7 +65,7 @@ func RawTx(cdc *codec.Codec, tmNode client.Client, fromAddr sdk.Address, txBytes
 	return util.CLIContext{
 		Codec:       cdc,
 		Client:      tmNode,
-		FromAddress: sdk.Address(fromAddr),
+		FromAddress: fromAddr,
 	}.BroadcastTx(txBytes)
 }
 

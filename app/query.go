@@ -29,7 +29,7 @@ func QueryNodeStatus() (*core_types.ResultStatus, error) {
 }
 
 func QueryBalance(addr string, height int64) (balance sdk.Int, err error) {
-	a, err := sdk.ValAddressFromHex(addr)
+	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return sdk.NewInt(0), err
 	}
@@ -41,7 +41,7 @@ func QueryAllNodes(height int64) (nodesTypes.Validators, error) {
 }
 
 func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err error) {
-	a, err := sdk.ValAddressFromHex(addr)
+	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return validator, err
 	}
@@ -65,7 +65,7 @@ func QueryNodeParams(height int64) (params nodesTypes.Params, err error) {
 }
 
 func QuerySigningInfo(height int64, addr string) (nodesTypes.ValidatorSigningInfo, error) {
-	a, err := sdk.ValAddressFromHex(addr)
+	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nodesTypes.ValidatorSigningInfo{}, err
 	}
@@ -85,7 +85,7 @@ func QueryAllApps(height int64) (appsTypes.Applications, error) {
 }
 
 func QueryApp(addr string, height int64) (validator appsTypes.Application, err error) {
-	a, err := sdk.ValAddressFromHex(addr)
+	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return validator, err
 	}
@@ -113,7 +113,7 @@ func QueryAppParams(height int64) (params appsTypes.Params, err error) {
 }
 
 func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredInvoice, err error) {
-	a, err := sdk.ValAddressFromHex(addr)
+	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredInvoice,
 }
 
 func QueryProof(blockchain, appPubKey, addr string, sessionblockHeight, height int64) (proof *pocketTypes.StoredInvoice, err error) {
-	a, err := sdk.ValAddressFromHex(addr)
+	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}

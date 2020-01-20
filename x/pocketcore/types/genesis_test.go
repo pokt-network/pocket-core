@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/binary"
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"reflect"
@@ -10,8 +9,8 @@ import (
 )
 
 func TestValidateGenesis(t *testing.T) {
-	appPubKeyProof := crypto.PublicKey(getRandomPubKey()).String()
-	appPubKeyClaim := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKeyProof := getRandomPubKey().RawString()
+	appPubKeyClaim := getRandomPubKey().RawString()
 	pk := getRandomPubKey()
 	servicerAddr := pk.Address()
 	nn, err := NonNativeChain{
@@ -172,8 +171,8 @@ func TestValidateGenesis(t *testing.T) {
 }
 
 func TestDefaultGenesisState(t *testing.T) {
-	appPubKeyProof := crypto.PublicKey(getRandomPubKey()).String()
-	appPubKeyClaim := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKeyProof := getRandomPubKey().RawString()
+	appPubKeyClaim := getRandomPubKey().RawString()
 	pk := getRandomPubKey()
 	servicerAddr := pk.Address()
 	nn, err := NonNativeChain{

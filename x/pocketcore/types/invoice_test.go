@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
@@ -12,9 +11,9 @@ func TestGetAllInvoices(t *testing.T) {
 }
 
 func TestAllInvoices_AddGetInvoice(t *testing.T) {
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	servicerPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	clientPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := getRandomPubKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -51,9 +50,9 @@ func TestAllInvoices_AddGetInvoice(t *testing.T) {
 }
 
 func TestAllInvoices_DeleteInvoice(t *testing.T) {
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	servicerPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	clientPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := getRandomPubKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -93,9 +92,9 @@ func TestAllInvoices_DeleteInvoice(t *testing.T) {
 }
 
 func TestAllInvoices_GetProofs(t *testing.T) {
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	servicerPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	clientPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := getRandomPubKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -150,9 +149,9 @@ func TestAllInvoices_GetProofs(t *testing.T) {
 }
 
 func TestAllInvoices_GetTotalRelays(t *testing.T) {
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	servicerPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	clientPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := getRandomPubKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",

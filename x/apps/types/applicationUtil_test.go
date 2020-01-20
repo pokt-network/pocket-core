@@ -3,8 +3,8 @@ package types
 import (
 	"encoding/json"
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"strings"
 
 	"fmt"
@@ -18,7 +18,7 @@ var application Application
 var moduleCdc *codec.Codec
 
 func init() {
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	moduleCdc = codec.New()
@@ -28,7 +28,7 @@ func init() {
 
 	application = Application{
 		Address:                 sdk.Address(pub.Address()),
-		ConsPubKey:              pub,
+		PublicKey:               pub,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		StakedTokens:            sdk.NewInt(100),
@@ -44,7 +44,7 @@ func TestApplicationUtil_MarshalJSON(t *testing.T) {
 	}
 	hexApp := hexApplication{
 		Address:                 application.Address,
-		ConsPubKey:              sdk.HexAddressPubKey(application.ConsPubKey),
+		PublicKey:               application.PublicKey.RawString(),
 		Jailed:                  application.Jailed,
 		Status:                  application.Status,
 		StakedTokens:            application.StakedTokens,
@@ -92,7 +92,7 @@ func TestApplicationUtil_String(t *testing.T) {
   Tokens:               	  %s
   Unstakeing Completion Time: %v `,
 				application.Address,
-				sdk.HexAddressPubKey(application.ConsPubKey),
+				application.PublicKey.RawString(),
 				application.Jailed,
 				application.Chains,
 				application.MaxRelays,
@@ -130,7 +130,7 @@ func TestApplicationUtil_JSON(t *testing.T) {
   Tokens:               	  %s
   Unstakeing Completion Time: %v`,
 				application.Address,
-				sdk.HexAddressPubKey(application.ConsPubKey),
+				application.PublicKey.RawString(),
 				application.Jailed,
 				application.Chains,
 				application.MaxRelays,
@@ -232,33 +232,33 @@ func TestApplicationUtil_MustUnMarshalApplication(t *testing.T) {
 	type args struct {
 		application Application
 		codec       *codec.Codec
-		bz []byte
+		bz          []byte
 	}
 	tests := []struct {
-		name string
+		name   string
 		panics bool
 		args
 		want interface{}
 	}{
 		{
-			name: "can unmarshal application",
+			name:   "can unmarshal application",
 			panics: true,
-			args: args{bz: []byte{}, codec:moduleCdc},
-			want: "UnmarshalBinaryLengthPrefixed cannot decode empty bytes",
+			args:   args{bz: []byte{}, codec: moduleCdc},
+			want:   "UnmarshalBinaryLengthPrefixed cannot decode empty bytes",
 		},
 		{
 			name: "can unmarshal application",
-			args: args{bz: MustMarshalApplication(moduleCdc, application), codec:moduleCdc},
+			args: args{bz: MustMarshalApplication(moduleCdc, application), codec: moduleCdc},
 			want: application,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			switch tt.panics{
+			switch tt.panics {
 			case true:
-				defer func(){
+				defer func() {
 					err := recover().(error)
-					if !reflect.DeepEqual(fmt.Sprintf("%s", err), tt.want){
+					if !reflect.DeepEqual(fmt.Sprintf("%s", err), tt.want) {
 						t.Errorf("got %v but want %v", err, tt.want)
 					}
 				}()

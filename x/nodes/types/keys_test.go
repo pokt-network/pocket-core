@@ -3,8 +3,8 @@ package types
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -100,7 +100,7 @@ func TestGetValidatorSigningInfoAddress(t *testing.T) {
 	type args struct {
 		key []byte
 	}
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	ca := types.Address(pub.Address())
 
@@ -256,7 +256,7 @@ func TestKeyForValidatorInStakingSet(t *testing.T) {
 	type args struct {
 		validator Validator
 	}
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	operAddrInvr := types.CopyBytes(pub.Address())
@@ -307,7 +307,7 @@ func TestParseValidatorPowerRankKey(t *testing.T) {
 		key []byte
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	operAddrInvr := types.CopyBytes(pub.Address())
@@ -341,7 +341,7 @@ func Test_getStakedValPowerRankKey(t *testing.T) {
 	type args struct {
 		validator Validator
 	}
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	operAddrInvr := types.CopyBytes(pub.Address())

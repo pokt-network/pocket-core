@@ -14,12 +14,12 @@ func TestDefaultParams(t *testing.T) {
 	}{
 		{"Default Test",
 			Params{
-				UnstakingTime:             DefaultUnstakingTime,
-				MaxApplications:           DefaultMaxApplications,
-				AppStakeMin:               DefaultMinStake,
-				BaselineThroughputPerPokt: DefaultBaselineThroughputPerPokt,
-				StakingAdjustment:         DefaultStakingAdjustment,
-				ParticipationRateOn:       DefaultParticipationRateOn,
+				UnstakingTime:       DefaultUnstakingTime,
+				MaxApplications:     DefaultMaxApplications,
+				AppStakeMin:         DefaultMinStake,
+				BaseRelaysPerPOKT:   DefaultBaseRelaysPerPOKT,
+				StakingAdjustment:   DefaultStakingAdjustment,
+				ParticipationRateOn: DefaultParticipationRateOn,
 			},
 		}}
 	for _, tt := range tests {
@@ -57,12 +57,12 @@ func TestParams_Equal(t *testing.T) {
 			StakingAdjustment:          0,
 			ParticipationRateOn:        false,
 		}, args{Params{
-			UnstakingTime:             0,
-			MaxApplications:           0,
-			AppStakeMin:               0,
-			BaselineThroughputPerPokt: 0,
-			StakingAdjustment:         0,
-			ParticipationRateOn:       false,
+			UnstakingTime:       0,
+			MaxApplications:     0,
+			AppStakeMin:         0,
+			BaseRelaysPerPOKT:   0,
+			StakingAdjustment:   0,
+			ParticipationRateOn: false,
 		}}, true},
 		{"Default Test False", fields{
 			UnstakingTime:              0,
@@ -72,23 +72,23 @@ func TestParams_Equal(t *testing.T) {
 			StakingAdjustment:          0,
 			ParticipationRateOn:        false,
 		}, args{Params{
-			UnstakingTime:             0,
-			MaxApplications:           1,
-			AppStakeMin:               0,
-			BaselineThroughputPerPokt: 0,
-			StakingAdjustment:         0,
-			ParticipationRateOn:       false,
+			UnstakingTime:       0,
+			MaxApplications:     1,
+			AppStakeMin:         0,
+			BaseRelaysPerPOKT:   0,
+			StakingAdjustment:   0,
+			ParticipationRateOn: false,
 		}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := Params{
-				UnstakingTime:             tt.fields.UnstakingTime,
-				MaxApplications:           tt.fields.MaxApplications,
-				AppStakeMin:               tt.fields.AppStakeMin,
-				BaselineThroughputPerPokt: tt.fields.BaslineThroughputStakeRate,
-				StakingAdjustment:         tt.fields.StakingAdjustment,
-				ParticipationRateOn:       tt.fields.ParticipationRateOn,
+				UnstakingTime:       tt.fields.UnstakingTime,
+				MaxApplications:     tt.fields.MaxApplications,
+				AppStakeMin:         tt.fields.AppStakeMin,
+				BaseRelaysPerPOKT:   tt.fields.BaslineThroughputStakeRate,
+				StakingAdjustment:   tt.fields.StakingAdjustment,
+				ParticipationRateOn: tt.fields.ParticipationRateOn,
 			}
 			if got := p.Equal(tt.args.p2); got != tt.want {
 				t.Errorf("Equal() = %v, want %v", got, tt.want)
@@ -143,12 +143,12 @@ func TestParams_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := Params{
-				UnstakingTime:             tt.fields.UnstakingTime,
-				MaxApplications:           tt.fields.MaxApplications,
-				AppStakeMin:               tt.fields.AppStakeMin,
-				BaselineThroughputPerPokt: tt.fields.BaselineThrouhgputStakeRate,
-				StakingAdjustment:         tt.fields.StakingAdjustment,
-				ParticipationRateOn:       tt.fields.ParticipationRateOn,
+				UnstakingTime:       tt.fields.UnstakingTime,
+				MaxApplications:     tt.fields.MaxApplications,
+				AppStakeMin:         tt.fields.AppStakeMin,
+				BaseRelaysPerPOKT:   tt.fields.BaselineThrouhgputStakeRate,
+				StakingAdjustment:   tt.fields.StakingAdjustment,
+				ParticipationRateOn: tt.fields.ParticipationRateOn,
 			}
 			if err := p.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
@@ -177,10 +177,10 @@ func TestParams_MustMarshalMarshal(t *testing.T) {
 			"Unmarshal application",
 			false,
 			Params{
-				UnstakingTime:             DefaultUnstakingTime,
-				MaxApplications:           DefaultMaxApplications,
-				AppStakeMin:               DefaultMinStake,
-				BaselineThroughputPerPokt: DefaultBaselineThroughputPerPokt,
+				UnstakingTime:     DefaultUnstakingTime,
+				MaxApplications:   DefaultMaxApplications,
+				AppStakeMin:       DefaultMinStake,
+				BaseRelaysPerPOKT: DefaultBaseRelaysPerPOKT,
 			},
 			args{moduleCdc.MustMarshalBinaryLengthPrefixed(DefaultParams())},
 		},
@@ -216,13 +216,13 @@ func TestParams_String(t *testing.T) {
   Unstaking Time:              %s
   Max Applications:            %d
   Minimum Stake:     	       %d
-  BaslineThroughputStakeRate   %d
+  BaseRelaysPerPOKT            %d
   Staking Adjustment           %d
   Participation Rate On        %v,`,
 				DefaultUnstakingTime,
 				DefaultMaxApplications,
 				DefaultMinStake,
-				DefaultBaselineThroughputPerPokt,
+				DefaultBaseRelaysPerPOKT,
 				DefaultStakingAdjustment,
 				DefaultParticipationRateOn),
 		},

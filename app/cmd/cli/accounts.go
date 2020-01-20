@@ -81,7 +81,7 @@ var deleteCmd = &cobra.Command{
 		if kb == nil {
 			panic("Uninitialized Kebyase")
 		}
-		addr, err := types.AccAddressFromHex(args[0])
+		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
 			panic(err)
 		}
@@ -126,7 +126,7 @@ var showCmd = &cobra.Command{
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
-		addr, err := types.AccAddressFromHex(args[0])
+		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
 			panic(err)
 		}
@@ -136,7 +136,7 @@ var showCmd = &cobra.Command{
 		}
 		fmt.Printf("Address:\t%s\nPublic Key:\t%s\n",
 			strings.ToUpper(kp.GetAddress().String()),
-			strings.ToUpper(hex.EncodeToString(kp.PubKey.Bytes())))
+			strings.ToUpper(hex.EncodeToString(kp.PublicKey.RawBytes())))
 	},
 }
 
@@ -151,7 +151,7 @@ var updatePassphraseCmd = &cobra.Command{
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
-		addr, err := types.AccAddressFromHex(args[0])
+		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
 			panic(err)
 		}
@@ -178,7 +178,7 @@ var signCmd = &cobra.Command{
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
-		addr, err := types.AccAddressFromHex(args[0])
+		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
 			panic(err)
 		}
@@ -229,7 +229,7 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
-		addr, err := types.AccAddressFromHex(args[0])
+		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
 			panic(err)
 		}
@@ -257,7 +257,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 		if kb == nil {
 			panic(app.UninitializedKeybaseError)
 		}
-		addr, err := types.AccAddressFromHex(args[0])
+		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
 			panic(err)
 		}
@@ -267,7 +267,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Exported Raw Private Key:\n%s\n", strings.ToUpper(hex.EncodeToString(pk.Bytes())))
+		fmt.Printf("Exported Raw Private Key:\n%s\n", strings.ToUpper(hex.EncodeToString(pk.RawBytes())))
 	},
 }
 
@@ -323,7 +323,7 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		kb := keys.New(app.KeybaseName, app.InitDataDirectory(datadir)+string(filepath.Separator)+app.KBDirectoryName)
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()
-		var pk [crypto.PrivKeySize]byte
+		var pk [crypto.Ed25519PrivKeySize]byte
 		copy(pk[:], pkBytes)
 		kp, err := kb.ImportPrivateKeyObject(pk, ePass)
 		if err != nil {
