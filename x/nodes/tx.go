@@ -14,7 +14,6 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 	fromAddr := kp.GetAddress()
 	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgStake{
-		Address:    fromAddr,
 		PublicKey:  kp.PublicKey,
 		Value:      amount,
 		ServiceURL: serviceURL, // url where pocket service api is hosted
