@@ -42,6 +42,7 @@ func newTx(cdc *codec.Codec, fromAddr sdk.Address, tmNode client.Client, keybase
 	}
 	chainID := genDoc.Genesis.ChainID
 	cliCtx = util.NewCLIContext(tmNode, fromAddr, passphrase).WithCodec(cdc)
+	cliCtx.BroadcastMode = util.BroadcastSync
 	accGetter := auth.NewAccountRetriever(cliCtx)
 	err = accGetter.EnsureExists(fromAddr)
 	account, err := accGetter.GetAccount(fromAddr)
