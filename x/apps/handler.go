@@ -29,7 +29,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 // These functions assume everything has been authenticated,
 // now we just perform action and save
 func handleStake(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Result {
-	if _, found := k.GetApplication(ctx, msg.Address); found {
+	if _, found := k.GetApplication(ctx, sdk.Address(msg.PubKey.Address())); found {
 		return stakeRegisteredApplication(ctx, msg, k)
 	} else {
 		return stakeNewApplication(ctx, msg, k)
@@ -51,7 +51,7 @@ func stakeNewApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper
 		}
 	}
 	// create application object using the message fields
-	application := types.NewApplication(msg.Address, msg.PubKey, msg.Chains, msg.Value)
+	application := types.NewApplication(sdk.Address(msg.PubKey.Address()), msg.PubKey, msg.Chains, msg.Value)
 	// check if they can stake
 	if err := k.ValidateApplicationStaking(ctx, application, msg.Value); err != nil {
 		return err.Result()
@@ -67,27 +67,27 @@ func stakeNewApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeCreateApplication,
-			sdk.NewAttribute(types.AttributeKeyApplication, msg.Address.String()),
+			sdk.NewAttribute(types.AttributeKeyApplication, sdk.Address(msg.PubKey.Address()).String()),
 		),
 		sdk.NewEvent(
 			types.EventTypeStake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PubKey.Address()).String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PubKey.Address()).String()),
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
 func stakeRegisteredApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Result {
-	// move coins from the msg.Address account to a (self-delegation) delegator account
+	// move coins from the sdk.Address(msg.PubKey.Address()) account to a (self-delegation) delegator account
 	// the application account and global shares are updated within here
-	application, found := k.GetApplication(ctx, msg.Address)
+	application, found := k.GetApplication(ctx, sdk.Address(msg.PubKey.Address()))
 	if !found {
 		return types.ErrNoApplicationFound(k.Codespace()).Result()
 	}
@@ -104,13 +104,13 @@ func stakeRegisteredApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper
 		sdk.NewEvent(
 			types.EventTypeStake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PubKey.Address()).String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, msg.Address.String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PubKey.Address()).String()),
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}
