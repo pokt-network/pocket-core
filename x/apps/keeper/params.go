@@ -35,7 +35,7 @@ func (k Keeper) ParticipationRateOn(ctx sdk.Context) (isOn bool) {
 }
 
 func (k Keeper) StakingAdjustment(ctx sdk.Context) (adjustment int64) {
-	k.Paramstore.Get(ctx, types.StakingAdjustment, &adjustment)
+	k.Paramstore.Get(ctx, types.StabilityAdjustment, &adjustment)
 	return
 }
 
@@ -58,7 +58,7 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 		AppStakeMin:         k.MinimumStake(ctx),
 		BaseRelaysPerPOKT:   k.BaselineThroughputStakeRate(ctx),
 		ParticipationRateOn: k.ParticipationRateOn(ctx),
-		StakingAdjustment:   k.StakingAdjustment(ctx),
+		StabilityAdjustment: k.StakingAdjustment(ctx),
 	}
 }
 
