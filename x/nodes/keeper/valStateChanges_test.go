@@ -95,7 +95,7 @@ func TestKeeper_JailValidator(t *testing.T) {
 	}{
 		{"Test JailValidator", fields{keeper: keeper}, args{
 			ctx:  context,
-			addr: validator.ConsAddress(),
+			addr: validator.GetAddress(),
 		}},
 	}
 	for _, tt := range tests {
@@ -219,7 +219,7 @@ func TestKeeper_UnjailValidator(t *testing.T) {
 	}{
 		{"Test UnjailValidator", fields{keeper: keeper}, args{
 			ctx:  context,
-			addr: validator.ConsAddress(),
+			addr: validator.GetAddress(),
 		}},
 	}
 	for _, tt := range tests {

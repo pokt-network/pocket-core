@@ -326,7 +326,7 @@ func TestBurnApplications(t *testing.T) {
 			keeper.setApplicationBurn(context, test.args.amount, test.args.application.Address)
 			keeper.burnApplications(context)
 
-			primaryCryptoAddr := test.args.application.ConsAddress()
+			primaryCryptoAddr := test.args.application.GetAddress()
 
 			primaryApplication, found := keeper.GetAppByConsAddr(context, primaryCryptoAddr)
 			if !found {

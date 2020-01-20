@@ -52,7 +52,7 @@ func TestSetandGetValidatorAward(t *testing.T) {
 
 func TestSetAndGetProposer(t *testing.T) {
 	validator := getBondedValidator()
-	consAddress := validator.ConsAddress()
+	consAddress := validator.GetAddress()
 
 	tests := []struct {
 		name            string
@@ -287,7 +287,7 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 		{"Test rewardFromFees", fields{keeper: keeper},
 			args{
 				ctx:              context,
-				previousProposer: bondedValidator.GetConsAddr(),
+				previousProposer: bondedValidator.GetAddress(),
 			}},
 	}
 	for _, tt := range tests {

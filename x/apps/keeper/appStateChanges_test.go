@@ -137,10 +137,10 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 						t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, does not contain %v", err, tt.want)
 					}
 				}()
-				keeper.JailApplication(context, tt.application.ConsAddress())
+				keeper.JailApplication(context, tt.application.GetAddress())
 			default:
-				keeper.JailApplication(context, tt.application.ConsAddress())
-				if got, _ := keeper.GetAppByConsAddr(context, tt.application.ConsAddress()); got.Jailed != tt.want {
+				keeper.JailApplication(context, tt.application.GetAddress())
+				if got, _ := keeper.GetAppByConsAddr(context, tt.application.GetAddress()); got.Jailed != tt.want {
 					t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, want %v", tt.application.Jailed, tt.want)
 				}
 			}
@@ -185,10 +185,10 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 						t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, does not contain %v", err, tt.want)
 					}
 				}()
-				keeper.UnjailApplication(context, tt.application.ConsAddress())
+				keeper.UnjailApplication(context, tt.application.GetAddress())
 			default:
-				keeper.UnjailApplication(context, tt.application.ConsAddress())
-				if got, _ := keeper.GetAppByConsAddr(context, tt.application.ConsAddress()); got.Jailed != tt.want {
+				keeper.UnjailApplication(context, tt.application.GetAddress())
+				if got, _ := keeper.GetAppByConsAddr(context, tt.application.GetAddress()); got.Jailed != tt.want {
 					t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, want %v", tt.application.Jailed, tt.want)
 				}
 			}
@@ -217,7 +217,7 @@ func TestAppStateChange_RegisterApplication(t *testing.T) {
 				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app")
 			}
 
-			_, found = keeper.GetAppByConsAddr(context, tt.application.ConsAddress())
+			_, found = keeper.GetAppByConsAddr(context, tt.application.GetAddress())
 			if !found {
 				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app by ConsAddr")
 			}

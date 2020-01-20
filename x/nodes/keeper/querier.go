@@ -144,16 +144,23 @@ func queryUnstakedValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) (
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 
-	validators := k.getAllUnstakedValidators(ctx)
+	validators := k.GetAllValidators(ctx)
+	var unstakedValidators types.Validators
 
-	start, end := util.Paginate(len(validators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
-	if start < 0 || end < 0 {
-		validators = []types.Validator{}
-	} else {
-		validators = validators[start:end]
+	for _, v := range validators {
+		if v.Status == sdk.Unbonded {
+			unstakedValidators = append(unstakedValidators, v)
+		}
 	}
 
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validators)
+	start, end := util.Paginate(len(unstakedValidators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
+	if start < 0 || end < 0 {
+		unstakedValidators = []types.Validator{}
+	} else {
+		unstakedValidators = unstakedValidators[start:end]
+	}
+
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, unstakedValidators)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}

@@ -40,7 +40,7 @@ func TestGetAndSetlUnstaking(t *testing.T) {
 			args:     args{stakedValidator: stakedValidator},
 		},
 		{
-			name:       "only gets unstakedbounded validators",
+			name:       "only gets unstaked validators",
 			validators: []types.Validator{boundedValidator, secondaryBoundedValidator},
 			expected:   expected{length: 1, stakedValidators: true},
 			args:       args{stakedValidator: stakedValidator, validators: []types.Validator{boundedValidator}},

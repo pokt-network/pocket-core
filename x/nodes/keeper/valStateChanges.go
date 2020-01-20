@@ -104,7 +104,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Context, validator types.Valida
 // store ops when a validator stakes
 func (k Keeper) StakeValidator(ctx sdk.Context, validator types.Validator, amount sdk.Int) sdk.Error {
 	// call the before hook
-	k.BeforeValidatorStaked(ctx, validator.ConsAddress(), validator.Address)
+	k.BeforeValidatorStaked(ctx, validator.GetAddress(), validator.Address)
 	// send the coins from address to staked module account
 	k.coinsFromUnstakedToStaked(ctx, validator, amount)
 	// add coins to the staked field
@@ -116,17 +116,17 @@ func (k Keeper) StakeValidator(ctx sdk.Context, validator types.Validator, amoun
 	// save in the staked store
 	k.SetStakedValidator(ctx, validator)
 	// ensure there's a signing info entry for the validator (used in slashing)
-	_, found := k.GetValidatorSigningInfo(ctx, validator.ConsAddress())
+	_, found := k.GetValidatorSigningInfo(ctx, validator.GetAddress())
 	if !found {
 		signingInfo := types.ValidatorSigningInfo{
-			Address:     validator.ConsAddress(),
+			Address:     validator.GetAddress(),
 			StartHeight: ctx.BlockHeight(),
 			JailedUntil: time.Unix(0, 0),
 		}
-		k.SetValidatorSigningInfo(ctx, validator.ConsAddress(), signingInfo)
+		k.SetValidatorSigningInfo(ctx, validator.GetAddress(), signingInfo)
 	}
 	// call the after hook
-	k.AfterValidatorStaked(ctx, validator.ConsAddress(), validator.Address)
+	k.AfterValidatorStaked(ctx, validator.GetAddress(), validator.Address)
 	return nil
 }
 
@@ -176,7 +176,7 @@ func (k Keeper) ReleaseWaitingValidators(ctx sdk.Context) {
 // store ops when validator begins to unstake -> starts the unbonding timer
 func (k Keeper) BeginUnstakingValidator(ctx sdk.Context, validator types.Validator) sdk.Error {
 	// call before unstaking hook
-	k.BeforeValidatorBeginUnstaking(ctx, validator.ConsAddress(), validator.Address)
+	k.BeforeValidatorBeginUnstaking(ctx, validator.GetAddress(), validator.Address)
 	// get params
 	params := k.GetParams(ctx)
 	// delete the validator from the staking set, as it is technically staked but not going to participate
@@ -190,7 +190,7 @@ func (k Keeper) BeginUnstakingValidator(ctx sdk.Context, validator types.Validat
 	// Adds to unstaking validator queue
 	k.SetUnstakingValidator(ctx, validator)
 	// call after hook
-	k.AfterValidatorBeginUnstaking(ctx, validator.ConsAddress(), validator.Address)
+	k.AfterValidatorBeginUnstaking(ctx, validator.GetAddress(), validator.Address)
 	return nil
 }
 
@@ -208,7 +208,7 @@ func (k Keeper) ValidateValidatorFinishUnstaking(ctx sdk.Context, validator type
 // store ops to unstake a validator -> called after unbonding time is up
 func (k Keeper) FinishUnstakingValidator(ctx sdk.Context, validator types.Validator) sdk.Error {
 	// call the before hook
-	k.BeforeValidatorUnstaked(ctx, validator.ConsAddress(), validator.Address)
+	k.BeforeValidatorUnstaked(ctx, validator.GetAddress(), validator.Address)
 	// delete the validator from the unstaking queue
 	k.deleteUnstakingValidator(ctx, validator)
 	// amount unstaked = stakedTokens
@@ -222,7 +222,7 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Context, validator types.Valida
 	// update the validator in the main store
 	k.SetValidator(ctx, validator)
 	// call the after hook
-	k.AfterValidatorUnstaked(ctx, validator.ConsAddress(), validator.Address)
+	k.AfterValidatorUnstaked(ctx, validator.GetAddress(), validator.Address)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -242,7 +242,7 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Context, validator types.Valida
 // force unstake (called when slashed below the minimum)
 func (k Keeper) ForceValidatorUnstake(ctx sdk.Context, validator types.Validator) sdk.Error {
 	// call the before unstaked hook
-	k.BeforeValidatorUnstaked(ctx, validator.ConsAddress(), validator.Address)
+	k.BeforeValidatorUnstaked(ctx, validator.GetAddress(), validator.Address)
 	// delete the validator from staking set as they are unstaked
 	k.deleteValidatorFromStakingSet(ctx, validator)
 	// amount unstaked = stakedTokens
@@ -257,7 +257,7 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Context, validator types.Validator
 	// set the validator in store
 	k.SetValidator(ctx, validator)
 	// call after hook
-	k.AfterValidatorUnstaked(ctx, validator.ConsAddress(), validator.Address)
+	k.AfterValidatorUnstaked(ctx, validator.GetAddress(), validator.Address)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

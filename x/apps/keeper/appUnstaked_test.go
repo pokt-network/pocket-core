@@ -120,48 +120,6 @@ func TestAppUnstaked_DeleteUnstakingApplication(t *testing.T) {
 	}
 }
 
-func TestAppUnstaked_GetAllUnstakedApplications(t *testing.T) {
-	unboundingApplication := getUnbondingApplication()
-
-	type want struct {
-		applications       []types.Application
-		stakedApplications bool
-		length             int
-	}
-	type args struct {
-		boundedVal        types.Application
-		applications      []types.Application
-		stakedApplication types.Application
-	}
-	tests := []struct {
-		name         string
-		application  types.Application
-		applications []types.Application
-		want
-		args
-	}{
-		{
-			name:     "gets all unstaked applications",
-			args:     args{applications: []types.Application{unboundingApplication}},
-			want: want{applications: []types.Application{unboundingApplication}, length: 1, stakedApplications: false},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			for _, application := range tt.args.applications {
-				keeper.SetApplication(context, application)
-				keeper.SetUnstakingApplication(context, application)
-			}
-			got := keeper.getAllUnstakedApplications(context);
-			if len(got) !=  tt.want.length {
-				t.Errorf("appUnstaked.unstakeAllMatureApplications()= %v, want %v", len(got), tt.want.length)
-			}
-		})
-	}
-}
-
 func TestAppUnstaked_DeleteUnstakingApplications(t *testing.T) {
 	boundedApplication := getBondedApplication()
 	secondaryBoundedApplication := getBondedApplication()

@@ -38,14 +38,14 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 		keeper.SetValidatorByConsAddr(ctx, validator)
 		keeper.SetStakedValidator(ctx, validator)
 		// ensure there's a signing info entry for the validator (used in slashing)
-		_, found := keeper.GetValidatorSigningInfo(ctx, validator.ConsAddress())
+		_, found := keeper.GetValidatorSigningInfo(ctx, validator.GetAddress())
 		if !found {
 			signingInfo := types.ValidatorSigningInfo{
-				Address:     validator.ConsAddress(),
+				Address:     validator.GetAddress(),
 				StartHeight: ctx.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
 			}
-			keeper.SetValidatorSigningInfo(ctx, validator.ConsAddress(), signingInfo)
+			keeper.SetValidatorSigningInfo(ctx, validator.GetAddress(), signingInfo)
 		}
 		// Call the creation hook if not exported
 		if !data.Exported {
@@ -235,10 +235,10 @@ func validateGenesisStateValidators(validators []types.Validator, minimumStake s
 		val := validators[i]
 		strKey := val.PublicKey.RawString()
 		if _, ok := addrMap[strKey]; ok {
-			return fmt.Errorf("duplicate validator in genesis state: address %v", val.ConsAddress())
+			return fmt.Errorf("duplicate validator in genesis state: address %v", val.GetAddress())
 		}
 		if val.Jailed && val.IsStaked() {
-			return fmt.Errorf("validator is staked and jailed in genesis state: address %v", val.ConsAddress())
+			return fmt.Errorf("validator is staked and jailed in genesis state: address %v", val.GetAddress())
 		}
 		if val.StakedTokens.IsZero() && !val.IsUnstaked() {
 			return fmt.Errorf("staked/unstaked genesis validator cannot have zero stake, validator: %v", val)

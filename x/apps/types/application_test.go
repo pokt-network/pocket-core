@@ -172,8 +172,8 @@ func TestApplication_ConsAddress(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			if got := v.ConsAddress(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ConsAddress() = %v, want %v", got, tt.want)
+			if got := v.GetAddress(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAddress() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -380,7 +380,7 @@ func TestApplication_GetConsAddr(t *testing.T) {
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
 			if got := v.GetAddress(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetConsAddr() = %v, want %v", got, tt.want)
+				t.Errorf("GetAddress() = %v, want %v", got, tt.want)
 			}
 		})
 	}

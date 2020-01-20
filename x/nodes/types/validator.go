@@ -104,9 +104,8 @@ func (v Validator) UpdateStatus(newStatus sdk.BondStatus) Validator {
 }
 
 // return the TM validator address
-func (v Validator) ConsAddress() sdk.Address        { return sdk.Address(v.PublicKey.Address()) }
-func (v Validator) GetChains() []string             { return v.Chains }
-func (v Validator) GetServiceURL() string           { return v.ServiceURL }
+func (v Validator) GetChains() []string            { return v.Chains }
+func (v Validator) GetServiceURL() string          { return v.ServiceURL }
 func (v Validator) IsStaked() bool                 { return v.GetStatus().Equal(sdk.Bonded) }
 func (v Validator) IsUnstaked() bool               { return v.GetStatus().Equal(sdk.Unbonded) }
 func (v Validator) IsUnstaking() bool              { return v.GetStatus().Equal(sdk.Unbonding) }
@@ -114,6 +113,5 @@ func (v Validator) IsJailed() bool                 { return v.Jailed }
 func (v Validator) GetStatus() sdk.BondStatus      { return v.Status }
 func (v Validator) GetAddress() sdk.Address        { return v.Address }
 func (v Validator) GetPublicKey() crypto.PublicKey { return v.PublicKey }
-func (v Validator) GetConsAddr() sdk.Address       { return sdk.Address(v.PublicKey.Address()) }
 func (v Validator) GetTokens() sdk.Int             { return v.StakedTokens }
 func (v Validator) GetConsensusPower() int64       { return v.ConsensusPower() }

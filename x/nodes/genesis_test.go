@@ -48,7 +48,7 @@ func TestInitGenesis(t *testing.T) {
 	context, _, kpr := createTestInput(t, true)
 
 	validator := getBondedValidator()
-	consAddress := validator.ConsAddress()
+	consAddress := validator.GetAddress()
 	kpr.SetPreviousProposer(context, consAddress)
 
 	tests := []struct {
