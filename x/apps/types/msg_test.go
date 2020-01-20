@@ -24,7 +24,6 @@ func init() {
 	moduleCdc.Seal()
 
 	msgAppStake = MsgAppStake{
-		Address: sdk.Address(pub.Address()),
 		PubKey:  pub,
 		Chains:  []string{"886ba5bcb77e1064530052fed1a3f145"},
 		Value:   sdk.NewInt(10),
@@ -45,7 +44,7 @@ func TestMsgApp_GetSigners(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgAppStake},
-			want: []sdk.Address{sdk.Address(msgAppStake.Address)},
+			want: []sdk.Address{sdk.Address(msgAppStake.PubKey.Address())},
 		},
 	}
 	for _, tt := range tests {
@@ -142,17 +141,17 @@ func TestMsgApp_ValidateBasic(t *testing.T) {
 		},
 		{
 			name: "errs if no stake lower than zero",
-			args: args{MsgAppStake{Address: msgAppStake.Address, Value: sdk.NewInt(-1)}},
+			args: args{MsgAppStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(-1)}},
 			want: ErrBadStakeAmount(DefaultCodespace),
 		},
 		{
 			name: "errs if no native chains supported",
-			args: args{MsgAppStake{Address: msgAppStake.Address, Value: sdk.NewInt(1), Chains: []string{}}},
+			args: args{MsgAppStake{PubKey:  msgAppStake.PubKey, Value: sdk.NewInt(1), Chains: []string{}}},
 			want: ErrNoChains(DefaultCodespace),
 		},
 		{
 			name: "returns err",
-			args: args{MsgAppStake{Address: msgAppStake.Address, Value: msgAppStake.Value, Chains: []string{"a"}}},
+			args: args{MsgAppStake{PubKey:  msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"a"}}},
 			want: types.NewInvalidHashLengthError("pocketcore"),
 		},
 		{
@@ -183,7 +182,7 @@ func TestMsgBeginAppUnstake_GetSigners(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgBeginAppUnstake},
-			want: []sdk.Address{sdk.Address(msgAppStake.Address)},
+			want: []sdk.Address{sdk.Address(msgAppStake.PubKey.Address())},
 		},
 	}
 	for _, tt := range tests {
