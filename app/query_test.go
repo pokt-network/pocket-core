@@ -79,11 +79,8 @@ func TestQueryNodeStatus(t *testing.T) {
 }
 
 func TestQueryValidators(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
-	kp, err := kb.Create("test")
-	assert.Nil(t, err)
-
 
 	time.Sleep(70*time.Millisecond) // Feed empty blocks
 	got, err := nodes.QueryValidators(memCodec(), getInMemoryTMClient(), 0)
