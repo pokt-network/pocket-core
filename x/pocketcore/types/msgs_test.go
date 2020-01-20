@@ -3,10 +3,8 @@ package types
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"testing"
 )
 
@@ -31,7 +29,7 @@ func TestMsgClaim_GetSigners(t *testing.T) {
 }
 
 func TestMsgClaim_ValidateBasic(t *testing.T) {
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
 	nodeAddress := getRandomValidatorAddress()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
@@ -160,7 +158,7 @@ func TestMsgProof_GetSigners(t *testing.T) {
 		Leaf: RelayProof{
 			Entropy:            0,
 			SessionBlockHeight: 0,
-			ServicerPubKey:     crypto.PublicKey(pk).String(),
+			ServicerPubKey:     pk.RawString(),
 			Blockchain:         "",
 			Token:              AAT{},
 			Signature:          "",
@@ -181,11 +179,11 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	servicerPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	servicerPubKey := getRandomPubKey().RawString()
 	clientPrivKey := getRandomPrivateKey()
-	clientPubKey := crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	clientPubKey := clientPrivKey.PublicKey().RawString()
 	appPrivKey := getRandomPrivateKey()
-	appPubKey := crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	appPubKey := appPrivKey.PublicKey().RawString()
 	hash1 := hash([]byte("fake1"))
 	hash2 := hash([]byte("fake2"))
 	hash3 := hash([]byte("fake3"))

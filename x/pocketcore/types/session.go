@@ -7,9 +7,7 @@ import (
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"sort"
 )
 
@@ -58,7 +56,7 @@ func (s Session) Validate(ctx sdk.Context, node nodeexported.ValidatorI, app app
 		return err
 	}
 	// validate app corresponds to appPubKey
-	if crypto.PublicKey(app.GetConsPubKey().(ed25519.PubKeyEd25519)).String() != s.ApplicationPubKey {
+	if app.GetPublicKey().RawString() != s.ApplicationPubKey {
 		return NewInvalidAppPubKeyError(ModuleName)
 	}
 	// validate app chains
@@ -153,7 +151,7 @@ func (sn SessionNodes) Contains(nodeVerify nodeexported.ValidatorI) bool { // to
 		return false
 	}
 	for _, node := range sn {
-		if node.GetConsPubKey().Equals(nodeVerify.GetConsPubKey()) {
+		if node.GetPublicKey().Equals(nodeVerify.GetPublicKey()) {
 			return true
 		}
 	}
@@ -166,7 +164,7 @@ func (sn *SessionNodes) MarshalJSON() ([]byte, error) {
 	for i, expNode := range *sn {
 		marshable[i] = types.Validator{ // todo depends on nodes.Types()
 			Address:      expNode.GetAddress(),
-			ConsPubKey:   expNode.GetConsPubKey(),
+			PublicKey:    expNode.GetPublicKey(),
 			Jailed:       expNode.IsJailed(),
 			Status:       expNode.GetStatus(),
 			Chains:       expNode.GetChains(),
@@ -202,7 +200,7 @@ func xor(sessionNodes SessionNodes, sessionkey SessionKey) (nodeDistances, error
 	result := make([]nodeDistance, len(sessionNodes))
 	// for every node, find the distance between it's pubkey and the sesskey
 	for index, node := range sessionNodes {
-		pubKeyBz := crypto.PublicKey(node.GetConsPubKey().(ed25519.PubKeyEd25519)).Bytes() // currently hashing public key but could easily just take the first n bytes to compare
+		pubKeyBz := node.GetPublicKey().RawBytes() // currently hashing public key but could easily just take the first n bytes to compare
 		if len(pubKeyBz) != keyLength {
 			return nil, MismatchedByteArraysError
 		}

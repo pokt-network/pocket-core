@@ -113,7 +113,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 	// add public key relationship to address
 	keeper.IterateAndExecuteOverVals(ctx,
 		func(index int64, validator exported.ValidatorI) bool {
-			keeper.AddPubKeyRelation(ctx, validator.GetConsPubKey())
+			keeper.AddPubKeyRelation(ctx, validator.GetPublicKey())
 			return false
 		},
 	)
@@ -233,7 +233,7 @@ func validateGenesisStateValidators(validators []types.Validator, minimumStake s
 	addrMap := make(map[string]bool, len(validators))
 	for i := 0; i < len(validators); i++ {
 		val := validators[i]
-		strKey := string(val.ConsPubKey.Bytes())
+		strKey := val.PublicKey.RawString()
 		if _, ok := addrMap[strKey]; ok {
 			return fmt.Errorf("duplicate validator in genesis state: address %v", val.ConsAddress())
 		}

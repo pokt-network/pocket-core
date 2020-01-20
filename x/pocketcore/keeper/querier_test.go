@@ -2,11 +2,9 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"testing"
 )
 
@@ -41,7 +39,7 @@ func TestQueryParameters(t *testing.T) {
 func TestQueryInvoice(t *testing.T) {
 	ctx, _, _, _, k := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
-	appPubKey := crypto.PublicKey(appPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	ethereum, err := types.NonNativeChain{
 		Ticker:  "eth",

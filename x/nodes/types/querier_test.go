@@ -1,8 +1,8 @@
 package types
 
 import (
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -12,7 +12,7 @@ func TestNewQuerySigningInfoParams(t *testing.T) {
 	type args struct {
 		consAddr types.Address
 	}
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	ca := types.Address(pub.Address())
 
@@ -120,7 +120,7 @@ func TestNewQueryValidatorParams(t *testing.T) {
 	type args struct {
 		validatorAddr types.Address
 	}
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	va := types.Address(pub.Address())
 

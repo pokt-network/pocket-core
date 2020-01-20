@@ -28,7 +28,7 @@ func (k Keeper) GetNodeFromPublicKey(ctx sdk.Context, pubKey string) (node expor
 	if err != nil {
 		return nil, false
 	}
-	return k.GetNode(ctx, pk.Address())
+	return k.GetNode(ctx, sdk.Address(pk.Address()))
 }
 
 //// todo create store in pos module for efficiency

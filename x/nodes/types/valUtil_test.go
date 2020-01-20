@@ -3,10 +3,9 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/go-amino"
-	"github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -14,13 +13,12 @@ import (
 )
 
 func TestValidators_JSON(t *testing.T) {
-
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	testvalidator := Validator{
 		Address:                 sdk.Address(pub.Address()),
-		ConsPubKey:              pub,
+		PublicKey:               pub,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		StakedTokens:            sdk.ZeroInt(),
@@ -58,13 +56,13 @@ func TestValidators_JSON(t *testing.T) {
 
 func TestValidators_String(t *testing.T) {
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	v := Validators{
 		Validator{
 			Address:                 sdk.Address(pub.Address()),
-			ConsPubKey:              pub,
+			PublicKey:               pub,
 			Jailed:                  false,
 			Status:                  sdk.Bonded,
 			StakedTokens:            sdk.ZeroInt(),
@@ -87,7 +85,7 @@ func TestValidators_String(t *testing.T) {
   ServiceURL:                 %s
   Chains:                     %v
   Unstaking Completion Time:  %v`,
-			sdk.Address(pub.Address()), sdk.HexAddressPubKey(pub), false, sdk.Bonded, sdk.ZeroInt(), "google.com", []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, time.Unix(0, 0).UTC(),
+			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Bonded, sdk.ZeroInt(), "google.com", []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, time.Unix(0, 0).UTC(),
 		)},
 	}
 	for _, tt := range tests {
@@ -102,7 +100,7 @@ func TestValidators_String(t *testing.T) {
 func TestValidator_MarshalJSON(t *testing.T) {
 	type fields struct {
 		Address                 sdk.Address
-		ConsPubKey              crypto.PubKey
+		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
 		Chains                  []string
@@ -111,12 +109,12 @@ func TestValidator_MarshalJSON(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	want, _ := amino.MarshalJSON(Validator{
 		Address:                 sdk.Address(pub.Address()),
-		ConsPubKey:              pub,
+		PublicKey:               pub,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
@@ -146,7 +144,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			v := Validator{
 				Address:                 tt.fields.Address,
-				ConsPubKey:              tt.fields.ConsPubKey,
+				PublicKey:               tt.fields.ConsPubKey,
 				Jailed:                  tt.fields.Jailed,
 				Status:                  tt.fields.Status,
 				Chains:                  tt.fields.Chains,
@@ -169,7 +167,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 func TestValidator_UnmarshalJSON(t *testing.T) {
 	type fields struct {
 		Address                 sdk.Address
-		ConsPubKey              crypto.PubKey
+		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.BondStatus
 		Chains                  []string
@@ -178,12 +176,12 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	marshal, _ := amino.MarshalJSON(Validator{
 		Address:                 sdk.Address(pub.Address()),
-		ConsPubKey:              pub,
+		PublicKey:               pub,
 		Jailed:                  false,
 		Status:                  sdk.Bonded,
 		Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
@@ -218,7 +216,7 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			v := &Validator{
 				Address:                 tt.fields.Address,
-				ConsPubKey:              tt.fields.ConsPubKey,
+				PublicKey:               tt.fields.ConsPubKey,
 				Jailed:                  tt.fields.Jailed,
 				Status:                  tt.fields.Status,
 				Chains:                  tt.fields.Chains,

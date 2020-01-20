@@ -7,11 +7,11 @@ import (
 )
 
 func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
-	fa, err := sdk.ValAddressFromHex(fromAddr)
+	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
 	}
-	ta, err := sdk.ValAddressFromHex(toAddr)
+	ta, err := sdk.AddressFromHex(toAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +19,7 @@ func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.
 }
 
 func SendRawTx(fromAddr string, txBytes []byte) (sdk.TxResponse, error) {
-	fa, err := sdk.ValAddressFromHex(fromAddr)
+	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return sdk.TxResponse{}, err
 	}
@@ -27,7 +27,7 @@ func SendRawTx(fromAddr string, txBytes []byte) (sdk.TxResponse, error) {
 }
 
 func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
-	fa, err := sdk.ValAddressFromHex(fromAddr)
+	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount 
 }
 
 func UnstakeNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
-	fa, err := sdk.ValAddressFromHex(fromAddr)
+	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func UnstakeNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 }
 
 func UnjailNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
-	fa, err := sdk.ValAddressFromHex(fromAddr)
+	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func UnjailNode(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 }
 
 func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
-	fa, err := sdk.ValAddressFromHex(fromAddr)
+	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sd
 }
 
 func UnstakeApp(fromAddr, passphrase string) (*sdk.TxResponse, error) {
-	fa, err := sdk.ValAddressFromHex(fromAddr)
+	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
 	}

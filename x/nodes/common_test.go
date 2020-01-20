@@ -3,30 +3,25 @@ package nodes
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
-	"github.com/pokt-network/posmint/types/module"
-	"github.com/pokt-network/posmint/x/supply"
-	"github.com/tendermint/tendermint/crypto/ed25519"
-	"github.com/tendermint/tendermint/rpc/client"
-	"math/rand"
-	fp "path/filepath"
-	"testing"
-
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/store"
+	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/params"
-	//"github.com/pokt-network/posmint/x/supply/internal/types"
-
-	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/supply"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/rpc/client"
+	tmtypes "github.com/tendermint/tendermint/types"
+	dbm "github.com/tendermint/tm-db"
+	"math/rand"
+	fp "path/filepath"
+	"testing"
 )
 
 // nolint: deadcode unused
@@ -140,8 +135,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
 
-		privKey := ed25519.GenPrivKey()
-		pubKey := privKey.PubKey()
+		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
 		acc.Coins = initialCoins
@@ -168,8 +163,8 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 //	}
 //}
 
-func getRandomPubKey() ed25519.PubKeyEd25519 {
-	var pub ed25519.PubKeyEd25519
+func getRandomPubKey() crypto.Ed25519PublicKey {
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	return pub
 }
@@ -183,7 +178,7 @@ func getValidator() types.Validator {
 	return types.Validator{
 		Address:      sdk.Address(pub.Address()),
 		StakedTokens: sdk.NewInt(100000000000),
-		ConsPubKey:   pub,
+		PublicKey:    pub,
 		Jailed:       false,
 		Status:       sdk.Bonded,
 		ServiceURL:   "google.com",

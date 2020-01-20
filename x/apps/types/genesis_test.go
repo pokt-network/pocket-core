@@ -1,8 +1,8 @@
 package types
 
 import (
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -32,11 +32,11 @@ func TestNewGenesisState(t *testing.T) {
 		applications []Application
 	}
 
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 	defaultApp := Application{
 		Address:                 types.Address(pub.Address()),
-		ConsPubKey:              pub,
+		PublicKey:               pub,
 		Jailed:                  false,
 		Status:                  0,
 		Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},

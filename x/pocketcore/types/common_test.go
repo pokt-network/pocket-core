@@ -2,6 +2,7 @@ package types
 
 import (
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/store"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
@@ -11,7 +12,6 @@ import (
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -81,13 +81,13 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	return ctx
 }
 
-func getRandomPrivateKey() ed25519.PrivKeyEd25519 {
-	return ed25519.GenPrivKey()
+func getRandomPrivateKey() crypto.Ed25519PrivateKey {
+	return crypto.Ed25519PrivateKey{}.GenPrivateKey().(crypto.Ed25519PrivateKey)
 }
 
-func getRandomPubKey() ed25519.PubKeyEd25519 {
-	pk := ed25519.GenPrivKey()
-	return pk.PubKey().(ed25519.PubKeyEd25519)
+func getRandomPubKey() crypto.Ed25519PublicKey {
+	pk := getRandomPrivateKey()
+	return pk.PublicKey().(crypto.Ed25519PublicKey)
 }
 
 func getRandomValidatorAddress() sdk.Address {

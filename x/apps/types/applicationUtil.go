@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"strings"
 	"time"
@@ -59,16 +60,16 @@ func (a Application) String() string {
   Status:                     %s
   Tokens:               	  %s
   Unstakeing Completion Time: %v`,
-		a.Address, sdk.HexAddressPubKey(a.ConsPubKey), a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
+		a.Address, a.PublicKey.RawString(), a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
 	)
 }
 
 // this is a helper struct used for JSON de- and encoding only
 type hexApplication struct {
 	Address                 sdk.Address `json:"operator_address" yaml:"operator_address"` // the hex address of the application
-	ConsPubKey              string         `json:"cons_pubkey" yaml:"cons_pubkey"`           // the hex consensus public key of the application
-	Jailed                  bool           `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
-	Chains                  []string       `json:"chains" yaml:"chains"`
+	PublicKey               string      `json:"cons_pubkey" yaml:"cons_pubkey"`           // the hex consensus public key of the application
+	Jailed                  bool        `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
+	Chains                  []string    `json:"chains" yaml:"chains"`
 	MaxRelays               sdk.Int
 	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
 	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"`     // how many staked tokens
@@ -79,7 +80,7 @@ type hexApplication struct {
 func (a Application) MarshalJSON() ([]byte, error) {
 	return codec.Cdc.MarshalJSON(hexApplication{
 		Address:                 a.Address,
-		ConsPubKey:              sdk.HexAddressPubKey(a.ConsPubKey),
+		PublicKey:               a.PublicKey.RawString(),
 		Jailed:                  a.Jailed,
 		Status:                  a.Status,
 		Chains:                  a.Chains,
@@ -95,13 +96,13 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
 		return err
 	}
-	consPubKey, err := sdk.GetConsPubKeyHex(bv.ConsPubKey)
+	consPubKey, err := crypto.NewPublicKey(bv.PublicKey)
 	if err != nil {
 		return err
 	}
 	*a = Application{
 		Address:                 bv.Address,
-		ConsPubKey:              consPubKey,
+		PublicKey:               consPubKey,
 		Chains:                  bv.Chains,
 		MaxRelays:               bv.MaxRelays,
 		Jailed:                  bv.Jailed,

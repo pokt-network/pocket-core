@@ -1,8 +1,8 @@
 package types
 
 import (
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -97,7 +97,7 @@ func TestKeyForApplicationByConsAddr(t *testing.T) {
 	type args struct {
 		addr types.Address
 	}
-	ca, _ := types.ConsAddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
+	ca, _ := types.AddressFromHex("29f0a60104f3218a2cb51e6a269182d5dc271447114e342086d9c922a106a3c0")
 
 	tests := []struct {
 		name string
@@ -119,7 +119,7 @@ func TestKeyForApplicationInStakingSet(t *testing.T) {
 	type args struct {
 		application Application
 	}
-	var pub ed25519.PubKeyEd25519
+	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
 
 	operAddrInvr := types.CopyBytes(pub.Address())

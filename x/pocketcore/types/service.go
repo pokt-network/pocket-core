@@ -8,7 +8,6 @@ import (
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"io/ioutil"
 	"net/http"
 )
@@ -28,11 +27,11 @@ func (r *Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb Hoste
 		return NewEmptyPayloadDataError(ModuleName)
 	}
 	// validate the RelayProof
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, hb, hex.EncodeToString(crypto.PublicKey(node.GetConsPubKey().(ed25519.PubKeyEd25519)).Bytes())); err != nil {
+	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, hb, node.GetPublicKey().RawString()); err != nil {
 		return err
 	}
 	// generate the session
-	session, err := NewSession(hex.EncodeToString(crypto.PublicKey(app.GetConsPubKey().(ed25519.PubKeyEd25519)).Bytes()), r.Proof.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allNodes, sessionNodeCount)
+	session, err := NewSession(app.GetPublicKey().RawString(), r.Proof.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allNodes, sessionNodeCount)
 	if err != nil {
 		return err
 	}
@@ -102,7 +101,7 @@ func (rr RelayResponse) Validate() sdk.Error { // todo more validaton
 		return NewEmptyResponseError(ModuleName)
 	}
 	// cannot contain empty signature (nodes must be accountable)
-	if rr.Signature == "" || len(rr.Signature) == crypto.SignatureSize {
+	if rr.Signature == "" || len(rr.Signature) == crypto.Ed25519SignatureSize {
 		return NewResponseSignatureError(ModuleName)
 	}
 	return nil

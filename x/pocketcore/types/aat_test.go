@@ -2,9 +2,7 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"testing"
 )
 
@@ -13,14 +11,14 @@ func TestAAT_VersionIsIncluded(t *testing.T) {
 	clientPrivKey := getRandomPrivateKey()
 	var AATNoVersion = AAT{
 		Version:              "",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	var AATWithVersion = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	tests := []struct {
@@ -51,14 +49,14 @@ func TestAAT_VersionIsSupported(t *testing.T) {
 	clientPrivKey := getRandomPrivateKey()
 	var AATNotSupportedVersion = AAT{
 		Version:              "0.0.11",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	var AATSupported = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	tests := []struct {
@@ -89,20 +87,20 @@ func TestAAT_ValidateVersion(t *testing.T) {
 	clientPrivKey := getRandomPrivateKey()
 	var AATVersionMissing = AAT{
 		Version:              "",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	var AATNotSupportedVersion = AAT{
 		Version:              "0.0.11",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	var AATSupported = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	tests := []struct {
@@ -139,19 +137,19 @@ func TestAAT_ValidateMessage(t *testing.T) {
 	var AATInvalidAppPubKey = AAT{
 		Version:              "0.0.1",
 		ApplicationPublicKey: appPrivKey.PubKey().Address().String(),
-		ClientPublicKey:      crypto.PublicKey(clientPubKey).String(),
+		ClientPublicKey:      clientPubKey.RawString(),
 		ApplicationSignature: "",
 	}
 	var AATInvalidClientPubKey = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
 		ClientPublicKey:      clientPubKey.Address().String(),
 		ApplicationSignature: "",
 	}
 	var AATValidMessage = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPubKey).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPubKey.RawString(),
 		ApplicationSignature: "",
 	}
 	tests := []struct {
@@ -187,14 +185,14 @@ func TestAAT_ValidateSignature(t *testing.T) {
 	clientPrivKey := getRandomPrivateKey()
 	var AATMissingSignature = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	var AATInvalidSignature = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	// sign with the client (invalid)
@@ -206,8 +204,8 @@ func TestAAT_ValidateSignature(t *testing.T) {
 	// sign with the application
 	var AATValidSignature = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	appSignature, err := appPrivKey.Sign(AATValidSignature.Hash())
@@ -248,8 +246,8 @@ func TestAAT_HashString(t *testing.T) {
 	clientPrivKey := getRandomPrivateKey()
 	var AAT = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	assert.True(t, len(AAT.Hash()) == HashLength)
@@ -261,8 +259,8 @@ func TestAAT_Validate(t *testing.T) {
 	clientPrivKey := getRandomPrivateKey()
 	var AAT = AAT{
 		Version:              "0.0.1",
-		ApplicationPublicKey: crypto.PublicKey(appPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
-		ClientPublicKey:      crypto.PublicKey(clientPrivKey.PubKey().(ed25519.PubKeyEd25519)).String(),
+		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
+		ClientPublicKey:      clientPrivKey.PublicKey().RawString(),
 		ApplicationSignature: "",
 	}
 	// sign with the client (invalid)

@@ -3,9 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"sync"
 	"testing"
 )
@@ -13,9 +11,9 @@ import (
 func TestProof_Validate(t *testing.T) {
 	appPrivateKey := getRandomPrivateKey()
 	clientPrivateKey := getRandomPrivateKey()
-	appPubKey := crypto.PublicKey(appPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
-	servicerPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	clientPubKey := crypto.PublicKey(clientPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	appPubKey := appPrivateKey.PublicKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := clientPrivateKey.PublicKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -71,7 +69,7 @@ func TestProof_Validate(t *testing.T) {
 	invalidProofServicerPubKey := validProof
 	invalidProofServicerPubKey.ServicerPubKey = ""
 	// invalid RelayProof wrong verify pub key
-	wrongVerifyPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	wrongVerifyPubKey := getRandomPubKey().RawString()
 	invalidProofServicerPubKeyVerify := validProof
 	invalidProofServicerPubKeyVerify.ServicerPubKey = wrongVerifyPubKey
 	// invalid RelayProof blockchain
@@ -209,9 +207,9 @@ func TestProof_Validate(t *testing.T) {
 }
 
 func TestProof_Bytes(t *testing.T) {
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	servicerPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	clientPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := getRandomPubKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -244,9 +242,9 @@ func TestProof_Bytes(t *testing.T) {
 }
 
 func TestProof_HashAndHashString(t *testing.T) {
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	servicerPubKey := crypto.PublicKey(getRandomPubKey()).String()
-	clientPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := getRandomPubKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",

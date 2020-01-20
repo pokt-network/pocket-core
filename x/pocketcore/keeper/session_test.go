@@ -3,16 +3,14 @@ package keeper
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"testing"
 )
 
 func TestKeeper_Dispatch(t *testing.T) {
 	ctx, _, _, _, keeper := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
-	appPubKey := crypto.PublicKey(appPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	appPubKey := appPrivateKey.PublicKey().RawString()
 	ethereum, err := types.NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",

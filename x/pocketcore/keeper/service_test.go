@@ -5,10 +5,8 @@ import (
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"gopkg.in/h2non/gock.v1"
 	"testing"
 )
@@ -27,10 +25,10 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	ctx, _, _, _, keeper := createTestInput(t, false)
 	ak := keeper.appKeeper.(appsKeeper.Keeper)
 	clientPrivateKey := getRandomPrivateKey()
-	clientPubKey := crypto.PublicKey(clientPrivateKey.PubKey().(ed25519.PubKeyEd25519)).String()
+	clientPubKey := clientPrivateKey.PublicKey().RawString()
 	appPrivateKey := getRandomPrivateKey()
-	apk := appPrivateKey.PubKey().(ed25519.PubKeyEd25519)
-	appPubKey := crypto.PublicKey(apk).String()
+	apk := appPrivateKey.PublicKey()
+	appPubKey := apk.RawString()
 	// add app to world state
 	app := appsTypes.NewApplication(sdk.Address(apk.Address()), apk, []string{ethereum}, sdk.NewInt(10000000))
 	// calculate relays
@@ -40,8 +38,8 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	ak.SetAppByConsAddr(ctx, app)
 	ak.SetStakedApplication(ctx, app)
 	kp, _ := keeper.Keybase.GetCoinbase()
-	npk := kp.PubKey
-	nodePubKey := hex.EncodeToString(crypto.PublicKey(npk.(ed25519.PubKeyEd25519)).Bytes())
+	npk := kp.PublicKey
+	nodePubKey := npk.RawString()
 	validRelay := types.Relay{
 		Payload: types.Payload{
 			Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",

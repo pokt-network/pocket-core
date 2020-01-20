@@ -40,12 +40,12 @@ func handleStake(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Resul
 
 func stakeNewValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Result {
 	// check to see if teh public key has already been register for that validator
-	if _, found := k.GetValidatorByConsAddr(ctx, sdk.GetAddress(msg.PubKey)); found {
+	if _, found := k.GetValidatorByConsAddr(ctx, sdk.GetAddress(msg.PublicKey)); found {
 		return types.ErrValidatorPubKeyExists(k.Codespace()).Result()
 	}
 	// check the consensus params
 	if ctx.ConsensusParams() != nil {
-		tmPubKey := tmtypes.TM2PB.PubKey(msg.PubKey)
+		tmPubKey := tmtypes.TM2PB.PubKey(msg.PublicKey)
 		if !common.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
 			return types.ErrValidatorPubKeyTypeNotSupported(k.Codespace(),
 				tmPubKey.Type,
@@ -53,7 +53,7 @@ func stakeNewValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk
 		}
 	}
 	// create validator object using the message fields
-	validator := types.NewValidator(msg.Address, msg.PubKey, msg.Chains, msg.ServiceURL, msg.Value)
+	validator := types.NewValidator(msg.Address, msg.PublicKey, msg.Chains, msg.ServiceURL, msg.Value)
 	// check if they can stake
 	if err := k.ValidateValidatorStaking(ctx, validator, msg.Value); err != nil {
 		return err.Result()
@@ -185,7 +185,7 @@ func validateUnjailMessage(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper
 	if !validator.IsJailed() {
 		return nil, types.ErrValidatorNotJailed(k.Codespace())
 	}
-	consAddr = sdk.Address(validator.GetConsPubKey().Address())
+	consAddr = sdk.Address(validator.GetPublicKey().Address())
 	info, found := k.GetValidatorSigningInfo(ctx, consAddr)
 	if !found {
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())

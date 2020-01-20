@@ -90,7 +90,7 @@ func validateGenesisStateApplications(applications []types.Application, minimumS
 	addrMap := make(map[string]bool, len(applications))
 	for i := 0; i < len(applications); i++ {
 		app := applications[i]
-		strKey := string(app.ConsPubKey.Bytes())
+		strKey := app.PublicKey.RawString()
 		if _, ok := addrMap[strKey]; ok {
 			return fmt.Errorf("duplicate application in genesis state: address %v", app.ConsAddress())
 		}

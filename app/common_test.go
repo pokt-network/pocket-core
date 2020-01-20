@@ -14,6 +14,7 @@ import (
 	bam "github.com/pokt-network/posmint/baseapp"
 	"github.com/pokt-network/posmint/codec"
 	cfg "github.com/pokt-network/posmint/config"
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
@@ -24,7 +25,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -260,7 +260,7 @@ func inMemTendermintNode() (*node.Node, keys.Keybase) {
 			},
 			Validators: nil,
 			AppHash:    nil,
-			AppState:   memGenesisState(kp.PubKey),
+			AppState:   memGenesisState(kp.PublicKey),
 		}, nil
 	}
 	err = kb.SetCoinbase(kp.GetAddress())
@@ -304,7 +304,7 @@ func inMemTendermintNode() (*node.Node, keys.Keybase) {
 	return tmNode, kb
 }
 
-func memGenesisState(pubKey crypto.PubKey) []byte {
+func memGenesisState(pubKey crypto.PublicKey) []byte {
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
@@ -320,7 +320,7 @@ func memGenesisState(pubKey crypto.PubKey) []byte {
 	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
-			ConsPubKey:   pubKey,
+			PublicKey:    pubKey,
 			Status:       sdk.Bonded,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,

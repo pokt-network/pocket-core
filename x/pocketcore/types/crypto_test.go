@@ -3,9 +3,7 @@ package types
 import (
 	"encoding/base64"
 	"encoding/hex"
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	ed255192 "golang.org/x/crypto/ed25519"
 	"testing"
@@ -15,8 +13,8 @@ func TestSignatureVerification(t *testing.T) {
 	testData := []byte("test")
 	badVerifyData := hex.EncodeToString([]byte("bad"))
 	privateKey := getRandomPrivateKey()
-	goodVerifyPubKey := crypto.PublicKey(privateKey.PubKey().(ed25519.PubKeyEd25519)).String()
-	badVerifyPublicKey := crypto.PublicKey(getRandomPubKey()).String()
+	goodVerifyPubKey := privateKey.PublicKey().RawString()
+	badVerifyPublicKey := getRandomPubKey().RawString()
 	signature, err := privateKey.Sign(testData)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -66,7 +64,7 @@ func TestPubKeyVerification(t *testing.T) {
 	privateKey := hex.EncodeToString(privateKeyBytes[:])
 	pubKeyWrongECBytes := [secp256k1.PubKeySecp256k1Size]byte(secp256k1.GenPrivKey().PubKey().(secp256k1.PubKeySecp256k1))
 	pkWrongEC := hex.EncodeToString(pubKeyWrongECBytes[:])
-	pk := crypto.PublicKey(getRandomPubKey()).String()
+	pk := getRandomPubKey().RawString()
 	tests := []struct {
 		name     string
 		key      string

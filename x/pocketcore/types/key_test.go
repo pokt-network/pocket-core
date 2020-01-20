@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -9,7 +8,7 @@ import (
 
 func TestKeyForClaim(t *testing.T) {
 	ctx := newContext(t, false)
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -52,7 +51,7 @@ func TestKeyForClaims(t *testing.T) {
 
 func TestKeyForProof(t *testing.T) {
 	ctx := newContext(t, false)
-	appPubKey := crypto.PublicKey(getRandomPubKey()).String()
+	appPubKey := getRandomPubKey().RawString()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
