@@ -86,7 +86,6 @@ func TestKeeper_JailValidator(t *testing.T) {
 	validator := getBondedValidator()
 	context, _, keeper := createTestInput(t, true)
 	keeper.SetValidator(context, validator)
-	keeper.SetValidatorByConsAddr(context, validator)
 
 	tests := []struct {
 		name   string
@@ -210,7 +209,6 @@ func TestKeeper_UnjailValidator(t *testing.T) {
 	context, _, keeper := createTestInput(t, true)
 	validator.Jailed = true
 	keeper.SetValidator(context, validator)
-	keeper.SetValidatorByConsAddr(context, validator)
 
 	tests := []struct {
 		name   string

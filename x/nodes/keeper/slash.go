@@ -53,7 +53,7 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.Address, infractionHeight, p
 	k.AfterValidatorSlashed(ctx, validator.Address, slashFactor)
 }
 
-func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
+func (k Keeper) validateSlash(ctx sdk.Context, addr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
 	logger := k.Logger(ctx)
 	if slashFactor.LT(sdk.ZeroDec()) {
 		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
@@ -71,11 +71,11 @@ func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionH
 			"INFO: tried to slash with expired evidence: %s %s", infractionTime, blockTime))
 		return types.Validator{}
 	}
-	validator, found := k.GetValidatorByConsAddr(ctx, consAddr)
+	validator, found := k.GetValidator(ctx, addr)
 	if !found {
 		logger.Error(fmt.Sprintf( // could've been overslashed and removed
 			"WARNING: Ignored attempt to slash a nonexistent validator with address %s, we recommend you investigate immediately",
-			consAddr))
+			addr))
 		return types.Validator{}
 	}
 	// should not be slashing an unstaked validator

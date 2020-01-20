@@ -127,7 +127,6 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetApplication(context, tt.application)
-			keeper.SetAppByConsAddr(context, tt.application)
 			keeper.SetStakedApplication(context, tt.application)
 
 			switch tt.panics {
@@ -140,7 +139,7 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 				keeper.JailApplication(context, tt.application.GetAddress())
 			default:
 				keeper.JailApplication(context, tt.application.GetAddress())
-				if got, _ := keeper.GetAppByConsAddr(context, tt.application.GetAddress()); got.Jailed != tt.want {
+				if got, _ := keeper.GetApplication(context, tt.application.GetAddress()); got.Jailed != tt.want {
 					t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, want %v", tt.application.Jailed, tt.want)
 				}
 			}
@@ -175,7 +174,6 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetApplication(context, tt.application)
-			keeper.SetAppByConsAddr(context, tt.application)
 			keeper.SetStakedApplication(context, tt.application)
 
 			switch tt.panics {
@@ -188,7 +186,7 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 				keeper.UnjailApplication(context, tt.application.GetAddress())
 			default:
 				keeper.UnjailApplication(context, tt.application.GetAddress())
-				if got, _ := keeper.GetAppByConsAddr(context, tt.application.GetAddress()); got.Jailed != tt.want {
+				if got, _ := keeper.GetApplication(context, tt.application.GetAddress()); got.Jailed != tt.want {
 					t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, want %v", tt.application.Jailed, tt.want)
 				}
 			}
@@ -217,7 +215,7 @@ func TestAppStateChange_RegisterApplication(t *testing.T) {
 				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app")
 			}
 
-			_, found = keeper.GetAppByConsAddr(context, tt.application.GetAddress())
+			_, found = keeper.GetApplication(context, tt.application.GetAddress())
 			if !found {
 				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app by ConsAddr")
 			}

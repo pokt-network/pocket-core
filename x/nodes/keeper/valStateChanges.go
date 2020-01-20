@@ -80,7 +80,6 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Context) (updates []abci.Vali
 func (k Keeper) RegisterValidator(ctx sdk.Context, validator types.Validator) {
 	k.BeforeValidatorRegistered(ctx, validator.Address)
 	k.SetValidator(ctx, validator)                     // store validator here (master list)
-	k.SetValidatorByConsAddr(ctx, validator)           // store validator here too (by cons address)
 	k.SetStakedValidator(ctx, validator)               // store validator here too (curr staked)
 	k.AddPubKeyRelation(ctx, validator.GetPublicKey()) // store relationshiop between consAddr and consPub key
 	k.AfterValidatorRegistered(ctx, validator.Address) // call after hook
@@ -276,7 +275,7 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Context, validator types.Validator
 
 // send a validator to jail
 func (k Keeper) JailValidator(ctx sdk.Context, addr sdk.Address) {
-	validator := k.mustGetValidatorByConsAddr(ctx, addr)
+	validator := k.mustGetValidator(ctx, addr)
 	if validator.Jailed {
 		panic(fmt.Sprintf("cannot jail already jailed validator, validator: %v\n", validator))
 	}
@@ -289,7 +288,7 @@ func (k Keeper) JailValidator(ctx sdk.Context, addr sdk.Address) {
 
 // remove a validator from jail
 func (k Keeper) UnjailValidator(ctx sdk.Context, addr sdk.Address) {
-	validator := k.mustGetValidatorByConsAddr(ctx, addr)
+	validator := k.mustGetValidator(ctx, addr)
 	if !validator.Jailed {
 		panic(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v\n", validator))
 	}

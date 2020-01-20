@@ -71,23 +71,6 @@ func (k Keeper) IterateAndExecuteOverApps(
 	}
 }
 
-// get a application in the consensus store
-func (k Keeper) GetAppByConsAddr(ctx sdk.Context, consAddr sdk.Address) (application types.Application, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	addr := store.Get(types.KeyForAppByConsAddr(consAddr))
-	if addr == nil {
-		return application, false
-	}
-	return k.GetApplication(ctx, addr)
-}
-
-// set a application in the consensus store
-func (k Keeper) SetAppByConsAddr(ctx sdk.Context, application types.Application) {
-	store := ctx.KVStore(k.storeKey)
-	consAddr := application.GetAddress()
-	store.Set(types.KeyForAppByConsAddr(consAddr), application.Address)
-}
-
 func (k Keeper) CalculateAppRelays(ctx sdk.Context, application types.Application) sdk.Int {
 	stakingAdjustment := sdk.NewDec(k.StakingAdjustment(ctx))
 	participationRate := sdk.NewDec(1)

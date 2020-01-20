@@ -153,7 +153,6 @@ func TestAppUtil_MustGetApplicationByConsAddr(t *testing.T) {
 				_ = keeper.mustGetApplicationByConsAddr(context, tt.args.application.GetAddress())
 			default:
 				keeper.SetApplication(context, tt.args.application)
-				keeper.SetAppByConsAddr(context, tt.args.application)
 				keeper.SetStakedApplication(context, tt.args.application)
 				if got := keeper.mustGetApplicationByConsAddr(context, tt.args.application.GetAddress()); !got.Equals(tt.want.application) {
 					t.Errorf("keeperAppUtil.MustGetApplicationByConsAddr()= %v, want %v", got, tt.want.application)
@@ -204,7 +203,6 @@ func TestAppUtil_ApplicationByConsAddr(t *testing.T) {
 
 			default:
 				keeper.SetApplication(context, tt.args.application)
-				keeper.SetAppByConsAddr(context, tt.args.application)
 				keeper.SetStakedApplication(context, tt.args.application)
 				if got := keeper.applicationByConsAddr(context, tt.args.application.GetAddress()); !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("keeperAppUtil.ApplicationByConsAddr()= %v, want %v", got, tt.want)

@@ -22,7 +22,6 @@ var ( // Keys for store prefixes
 	ValidatorMissedBlockBitArrayKey = []byte{0x12} // Prefix for missed block bit array used in slashing
 	AddrPubkeyRelationKey           = []byte{0x13} // Prefix for address-pubkey relation used in slashing
 	AllValidatorsKey                = []byte{0x21} // prefix for each key to a validator
-	AllValidatorsByConsensusAddrKey = []byte{0x22} // prefix for each key to a validator index, by pubkey
 	StakedValidatorsKey             = []byte{0x23} // prefix for each key to a staked validator index, sorted by power
 	PrevStateValidatorsPowerKey     = []byte{0x31} // prefix for the key to the validators of the prevState state
 	PrevStateTotalPowerKey          = []byte{0x32} // prefix for the total power of the prevState state
@@ -40,11 +39,6 @@ func KeyForValWaitingToBeginUnstaking(addr sdk.Address) []byte {
 // generates the key for the validator with address
 func KeyForValByAllVals(addr sdk.Address) []byte {
 	return append(AllValidatorsKey, addr.Bytes()...)
-}
-
-// generates the key for the validator with consensus address
-func KeyForValidatorByConsAddr(addr sdk.Address) []byte {
-	return append(AllValidatorsByConsensusAddrKey, addr.Bytes()...)
 }
 
 // generates the key for unstaking validators by the unstakingtime

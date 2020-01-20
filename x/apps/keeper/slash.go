@@ -67,7 +67,7 @@ func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionH
 			"INFO: tried to slash with expired evidence: %s %s", infractionTime, blockTime))
 		return types.Application{}
 	}
-	application, found := k.GetAppByConsAddr(ctx, consAddr)
+	application, found := k.GetApplication(ctx, consAddr)
 	if !found {
 		logger.Error(fmt.Sprintf( // could've been overslashed and removed
 			"WARNING: Ignored attempt to slash a nonexistent application with address %s, we recommend you investigate immediately",
