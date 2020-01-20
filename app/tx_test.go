@@ -14,9 +14,19 @@ func TestSendTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	kp, err := kb.Create("test")
 	assert.Nil(t, err)
-	res, err := nodes.Send(memCodec(), getInMemoryTMClient(), kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(1000))
+	memCli := getInMemoryTMClient()
+	memCodec := memCodec()
+
+	fromAddr := cb.GetAddress()
+	toAddr := kp.GetAddress()
+
+	res, err := nodes.Send(memCodec, memCli, kb, fromAddr, toAddr, "test", sdk.NewInt(1000))
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
+
+	got, err := nodes.QueryAccountBalance(memCodec, memCli, toAddr, res.Height)
+	assert.Nil(t, err)
+	assert.True(t, got.Equal(sdk.NewInt(1000)))
 	// todo assert that accountValue of coinbase is `1000 less` than account value before
 	// todo assert that receiver accountValue = 1000
 }

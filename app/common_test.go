@@ -46,6 +46,12 @@ func NewInMemoryTendermintNode(t *testing.T) (tendermintNode *node.Node, keybase
 	// create the in memory tendermint node and keybase
 	tendermintNode, keybase = inMemTendermintNode()
 	// test assertions
+	if tendermintNode == nil {
+		panic("tendermintNode should not be nil")
+	}
+	if keybase == nil {
+		panic("should not be nil")
+	}
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
 	// start the in memory node
@@ -267,9 +273,10 @@ func inMemTendermintNode() (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
+	loggerFile, err := os.Open(os.DevNull)
 	c := config{
-		TmConfig: tmCfg.TestConfig(),
-		Logger:   log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		TmConfig: getTestConfig(),
+		Logger:   log.NewTMLogger(log.NewSyncWriter(loggerFile)),
 	}
 	db := dbm.NewMemDB()
 	traceWriter, err := openTraceWriter(c.TraceWriter)
@@ -373,4 +380,9 @@ func getInMemHostedChains() pocketTypes.HostedBlockchains {
 	return pocketTypes.HostedBlockchains{
 		M: map[string]pocketTypes.HostedBlockchain{dummyChainsHash: {Hash: dummyChainsHash, URL: dummyChainsURL}},
 	}
+}
+
+func getTestConfig() ( tmConfg *tmCfg.Config){
+	tmConfg = tmCfg.TestConfig()
+	return
 }
