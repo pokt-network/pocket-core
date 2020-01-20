@@ -331,6 +331,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybas
 	pubKey := kp.PublicKey
 	fromAddr := sdk.Address(pubKey.Bytes())
 	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
+	cliCtx.BroadcastMode = util.BroadcastSync
 	accGetter := auth.NewAccountRetriever(cliCtx)
 	err = accGetter.EnsureExists(fromAddr)
 	if err != nil {
