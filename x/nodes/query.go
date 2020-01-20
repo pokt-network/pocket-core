@@ -18,9 +18,14 @@ func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Add
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
-	balanceBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/account_balance", types.StoreKey), bz)
+	path := fmt.Sprintf("custom/%s/account_balance", types.StoreKey)
+	balanceBz, _, err := cliCtx.QueryWithData(path, bz)
+	if err != nil {
+		return sdk.ZeroInt(), err
+	}
+
 	var balance sdk.Int
-	err = cdc.UnmarshalJSON(balanceBz, balance)
+	err = cdc.UnmarshalJSON(balanceBz, &balance)
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
@@ -165,7 +170,7 @@ func QueryTransaction(tmNode rpcclient.Client, hash string) (*ctypes.ResultTx, e
 }
 
 func QueryBlock(tmNode rpcclient.Client, height *int64) ([]byte, error) {
-	res, err := (tmNode).Block(height)
+	res, err := tmNode.Block(height)
 	if err != nil {
 		return nil, err
 	}
