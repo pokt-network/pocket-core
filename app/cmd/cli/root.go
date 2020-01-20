@@ -13,8 +13,8 @@ import (
 var (
 	datadir         string
 	tmNode          string
-	persistentPeers = "" // todo pull from file
-	seeds           = "" // todo pull from file
+	persistentPeers string
+	seeds           string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -41,6 +41,8 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().StringVar(&datadir, "datadir", "", "data directory (default is $HOME/.pocket/")
 	rootCmd.PersistentFlags().StringVar(&tmNode, "node", "", "takes a remote endpoint in the form <protocol>://<host>:<port>")
+	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
+	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
 	rootCmd.AddCommand(startCmd)
 }
 
