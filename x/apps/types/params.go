@@ -17,7 +17,7 @@ const (
 	DefaultMaxApplications     uint64 = 100000
 	DefaultMinStake            int64  = 1
 	DefaultBaseRelaysPerPOKT   int64  = 100
-	DefaultStakingAdjustment   int64  = 0
+	DefaultStabilityAdjustment int64  = 0
 	DefaultParticipationRateOn bool   = false
 )
 
@@ -27,7 +27,7 @@ var (
 	KeyMaxApplications     = []byte("MaxApplications")
 	KeyApplicationMinStake = []byte("ApplicationStakeMinimum")
 	BaseRelaysPerPOKT      = []byte("BaseRelaysPerPOKT")
-	StakingAdjustment      = []byte("StakingAdjustment")
+	StabilityAdjustment    = []byte("StabilityAdjustment")
 	ParticipationRateOn    = []byte("ParticipationRateOn")
 )
 
@@ -39,7 +39,7 @@ type Params struct {
 	MaxApplications     uint64        `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
 	AppStakeMin         int64         `json:"app_stake_minimum" yaml:"app_stake_minimum"` // minimum amount needed to stake
 	BaseRelaysPerPOKT   int64         `json:"base_relays_per_pokt" yaml:"base_relays_per_pokt"`
-	StakingAdjustment   int64         `json:"staking_adjustment" yaml:"staking_adjustment"`
+	StabilityAdjustment int64         `json:"stability_adjustment" yaml:"stability_adjustment"`
 	ParticipationRateOn bool          `json:"participation_rate_on" yaml:"participation_rate_on"`
 }
 
@@ -50,7 +50,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeyMaxApplications, Value: &p.MaxApplications},
 		{Key: KeyApplicationMinStake, Value: &p.AppStakeMin},
 		{Key: BaseRelaysPerPOKT, Value: &p.BaseRelaysPerPOKT},
-		{Key: StakingAdjustment, Value: &p.StakingAdjustment},
+		{Key: StabilityAdjustment, Value: &p.StabilityAdjustment},
 		{Key: ParticipationRateOn, Value: &p.ParticipationRateOn},
 	}
 }
@@ -62,7 +62,7 @@ func DefaultParams() Params {
 		MaxApplications:     DefaultMaxApplications,
 		AppStakeMin:         DefaultMinStake,
 		BaseRelaysPerPOKT:   DefaultBaseRelaysPerPOKT,
-		StakingAdjustment:   DefaultStakingAdjustment,
+		StabilityAdjustment: DefaultStabilityAdjustment,
 		ParticipationRateOn: DefaultParticipationRateOn,
 	}
 }
@@ -96,13 +96,13 @@ func (p Params) String() string {
   Max Applications:            %d
   Minimum Stake:     	       %d
   BaseRelaysPerPOKT            %d
-  Staking Adjustment           %d
+  Stability Adjustment         %d
   Participation Rate On        %v,`,
 		p.UnstakingTime,
 		p.MaxApplications,
 		p.AppStakeMin,
 		p.BaseRelaysPerPOKT,
-		p.StakingAdjustment,
+		p.StabilityAdjustment,
 		p.ParticipationRateOn)
 }
 
