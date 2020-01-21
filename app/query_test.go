@@ -47,9 +47,6 @@ func TestQueryTx(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
 	defer stopCli()
-	select {
-	case <-evtChan: // todo needs empty block for some reason?
-	}
 	var tx *sdk.TxResponse
 	select {
 	case <-evtChan:
@@ -176,9 +173,6 @@ func TestAccountBalance(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
 	defer stopCli()
-	select {
-	case <-evtChan: // todo needs empty block for some reason?
-	}
 	select {
 	case <-evtChan:
 		var err error
