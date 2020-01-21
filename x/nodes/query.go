@@ -59,39 +59,66 @@ func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (t
 
 func QueryStakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	resKVs, _, err := cliCtx.QuerySubspace(types.StakedValidatorsKey, types.StoreKey)
+	params := types.QueryStakedValidatorsParams{
+		Page:  1,
+		Limit: 10000,
+	}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryStakedValidators), bz)
 	if err != nil {
 		return types.Validators{}, err
 	}
-	var validators types.Validators
-	for _, kv := range resKVs {
-		validators = append(validators, types.MustUnmarshalValidator(cdc, kv.Value))
+	validators := types.Validators{}
+	err = cdc.UnmarshalJSON(res, &validators)
+	if err != nil {
+		return validators, err
 	}
 	return validators, nil
 }
 
 func QueryUnstakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	resKVs, _, err := cliCtx.QuerySubspace(types.UnstakedValidatorsKey, types.StoreKey)
+	params := types.QueryUnstakedValidatorsParams{
+		Page:  1,
+		Limit: 10000,
+	}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakedValidators), bz)
 	if err != nil {
 		return types.Validators{}, err
 	}
-	var validators types.Validators
-	for _, kv := range resKVs {
-		validators = append(validators, types.MustUnmarshalValidator(cdc, kv.Value))
+	validators := types.Validators{}
+	err = cdc.UnmarshalJSON(res, &validators)
+	if err != nil {
+		return validators, err
 	}
 	return validators, nil
 }
 
 func QueryUnstakingValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	resKVs, _, err := cliCtx.QuerySubspace(types.UnstakingValidatorsKey, types.StoreKey)
+	params := types.QueryUnstakingValidatorsParams{
+		Page:  1,
+		Limit: 10000,
+	}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakingValidators), bz)
 	if err != nil {
 		return types.Validators{}, err
 	}
-	var validators types.Validators
-	for _, kv := range resKVs {
-		validators = append(validators, types.MustUnmarshalValidator(cdc, kv.Value))
+	validators := types.Validators{}
+	err = cdc.UnmarshalJSON(res, &validators)
+	if err != nil {
+		return validators, err
 	}
 	return validators, nil
 }

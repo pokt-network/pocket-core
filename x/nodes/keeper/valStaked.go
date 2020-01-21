@@ -8,9 +8,6 @@ import (
 
 // set staked validator
 func (k Keeper) SetStakedValidator(ctx sdk.Context, validator types.Validator) {
-	if validator.Jailed {
-		return // jailed validators are not kept in the power index
-	}
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForValidatorInStakingSet(validator), validator.Address)
 }
