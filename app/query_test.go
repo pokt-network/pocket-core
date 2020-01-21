@@ -4,6 +4,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	"math/big"
 	"testing"
 	"time"
 )
@@ -105,6 +106,35 @@ func TestQueryValidator(t *testing.T) {
 	assert.True(t, got.StakedTokens.Equal(sdk.NewInt(10000000)))
 }
 
+func TestQueryDaoBalance(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+
+	got, err := nodes.QueryDAO(memCodec(), getInMemoryTMClient(), 0)
+	assert.NotNil(t, err)
+
+	time.Sleep(90*time.Millisecond)
+	height, err := nodes.QueryChainHeight(getInMemoryTMClient())
+	got, err = nodes.QueryDAO(memCodec(), getInMemoryTMClient(), height)
+	assert.Nil(t, err)
+	assert.Equal(t, big.NewInt(0) ,got.BigInt())
+}
+
+func TestQuerySupply(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+
+	_, _, err := nodes.QuerySupply(memCodec(), getInMemoryTMClient(), 0)
+	assert.NotNil(t, err)
+
+	time.Sleep(100*time.Millisecond)
+	height, err := nodes.QueryChainHeight(getInMemoryTMClient())
+	gotStaked, gotUnstaked, err := nodes.QuerySupply(memCodec(), getInMemoryTMClient(), height)
+	assert.Nil(t, err)
+	assert.True(t, gotStaked.Equal(sdk.NewInt(10000000)))
+	assert.True(t, gotUnstaked.Equal(sdk.NewInt(0)))
+}
+
 func TestQueryPOSParams(t *testing.T) {
 	_,_, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
@@ -149,6 +179,7 @@ func TestQueryStakedValidator(t *testing.T) {
 	assert.Equal(t, 1, len(got))
 }
 
+
 func TestAccountBalance(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
@@ -157,7 +188,12 @@ func TestAccountBalance(t *testing.T) {
 	tmClient := getInMemoryTMClient()
 	codec := memCodec()
 
+	// TODO failed to load state at height 0 !?
 	got, err := nodes.QueryAccountBalance(codec, tmClient, cb.GetAddress(), 0)
+	assert.NotNil(t, err)
+
+	time.Sleep(100 * time.Millisecond)
+	got, err = nodes.QueryAccountBalance(codec, tmClient, cb.GetAddress(), 0)
 	assert.Nil(t, err)
 	assert.Equal(t,got, got)
 	// TODO fix, there is a bug on QueryAccountBalance
