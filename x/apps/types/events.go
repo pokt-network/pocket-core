@@ -1,6 +1,6 @@
 package types
 
-// pos module event types
+// app module event types
 const (
 	EventTypeCompleteUnstaking = "complete_unstaking"
 	EventTypeCreateApplication = "create_application"

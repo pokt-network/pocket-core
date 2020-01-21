@@ -12,8 +12,8 @@ import (
 type Application struct {
 	Address                 sdk.Address      `json:"address" yaml:"address"`               // address of the application; hex encoded in JSON
 	PublicKey               crypto.PublicKey `json:"public_key" yaml:"public_key"`         // the public key of the application; hex encoded in JSON
-	Jailed                  bool             `json:"jailed" yaml:"jailed"`                 // has the application been jailed from bonded status?
-	Status                  sdk.BondStatus   `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
+	Jailed                  bool             `json:"jailed" yaml:"jailed"`                 // has the application been jailed from Staked status?
+	Status                  sdk.StakeStatus  `json:"status" yaml:"status"`                 // application status (Staked/unstaking/unstaked)
 	Chains                  []string         `json:"chains" yaml:"chains"`                 // requested chains
 	StakedTokens            sdk.Int          `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
 	MaxRelays               sdk.Int          `json:"max_relays" yaml:"max_relays"`         // maximum number of relays allowed
@@ -26,10 +26,10 @@ func NewApplication(addr sdk.Address, publicKey crypto.PublicKey, chains []strin
 		Address:                 addr,
 		PublicKey:               publicKey,
 		Jailed:                  false,
-		Status:                  sdk.Bonded,
+		Status:                  sdk.Staked,
 		Chains:                  chains,
 		StakedTokens:            tokensToStake,
-		UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: bonded
+		UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: Staked
 	}
 }
 
@@ -77,17 +77,17 @@ func (a Application) Equals(v2 Application) bool {
 }
 
 // UpdateStatus updates the staking status
-func (a Application) UpdateStatus(newStatus sdk.BondStatus) Application {
+func (a Application) UpdateStatus(newStatus sdk.StakeStatus) Application {
 	a.Status = newStatus
 	return a
 }
 
 func (a Application) GetChains() []string            { return a.Chains }
-func (a Application) IsStaked() bool                 { return a.GetStatus().Equal(sdk.Bonded) }
-func (a Application) IsUnstaked() bool               { return a.GetStatus().Equal(sdk.Unbonded) }
-func (a Application) IsUnstaking() bool              { return a.GetStatus().Equal(sdk.Unbonding) }
+func (a Application) IsStaked() bool                 { return a.GetStatus().Equal(sdk.Staked) }
+func (a Application) IsUnstaked() bool               { return a.GetStatus().Equal(sdk.Unstaked) }
+func (a Application) IsUnstaking() bool              { return a.GetStatus().Equal(sdk.Unstaking) }
 func (a Application) IsJailed() bool                 { return a.Jailed }
-func (a Application) GetStatus() sdk.BondStatus      { return a.Status }
+func (a Application) GetStatus() sdk.StakeStatus     { return a.Status }
 func (a Application) GetAddress() sdk.Address        { return a.Address }
 func (a Application) GetPublicKey() crypto.PublicKey { return a.PublicKey }
 func (a Application) GetTokens() sdk.Int             { return a.StakedTokens }

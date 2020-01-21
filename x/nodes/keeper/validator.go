@@ -6,7 +6,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// get a single validator from the main store
+// get a single Validator from the main store
 func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.Address) (validator types.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValByAllVals(addr))
@@ -17,7 +17,7 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.Address) (validator types
 	return validator, true
 }
 
-// set a validator in the main store
+// set a Validator in the main store
 func (k Keeper) SetValidator(ctx sdk.Context, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidator(k.cdc, validator)
@@ -54,7 +54,7 @@ func (k Keeper) GetValidators(ctx sdk.Context, maxRetrieve uint16) (validators [
 	return validators[:i] // trim if the array length < maxRetrieve
 }
 
-// iterate through the validator set and perform the provided function
+// iterate through the Validator set and perform the provided function
 func (k Keeper) IterateAndExecuteOverVals(
 	ctx sdk.Context, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
@@ -63,7 +63,7 @@ func (k Keeper) IterateAndExecuteOverVals(
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
+		stop := fn(i, validator) // XXX is this safe will the Validator unexposed fields be able to get written to?
 		if stop {
 			break
 		}

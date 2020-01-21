@@ -62,7 +62,7 @@ func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionH
 	// see if infraction height is outside of unstaking time
 	blockTime := ctx.BlockTime()
 	infractionTime := ctx.WithBlockHeight(infractionHeight).BlockTime()
-	if blockTime.After(infractionTime.Add(k.UnStakingTime(ctx))) {
+	if blockTime.After(infractionTime.Add(k.UnstakingTime(ctx))) {
 		logger.Info(fmt.Sprintf( // could've been overslashed and removed
 			"INFO: tried to slash with expired evidence: %s %s", infractionTime, blockTime))
 		return types.Application{}

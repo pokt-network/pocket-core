@@ -8,8 +8,8 @@ import (
 )
 
 func TestGetAndSetStakedValidator(t *testing.T) {
-	boundedValidator := getBondedValidator()
-	unboundedValidator := getUnbondedValidator()
+	StakedValidator := getStakedValidator()
+	unStakedValidator := getUnstakedValidator()
 
 	type expected struct {
 		validators []types.Validator
@@ -23,18 +23,18 @@ func TestGetAndSetStakedValidator(t *testing.T) {
 	}{
 		{
 			name:       "gets validators",
-			validators: []types.Validator{boundedValidator},
-			expected:   expected{validators: []types.Validator{boundedValidator}, length: 1},
+			validators: []types.Validator{StakedValidator},
+			expected:   expected{validators: []types.Validator{StakedValidator}, length: 1},
 		},
 		{
 			name:       "gets emtpy slice of validators",
-			validators: []types.Validator{unboundedValidator},
+			validators: []types.Validator{unStakedValidator},
 			expected:   expected{validators: []types.Validator{}, length: 0},
 		},
 		{
-			name:       "only gets bounded validators",
-			validators: []types.Validator{boundedValidator, unboundedValidator},
-			expected:   expected{validators: []types.Validator{boundedValidator}, length: 1},
+			name:       "only gets Staked validators",
+			validators: []types.Validator{StakedValidator, unStakedValidator},
+			expected:   expected{validators: []types.Validator{StakedValidator}, length: 1},
 		},
 	}
 
@@ -56,7 +56,7 @@ func TestGetAndSetStakedValidator(t *testing.T) {
 }
 
 func TestRemoveStakedValidatorTokens(t *testing.T) {
-	boundedValidator := getBondedValidator()
+	StakedValidator := getStakedValidator()
 
 	type expected struct {
 		tokens       sdk.Int
@@ -71,15 +71,15 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 		expected
 	}{
 		{
-			name:      "removes tokens from validator validators",
-			validator: boundedValidator,
+			name:      "removes tokens from Validator validators",
+			validator: StakedValidator,
 			amount:    sdk.NewInt(5),
 			panics:    false,
 			expected:  expected{tokens: sdk.NewInt(99999999995), validators: []types.Validator{}},
 		},
 		{
-			name:      "removes tokens from validator validators",
-			validator: boundedValidator,
+			name:      "removes tokens from Validator validators",
+			validator: StakedValidator,
 			amount:    sdk.NewInt(-5),
 			panics:    true,
 			expected:  expected{tokens: sdk.NewInt(99999999995), validators: []types.Validator{}, errorMessage: "trying to remove negative tokens"},
@@ -100,7 +100,7 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 				_ = keeper.removeValidatorTokens(context, test.validator, test.amount)
 			default:
 				validator := keeper.removeValidatorTokens(context, test.validator, test.amount)
-				assert.True(t, validator.StakedTokens.Equal(test.expected.tokens), "validator staked tokens is not as expected")
+				assert.True(t, validator.StakedTokens.Equal(test.expected.tokens), "Validator staked tokens is not as expected")
 
 				store := context.KVStore(keeper.storeKey)
 				assert.NotNil(t, store.Get(types.KeyForValidatorInStakingSet(validator)))
@@ -110,8 +110,8 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 }
 
 func TestRemoveDeleteFromStakingSet(t *testing.T) {
-	boundedValidator := getBondedValidator()
-	unboundedValidator := getUnbondedValidator()
+	StakedValidator := getStakedValidator()
+	unStakedValidator := getUnstakedValidator()
 
 	tests := []struct {
 		name       string
@@ -121,7 +121,7 @@ func TestRemoveDeleteFromStakingSet(t *testing.T) {
 	}{
 		{
 			name:       "removes validators from set",
-			validators: []types.Validator{boundedValidator, unboundedValidator},
+			validators: []types.Validator{StakedValidator, unStakedValidator},
 			panics:     false,
 		},
 	}
@@ -144,8 +144,8 @@ func TestRemoveDeleteFromStakingSet(t *testing.T) {
 }
 
 func TestGetValsIterator(t *testing.T) {
-	boundedValidator := getBondedValidator()
-	unboundedValidator := getUnbondedValidator()
+	StakedValidator := getStakedValidator()
+	unStakedValidator := getUnstakedValidator()
 
 	tests := []struct {
 		name       string
@@ -155,7 +155,7 @@ func TestGetValsIterator(t *testing.T) {
 	}{
 		{
 			name:       "recieves a valid iterator",
-			validators: []types.Validator{boundedValidator, unboundedValidator},
+			validators: []types.Validator{StakedValidator, unStakedValidator},
 			panics:     false,
 		},
 	}
@@ -174,8 +174,8 @@ func TestGetValsIterator(t *testing.T) {
 	}
 }
 func TestApplicationStaked_IterateAndExecuteOverStakedApps(t *testing.T) {
-	boundedValidator := getBondedValidator()
-	secondBoundedValidator := getBondedValidator()
+	StakedValidator := getStakedValidator()
+	secondStakedValidator := getStakedValidator()
 	tests := []struct {
 		name         string
 		application  types.Validator
@@ -184,7 +184,7 @@ func TestApplicationStaked_IterateAndExecuteOverStakedApps(t *testing.T) {
 	}{
 		{
 			name:         "iterates over applications",
-			applications: []types.Validator{boundedValidator, secondBoundedValidator},
+			applications: []types.Validator{StakedValidator, secondStakedValidator},
 			want:         2,
 		},
 	}

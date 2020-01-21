@@ -35,12 +35,12 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
 	// divide up the reward from the proposer reward and the dao reward
 	proposerReward := baseProposerRewardPercentage.Mul(totalReward).Quo(sdk.NewInt(100))
 	daoReward := totalReward.Sub(proposerReward)
-	// get the validator structure
-	proposerValidator := k.validatorByConsAddr(ctx, previousProposer)
+	// get the Validator structure
+	proposerValidator := k.Validator(ctx, previousProposer)
 	if proposerValidator != nil {
 		propRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), proposerReward))
 		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
-		// send to validator
+		// send to Validator
 		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName,
 			sdk.Address(proposerValidator.GetAddress()), propRewardCoins); err != nil {
 			panic(err)
@@ -85,7 +85,7 @@ func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Context) sdk.Int {
 	return total
 }
 
-// store functions used to keep track of a validator award
+// store functions used to keep track of a Validator award
 func (k Keeper) setValidatorAward(ctx sdk.Context, amount sdk.Int, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.KeyForValidatorAward(address)

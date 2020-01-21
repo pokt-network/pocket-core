@@ -148,7 +148,7 @@ func queryUnstakedValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) (
 	var unstakedValidators types.Validators
 
 	for _, v := range validators {
-		if v.Status == sdk.Unbonded {
+		if v.Status == sdk.Unstaked {
 			unstakedValidators = append(unstakedValidators, v)
 		}
 	}
@@ -247,9 +247,9 @@ func querySigningInfo(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte,
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 
-	signingInfo, found := k.GetValidatorSigningInfo(ctx, params.ConsAddress)
+	signingInfo, found := k.GetValidatorSigningInfo(ctx, params.Address)
 	if !found {
-		return nil, types.ErrNoSigningInfoFound(types.DefaultCodespace, params.ConsAddress)
+		return nil, types.ErrNoSigningInfoFound(types.DefaultCodespace, params.Address)
 	}
 
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, signingInfo)

@@ -10,7 +10,7 @@ import (
 )
 
 func TestMustGetValidator(t *testing.T) {
-	boundedValidator := getBondedValidator()
+	StakedValidator := getStakedValidator()
 
 	type args struct {
 		validator types.Validator
@@ -26,16 +26,16 @@ func TestMustGetValidator(t *testing.T) {
 		expected
 	}{
 		{
-			name:     "gets validator",
+			name:     "gets Validator",
 			panics:   false,
-			args:     args{validator: boundedValidator},
-			expected: expected{validator: boundedValidator},
+			args:     args{validator: StakedValidator},
+			expected: expected{validator: StakedValidator},
 		},
 		{
-			name:     "panics if no validator",
+			name:     "panics if no Validator",
 			panics:   true,
-			args:     args{validator: boundedValidator},
-			expected: expected{message: fmt.Sprintf("validator record not found for address: %X\n", boundedValidator.Address)},
+			args:     args{validator: StakedValidator},
+			expected: expected{message: fmt.Sprintf("Validator record not found for address: %X\n", StakedValidator.Address)},
 		},
 	}
 
@@ -53,61 +53,15 @@ func TestMustGetValidator(t *testing.T) {
 				keeper.SetValidator(context, test.args.validator)
 				keeper.SetStakedValidator(context, test.args.validator)
 				validator := keeper.mustGetValidator(context, test.args.validator.Address)
-				assert.True(t, validator.Equals(test.expected.validator), "validator does not match")
+				assert.True(t, validator.Equals(test.expected.validator), "Validator does not match")
 			}
 		})
 	}
 
-}
-
-func TestValidatorByConsAddr(t *testing.T) {
-	boundedValidator := getBondedValidator()
-
-	type args struct {
-		validator types.Validator
-	}
-	type expected struct {
-		validator types.Validator
-		message   string
-		null      bool
-	}
-	tests := []struct {
-		name   string
-		panics bool
-		args
-		expected
-	}{
-		{
-			name:     "gets validator",
-			args:     args{validator: boundedValidator},
-			expected: expected{validator: boundedValidator, null: false},
-		},
-		{
-			name:     "nil if not found",
-			args:     args{validator: boundedValidator},
-			expected: expected{null: true},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			switch test.expected.null {
-			case true:
-				validator := keeper.validatorByConsAddr(context, test.args.validator.GetAddress())
-				assert.Nil(t, validator)
-			default:
-				keeper.SetValidator(context, test.args.validator)
-				keeper.SetStakedValidator(context, test.args.validator)
-				validator := keeper.validatorByConsAddr(context, test.args.validator.GetAddress())
-				assert.Equal(t, validator, test.expected.validator, "validator does not match")
-			}
-		})
-	}
 }
 
 func TestValidatorCaching(t *testing.T) {
-	boundedValidator := getBondedValidator()
+	StakedValidator := getStakedValidator()
 
 	type args struct {
 		bz        []byte
@@ -124,10 +78,10 @@ func TestValidatorCaching(t *testing.T) {
 		expected
 	}{
 		{
-			name:     "gets validator",
+			name:     "gets Validator",
 			panics:   false,
-			args:     args{validator: boundedValidator},
-			expected: expected{validator: boundedValidator},
+			args:     args{validator: StakedValidator},
+			expected: expected{validator: StakedValidator},
 		},
 	}
 
@@ -139,14 +93,14 @@ func TestValidatorCaching(t *testing.T) {
 			store := context.KVStore(keeper.storeKey)
 			bz := store.Get(types.KeyForValByAllVals(test.args.validator.Address))
 			validator := keeper.validatorCaching(bz, test.args.validator.Address)
-			assert.True(t, validator.Equals(test.expected.validator), "validator does not match")
+			assert.True(t, validator.Equals(test.expected.validator), "Validator does not match")
 		})
 	}
 
 }
 
 func TestNewValidatorCaching(t *testing.T) {
-	boundedValidator := getBondedValidator()
+	StakedValidator := getStakedValidator()
 
 	type args struct {
 		bz        []byte
@@ -166,8 +120,8 @@ func TestNewValidatorCaching(t *testing.T) {
 		{
 			name:     "getPrevStatePowerMap",
 			panics:   false,
-			args:     args{validator: boundedValidator},
-			expected: expected{validator: boundedValidator, length: 1},
+			args:     args{validator: StakedValidator},
+			expected: expected{validator: StakedValidator, length: 1},
 		},
 	}
 

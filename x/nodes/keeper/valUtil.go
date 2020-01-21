@@ -15,7 +15,7 @@ import (
 // live chain should, however we require the slashing to be fast as noone pays gas for it.
 type cachedValidator struct {
 	val        types.Validator
-	marshalled string // marshalled amino bytes for the validator object (not operator address)
+	marshalled string // marshalled amino bytes for the Validator object (not operator address)
 }
 
 func newCachedValidator(val types.Validator, marshalled string) cachedValidator {
@@ -26,7 +26,7 @@ func newCachedValidator(val types.Validator, marshalled string) cachedValidator 
 }
 
 func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator {
-	// If these amino encoded bytes are in the cache, return the cached validator
+	// If these amino encoded bytes are in the cache, return the cached Validator
 	strValue := string(value)
 	if val, ok := k.validatorCache[strValue]; ok {
 		valToReturn := val.val
@@ -51,7 +51,7 @@ func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator
 func (k Keeper) mustGetValidator(ctx sdk.Context, addr sdk.Address) types.Validator {
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
-		panic(fmt.Sprintf("validator record not found for address: %X\n", addr))
+		panic(fmt.Sprintf("Validator record not found for address: %X\n", addr))
 	}
 	return validator
 }
@@ -77,28 +77,19 @@ func (k Keeper) AllValidators(ctx sdk.Context) (validators []exported.ValidatorI
 	return validators
 }
 
-// wrapper for GetValidatorByConsAddress call
-func (k Keeper) validatorByConsAddr(ctx sdk.Context, addr sdk.Address) exported.ValidatorI {
-	val, found := k.GetValidator(ctx, addr)
-	if !found {
-		return nil
-	}
-	return val
-}
-
-// map of validator addresses to serialized power
+// map of Validator addresses to serialized power
 type valPowerMap map[[sdk.AddrLen]byte][]byte
 
-// get the prevState validator set
+// get the prevState Validator set
 func (k Keeper) getPrevStatePowerMap(ctx sdk.Context) valPowerMap {
 	prevState := make(valPowerMap)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
 	defer iterator.Close()
-	// iterate over the prevState validator set index
+	// iterate over the prevState Validator set index
 	for ; iterator.Valid(); iterator.Next() {
 		var valAddr [sdk.AddrLen]byte
-		// extract the validator address from the key (prefix is 1-byte)
+		// extract the Validator address from the key (prefix is 1-byte)
 		copy(valAddr[:], iterator.Key()[1:])
 		// power bytes is just the value
 		powerBytes := iterator.Value()

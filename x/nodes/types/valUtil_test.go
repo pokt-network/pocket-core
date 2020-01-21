@@ -15,12 +15,11 @@ import (
 func TestValidators_JSON(t *testing.T) {
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-
 	testvalidator := Validator{
 		Address:                 sdk.Address(pub.Address()),
 		PublicKey:               pub,
 		Jailed:                  false,
-		Status:                  sdk.Bonded,
+		Status:                  sdk.Staked,
 		StakedTokens:            sdk.ZeroInt(),
 		Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 		ServiceURL:              "google.com",
@@ -64,7 +63,7 @@ func TestValidators_String(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			PublicKey:               pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 			ServiceURL:              "google.com",
@@ -85,7 +84,7 @@ func TestValidators_String(t *testing.T) {
   ServiceURL:                 %s
   Chains:                     %v
   Unstaking Completion Time:  %v`,
-			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Bonded, sdk.ZeroInt(), "google.com", []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, time.Unix(0, 0).UTC(),
+			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "google.com", []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, time.Unix(0, 0).UTC(),
 		)},
 	}
 	for _, tt := range tests {
@@ -102,7 +101,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		Chains                  []string
 		ServiceURL              string
 		StakedTokens            sdk.Int
@@ -116,7 +115,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 		Address:                 sdk.Address(pub.Address()),
 		PublicKey:               pub,
 		Jailed:                  false,
-		Status:                  sdk.Bonded,
+		Status:                  sdk.Staked,
 		Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 		ServiceURL:              "www.pokt.network",
 		StakedTokens:            sdk.ZeroInt(),
@@ -133,7 +132,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
@@ -169,7 +168,7 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		Chains                  []string
 		ServiceURL              string
 		StakedTokens            sdk.Int
@@ -183,7 +182,7 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 		Address:                 sdk.Address(pub.Address()),
 		PublicKey:               pub,
 		Jailed:                  false,
-		Status:                  sdk.Bonded,
+		Status:                  sdk.Staked,
 		Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 		ServiceURL:              "www.pokt.network",
 		StakedTokens:            sdk.ZeroInt(),
@@ -205,7 +204,7 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),

@@ -9,7 +9,7 @@ import (
 )
 
 // 1) allocate tokens to block producer
-// 2) mint any custom awards for each validator
+// 2) mint any custom awards for each Validator
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
@@ -18,9 +18,9 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
 		previousProposer := k.GetPreviousProposer(ctx)
 		k.rewardFromFees(ctx, previousProposer)
 	}
-	// mint any custom validator awards
+	// mint any custom Validator awards
 	k.mintValidatorAwards(ctx)
-	// burn any custom validator slashes
+	// burn any custom Validator slashes
 	k.burnValidators(ctx)
 	// record the new proposer for when we payout on the next block
 	consAddr := sdk.Address(req.Header.ProposerAddress)
@@ -46,9 +46,9 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
 	}
 }
 
-// Called every block, update validator set
+// Called every block, update Validator set
 func EndBlocker(ctx sdk.Context, k Keeper) []abci.ValidatorUpdate {
-	// Calculate validator set changes.
+	// Calculate Validator set changes.
 	// NOTE: UpdateTendermintValidators has to come before unstakeAllMatureValidators.
 	validatorUpdates := k.UpdateTendermintValidators(ctx)
 	matureValidators := k.getMatureValidators(ctx)

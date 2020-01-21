@@ -10,7 +10,7 @@ import (
 
 func TestNewQuerySigningInfoParams(t *testing.T) {
 	type args struct {
-		consAddr types.Address
+		addr types.Address
 	}
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
@@ -21,11 +21,11 @@ func TestNewQuerySigningInfoParams(t *testing.T) {
 		args args
 		want QuerySigningInfoParams
 	}{
-		{"default Test", args{ca}, QuerySigningInfoParams{ConsAddress: ca}},
+		{"default Test", args{ca}, QuerySigningInfoParams{Address: ca}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewQuerySigningInfoParams(tt.args.consAddr); !reflect.DeepEqual(got, tt.want) {
+			if got := NewQuerySigningInfoParams(tt.args.addr); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewQuerySigningInfoParams() = %v, want %v", got, tt.want)
 			}
 		})

@@ -112,7 +112,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	moduleManager.InitGenesis(ctx, genesisState)
 
 	posSubSpace := pk.Subspace(DefaultParamspace)
-	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
+	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
 	keeper := NewKeeper(cdc, keySupply, bk, sk, posSubSpace, sdk.CodespaceType("pos"))
@@ -171,24 +171,24 @@ func getValidator() types.Validator {
 		StakedTokens: sdk.NewInt(100000000000),
 		PublicKey:    pub,
 		Jailed:       false,
-		Status:       sdk.Bonded,
+		Status:       sdk.Staked,
 		ServiceURL:   "google.com",
 		Chains:       []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 	}
 }
 
-func getBondedValidator() types.Validator {
+func getStakedValidator() types.Validator {
 	return getValidator()
 }
 
-func getUnbondedValidator() types.Validator {
+func getUnstakedValidator() types.Validator {
 	v := getValidator()
-	return v.UpdateStatus(sdk.Unbonded)
+	return v.UpdateStatus(sdk.Unstaked)
 }
 
-func getUnbondingValidator() types.Validator {
+func getUnstakingValidator() types.Validator {
 	v := getValidator()
-	return v.UpdateStatus(sdk.Unbonding)
+	return v.UpdateStatus(sdk.Unstaking)
 }
 func modifyFn(i *int) func(index int64, Validator exported.ValidatorI) (stop bool) {
 	return func(index int64, validator exported.ValidatorI) (stop bool) {
@@ -212,29 +212,29 @@ func (ph *POSHooks) BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.Addre
 func (ph *POSHooks) AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.Address) {
 	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
+func (ph *POSHooks) BeforeValidatorRemoved(ctx sdk.Context, valAddr sdk.Address) {
+	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
+func (ph *POSHooks) AfterValidatorRemoved(ctx sdk.Context, valAddr sdk.Address) {
+	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
+func (ph *POSHooks) BeforeValidatorStaked(ctx sdk.Context, valAddr sdk.Address) {
+	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) AfterValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
+func (ph *POSHooks) AfterValidatorStaked(ctx sdk.Context, valAddr sdk.Address) {
+	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
+func (ph *POSHooks) BeforeValidatorBeginUnstaking(ctx sdk.Context, valAddr sdk.Address) {
+	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
+func (ph *POSHooks) AfterValidatorBeginUnstaking(ctx sdk.Context, valAddr sdk.Address) {
+	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) BeforeValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
+func (ph *POSHooks) BeforeValidatorUnstaked(ctx sdk.Context, valAddr sdk.Address) {
+	ph.Called(ctx, valAddr)
 }
-func (ph *POSHooks) AfterValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
+func (ph *POSHooks) AfterValidatorUnstaked(ctx sdk.Context, valAddr sdk.Address) {
+	ph.Called(ctx, valAddr)
 }
 func (ph *POSHooks) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec) {
 	ph.Called(ctx, valAddr, fraction)

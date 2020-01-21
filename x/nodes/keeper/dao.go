@@ -11,7 +11,7 @@ func (k Keeper) GetDAOPool(ctx sdk.Context) (stakedPool exported.ModuleAccountI)
 	return k.supplyKeeper.GetModuleAccount(ctx, types.DAOPoolName)
 }
 
-// moves coins from the module account to the validator -> used in unstaking
+// moves coins from the module account to the Validator -> used in unstaking
 func (k Keeper) coinsFromDAOToValidator(ctx sdk.Context, validator types.Validator, amount sdk.Int) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.DAOPoolName, sdk.Address(validator.Address), coins)

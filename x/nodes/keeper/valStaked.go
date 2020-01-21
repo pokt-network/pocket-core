@@ -6,7 +6,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// set staked validator
+// set staked Validator
 func (k Keeper) SetStakedValidator(ctx sdk.Context, validator types.Validator) {
 	if validator.Jailed {
 		return // jailed validators are not kept in the power index
@@ -15,13 +15,13 @@ func (k Keeper) SetStakedValidator(ctx sdk.Context, validator types.Validator) {
 	store.Set(types.KeyForValidatorInStakingSet(validator), validator.Address)
 }
 
-// delete validator from staked set
+// delete Validator from staked set
 func (k Keeper) deleteValidatorFromStakingSet(ctx sdk.Context, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorInStakingSet(validator))
 }
 
-// Update the staked tokens of an existing validator, update the validators power index key
+// Update the staked tokens of an existing Validator, update the validators power index key
 func (k Keeper) removeValidatorTokens(ctx sdk.Context, v types.Validator, tokensToRemove sdk.Int) types.Validator {
 	k.deleteValidatorFromStakingSet(ctx, v)
 	v = v.RemoveStakedTokens(tokensToRemove)
@@ -54,7 +54,7 @@ func (k Keeper) stakedValsIterator(ctx sdk.Context) sdk.Iterator {
 	return sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
 }
 
-// iterate through the staked validator set and perform the provided function
+// iterate through the staked Validator set and perform the provided function
 func (k Keeper) IterateAndExecuteOverStakedVals(
 	ctx sdk.Context, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
@@ -66,7 +66,7 @@ func (k Keeper) IterateAndExecuteOverStakedVals(
 		address := iterator.Value()
 		validator := k.mustGetValidator(ctx, address)
 		if validator.IsStaked() {
-			stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
+			stop := fn(i, validator) // XXX is this safe will the Validator unexposed fields be able to get written to?
 			if stop {
 				break
 			}

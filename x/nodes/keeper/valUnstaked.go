@@ -39,14 +39,14 @@ func (k Keeper) DeleteWaitingValidator(ctx sdk.Context, valAddr sdk.Address) {
 	store.Delete(types.KeyForValWaitingToBeginUnstaking(valAddr))
 }
 
-// Insert a validator address to the appropriate position in the unstaking queue
+// Insert a Validator address to the appropriate position in the unstaking queue
 func (k Keeper) SetUnstakingValidator(ctx sdk.Context, val types.Validator) {
 	validators := k.getUnstakingValidators(ctx, val.UnstakingCompletionTime)
 	validators = append(validators, val.Address)
 	k.setUnstakingValidators(ctx, val.UnstakingCompletionTime, validators)
 }
 
-// DeleteInvoice a validator address from the unstaking queue
+// DeleteInvoice a Validator address from the unstaking queue
 func (k Keeper) deleteUnstakingValidator(ctx sdk.Context, val types.Validator) {
 	validators := k.getUnstakingValidators(ctx, val.UnstakingCompletionTime)
 	var newValidators []sdk.Address
@@ -127,7 +127,7 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Context) {
 		for _, valAddr := range unstakingVals {
 			val, found := k.GetValidator(ctx, valAddr)
 			if !found {
-				panic("validator in the unstaking queue was not found")
+				panic("Validator in the unstaking queue was not found")
 			}
 			err := k.ValidateValidatorFinishUnstaking(ctx, val)
 			if err != nil {

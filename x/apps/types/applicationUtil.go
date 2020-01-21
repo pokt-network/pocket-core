@@ -66,14 +66,14 @@ func (a Application) String() string {
 
 // this is a helper struct used for JSON de- and encoding only
 type hexApplication struct {
-	Address                 sdk.Address `json:"operator_address" yaml:"operator_address"` // the hex address of the application
-	PublicKey               string      `json:"cons_pubkey" yaml:"cons_pubkey"`           // the hex consensus public key of the application
-	Jailed                  bool        `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
-	Chains                  []string    `json:"chains" yaml:"chains"`
-	MaxRelays               sdk.Int
-	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
-	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"`     // how many staked tokens
-	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
+	Address                 sdk.Address     `json:"operator_address" yaml:"operator_address"` // the hex address of the application
+	PublicKey               string          `json:"public_key" yaml:"public_key"`             // the hex consensus public key of the application
+	Jailed                  bool            `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
+	Chains                  []string        `json:"chains" yaml:"chains"`                     // chains the app stakes for
+	MaxRelays               sdk.Int         `json:"max_relays" yaml:"max_relays"`             // max number of relays the application gets per session
+	Status                  sdk.StakeStatus `json:"status" yaml:"status"`                     // application status (Staked/unstaking/unstaked)
+	StakedTokens            sdk.Int         `json:"stakedTokens" yaml:"stakedTokens"`         // how many staked tokens
+	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"`     // if unstaking, min time for the application to complete unstaking
 }
 
 // MarshalJSON marshals the application to JSON using Hex

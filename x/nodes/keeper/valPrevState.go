@@ -27,7 +27,7 @@ func (k Keeper) getValsFromPrevState(ctx sdk.Context) (validators []types.Valida
 	return validators[:i] // trim
 }
 
-// Load the prevState total validator power.
+// Load the prevState total Validator power.
 func (k Keeper) PrevStateValidatorsPower(ctx sdk.Context) (power sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.PrevStateTotalPowerKey)
@@ -38,7 +38,7 @@ func (k Keeper) PrevStateValidatorsPower(ctx sdk.Context) (power sdk.Int) {
 	return
 }
 
-// Set the prevState total validator power (used in moving the curr to prev)
+// Set the prevState total Validator power (used in moving the curr to prev)
 func (k Keeper) SetPrevStateValidatorsPower(ctx sdk.Context, power sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(power)
@@ -52,7 +52,7 @@ func (k Keeper) prevStateValidatorsIterator(ctx sdk.Context) (iterator sdk.Itera
 	return iterator
 }
 
-// Iterate over prevState validator powers and perform a function on each validator.
+// Iterate over prevState Validator powers and perform a function on each Validator.
 func (k Keeper) IterateAndExecuteOverPrevStateValsByPower(
 	ctx sdk.Context, handler func(address sdk.Address, power int64) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
@@ -68,7 +68,7 @@ func (k Keeper) IterateAndExecuteOverPrevStateValsByPower(
 	}
 }
 
-// iterate through the active validator set and perform the provided function
+// iterate through the active Validator set and perform the provided function
 func (k Keeper) IterateAndExecuteOverPrevStateVals(
 	ctx sdk.Context, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	iterator := k.prevStateValidatorsIterator(ctx)
@@ -78,9 +78,9 @@ func (k Keeper) IterateAndExecuteOverPrevStateVals(
 		address := types.AddressFromKey(iterator.Key())
 		validator, found := k.GetValidator(ctx, address)
 		if !found {
-			panic(fmt.Sprintf("validator record not found for address: %v\n", address))
+			panic(fmt.Sprintf("Validator record not found for address: %v\n", address))
 		}
-		stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
+		stop := fn(i, validator) // XXX is this safe will the Validator unexposed fields be able to get written to?
 		if stop {
 			break
 		}
@@ -88,7 +88,7 @@ func (k Keeper) IterateAndExecuteOverPrevStateVals(
 	}
 }
 
-// get the power of a SINGLE staked validator from the previous state
+// get the power of a SINGLE staked Validator from the previous state
 func (k Keeper) PrevStateValidatorPower(ctx sdk.Context, addr sdk.Address) (power int64) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.KeyForValidatorPrevStateStateByPower(addr))
@@ -99,14 +99,14 @@ func (k Keeper) PrevStateValidatorPower(ctx sdk.Context, addr sdk.Address) (powe
 	return
 }
 
-// set the power of a SINGLE staked validator from the previous state
+// set the power of a SINGLE staked Validator from the previous state
 func (k Keeper) SetPrevStateValPower(ctx sdk.Context, addr sdk.Address, power int64) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(power)
 	store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
 }
 
-// DeleteInvoice the power of a SINGLE staked validator from the previous state
+// DeleteInvoice the power of a SINGLE staked Validator from the previous state
 func (k Keeper) DeletePrevStateValPower(ctx sdk.Context, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorPrevStateStateByPower(addr))

@@ -25,36 +25,36 @@ func (h MultiPOSHooks) AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.Add
 
 func (h MultiPOSHooks) BeforeValidtorRemoved(ctx sdk.Context, consAddr sdk.Address, address sdk.Address) {
 	for i := range h {
-		h[i].BeforeValidatorRemoved(ctx, consAddr, address)
+		h[i].BeforeValidatorRemoved(ctx, address)
 	}
 }
 
 func (h MultiPOSHooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	for i := range h {
-		h[i].AfterValidatorRemoved(ctx, consAddr, valAddr)
+		h[i].AfterValidatorRemoved(ctx, valAddr)
 	}
 }
 
 func (h MultiPOSHooks) BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.Address, address sdk.Address) {
 	for i := range h {
-		h[i].BeforeValidatorStaked(ctx, consAddr, address)
+		h[i].BeforeValidatorStaked(ctx, address)
 	}
 }
 
 func (h MultiPOSHooks) AfterValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	for i := range h {
-		h[i].AfterValidatorStaked(ctx, consAddr, valAddr)
+		h[i].AfterValidatorStaked(ctx, valAddr)
 	}
 }
 
 func (h MultiPOSHooks) BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, address sdk.Address) {
 	for i := range h {
-		h[i].BeforeValidatorBeginUnstaking(ctx, consAddr, address)
+		h[i].BeforeValidatorBeginUnstaking(ctx, address)
 	}
 }
 func (h MultiPOSHooks) AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
 	for i := range h {
-		h[i].AfterValidatorBeginUnstaking(ctx, consAddr, valAddr)
+		h[i].AfterValidatorBeginUnstaking(ctx, valAddr)
 	}
 }
 

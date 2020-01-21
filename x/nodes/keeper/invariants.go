@@ -28,12 +28,12 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 
 		k.IterateAndExecuteOverVals(ctx, func(_ int64, validator exported.ValidatorI) bool {
 			switch validator.GetStatus() {
-			case sdk.Bonded, sdk.Unbonding:
+			case sdk.Staked, sdk.Unstaking:
 				staked = staked.Add(validator.GetTokens())
-			case sdk.Unbonded:
+			case sdk.Unstaked:
 				notStaked = notStaked.Add(validator.GetTokens())
 			default:
-				panic("invalid validator status")
+				panic("invalid Validator status")
 			}
 			return false
 		})
@@ -66,24 +66,24 @@ func NonNegativePowerInvariant(k Keeper) sdk.Invariant {
 		for ; iterator.Valid(); iterator.Next() {
 			validator, found := k.GetValidator(ctx, iterator.Value())
 			if !found {
-				panic(fmt.Sprintf("validator record not found for address: %X\n", iterator.Value()))
+				panic(fmt.Sprintf("Validator record not found for address: %X\n", iterator.Value()))
 			}
 
 			powerKey := types.KeyForValidatorInStakingSet(validator)
 
 			if !bytes.Equal(iterator.Key(), powerKey) {
 				broken = true
-				msg += fmt.Sprintf("power store invariance:\n\tvalidator.Power: %v"+
+				msg += fmt.Sprintf("power store invariance:\n\tValidator.Power: %v"+
 					"\n\tkey should be: %v\n\tkey in store: %v\n",
 					validator.GetConsensusPower(), powerKey, iterator.Key())
 			}
 
 			if validator.StakedTokens.IsNegative() {
 				broken = true
-				msg += fmt.Sprintf("\tnegative tokens for validator: %v\n", validator)
+				msg += fmt.Sprintf("\tnegative tokens for Validator: %v\n", validator)
 			}
 		}
 		iterator.Close()
-		return sdk.FormatInvariant(types.ModuleName, "nonnegative power", fmt.Sprintf("found invalid validator powers\n%s", msg)), broken
+		return sdk.FormatInvariant(types.ModuleName, "nonnegative power", fmt.Sprintf("found invalid Validator powers\n%s", msg)), broken
 	}
 }

@@ -50,7 +50,7 @@ func TestEndBlocker(t *testing.T) {
 		apps []types.Application
 	}
 	context, _, keeper := createTestInput(t, true)
-	application := getUnbondingApplication()
+	application := getUnstakingApplication()
 
 	keeper.SetApplication(context, application)
 	keeper.SetUnstakingApplication(context, application)

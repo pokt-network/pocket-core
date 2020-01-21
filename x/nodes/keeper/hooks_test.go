@@ -68,7 +68,7 @@ func TestHooks_BeforeValidatorRemoved(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeValidatorRemoved", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
-			keeper.BeforeValidatorRemoved(context, sdk.Address{}, sdk.Address{})
+			keeper.BeforeValidatorRemoved(context, sdk.Address{})
 			if len(tt.args.Calls) != 1 {
 				t.Errorf("hook was not called %v", len(tt.args.Calls))
 			}
@@ -91,7 +91,7 @@ func TestHooks_AfterValidatorRemoved(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterValidatorRemoved", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
-			keeper.AfterValidatorRemoved(context, sdk.Address{}, sdk.Address{})
+			keeper.AfterValidatorRemoved(context, sdk.Address{})
 			if len(tt.args.Calls) != 1 {
 				t.Errorf("hook was not called %v", len(tt.args.Calls))
 			}
@@ -114,7 +114,7 @@ func TestHooks_BeforeValidatorStaked(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeValidatorStaked", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
-			keeper.BeforeValidatorStaked(context, sdk.Address{}, sdk.Address{})
+			keeper.BeforeValidatorStaked(context, sdk.Address{})
 			if len(tt.args.Calls) != 1 {
 				t.Errorf("hook was not called %v", len(tt.args.Calls))
 			}
@@ -137,7 +137,7 @@ func TestHooks_AfterValidatorStaked(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterValidatorStaked", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
-			keeper.AfterValidatorStaked(context, sdk.Address{}, sdk.Address{})
+			keeper.AfterValidatorStaked(context, sdk.Address{})
 			if len(tt.args.Calls) != 1 {
 				t.Errorf("hook was not called %v", len(tt.args.Calls))
 			}
@@ -160,7 +160,7 @@ func TestHooks_BeforeValidatorBeginUnstaking(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeValidatorBeginUnstaking", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
-			keeper.BeforeValidatorBeginUnstaking(context, sdk.Address{}, sdk.Address{})
+			keeper.BeforeValidatorBeginUnstaking(context, sdk.Address{})
 			if len(tt.args.Calls) != 1 {
 				t.Errorf("hook was not called %v", len(tt.args.Calls))
 			}
@@ -183,7 +183,7 @@ func TestHooks_AfterValidatorBeginUnstaking(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterValidatorBeginUnstaking", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
-			keeper.AfterValidatorBeginUnstaking(context, sdk.Address{}, sdk.Address{})
+			keeper.AfterValidatorBeginUnstaking(context, sdk.Address{})
 			if len(tt.args.Calls) != 1 {
 				t.Errorf("hook was not called %v", len(tt.args.Calls))
 			}

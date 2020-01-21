@@ -35,7 +35,7 @@ type Keeper struct {
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, coinKeeper bank.Keeper, supplyKeeper types.SupplyKeeper,
 	paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
 
-	// ensure bonded module accounts are set
+	// ensure Staked module accounts are set
 	if addr := supplyKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
 	}
@@ -58,10 +58,10 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// Set the validator hooks
+// Set the Validator hooks
 func (k *Keeper) SetHooks(sh types.POSHooks) *Keeper {
 	if k.hooks != nil {
-		panic("cannot set validator hooks twice")
+		panic("cannot set Validator hooks twice")
 	}
 	k.hooks = sh
 	return k

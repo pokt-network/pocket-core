@@ -8,10 +8,10 @@ import (
 // ApplicationI expected application functions
 type ApplicationI interface {
 	IsJailed() bool                 // whether the application is jailed
-	GetStatus() sdk.BondStatus      // status of the application
-	IsStaked() bool                 // check if has a bonded status
-	IsUnstaked() bool               // check if has status unbonded
-	IsUnstaking() bool              // check if has status unbonding
+	GetStatus() sdk.StakeStatus     // stake status of the application
+	IsStaked() bool                 // check if has a Staked status
+	IsUnstaked() bool               // check if has status unstaked
+	IsUnstaking() bool              // check if has status unstaking
 	GetChains() []string            // retrieve the staked chains
 	GetAddress() sdk.Address        // operator address to receive/return applications coins
 	GetPublicKey() crypto.PublicKey // validation consensus pubkey

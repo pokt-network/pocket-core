@@ -10,7 +10,6 @@ import (
 // StakedRatio the fraction of the staking tokens which are currently staked
 func (k Keeper) StakedRatio(ctx sdk.Context) sdk.Dec {
 	stakedPool := k.GetStakedPool(ctx)
-
 	stakeSupply := k.TotalTokens(ctx)
 	if stakeSupply.IsPositive() {
 		return stakedPool.GetCoins().AmountOf(k.StakeDenom(ctx)).ToDec().QuoInt(stakeSupply)

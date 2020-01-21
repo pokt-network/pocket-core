@@ -65,7 +65,7 @@ func (k Keeper) clearMissedArray(ctx sdk.Context, consAddr sdk.Address) {
 	}
 }
 
-// Stored by *validator* address (not operator address)
+// Stored by *Validator* address (not operator address)
 func (k Keeper) IterateAndExecuteOverMissedArray(ctx sdk.Context,
 	address sdk.Address, handler func(index int64, missed bool) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)

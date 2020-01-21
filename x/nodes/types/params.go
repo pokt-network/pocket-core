@@ -55,7 +55,7 @@ var _ params.ParamSet = (*Params)(nil)
 type Params struct {
 	UnstakingTime            time.Duration `json:"unstaking_time" yaml:"unstaking_time"`           // duration of unstaking
 	MaxValidators            uint64        `json:"max_validators" yaml:"max_validators"`           // maximum number of validators
-	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                 // bondable coin denomination
+	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                 // Stakable coin denomination
 	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`             // minimum amount needed to stake
 	ProposerRewardPercentage int8          `json:"base_proposer_award" yaml:"base_proposer_award"` // minimum award for the proposer
 	SessionBlockFrequency    int64         `json:"session_block_frequency" yaml:"session_block_frequency"`
@@ -94,7 +94,7 @@ func DefaultParams() Params {
 		UnstakingTime:            DefaultUnstakingTime,
 		MaxValidators:            DefaultMaxValidators,
 		StakeMinimum:             DefaultMinStake,
-		StakeDenom:               sdk.DefaultBondDenom,
+		StakeDenom:               sdk.DefaultStakeDenom,
 		ProposerRewardPercentage: DefaultBaseProposerAwardPercentage,
 		MaxEvidenceAge:           DefaultMaxEvidenceAge,
 		SignedBlocksWindow:       DefaultSignedBlocksWindow,

@@ -10,7 +10,7 @@ import (
 )
 
 func TestPool_CoinsFromUnstakedToStaked(t *testing.T) {
-	application := getBondedApplication()
+	application := getStakedApplication()
 	applicationAddress := application.Address
 
 	tests := []struct {
@@ -69,7 +69,7 @@ func TestPool_CoinsFromUnstakedToStaked(t *testing.T) {
 }
 
 func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
-	application := getBondedApplication()
+	application := getStakedApplication()
 	applicationAddress := application.Address
 
 	tests := []struct {
@@ -122,7 +122,7 @@ func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
 }
 
 func TestPool_BurnStakedTokens(t *testing.T) {
-	application := getBondedApplication()
+	application := getStakedApplication()
 	applicationAddress := application.Address
 
 	supplySize := sdk.NewInt(100000000000)
@@ -198,7 +198,7 @@ func TestPool_GetFeePool(t *testing.T) {
 }
 
 func TestPool_StakedRatio(t *testing.T) {
-	application := getBondedApplication()
+	application := getStakedApplication()
 	applicationAddress := application.Address
 
 	tests := []struct{

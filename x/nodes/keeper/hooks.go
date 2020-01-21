@@ -20,39 +20,39 @@ func (k Keeper) AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.Address) {
 	}
 }
 
-func (k Keeper) BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
+func (k Keeper) BeforeValidatorRemoved(ctx sdk.Context, valAddr sdk.Address) {
 	if k.hooks != nil {
-		k.hooks.BeforeValidatorRemoved(ctx, consAddr, valAddr)
+		k.hooks.BeforeValidatorRemoved(ctx, valAddr)
 	}
 }
 
-func (k Keeper) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
+func (k Keeper) AfterValidatorRemoved(ctx sdk.Context, valAddr sdk.Address) {
 	if k.hooks != nil {
-		k.hooks.AfterValidatorRemoved(ctx, consAddr, valAddr)
+		k.hooks.AfterValidatorRemoved(ctx, valAddr)
 	}
 }
 
-func (k Keeper) BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
+func (k Keeper) BeforeValidatorStaked(ctx sdk.Context, valAddr sdk.Address) {
 	if k.hooks != nil {
-		k.hooks.BeforeValidatorStaked(ctx, consAddr, valAddr)
+		k.hooks.BeforeValidatorStaked(ctx, valAddr)
 	}
 }
 
-func (k Keeper) AfterValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
+func (k Keeper) AfterValidatorStaked(ctx sdk.Context, valAddr sdk.Address) {
 	if k.hooks != nil {
-		k.hooks.AfterValidatorStaked(ctx, consAddr, valAddr)
+		k.hooks.AfterValidatorStaked(ctx, valAddr)
 	}
 }
 
-func (k Keeper) BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
+func (k Keeper) BeforeValidatorBeginUnstaking(ctx sdk.Context, valAddr sdk.Address) {
 	if k.hooks != nil {
-		k.hooks.BeforeValidatorBeginUnstaking(ctx, consAddr, valAddr)
+		k.hooks.BeforeValidatorBeginUnstaking(ctx, valAddr)
 	}
 }
 
-func (k Keeper) AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
+func (k Keeper) AfterValidatorBeginUnstaking(ctx sdk.Context, valAddr sdk.Address) {
 	if k.hooks != nil {
-		k.hooks.AfterValidatorBeginUnstaking(ctx, consAddr, valAddr)
+		k.hooks.AfterValidatorBeginUnstaking(ctx, valAddr)
 	}
 }
 

@@ -40,7 +40,7 @@ func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application,
 	// calculate relays
 	application.MaxRelays = k.CalculateAppRelays(ctx, application)
 	// set the status to staked
-	application = application.UpdateStatus(sdk.Bonded)
+	application = application.UpdateStatus(sdk.Staked)
 	// save in the application store
 	k.SetApplication(ctx, application)
 	// save in the staked store
@@ -62,7 +62,7 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Context, application t
 	return nil
 }
 
-// store ops when application begins to unstake -> starts the unbonding timer
+// store ops when application begins to unstake -> starts the unstaking timer
 func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.Application) sdk.Error {
 	// call before unstaking hook
 	k.BeforeApplicationBeginUnstaking(ctx, application.GetAddress(), application.Address)
@@ -71,7 +71,7 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.App
 	// delete the application from the staking set, as it is technically staked but not going to participate
 	k.deleteApplicationFromStakingSet(ctx, application)
 	// set the status
-	application = application.UpdateStatus(sdk.Unbonding)
+	application = application.UpdateStatus(sdk.Unstaking)
 	// set the unstaking completion time and completion height appropriately
 	application.UnstakingCompletionTime = ctx.BlockHeader().Time.Add(params.UnstakingTime)
 	// save the now unstaked application record and power index
@@ -94,7 +94,7 @@ func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Context, application 
 	return nil
 }
 
-// store ops to unstake a application -> called after unbonding time is up
+// store ops to unstake a application -> called after unstaking time is up
 func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Application) sdk.Error {
 	// call the before hook
 	k.BeforeApplicationUnstaked(ctx, application.GetAddress(), application.Address)
@@ -107,7 +107,7 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 	// send the tokens from staking module account to application account
 	k.coinsFromStakedToUnstaked(ctx, application)
 	// update the status to unstaked
-	application = application.UpdateStatus(sdk.Unbonded)
+	application = application.UpdateStatus(sdk.Unstaked)
 	// reset app relays
 	application.MaxRelays = sdk.ZeroInt()
 	// update the application in the main store
@@ -144,7 +144,7 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Appli
 	// remove their tokens from the field
 	application = application.RemoveStakedTokens(application.StakedTokens)
 	// update their status to unstaked
-	application = application.UpdateStatus(sdk.Unbonded)
+	application = application.UpdateStatus(sdk.Unstaked)
 	// reset app relays
 	application.MaxRelays = sdk.ZeroInt()
 	// set the application in store

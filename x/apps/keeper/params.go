@@ -19,7 +19,7 @@ func ParamKeyTable() params.KeyTable {
 }
 
 // UnstakingTime
-func (k Keeper) UnStakingTime(ctx sdk.Context) (res time.Duration) {
+func (k Keeper) UnstakingTime(ctx sdk.Context) (res time.Duration) {
 	k.Paramstore.Get(ctx, types.KeyUnstakingTime, &res)
 	return
 }
@@ -53,7 +53,7 @@ func (k Keeper) MinimumStake(ctx sdk.Context) (res int64) {
 // Get all parameteras as types.Params
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.Params{
-		UnstakingTime:       k.UnStakingTime(ctx),
+		UnstakingTime:       k.UnstakingTime(ctx),
 		MaxApplications:     k.MaxApplications(ctx),
 		AppStakeMin:         k.MinimumStake(ctx),
 		BaseRelaysPerPOKT:   k.BaselineThroughputStakeRate(ctx),

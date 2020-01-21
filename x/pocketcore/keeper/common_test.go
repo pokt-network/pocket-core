@@ -62,46 +62,6 @@ func makeTestCodec() *codec.Codec {
 }
 
 // nolint: deadcode unused
-func newContext(t *testing.T, isCheckTx bool) sdk.Context {
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
-	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
-	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
-	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
-
-	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
-	err := ms.LoadLatestVersion()
-	require.Nil(t, err)
-
-	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, isCheckTx, log.NewNopLogger())
-	ctx = ctx.WithConsensusParams(
-		&abci.ConsensusParams{
-			Validator: &abci.ValidatorParams{
-				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
-			},
-		},
-	)
-	ctx = ctx.WithBlockHeader(abci.Header{
-		Height: 1,
-		Time:   time.Time{},
-		LastBlockId: abci.BlockID{
-			Hash: types.Hash([]byte("fake")),
-		},
-	})
-	return ctx
-}
-
-// nolint: deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(5)
@@ -196,7 +156,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []nodesTypes.Va
 	)
 	genesisState := ModuleBasics.DefaultGenesis()
 	moduleManager.InitGenesis(ctx, genesisState)
-	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
+	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 	ap := createTestApps(ctx, int(nAccs), sdk.NewInt(10000000), appk, sk)
 	vals := createTestValidators(ctx, int(nAccs), sdk.NewInt(10000000), sdk.ZeroInt(), &nk, sk, kb)

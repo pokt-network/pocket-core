@@ -38,7 +38,7 @@ func (k Keeper) GetStakedPool(ctx sdk.Context) (stakedPool exported.ModuleAccoun
 	return k.supplyKeeper.GetModuleAccount(ctx, types.StakedPoolName)
 }
 
-// moves coins from the module account to the validator -> used in unstaking
+// moves coins from the module account to the Validator -> used in unstaking
 func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Context, validator types.Validator) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), validator.StakedTokens))
 	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.Address(validator.Address), coins)
@@ -47,7 +47,7 @@ func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Context, validator types.Valid
 	}
 }
 
-// moves coins from the module account to validator -> used in staking
+// moves coins from the module account to Validator -> used in staking
 func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Context, validator types.Validator, amount sdk.Int) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, sdk.Address(validator.Address), types.StakedPoolName, coins)

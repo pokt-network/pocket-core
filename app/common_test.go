@@ -321,7 +321,7 @@ func memGenesisState(pubKey crypto.PublicKey) []byte {
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
 			PublicKey:    pubKey,
-			Status:       sdk.Bonded,
+			Status:       sdk.staked,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
@@ -334,7 +334,7 @@ func memGenesisState(pubKey crypto.PublicKey) []byte {
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultstakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,

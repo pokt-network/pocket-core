@@ -47,7 +47,7 @@ func TestInitGenesis(t *testing.T) {
 
 	context, _, kpr := createTestInput(t, true)
 
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	consAddress := validator.GetAddress()
 	kpr.SetPreviousProposer(context, consAddress)
 
@@ -120,7 +120,7 @@ func Test_validateGenesisStateValidators(t *testing.T) {
 
 	testdata := getGenesisStateForTest(ctx, k, true)
 
-	val1 := getBondedValidator()
+	val1 := getStakedValidator()
 	val1.Jailed = true
 	val2 := val1
 

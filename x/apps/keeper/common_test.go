@@ -122,7 +122,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	moduleManager.InitGenesis(ctx, genesisState)
 
 	appSubspace := pk.Subspace(DefaultParamspace)
-	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
+	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
 	keeper := NewKeeper(cdc, keySupply, bk, nk, sk, appSubspace, "apps")
@@ -180,24 +180,24 @@ func getApplication() types.Application {
 		StakedTokens: sdk.NewInt(100000000000),
 		PublicKey:    pub,
 		Jailed:       false,
-		Status:       sdk.Bonded,
+		Status:       sdk.Staked,
 		MaxRelays:    sdk.NewInt(100000000000),
 		Chains:       []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 	}
 }
 
-func getBondedApplication() types.Application {
+func getStakedApplication() types.Application {
 	return getApplication()
 }
 
-func getUnbondedApplication() types.Application {
+func getUnstakedApplication() types.Application {
 	v := getApplication()
-	return v.UpdateStatus(sdk.Unbonded)
+	return v.UpdateStatus(sdk.Unstaked)
 }
 
-func getUnbondingApplication() types.Application {
+func getUnstakingApplication() types.Application {
 	v := getApplication()
-	return v.UpdateStatus(sdk.Unbonding)
+	return v.UpdateStatus(sdk.Unstaking)
 }
 
 func modifyFn(i *int) func(index int64, application exported.ApplicationI) (stop bool) {
@@ -222,29 +222,29 @@ func (ah *AppHooks) BeforeApplicationRegistered(ctx sdk.Context, valAddr sdk.Add
 func (ah *AppHooks) AfterApplicationRegistered(ctx sdk.Context, valAddr sdk.Address) {
 	ah.Called(ctx, valAddr)
 }
-func (ah *AppHooks) BeforeApplicationRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ah.Called(ctx, consAddr, valAddr)
+func (ah *AppHooks) BeforeApplicationRemoved(ctx sdk.Context, addr sdk.Address, valAddr sdk.Address) {
+	ah.Called(ctx, addr, valAddr)
 }
-func (ah *AppHooks) AfterApplicationRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ah.Called(ctx, consAddr, valAddr)
+func (ah *AppHooks) AfterApplicationRemoved(ctx sdk.Context, addr sdk.Address, valAddr sdk.Address) {
+	ah.Called(ctx, addr, valAddr)
 }
-func (ah *AppHooks) BeforeApplicationStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ah.Called(ctx, consAddr, valAddr)
+func (ah *AppHooks) BeforeApplicationStaked(ctx sdk.Context, addr sdk.Address, valAddr sdk.Address) {
+	ah.Called(ctx, addr, valAddr)
 }
-func (ah *AppHooks) AfterApplicationStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ah.Called(ctx, consAddr, valAddr)
+func (ah *AppHooks) AfterApplicationStaked(ctx sdk.Context, addr sdk.Address, valAddr sdk.Address) {
+	ah.Called(ctx, addr, valAddr)
 }
-func (ah *AppHooks) BeforeApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ah.Called(ctx, consAddr, valAddr)
+func (ah *AppHooks) BeforeApplicationBeginUnstaking(ctx sdk.Context, addr sdk.Address, valAddr sdk.Address) {
+	ah.Called(ctx, addr, valAddr)
 }
-func (ah *AppHooks) AfterApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ah.Called(ctx, consAddr, valAddr)
+func (ah *AppHooks) AfterApplicationBeginUnstaking(ctx sdk.Context, addr sdk.Address, valAddr sdk.Address) {
+	ah.Called(ctx, addr, valAddr)
 }
-func (ah *AppHooks) BeforeApplicationUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ah.Called(ctx, consAddr, valAddr)
+func (ah *AppHooks) BeforeApplicationUnstaked(ctx sdk.Context, addr sdk.Address, valAddr sdk.Address) {
+	ah.Called(ctx, addr, valAddr)
 }
-func (ah *AppHooks) AfterApplicationUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ah.Called(ctx, consAddr, valAddr)
+func (ah *AppHooks) AfterApplicationUnstaked(ctx sdk.Context, addr sdk.Address, valAddr sdk.Address) {
+	ah.Called(ctx, addr, valAddr)
 }
 func (ah *AppHooks) BeforeApplicationSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec) {
 	ah.Called(ctx, valAddr, fraction)
