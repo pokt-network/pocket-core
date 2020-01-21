@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ func TestQueryBlock(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, got)
 
-	time.Sleep(60*time.Millisecond) // Feed empty blocks
+	time.Sleep(60 * time.Millisecond) // Feed empty blocks
 	height = 1
 	got, err = nodes.QueryBlock(getInMemoryTMClient(), &height)
 	assert.Nil(t, err)
@@ -32,7 +33,7 @@ func TestQueryChainHeight(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, got, int64(0))
 
-	time.Sleep(50*time.Millisecond) // end block
+	time.Sleep(50 * time.Millisecond) // end block
 	got, err = nodes.QueryChainHeight(getInMemoryTMClient())
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1), got) // should not be 0 due to empty blocks
@@ -62,7 +63,7 @@ func TestQueryTx(t *testing.T) {
 	assert.NotNil(t, err) // Needs to be committed to the chain
 	assert.Nil(t, got)
 
-	time.Sleep(140 *time.Millisecond) // Feed empty blocks to ensure tx is on the chain
+	time.Sleep(140 * time.Millisecond) // Feed empty blocks to ensure tx is on the chain
 
 	got, err = nodes.QueryTransaction(memCli, tx.TxHash)
 	assert.Nil(t, err)
@@ -82,11 +83,36 @@ func TestQueryNodeStatus(t *testing.T) {
 func TestQueryValidators(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
-
-	got, err := nodes.QueryValidators(memCodec(), getInMemoryTMClient(), 0)
+	time.Sleep(time.Second * 2)
+	got, err := nodes.QueryValidators(memCodec(), getInMemoryTMClient(), 1)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(got))
+	fmt.Println(got)
 }
+
+//func TestQueryValidators(t *testing.T) {
+//	_, _, cleanup := NewInMemoryTendermintNode(t)
+//	defer cleanup()
+//	time.Sleep(time.Second * 5)
+//	tmClient := getInMemoryTMClient()
+//	err := tmClient.Start()
+//	defer tmClient.Stop()
+//	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+//	defer cancel()
+//	res, err := tmClient.Subscribe(ctx, "test-client", "tm.event = 'NewBlock'")
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//	go func() {
+//		for block := range res {
+//			fmt.Println(block.Data.(types.EventDataNewBlock))
+//			//got, err := nodes.QueryValidators(memCodec(), getInMemoryTMClient(), 1)
+//			//assert.Nil(t, err)
+//			//assert.Equal(t, 1, len(got))
+//			//fmt.Println(got)
+//		}
+//	}()
+//}
 
 func TestQueryValidator(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
@@ -96,7 +122,7 @@ func TestQueryValidator(t *testing.T) {
 	tmClient := getInMemoryTMClient()
 	codec := memCodec()
 
-	time.Sleep(80*time.Millisecond) // Feed empty blocks
+	time.Sleep(1000 * time.Millisecond) // Feed empty blocks
 
 	got, err := nodes.QueryValidator(codec, tmClient, cb.GetAddress(), 0)
 
@@ -113,11 +139,11 @@ func TestQueryDaoBalance(t *testing.T) {
 	got, err := nodes.QueryDAO(memCodec(), getInMemoryTMClient(), 0)
 	assert.NotNil(t, err)
 
-	time.Sleep(90*time.Millisecond)
+	time.Sleep(90 * time.Millisecond)
 	height, err := nodes.QueryChainHeight(getInMemoryTMClient())
 	got, err = nodes.QueryDAO(memCodec(), getInMemoryTMClient(), height)
 	assert.Nil(t, err)
-	assert.Equal(t, big.NewInt(0) ,got.BigInt())
+	assert.Equal(t, big.NewInt(0), got.BigInt())
 }
 
 func TestQuerySupply(t *testing.T) {
@@ -127,7 +153,7 @@ func TestQuerySupply(t *testing.T) {
 	_, _, err := nodes.QuerySupply(memCodec(), getInMemoryTMClient(), 0)
 	assert.NotNil(t, err)
 
-	time.Sleep(100*time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 	height, err := nodes.QueryChainHeight(getInMemoryTMClient())
 	gotStaked, gotUnstaked, err := nodes.QuerySupply(memCodec(), getInMemoryTMClient(), height)
 	assert.Nil(t, err)
@@ -136,7 +162,7 @@ func TestQuerySupply(t *testing.T) {
 }
 
 func TestQueryPOSParams(t *testing.T) {
-	_,_, cleanup := NewInMemoryTendermintNode(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
 
 	tmClient := getInMemoryTMClient()
@@ -158,27 +184,15 @@ func TestQueryPOSParams(t *testing.T) {
 }
 
 func TestQueryStakedValidator(t *testing.T) {
-	_,_, cleanup := NewInMemoryTendermintNode(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
-	//cb, err := kb.GetCoinbase()
-
 	tmClient := getInMemoryTMClient()
 	codec := memCodec()
-
-	// TODO major bug it's not getting staked validators from genesis state??
+	time.Sleep(1 * time.Second)
 	got, err := nodes.QueryStakedValidators(codec, tmClient, 0)
-	assert.Nil(t, err)
-	assert.Equal(t, 0, len(got))
-
-
-	time.Sleep(100*time.Millisecond)
-
-	// TODO major bug panics
-	got, err = nodes.QueryStakedValidators(codec, tmClient, 0)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(got))
 }
-
 
 func TestAccountBalance(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
@@ -195,7 +209,6 @@ func TestAccountBalance(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 	got, err = nodes.QueryAccountBalance(codec, tmClient, cb.GetAddress(), 0)
 	assert.Nil(t, err)
-	assert.Equal(t,got, got)
+	assert.Equal(t, got, got)
 	// TODO fix, there is a bug on QueryAccountBalance
 }
-
