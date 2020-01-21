@@ -407,6 +407,6 @@ func getInMemHostedChains() pocketTypes.HostedBlockchains {
 }
 
 func getTestConfig() (tmConfg *tmCfg.Config) {
-	tmConfg = tmCfg.DefaultConfig()
+	tmConfg = tmCfg.TestConfig()
 	return
 }
