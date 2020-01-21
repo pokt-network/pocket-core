@@ -48,7 +48,7 @@ const (
 	dummyChainsHash   = "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
 	dummyChainsURL    = "https://foo.bar:8080"
 	dummyServiceURL   = "https://myPocketNode:8080"
-	defaultTMURI      = "tcp://localhost:36657"
+	defaultTMURI      = "tcp://localhost:26657"
 	defaultNodeKey    = "node_key.json"
 	defaultValKey     = "priv_val_key.json"
 	defaultValState   = "priv_val_state.json"

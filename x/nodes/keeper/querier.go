@@ -70,19 +70,15 @@ func queryValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, 
 
 func queryAccountBalance(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryAccountBalanceParams
-
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
 	balance := k.GetBalance(ctx, params.Address)
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, balance)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
-
 	return res, nil
 }
 
@@ -113,14 +109,11 @@ func queryUnstakingValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) 
 
 func queryStakedValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryStakedValidatorsParams
-
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
 	validators := k.getStakedValidators(ctx)
-
 	start, end := util.Paginate(len(validators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
 	if start < 0 || end < 0 {
 		validators = []types.Validator{}

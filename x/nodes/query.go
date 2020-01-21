@@ -14,16 +14,15 @@ import (
 func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (sdk.Int, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryAccountBalanceParams{Address: addr}
-	bz, err := cdc.MarshalBinaryBare(params)
+	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
-	path := fmt.Sprintf("custom/%s/account_balance", types.StoreKey)
+	path := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryAccountBalance)
 	balanceBz, _, err := cliCtx.QueryWithData(path, bz)
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
-
 	var balance sdk.Int
 	err = cdc.UnmarshalJSON(balanceBz, &balance)
 	if err != nil {
