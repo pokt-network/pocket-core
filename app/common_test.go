@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
@@ -32,6 +33,7 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
 	"github.com/tendermint/tendermint/rpc/client"
+	cTypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"io"
@@ -376,13 +378,33 @@ func getInMemoryTMClient() client.Client {
 	return client.NewHTTP(defaultTMURI, "/websocket")
 }
 
+func subscribeNewblock(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
+	ctx := context.Background()
+	cli = getInMemoryTMClient()
+	err := cli.Start()
+	if err != nil {
+		t.Fatal(err)
+	}
+	stopClient = func() {
+		err := cli.Stop()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	eventChan, err = cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlock).String())
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
 func getInMemHostedChains() pocketTypes.HostedBlockchains {
 	return pocketTypes.HostedBlockchains{
 		M: map[string]pocketTypes.HostedBlockchain{dummyChainsHash: {Hash: dummyChainsHash, URL: dummyChainsURL}},
 	}
 }
 
-func getTestConfig() ( tmConfg *tmCfg.Config){
+func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg = tmCfg.TestConfig()
 	return
 }
