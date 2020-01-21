@@ -29,14 +29,16 @@ func TestQueryBlock(t *testing.T) {
 func TestQueryChainHeight(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
-	got, err := nodes.QueryChainHeight(getInMemoryTMClient())
-	assert.Nil(t, err)
-	assert.Equal(t, got, int64(0))
-
-	time.Sleep(50 * time.Millisecond) // end block
-	got, err = nodes.QueryChainHeight(getInMemoryTMClient())
-	assert.Nil(t, err)
-	assert.Equal(t, int64(1), got) // should not be 0 due to empty blocks
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
+	select {
+	case <-evtChan:
+		got, err := nodes.QueryChainHeight(memCli)
+		assert.Nil(t, err)
+		assert.Equal(t, int64(1), got) // should not be 0 due to empty blocks
+		return
+	}
+	t.Errorf("context expired")
 }
 
 func TestQueryTx(t *testing.T) {
