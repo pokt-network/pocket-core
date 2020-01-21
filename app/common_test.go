@@ -348,6 +348,8 @@ func memGenesisState(pubKey crypto.PublicKey) []byte {
 		AccountNumber: 0,
 		Sequence:      0,
 	})
+	res2 := memCodec().MustMarshalJSON(authGenState)
+	defaultGenesis[auth.ModuleName] = res2
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j
 }
@@ -405,6 +407,6 @@ func getInMemHostedChains() pocketTypes.HostedBlockchains {
 }
 
 func getTestConfig() (tmConfg *tmCfg.Config) {
-	tmConfg = tmCfg.TestConfig()
+	tmConfg = tmCfg.DefaultConfig()
 	return
 }
