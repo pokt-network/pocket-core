@@ -68,8 +68,12 @@ func (k Keeper) getAllUnstakingValidators(ctx sdk.Context) (validators []types.V
 	iterator := sdk.KVStorePrefixIterator(store, types.UnstakingValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		validators = append(validators, validator)
+		var addrs []sdk.Address
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
+		for _, addr := range addrs {
+			validator := k.mustGetValidator(ctx, addr)
+			validators = append(validators, validator)
+		}
 	}
 	return validators
 }
