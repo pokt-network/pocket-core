@@ -4,8 +4,10 @@ import (
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/big"
 	"testing"
 	"time"
@@ -272,8 +274,8 @@ func TestQueryProof(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := pocket.QueryProof(memCodec(), kp.GetAddress(), memCli, dummyChainsHash, kp.GetAddress().String(), 0, 0)
-		assert.NotNil(t, err)
-		assert.Nil(t, got)
+		got, err := pocket.QueryProof(memCodec(), kp.GetAddress(), memCli, dummyChainsHash, crypto.PublicKey(kp.PubKey.(ed25519.PubKeyEd25519)).String(), 1, 0)
+		assert.Nil(t, err)
+		assert.NotNil(t, got)
 	}
 }
