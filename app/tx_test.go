@@ -197,6 +197,7 @@ func TestUnstakeApp(t *testing.T) {
 		got, err := apps.QueryApplications(memCodec(), memCli, 0)
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got))
+		memCli, stopCli, evtChan = subscribeNewTx(t)
 		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 	}
 	select {

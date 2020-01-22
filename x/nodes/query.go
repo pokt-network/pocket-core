@@ -134,7 +134,7 @@ func QuerySigningInfo(cdc *codec.Codec, tmNode rpcclient.Client, height int64, c
 	}
 	var signingInfo types.ValidatorSigningInfo
 	cdc.MustUnmarshalBinaryLengthPrefixed(res, &signingInfo)
-	return types.ValidatorSigningInfo{}, nil
+	return signingInfo, nil
 }
 
 func QuerySupply(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
