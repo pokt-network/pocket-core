@@ -128,13 +128,13 @@ func TestParams_Validate(t *testing.T) {
 		{"Default Validation Test / Wrong BaselinethroughputStakeRate", fields{
 			UnstakingTime:               10000,
 			MaxApplications:             2,
-			AppStakeMin:                 1,
+			AppStakeMin:                 1000000,
 			BaselineThrouhgputStakeRate: -1,
 		}, true},
 		{"Default Validation Test / Valid", fields{
 			UnstakingTime:               10000,
 			MaxApplications:             2,
-			AppStakeMin:                 1,
+			AppStakeMin:                 1000000,
 			BaselineThrouhgputStakeRate: 90,
 			StabilityAdjustment:         100,
 			ParticipationRateOn:         false,
