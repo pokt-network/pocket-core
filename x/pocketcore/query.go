@@ -19,11 +19,14 @@ func QueryProof(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, blockc
 			ApplicationPubKey:  appPubKey,
 		},
 	}
-	bz, err := cdc.MarshalBinaryBare(params)
+	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
 		return nil, err
 	}
 	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryInvoice), bz)
+	if err != nil {
+		return nil, err
+	}
 	var ps types.StoredInvoice
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
