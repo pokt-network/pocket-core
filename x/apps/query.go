@@ -36,41 +36,68 @@ func QueryApplications(cdc *codec.Codec, tmNode client.Client, height int64) (ty
 
 func QueryStakedApplications(cdc *codec.Codec, tmNode client.Client, height int64) (types.Applications, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	resKVs, _, err := cliCtx.QuerySubspace(types.StakedAppsKey, types.StoreKey)
+	params := types.QueryStakedApplicationsParams{
+		Page:  1,
+		Limit: 10000,
+	}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryStakedApplications), bz)
 	if err != nil {
 		return types.Applications{}, err
 	}
-	var applications types.Applications
-	for _, kv := range resKVs {
-		applications = append(applications, types.MustUnmarshalApplication(cdc, kv.Value))
+	apps := types.Applications{}
+	err = cdc.UnmarshalJSON(res, &apps)
+	if err != nil {
+		return apps, err
 	}
-	return applications, nil
+	return apps, nil
 }
 
 func QueryUnstakedApplications(cdc *codec.Codec, tmNode client.Client, height int64) (types.Applications, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	resKVs, _, err := cliCtx.QuerySubspace(types.UnstakedAppsKey, types.StoreKey)
+	params := types.QueryStakedApplicationsParams{
+		Page:  1,
+		Limit: 10000,
+	}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakedApplications), bz)
 	if err != nil {
 		return types.Applications{}, err
 	}
-	var applications types.Applications
-	for _, kv := range resKVs {
-		applications = append(applications, types.MustUnmarshalApplication(cdc, kv.Value))
+	apps := types.Applications{}
+	err = cdc.UnmarshalJSON(res, &apps)
+	if err != nil {
+		return apps, err
 	}
-	return applications, nil
+	return apps, nil
 }
 
 func QueryUnstakingApplications(cdc *codec.Codec, tmNode client.Client, height int64) (types.Applications, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	resKVs, _, err := cliCtx.QuerySubspace(types.UnstakingAppsKey, types.StoreKey)
+	params := types.QueryStakedApplicationsParams{
+		Page:  1,
+		Limit: 10000,
+	}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakingApplications), bz)
 	if err != nil {
 		return types.Applications{}, err
 	}
-	var applications types.Applications
-	for _, kv := range resKVs {
-		applications = append(applications, types.MustUnmarshalApplication(cdc, kv.Value))
+	apps := types.Applications{}
+	err = cdc.UnmarshalJSON(res, &apps)
+	if err != nil {
+		return apps, err
 	}
-	return applications, nil
+	return apps, nil
 }
 
 func QuerySupply(cdc *codec.Codec, tmNode client.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
