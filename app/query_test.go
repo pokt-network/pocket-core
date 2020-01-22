@@ -60,6 +60,9 @@ func TestQueryTx(t *testing.T) {
 	case <-evtChan:
 		got, err := nodes.QueryTransaction(memCli, tx.TxHash)
 		assert.Nil(t, err)
+		validator, err := nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
+		assert.Nil(t, err)
+		assert.True(t, validator.Equal(sdk.NewInt(1000)))
 		assert.NotNil(t, got)
 		return
 	}
@@ -180,5 +183,23 @@ func TestAccountBalance(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
 		assert.Equal(t, got.Int64(), int64(1000000000))
+	}
+}
+
+func TestQuerySigningInfo(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+	cb, err := kb.GetCoinbase()
+	cbAddr := cb.GetAddress()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
+	select {
+	case <-evtChan:
+		var err error
+		got, err := nodes.QuerySigningInfo(memCodec(), memCli,1, cbAddr)
+		assert.Nil(t, err)
+		assert.NotNil(t, got)
+		assert.Equal(t, got.Address, cbAddr)
 	}
 }
