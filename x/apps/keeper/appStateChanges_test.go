@@ -66,7 +66,7 @@ func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
 		{
 			name:        "validates application",
 			application: getUnbondedApplication(),
-			amount:      sdk.NewInt(100),
+			amount:      sdk.NewInt(1000000),
 			want:        nil,
 		},
 		{
