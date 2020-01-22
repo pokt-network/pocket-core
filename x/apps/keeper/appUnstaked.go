@@ -36,8 +36,12 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Context) (applications []typ
 	iterator := sdk.KVStorePrefixIterator(store, types.UnstakingAppsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
-		applications = append(applications, application)
+		var addrs []sdk.Address
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
+		for _, addr := range addrs {
+			validator := k.mustGetApplication(ctx, addr)
+			applications = append(applications, validator)
+		}
 	}
 	return applications
 }
