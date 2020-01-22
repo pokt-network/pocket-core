@@ -52,6 +52,7 @@ func stakeNewApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper
 	}
 	// create application object using the message fields
 	application := types.NewApplication(sdk.Address(msg.PubKey.Address()), msg.PubKey, msg.Chains, msg.Value)
+	application.Status = sdk.Unbonded
 	// check if they can stake
 	if err := k.ValidateApplicationStaking(ctx, application, msg.Value); err != nil {
 		return err.Result()

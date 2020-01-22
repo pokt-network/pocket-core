@@ -80,7 +80,6 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Context) (updates []abci.Vali
 func (k Keeper) RegisterValidator(ctx sdk.Context, validator types.Validator) {
 	k.BeforeValidatorRegistered(ctx, validator.Address)
 	k.SetValidator(ctx, validator)                     // store validator here (master list)
-	k.SetStakedValidator(ctx, validator)               // store validator here too (curr staked)
 	k.AddPubKeyRelation(ctx, validator.GetPublicKey()) // store relationshiop between consAddr and consPub key
 	k.AfterValidatorRegistered(ctx, validator.Address) // call after hook
 }

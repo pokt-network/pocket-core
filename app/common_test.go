@@ -70,6 +70,7 @@ func NewInMemoryTendermintNode(t *testing.T) (tendermintNode *node.Node, keybase
 		if err != nil {
 			panic(err)
 		}
+		return
 	}
 	return
 }
@@ -77,7 +78,6 @@ func NewInMemoryTendermintNode(t *testing.T) (tendermintNode *node.Node, keybase
 func TestNewInMemory(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
-	time.Sleep(2 * time.Second)
 }
 
 type memoryPCApp struct {
@@ -249,6 +249,14 @@ func inMemTendermintNode() (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
+	_, err = kb.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	kp2, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
 	genDocProvider := func() (*types.GenesisDoc, error) {
 		return &types.GenesisDoc{
 			GenesisTime: time.Time{},
@@ -268,14 +276,10 @@ func inMemTendermintNode() (*node.Node, keys.Keybase) {
 			},
 			Validators: nil,
 			AppHash:    nil,
-			AppState:   memGenesisState(kp.PublicKey),
+			AppState:   memGenesisState(kp.PublicKey, kp2.PublicKey),
 		}, nil
 	}
-	err = kb.SetCoinbase(kp.GetAddress())
-	if err != nil {
-		panic(err)
-	}
-	loggerFile, err := os.Open(os.DevNull)
+	loggerFile, _ := os.Open(os.DevNull)
 	c := config{
 		TmConfig: getTestConfig(),
 		Logger:   log.NewTMLogger(log.NewSyncWriter(loggerFile)),
@@ -313,7 +317,7 @@ func inMemTendermintNode() (*node.Node, keys.Keybase) {
 	return tmNode, kb
 }
 
-func memGenesisState(pubKey crypto.PublicKey) []byte {
+func memGenesisState(pubKey crypto.PublicKey, pubKey2 crypto.PublicKey) []byte {
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
@@ -327,13 +331,14 @@ func memGenesisState(pubKey crypto.PublicKey) []byte {
 	rawPOS := defaultGenesis[nodesTypes.ModuleName]
 	var posGenesisState nodesTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
+
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
 			PublicKey:    pubKey,
 			Status:       sdk.Bonded,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
-			StakedTokens: sdk.NewInt(10000000)})
+			StakedTokens: sdk.NewInt(1000000000000000)})
 	res := memCodec().MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
 	genState = defaultGenesis
@@ -348,8 +353,25 @@ func memGenesisState(pubKey crypto.PublicKey) []byte {
 		AccountNumber: 0,
 		Sequence:      0,
 	})
+	// add second account
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address:       sdk.Address(pubKey2.Address()),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
+		PubKey:        pubKey,
+		AccountNumber: 0,
+		Sequence:      0,
+	})
 	res2 := memCodec().MustMarshalJSON(authGenState)
 	defaultGenesis[auth.ModuleName] = res2
+
+	// set default chain for module
+	rawPocket := defaultGenesis[pocketTypes.ModuleName]
+	var pocketGenesisState pocketTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
+
+	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
+	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
+	defaultGenesis[pocketTypes.ModuleName] = res3
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j
 }
@@ -376,28 +398,85 @@ func makeMemCodec() {
 	codec.RegisterCrypto(memCDC)
 }
 
+var memCLI client.Client
+
 func getInMemoryTMClient() client.Client {
-	return client.NewHTTP(defaultTMURI, "/websocket")
+	if memCLI == nil || !memCLI.IsRunning() {
+		memCLI = client.NewHTTP(defaultTMURI, "/websocket")
+	}
+	return memCLI
 }
 
 func subscribeNewblock(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
-	ctx := context.Background()
+	ctx, cancel := getBackgroundContext()
 	cli = getInMemoryTMClient()
-	err := cli.Start()
-	if err != nil {
-		t.Fatal(err)
-	}
+	cli.Start()
 	stopClient = func() {
-		err := cli.Stop()
+		err := cli.UnsubscribeAll(ctx, "helpers")
 		if err != nil {
 			t.Fatal(err)
 		}
+		err = cli.Stop()
+		if err != nil {
+			t.Fatal(err)
+		}
+		cancel()
 	}
-	eventChan, err = cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlock).String())
+	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlock).String())
 	if err != nil {
 		panic(err)
 	}
 	return
+}
+
+func subscribeNewTx(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
+	ctx, cancel := getBackgroundContext()
+	cli = getInMemoryTMClient()
+	cli.Start()
+	stopClient = func() {
+		err := cli.UnsubscribeAll(ctx, "helpers")
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = cli.Stop()
+		if err != nil {
+			t.Fatal(err)
+		}
+		cancel()
+		return
+	}
+	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventTx).String())
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func subscribeNewblockHeader(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
+	ctx, cancel := getBackgroundContext()
+	cli = getInMemoryTMClient()
+	cli.Start()
+	stopClient = func() {
+		err := cli.UnsubscribeAll(ctx, "helpers")
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = cli.Stop()
+		if err != nil {
+			t.Fatal(err)
+		}
+		cancel()
+	}
+	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlockHeader).String())
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func getBackgroundContext() (context.Context, func()) {
+	memCtx := context.Background()
+	return context.WithCancel(memCtx)
 }
 
 func getInMemHostedChains() pocketTypes.HostedBlockchains {
@@ -408,5 +487,26 @@ func getInMemHostedChains() pocketTypes.HostedBlockchains {
 
 func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg = tmCfg.TestConfig()
+	tmConfg.RPC.ListenAddress = defaultTMURI
 	return
+}
+
+func getUnstakedAccount(kb keys.Keybase) *keys.KeyPair {
+	cb, err := kb.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	kps, err := kb.List()
+	if err != nil {
+		panic(err)
+	}
+	if len(kps) > 2 {
+		panic("get unstaked account only works with the default 2 keypairs")
+	}
+	for _, kp := range kps {
+		if kp.PublicKey != cb.PublicKey {
+			return &kp
+		}
+	}
+	return nil
 }
