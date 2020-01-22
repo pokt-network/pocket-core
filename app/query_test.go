@@ -240,6 +240,7 @@ func TestQueryPocket(t *testing.T) {
 		assert.Contains(t, got.SupportedBlockchains, dummyChainsHash)
 	}
 }
+
 func TestQueryProofs(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
@@ -254,6 +255,7 @@ func TestQueryProofs(t *testing.T) {
 		assert.Nil(t, got)
 	}
 }
+
 func TestQueryProof(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
@@ -279,3 +281,32 @@ func TestQueryProof(t *testing.T) {
 		assert.NotNil(t, got)
 	}
 }
+
+func TestQueryStakedApp(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+	kp, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
+	var tx *sdk.TxResponse
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		got, err := apps.QueryApplication(memCodec(), memCli, kp.GetAddress(), 0)
+		assert.Nil(t, err)
+		assert.NotNil(t, got)
+		assert.Equal(t, sdk.Bonded, got.Status)
+		assert.Equal(t, false, got.Jailed)
+	}
+}
+
