@@ -327,6 +327,7 @@ func memGenesisState(pubKey crypto.PublicKey, pubKey2 crypto.PublicKey) []byte {
 		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
 	).DefaultGenesis()
+
 	// set coinbase as a validator
 	rawPOS := defaultGenesis[nodesTypes.ModuleName]
 	var posGenesisState nodesTypes.GenesisState
@@ -342,6 +343,7 @@ func memGenesisState(pubKey crypto.PublicKey, pubKey2 crypto.PublicKey) []byte {
 	res := memCodec().MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
 	genState = defaultGenesis
+
 	// set coinbase as account holding coins
 	rawAccounts := defaultGenesis[auth.ModuleName]
 	var authGenState auth.GenesisState

@@ -1,7 +1,9 @@
 package app
 
 import (
+	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
+	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"math/big"
@@ -106,7 +108,7 @@ func TestQueryValidator(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, cb.GetAddress(), got.Address)
 		assert.False(t, got.Jailed)
-		assert.True(t, got.StakedTokens.Equal(sdk.NewInt(10000000)))
+		assert.True(t, got.StakedTokens.Equal(sdk.NewInt(1000000000000000)))
 	}
 }
 
@@ -202,5 +204,76 @@ func TestQuerySigningInfo(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
 		assert.Equal(t, got.Address.String(), cbAddr.String())
+	}
+}
+
+func TestQueryPocketSupportedBlockchains(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
+	select {
+	case <-evtChan:
+		var err error
+		got, err := pocket.QueryPocketSupportedBlockchains(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.NotNil(t, got)
+		assert.Contains(t, got, dummyChainsHash)
+	}
+}
+
+func TestQueryPocket(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
+	select {
+	case <-evtChan:
+		got, err := pocket.QueryParams(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.NotNil(t, got)
+		assert.Equal(t, int64(5), got.SessionNodeCount)
+		assert.Equal(t, int64(3), got.ProofWaitingPeriod)
+		assert.Equal(t, int64(25), got.ClaimExpiration)
+		assert.Contains(t, got.SupportedBlockchains, dummyChainsHash)
+	}
+}
+func TestQueryProofs(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
+	select {
+	case <-evtChan:
+		got, err := pocket.QueryProofs(memCodec(), memCli, cb.GetAddress(), 0)
+		assert.NotNil(t, err)
+		assert.Nil(t, got)
+	}
+}
+func TestQueryProof(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+	kp, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
+	var tx *sdk.TxResponse
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+
+	select {
+	case <-evtChan:
+		var err error
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+		time.Sleep(time.Second / 2)
+	}
+	select {
+	case <-evtChan:
+		got, err := pocket.QueryProof(memCodec(), kp.GetAddress(), memCli, dummyChainsHash, kp.GetAddress().String(), 0, 0)
+		assert.NotNil(t, err)
+		assert.Nil(t, got)
 	}
 }
