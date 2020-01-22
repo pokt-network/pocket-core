@@ -3,7 +3,10 @@ package app
 import (
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/auth/types"
+	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -18,8 +21,8 @@ func TestSendTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
 	defer stopCli()
-	var baseAmount sdk.Int = sdk.NewInt(1000000000)
-	var transferAmount sdk.Int = sdk.NewInt(1000)
+	var baseAmount = sdk.NewInt(1000000000)
+	var transferAmount = sdk.NewInt(1000)
 	var tx *sdk.TxResponse
 
 	select {
@@ -47,131 +50,161 @@ func TestSendRawTx(t *testing.T) {
 	defer cleanup()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
+	kp, err := kb.Create("test")
+	assert.Nil(t, err)
+	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
+	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
 	defer stopCli()
-	var tx sdk.TxResponse
-
+	// create the transaction
+	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
+		[]sdk.Msg{bank.MsgSend{
+			FromAddress: cb.GetAddress(),
+			ToAddress:   kp.GetAddress(),
+			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1))),
+		}},
+		[]crypto.PrivateKey{pk},
+		[]uint64{0},
+		[]uint64{0},
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1)))))
+	assert.Nil(t, err)
 	select {
 	case <-evtChan:
 		var err error
-		tx, err = nodes.RawTx(memCodec(), memCli, cb.GetAddress(), []byte{})
+		txResp, err := nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
 		assert.Nil(t, err)
-		assert.NotNil(t, tx)
+		assert.NotNil(t, txResp)
+	}
+	select {
+	case <-evtChan: // todo needs empty block?
+	}
+	// next block
+	select {
+	case <-evtChan:
+		res, err := nodes.QueryAccountBalance(memCodec(), memCli, cb.GetAddress(), 0)
+		assert.Nil(t, err)
+		assert.Equal(t, int64(999999999), res.Int64())
 	}
 }
 
 func TestStakeNode(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
-	kp, err := kb.Create("test")
-	assert.Nil(t, err)
+	kp := *getUnstakedAccount(kb)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
 	defer stopCli()
 	var tx *sdk.TxResponse
-	var chains []string = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
-
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	select {
 	case <-evtChan:
 		var err error
-		tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(100000), kp, "test")
-		// todo stake returns account does not exist even though it is contained within the CliCtx
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
-		time.Sleep(time.Second / 2)
 	}
 	select {
 	case <-evtChan:
-		got, err := nodes.QueryStakedValidators(memCodec(), memCli,0 )
-
+		got, err := nodes.QueryStakedValidators(memCodec(), memCli, 0)
 		assert.Nil(t, err)
 		assert.Equal(t, 2, len(got))
 	}
 }
 
-func TestUnstakeNode(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
-	defer cleanup()
-	cb, err := kb.GetCoinbase()
-	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
-	defer stopCli()
-	var tx *sdk.TxResponse
-
-	select {
-	case <-evtChan:
-		var err error
-		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, cb.GetAddress(), "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-		time.Sleep(time.Second / 2)
-	}
-	select {
-	case <-evtChan:
-		// todo unstake Tx marks success but it does not reflect itself on unstakedValidators
-		got, err := nodes.QueryUnstakedValidators(memCodec(), memCli,0 )
-
-		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
-	}
-}
+//func TestUnstakeNode(t *testing.T) { // todo it works but it crashes tendermint due to no validators left in the validator pool
+//	_, kb, cleanup := NewInMemoryTendermintNode(t)
+//	defer cleanup()
+//	cb, err := kb.GetCoinbase()
+//	assert.Nil(t, err)
+//	memCli, stopCli, evtChan := subscribeNewblock(t)
+//	defer stopCli()
+//	var tx *sdk.TxResponse
+//
+//	select {
+//	case <-evtChan:
+//		var err error
+//		memCli, stopCli, evtChan = subscribeNewTx(t)
+//		defer stopCli()
+//		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, cb.GetAddress(), "test")
+//		assert.Nil(t, err)
+//		assert.NotNil(t, tx)
+//	}
+//	select {
+//	case <-evtChan:
+//		memCli, stopCli, evtChan = subscribeNewblock(t)
+//		defer stopCli()
+//		for {
+//			select {
+//			case blck := <-evtChan:
+//				if blck.Data.(types2.EventDataNewBlock).Block.Height > 25 { // validator isn't unstaked until after session ends
+//					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
+//					assert.Nil(t, err)
+//					assert.Equal(t, 1, len(got))
+//					return
+//				}
+//			default:
+//				continue
+//			}
+//		}
+//	}
+//}
 
 func TestStakeApp(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
-	kp, err := kb.Create("test")
+	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
 	defer stopCli()
 	var tx *sdk.TxResponse
-	var chains []string = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 
 	select {
 	case <-evtChan:
 		var err error
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains,  sdk.NewInt(100000), kp, "test")
-		// todo stake returns account does not exist even though it is contained within the CliCtx
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
-		time.Sleep(time.Second / 2)
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli,0)
-
+		got, err := apps.QueryApplications(memCodec(), memCli, 0)
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got))
 	}
 }
+
 func TestUnstakeApp(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
-	kp, err := kb.Create("test")
+	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
 	defer stopCli()
 	var tx *sdk.TxResponse
-	var chains []string = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
-
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	select {
 	case <-evtChan:
 		var err error
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains,  sdk.NewInt(100000), kp, "test")
-		// todo stake returns account does not exist even though it is contained within the CliCtx
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
-		time.Sleep(time.Second / 2)
 	}
 	select {
 	case <-evtChan:
-		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
-
+		got, err := apps.QueryApplications(memCodec(), memCli, 0)
 		assert.Nil(t, err)
-		time.Sleep(time.Second / 2)
+		assert.Equal(t, 1, len(got))
+		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli,0)
-
+		got, err := apps.QueryUnstakingApplications(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(got))
+		got, err = apps.QueryStakedApplications(memCodec(), memCli, 0)
 		assert.Nil(t, err)
 		assert.Equal(t, 0, len(got))
 	}

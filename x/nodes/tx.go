@@ -61,11 +61,13 @@ func Send(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddr
 }
 
 func RawTx(cdc *codec.Codec, tmNode client.Client, fromAddr sdk.Address, txBytes []byte) (sdk.TxResponse, error) {
-	return util.CLIContext{
+	cliCtx := util.CLIContext{
 		Codec:       cdc,
 		Client:      tmNode,
-		FromAddress: fromAddr,
-	}.BroadcastTx(txBytes)
+		FromAddress: sdk.Address(fromAddr),
+	}
+	cliCtx.BroadcastMode = util.BroadcastSync
+	return cliCtx.BroadcastTx(txBytes)
 }
 
 func newTx(cdc *codec.Codec, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
