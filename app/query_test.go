@@ -135,7 +135,7 @@ func TestQuerySupply(t *testing.T) {
 		gotStaked, gotUnstaked, err := nodes.QuerySupply(memCodec(), memCli, 0)
 		assert.Nil(t, err)
 		assert.True(t, gotStaked.Equal(sdk.NewInt(10000000)))
-		assert.True(t, gotUnstaked.Equal(sdk.NewInt(1000000000)))
+		assert.True(t, gotUnstaked.Equal(sdk.NewInt(2000000000)))
 		return
 	}
 }
@@ -190,6 +190,7 @@ func TestQuerySigningInfo(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
 	defer cleanup()
 	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
 	cbAddr := cb.GetAddress()
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
@@ -197,9 +198,9 @@ func TestQuerySigningInfo(t *testing.T) {
 	select {
 	case <-evtChan:
 		var err error
-		got, err := nodes.QuerySigningInfo(memCodec(), memCli,1, cbAddr)
+		got, err := nodes.QuerySigningInfo(memCodec(), memCli, 0, cbAddr)
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
-		assert.Equal(t, got.Address, cbAddr)
+		assert.Equal(t, got.Address.String(), cbAddr.String())
 	}
 }
