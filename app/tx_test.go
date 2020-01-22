@@ -8,6 +8,7 @@ import (
 	"github.com/pokt-network/posmint/x/auth/types"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
+	tmTypes "github.com/tendermint/tendermint/types"
 	"testing"
 	"time"
 )
@@ -111,43 +112,50 @@ func TestStakeNode(t *testing.T) {
 	}
 }
 
-//func TestUnstakeNode(t *testing.T) { // todo it works but it crashes tendermint due to no validators left in the validator pool
-//	_, kb, cleanup := NewInMemoryTendermintNode(t)
-//	defer cleanup()
-//	cb, err := kb.GetCoinbase()
-//	assert.Nil(t, err)
-//	memCli, stopCli, evtChan := subscribeNewblock(t)
-//	defer stopCli()
-//	var tx *sdk.TxResponse
-//
-//	select {
-//	case <-evtChan:
-//		var err error
-//		memCli, stopCli, evtChan = subscribeNewTx(t)
-//		defer stopCli()
-//		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, cb.GetAddress(), "test")
-//		assert.Nil(t, err)
-//		assert.NotNil(t, tx)
-//	}
-//	select {
-//	case <-evtChan:
-//		memCli, stopCli, evtChan = subscribeNewblock(t)
-//		defer stopCli()
-//		for {
-//			select {
-//			case blck := <-evtChan:
-//				if blck.Data.(types2.EventDataNewBlock).Block.Height > 25 { // validator isn't unstaked until after session ends
-//					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
-//					assert.Nil(t, err)
-//					assert.Equal(t, 1, len(got))
-//					return
-//				}
-//			default:
-//				continue
-//			}
-//		}
-//	}
-//}
+func TestUnstakeNode(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
+	kp := *getUnstakedAccount(kb)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
+	var tx *sdk.TxResponse
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		defer stopCli()
+		tx, err = nodes.StakeTx(memCodec(), memCli, kb, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		defer stopCli()
+		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		memCli, stopCli, evtChan := subscribeNewblock(t)
+		defer stopCli()
+		for {
+			select {
+			case blck := <-evtChan:
+				if blck.Data.(tmTypes.EventDataNewBlock).Block.Height > 25 { // validator isn't unstaked until after session ends
+					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
+					assert.Nil(t, err)
+					assert.Equal(t, 1, len(got))
+					return
+				}
+			default:
+				continue
+			}
+		}
+	}
+}
 
 func TestStakeApp(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
