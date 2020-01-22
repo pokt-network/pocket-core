@@ -346,7 +346,7 @@ func TestKeeper_ValidateValidatorStaking(t *testing.T) {
 		{"Test ValidateValidatorStaking", fields{keeper: keeper}, args{
 			ctx:       context,
 			validator: validator,
-			amount:    sdk.OneInt(),
+			amount:    sdk.NewInt(1000000),
 		}, types.ErrNotEnoughCoins(types.ModuleName)},
 	}
 	for _, tt := range tests {
