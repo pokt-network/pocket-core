@@ -43,7 +43,7 @@ func stakeNewApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper
 	}
 	// check the consensus params
 	if ctx.ConsensusParams() != nil {
-		tmPubKey := tmtypes.TM2PB.PubKey(msg.PubKey)
+		tmPubKey := tmtypes.TM2PB.PubKey(msg.PubKey.PubKey())
 		if !common.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
 			return types.ErrApplicationPubKeyTypeNotSupported(k.Codespace(),
 				tmPubKey.Type,

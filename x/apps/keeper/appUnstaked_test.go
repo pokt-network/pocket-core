@@ -7,70 +7,64 @@ import (
 	"testing"
 )
 
-//func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
-//	boundedApplication := getBondedApplication()
-//	secondaryBoundedApplication := getBondedApplication()
-//	stakedApplication := getBondedApplication()
-//
-//	type want struct {
-//		applications       []types.Application
-//		stakedApplications bool
-//		length             int
-//	}
-//	type args struct {
-//		boundedVal        types.Application
-//		applications      []types.Application
-//		stakedApplication types.Application
-//	}
-//	tests := []struct {
-//		name         string
-//		application  types.Application
-//		applications []types.Application
-//		want
-//		args
-//	}{
-//		{
-//			name:     "gets applications",
-//			args:     args{applications: []types.Application{boundedApplication}},
-//			want: want{applications: []types.Application{boundedApplication}, length: 1, stakedApplications: false},
-//		},
-//		{
-//			name:     "gets emtpy slice of applications",
-//			want: want{length: 0, stakedApplications: true},
-//			args:     args{stakedApplication: stakedApplication},
-//		},
-//		{
-//			name:         "only gets unstakedbounded applications",
-//			applications: []types.Application{boundedApplication, secondaryBoundedApplication},
-//			want:     want{length: 1, stakedApplications: true},
-//			args:         args{stakedApplication: stakedApplication, applications: []types.Application{boundedApplication}},
-//		},
-//	}
-//
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			context, _, keeper := createTestInput(t, true)
-//			for _, application := range tt.args.applications {
-//				keeper.SetApplication(context, application)
-//				keeper.SetUnstakingApplication(context, application)
-//			}
-//			if tt.want.stakedApplications {
-//				keeper.SetApplication(context, tt.args.stakedApplication)
-//				keeper.SetStakedApplication(context, tt.args.stakedApplication)
-//			}
-//			applications := keeper.getAllUnstakingApplications(context)
-//
-//			for _, application := range applications {
-//				if !application.Status.Equal(sdk.Unbonded) {
-//					t.Errorf("appUnstaked.GetApplications application = %v, want %v", application.Status, sdk.Unbonded)
-//				}
-//			}
-//			if len(applications) != tt.want.length {
-//				t.Errorf("appUnstaked.GetApplications() = %v, want %v", len(applications), tt.want.length)
-//			}
-//		})
-//	}
-//}
+func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
+	boundedApplication := getBondedApplication()
+	secondaryBoundedApplication := getBondedApplication()
+	stakedApplication := getBondedApplication()
+
+	type want struct {
+		applications       []types.Application
+		stakedApplications bool
+		length             int
+	}
+	type args struct {
+		boundedVal        types.Application
+		applications      []types.Application
+		stakedApplication types.Application
+	}
+	tests := []struct {
+		name         string
+		application  types.Application
+		applications []types.Application
+		want
+		args
+	}{
+		{
+			name:     "gets applications",
+			args:     args{applications: []types.Application{boundedApplication}},
+			want: want{applications: []types.Application{boundedApplication}, length: 1, stakedApplications: false},
+		},
+		{
+			name:     "gets emtpy slice of applications",
+			want: want{length: 0, stakedApplications: true},
+			args:     args{stakedApplication: stakedApplication},
+		},
+		{
+			name:         "only gets unstakedbounded applications",
+			applications: []types.Application{boundedApplication, secondaryBoundedApplication},
+			want:     want{length: 1, stakedApplications: true},
+			args:         args{stakedApplication: stakedApplication, applications: []types.Application{boundedApplication}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			for _, application := range tt.args.applications {
+				keeper.SetApplication(context, application)
+				keeper.SetUnstakingApplication(context, application)
+			}
+			if tt.want.stakedApplications {
+				keeper.SetApplication(context, tt.args.stakedApplication)
+				keeper.SetStakedApplication(context, tt.args.stakedApplication)
+			}
+			applications := keeper.getAllUnstakingApplications(context)
+			if len(applications) != tt.want.length {
+				t.Errorf("appUnstaked.GetApplications() = %v, want %v", len(applications), tt.want.length)
+			}
+		})
+	}
+}
 
 func TestAppUnstaked_DeleteUnstakingApplication(t *testing.T) {
 	boundedApplication := getBondedApplication()

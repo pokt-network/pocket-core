@@ -327,7 +327,6 @@ func memGenesisState(pubKey crypto.PublicKey, pubKey2 crypto.PublicKey) []byte {
 		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
 	).DefaultGenesis()
-
 	// set coinbase as a validator
 	rawPOS := defaultGenesis[nodesTypes.ModuleName]
 	var posGenesisState nodesTypes.GenesisState
@@ -343,7 +342,6 @@ func memGenesisState(pubKey crypto.PublicKey, pubKey2 crypto.PublicKey) []byte {
 	res := memCodec().MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
 	genState = defaultGenesis
-
 	// set coinbase as account holding coins
 	rawAccounts := defaultGenesis[auth.ModuleName]
 	var authGenState auth.GenesisState
@@ -470,51 +468,6 @@ func subscribeNewblockHeader(t *testing.T) (cli client.Client, stopClient func()
 		cancel()
 	}
 	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlockHeader).String())
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-func subscribeNewblockHeader(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
-	ctx, cancel := getBackgroundContext()
-	cli = getInMemoryTMClient()
-	cli.Start()
-	stopClient = func() {
-		err := cli.UnsubscribeAll(ctx, "helpers")
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = cli.Stop()
-		if err != nil {
-			t.Fatal(err)
-		}
-		cancel()
-	}
-	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlockHeader).String())
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-func subscribeNewUnstakingEvent(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
-	ctx, cancel := getBackgroundContext()
-	cli = getInMemoryTMClient()
-	cli.Start()
-	stopClient = func() {
-		err := cli.UnsubscribeAll(ctx, "helpers")
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = cli.Stop()
-		if err != nil {
-			t.Fatal(err)
-		}
-		cancel()
-		return
-	}
-	eventChan, err := cli.Subscribe(ctx, "helpers", "tm.event=begin_unstake")
 	if err != nil {
 		panic(err)
 	}
