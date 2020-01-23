@@ -16,7 +16,7 @@ const (
 	DefaultParamspace                         = ModuleName
 	DefaultUnstakingTime                      = time.Hour * 24 * 7 * 3
 	DefaultMaxValidators               uint64 = 100000
-	DefaultMinStake                    int64  = 1
+	DefaultMinStake                    int64  = 1000000
 	DefaultBaseProposerAwardPercentage        = 90
 	DefaultMaxEvidenceAge                     = 60 * 2 * time.Second
 	DefaultSignedBlocksWindow                 = int64(100)
