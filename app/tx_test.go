@@ -13,15 +13,132 @@ import (
 	"time"
 )
 
+func TestUnstakeApp(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	kp, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	var tx *sdk.TxResponse
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		got, err := apps.QueryApplications(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(got))
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestUnstakeNode(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	kp := *getUnstakedAccount(kb)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	var tx *sdk.TxResponse
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = nodes.StakeTx(memCodec(), memCli, kb, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		memCli, stopCli, evtChan = subscribeNewblock(t)
+		for {
+			select {
+			case blck := <-evtChan:
+				if blck.Data.(tmTypes.EventDataNewBlock).Block.Height > 25 { // validator isn't unstaked until after session ends
+					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
+					assert.Nil(t, err)
+					assert.Equal(t, 1, len(got))
+					cleanup()
+					stopCli()
+					return
+				}
+			default:
+				continue
+			}
+		}
+	}
+}
+
+func TestStakeNode(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	kp := *getUnstakedAccount(kb)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	var tx *sdk.TxResponse
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		got, err := nodes.QueryStakedValidators(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(got))
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestStakeApp(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	kp, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeNewblock(t)
+	var tx *sdk.TxResponse
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		got, err := apps.QueryApplications(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(got))
+	}
+	stopCli()
+	cleanup()
+}
+
 func TestSendTransaction(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
-	defer cleanup()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	kp, err := kb.Create("test")
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
-	defer stopCli()
 	var baseAmount = sdk.NewInt(1000000000)
 	var transferAmount = sdk.NewInt(1000)
 	var tx *sdk.TxResponse
@@ -42,13 +159,13 @@ func TestSendTransaction(t *testing.T) {
 		validator, err = nodes.QueryAccountBalance(memCodec(), memCli, cb.GetAddress(), 0)
 		assert.Nil(t, err)
 		assert.True(t, validator.Equal(baseAmount.Sub(transferAmount)))
-		return
 	}
+	cleanup()
+	stopCli()
 }
 
 func TestSendRawTx(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
-	defer cleanup()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	kp, err := kb.Create("test")
@@ -56,7 +173,6 @@ func TestSendRawTx(t *testing.T) {
 	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
-	defer stopCli()
 	// create the transaction
 	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
 		[]sdk.Msg{bank.MsgSend{
@@ -86,135 +202,6 @@ func TestSendRawTx(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, int64(999999999), res.Int64())
 	}
-}
-
-func TestStakeNode(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
-	defer cleanup()
-	kp := *getUnstakedAccount(kb)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
-	defer stopCli()
-	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
-		tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		got, err := nodes.QueryStakedValidators(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, 2, len(got))
-	}
-}
-
-func TestUnstakeNode(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
-	defer cleanup()
-	kp := *getUnstakedAccount(kb)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
-	defer stopCli()
-	var tx *sdk.TxResponse
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
-		defer stopCli()
-		tx, err = nodes.StakeTx(memCodec(), memCli, kb, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
-		defer stopCli()
-		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		memCli, stopCli, evtChan := subscribeNewblock(t)
-		defer stopCli()
-		for {
-			select {
-			case blck := <-evtChan:
-				if blck.Data.(tmTypes.EventDataNewBlock).Block.Height > 25 { // validator isn't unstaked until after session ends
-					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
-					assert.Nil(t, err)
-					assert.Equal(t, 1, len(got))
-					return
-				}
-			default:
-				continue
-			}
-		}
-	}
-}
-
-func TestStakeApp(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
-	defer cleanup()
-	kp, err := kb.GetCoinbase()
-	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
-	defer stopCli()
-	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
-
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
-	}
-}
-
-func TestUnstakeApp(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
-	defer cleanup()
-	kp, err := kb.GetCoinbase()
-	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
-	defer stopCli()
-	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
-		memCli, stopCli, evtChan = subscribeNewTx(t)
-		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
-	}
-	select {
-	case <-evtChan:
-		got, err := apps.QueryUnstakingApplications(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
-		got, err = apps.QueryStakedApplications(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, 0, len(got))
-	}
+	cleanup()
+	stopCli()
 }
