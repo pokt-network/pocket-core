@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	"github.com/pokt-network/posmint/crypto"
@@ -36,16 +35,23 @@ func TestUnstakeApp(t *testing.T) {
 		memCli, stopCli, evtChan = subscribeNewTx(t)
 		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 	}
+	select {
+	case <-evtChan:
+		got, err := apps.QueryUnstakingApplications(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(got))
+		got, err = apps.QueryStakedApplications(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, 0, len(got))
+	}
 	cleanup()
 	stopCli()
 }
 
 func TestUnstakeNode(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
-	defer cleanup()
 	kp := *getUnstakedAccount(kb)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
-	defer stopCli()
 	var tx *sdk.TxResponse
 	select {
 	case <-evtChan:
@@ -68,14 +74,13 @@ func TestUnstakeNode(t *testing.T) {
 		memCli, stopCli, evtChan = subscribeNewblockHeader(t)
 		for {
 			select {
-			case res:=<-evtChan:
+			case res := <-evtChan:
 				if len(res.Events["begin_unstake.module"])==1{
 					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
 					assert.Nil(t, err)
 					assert.Equal(t, 1, len(got))
 					cleanup()
 					stopCli()
-					fmt.Println("Obviously passed the test")
 					return
 				}
 			default:

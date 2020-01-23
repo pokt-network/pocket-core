@@ -10,7 +10,6 @@ import (
 func (k Keeper) RegisterApplication(ctx sdk.Context, application types.Application) {
 	k.BeforeApplicationRegistered(ctx, application.Address)
 	k.SetApplication(ctx, application)                     // store application here (master list)
-	k.SetStakedApplication(ctx, application)               // store application here too (curr staked)
 	k.AfterApplicationRegistered(ctx, application.Address) // call after hook
 }
 
