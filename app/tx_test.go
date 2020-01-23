@@ -146,6 +146,7 @@ func TestSendTransaction(t *testing.T) {
 	select {
 	case <-evtChan:
 		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
 		tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", transferAmount)
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -187,13 +188,11 @@ func TestSendRawTx(t *testing.T) {
 	assert.Nil(t, err)
 	select {
 	case <-evtChan:
+		memCli, stopCli, evtChan = subscribeNewTx(t)
 		var err error
 		txResp, err := nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
 		assert.Nil(t, err)
 		assert.NotNil(t, txResp)
-	}
-	select {
-	case <-evtChan: // todo needs empty block?
 	}
 	// next block
 	select {

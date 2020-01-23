@@ -51,6 +51,7 @@ func TestQueryTx(t *testing.T) {
 	select {
 	case <-evtChan:
 		var err error
+		memCli, stopCli, evtChan = subscribeNewTx(t)
 		tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(1000))
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
