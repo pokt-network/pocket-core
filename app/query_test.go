@@ -147,7 +147,7 @@ func TestQueryPOSParams(t *testing.T) {
 		got, err := nodes.QueryPOSParams(memCodec(), memCli, 0)
 		assert.Nil(t, err)
 		assert.Equal(t, uint64(100000), got.MaxValidators)
-		assert.Equal(t, int64(1), got.StakeMinimum)
+		assert.Equal(t, int64(1000000), got.StakeMinimum)
 		assert.Equal(t, int8(90), got.ProposerRewardPercentage)
 		assert.Equal(t, "stake", got.StakeDenom)
 	}
@@ -262,7 +262,7 @@ func TestQueryProof(t *testing.T) {
 	select {
 	case <-evtChan:
 		var err error
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
 		time.Sleep(time.Second / 2)
@@ -289,7 +289,7 @@ func TestQueryStakedApp(t *testing.T) {
 	case <-evtChan:
 		var err error
 		memCli, stopCli, evtChan = subscribeNewTx(t)
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
 	}

@@ -24,7 +24,7 @@ func TestUnstakeApp(t *testing.T) {
 	case <-evtChan:
 		var err error
 		memCli, stopCli, evtChan = subscribeNewTx(t)
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
 	}
@@ -118,7 +118,7 @@ func TestStakeApp(t *testing.T) {
 	case <-evtChan:
 		var err error
 		memCli, stopCli, evtChan = subscribeNewTx(t)
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(100000), kp, "test")
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
 	}
