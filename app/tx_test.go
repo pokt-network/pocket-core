@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	"github.com/pokt-network/posmint/crypto"
@@ -8,7 +9,6 @@ import (
 	"github.com/pokt-network/posmint/x/auth/types"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
-	tmTypes "github.com/tendermint/tendermint/types"
 	"testing"
 	"time"
 )
@@ -42,8 +42,10 @@ func TestUnstakeApp(t *testing.T) {
 
 func TestUnstakeNode(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	defer cleanup()
 	kp := *getUnstakedAccount(kb)
 	memCli, stopCli, evtChan := subscribeNewblock(t)
+	defer stopCli()
 	var tx *sdk.TxResponse
 	select {
 	case <-evtChan:
@@ -63,16 +65,17 @@ func TestUnstakeNode(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		memCli, stopCli, evtChan = subscribeNewblock(t)
+		memCli, stopCli, evtChan = subscribeNewblockHeader(t)
 		for {
 			select {
-			case blck := <-evtChan:
-				if blck.Data.(tmTypes.EventDataNewBlock).Block.Height > 25 { // validator isn't unstaked until after session ends
+			case res:=<-evtChan:
+				if len(res.Events["begin_unstake.module"])==1{
 					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
 					assert.Nil(t, err)
 					assert.Equal(t, 1, len(got))
 					cleanup()
 					stopCli()
+					fmt.Println("Obviously passed the test")
 					return
 				}
 			default:
