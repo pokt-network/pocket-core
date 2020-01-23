@@ -476,6 +476,51 @@ func subscribeNewblockHeader(t *testing.T) (cli client.Client, stopClient func()
 	return
 }
 
+func subscribeNewblockHeader(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
+	ctx, cancel := getBackgroundContext()
+	cli = getInMemoryTMClient()
+	cli.Start()
+	stopClient = func() {
+		err := cli.UnsubscribeAll(ctx, "helpers")
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = cli.Stop()
+		if err != nil {
+			t.Fatal(err)
+		}
+		cancel()
+	}
+	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlockHeader).String())
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func subscribeNewUnstakingEvent(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
+	ctx, cancel := getBackgroundContext()
+	cli = getInMemoryTMClient()
+	cli.Start()
+	stopClient = func() {
+		err := cli.UnsubscribeAll(ctx, "helpers")
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = cli.Stop()
+		if err != nil {
+			t.Fatal(err)
+		}
+		cancel()
+		return
+	}
+	eventChan, err := cli.Subscribe(ctx, "helpers", "tm.event=begin_unstake")
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
 func getBackgroundContext() (context.Context, func()) {
 	memCtx := context.Background()
 	return context.WithCancel(memCtx)

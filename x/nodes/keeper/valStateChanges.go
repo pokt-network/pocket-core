@@ -162,7 +162,7 @@ func (k Keeper) ReleaseWaitingValidators(ctx sdk.Context) {
 				),
 				sdk.NewEvent(
 					sdk.EventTypeMessage,
-					sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+					sdk.NewAttribute(sdk.AttributeKeyModule, types.EventTypeBeginUnstake),
 					sdk.NewAttribute(sdk.AttributeKeySender, val.Address.String()),
 				),
 			})
