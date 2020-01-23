@@ -48,7 +48,7 @@ const (
 	dummyChainsHash   = "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
 	dummyChainsURL    = "https://foo.bar:8080"
 	dummyServiceURL   = "https://myPocketNode:8080"
-	defaultTMURI      = "tcp://localhost:36657"
+	defaultTMURI      = "tcp://localhost:26657"
 	defaultNodeKey    = "node_key.json"
 	defaultValKey     = "priv_val_key.json"
 	defaultValState   = "priv_val_state.json"
@@ -181,7 +181,7 @@ func InitTendermint(persistentPeers, seeds string) *node.Node {
 		}
 	})
 	c := *cfg.NewConfig(datadir, "", defaultNodeKey, defaultValKey, defaultValState, persistentPeers, seeds, defaultListenAddr,
-		true, 0, 40, 10, logger, "")
+		true, time.Second*10, 40, 10, logger, "")
 	var err error
 	tmNode, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
 		return NewPocketCoreApp(logger, db)
