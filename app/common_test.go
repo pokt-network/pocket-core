@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -62,11 +61,11 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	cleanup = func() {
 		err = tendermintNode.Stop()
 		if err != nil {
-			fmt.Println("couldn't stop tendermint - > " + err.Error())
+			panic(err)
 		}
 		err = os.RemoveAll(tendermintNode.Config().DBPath)
 		if err != nil {
-			fmt.Println("couldn't remove testfiles - > " + err.Error())
+			panic(err)
 		}
 		inMemKB = nil
 		return
@@ -346,7 +345,7 @@ func memCodec() *codec.Codec {
 
 func getInMemoryTMClient() client.Client {
 	if memCLI == nil || !memCLI.IsRunning() {
-		memCLI = client.NewHTTP(defaultTMURI, "/websocket")
+		memCLI = client.NewHTTP(tmCfg.TestConfig().RPC.ListenAddress, "/websocket")
 	}
 	return memCLI
 }
@@ -385,7 +384,6 @@ func getInMemHostedChains() pocketTypes.HostedBlockchains {
 
 func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg = tmCfg.TestConfig()
-	tmConfg.RPC.ListenAddress = defaultTMURI
 	return
 }
 
