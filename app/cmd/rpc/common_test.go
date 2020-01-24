@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"github.com/pokt-network/pocket-core/app"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -42,6 +43,7 @@ import (
 )
 
 func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
+	app.MakeCodec() // needed for queries and tx
 	// create the in memory tendermint node and keybase
 	tendermintNode, keybase = inMemTendermintNode(genesisState)
 	// test assertions
