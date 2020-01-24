@@ -25,6 +25,10 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryUnstakedApplications(ctx, req, k)
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
+		case types.QueryAppStakedPool:
+			return queryStakedPool(ctx, k)
+		case types.QueryAppUnstakedPool:
+			return queryUnstakedPool(ctx, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown staking query endpoint")
 		}

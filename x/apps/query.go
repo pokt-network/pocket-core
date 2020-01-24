@@ -102,11 +102,11 @@ func QueryUnstakingApplications(cdc *codec.Codec, tmNode client.Client, height i
 
 func QuerySupply(cdc *codec.Codec, tmNode client.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/appStakedPool", types.StoreKey), nil)
+	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryAppStakedPool), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}
-	unstakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/appUnstakedPool", types.StoreKey), nil)
+	unstakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryAppUnstakedPool), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}

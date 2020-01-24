@@ -343,7 +343,7 @@ func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	appsStaked, appsUnstaked, err := app.QueryTotalAppCoins(params.Height)
+	appsStaked, _, err := app.QueryTotalAppCoins(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -353,8 +353,8 @@ func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	totalStaked := nodesStake.Add(appsStaked)
-	totalUnstaked := nodesUnstaked.Add(appsUnstaked).Add(dao) // todo error check this may be wrong
+	totalStaked := nodesStake.Add(appsStaked).Add(dao)
+	totalUnstaked := nodesUnstaked
 	total := totalStaked.Add(totalUnstaked)
 	res, err := json.MarshalIndent(&querySupplyResponse{
 		NodeStaked:    nodesStake.Int64(),
