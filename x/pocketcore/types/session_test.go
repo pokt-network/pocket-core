@@ -282,12 +282,4 @@ func TestNewSessionNodes(t *testing.T) {
 	assert.False(t, sessionNodes.Contains(node12))
 	assert.Nil(t, sessionNodes.Validate(5))
 	assert.NotNil(t, SessionNodes(make([]exported.ValidatorI, 5)).Validate(5))
-	nodesbz, err := sessionNodes.MarshalJSON()
-	assert.Nil(t, err)
-	assert.NotNil(t, nodesbz)
-	sn := SessionNodes{}
-	sn, err = sn.UnmarshalJSON(nodesbz)
-	assert.Nil(t, err)
-	assert.NotNil(t, sn)
-	assert.Equal(t, sessionNodes, sn)
 }
