@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
@@ -63,13 +64,12 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	cleanup = func() {
 		err = tendermintNode.Stop()
 		if err != nil {
-			panic(err)
+			fmt.Println("couldn't stop tendermint - > " + err.Error())
 		}
 		err = os.RemoveAll(tendermintNode.Config().DBPath)
 		if err != nil {
-			panic(err)
+			fmt.Println("couldn't remove testfiles - > " + err.Error())
 		}
-		inMemKB = nil
 		return
 	}
 	return
