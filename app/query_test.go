@@ -247,7 +247,7 @@ func TestQueryProofs(t *testing.T) {
 	select {
 	case <-evtChan:
 		got, err := pocket.QueryProofs(memCodec(), memCli, cb.GetAddress(), 0)
-		assert.NotNil(t, err)
+		assert.Nil(t, err)
 		assert.Nil(t, got)
 	}
 	cleanup()
