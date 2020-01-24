@@ -31,10 +31,10 @@ func (mp MerkleProofs) Validate(root HashSum, leaf, cousin RelayProof, totalRela
 	// verifier is the opposing verification piece to the merkle proofs, with its counterpart, we will verify the tree
 	var verifier [2]HashSum
 	// convert leaf to hashsum
-	verifier[0].Hash = hash(leaf.Bytes())
+	verifier[0].Hash = hash(leaf.Hash())
 	verifier[0].Sum = sumFromHash(verifier[0].Hash)
 	// convert cousin to hashsum
-	verifier[1].Hash = hash(cousin.Bytes())
+	verifier[1].Hash = hash(cousin.Hash())
 	verifier[1].Sum = sumFromHash(verifier[1].Hash)
 	// replay attack check -> params (leaf, sibling, cousin, cousinSibling, leafIndex, size of the tree)
 	if isReplayAttack(verifier[0], mp[0].HashSums[0], verifier[1], mp[1].HashSums[0], int64(mp[0].Index), totalRelays) {
@@ -124,7 +124,7 @@ func sortAndStructure(relayProofs []RelayProof) (d []HashSum, sortedProofs []Rel
 	// first, let's tHash the data
 	for i, p := range relayProofs {
 		// save the hash and sum of the RelayProof in the new tree slice
-		data[i].Hash = hash(p.Bytes())
+		data[i].Hash = hash(p.Hash())
 		data[i].Sum = sumFromHash(data[i].Hash)
 	}
 	// for the rest, add the max uint32

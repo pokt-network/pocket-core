@@ -26,7 +26,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
@@ -42,11 +41,9 @@ import (
 	"time"
 )
 
-func NewInMemoryTendermintNode(t *testing.T) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
-	// make the codec
-	makeMemCodec()
+func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
 	// create the in memory tendermint node and keybase
-	tendermintNode, keybase = inMemTendermintNode()
+	tendermintNode, keybase = inMemTendermintNode(genesisState)
 	// test assertions
 	if tendermintNode == nil {
 		panic("tendermintNode should not be nil")
@@ -70,15 +67,31 @@ func NewInMemoryTendermintNode(t *testing.T) (tendermintNode *node.Node, keybase
 		if err != nil {
 			panic(err)
 		}
+		inMemKB = nil
 		return
 	}
 	return
 }
 
 func TestNewInMemory(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	defer cleanup()
 }
+
+var (
+	memoryModAccPerms = map[string][]string{
+		auth.FeeCollectorName:     nil,
+		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
+		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
+		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
+		nodesTypes.ModuleName:     nil,
+		appsTypes.ModuleName:      nil,
+	}
+	genState cfg.GenesisState
+	memCDC   *codec.Codec
+	inMemKB  keys.Keybase
+	memCLI   client.Client
+)
 
 type memoryPCApp struct {
 	*bam.BaseApp
@@ -93,20 +106,6 @@ type memoryPCApp struct {
 	paramsKeeper  params.Keeper
 	pocketKeeper  pocketKeeper.Keeper
 	mm            *module.Manager
-}
-
-func newMemoryPCBaseApp(logger log.Logger, db dbm.DB, options ...func(*bam.BaseApp)) *memoryPCApp {
-	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(memCDC), options...)
-	bApp.SetAppVersion(appVersion)
-	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, params.StoreKey, pocketTypes.StoreKey)
-	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, params.TStoreKey)
-	// Create the application
-	return &memoryPCApp{
-		BaseApp: bApp,
-		cdc:     memCDC,
-		keys:    k,
-		tkeys:   tkeys,
-	}
 }
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
@@ -158,7 +157,7 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		app.paramsKeeper.Subspace(pocketTypes.DefaultParamspace),
 		"test",
 	)
-	app.pocketKeeper.Keybase = inMemKeybase
+	app.pocketKeeper.Keybase = getInMemoryKeybase()
 	app.pocketKeeper.TmNode = getInMemoryTMClient()
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper),
@@ -189,6 +188,20 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		cmn.Exit(err.Error())
 	}
 	return app
+}
+
+func newMemoryPCBaseApp(logger log.Logger, db dbm.DB, options ...func(*bam.BaseApp)) *memoryPCApp {
+	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(memCodec()), options...)
+	bApp.SetAppVersion(appVersion)
+	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, params.StoreKey, pocketTypes.StoreKey)
+	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, params.TStoreKey)
+	// Create the application
+	return &memoryPCApp{
+		BaseApp: bApp,
+		cdc:     memCodec(),
+		keys:    k,
+		tkeys:   tkeys,
+	}
 }
 
 func (app *memoryPCApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
@@ -227,33 +240,28 @@ func (app *memoryPCApp) ExportAppState(forZeroHeight bool, jailWhiteList []strin
 	return appState, nil
 }
 
-var (
-	memoryModAccPerms = map[string][]string{
-		auth.FeeCollectorName:     nil,
-		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
-		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
-		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
-		nodesTypes.ModuleName:     nil,
-		appsTypes.ModuleName:      nil,
+func getInMemoryKeybase() keys.Keybase {
+	if inMemKB == nil {
+		inMemKB = keys.NewInMemory()
+		_, err := inMemKB.Create("test")
+		if err != nil {
+			panic(err)
+		}
+		_, err = inMemKB.GetCoinbase()
+		if err != nil {
+			panic(err)
+		}
 	}
-	genState     cfg.GenesisState
-	inMemKeybase keys.Keybase
-	memCDC       *codec.Codec
-)
+	return inMemKB
+}
 
-func inMemTendermintNode() (*node.Node, keys.Keybase) {
-	pk := ed25519.GenPrivKey()
-	kb := keys.NewInMemory()
-	inMemKeybase = kb
-	kp, err := kb.ImportPrivateKeyObject(pk, "test")
+func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
 	if err != nil {
 		panic(err)
 	}
-	_, err = kb.GetCoinbase()
-	if err != nil {
-		panic(err)
-	}
-	kp2, err := kb.Create("test")
+	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
 	if err != nil {
 		panic(err)
 	}
@@ -276,7 +284,7 @@ func inMemTendermintNode() (*node.Node, keys.Keybase) {
 			},
 			Validators: nil,
 			AppHash:    nil,
-			AppState:   memGenesisState(kp.PublicKey, kp2.PublicKey),
+			AppState:   genesisState,
 		}, nil
 	}
 	loggerFile, _ := os.Open(os.DevNull)
@@ -317,88 +325,23 @@ func inMemTendermintNode() (*node.Node, keys.Keybase) {
 	return tmNode, kb
 }
 
-func memGenesisState(pubKey crypto.PublicKey, pubKey2 crypto.PublicKey) []byte {
-	defaultGenesis := module.NewBasicManager(
-		apps.AppModuleBasic{},
-		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
-		nodes.AppModuleBasic{},
-		supply.AppModuleBasic{},
-		pocket.AppModuleBasic{},
-	).DefaultGenesis()
-	// set coinbase as a validator
-	rawPOS := defaultGenesis[nodesTypes.ModuleName]
-	var posGenesisState nodesTypes.GenesisState
-	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
-
-	posGenesisState.Validators = append(posGenesisState.Validators,
-		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
-			PublicKey:    pubKey,
-			Status:       sdk.Bonded,
-			Chains:       []string{dummyChainsHash},
-			ServiceURL:   dummyServiceURL,
-			StakedTokens: sdk.NewInt(1000000000000000)})
-	res := memCodec().MustMarshalJSON(posGenesisState)
-	defaultGenesis[nodesTypes.ModuleName] = res
-	genState = defaultGenesis
-	// set coinbase as account holding coins
-	rawAccounts := defaultGenesis[auth.ModuleName]
-	var authGenState auth.GenesisState
-	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
-	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
-		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
-		PubKey:        pubKey,
-		AccountNumber: 0,
-		Sequence:      0,
-	})
-	// add second account
-	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
-		Address:       sdk.Address(pubKey2.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
-		PubKey:        pubKey,
-		AccountNumber: 0,
-		Sequence:      0,
-	})
-	res2 := memCodec().MustMarshalJSON(authGenState)
-	defaultGenesis[auth.ModuleName] = res2
-
-	// set default chain for module
-	rawPocket := defaultGenesis[pocketTypes.ModuleName]
-	var pocketGenesisState pocketTypes.GenesisState
-	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
-
-	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
-	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
-	defaultGenesis[pocketTypes.ModuleName] = res3
-	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
-	return j
-}
-
 func memCodec() *codec.Codec {
 	if memCDC == nil {
-		makeMemCodec()
+		memCDC = codec.New()
+		module.NewBasicManager(
+			apps.AppModuleBasic{},
+			auth.AppModuleBasic{},
+			bank.AppModuleBasic{},
+			params.AppModuleBasic{},
+			nodes.AppModuleBasic{},
+			supply.AppModuleBasic{},
+			pocket.AppModuleBasic{},
+		).RegisterCodec(memCDC)
+		sdk.RegisterCodec(memCDC)
+		codec.RegisterCrypto(memCDC)
 	}
 	return memCDC
 }
-
-func makeMemCodec() {
-	memCDC = codec.New()
-	module.NewBasicManager(
-		apps.AppModuleBasic{},
-		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
-		nodes.AppModuleBasic{},
-		supply.AppModuleBasic{},
-		pocket.AppModuleBasic{},
-	).RegisterCodec(memCDC)
-	sdk.RegisterCodec(memCDC)
-	codec.RegisterCrypto(memCDC)
-}
-
-var memCLI client.Client
 
 func getInMemoryTMClient() client.Client {
 	if memCLI == nil || !memCLI.IsRunning() {
@@ -407,7 +350,7 @@ func getInMemoryTMClient() client.Client {
 	return memCLI
 }
 
-func subscribeNewblock(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
+func subscribeTo(t *testing.T, eventType string) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
 	ctx, cancel := getBackgroundContext()
 	cli = getInMemoryTMClient()
 	cli.Start()
@@ -422,52 +365,7 @@ func subscribeNewblock(t *testing.T) (cli client.Client, stopClient func(), even
 		}
 		cancel()
 	}
-	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlock).String())
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-func subscribeNewTx(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
-	ctx, cancel := getBackgroundContext()
-	cli = getInMemoryTMClient()
-	cli.Start()
-	stopClient = func() {
-		err := cli.UnsubscribeAll(ctx, "helpers")
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = cli.Stop()
-		if err != nil {
-			t.Fatal(err)
-		}
-		cancel()
-		return
-	}
-	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventTx).String())
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-func subscribeNewblockHeader(t *testing.T) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
-	ctx, cancel := getBackgroundContext()
-	cli = getInMemoryTMClient()
-	cli.Start()
-	stopClient = func() {
-		err := cli.UnsubscribeAll(ctx, "helpers")
-		if err != nil {
-			t.Fatal(err)
-		}
-		err = cli.Stop()
-		if err != nil {
-			t.Fatal(err)
-		}
-		cancel()
-	}
-	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(types.EventNewBlockHeader).String())
+	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(eventType).String())
 	if err != nil {
 		panic(err)
 	}
@@ -475,8 +373,7 @@ func subscribeNewblockHeader(t *testing.T) (cli client.Client, stopClient func()
 }
 
 func getBackgroundContext() (context.Context, func()) {
-	memCtx := context.Background()
-	return context.WithCancel(memCtx)
+	return context.WithCancel(context.Background())
 }
 
 func getInMemHostedChains() pocketTypes.HostedBlockchains {
@@ -509,4 +406,166 @@ func getUnstakedAccount(kb keys.Keybase) *keys.KeyPair {
 		}
 	}
 	return nil
+}
+
+func oneValTwoNodeGenesisState() []byte {
+	kb := getInMemoryKeybase()
+	kp1, err := kb.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	kp2, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	pubKey := kp1.PublicKey
+	pubKey2 := kp2.PublicKey
+	defaultGenesis := module.NewBasicManager(
+		apps.AppModuleBasic{},
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		params.AppModuleBasic{},
+		nodes.AppModuleBasic{},
+		supply.AppModuleBasic{},
+		pocket.AppModuleBasic{},
+	).DefaultGenesis()
+	// set coinbase as a validator
+	rawPOS := defaultGenesis[nodesTypes.ModuleName]
+	var posGenesisState nodesTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
+			PublicKey:    pubKey,
+			Status:       sdk.Bonded,
+			Chains:       []string{dummyChainsHash},
+			ServiceURL:   dummyServiceURL,
+			StakedTokens: sdk.NewInt(1000000000000000)})
+	res := memCodec().MustMarshalJSON(posGenesisState)
+	defaultGenesis[nodesTypes.ModuleName] = res
+	// set coinbase as account holding coins
+	rawAccounts := defaultGenesis[auth.ModuleName]
+	var authGenState auth.GenesisState
+	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address:       sdk.Address(pubKey.Address()),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
+		PubKey:        pubKey,
+		AccountNumber: 0,
+		Sequence:      0,
+	})
+	// add second account
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address:       sdk.Address(pubKey2.Address()),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
+		PubKey:        pubKey,
+		AccountNumber: 0,
+		Sequence:      0,
+	})
+	res2 := memCodec().MustMarshalJSON(authGenState)
+	defaultGenesis[auth.ModuleName] = res2
+	// set default chain for module
+	rawPocket := defaultGenesis[pocketTypes.ModuleName]
+	var pocketGenesisState pocketTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
+	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
+	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
+	defaultGenesis[pocketTypes.ModuleName] = res3
+	genState = defaultGenesis
+	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
+	return j
+}
+
+func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validators, app appsTypes.Application) {
+	kb := getInMemoryKeybase()
+	// create keypairs
+	kp1, err := kb.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	kp2, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	// get public keys
+	pubKey := kp1.PublicKey
+	pubKey2 := crypto.GenerateEd25519PrivKey().PublicKey()
+	pubKey3 := crypto.GenerateEd25519PrivKey().PublicKey()
+	pubKey4 := crypto.GenerateEd25519PrivKey().PublicKey()
+	pubKey5 := crypto.GenerateEd25519PrivKey().PublicKey()
+	defaultGenesis := module.NewBasicManager(
+		apps.AppModuleBasic{},
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		params.AppModuleBasic{},
+		nodes.AppModuleBasic{},
+		supply.AppModuleBasic{},
+		pocket.AppModuleBasic{},
+	).DefaultGenesis()
+	// setup validators
+	rawPOS := defaultGenesis[nodesTypes.ModuleName]
+	var posGenesisState nodesTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
+	// validator 1
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
+			PublicKey:    pubKey,
+			Status:       sdk.Bonded,
+			Chains:       []string{dummyChainsHash},
+			ServiceURL:   dummyServiceURL,
+			StakedTokens: sdk.NewInt(1000000000000000000)})
+	// validator 2
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{Address: sdk.Address(pubKey2.Address()),
+			PublicKey:    pubKey2,
+			Status:       sdk.Bonded,
+			Chains:       []string{dummyChainsHash},
+			ServiceURL:   dummyServiceURL,
+			StakedTokens: sdk.NewInt(10000000)})
+	// validator 3
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{Address: sdk.Address(pubKey3.Address()),
+			PublicKey:    pubKey3,
+			Status:       sdk.Bonded,
+			Chains:       []string{dummyChainsHash},
+			ServiceURL:   dummyServiceURL,
+			StakedTokens: sdk.NewInt(10000000)})
+	// validator 4
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{Address: sdk.Address(pubKey4.Address()),
+			PublicKey:    pubKey4,
+			Status:       sdk.Bonded,
+			Chains:       []string{dummyChainsHash},
+			ServiceURL:   dummyServiceURL,
+			StakedTokens: sdk.NewInt(10000000)})
+	// validator 5
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{Address: sdk.Address(pubKey5.Address()),
+			PublicKey:    pubKey5,
+			Status:       sdk.Bonded,
+			Chains:       []string{dummyChainsHash},
+			ServiceURL:   dummyServiceURL,
+			StakedTokens: sdk.NewInt(10000000)})
+	// marshal into json
+	res := memCodec().MustMarshalJSON(posGenesisState)
+	defaultGenesis[nodesTypes.ModuleName] = res
+	// setup applications
+	rawApps := defaultGenesis[appsTypes.ModuleName]
+	var appsGenesisState appsTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawApps, &appsGenesisState)
+	// app 1
+	appsGenesisState.Applications = append(appsGenesisState.Applications, appsTypes.Application{
+		Address:                 kp2.GetAddress(),
+		PublicKey:               kp2.PublicKey,
+		Jailed:                  false,
+		Status:                  sdk.Bonded,
+		Chains:                  []string{dummyChainsHash},
+		StakedTokens:            sdk.NewInt(10000000),
+		MaxRelays:               sdk.NewInt(100000),
+		UnstakingCompletionTime: time.Time{},
+	})
+	res2 := memCodec().MustMarshalJSON(appsGenesisState)
+	defaultGenesis[appsTypes.ModuleName] = res2
+	genState = defaultGenesis
+	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
+	return j, posGenesisState.Validators, appsGenesisState.Applications[0]
 }

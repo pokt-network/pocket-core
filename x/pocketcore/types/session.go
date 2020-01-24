@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"sort"
 )
@@ -156,34 +154,6 @@ func (sn SessionNodes) Contains(nodeVerify nodeexported.ValidatorI) bool { // to
 		}
 	}
 	return false
-}
-
-func (sn *SessionNodes) MarshalJSON() ([]byte, error) {
-	var marshable types.Validators
-	marshable = make(types.Validators, len(*sn))
-	for i, expNode := range *sn {
-		marshable[i] = types.Validator{ // todo depends on nodes.Types()
-			Address:      expNode.GetAddress(),
-			PublicKey:    expNode.GetPublicKey(),
-			Jailed:       expNode.IsJailed(),
-			Status:       expNode.GetStatus(),
-			Chains:       expNode.GetChains(),
-			ServiceURL:   expNode.GetServiceURL(),
-			StakedTokens: expNode.GetTokens()}
-	}
-	return codec.Cdc.MarshalJSON(marshable)
-}
-
-// UnmarshalJSON unmarshals the validator from JSON // todo test if function needed
-func (sn SessionNodes) UnmarshalJSON(data []byte) (temp SessionNodes, err error) {
-	v := &types.Validators{} // todo depends on nodes.Types()
-	if err := codec.Cdc.UnmarshalJSON(data, v); err != nil {
-		return SessionNodes{}, err
-	}
-	for _, nonExNode := range *v {
-		temp = append(temp, nonExNode)
-	}
-	return
 }
 
 // A node linked to it's computational distance

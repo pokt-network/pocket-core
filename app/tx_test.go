@@ -8,21 +8,22 @@ import (
 	"github.com/pokt-network/posmint/x/auth/types"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
+	tmTypes "github.com/tendermint/tendermint/types"
 	"testing"
 	"time"
 )
 
 func TestUnstakeApp(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	select {
 	case <-evtChan:
 		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -32,7 +33,7 @@ func TestUnstakeApp(t *testing.T) {
 		got, err := apps.QueryApplications(memCodec(), memCli, 0)
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got))
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 	}
 	select {
@@ -49,14 +50,14 @@ func TestUnstakeApp(t *testing.T) {
 }
 
 func TestUnstakeNode(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp := *getUnstakedAccount(kb)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	select {
 	case <-evtChan:
 		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = nodes.StakeTx(memCodec(), memCli, kb, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -64,18 +65,18 @@ func TestUnstakeNode(t *testing.T) {
 	select {
 	case <-evtChan:
 		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
 	}
 	select {
 	case <-evtChan:
-		memCli, stopCli, evtChan = subscribeNewblockHeader(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlockHeader)
 		for {
 			select {
 			case res := <-evtChan:
-				if len(res.Events["begin_unstake.module"])==1{
+				if len(res.Events["begin_unstake.module"]) == 1 {
 					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
 					assert.Nil(t, err)
 					assert.Equal(t, 1, len(got))
@@ -91,15 +92,15 @@ func TestUnstakeNode(t *testing.T) {
 }
 
 func TestStakeNode(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp := *getUnstakedAccount(kb)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	select {
 	case <-evtChan:
 		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -115,17 +116,17 @@ func TestStakeNode(t *testing.T) {
 }
 
 func TestStakeApp(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 
 	select {
 	case <-evtChan:
 		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -141,12 +142,12 @@ func TestStakeApp(t *testing.T) {
 }
 
 func TestSendTransaction(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	kp, err := kb.Create("test")
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var baseAmount = sdk.NewInt(1000000000)
 	var transferAmount = sdk.NewInt(1000)
 	var tx *sdk.TxResponse
@@ -154,7 +155,7 @@ func TestSendTransaction(t *testing.T) {
 	select {
 	case <-evtChan:
 		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", transferAmount)
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -174,14 +175,14 @@ func TestSendTransaction(t *testing.T) {
 }
 
 func TestSendRawTx(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	kp, err := kb.Create("test")
 	assert.Nil(t, err)
 	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
 	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
 		[]sdk.Msg{bank.MsgSend{
@@ -196,7 +197,7 @@ func TestSendRawTx(t *testing.T) {
 	assert.Nil(t, err)
 	select {
 	case <-evtChan:
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		var err error
 		txResp, err := nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
 		assert.Nil(t, err)

@@ -1,6 +1,7 @@
 package pocketcore
 
 import (
+	"errors"
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
@@ -40,7 +41,7 @@ func QueryProofs(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, heigh
 	params := types.QueryInvoicesParams{
 		Address: addr,
 	}
-	bz, err := cdc.MarshalBinaryBare(params)
+	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func QueryRelay(cdc *codec.Codec, tmNode client.Client, relay types.Relay) (*typ
 	params := types.QueryRelayParams{
 		Relay: relay,
 	}
-	bz, err := cdc.MarshalBinaryBare(params)
+	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
 		return nil, err
 	}
@@ -89,12 +90,15 @@ func QueryRelay(cdc *codec.Codec, tmNode client.Client, relay types.Relay) (*typ
 	if err != nil {
 		return nil, err
 	}
-	var response *types.RelayResponse
-	err = cdc.UnmarshalJSON(res, response)
+	if res == nil {
+		return nil, errors.New("nil response error")
+	}
+	var response types.RelayResponse
+	err = cdc.UnmarshalJSON(res, &response)
 	if err != nil {
 		return nil, err
 	}
-	return response, nil
+	return &response, nil
 }
 
 func QueryDispatch(cdc *codec.Codec, tmNode client.Client, header types.SessionHeader) (*types.Session, error) {
@@ -102,7 +106,7 @@ func QueryDispatch(cdc *codec.Codec, tmNode client.Client, header types.SessionH
 	params := types.QueryDispatchParams{
 		SessionHeader: header,
 	}
-	bz, err := cdc.MarshalBinaryBare(params)
+	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
 		return nil, err
 	}
@@ -110,10 +114,10 @@ func QueryDispatch(cdc *codec.Codec, tmNode client.Client, header types.SessionH
 	if err != nil {
 		return nil, err
 	}
-	var response *types.Session
-	err = cdc.UnmarshalJSON(res, response)
+	var response types.Session
+	err = cdc.UnmarshalJSON(res, &response)
 	if err != nil {
 		return nil, err
 	}
-	return response, nil
+	return &response, nil
 }

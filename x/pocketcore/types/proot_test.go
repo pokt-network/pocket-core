@@ -235,8 +235,8 @@ func TestProof_Bytes(t *testing.T) {
 	}
 	proof2 := pro
 	proof2.Signature = hex.EncodeToString([]byte("fake Signature"))
-	assert.Equal(t, pro.Bytes(), proof2.Bytes())
-	assert.NotEqual(t, pro.BytesWithSignature(), proof2.BytesWithSignature())
+	assert.Equal(t, pro.Hash(), proof2.Hash())
+	assert.NotEqual(t, pro.HashWithSignature(), proof2.HashWithSignature())
 	var p relayProof
 	assert.Nil(t, json.Unmarshal(pro.Bytes(), &p))
 }
