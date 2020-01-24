@@ -27,7 +27,7 @@ jobs:
           paths:
             -  /go/src/github.com/pokt-network/pocket-core
       # Run tests
-      #- run: go test ./...
+      #- run: go test -p 1 ./...
   # Generic test job
   # TODO: Expand the testing capabilities
   test:

@@ -96,10 +96,10 @@ var (
 )
 
 const (
-	dummyChainsHash   = "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-	dummyChainsURL    = "https://foo.bar:8080"
-	dummyServiceURL   = "0.0.0.0:8081"
-	defaultTMURI      = "tcp://localhost:26657"
+	dummyChainsHash = "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+	dummyChainsURL  = "https://foo.bar:8080"
+	dummyServiceURL = "0.0.0.0:8081"
+	defaultTMURI    = "tcp://localhost:26657"
 )
 
 type memoryPCApp struct {
@@ -361,7 +361,9 @@ func getInMemoryTMClient() client.Client {
 func subscribeTo(t *testing.T, eventType string) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
 	ctx, cancel := getBackgroundContext()
 	cli = getInMemoryTMClient()
-	cli.Start()
+	if !cli.IsRunning(){
+		_ = cli.Start()
+	}
 	stopClient = func() {
 		err := cli.UnsubscribeAll(ctx, "helpers")
 		if err != nil {
@@ -371,6 +373,7 @@ func subscribeTo(t *testing.T, eventType string) (cli client.Client, stopClient 
 		if err != nil {
 			t.Fatal(err)
 		}
+		memCLI = nil
 		cancel()
 	}
 	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(eventType).String())
