@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -61,11 +62,11 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	cleanup = func() {
 		err = tendermintNode.Stop()
 		if err != nil {
-			panic(err)
+			fmt.Println("couldn't stop tendermint - > " + err.Error())
 		}
 		err = os.RemoveAll(tendermintNode.Config().DBPath)
 		if err != nil {
-			panic(err)
+			fmt.Println("couldn't remove testfiles - > " + err.Error())
 		}
 		inMemKB = nil
 		return
