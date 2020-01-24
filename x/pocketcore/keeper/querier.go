@@ -36,7 +36,10 @@ func queryRelay(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.E
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	response, err := k.HandleRelay(ctx, params.Relay)
+	response, er := k.HandleRelay(ctx, params.Relay)
+	if er != nil {
+		return nil, er
+	}
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, response)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -50,8 +53,11 @@ func queryDispatch(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sd
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	response, err := k.Dispatch(ctx, params.SessionHeader)
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, response)
+	response, er := k.Dispatch(ctx, params.SessionHeader)
+	if er != nil {
+		return nil, er
+	}
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, *response)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}

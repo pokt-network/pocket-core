@@ -1,19 +1,23 @@
 package app
 
 import (
+	"encoding/hex"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	tmTypes "github.com/tendermint/tendermint/types"
+	"gopkg.in/h2non/gock.v1"
 	"math/big"
 	"testing"
 	"time"
 )
 
 func TestQueryBlock(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	_, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	height := int64(1)
 	select {
 	case <-evtChan:
@@ -26,8 +30,8 @@ func TestQueryBlock(t *testing.T) {
 }
 
 func TestQueryChainHeight(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		got, err := nodes.QueryChainHeight(memCli)
@@ -39,17 +43,17 @@ func TestQueryChainHeight(t *testing.T) {
 }
 
 func TestQueryTx(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	kp, err := kb.Create("test")
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	select {
 	case <-evtChan:
 		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(1000))
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -69,7 +73,7 @@ func TestQueryTx(t *testing.T) {
 }
 
 func TestQueryNodeStatus(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	got, err := nodes.QueryNodeStatus(getInMemoryTMClient())
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
@@ -78,8 +82,8 @@ func TestQueryNodeStatus(t *testing.T) {
 }
 
 func TestQueryValidators(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		got, err := nodes.QueryValidators(memCodec(), memCli, 1)
@@ -91,13 +95,13 @@ func TestQueryValidators(t *testing.T) {
 }
 
 func TestQueryValidator(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	if err != nil {
 		t.Fatal(err)
 	}
 	codec := memCodec()
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		got, err := nodes.QueryValidator(codec, memCli, cb.GetAddress(), 0)
@@ -111,8 +115,8 @@ func TestQueryValidator(t *testing.T) {
 }
 
 func TestQueryDaoBalance(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		var err error
@@ -125,8 +129,8 @@ func TestQueryDaoBalance(t *testing.T) {
 }
 
 func TestQuerySupply(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		gotStaked, gotUnstaked, err := nodes.QuerySupply(memCodec(), memCli, 0)
@@ -139,8 +143,8 @@ func TestQuerySupply(t *testing.T) {
 }
 
 func TestQueryPOSParams(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		got, err := nodes.QueryPOSParams(memCodec(), memCli, 0)
@@ -155,8 +159,8 @@ func TestQueryPOSParams(t *testing.T) {
 }
 
 func TestQueryStakedValidator(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		got, err := nodes.QueryStakedValidators(memCodec(), memCli, 0)
@@ -168,10 +172,10 @@ func TestQueryStakedValidator(t *testing.T) {
 }
 
 func TestAccountBalance(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		var err error
@@ -185,12 +189,12 @@ func TestAccountBalance(t *testing.T) {
 }
 
 func TestQuerySigningInfo(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	cbAddr := cb.GetAddress()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		var err error
@@ -204,8 +208,8 @@ func TestQuerySigningInfo(t *testing.T) {
 }
 
 func TestQueryPocketSupportedBlockchains(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		var err error
@@ -219,8 +223,8 @@ func TestQueryPocketSupportedBlockchains(t *testing.T) {
 }
 
 func TestQueryPocket(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		got, err := pocket.QueryParams(memCodec(), memCli, 0)
@@ -236,10 +240,10 @@ func TestQueryPocket(t *testing.T) {
 }
 
 func TestQueryProofs(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		got, err := pocket.QueryProofs(memCodec(), memCli, cb.GetAddress(), 0)
@@ -251,10 +255,10 @@ func TestQueryProofs(t *testing.T) {
 }
 
 func TestQueryProof(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 
@@ -277,17 +281,17 @@ func TestQueryProof(t *testing.T) {
 }
 
 func TestQueryStakedApp(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeNewblock(t)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 
 	select {
 	case <-evtChan:
 		var err error
-		memCli, stopCli, evtChan = subscribeNewTx(t)
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -302,4 +306,86 @@ func TestQueryStakedApp(t *testing.T) {
 	}
 	cleanup()
 	stopCli()
+}
+
+func TestQueryRelay(t *testing.T) {
+	genBz, validators, app := fiveValidatorsOneAppGenesis()
+	// setup relay endpoint
+	defer gock.Off()
+	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
+	expectedResponse := "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"
+	gock.New(dummyChainsURL).
+		Post("").
+		BodyString(expectedRequest).
+		Reply(200).
+		BodyString(expectedResponse)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, genBz)
+	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
+	assert.Nil(t, err)
+	// setup AAT
+	aat := types.AAT{
+		Version:              "0.0.1",
+		ApplicationPublicKey: appPrivateKey.PublicKey().RawString(),
+		ClientPublicKey:      appPrivateKey.PublicKey().RawString(),
+		ApplicationSignature: "",
+	}
+	sig, err := appPrivateKey.Sign(aat.Hash())
+	if err != nil {
+		panic(err)
+	}
+	aat.ApplicationSignature = hex.EncodeToString(sig)
+	// setup relay
+	relay := types.Relay{
+		Payload: types.Payload{
+			Data: expectedRequest,
+		},
+		Proof: types.RelayProof{
+			Entropy:            32598345349034509,
+			SessionBlockHeight: 1,
+			ServicerPubKey:     validators[0].PublicKey.RawString(),
+			Blockchain:         dummyChainsHash,
+			Token:              aat,
+			Signature:          "",
+		},
+	}
+	sig, err = appPrivateKey.Sign(relay.Proof.Hash())
+	if err != nil {
+		panic(err)
+	}
+	relay.Proof.Signature = hex.EncodeToString(sig)
+	// setup the query
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		res, err := pocket.QueryRelay(memCodec(), memCli, relay)
+		assert.Nil(t, err)
+		assert.Equal(t, expectedResponse, res.Response)
+		cleanup()
+		stopCli()
+	}
+}
+
+func TestQueryDispatch(t *testing.T) {
+	genBz, validators, app := fiveValidatorsOneAppGenesis()
+	_, kb, cleanup := NewInMemoryTendermintNode(t, genBz)
+	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
+	assert.Nil(t, err)
+	// Setup Dispatch Request
+	key := types.SessionHeader{
+		ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
+		Chain:              dummyChainsHash,
+		SessionBlockHeight: 1,
+	}
+	// setup the query
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		res, err := pocket.QueryDispatch(memCodec(), memCli, key)
+		assert.Nil(t, err)
+		for _, val := range validators {
+			assert.Contains(t, res.SessionNodes, val)
+		}
+		cleanup()
+		stopCli()
+	}
 }
