@@ -63,8 +63,8 @@ func TestEndBlocker(t *testing.T) {
 		{
 			name: "Test EndBlocker",
 			args: args{
-				ctx: context,
-				k:   keeper,
+				ctx:  context,
+				k:    keeper,
 				apps: []types.Application{application},
 			},
 			want: []abci.ValidatorUpdate{},

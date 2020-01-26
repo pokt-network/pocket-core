@@ -14,9 +14,9 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 	fromAddr := kp.GetAddress()
 	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgAppStake{
-		PubKey:  kp.PublicKey,
-		Value:   amount,
-		Chains:  chains, // non native blockchains
+		PubKey: kp.PublicKey,
+		Value:  amount,
+		Chains: chains, // non native blockchains
 	}
 	err := msg.ValidateBasic()
 	if err != nil {

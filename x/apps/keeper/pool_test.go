@@ -15,7 +15,7 @@ func TestPool_CoinsFromUnstakedToStaked(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		want    string
+		want        string
 		application types.Application
 		amount      sdk.Int
 		panics      bool
@@ -30,12 +30,12 @@ func TestPool_CoinsFromUnstakedToStaked(t *testing.T) {
 			name:        "panics if negative ammount",
 			application: types.Application{Address: applicationAddress},
 			amount:      sdk.NewInt(-1),
-			want:    fmt.Sprintf("negative coin amount: -1"),
+			want:        fmt.Sprintf("negative coin amount: -1"),
 			panics:      true,
 		},
 		{name: "panics if no supply is set",
 			application: types.Application{Address: applicationAddress},
-			want:    fmt.Sprintf("insufficient account funds"),
+			want:        fmt.Sprintf("insufficient account funds"),
 			amount:      sdk.NewInt(10),
 			panics:      true,
 		},
@@ -60,7 +60,7 @@ func TestPool_CoinsFromUnstakedToStaked(t *testing.T) {
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
 				keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
-				if got := keeper.GetStakedTokens(context);!tt.amount.Add(sdk.NewInt(100000000000)).Equal(got) {
+				if got := keeper.GetStakedTokens(context); !tt.amount.Add(sdk.NewInt(100000000000)).Equal(got) {
 					t.Errorf("KeeperCoins.FromUnstakedToStaked()= %v, want %v", got, tt.amount.Add(sdk.NewInt(100000000000)))
 				}
 			}
@@ -75,7 +75,7 @@ func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
 	tests := []struct {
 		name        string
 		amount      sdk.Int
-		want    string
+		want        string
 		application types.Application
 		panics      bool
 	}{
@@ -89,7 +89,7 @@ func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
 			name:        "panics if negative ammount",
 			application: types.Application{Address: applicationAddress, StakedTokens: sdk.NewInt(-1)},
 			amount:      sdk.NewInt(-1),
-			want:    fmt.Sprintf("negative coin amount: -1"),
+			want:        fmt.Sprintf("negative coin amount: -1"),
 			panics:      true,
 		},
 	}
@@ -178,7 +178,7 @@ func TestPool_BurnStakedTokens(t *testing.T) {
 }
 
 func TestPool_GetFeePool(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 	}{
 		{
@@ -186,7 +186,7 @@ func TestPool_GetFeePool(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T){
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			got := keeper.getFeePool(context)
 
@@ -201,9 +201,9 @@ func TestPool_StakedRatio(t *testing.T) {
 	application := getBondedApplication()
 	applicationAddress := application.Address
 
-	tests := []struct{
-		name string
-		amount sdk.Dec
+	tests := []struct {
+		name    string
+		amount  sdk.Dec
 		address sdk.Address
 	}{
 		{"return 0 if stake supply is lower than 0", sdk.ZeroDec(), applicationAddress},
@@ -211,7 +211,7 @@ func TestPool_StakedRatio(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T){
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			if !tt.amount.Equal(sdk.ZeroDec()) {
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)

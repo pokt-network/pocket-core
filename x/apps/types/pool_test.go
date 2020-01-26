@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-func TestPool_NewPool(t *testing.T){
-	tests := []struct{
+func TestPool_NewPool(t *testing.T) {
+	tests := []struct {
 		name string
 		args sdk.Int
 		want sdk.Int
@@ -19,16 +19,16 @@ func TestPool_NewPool(t *testing.T){
 			sdk.NewInt(1),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func(t *testing.T){
-			if got := NewPool(tt.args); !got.Tokens.Equal(tt.want)  {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewPool(tt.args); !got.Tokens.Equal(tt.want) {
 				t.Errorf("NewPool.Tokens = %v, want %v", got.Tokens, tt.want)
 			}
 		})
 	}
 }
-func TestPool_String(t *testing.T){
-	tests := []struct{
+func TestPool_String(t *testing.T) {
+	tests := []struct {
 		name string
 		args StakingPool
 		want string
@@ -39,9 +39,9 @@ func TestPool_String(t *testing.T){
 			fmt.Sprintf(`Staked Tokens:      %s`, sdk.NewInt(10)),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func(t *testing.T){
-			if got := tt.args.String(); !reflect.DeepEqual(got, tt.want)  {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.args.String(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("StakingPool.String() = %v, want %v", got, tt.want)
 			}
 		})

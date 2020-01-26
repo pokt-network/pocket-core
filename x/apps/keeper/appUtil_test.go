@@ -73,21 +73,21 @@ func TestAppUtil_Application(t *testing.T) {
 		message     string
 	}
 	tests := []struct {
-		name   string
+		name string
 		find bool
 		args
 		want
 	}{
 		{
-			name:   "gets application",
+			name: "gets application",
 			find: false,
-			args:   args{application: boundedApplication},
-			want:   want{application: boundedApplication},
+			args: args{application: boundedApplication},
+			want: want{application: boundedApplication},
 		},
 		{
-			name:   "panics if no application",
+			name: "panics if no application",
 			find: true,
-			args:   args{application: boundedApplication},
+			args: args{application: boundedApplication},
 		},
 	}
 
@@ -216,8 +216,8 @@ func TestAppUtil_ApplicationCaching(t *testing.T) {
 	boundedApplication := getBondedApplication()
 
 	type args struct {
-		bz          []byte
-		application types.Application
+		bz             []byte
+		application    types.Application
 		aminoCacheSize int
 	}
 	tests := []struct {

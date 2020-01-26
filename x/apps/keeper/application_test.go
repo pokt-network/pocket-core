@@ -86,7 +86,7 @@ func TestApplication_GetAllAplications(t *testing.T) {
 
 			keeper.SetApplication(context, tt.application)
 
-			if got := keeper.GetAllApplications(context); !reflect.DeepEqual(got, tt.want){
+			if got := keeper.GetAllApplications(context); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Applicaiton.GetAllApplications() = got %v, want %v", got, tt.want)
 			}
 		})
@@ -115,7 +115,7 @@ func TestApplication_GetAplications(t *testing.T) {
 
 			keeper.SetApplication(context, tt.application)
 
-			if got := keeper.GetApplications(context, tt.maxRetrieve); !reflect.DeepEqual(got, tt.want){
+			if got := keeper.GetApplications(context, tt.maxRetrieve); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Applicaiton.GetAllApplications() = got %v, want %v", got, tt.want)
 			}
 		})
@@ -127,16 +127,16 @@ func TestApplication_IterateAndExecuteOverApps(t *testing.T) {
 	secondApp := getBondedApplication()
 
 	tests := []struct {
-		name        string
-		application types.Application
+		name              string
+		application       types.Application
 		secondApplication types.Application
-		want       int
+		want              int
 	}{
 		{
-			name:        "iterates over all applications",
-			application: application,
+			name:              "iterates over all applications",
+			application:       application,
 			secondApplication: secondApp,
-			want:       2,
+			want:              2,
 		},
 	}
 	for _, tt := range tests {
@@ -154,4 +154,3 @@ func TestApplication_IterateAndExecuteOverApps(t *testing.T) {
 		})
 	}
 }
-

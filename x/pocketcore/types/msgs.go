@@ -19,7 +19,7 @@ type MsgClaim struct {
 	SessionHeader `json:"header"` // header information for identification
 	MerkleRoot    HashSum         `json:"merkle_root"`  // merkle root for data integrity
 	TotalRelays   int64           `json:"total_relays"` // total number of relays
-	FromAddress   sdk.Address  `json:"from_address"` // claimant
+	FromAddress   sdk.Address     `json:"from_address"` // claimant
 }
 
 func (msg MsgClaim) Route() string { return RouterKey }
