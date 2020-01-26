@@ -13,7 +13,7 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	d := types.SessionHeader{}
-	if err := PopModel(w, r, ps, d); err != nil {
+	if err := PopModel(w, r, ps, &d); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
@@ -35,7 +35,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if !cors(&w, r) {
 		return
 	}
-	if err := PopModel(w, r, ps, relay); err != nil {
+	if err := PopModel(w, r, ps, &relay); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
@@ -62,7 +62,7 @@ func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if !cors(&w, r) {
 		return
 	}
-	if err := PopModel(w, r, ps, params); err != nil {
+	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}

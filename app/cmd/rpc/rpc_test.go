@@ -2,14 +2,21 @@ package rpc
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/x/nodes"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/auth"
+	authTypes "github.com/pokt-network/posmint/x/auth/types"
+	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
+	"gopkg.in/h2non/gock.v1"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -316,6 +323,166 @@ func TestRPC_QuerySupply(t *testing.T) {
 	stopCli()
 }
 
+func TestRPC_StakeNode(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var params = heightParams{
+			Height: 0,
+		}
+		q := newQueryRequest("supply", newBody(params))
+		rec := httptest.NewRecorder()
+		Supply(rec, q, httprouter.Params{})
+		resp := getResponse(rec)
+		assert.NotNil(t, resp)
+		assert.NotEmpty(t, resp)
+		var supply querySupplyResponse
+		err := json.Unmarshal([]byte(resp), &supply)
+		assert.Nil(t, err)
+		assert.NotZero(t, supply.Total)
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestRPC_Relay(t *testing.T) {
+	kb := getInMemoryKeybase()
+	genBZ, validators, app := fiveValidatorsOneAppGenesis()
+	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
+	// setup relay endpoint
+	defer gock.Off()
+	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
+	expectedResponse := "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"
+	gock.New(dummyChainsURL).
+		Post("").
+		BodyString(expectedRequest).
+		Reply(200).
+		BodyString(expectedResponse)
+	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
+	assert.Nil(t, err)
+	// setup AAT
+	aat := pocketTypes.AAT{
+		Version:              "0.0.1",
+		ApplicationPublicKey: appPrivateKey.PublicKey().RawString(),
+		ClientPublicKey:      appPrivateKey.PublicKey().RawString(),
+		ApplicationSignature: "",
+	}
+	sig, err := appPrivateKey.Sign(aat.Hash())
+	if err != nil {
+		panic(err)
+	}
+	aat.ApplicationSignature = hex.EncodeToString(sig)
+	// setup relay
+	relay := pocketTypes.Relay{
+		Payload: pocketTypes.Payload{
+			Data: expectedRequest,
+		},
+		Proof: pocketTypes.RelayProof{
+			Entropy:            32598345349034509,
+			SessionBlockHeight: 1,
+			ServicerPubKey:     validators[0].PublicKey.RawString(),
+			Blockchain:         dummyChainsHash,
+			Token:              aat,
+			Signature:          "",
+		},
+	}
+	sig, err = appPrivateKey.Sign(relay.Proof.Hash())
+	if err != nil {
+		panic(err)
+	}
+	relay.Proof.Signature = hex.EncodeToString(sig)
+	// setup the query
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		q := newClientRequest("relay", newBody(relay))
+		rec := httptest.NewRecorder()
+		Relay(rec, q, httprouter.Params{})
+		resp := getResponse(rec)
+		var response pocketTypes.RelayResponse
+		err := memCodec().UnmarshalJSON([]byte(resp), &response)
+		assert.Nil(t, err)
+		assert.Equal(t, expectedResponse, response.Response)
+		cleanup()
+		stopCli()
+	}
+}
+
+func TestRPC_Dispatch(t *testing.T) {
+	kb := getInMemoryKeybase()
+	genBZ, validators, app := fiveValidatorsOneAppGenesis()
+	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
+	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
+	assert.Nil(t, err)
+	// Setup Dispatch Request
+	key := pocketTypes.SessionHeader{
+		ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
+		Chain:              dummyChainsHash,
+		SessionBlockHeight: 1,
+	}
+	// setup the query
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		q := newClientRequest("dispatch", newBody(key))
+		rec := httptest.NewRecorder()
+		Dispatch(rec, q, httprouter.Params{})
+		resp := getResponse(rec)
+		var response pocketTypes.Session
+		err := memCodec().UnmarshalJSON([]byte(resp), &response)
+		assert.Nil(t, err)
+		for _, val := range validators {
+			assert.Contains(t, response.SessionNodes, val)
+		}
+		cleanup()
+		stopCli()
+	}
+}
+
+func TestRPC_RawTX(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	kp, err := kb.Create("test")
+	assert.Nil(t, err)
+	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
+	assert.Nil(t, err)
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	// create the transaction
+	txBz, err := auth.DefaultTxEncoder(memCodec())(authTypes.NewTestTx(types.Context{}.WithChainID("pocket-test"),
+		[]types.Msg{bank.MsgSend{
+			FromAddress: cb.GetAddress(),
+			ToAddress:   kp.GetAddress(),
+			Amount:      types.NewCoins(types.NewCoin(types.DefaultBondDenom, types.NewInt(1))),
+		}},
+		[]crypto.PrivateKey{pk},
+		[]uint64{0},
+		[]uint64{0},
+		types.NewCoins(types.NewCoin(types.DefaultBondDenom, types.NewInt(1)))))
+	assert.Nil(t, err)
+	select {
+	case <-evtChan:
+		var err error
+		params := sendRawTxParams{
+			Addr:        cb.GetAddress().String(),
+			RawHexBytes: hex.EncodeToString(txBz),
+		}
+		q := newClientRequest("rawtx", newBody(params))
+		rec := httptest.NewRecorder()
+		SendRawTx(rec, q, httprouter.Params{})
+		resp := getResponse(rec)
+		assert.Nil(t, err)
+		assert.NotNil(t, resp)
+		var response types.TxResponse
+		err = memCodec().UnmarshalJSON([]byte(resp), &response)
+		assert.Nil(t, err)
+		assert.True(t, strings.Contains(response.Logs.String(), `"success":true`))
+	}
+	cleanup()
+	stopCli()
+}
+
 func newBody(params interface{}) io.Reader {
 	bz, err := json.Marshal(params)
 	if err != nil {
@@ -323,6 +490,14 @@ func newBody(params interface{}) io.Reader {
 	}
 	reader := bytes.NewReader(bz)
 	return reader
+}
+
+func newClientRequest(query string, body io.Reader) *http.Request {
+	req, err := http.NewRequest("POST", "localhost:8081/v1/client/"+query, body)
+	if err != nil {
+		panic("could not create request: %v")
+	}
+	return req
 }
 
 func newQueryRequest(query string, body io.Reader) *http.Request {
@@ -340,7 +515,7 @@ func getResponse(rec *httptest.ResponseRecorder) string {
 	if err != nil {
 		panic("could not read response: " + err.Error())
 	}
-	if strings.Contains(string(b), "error"){
+	if strings.Contains(string(b), "error") {
 		return string(b)
 	}
 	resp, err := strconv.Unquote(string(b))
