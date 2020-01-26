@@ -7,7 +7,7 @@ import (
 )
 
 func TestHooks_BeforeApplicationRegistered(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -17,8 +17,8 @@ func TestHooks_BeforeApplicationRegistered(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeApplicationRegistered", context, sdk.Address{}).Return(mock.Anything)
@@ -30,7 +30,7 @@ func TestHooks_BeforeApplicationRegistered(t *testing.T) {
 	}
 }
 func TestHooks_AfterApplicationRegistered(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -40,8 +40,8 @@ func TestHooks_AfterApplicationRegistered(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterApplicationRegistered", context, sdk.Address{}).Return(mock.Anything)
@@ -54,7 +54,7 @@ func TestHooks_AfterApplicationRegistered(t *testing.T) {
 }
 
 func TestHooks_BeforeApplicationRemoved(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -64,8 +64,8 @@ func TestHooks_BeforeApplicationRemoved(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeApplicationRemoved", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
@@ -78,7 +78,7 @@ func TestHooks_BeforeApplicationRemoved(t *testing.T) {
 }
 
 func TestHooks_AfterApplicationRemoved(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -88,8 +88,8 @@ func TestHooks_AfterApplicationRemoved(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterApplicationRemoved", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
@@ -102,7 +102,7 @@ func TestHooks_AfterApplicationRemoved(t *testing.T) {
 }
 
 func TestHooks_BeforeApplicationStaked(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -112,8 +112,8 @@ func TestHooks_BeforeApplicationStaked(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeApplicationStaked", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
@@ -125,7 +125,7 @@ func TestHooks_BeforeApplicationStaked(t *testing.T) {
 	}
 }
 func TestHooks_AfterApplicationStaked(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -135,8 +135,8 @@ func TestHooks_AfterApplicationStaked(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterApplicationStaked", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
@@ -148,7 +148,7 @@ func TestHooks_AfterApplicationStaked(t *testing.T) {
 	}
 }
 func TestHooks_BeforeApplicationBeginUnstaking(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -158,8 +158,8 @@ func TestHooks_BeforeApplicationBeginUnstaking(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeApplicationBeginUnstaking", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
@@ -171,7 +171,7 @@ func TestHooks_BeforeApplicationBeginUnstaking(t *testing.T) {
 	}
 }
 func TestHooks_AfterApplicationBeginUnstaking(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -181,8 +181,8 @@ func TestHooks_AfterApplicationBeginUnstaking(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterApplicationBeginUnstaking", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
@@ -194,7 +194,7 @@ func TestHooks_AfterApplicationBeginUnstaking(t *testing.T) {
 	}
 }
 func TestHooks_BeforeApplicationUnstaked(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -204,8 +204,8 @@ func TestHooks_BeforeApplicationUnstaked(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeApplicationUnstaked", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
@@ -217,7 +217,7 @@ func TestHooks_BeforeApplicationUnstaked(t *testing.T) {
 	}
 }
 func TestHooks_AfterApplicationUnstaked(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -227,8 +227,8 @@ func TestHooks_AfterApplicationUnstaked(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterApplicationUnstaked", context, sdk.Address{}, sdk.Address{}).Return(mock.Anything)
@@ -240,7 +240,7 @@ func TestHooks_AfterApplicationUnstaked(t *testing.T) {
 	}
 }
 func TestHooks_BeforeApplicationSlashed(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -250,8 +250,8 @@ func TestHooks_BeforeApplicationSlashed(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("BeforeApplicationSlashed", context, sdk.Address{}, sdk.NewDec(1)).Return(mock.Anything)
@@ -263,7 +263,7 @@ func TestHooks_BeforeApplicationSlashed(t *testing.T) {
 	}
 }
 func TestHooks_AfterApplicationSlashed(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 		args *AppHooks
 		want bool
@@ -273,8 +273,8 @@ func TestHooks_AfterApplicationSlashed(t *testing.T) {
 			args: new(AppHooks),
 		},
 	}
-	for _, tt := range tests{
-		t.Run(tt.name, func (t *testing.T){
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			_ = keeper.SetHooks(tt.args)
 			tt.args.On("AfterApplicationSlashed", context, sdk.Address{}, sdk.NewDec(1)).Return(mock.Anything)

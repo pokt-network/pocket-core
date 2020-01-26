@@ -24,9 +24,9 @@ func init() {
 	moduleCdc.Seal()
 
 	msgAppStake = MsgAppStake{
-		PubKey:  pub,
-		Chains:  []string{"886ba5bcb77e1064530052fed1a3f145"},
-		Value:   sdk.NewInt(10),
+		PubKey: pub,
+		Chains: []string{"886ba5bcb77e1064530052fed1a3f145"},
+		Value:  sdk.NewInt(10),
 	}
 	msgAppUnjail = MsgAppUnjail{sdk.Address(pub.Address())}
 	msgBeginAppUnstake = MsgBeginAppUnstake{sdk.Address(pub.Address())}
@@ -146,12 +146,12 @@ func TestMsgApp_ValidateBasic(t *testing.T) {
 		},
 		{
 			name: "errs if no native chains supported",
-			args: args{MsgAppStake{PubKey:  msgAppStake.PubKey, Value: sdk.NewInt(1), Chains: []string{}}},
+			args: args{MsgAppStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(1), Chains: []string{}}},
 			want: ErrNoChains(DefaultCodespace),
 		},
 		{
 			name: "returns err",
-			args: args{MsgAppStake{PubKey:  msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"a"}}},
+			args: args{MsgAppStake{PubKey: msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"a"}}},
 			want: types.NewInvalidHashLengthError("pocketcore"),
 		},
 		{

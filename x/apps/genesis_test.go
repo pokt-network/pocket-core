@@ -55,11 +55,11 @@ func TestPos_ValidateGeneis(t *testing.T) {
 	singleTokenApp := getApplication()
 	singleTokenApp.StakedTokens = sdk.NewInt(1)
 	tests := []struct {
-		name  string
-		state types.GenesisState
-		apps types.Applications
+		name   string
+		state  types.GenesisState
+		apps   types.Applications
 		params bool
-		want  interface{}
+		want   interface{}
 	}{
 		{
 			name: "valdiates genesis for application",
@@ -67,10 +67,10 @@ func TestPos_ValidateGeneis(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "errs if invalid params",
-			apps: types.Applications{application},
+			name:   "errs if invalid params",
+			apps:   types.Applications{application},
 			params: true,
-			want: fmt.Errorf("staking parameter StakeMimimum must be a positive integer"),
+			want:   fmt.Errorf("staking parameter StakeMimimum must be a positive integer"),
 		},
 		{
 			name: "errs if dupplicate application in geneiss state",

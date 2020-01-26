@@ -361,7 +361,7 @@ func getInMemoryTMClient() client.Client {
 func subscribeTo(t *testing.T, eventType string) (cli client.Client, stopClient func(), eventChan <-chan cTypes.ResultEvent) {
 	ctx, cancel := getBackgroundContext()
 	cli = getInMemoryTMClient()
-	if !cli.IsRunning(){
+	if !cli.IsRunning() {
 		_ = cli.Start()
 	}
 	stopClient = func() {

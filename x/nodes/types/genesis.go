@@ -14,7 +14,7 @@ type GenesisState struct {
 	DAO                      DAOPool                         `json:"dao" yaml:"dao"`
 	SigningInfos             map[string]ValidatorSigningInfo `json:"signing_infos" yaml:"signing_infos"`
 	MissedBlocks             map[string][]MissedBlock        `json:"missed_blocks" yaml:"missed_blocks"`
-	PreviousProposer         sdk.Address                 `json:"previous_proposer" yaml:"previous_proposer"`
+	PreviousProposer         sdk.Address                     `json:"previous_proposer" yaml:"previous_proposer"`
 }
 
 // PrevState validator power, needed for validator set update logic

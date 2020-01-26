@@ -10,7 +10,7 @@ import (
 
 type args struct {
 	amount      sdk.Int
-	address  sdk.Address
+	address     sdk.Address
 	consAddress sdk.Address
 }
 

@@ -55,7 +55,7 @@ func Test_queryApplication(t *testing.T) {
 
 	context, _, keeper := createTestInput(t, true)
 	addr := getRandomApplicationAddress()
-	jsondata, _ := amino.MarshalJSON(types.QueryAppParams{Address:addr})
+	jsondata, _ := amino.MarshalJSON(types.QueryAppParams{Address: addr})
 	var jsonresponse []byte
 
 	tests := []struct {
@@ -316,10 +316,10 @@ func Test_NewQuerier(t *testing.T) {
 		{
 			name: "Test queryUnstakingApplications",
 			args: args{
-				ctx: context,
-				req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
+				ctx:  context,
+				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 				path: []string{types.QueryUnstakingApplications},
-				k:   keeper,
+				k:    keeper,
 			},
 			want:  jsonresponse,
 			want1: nil,
@@ -327,10 +327,10 @@ func Test_NewQuerier(t *testing.T) {
 		{
 			name: "Test queryUnstakedApplications",
 			args: args{
-				ctx: context,
-				req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
+				ctx:  context,
+				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 				path: []string{types.QueryUnstakedApplications},
-				k:   keeper,
+				k:    keeper,
 			},
 			want:  jsonresponse,
 			want1: nil,
@@ -338,10 +338,10 @@ func Test_NewQuerier(t *testing.T) {
 		{
 			name: "Test queryStakedApplications",
 			args: args{
-				ctx: context,
-				req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
+				ctx:  context,
+				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 				path: []string{types.QueryStakedApplications},
-				k:   keeper,
+				k:    keeper,
 			},
 			want:  jsonresponse,
 			want1: nil,
@@ -349,10 +349,10 @@ func Test_NewQuerier(t *testing.T) {
 		{
 			name: "Test queryParams",
 			args: args{
-				ctx: context,
-				req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
+				ctx:  context,
+				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 				path: []string{types.QueryParameters},
-				k:   keeper,
+				k:    keeper,
 			},
 			want:  jsonresponseForParams,
 			want1: nil,
@@ -360,10 +360,10 @@ func Test_NewQuerier(t *testing.T) {
 		{
 			name: "Test queryApplications",
 			args: args{
-				ctx: context,
-				req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
+				ctx:  context,
+				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 				path: []string{types.QueryApplications},
-				k:   keeper,
+				k:    keeper,
 			},
 			want:  jsonresponse,
 			want1: nil,
@@ -371,10 +371,10 @@ func Test_NewQuerier(t *testing.T) {
 		{
 			name: "Test query application",
 			args: args{
-				ctx: context,
-				req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
+				ctx:  context,
+				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 				path: []string{types.QueryApplication},
-				k:   keeper,
+				k:    keeper,
 			},
 			want:  []byte(nil),
 			want1: types.ErrNoApplicationFound(types.DefaultCodespace),
@@ -382,10 +382,10 @@ func Test_NewQuerier(t *testing.T) {
 		{
 			name: "Test default querier",
 			args: args{
-				ctx: context,
-				req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
+				ctx:  context,
+				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
 				path: []string{"query"},
-				k:   keeper,
+				k:    keeper,
 			},
 			want:  []byte(nil),
 			want1: sdk.ErrUnknownRequest("unknown staking query endpoint"),

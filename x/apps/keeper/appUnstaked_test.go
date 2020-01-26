@@ -30,19 +30,19 @@ func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 		args
 	}{
 		{
-			name:     "gets applications",
-			args:     args{applications: []types.Application{boundedApplication}},
+			name: "gets applications",
+			args: args{applications: []types.Application{boundedApplication}},
 			want: want{applications: []types.Application{boundedApplication}, length: 1, stakedApplications: false},
 		},
 		{
-			name:     "gets emtpy slice of applications",
+			name: "gets emtpy slice of applications",
 			want: want{length: 0, stakedApplications: true},
-			args:     args{stakedApplication: stakedApplication},
+			args: args{stakedApplication: stakedApplication},
 		},
 		{
 			name:         "only gets unstakedbounded applications",
 			applications: []types.Application{boundedApplication, secondaryBoundedApplication},
-			want:     want{length: 1, stakedApplications: true},
+			want:         want{length: 1, stakedApplications: true},
 			args:         args{stakedApplication: stakedApplication, applications: []types.Application{boundedApplication}},
 		},
 	}
@@ -84,13 +84,13 @@ func TestAppUnstaked_DeleteUnstakingApplication(t *testing.T) {
 		name         string
 		application  types.Application
 		applications []types.Application
-		sets bool
+		sets         bool
 		want
 		args
 	}{
 		{
-			name:     "deletes",
-			args:     args{applications: []types.Application{boundedApplication, secondBoundedApp}},
+			name: "deletes",
+			args: args{applications: []types.Application{boundedApplication, secondBoundedApp}},
 			sets: false,
 			want: want{length: 1, stakedApplications: false},
 		},
@@ -136,8 +136,8 @@ func TestAppUnstaked_DeleteUnstakingApplications(t *testing.T) {
 		args
 	}{
 		{
-			name:     "deletes all unstaking application",
-			args:     args{applications: []types.Application{boundedApplication, secondaryBoundedApplication}},
+			name: "deletes all unstaking application",
+			args: args{applications: []types.Application{boundedApplication, secondaryBoundedApplication}},
 			want: want{length: 0, stakedApplications: false},
 		},
 	}
@@ -179,13 +179,13 @@ func TestAppUnstaked_GetAllMatureApplications(t *testing.T) {
 		args
 	}{
 		{
-			name:     "gets all mature applications",
-			args:     args{applications: []types.Application{unboundingApplication}},
+			name: "gets all mature applications",
+			args: args{applications: []types.Application{unboundingApplication}},
 			want: want{applications: []types.Application{unboundingApplication}, length: 1, stakedApplications: false},
 		},
 		{
-			name:     "gets empty slice if no mature applications",
-			args:     args{applications: []types.Application{}},
+			name: "gets empty slice if no mature applications",
+			args: args{applications: []types.Application{}},
 			want: want{applications: []types.Application{unboundingApplication}, length: 0, stakedApplications: false},
 		},
 	}
@@ -197,7 +197,7 @@ func TestAppUnstaked_GetAllMatureApplications(t *testing.T) {
 				keeper.SetApplication(context, application)
 				keeper.SetUnstakingApplication(context, application)
 			}
-			if got := keeper.getMatureApplications(context); len(got) !=  tt.want.length {
+			if got := keeper.getMatureApplications(context); len(got) != tt.want.length {
 				t.Errorf("appUnstaked.unstakeAllMatureApplications()= %v, want %v", len(got), tt.want.length)
 			}
 		})
@@ -225,8 +225,8 @@ func TestAppUnstaked_UnstakeAllMatureApplications(t *testing.T) {
 		args
 	}{
 		{
-			name:     "unstake mature applications",
-			args:     args{applications: []types.Application{unboundingApplication}},
+			name: "unstake mature applications",
+			args: args{applications: []types.Application{unboundingApplication}},
 			want: want{applications: []types.Application{unboundingApplication}, length: 0, stakedApplications: false},
 		},
 	}
