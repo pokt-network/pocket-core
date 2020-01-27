@@ -6,6 +6,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/params"
 	"github.com/tendermint/tendermint/libs/log"
@@ -20,6 +21,7 @@ var _ types.ValidatorSet = Keeper{}
 type Keeper struct {
 	storeKey           sdk.StoreKey
 	cdc                *codec.Codec
+	accountKeeper      auth.AccountKeeper
 	coinKeeper         bank.Keeper
 	supplyKeeper       types.SupplyKeeper
 	hooks              types.POSHooks
@@ -32,7 +34,7 @@ type Keeper struct {
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, coinKeeper bank.Keeper, supplyKeeper types.SupplyKeeper,
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper auth.AccountKeeper, coinKeeper bank.Keeper, supplyKeeper types.SupplyKeeper,
 	paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
 
 	// ensure bonded module accounts are set
@@ -43,6 +45,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, coinKeeper bank.Keeper, suppl
 	return Keeper{
 		storeKey:           key,
 		cdc:                cdc,
+		accountKeeper:      accountKeeper,
 		coinKeeper:         coinKeeper,
 		supplyKeeper:       supplyKeeper,
 		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),

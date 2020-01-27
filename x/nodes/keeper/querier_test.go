@@ -3,6 +3,8 @@ package keeper
 import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/auth"
+	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"reflect"
@@ -649,4 +651,22 @@ func Test_queryValidators(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestQueryAccount(t *testing.T) {
+	context, accs, keeper := createTestInput(t, true)
+	jsondata, _ := keeper.cdc.MarshalJSON(types.QueryAccountParams{
+		Address: accs[0].GetAddress(),
+	})
+	req := abci.RequestQuery{
+		Data: jsondata,
+		Path: "account",
+	}
+	res, err := queryAccount(context, req, keeper)
+	assert.Nil(t, err)
+	assert.NotNil(t, res)
+	var acc auth.BaseAccount
+	er := types.ModuleCdc.UnmarshalJSON(res, &acc)
+	assert.Nil(t, er)
+	assert.Equal(t, accs[0], &acc)
 }

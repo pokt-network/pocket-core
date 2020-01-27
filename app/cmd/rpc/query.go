@@ -93,6 +93,25 @@ func Balance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteResponse(w, string(s), r.URL.Path, r.Host)
 }
 
+func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = heightAddrParams{}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.QueryAccount(params.Address, params.Height)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	s, err := app.Codec().MarshalJSON(res)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteResponse(w, string(s), r.URL.Path, r.Host)
+}
+
 func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = heightAndStakingStatusParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {

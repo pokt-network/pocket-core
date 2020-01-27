@@ -125,6 +125,33 @@ func TestRPC_QueryBalance(t *testing.T) {
 	stopCli()
 }
 
+func TestRPC_QueryAccount(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		kb := getInMemoryKeybase()
+		cb, err := kb.GetCoinbase()
+		assert.Nil(t, err)
+		var params = heightAddrParams{
+			Height:  0,
+			Address: cb.GetAddress().String(),
+		}
+		q := newQueryRequest("account", newBody(params))
+		rec := httptest.NewRecorder()
+		Account(rec, q, httprouter.Params{})
+		resp := getResponse(rec)
+		assert.NotNil(t, resp)
+		assert.NotEmpty(t, resp)
+		var account auth.BaseAccount
+		err = json.Unmarshal([]byte(resp), &account)
+		assert.Nil(t, err)
+		assert.NotZero(t, account.Coins.AmountOf(types.DefaultBondDenom))
+	}
+	cleanup()
+	stopCli()
+}
+
 func TestRPC_QueryNodes(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)

@@ -21,6 +21,7 @@ import (
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/params"
 	"github.com/pokt-network/posmint/x/supply"
+	con "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
@@ -52,7 +53,7 @@ const (
 	defaultNodeKey    = "node_key.json"
 	defaultValKey     = "priv_val_key.json"
 	defaultValState   = "priv_val_state.json"
-	defaultListenAddr = "0.0.0.0:46656"
+	defaultListenAddr = "0.0.0.0:"
 )
 
 var (
@@ -69,7 +70,7 @@ var (
 	fs = string(fp.Separator)
 )
 
-func InitApp(datadir, tmNode, persistentPeers, seeds string) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node.Node {
 	pswrd := InitConfig(datadir)
 	// setup coinbase password
 	if pswrd == "" {
@@ -84,7 +85,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds string) *node.Node {
 	// set tendermint node
 	setTmNode(tmNode)
 	// init the tendermint node
-	return InitTendermint(persistentPeers, seeds)
+	return InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort)
 }
 
 func InitConfig(datadir string) string {
@@ -162,7 +163,7 @@ func InitGenesis() {
 	}
 }
 
-func InitTendermint(persistentPeers, seeds string) *node.Node {
+func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node.Node {
 	datadir := getDataDir()
 	// setup the logger
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
@@ -180,8 +181,29 @@ func InitTendermint(persistentPeers, seeds string) *node.Node {
 			return term.FgBgColor{}
 		}
 	})
-	c := *cfg.NewConfig(datadir, "", defaultNodeKey, defaultValKey, defaultValState, persistentPeers, seeds, defaultListenAddr,
-		true, time.Second*10, 40, 10, logger, "")
+
+	// setup tendermint node config
+	newTMConfig := con.DefaultConfig()
+	newTMConfig.SetRoot(datadir)
+	newTMConfig.DBPath = datadir
+	newTMConfig.NodeKey = defaultNodeKey
+	newTMConfig.PrivValidatorKey = defaultValKey
+	newTMConfig.PrivValidatorState = defaultValState
+	newTMConfig.RPC.ListenAddress = defaultListenAddr + tmRPCPort
+	newTMConfig.P2P.ListenAddress = defaultListenAddr + tmPeersPort // Node listen address. (0.0.0.0:0 means any interface, any port)
+	newTMConfig.P2P.PersistentPeers = persistentPeers               // Comma-delimited ID@host:port persistent peers
+	newTMConfig.P2P.Seeds = seeds                                   // Comma-delimited ID@host:port seed nodes
+	newTMConfig.Consensus.CreateEmptyBlocks = true                  // Set this to false to only produce blocks when there are txs or when the AppHash changes
+	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Second * 10
+	newTMConfig.P2P.MaxNumInboundPeers = 40
+	newTMConfig.P2P.MaxNumOutboundPeers = 10
+
+	c := cfg.Config{
+		TmConfig:    newTMConfig,
+		Logger:      logger,
+		TraceWriter: "",
+	}
+
 	var err error
 	tmNode, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
 		return NewPocketCoreApp(logger, db)

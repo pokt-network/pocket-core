@@ -15,7 +15,7 @@ func init() {
 // accountsCmd represents the accounts namespace command
 var utilCmd = &cobra.Command{
 	Use:   "util",
-	Short: "Functions for pocket core util",
+	Short: "utilities",
 	Long:  ``,
 }
 

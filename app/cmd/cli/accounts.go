@@ -33,7 +33,7 @@ func init() {
 // accountsCmd represents the accounts namespace command
 var accountsCmd = &cobra.Command{
 	Use:   "accounts",
-	Short: "The accounts namespace",
+	Short: "account management",
 	Long: `The accounts namespace handles all account related interactions,
 from creating and deleting accounts, to importing and exporting accounts.`,
 }

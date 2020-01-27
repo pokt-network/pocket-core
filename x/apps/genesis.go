@@ -16,25 +16,21 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 	// set the parameters from the data
 	keeper.SetParams(ctx, data.Params)
 	for _, application := range data.Applications {
-		if application.IsUnstaked() {
-			panic(fmt.Sprintf("%v the applications must be staked or unstaking at genesis", application))
+		if application.IsUnstaked() || application.IsUnstaking() {
+			panic(fmt.Sprintf("%v the applications must be staked at genesis", application))
 		}
 		// Call the registration hook if not exported
 		if !data.Exported {
 			keeper.BeforeApplicationRegistered(ctx, application.Address)
 		}
+		// calculate relays
+		application.MaxRelays = keeper.CalculateAppRelays(ctx, application)
 		// set the applications from the data
 		keeper.SetApplication(ctx, application)
 		keeper.SetStakedApplication(ctx, application)
-		// Call the creation hook if not exported
 		if !data.Exported {
 			keeper.AfterApplicationRegistered(ctx, application.Address)
 		}
-		// update unstaking applications if necessary
-		if application.IsUnstaking() {
-			keeper.SetUnstakingApplication(ctx, application)
-		}
-
 		if application.IsStaked() {
 			stakedTokens = stakedTokens.Add(application.GetTokens())
 		}

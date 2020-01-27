@@ -25,7 +25,7 @@ func TestQueryAccountBalance(t *testing.T) {
 	}{
 		{"TestQueryAccountBalance", args{
 			cdc:    makeTestCodec(),
-			tmNode: GetTestTendermintClient(),
+			tmNode: GetTestTendermintClient(), // todo these tests seem to return an error?
 			addr:   getRandomValidatorAddress(),
 			height: 0,
 		}, sdk.ZeroInt(), true},

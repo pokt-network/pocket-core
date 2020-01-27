@@ -222,7 +222,7 @@ func TestQueryPocketSupportedBlockchains(t *testing.T) {
 	stopCli()
 }
 
-func TestQueryPocket(t *testing.T) {
+func TestQueryPocketParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
@@ -234,6 +234,22 @@ func TestQueryPocket(t *testing.T) {
 		assert.Equal(t, int64(3), got.ProofWaitingPeriod)
 		assert.Equal(t, int64(25), got.ClaimExpiration)
 		assert.Contains(t, got.SupportedBlockchains, dummyChainsHash)
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestQueryAccount(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	acc := getUnstakedAccount(kb)
+	assert.NotNil(t, acc)
+	select {
+	case <-evtChan:
+		got, err := nodes.QueryAccount(memCodec(), memCli, acc.GetAddress(), 0)
+		assert.Nil(t, err)
+		assert.NotNil(t, got)
+		assert.Equal(t, acc.GetAddress(), got.GetAddress())
 	}
 	cleanup()
 	stopCli()

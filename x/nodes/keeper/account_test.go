@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 )
@@ -49,4 +50,11 @@ func TestKeeper_SendCoins(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestKeeper_GetAccount(t *testing.T) {
+	ctx, accs, keeper := createTestInput(t, false)
+	acc := keeper.GetAccount(ctx, accs[0].GetAddress())
+	assert.NotNil(t, acc)
+	assert.Equal(t, accs[0], acc)
 }
