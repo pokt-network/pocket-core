@@ -18,7 +18,7 @@ func init() {
 
 var nodesCmd = &cobra.Command{
 	Use:   "nodes",
-	Short: "Functions for node management",
+	Short: "node management",
 	Long:  ``,
 }
 

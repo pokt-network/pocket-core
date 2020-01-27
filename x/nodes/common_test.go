@@ -124,7 +124,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
-	keeper := keeper.NewKeeper(cdc, keySupply, bk, sk, posSubSpace, sdk.CodespaceType("pos"))
+	keeper := keeper.NewKeeper(cdc, keySupply, ak, bk, sk, posSubSpace, sdk.CodespaceType("pos"))
 
 	params := types.DefaultParams()
 	keeper.SetParams(ctx, params)
@@ -134,8 +134,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 // nolint: unparam deadcode unused
 func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
-
-		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+		privKey := crypto.GenerateEd25519PrivKey()
 		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
@@ -143,6 +142,7 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 		acc.PubKey = pubKey
 		acc.AccountNumber = uint64(i)
 		ak.SetAccount(ctx, &acc)
+		accs = append(accs, &acc)
 	}
 	return
 }

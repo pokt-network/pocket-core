@@ -17,6 +17,7 @@ func init() {
 	queryCmd.AddCommand(queryTx)
 	queryCmd.AddCommand(queryNodes)
 	queryCmd.AddCommand(queryBalance)
+	queryCmd.AddCommand(queryAccount)
 	queryCmd.AddCommand(queryNode)
 	queryCmd.AddCommand(queryApps)
 	queryCmd.AddCommand(queryApp)
@@ -31,7 +32,7 @@ func init() {
 
 var queryCmd = &cobra.Command{
 	Use:   "query",
-	Short: "Queries the current world state built on the Pocket node.",
+	Short: "query the blockchain",
 	Long:  ``,
 }
 
@@ -104,6 +105,29 @@ var queryBalance = &cobra.Command{
 			panic(err)
 		}
 		fmt.Printf("Account Balance: %v\n", res)
+	},
+}
+
+var queryAccount = &cobra.Command{
+	Use:   "account <accAddr> <height>",
+	Short: "Gets an account",
+	Long:  `Returns the account structure for a specific address.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		var height int
+		if len(args) == 1 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[1])
+			if err != nil {
+				panic(err)
+			}
+		}
+		res, err := app.QueryAccount(args[0], int64(height))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Account: %v\n", res)
 	},
 }
 

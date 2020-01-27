@@ -109,7 +109,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-	nk := nodeskeeper.NewKeeper(cdc, nodesKey, bk, sk, pk.Subspace(nodestypes.DefaultParamspace), "pos")
+	nk := nodeskeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, pk.Subspace(nodestypes.DefaultParamspace), "pos")
 
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
@@ -135,7 +135,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 // nolint: unparam deadcode unused
 func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
-		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+		privKey := crypto.GenerateEd25519PrivKey()
 		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
 		acc := auth.NewBaseAccountWithAddress(addr)
@@ -143,6 +143,7 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 		acc.PubKey = pubKey
 		acc.AccountNumber = uint64(i)
 		ak.SetAccount(ctx, &acc)
+		accs = append(accs, &acc)
 	}
 	return
 }

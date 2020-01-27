@@ -143,6 +143,7 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 	app.nodesKeeper = nodesKeeper.NewKeeper(
 		app.cdc,
 		app.keys[nodesTypes.StoreKey],
+		app.accountKeeper,
 		app.bankKeeper,
 		app.supplyKeeper,
 		app.paramsKeeper.Subspace(nodesTypes.DefaultParamspace),

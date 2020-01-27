@@ -136,7 +136,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
 			bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
 			sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-			nk := nodeskeeper.NewKeeper(cdc, nodesKey, bk, sk, pk.Subspace(nodestypes.DefaultParamspace), "pos")
+			nk := nodeskeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, pk.Subspace(nodestypes.DefaultParamspace), "pos")
 
 			moduleManager := module.NewManager(
 				auth.NewAppModule(ak),

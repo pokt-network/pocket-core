@@ -8,6 +8,7 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/auth"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
@@ -34,6 +35,14 @@ func QueryBalance(addr string, height int64) (balance sdk.Int, err error) {
 		return sdk.NewInt(0), err
 	}
 	return nodes.QueryAccountBalance(cdc, getTMClient(), a, height)
+}
+
+func QueryAccount(addr string, height int64) (account *auth.BaseAccount, err error) {
+	a, err := sdk.AddressFromHex(addr)
+	if err != nil {
+		return nil, err
+	}
+	return nodes.QueryAccount(cdc, getTMClient(), a, height)
 }
 
 func QueryAllNodes(height int64) (nodesTypes.Validators, error) {

@@ -6,6 +6,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
@@ -13,7 +14,7 @@ import (
 
 func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (sdk.Int, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryAccountBalanceParams{Address: addr}
+	params := types.QueryAccountParams{Address: addr}
 	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
 		return sdk.ZeroInt(), err
@@ -29,6 +30,26 @@ func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Add
 		return sdk.ZeroInt(), err
 	}
 	return balance, nil
+}
+
+func QueryAccount(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (*auth.BaseAccount, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
+	params := types.QueryAccountParams{Address: addr}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryAccount)
+	balanceBz, _, err := cliCtx.QueryWithData(path, bz)
+	if err != nil {
+		return nil, err
+	}
+	var acc auth.BaseAccount
+	err = cdc.UnmarshalJSON(balanceBz, &acc)
+	if err != nil {
+		return nil, err
+	}
+	return &acc, nil
 }
 
 func QueryValidator(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (types.Validator, error) {

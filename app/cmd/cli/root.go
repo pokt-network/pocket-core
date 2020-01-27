@@ -15,6 +15,9 @@ var (
 	tmNode          string
 	persistentPeers string
 	seeds           string
+	tmRPCPort       string
+	tmPeersPort     string
+	pocketRPCPort   string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -38,22 +41,25 @@ func Execute() {
 func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolP("toggle", "t", false, "help message for toggle")
 	rootCmd.PersistentFlags().StringVar(&datadir, "datadir", "", "data directory (default is $HOME/.pocket/")
 	rootCmd.PersistentFlags().StringVar(&tmNode, "node", "", "takes a remote endpoint in the form <protocol>://<host>:<port>")
 	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
 	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
+	rootCmd.PersistentFlags().StringVar(&tmRPCPort, "tmRPCPort", "26657", "the port for tendermint rpc")
+	rootCmd.PersistentFlags().StringVar(&tmPeersPort, "tmPeersPort", "46656", "the port for tendermint p2p")
+	rootCmd.PersistentFlags().StringVar(&pocketRPCPort, "pocketRPCPort", "8081", "the port for pocket rpc")
 	rootCmd.AddCommand(startCmd)
 }
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Starts the pocket-core client",
+	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		go rpc.StartRPC("8081")
-		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds)
+		go rpc.StartRPC(pocketRPCPort)
+		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		// We trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel,
