@@ -52,7 +52,7 @@ func TestRPC_QueryBlock(t *testing.T) {
 		q := newQueryRequest("block", newBody(params))
 		rec := httptest.NewRecorder()
 		Block(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
 		var blk core_types.ResultBlock
@@ -550,4 +550,14 @@ func getResponse(rec *httptest.ResponseRecorder) string {
 		panic("could not unquote resp: " + err.Error())
 	}
 	return resp
+}
+
+func getJSONResponse(rec *httptest.ResponseRecorder) []byte {
+	res := rec.Result()
+	defer res.Body.Close()
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		panic("could not read response: " + err.Error())
+	}
+	return b
 }
