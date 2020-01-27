@@ -53,7 +53,7 @@ const (
 	defaultNodeKey    = "node_key.json"
 	defaultValKey     = "priv_val_key.json"
 	defaultValState   = "priv_val_state.json"
-	defaultListenAddr = "0.0.0.0:"
+	defaultListenAddr = "tcp://0.0.0.0:"
 )
 
 var (
