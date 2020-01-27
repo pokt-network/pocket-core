@@ -666,7 +666,7 @@ func TestQueryAccount(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 	var acc auth.BaseAccount
-	er := types.ModuleCdc.UnmarshalJSON(res, &acc)
+	er := keeper.cdc.UnmarshalJSON(res, &acc)
 	assert.Nil(t, er)
 	assert.Equal(t, accs[0], &acc)
 }
