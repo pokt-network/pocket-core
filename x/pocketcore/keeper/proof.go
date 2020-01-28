@@ -3,7 +3,6 @@ package keeper
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
@@ -241,7 +240,6 @@ func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) {
 }
 func (k Keeper) GetClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	fmt.Println(pc.KeyForClaim(ctx, address, header))
 	res := store.Get(pc.KeyForClaim(ctx, address, header))
 	if res == nil {
 		return pc.MsgClaim{}, false

@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/hex"
-	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -257,18 +256,28 @@ func TestClaimTx(t *testing.T) {
 		assert.Nil(t, err)
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
-	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlockHeader)
-	for {
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	select {
+	case res := <-evtChan:
+		if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeClaim) {
+			t.Fatal("claim message was not received first")
+		}
+		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		select {
 		case res := <-evtChan:
-			if len(res.Events["proof.module"]) == 1 {
-				fmt.Println("YAH")
+			if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeProof) {
+				t.Fatal("proof message was not received afterward")
+			}
+			memCLI, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+			select {
+			case <-evtChan:
+				res, err := nodes.QueryAccountBalance(memCodec(), memCLI, validators[0].Address, 0)
+				assert.Nil(t, err)
+				assert.Equal(t, int64(1000020000), res.Int64())
 				cleanup()
 				stopCli()
 				return
 			}
-		default:
-			continue
 		}
 	}
 }
