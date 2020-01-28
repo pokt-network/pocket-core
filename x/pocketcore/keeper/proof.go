@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
@@ -12,11 +13,12 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	"math"
 	"strconv"
+	"time"
 )
 
 func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
 	// delete the proofs held within the world state for too long
-	k.DeleteExpiredClaims(ctx)
+	//k.DeleteExpiredClaims(ctx)
 }
 
 // validate the zero knowledge range proof using the proof message and the claim message
@@ -113,19 +115,22 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		if _, found := k.GetClaim(ctx, sdk.Address(kp.GetAddress()), invoice.SessionHeader); found {
 			continue
 		}
-		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
 		// generate the merkle root for this invoice
 		root := invoice.GenerateMerkleRoot()
-		// send in the invoice header, the total relays completed, and the merkle root (ensures data integrity)
-		if _, err := claimTx(keybase, cliCtx, txBuilder, invoice.SessionHeader, invoice.TotalRelays, root); err != nil {
-			panic(err)
-		}
+		go func() {
+			time.Sleep(time.Second * 1)
+			// generate the auto txbuilder and clictx
+			txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+			// send in the invoice header, the total relays completed, and the merkle root (ensures data integrity)
+			if _, err := claimTx(keybase, cliCtx, txBuilder, invoice.SessionHeader, invoice.TotalRelays, root); err != nil {
+				ctx.Logger().Error(err.Error())
+			}
+		}()
 	}
 }
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, claimTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.RelayProof) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.RelayProof) (*sdk.TxResponse, error)) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		panic(err)
@@ -144,8 +149,6 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			k.DeleteClaim(ctx, addr, proof.SessionHeader)
 			continue
 		}
-		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
 		// generate the proof of relay object using the found proof and local cache
 		inv := pc.Invoice{
 			SessionHeader: proof.SessionHeader,
@@ -159,11 +162,16 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		// get the leaf for the required pseudorandom proof index
 		leaf := pc.GetAllInvoices().GetProof(proof.SessionHeader, reqProof)
 		cousin := pc.GetAllInvoices().GetProof(proof.SessionHeader, cousinIndex)
-		// send the claim TX
-		_, err := claimTx(cliCtx, txBuilder, branch, leaf, cousin)
-		if err != nil {
-			panic(err)
-		}
+		go func() {
+			time.Sleep(time.Second * 1)
+			// generate the auto txbuilder and clictx
+			txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+			// send the claim TX
+			_, err := proofTx(cliCtx, txBuilder, branch, leaf, cousin)
+			if err != nil {
+				ctx.Logger().Error(err.Error())
+			}
+		}()
 	}
 }
 
@@ -233,6 +241,7 @@ func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) {
 }
 func (k Keeper) GetClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
 	store := ctx.KVStore(k.storeKey)
+	fmt.Println(pc.KeyForClaim(ctx, address, header))
 	res := store.Get(pc.KeyForClaim(ctx, address, header))
 	if res == nil {
 		return pc.MsgClaim{}, false
@@ -318,7 +327,6 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 	return false
 }
 
-// todo this auto tx needs to be fixed
 func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
@@ -328,8 +336,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybas
 	if err != nil {
 		panic(err)
 	}
-	pubKey := kp.PublicKey
-	fromAddr := sdk.Address(pubKey.Bytes())
+	fromAddr := kp.GetAddress()
 	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
 	cliCtx.BroadcastMode = util.BroadcastSync
 	accGetter := auth.NewAccountRetriever(cliCtx)

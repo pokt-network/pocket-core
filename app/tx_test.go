@@ -1,14 +1,18 @@
 package app
 
 import (
+	"encoding/hex"
+	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/types"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
 	tmTypes "github.com/tendermint/tendermint/types"
+	"math/rand"
 	"testing"
 	"time"
 )
@@ -212,4 +216,59 @@ func TestSendRawTx(t *testing.T) {
 	}
 	cleanup()
 	stopCli()
+}
+
+func TestClaimTx(t *testing.T) {
+	genBz, validators, app := fiveValidatorsOneAppGenesis()
+	kb := getInMemoryKeybase()
+	for i := 0; i < 20; i++ {
+		appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
+		assert.Nil(t, err)
+		// setup AAT
+		aat := pocketTypes.AAT{
+			Version:              "0.0.1",
+			ApplicationPublicKey: appPrivateKey.PublicKey().RawString(),
+			ClientPublicKey:      appPrivateKey.PublicKey().RawString(),
+			ApplicationSignature: "",
+		}
+		sig, err := appPrivateKey.Sign(aat.Hash())
+		if err != nil {
+			panic(err)
+		}
+		aat.ApplicationSignature = hex.EncodeToString(sig)
+		proof := pocketTypes.RelayProof{
+			Entropy:            int64(rand.Int()),
+			SessionBlockHeight: 1,
+			ServicerPubKey:     validators[0].PublicKey.RawString(),
+			Blockchain:         dummyChainsHash,
+			Token:              aat,
+			Signature:          "",
+		}
+		sig, err = appPrivateKey.Sign(proof.Hash())
+		if err != nil {
+			t.Fatal(err)
+		}
+		proof.Signature = hex.EncodeToString(sig)
+		err = pocketTypes.GetAllInvoices().AddToInvoice(pocketTypes.SessionHeader{
+			ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
+			Chain:              dummyChainsHash,
+			SessionBlockHeight: 1,
+		}, proof)
+		assert.Nil(t, err)
+	}
+	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlockHeader)
+	for {
+		select {
+		case res := <-evtChan:
+			if len(res.Events["proof.module"]) == 1 {
+				fmt.Println("YAH")
+				cleanup()
+				stopCli()
+				return
+			}
+		default:
+			continue
+		}
+	}
 }

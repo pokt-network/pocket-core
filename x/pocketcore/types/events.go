@@ -3,6 +3,6 @@ package types
 // pc module event types
 const (
 	EventTypeClaim        = "claim"
-	EventTypeClaimedProof = "RelayProof"
+	EventTypeProof        = "RelayProof"
 	AttributeKeyValidator = "validator"
 )
