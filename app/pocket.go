@@ -109,9 +109,9 @@ var (
 	// module account permissions
 	moduleAccountPermissions = map[string][]string{
 		auth.FeeCollectorName:     nil,
-		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
-		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
-		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
+		nodesTypes.StakedPoolName: {supply.Burner, supply.Minter, supply.Staking},
+		appsTypes.StakedPoolName:  {supply.Burner, supply.Minter, supply.Staking},
+		nodesTypes.DAOPoolName:    {supply.Burner, supply.Minter, supply.Staking},
 		nodesTypes.ModuleName:     nil,
 		appsTypes.ModuleName:      nil,
 	}

@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -58,7 +57,6 @@ func TestKeeper_IsSessionBlock(t *testing.T) {
 
 func TestKeeper_GetLatestSessionBlock(t *testing.T) {
 	notSessionContext, _, _, _, keeper := createTestInput(t, false)
-	fmt.Println(notSessionContext.BlockHeight())
 	assert.Equal(t, keeper.GetLatestSessionBlock(notSessionContext).BlockHeight(), int64(976))
 }
 
