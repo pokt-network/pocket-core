@@ -7,6 +7,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/params"
 	"github.com/tendermint/tendermint/rpc/client"
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
@@ -38,4 +39,9 @@ func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper type
 // get the non native chains hosted locally on this node
 func (k Keeper) GetHostedBlockchains() types.HostedBlockchains {
 	return k.hostedBlockchains
+}
+
+func (k Keeper) GetBlock(height int) (*core_types.ResultBlock, error) {
+	h := int64(height)
+	return k.TmNode.Block(&h)
 }

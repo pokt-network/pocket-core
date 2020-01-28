@@ -577,6 +577,26 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	})
 	res2 := memCodec().MustMarshalJSON(appsGenesisState)
 	defaultGenesis[appsTypes.ModuleName] = res2
+	// accounts
+	rawAccounts := defaultGenesis[auth.ModuleName]
+	var authGenState auth.GenesisState
+	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address:       sdk.Address(pubKey.Address()),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
+		PubKey:        pubKey,
+		AccountNumber: 0,
+		Sequence:      0,
+	})
+	res = memCodec().MustMarshalJSON(authGenState)
+	defaultGenesis[auth.ModuleName] = res
+	// setup supported blockchains
+	rawPocket := defaultGenesis[pocketTypes.ModuleName]
+	var pocketGenesisState pocketTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
+	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
+	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
+	defaultGenesis[pocketTypes.ModuleName] = res3
 	genState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j, posGenesisState.Validators, appsGenesisState.Applications[0]

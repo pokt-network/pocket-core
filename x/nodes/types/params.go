@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	DefaultRelaysToTokens = sdk.NewDec(1).Quo(sdk.NewDec(10000)) // .0001
+	DefaultRelaysToTokens = sdk.NewDec(1000) // .0001 POKT
 )
 
 // nolint - Keys for parameter access
