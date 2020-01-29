@@ -34,7 +34,7 @@ func QueryBalance(addr string, height int64) (balance sdk.Int, err error) {
 	if err != nil {
 		return sdk.NewInt(0), err
 	}
-	return nodes.QueryAccountBalance(cdc, getTMClient(), a, height)
+	return nodes.QueryAccountBalance(Codec(), getTMClient(), a, height)
 }
 
 func QueryAccount(addr string, height int64) (account *auth.BaseAccount, err error) {
@@ -42,11 +42,11 @@ func QueryAccount(addr string, height int64) (account *auth.BaseAccount, err err
 	if err != nil {
 		return nil, err
 	}
-	return nodes.QueryAccount(cdc, getTMClient(), a, height)
+	return nodes.QueryAccount(Codec(), getTMClient(), a, height)
 }
 
 func QueryAllNodes(height int64) (nodesTypes.Validators, error) {
-	return nodes.QueryValidators(cdc, getTMClient(), height)
+	return nodes.QueryValidators(Codec(), getTMClient(), height)
 }
 
 func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err error) {
@@ -54,23 +54,23 @@ func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err e
 	if err != nil {
 		return validator, err
 	}
-	return nodes.QueryValidator(cdc, getTMClient(), a, height)
+	return nodes.QueryValidator(Codec(), getTMClient(), a, height)
 }
 
 func QueryUnstakingNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return nodes.QueryUnstakingValidators(cdc, getTMClient(), height)
+	return nodes.QueryUnstakingValidators(Codec(), getTMClient(), height)
 }
 
 func QueryStakedNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return nodes.QueryStakedValidators(cdc, getTMClient(), height)
+	return nodes.QueryStakedValidators(Codec(), getTMClient(), height)
 }
 
 func QueryUnstakedNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return nodes.QueryUnstakedValidators(cdc, getTMClient(), height)
+	return nodes.QueryUnstakedValidators(Codec(), getTMClient(), height)
 }
 
 func QueryNodeParams(height int64) (params nodesTypes.Params, err error) {
-	return nodes.QueryPOSParams(cdc, getTMClient(), height)
+	return nodes.QueryPOSParams(Codec(), getTMClient(), height)
 }
 
 func QuerySigningInfo(height int64, addr string) (nodesTypes.ValidatorSigningInfo, error) {
@@ -78,19 +78,19 @@ func QuerySigningInfo(height int64, addr string) (nodesTypes.ValidatorSigningInf
 	if err != nil {
 		return nodesTypes.ValidatorSigningInfo{}, err
 	}
-	return nodes.QuerySigningInfo(cdc, getTMClient(), height, a)
+	return nodes.QuerySigningInfo(Codec(), getTMClient(), height, a)
 }
 
 func QueryTotalNodeCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {
-	return nodes.QuerySupply(cdc, getTMClient(), height)
+	return nodes.QuerySupply(Codec(), getTMClient(), height)
 }
 
 func QueryDaoBalance(height int64) (daoCoins sdk.Int, err error) {
-	return nodes.QueryDAO(cdc, getTMClient(), height)
+	return nodes.QueryDAO(Codec(), getTMClient(), height)
 }
 
 func QueryAllApps(height int64) (appsTypes.Applications, error) {
-	return apps.QueryApplications(cdc, getTMClient(), height)
+	return apps.QueryApplications(Codec(), getTMClient(), height)
 }
 
 func QueryApp(addr string, height int64) (validator appsTypes.Application, err error) {
@@ -98,27 +98,27 @@ func QueryApp(addr string, height int64) (validator appsTypes.Application, err e
 	if err != nil {
 		return validator, err
 	}
-	return apps.QueryApplication(cdc, getTMClient(), a, height)
+	return apps.QueryApplication(Codec(), getTMClient(), a, height)
 }
 
 func QueryUnstakingApps(height int64) (validators appsTypes.Applications, err error) {
-	return apps.QueryUnstakingApplications(cdc, getTMClient(), height)
+	return apps.QueryUnstakingApplications(Codec(), getTMClient(), height)
 }
 
 func QueryStakedApps(height int64) (validators appsTypes.Applications, err error) {
-	return apps.QueryStakedApplications(cdc, getTMClient(), height)
+	return apps.QueryStakedApplications(Codec(), getTMClient(), height)
 }
 
 func QueryUnstakedApps(height int64) (validators appsTypes.Applications, err error) {
-	return apps.QueryUnstakedApplications(cdc, getTMClient(), height)
+	return apps.QueryUnstakedApplications(Codec(), getTMClient(), height)
 }
 
 func QueryTotalAppCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {
-	return apps.QuerySupply(cdc, getTMClient(), height)
+	return apps.QuerySupply(Codec(), getTMClient(), height)
 }
 
 func QueryAppParams(height int64) (params appsTypes.Params, err error) {
-	return apps.QueryPOSParams(cdc, getTMClient(), height)
+	return apps.QueryPOSParams(Codec(), getTMClient(), height)
 }
 
 func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredInvoice, err error) {
@@ -126,7 +126,7 @@ func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredInvoice,
 	if err != nil {
 		return nil, err
 	}
-	return pocket.QueryProofs(cdc, getTMClient(), a, height)
+	return pocket.QueryProofs(Codec(), getTMClient(), a, height)
 }
 
 func QueryProof(blockchain, appPubKey, addr string, sessionblockHeight, height int64) (proof *pocketTypes.StoredInvoice, err error) {
@@ -134,21 +134,21 @@ func QueryProof(blockchain, appPubKey, addr string, sessionblockHeight, height i
 	if err != nil {
 		return nil, err
 	}
-	return pocket.QueryProof(cdc, a, getTMClient(), blockchain, appPubKey, sessionblockHeight, height)
+	return pocket.QueryProof(Codec(), a, getTMClient(), blockchain, appPubKey, sessionblockHeight, height)
 }
 
 func QueryPocketSupportedBlockchains(height int64) ([]string, error) {
-	return pocket.QueryPocketSupportedBlockchains(cdc, getTMClient(), height)
+	return pocket.QueryPocketSupportedBlockchains(Codec(), getTMClient(), height)
 }
 
 func QueryPocketParams(height int64) (pocketTypes.Params, error) {
-	return pocket.QueryParams(cdc, getTMClient(), height)
+	return pocket.QueryParams(Codec(), getTMClient(), height)
 }
 
 func QueryRelay(r pocketTypes.Relay) (*pocketTypes.RelayResponse, error) {
-	return pocket.QueryRelay(cdc, getTMClient(), r)
+	return pocket.QueryRelay(Codec(), getTMClient(), r)
 }
 
 func QueryDispatch(header pocketTypes.SessionHeader) (*pocketTypes.Session, error) {
-	return pocket.QueryDispatch(cdc, getTMClient(), header)
+	return pocket.QueryDispatch(Codec(), getTMClient(), header)
 }
