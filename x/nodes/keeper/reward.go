@@ -101,7 +101,7 @@ func (k Keeper) getValidatorAward(ctx sdk.Context, address sdk.Address) (coins s
 	}
 	k.cdc.MustUnmarshalBinaryBare(value, &coins)
 	found = true
-	return sdk.ZeroInt(), true
+	return coins, true
 }
 
 func (k Keeper) deleteValidatorAward(ctx sdk.Context, address sdk.Address) {
