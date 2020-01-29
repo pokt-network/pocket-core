@@ -229,7 +229,7 @@ var queryNodeParams = &cobra.Command{
 var appStakingStatus string
 
 func init() {
-	queryApps.LocalNonPersistentFlags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
+	queryApps.Flags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
 }
 
 var queryApps = &cobra.Command{
