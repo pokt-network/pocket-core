@@ -105,6 +105,10 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 	invoices := pc.GetAllInvoices()
 	// for every invoice in Invoices
 	for _, invoice := range (*invoices).M {
+		if len(invoice.Proofs) < 5 {
+			invoices.DeleteInvoice(invoice.SessionHeader)
+			continue
+		}
 		// if the blockchain in the invoice is not supported then delete it because nodes don't get paid for unsupported blockchains
 		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(invoice.SessionHeader.SessionBlockHeight), invoice.SessionHeader.Chain) && invoice.TotalRelays > 0 {
 			invoices.DeleteInvoice(invoice.SessionHeader)

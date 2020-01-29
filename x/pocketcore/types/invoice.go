@@ -19,7 +19,7 @@ type Invoice struct {
 
 // generate the merkle root of an invoice
 func (i *Invoice) GenerateMerkleRoot() (root HashSum) {
-	root, sortedProofs := GenerateRoot(i.Proofs)
+		root, sortedProofs := GenerateRoot(i.Proofs)
 	i.Proofs = sortedProofs
 	return
 }

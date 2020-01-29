@@ -124,8 +124,8 @@ func (p Params) Validate() error {
 	if p.SessionBlockFrequency < 2 {
 		return fmt.Errorf("session block must be greater than 1")
 	}
-	if p.RelaysToTokens.GT(sdk.OneDec()) || p.RelaysToTokens.LTE(sdk.ZeroDec()) {
-		return fmt.Errorf("relays to tokens must be a decimal <= 1 and > 0")
+	if p.RelaysToTokens.LTE(sdk.ZeroDec()) {
+		return fmt.Errorf("relays to tokens must be > 0")
 	}
 	return nil
 }

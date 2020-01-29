@@ -40,9 +40,9 @@ func TestSetandGetValidatorAward(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-
 			keeper.setValidatorAward(context, test.args.amount, test.args.address)
 			coins, found := keeper.getValidatorAward(context, test.args.address)
+			fmt.Println(coins, test.expectedCoins)
 			assert.True(t, test.expectedCoins.Equal(coins), "coins don't match")
 			assert.Equal(t, test.expectedFind, found, "finds don't match")
 
