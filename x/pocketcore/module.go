@@ -8,6 +8,8 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"math/rand"
+	"time"
 )
 
 // type check to ensure the interface is properly implemented
@@ -81,11 +83,14 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 }
 
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
-	if am.keeper.IsSessionBlock(ctx) {
-		// auto send the proofs
-		am.keeper.SendClaimTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ClaimTx)
-		// auto claim the proofs
-		am.keeper.SendProofTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ProofTx)
+	if am.keeper.IsSessionBlock(ctx) && ctx.BlockHeight() != 1 {
+		go func() {
+			time.Sleep(time.Duration(rand.Intn(3000)) * time.Millisecond)
+			// auto send the proofs
+			am.keeper.SendClaimTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ClaimTx)
+			// auto claim the proofs
+			am.keeper.SendProofTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ProofTx)
+		}()
 	}
 	keeper.BeginBlocker(ctx, req, am.keeper)
 }

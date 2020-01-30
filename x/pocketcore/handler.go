@@ -66,11 +66,11 @@ func handleProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) sdk.Re
 
 func validateClaimMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim) sdk.Error {
 	// if is not a pocket supported blockchain then return not supported error
-	if !keeper.IsPocketSupportedBlockchain(ctx.WithBlockHeight(msg.SessionBlockHeight), msg.Chain) {
+	if !keeper.IsPocketSupportedBlockchain(ctx.MustGetPrevCtx(msg.SessionBlockHeight), msg.Chain) {
 		return types.NewChainNotSupportedErr(types.ModuleName)
 	}
 	// get the session context
-	sessionContext := ctx.WithBlockHeight(msg.SessionBlockHeight)
+	sessionContext := ctx.MustGetPrevCtx(msg.SessionBlockHeight)
 	// get the node from the keeper at the time of the session
 	node, found := keeper.GetNode(sessionContext, msg.FromAddress)
 	// if not found return not found error

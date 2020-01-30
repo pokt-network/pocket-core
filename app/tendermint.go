@@ -16,40 +16,40 @@ import (
 
 type AppCreator func(log.Logger, dbm.DB, io.Writer) *pocketCoreApp
 
-func NewClient(c config, creator AppCreator) (*node.Node, error) {
+func NewClient(c config, creator AppCreator) (*node.Node, *pocketCoreApp, error) {
 	// setup the database
 	db, err := openDB(c.TmConfig.RootDir)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// open the tracewriter
 	traceWriter, err := openTraceWriter(c.TraceWriter)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// load the node key
 	nodeKey, err := p2p.LoadOrGenNodeKey(c.TmConfig.NodeKeyFile())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	// upgrade the privVal file
 	upgradePrivVal(c.TmConfig)
+	app := creator(c.Logger, db, traceWriter)
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		pvm.LoadOrGenFilePV(c.TmConfig.PrivValidatorKeyFile(), c.TmConfig.PrivValidatorStateFile()),
 		nodeKey,
-		proxy.NewLocalClientCreator(creator(c.Logger, db, traceWriter)),
+		proxy.NewLocalClientCreator(app),
 		node.DefaultGenesisDocProviderFunc(c.TmConfig),
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
 		c.Logger.With("module", "node"),
 	)
-
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return tmNode, nil
+	return tmNode, app, nil
 }
 
 func openDB(rootDir string) (dbm.DB, error) {

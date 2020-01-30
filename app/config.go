@@ -11,10 +11,12 @@ import (
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/baseapp"
 	"github.com/pokt-network/posmint/codec"
 	cfg "github.com/pokt-network/posmint/config"
 	"github.com/pokt-network/posmint/crypto"
 	kb "github.com/pokt-network/posmint/crypto/keys"
+	"github.com/pokt-network/posmint/store"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
@@ -205,8 +207,8 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	}
 
 	var err error
-	tmNode, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
-		return NewPocketCoreApp(logger, db)
+	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
+		return NewPocketCoreApp(logger, db, baseapp.SetPruning(store.PruneNothing))
 	})
 	if err != nil {
 		panic(err)
@@ -214,6 +216,7 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	if err := tmNode.Start(); err != nil {
 		panic(err)
 	}
+	app.SetTendermintNode(tmNode)
 	return tmNode
 }
 

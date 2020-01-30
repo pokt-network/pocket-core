@@ -298,5 +298,5 @@ func (sh SessionHeader) Bytes() []byte {
 }
 
 func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
-	return hex.EncodeToString(ctx.WithBlockHeight(height).BlockHeader().LastBlockId.Hash)
+	return hex.EncodeToString(ctx.MustGetPrevCtx(height).BlockHeader().LastBlockId.Hash)
 }

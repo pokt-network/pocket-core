@@ -11,7 +11,7 @@ func (k Keeper) Dispatch(ctx sdk.Context, header types.SessionHeader) (*types.Se
 	if err != nil {
 		return nil, err
 	}
-	sessionCtx := ctx.WithBlockHeight(header.SessionBlockHeight)
+	sessionCtx := ctx.MustGetPrevCtx(header.SessionBlockHeight)
 	sessionBlkHeader := sessionCtx.BlockHeader()
 	return types.NewSession(header.ApplicationPubKey, header.Chain, hex.EncodeToString(sessionBlkHeader.LastBlockId.Hash),
 		header.SessionBlockHeight, k.GetAllNodes(ctx), int(k.SessionNodeCount(ctx)))
@@ -30,7 +30,7 @@ func (k Keeper) GetLatestSessionBlock(ctx sdk.Context) sdk.Context {
 	} else {
 		sessionBlockHeight = (ctx.BlockHeight()/k.posKeeper.SessionBlockFrequency(ctx))*k.posKeeper.SessionBlockFrequency(ctx) + 1
 	}
-	return ctx.WithBlockHeight(sessionBlockHeight)
+	return ctx.MustGetPrevCtx(sessionBlockHeight)
 }
 
 // is the blockchain supported at this specific context?

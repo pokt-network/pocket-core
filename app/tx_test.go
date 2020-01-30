@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/hex"
+	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -259,6 +260,7 @@ func TestClaimTx(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	select {
 	case res := <-evtChan:
+		fmt.Println(res)
 		if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeClaim) {
 			t.Fatal("claim message was not received first")
 		}
