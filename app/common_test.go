@@ -17,6 +17,7 @@ import (
 	cfg "github.com/pokt-network/posmint/config"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
+	"github.com/pokt-network/posmint/store"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
@@ -63,7 +64,7 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		if err != nil {
 			panic(err)
 		}
-		err = os.RemoveAll(tendermintNode.Config().DBPath)
+		err = os.RemoveAll("data")
 		if err != nil {
 			panic(err)
 		}
@@ -288,12 +289,15 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 			AppState:   genesisState,
 		}, nil
 	}
-	loggerFile, _ := os.Open(os.DevNull)
+	//loggerFile, _ := os.Open(os.DevNull)
 	c := config{
 		TmConfig: getTestConfig(),
-		Logger:   log.NewTMLogger(log.NewSyncWriter(loggerFile)),
+		Logger:   log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
 	}
-	db := dbm.NewMemDB()
+	db, err := openDB(c.TmConfig.RootDir)
+	if err != nil {
+		panic(err)
+	}
 	traceWriter, err := openTraceWriter(c.TraceWriter)
 	if err != nil {
 		panic(err)
@@ -304,17 +308,18 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	privVal.Key.PubKey = pk.PubKey()
 	privVal.Key.Address = pk.PubKey().Address()
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *memoryPCApp {
-		return newMemPCApp(logger, db)
+		return newMemPCApp(logger, db, bam.SetPruning(store.PruneNothing))
 	}
 	upgradePrivVal(c.TmConfig)
 	dbProvider := func(*node.DBContext) (dbm.DB, error) {
 		return db, nil
 	}
+	app := creator(c.Logger, db, traceWriter)
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		privVal,
 		&nodeKey,
-		proxy.NewLocalClientCreator(creator(c.Logger, db, traceWriter)),
+		proxy.NewLocalClientCreator(app),
 		genDocProvider,
 		dbProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
@@ -323,6 +328,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
+	app.SetTendermintNode(tmNode)
 	return tmNode, kb
 }
 
@@ -386,8 +392,20 @@ func getInMemHostedChains() pocketTypes.HostedBlockchains {
 	}
 }
 
-func getTestConfig() (tmConfg *tmCfg.Config) {
-	tmConfg = tmCfg.TestConfig()
+func getTestConfig() (newTMConfig *tmCfg.Config) {
+	newTMConfig = tmCfg.DefaultConfig()
+	// setup tendermint node config
+	newTMConfig.SetRoot("data")
+	newTMConfig.FastSyncMode = false
+	newTMConfig.DBPath = datadir
+	newTMConfig.NodeKey = "data" + fs + defaultNodeKey
+	newTMConfig.PrivValidatorKey = "data" + fs + defaultValKey
+	newTMConfig.PrivValidatorState = "data" + fs + defaultValState
+	newTMConfig.RPC.ListenAddress = defaultListenAddr + "36657"
+	newTMConfig.P2P.ListenAddress = defaultListenAddr + "36656" // Node listen address. (0.0.0.0:0 means any interface, any port)
+	newTMConfig.Consensus = tmCfg.TestConsensusConfig()
+	newTMConfig.P2P.MaxNumInboundPeers = 40
+	newTMConfig.P2P.MaxNumOutboundPeers = 10
 	return
 }
 

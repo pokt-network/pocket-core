@@ -27,10 +27,10 @@ func KeyForInvoice(ctx sdk.Context, addr sdk.Address, header SessionHeader) []by
 	if err != nil {
 		panic(err)
 	}
-	//sessionCtx := ctx.WithBlockHeight(header.SessionBlockHeight)
-	//sessionBlockHeader := sessionCtx.BlockHeader()
-	//sessionHash := sessionBlockHeader.GetLastBlockId().Hash
-	return append(append(append(InvoiceKey, addr.Bytes()...), appPubKey...))
+	sessionCtx := ctx.MustGetPrevCtx(header.SessionBlockHeight)
+	sessionBlockHeader := sessionCtx.BlockHeader()
+	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
+	return append(append(append(InvoiceKey, addr.Bytes()...), appPubKey...), sessionHash...)
 }
 
 func KeyForInvoices(addr sdk.Address) []byte {
@@ -51,10 +51,10 @@ func KeyForClaim(ctx sdk.Context, addr sdk.Address, header SessionHeader) []byte
 	if err != nil {
 		panic(err)
 	}
-	//sessionCtx := ctx.WithBlockHeight(header.SessionBlockHeight)
-	//sessionBlockHeader := sessionCtx.BlockHeader()
-	//sessionHash := sessionBlockHeader.GetLastBlockId().Hash
-	return append(append(append(ClaimKey, addr.Bytes()...), appPubKey...))
+	sessionCtx := ctx.MustGetPrevCtx(header.SessionBlockHeight)
+	sessionBlockHeader := sessionCtx.BlockHeader()
+	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
+	return append(append(append(ClaimKey, addr.Bytes()...), appPubKey...), sessionHash...)
 }
 
 func KeyForClaims(addr sdk.Address) []byte {

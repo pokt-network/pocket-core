@@ -18,6 +18,7 @@ import (
 	cfg "github.com/pokt-network/posmint/config"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
+	"github.com/pokt-network/posmint/store"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
@@ -303,26 +304,24 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		Logger:   log.NewTMLogger(log.NewSyncWriter(loggerFile)),
 	}
 	db := dbm.NewMemDB()
-	if err != nil {
-		panic(err)
-	}
 	nodeKey := p2p.NodeKey{PrivKey: pk}
 	privVal := cfg.GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
 	privVal.Key.PrivKey = pk
 	privVal.Key.PubKey = pk.PubKey()
 	privVal.Key.Address = pk.PubKey().Address()
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *memoryPCApp {
-		return newMemPCApp(logger, db)
+		return newMemPCApp(logger, db, bam.SetPruning(store.PruneNothing))
 	}
 	//upgradePrivVal(c.TmConfig)
 	dbProvider := func(*node.DBContext) (dbm.DB, error) {
 		return db, nil
 	}
+	baseapp := creator(c.Logger, db, io.Writer(nil))
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		privVal,
 		&nodeKey,
-		proxy.NewLocalClientCreator(creator(c.Logger, db, io.Writer(nil))),
+		proxy.NewLocalClientCreator(baseapp),
 		genDocProvider,
 		dbProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
@@ -331,6 +330,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
+	baseapp.SetTendermintNode(tmNode)
 	return tmNode, kb
 }
 

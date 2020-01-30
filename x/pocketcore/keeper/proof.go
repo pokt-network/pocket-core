@@ -12,7 +12,6 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	"math"
 	"strconv"
-	"time"
 )
 
 func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
@@ -50,7 +49,7 @@ func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc
 // generates the required pseudorandom index for the zero knowledge proof
 func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) int64 {
 	// get the context for the proof (the proof context is X sessions after the session began)
-	proofContext := ctx.WithBlockHeight(header.SessionBlockHeight + k.ProofWaitingPeriod(ctx)*k.SessionFrequency(ctx)) // next session block hash
+	proofContext := ctx.MustGetPrevCtx(header.SessionBlockHeight + k.ProofWaitingPeriod(ctx)*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
 	proofBlockHeader := proofContext.BlockHeader()
 	r, err := json.Marshal(pseudorandomGenerator{
@@ -120,15 +119,12 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		}
 		// generate the merkle root for this invoice
 		root := invoice.GenerateMerkleRoot()
-		go func() {
-			time.Sleep(time.Second * 1)
-			// generate the auto txbuilder and clictx
-			txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
-			// send in the invoice header, the total relays completed, and the merkle root (ensures data integrity)
-			if _, err := claimTx(keybase, cliCtx, txBuilder, invoice.SessionHeader, invoice.TotalRelays, root); err != nil {
-				ctx.Logger().Error(err.Error())
-			}
-		}()
+		// generate the auto txbuilder and clictx
+		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+		// send in the invoice header, the total relays completed, and the merkle root (ensures data integrity)
+		if _, err := claimTx(keybase, cliCtx, txBuilder, invoice.SessionHeader, invoice.TotalRelays, root); err != nil {
+			ctx.Logger().Error(err.Error())
+		}
 	}
 }
 
@@ -165,16 +161,13 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		// get the leaf for the required pseudorandom proof index
 		leaf := pc.GetAllInvoices().GetProof(proof.SessionHeader, reqProof)
 		cousin := pc.GetAllInvoices().GetProof(proof.SessionHeader, cousinIndex)
-		go func() {
-			time.Sleep(time.Second * 1)
-			// generate the auto txbuilder and clictx
-			txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
-			// send the claim TX
-			_, err := proofTx(cliCtx, txBuilder, branch, leaf, cousin)
-			if err != nil {
-				ctx.Logger().Error(err.Error())
-			}
-		}()
+		// generate the auto txbuilder and clictx
+		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+		// send the claim TX
+		_, err := proofTx(cliCtx, txBuilder, branch, leaf, cousin)
+		if err != nil {
+			ctx.Logger().Error(err.Error())
+		}
 	}
 }
 
@@ -312,7 +305,7 @@ func (k Keeper) DeleteExpiredClaims(ctx sdk.Context) {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &msg)
-		sessionContext := ctx.WithBlockHeight(msg.SessionBlockHeight)
+		sessionContext := ctx.MustGetPrevCtx(msg.SessionBlockHeight)
 		// if more sessions has passed than the expiration of unverified pseudorandomGenerator, delete from set
 		if (ctx.BlockHeight()-msg.SessionBlockHeight)/k.SessionFrequency(sessionContext) >= k.ClaimExpiration(sessionContext) { // todo confirm these contexts should be now and not when submitted
 			store.Delete(iterator.Key())
