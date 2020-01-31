@@ -209,7 +209,7 @@ func QueryTransaction(tmNode rpcclient.Client, hash string) (*ctypes.ResultTx, e
 	if err != nil {
 		return nil, err
 	}
-	tx, err := (tmNode).Tx(res, false)
+	tx, err := tmNode.Tx(res, false)
 	if err != nil {
 		return nil, err
 	}
