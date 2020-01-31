@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/hex"
+	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
@@ -57,10 +58,11 @@ func TestQueryTx(t *testing.T) {
 		tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(1000))
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
-		time.Sleep(time.Second / 2)
 	}
 	select {
-	case <-evtChan:
+	case res :=<-evtChan:
+		time.Sleep(time.Second*1)
+		fmt.Println(res.Data.(tmTypes.EventDataTx))
 		got, err := nodes.QueryTransaction(memCli, tx.TxHash)
 		assert.Nil(t, err)
 		validator, err := nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
@@ -232,7 +234,7 @@ func TestQueryPocketParams(t *testing.T) {
 		assert.NotNil(t, got)
 		assert.Equal(t, int64(5), got.SessionNodeCount)
 		assert.Equal(t, int64(3), got.ProofWaitingPeriod)
-		assert.Equal(t, int64(25), got.ClaimExpiration)
+		assert.Equal(t, int64(100), got.ClaimExpiration)
 		assert.Contains(t, got.SupportedBlockchains, dummyChainsHash)
 	}
 	cleanup()

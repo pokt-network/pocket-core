@@ -289,10 +289,10 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 			AppState:   genesisState,
 		}, nil
 	}
-	//loggerFile, _ := os.Open(os.DevNull)
+	loggerFile, _ := os.Open(os.DevNull)
 	c := config{
 		TmConfig: getTestConfig(),
-		Logger:   log.NewTMLogger(log.NewSyncWriter(os.Stdout)),
+		Logger:   log.NewTMLogger(log.NewSyncWriter(loggerFile)),
 	}
 	db, err := openDB(c.TmConfig.RootDir)
 	if err != nil {

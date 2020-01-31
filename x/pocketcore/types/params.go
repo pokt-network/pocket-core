@@ -13,7 +13,7 @@ const (
 	DefaultParamspace         = ModuleName
 	DefaultSessionNodeCount   = int64(5)
 	DefaultProofWaitingPeriod = int64(3)
-	DefaultClaimExpiration    = int64(25) // sessions
+	DefaultClaimExpiration    = int64(100) // sessions
 )
 
 var (

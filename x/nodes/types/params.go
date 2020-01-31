@@ -53,20 +53,20 @@ var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	UnstakingTime            time.Duration `json:"unstaking_time" yaml:"unstaking_time"`           // duration of unstaking
-	MaxValidators            uint64        `json:"max_validators" yaml:"max_validators"`           // maximum number of validators
-	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                 // bondable coin denomination
-	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`             // minimum amount needed to stake
-	ProposerRewardPercentage int8          `json:"base_proposer_award" yaml:"base_proposer_award"` // minimum award for the proposer
-	SessionBlockFrequency    int64         `json:"session_block_frequency" yaml:"session_block_frequency"`
-	RelaysToTokens           sdk.Dec       `json:"relays_to_tokens" yaml:"relays_to_tokens"`
+	UnstakingTime            time.Duration `json:"unstaking_time" yaml:"unstaking_time"`                   // how much time must pass between the begin_unstaking_tx and the node going to -> unstaked status
+	MaxValidators            uint64        `json:"max_validators" yaml:"max_validators"`                   // maximum number of validators in the network at any given block
+	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                         // the monetary denomination of the coins in the network `uPOKT` or `uAtom` or `Wei`
+	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`                     // minimum amount of `uPOKT` needed to stake in the network as a node
+	ProposerRewardPercentage int8          `json:"base_proposer_award" yaml:"base_proposer_award"`         // award percentage of the mint for the proposer (This will change with #559)
+	SessionBlockFrequency    int64         `json:"session_block_frequency" yaml:"session_block_frequency"` // how many blocks are in a session (pocket network unit)
+	RelaysToTokens           sdk.Dec       `json:"relays_to_tokens" yaml:"relays_to_tokens"`               // how many relays serviced award tokens (This will change with #559)
 	// slashing params
-	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`
-	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`
-	MinSignedPerWindow      sdk.Dec       `json:"min_signed_per_window" yaml:"min_signed_per_window"`
-	DowntimeJailDuration    time.Duration `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`
-	SlashFractionDoubleSign sdk.Dec       `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"`
-	SlashFractionDowntime   sdk.Dec       `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`
+	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`                     // maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)
+	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`             // window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks
+	MinSignedPerWindow      sdk.Dec       `json:"min_signed_per_window" yaml:"min_signed_per_window"`           // minimum number of blocks the node must sign per window
+	DowntimeJailDuration    time.Duration `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`         // minimum amount of time node must spend in jail after missing blocks
+	SlashFractionDoubleSign sdk.Dec       `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"` // the factor of which a node is slashed for a double sign
+	SlashFractionDowntime   sdk.Dec       `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`       // the factor of which a node is slashed for missing blocks
 }
 
 // Implements params.ParamSet
