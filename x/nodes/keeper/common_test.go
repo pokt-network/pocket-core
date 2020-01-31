@@ -111,7 +111,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	moduleManager.InitGenesis(ctx, genesisState)
 
 	posSubSpace := pk.Subspace(DefaultParamspace)
-	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
+	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
 	keeper := NewKeeper(cdc, keySupply, ak, bk, sk, posSubSpace, sdk.CodespaceType("pos"))
@@ -170,24 +170,24 @@ func getValidator() types.Validator {
 		StakedTokens: sdk.NewInt(100000000000),
 		PublicKey:    pub,
 		Jailed:       false,
-		Status:       sdk.Bonded,
+		Status:       sdk.Staked,
 		ServiceURL:   "google.com",
 		Chains:       []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 	}
 }
 
-func getBondedValidator() types.Validator {
+func getStakedValidator() types.Validator {
 	return getValidator()
 }
 
-func getUnbondedValidator() types.Validator {
+func getUnstakedValidator() types.Validator {
 	v := getValidator()
-	return v.UpdateStatus(sdk.Unbonded)
+	return v.UpdateStatus(sdk.Unstaked)
 }
 
-func getUnbondingValidator() types.Validator {
+func getUnstakingValidator() types.Validator {
 	v := getValidator()
-	return v.UpdateStatus(sdk.Unbonding)
+	return v.UpdateStatus(sdk.Unstaking)
 }
 func modifyFn(i *int) func(index int64, Validator exported.ValidatorI) (stop bool) {
 	return func(index int64, validator exported.ValidatorI) (stop bool) {

@@ -18,17 +18,17 @@ func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
 	}{
 		{
 			name:        "validates application",
-			application: getBondedApplication(),
+			application: getStakedApplication(),
 			want:        nil,
 		},
 		{
 			name:        "errors if application not staked",
-			application: getUnbondedApplication(),
+			application: getUnstakedApplication(),
 			want:        types.ErrApplicationStatus("apps"),
 		},
 		{
 			name:        "validates application",
-			application: getBondedApplication(),
+			application: getStakedApplication(),
 			panics:      true,
 			want:        "should not happen: application trying to begin unstaking has less than the minimum stake",
 		},
@@ -65,25 +65,25 @@ func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
 	}{
 		{
 			name:        "validates application",
-			application: getUnbondedApplication(),
+			application: getUnstakedApplication(),
 			amount:      sdk.NewInt(1000000),
 			want:        nil,
 		},
 		{
 			name:        "errors if application staked",
-			application: getBondedApplication(),
+			application: getStakedApplication(),
 			amount:      sdk.NewInt(100),
 			want:        types.ErrApplicationStatus("apps"),
 		},
 		{
 			name:        "errors if application staked",
-			application: getUnbondedApplication(),
+			application: getUnstakedApplication(),
 			amount:      sdk.NewInt(0),
 			want:        types.ErrMinimumStake("apps"),
 		},
 		{
 			name:        "errors bank does not have enough coins",
-			application: getUnbondedApplication(),
+			application: getUnstakedApplication(),
 			amount:      sdk.NewInt(1000000000000000000),
 			want:        types.ErrNotEnoughCoins("apps"),
 		},
@@ -102,7 +102,7 @@ func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
 }
 
 func TestAppStateChange_JailApplication(t *testing.T) {
-	jailedApp := getBondedApplication()
+	jailedApp := getStakedApplication()
 	jailedApp.Jailed = true
 	tests := []struct {
 		name        string
@@ -112,7 +112,7 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 	}{
 		{
 			name:        "jails application",
-			application: getBondedApplication(),
+			application: getStakedApplication(),
 			want:        true,
 		},
 		{
@@ -149,7 +149,7 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 }
 
 func TestAppStateChange_UnjailApplication(t *testing.T) {
-	jailedApp := getBondedApplication()
+	jailedApp := getStakedApplication()
 	jailedApp.Jailed = true
 	tests := []struct {
 		name        string
@@ -164,7 +164,7 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 		},
 		{
 			name:        "already jailed app ",
-			application: getBondedApplication(),
+			application: getStakedApplication(),
 			panics:      true,
 			want:        fmt.Sprint("cannot unjail already unjailed application, application:"),
 		},
@@ -202,7 +202,7 @@ func TestAppStateChange_RegisterApplication(t *testing.T) {
 	}{
 		{
 			name:        "name registers apps",
-			application: getBondedApplication(),
+			application: getStakedApplication(),
 		},
 	}
 	for _, tt := range tests {
@@ -232,7 +232,7 @@ func TestAppStateChange_StakeApplication(t *testing.T) {
 	}{
 		{
 			name:        "name registers apps",
-			application: getUnbondedApplication(),
+			application: getUnstakedApplication(),
 			amount:      sdk.NewInt(100000000000),
 		},
 	}
@@ -259,12 +259,12 @@ func TestAppStateChange_BeginUnstakingApplication(t *testing.T) {
 	tests := []struct {
 		name        string
 		application types.Application
-		want        sdk.BondStatus
+		want        sdk.StakeStatus
 	}{
 		{
 			name:        "name registers apps",
-			application: getBondedApplication(),
-			want:        sdk.Unbonding,
+			application: getStakedApplication(),
+			want:        sdk.Unstaking,
 		},
 	}
 	for _, tt := range tests {

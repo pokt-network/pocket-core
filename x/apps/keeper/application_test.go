@@ -8,7 +8,7 @@ import (
 )
 
 func TestApplication_SetAndGetApplication(t *testing.T) {
-	application := getBondedApplication()
+	application := getStakedApplication()
 
 	tests := []struct {
 		name        string
@@ -42,7 +42,7 @@ func TestApplication_SetAndGetApplication(t *testing.T) {
 }
 
 func TestApplication_CalculateAppRelays(t *testing.T) {
-	application := getBondedApplication()
+	application := getStakedApplication()
 
 	tests := []struct {
 		name        string
@@ -67,7 +67,7 @@ func TestApplication_CalculateAppRelays(t *testing.T) {
 }
 
 func TestApplication_GetAllAplications(t *testing.T) {
-	application := getBondedApplication()
+	application := getStakedApplication()
 
 	tests := []struct {
 		name        string
@@ -94,7 +94,7 @@ func TestApplication_GetAllAplications(t *testing.T) {
 }
 
 func TestApplication_GetAplications(t *testing.T) {
-	application := getBondedApplication()
+	application := getStakedApplication()
 
 	tests := []struct {
 		name        string
@@ -123,8 +123,8 @@ func TestApplication_GetAplications(t *testing.T) {
 }
 
 func TestApplication_IterateAndExecuteOverApps(t *testing.T) {
-	application := getBondedApplication()
-	secondApp := getBondedApplication()
+	application := getStakedApplication()
+	secondApp := getStakedApplication()
 
 	tests := []struct {
 		name              string

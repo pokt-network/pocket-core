@@ -71,7 +71,7 @@ type hexApplication struct {
 	Jailed                  bool        `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
 	Chains                  []string    `json:"chains" yaml:"chains"`
 	MaxRelays               sdk.Int
-	Status                  sdk.BondStatus `json:"status" yaml:"status"`                 // application status (bonded/unbonding/unbonded)
+	Status                  sdk.StakeStatus `json:"status" yaml:"status"`                 // application status (staked/unstaking/unstaked)
 	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"`     // how many staked tokens
 	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }

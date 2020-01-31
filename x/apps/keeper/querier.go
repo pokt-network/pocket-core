@@ -120,7 +120,7 @@ func queryUnstakedApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper)
 	apps := k.GetAllApplications(ctx)
 	var unstakedApps types.Applications
 	for _, app := range apps {
-		if app.Status == sdk.Unbonded {
+		if app.Status == sdk.Unstaked {
 			unstakedApps = append(unstakedApps, app)
 		}
 	}

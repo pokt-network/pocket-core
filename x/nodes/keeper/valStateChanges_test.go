@@ -17,7 +17,7 @@ func TestKeeper_BeginUnstakingValidator(t *testing.T) {
 		ctx       sdk.Context
 		validator types.Validator
 	}
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 	tests := []struct {
 		name   string
@@ -50,7 +50,7 @@ func TestKeeper_FinishUnstakingValidator(t *testing.T) {
 		validator types.Validator
 	}
 
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -83,7 +83,7 @@ func TestKeeper_JailValidator(t *testing.T) {
 		addr sdk.Address
 	}
 
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 	keeper.SetValidator(context, validator)
 
@@ -114,7 +114,7 @@ func TestKeeper_RegisterValidator(t *testing.T) {
 		validator types.Validator
 	}
 
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -143,7 +143,7 @@ func TestKeeper_ReleaseWaitingValidators(t *testing.T) {
 		ctx sdk.Context
 	}
 
-	validator := getUnbondingValidator()
+	validator := getUnstakingValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -172,7 +172,7 @@ func TestKeeper_StakeValidator(t *testing.T) {
 		amount    sdk.Int
 	}
 
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -205,7 +205,7 @@ func TestKeeper_UnjailValidator(t *testing.T) {
 		ctx  sdk.Context
 		addr sdk.Address
 	}
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 	validator.Jailed = true
 	keeper.SetValidator(context, validator)
@@ -236,7 +236,7 @@ func TestKeeper_UpdateTendermintValidators(t *testing.T) {
 		ctx sdk.Context
 	}
 
-	//validator := getBondedValidator()
+	//validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -267,7 +267,7 @@ func TestKeeper_ValidateValidatorBeginUnstaking(t *testing.T) {
 		validator types.Validator
 	}
 
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -300,7 +300,7 @@ func TestKeeper_ValidateValidatorFinishUnstaking(t *testing.T) {
 		validator types.Validator
 	}
 
-	validator := getUnbondingValidator()
+	validator := getUnstakingValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -334,7 +334,7 @@ func TestKeeper_ValidateValidatorStaking(t *testing.T) {
 		amount    sdk.Int
 	}
 
-	validator := getUnbondedValidator()
+	validator := getUnstakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -368,7 +368,7 @@ func TestKeeper_WaitToBeginUnstakingValidator(t *testing.T) {
 		validator types.Validator
 	}
 
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {

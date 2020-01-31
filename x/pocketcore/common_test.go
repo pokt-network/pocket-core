@@ -197,7 +197,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, nodesKeeper.Kee
 	)
 	genesisState := ModuleBasics.DefaultGenesis()
 	moduleManager.InitGenesis(ctx, genesisState)
-	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
+	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	_ = createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 	_ = createTestApps(ctx, int(nAccs), sdk.NewInt(10000000), appk, sk)
 	_ = createTestValidators(ctx, int(nAccs), sdk.NewInt(10000000), sdk.ZeroInt(), &nk, sk, kb)

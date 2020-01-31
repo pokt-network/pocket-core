@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetAndSetApplicationBurn(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 
 	type args struct {
 		amount      sdk.Dec
@@ -26,12 +26,12 @@ func TestGetAndSetApplicationBurn(t *testing.T) {
 	}{
 		{
 			name:     "can get and set application burn",
-			args:     args{amount: sdk.NewDec(10), application: boundedApplication},
+			args:     args{amount: sdk.NewDec(10), application: stakedApplication},
 			expected: expected{amount: sdk.NewDec(10), found: true},
 		},
 		{
 			name:     "returns no coins if not set",
-			args:     args{amount: sdk.NewDec(10), application: boundedApplication},
+			args:     args{amount: sdk.NewDec(10), application: stakedApplication},
 			expected: expected{amount: sdk.NewDec(0), found: false},
 		},
 	}
@@ -53,7 +53,7 @@ func TestGetAndSetApplicationBurn(t *testing.T) {
 }
 
 func TestDeleteApplicationBurn(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 	var emptyCoins sdk.Dec
 
 	type args struct {
@@ -74,7 +74,7 @@ func TestDeleteApplicationBurn(t *testing.T) {
 		{
 			name:     "deletes application burn",
 			panics:   false,
-			args:     args{amount: sdk.NewDec(10), application: boundedApplication},
+			args:     args{amount: sdk.NewDec(10), application: stakedApplication},
 			expected: expected{amount: emptyCoins, found: false},
 		},
 	}
@@ -91,8 +91,8 @@ func TestDeleteApplicationBurn(t *testing.T) {
 }
 
 func TestValidateSlash(t *testing.T) {
-	boundedApplication := getBondedApplication()
-	unboundedApplication := getUnbondedApplication()
+	stakedApplication := getStakedApplication()
+	unstakedApplication := getUnstakedApplication()
 	supplySize := sdk.NewInt(100)
 
 	type args struct {
@@ -120,9 +120,9 @@ func TestValidateSlash(t *testing.T) {
 		{
 			name:   "validates slash",
 			panics: false,
-			args:   args{application: boundedApplication, slashFraction: sdk.NewDec(90)},
+			args:   args{application: stakedApplication, slashFraction: sdk.NewDec(90)},
 			expected: expected{
-				application:    boundedApplication,
+				application:    stakedApplication,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
@@ -131,33 +131,33 @@ func TestValidateSlash(t *testing.T) {
 		{
 			name:   "empty application if not found",
 			panics: false,
-			args:   args{application: boundedApplication, slashFraction: sdk.NewDec(90)},
+			args:   args{application: stakedApplication, slashFraction: sdk.NewDec(90)},
 			expected: expected{
-				application:    boundedApplication,
+				application:    stakedApplication,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
 			},
 		},
 		{
-			name:   "panics if unboundedApplication",
+			name:   "panics if unstakedApplication",
 			panics: true,
-			args:   args{application: unboundedApplication, slashFraction: sdk.NewDec(90)},
+			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(90)},
 			expected: expected{
-				application:    boundedApplication,
+				application:    stakedApplication,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
 				fraction:       false,
-				message:        fmt.Sprintf("should not be slashing unstaked application: %s", unboundedApplication.Address),
+				message:        fmt.Sprintf("should not be slashing unstaked application: %s", unstakedApplication.Address),
 			},
 		},
 		{
 			name:   "panics with invalid slashFactor",
 			panics: true,
-			args:   args{application: unboundedApplication, slashFraction: sdk.NewDec(-10)},
+			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(-10)},
 			expected: expected{
-				application:    boundedApplication,
+				application:    stakedApplication,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
@@ -168,9 +168,9 @@ func TestValidateSlash(t *testing.T) {
 		{
 			name:   "panics with wrong infraction height",
 			panics: true,
-			args:   args{application: unboundedApplication, slashFraction: sdk.NewDec(90)},
+			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(90)},
 			expected: expected{
-				application:    boundedApplication,
+				application:    stakedApplication,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
@@ -217,7 +217,7 @@ func TestValidateSlash(t *testing.T) {
 }
 
 func TestSlash(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 	supplySize := sdk.NewInt(50001)
 
 	type args struct {
@@ -246,13 +246,13 @@ func TestSlash(t *testing.T) {
 		{
 			name:   "slash application coins",
 			panics: false,
-			args:   args{application: boundedApplication, power: int64(1), slashFraction: sdk.NewDec(100)},
+			args:   args{application: stakedApplication, power: int64(1), slashFraction: sdk.NewDec(100)},
 			expected: expected{
-				application:    boundedApplication,
+				application:    stakedApplication,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
-				stakedTokens:   boundedApplication.StakedTokens.Sub(sdk.NewInt(100000000)),
+				stakedTokens:   stakedApplication.StakedTokens.Sub(sdk.NewInt(100000000)),
 			},
 		},
 	}
@@ -285,7 +285,7 @@ func TestSlash(t *testing.T) {
 }
 
 func TestBurnApplications(t *testing.T) {
-	primaryBoundedApplication := getBondedApplication()
+	primaryStakedApplication := getStakedApplication()
 
 	type args struct {
 		amount      sdk.Dec
@@ -305,12 +305,12 @@ func TestBurnApplications(t *testing.T) {
 			name: "can get and set application burn",
 			args: args{
 				amount:      sdk.NewDec(100),
-				application: primaryBoundedApplication,
+				application: primaryStakedApplication,
 			},
 			expected: expected{
 				amount:      sdk.ZeroDec(),
 				found:       true,
-				application: primaryBoundedApplication,
+				application: primaryStakedApplication,
 			},
 		},
 	}

@@ -157,7 +157,7 @@ func queryUnstakedValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) (
 	var unstakedValidators types.Validators
 
 	for _, v := range validators {
-		if v.Status == sdk.Unbonded {
+		if v.Status == sdk.Unstaked {
 			unstakedValidators = append(unstakedValidators, v)
 		}
 	}

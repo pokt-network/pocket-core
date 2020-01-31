@@ -32,11 +32,11 @@ func TestNewValidator(t *testing.T) {
 				Address:                 sdk.Address(pub.Address()),
 				PublicKey:               pub,
 				Jailed:                  false,
-				Status:                  sdk.Bonded,
+				Status:                  sdk.Staked,
 				StakedTokens:            sdk.ZeroInt(),
 				Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 				ServiceURL:              "google.com",
-				UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: bonded
+				UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: staked
 			}},
 	}
 	for _, tt := range tests {
@@ -53,7 +53,7 @@ func TestValidator_ABCIValidatorUpdate(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -65,22 +65,22 @@ func TestValidator_ABCIValidatorUpdate(t *testing.T) {
 		fields fields
 		want   abci.ValidatorUpdate
 	}{
-		{"testingABCIValidatorUpdate Unbonded", fields{
+		{"testingABCIValidatorUpdate Unstaked", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonded,
+			Status:                  sdk.Unstaked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, abci.ValidatorUpdate{
 			PubKey: tmtypes.TM2PB.PubKey(pub.PubKey()),
 			Power:  int64(0),
 		}},
-		{"testingABCIValidatorUpdate Bonded", fields{
+		{"testingABCIValidatorUpdate Staked", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, abci.ValidatorUpdate{
@@ -110,7 +110,7 @@ func TestValidator_ABCIValidatorUpdateZero(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -122,22 +122,22 @@ func TestValidator_ABCIValidatorUpdateZero(t *testing.T) {
 		fields fields
 		want   abci.ValidatorUpdate
 	}{
-		{"testingABCIValidatorUpdate Unbonded", fields{
+		{"testingABCIValidatorUpdate Unstaked", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonded,
+			Status:                  sdk.Unstaked,
 			StakedTokens:            sdk.OneInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, abci.ValidatorUpdate{
 			PubKey: tmtypes.TM2PB.PubKey(pub.PubKey()),
 			Power:  int64(0),
 		}},
-		{"testingABCIValidatorUpdate Bonded", fields{
+		{"testingABCIValidatorUpdate Staked", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.OneInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, abci.ValidatorUpdate{
@@ -167,7 +167,7 @@ func TestValidator_AddStakedTokens(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -187,7 +187,7 @@ func TestValidator_AddStakedTokens(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{tokens: sdk.NewInt(100)},
@@ -195,7 +195,7 @@ func TestValidator_AddStakedTokens(t *testing.T) {
 				Address:                 sdk.Address(pub.Address()),
 				PublicKey:               pub,
 				Jailed:                  false,
-				Status:                  sdk.Bonded,
+				Status:                  sdk.Staked,
 				StakedTokens:            sdk.NewInt(100),
 				UnstakingCompletionTime: time.Time{},
 			}},
@@ -222,7 +222,7 @@ func TestValidator_ConsAddress(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -238,7 +238,7 @@ func TestValidator_ConsAddress(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, sdk.Address(pub.Address())},
@@ -265,7 +265,7 @@ func TestValidator_ConsensusPower(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -281,7 +281,7 @@ func TestValidator_ConsensusPower(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, 0},
@@ -289,7 +289,7 @@ func TestValidator_ConsensusPower(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.NewInt(1000000),
 			UnstakingCompletionTime: time.Time{},
 		}, 1},
@@ -316,7 +316,7 @@ func TestValidator_Equals(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -336,14 +336,14 @@ func TestValidator_Equals(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{Validator{
 			Address:                 sdk.Address(pub.Address()),
 			PublicKey:               pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}}, true},
@@ -351,14 +351,14 @@ func TestValidator_Equals(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{Validator{
 			Address:                 sdk.Address(pub.Address()),
 			PublicKey:               pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonded,
+			Status:                  sdk.Unstaked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}}, false},
@@ -385,7 +385,7 @@ func TestValidator_GetAddress(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -402,7 +402,7 @@ func TestValidator_GetAddress(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, sdk.Address(pub.Address())},
@@ -429,7 +429,7 @@ func TestValidator_GetConsAddr(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -445,7 +445,7 @@ func TestValidator_GetConsAddr(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, sdk.Address(pub.Address())},
@@ -472,7 +472,7 @@ func TestValidator_GetConsPubKey(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -488,7 +488,7 @@ func TestValidator_GetConsPubKey(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, pub},
@@ -515,7 +515,7 @@ func TestValidator_GetConsensusPower(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -532,7 +532,7 @@ func TestValidator_GetConsensusPower(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, 0},
@@ -559,7 +559,7 @@ func TestValidator_GetStatus(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -570,16 +570,16 @@ func TestValidator_GetStatus(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   sdk.BondStatus
+		want   sdk.StakeStatus
 	}{
 		{"Default Test", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, sdk.Bonded},
+		}, sdk.Staked},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -603,7 +603,7 @@ func TestValidator_GetTokens(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -620,7 +620,7 @@ func TestValidator_GetTokens(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, sdk.ZeroInt()},
@@ -647,7 +647,7 @@ func TestValidator_IsJailed(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -664,7 +664,7 @@ func TestValidator_IsJailed(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, false},
@@ -691,7 +691,7 @@ func TestValidator_IsStaked(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -704,27 +704,27 @@ func TestValidator_IsStaked(t *testing.T) {
 		fields fields
 		want   bool
 	}{
-		{"Default Test / bonded true", fields{
+		{"Default Test / staked true", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, true},
-		{"Default Test / Unbonding false", fields{
+		{"Default Test / Unstaking false", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonding,
+			Status:                  sdk.Unstaking,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, false},
-		{"Default Test / Unbonded false", fields{
+		{"Default Test / Unstaked false", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonded,
+			Status:                  sdk.Unstaked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, false},
@@ -751,7 +751,7 @@ func TestValidator_IsUnstaked(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -764,27 +764,27 @@ func TestValidator_IsUnstaked(t *testing.T) {
 		fields fields
 		want   bool
 	}{
-		{"Default Test / bonded false", fields{
+		{"Default Test / staked false", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, false},
-		{"Default Test / Unbonding false", fields{
+		{"Default Test / Unstaking false", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonding,
+			Status:                  sdk.Unstaking,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, false},
-		{"Default Test / Unbonded true", fields{
+		{"Default Test / Unstaked true", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonded,
+			Status:                  sdk.Unstaked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, true},
@@ -811,7 +811,7 @@ func TestValidator_IsUnstaking(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -824,27 +824,27 @@ func TestValidator_IsUnstaking(t *testing.T) {
 		fields fields
 		want   bool
 	}{
-		{"Default Test / bonded false", fields{
+		{"Default Test / staked false", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, false},
-		{"Default Test / Unbonding true", fields{
+		{"Default Test / Unstaking true", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonding,
+			Status:                  sdk.Unstaking,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, true},
-		{"Default Test / Unbonded false", fields{
+		{"Default Test / Unstaked false", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonded,
+			Status:                  sdk.Unstaked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, false},
@@ -871,7 +871,7 @@ func TestValidator_PotentialConsensusPower(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -888,7 +888,7 @@ func TestValidator_PotentialConsensusPower(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, 0},
@@ -915,7 +915,7 @@ func TestValidator_RemoveStakedTokens(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -936,14 +936,14 @@ func TestValidator_RemoveStakedTokens(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}, args{tokens: sdk.ZeroInt()}, Validator{
 			Address:                 sdk.Address(pub.Address()),
 			PublicKey:               pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}},
@@ -951,14 +951,14 @@ func TestValidator_RemoveStakedTokens(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.NewInt(100),
 			UnstakingCompletionTime: time.Time{},
 		}, args{tokens: sdk.NewInt(99)}, Validator{
 			Address:                 sdk.Address(pub.Address()),
 			PublicKey:               pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.OneInt(),
 			UnstakingCompletionTime: time.Time{},
 		}},
@@ -985,7 +985,7 @@ func TestValidator_UpdateStatus(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		StakedTokens            sdk.Int
 		UnstakingCompletionTime time.Time
 	}
@@ -994,7 +994,7 @@ func TestValidator_UpdateStatus(t *testing.T) {
 	rand.Read(pub[:])
 
 	type args struct {
-		newStatus sdk.BondStatus
+		newStatus sdk.StakeStatus
 	}
 	tests := []struct {
 		name   string
@@ -1002,48 +1002,48 @@ func TestValidator_UpdateStatus(t *testing.T) {
 		args   args
 		want   Validator
 	}{
-		{"Test Bonded -> Unbonding", fields{
+		{"Test staked -> Unstaking", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, args{newStatus: sdk.Unbonding}, Validator{
+		}, args{newStatus: sdk.Unstaking}, Validator{
 			Address:                 sdk.Address(pub.Address()),
 			PublicKey:               pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonding,
+			Status:                  sdk.Unstaking,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}},
-		{"Test Unbonding -> Unbonded", fields{
+		{"Test Unstaking -> Unstaked", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonding,
+			Status:                  sdk.Unstaking,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, args{newStatus: sdk.Unbonded}, Validator{
+		}, args{newStatus: sdk.Unstaked}, Validator{
 			Address:                 sdk.Address(pub.Address()),
 			PublicKey:               pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonded,
+			Status:                  sdk.Unstaked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}},
-		{"Test Unbonded -> Bonded", fields{
+		{"Test Unstaked -> staked", fields{
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Unbonded,
+			Status:                  sdk.Unstaked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, args{newStatus: sdk.Bonded}, Validator{
+		}, args{newStatus: sdk.Staked}, Validator{
 			Address:                 sdk.Address(pub.Address()),
 			PublicKey:               pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
 		}},
@@ -1070,7 +1070,7 @@ func TestValidator_GetServiceURL(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		Chains                  []string
 		ServiceURL              string
 		StakedTokens            sdk.Int
@@ -1089,7 +1089,7 @@ func TestValidator_GetServiceURL(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
@@ -1120,7 +1120,7 @@ func TestValidator_GetChains(t *testing.T) {
 		Address                 sdk.Address
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
-		Status                  sdk.BondStatus
+		Status                  sdk.StakeStatus
 		Chains                  []string
 		ServiceURL              string
 		StakedTokens            sdk.Int
@@ -1139,7 +1139,7 @@ func TestValidator_GetChains(t *testing.T) {
 			Address:                 sdk.Address(pub.Address()),
 			ConsPubKey:              pub,
 			Jailed:                  false,
-			Status:                  sdk.Bonded,
+			Status:                  sdk.Staked,
 			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
