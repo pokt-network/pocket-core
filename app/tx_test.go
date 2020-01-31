@@ -257,39 +257,22 @@ func TestClaimTx(t *testing.T) {
 		assert.Nil(t, err)
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
-	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	select {
-	case <-evtChan:
-		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		balance, err := nodes.QueryAccountBalance(memCodec(), memCLI, validators[0].Address, 0)
-		fmt.Println(balance)
-		if err != nil {
-			panic(err)
+	case res := <-evtChan:
+		fmt.Println(res)
+		if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeClaim) {
+			t.Fatal("claim message was not received first")
 		}
+		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		select {
 		case res := <-evtChan:
-			fmt.Println(res)
-			if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeClaim) {
-				t.Fatal("claim message was not received first")
+			if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeProof) {
+				t.Fatal("proof message was not received afterward")
 			}
-			_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-			select {
-			case res := <-evtChan:
-				if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeProof) {
-					t.Fatal("proof message was not received afterward")
-				}
-				memCLI, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlockHeader)
-				select {
-				case <-evtChan:
-					time.Sleep(time.Second)
-					res, err := nodes.QueryAccountBalance(memCodec(), memCLI, validators[0].Address, 0)
-					assert.Nil(t, err)
-					assert.Equal(t, balance.Add(sdk.NewInt(20000)).Int64(), res.Int64())
-					cleanup()
-					stopCli()
-					return
-				}
-			}
+			cleanup()
+			stopCli()
+			return
 		}
 	}
 }
