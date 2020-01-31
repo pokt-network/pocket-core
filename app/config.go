@@ -200,6 +200,7 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Second * 10
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
+	newTMConfig.P2P.AddrBookStrict = false
 
 	c := cfg.Config{
 		TmConfig:    newTMConfig,
