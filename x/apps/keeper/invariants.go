@@ -17,7 +17,7 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
 		NonNegativePowerInvariant(k))
 }
 
-// todo add max relay invariant compared to bonded status / relays
+// todo add max relay invariant compared to staked status / relays
 
 // ModuleAccountInvariants checks that the staked ModuleAccounts pools
 // reflects the tokens actively staked and not staked
@@ -30,9 +30,9 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 
 		k.IterateAndExecuteOverApps(ctx, func(_ int64, application exported.ApplicationI) bool {
 			switch application.GetStatus() {
-			case sdk.Bonded, sdk.Unbonding:
+			case sdk.Staked, sdk.Unstaking:
 				staked = staked.Add(application.GetTokens())
-			case sdk.Unbonded:
+			case sdk.Unstaked:
 				notStaked = notStaked.Add(application.GetTokens())
 			default:
 				panic("invalid application status")

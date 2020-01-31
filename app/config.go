@@ -191,6 +191,7 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	newTMConfig.NodeKey = defaultNodeKey
 	newTMConfig.PrivValidatorKey = defaultValKey
 	newTMConfig.PrivValidatorState = defaultValState
+	newTMConfig.P2P.AddrBookStrict = false
 	newTMConfig.RPC.ListenAddress = defaultListenAddr + tmRPCPort
 	newTMConfig.P2P.ListenAddress = defaultListenAddr + tmPeersPort // Node listen address. (0.0.0.0:0 means any interface, any port)
 	newTMConfig.P2P.PersistentPeers = persistentPeers               // Comma-delimited ID@host:port persistent peers
@@ -544,7 +545,7 @@ func newDefaultGenesisState(pubKey crypto.PublicKey) []byte {
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
 			PublicKey:    pubKey,
-			Status:       sdk.Bonded,
+			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})

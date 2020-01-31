@@ -121,7 +121,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, keeper.Keeper, 
 	moduleManager.InitGenesis(ctx, genesisState)
 
 	appSubspace := pk.Subspace(keeper.DefaultParamspace)
-	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
+	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	_ = createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
 	keeper := keeper.NewKeeper(cdc, keySupply, bk, nk, sk, appSubspace, "apps")
@@ -160,7 +160,7 @@ func getApplication() types.Application {
 		StakedTokens: sdk.NewInt(100000000000),
 		PublicKey:    pub,
 		Jailed:       false,
-		Status:       sdk.Bonded,
+		Status:       sdk.Staked,
 		MaxRelays:    sdk.NewInt(100000000000),
 		Chains:       []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
 	}

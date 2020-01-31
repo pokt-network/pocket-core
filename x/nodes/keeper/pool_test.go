@@ -11,7 +11,7 @@ import (
 )
 
 func TestCoinsFromUnstakedToStaked(t *testing.T) {
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	validatorAddress := validator.Address
 
 	tests := []struct {
@@ -68,7 +68,7 @@ func TestCoinsFromUnstakedToStaked(t *testing.T) {
 }
 
 func TestCoinsFromStakedToUnstaked(t *testing.T) {
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	validatorAddress := validator.Address
 
 	tests := []struct {
@@ -119,7 +119,7 @@ func TestCoinsFromStakedToUnstaked(t *testing.T) {
 }
 
 func TestBurnStakedTokens(t *testing.T) {
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	validatorAddress := validator.Address
 
 	supplySize := sdk.NewInt(100000000000)
@@ -193,7 +193,7 @@ func TestPool_GetFeePool(t *testing.T) {
 }
 
 func TestPool_StakedRatio(t *testing.T) {
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	validatorAddress := validator.Address
 
 	tests := []struct {

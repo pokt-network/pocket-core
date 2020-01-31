@@ -457,7 +457,7 @@ func oneValTwoNodeGenesisState() []byte {
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
 			PublicKey:    pubKey,
-			Status:       sdk.Bonded,
+			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(1000000000000000)})
@@ -469,7 +469,7 @@ func oneValTwoNodeGenesisState() []byte {
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,
@@ -477,7 +477,7 @@ func oneValTwoNodeGenesisState() []byte {
 	// add second account
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey2.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,
@@ -530,7 +530,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
 			PublicKey:    pubKey,
-			Status:       sdk.Bonded,
+			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(1000000000000000000)})
@@ -538,7 +538,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey2.Address()),
 			PublicKey:    pubKey2,
-			Status:       sdk.Bonded,
+			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
@@ -546,7 +546,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey3.Address()),
 			PublicKey:    pubKey3,
-			Status:       sdk.Bonded,
+			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
@@ -554,7 +554,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey4.Address()),
 			PublicKey:    pubKey4,
-			Status:       sdk.Bonded,
+			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
@@ -562,7 +562,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey5.Address()),
 			PublicKey:    pubKey5,
-			Status:       sdk.Bonded,
+			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
@@ -578,7 +578,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 		Address:                 kp2.GetAddress(),
 		PublicKey:               kp2.PublicKey,
 		Jailed:                  false,
-		Status:                  sdk.Bonded,
+		Status:                  sdk.Staked,
 		Chains:                  []string{dummyChainsHash},
 		StakedTokens:            sdk.NewInt(10000000),
 		MaxRelays:               sdk.NewInt(100000),
@@ -592,7 +592,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,

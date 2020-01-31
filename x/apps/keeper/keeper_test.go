@@ -149,7 +149,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			moduleManager.InitGenesis(ctx, genesisState)
 
 			appSubspace := pk.Subspace(DefaultParamspace)
-			initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, valTokens))
+			initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 
 			_ = createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 

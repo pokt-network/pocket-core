@@ -10,7 +10,7 @@ import (
 )
 
 func TestMustGetValidator(t *testing.T) {
-	boundedValidator := getBondedValidator()
+	stakedValidator := getStakedValidator()
 
 	type args struct {
 		validator types.Validator
@@ -28,14 +28,14 @@ func TestMustGetValidator(t *testing.T) {
 		{
 			name:     "gets validator",
 			panics:   false,
-			args:     args{validator: boundedValidator},
-			expected: expected{validator: boundedValidator},
+			args:     args{validator: stakedValidator},
+			expected: expected{validator: stakedValidator},
 		},
 		{
 			name:     "panics if no validator",
 			panics:   true,
-			args:     args{validator: boundedValidator},
-			expected: expected{message: fmt.Sprintf("validator record not found for address: %X\n", boundedValidator.Address)},
+			args:     args{validator: stakedValidator},
+			expected: expected{message: fmt.Sprintf("validator record not found for address: %X\n", stakedValidator.Address)},
 		},
 	}
 
@@ -61,7 +61,7 @@ func TestMustGetValidator(t *testing.T) {
 }
 
 func TestValidatorByConsAddr(t *testing.T) {
-	boundedValidator := getBondedValidator()
+	stakedValidator := getStakedValidator()
 
 	type args struct {
 		validator types.Validator
@@ -79,12 +79,12 @@ func TestValidatorByConsAddr(t *testing.T) {
 	}{
 		{
 			name:     "gets validator",
-			args:     args{validator: boundedValidator},
-			expected: expected{validator: boundedValidator, null: false},
+			args:     args{validator: stakedValidator},
+			expected: expected{validator: stakedValidator, null: false},
 		},
 		{
 			name:     "nil if not found",
-			args:     args{validator: boundedValidator},
+			args:     args{validator: stakedValidator},
 			expected: expected{null: true},
 		},
 	}
@@ -107,7 +107,7 @@ func TestValidatorByConsAddr(t *testing.T) {
 }
 
 func TestValidatorCaching(t *testing.T) {
-	boundedValidator := getBondedValidator()
+	stakedValidator := getStakedValidator()
 
 	type args struct {
 		bz        []byte
@@ -126,8 +126,8 @@ func TestValidatorCaching(t *testing.T) {
 		{
 			name:     "gets validator",
 			panics:   false,
-			args:     args{validator: boundedValidator},
-			expected: expected{validator: boundedValidator},
+			args:     args{validator: stakedValidator},
+			expected: expected{validator: stakedValidator},
 		},
 	}
 
@@ -146,7 +146,7 @@ func TestValidatorCaching(t *testing.T) {
 }
 
 func TestNewValidatorCaching(t *testing.T) {
-	boundedValidator := getBondedValidator()
+	stakedValidator := getStakedValidator()
 
 	type args struct {
 		bz        []byte
@@ -166,8 +166,8 @@ func TestNewValidatorCaching(t *testing.T) {
 		{
 			name:     "getPrevStatePowerMap",
 			panics:   false,
-			args:     args{validator: boundedValidator},
-			expected: expected{validator: boundedValidator, length: 1},
+			args:     args{validator: stakedValidator},
+			expected: expected{validator: stakedValidator, length: 1},
 		},
 	}
 

@@ -30,7 +30,7 @@ func init() {
 		Address:                 sdk.Address(pub.Address()),
 		PublicKey:               pub,
 		Jailed:                  false,
-		Status:                  sdk.Bonded,
+		Status:                  sdk.Staked,
 		StakedTokens:            sdk.NewInt(100),
 		MaxRelays:               sdk.NewInt(1000),
 		UnstakingCompletionTime: time.Time{},

@@ -10,7 +10,7 @@ import (
 )
 
 func TestAppUtil_MustGetApplication(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 
 	type args struct {
 		application types.Application
@@ -28,14 +28,14 @@ func TestAppUtil_MustGetApplication(t *testing.T) {
 		{
 			name:   "gets application",
 			panics: false,
-			args:   args{application: boundedApplication},
-			want:   want{application: boundedApplication},
+			args:   args{application: stakedApplication},
+			want:   want{application: stakedApplication},
 		},
 		{
 			name:   "panics if no application",
 			panics: true,
-			args:   args{application: boundedApplication},
-			want:   want{message: fmt.Sprintf("application record not found for address: %X\n", boundedApplication.Address)},
+			args:   args{application: stakedApplication},
+			want:   want{message: fmt.Sprintf("application record not found for address: %X\n", stakedApplication.Address)},
 		},
 	}
 
@@ -63,7 +63,7 @@ func TestAppUtil_MustGetApplication(t *testing.T) {
 }
 
 func TestAppUtil_Application(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 
 	type args struct {
 		application types.Application
@@ -81,13 +81,13 @@ func TestAppUtil_Application(t *testing.T) {
 		{
 			name: "gets application",
 			find: false,
-			args: args{application: boundedApplication},
-			want: want{application: boundedApplication},
+			args: args{application: stakedApplication},
+			want: want{application: stakedApplication},
 		},
 		{
 			name: "panics if no application",
 			find: true,
-			args: args{application: boundedApplication},
+			args: args{application: stakedApplication},
 		},
 	}
 
@@ -112,7 +112,7 @@ func TestAppUtil_Application(t *testing.T) {
 }
 
 func TestAppUtil_MustGetApplicationByConsAddr(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 	type args struct {
 		application types.Application
 	}
@@ -129,14 +129,14 @@ func TestAppUtil_MustGetApplicationByConsAddr(t *testing.T) {
 		{
 			name:   "gets application",
 			panics: false,
-			args:   args{application: boundedApplication},
-			want:   want{application: boundedApplication},
+			args:   args{application: stakedApplication},
+			want:   want{application: stakedApplication},
 		},
 		{
 			name:   "panics if no application",
 			panics: true,
-			args:   args{application: boundedApplication},
-			want:   want{message: fmt.Sprintf("application with consensus-Address %s not found", boundedApplication.GetAddress())},
+			args:   args{application: stakedApplication},
+			want:   want{message: fmt.Sprintf("application with consensus-Address %s not found", stakedApplication.GetAddress())},
 		},
 	}
 
@@ -164,7 +164,7 @@ func TestAppUtil_MustGetApplicationByConsAddr(t *testing.T) {
 }
 
 func TestAppUtil_ApplicationByConsAddr(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 
 	type args struct {
 		application types.Application
@@ -182,12 +182,12 @@ func TestAppUtil_ApplicationByConsAddr(t *testing.T) {
 	}{
 		{
 			name: "gets application",
-			args: args{application: boundedApplication},
-			want: boundedApplication,
+			args: args{application: stakedApplication},
+			want: stakedApplication,
 		},
 		{
 			name: "nil if not found",
-			args: args{application: boundedApplication},
+			args: args{application: stakedApplication},
 			want: nil,
 		},
 	}
@@ -213,7 +213,7 @@ func TestAppUtil_ApplicationByConsAddr(t *testing.T) {
 }
 
 func TestAppUtil_ApplicationCaching(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 
 	type args struct {
 		bz             []byte
@@ -228,8 +228,8 @@ func TestAppUtil_ApplicationCaching(t *testing.T) {
 	}{
 		{
 			name: "gets application",
-			args: args{application: boundedApplication},
-			want: boundedApplication,
+			args: args{application: stakedApplication},
+			want: stakedApplication,
 		},
 	}
 
@@ -248,7 +248,7 @@ func TestAppUtil_ApplicationCaching(t *testing.T) {
 }
 
 func TestAppUtil_AllApplications(t *testing.T) {
-	boundedApplication := getBondedApplication()
+	stakedApplication := getStakedApplication()
 
 	type args struct {
 		application types.Application
@@ -262,8 +262,8 @@ func TestAppUtil_AllApplications(t *testing.T) {
 		{
 			name:     "gets application",
 			panics:   false,
-			args:     args{application: boundedApplication},
-			expected: []exported.ApplicationI{boundedApplication},
+			args:     args{application: stakedApplication},
+			expected: []exported.ApplicationI{stakedApplication},
 		},
 	}
 
@@ -280,7 +280,7 @@ func TestAppUtil_AllApplications(t *testing.T) {
 }
 
 //func TestNewApplicationCaching(t *testing.T) { todo
-//	boundedApplication := getBondedApplication()
+//	stakedApplication := getStakedApplication()
 //
 //	type args struct {
 //		bz        []byte
@@ -300,8 +300,8 @@ func TestAppUtil_AllApplications(t *testing.T) {
 //		{
 //			name:     "getPrevStatePowerMap",
 //			panics:   false,
-//			args:     args{application: boundedApplication},
-//			expected: expected{application: boundedApplication, length: 1},
+//			args:     args{application: stakedApplication},
+//			expected: expected{application: stakedApplication, length: 1},
 //		},
 //	}
 //

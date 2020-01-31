@@ -192,12 +192,12 @@ func TestSendRawTx(t *testing.T) {
 		[]sdk.Msg{bank.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
-			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1))),
+			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1))),
 		}},
 		[]crypto.PrivateKey{pk},
 		[]uint64{0},
 		[]uint64{0},
-		sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1)))))
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1)))))
 	assert.Nil(t, err)
 	select {
 	case <-evtChan:

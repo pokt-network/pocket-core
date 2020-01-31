@@ -94,7 +94,7 @@ func DefaultParams() Params {
 		UnstakingTime:            DefaultUnstakingTime,
 		MaxValidators:            DefaultMaxValidators,
 		StakeMinimum:             DefaultMinStake,
-		StakeDenom:               sdk.DefaultBondDenom,
+		StakeDenom:               sdk.DefaultStakeDenom,
 		ProposerRewardPercentage: DefaultBaseProposerAwardPercentage,
 		MaxEvidenceAge:           DefaultMaxEvidenceAge,
 		SignedBlocksWindow:       DefaultSignedBlocksWindow,

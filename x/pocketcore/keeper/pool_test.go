@@ -8,8 +8,8 @@ import (
 
 func TestKeeper_StakeDenom(t *testing.T) {
 	ctx, _, _, _, k := createTestInput(t, false)
-	bondDenom := types.DefaultBondDenom
-	assert.Equal(t, bondDenom, k.posKeeper.StakeDenom(ctx))
+	stakeDenom := types.DefaultStakeDenom
+	assert.Equal(t, stakeDenom, k.posKeeper.StakeDenom(ctx))
 }
 
 func TestKeeper_GetNodesStakedTokens(t *testing.T) {

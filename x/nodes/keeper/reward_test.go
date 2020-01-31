@@ -15,7 +15,7 @@ type args struct {
 }
 
 func TestSetandGetValidatorAward(t *testing.T) {
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	validatorAddress := validator.Address
 
 	tests := []struct {
@@ -51,7 +51,7 @@ func TestSetandGetValidatorAward(t *testing.T) {
 }
 
 func TestSetAndGetProposer(t *testing.T) {
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	consAddress := validator.GetAddress()
 
 	tests := []struct {
@@ -78,7 +78,7 @@ func TestSetAndGetProposer(t *testing.T) {
 }
 
 func TestDeleteValidatorAward(t *testing.T) {
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	validatorAddress := validator.Address
 
 	tests := []struct {
@@ -128,7 +128,7 @@ func TestGetProposerRewardPercentage(t *testing.T) {
 }
 
 func TestMint(t *testing.T) {
-	validator := getBondedValidator()
+	validator := getStakedValidator()
 	validatorAddress := validator.Address
 
 	tests := []struct {
@@ -275,7 +275,7 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 		ctx              sdk.Context
 		previousProposer sdk.Address
 	}
-	bondedValidator := getBondedValidator()
+	stakedValidator := getStakedValidator()
 
 	context, _, keeper := createTestInput(t, true)
 
@@ -287,7 +287,7 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 		{"Test rewardFromFees", fields{keeper: keeper},
 			args{
 				ctx:              context,
-				previousProposer: bondedValidator.GetAddress(),
+				previousProposer: stakedValidator.GetAddress(),
 			}},
 	}
 	for _, tt := range tests {

@@ -69,7 +69,7 @@ type hexValidator struct {
 	Address                 sdk.Address    `json:"address" yaml:"address"`       // the hex address of the validator
 	PublicKey               string         `json:"public_key" yaml:"public_key"` // the hex consensus public key of the validator
 	Jailed                  bool           `json:"jailed" yaml:"jailed"`         // has the validator been jailed from staked status?
-	Status                  sdk.BondStatus `json:"status" yaml:"status"`         // validator status (bonded/unbonding/unbonded)
+	Status                  sdk.StakeStatus `json:"status" yaml:"status"`         // validator status (staked/unstaking/unstaked)
 	StakedTokens            sdk.Int        `json:"tokens" yaml:"tokens"`         // how many staked tokens
 	ServiceURL              string         `json:"service_url" yaml:"service_uRL"`
 	Chains                  []string       `json:"chains" yaml:"chains"`

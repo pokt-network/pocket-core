@@ -37,7 +37,7 @@ type Keeper struct {
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper auth.AccountKeeper, coinKeeper bank.Keeper, supplyKeeper types.SupplyKeeper,
 	paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
 
-	// ensure bonded module accounts are set
+	// ensure staked module accounts are set
 	if addr := supplyKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
 	}

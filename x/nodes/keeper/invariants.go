@@ -28,9 +28,9 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 
 		k.IterateAndExecuteOverVals(ctx, func(_ int64, validator exported.ValidatorI) bool {
 			switch validator.GetStatus() {
-			case sdk.Bonded, sdk.Unbonding:
+			case sdk.Staked, sdk.Unstaking:
 				staked = staked.Add(validator.GetTokens())
-			case sdk.Unbonded:
+			case sdk.Unstaked:
 				notStaked = notStaked.Add(validator.GetTokens())
 			default:
 				panic("invalid validator status")

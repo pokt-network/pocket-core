@@ -69,7 +69,7 @@ func TestInvariants_ModuleAccountInvariants(t *testing.T) {
 
 func TestInvariants_NonNegativePowerInvariant(t *testing.T) {
 	context, _, keeper := createTestInput(t, true)
-	application := getBondedApplication()
+	application := getStakedApplication()
 
 	keeper.SetApplication(context, application)
 	keeper.SetStakedApplication(context, application)

@@ -317,7 +317,7 @@ func TestQueryStakedApp(t *testing.T) {
 		got, err := apps.QueryApplication(memCodec(), memCli, kp.GetAddress(), 0)
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
-		assert.Equal(t, sdk.Bonded, got.Status)
+		assert.Equal(t, sdk.Staked, got.Status)
 		assert.Equal(t, false, got.Jailed)
 	}
 	cleanup()
