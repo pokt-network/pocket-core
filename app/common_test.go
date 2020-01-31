@@ -294,10 +294,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		TmConfig: getTestConfig(),
 		Logger:   log.NewTMLogger(log.NewSyncWriter(loggerFile)),
 	}
-	db, err := openDB(c.TmConfig.RootDir)
-	if err != nil {
-		panic(err)
-	}
+	db := dbm.NewMemDB()
 	traceWriter, err := openTraceWriter(c.TraceWriter)
 	if err != nil {
 		panic(err)
