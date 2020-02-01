@@ -23,7 +23,9 @@ import (
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/params"
 	"github.com/pokt-network/posmint/x/supply"
+	"github.com/spf13/cobra"
 	con "github.com/tendermint/tendermint/config"
+	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
@@ -187,7 +189,7 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	// setup tendermint node config
 	newTMConfig := con.DefaultConfig()
 	newTMConfig.SetRoot(datadir)
-	newTMConfig.DBPath = datadir
+	//newTMConfig.DBPath = datadir
 	newTMConfig.NodeKey = defaultNodeKey
 	newTMConfig.PrivValidatorKey = defaultValKey
 	newTMConfig.PrivValidatorState = defaultValState
@@ -200,7 +202,6 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Minute * 2
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
-	newTMConfig.P2P.AddrBookStrict = false
 
 	c := cfg.Config{
 		TmConfig:    newTMConfig,
@@ -555,4 +556,71 @@ func newDefaultGenesisState(pubKey crypto.PublicKey) []byte {
 
 	j, _ := types.ModuleCdc.MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j
+}
+
+// XXX: this is totally unsafe.
+// it's only suitable for testnets.
+func ResetWorldState(cmd *cobra.Command, args []string) {
+	// setup the logger
+	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
+		if keyvals[0] != kitlevel.Key() {
+			panic(fmt.Sprintf("expected level key to be first, got %v", keyvals[0]))
+		}
+		switch keyvals[1].(kitlevel.Value).String() {
+		case "info":
+			return term.FgBgColor{Fg: term.Green}
+		case "debug":
+			return term.FgBgColor{Fg: term.DarkBlue}
+		case "error":
+			return term.FgBgColor{Fg: term.Red}
+		default:
+			return term.FgBgColor{}
+		}
+	})
+
+	// setup tendermint node config
+	newTMConfig := con.DefaultConfig()
+	newTMConfig.SetRoot(getDataDir())
+
+	ResetAll(newTMConfig.DBDir(), newTMConfig.P2P.AddrBookFile(), getDataDir()+fs+privValKeyName,
+		getDataDir()+fs+privValStateName, logger)
+}
+
+var keepAddrBook = false
+
+// ResetAll removes address book files plus all data, and resets the privValdiator data.
+// Exported so other CLI tools can use it.
+func ResetAll(dbDir, addrBookFile, privValKeyFile, privValStateFile string, logger log.Logger) {
+	if keepAddrBook {
+		logger.Info("The address book remains intact")
+	} else {
+		removeAddrBook(addrBookFile, logger)
+	}
+	if err := os.RemoveAll(dbDir); err == nil {
+		logger.Info("Removed all blockchain history", "dir", dbDir)
+	} else {
+		logger.Error("Error removing all blockchain history", "dir", dbDir, "err", err)
+	}
+	// recreate the dbDir since the privVal state needs to live there
+	cmn.EnsureDir(dbDir, 0700)
+	resetFilePV(privValKeyFile, privValStateFile, logger)
+}
+
+func resetFilePV(privValKeyFile, privValStateFile string, logger log.Logger) {
+
+	if _, err := os.Stat(privValKeyFile); err == nil {
+		os.Remove(privValKeyFile)
+		os.Remove(privValStateFile)
+		os.Remove(getDataDir() + fs + nodeKeyName)
+	}
+	logger.Info("Reset private validator file", "keyFile", privValKeyFile,
+		"stateFile", privValStateFile)
+}
+
+func removeAddrBook(addrBookFile string, logger log.Logger) {
+	if err := os.Remove(addrBookFile); err == nil {
+		logger.Info("Removed existing address book", "file", addrBookFile)
+	} else if !os.IsNotExist(err) {
+		logger.Info("Error removing address book", "file", addrBookFile, "err", err)
+	}
 }

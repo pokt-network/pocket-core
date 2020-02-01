@@ -81,3 +81,11 @@ var startCmd = &cobra.Command{
 		}()
 	},
 }
+
+// startCmd represents the start command
+var resetCmd = &cobra.Command{
+	Use:   "reset",
+	Short: "reset pocket-core",
+	Long:  `Reset the Pocket node,`,
+	Run:   app.ResetWorldState,
+}
