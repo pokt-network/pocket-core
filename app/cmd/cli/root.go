@@ -50,6 +50,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&tmPeersPort, "tmPeersPort", "26656", "the port for tendermint p2p")
 	rootCmd.PersistentFlags().StringVar(&pocketRPCPort, "pocketRPCPort", "8081", "the port for pocket rpc")
 	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(resetCmd)
 }
 
 // startCmd represents the start command
