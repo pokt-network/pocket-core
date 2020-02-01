@@ -48,7 +48,7 @@ const (
 	nodeKeyName       = "node_key.json"
 	KBDirectoryName   = "keybase"
 	chainsName        = "chains.json"
-	dummyChainsHash   = "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+	dummyChainsHash   = "36F028580BB02CC8272A9A020F4200E346E276AE664E45EE80745574E2F5AB80"
 	dummyChainsURL    = "https://foo.bar:8080"
 	dummyServiceURL   = "0.0.0.0:8081"
 	defaultTMURI      = "tcp://localhost:26657"
@@ -200,7 +200,6 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Second * 10
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
-	newTMConfig.P2P.AddrBookStrict = false
 
 	c := cfg.Config{
 		TmConfig:    newTMConfig,
