@@ -2,7 +2,7 @@
 ## Version 0.0.1
 
 ### Overview
-This document serves as a specification for the Command Line Interface of the Pocket Core application. There's no protocol verification for these commands, however because they map closely to protocol functions.
+This document serves as a specification for the Command Line Interface of the Pocket Core application. There's no protocol verification for these commands because they map closely to protocol functions.
 
 ### Namespaces
 The CLI will contain multiple namespaces listed below:
@@ -60,7 +60,7 @@ Public Key: 0x....
 > - `<address>`: The address to be deleted.
 > Example output:
 ```
-KeyPair 0x... deleted succesfully.
+KeyPair 0x... deleted successfully.
 ```
 
 - `pocket accounts update-passphrase <address>`
@@ -70,7 +70,7 @@ KeyPair 0x... deleted succesfully.
 > - `<address>`: The address to be deleted.
 > Example output:
 ```
-KeyPair 0x... passphrase updated succesfully.
+KeyPair 0x... passphrase updated successfully.
 ```
 
 - `pocket accounts sign <address> <msg>`
@@ -90,7 +90,7 @@ Signature: 0x...
 >
 > Example output:
 ```
-Account generated succesfully.
+Account generated successfully.
 Address: 0x....
 ```
 
@@ -101,7 +101,7 @@ Address: 0x....
 > - `<mnemonic>`: The mnemonic of the account to be imported.
 > Example output:
 ```
-Account imported succesfully.
+Account imported successfully.
 Address: 0x....
 ```
 
@@ -112,12 +112,12 @@ Address: 0x....
 > - `<armor>`: The encrypted encoded private key to be imported.
 > Example output:
 ```
-Account imported succesfully.
+Account imported successfully.
 Address: 0x....
 ```
 
 - `pocket accounts export <address>`
-> Exports the account with `<address>`, encrypted and ASCII armored. Will prompt the user for the account passphrase and for an encryption passphrase for the exported account.
+> Exports the account with `<address>`, encrypted and ASCII armored. Will prompt the user for the account passphrase and an encryption passphrase for the exported account.
 >
 > Arguments:
 > - `<address>`: The address of the account to be exported.
@@ -127,7 +127,7 @@ Exported account: <armored string>
 ```
 
 - `pocket accounts export-raw <address>`
-> Exports the raw private key in hex format. Will prompt the user for the account passphrase. ***NOTE***: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.*
+> Exports the raw private key in hex format. Will prompt the user for the account passphrase. ***NOTE***: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR RISK.*
 >
 > Arguments:
 > - `<address>`: The address of the account to be exported.
@@ -165,7 +165,7 @@ Transaction submitted with hash: <Transaction Hash>
 ```
 
 - `pocket node unstake <fromAddr>`
-> Unstakes a Node from the network, changing it's status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
+> Unstakes a Node from the network, changing its status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
 >
 > Arguments:
 > - `<fromAddr>`: The address of the sender.
@@ -200,7 +200,7 @@ Transaction submitted with hash: <Transaction Hash>
 ```
 
 - `pocket app unstake <fromAddr>`
-> Unstakes an Application from the network, changing it's status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
+> Unstakes an Application from the network, changing its status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
 >
 > Arguments:
 > - `<fromAddr>`: The address of the sender.
@@ -210,18 +210,18 @@ Transaction submitted with hash: <Transaction Hash>
 ```
 
 - `pocket app create-aat <appAddr> <clientPubKey>`
-> Creates a signed application authentication token (version `0.0.1` of the AAT spec), that can be embedded into application software for Relay servicing. Will prompt the user for the `<appAddr>` account passphrase. Read the Application Authentication Token documentation [here](application-auth-token.md). ***NOTE***: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES IN ORDER TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION:
+> Creates a signed application authentication token (version `0.0.1` of the AAT spec), that can be embedded into application software for Relay servicing. Will prompt the user for the `<appAddr>` account passphrase. Read the Application Authentication Token documentation [here](application-auth-token.md). ***NOTE***: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION:
 >
 > Arguments:
 > - `<appAddr>`: The address of the Application account to use to produce this AAT.
-> - `<clientPubKey>`: The account public key of the clien that will be signing and sending Relays sent to the Pocket Network.
+> - `<clientPubKey>`: The account public key of the client that will be signing and sending Relays sent to the Pocket Network.
 > Example output:
 ```json
 {
-	"version": "0.0.1",
-	"applicationPublicKey": "0x...",
-	"clientPublicKey": "0x...",
-	"signature": "0x..."
+    "version": "0.0.1",
+    "applicationPublicKey": "0x...",
+    "clientPublicKey": "0x...",
+    "signature": "0x..."
 }
 ```
 
@@ -303,7 +303,7 @@ Account balance: <balance of the account>
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
 - `pocket query supply <height>`
-> Returns the total amount of POKT staked/unstaked by nodes, apps, dao, and totals at the specified `<height>`.
+> Returns the total amount of POKT staked/unstaked by nodes, apps, DAO, and totals at the specified `<height>`.
 >
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
@@ -358,11 +358,4 @@ Account balance: <balance of the account>
 >
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
-
-
-
-
-
-
-
 
