@@ -35,7 +35,7 @@ func TestKeeper_SetHooks(t *testing.T) {
 		args   AppHooks
 	}{
 		{
-			name:   "panics if setting hooks twice",
+			name:   "errors if setting hooks twice",
 			panics: true,
 			args:   AppHooks{},
 		},
@@ -77,7 +77,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			panics: false,
 		},
 		{
-			name:   "panics if no GetModuleAddress is nill",
+			name:   "errors if no GetModuleAddress is nill",
 			msg:    fmt.Sprintf("%s module account has not been set", types.StakedPoolName),
 			panics: true,
 		},

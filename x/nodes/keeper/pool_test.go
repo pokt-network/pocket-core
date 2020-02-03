@@ -19,47 +19,45 @@ func TestCoinsFromUnstakedToStaked(t *testing.T) {
 		expected  string
 		validator types.Validator
 		amount    sdk.Int
-		panics    bool
+		errors    bool
 	}{
 		{
 			name:      "stake coins on pool",
 			validator: types.Validator{Address: validatorAddress},
 			amount:    sdk.NewInt(10),
-			panics:    false,
+			errors:    true,
 		},
 		{
-			name:      "panics if negative ammount",
+			name:      "error if negative ammount",
 			validator: types.Validator{Address: validatorAddress},
 			amount:    sdk.NewInt(-1),
 			expected:  fmt.Sprintf("negative coin amount: -1"),
-			panics:    true,
+			errors:    true,
 		},
-		{name: "panics if no supply is set",
+		{name: "error if no supply is set",
 			validator: types.Validator{Address: validatorAddress},
 			expected:  fmt.Sprintf("insufficient account funds"),
 			amount:    sdk.NewInt(10),
-			panics:    true,
+			errors:    false,
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 
-			switch test.panics {
+			switch test.errors {
 			case true:
-				defer func() {
-					err := recover().(error)
-					assert.Contains(t, err.Error(), test.expected)
-				}()
 				if strings.Contains(test.name, "setup") {
 					addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, sdk.NewInt(100000000000))
 				}
-				keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				err := keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				assert.NotNil(t, err)
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, sdk.NewInt(100000000000))
-				keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				err := keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				assert.Nil(t, err)
 				staked := keeper.GetStakedTokens(context)
 				assert.True(t, test.amount.Add(sdk.NewInt(100000000000)).Equal(staked), "values do not match")
 			}
@@ -85,7 +83,7 @@ func TestCoinsFromStakedToUnstaked(t *testing.T) {
 			panics:    false,
 		},
 		{
-			name:      "panics if negative ammount",
+			name:      "errors if negative ammount",
 			validator: types.Validator{Address: validatorAddress, StakedTokens: sdk.NewInt(-1)},
 			amount:    sdk.NewInt(-1),
 			expected:  fmt.Sprintf("negative coin amount: -1"),

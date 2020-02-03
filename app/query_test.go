@@ -60,8 +60,8 @@ func TestQueryTx(t *testing.T) {
 		assert.NotNil(t, tx)
 	}
 	select {
-	case res :=<-evtChan:
-		time.Sleep(time.Second*1)
+	case res := <-evtChan:
+		time.Sleep(time.Second * 1)
 		fmt.Println(res.Data.(tmTypes.EventDataTx))
 		got, err := nodes.QueryTransaction(memCli, tx.TxHash)
 		assert.Nil(t, err)

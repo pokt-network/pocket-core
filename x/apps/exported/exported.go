@@ -8,7 +8,7 @@ import (
 // ApplicationI expected application functions
 type ApplicationI interface {
 	IsJailed() bool                 // whether the application is jailed
-	GetStatus() sdk.StakeStatus      // status of the application
+	GetStatus() sdk.StakeStatus     // status of the application
 	IsStaked() bool                 // check if has a staked status
 	IsUnstaked() bool               // check if has status unstaked
 	IsUnstaking() bool              // check if has status unstaking

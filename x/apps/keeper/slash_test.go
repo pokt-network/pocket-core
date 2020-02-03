@@ -140,7 +140,7 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "panics if unstakedApplication",
+			name:   "errors if unstakedApplication",
 			panics: true,
 			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(90)},
 			expected: expected{
@@ -153,7 +153,7 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "panics with invalid slashFactor",
+			name:   "errors with invalid slashFactor",
 			panics: true,
 			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(-10)},
 			expected: expected{
@@ -166,7 +166,7 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "panics with wrong infraction height",
+			name:   "errors with wrong infraction height",
 			panics: true,
 			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(90)},
 			expected: expected{

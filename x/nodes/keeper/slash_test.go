@@ -223,7 +223,7 @@ func TestHandleValidatorSignature(t *testing.T) {
 			expected: expected{validator: stakedValidator, tombstoned: false, missedBlocksCounter: int64(0)},
 		},
 		{
-			name:   "panics if no PublicKey Relation",
+			name:   "errors if no PublicKey Relation",
 			panics: true,
 			args:   args{validator: stakedValidator, power: int64(10), signed: false},
 			expected: expected{
@@ -232,7 +232,7 @@ func TestHandleValidatorSignature(t *testing.T) {
 			},
 		},
 		{
-			name:   "panics if no signed info",
+			name:   "errors if no signed info",
 			panics: true,
 			args:   args{validator: stakedValidator, power: int64(10), signed: false},
 			expected: expected{
@@ -534,7 +534,7 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "panics if unstakedValidator",
+			name:   "errors if unstakedValidator",
 			panics: true,
 			args:   args{validator: unstakedValidator},
 			expected: expected{
@@ -547,7 +547,7 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "panics with invalid slashFactor",
+			name:   "errors with invalid slashFactor",
 			panics: true,
 			args:   args{validator: unstakedValidator, slashFraction: sdk.NewDec(-10)},
 			expected: expected{
@@ -560,7 +560,7 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "panics with wrong infraction height",
+			name:   "errors with wrong infraction height",
 			panics: true,
 			args:   args{validator: unstakedValidator},
 			expected: expected{

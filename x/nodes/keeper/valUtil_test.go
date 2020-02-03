@@ -32,7 +32,7 @@ func TestMustGetValidator(t *testing.T) {
 			expected: expected{validator: stakedValidator},
 		},
 		{
-			name:     "panics if no validator",
+			name:     "errors if no validator",
 			panics:   true,
 			args:     args{validator: stakedValidator},
 			expected: expected{message: fmt.Sprintf("validator record not found for address: %X\n", stakedValidator.Address)},

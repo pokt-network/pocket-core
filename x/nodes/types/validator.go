@@ -15,7 +15,7 @@ type Validator struct {
 	Address                 sdk.Address      `json:"address" yaml:"address"`               // address of the validator; hex encoded in JSON
 	PublicKey               crypto.PublicKey `json:"public_key" yaml:"public_key"`         // the consensus public key of the validator; hex encoded in JSON
 	Jailed                  bool             `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from staked status?
-	Status                  sdk.StakeStatus   `json:"status" yaml:"status"`                 // validator status (staked/unstaking/unstaked)
+	Status                  sdk.StakeStatus  `json:"status" yaml:"status"`                 // validator status (staked/unstaking/unstaked)
 	Chains                  []string         `json:"chains" yaml:"chains"`                 // validator non native blockchains
 	ServiceURL              string           `json:"service_url" yaml:"service_url"`       // url where the pocket service api is hosted
 	StakedTokens            sdk.Int          `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
@@ -110,7 +110,7 @@ func (v Validator) IsStaked() bool                 { return v.GetStatus().Equal(
 func (v Validator) IsUnstaked() bool               { return v.GetStatus().Equal(sdk.Unstaked) }
 func (v Validator) IsUnstaking() bool              { return v.GetStatus().Equal(sdk.Unstaking) }
 func (v Validator) IsJailed() bool                 { return v.Jailed }
-func (v Validator) GetStatus() sdk.StakeStatus      { return v.Status }
+func (v Validator) GetStatus() sdk.StakeStatus     { return v.Status }
 func (v Validator) GetAddress() sdk.Address        { return v.Address }
 func (v Validator) GetPublicKey() crypto.PublicKey { return v.PublicKey }
 func (v Validator) GetTokens() sdk.Int             { return v.StakedTokens }

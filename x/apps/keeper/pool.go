@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
@@ -42,19 +43,23 @@ func (k Keeper) GetStakedPool(ctx sdk.Context) (stakedPool exported.ModuleAccoun
 // moves coins from the module account to the application -> used in unstaking
 func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Context, application types.Application) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), application.StakedTokens))
-	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.Address(application.Address), coins)
+	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, application.Address, coins)
 	if err != nil {
 		panic(err)
 	}
 }
 
 // moves coins from the module account to application -> used in staking
-func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Context, application types.Application, amount sdk.Int) {
+func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Context, application types.Application, amount sdk.Int) error {
+	if amount.LT(sdk.ZeroInt()) {
+		return errors.New("cannot stake a negative amount of coins")
+	}
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, sdk.Address(application.Address), types.StakedPoolName, coins)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // burnStakedTokens removes coins from the staked pool module account

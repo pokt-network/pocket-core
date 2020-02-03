@@ -27,7 +27,7 @@ func TestCoinsFromDAOToValidator(t *testing.T) {
 			panics:   false,
 		},
 		{
-			name:     "panics invalid ammount of coins",
+			name:     "errors invalid ammount of coins",
 			amount:   sdk.NewInt(-1),
 			expected: fmt.Sprintf("negative coin amount: -1"),
 			address:  validatorAddress,

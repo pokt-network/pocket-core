@@ -33,7 +33,10 @@ func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application,
 	// call the before hook
 	k.BeforeApplicationStaked(ctx, application.GetAddress(), application.Address)
 	// send the coins from address to staked module account
-	k.coinsFromUnstakedToStaked(ctx, application, amount)
+	err := k.coinsFromUnstakedToStaked(ctx, application, amount)
+	if err != nil {
+		return sdk.ErrInternal(err.Error())
+	}
 	// add coins to the staked field
 	application.AddStakedTokens(amount)
 	// calculate relays
