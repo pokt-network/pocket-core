@@ -197,7 +197,7 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	newTMConfig.P2P.PersistentPeers = persistentPeers               // Comma-delimited ID@host:port persistent peers
 	newTMConfig.P2P.Seeds = seeds                                   // Comma-delimited ID@host:port seed nodes
 	newTMConfig.Consensus.CreateEmptyBlocks = true                  // Set this to false to only produce blocks when there are txs or when the AppHash changes
-	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Second * 10
+	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Minute * 2
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
 	newTMConfig.P2P.AddrBookStrict = false
