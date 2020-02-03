@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	sdk "github.com/pokt-network/posmint/types"
 	"math"
 )
@@ -83,7 +84,7 @@ func (rp RelayProof) Bytes() []byte {
 		Token:              rp.Token.HashString(),
 	})
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("an error occured converting the relay proof to bytes:\n%v", err))
 	}
 	return res
 }
@@ -99,7 +100,7 @@ func (rp RelayProof) BytesWithSignature() []byte {
 		Token:              rp.Token.HashString(),
 	})
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("an error occured converting the relay proof to bytes with signature:\n%v", err))
 	}
 	return res
 }

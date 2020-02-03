@@ -135,15 +135,15 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Context) {
 		for _, valAddr := range unstakingVals {
 			val, found := k.GetValidator(ctx, valAddr)
 			if !found {
-				panic("validator in the unstaking queue was not found")
+				ctx.Logger().Error("validator in the unstaking queue was not found, possible forced unstake?")
 			}
 			err := k.ValidateValidatorFinishUnstaking(ctx, val)
 			if err != nil {
-				panic(err)
+				ctx.Logger().Error(err.Error())
 			}
 			err = k.FinishUnstakingValidator(ctx, val)
 			if err != nil {
-				panic(err)
+				ctx.Logger().Error(err.Error())
 			}
 		}
 		store.Delete(unstakingValidatorsIterator.Key())

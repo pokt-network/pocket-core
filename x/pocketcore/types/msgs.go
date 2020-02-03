@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"fmt"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"reflect"
@@ -150,7 +151,7 @@ func (msg MsgProof) GetSignBytes() []byte {
 func (msg MsgProof) GetSigners() []sdk.Address {
 	pk, err := crypto.NewPublicKey(msg.Leaf.ServicerPubKey)
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("an error occured getting the signer for the proof message, %v", err))
 	}
 	return []sdk.Address{sdk.Address(pk.Address())}
 }

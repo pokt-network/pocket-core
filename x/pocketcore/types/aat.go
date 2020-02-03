@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 )
 
 const (
@@ -51,7 +52,7 @@ func (a AAT) Hash() []byte {
 		Version:              a.Version,
 	})
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("an error occured hashing the aat:\n%v", err))
 	}
 	return Hash(r)
 }

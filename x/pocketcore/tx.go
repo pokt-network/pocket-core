@@ -13,7 +13,7 @@ import (
 func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root types.HashSum) (*sdk.TxResponse, error) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	msg := types.MsgClaim{
 		SessionHeader: header,
