@@ -87,6 +87,6 @@ var startCmd = &cobra.Command{
 var resetCmd = &cobra.Command{
 	Use:   "reset",
 	Short: "reset pocket-core",
-	Long:  `Reset the Pocket node,`,
+	Long:  `Reset the Pocket node`,
 	Run:   app.ResetWorldState,
 }

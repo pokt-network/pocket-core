@@ -30,6 +30,15 @@ The default namespace contains functions that are pertinent to the execution of 
 > Arguments:
 > - `<datadir>`: The data directory where the configuration files for this node are specified.
 
+- `pocket reset`
+> Reset the Pocket node.
+> Deletes the following files / folders:
+> - .pocket/data
+> - priv_val_key
+> - priv_val_state
+> - node_keys
+>
+
 ### Accounts Namespace Functions
 The `accounts` namespace handles all account related interactions, from creating and deleting accounts, to importing and exporting accounts.
 
