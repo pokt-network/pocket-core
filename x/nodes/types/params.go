@@ -165,7 +165,7 @@ func (p Params) String() string {
 		p.SlashFractionDowntime,
 		p.SessionBlockFrequency,
 		p.ProposerAllocation,
-		p.DAOAllocation, )
+		p.DAOAllocation)
 }
 
 // unmarshal the current pos params value from store key or panic

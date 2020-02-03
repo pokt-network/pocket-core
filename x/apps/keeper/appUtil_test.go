@@ -32,7 +32,7 @@ func TestAppUtil_MustGetApplication(t *testing.T) {
 			want:   want{application: stakedApplication},
 		},
 		{
-			name:   "panics if no application",
+			name:   "errors if no application",
 			panics: true,
 			args:   args{application: stakedApplication},
 			want:   want{message: fmt.Sprintf("application record not found for address: %X\n", stakedApplication.Address)},
@@ -85,7 +85,7 @@ func TestAppUtil_Application(t *testing.T) {
 			want: want{application: stakedApplication},
 		},
 		{
-			name: "panics if no application",
+			name: "errors if no application",
 			find: true,
 			args: args{application: stakedApplication},
 		},
@@ -133,7 +133,7 @@ func TestAppUtil_MustGetApplicationByConsAddr(t *testing.T) {
 			want:   want{application: stakedApplication},
 		},
 		{
-			name:   "panics if no application",
+			name:   "errors if no application",
 			panics: true,
 			args:   args{application: stakedApplication},
 			want:   want{message: fmt.Sprintf("application with consensus-Address %s not found", stakedApplication.GetAddress())},
@@ -293,13 +293,13 @@ func TestAppUtil_AllApplications(t *testing.T) {
 //	}
 //	tests := []struct {
 //		name   string
-//		panics bool
+//		errors bool
 //		args
 //		expected
 //	}{
 //		{
 //			name:     "getPrevStatePowerMap",
-//			panics:   false,
+//			errors:   false,
 //			args:     args{application: stakedApplication},
 //			expected: expected{application: stakedApplication, length: 1},
 //		},

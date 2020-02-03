@@ -446,7 +446,7 @@ func TestParams_String(t *testing.T) {
 			DefaultSlashFractionDowntime,
 			DefaultSessionBlocktime,
 			DefaultProposerAllocation,
-			DefaultDAOAllocation, )},
+			DefaultDAOAllocation)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

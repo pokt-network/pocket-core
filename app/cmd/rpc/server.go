@@ -91,7 +91,8 @@ func WriteJSONResponse(w http.ResponseWriter, jsn, path, ip string) {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 		log.Println(err.Error())
 	}
-	json.NewEncoder(w).Encode(raw)}
+	json.NewEncoder(w).Encode(raw)
+}
 
 func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

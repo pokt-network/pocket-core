@@ -72,8 +72,8 @@ type hexApplication struct {
 	Chains                  []string    `json:"chains" yaml:"chains"`
 	MaxRelays               sdk.Int
 	Status                  sdk.StakeStatus `json:"status" yaml:"status"`                 // application status (staked/unstaking/unstaked)
-	StakedTokens            sdk.Int        `json:"stakedTokens" yaml:"stakedTokens"`     // how many staked tokens
-	UnstakingCompletionTime time.Time      `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
+	StakedTokens            sdk.Int         `json:"stakedTokens" yaml:"stakedTokens"`     // how many staked tokens
+	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }
 
 // MarshalJSON marshals the application to JSON using Hex

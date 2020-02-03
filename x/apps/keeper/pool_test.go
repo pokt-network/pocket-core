@@ -5,6 +5,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/supply/exported"
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
 )
@@ -18,48 +19,45 @@ func TestPool_CoinsFromUnstakedToStaked(t *testing.T) {
 		want        string
 		application types.Application
 		amount      sdk.Int
-		panics      bool
+		errors      bool
 	}{
 		{
 			name:        "stake coins on pool",
 			application: types.Application{Address: applicationAddress},
 			amount:      sdk.NewInt(10),
-			panics:      false,
+			errors:      false,
 		},
 		{
-			name:        "panics if negative ammount",
+			name:        "errors if negative ammount",
 			application: types.Application{Address: applicationAddress},
 			amount:      sdk.NewInt(-1),
 			want:        fmt.Sprintf("negative coin amount: -1"),
-			panics:      true,
+			errors:      true,
 		},
-		{name: "panics if no supply is set",
+		{name: "errors if no supply is set",
 			application: types.Application{Address: applicationAddress},
 			want:        fmt.Sprintf("insufficient account funds"),
 			amount:      sdk.NewInt(10),
-			panics:      true,
+			errors:      true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 
-			switch tt.panics {
+			switch tt.errors {
 			case true:
-				defer func() {
-					if err := recover().(error); !strings.Contains(err.Error(), tt.want) {
-						t.Errorf("KeeperCoins.FromUnstakedToStaked()= %v, want %v", err.Error(), tt.want)
-					}
-				}()
 				if strings.Contains(tt.name, "setup") {
 					addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
 				}
-				keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
+				err := keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
+				assert.NotNil(t, err)
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
-				keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
+				err := keeper.coinsFromUnstakedToStaked(context, tt.application, tt.amount)
+				assert.Nil(t, err)
 				if got := keeper.GetStakedTokens(context); !tt.amount.Add(sdk.NewInt(100000000000)).Equal(got) {
 					t.Errorf("KeeperCoins.FromUnstakedToStaked()= %v, want %v", got, tt.amount.Add(sdk.NewInt(100000000000)))
 				}
@@ -86,7 +84,7 @@ func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
 			panics:      false,
 		},
 		{
-			name:        "panics if negative ammount",
+			name:        "errors if negative ammount",
 			application: types.Application{Address: applicationAddress, StakedTokens: sdk.NewInt(-1)},
 			amount:      sdk.NewInt(-1),
 			want:        fmt.Sprintf("negative coin amount: -1"),

@@ -34,6 +34,7 @@ func TestQueryParameters(t *testing.T) {
 	assert.Nil(t, er)
 	assert.Equal(t, params, p)
 }
+
 //
 //func TestQueryInvoice(t *testing.T) {
 //	ctx, _, _, _, k := createTestInput(t, false)

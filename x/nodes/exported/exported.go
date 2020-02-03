@@ -8,7 +8,7 @@ import (
 // ValidatorI expected validator functions
 type ValidatorI interface {
 	IsJailed() bool                 // whether the validator is jailed
-	GetStatus() sdk.StakeStatus      // status of the validator
+	GetStatus() sdk.StakeStatus     // status of the validator
 	IsStaked() bool                 // check if has a staked status
 	IsUnstaked() bool               // check if has status unstaked
 	IsUnstaking() bool              // check if has status unstaking
