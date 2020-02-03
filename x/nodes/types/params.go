@@ -13,19 +13,16 @@ import (
 // POS params default values
 const (
 	// DefaultParamspace for params keeper
-	DefaultParamspace                         = ModuleName
-	DefaultUnstakingTime                      = time.Hour * 24 * 7 * 3
-	DefaultMaxValidators               uint64 = 100000
-	DefaultMinStake                    int64  = 1000000
-	DefaultBaseProposerAwardPercentage        = 90
-	DefaultMaxEvidenceAge                     = 60 * 2 * time.Second
-	DefaultSignedBlocksWindow                 = int64(100)
-	DefaultDowntimeJailDuration               = 60 * 10 * time.Second
-	DefaultSessionBlocktime                   = 25
-)
-
-var (
-	DefaultRelaysToTokens = sdk.NewDec(1000) // .0001 POKT
+	DefaultParamspace                  = ModuleName
+	DefaultUnstakingTime               = time.Hour * 24 * 7 * 3
+	DefaultMaxValidators        uint64 = 100000
+	DefaultMinStake             int64  = 1000000
+	DefaultMaxEvidenceAge              = 60 * 2 * time.Second
+	DefaultSignedBlocksWindow          = int64(100)
+	DefaultDowntimeJailDuration        = 60 * 10 * time.Second
+	DefaultSessionBlocktime            = 25
+	DefaultProposerAllocation          = 1
+	DefaultDAOAllocation               = 10
 )
 
 // nolint - Keys for parameter access
@@ -34,7 +31,6 @@ var (
 	KeyMaxValidators               = []byte("MaxValidators")
 	KeyStakeDenom                  = []byte("StakeDenom")
 	KeyStakeMinimum                = []byte("StakeMinimum")
-	KeyProposerRewardPercentage    = []byte("ProposerRewardPercentage")
 	KeyMaxEvidenceAge              = []byte("MaxEvidenceAge")
 	KeySignedBlocksWindow          = []byte("SignedBlocksWindow")
 	KeyMinSignedPerWindow          = []byte("MinSignedPerWindow")
@@ -42,7 +38,8 @@ var (
 	KeySlashFractionDoubleSign     = []byte("SlashFractionDoubleSign")
 	KeySlashFractionDowntime       = []byte("SlashFractionDowntime")
 	KeySessionBlock                = []byte("SessionBlockFrequency")
-	KeyRelaysToTokens              = []byte("RelaysToTokens")
+	KeyDAOAllocation               = []byte("DAOAllocation")
+	KeyProposerAllocation          = []byte("ProposerPercentage")
 	DoubleSignJailEndTime          = time.Unix(253402300799, 0) // forever
 	DefaultMinSignedPerWindow      = sdk.NewDecWithPrec(5, 1)
 	DefaultSlashFractionDoubleSign = sdk.NewDec(1).Quo(sdk.NewDec(20))
@@ -53,13 +50,13 @@ var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	UnstakingTime            time.Duration `json:"unstaking_time" yaml:"unstaking_time"`                   // how much time must pass between the begin_unstaking_tx and the node going to -> unstaked status
-	MaxValidators            uint64        `json:"max_validators" yaml:"max_validators"`                   // maximum number of validators in the network at any given block
-	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                         // the monetary denomination of the coins in the network `uPOKT` or `uAtom` or `Wei`
-	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`                     // minimum amount of `uPOKT` needed to stake in the network as a node
-	ProposerRewardPercentage int8          `json:"base_proposer_award" yaml:"base_proposer_award"`         // award percentage of the mint for the proposer (This will change with #559)
-	SessionBlockFrequency    int64         `json:"session_block_frequency" yaml:"session_block_frequency"` // how many blocks are in a session (pocket network unit)
-	RelaysToTokens           sdk.Dec       `json:"relays_to_tokens" yaml:"relays_to_tokens"`               // how many relays serviced award tokens (This will change with #559)
+	UnstakingTime         time.Duration `json:"unstaking_time" yaml:"unstaking_time"`                   // how much time must pass between the begin_unstaking_tx and the node going to -> unstaked status
+	MaxValidators         uint64        `json:"max_validators" yaml:"max_validators"`                   // maximum number of validators in the network at any given block
+	StakeDenom            string        `json:"stake_denom" yaml:"stake_denom"`                         // the monetary denomination of the coins in the network `uPOKT` or `uAtom` or `Wei`
+	StakeMinimum          int64         `json:"stake_minimum" yaml:"stake_minimum"`                     // minimum amount of `uPOKT` needed to stake in the network as a node
+	SessionBlockFrequency int64         `json:"session_block_frequency" yaml:"session_block_frequency"` // how many blocks are in a session (pocket network unit)
+	DAOAllocation         int64         `json:"dao_allocation" yaml:"dao_allocation"`
+	ProposerAllocation    int64         `json:"proposer_allocation" yaml:"proposer_allocation"`
 	// slashing params
 	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`                     // maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)
 	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`             // window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks
@@ -80,30 +77,30 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{Key: KeySignedBlocksWindow, Value: &p.SignedBlocksWindow},
 		{Key: KeyMinSignedPerWindow, Value: &p.MinSignedPerWindow},
 		{Key: KeyDowntimeJailDuration, Value: &p.DowntimeJailDuration},
-		{Key: KeyProposerRewardPercentage, Value: &p.ProposerRewardPercentage},
 		{Key: KeySlashFractionDoubleSign, Value: &p.SlashFractionDoubleSign},
 		{Key: KeySlashFractionDowntime, Value: &p.SlashFractionDowntime},
 		{Key: KeySessionBlock, Value: &p.SessionBlockFrequency},
-		{Key: KeyRelaysToTokens, Value: &p.RelaysToTokens},
+		{Key: KeyDAOAllocation, Value: &p.DAOAllocation},
+		{Key: KeyProposerAllocation, Value: &p.ProposerAllocation},
 	}
 }
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		UnstakingTime:            DefaultUnstakingTime,
-		MaxValidators:            DefaultMaxValidators,
-		StakeMinimum:             DefaultMinStake,
-		StakeDenom:               sdk.DefaultStakeDenom,
-		ProposerRewardPercentage: DefaultBaseProposerAwardPercentage,
-		MaxEvidenceAge:           DefaultMaxEvidenceAge,
-		SignedBlocksWindow:       DefaultSignedBlocksWindow,
-		MinSignedPerWindow:       DefaultMinSignedPerWindow,
-		DowntimeJailDuration:     DefaultDowntimeJailDuration,
-		SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
-		SlashFractionDowntime:    DefaultSlashFractionDowntime,
-		SessionBlockFrequency:    DefaultSessionBlocktime,
-		RelaysToTokens:           DefaultRelaysToTokens,
+		UnstakingTime:           DefaultUnstakingTime,
+		MaxValidators:           DefaultMaxValidators,
+		StakeMinimum:            DefaultMinStake,
+		StakeDenom:              sdk.DefaultStakeDenom,
+		MaxEvidenceAge:          DefaultMaxEvidenceAge,
+		SignedBlocksWindow:      DefaultSignedBlocksWindow,
+		MinSignedPerWindow:      DefaultMinSignedPerWindow,
+		DowntimeJailDuration:    DefaultDowntimeJailDuration,
+		SlashFractionDoubleSign: DefaultSlashFractionDoubleSign,
+		SlashFractionDowntime:   DefaultSlashFractionDowntime,
+		SessionBlockFrequency:   DefaultSessionBlocktime,
+		DAOAllocation:           DefaultDAOAllocation,
+		ProposerAllocation:      DefaultProposerAllocation,
 	}
 }
 
@@ -118,14 +115,17 @@ func (p Params) Validate() error {
 	if p.StakeMinimum < DefaultMinStake {
 		return fmt.Errorf("staking parameter StakeMimimum must be a positive integer")
 	}
-	if p.ProposerRewardPercentage < 0 || p.ProposerRewardPercentage > 100 {
-		return fmt.Errorf("base proposer award is a percentage and must be between 0 and 100")
-	}
 	if p.SessionBlockFrequency < 2 {
 		return fmt.Errorf("session block must be greater than 1")
 	}
-	if p.RelaysToTokens.LTE(sdk.ZeroDec()) {
-		return fmt.Errorf("relays to tokens must be > 0")
+	if p.DAOAllocation < 0 {
+		return fmt.Errorf("the dao allocation must not be negative")
+	}
+	if p.ProposerAllocation < 0 {
+		return fmt.Errorf("the proposer allication must not be negative")
+	}
+	if p.ProposerAllocation+p.DAOAllocation > 100 {
+		return fmt.Errorf("the combo of proposer allocation and dao allocation mnust not be greater than 100")
 	}
 	return nil
 }
@@ -144,26 +144,28 @@ func (p Params) String() string {
   Max Validators:          %d
   Stake Coin Denom:        %s
   Minimum Stake:     	   %d
-  Base Proposer Award:     %d
   MaxEvidenceAge:          %s
   SignedBlocksWindow:      %d
   MinSignedPerWindow:      %s
   DowntimeJailDuration:    %s
   SlashFractionDoubleSign: %s
   SlashFractionDowntime:   %s
-  SessionBlockFrequency    %d`,
+  SessionBlockFrequency    %d
+  Proposer Allocation      %d
+  DAO allocation           %d`,
 		p.UnstakingTime,
 		p.MaxValidators,
 		p.StakeDenom,
 		p.StakeMinimum,
-		p.ProposerRewardPercentage,
 		p.MaxEvidenceAge,
 		p.SignedBlocksWindow,
 		p.MinSignedPerWindow,
 		p.DowntimeJailDuration,
 		p.SlashFractionDoubleSign,
 		p.SlashFractionDowntime,
-		p.SessionBlockFrequency)
+		p.SessionBlockFrequency,
+		p.ProposerAllocation,
+		p.DAOAllocation, )
 }
 
 // unmarshal the current pos params value from store key or panic

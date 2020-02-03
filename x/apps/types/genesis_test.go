@@ -14,7 +14,8 @@ func TestDefaultGenesisState(t *testing.T) {
 		name string
 		want GenesisState
 	}{{"defaultState", GenesisState{
-		Params: DefaultParams(),
+		Params:       DefaultParams(),
+		Applications: make(Applications, 0),
 	}},
 	}
 	for _, tt := range tests {

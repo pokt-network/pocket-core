@@ -50,10 +50,11 @@ func TestGetAndSetStakedApplication(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, application := range test.applications {
 				keeper.SetApplication(context, application)
-				keeper.SetStakedApplication(context, application)
+				if application.IsStaked() {
+					keeper.SetStakedApplication(context, application)
+				}
 			}
 			applications := keeper.getStakedApplications(context)
-
 			if equal := assert.ObjectsAreEqualValues(applications, test.want.applications); !equal { // note ObjectsAreEqualValues does not assert, manual verification is required
 				t.FailNow()
 			}

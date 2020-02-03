@@ -107,21 +107,20 @@ func TestDeleteValidatorAward(t *testing.T) {
 	}
 }
 
-func TestGetProposerRewardPercentage(t *testing.T) {
+func TestGetProposerAllocation(t *testing.T) {
 	tests := []struct {
 		name               string
 		expectedPercentage sdk.Int
 	}{
 		{
 			name:               "get reward percentage",
-			expectedPercentage: sdk.NewInt(90),
+			expectedPercentage: sdk.NewInt(1),
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-
-			percentage := keeper.getProposerRewardPercentage(context) // TODO: replace with  sdk.Dec isntead of sdk.Int
+			percentage := keeper.getProposerAllocaiton(context)
 			assert.True(t, test.expectedPercentage.Equal(percentage), "percentages do not match")
 		})
 	}

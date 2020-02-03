@@ -41,8 +41,8 @@ func (k Keeper) MinimumStake(ctx sdk.Context) (res int64) {
 	return
 }
 
-func (k Keeper) ProposerRewardPercentage(ctx sdk.Context) (res int8) {
-	k.Paramstore.Get(ctx, types.KeyProposerRewardPercentage, &res)
+func (k Keeper) ProposerAllocation(ctx sdk.Context) (res int64) {
+	k.Paramstore.Get(ctx, types.KeyProposerAllocation, &res)
 	return
 }
 
@@ -87,8 +87,14 @@ func (k Keeper) SlashFractionDowntime(ctx sdk.Context) (res sdk.Dec) {
 	return
 }
 
-func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Context) (res sdk.Dec) {
-	k.Paramstore.Get(ctx, types.KeyRelaysToTokens, &res)
+func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Context) (sdk.Int) {
+	daoAllocation := k.DAOAllocation(ctx)
+	proposerAllocation := k.ProposerAllocation(ctx)
+	return sdk.NewInt(100 - daoAllocation + proposerAllocation)
+}
+
+func (k Keeper) DAOAllocation(ctx sdk.Context) (res int64) {
+	k.Paramstore.Get(ctx, types.KeyDAOAllocation, &res)
 	return
 }
 
@@ -100,19 +106,19 @@ func (k Keeper) SessionBlockFrequency(ctx sdk.Context) (res int64) {
 // Get all parameteras as types.Params
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.Params{
-		UnstakingTime:            k.UnStakingTime(ctx),
-		MaxValidators:            k.MaxValidators(ctx),
-		StakeDenom:               k.StakeDenom(ctx),
-		StakeMinimum:             k.MinimumStake(ctx),
-		ProposerRewardPercentage: k.ProposerRewardPercentage(ctx),
-		SessionBlockFrequency:    k.SessionBlockFrequency(ctx),
-		RelaysToTokens:           k.RelaysToTokensMultiplier(ctx),
-		MaxEvidenceAge:           k.MaxEvidenceAge(ctx),
-		SignedBlocksWindow:       k.SignedBlocksWindow(ctx),
-		MinSignedPerWindow:       sdk.NewDec(k.MinSignedPerWindow(ctx)),
-		DowntimeJailDuration:     k.DowntimeJailDuration(ctx),
-		SlashFractionDoubleSign:  k.SlashFractionDoubleSign(ctx),
-		SlashFractionDowntime:    k.SlashFractionDowntime(ctx),
+		UnstakingTime:           k.UnStakingTime(ctx),
+		MaxValidators:           k.MaxValidators(ctx),
+		StakeDenom:              k.StakeDenom(ctx),
+		StakeMinimum:            k.MinimumStake(ctx),
+		ProposerAllocation:      k.ProposerAllocation(ctx),
+		SessionBlockFrequency:   k.SessionBlockFrequency(ctx),
+		DAOAllocation:           k.DAOAllocation(ctx),
+		MaxEvidenceAge:          k.MaxEvidenceAge(ctx),
+		SignedBlocksWindow:      k.SignedBlocksWindow(ctx),
+		MinSignedPerWindow:      sdk.NewDec(k.MinSignedPerWindow(ctx)),
+		DowntimeJailDuration:    k.DowntimeJailDuration(ctx),
+		SlashFractionDoubleSign: k.SlashFractionDoubleSign(ctx),
+		SlashFractionDowntime:   k.SlashFractionDowntime(ctx),
 	}
 }
 

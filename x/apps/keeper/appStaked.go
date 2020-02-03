@@ -43,22 +43,18 @@ func (k Keeper) removeApplicationRelays(ctx sdk.Context, v types.Application, re
 	return v
 }
 
-// get the current staked applications sorted by power-rank
 func (k Keeper) getStakedApplications(ctx sdk.Context) types.Applications {
-	maxApplications := k.MaxApplications(ctx)
-	applications := make([]types.Application, maxApplications)
+	var applications = make(types.Applications, 0)
 	iterator := k.stakedAppsIterator(ctx)
 	defer iterator.Close()
-	i := 0
-	for ; iterator.Valid() && i < int(maxApplications); iterator.Next() {
+	for ; iterator.Valid(); iterator.Next() {
 		address := iterator.Value()
 		application := k.mustGetApplication(ctx, address)
 		if application.IsStaked() {
-			applications[i] = application
-			i++
+			applications = append(applications, application)
 		}
 	}
-	return applications[:i] // trim
+	return applications
 }
 
 // returns an iterator for the current staked applications
@@ -71,11 +67,10 @@ func (k Keeper) stakedAppsIterator(ctx sdk.Context) sdk.Iterator {
 func (k Keeper) IterateAndExecuteOverStakedApps(
 	ctx sdk.Context, fn func(index int64, application exported.ApplicationI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	maxApplications := k.MaxApplications(ctx)
 	iterator := sdk.KVStoreReversePrefixIterator(store, types.StakedAppsKey)
 	defer iterator.Close()
 	i := int64(0)
-	for ; iterator.Valid() && i < int64(maxApplications); iterator.Next() {
+	for ; iterator.Valid(); iterator.Next() {
 		address := iterator.Value()
 		application := k.mustGetApplication(ctx, address)
 		if application.IsStaked() {

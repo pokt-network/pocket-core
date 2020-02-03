@@ -11,7 +11,7 @@ import (
 // award coins to an address (will be called at the beginning of the next block)
 func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.Address) {
 	award, _ := k.getValidatorAward(ctx, address)
-	coins := k.RelaysToTokensMultiplier(ctx).MulInt(relays).TruncateInt() // round down
+	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays).Quo(sdk.NewInt(100)) // truncate
 	k.setValidatorAward(ctx, award.Add(coins), address)
 }
 
@@ -28,13 +28,15 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
 	if err != nil {
 		panic(err)
 	}
-	// calculate the total reward by adding relays to the
-	totalReward := feesCollected.AmountOf(k.StakeDenom(ctx))
+	rewardForRelays := k.GetTotalCustomValidatorAwards(ctx)
+	// calculate the total reward by adding relays to the fees
+	totalReward := feesCollected.AmountOf(k.StakeDenom(ctx)).Add(rewardForRelays)
 	// calculate previous proposer reward
-	baseProposerRewardPercentage := k.getProposerRewardPercentage(ctx)
+	proposerAllocation := k.getProposerAllocaiton(ctx)
+	daoAllocation := k.getDAOAllocation(ctx)
 	// divide up the reward from the proposer reward and the dao reward
-	proposerReward := baseProposerRewardPercentage.Mul(totalReward).Quo(sdk.NewInt(100))
-	daoReward := totalReward.Sub(proposerReward)
+	proposerReward := proposerAllocation.Mul(totalReward).Quo(sdk.NewInt(100)) // truncates
+	daoReward := daoAllocation.Mul(totalReward).Quo(sdk.NewInt(100))           // truncates
 	// get the validator structure
 	proposerValidator := k.validatorByConsAddr(ctx, previousProposer)
 	if proposerValidator != nil {
@@ -160,8 +162,10 @@ func (k Keeper) SetPreviousProposer(ctx sdk.Context, consAddr sdk.Address) {
 	store.Set(types.ProposerKey, b)
 }
 
-// returns the current BaseProposerReward rate from the global param store
-// nolint: errcheck
-func (k Keeper) getProposerRewardPercentage(ctx sdk.Context) sdk.Int {
-	return sdk.NewInt(int64(k.ProposerRewardPercentage(ctx)))
+func (k Keeper) getProposerAllocaiton(ctx sdk.Context) sdk.Int {
+	return sdk.NewInt(k.ProposerAllocation(ctx))
+}
+
+func (k Keeper) getDAOAllocation(ctx sdk.Context) sdk.Int {
+	return sdk.NewInt(k.DAOAllocation(ctx))
 }

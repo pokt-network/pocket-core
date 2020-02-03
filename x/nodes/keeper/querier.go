@@ -47,26 +47,21 @@ func NewQuerier(k Keeper) sdk.Querier {
 
 func queryValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryValidatorsParams
-
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
 	validators := k.GetAllValidators(ctx)
-
 	start, end := util.Paginate(len(validators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
 	if start < 0 || end < 0 {
 		validators = []types.Validator{}
 	} else {
 		validators = validators[start:end]
 	}
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validators)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
-
 	return res, nil
 }
 
@@ -100,21 +95,17 @@ func queryAccount(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk
 
 func queryUnstakingValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryUnstakingValidatorsParams
-
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
 	validators := k.getAllUnstakingValidators(ctx)
-
 	start, end := util.Paginate(len(validators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
 	if start < 0 || end < 0 {
 		validators = []types.Validator{}
 	} else {
 		validators = validators[start:end]
 	}
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validators)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -136,7 +127,6 @@ func queryStakedValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]
 	} else {
 		validators = validators[start:end]
 	}
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validators)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -147,28 +137,23 @@ func queryStakedValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]
 
 func queryUnstakedValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryValidatorsParams
-
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
 	validators := k.GetAllValidators(ctx)
-	var unstakedValidators types.Validators
-
+	var unstakedValidators = make([]types.Validator, 0)
 	for _, v := range validators {
 		if v.Status == sdk.Unstaked {
 			unstakedValidators = append(unstakedValidators, v)
 		}
 	}
-
 	start, end := util.Paginate(len(unstakedValidators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
 	if start < 0 || end < 0 {
 		unstakedValidators = []types.Validator{}
 	} else {
 		unstakedValidators = unstakedValidators[start:end]
 	}
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, unstakedValidators)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -179,17 +164,14 @@ func queryUnstakedValidators(ctx sdk.Context, req abci.RequestQuery, k Keeper) (
 
 func queryValidator(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryValidatorParams
-
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
 	validator, found := k.GetValidator(ctx, params.Address)
 	if !found {
 		return nil, types.ErrNoValidatorFound(types.DefaultCodespace)
 	}
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validator)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
@@ -200,22 +182,17 @@ func queryValidator(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, s
 
 func queryStakedPool(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 	stakedTokens := k.GetStakedTokens(ctx)
-
 	pool := types.StakingPool(types.NewPool(stakedTokens))
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
 	}
-
 	return res, nil
 }
 
 func queryUnstakedPool(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 	unstakedTokens := k.GetUnstakedTokens(ctx)
-
 	pool := types.StakingPool(types.NewPool(unstakedTokens))
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
@@ -226,41 +203,33 @@ func queryUnstakedPool(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 
 func queryDAO(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 	daoPool := k.GetDAOTokens(ctx)
-
 	pool := types.NewPool(daoPool)
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
 	}
-
 	return res, nil
 }
 
 func queryParameters(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 	params := k.GetParams(ctx)
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, params)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
 	}
-
 	return res, nil
 }
 
 func querySigningInfo(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QuerySigningInfoParams
-
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
 	signingInfo, found := k.GetValidatorSigningInfo(ctx, params.ConsAddress)
 	if !found {
 		return nil, types.ErrNoSigningInfoFound(types.DefaultCodespace, params.ConsAddress)
 	}
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, signingInfo)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -271,30 +240,24 @@ func querySigningInfo(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte,
 
 func querySigningInfos(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QuerySigningInfosParams
-
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-
-	var signingInfos []types.ValidatorSigningInfo
-
+	var signingInfos = make([]types.ValidatorSigningInfo, 0)
 	k.IterateAndExecuteOverValSigningInfo(ctx, func(consAddr sdk.Address, info types.ValidatorSigningInfo) (stop bool) {
 		signingInfos = append(signingInfos, info)
 		return false
 	})
-
 	start, end := util.Paginate(len(signingInfos), params.Page, params.Limit, int(k.MaxValidators(ctx)))
 	if start < 0 || end < 0 {
 		signingInfos = []types.ValidatorSigningInfo{}
 	} else {
 		signingInfos = signingInfos[start:end]
 	}
-
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, signingInfos)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
-
 	return res, nil
 }

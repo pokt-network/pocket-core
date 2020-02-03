@@ -29,20 +29,19 @@ func (k Keeper) removeValidatorTokens(ctx sdk.Context, v types.Validator, tokens
 
 // get the current staked validators sorted by power-rank
 func (k Keeper) getStakedValidators(ctx sdk.Context) types.Validators {
-	maxValidators := k.MaxValidators(ctx)
-	validators := make([]types.Validator, maxValidators)
+	validators := make([]types.Validator, 0)
 	iterator := k.stakedValsIterator(ctx)
 	defer iterator.Close()
 	i := 0
-	for ; iterator.Valid() && i < int(maxValidators); iterator.Next() {
+	for ; iterator.Valid(); iterator.Next() {
 		address := iterator.Value()
 		validator := k.mustGetValidator(ctx, address)
 		if validator.IsStaked() {
-			validators[i] = validator
+			validators = append(validators, validator)
 			i++
 		}
 	}
-	return validators[:i] // trim
+	return validators
 }
 
 // returns an iterator for the current staked validators
@@ -55,11 +54,10 @@ func (k Keeper) stakedValsIterator(ctx sdk.Context) sdk.Iterator {
 func (k Keeper) IterateAndExecuteOverStakedVals(
 	ctx sdk.Context, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	maxValidators := k.MaxValidators(ctx)
 	iterator := sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
 	defer iterator.Close()
 	i := int64(0)
-	for ; iterator.Valid() && i < int64(maxValidators); iterator.Next() {
+	for ; iterator.Valid(); iterator.Next() {
 		address := iterator.Value()
 		validator := k.mustGetValidator(ctx, address)
 		if validator.IsStaked() {

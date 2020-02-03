@@ -26,6 +26,7 @@ func (k Keeper) SetApplication(ctx sdk.Context, application types.Application) {
 
 // get the set of all applications with no limits from the main store
 func (k Keeper) GetAllApplications(ctx sdk.Context) (applications types.Applications) {
+	applications = make([]types.Application, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()

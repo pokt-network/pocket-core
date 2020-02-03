@@ -26,10 +26,10 @@ func (k Keeper) SetValidator(ctx sdk.Context, validator types.Validator) {
 
 // get the set of all validators with no limits from the main store
 func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []types.Validator) {
+	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
-
 	for ; iterator.Valid(); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
 		validators = append(validators, validator)
@@ -41,10 +41,8 @@ func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []types.Validator)
 func (k Keeper) GetValidators(ctx sdk.Context, maxRetrieve uint16) (validators []types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	validators = make([]types.Validator, maxRetrieve)
-
 	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
-
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
 		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())

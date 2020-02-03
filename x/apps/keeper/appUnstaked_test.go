@@ -9,7 +9,7 @@ import (
 
 func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 	stakedApplication := getStakedApplication()
-	secondaryStakedApplication := getStakedApplication()
+	unstaking := getUnstakingApplication()
 
 	type want struct {
 		applications       []types.Application
@@ -17,7 +17,7 @@ func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 		length             int
 	}
 	type args struct {
-		stakedVal        types.Application
+		stakedVal         types.Application
 		applications      []types.Application
 		stakedApplication types.Application
 	}
@@ -30,19 +30,19 @@ func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 	}{
 		{
 			name: "gets applications",
-			args: args{applications: []types.Application{stakedApplication}},
-			want: want{applications: []types.Application{stakedApplication}, length: 1, stakedApplications: false},
+			args: args{applications: []types.Application{unstaking}},
+			want: want{applications: []types.Application{unstaking}, length: 1, stakedApplications: false},
 		},
 		{
 			name: "gets emtpy slice of applications",
 			want: want{length: 0, stakedApplications: true},
-			args: args{stakedApplication: stakedApplication},
+			args: args{stakedApplication: unstaking},
 		},
 		{
-			name:         "only gets unstakedstaked applications",
-			applications: []types.Application{stakedApplication, secondaryStakedApplication},
+			name:         "only gets unstaking applications",
+			applications: []types.Application{stakedApplication, unstaking},
 			want:         want{length: 1, stakedApplications: true},
-			args:         args{stakedApplication: stakedApplication, applications: []types.Application{stakedApplication}},
+			args:         args{stakedApplication: unstaking, applications: []types.Application{unstaking}},
 		},
 	}
 
@@ -51,11 +51,15 @@ func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, application := range tt.args.applications {
 				keeper.SetApplication(context, application)
-				keeper.SetUnstakingApplication(context, application)
+				if application.IsUnstaking() {
+					keeper.SetUnstakingApplication(context, application)
+				}
 			}
 			if tt.want.stakedApplications {
 				keeper.SetApplication(context, tt.args.stakedApplication)
-				keeper.SetStakedApplication(context, tt.args.stakedApplication)
+				if stakedApplication.IsStaked() {
+					keeper.SetStakedApplication(context, tt.args.stakedApplication)
+				}
 			}
 			applications := keeper.getAllUnstakingApplications(context)
 			if len(applications) != tt.want.length {
@@ -75,7 +79,7 @@ func TestAppUnstaked_DeleteUnstakingApplication(t *testing.T) {
 		length             int
 	}
 	type args struct {
-		stakedVal        types.Application
+		stakedVal         types.Application
 		applications      []types.Application
 		stakedApplication types.Application
 	}
@@ -123,7 +127,7 @@ func TestAppUnstaked_DeleteUnstakingApplications(t *testing.T) {
 		length             int
 	}
 	type args struct {
-		stakedVal        types.Application
+		stakedVal         types.Application
 		applications      []types.Application
 		stakedApplication types.Application
 	}
@@ -166,7 +170,7 @@ func TestAppUnstaked_GetAllMatureApplications(t *testing.T) {
 		length             int
 	}
 	type args struct {
-		stakedVal        types.Application
+		stakedVal         types.Application
 		applications      []types.Application
 		stakedApplication types.Application
 	}
@@ -212,7 +216,7 @@ func TestAppUnstaked_UnstakeAllMatureApplications(t *testing.T) {
 		length             int
 	}
 	type args struct {
-		stakedVal        types.Application
+		stakedVal         types.Application
 		applications      []types.Application
 		stakedApplication types.Application
 	}
