@@ -153,7 +153,7 @@ func TestQueryPOSParams(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, uint64(100000), got.MaxValidators)
 		assert.Equal(t, int64(1000000), got.StakeMinimum)
-		assert.Equal(t, int8(90), got.ProposerRewardPercentage)
+		assert.Equal(t, int64(10), got.DAOAllocation)
 		assert.Equal(t, "stake", got.StakeDenom)
 	}
 	cleanup()

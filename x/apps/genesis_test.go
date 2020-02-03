@@ -38,7 +38,7 @@ func TestPos_ExportGenesis(t *testing.T) {
 			InitGenesis(context, keeper, supplyKeeper, posKeeper, state)
 			state.Exported = true // Export genesis returns an exported state
 			if got := ExportGenesis(context, keeper); !reflect.DeepEqual(got, state) {
-				t.Errorf("ExportGenesis()= got %v, want %v", got, state.Params)
+				t.Errorf("\nExportGenesis()=\nGot-> %v\nWant-> %v", got, state.Params)
 			}
 		})
 	}

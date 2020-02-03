@@ -32,6 +32,7 @@ func (k Keeper) deleteUnstakingApplication(ctx sdk.Context, val types.Applicatio
 
 // get the set of all unstaking applications with no limits
 func (k Keeper) getAllUnstakingApplications(ctx sdk.Context) (applications []types.Application) {
+	applications = make(types.Applications, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.UnstakingAppsKey)
 	defer iterator.Close()
@@ -48,6 +49,7 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Context) (applications []typ
 
 // gets all of the applications who will be unstaked at exactly this time
 func (k Keeper) getUnstakingApplications(ctx sdk.Context, unstakingTime time.Time) (valAddrs []sdk.Address) {
+	valAddrs = make([]sdk.Address, 0)
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.KeyForUnstakingApps(unstakingTime))
 	if bz == nil {
@@ -78,6 +80,7 @@ func (k Keeper) unstakingApplicationsIterator(ctx sdk.Context, endTime time.Time
 
 // Returns a list of all the mature applications
 func (k Keeper) getMatureApplications(ctx sdk.Context) (matureValsAddrs []sdk.Address) {
+	matureValsAddrs = make([]sdk.Address, 0)
 	unstakingValsIterator := k.unstakingApplicationsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValsIterator.Close()
 	for ; unstakingValsIterator.Valid(); unstakingValsIterator.Next() {

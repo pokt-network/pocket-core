@@ -27,6 +27,7 @@ func NewGenesisState(params Params, applications []Application) GenesisState {
 // get raw genesis raw message for testing
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		Params: DefaultParams(),
+		Params:       DefaultParams(),
+		Applications: make(Applications, 0),
 	}
 }

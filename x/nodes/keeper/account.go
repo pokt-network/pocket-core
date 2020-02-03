@@ -12,6 +12,11 @@ func (k Keeper) GetBalance(ctx sdk.Context, addr sdk.Address) sdk.Int {
 
 func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.Address) (acc *auth.BaseAccount) {
 	account := k.accountKeeper.GetAccount(ctx, addr)
+	if account == nil {
+		return &auth.BaseAccount{
+			Address: sdk.Address{},
+		}
+	}
 	acc = account.(*auth.BaseAccount)
 	return
 }
