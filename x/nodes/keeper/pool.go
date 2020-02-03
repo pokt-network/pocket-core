@@ -48,12 +48,10 @@ func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Context, validator types.Valid
 }
 
 // moves coins from the module account to validator -> used in staking
-func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Context, validator types.Validator, amount sdk.Int) {
+func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Context, validator types.Validator, amount sdk.Int) sdk.Error {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, sdk.Address(validator.Address), types.StakedPoolName, coins)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
 // burnStakedTokens removes coins from the staked pool module account

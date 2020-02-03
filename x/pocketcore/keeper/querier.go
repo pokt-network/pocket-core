@@ -104,7 +104,10 @@ func queryInvoices(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sd
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	invoices := k.GetInvoices(ctx, params.Address)
+	invoices, err := k.GetInvoices(ctx, params.Address)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("an error occured retrieving the invoices: %s", err))
+	}
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, invoices)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))

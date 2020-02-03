@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
@@ -22,7 +23,10 @@ func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
 // validate the zero knowledge range proof using the proof message and the claim message
 func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc.MsgProof) error {
 	// generate the needed pseudorandom claimMsg index
-	reqProof := k.GetPseudorandomIndex(ctx, claimMsg.TotalRelays, claimMsg.SessionHeader)
+	reqProof, err := k.GetPseudorandomIndex(ctx, claimMsg.TotalRelays, claimMsg.SessionHeader)
+	if err != nil {
+		return err
+	}
 	// if the required claimMsg index does not match the proofMsg leafNode index
 	if reqProof != int64(proofMsg.MerkleProofs[0].Index) {
 		return pc.NewInvalidProofsError(pc.ModuleName)
@@ -47,7 +51,7 @@ func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc
 }
 
 // generates the required pseudorandom index for the zero knowledge proof
-func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) int64 {
+func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) (int64, error) {
 	// get the context for the proof (the proof context is X sessions after the session began)
 	proofContext := ctx.MustGetPrevCtx(header.SessionBlockHeight + k.ProofWaitingPeriod(ctx)*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
@@ -57,7 +61,7 @@ func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header 
 		header:    header.HashString(),                                        // header hashstring
 	})
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 	// hash the bytes and take the first 15 characters of the string
 	proofsHash := hex.EncodeToString(pc.Hash(r))[:15]
@@ -67,25 +71,25 @@ func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header 
 		// parse the integer from this point of the hex string onward
 		maxValue, err = strconv.ParseInt(string(proofsHash[:i]), 16, 64)
 		if err != nil {
-			panic(err)
+			return 0, err
 
 		}
 		// if the total relays is greater than the resulting integer, this is the pseudorandom chosen proof
 		if totalRelays >= maxValue {
 			firstCharacter, err := strconv.ParseInt(string(proofsHash[0]), 16, 64)
 			if err != nil {
-				panic(err)
+				return 0, err
 			}
 			selection := firstCharacter%int64(i) + 1
 			// parse the integer from this point of the hex string onward
 			index, err := strconv.ParseInt(proofsHash[:selection], 16, 64)
 			if err != nil {
-				panic(err)
+				return 0, err
 			}
-			return index
+			return index, err
 		}
 	}
-	return 0
+	return 0, nil
 }
 
 // struct used for creating the psuedorandom index
@@ -98,7 +102,8 @@ type pseudorandomGenerator struct {
 func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, claimTx func(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root pc.HashSum) (*sdk.TxResponse, error)) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
+		return
 	}
 	// get all the invoices held in memory
 	invoices := pc.GetAllInvoices()
@@ -120,10 +125,14 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		// generate the merkle root for this invoice
 		root := invoice.GenerateMerkleRoot()
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
+			return
+		}
 		// send in the invoice header, the total relays completed, and the merkle root (ensures data integrity)
 		if _, err := claimTx(keybase, cliCtx, txBuilder, invoice.SessionHeader, invoice.TotalRelays, root); err != nil {
-			ctx.Logger().Error(err.Error())
+			ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
 		}
 	}
 }
@@ -132,12 +141,17 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.RelayProof) (*sdk.TxResponse, error)) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the ProofTX:\n%v", err))
+		return
 	}
 	// get the self address
-	addr := sdk.Address(kp.GetAddress())
+	addr := kp.GetAddress()
 	// get all mature (waiting period has passed) proofs for your address
-	proofs := k.GetMatureClaims(ctx, addr)
+	proofs, err := k.GetMatureClaims(ctx, addr)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the ProofTX:\n%v", err))
+		return
+	}
 	// for every proof of the mature set
 	for _, proof := range proofs {
 		// if the proof is found to be verified in the world state, you can delete it from the cache and not send again
@@ -145,7 +159,10 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			// remove from the local cache
 			pc.GetAllInvoices().DeleteInvoice(proof.SessionHeader)
 			// remove from the temporary world state
-			k.DeleteClaim(ctx, addr, proof.SessionHeader)
+			err := k.DeleteClaim(ctx, addr, proof.SessionHeader)
+			if err != nil {
+				ctx.Logger().Error(fmt.Sprintf("an error occured deleting the claim in the ProofTx:\n%v", err))
+			}
 			continue
 		}
 		// generate the proof of relay object using the found proof and local cache
@@ -155,16 +172,23 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			Proofs:        pc.GetAllInvoices().GetProofs(proof.SessionHeader),
 		}
 		// generate the needed pseudorandom proof using the information found in the first transaction
-		reqProof := int(k.GetPseudorandomIndex(ctx, proof.TotalRelays, proof.SessionHeader))
+		reqProof, err := k.GetPseudorandomIndex(ctx, proof.TotalRelays, proof.SessionHeader)
+		if err != nil {
+			ctx.Logger().Error(err.Error())
+		}
 		// get the merkle proof object for the pseudorandom proof index
-		branch, cousinIndex := inv.GenerateMerkleProof(reqProof)
+		branch, cousinIndex := inv.GenerateMerkleProof(int(reqProof))
 		// get the leaf for the required pseudorandom proof index
-		leaf := pc.GetAllInvoices().GetProof(proof.SessionHeader, reqProof)
+		leaf := pc.GetAllInvoices().GetProof(proof.SessionHeader, int(reqProof))
 		cousin := pc.GetAllInvoices().GetProof(proof.SessionHeader, cousinIndex)
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the ProofTX:\n%v", err))
+			return
+		}
 		// send the claim TX
-		_, err := proofTx(cliCtx, txBuilder, branch, leaf, cousin)
+		_, err = proofTx(cliCtx, txBuilder, branch, leaf, cousin)
 		if err != nil {
 			ctx.Logger().Error(err.Error())
 		}
@@ -174,16 +198,26 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 // stored invoices (already proved)
 
 // set the verified invoice
-func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.Address, p pc.StoredInvoice) {
+func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.Address, p pc.StoredInvoice) error {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
-	store.Set(pc.KeyForInvoice(ctx, address, p.SessionHeader), bz)
+	key, err := pc.KeyForInvoice(ctx, address, p.SessionHeader)
+	if err != nil {
+		return err
+	}
+	store.Set(key, bz)
+	return nil
 }
 
 // retrieve the verified invoice
 func (k Keeper) GetInvoice(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (invoice pc.StoredInvoice, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	res := store.Get(pc.KeyForInvoice(ctx, address, header))
+	key, err := pc.KeyForInvoice(ctx, address, header)
+	if err != nil {
+		ctx.Logger().Error("There was a problem creating a key for the invoice:\n" + err.Error())
+		return pc.StoredInvoice{}, false
+	}
+	res := store.Get(key)
 	if res == nil {
 		return pc.StoredInvoice{}, false
 	}
@@ -196,17 +230,25 @@ func (k Keeper) SetInvoices(ctx sdk.Context, invoices []pc.StoredInvoice) {
 	for _, invoice := range invoices {
 		addrbz, err := hex.DecodeString(invoice.ServicerAddress)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("an error occured setting the invoices:\n%v", err))
 		}
 		bz := k.cdc.MustMarshalBinaryBare(invoice)
-		store.Set(pc.KeyForInvoice(ctx, addrbz, invoice.SessionHeader), bz)
+		key, err := pc.KeyForInvoice(ctx, addrbz, invoice.SessionHeader)
+		if err != nil {
+			panic(fmt.Sprintf("an error occured setting the invoices:\n%v", err))
+		}
+		store.Set(key, bz)
 	}
 }
 
 // get all verified invoices for this address
-func (k Keeper) GetInvoices(ctx sdk.Context, address sdk.Address) (invoices []pc.StoredInvoice) {
+func (k Keeper) GetInvoices(ctx sdk.Context, address sdk.Address) (invoices []pc.StoredInvoice, err error) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForInvoices(address))
+	key, err := pc.KeyForInvoices(address)
+	if err != nil {
+		return nil, err
+	}
+	iterator := sdk.KVStorePrefixIterator(store, key)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var summary pc.StoredInvoice
@@ -230,14 +272,25 @@ func (k Keeper) GetAllInvoices(ctx sdk.Context) (invoices []pc.StoredInvoice) {
 }
 
 // claims ----
-func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) {
+func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) error {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(msg)
-	store.Set(pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader), bz)
+	key, err := pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader)
+	if err != nil {
+		return err
+	}
+	store.Set(key, bz)
+	return nil
 }
+
 func (k Keeper) GetClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	res := store.Get(pc.KeyForClaim(ctx, address, header))
+	key, err := pc.KeyForClaim(ctx, address, header)
+	if err != nil {
+		ctx.Logger().Error("an error occured getting the claim:\n", msg)
+		return pc.MsgClaim{}, false
+	}
+	res := store.Get(key)
 	if res == nil {
 		return pc.MsgClaim{}, false
 	}
@@ -249,13 +302,21 @@ func (k Keeper) SetClaims(ctx sdk.Context, claims []pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	for _, msg := range claims {
 		bz := k.cdc.MustMarshalBinaryBare(msg)
-		store.Set(pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader), bz)
+		key, err := pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader)
+		if err != nil {
+			panic(fmt.Sprintf("an error occured setting the claims:\n%v", err))
+		}
+		store.Set(key, bz)
 	}
 }
 
-func (k Keeper) GetClaims(ctx sdk.Context, address sdk.Address) (proofs []pc.MsgClaim) {
+func (k Keeper) GetClaims(ctx sdk.Context, address sdk.Address) (proofs []pc.MsgClaim, err error) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForClaims(address))
+	key, err := pc.KeyForClaims(address)
+	if err != nil {
+		return nil, err
+	}
+	iterator := sdk.KVStorePrefixIterator(store, key)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var summary pc.MsgClaim
@@ -277,15 +338,24 @@ func (k Keeper) GetAllClaims(ctx sdk.Context) (proofs []pc.MsgClaim) {
 	return
 }
 
-func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) {
+func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) error {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(pc.KeyForClaim(ctx, address, header))
+	key, err := pc.KeyForClaim(ctx, address, header)
+	if err != nil {
+		return err
+	}
+	store.Delete(key)
+	return nil
 }
 
 // get the mature unverified proofs for this address
-func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.Address) (matureProofs []pc.MsgClaim) {
+func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.Address) (matureProofs []pc.MsgClaim, err error) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.KeyForClaims(address))
+	key, err := pc.KeyForClaims(address)
+	if err != nil {
+		return nil, err
+	}
+	iterator := sdk.KVStorePrefixIterator(store, key)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var msg pc.MsgClaim
@@ -322,14 +392,14 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 	return false
 }
 
-func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
-		panic(err)
+		return txBuilder, cliCtx, err
 	}
 	genDoc, err := n.Genesis()
 	if err != nil {
-		panic(err)
+		return txBuilder, cliCtx, err
 	}
 	fromAddr := kp.GetAddress()
 	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
@@ -337,11 +407,11 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybas
 	accGetter := auth.NewAccountRetriever(cliCtx)
 	err = accGetter.EnsureExists(fromAddr)
 	if err != nil {
-		panic(err)
+		return txBuilder, cliCtx, err
 	}
 	account, err := accGetter.GetAccount(fromAddr)
 	if err != nil {
-		panic(err)
+		return txBuilder, cliCtx, err
 	}
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(k.cdc),

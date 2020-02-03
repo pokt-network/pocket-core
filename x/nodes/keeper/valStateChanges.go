@@ -104,7 +104,10 @@ func (k Keeper) StakeValidator(ctx sdk.Context, validator types.Validator, amoun
 	// call the before hook
 	k.BeforeValidatorStaked(ctx, validator.GetAddress(), validator.Address)
 	// send the coins from address to staked module account
-	k.coinsFromUnstakedToStaked(ctx, validator, amount)
+	err := k.coinsFromUnstakedToStaked(ctx, validator, amount)
+	if err != nil {
+		return err
+	}
 	// add coins to the staked field
 	validator.AddStakedTokens(amount)
 	// set the status to staked

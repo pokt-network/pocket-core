@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/posmint/crypto"
@@ -115,7 +116,7 @@ func (rr RelayResponse) Hash() []byte {
 		Proof:     rr.Proof.HashString(),
 	})
 	if err != nil {
-		panic(err)
+		panic(fmt.Sprintf("an error occured hashing the relay response:\n%v", err))
 	}
 	return Hash(seed)
 }

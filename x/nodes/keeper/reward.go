@@ -43,8 +43,7 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
 		propRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), proposerReward))
 		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
 		// send to validator
-		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName,
-			sdk.Address(proposerValidator.GetAddress()), propRewardCoins); err != nil {
+		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposerValidator.GetAddress(), propRewardCoins); err != nil {
 			panic(err)
 		}
 		// send to rest dao

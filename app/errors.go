@@ -3,7 +3,7 @@ package app
 import "errors"
 
 var (
-	UninitializedKeybaseError = errors.New("uninitialized keybase")
+	UninitializedKeybaseError = errors.New(`no keys stored in keybase, create a key pair by using "./main accounts create"`)
 	InvalidChainsError        = errors.New("invalid chains.json")
 )
 

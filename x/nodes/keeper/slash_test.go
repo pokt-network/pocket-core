@@ -870,12 +870,12 @@ func TestKeeper_BurnValidator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.Keeper
 			k.SetValidator(context, primaryStakedValidator)
-
 			store := tt.args.ctx.KVStore(k.storeKey)
 			store.Set(types.KeyForValidatorBurn(tt.args.address), k.cdc.MustMarshalBinaryBare(sdk.NewDec(1)))
-
 			k.BurnValidator(tt.args.ctx, tt.args.address, tt.args.severityPercentage)
-
+			burn, found := keeper.getValidatorBurn(tt.args.ctx, tt.args.address)
+			assert.True(t, found)
+			assert.NotNil(t, burn)
 		})
 	}
 }

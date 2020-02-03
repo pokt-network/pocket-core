@@ -29,7 +29,10 @@ func handleClaimMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim) s
 		return err.Result()
 	}
 	// set the claim in the world state
-	keeper.SetClaim(ctx, msg)
+	err := keeper.SetClaim(ctx, msg)
+	if err != nil {
+		return sdk.ErrInternal(err.Error()).Result()
+	}
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -47,11 +50,14 @@ func handleProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) sdk.Re
 		return err.Result()
 	}
 	// set the proof in the world state
-	k.SetInvoice(ctx, addr, types.StoredInvoice{
+	er := k.SetInvoice(ctx, addr, types.StoredInvoice{
 		SessionHeader:   proof.SessionHeader,
 		TotalRelays:     proof.TotalRelays,
 		ServicerAddress: addr.String(),
 	})
+	if er != nil {
+		return sdk.ErrInternal(er.Error()).Result()
+	}
 	// valid claim so award coins for relays
 	k.AwardCoinsForRelays(ctx, proof.TotalRelays, addr)
 	// create the event
