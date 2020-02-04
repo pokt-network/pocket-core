@@ -50,6 +50,7 @@ var nodeUnstakeCmd = &cobra.Command{
 	Long:  `Unstake a node from the network, changing it's status to Unstaking. Prompts the user for the <fromAddr> account passphrase.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Enter Password: ")
 		res, err := app.UnstakeNode(args[0], app.Credentials())
 		if err != nil {
 			panic(err)
