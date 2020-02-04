@@ -282,6 +282,7 @@ var sendTxCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
+		fmt.Println("Enter Password: ")
 		res, err := app.SendTransaction(args[0], args[1], app.Credentials(), types.NewInt(int64(amount)))
 		if err != nil {
 			panic(err)
