@@ -10,6 +10,6 @@ var (
 	AppFeeMap = map[string]int64{
 		MsgAppStakeName:   StakeFee,
 		MsgAppUnstakeName: UnstakeFee,
-		MsgAppUnjailName: UnjailFee,
+		MsgAppUnjailName:  UnjailFee,
 	}
 )
