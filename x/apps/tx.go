@@ -45,6 +45,9 @@ func newTx(cdc *codec.Codec, fromAddr sdk.Address, tmNode client.Client, keybase
 	cliCtx.BroadcastMode = util.BroadcastSync
 	accGetter := auth.NewAccountRetriever(cliCtx)
 	err = accGetter.EnsureExists(fromAddr)
+	if err != nil {
+		panic(err)
+	}
 	account, err := accGetter.GetAccount(fromAddr)
 	if err != nil {
 		panic(err)
