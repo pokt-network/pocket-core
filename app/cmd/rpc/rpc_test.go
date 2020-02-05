@@ -167,10 +167,7 @@ func TestRPC_QueryNodes(t *testing.T) {
 		q := newQueryRequest("nodes", newBody(params))
 		rec := httptest.NewRecorder()
 		Nodes(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(resp, cb.GetAddress().String()))
+		assert.True(t, strings.Contains(rec.Body.String(), cb.GetAddress().String()))
 	}
 	cleanup()
 	stopCli()
@@ -235,11 +232,7 @@ func TestRPC_QueryApps(t *testing.T) {
 		q := newQueryRequest("apps", newBody(params))
 		rec := httptest.NewRecorder()
 		Apps(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(resp, app.GetAddress().String()))
-	}
+		assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String())) }
 	cleanup()
 	stopCli()
 }

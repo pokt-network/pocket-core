@@ -96,7 +96,7 @@ func (p Params) String() string {
   SessionNodeCount:          %d
   ProofWaitingPeriod:        %d
   Supported Blockchains      %v
-  ClaimExpiration  			 %d
+  ClaimExpiration            %d
 `,
 		p.SessionNodeCount,
 		p.ProofWaitingPeriod,
