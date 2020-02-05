@@ -487,11 +487,11 @@ var querySupply = &cobra.Command{
 			return
 		}
 		totalStaked := nodesStake.Add(appsStaked).Add(dao)
-		totalUnstaked := nodesUnstaked
+		totalUnstaked := nodesUnstaked.Add(appsUnstaked).Sub(nodesStake).Sub(appsStaked)
 		total := totalStaked.Add(totalUnstaked)
-		fmt.Printf("Nodes Staked:\t%v\n\nApps Staked:\t%v\nUnstaked:\t%v\n\n"+
-			"Dao Supply:\t%v\n\nTotal Staked:\t%v\nTotalUnstaked:\t%v\nTotal Supply:\t%v\n\n",
-			nodesStake, appsStaked, appsUnstaked, dao, totalStaked, totalUnstaked, total,
+		fmt.Printf("Nodes Staked:\t%v\nApps Staked:\t%v\n"+
+			"Dao Supply:\t%v\nTotal Staked:\t%v\nTotalUnstaked:\t%v\nTotal Supply:\t%v\n\n",
+			nodesStake, appsStaked, dao, totalStaked, totalUnstaked, total,
 		)
 	},
 }
