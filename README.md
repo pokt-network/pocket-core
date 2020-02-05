@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://www.pokt.network">
-    <img src="https://pokt.network/wp-content/uploads/2018/12/Logo-488x228-px.png" alt="Pocket Network logo" width="340"/>
+    <img src="https://pokt.network/wp-content/uploads/2019/11/pocket-logo.png" alt="Pocket Network logo" width="340"/>
   </a>
 </div>
 
