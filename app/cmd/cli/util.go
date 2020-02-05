@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 func init() {
@@ -29,6 +28,6 @@ var generateChainCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Pocket Network Identifier: %s\n", strings.ToUpper(res))
+		fmt.Printf("Pocket Network Identifier: %s\n", res)
 	},
 }
