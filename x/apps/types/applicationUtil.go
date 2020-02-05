@@ -51,16 +51,16 @@ func UnmarshalApplication(cdc *codec.Codec, appBytes []byte) (application Applic
 
 // HashString returns a human readable string representation of a application.
 func (a Application) String() string {
-	return fmt.Sprintf(`AppPubKey
-  Address:           		  %s
-  AppPubKey Cons Pubkey: 	  %s
+	return fmt.Sprintf(`
+  Address:                    %s
+  Public Key:                 %s
   Jailed:                     %v
   Chains:                     %v
   MaxRelays:                  %d
   Status:                     %s
-  Tokens:               	  %s
-  Unstakeing Completion Time: %v`,
-		a.Address, a.PublicKey.RawString(), a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
+  Tokens:                     %s
+  Unstaking Completion Time:  %v`,
+		a.Address, a.PublicKey.RawString(), a.Jailed, a.Chains, a.MaxRelays.Int64(), a.Status, a.StakedTokens, a.UnstakingCompletionTime,
 	)
 }
 

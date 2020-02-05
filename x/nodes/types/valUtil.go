@@ -51,12 +51,12 @@ func UnmarshalValidator(cdc *codec.Codec, valBytes []byte) (validator Validator,
 
 // HashString returns a human readable string representation of a validator.
 func (v Validator) String() string {
-	return fmt.Sprintf(`Validator
-  Address:           		  %s
-  Validator Cons Pubkey:      %s
+	return fmt.Sprintf(`
+  Address:                    %s
+  Public Key:                 %s
   Jailed:                     %v
   Status:                     %s
-  Tokens:               	  %s
+  Tokens:                     %s
   ServiceURL:                 %s
   Chains:                     %v
   Unstaking Completion Time:  %v`,
