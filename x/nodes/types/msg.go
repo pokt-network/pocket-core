@@ -13,6 +13,13 @@ var (
 	_ sdk.Msg = &MsgSend{}
 )
 
+const (
+	MsgStakeName   = "stake_validator"
+	MsgUnstakeName = "begin_unstake_validator"
+	MsgUnjailName  = "unjail_validator"
+	MsgSendName    = "send"
+)
+
 //----------------------------------------------------------------------------------------------------------------------
 // MsgStake - struct for staking transactions
 type MsgStake struct {
@@ -58,7 +65,7 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 
 //nolint
 func (msg MsgStake) Route() string { return RouterKey }
-func (msg MsgStake) Type() string  { return "stake_validator" }
+func (msg MsgStake) Type() string  { return MsgStakeName }
 
 //----------------------------------------------------------------------------------------------------------------------
 // MsgBeginUnstake - struct for unstaking transaciton
@@ -84,7 +91,7 @@ func (msg MsgBeginUnstake) ValidateBasic() sdk.Error {
 
 //nolint
 func (msg MsgBeginUnstake) Route() string { return RouterKey }
-func (msg MsgBeginUnstake) Type() string  { return "begin_unstaking_validator" }
+func (msg MsgBeginUnstake) Type() string  { return MsgUnstakeName }
 
 //----------------------------------------------------------------------------------------------------------------------
 // MsgUnjail - struct for unjailing jailed validator
@@ -94,7 +101,7 @@ type MsgUnjail struct {
 
 //nolint
 func (msg MsgUnjail) Route() string { return RouterKey }
-func (msg MsgUnjail) Type() string  { return "unjail" }
+func (msg MsgUnjail) Type() string  { return MsgUnjailName }
 func (msg MsgUnjail) GetSigners() []sdk.Address {
 	return []sdk.Address{sdk.Address(msg.ValidatorAddr)}
 }
@@ -121,9 +128,9 @@ type MsgSend struct {
 
 //nolint
 func (msg MsgSend) Route() string { return RouterKey }
-func (msg MsgSend) Type() string  { return "send" }
+func (msg MsgSend) Type() string  { return MsgSendName }
 func (msg MsgSend) GetSigners() []sdk.Address {
-	return []sdk.Address{sdk.Address(msg.FromAddress)}
+	return []sdk.Address{msg.FromAddress}
 }
 
 func (msg MsgSend) GetSignBytes() []byte {

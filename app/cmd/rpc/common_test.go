@@ -190,6 +190,7 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 	)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	app.SetInitChainer(app.InitChainer)
+	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper))
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 	app.MountKVStores(app.keys)
@@ -460,7 +461,7 @@ func oneValTwoNodeGenesisState() []byte {
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,
@@ -468,7 +469,7 @@ func oneValTwoNodeGenesisState() []byte {
 	// add second account
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey2.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,
@@ -583,7 +584,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,

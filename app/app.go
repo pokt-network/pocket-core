@@ -106,6 +106,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	// The initChainer handles translating the genesis.json file into initial state for the network
 	app.SetInitChainer(app.InitChainer)
+	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper))
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 	// initialize stores

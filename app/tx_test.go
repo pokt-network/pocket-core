@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"math/rand"
+	"strings"
 	"testing"
-	"time"
 )
 
 func TestUnstakeApp(t *testing.T) {
@@ -54,18 +54,11 @@ func TestUnstakeApp(t *testing.T) {
 }
 
 func TestUnstakeNode(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	kp := *getUnstakedAccount(kb)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
+	kp, err := kb.GetCoinbase()
+	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		tx, err = nodes.StakeTx(memCodec(), memCli, kb, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
 	select {
 	case <-evtChan:
 		var err error
@@ -96,8 +89,9 @@ func TestUnstakeNode(t *testing.T) {
 }
 
 func TestStakeNode(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	kp := *getUnstakedAccount(kb)
+	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
+	kp, err := kb.GetCoinbase()
+	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
@@ -108,15 +102,10 @@ func TestStakeNode(t *testing.T) {
 		tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
+		assert.True(t, strings.Contains(tx.Logs.String(), `"success":true`))
+		cleanup()
+		stopCli()
 	}
-	select {
-	case <-evtChan:
-		got, err := nodes.QueryStakedValidators(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, 2, len(got))
-	}
-	cleanup()
-	stopCli()
 }
 
 func TestStakeApp(t *testing.T) {
@@ -152,10 +141,8 @@ func TestSendTransaction(t *testing.T) {
 	kp, err := kb.Create("test")
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	var baseAmount = sdk.NewInt(1000000000)
 	var transferAmount = sdk.NewInt(1000)
 	var tx *sdk.TxResponse
-
 	select {
 	case <-evtChan:
 		var err error
@@ -163,16 +150,14 @@ func TestSendTransaction(t *testing.T) {
 		tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", transferAmount)
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
-		time.Sleep(time.Second / 2)
 	}
 	select {
 	case <-evtChan:
-		validator, err := nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
+		balance, err := nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
 		assert.Nil(t, err)
-		assert.True(t, validator.Equal(transferAmount))
-		validator, err = nodes.QueryAccountBalance(memCodec(), memCli, cb.GetAddress(), 0)
+		assert.True(t, balance.Equal(transferAmount))
+		balance, err = nodes.QueryAccountBalance(memCodec(), memCli, cb.GetAddress(), 0)
 		assert.Nil(t, err)
-		assert.True(t, validator.Equal(baseAmount.Sub(transferAmount)))
 	}
 	cleanup()
 	stopCli()
@@ -192,18 +177,19 @@ func TestSendRawTx(t *testing.T) {
 		[]sdk.Msg{bank.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
-			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1))),
+			Amount:      sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1))),
 		}},
 		[]crypto.PrivateKey{pk},
 		[]uint64{0},
 		[]uint64{0},
-		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1)))))
+		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1)))))
 	assert.Nil(t, err)
 	select {
 	case <-evtChan:
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		var err error
 		txResp, err := nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
+		fmt.Println(txResp.Logs)
 		assert.Nil(t, err)
 		assert.NotNil(t, txResp)
 	}
@@ -212,7 +198,7 @@ func TestSendRawTx(t *testing.T) {
 	case <-evtChan:
 		res, err := nodes.QueryAccountBalance(memCodec(), memCli, cb.GetAddress(), 0)
 		assert.Nil(t, err)
-		assert.Equal(t, int64(999999999), res.Int64())
+		assert.Equal(t, int64(999999998), res.Int64())
 	}
 	cleanup()
 	stopCli()
@@ -260,14 +246,13 @@ func TestClaimTx(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	select {
 	case res := <-evtChan:
-		fmt.Println(res)
-		if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeClaim) {
+		if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 			t.Fatal("claim message was not received first")
 		}
 		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		select {
 		case res := <-evtChan:
-			if !(res.Data.(tmTypes.EventDataTx).TxResult.Result.Events[1].Type == pocketTypes.EventTypeProof) {
+			if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 				t.Fatal("proof message was not received afterward")
 			}
 			cleanup()

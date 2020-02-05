@@ -125,7 +125,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		// generate the merkle root for this invoice
 		root := invoice.GenerateMerkleRoot()
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgClaimName, n, keybase, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
 			return
@@ -182,7 +182,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		leaf := pc.GetAllInvoices().GetProof(proof.SessionHeader, int(reqProof))
 		cousin := pc.GetAllInvoices().GetProof(proof.SessionHeader, cousinIndex)
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, n, keybase, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, keybase, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the ProofTX:\n%v", err))
 			return
@@ -392,7 +392,7 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 	return false
 }
 
-func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
+func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		return txBuilder, cliCtx, err
@@ -412,6 +412,10 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, n client.Client, keybase keys.Keybas
 	account, err := accGetter.GetAccount(fromAddr)
 	if err != nil {
 		return txBuilder, cliCtx, err
+	}
+	fee := sdk.NewInt(pc.PocketFeeMap[msgType])
+	if account.GetCoins().AmountOf("pokt").LTE(fee) { // todo get stake denom
+		ctx.Logger().Error(fmt.Sprintf("insufficient funds for the auto %s transaction: the fee needed is %v pokt", msgType, fee))
 	}
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(k.cdc),

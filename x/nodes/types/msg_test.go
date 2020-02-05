@@ -113,7 +113,7 @@ func TestMsgBeginUnstake_Type(t *testing.T) {
 		fields fields
 		want   string
 	}{
-		{"Test Type", fields{va}, "begin_unstaking_validator"},
+		{"Test Type", fields{va}, MsgUnstakeName},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -710,7 +710,7 @@ func TestMsgUnjail_Type(t *testing.T) {
 		fields fields
 		want   string
 	}{
-		{"Test Type", fields{va}, "unjail"},
+		{"Test Type", fields{va}, MsgUnjailName},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

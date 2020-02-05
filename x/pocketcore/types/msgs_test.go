@@ -13,7 +13,7 @@ func TestMsgClaim_Route(t *testing.T) {
 }
 
 func TestMsgClaim_Type(t *testing.T) {
-	assert.Equal(t, MsgClaim{}.Type(), MsgClaimType)
+	assert.Equal(t, MsgClaim{}.Type(), MsgClaimName)
 }
 
 func TestMsgClaim_GetSigners(t *testing.T) {
@@ -147,7 +147,7 @@ func TestMsgProof_Route(t *testing.T) {
 }
 
 func TestMsgProof_Type(t *testing.T) {
-	assert.Equal(t, MsgProof{}.Type(), MsgProofType)
+	assert.Equal(t, MsgProof{}.Type(), MsgProofName)
 }
 
 func TestMsgProof_GetSigners(t *testing.T) {

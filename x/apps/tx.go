@@ -1,6 +1,7 @@
 package pos
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -12,12 +13,12 @@ import (
 
 func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, amount sdk.Int, kp keys.KeyPair, passphrase string) (*sdk.TxResponse, error) {
 	fromAddr := kp.GetAddress()
-	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgAppStake{
 		PubKey: kp.PublicKey,
 		Value:  amount,
 		Chains: chains, // non native blockchains
 	}
+	txBuilder, cliCtx := newTx(cdc, msg, fromAddr, tmNode, keybase, passphrase)
 	err := msg.ValidateBasic()
 	if err != nil {
 		return nil, err
@@ -26,8 +27,8 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 }
 
 func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, address, tmNode, keybase, passphrase)
 	msg := types.MsgBeginAppUnstake{Address: address}
+	txBuilder, cliCtx := newTx(cdc, msg, address, tmNode, keybase, passphrase)
 	err := msg.ValidateBasic()
 	if err != nil {
 		return nil, err
@@ -35,7 +36,7 @@ func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, add
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-func newTx(cdc *codec.Codec, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		panic(err)
@@ -52,12 +53,16 @@ func newTx(cdc *codec.Codec, fromAddr sdk.Address, tmNode client.Client, keybase
 	if err != nil {
 		panic(err)
 	}
+	fee := sdk.NewInt(types.AppFeeMap[msg.Type()])
+	if account.GetCoins().AmountOf("pokt").LTE(fee) { // todo get stake denom
+		panic(fmt.Sprintf("insufficient funds: the fee needed is %v", fee))
+	}
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(cdc),
 		account.GetAccountNumber(),
 		account.GetSequence(),
 		chainID,
 		"",
-		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(10)))).WithKeybase(keybase)
+		sdk.NewCoins(sdk.NewCoin("pokt", fee))).WithKeybase(keybase)
 	return
 }
