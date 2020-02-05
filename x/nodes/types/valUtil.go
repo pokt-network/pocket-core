@@ -60,7 +60,7 @@ type hexValidator struct {
 	Jailed                  bool            `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from staked status?
 	Status                  sdk.StakeStatus `json:"status" yaml:"status"`                 // validator status (staked/unstaking/unstaked)
 	StakedTokens            sdk.Int         `json:"tokens" yaml:"tokens"`                 // how many staked tokens
-	ServiceURL              string          `json:"service_url" yaml:"service_urL"`       // the url of the pocket-api
+	ServiceURL              string          `json:"service_url" yaml:"service_url"`       // the url of the pocket-api
 	Chains                  []string        `json:"chains" yaml:"chains"`                 // the non-native (external) chains hosted
 	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 }
