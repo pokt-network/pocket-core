@@ -112,43 +112,25 @@ func TestApplicationUtil_String(t *testing.T) {
 }
 
 func TestApplicationUtil_JSON(t *testing.T) {
+	applications := Applications{application}
+	j, _ := json.Marshal(applications)
+
 	tests := []struct {
 		name string
 		args Applications
-		want string
+		want []byte
 	}{
 		{
-			name: "serializes applicaitons into string",
-			args: Applications{application},
-			want: fmt.Sprintf(`AppPubKey
-  Address:           		  %s
-  AppPubKey Cons Pubkey: 	  %s
-  Jailed:                     %v
-  Chains:                     %v
-  MaxRelays:                  %d
-  Status:                     %s
-  Tokens:               	  %s
-  Unstakeing Completion Time: %v`,
-				application.Address,
-				application.PublicKey.RawString(),
-				application.Jailed,
-				application.Chains,
-				application.MaxRelays,
-				application.Status,
-				application.StakedTokens,
-				application.UnstakingCompletionTime,
-			),
+			name: "serializes applicaitons into JSON",
+			args: applications,
+			want: j,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			want, err := json.Marshal([]string{tt.want})
-			if err != nil {
-				t.Errorf("could not marshal want %s", err)
-			}
-			if got, _ := tt.args.JSON(); !reflect.DeepEqual(got, want) {
+			if got, _ := tt.args.JSON(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("JSON() = %s", got)
-				t.Errorf("JSON() = %s", want)
+				t.Errorf("JSON() = %s", tt.want)
 			}
 		})
 	}

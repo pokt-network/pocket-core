@@ -28,9 +28,8 @@ func TestValidators_JSON(t *testing.T) {
 	}
 
 	vals := Validators{testvalidator}
-	r := []string{testvalidator.String()}
 
-	result, _ := json.Marshal(r)
+	result, _ := json.Marshal(vals)
 
 	tests := []struct {
 		name    string
