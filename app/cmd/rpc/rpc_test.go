@@ -338,9 +338,11 @@ func TestRPC_QuerySupply(t *testing.T) {
 		q := newQueryRequest("supply", newBody(params))
 		rec := httptest.NewRecorder()
 		Supply(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
+
 		var supply querySupplyResponse
 		err := json.Unmarshal([]byte(resp), &supply)
 		assert.Nil(t, err)
@@ -361,7 +363,7 @@ func TestRPC_StakeNode(t *testing.T) {
 		q := newQueryRequest("supply", newBody(params))
 		rec := httptest.NewRecorder()
 		Supply(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
 		var supply querySupplyResponse

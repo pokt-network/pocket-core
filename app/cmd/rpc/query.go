@@ -387,5 +387,5 @@ func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(res), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(res), r.URL.Path, r.Host)
 }
