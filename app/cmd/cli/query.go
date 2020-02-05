@@ -48,12 +48,14 @@ var queryBlock = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryBlock(int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println(res)
 	},
@@ -66,7 +68,8 @@ var queryTx = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := app.QueryTx(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println(res)
 	},
@@ -79,7 +82,8 @@ var queryHeight = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := app.QueryHeight()
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Block Height: %d\n", res)
 	},
@@ -97,12 +101,14 @@ var queryBalance = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[1])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryBalance(args[0], int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Account Balance: %v\n", res)
 	},
@@ -120,12 +126,14 @@ var queryAccount = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[1])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryAccount(args[0], int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Account: %v\n", res)
 	},
@@ -149,7 +157,8 @@ var queryNodes = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		var res nodeTypes.Validators
@@ -168,13 +177,16 @@ var queryNodes = &cobra.Command{
 			// unstaking nodes
 			res, err = app.QueryUnstakingNodes(int64(height))
 		default:
-			panic("invalid staking status, can be staked, unstaked, unstaking, or empty")
+			fmt.Println("invalid staking status, can be staked, unstaked, unstaking, or empty")
+			return
 		}
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		if res == nil {
-			panic("nil nodes result")
+			fmt.Println("nil nodes result")
+			return
 		}
 		fmt.Printf("Nodes\n%s\n", res.String())
 	},
@@ -192,12 +204,14 @@ var queryNode = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[1])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryNode(args[0], int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println(res.String())
 	},
@@ -215,12 +229,14 @@ var queryNodeParams = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryNodeParams(int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println(res.String())
 	},
@@ -244,7 +260,8 @@ var queryApps = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		var res appTypes.Applications
@@ -263,13 +280,16 @@ var queryApps = &cobra.Command{
 			// unstaking nodes
 			res, err = app.QueryUnstakingApps(int64(height))
 		default:
-			panic("invalid staking status, can be staked, unstaked, unstaking, or empty")
+			fmt.Printf("invalid staking status, can be staked, unstaked, unstaking, or empty")
+			return
 		}
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		if res == nil {
-			panic("nil Apps result")
+			fmt.Println("nil Apps result")
+			return
 		}
 		fmt.Printf("Apps:\n%s\n", res.String())
 	},
@@ -287,12 +307,14 @@ var queryApp = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[1])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryApp(args[0], int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println(res.String())
 	},
@@ -310,12 +332,14 @@ var queryAppParams = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryAppParams(int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println(res.String())
 	},
@@ -333,12 +357,14 @@ var queryNodeProofs = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[1])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryProofs(args[0], int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println("MerkleProofs:")
 		for _, p := range res {
@@ -359,16 +385,19 @@ var queryNodeProof = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[4])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		sessionheight, err := strconv.Atoi(args[3])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		res, err := app.QueryProof(args[2], args[1], args[0], int64(sessionheight), int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("%v\n", res)
 	},
@@ -386,12 +415,14 @@ var queryPocketParams = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryPocketParams(int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println(res.String())
 	},
@@ -409,12 +440,14 @@ var queryPocketSupportedChains = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		res, err := app.QueryPocketSupportedBlockchains(int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		for i, chain := range res {
 			fmt.Printf("(%d)\t%s\n", i, chain)
@@ -434,20 +467,24 @@ var querySupply = &cobra.Command{
 			var err error
 			height, err = strconv.Atoi(args[0])
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 		}
 		nodesStake, nodesUnstaked, err := app.QueryTotalNodeCoins(int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		appsStaked, appsUnstaked, err := app.QueryTotalAppCoins(int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		dao, err := app.QueryDaoBalance(int64(height))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		totalStaked := nodesStake.Add(appsStaked).Add(dao)
 		totalUnstaked := nodesUnstaked

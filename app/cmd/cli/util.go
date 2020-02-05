@@ -26,7 +26,8 @@ var generateChainCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		res, err := app.GenerateChain(args[0], args[1], args[2], args[3], args[4])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Pocket Network Identifier: %s\n", res)
 	},

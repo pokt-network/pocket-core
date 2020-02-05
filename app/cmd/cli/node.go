@@ -31,14 +31,16 @@ var nodeStakeCmd = &cobra.Command{
 		fromAddr := args[0]
 		amount, err := strconv.Atoi(args[1])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		chains := strings.Split(args[2], ",")
 		serviceURI := args[3]
 		fmt.Println("Enter Password: ")
 		res, err := app.StakeNode(chains, serviceURI, fromAddr, app.Credentials(), types.NewInt(int64(amount)))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
@@ -53,7 +55,8 @@ var nodeUnstakeCmd = &cobra.Command{
 		fmt.Println("Enter Password: ")
 		res, err := app.UnstakeNode(args[0], app.Credentials())
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
@@ -68,7 +71,8 @@ var nodeUnjailCmd = &cobra.Command{
 		fmt.Println("Enter Password: ")
 		res, err := app.UnjailNode(args[0], app.Credentials())
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
