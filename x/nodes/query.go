@@ -70,7 +70,7 @@ func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (t
 	if err != nil {
 		return types.Validators{}, err
 	}
-	var validators types.Validators
+	validators := make(types.Validators, 0)
 	for _, kv := range resKVs {
 		validators = append(validators, types.MustUnmarshalValidator(cdc, kv.Value))
 	}
