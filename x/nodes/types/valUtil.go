@@ -21,12 +21,8 @@ func (v Validators) String() (out string) {
 }
 
 func (v Validators) JSON() (out []byte, err error) {
-	var result []string
-	for _, val := range v {
-		r := val.String()
-		result = append(result, r)
-	}
-	return json.Marshal(result)
+	// each element should be a JSON
+	return json.Marshal(v)
 }
 
 // MUST return the amino encoded version of this validator

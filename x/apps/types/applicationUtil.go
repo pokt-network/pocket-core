@@ -21,12 +21,7 @@ func (v Applications) String() (out string) {
 }
 
 func (v Applications) JSON() (out []byte, err error) {
-	var result []string
-	for _, val := range v {
-		r := val.String()
-		result = append(result, r)
-	}
-	return json.Marshal(result)
+	return json.Marshal(v)
 }
 
 // MUST return the amino encoded version of this application

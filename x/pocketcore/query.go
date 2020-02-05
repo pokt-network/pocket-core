@@ -74,6 +74,9 @@ func QueryPocketSupportedBlockchains(cdc *codec.Codec, tmNode client.Client, hei
 		return nil, err
 	}
 	err = cdc.UnmarshalJSON(res, &chains)
+	if err != nil {
+		return nil, err
+	}
 	return chains, nil
 }
 
