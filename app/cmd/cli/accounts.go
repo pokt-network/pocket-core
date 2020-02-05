@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 func init() {
@@ -110,7 +109,7 @@ var listCmd = &cobra.Command{
 			panic(err)
 		}
 		for i, key := range kp {
-			fmt.Printf("(%d) %s\n", i, strings.ToUpper(key.GetAddress().String()))
+			fmt.Printf("(%d) %s\n", i, key.GetAddress().String())
 		}
 	},
 }
@@ -135,8 +134,8 @@ var showCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Printf("Address:\t%s\nPublic Key:\t%s\n",
-			strings.ToUpper(kp.GetAddress().String()),
-			strings.ToUpper(hex.EncodeToString(kp.PublicKey.RawBytes())))
+			kp.GetAddress().String(),
+			hex.EncodeToString(kp.PublicKey.RawBytes()))
 	},
 }
 
@@ -191,7 +190,7 @@ var signCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Original Message:\t%s\nSignature:\t%s\n", strings.ToUpper(args[1]), strings.ToUpper(hex.EncodeToString(sig)))
+		fmt.Printf("Original Message:\t%s\nSignature:\t%s\n", args[1], hex.EncodeToString(sig))
 	},
 }
 
@@ -213,7 +212,7 @@ var importArmoredCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account imported successfully:\n%s", strings.ToUpper(kp.GetAddress().String()))
+		fmt.Printf("Account imported successfully:\n%s", kp.GetAddress().String())
 	},
 }
 
@@ -267,7 +266,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Exported Raw Private Key:\n%s\n", strings.ToUpper(hex.EncodeToString(pk.RawBytes())))
+		fmt.Printf("Exported Raw Private Key:\n%s\n", hex.EncodeToString(pk.RawBytes()))
 	},
 }
 
@@ -331,6 +330,6 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 			panic(err)
 		}
 
-		fmt.Printf("Account imported successfully:\n%s\n", strings.ToUpper(kp.GetAddress().String()))
+		fmt.Printf("Account imported successfully:\n%s\n", kp.GetAddress().String())
 	},
 }
