@@ -27,7 +27,7 @@ func QueryApplications(cdc *codec.Codec, tmNode client.Client, height int64) (ty
 	if err != nil {
 		return types.Applications{}, err
 	}
-	var applications types.Applications
+	applications := make(types.Applications, 0)
 	for _, kv := range resKVs {
 		applications = append(applications, types.MustUnmarshalApplication(cdc, kv.Value))
 	}
