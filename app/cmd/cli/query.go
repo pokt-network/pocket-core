@@ -137,7 +137,7 @@ var queryAccount = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Account: %v\n", res)
+		fmt.Printf("%v\n", res)
 	},
 }
 
