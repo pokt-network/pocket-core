@@ -129,7 +129,7 @@ var queryAccount = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Account: %v\n", res)
+		fmt.Printf("%v\n", res)
 	},
 }
 
