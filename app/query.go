@@ -13,8 +13,8 @@ import (
 )
 
 // zero for height = latest
-func QueryBlock(height int64) (blockJSON []byte, err error) {
-	return nodes.QueryBlock(getTMClient(), &height)
+func QueryBlock(height *int64) (blockJSON []byte, err error) {
+	return nodes.QueryBlock(getTMClient(), height)
 }
 
 func QueryTx(hash string) (*core_types.ResultTx, error) {
