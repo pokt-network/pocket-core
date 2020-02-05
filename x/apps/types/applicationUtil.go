@@ -61,13 +61,13 @@ func (a Application) String() string {
 
 // this is a helper struct used for JSON de- and encoding only
 type hexApplication struct {
-	Address                 sdk.Address `json:"operator_address" yaml:"operator_address"` // the hex address of the application
-	PublicKey               string      `json:"cons_pubkey" yaml:"cons_pubkey"`           // the hex consensus public key of the application
-	Jailed                  bool        `json:"jailed" yaml:"jailed"`                     // has the application been jailed from staked status?
-	Chains                  []string    `json:"chains" yaml:"chains"`
-	MaxRelays               sdk.Int
+	Address                 sdk.Address     `json:"address" yaml:"address"`               // the hex address of the application
+	PublicKey               string          `json:"public_key" yaml:"public_key"`         // the hex consensus public key of the application
+	Jailed                  bool            `json:"jailed" yaml:"jailed"`                 // has the application been jailed from staked status?
+	Chains                  []string        `json:"chains" yaml:"chains"`                 // non native (external) blockchains needed for the application
+	MaxRelays               sdk.Int         `json:"max_relays" yaml:"max_relays"`         // maximum number of relays allowed for the application
 	Status                  sdk.StakeStatus `json:"status" yaml:"status"`                 // application status (staked/unstaking/unstaked)
-	StakedTokens            sdk.Int         `json:"stakedTokens" yaml:"stakedTokens"`     // how many staked tokens
+	StakedTokens            sdk.Int         `json:"staked_tokens" yaml:"staked_tokens"`   // how many staked tokens
 	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }
 

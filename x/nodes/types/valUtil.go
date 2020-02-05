@@ -62,13 +62,13 @@ func (v Validator) String() string {
 
 // this is a helper struct used for JSON de- and encoding only
 type hexValidator struct {
-	Address                 sdk.Address     `json:"address" yaml:"address"`       // the hex address of the validator
-	PublicKey               string          `json:"public_key" yaml:"public_key"` // the hex consensus public key of the validator
-	Jailed                  bool            `json:"jailed" yaml:"jailed"`         // has the validator been jailed from staked status?
-	Status                  sdk.StakeStatus `json:"status" yaml:"status"`         // validator status (staked/unstaking/unstaked)
-	StakedTokens            sdk.Int         `json:"tokens" yaml:"tokens"`         // how many staked tokens
-	ServiceURL              string          `json:"service_url" yaml:"service_uRL"`
-	Chains                  []string        `json:"chains" yaml:"chains"`
+	Address                 sdk.Address     `json:"address" yaml:"address"`               // the hex address of the validator
+	PublicKey               string          `json:"public_key" yaml:"public_key"`         // the hex consensus public key of the validator
+	Jailed                  bool            `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from staked status?
+	Status                  sdk.StakeStatus `json:"status" yaml:"status"`                 // validator status (staked/unstaking/unstaked)
+	StakedTokens            sdk.Int         `json:"tokens" yaml:"tokens"`                 // how many staked tokens
+	ServiceURL              string          `json:"service_url" yaml:"service_urL"`       // the url of the pocket-api
+	Chains                  []string        `json:"chains" yaml:"chains"`                 // the non-native (external) chains hosted
 	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
 }
 
