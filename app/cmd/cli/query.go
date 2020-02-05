@@ -41,21 +41,23 @@ var queryBlock = &cobra.Command{
 	Short: "Get block at height",
 	Long:  `Returns the block structure at the specified height.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var height int
+		var height *int64
 		if len(args) == 0 {
-			height = 0 // latest
+			height = nil
 		} else {
 			var err error
-			height, err = strconv.Atoi(args[0])
+			parsed, err := strconv.Atoi(args[0])
 			if err != nil {
 				panic(err)
 			}
+			convert := int64(parsed)
+			height = &convert
 		}
-		res, err := app.QueryBlock(int64(height))
+		res, err := app.QueryBlock(height)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(res)
+		fmt.Println(string(res))
 	},
 }
 
