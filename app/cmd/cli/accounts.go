@@ -47,7 +47,8 @@ var createCmd = &cobra.Command{
 		fmt.Print("Enter Password: \n")
 		kp, err := kb.Create(app.Credentials())
 		if err != nil {
-			panic(err)
+			fmt.Printf("Account generation Failed, %s", err)
+			return
 		}
 		fmt.Printf("Account generated successfully:\nAddress: %s\n", kp.GetAddress())
 	},
@@ -60,11 +61,13 @@ var getCoinbase = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
 		}
 		coinbase, err := kb.GetCoinbase()
 		if err != nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf("Could not get coinbase, %s", err)
+			return
 		}
 		fmt.Printf("Coinbase Account:%s\n", coinbase.GetAddress())
 	},
@@ -78,16 +81,20 @@ var deleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic("Uninitialized Kebyase")
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
+
 		}
 		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Printf("Address Error %s", err)
+			return
 		}
 		fmt.Print("Enter Password: \n")
 		err = kb.Delete(addr, app.Credentials())
 		if err != nil {
-			panic(err)
+			fmt.Printf("Error Deleting Account, check your credentials")
+			return
 		}
 		fmt.Println("Account deleted successfully")
 	},
@@ -102,11 +109,13 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
 		}
 		kp, err := kb.List()
 		if err != nil {
-			panic(err)
+			fmt.Printf("Error retrieving accounts from keybase, %s", err)
+			return
 		}
 		for i, key := range kp {
 			fmt.Printf("(%d) %s\n", i, key.GetAddress().String())
@@ -123,15 +132,18 @@ var showCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
 		}
 		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Printf("Address Error, %s", err)
+			return
 		}
 		kp, err := kb.Get(addr)
 		if err != nil {
-			panic(err)
+			fmt.Printf("Error Getting pubkey For Address, %s", err)
+			return
 		}
 		fmt.Printf("Address:\t%s\nPublic Key:\t%s\n",
 			kp.GetAddress().String(),
@@ -148,11 +160,13 @@ var updatePassphraseCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
 		}
 		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Printf("Address Error, %s", err)
+			return
 		}
 		fmt.Println("Enter Password: ")
 		oldpass := app.Credentials()
@@ -160,7 +174,8 @@ var updatePassphraseCmd = &cobra.Command{
 		newpass := app.Credentials()
 		err = kb.Update(addr, oldpass, newpass)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println("Successfully updated account: " + addr.String())
 	},
@@ -175,20 +190,24 @@ var signCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
 		}
 		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Printf("Address Error %s", err)
+			return
 		}
 		msg, err := hex.DecodeString(args[1])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println("Enter Password: ")
 		sig, _, err := kb.Sign(addr, app.Credentials(), msg)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Original Message:\t%s\nSignature:\t%s\n", args[1], hex.EncodeToString(sig))
 	},
@@ -202,7 +221,8 @@ var importArmoredCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
 		}
 		fmt.Println("Enter decrypt pass")
 		dPass := app.Credentials()
@@ -210,7 +230,8 @@ var importArmoredCmd = &cobra.Command{
 		ePass := app.Credentials()
 		kp, err := kb.ImportPrivKey(args[0], dPass, ePass)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Account imported successfully:\n%s", kp.GetAddress().String())
 	},
@@ -226,11 +247,13 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
 		}
 		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Printf("Address Error %s", err)
+			return
 		}
 		fmt.Println("Enter Decrypt Passphrase")
 		dPass := app.Credentials()
@@ -238,7 +261,8 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 		ePass := app.Credentials()
 		pk, err := kb.ExportPrivKeyEncryptedArmor(addr, dPass, ePass)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Exported Armor Private Key:\n%s\n", pk)
 	},
@@ -254,17 +278,20 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Printf(app.UninitializedKeybaseError.Error())
+			return
 		}
 		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Printf("Address Error %s", err)
+			return
 		}
 		fmt.Println("Enter Decrypt Passphrase")
 		dPass := app.Credentials()
 		pk, err := kb.ExportPrivateKeyObject(addr, dPass)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Exported Raw Private Key:\n%s\n", hex.EncodeToString(pk.RawBytes()))
 	},
@@ -279,12 +306,14 @@ var sendTxCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		amount, err := strconv.Atoi(args[2])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println("Enter Password: ")
 		res, err := app.SendTransaction(args[0], args[1], app.Credentials(), types.NewInt(int64(amount)))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Transaction Submitted: %s", res.TxHash)
 	},
@@ -299,11 +328,13 @@ var sendRawTxCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		bz, err := hex.DecodeString(args[1])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		res, err := app.SendRawTx(args[0], bz)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Transaction Submitted: %s", res.TxHash)
 	},
@@ -311,7 +342,7 @@ var sendRawTxCmd = &cobra.Command{
 
 // importCmd represents the import command
 var importCmd = &cobra.Command{
-	Use:   "import-raw",
+	Use:   "import-raw <private-key-hex>",
 	Short: "import-raw <private-key-hex>",
 	Args:  cobra.ExactArgs(1),
 	Long: `Imports an account using the provided <private-key-hex>
@@ -327,7 +358,8 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		copy(pk[:], pkBytes)
 		kp, err := kb.ImportPrivateKeyObject(pk, ePass)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 
 		fmt.Printf("Account imported successfully:\n%s\n", kp.GetAddress().String())

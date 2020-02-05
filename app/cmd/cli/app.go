@@ -32,13 +32,15 @@ var appStakeCmd = &cobra.Command{
 		fromAddr := args[0]
 		amount, err := strconv.Atoi(args[1])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		chains := strings.Split(args[2], ",")
 		fmt.Println("Enter Password: ")
 		res, err := app.StakeApp(chains, fromAddr, app.Credentials(), types.NewInt(int64(amount)))
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
@@ -53,7 +55,8 @@ var appUnstakeCmd = &cobra.Command{
 		fmt.Println("Enter Password: ")
 		res, err := app.UnstakeApp(args[0], app.Credentials())
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Printf("Transaction Submitted: %s\n", res.TxHash)
 	},
@@ -70,15 +73,18 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 	Run: func(cmd *cobra.Command, args []string) {
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			panic(app.UninitializedKeybaseError)
+			fmt.Println(app.UninitializedKeybaseError)
+			return
 		}
 		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Printf("Address Error %s", err)
+			return
 		}
 		res, err := kb.Get(addr)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			return
 		}
 		fmt.Println("Enter Password: ")
 		aatBytes, err := app.GenerateAAT(hex.EncodeToString(res.PublicKey.RawBytes()), args[1], app.Credentials())

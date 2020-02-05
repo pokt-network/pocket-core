@@ -74,7 +74,8 @@ var startCmd = &cobra.Command{
 			sig := <-signalChannel
 			err := tmNode.Stop()
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				return
 			}
 			message := fmt.Sprintf("Exit signal %s received\n", sig)
 			fmt.Println(message)
