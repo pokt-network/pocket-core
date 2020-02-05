@@ -113,7 +113,7 @@ func TestMsgApp_Type(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgAppStake},
-			want: "stake_application",
+			want: MsgAppStakeName,
 		},
 	}
 	for _, tt := range tests {
@@ -251,7 +251,7 @@ func TestMsgBeginAppUnstake_Type(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgBeginAppUnstake},
-			want: "begin_unstaking_application",
+			want: MsgAppUnstakeName,
 		},
 	}
 	for _, tt := range tests {
@@ -328,7 +328,7 @@ func TestMsgAppUnjail_Type(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgAppUnjail},
-			want: "unjail",
+			want: MsgAppUnjailName,
 		},
 	}
 	for _, tt := range tests {

@@ -2,7 +2,7 @@ package types
 
 // pc module event types
 const (
-	EventTypeClaim        = "claim"
-	EventTypeProof        = "RelayProof"
+	EventTypeClaim        = MsgClaimName
+	EventTypeProof        = MsgProofName
 	AttributeKeyValidator = "validator"
 )

@@ -11,20 +11,20 @@ import (
 // RouterKey is the module name router key
 const (
 	RouterKey    = ModuleName
-	MsgClaimType = "claim"
-	MsgProofType = "RelayProof"
+	MsgClaimName = "claim"
+	MsgProofName = "proof"
 )
 
 // MsgClaim claims that you completed `TotalRelays` and provides the merkle root for data integrity
 type MsgClaim struct {
-	SessionHeader `json:"header"` // header information for identification
-	MerkleRoot    HashSum         `json:"merkle_root"`  // merkle root for data integrity
-	TotalRelays   int64           `json:"total_relays"` // total number of relays
-	FromAddress   sdk.Address     `json:"from_address"` // claimant
+	SessionHeader `json:"header"`                   // header information for identification
+	MerkleRoot    HashSum     `json:"merkle_root"`  // merkle root for data integrity
+	TotalRelays   int64       `json:"total_relays"` // total number of relays
+	FromAddress   sdk.Address `json:"from_address"` // claimant
 }
 
 func (msg MsgClaim) Route() string { return RouterKey }
-func (msg MsgClaim) Type() string  { return MsgClaimType }
+func (msg MsgClaim) Type() string  { return MsgClaimName }
 func (msg MsgClaim) ValidateBasic() sdk.Error {
 	// validate a non empty chain
 	if msg.Chain == "" {
@@ -77,7 +77,7 @@ type MsgProof struct {
 }
 
 func (msg MsgProof) Route() string { return RouterKey }
-func (msg MsgProof) Type() string  { return MsgProofType }
+func (msg MsgProof) Type() string  { return MsgProofName }
 func (msg MsgProof) ValidateBasic() sdk.Error {
 	// verify valid number of levels for merkle proofs
 	if len(msg.MerkleProofs[0].HashSums) < 3 || len(msg.MerkleProofs[0].HashSums) != len(msg.MerkleProofs[1].HashSums) {

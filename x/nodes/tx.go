@@ -1,6 +1,7 @@
 package nodes
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -12,13 +13,13 @@ import (
 
 func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, serviceURL string, amount sdk.Int, kp keys.KeyPair, passphrase string) (*sdk.TxResponse, error) {
 	fromAddr := kp.GetAddress()
-	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgStake{
 		PublicKey:  kp.PublicKey,
 		Value:      amount,
 		ServiceURL: serviceURL, // url where pocket service api is hosted
 		Chains:     chains,     // non native blockchains
 	}
+	txBuilder, cliCtx := newTx(cdc, msg, fromAddr, tmNode, keybase, passphrase)
 	err := msg.ValidateBasic()
 	if err != nil {
 		return nil, err
@@ -27,8 +28,8 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 }
 
 func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, address, tmNode, keybase, passphrase)
 	msg := types.MsgBeginUnstake{Address: address}
+	txBuilder, cliCtx := newTx(cdc, msg, address, tmNode, keybase, passphrase)
 	err := msg.ValidateBasic()
 	if err != nil {
 		return nil, err
@@ -37,8 +38,8 @@ func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, add
 }
 
 func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, address, tmNode, keybase, passphrase)
 	msg := types.MsgUnjail{ValidatorAddr: address}
+	txBuilder, cliCtx := newTx(cdc, msg, address, tmNode, keybase, passphrase)
 	err := msg.ValidateBasic()
 	if err != nil {
 		return nil, err
@@ -47,12 +48,12 @@ func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, addr
 }
 
 func Send(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddr, toAddr sdk.Address, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
-	txBuilder, cliCtx := newTx(cdc, fromAddr, tmNode, keybase, passphrase)
 	msg := types.MsgSend{
 		FromAddress: fromAddr,
 		ToAddress:   toAddr,
 		Amount:      amount,
 	}
+	txBuilder, cliCtx := newTx(cdc, msg, fromAddr, tmNode, keybase, passphrase)
 	err := msg.ValidateBasic()
 	if err != nil {
 		return nil, err
@@ -64,13 +65,13 @@ func RawTx(cdc *codec.Codec, tmNode client.Client, fromAddr sdk.Address, txBytes
 	cliCtx := util.CLIContext{
 		Codec:       cdc,
 		Client:      tmNode,
-		FromAddress: sdk.Address(fromAddr),
+		FromAddress: fromAddr,
 	}
 	cliCtx.BroadcastMode = util.BroadcastSync
 	return cliCtx.BroadcastTx(txBytes)
 }
 
-func newTx(cdc *codec.Codec, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		panic(err)
@@ -87,12 +88,16 @@ func newTx(cdc *codec.Codec, fromAddr sdk.Address, tmNode client.Client, keybase
 	if err != nil {
 		panic(err)
 	}
+	fee := sdk.NewInt(types.NodeFeeMap[msg.Type()])
+	if account.GetCoins().AmountOf("pokt").LTE(fee) { // todo get stake denom
+		panic(fmt.Sprintf("insufficient funds: the fee needed is %v", fee))
+	}
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(cdc),
 		account.GetAccountNumber(),
 		account.GetSequence(),
 		chainID,
 		"",
-		sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(10)))).WithKeybase(keybase)
+		sdk.NewCoins(sdk.NewCoin("pokt", fee))).WithKeybase(keybase)
 	return
 }

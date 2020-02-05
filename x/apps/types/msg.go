@@ -12,6 +12,12 @@ var (
 	_ sdk.Msg = &MsgAppUnjail{}
 )
 
+const (
+	MsgAppStakeName   = "app_stake"
+	MsgAppUnstakeName = "app_begin_unstake"
+	MsgAppUnjailName  = "app_unjail"
+)
+
 //----------------------------------------------------------------------------------------------------------------------
 // MsgAppStake - struct for staking transactions
 type MsgAppStake struct {
@@ -53,7 +59,7 @@ func (msg MsgAppStake) ValidateBasic() sdk.Error {
 
 //nolint
 func (msg MsgAppStake) Route() string { return RouterKey }
-func (msg MsgAppStake) Type() string  { return "stake_application" }
+func (msg MsgAppStake) Type() string  { return MsgAppStakeName }
 
 //----------------------------------------------------------------------------------------------------------------------
 // MsgBeginAppUnstake - struct for unstaking transaciton
@@ -79,7 +85,7 @@ func (msg MsgBeginAppUnstake) ValidateBasic() sdk.Error {
 
 //nolint
 func (msg MsgBeginAppUnstake) Route() string { return RouterKey }
-func (msg MsgBeginAppUnstake) Type() string  { return "begin_unstaking_application" }
+func (msg MsgBeginAppUnstake) Type() string  { return MsgAppUnstakeName }
 
 //----------------------------------------------------------------------------------------------------------------------
 // MsgAppUnjail - struct for unjailing jailed application
@@ -89,9 +95,9 @@ type MsgAppUnjail struct {
 
 //nolint
 func (msg MsgAppUnjail) Route() string { return RouterKey }
-func (msg MsgAppUnjail) Type() string  { return "unjail" }
+func (msg MsgAppUnjail) Type() string  { return MsgAppUnjailName }
 func (msg MsgAppUnjail) GetSigners() []sdk.Address {
-	return []sdk.Address{sdk.Address(msg.AppAddr)}
+	return []sdk.Address{msg.AppAddr}
 }
 
 func (msg MsgAppUnjail) GetSignBytes() []byte {

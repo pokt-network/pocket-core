@@ -82,20 +82,12 @@ func TestApplicationUtil_String(t *testing.T) {
 		{
 			name: "serializes applicaitons into string",
 			args: Applications{application},
-			want: fmt.Sprintf(`AppPubKey
-  Address:           		  %s
-  AppPubKey Cons Pubkey: 	  %s
-  Jailed:                     %v
-  Chains:                     %v
-  MaxRelays:                  %d
-  Status:                     %s
-  Tokens:               	  %s
-  Unstakeing Completion Time: %v `,
+			want: fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nChains:\t\t\t%v\nMaxRelays:\t\t%d\nStatus:\t\t\t%s\nTokens:\t\t\t%s\nUnstaking Time:\t%v",
 				application.Address,
 				application.PublicKey.RawString(),
 				application.Jailed,
 				application.Chains,
-				application.MaxRelays,
+				application.MaxRelays.Int64(),
 				application.Status,
 				application.StakedTokens,
 				application.UnstakingCompletionTime,
@@ -105,7 +97,7 @@ func TestApplicationUtil_String(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.args.String(); got != strings.TrimSpace(fmt.Sprintf("%s\n", tt.want)) {
-				t.Errorf("String() = %s, want %s", got, tt.want)
+				t.Errorf("String() = \n%s\nwant\n%s", got, tt.want)
 			}
 		})
 	}
