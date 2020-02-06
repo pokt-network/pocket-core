@@ -8,7 +8,7 @@ import (
 
 func TestKeeper_StakeDenom(t *testing.T) {
 	ctx, _, _, _, k := createTestInput(t, false)
-	stakeDenom := "pokt"
+	stakeDenom := types.DefaultStakeDenom
 	assert.Equal(t, stakeDenom, k.posKeeper.StakeDenom(ctx))
 }
 

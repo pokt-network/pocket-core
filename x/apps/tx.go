@@ -54,7 +54,7 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 		panic(err)
 	}
 	fee := sdk.NewInt(types.AppFeeMap[msg.Type()])
-	if account.GetCoins().AmountOf("pokt").LTE(fee) { // todo get stake denom
+	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LTE(fee) { // todo get stake denom
 		panic(fmt.Sprintf("insufficient funds: the fee needed is %v", fee))
 	}
 	txBuilder = auth.NewTxBuilder(
@@ -63,6 +63,6 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 		account.GetSequence(),
 		chainID,
 		"",
-		sdk.NewCoins(sdk.NewCoin("pokt", fee))).WithKeybase(keybase)
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, fee))).WithKeybase(keybase)
 	return
 }

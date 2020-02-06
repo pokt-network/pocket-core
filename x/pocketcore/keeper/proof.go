@@ -414,7 +414,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, key
 		return txBuilder, cliCtx, err
 	}
 	fee := sdk.NewInt(pc.PocketFeeMap[msgType])
-	if account.GetCoins().AmountOf("pokt").LTE(fee) { // todo get stake denom
+	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LTE(fee) { // todo get stake denom
 		ctx.Logger().Error(fmt.Sprintf("insufficient funds for the auto %s transaction: the fee needed is %v pokt", msgType, fee))
 	}
 	txBuilder = auth.NewTxBuilder(
