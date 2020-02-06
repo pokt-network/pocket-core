@@ -467,7 +467,7 @@ func oneValTwoNodeGenesisState() []byte {
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,
@@ -475,7 +475,7 @@ func oneValTwoNodeGenesisState() []byte {
 	// add second account
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey2.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,
@@ -543,7 +543,7 @@ func twoValTwoNodeGenesisState() []byte {
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,
@@ -551,7 +551,7 @@ func twoValTwoNodeGenesisState() []byte {
 	// add second account
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey2.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,
@@ -666,7 +666,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(1000000000))),
+		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
 		AccountNumber: 0,
 		Sequence:      0,

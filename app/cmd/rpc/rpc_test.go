@@ -146,7 +146,7 @@ func TestRPC_QueryAccount(t *testing.T) {
 		var account auth.BaseAccount
 		err = json.Unmarshal([]byte(resp), &account)
 		assert.Nil(t, err)
-		assert.NotZero(t, account.Coins.AmountOf("pokt"))
+		assert.NotZero(t, account.Coins.AmountOf(types.DefaultStakeDenom))
 	}
 	cleanup()
 	stopCli()
@@ -476,12 +476,12 @@ func TestRPC_RawTX(t *testing.T) {
 		[]types.Msg{bank.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
-			Amount:      types.NewCoins(types.NewCoin("pokt", types.NewInt(1))),
+			Amount:      types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(1))),
 		}},
 		[]crypto.PrivateKey{pk},
 		[]uint64{0},
 		[]uint64{0},
-		types.NewCoins(types.NewCoin("pokt", types.NewInt(1)))))
+		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(1)))))
 	assert.Nil(t, err)
 	select {
 	case <-evtChan:
