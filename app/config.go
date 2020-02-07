@@ -87,7 +87,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort str
 	}
 	setcoinbasePassphrase(pswrd)
 	// set tendermint node
-	setTmNode(tmNode)
+	SetTMNode(tmNode)
 	// init the tendermint node
 	return InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort)
 }
@@ -199,7 +199,8 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node
 	newTMConfig.P2P.PersistentPeers = persistentPeers               // Comma-delimited ID@host:port persistent peers
 	newTMConfig.P2P.Seeds = seeds                                   // Comma-delimited ID@host:port seed nodes
 	newTMConfig.Consensus.CreateEmptyBlocks = true                  // Set this to false to only produce blocks when there are txs or when the AppHash changes
-	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Minute * 2
+	newTMConfig.Consensus.CreateEmptyBlocksInterval = 10 * time.Minute
+	newTMConfig.Consensus.TimeoutCommit = 10 * time.Minute
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
 
@@ -470,7 +471,7 @@ func getCoinbasePassphrase() string {
 	return passphrase
 }
 
-func setTmNode(n string) {
+func SetTMNode(n string) {
 	tmNodeURI = n
 }
 
