@@ -86,7 +86,7 @@ func TestRPC_QueryTX(t *testing.T) {
 		q := newQueryRequest("tx", newBody(params))
 		rec := httptest.NewRecorder()
 		Tx(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
 		var resTX core_types.ResultTx
@@ -140,7 +140,7 @@ func TestRPC_QueryAccount(t *testing.T) {
 		q := newQueryRequest("account", newBody(params))
 		rec := httptest.NewRecorder()
 		Account(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
 		var account auth.BaseAccount
@@ -188,10 +188,10 @@ func TestRPC_QueryNode(t *testing.T) {
 		q := newQueryRequest("node", newBody(params))
 		rec := httptest.NewRecorder()
 		Node(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(resp, cb.GetAddress().String()))
+		assert.True(t, strings.Contains(rec.Body.String(), cb.GetAddress().String()))
 	}
 	cleanup()
 	stopCli()
@@ -210,10 +210,10 @@ func TestRPC_QueryApp(t *testing.T) {
 		q := newQueryRequest("app", newBody(params))
 		rec := httptest.NewRecorder()
 		App(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(resp, app.GetAddress().String()))
+		assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String()))
 	}
 	cleanup()
 	stopCli()
@@ -232,7 +232,8 @@ func TestRPC_QueryApps(t *testing.T) {
 		q := newQueryRequest("apps", newBody(params))
 		rec := httptest.NewRecorder()
 		Apps(rec, q, httprouter.Params{})
-		assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String())) }
+		assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String()))
+	}
 	cleanup()
 	stopCli()
 }
@@ -249,10 +250,10 @@ func TestRPC_QueryNodeParams(t *testing.T) {
 		q := newQueryRequest("nodeparams", newBody(params))
 		rec := httptest.NewRecorder()
 		NodeParams(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(resp, "max_validators"))
+		assert.True(t, strings.Contains(rec.Body.String(), "max_validators"))
 	}
 	cleanup()
 	stopCli()
@@ -270,10 +271,10 @@ func TestRPC_QueryAppParams(t *testing.T) {
 		q := newQueryRequest("appparams", newBody(params))
 		rec := httptest.NewRecorder()
 		AppParams(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(resp, "max_applications"))
+		assert.True(t, strings.Contains(rec.Body.String(), "max_applications"))
 	}
 	cleanup()
 	stopCli()
@@ -291,10 +292,10 @@ func TestRPC_QueryPocketParams(t *testing.T) {
 		q := newQueryRequest("pocketparams", newBody(params))
 		rec := httptest.NewRecorder()
 		PocketParams(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(resp, "chains"))
+		assert.True(t, strings.Contains(rec.Body.String(), "chains"))
 	}
 	cleanup()
 	stopCli()
