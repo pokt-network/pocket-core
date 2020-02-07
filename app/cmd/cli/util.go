@@ -24,6 +24,7 @@ var generateChainCmd = &cobra.Command{
 	Long:  `Creates a Network Identifier hash, used as a parameter for both node and App stake.`,
 	Args:  cobra.MinimumNArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
 		res, err := app.GenerateChain(args[0], args[1], args[2], args[3], args[4])
 		if err != nil {
 			fmt.Println(err)
