@@ -62,7 +62,7 @@ func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, er.Error())
 		return
 	}
-	WriteResponse(w, string(s), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
 }
 
 func Height(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -109,7 +109,7 @@ func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(s), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
 }
 
 func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -167,7 +167,7 @@ func Node(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -186,7 +186,7 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func NodeProofs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -232,7 +232,7 @@ func NodeProof(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -290,7 +290,7 @@ func App(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func AppParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -309,7 +309,7 @@ func AppParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func PocketParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -328,7 +328,7 @@ func PocketParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func SupportedChains(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
