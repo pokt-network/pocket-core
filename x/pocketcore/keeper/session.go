@@ -7,6 +7,8 @@ import (
 )
 
 func (k Keeper) Dispatch(ctx sdk.Context, header types.SessionHeader) (*types.Session, sdk.Error) {
+	latestSessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
+	header.SessionBlockHeight = latestSessionBlockHeight
 	err := header.ValidateHeader()
 	if err != nil {
 		return nil, err
@@ -24,13 +26,18 @@ func (k Keeper) IsSessionBlock(ctx sdk.Context) bool {
 
 // get the most recent session block from the cont
 func (k Keeper) GetLatestSessionBlock(ctx sdk.Context) sdk.Context {
+	return ctx.MustGetPrevCtx(k.GetLatestSessionBlockHeight(ctx))
+}
+
+// get the most recent session block from the cont
+func (k Keeper) GetLatestSessionBlockHeight(ctx sdk.Context) int64 {
 	var sessionBlockHeight int64
 	if ctx.BlockHeight()%k.posKeeper.SessionBlockFrequency(ctx) == 0 {
 		sessionBlockHeight = ctx.BlockHeight() - k.posKeeper.SessionBlockFrequency(ctx) + 1
 	} else {
 		sessionBlockHeight = (ctx.BlockHeight()/k.posKeeper.SessionBlockFrequency(ctx))*k.posKeeper.SessionBlockFrequency(ctx) + 1
 	}
-	return ctx.MustGetPrevCtx(sessionBlockHeight)
+	return sessionBlockHeight
 }
 
 // is the blockchain supported at this specific context?
