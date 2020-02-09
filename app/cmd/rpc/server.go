@@ -71,7 +71,7 @@ func GetRoutes() Routes {
 }
 
 func WriteResponse(w http.ResponseWriter, jsn, path, ip string) {
-	b, err := json.MarshalIndent(jsn, "", "\t")
+	b, err := json.Marshal(jsn)
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 		log.Println(err.Error())
