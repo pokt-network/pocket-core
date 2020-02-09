@@ -19,6 +19,7 @@ var (
 	tmRPCPort       string
 	tmPeersPort     string
 	pocketRPCPort   string
+	blockTime       int
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -50,6 +51,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&tmRPCPort, "tmRPCPort", "26657", "the port for tendermint rpc")
 	rootCmd.PersistentFlags().StringVar(&tmPeersPort, "tmPeersPort", "26656", "the port for tendermint p2p")
 	rootCmd.PersistentFlags().StringVar(&pocketRPCPort, "pocketRPCPort", "8081", "the port for pocket rpc")
+	rootCmd.PersistentFlags().IntVar(&blockTime, "blockTime", 10, "how often should the network create blocks")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 }
@@ -62,7 +64,7 @@ var startCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		go rpc.StartRPC(pocketRPCPort)
-		tmNode := app.InitApp(datadir, tmNode, strings.ToLower(persistentPeers), strings.ToLower(seeds), tmRPCPort, tmPeersPort)
+		tmNode := app.InitApp(datadir, tmNode, strings.ToLower(persistentPeers), strings.ToLower(seeds), tmRPCPort, tmPeersPort, blockTime)
 		// We trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel,
