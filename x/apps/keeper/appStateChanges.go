@@ -38,7 +38,7 @@ func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application,
 		return sdk.ErrInternal(err.Error())
 	}
 	// add coins to the staked field
-	application.AddStakedTokens(amount)
+	application = application.AddStakedTokens(amount)
 	// calculate relays
 	application.MaxRelays = k.CalculateAppRelays(ctx, application)
 	// set the status to staked
@@ -104,10 +104,10 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 	k.deleteUnstakingApplication(ctx, application)
 	// amount unstaked = stakedTokens
 	amount := sdk.NewInt(application.StakedTokens.Int64())
-	// removed the staked tokens field from application structure
-	application = application.RemoveStakedTokens(amount)
 	// send the tokens from staking module account to application account
 	k.coinsFromStakedToUnstaked(ctx, application)
+	// removed the staked tokens field from application structure
+	application = application.RemoveStakedTokens(amount)
 	// update the status to unstaked
 	application = application.UpdateStatus(sdk.Unstaked)
 	// reset app relays
