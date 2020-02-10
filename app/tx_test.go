@@ -54,6 +54,7 @@ func TestUnstakeApp(t *testing.T) {
 }
 
 func TestUnstakeNode(t *testing.T) {
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -77,8 +78,28 @@ func TestUnstakeNode(t *testing.T) {
 					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
 					assert.Nil(t, err)
 					assert.Equal(t, 1, len(got))
-					cleanup()
-					stopCli()
+					got, err = nodes.QueryStakedValidators(memCodec(), memCli, 0)
+					assert.Nil(t, err)
+					assert.Equal(t, 1, len(got))
+					memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlockHeader)
+					select {
+					case res := <-evtChan:
+						if len(res.Events["unstake.module"]) == 1 {
+							got, err := nodes.QueryUnstakedValidators(memCodec(), memCli, 0)
+							assert.Nil(t, err)
+							assert.Equal(t, 1, len(got))
+							assert.Equal(t, got[0].StakedTokens.Int64(), int64(0))
+							addr := got[0].Address
+							balance, err := nodes.QueryAccountBalance(memCodec(), memCli, addr, 0)
+							assert.NotZero(t, balance.Int64())
+							tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
+							assert.Nil(t, err)
+							assert.NotNil(t, tx)
+							assert.True(t, strings.Contains(tx.Logs.String(), `"success":true`))
+							cleanup()
+							stopCli()
+						}
+					}
 					return
 				}
 			default:
