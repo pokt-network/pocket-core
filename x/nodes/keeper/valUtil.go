@@ -77,6 +77,18 @@ func (k Keeper) AllValidators(ctx sdk.Context) (validators []exported.ValidatorI
 	return validators
 }
 
+func (k Keeper) GetStakedValidators(ctx sdk.Context) (validators []exported.ValidatorI) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.StakedValidatorsKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		validator := k.mustGetValidator(ctx, iterator.Value())
+		validators = append(validators, validator)
+	}
+	return validators
+}
+
 // wrapper for GetValidatorByConsAddress call
 func (k Keeper) validatorByConsAddr(ctx sdk.Context, addr sdk.Address) exported.ValidatorI {
 	val, found := k.GetValidator(ctx, addr)
