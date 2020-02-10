@@ -128,6 +128,10 @@ func TestRPC_QueryBalance(t *testing.T) {
 func TestRPC_QueryAccount(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	type Coins struct {
+		denom string `json:string`
+		amount int `json:amount`
+	}
 	select {
 	case <-evtChan:
 		kb := getInMemoryKeybase()
@@ -141,12 +145,7 @@ func TestRPC_QueryAccount(t *testing.T) {
 		rec := httptest.NewRecorder()
 		Account(rec, q, httprouter.Params{})
 		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		var account auth.BaseAccount
-		err = json.Unmarshal([]byte(resp), &account)
-		assert.Nil(t, err)
-		assert.NotZero(t, account.Coins.AmountOf(types.DefaultStakeDenom))
+		assert.Regexp(t, "upokt", string(resp))
 	}
 	cleanup()
 	stopCli()
@@ -434,7 +433,7 @@ func TestRPC_Relay(t *testing.T) {
 
 func TestRPC_Dispatch(t *testing.T) {
 	kb := getInMemoryKeybase()
-	genBZ, _, app := fiveValidatorsOneAppGenesis()
+	genBZ, validators, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 	assert.Nil(t, err)
@@ -452,13 +451,13 @@ func TestRPC_Dispatch(t *testing.T) {
 		rec := httptest.NewRecorder()
 		Dispatch(rec, q, httprouter.Params{})
 		resp := getJSONResponse(rec)
-		var raw map[string]interface{}
-		if err := json.Unmarshal([]byte(resp), &raw); err != nil {
-			t.Fail()
-		}
 		rawResp := string(resp)
-		assert.Contains(t, rawResp, key.ApplicationPubKey)
-		assert.Contains(t, rawResp, key.Chain)
+		assert.Regexp(t, key.ApplicationPubKey, rawResp)
+		assert.Regexp(t,key.Chain, rawResp)
+
+		for _, validator := range validators {
+			assert.Regexp(t, validator.Address.String(), rawResp)
+		}
 		cleanup()
 		stopCli()
 	}

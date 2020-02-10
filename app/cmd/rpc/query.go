@@ -104,7 +104,7 @@ func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	s, err := app.Codec().MarshalJSON(res)
+	s, err := json.Marshal(res)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
