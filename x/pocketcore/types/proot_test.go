@@ -201,7 +201,7 @@ func TestProof_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.proof.Validate(tt.maxRelays, tt.numOfChains, tt.sessionNodeCount, tt.hb, tt.verifyPubKey) != nil, tt.hasError)
+			assert.Equal(t, tt.proof.Validate(tt.maxRelays, tt.numOfChains, tt.sessionNodeCount, 1, tt.hb, tt.verifyPubKey) != nil, tt.hasError)
 		})
 	}
 }
