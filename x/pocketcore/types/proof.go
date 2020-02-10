@@ -18,9 +18,9 @@ type RelayProof struct {
 	Signature          string `json:"signature"`
 }
 
-func (rp RelayProof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, hb HostedBlockchains, verifyPubKey string) sdk.Error {
+func (rp RelayProof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, verifyPubKey string) sdk.Error {
 	// validate the session block height
-	if rp.SessionBlockHeight < 0 {
+	if rp.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
 	}
 	// validate blockchain

@@ -28,7 +28,7 @@ func (r *Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb Hoste
 		return NewEmptyPayloadDataError(ModuleName)
 	}
 	// validate the RelayProof
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, hb, node.GetPublicKey().RawString()); err != nil {
+	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, sessionBlockHeight, hb, node.GetPublicKey().RawString()); err != nil {
 		return err
 	}
 	// generate the session
