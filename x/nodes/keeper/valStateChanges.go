@@ -109,7 +109,7 @@ func (k Keeper) StakeValidator(ctx sdk.Context, validator types.Validator, amoun
 		return err
 	}
 	// add coins to the staked field
-	validator.AddStakedTokens(amount)
+	validator = validator.AddStakedTokens(amount)
 	// set the status to staked
 	validator = validator.UpdateStatus(sdk.Staked)
 	// save in the validator store
@@ -281,9 +281,9 @@ func (k Keeper) JailValidator(ctx sdk.Context, addr sdk.Address) {
 	if validator.Jailed {
 		panic(fmt.Sprintf("cannot jail already jailed validator, validator: %v\n", validator))
 	}
+	k.deleteValidatorFromStakingSet(ctx, validator)
 	validator.Jailed = true
 	k.SetValidator(ctx, validator)
-	k.deleteValidatorFromStakingSet(ctx, validator)
 	logger := k.Logger(ctx)
 	logger.Info(fmt.Sprintf("validator %s jailed", addr))
 }
