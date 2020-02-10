@@ -482,7 +482,7 @@ func TestRPC_RawTX(t *testing.T) {
 		[]crypto.PrivateKey{pk},
 		[]uint64{0},
 		[]uint64{0},
-		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(1)))))
+		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))))
 	assert.Nil(t, err)
 	select {
 	case <-evtChan:

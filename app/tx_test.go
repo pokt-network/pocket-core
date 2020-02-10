@@ -182,7 +182,7 @@ func TestSendRawTx(t *testing.T) {
 		[]crypto.PrivateKey{pk},
 		[]uint64{0},
 		[]uint64{0},
-		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1)))))
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(100000)))))
 	assert.Nil(t, err)
 	select {
 	case <-evtChan:
@@ -198,7 +198,7 @@ func TestSendRawTx(t *testing.T) {
 	case <-evtChan:
 		res, err := nodes.QueryAccountBalance(memCodec(), memCli, cb.GetAddress(), 0)
 		assert.Nil(t, err)
-		assert.Equal(t, int64(999999998), res.Int64())
+		assert.Equal(t, int64(999899999), res.Int64())
 	}
 	cleanup()
 	stopCli()
