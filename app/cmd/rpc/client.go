@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -44,12 +45,12 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, er := app.Codec().MarshalJSON(res)
+	j, er := json.Marshal(res)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 type sendRawTxParams struct {
