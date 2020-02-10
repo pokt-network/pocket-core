@@ -9,7 +9,7 @@ import (
 
 // get all nodes from the world state
 func (k Keeper) GetAllNodes(ctx sdk.Context) []exported.ValidatorI {
-	return k.posKeeper.AllValidators(ctx)
+	return k.posKeeper.GetStakedValidators(ctx)
 }
 
 // get a node from the world state

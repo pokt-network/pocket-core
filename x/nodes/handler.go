@@ -98,9 +98,6 @@ func stakeRegisteredValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keep
 	if err != nil {
 		return err.Result()
 	}
-	if k.IsWaitingValidator(ctx, validator.Address) {
-		return types.ErrValidatorWaitingToUnstake(types.DefaultCodespace).Result()
-	}
 	err = k.StakeValidator(ctx, validator, msg.Value)
 	if err != nil {
 		return err.Result()
