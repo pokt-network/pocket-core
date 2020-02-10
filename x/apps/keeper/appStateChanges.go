@@ -38,7 +38,7 @@ func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application,
 		return sdk.ErrInternal(err.Error())
 	}
 	// add coins to the staked field
-	application.AddStakedTokens(amount)
+	application = application.AddStakedTokens(amount)
 	// calculate relays
 	application.MaxRelays = k.CalculateAppRelays(ctx, application)
 	// set the status to staked
