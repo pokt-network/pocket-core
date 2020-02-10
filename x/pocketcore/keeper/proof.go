@@ -423,7 +423,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, key
 		account.GetSequence(),
 		genDoc.Genesis.ChainID,
 		"",
-		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), sdk.NewInt(10))),
+		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), fee)),
 	).WithKeybase(keybase)
 	return
 }
