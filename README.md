@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://www.pokt.network">
-    <img src="https://pokt.network/wp-content/uploads/2019/11/pocket-logo.png" alt="Pocket Network logo" width="340"/>
+    <img src="https://user-images.githubusercontent.com/16605170/74199287-94f17680-4c18-11ea-9de2-b094fab91431.png" alt="Pocket Network logo" width="340"/>
   </a>
 </div>
 
@@ -32,28 +32,33 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 ### Example usage
 
-To run the Pocket Core binary you can use the following flags alongside the `pocket-core` executable:
+To run the Pocket Core binary you can use the following flags alongside the `main` executable:
 ````
-  -cfile string
-    	specifies the filepath for chains.json (default "chains.json")
-  -clientrpc
-    	whether or not to start the rpc server (default true)
-  -clientrpcport string
-    	specified port to run client rpc (default "8080")
-  -datadirectory string
-    	setup a custom location for the datadirectory
-        	(default: `%APPDATA%\Pocket` for Windows, `~/.pocket` for Linux, `~/Library/Pocket` for Mac)
-  -pfile string
-    	specifies the filepath for peers.json (default "peers.json")
-  -relayrpc
-    	whether or not to start the rpc server (default true)
-  -relayrpcport string
-    	specified port to run relay rpc (default "8081")
+    --blockTime int             
+        how often should the network create blocks (default 10)
+    --datadir string            
+        data directory (default is $HOME/.pocket/
+    -h, --help                      
+        help for pocket
+    --node string               
+        takes a remote endpoint in the form <protocol>://<host>:<port>
+    --persistent_peers string   
+        a comma separated list of PeerURLs: <ID>@<IP>:<PORT>
+    --pocketRPCPort string      
+        the port for pocket rpc (default "8081")
+    --seeds string                  
+        a comma separated list of PeerURLs: <ID>@<IP>:<PORT>
+    --tmPeersPort string       
+        the port for tendermint p2p (default "26656")
+    --tmRPCPort string          
+        the port for tendermint rpc (default "26657")
+    -t, --toggle                    
+        help message for toggle
 ````
 
 ### Installation
 
-Clone the repository and run `go build pokt-network/pocket-core/cmd/pocket_core/main.go`
+Clone the repository and run `go build pocket-core/app/cmd/pocket_core/main.go`
 
 ## Documentation
 
