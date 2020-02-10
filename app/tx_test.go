@@ -58,12 +58,14 @@ func TestUnstakeNode(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
+	var balance1 sdk.Int
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	select {
 	case <-evtChan:
 		var err error
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		balance1, err = nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
 		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -91,6 +93,7 @@ func TestUnstakeNode(t *testing.T) {
 							assert.Equal(t, got[0].StakedTokens.Int64(), int64(0))
 							addr := got[0].Address
 							balance, err := nodes.QueryAccountBalance(memCodec(), memCli, addr, 0)
+							fmt.Println(balance1, balance)
 							assert.NotZero(t, balance.Int64())
 							tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
 							assert.Nil(t, err)

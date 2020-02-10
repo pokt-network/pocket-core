@@ -93,7 +93,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Context, validator types.Valida
 	if amount.LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		return types.ErrMinimumStake(k.codespace)
 	}
-	if !k.coinKeeper.HasCoins(ctx, sdk.Address(validator.Address), coin) {
+	if !k.coinKeeper.HasCoins(ctx, validator.Address, coin) {
 		return types.ErrNotEnoughCoins(k.codespace)
 	}
 	return nil
@@ -214,10 +214,10 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Context, validator types.Valida
 	k.deleteUnstakingValidator(ctx, validator)
 	// amount unstaked = stakedTokens
 	amount := sdk.NewInt(validator.StakedTokens.Int64())
-	// removed the staked tokens field from validator structure
-	validator = validator.RemoveStakedTokens(amount)
 	// send the tokens from staking module account to validator account
 	k.coinsFromStakedToUnstaked(ctx, validator)
+	// removed the staked tokens field from validator structure
+	validator = validator.RemoveStakedTokens(amount)
 	// update the status to unstaked
 	validator = validator.UpdateStatus(sdk.Unstaked)
 	// update the validator in the main store
