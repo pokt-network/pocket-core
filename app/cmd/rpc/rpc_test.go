@@ -434,7 +434,7 @@ func TestRPC_Relay(t *testing.T) {
 
 func TestRPC_Dispatch(t *testing.T) {
 	kb := getInMemoryKeybase()
-	genBZ, validators, app := fiveValidatorsOneAppGenesis()
+	genBZ, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 	assert.Nil(t, err)
@@ -451,13 +451,14 @@ func TestRPC_Dispatch(t *testing.T) {
 		q := newClientRequest("dispatch", newBody(key))
 		rec := httptest.NewRecorder()
 		Dispatch(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
-		var response pocketTypes.Session
-		err := memCodec().UnmarshalJSON([]byte(resp), &response)
-		assert.Nil(t, err)
-		for _, val := range validators {
-			assert.Contains(t, response.SessionNodes, val)
+		resp := getJSONResponse(rec)
+		var raw map[string]interface{}
+		if err := json.Unmarshal([]byte(resp), &raw); err != nil {
+			t.Fail()
 		}
+		rawResp := string(resp)
+		assert.Contains(t, rawResp, key.ApplicationPubKey)
+		assert.Contains(t, rawResp, key.Chain)
 		cleanup()
 		stopCli()
 	}
