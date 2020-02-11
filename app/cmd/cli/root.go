@@ -22,6 +22,8 @@ var (
 	blockTime       int
 )
 
+const defaultSeeds = `610CF8A6E8CEFBADED845F1C1DC3B10A670BE26B@node1.testnet.pokt.network:26656, E6946760D9833F49DA39AAE9500537BEF6F33A7A@node2.testnet.pokt.network:26656, 7674A47CC977326F1DF6CB92C7B5A2AD36557EA2@node3.testnet.pokt.network:26656, C7B7B7665D20A7172D0C0AA58237E425F333560A@node4.testnet.pokt.network:26656, F6DC0B244C93232283CD1D8443363946D0A3D77A@node5.testnet.pokt.network:26656, 86209713BEFECA0807714BCDD5B79E81073FAF8F@node6.testnet.pokt.network:26656, 915A58AE437D2C2D6F35AC11B79F42972267700D@node7.testnet.pokt.network:26656, B3D86CD8AB4AA0CB9861CB795D8D154E685A94CF@node8.testnet.pokt.network:26656, 17CA63E4FF7535A40512C550DD0267E519CAFC1A@node9.testnet.pokt.network:26656, F99386C6D7CD42A486C63CCD80F5FBEA68759CD7@node10.testnet.pokt.network:26656`
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "pocket",
@@ -47,11 +49,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&datadir, "datadir", "", "data directory (default is $HOME/.pocket/")
 	rootCmd.PersistentFlags().StringVar(&tmNode, "node", "", "takes a remote endpoint in the form <protocol>://<host>:<port>")
 	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
-	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
+	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", defaultSeeds, "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
 	rootCmd.PersistentFlags().StringVar(&tmRPCPort, "tmRPCPort", "26657", "the port for tendermint rpc")
 	rootCmd.PersistentFlags().StringVar(&tmPeersPort, "tmPeersPort", "26656", "the port for tendermint p2p")
 	rootCmd.PersistentFlags().StringVar(&pocketRPCPort, "pocketRPCPort", "8081", "the port for pocket rpc")
-	rootCmd.PersistentFlags().IntVar(&blockTime, "blockTime", 10, "how often should the network create blocks")
+	rootCmd.PersistentFlags().IntVar(&blockTime, "blockTime", 1, "how often should the network create blocks")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 }
