@@ -51,6 +51,7 @@ func TestKeeper_FinishUnstakingValidator(t *testing.T) {
 	}
 
 	validator := getStakedValidator()
+	validator.StakedTokens = sdk.NewInt(0)
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -67,6 +68,7 @@ func TestKeeper_FinishUnstakingValidator(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
+			// todo: add more tests scenarios
 			if got := k.FinishUnstakingValidator(tt.args.ctx, tt.args.validator); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FinishUnstakingValidator() = %v, want %v", got, tt.want)
 			}
