@@ -2,13 +2,16 @@ package app
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/iavl/common"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
 	"math/big"
@@ -324,6 +327,55 @@ func TestQueryStakedApp(t *testing.T) {
 	}
 	cleanup()
 	stopCli()
+}
+
+func TestRelayGenerator(t *testing.T) {
+	const appPrivKey = "e63df045400c136dae909c6bfabfe632dd37e44abbabea3e9fb1f672bd21c04567f0446d45f3e1ba9f3edc957018174cb82871521ca793acdb45898ec4b1c479"
+	const nodePublicKey = "7eb410b363df8f71caf6d3a88f11360b74abbcf7e1293cfbc88a021d966110d5"
+	const sessionBlockheight = 1
+	const query = `{"jsonrpc":"2.0","method":"net_version","params":[],"id":67}`
+	const supportedBlockchain = "49aff8a9f51b268f6fc485ec14fb08466c3ec68c8d86d9b5810ad80546b65f29"
+	apkBz, err := hex.DecodeString(appPrivKey)
+	if err != nil {
+		panic(err)
+	}
+	var appPrivateKey crypto.Ed25519PrivateKey
+	copy(appPrivateKey[:], apkBz)
+	aat := types.AAT{
+		Version:              "0.0.1",
+		ApplicationPublicKey: appPrivateKey.PublicKey().RawString(),
+		ClientPublicKey:      appPrivateKey.PublicKey().RawString(),
+		ApplicationSignature: "",
+	}
+	sig, err := appPrivateKey.Sign(aat.Hash())
+	if err != nil {
+		panic(err)
+	}
+	aat.ApplicationSignature = hex.EncodeToString(sig)
+	// setup relay
+	relay := types.Relay{
+		Payload: types.Payload{
+			Data: query,
+		},
+		Proof: types.RelayProof{
+			Entropy:            int64(common.RandInt()),
+			SessionBlockHeight: sessionBlockheight,
+			ServicerPubKey:     nodePublicKey,
+			Blockchain:         supportedBlockchain,
+			Token:              aat,
+			Signature:          "",
+		},
+	}
+	sig, err = appPrivateKey.Sign(relay.Proof.Hash())
+	if err != nil {
+		panic(err)
+	}
+	relay.Proof.Signature = hex.EncodeToString(sig)
+	res, err := json.MarshalIndent(relay, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(res))
 }
 
 func TestQueryRelay(t *testing.T) {

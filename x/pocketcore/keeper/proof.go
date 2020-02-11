@@ -75,7 +75,7 @@ func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header 
 
 		}
 		// if the total relays is greater than the resulting integer, this is the pseudorandom chosen proof
-		if totalRelays >= maxValue {
+		if totalRelays > maxValue {
 			firstCharacter, err := strconv.ParseInt(string(proofsHash[0]), 16, 64)
 			if err != nil {
 				return 0, err
@@ -122,6 +122,10 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		if _, found := k.GetClaim(ctx, sdk.Address(kp.GetAddress()), invoice.SessionHeader); found {
 			continue
 		}
+		if k.ClaimIsMature(ctx, invoice.SessionBlockHeight) {
+			invoices.DeleteInvoice(invoice.SessionHeader)
+			continue
+		}
 		// generate the merkle root for this invoice
 		root := invoice.GenerateMerkleRoot()
 		// generate the auto txbuilder and clictx
@@ -158,11 +162,11 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		if _, found := k.GetInvoice(ctx, addr, proof.SessionHeader); found {
 			// remove from the local cache
 			pc.GetAllInvoices().DeleteInvoice(proof.SessionHeader)
-			// remove from the temporary world state
-			err := k.DeleteClaim(ctx, addr, proof.SessionHeader)
-			if err != nil {
-				ctx.Logger().Error(fmt.Sprintf("an error occured deleting the claim in the ProofTx:\n%v", err))
-			}
+			//// remove from the temporary world state
+			//err := k.DeleteClaim(ctx, addr, proof.SessionHeader)
+			//if err != nil {
+			//	ctx.Logger().Error(fmt.Sprintf("an error occured deleting the claim in the ProofTx:\n%v", err))
+			//}
 			continue
 		}
 		// generate the proof of relay object using the found proof and local cache
@@ -386,7 +390,7 @@ func (k Keeper) DeleteExpiredClaims(ctx sdk.Context) {
 // is the proof mature? able to be claimed because the `waiting period` has passed since the sessionBlock
 func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 	waitingPeriodInBlocks := k.ProofWaitingPeriod(ctx) * k.SessionFrequency(ctx)
-	if ctx.BlockHeight() >= waitingPeriodInBlocks+sessionBlockHeight {
+	if ctx.BlockHeight() > waitingPeriodInBlocks+sessionBlockHeight {
 		return true
 	}
 	return false
