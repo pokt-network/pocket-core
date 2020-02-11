@@ -140,7 +140,7 @@ func TestMint(t *testing.T) {
 		{
 			name:     "mints a coin",
 			amount:   sdk.NewInt(90),
-			expected: fmt.Sprintf("was successfully minted to %s", validatorAddress.String()),
+			expected: fmt.Sprintf("a custom reward of "),
 			address:  validatorAddress,
 			panics:   false,
 		},

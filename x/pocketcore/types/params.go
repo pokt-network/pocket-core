@@ -63,8 +63,8 @@ func (p Params) Validate() error {
 	if p.SessionNodeCount > 25 || p.SessionNodeCount < 1 {
 		return errors.New("Invalid session node count")
 	}
-	if p.ProofWaitingPeriod < 1 {
-		return errors.New("no waiting period is subject to attack")
+	if p.ProofWaitingPeriod < 2 {
+		return errors.New("waiting period must be at least 2 sessions")
 	}
 	if len(p.SupportedBlockchains) == 0 {
 		return errors.New("no supported blockchains")

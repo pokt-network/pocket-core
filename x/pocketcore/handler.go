@@ -60,6 +60,10 @@ func handleProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) sdk.Re
 	}
 	// valid claim so award coins for relays
 	k.AwardCoinsForRelays(ctx, proof.TotalRelays, addr)
+	er = k.DeleteClaim(ctx, addr, proof.SessionHeader)
+	if er != nil {
+		return sdk.ErrInternal(er.Error()).Result()
+	}
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

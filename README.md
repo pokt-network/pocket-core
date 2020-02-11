@@ -34,26 +34,29 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 To run the Pocket Core binary you can use the following flags alongside the `main` executable:
 ````
-    --blockTime int             
-        how often should the network create blocks (default 10)
-    --datadir string            
-        data directory (default is $HOME/.pocket/
-    -h, --help                      
-        help for pocket
-    --node string               
-        takes a remote endpoint in the form <protocol>://<host>:<port>
-    --persistent_peers string   
-        a comma separated list of PeerURLs: <ID>@<IP>:<PORT>
-    --pocketRPCPort string      
-        the port for pocket rpc (default "8081")
-    --seeds string                  
-        a comma separated list of PeerURLs: <ID>@<IP>:<PORT>
-    --tmPeersPort string       
-        the port for tendermint p2p (default "26656")
-    --tmRPCPort string          
-        the port for tendermint rpc (default "26657")
-    -t, --toggle                    
-        help message for toggle
+Usage:
+  pocket [command]
+
+Available Commands:
+  accounts    account management
+  apps        application management
+  help        help about any command
+  nodes       node management
+  query       query the blockchain
+  reset       reset pocket-core
+  start       starts pocket-core daemon
+  util        utilities
+
+Flags:
+      --datadir string            data directory (default is $HOME/.pocket/
+  -h, --help                      help for pocket
+      --node string               takes a remote endpoint in the form <protocol>://<host>:<port>
+      --persistent_peers string   a comma separated list of PeerURLs: <ID>@<IP>:<PORT>
+      --pocketRPCPort string      the port for pocket rpc (default "8081")
+      --seeds string              a comma separated list of PeerURLs: <ID>@<IP>:<PORT>
+      --tmPeersPort string        the port for tendermint p2p (default "26656")
+      --tmRPCPort string          the port for tendermint rpc (default "26657")
+  -t, --toggle                    help message for toggle
 ````
 
 ### Installation
