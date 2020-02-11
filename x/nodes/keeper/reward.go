@@ -11,7 +11,7 @@ import (
 // award coins to an address (will be called at the beginning of the next block)
 func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.Address) {
 	award, _ := k.getValidatorAward(ctx, address)
-	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays).Quo(sdk.NewInt(100)) // truncate
+	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
 	k.setValidatorAward(ctx, award.Add(coins), address)
 }
 
@@ -42,6 +42,14 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
 	if proposerValidator != nil {
 		propRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), proposerReward))
 		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
+		err := k.supplyKeeper.MintCoins(ctx, types.ModuleName, propRewardCoins)
+		if err != nil {
+			panic(err)
+		}
+		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, daoRewardCoins)
+		if err != nil {
+			panic(err)
+		}
 		// send to validator
 		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposerValidator.GetAddress(), propRewardCoins); err != nil {
 			panic(err)
@@ -50,6 +58,8 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
 		if err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, types.DAOPoolName, daoRewardCoins); err != nil {
 			panic(err)
 		}
+		logger.Info(fmt.Sprintf("minted %s to block proposer: %s", propRewardCoins.String(), proposerValidator.GetAddress().String()))
+		logger.Info(fmt.Sprintf("minted %s to DAO", daoRewardCoins.String()))
 		ctx.EventManager().EmitEvent(
 			sdk.NewEvent(
 				types.EventTypeProposerReward,
@@ -111,7 +121,7 @@ func (k Keeper) deleteValidatorAward(ctx sdk.Context, address sdk.Address) {
 }
 
 // called on begin blocker
-func (k Keeper) mintValidatorAwards(ctx sdk.Context) {
+func (k Keeper) mintNodeRelayRewards(ctx sdk.Context) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
 	defer iterator.Close()
@@ -119,6 +129,7 @@ func (k Keeper) mintValidatorAwards(ctx sdk.Context) {
 		amount := sdk.Int{}
 		address := sdk.Address(types.AddressFromKey(iterator.Key()))
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &amount)
+		amount = k.NodeCutOfReward(ctx).Mul(amount).Quo(sdk.NewInt(100)) // truncate
 		k.mint(ctx, amount, address)
 		// remove from the award store
 		store.Delete(iterator.Key())
@@ -128,7 +139,7 @@ func (k Keeper) mintValidatorAwards(ctx sdk.Context) {
 // Mints sdk.Coins and sends them to an address
 func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.Address) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	mintErr := k.supplyKeeper.MintCoins(ctx, types.StakedPoolName, coins.Add(coins))
+	mintErr := k.supplyKeeper.MintCoins(ctx, types.StakedPoolName, coins)
 	if mintErr != nil {
 		return mintErr.Result()
 	}
@@ -136,8 +147,8 @@ func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.Address) sdk.R
 	if sendErr != nil {
 		return sendErr.Result()
 	}
-
-	logString := amount.String() + " was successfully minted to " + address.String()
+	logString := fmt.Sprintf("a custom reward of %s was minted to %s", amount.String(), address.String())
+	k.Logger(ctx).Info(logString)
 	return sdk.Result{
 		Log: logString,
 	}

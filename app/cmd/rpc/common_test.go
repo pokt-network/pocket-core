@@ -84,10 +84,10 @@ func TestNewInMemory(t *testing.T) {
 var (
 	memoryModAccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
-		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
-		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking},
-		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
-		nodesTypes.ModuleName:     nil,
+		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking, supply.Minter},
+		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
+		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking, supply.Minter},
+		nodesTypes.ModuleName:     {supply.Burner, supply.Staking, supply.Minter},
 		appsTypes.ModuleName:      nil,
 	}
 	genState cfg.GenesisState

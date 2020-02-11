@@ -19,7 +19,7 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
 		k.rewardFromFees(ctx, previousProposer)
 	}
 	// mint any custom validator awards
-	k.mintValidatorAwards(ctx)
+	k.mintNodeRelayRewards(ctx)
 	// burn any custom validator slashes
 	k.burnValidators(ctx)
 	// record the new proposer for when we payout on the next block
