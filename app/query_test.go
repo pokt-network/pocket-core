@@ -434,11 +434,12 @@ func TestQueryRelay(t *testing.T) {
 			BodyString(expectedRequest).
 			Reply(200).
 			BodyString(expectedResponse)
-		inv, _ := types.GetAllInvoices().GetInvoice(types.SessionHeader{
+		inv, found  := types.GetAllInvoices().GetInvoice(types.SessionHeader{
 			ApplicationPubKey:  aat.ApplicationPublicKey,
 			Chain:              relay.Proof.Blockchain,
 			SessionBlockHeight: relay.Proof.SessionBlockHeight,
 		})
+		assert.True(t, found)
 		assert.NotNil(t, inv)
 		assert.Equal(t, inv.TotalRelays, int64(1))
 		cleanup()
