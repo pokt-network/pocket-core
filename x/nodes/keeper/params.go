@@ -88,9 +88,13 @@ func (k Keeper) SlashFractionDowntime(ctx sdk.Context) (res sdk.Dec) {
 }
 
 func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Context) sdk.Int {
+	return sdk.NewInt(1000) // todo parameterize
+}
+
+func (k Keeper) NodeCutOfReward(ctx sdk.Context) sdk.Int {
 	daoAllocation := k.DAOAllocation(ctx)
 	proposerAllocation := k.ProposerAllocation(ctx)
-	return sdk.NewInt(100 - daoAllocation + proposerAllocation)
+	return sdk.NewInt(100 - daoAllocation - proposerAllocation) // todo parameterize the 1000
 }
 
 func (k Keeper) DAOAllocation(ctx sdk.Context) (res int64) {

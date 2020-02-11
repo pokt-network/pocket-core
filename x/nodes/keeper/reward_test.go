@@ -195,7 +195,7 @@ func TestMintValidatorAwards(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.setValidatorAward(context, test.amount, test.address)
 
-			keeper.mintValidatorAwards(context)
+			keeper.mintNodeRelayRewards(context)
 			coins := keeper.coinKeeper.GetCoins(context, sdk.Address(test.address))
 			assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), test.amount)).IsEqual(coins), "coins should match")
 		})

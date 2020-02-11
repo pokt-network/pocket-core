@@ -281,7 +281,6 @@ func TestClaimTx(t *testing.T) {
 			}
 			cleanup()
 			stopCli()
-			return
 		}
 	}
 }
