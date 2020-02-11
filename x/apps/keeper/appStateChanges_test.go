@@ -246,7 +246,7 @@ func TestAppStateChange_StakeApplication(t *testing.T) {
 			if !found {
 				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app")
 			}
-			if !got.StakedTokens.Equal(tt.amount) {
+			if !got.StakedTokens.Equal(tt.amount.Add(sdk.NewInt(100000000000))) {
 				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app %v", got.StakedTokens)
 			}
 

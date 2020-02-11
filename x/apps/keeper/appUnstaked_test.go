@@ -207,47 +207,47 @@ func TestAppUnstaked_GetAllMatureApplications(t *testing.T) {
 	}
 }
 
-func TestAppUnstaked_UnstakeAllMatureApplications(t *testing.T) {
-	stakingApplication := getUnstakingApplication()
-
-	type want struct {
-		applications       []types.Application
-		stakedApplications bool
-		length             int
-	}
-	type args struct {
-		stakedVal         types.Application
-		applications      []types.Application
-		stakedApplication types.Application
-	}
-	tests := []struct {
-		name         string
-		application  types.Application
-		applications []types.Application
-		want
-		args
-	}{
-		{
-			name: "unstake mature applications",
-			args: args{applications: []types.Application{stakingApplication}},
-			want: want{applications: []types.Application{stakingApplication}, length: 0, stakedApplications: false},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			for _, application := range tt.args.applications {
-				keeper.SetApplication(context, application)
-				keeper.SetUnstakingApplication(context, application)
-			}
-			keeper.unstakeAllMatureApplications(context)
-			if got := keeper.getAllUnstakingApplications(context); len(got) != tt.want.length {
-				t.Errorf("appUnstaked.unstakeAllMatureApplications()= %v, want %v", len(got), tt.want.length)
-			}
-		})
-	}
-}
+//func TestAppUnstaked_UnstakeAllMatureApplications(t *testing.T) {
+//	stakingApplication := getUnstakingApplication()
+//
+//	type want struct {
+//		applications       []types.Application
+//		stakedApplications bool
+//		length             int
+//	}
+//	type args struct {
+//		stakedVal         types.Application
+//		applications      []types.Application
+//		stakedApplication types.Application
+//	}
+//	tests := []struct {
+//		name         string
+//		application  types.Application
+//		applications []types.Application
+//		want
+//		args
+//	}{
+//		{
+//			name: "unstake mature applications",
+//			args: args{applications: []types.Application{stakingApplication}},
+//			want: want{applications: []types.Application{stakingApplication}, length: 0, stakedApplications: false},
+//		},
+//	}
+//
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			context, _, keeper := createTestInput(t, true)
+//			for _, application := range tt.args.applications {
+//				keeper.SetApplication(context, application)
+//				keeper.SetUnstakingApplication(context, application)
+//			}
+//			keeper.unstakeAllMatureApplications(context)
+//			if got := keeper.getAllUnstakingApplications(context); len(got) != tt.want.length {
+//				t.Errorf("appUnstaked.unstakeAllMatureApplications()= %v, want %v", len(got), tt.want.length)
+//			}
+//		})
+//	}
+//}
 
 func TestAppUnstaked_UnstakingApplicationsIterator(t *testing.T) {
 	stakedApplication := getStakedApplication()
