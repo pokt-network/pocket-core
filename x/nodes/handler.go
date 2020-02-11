@@ -91,9 +91,12 @@ func stakeRegisteredValidator(ctx sdk.Context, msg types.MsgStake, k keeper.Keep
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the validator account and global shares are updated within here
 	validator, found := k.GetValidator(ctx, sdk.Address(msg.PublicKey.Address()))
-	if !found {
+	if !found || !validator.IsUnstaked(){
 		return types.ErrNoValidatorFound(k.Codespace()).Result()
 	}
+	// edit validator object using the message fields
+	validator = types.NewValidator(sdk.Address(msg.PublicKey.Address()), msg.PublicKey, msg.Chains, msg.ServiceURL, msg.Value)
+	validator.Status = sdk.Unstaked
 	err := k.ValidateValidatorStaking(ctx, validator, msg.Value)
 	if err != nil {
 		return err.Result()

@@ -89,9 +89,12 @@ func stakeRegisteredApplication(ctx sdk.Context, msg types.MsgAppStake, k keeper
 	// move coins from the sdk.Address(msg.PubKey.Address()) account to a (self-delegation) delegator account
 	// the application account and global shares are updated within here
 	application, found := k.GetApplication(ctx, sdk.Address(msg.PubKey.Address()))
-	if !found {
+	if !found || !application.IsUnstaked() {
 		return types.ErrNoApplicationFound(k.Codespace()).Result()
 	}
+	// edit application object using the message fields
+	application = types.NewApplication(sdk.Address(msg.PubKey.Address()), msg.PubKey, msg.Chains, msg.Value)
+	application.Status = sdk.Unstaked
 	err := k.ValidateApplicationStaking(ctx, application, msg.Value)
 	if err != nil {
 		return err.Result()
