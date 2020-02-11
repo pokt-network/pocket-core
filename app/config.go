@@ -596,7 +596,7 @@ func removeAddrBook(addrBookFile string, logger log.Logger) {
 }
 
 const testnetGenesis = `{
-  "genesis_time": "2020-02-11T08:30:00.000000Z",
+  "genesis_time": "2020-02-11T22:30:00.00Z",
   "chain_id": "pocket-testnet",
   "consensus_params": {
     "block": {
@@ -615,6 +615,381 @@ const testnetGenesis = `{
   },
   "app_hash": "",
   "app_state": {
+    "bank": {
+      "send_enabled": true
+    },
+    "params": null,
+    "pos": {
+      "params": {
+        "unstaking_time": "1800000000000",
+        "max_validators": "100000",
+        "stake_denom": "upokt",
+        "stake_minimum": "1000000",
+        "session_block_frequency": "30",
+        "dao_allocation": "10",
+        "proposer_allocation": "1",
+        "max_evidence_age": "120000000000",
+        "signed_blocks_window": "100",
+        "min_signed_per_window": "0.500000000000000000",
+        "downtime_jail_duration": "600000000000",
+        "slash_fraction_double_sign": "0.050000000000000000",
+        "slash_fraction_downtime": "0.010000000000000000"
+      },
+      "prevState_total_power": "0",
+      "prevState_validator_powers": null,
+      "validators": [
+        {
+          "address": "610cf8a6e8cefbaded845f1c1dc3b10a670be26b",
+          "public_key": "1807948ea0041de2a9cd573d0edb073c1eaea60313c364c16c1bcd27629e305b",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node1.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "e6946760d9833f49da39aae9500537bef6f33a7a",
+          "public_key": "4ac6202fca022b932be12a5bd51dc8375bfee843f4f90c412e83ad9af1069361",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node2.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "7674a47cc977326f1df6cb92c7b5a2ad36557ea2",
+          "public_key": "257943d4255d60f9a042a2cd81ff64b711bedbf72db64d1f84b0e2455ce1dfd1",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node3.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "c7b7b7665d20a7172d0c0aa58237e425f333560a",
+          "public_key": "d4448f629a19e4fb68a904a8d879fdd8b1b326d0fff39973f39af737a282be71",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node4.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "f6dc0b244c93232283cd1d8443363946d0a3d77a",
+          "public_key": "1c03871c9f6d437a1856cc5141afa7beb1670e82ce692cb7d041d4bc90ab71ad",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node5.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "86209713befeca0807714bcdd5b79e81073faf8f",
+          "public_key": "11ac3c35a531ec39f9c5f9164cdf13b19572181dc2048cba666ade0947df6a71",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node6.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "915a58ae437d2c2d6f35ac11b79f42972267700d",
+          "public_key": "9290914ab72b4e1d377ac53350996b937ed466a01e3381a7de40282d11501f5b",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node7.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "b3d86cd8ab4aa0cb9861cb795d8d154e685a94cf",
+          "public_key": "6b1072e5e5744f3cf9d0e318572f3feb7fdd20e46d67ac15d9607a3a1609bad0",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node8.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "17ca63e4ff7535a40512c550dd0267e519cafc1a",
+          "public_key": "05f1b1bb09ddf26b7ba024e458c2712685ecad221beb83534aa8b7f9b19cee75",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node9.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        },
+        {
+          "address": "f99386c6d7cd42a486c63ccd80f5fbea68759cd7",
+          "public_key": "2ea45fa7305a01d87d7471c3cc558f451a32d9dded958c002260069b9eb2249e",
+          "jailed": false,
+          "status": 2,
+          "tokens": "1000000000",
+          "service_url": "http://node10.testnet.pokt.network:8081",
+          "chains": [
+            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
+            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
+            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
+            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
+            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
+            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
+            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
+            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
+            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
+            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
+            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
+            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
+            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
+            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
+            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
+            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
+            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
+            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
+            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
+            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
+            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
+            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
+            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
+          ],
+          "unstaking_time": "0001-01-01T00:00:00Z"
+        }
+      ],
+      "exported": false,
+      "dao": {
+        "Tokens": "0"
+      },
+      "signing_infos": {},
+      "missed_blocks": {},
+      "previous_proposer": ""
+    },
+    "supply": {
+      "supply": []
+    },
     "pocketcore": {
       "params": {
         "session_node_count": "5",
@@ -673,7 +1048,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "808053795c7b302218a26af6c40f8c39565ebe02",
+            "address": "610cf8a6e8cefbaded845f1c1dc3b10a670be26b",
             "coins": [
               {
                 "denom": "upokt",
@@ -682,7 +1057,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "uC2Etat3V0/AlbeFJqTRfEBWSo1kFWYVrYCBiILf8r4="
+              "value": "GAeUjqAEHeKpzVc9DtsHPB6upgMTw2TBbBvNJ2KeMFs="
             },
             "account_number": "0",
             "sequence": "0"
@@ -691,7 +1066,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "e9ee23ea88967a3493c11d783d69b14a8a448f36",
+            "address": "e6946760d9833f49da39aae9500537bef6f33a7a",
             "coins": [
               {
                 "denom": "upokt",
@@ -700,7 +1075,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "uomLLP25BiEJqhSWNJ/syzfze61TSn6bNRGgmxkbjX0="
+              "value": "SsYgL8oCK5Mr4Spb1R3IN1v+6EP0+QxBLoOtmvEGk2E="
             },
             "account_number": "1",
             "sequence": "0"
@@ -709,7 +1084,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "99438bc8937b3c5711886ca5c4ed657e17174657",
+            "address": "7674a47cc977326f1df6cb92c7b5a2ad36557ea2",
             "coins": [
               {
                 "denom": "upokt",
@@ -718,7 +1093,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "ySKNV8+8iBBZ4+B95rvUb9XVokkSYwkKvYXwe1rnFBc="
+              "value": "JXlD1CVdYPmgQqLNgf9ktxG+2/cttk0fhLDiRVzh39E="
             },
             "account_number": "2",
             "sequence": "0"
@@ -727,7 +1102,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "deb8f5b8be1fab076db014ac9ecf92068e616d93",
+            "address": "c7b7b7665d20a7172d0c0aa58237e425f333560a",
             "coins": [
               {
                 "denom": "upokt",
@@ -736,7 +1111,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "8PupreqsBPoFq8C6lA57wm/l0k8bGhMyJPc6oHaxLbo="
+              "value": "1ESPYpoZ5PtoqQSo2Hn92LGzJtD/85lz85r3N6KCvnE="
             },
             "account_number": "3",
             "sequence": "0"
@@ -745,7 +1120,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "f31f77c8a882504ef8525e6557351295107f1680",
+            "address": "f6dc0b244c93232283cd1d8443363946d0a3d77a",
             "coins": [
               {
                 "denom": "upokt",
@@ -754,7 +1129,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "2cFggupl7wCwdkOlVsNq8Yp67I3QAz/JhfoB72Dkw5Q="
+              "value": "HAOHHJ9tQ3oYVsxRQa+nvrFnDoLOaSy30EHUvJCrca0="
             },
             "account_number": "4",
             "sequence": "0"
@@ -763,7 +1138,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "cf37ae72a13de919705990b094b765eac5d8a04c",
+            "address": "86209713befeca0807714bcdd5b79e81073faf8f",
             "coins": [
               {
                 "denom": "upokt",
@@ -772,7 +1147,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "ioq5A4OxGsusKC9UngGvwqCQACrPeb07XKJfq1HoqkE="
+              "value": "Eaw8NaUx7Dn5xfkWTN8TsZVyGB3CBIy6ZmreCUffanE="
             },
             "account_number": "5",
             "sequence": "0"
@@ -781,7 +1156,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "24486271c197bdd1b58af70d69697aaedf01a569",
+            "address": "915a58ae437d2c2d6f35ac11b79f42972267700d",
             "coins": [
               {
                 "denom": "upokt",
@@ -790,7 +1165,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "5rbVITCATgOsJoJGJkVrkvTk+Aprav4A3o15PHdXbR4="
+              "value": "kpCRSrcrTh03esUzUJlrk37UZqAeM4Gn3kAoLRFQH1s="
             },
             "account_number": "6",
             "sequence": "0"
@@ -799,7 +1174,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "1b33a9a2f9108c7bf9a60c12e2cf92326175fbd2",
+            "address": "b3d86cd8ab4aa0cb9861cb795d8d154e685a94cf",
             "coins": [
               {
                 "denom": "upokt",
@@ -808,7 +1183,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "FaJHHhJufXztMU5C4O5vCp3BenyRXOHZocVIgwRWUSc="
+              "value": "axBy5eV0Tzz50OMYVy8/63/dIORtZ6wV2WB6OhYJutA="
             },
             "account_number": "7",
             "sequence": "0"
@@ -817,7 +1192,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "75e65c143a9ec7f9c400c266116e93f9d7a3a3bb",
+            "address": "17ca63e4ff7535a40512c550dd0267e519cafc1a",
             "coins": [
               {
                 "denom": "upokt",
@@ -826,7 +1201,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "yY/D3Spj4ej6dfHb24CLOhkSifxQS766ixlWZSxKORI="
+              "value": "BfGxuwnd8mt7oCTkWMJxJoXsrSIb64NTSqi3+bGc7nU="
             },
             "account_number": "8",
             "sequence": "0"
@@ -835,7 +1210,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "bb466f281ad6eb17b2dfb6a0995a021d1a957253",
+            "address": "f99386c6d7cd42a486c63ccd80f5fbea68759cd7",
             "coins": [
               {
                 "denom": "upokt",
@@ -844,7 +1219,7 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "92rjfwXy3rmF+p6kUogUKg9FgaVBPxfxefthL+8aemY="
+              "value": "LqRfpzBaAdh9dHHDzFWPRRoy2d3tlYwAImAGm56yJJ4="
             },
             "account_number": "9",
             "sequence": "0"
@@ -853,7 +1228,7 @@ const testnetGenesis = `{
         {
           "type": "posmint/Account",
           "value": {
-            "address": "61698cd28ef417be540db38eb37d559742dee41e",
+            "address": "cad3b0b8f5b54f0750385c6ca17a5c745d9dba17",
             "coins": [
               {
                 "denom": "upokt",
@@ -862,388 +1237,13 @@ const testnetGenesis = `{
             ],
             "public_key": {
               "type": "crypto/ed25519_public_key",
-              "value": "0ELLVHbMzt2nZTkbXlm8OVy/qlzR4hCo5rfJQnj8bjo="
+              "value": "5gM3j0wP4cpX1UV0GoFQIxIYqj2eL2LAalAF37yjvz0="
             },
             "account_number": "10",
             "sequence": "0"
           }
         }
       ]
-    },
-    "bank": {
-      "send_enabled": true
-    },
-    "params": null,
-    "pos": {
-      "params": {
-        "unstaking_time": "1800000000000",
-        "max_validators": "100000",
-        "stake_denom": "upokt",
-        "stake_minimum": "1000000",
-        "session_block_frequency": "60",
-        "dao_allocation": "10",
-        "proposer_allocation": "1",
-        "max_evidence_age": "120000000000",
-        "signed_blocks_window": "100",
-        "min_signed_per_window": "0.500000000000000000",
-        "downtime_jail_duration": "600000000000",
-        "slash_fraction_double_sign": "0.050000000000000000",
-        "slash_fraction_downtime": "0.010000000000000000"
-      },
-      "prevState_total_power": "0",
-      "prevState_validator_powers": null,
-      "validators": [
-        {
-          "address": "808053795c7b302218a26af6c40f8c39565ebe02",
-          "public_key": "b82d84b5ab77574fc095b78526a4d17c40564a8d64156615ad80818882dff2be",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet0:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "e9ee23ea88967a3493c11d783d69b14a8a448f36",
-          "public_key": "ba898b2cfdb9062109aa1496349feccb37f37bad534a7e9b3511a09b191b8d7d",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet1:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "99438bc8937b3c5711886ca5c4ed657e17174657",
-          "public_key": "c9228d57cfbc881059e3e07de6bbd46fd5d5a2491263090abd85f07b5ae71417",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet2:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "deb8f5b8be1fab076db014ac9ecf92068e616d93",
-          "public_key": "f0fba9adeaac04fa05abc0ba940e7bc26fe5d24f1b1a133224f73aa076b12dba",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet3:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "f31f77c8a882504ef8525e6557351295107f1680",
-          "public_key": "d9c16082ea65ef00b07643a556c36af18a7aec8dd0033fc985fa01ef60e4c394",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet4:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "cf37ae72a13de919705990b094b765eac5d8a04c",
-          "public_key": "8a8ab90383b11acbac282f549e01afc2a090002acf79bd3b5ca25fab51e8aa41",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet5:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "24486271c197bdd1b58af70d69697aaedf01a569",
-          "public_key": "e6b6d52130804e03ac26824626456b92f4e4f80a6b6afe00de8d793c77576d1e",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet6:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "1b33a9a2f9108c7bf9a60c12e2cf92326175fbd2",
-          "public_key": "15a2471e126e7d7ced314e42e0ee6f0a9dc17a7c915ce1d9a1c5488304565127",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet7:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "75e65c143a9ec7f9c400c266116e93f9d7a3a3bb",
-          "public_key": "c98fc3dd2a63e1e8fa75f1dbdb808b3a191289fc504bbeba8b1956652c4a3912",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet8:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        },
-        {
-          "address": "bb466f281ad6eb17b2dfb6a0995a021d1a957253",
-          "public_key": "f76ae37f05f2deb985fa9ea45288142a0f4581a5413f17f179fb612fef1a7a66",
-          "jailed": false,
-          "status": 2,
-          "tokens": "1000000000",
-          "service_url": "http://www.pocket-core-testnet9:8081",
-          "chains": [
-            "8ef9a7c67f6f8ad14f82c1f340963951245f912f037a7087f3f2d2f9f9ee38a8",
-            "a969144c864bd87a92e974f11aca9d964fb84cf5fb67bcc6583fe91a407a9309",
-            "0070eebec778ea95ef9c75551888971c27cce222e00b2f3f79168078b8a77ff9",
-            "4ae7539e01ad2c42528b6a697f118a3535e404fe65999b2c6fee506465390367",
-            "0de3141aec1e69aea9d45d9156269b81a3ab4ead314fbf45a8007063879e743b",
-            "8cf7f8799c5b30d36c86d18f0f4ca041cf1803e0414ed9e9fd3a19ba2f0938ff",
-            "10d1290eee169e3970afb106fe5417a11b81676ce1e2119a0292df29f0445d30",
-            "d9d669583c2d2a88e54c0120be6f8195b2575192f178f925099813ff9095d139",
-            "d9d77bce50d80e70026bd240fb0759f08aab7aee63d0a6d98c545f2b5ae0a0b8",
-            "dcc98e38e1edb55a97265efca6c34f21e55f683abdded0aa71df3958a49c8b69",
-            "26a2800156f76b66bcb5661f2988a9d09e76caaffd053fe17bf20d251b4cb823",
-            "73d8dd1b7d8aa02254e75936b09780447c06729f3e55f7ae5eb94ab732c1ec05",
-            "6cbb58da0b05d23022557dd2e479dd5cdf2441f20507b37383467d837ad40f5e",
-            "54cb0d71117aa644e74bdea848d61bd2fd410d3d4a3ed92b46b0847769dc132e",
-            "cb92cb81d6f72f55114140a7bbe5e0f63524d1200fe63250f58dfe5d907032bf",
-            "e458822c5f4d927c29aa4240a34647e11aff75232ccb9ffb50af06dc4469a5fa",
-            "0dfcabfb7f810f96cde01d65f775a565d3a60ad9e15575dfe3d188ff506c35a0",
-            "866d7183a24fad1d0a32c399cf2a1101f3a3bdfdff999e142bd8f49b2ebc45d4",
-            "4c0437dda63eff39f85c60d62ac936045da5e610aca97a3793771e271578c534",
-            "773eda9368243afe027062d771b08cebddf22e03451e0eb5ed0ff4460288847e",
-            "d5ddbb1ca49249438f552dccfd01918ee1fbdc6457997a142c8cfd144b40cd15",
-            "4ecc78e62904c833ad5b727b9abf343a17d0d24fb27e9b5d2dd8c34361c23156",
-            "d754973bdeab17eaed47729ee074ad87737c3ce51198263b8c4781568ea39e72"
-          ],
-          "unstaking_time": "0001-01-01T00:00:00Z"
-        }
-      ],
-      "exported": false,
-      "dao": {
-        "Tokens": "0"
-      },
-      "signing_infos": {},
-      "missed_blocks": {},
-      "previous_proposer": ""
-    },
-    "supply": {
-      "supply": []
     }
   }
 }`
