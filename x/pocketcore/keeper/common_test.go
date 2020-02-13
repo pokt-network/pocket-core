@@ -215,7 +215,6 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 		acc := auth.NewBaseAccountWithAddress(addr)
 		acc.Coins = initialCoins
 		acc.PubKey = pubKey
-		acc.AccountNumber = uint64(i)
 		ak.SetAccount(ctx, &acc)
 		accs = append(accs, acc)
 	}

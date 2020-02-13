@@ -14,6 +14,7 @@ import (
 	authTypes "github.com/pokt-network/posmint/x/auth/types"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/tendermint/libs/common"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
@@ -480,8 +481,7 @@ func TestRPC_RawTX(t *testing.T) {
 			Amount:      types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(1))),
 		}},
 		[]crypto.PrivateKey{pk},
-		[]uint64{0},
-		[]uint64{0},
+		common.RandInt64(),
 		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))))
 	assert.Nil(t, err)
 	select {

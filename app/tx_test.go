@@ -11,6 +11,7 @@ import (
 	"github.com/pokt-network/posmint/x/auth/types"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/tendermint/libs/common"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"math/rand"
 	"strings"
@@ -187,6 +188,63 @@ func TestSendTransaction(t *testing.T) {
 	stopCli()
 }
 
+func TestDuplicateTxWithRawTx(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	kp, err := kb.Create("test")
+	assert.Nil(t, err)
+	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	// create the transaction
+	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
+		[]sdk.Msg{bank.MsgSend{
+			FromAddress: cb.GetAddress(),
+			ToAddress:   kp.GetAddress(),
+			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1))),
+		}},
+		[]crypto.PrivateKey{pk},
+		common.RandInt64(),
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(100000)))))
+	assert.Nil(t, err)
+	// create the transaction
+	txBz2, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
+		[]sdk.Msg{bank.MsgSend{
+			FromAddress: cb.GetAddress(),
+			ToAddress:   kp.GetAddress(),
+			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1))),
+		}},
+		[]crypto.PrivateKey{pk},
+		common.RandInt64(),
+		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(100000)))))
+	txBz2 = txBz2
+	assert.Nil(t, err)
+	select {
+	case <-evtChan:
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		var err error
+		_, err = nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
+		assert.Nil(t, err)
+	}
+	// next tx
+	select {
+	case <-evtChan:
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+		select {
+		case <-evtChan:
+			memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+			var err error
+			txResp, err := nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
+			if err == nil && txResp.Code == 0 {
+				t.Fatal("should fail on replay attack")
+			}
+			cleanup()
+			stopCli()
+		}
+	}
+}
+
 func TestSendRawTx(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
@@ -204,8 +262,7 @@ func TestSendRawTx(t *testing.T) {
 			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1))),
 		}},
 		[]crypto.PrivateKey{pk},
-		[]uint64{0},
-		[]uint64{0},
+		common.RandInt64(),
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(100000)))))
 	assert.Nil(t, err)
 	select {

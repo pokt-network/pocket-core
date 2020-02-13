@@ -469,16 +469,12 @@ func oneValTwoNodeGenesisState() []byte {
 		Address:       sdk.Address(pubKey.Address()),
 		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
-		AccountNumber: 0,
-		Sequence:      0,
 	})
 	// add second account
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey2.Address()),
 		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
-		AccountNumber: 0,
-		Sequence:      0,
 	})
 	res2 := memCodec().MustMarshalJSON(authGenState)
 	defaultGenesis[auth.ModuleName] = res2
@@ -545,16 +541,12 @@ func twoValTwoNodeGenesisState() []byte {
 		Address:       sdk.Address(pubKey.Address()),
 		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
-		AccountNumber: 0,
-		Sequence:      0,
 	})
 	// add second account
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
 		Address:       sdk.Address(pubKey2.Address()),
 		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
-		AccountNumber: 0,
-		Sequence:      0,
 	})
 	res2 := memCodec().MustMarshalJSON(authGenState)
 	defaultGenesis[auth.ModuleName] = res2
@@ -668,8 +660,6 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 		Address:       sdk.Address(pubKey.Address()),
 		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:        pubKey,
-		AccountNumber: 0,
-		Sequence:      0,
 	})
 	res = memCodec().MustMarshalJSON(authGenState)
 	defaultGenesis[auth.ModuleName] = res
