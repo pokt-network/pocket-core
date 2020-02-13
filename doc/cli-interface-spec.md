@@ -268,8 +268,10 @@ Queries the current world state built on the Pocket node.
 Block Height: <current block height>
 ```
 
-- `pocket query node-status`
-> Returns the current node status.
+- `pocket query tx <hash>`
+> Returns a result transaction object
+>> Arguments:
+ > - `<hash>`: The hash of the transaction to query.
 
 - `pocket query balance <accAddr> <height>`
 > Returns the balance of the specified `<accAddr>` at the specified `<height>`.

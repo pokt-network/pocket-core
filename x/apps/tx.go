@@ -59,8 +59,6 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 	}
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(cdc),
-		account.GetAccountNumber(),
-		account.GetSequence(),
 		chainID,
 		"",
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, fee))).WithKeybase(keybase)

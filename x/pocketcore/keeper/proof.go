@@ -423,8 +423,6 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, key
 	}
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(k.cdc),
-		account.GetAccountNumber(),
-		account.GetSequence(),
 		genDoc.Genesis.ChainID,
 		"",
 		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), fee)),

@@ -65,7 +65,7 @@ var queryBlock = &cobra.Command{
 }
 
 var queryTx = &cobra.Command{
-	Use:   "tx <height>",
+	Use:   "tx <hash>",
 	Short: "Get the transaction by the hash",
 	Long:  `Returns the transaction by the hash`,
 	Run: func(cmd *cobra.Command, args []string) {
