@@ -38,7 +38,7 @@ func (msg MsgAppStake) GetSignBytes() []byte {
 	return sdk.MustSortJSON(bz)
 }
 
-// quick validity check
+// Quick validity check for staking an application
 func (msg MsgAppStake) ValidateBasic() sdk.Error {
 	if msg.PubKey == nil || msg.PubKey.RawString() == "" {
 		return ErrNilApplicationAddr(DefaultCodespace)
@@ -57,7 +57,6 @@ func (msg MsgAppStake) ValidateBasic() sdk.Error {
 	return nil
 }
 
-//nolint
 func (msg MsgAppStake) Route() string { return RouterKey }
 func (msg MsgAppStake) Type() string  { return MsgAppStakeName }
 
@@ -67,15 +66,18 @@ type MsgBeginAppUnstake struct {
 	Address sdk.Address `json:"application_address" yaml:"application_address"`
 }
 
+// Return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgBeginAppUnstake) GetSigners() []sdk.Address {
-	return []sdk.Address{sdk.Address(msg.Address)}
+	return []sdk.Address{msg.Address}
 }
 
+// GetSignBytes returns the message bytes to sign over.
 func (msg MsgBeginAppUnstake) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
+// Quick validity check for staking an application
 func (msg MsgBeginAppUnstake) ValidateBasic() sdk.Error {
 	if msg.Address.Empty() {
 		return ErrNilApplicationAddr(DefaultCodespace)
@@ -83,7 +85,6 @@ func (msg MsgBeginAppUnstake) ValidateBasic() sdk.Error {
 	return nil
 }
 
-//nolint
 func (msg MsgBeginAppUnstake) Route() string { return RouterKey }
 func (msg MsgBeginAppUnstake) Type() string  { return MsgAppUnstakeName }
 
@@ -93,18 +94,21 @@ type MsgAppUnjail struct {
 	AppAddr sdk.Address `json:"address" yaml:"address"` // address of the application operator
 }
 
-//nolint
 func (msg MsgAppUnjail) Route() string { return RouterKey }
 func (msg MsgAppUnjail) Type() string  { return MsgAppUnjailName }
+
+// Return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgAppUnjail) GetSigners() []sdk.Address {
 	return []sdk.Address{msg.AppAddr}
 }
 
+// GetSignBytes returns the message bytes to sign over.
 func (msg MsgAppUnjail) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
+// Quick validity check for staking an application
 func (msg MsgAppUnjail) ValidateBasic() sdk.Error {
 	if msg.AppAddr.Empty() {
 		return ErrBadApplicationAddr(DefaultCodespace)

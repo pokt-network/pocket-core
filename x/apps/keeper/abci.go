@@ -6,8 +6,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
-	// burn any custom application slashes
+func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
+	// burn applications triggered by the custom burning interface
 	k.burnApplications(ctx)
 }
 

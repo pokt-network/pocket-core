@@ -28,44 +28,6 @@ func TestKeeper_Codespace(t *testing.T) {
 	}
 }
 
-func TestKeeper_SetHooks(t *testing.T) {
-	tests := []struct {
-		name   string
-		panics bool
-		args   AppHooks
-	}{
-		{
-			name:   "errors if setting hooks twice",
-			panics: true,
-			args:   AppHooks{},
-		},
-		{
-			name: "can set hooks",
-			args: AppHooks{},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, _, keeper := createTestInput(t, true)
-			switch tt.panics {
-			case true:
-				defer func() {
-					err := recover()
-					if err == nil {
-						t.Error("SetHooks(): got nil want err")
-					}
-				}()
-				_ = keeper.SetHooks(&tt.args)
-				_ = keeper.SetHooks(&tt.args)
-			default:
-				if got := keeper.SetHooks(&tt.args); got != &keeper {
-					t.Errorf("SetHooks(): got %v want %v", got, &keeper)
-				}
-			}
-		})
-	}
-}
-
 func TestKeepers_NewKeeper(t *testing.T) {
 	tests := []struct {
 		name   string

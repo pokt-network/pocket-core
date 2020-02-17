@@ -39,9 +39,9 @@ func (k Keeper) GetAllApplications(ctx sdk.Context) (applications types.Applicat
 }
 
 // return a given amount of all the applications
-func (k Keeper) GetApplications(ctx sdk.Context, maxRetrieve uint16) (applicatinos types.Applications) {
+func (k Keeper) GetApplications(ctx sdk.Context, maxRetrieve uint16) (applications types.Applications) {
 	store := ctx.KVStore(k.storeKey)
-	applicatinos = make([]types.Application, maxRetrieve)
+	applications = make([]types.Application, maxRetrieve)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
@@ -49,10 +49,10 @@ func (k Keeper) GetApplications(ctx sdk.Context, maxRetrieve uint16) (applicatin
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
 		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
-		applicatinos[i] = application
+		applications[i] = application
 		i++
 	}
-	return applicatinos[:i] // trim if the array length < maxRetrieve
+	return applications[:i] // trim if the array length < maxRetrieve
 }
 
 // iterate through the application set and perform the provided function

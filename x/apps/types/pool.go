@@ -7,7 +7,7 @@ import (
 )
 
 // names used as root for pool module accounts:
-// - StakingPool -> "application_staked_tokens_pool"
+// StakingPool -> "application_staked_tokens_pool"
 const (
 	StakedPoolName = "application_staked_tokens_pool"
 )

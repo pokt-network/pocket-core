@@ -822,8 +822,8 @@ func TestApplication_PotentialConsensusPower(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			if got := v.PotentialConsensusPower(); got != tt.want {
-				t.Errorf("PotentialConsensusPower() = %v, want %v", got, tt.want)
+			if got := v.ConsensusPower(); got != tt.want {
+				t.Errorf("ConsensusPower() = %v, want %v", got, tt.want)
 			}
 		})
 	}

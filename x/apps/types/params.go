@@ -16,13 +16,13 @@ const (
 	DefaultParamspace                 = ModuleName
 	DefaultUnstakingTime              = time.Hour * 24 * 7 * 3
 	DefaultMaxApplications     uint64 = math.MaxUint64
-	DefaultMinStake            int64  = 1000000
-	DefaultBaseRelaysPerPOKT   int64  = 100
+	DefaultMinStake            int64 = 1000000
+	DefaultBaseRelaysPerPOKT   int64 = 100
 	DefaultStabilityAdjustment int64  = 0
 	DefaultParticipationRateOn bool   = false
 )
 
-// nolint - Keys for parameter access
+// Keys for parameter access
 var (
 	KeyUnstakingTime       = []byte("AppUnstakingTime")
 	KeyMaxApplications     = []byte("MaxApplications")
@@ -36,12 +36,12 @@ var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	UnstakingTime       time.Duration `json:"unstaking_time" yaml:"unstaking_time"`       // duration of unstaking
-	MaxApplications     uint64        `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
-	AppStakeMin         int64         `json:"app_stake_minimum" yaml:"app_stake_minimum"` // minimum amount needed to stake
-	BaseRelaysPerPOKT   int64         `json:"base_relays_per_pokt" yaml:"base_relays_per_pokt"`
-	StabilityAdjustment int64         `json:"stability_adjustment" yaml:"stability_adjustment"`
-	ParticipationRateOn bool          `json:"participation_rate_on" yaml:"participation_rate_on"`
+	UnstakingTime       time.Duration `json:"unstaking_time" yaml:"unstaking_time"`               // duration of unstaking
+	MaxApplications     uint64        `json:"max_applications" yaml:"max_applications"`           // maximum number of applications
+	AppStakeMin         int64        `json:"app_stake_minimum" yaml:"app_stake_minimum"`         // minimum amount needed to stake as an application
+	BaseRelaysPerPOKT   int64        `json:"base_relays_per_pokt" yaml:"base_relays_per_pokt"`   // base relays per POKT coin staked
+	StabilityAdjustment int64         `json:"stability_adjustment" yaml:"stability_adjustment"`   // the stability adjustment from the governance
+	ParticipationRateOn bool          `json:"participation_rate_on" yaml:"participation_rate_on"` // the participation rate affects the amount minted based on staked ratio
 }
 
 // Implements params.ParamSet
@@ -68,7 +68,7 @@ func DefaultParams() Params {
 	}
 }
 
-// validate a set of params
+// Validate a set of params
 func (p Params) Validate() error {
 	if p.MaxApplications == 0 {
 		return fmt.Errorf("staking parameter MaxApplications must be a positive integer")

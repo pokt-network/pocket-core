@@ -25,7 +25,6 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.Address, infractionHeight, p
 	// Amount of slashing = slash slashFactor * power at time of infraction
 	amount := sdk.TokensFromConsensusPower(power)
 	slashAmount := amount.ToDec().Mul(slashFactor).TruncateInt()
-	k.BeforeApplicationSlashed(ctx, application.Address, slashFactor)
 	// cannot decrease balance below zero
 	tokensToBurn := sdk.MinInt(slashAmount, application.StakedTokens)
 	tokensToBurn = sdk.MaxInt(tokensToBurn, sdk.ZeroInt()) // defensive.
@@ -46,7 +45,6 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.Address, infractionHeight, p
 	// Log that a slash occurred
 	logger.Info(fmt.Sprintf("application %s slashed by slash factor of %s; burned %v tokens",
 		application.GetAddress(), slashFactor.String(), tokensToBurn))
-	k.AfterApplicationSlashed(ctx, application.Address, slashFactor)
 }
 
 func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Application {
@@ -58,14 +56,6 @@ func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionH
 		panic(fmt.Errorf( // Can't slash infractions in the future
 			"impossible attempt to slash future infraction at height %d but we are at height %d",
 			infractionHeight, ctx.BlockHeight()))
-	}
-	// see if infraction height is outside of unstaking time
-	blockTime := ctx.BlockTime()
-	infractionTime := ctx.WithBlockHeight(infractionHeight).BlockTime()
-	if blockTime.After(infractionTime.Add(k.UnStakingTime(ctx))) {
-		logger.Info(fmt.Sprintf( // could've been overslashed and removed
-			"INFO: tried to slash with expired evidence: %s %s", infractionTime, blockTime))
-		return types.Application{}
 	}
 	application, found := k.GetApplication(ctx, consAddr)
 	if !found {
@@ -98,7 +88,7 @@ func (k Keeper) burnApplications(ctx sdk.Context) {
 		address := sdk.Address(types.AddressFromKey(iterator.Key()))
 		amino.MustUnmarshalBinaryBare(iterator.Value(), &severity)
 		val := k.mustGetApplication(ctx, address)
-		k.slash(ctx, sdk.Address(address), ctx.BlockHeight(), val.ConsensusPower(), severity)
+		k.slash(ctx, address, ctx.BlockHeight(), val.ConsensusPower(), severity)
 		// remove from the burn store
 		store.Delete(iterator.Key())
 	}

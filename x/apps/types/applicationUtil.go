@@ -10,38 +10,14 @@ import (
 	"time"
 )
 
-// Applications is a collection of AppPubKey
+// Applications is a slice of type application.
 type Applications []Application
 
-func (v Applications) String() (out string) {
-	for _, val := range v {
+func (a Applications) String() (out string) {
+	for _, val := range a {
 		out += val.String() + "\n"
 	}
 	return strings.TrimSpace(out)
-}
-
-func (v Applications) JSON() (out []byte, err error) {
-	return json.Marshal(v)
-}
-
-// MUST return the amino encoded version of this application
-func MustMarshalApplication(cdc *codec.Codec, application Application) []byte {
-	return cdc.MustMarshalBinaryLengthPrefixed(application)
-}
-
-// MUST decode the app from the bytes
-func MustUnmarshalApplication(cdc *codec.Codec, valBytes []byte) Application {
-	application, err := UnmarshalApplication(cdc, valBytes)
-	if err != nil {
-		panic(err)
-	}
-	return application
-}
-
-// unmarshal the application
-func UnmarshalApplication(cdc *codec.Codec, appBytes []byte) (application Application, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(appBytes, &application)
-	return application, err
 }
 
 // HashString returns a human readable string representation of a application.
@@ -63,7 +39,12 @@ type hexApplication struct {
 	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }
 
-// MarshalJSON marshals the application to JSON using Hex
+// marshal structure into JSON encoding
+func (a Applications) JSON() (out []byte, err error) {
+	return json.Marshal(a)
+}
+
+// MarshalJSON marshals the application to JSON using raw Hex for the public key
 func (a Application) MarshalJSON() ([]byte, error) {
 	return codec.Cdc.MarshalJSON(hexApplication{
 		Address:                 a.Address,
@@ -77,7 +58,7 @@ func (a Application) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// UnmarshalJSON unmarshals the application from JSON using Hex
+// UnmarshalJSON unmarshals the application from JSON using raw hex for the public key
 func (a *Application) UnmarshalJSON(data []byte) error {
 	bv := &hexApplication{}
 	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
@@ -98,4 +79,24 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 		UnstakingCompletionTime: bv.UnstakingCompletionTime,
 	}
 	return nil
+}
+
+// MUST return the amino encoded version of this application
+func MustMarshalApplication(cdc *codec.Codec, application Application) []byte {
+	return cdc.MustMarshalBinaryLengthPrefixed(application)
+}
+
+// MUST decode the app from the bytes
+func MustUnmarshalApplication(cdc *codec.Codec, valBytes []byte) Application {
+	application, err := UnmarshalApplication(cdc, valBytes)
+	if err != nil {
+		panic(err)
+	}
+	return application
+}
+
+// unmarshal the application
+func UnmarshalApplication(cdc *codec.Codec, appBytes []byte) (application Application, err error) {
+	err = cdc.UnmarshalBinaryLengthPrefixed(appBytes, &application)
+	return application, err
 }

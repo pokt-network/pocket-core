@@ -110,7 +110,7 @@ func TestKeyForApplicationInStakingSet(t *testing.T) {
 		args args
 		want []byte
 	}{
-		{"NewApplication", args{application: NewApplication(types.Address(pub.Address()), pub, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, types.ZeroInt())}, append([]byte{0x03, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
+		{"NewApplication", args{application: NewApplication(types.Address(pub.Address()), pub, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, types.ZeroInt())}, append([]byte{0x02, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

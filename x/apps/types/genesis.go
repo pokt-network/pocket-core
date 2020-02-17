@@ -17,13 +17,6 @@ type PrevStatePowerMapping struct {
 	Power   int64
 }
 
-func NewGenesisState(params Params, applications []Application) GenesisState {
-	return GenesisState{
-		Params:       params,
-		Applications: applications,
-	}
-}
-
 // get raw genesis raw message for testing
 func DefaultGenesisState() GenesisState {
 	return GenesisState{

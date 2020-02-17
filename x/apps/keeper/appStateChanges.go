@@ -4,25 +4,39 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/tendermint/tendermint/libs/common"
+	tmTypes "github.com/tendermint/tendermint/types"
 )
-
-// register the application in the necessary stores in the world state
-func (k Keeper) RegisterApplication(ctx sdk.Context, application types.Application) {
-	k.BeforeApplicationRegistered(ctx, application.Address)
-	k.SetApplication(ctx, application)                     // store application here (master list)
-	k.AfterApplicationRegistered(ctx, application.Address) // call after hook
-}
 
 // validate check called before staking
 func (k Keeper) ValidateApplicationStaking(ctx sdk.Context, application types.Application, amount sdk.Int) sdk.Error {
+	// convert the amount to sdk.Coin
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	if !application.IsUnstaked() {
-		return types.ErrApplicationStatus(k.codespace)
+	// attempt to get the application from the world state
+	app, found := k.GetApplication(ctx, application.Address)
+	// if the application exists
+	if found {
+		// ensure unstaked
+		if !app.IsUnstaked() {
+			return types.ErrApplicationStatus(k.codespace)
+		}
+		// if the application does not exist
+	} else {
+		// ensure public key type is supported
+		if ctx.ConsensusParams() != nil {
+			tmPubKey := tmTypes.TM2PB.PubKey(application.PublicKey.PubKey())
+			if !common.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
+				return types.ErrApplicationPubKeyTypeNotSupported(k.Codespace(),
+					tmPubKey.Type,
+					ctx.ConsensusParams().Validator.PubKeyTypes)
+			}
+		}
 	}
+	// ensure the amount they are staking is < the minimum stake amount
 	if amount.LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		return types.ErrMinimumStake(k.codespace)
 	}
-	if !k.coinKeeper.HasCoins(ctx, sdk.Address(application.Address), coin) {
+	if !k.coinKeeper.HasCoins(ctx, application.Address, coin) {
 		return types.ErrNotEnoughCoins(k.codespace)
 	}
 	return nil
@@ -30,8 +44,6 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Context, application types.Ap
 
 // store ops when a application stakes
 func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application, amount sdk.Int) sdk.Error {
-	// call the before hook
-	k.BeforeApplicationStaked(ctx, application.GetAddress(), application.Address)
 	// send the coins from address to staked module account
 	err := k.coinsFromUnstakedToStaked(ctx, application, amount)
 	if err != nil {
@@ -47,8 +59,6 @@ func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application,
 	k.SetApplication(ctx, application)
 	// save in the staked store
 	k.SetStakedApplication(ctx, application)
-	// call the after hook
-	k.AfterApplicationStaked(ctx, application.GetAddress(), application.Address)
 	return nil
 }
 
@@ -66,8 +76,6 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Context, application t
 
 // store ops when application begins to unstake -> starts the unstaking timer
 func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.Application) sdk.Error {
-	// call before unstaking hook
-	k.BeforeApplicationBeginUnstaking(ctx, application.GetAddress(), application.Address)
 	// get params
 	params := k.GetParams(ctx)
 	// delete the application from the staking set, as it is technically staked but not going to participate
@@ -80,8 +88,6 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.App
 	k.SetApplication(ctx, application)
 	// Adds to unstaking application queue
 	k.SetUnstakingApplication(ctx, application)
-	// call after hook
-	k.AfterApplicationBeginUnstaking(ctx, application.GetAddress(), application.Address)
 	return nil
 }
 
@@ -98,8 +104,6 @@ func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Context, application 
 
 // store ops to unstake a application -> called after unstaking time is up
 func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Application) sdk.Error {
-	// call the before hook
-	k.BeforeApplicationUnstaked(ctx, application.GetAddress(), application.Address)
 	// delete the application from the unstaking queue
 	k.deleteUnstakingApplication(ctx, application)
 	// amount unstaked = stakedTokens
@@ -114,8 +118,6 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 	application.MaxRelays = sdk.ZeroInt()
 	// update the application in the main store
 	k.SetApplication(ctx, application)
-	// call the after hook
-	k.AfterApplicationUnstaked(ctx, application.GetAddress(), application.Address)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -134,8 +136,6 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 
 // force unstake (called when slashed below the minimum)
 func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Application) sdk.Error {
-	// call the before unstaked hook
-	k.BeforeApplicationUnstaked(ctx, application.GetAddress(), application.Address)
 	// delete the application from staking set as they are unstaked
 	k.deleteApplicationFromStakingSet(ctx, application)
 	// amount unstaked = stakedTokens
@@ -151,8 +151,6 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Appli
 	application.MaxRelays = sdk.ZeroInt()
 	// set the application in store
 	k.SetApplication(ctx, application)
-	// call after hook
-	k.AfterApplicationUnstaked(ctx, application.GetAddress(), application.Address)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
