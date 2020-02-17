@@ -11,20 +11,13 @@ type CodeType = sdk.CodeType
 
 const (
 	DefaultCodespace          sdk.CodespaceType = ModuleName
-	CodeUnauthorized          CodeType          = sdk.CodeUnauthorized
 	CodeInvalidApplication    CodeType          = 101
-	CodeInvalidDelegation     CodeType          = 102
 	CodeInvalidInput          CodeType          = 103
-	CodeApplicationJailed     CodeType          = 104
 	CodeApplicationNotJailed  CodeType          = 105
 	CodeMissingSelfDelegation CodeType          = 106
-	CodeMissingSigningInfo    CodeType          = 108
-	CodeBadSend               CodeType          = 109
 	CodeInvalidStatus         CodeType          = 110
 	CodeMinimumStake          CodeType          = 111
 	CodeNotEnoughCoins        CodeType          = 112
-	CodeApplicationTombstoned CodeType          = 113
-	CodeCantHandleEvidence    CodeType          = 114
 	CodeInvalidStakeAmount    CodeType          = 115
 	CodeNoChains              CodeType          = 116
 )

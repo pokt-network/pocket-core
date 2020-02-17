@@ -23,7 +23,6 @@ type Keeper struct {
 	coinKeeper           bank.Keeper
 	supplyKeeper         types.SupplyKeeper
 	posKeeper            types.PosKeeper
-	hooks                types.AppHooks
 	Paramstore           params.Subspace
 	applicationCache     map[string]cachedApplication
 	applicationCacheList *list.List
@@ -48,7 +47,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, coinKeeper bank.Keeper, posKe
 		supplyKeeper:         supplyKeeper,
 		posKeeper:            posKeeper,
 		Paramstore:           paramstore.WithKeyTable(ParamKeyTable()),
-		hooks:                nil,
 		applicationCache:     make(map[string]cachedApplication, aminoCacheSize),
 		applicationCacheList: list.New(),
 		codespace:            codespace,
@@ -58,15 +56,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, coinKeeper bank.Keeper, posKe
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
-// Set the application hooks
-func (k *Keeper) SetHooks(sh types.AppHooks) *Keeper {
-	if k.hooks != nil {
-		panic("cannot set application hooks twice")
-	}
-	k.hooks = sh
-	return k
 }
 
 // return the codespace

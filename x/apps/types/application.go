@@ -9,18 +9,19 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
+// Application represents a pocket network decentralized application. Applications stake in the network for relay throughput.
 type Application struct {
 	Address                 sdk.Address      `json:"address" yaml:"address"`               // address of the application; hex encoded in JSON
 	PublicKey               crypto.PublicKey `json:"public_key" yaml:"public_key"`         // the public key of the application; hex encoded in JSON
 	Jailed                  bool             `json:"jailed" yaml:"jailed"`                 // has the application been jailed from staked status?
 	Status                  sdk.StakeStatus  `json:"status" yaml:"status"`                 // application status (staked/unstaking/unstaked)
 	Chains                  []string         `json:"chains" yaml:"chains"`                 // requested chains
-	StakedTokens            sdk.Int          `json:"Tokens" yaml:"Tokens"`                 // tokens staked in the network
+	StakedTokens            sdk.Int          `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	MaxRelays               sdk.Int          `json:"max_relays" yaml:"max_relays"`         // maximum number of relays allowed
 	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
 }
 
-// NewApplication - initialize a new application
+// NewApplication - initialize a new instance of an application
 func NewApplication(addr sdk.Address, publicKey crypto.PublicKey, chains []string, tokensToStake sdk.Int) Application {
 	return Application{
 		Address:                 addr,
@@ -37,14 +38,9 @@ func NewApplication(addr sdk.Address, publicKey crypto.PublicKey, chains []strin
 // a reduction of 10^6 from application tokens is applied
 func (a Application) ConsensusPower() int64 {
 	if a.IsStaked() {
-		return a.PotentialConsensusPower()
+		return sdk.TokensToConsensusPower(a.StakedTokens)
 	}
 	return 0
-}
-
-// potential consensus-engine power
-func (a Application) PotentialConsensusPower() int64 {
-	return sdk.TokensToConsensusPower(a.StakedTokens)
 }
 
 // RemoveStakedTokens removes tokens from a application

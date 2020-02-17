@@ -51,26 +51,3 @@ type ApplicationSet interface {
 	// MaxApplications returns the maximum amount of staked applications
 	MaxApplications(sdk.Context) uint64
 }
-
-//_______________________________________________________________________________
-// Event Hooks
-// These can be utilized to communicate between the pos keeper and another
-// keeper which must take particular actions when applications change
-// state. The second keeper must implement this interface, which then the
-// staking keeper can call.
-
-// AppHooks event hooks for staking application object (noalias)
-type AppHooks interface {
-	BeforeApplicationRegistered(ctx sdk.Context, valAddr sdk.Address)
-	AfterApplicationRegistered(ctx sdk.Context, valAddr sdk.Address)
-	BeforeApplicationRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	AfterApplicationRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	BeforeApplicationStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	AfterApplicationStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	BeforeApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	AfterApplicationBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	BeforeApplicationUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	AfterApplicationUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	BeforeApplicationSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec)
-	AfterApplicationSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec)
-}

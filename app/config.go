@@ -25,6 +25,7 @@ import (
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/spf13/cobra"
 	con "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/libs/cli/flags"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
@@ -172,14 +173,16 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, block
 	newTMConfig.Consensus.TimeoutCommit = time.Duration(blockTime) * time.Minute
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
-
+	newTMConfig.LogLevel = "*:info, *:error"
+	logger, err := flags.ParseLogLevel(newTMConfig.LogLevel, logger, "info")
+	if err != nil {
+		panic(err)
+	}
 	c := cfg.Config{
 		TmConfig:    newTMConfig,
 		Logger:      logger,
 		TraceWriter: "",
 	}
-
-	var err error
 	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
 		return NewPocketCoreApp(logger, db, baseapp.SetPruning(store.PruneNothing))
 	})

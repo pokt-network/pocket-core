@@ -217,32 +217,3 @@ func TestApplicationStaked_IterateAndExecuteOverStakedApps(t *testing.T) {
 		})
 	}
 }
-func TestApplicationStaked_RemoveApplicationRelays(t *testing.T) {
-	stakedApplication := getStakedApplication()
-
-	tests := []struct {
-		name        string
-		application types.Application
-		remove      sdk.Int
-		want        sdk.Int
-	}{
-		{
-			name:        "iterates over applications",
-			application: stakedApplication,
-			remove:      sdk.NewInt(100000000000 / 2),
-			want:        sdk.NewInt(100000000000 / 2),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			keeper.SetApplication(context, tt.application)
-			keeper.SetStakedApplication(context, tt.application)
-
-			if got := keeper.removeApplicationRelays(context, tt.application, tt.remove); !got.MaxRelays.Equal(tt.want) {
-				t.Errorf("appStaked.RemoveApplicationRelays() = got %v, want %v", got.MaxRelays, tt.want)
-			}
-		})
-	}
-}

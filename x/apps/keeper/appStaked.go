@@ -6,15 +6,16 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// set staked application
+// Set staked application by address in the store.
 func (k Keeper) SetStakedApplication(ctx sdk.Context, application types.Application) {
 	if application.Jailed {
-		return // jailed applications are not kept in the power index
+		return // jailed applications are not kept in the staking set
 	}
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForAppInStakingSet(application), application.Address)
 }
 
+// Get the denomination of coins.
 func (k Keeper) StakeDenom(ctx sdk.Context) string {
 	return k.posKeeper.StakeDenom(ctx)
 }
@@ -26,21 +27,12 @@ func (k Keeper) deleteApplicationFromStakingSet(ctx sdk.Context, application typ
 }
 
 // Update the staked tokens of an existing application, update the applications power index key
-func (k Keeper) removeApplicationTokens(ctx sdk.Context, v types.Application, tokensToRemove sdk.Int) types.Application {
-	k.deleteApplicationFromStakingSet(ctx, v)
-	v = v.RemoveStakedTokens(tokensToRemove)
-	k.SetApplication(ctx, v)
-	k.SetStakedApplication(ctx, v)
-	return v
-}
-
-// Update the staked tokens of an existing application, update the applications power index key
-func (k Keeper) removeApplicationRelays(ctx sdk.Context, v types.Application, relaysToRemove sdk.Int) types.Application {
-	k.deleteApplicationFromStakingSet(ctx, v)
-	v.MaxRelays = v.MaxRelays.Sub(relaysToRemove)
-	k.SetApplication(ctx, v)
-	k.SetStakedApplication(ctx, v)
-	return v
+func (k Keeper) removeApplicationTokens(ctx sdk.Context, application types.Application, tokensToRemove sdk.Int) types.Application {
+	k.deleteApplicationFromStakingSet(ctx, application)
+	application = application.RemoveStakedTokens(tokensToRemove)
+	k.SetApplication(ctx, application)
+	k.SetStakedApplication(ctx, application)
+	return application
 }
 
 func (k Keeper) getStakedApplications(ctx sdk.Context) types.Applications {

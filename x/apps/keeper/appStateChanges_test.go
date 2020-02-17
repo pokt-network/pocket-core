@@ -70,13 +70,7 @@ func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
 			want:        nil,
 		},
 		{
-			name:        "errors if application staked",
-			application: getStakedApplication(),
-			amount:      sdk.NewInt(100),
-			want:        types.ErrApplicationStatus("apps"),
-		},
-		{
-			name:        "errors if application staked",
+			name:        "errors if below minimum stake",
 			application: getUnstakedApplication(),
 			amount:      sdk.NewInt(0),
 			want:        types.ErrMinimumStake("apps"),
@@ -95,7 +89,7 @@ func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
 			addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
 			if got := keeper.ValidateApplicationStaking(context, tt.application, tt.amount); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, want %v", got, tt.want)
+				t.Errorf("AppStateChange.ValidateApplicationStaking() = got %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -192,35 +186,6 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 			}
 
 		})
-	}
-}
-
-func TestAppStateChange_RegisterApplication(t *testing.T) {
-	tests := []struct {
-		name        string
-		application types.Application
-	}{
-		{
-			name:        "name registers apps",
-			application: getStakedApplication(),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			keeper.RegisterApplication(context, tt.application)
-
-			_, found := keeper.GetApplication(context, tt.application.Address)
-			if !found {
-				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app")
-			}
-
-			_, found = keeper.GetApplication(context, tt.application.GetAddress())
-			if !found {
-				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app by ConsAddr")
-			}
-		})
-
 	}
 }
 

@@ -904,7 +904,7 @@ func TestValidator_PotentialConsensusPower(t *testing.T) {
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
 			if got := v.PotentialConsensusPower(); got != tt.want {
-				t.Errorf("PotentialConsensusPower() = %v, want %v", got, tt.want)
+				t.Errorf("ConsensusPower() = %v, want %v", got, tt.want)
 			}
 		})
 	}
