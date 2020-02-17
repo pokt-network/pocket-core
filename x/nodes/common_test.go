@@ -20,25 +20,17 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"math/rand"
-	fp "path/filepath"
 	"testing"
 )
 
 // nolint: deadcode unused
 var (
-	multiPerm    = "multiple permissions account"
-	randomPerm   = "random permission"
-	holder       = "holder"
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 	)
-	keybaseName = "pocket-keybase"
-	kbDirName   = "keybase"
-	fs          = string(fp.Separator)
-	datadir     string
 )
 
 // nolint: deadcode unused

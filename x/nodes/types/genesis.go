@@ -23,18 +23,6 @@ type PrevStatePowerMapping struct {
 	Power   int64
 }
 
-func NewGenesisState(params Params, validators []Validator, dao DAOPool, previousProposer sdk.Address,
-	signingInfos map[string]ValidatorSigningInfo, missedBlocks map[string][]MissedBlock) GenesisState {
-	return GenesisState{
-		Params:           params,
-		Validators:       validators,
-		SigningInfos:     signingInfos,
-		PreviousProposer: previousProposer,
-		MissedBlocks:     missedBlocks,
-		DAO:              dao,
-	}
-}
-
 // MissedBlock
 type MissedBlock struct {
 	Index  int64 `json:"index" yaml:"index"`

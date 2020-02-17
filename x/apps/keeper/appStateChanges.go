@@ -180,6 +180,26 @@ func (k Keeper) JailApplication(ctx sdk.Context, addr sdk.Address) {
 	logger.Info(fmt.Sprintf("application %s jailed", addr))
 }
 
+func (k Keeper) ValidateUnjailMessage(ctx sdk.Context, msg types.MsgAppUnjail) (addr sdk.Address, err sdk.Error) {
+	application := k.Application(ctx, msg.AppAddr)
+	if application == nil {
+		return nil, types.ErrNoApplicationForAddress(k.Codespace())
+	}
+	// cannot be unjailed if not staked
+	stake := application.GetTokens()
+	if stake == sdk.ZeroInt() {
+		return nil, types.ErrMissingAppStake(k.Codespace())
+	}
+	if application.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) { // TODO look into this state change (stuck in jail)
+		return nil, types.ErrStakeTooLow(k.Codespace())
+	}
+	// cannot be unjailed if not jailed
+	if !application.IsJailed() {
+		return nil, types.ErrApplicationNotJailed(k.Codespace())
+	}
+	return
+}
+
 // remove a application from jail
 func (k Keeper) UnjailApplication(ctx sdk.Context, addr sdk.Address) {
 	application := k.mustGetApplicationByConsAddr(ctx, addr)

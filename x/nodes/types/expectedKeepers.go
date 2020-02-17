@@ -35,7 +35,6 @@ type SupplyKeeper interface {
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)
-// todo this is here so other modules can conform to this interface
 type ValidatorSet interface {
 	// iterate through validators by address, execute func for each validator
 	IterateAndExecuteOverVals(sdk.Context, func(index int64, validator posexported.ValidatorI) (stop bool))
@@ -53,27 +52,4 @@ type ValidatorSet interface {
 	UnjailValidator(sdk.Context, sdk.Address)
 	// MaxValidators returns the maximum amount of staked validators
 	MaxValidators(sdk.Context) uint64
-}
-
-//_______________________________________________________________________________
-// Event Hooks
-// These can be utilized to communicate between the pos keeper and another
-// keeper which must take particular actions when validators change
-// state. The second keeper must implement this interface, which then the
-// staking keeper can call.
-
-// POSHooks event hooks for staking validator object (noalias)
-type POSHooks interface {
-	BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.Address)
-	AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.Address)
-	BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	AfterValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	BeforeValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	AfterValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address)
-	BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec)
-	AfterValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec)
 }

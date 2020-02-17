@@ -189,30 +189,3 @@ func TestPool_GetFeePool(t *testing.T) {
 		})
 	}
 }
-
-func TestPool_StakedRatio(t *testing.T) {
-	validator := getStakedValidator()
-	validatorAddress := validator.Address
-
-	tests := []struct {
-		name    string
-		amount  sdk.Dec
-		address sdk.Address
-	}{
-		{"return 0 if stake supply is lower than 0", sdk.ZeroDec(), validatorAddress},
-		{"return supply", sdk.NewDec(1), validatorAddress},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			if !tt.amount.Equal(sdk.ZeroDec()) {
-				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-			}
-
-			if got := keeper.StakedRatio(context); !got.Equal(tt.amount) {
-				t.Errorf("KeeperPool.StakedRatio()= %v, %v", got.String(), tt.amount.String())
-			}
-		})
-	}
-}

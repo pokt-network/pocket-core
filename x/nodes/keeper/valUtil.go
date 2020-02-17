@@ -89,15 +89,6 @@ func (k Keeper) GetStakedValidators(ctx sdk.Context) (validators []exported.Vali
 	return validators
 }
 
-// wrapper for GetValidatorByConsAddress call
-func (k Keeper) validatorByConsAddr(ctx sdk.Context, addr sdk.Address) exported.ValidatorI {
-	val, found := k.GetValidator(ctx, addr)
-	if !found {
-		return nil
-	}
-	return val
-}
-
 // map of validator addresses to serialized power
 type valPowerMap map[[sdk.AddrLen]byte][]byte
 

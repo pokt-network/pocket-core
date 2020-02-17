@@ -29,24 +29,6 @@ func TestAddressFromPrevStateValidatorPowerKey(t *testing.T) {
 	}
 }
 
-func TestGetAddrPubkeyRelationKey(t *testing.T) {
-	type args struct {
-		address []byte
-	}
-	tests := []struct {
-		name string
-		args args
-		want []byte
-	}{{"sampleByteArray", args{address: []byte{0x51, 0x51, 0x51}}, []byte{0x13, 0x51, 0x51, 0x51}}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetAddrPubkeyRelationKey(tt.args.address); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetAddrPubkeyRelationKey() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestGetValMissedBlockKey(t *testing.T) {
 	type args struct {
 		v types.Address

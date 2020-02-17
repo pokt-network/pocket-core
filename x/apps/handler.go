@@ -26,7 +26,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 
 func handleStake(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Result {
 	// create application object using the message fields
-	application := types.NewApplication(sdk.Address(msg.PubKey.Address()), msg.PubKey, msg.Chains, msg.Value)
+	application := types.NewApplication(sdk.Address(msg.PubKey.Address()), msg.PubKey, msg.Chains, sdk.ZeroInt())
 	// check if they can stake
 	if err := k.ValidateApplicationStaking(ctx, application, msg.Value); err != nil {
 		return err.Result()
@@ -89,7 +89,7 @@ func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginAppUnstake, k keep
 // Applications must submit a transaction to unjail itself after todo
 // having been jailed (and thus unstaked) for downtime
 func handleMsgUnjail(ctx sdk.Context, msg types.MsgAppUnjail, k keeper.Keeper) sdk.Result {
-	consAddr, err := validateUnjailMessage(ctx, msg, k)
+	consAddr, err := k.ValidateUnjailMessage(ctx, msg)
 	if err != nil {
 		return err.Result()
 	}
@@ -102,24 +102,4 @@ func handleMsgUnjail(ctx sdk.Context, msg types.MsgAppUnjail, k keeper.Keeper) s
 		),
 	)
 	return sdk.Result{Events: ctx.EventManager().Events()}
-}
-
-func validateUnjailMessage(ctx sdk.Context, msg types.MsgAppUnjail, k keeper.Keeper) (consAddr sdk.Address, err sdk.Error) {
-	application := k.Application(ctx, msg.AppAddr)
-	if application == nil {
-		return nil, types.ErrNoApplicationForAddress(k.Codespace())
-	}
-	// cannot be unjailed if no self-delegation exists
-	selfDel := application.GetTokens()
-	if selfDel == sdk.ZeroInt() {
-		return nil, types.ErrMissingAppStake(k.Codespace())
-	}
-	if application.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		return nil, types.ErrStakeTooLow(k.Codespace())
-	}
-	// cannot be unjailed if not jailed
-	if !application.IsJailed() {
-		return nil, types.ErrApplicationNotJailed(k.Codespace())
-	}
-	return
 }

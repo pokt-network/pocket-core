@@ -105,63 +105,6 @@ func TestValidator_ABCIValidatorUpdate(t *testing.T) {
 	}
 }
 
-func TestValidator_ABCIValidatorUpdateZero(t *testing.T) {
-	type fields struct {
-		Address                 sdk.Address
-		ConsPubKey              crypto.PublicKey
-		Jailed                  bool
-		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
-		UnstakingCompletionTime time.Time
-	}
-	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-
-	tests := []struct {
-		name   string
-		fields fields
-		want   abci.ValidatorUpdate
-	}{
-		{"testingABCIValidatorUpdate Unstaked", fields{
-			Address:                 sdk.Address(pub.Address()),
-			ConsPubKey:              pub,
-			Jailed:                  false,
-			Status:                  sdk.Unstaked,
-			StakedTokens:            sdk.OneInt(),
-			UnstakingCompletionTime: time.Time{},
-		}, abci.ValidatorUpdate{
-			PubKey: tmtypes.TM2PB.PubKey(pub.PubKey()),
-			Power:  int64(0),
-		}},
-		{"testingABCIValidatorUpdate Staked", fields{
-			Address:                 sdk.Address(pub.Address()),
-			ConsPubKey:              pub,
-			Jailed:                  false,
-			Status:                  sdk.Staked,
-			StakedTokens:            sdk.OneInt(),
-			UnstakingCompletionTime: time.Time{},
-		}, abci.ValidatorUpdate{
-			PubKey: tmtypes.TM2PB.PubKey(pub.PubKey()),
-			Power:  int64(0),
-		}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			v := Validator{
-				Address:                 tt.fields.Address,
-				PublicKey:               tt.fields.ConsPubKey,
-				Jailed:                  tt.fields.Jailed,
-				Status:                  tt.fields.Status,
-				StakedTokens:            tt.fields.StakedTokens,
-				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
-			}
-			if got := v.ABCIValidatorUpdateZero(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ABCIValidatorUpdateZero() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestValidator_AddStakedTokens(t *testing.T) {
 	type fields struct {
 		Address                 sdk.Address
@@ -903,7 +846,7 @@ func TestValidator_PotentialConsensusPower(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			if got := v.PotentialConsensusPower(); got != tt.want {
+			if got := v.ConsensusPower(); got != tt.want {
 				t.Errorf("ConsensusPower() = %v, want %v", got, tt.want)
 			}
 		})

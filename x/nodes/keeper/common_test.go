@@ -5,7 +5,6 @@ import (
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/supply"
-	"github.com/stretchr/testify/mock"
 	"math/rand"
 	"testing"
 
@@ -27,11 +26,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// nolint: deadcode unused
 var (
-	multiPerm    = "multiple permissions account"
-	randomPerm   = "random permission"
-	holder       = "holder"
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
@@ -198,45 +193,4 @@ func modifyFn(i *int) func(index int64, Validator exported.ValidatorI) (stop boo
 		*i++
 		return
 	}
-}
-
-type POSHooks struct {
-	mock.Mock
-}
-
-func (ph *POSHooks) BeforeValidatorRegistered(ctx sdk.Context, valAddr sdk.Address) {
-	ph.Called(ctx, valAddr)
-}
-func (ph *POSHooks) AfterValidatorRegistered(ctx sdk.Context, valAddr sdk.Address) {
-	ph.Called(ctx, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) AfterValidatorStaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) AfterValidatorBeginUnstaking(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) AfterValidatorUnstaked(ctx sdk.Context, consAddr sdk.Address, valAddr sdk.Address) {
-	ph.Called(ctx, consAddr, valAddr)
-}
-func (ph *POSHooks) BeforeValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec) {
-	ph.Called(ctx, valAddr, fraction)
-}
-func (ph *POSHooks) AfterValidatorSlashed(ctx sdk.Context, valAddr sdk.Address, fraction sdk.Dec) {
-	ph.Called(ctx, valAddr, fraction)
 }

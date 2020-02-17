@@ -20,9 +20,12 @@ func (v Validators) String() (out string) {
 	return strings.TrimSpace(out)
 }
 
-func (v Validators) JSON() (out []byte, err error) {
-	// each element should be a JSON
-	return json.Marshal(v)
+// HashString returns a human readable string representation of a validator.
+func (v Validator) String() string {
+	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
+		"ServiceURL:\t\t%s\nChains:\t\t\t%vUnstaking Completion Time:\t\t%v",
+		v.Address, v.PublicKey.RawString(), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
+	)
 }
 
 // MUST return the amino encoded version of this validator
@@ -45,14 +48,6 @@ func UnmarshalValidator(cdc *codec.Codec, valBytes []byte) (validator Validator,
 	return validator, err
 }
 
-// HashString returns a human readable string representation of a validator.
-func (v Validator) String() string {
-	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
-		"ServiceURL:\t\t%s\nChains:\t\t\t%vUnstaking Completion Time:\t\t%v",
-		v.Address, v.PublicKey.RawString(), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
-	)
-}
-
 // this is a helper struct used for JSON de- and encoding only
 type hexValidator struct {
 	Address                 sdk.Address     `json:"address" yaml:"address"`               // the hex address of the validator
@@ -63,6 +58,12 @@ type hexValidator struct {
 	ServiceURL              string          `json:"service_url" yaml:"service_url"`       // the url of the pocket-api
 	Chains                  []string        `json:"chains" yaml:"chains"`                 // the non-native (external) chains hosted
 	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
+}
+
+// Marshals struct into JSON
+func (v Validators) JSON() (out []byte, err error) {
+	// each element should be a JSON
+	return json.Marshal(v)
 }
 
 // MarshalJSON marshals the validator to JSON using Hex

@@ -6,7 +6,7 @@ import (
 )
 
 func (k Keeper) GetBalance(ctx sdk.Context, addr sdk.Address) sdk.Int {
-	coins := k.coinKeeper.GetCoins(ctx, sdk.Address(addr))
+	coins := k.coinKeeper.GetCoins(ctx, addr)
 	return coins.AmountOf(k.StakeDenom(ctx))
 }
 

@@ -284,7 +284,7 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		{"Test rewardFromFees", fields{keeper: keeper},
+		{"Test blockReward", fields{keeper: keeper},
 			args{
 				ctx:              context,
 				previousProposer: stakedValidator.GetAddress(),
@@ -294,7 +294,7 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
 
-			k.rewardFromFees(tt.args.ctx, tt.args.previousProposer)
+			k.blockReward(tt.args.ctx, tt.args.previousProposer)
 
 		})
 	}

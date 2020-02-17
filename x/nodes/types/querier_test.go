@@ -21,7 +21,7 @@ func TestNewQuerySigningInfoParams(t *testing.T) {
 		args args
 		want QuerySigningInfoParams
 	}{
-		{"default Test", args{ca}, QuerySigningInfoParams{ConsAddress: ca}},
+		{"default Test", args{ca}, QuerySigningInfoParams{Address: ca}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
