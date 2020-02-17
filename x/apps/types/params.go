@@ -16,8 +16,8 @@ const (
 	DefaultParamspace                 = ModuleName
 	DefaultUnstakingTime              = time.Hour * 24 * 7 * 3
 	DefaultMaxApplications     uint64 = math.MaxUint64
-	DefaultMinStake            int64  = 1000000
-	DefaultBaseRelaysPerPOKT   int64  = 100
+	DefaultMinStake            int64 = 1000000
+	DefaultBaseRelaysPerPOKT   int64 = 100
 	DefaultStabilityAdjustment int64  = 0
 	DefaultParticipationRateOn bool   = false
 )
