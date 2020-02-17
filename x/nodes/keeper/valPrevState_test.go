@@ -100,38 +100,6 @@ func TestKeeper_IterateAndExecuteOverPrevStateValsByPower(t *testing.T) {
 	}
 }
 
-func TestKeeper_PrevStateValidatorPower(t *testing.T) {
-	type fields struct {
-		keeper Keeper
-	}
-	type args struct {
-		ctx  sdk.Context
-		addr sdk.Address
-	}
-
-	context, _, keeper := createTestInput(t, true)
-
-	tests := []struct {
-		name      string
-		fields    fields
-		args      args
-		wantPower int64
-	}{
-		{"Test PrevStateValidatorPower", fields{keeper: keeper}, args{
-			ctx:  context,
-			addr: getRandomValidatorAddress(),
-		}, 0},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			k := tt.fields.keeper
-			if gotPower := k.PrevStateValidatorPower(tt.args.ctx, tt.args.addr); gotPower != tt.wantPower {
-				t.Errorf("PrevStateValidatorPower() = %v, want %v", gotPower, tt.wantPower)
-			}
-		})
-	}
-}
-
 func TestKeeper_PrevStateValidatorsPower(t *testing.T) {
 	type fields struct {
 		keeper Keeper
@@ -215,35 +183,6 @@ func TestKeeper_SetPrevStateValidatorsPower(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
 			k.SetPrevStateValidatorsPower(tt.args.ctx, tt.args.power)
-		})
-	}
-}
-
-func TestKeeper_getValsFromPrevState(t *testing.T) {
-	type fields struct {
-		keeper Keeper
-	}
-	type args struct {
-		ctx sdk.Context
-	}
-
-	context, _, keeper := createTestInput(t, true)
-
-	tests := []struct {
-		name           string
-		fields         fields
-		args           args
-		wantValidators []types.Validator
-	}{
-		{"Test getValsFromPrevState", fields{keeper: keeper}, args{ctx: context},
-			[]types.Validator{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			k := tt.fields.keeper
-			if gotValidators := k.getValsFromPrevState(tt.args.ctx); !reflect.DeepEqual(gotValidators, tt.wantValidators) {
-				t.Errorf("getValsFromPrevState() = %v, want %v", gotValidators, tt.wantValidators)
-			}
 		})
 	}
 }

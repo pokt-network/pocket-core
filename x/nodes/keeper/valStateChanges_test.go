@@ -107,36 +107,6 @@ func TestKeeper_JailValidator(t *testing.T) {
 	}
 }
 
-func TestKeeper_RegisterValidator(t *testing.T) {
-	type fields struct {
-		keeper Keeper
-	}
-	type args struct {
-		ctx       sdk.Context
-		validator types.Validator
-	}
-
-	validator := getStakedValidator()
-	context, _, keeper := createTestInput(t, true)
-
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		{"Test RegisterValidator", fields{keeper: keeper}, args{
-			ctx:       context,
-			validator: validator,
-		}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			k := tt.fields.keeper
-			k.RegisterValidator(tt.args.ctx, tt.args.validator)
-		})
-	}
-}
-
 func TestKeeper_ReleaseWaitingValidators(t *testing.T) {
 	type fields struct {
 		keeper Keeper

@@ -7,7 +7,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// Signing info for a validator
+// Signing information of the validator is needed for tracking bad acting within the block signing process
 type ValidatorSigningInfo struct {
 	Address             sdk.Address `json:"address" yaml:"address"`                             // validator consensus address
 	StartHeight         int64       `json:"start_height" yaml:"start_height"`                   // height at which validator was first a candidate OR was unjailed

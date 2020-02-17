@@ -15,8 +15,8 @@ func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.Addres
 	k.setValidatorAward(ctx, award.Add(coins), address)
 }
 
-// rewardFromFees handles distribution of the collected fees
-func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
+// blockReward handles distribution of the collected fees
+func (k Keeper) blockReward(ctx sdk.Context, previousProposer sdk.Address) {
 	logger := k.Logger(ctx)
 	// fetch and clear the collected fees for distribution, since this is
 	// called in BeginBlock, collected fees will be from the previous block
@@ -28,6 +28,7 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
 	if err != nil {
 		panic(err)
 	}
+	// get the reward from the total relays completed in the last block
 	rewardForRelays := k.GetTotalCustomValidatorAwards(ctx)
 	// calculate the total reward by adding relays to the fees
 	totalReward := feesCollected.AmountOf(k.StakeDenom(ctx)).Add(rewardForRelays)
@@ -38,14 +39,18 @@ func (k Keeper) rewardFromFees(ctx sdk.Context, previousProposer sdk.Address) {
 	proposerReward := proposerAllocation.Mul(totalReward).Quo(sdk.NewInt(100)) // truncates
 	daoReward := daoAllocation.Mul(totalReward).Quo(sdk.NewInt(100))           // truncates
 	// get the validator structure
-	proposerValidator := k.validatorByConsAddr(ctx, previousProposer)
-	if proposerValidator != nil {
+	proposerValidator, found := k.GetValidator(ctx, previousProposer)
+	if found {
+		// create the proposer coins
 		propRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), proposerReward))
+		// create the dao coins
 		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
+		// mint the coins for the proposer to the module account
 		err := k.supplyKeeper.MintCoins(ctx, types.ModuleName, propRewardCoins)
 		if err != nil {
 			panic(err)
 		}
+		// mint the coins for the dao to the module account
 		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, daoRewardCoins)
 		if err != nil {
 			panic(err)

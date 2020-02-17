@@ -7,16 +7,6 @@ import (
 	"github.com/pokt-network/posmint/x/supply/exported"
 )
 
-// StakedRatio the fraction of the staking tokens which are currently staked
-func (k Keeper) StakedRatio(ctx sdk.Context) sdk.Dec {
-	stakedPool := k.GetStakedPool(ctx)
-	stakeSupply := k.TotalTokens(ctx)
-	if stakeSupply.IsPositive() {
-		return stakedPool.GetCoins().AmountOf(k.StakeDenom(ctx)).ToDec().QuoInt(stakeSupply)
-	}
-	return sdk.ZeroDec()
-}
-
 // GetStakedTokens total staking tokens supply which is staked
 func (k Keeper) GetStakedTokens(ctx sdk.Context) sdk.Int {
 	stakedPool := k.GetStakedPool(ctx)

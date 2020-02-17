@@ -7,12 +7,11 @@ import (
 )
 
 const (
-	ModuleName = "pos"
-	StoreKey   = ModuleName // StoreKey is the string store representation
-	// TStoreKey is the string transient store representation
-	TStoreKey    = "transient_" + ModuleName
-	QuerierRoute = ModuleName // QuerierRoute is the querier route for the staking module
-	RouterKey    = ModuleName // RouterKey is the msg router key for the staking module
+	ModuleName   = "pos"                     // nodes module is called 'pos' for proof of stake
+	StoreKey     = ModuleName                // StoreKey is the string store representation
+	TStoreKey    = "transient_" + ModuleName // TStoreKey is the string transient store representation
+	QuerierRoute = ModuleName                // QuerierRoute is the querier route for the staking module
+	RouterKey    = ModuleName                // RouterKey is the msg router key for the staking module
 )
 
 //nolint
@@ -20,16 +19,14 @@ var ( // Keys for store prefixes
 	ProposerKey                     = []byte{0x01} // key for the proposer address used for rewards
 	ValidatorSigningInfoKey         = []byte{0x11} // Prefix for signing info used in slashing
 	ValidatorMissedBlockBitArrayKey = []byte{0x12} // Prefix for missed block bit array used in slashing
-	AddrPubkeyRelationKey           = []byte{0x13} // Prefix for address-pubkey relation used in slashing
 	AllValidatorsKey                = []byte{0x21} // prefix for each key to a validator
 	StakedValidatorsKey             = []byte{0x23} // prefix for each key to a staked validator index, sorted by power
 	PrevStateValidatorsPowerKey     = []byte{0x31} // prefix for the key to the validators of the prevState state
 	PrevStateTotalPowerKey          = []byte{0x32} // prefix for the total power of the prevState state
 	UnstakingValidatorsKey          = []byte{0x41} // prefix for unstaking validator
-	UnstakedValidatorsKey           = []byte{0x42} // prefix for unstaked validators
 	AwardValidatorKey               = []byte{0x51} // prefix for awarding validators
 	BurnValidatorKey                = []byte{0x52} // prefix for awarding validators
-	WaitingToBeginUnstakingKey      = []byte{0x43}
+	WaitingToBeginUnstakingKey      = []byte{0x43} // prefix for waiting validators
 )
 
 func KeyForValWaitingToBeginUnstaking(addr sdk.Address) []byte {
@@ -135,9 +132,4 @@ func GetValMissedBlockKey(v sdk.Address, i int64) []byte {
 	b := make([]byte, 8)
 	binary.LittleEndian.PutUint64(b, uint64(i))
 	return append(GetValMissedBlockPrefixKey(v), b...)
-}
-
-// generates pubkey relation key used to get the pubkey from the address
-func GetAddrPubkeyRelationKey(address []byte) []byte {
-	return append(AddrPubkeyRelationKey, address...)
 }

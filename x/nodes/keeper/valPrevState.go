@@ -7,26 +7,6 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// get the staked validators from the previous state
-func (k Keeper) getValsFromPrevState(ctx sdk.Context) (validators []types.Validator) {
-	store := ctx.KVStore(k.storeKey)
-	maxValidators := k.MaxValidators(ctx)
-	validators = make([]types.Validator, maxValidators)
-	iterator := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
-	defer iterator.Close()
-	i := 0
-	for ; iterator.Valid(); iterator.Next() {
-		if i >= int(maxValidators) {
-			panic("more validators than maxValidators found")
-		}
-		address := types.AddressFromKey(iterator.Key())
-		validator := k.mustGetValidator(ctx, address)
-		validators[i] = validator
-		i++
-	}
-	return validators[:i] // trim
-}
-
 // Load the prevState total validator power.
 func (k Keeper) PrevStateValidatorsPower(ctx sdk.Context) (power sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
@@ -86,17 +66,6 @@ func (k Keeper) IterateAndExecuteOverPrevStateVals(
 		}
 		i++
 	}
-}
-
-// get the power of a SINGLE staked validator from the previous state
-func (k Keeper) PrevStateValidatorPower(ctx sdk.Context, addr sdk.Address) (power int64) {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.KeyForValidatorPrevStateStateByPower(addr))
-	if bz == nil {
-		return 0
-	}
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &power)
-	return
 }
 
 // set the power of a SINGLE staked validator from the previous state

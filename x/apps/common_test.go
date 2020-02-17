@@ -29,9 +29,6 @@ import (
 
 // nolint: deadcode unused
 var (
-	multiPerm    = "multiple permissions account"
-	randomPerm   = "random permission"
-	holder       = "holder"
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},

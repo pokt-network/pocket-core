@@ -60,52 +60,6 @@ func TestMustGetValidator(t *testing.T) {
 
 }
 
-func TestValidatorByConsAddr(t *testing.T) {
-	stakedValidator := getStakedValidator()
-
-	type args struct {
-		validator types.Validator
-	}
-	type expected struct {
-		validator types.Validator
-		message   string
-		null      bool
-	}
-	tests := []struct {
-		name   string
-		panics bool
-		args
-		expected
-	}{
-		{
-			name:     "gets validator",
-			args:     args{validator: stakedValidator},
-			expected: expected{validator: stakedValidator, null: false},
-		},
-		{
-			name:     "nil if not found",
-			args:     args{validator: stakedValidator},
-			expected: expected{null: true},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			switch test.expected.null {
-			case true:
-				validator := keeper.validatorByConsAddr(context, test.args.validator.GetAddress())
-				assert.Nil(t, validator)
-			default:
-				keeper.SetValidator(context, test.args.validator)
-				keeper.SetStakedValidator(context, test.args.validator)
-				validator := keeper.validatorByConsAddr(context, test.args.validator.GetAddress())
-				assert.Equal(t, validator, test.expected.validator, "validator does not match")
-			}
-		})
-	}
-}
-
 func TestValidatorCaching(t *testing.T) {
 	stakedValidator := getStakedValidator()
 

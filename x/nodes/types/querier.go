@@ -71,18 +71,14 @@ func NewQueryUnstakedValidatorsParams(page, limit int) QueryUnstakedValidatorsPa
 	return QueryUnstakedValidatorsParams{page, limit}
 }
 
-// QuerySigningInfoParams defines the params for the following queries:
-// - 'custom/slashing/signingInfo'
 type QuerySigningInfoParams struct {
-	ConsAddress sdk.Address
+	Address sdk.Address
 }
 
 func NewQuerySigningInfoParams(consAddr sdk.Address) QuerySigningInfoParams {
 	return QuerySigningInfoParams{consAddr}
 }
 
-// QuerySigningInfosParams defines the params for the following queries:
-// - 'custom/slashing/signingInfos'
 type QuerySigningInfosParams struct {
 	Page, Limit int
 }

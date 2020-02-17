@@ -16,7 +16,7 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx)
-		k.rewardFromFees(ctx, previousProposer)
+		k.blockReward(ctx, previousProposer)
 	}
 	// mint any custom validator awards
 	k.mintNodeRelayRewards(ctx)
@@ -51,6 +51,7 @@ func EndBlocker(ctx sdk.Context, k Keeper) []abci.ValidatorUpdate {
 	// Calculate validator set changes.
 	// NOTE: UpdateTendermintValidators has to come before unstakeAllMatureValidators.
 	validatorUpdates := k.UpdateTendermintValidators(ctx)
+	// get the mature (ready to unstake) validators from the network
 	matureValidators := k.getMatureValidators(ctx)
 	// Unstake all mature validators from the unstakeing queue.
 	k.unstakeAllMatureValidators(ctx)
@@ -62,6 +63,5 @@ func EndBlocker(ctx sdk.Context, k Keeper) []abci.ValidatorUpdate {
 			),
 		)
 	}
-
 	return validatorUpdates
 }

@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	posCrypto "github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/tendermint/crypto"
 	"reflect"
 	"testing"
 	"time"
@@ -93,92 +93,6 @@ func TestDeleteValidatorBurn(t *testing.T) {
 	}
 }
 
-func TestGetAndSetAddrPubKeyRelation(t *testing.T) {
-	stakedValidator := getStakedValidator()
-
-	type args struct {
-		validator types.Validator
-	}
-	type expected struct {
-		validator types.Validator
-		set       bool
-		message   string
-	}
-	tests := []struct {
-		name string
-		args
-		expected
-	}{
-		{
-			name:     "can get and set PubKeyRelations",
-			args:     args{validator: stakedValidator},
-			expected: expected{validator: stakedValidator, set: true},
-		},
-		{
-			name: "throws err if not set ",
-			args: args{validator: stakedValidator},
-			expected: expected{
-				validator: stakedValidator,
-				set:       false,
-				message:   fmt.Sprintf("address %s not found", sdk.Address(stakedValidator.GetPublicKey().Address())),
-			},
-		},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			if test.expected.set {
-				keeper.setAddrPubkeyRelation(context, test.args.validator.GetPublicKey().Address(), test.args.validator.GetPublicKey())
-			}
-			key, err := keeper.getPubKeyRelation(context, test.args.validator.GetPublicKey().Address())
-			if err != nil {
-				assert.Equal(t, test.expected.message, fmt.Sprintf("%s", err), "error message doe sno tmatch expected$")
-			} else {
-				assert.True(t, test.expected.validator.GetPublicKey().Equals(key), "do not match")
-			}
-		})
-	}
-}
-
-func TestDeleteAddrPubKeyRelation(t *testing.T) {
-	stakedValidator := getStakedValidator()
-
-	type args struct {
-		validator types.Validator
-	}
-	type expected struct {
-		validator types.Validator
-		set       bool
-		message   string
-	}
-	tests := []struct {
-		name string
-		args
-		expected
-	}{
-		{
-			name: "delete a PubKeyRelation",
-			args: args{validator: stakedValidator},
-			expected: expected{
-				validator: stakedValidator,
-				set:       true,
-				message:   fmt.Sprintf("address %s not found", sdk.Address(stakedValidator.GetPublicKey().Address())),
-			},
-		},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			keeper.setAddrPubkeyRelation(context, test.args.validator.GetPublicKey().Address(), test.args.validator.GetPublicKey())
-			keeper.deleteAddrPubkeyRelation(context, test.args.validator.GetPublicKey().Address())
-			_, err := keeper.getPubKeyRelation(context, test.args.validator.GetPublicKey().Address())
-			if err != nil {
-				assert.Equal(t, test.expected.message, fmt.Sprintf("%s", err), "error message doe sno tmatch expected$")
-			}
-		})
-	}
-}
-
 func TestHandleValidatorSignature(t *testing.T) {
 	stakedValidator := getStakedValidator()
 
@@ -194,7 +108,6 @@ func TestHandleValidatorSignature(t *testing.T) {
 		tombstoned          bool
 		missedBlocksCounter int64
 		message             string
-		pubKeyRelation      bool
 		signedInfo          bool
 		jail                bool
 	}
@@ -223,21 +136,11 @@ func TestHandleValidatorSignature(t *testing.T) {
 			expected: expected{validator: stakedValidator, tombstoned: false, missedBlocksCounter: int64(0)},
 		},
 		{
-			name:   "errors if no PublicKey Relation",
-			panics: true,
-			args:   args{validator: stakedValidator, power: int64(10), signed: false},
-			expected: expected{
-				message:        fmt.Sprintf("Validator consensus-address %s not found", sdk.Address(stakedValidator.GetPublicKey().Address())),
-				pubKeyRelation: false,
-			},
-		},
-		{
 			name:   "errors if no signed info",
 			panics: true,
 			args:   args{validator: stakedValidator, power: int64(10), signed: false},
 			expected: expected{
-				message:        fmt.Sprintf("Expected signing info for validator %s but not found", sdk.Address(stakedValidator.GetPublicKey().Address())),
-				pubKeyRelation: true,
+				message: fmt.Sprintf("Expected signing info for validator %s but not found", sdk.Address(stakedValidator.GetPublicKey().Address())),
 			},
 		},
 	}
@@ -245,15 +148,13 @@ func TestHandleValidatorSignature(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			cryptoAddr := test.args.validator.GetPublicKey().Address()
+			keeper.SetValidator(context, test.args.validator)
 			switch test.panics {
 			case true:
 				defer func() {
 					err := recover()
-					assert.Contains(t, test.expected.message, err, "does not containe error ")
+					assert.Contains(t, test.expected.message, err, "does not contain error ")
 				}()
-				if test.expected.pubKeyRelation {
-					keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetPublicKey())
-				}
 				if test.expected.signedInfo {
 					keeper.handleValidatorSignature(context, cryptoAddr, test.args.power, test.args.signed)
 				}
@@ -268,7 +169,6 @@ func TestHandleValidatorSignature(t *testing.T) {
 					context.WithBlockHeight(101)
 					signingInfo.MissedBlocksCounter = test.args.maxMissed
 				}
-				keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetPublicKey())
 				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 				keeper.handleValidatorSignature(context, cryptoAddr, test.args.power, test.args.signed)
 				signedInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
@@ -346,7 +246,7 @@ func TestValidateDoubleSign(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			cryptoAddr := test.args.validator.GetPublicKey().Address()
+			cryptoAddr := test.args.validator.GetAddress()
 			keeper.SetValidator(context, test.args.validator)
 			signingInfo := types.ValidatorSigningInfo{
 				Address:     test.args.validator.GetAddress(),
@@ -357,20 +257,16 @@ func TestValidateDoubleSign(t *testing.T) {
 				signingInfo.Tombstoned = test.expected.tombstoned
 			}
 			infractionHeight := context.BlockHeight()
-			if test.expected.pubKeyRelation {
-				keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetPublicKey())
-			}
-			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
-			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
+			keeper.SetValidatorSigningInfo(context, cryptoAddr, signingInfo)
+			signingInfo, found := keeper.GetValidatorSigningInfo(context, cryptoAddr)
 			if !found {
 				t.FailNow()
 			}
-
-			consAddr, signedInfo, validator, err := keeper.validateDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0))
+			consAddr, signedInfo, validator, err := keeper.validateDoubleSign(context, crypto.Address(cryptoAddr), infractionHeight, time.Unix(0, 0))
 			if err != nil {
 				assert.Equal(t, test.expected.message, err.Error())
 			} else {
-				assert.Equal(t, sdk.Address(cryptoAddr), consAddr, "addresses do not match")
+				assert.Equal(t, cryptoAddr, consAddr, "addresses do not match")
 				assert.Equal(t, signedInfo, signingInfo, "signed Info do not match")
 				assert.Equal(t, test.expected.validator, validator, "validators do not match")
 			}
@@ -421,17 +317,6 @@ func TestHandleDoubleSign(t *testing.T) {
 				message:        fmt.Sprintf("ERROR:\nCodespace: pos\nCode: 113\nMessage: \"Warning: validator is already tombstoned\"\n"),
 			},
 		},
-		{
-			name:   "ignores double signature on tombstoned validator",
-			panics: true,
-			args:   args{validator: stakedValidator},
-			expected: expected{
-				validator:      stakedValidator,
-				pubKeyRelation: false,
-				tombstoned:     false,
-				message:        fmt.Sprintf("ERROR:\nCodespace: pos\nCode: 114\nMessage: \"Warning: the DS evidence is unable to be handled\"\n"),
-			},
-		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -456,9 +341,6 @@ func TestHandleDoubleSign(t *testing.T) {
 					signingInfo.Tombstoned = test.expected.tombstoned
 				}
 				infractionHeight := context.BlockHeight()
-				if test.expected.pubKeyRelation {
-					keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetPublicKey())
-				}
 				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 				keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
 			default:
@@ -466,9 +348,6 @@ func TestHandleDoubleSign(t *testing.T) {
 					signingInfo.Tombstoned = test.expected.tombstoned
 				}
 				infractionHeight := context.BlockHeight()
-				if test.expected.pubKeyRelation {
-					keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetPublicKey())
-				}
 				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 				keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
 
@@ -480,7 +359,6 @@ func TestHandleDoubleSign(t *testing.T) {
 				assert.True(t, signingInfo.Tombstoned)
 			}
 		})
-
 	}
 }
 
@@ -592,9 +470,6 @@ func TestValidateSlash(t *testing.T) {
 				signingInfo.Tombstoned = test.expected.tombstoned
 			}
 			infractionHeight := context.BlockHeight()
-			if test.expected.pubKeyRelation {
-				keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetPublicKey())
-			}
 
 			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
@@ -695,9 +570,6 @@ func TestSlash(t *testing.T) {
 				signingInfo.Tombstoned = test.expected.tombstoned
 			}
 			infractionHeight := context.BlockHeight()
-			if test.expected.pubKeyRelation {
-				keeper.setAddrPubkeyRelation(context, cryptoAddr, test.args.validator.GetPublicKey())
-			}
 
 			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
@@ -805,37 +677,6 @@ func TestKeeper_getBurnFromSeverity(t *testing.T) {
 			if got := k.getBurnFromSeverity(tt.args.ctx, tt.args.address, tt.args.severityPercentage); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("getBurnFromSeverity() = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
-
-func TestKeeper_AddPubKeyRelation(t *testing.T) {
-	type fields struct {
-		Keeper Keeper
-	}
-	context, _, keeper := createTestInput(t, true)
-
-	pub := getRandomPubKey()
-
-	type args struct {
-		ctx       sdk.Context
-		publicKey posCrypto.PublicKey
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		{"Test Add PubKeyRelation", fields{Keeper: keeper}, args{
-			ctx:       context,
-			publicKey: pub,
-		}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			k := tt.fields.Keeper
-
-			k.AddPubKeyRelation(tt.args.ctx, tt.args.publicKey)
 		})
 	}
 }

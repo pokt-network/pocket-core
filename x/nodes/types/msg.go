@@ -41,7 +41,7 @@ func (msg MsgStake) GetSignBytes() []byte {
 	return sdk.MustSortJSON(bz)
 }
 
-// quick validity check
+// Quick validity check, stateless
 func (msg MsgStake) ValidateBasic() sdk.Error {
 	if msg.PublicKey == nil || msg.PublicKey.RawString() == "" {
 		return ErrNilValidatorAddr(DefaultCodespace)
@@ -63,7 +63,6 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 	return nil
 }
 
-//nolint
 func (msg MsgStake) Route() string { return RouterKey }
 func (msg MsgStake) Type() string  { return MsgStakeName }
 
@@ -73,15 +72,18 @@ type MsgBeginUnstake struct {
 	Address sdk.Address `json:"validator_address" yaml:"validator_address"`
 }
 
+// Return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgBeginUnstake) GetSigners() []sdk.Address {
-	return []sdk.Address{sdk.Address(msg.Address)}
+	return []sdk.Address{msg.Address}
 }
 
+// GetSignBytes returns the message bytes to sign over.
 func (msg MsgBeginUnstake) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
+// Quick validity check, stateless
 func (msg MsgBeginUnstake) ValidateBasic() sdk.Error {
 	if msg.Address.Empty() {
 		return ErrNilValidatorAddr(DefaultCodespace)
@@ -89,7 +91,6 @@ func (msg MsgBeginUnstake) ValidateBasic() sdk.Error {
 	return nil
 }
 
-//nolint
 func (msg MsgBeginUnstake) Route() string { return RouterKey }
 func (msg MsgBeginUnstake) Type() string  { return MsgUnstakeName }
 
@@ -99,24 +100,27 @@ type MsgUnjail struct {
 	ValidatorAddr sdk.Address `json:"address" yaml:"address"` // address of the validator operator
 }
 
-//nolint
-func (msg MsgUnjail) Route() string { return RouterKey }
-func (msg MsgUnjail) Type() string  { return MsgUnjailName }
+// Return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgUnjail) GetSigners() []sdk.Address {
-	return []sdk.Address{sdk.Address(msg.ValidatorAddr)}
+	return []sdk.Address{msg.ValidatorAddr}
 }
 
+// GetSignBytes returns the message bytes to sign over.
 func (msg MsgUnjail) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
+// Quick validity check, stateless
 func (msg MsgUnjail) ValidateBasic() sdk.Error {
 	if msg.ValidatorAddr.Empty() {
 		return ErrBadValidatorAddr(DefaultCodespace)
 	}
 	return nil
 }
+
+func (msg MsgUnjail) Route() string { return RouterKey }
+func (msg MsgUnjail) Type() string  { return MsgUnjailName }
 
 //----------------------------------------------------------------------------------------------------------------------
 // MsgSend structure for sending coins
@@ -126,18 +130,18 @@ type MsgSend struct {
 	Amount      sdk.Int
 }
 
-//nolint
-func (msg MsgSend) Route() string { return RouterKey }
-func (msg MsgSend) Type() string  { return MsgSendName }
+// Return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgSend) GetSigners() []sdk.Address {
 	return []sdk.Address{msg.FromAddress}
 }
 
+// GetSignBytes returns the message bytes to sign over.
 func (msg MsgSend) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
+// Quick validity check, stateless
 func (msg MsgSend) ValidateBasic() sdk.Error {
 	if msg.FromAddress.Empty() {
 		return ErrBadValidatorAddr(DefaultCodespace)
@@ -150,3 +154,6 @@ func (msg MsgSend) ValidateBasic() sdk.Error {
 	}
 	return nil
 }
+
+func (msg MsgSend) Route() string { return RouterKey }
+func (msg MsgSend) Type() string  { return MsgSendName }

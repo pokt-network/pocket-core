@@ -5,7 +5,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"time"
 
-	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -29,10 +28,6 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 		if validator.IsUnstaked() {
 			panic(fmt.Sprintf("%v the validators must be staked or unstaking at genesis", validator))
 		}
-		// Call the registration hook if not exported (exported means the data came from another node, meaning the val already exist in mem)
-		if !data.Exported {
-			keeper.BeforeValidatorRegistered(ctx, validator.Address)
-		}
 		// set the validators from the data
 		keeper.SetValidator(ctx, validator)
 		keeper.SetStakedValidator(ctx, validator)
@@ -45,10 +40,6 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 				JailedUntil: time.Unix(0, 0),
 			}
 			keeper.SetValidatorSigningInfo(ctx, validator.GetAddress(), signingInfo)
-		}
-		// Call the creation hook if not exported
-		if !data.Exported {
-			keeper.AfterValidatorRegistered(ctx, validator.Address)
 		}
 		// update unstaking validators if necessary
 		if validator.IsUnstaking() {
@@ -109,13 +100,6 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 		// run tendermint updates
 		res = keeper.UpdateTendermintValidators(ctx)
 	}
-	// add public key relationship to address
-	keeper.IterateAndExecuteOverVals(ctx,
-		func(index int64, validator exported.ValidatorI) bool {
-			keeper.AddPubKeyRelation(ctx, validator.GetPublicKey())
-			return false
-		},
-	)
 	// update signing information from genesis state
 	for addr, info := range data.SigningInfos {
 		address, err := sdk.AddressFromHex(addr)
@@ -131,7 +115,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, supplyKeeper types.Suppl
 			panic(err)
 		}
 		for _, missed := range array {
-			keeper.SetMissedBlockArray(ctx, address, missed.Index, missed.Missed)
+			keeper.SetValidatorMissedAt(ctx, address, missed.Index, missed.Missed)
 		}
 	}
 	// set the params set in the keeper

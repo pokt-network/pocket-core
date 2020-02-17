@@ -24,7 +24,6 @@ type Keeper struct {
 	accountKeeper      auth.AccountKeeper
 	coinKeeper         bank.Keeper
 	supplyKeeper       types.SupplyKeeper
-	hooks              types.POSHooks
 	Paramstore         params.Subspace
 	validatorCache     map[string]cachedValidator
 	validatorCacheList *list.List
@@ -49,7 +48,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper auth.AccountKee
 		coinKeeper:         coinKeeper,
 		supplyKeeper:       supplyKeeper,
 		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),
-		hooks:              nil,
 		validatorCache:     make(map[string]cachedValidator, aminoCacheSize),
 		validatorCacheList: list.New(),
 		codespace:          codespace,
@@ -59,15 +57,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper auth.AccountKee
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
-// Set the validator hooks
-func (k *Keeper) SetHooks(sh types.POSHooks) *Keeper {
-	if k.hooks != nil {
-		panic("cannot set validator hooks twice")
-	}
-	k.hooks = sh
-	return k
 }
 
 // return the codespace
