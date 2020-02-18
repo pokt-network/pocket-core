@@ -37,7 +37,7 @@ var nodeStakeCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+		reg, err := regexp.Compile("[^,a-zA-Z0-9]+")
 		if err != nil {
 			log.Fatal(err)
 		}
