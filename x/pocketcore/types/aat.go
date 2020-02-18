@@ -12,7 +12,7 @@ const (
 
 type AAT struct {
 	Version              string `json:"version"`
-	ApplicationPublicKey string `json:"app_address"`
+	ApplicationPublicKey string `json:"app_pub_key"`
 	ClientPublicKey      string `json:"client_pub_key"`
 	ApplicationSignature string `json:"signature"`
 }
