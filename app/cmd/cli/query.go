@@ -67,6 +67,7 @@ var queryBlock = &cobra.Command{
 var queryTx = &cobra.Command{
 	Use:   "tx <hash>",
 	Short: "Get the transaction by the hash",
+	Args:  cobra.ExactArgs(1),
 	Long:  `Returns the transaction by the hash`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
@@ -97,6 +98,7 @@ var queryHeight = &cobra.Command{
 var queryBalance = &cobra.Command{
 	Use:   "balance <accAddr> <height>",
 	Short: "Gets account balance",
+	Args:  cobra.MinimumNArgs(1),
 	Long:  `Returns the balance of the specified <accAddr> at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
@@ -123,6 +125,7 @@ var queryBalance = &cobra.Command{
 var queryAccount = &cobra.Command{
 	Use:   "account <accAddr> <height>",
 	Short: "Gets an account",
+	Args:  cobra.MinimumNArgs(1),
 	Long:  `Returns the account structure for a specific address.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
@@ -155,6 +158,7 @@ func init() {
 var queryNodes = &cobra.Command{
 	Use:   "nodes --staking-status=<nodeStakingStatus> <height>",
 	Short: "Gets nodes",
+	Args:  cobra.MinimumNArgs(1),
 	Long:  `Returns the list of all nodes known at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
