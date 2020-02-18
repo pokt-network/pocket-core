@@ -303,8 +303,9 @@ func TestRelayResponse_BytesAndHash(t *testing.T) {
 	cliPrivKey := getRandomPrivateKey()
 	cliPublicKey := cliPrivKey.PublicKey().RawString()
 	relayResp := RelayResponse{
-		Signature: "",
-		Response:  "foo",
+		Signature:   "",
+		RequestHash: appPublicKey, // fake
+		Response:    "foo",
 		Proof: RelayProof{
 			Entropy:            230942034,
 			SessionBlockHeight: 1,

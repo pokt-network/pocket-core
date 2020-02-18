@@ -3,7 +3,6 @@ package keeper
 import (
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 )
 
@@ -20,21 +19,6 @@ func (k Keeper) GetNode(ctx sdk.Context, address sdk.Address) (n exported.Valida
 	}
 	return n, true
 }
-
-// get the node from the public key string
-func (k Keeper) GetNodeFromPublicKey(ctx sdk.Context, pubKey string) (node exported.ValidatorI, found bool) {
-	// get the node at the session context
-	pk, err := crypto.NewPublicKey(pubKey)
-	if err != nil {
-		return nil, false
-	}
-	return k.GetNode(ctx, sdk.Address(pk.Address()))
-}
-
-//// todo create store in pos module for efficiency
-//func (k Keeper) GetAllNodesForChain(ctx sdk.Context, chain string) (nodes []exported.ValidatorI) {
-//	return nil
-//}
 
 // self node is needed to verify that self node is part of a session
 func (k Keeper) GetSelfNode(ctx sdk.Context) (node exported.ValidatorI, er sdk.Error) {

@@ -73,6 +73,18 @@ func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64) sdk.Error 
 	}, r.Proof)
 }
 
+func (r Relay) HashString() string {
+	return hex.EncodeToString(r.Hash())
+}
+
+func (r Relay) Hash() []byte {
+	res, err := json.Marshal(r)
+	if err != nil {
+		panic(fmt.Sprintf("an error occured hashing the relay:\n%v", err))
+	}
+	return Hash(res)
+}
+
 // the payload of the relay
 type Payload struct {
 	Data    string            `json:"data"`    // the actual data string for the external chain
@@ -90,9 +102,10 @@ func (p Payload) Validate() sdk.Error {
 
 // response structure for the relay
 type RelayResponse struct {
-	Signature string     `json:"signature"`  // signature from the node in hex
-	Response  string     `json:"payload"`    // response to relay
-	Proof     RelayProof `json:"RelayProof"` // to be signed by the client
+	Signature   string     `json:"signature"`   // signature from the node in hex
+	RequestHash string     `json:"RequestHash"` // the hash of the relay request
+	Response    string     `json:"payload"`     // response to relay
+	Proof       RelayProof `json:"RelayProof"`  // to be signed by the client
 }
 
 // node validates the response after signing
@@ -100,6 +113,9 @@ func (rr RelayResponse) Validate() sdk.Error { // todo more validaton
 	// cannot contain empty response
 	if rr.Response == "" {
 		return NewEmptyResponseError(ModuleName)
+	}
+	if rr.RequestHash == "" {
+		return NewEmptyHashError(ModuleName)
 	}
 	// cannot contain empty signature (nodes must be accountable)
 	if rr.Signature == "" || len(rr.Signature) == crypto.Ed25519SignatureSize {
@@ -111,9 +127,10 @@ func (rr RelayResponse) Validate() sdk.Error { // todo more validaton
 // node signs the response before validating back
 func (rr RelayResponse) Hash() []byte {
 	seed, err := json.Marshal(relayResponse{
-		Signature: "",
-		Response:  rr.Response,
-		Proof:     rr.Proof.HashString(),
+		Signature:   "",
+		Response:    rr.Response,
+		RequestHash: rr.RequestHash,
+		Proof:       rr.Proof.HashString(),
 	})
 	if err != nil {
 		panic(fmt.Sprintf("an error occured hashing the relay response:\n%v", err))
@@ -127,9 +144,10 @@ func (rr RelayResponse) HashString() string {
 }
 
 type relayResponse struct {
-	Signature string `json:"signature"`
-	Response  string `json:"payload"`
-	Proof     string `json:"RelayProof"`
+	Signature   string `json:"signature"`
+	Response    string `json:"payload"`
+	RequestHash string `json:"RequestHash"`
+	Proof       string `json:"RelayProof"`
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint

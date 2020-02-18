@@ -207,6 +207,7 @@ var queryNodes = &cobra.Command{
 var queryNode = &cobra.Command{
 	Use:   "node <address> <height>",
 	Short: "Gets node from address",
+	Args:  cobra.MinimumNArgs(1),
 	Long:  `Returns the node at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
@@ -313,6 +314,7 @@ var queryApps = &cobra.Command{
 var queryApp = &cobra.Command{
 	Use:   "app <address> <height>",
 	Short: "Gets app from address",
+	Args:  cobra.MinimumNArgs(1),
 	Long:  `Returns the app at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
@@ -365,6 +367,7 @@ var queryAppParams = &cobra.Command{
 var queryNodeProofs = &cobra.Command{
 	Use:   "node-proofs <nodeAddr> <height>",
 	Short: "Gets node proofs",
+	Args:  cobra.MinimumNArgs(1),
 	Long:  `Returns the list of all Relay Batch proofs submitted by <nodeAddr> at <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)

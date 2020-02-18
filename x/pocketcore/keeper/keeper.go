@@ -16,7 +16,7 @@ type Keeper struct {
 	appKeeper          types.AppsKeeper
 	Keybase            keys.Keybase
 	TmNode             client.Client
-	coinbasePassphrase string // todo is this safe??
+	coinbasePassphrase string // todo infrastructure security task
 	hostedBlockchains  types.HostedBlockchains
 	Paramstore         params.Subspace
 	storeKey           sdk.StoreKey // Unexposed key to access store from sdk.Context

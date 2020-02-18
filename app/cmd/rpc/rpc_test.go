@@ -424,7 +424,7 @@ func TestRPC_Relay(t *testing.T) {
 		Relay(rec, q, httprouter.Params{})
 		resp := getJSONResponse(rec)
 		var response pocketTypes.RelayResponse
-		err := json.Unmarshal([]byte(resp), &response)
+		err := json.Unmarshal(resp, &response)
 		assert.Nil(t, err)
 		assert.Equal(t, expectedResponse, response.Response)
 		cleanup()
