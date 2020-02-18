@@ -6,11 +6,6 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// get all the apps from the world state
-func (k Keeper) GetAllApps(ctx sdk.Context) []exported.ApplicationI {
-	return k.appKeeper.AllApplications(ctx)
-}
-
 // get an app from the world state
 func (k Keeper) GetApp(ctx sdk.Context, address sdk.Address) (a exported.ApplicationI, found bool) {
 	a = k.appKeeper.Application(ctx, address)

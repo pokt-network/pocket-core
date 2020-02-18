@@ -397,30 +397,35 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 }
 
 func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
+	// get the coinbase, as it is the sender of the automatic message
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		return txBuilder, cliCtx, err
 	}
+	// get the from address from the coinbase
+	fromAddr := kp.GetAddress()
+	// get the genesis doc from the node for the chainID
 	genDoc, err := n.Genesis()
 	if err != nil {
 		return txBuilder, cliCtx, err
 	}
-	fromAddr := kp.GetAddress()
+	// create a client context for sending
 	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
+	// broadcast synchronously
 	cliCtx.BroadcastMode = util.BroadcastSync
+	// get the account to ensure balance
 	accGetter := auth.NewAccountRetriever(cliCtx)
-	err = accGetter.EnsureExists(fromAddr)
-	if err != nil {
-		return txBuilder, cliCtx, err
-	}
+	// retrieve the account for a balance check (and ensure it exists)
 	account, err := accGetter.GetAccount(fromAddr)
 	if err != nil {
 		return txBuilder, cliCtx, err
 	}
+	// check the fee amount
 	fee := sdk.NewInt(pc.PocketFeeMap[msgType])
-	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LTE(fee) { // todo get stake denom
-		ctx.Logger().Error(fmt.Sprintf("insufficient funds for the auto %s transaction: the fee needed is %v pokt", msgType, fee))
+	if account.GetCoins().AmountOf(k.posKeeper.StakeDenom(ctx)).LTE(fee) {
+		ctx.Logger().Error(fmt.Sprintf("insufficient funds for the auto %s transaction: the fee needed is %v ", msgType, fee))
 	}
+	// ensure that the tx builder has the correct tx encoder, chainID, fee, and keybase
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(k.cdc),
 		genDoc.Genesis.ChainID,
