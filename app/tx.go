@@ -3,7 +3,9 @@ package app
 import (
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"net/url"
 )
 
 func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.TxResponse, error) {
@@ -14,6 +16,9 @@ func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.
 	ta, err := sdk.AddressFromHex(toAddr)
 	if err != nil {
 		return nil, err
+	}
+	if amount.LTE(sdk.ZeroInt()){
+		return nil, sdk.ErrInternal("must send above 0")
 	}
 	return nodes.Send(Codec(), getTMClient(), MustGetKeybase(), fa, ta, passphrase, amount)
 }
@@ -32,6 +37,19 @@ func StakeNode(chains []string, serviceUrl, fromAddr, passphrase string, amount 
 		return nil, err
 	}
 	kp, err := (MustGetKeybase()).Get(fa)
+	if err != nil {
+		return nil, err
+	}
+	for _, chain := range chains {
+		err := pocketTypes.HashVerification(chain)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if amount.LTE(sdk.NewInt(0)) {
+		return nil, sdk.ErrInternal("must stake above zero")
+	}
+	_, err = url.ParseRequestURI(serviceUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -62,6 +80,15 @@ func StakeApp(chains []string, fromAddr, passphrase string, amount sdk.Int) (*sd
 	kp, err := (MustGetKeybase()).Get(fa)
 	if err != nil {
 		return nil, err
+	}
+	for _, chain := range chains {
+		err := pocketTypes.HashVerification(chain)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if amount.LTE(sdk.NewInt(0)) {
+		return nil, sdk.ErrInternal("must stake above zero")
 	}
 	return apps.StakeTx(Codec(), getTMClient(), MustGetKeybase(), chains, amount, kp, passphrase)
 }

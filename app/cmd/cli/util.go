@@ -22,10 +22,18 @@ var generateChainCmd = &cobra.Command{
 	Use:   "generate-chain <ticker> <netid> <version> <client> <interface>",
 	Short: "generate a chain identifier",
 	Long:  `Creates a Network Identifier hash, used as a parameter for both node and App stake.`,
-	Args:  cobra.MinimumNArgs(5),
+	Args:  cobra.MinimumNArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
+		var client, inter string
 		app.SetTMNode(tmNode)
-		res, err := app.GenerateChain(args[0], args[1], args[2], args[3], args[4])
+		switch len(args) {
+		case 4:
+			client = args[3]
+		case 5:
+			client = args[3]
+			inter = args[4]
+		}
+		res, err := app.GenerateChain(args[0], args[1], args[2], client, inter)
 		if err != nil {
 			fmt.Println(err)
 			return

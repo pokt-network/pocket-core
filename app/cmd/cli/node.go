@@ -5,6 +5,8 @@ import (
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/posmint/types"
 	"github.com/spf13/cobra"
+	"log"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -35,7 +37,12 @@ var nodeStakeCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		chains := strings.Split(args[2], ",")
+		reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+		if err != nil {
+			log.Fatal(err)
+		}
+		rawChains := reg.ReplaceAllString(args[2], "")
+		chains := strings.Split(rawChains, ",")
 		serviceURI := args[3]
 		fmt.Println("Enter Password: ")
 		res, err := app.StakeNode(chains, serviceURI, fromAddr, app.Credentials(), types.NewInt(int64(amount)))
