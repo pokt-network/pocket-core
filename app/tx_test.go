@@ -288,7 +288,7 @@ func TestSendRawTx(t *testing.T) {
 func TestClaimTx(t *testing.T) {
 	genBz, validators, app := fiveValidatorsOneAppGenesis()
 	kb := getInMemoryKeybase()
-	for i := 0; i < 8; i++ {
+	for i := 0; i < 5; i++ {
 		appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 		assert.Nil(t, err)
 		// setup AAT

@@ -423,7 +423,6 @@ func TestQueryRelay(t *testing.T) {
 	}
 	relay.Proof.Signature = hex.EncodeToString(sig)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-
 	select {
 	case <-evtChan:
 		res, err := pocket.QueryRelay(memCodec(), memCli, relay)
@@ -434,18 +433,22 @@ func TestQueryRelay(t *testing.T) {
 			BodyString(expectedRequest).
 			Reply(200).
 			BodyString(expectedResponse)
-		inv, found  := types.GetAllInvoices().GetInvoice(types.SessionHeader{
-			ApplicationPubKey:  aat.ApplicationPublicKey,
-			Chain:              relay.Proof.Blockchain,
-			SessionBlockHeight: relay.Proof.SessionBlockHeight,
-		})
-		assert.True(t, found)
-		assert.NotNil(t, inv)
-		assert.Equal(t, inv.TotalRelays, int64(1))
-		cleanup()
-		stopCli()
-		gock.Off()
-		return
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+		select {
+		case <-evtChan:
+			inv, found := types.GetAllInvoices().GetInvoice(types.SessionHeader{
+				ApplicationPubKey:  aat.ApplicationPublicKey,
+				Chain:              relay.Proof.Blockchain,
+				SessionBlockHeight: relay.Proof.SessionBlockHeight,
+			})
+			assert.True(t, found)
+			assert.NotNil(t, inv)
+			assert.Equal(t, inv.TotalRelays, int64(1))
+			cleanup()
+			stopCli()
+			gock.Off()
+			return
+		}
 	}
 }
 
