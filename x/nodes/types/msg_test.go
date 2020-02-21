@@ -341,12 +341,12 @@ func TestMsgSend_ValidateBasic(t *testing.T) {
 			FromAddress: nil,
 			ToAddress:   va2,
 			Amount:      sdk.OneInt(),
-		}, ErrBadValidatorAddr(DefaultCodespace)},
+		}, ErrNoValidatorFound(DefaultCodespace)},
 		{"Test ValidateBasic empty to", fields{
 			FromAddress: va,
 			ToAddress:   nil,
 			Amount:      sdk.OneInt(),
-		}, ErrBadValidatorAddr(DefaultCodespace)},
+		}, ErrNoValidatorFound(DefaultCodespace)},
 		{"Test ValidateBasic bad amount", fields{
 			FromAddress: va,
 			ToAddress:   va2,
@@ -739,7 +739,7 @@ func TestMsgUnjail_ValidateBasic(t *testing.T) {
 		want   sdk.Error
 	}{
 		{"Test ValidateBasic OK", fields{va}, nil},
-		{"Test ValidateBasic bad address", fields{nil}, ErrBadValidatorAddr(DefaultCodespace)},
+		{"Test ValidateBasic bad address", fields{nil}, ErrNoValidatorFound(DefaultCodespace)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

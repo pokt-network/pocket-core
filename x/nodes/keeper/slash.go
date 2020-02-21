@@ -78,7 +78,7 @@ func (k Keeper) validateSlash(ctx sdk.Context, addr sdk.Address, infractionHeigh
 // handle a validator signing two blocks at the same height
 // power: power of the double-signing validator at the height of infraction
 func (k Keeper) handleDoubleSign(ctx sdk.Context, addr crypto.Address, infractionHeight int64, timestamp time.Time, power int64) {
-	consAddr, signInfo, validator, err := k.validateDoubleSign(ctx, addr, infractionHeight, timestamp)
+	address, _, _, err := k.validateDoubleSign(ctx, addr, infractionHeight, timestamp)
 	if err != nil {
 		panic(err)
 	}
@@ -95,38 +95,13 @@ func (k Keeper) handleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeSlash,
-			sdk.NewAttribute(types.AttributeKeyAddress, consAddr.String()),
+			sdk.NewAttribute(types.AttributeKeyAddress, address.String()),
 			sdk.NewAttribute(types.AttributeKeyPower, fmt.Sprintf("%d", power)),
 			sdk.NewAttribute(types.AttributeKeyReason, types.AttributeValueDoubleSign),
 		),
 	)
-	k.slash(ctx, consAddr, distributionHeight, power, fraction)
-
-	// JailValidator validator if not already jailed
-	if !validator.IsJailed() {
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeSlash,
-				sdk.NewAttribute(types.AttributeKeyJailed, consAddr.String()),
-			),
-		)
-		k.JailValidator(ctx, consAddr)
-	}
-	// force the validator to unstake if isn't already
-	v, found := k.GetValidator(ctx, validator.GetAddress())
-	if !found {
-		panic(types.ErrNoValidatorFound(k.codespace))
-	}
-	err = k.ForceValidatorUnstake(ctx, v)
-	if err != nil {
-		panic(err)
-	}
-	// Set tombstoned to be true
-	signInfo.Tombstoned = true
-	// Set jailed until to be forever (max t)
-	signInfo.JailedUntil = types.DoubleSignJailEndTime
-	// Set validator signing info
-	k.SetValidatorSigningInfo(ctx, consAddr, signInfo)
+	k.slash(ctx, address, distributionHeight, power, fraction)
+	// todo fix once tendermint is patched
 }
 
 func (k Keeper) validateDoubleSign(ctx sdk.Context, addr crypto.Address, infractionHeight int64, timestamp time.Time) (address sdk.Address, signInfo types.ValidatorSigningInfo, validator exported.ValidatorI, err sdk.Error) {

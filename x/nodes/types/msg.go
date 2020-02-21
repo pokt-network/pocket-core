@@ -114,7 +114,7 @@ func (msg MsgUnjail) GetSignBytes() []byte {
 // Quick validity check, stateless
 func (msg MsgUnjail) ValidateBasic() sdk.Error {
 	if msg.ValidatorAddr.Empty() {
-		return ErrBadValidatorAddr(DefaultCodespace)
+		return ErrNoValidatorFound(DefaultCodespace)
 	}
 	return nil
 }
@@ -144,10 +144,10 @@ func (msg MsgSend) GetSignBytes() []byte {
 // Quick validity check, stateless
 func (msg MsgSend) ValidateBasic() sdk.Error {
 	if msg.FromAddress.Empty() {
-		return ErrBadValidatorAddr(DefaultCodespace)
+		return ErrNoValidatorFound(DefaultCodespace)
 	}
 	if msg.ToAddress.Empty() {
-		return ErrBadValidatorAddr(DefaultCodespace)
+		return ErrNoValidatorFound(DefaultCodespace)
 	}
 	if msg.Amount.LTE(sdk.ZeroInt()) {
 		return ErrBadSendAmount(DefaultCodespace)

@@ -86,8 +86,8 @@ func TestErrBadValidatorAddr(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ErrBadValidatorAddr(tt.args.codespace); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ErrBadValidatorAddr() = %v, want %v", got, tt.want)
+			if got := ErrNoValidatorFound(tt.args.codespace); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ErrNoValidatorFound() = %v, want %v", got, tt.want)
 			}
 		})
 	}

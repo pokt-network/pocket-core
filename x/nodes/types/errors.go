@@ -90,10 +90,6 @@ func ErrNoValidatorForAddress(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidValidator, "that address is not associated with any known validator")
 }
 
-func ErrBadValidatorAddr(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidValidator, "validator does not exist for that address")
-}
-
 func ErrValidatorJailed(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeValidatorJailed, "validator still jailed, cannot yet be unjailed")
 }
