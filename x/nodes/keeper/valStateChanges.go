@@ -240,7 +240,14 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Context, validator types.Valida
 // force unstake (called when slashed below the minimum)
 func (k Keeper) ForceValidatorUnstake(ctx sdk.Context, validator types.Validator) sdk.Error {
 	// delete the validator from staking set as they are unstaked
-	k.deleteValidatorFromStakingSet(ctx, validator)
+	switch validator.Status {
+	case sdk.Staked:
+		k.deleteValidatorFromStakingSet(ctx, validator)
+	case sdk.Unstaking:
+		k.deleteUnstakingValidator(ctx, validator)
+	default:
+		panic(sdk.ErrInternal("trying to force unstake an already unstaked validator"))
+	}
 	// amount unstaked = stakedTokens
 	err := k.burnStakedTokens(ctx, validator.StakedTokens)
 	if err != nil {
@@ -302,6 +309,9 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Context, msg types.MsgUnjail) (add
 	info, found := k.GetValidatorSigningInfo(ctx, addr)
 	if !found {
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())
+	}
+	if info.JailedUntil.After(time.Now()) {
+		return nil, types.ErrValidatorJailed(k.Codespace())
 	}
 	// cannot be unjailed if tombstoned
 	if info.Tombstoned {
