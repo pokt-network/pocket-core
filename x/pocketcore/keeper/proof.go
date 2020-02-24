@@ -24,19 +24,25 @@ func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
 func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc.MsgProof) error {
 	ctx.Logger().Info(fmt.Sprintf("ValidateProof(MsgClaim= %+v, proofMsg= %+v) \n", claimMsg, proofMsg))
 	// generate the needed pseudorandom claimMsg index
+	ctx.Logger().Info(fmt.Sprintf("Generate psuedorandom claimMsg with %+v, %+v", claimMsg.TotalRelays, claimMsg.SessionBlockHeight))
 	reqProof, err := k.GetPseudorandomIndex(ctx, claimMsg.TotalRelays, claimMsg.SessionHeader)
 	if err != nil {
 		return err
 	}
 	// if the required claimMsg index does not match the proofMsg leafNode index
+	ctx.Logger().Info(fmt.Sprintf("Check Required claimMsgIdx: %v,  matches proofMsg leafNode Idx %v:\n", reqProof,  int64(proofMsg.MerkleProofs[0].Index)))
 	if reqProof != int64(proofMsg.MerkleProofs[0].Index) {
 		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate level count on claimMsg by total relays
-	if len(proofMsg.MerkleProofs[0].HashSums) != int(math.Ceil(math.Log2(float64(claimMsg.TotalRelays)))) {
+	levelCount := len(proofMsg.MerkleProofs[0].HashSums)
+	ctx.Logger().Info(fmt.Sprintf("validate level count claimMsg: %v, By total relays: %v \n", levelCount, int(math.Ceil(math.Log2(float64(claimMsg.TotalRelays))))))
+	if levelCount != int(math.Ceil(math.Log2(float64(claimMsg.TotalRelays)))) {
 		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
+
 	// do a merkle claimMsg using the merkle claimMsg, the previously submitted root, and the leafNode to ensure validity of the proofMsg
+	ctx.Logger().Info(fmt.Sprintf("do a merkle claimMsg using: %v, %v, %v, %v \n", claimMsg.MerkleRoot, proofMsg.Leaf, proofMsg.Cousin, claimMsg.TotalRelays))
 	if !proofMsg.MerkleProofs.Validate(claimMsg.MerkleRoot, proofMsg.Leaf, proofMsg.Cousin, claimMsg.TotalRelays) {
 		return pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
@@ -53,7 +59,6 @@ func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc
 
 // generates the required pseudorandom index for the zero knowledge proof
 func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) (int64, error) {
-	ctx.Logger().Info(fmt.Sprintf("GetPseudorandomIndex(totalRelays= %v, header= %+v) \n", totalRelays, header))
 	// get the context for the proof (the proof context is X sessions after the session began)
 	proofContext := ctx.MustGetPrevCtx(header.SessionBlockHeight + k.ProofWaitingPeriod(ctx)*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
@@ -118,11 +123,13 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			continue
 		}
 		// if the blockchain in the invoice is not supported then delete it because nodes don't get paid for unsupported blockchains
+		ctx.Logger().Info(fmt.Sprintf("check if invoice supported for chain %v \n", invoice.SessionHeader.Chain))
 		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(invoice.SessionHeader.SessionBlockHeight), invoice.SessionHeader.Chain) && invoice.TotalRelays > 0 {
 			invoices.DeleteInvoice(invoice.SessionHeader)
 			continue
 		}
 		// check the current state to see if the unverified invoice has already been sent and processed (if so, then skip this invoice)
+		ctx.Logger().Info(fmt.Sprintf("get claim for address: %v with header %+v", sdk.Address(kp.GetAddress()).String(), invoice.SessionHeader))
 		if _, found := k.GetClaim(ctx, sdk.Address(kp.GetAddress()), invoice.SessionHeader); found {
 			continue
 		}
@@ -415,10 +422,8 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 	ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(SessionBlockHeight = %v)", sessionBlockHeight))
 	waitingPeriodInBlocks := k.ProofWaitingPeriod(ctx) * k.SessionFrequency(ctx)
 	if ctx.BlockHeight() > waitingPeriodInBlocks+sessionBlockHeight {
-		ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(...) = %v; block height higher than waitingPeriod \n", true))
 		return true
 	}
-	ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(...) = %v; block height lower than waitingPeriod \n", false))
 	return false
 }
 
@@ -459,6 +464,5 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, key
 		"",
 		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), fee)),
 	).WithKeybase(keybase)
-	ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(...) = %+v, %+v, %v \n", txBuilder, cliCtx, err))
 	return
 }
