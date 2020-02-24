@@ -45,7 +45,7 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := keys.New(app.KeybaseName, app.InitDataDirectory(datadir)+string(filepath.Separator)+app.KBDirectoryName)
-		fmt.Print("Enter Password: \n")
+		fmt.Print("Enter Passphrase: \n")
 		kp, err := kb.Create(app.Credentials())
 		if err != nil {
 			fmt.Printf("Account generation Failed, %s", err)
