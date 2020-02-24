@@ -17,7 +17,7 @@ func SendTransaction(fromAddr, toAddr, passphrase string, amount sdk.Int) (*sdk.
 	if err != nil {
 		return nil, err
 	}
-	if amount.LTE(sdk.ZeroInt()){
+	if amount.LTE(sdk.ZeroInt()) {
 		return nil, sdk.ErrInternal("must send above 0")
 	}
 	return nodes.Send(Codec(), getTMClient(), MustGetKeybase(), fa, ta, passphrase, amount)

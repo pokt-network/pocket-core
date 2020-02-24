@@ -13,6 +13,7 @@ func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.Addres
 	award, _ := k.getValidatorAward(ctx, address)
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
 	k.setValidatorAward(ctx, award.Add(coins), address)
+	ctx.Logger().Info("Custom award of " + coins.String() + " set for " + address.String())
 }
 
 // blockReward handles distribution of the collected fees
@@ -138,6 +139,7 @@ func (k Keeper) mintNodeRelayRewards(ctx sdk.Context) {
 		k.mint(ctx, amount, address)
 		// remove from the award store
 		store.Delete(iterator.Key())
+		ctx.Logger().Info("Relay reward of " + amount.String() + " minted to" + address.String())
 	}
 }
 
@@ -148,7 +150,7 @@ func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.Address) sdk.R
 	if mintErr != nil {
 		return mintErr.Result()
 	}
-	sendErr := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.Address(address), coins)
+	sendErr := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, address, coins)
 	if sendErr != nil {
 		return sendErr.Result()
 	}

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -23,16 +22,14 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
 	// burn any custom validator slashes
 	k.burnValidators(ctx)
 	// record the new proposer for when we payout on the next block
-	consAddr := sdk.Address(req.Header.ProposerAddress)
-	k.SetPreviousProposer(ctx, consAddr)
-
+	addr := sdk.Address(req.Header.ProposerAddress)
+	k.SetPreviousProposer(ctx, addr)
 	// Iterate over all the validators which *should* have signed this block
 	// store whether or not they have actually signed it and slash/unstake any
 	// which have missed too many blocks in a row (downtime slashing)
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
 		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock)
 	}
-
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
 	// who contributed to valid infractions
@@ -51,17 +48,7 @@ func EndBlocker(ctx sdk.Context, k Keeper) []abci.ValidatorUpdate {
 	// Calculate validator set changes.
 	// NOTE: UpdateTendermintValidators has to come before unstakeAllMatureValidators.
 	validatorUpdates := k.UpdateTendermintValidators(ctx)
-	// get the mature (ready to unstake) validators from the network
-	matureValidators := k.getMatureValidators(ctx)
 	// Unstake all mature validators from the unstakeing queue.
 	k.unstakeAllMatureValidators(ctx)
-	for _, valAddr := range matureValidators {
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeCompleteUnstaking,
-				sdk.NewAttribute(types.AttributeKeyValidator, valAddr.String()),
-			),
-		)
-	}
 	return validatorUpdates
 }

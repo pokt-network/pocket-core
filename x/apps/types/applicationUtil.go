@@ -15,7 +15,7 @@ type Applications []Application
 
 func (a Applications) String() (out string) {
 	for _, val := range a {
-		out += val.String() + "\n"
+		out += val.String() + "\n\n"
 	}
 	return strings.TrimSpace(out)
 }
