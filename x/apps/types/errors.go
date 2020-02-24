@@ -13,6 +13,7 @@ const (
 	DefaultCodespace          sdk.CodespaceType = ModuleName
 	CodeInvalidApplication    CodeType          = 101
 	CodeInvalidInput          CodeType          = 103
+	CodeApplicationJailed     CodeType          = 104
 	CodeApplicationNotJailed  CodeType          = 105
 	CodeMissingSelfDelegation CodeType          = 106
 	CodeInvalidStatus         CodeType          = 110
@@ -62,6 +63,10 @@ func ErrNoApplicationForAddress(codespace sdk.CodespaceType) sdk.Error {
 
 func ErrBadApplicationAddr(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidApplication, "application does not exist for that address")
+}
+
+func ErrApplicationJailed(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeApplicationJailed, "application still jailed, cannot yet be unjailed")
 }
 
 func ErrApplicationNotJailed(codespace sdk.CodespaceType) sdk.Error {

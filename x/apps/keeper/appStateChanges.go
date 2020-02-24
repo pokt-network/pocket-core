@@ -20,7 +20,9 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Context, application types.Ap
 		if !app.IsUnstaked() {
 			return types.ErrApplicationStatus(k.codespace)
 		}
-		// if the application does not exist
+		if app.IsJailed() {
+			return types.ErrApplicationJailed(k.codespace)
+		}
 	} else {
 		// ensure public key type is supported
 		if ctx.ConsensusParams() != nil {
@@ -67,6 +69,9 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Context, application t
 	if !application.IsStaked() {
 		return types.ErrApplicationStatus(k.codespace)
 	}
+	if application.IsJailed() {
+		return types.ErrApplicationJailed(k.codespace)
+	}
 	// sanity check
 	if application.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		panic("should not happen: application trying to begin unstaking has less than the minimum stake")
@@ -75,7 +80,7 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Context, application t
 }
 
 // store ops when application begins to unstake -> starts the unstaking timer
-func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.Application) sdk.Error {
+func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.Application) {
 	// get params
 	params := k.GetParams(ctx)
 	// delete the application from the staking set, as it is technically staked but not going to participate
@@ -88,12 +93,15 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.App
 	k.SetApplication(ctx, application)
 	// Adds to unstaking application queue
 	k.SetUnstakingApplication(ctx, application)
-	return nil
+	ctx.Logger().Info("Began unstaking App " + application.Address.String())
 }
 
 func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Context, application types.Application) sdk.Error {
 	if !application.IsUnstaking() {
 		return types.ErrApplicationStatus(k.codespace)
+	}
+	if application.IsJailed() {
+		return types.ErrApplicationJailed(k.codespace)
 	}
 	// sanity check
 	if application.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
@@ -103,7 +111,7 @@ func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Context, application 
 }
 
 // store ops to unstake a application -> called after unstaking time is up
-func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Application) sdk.Error {
+func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Application) {
 	// delete the application from the unstaking queue
 	k.deleteUnstakingApplication(ctx, application)
 	// amount unstaked = stakedTokens
@@ -118,6 +126,7 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 	application.MaxRelays = sdk.ZeroInt()
 	// update the application in the main store
 	k.SetApplication(ctx, application)
+	ctx.Logger().Info("Finished unstaking application " + application.Address.String())
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -131,7 +140,6 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 			sdk.NewAttribute(sdk.AttributeKeySender, application.Address.String()),
 		),
 	})
-	return nil
 }
 
 // force unstake (called when slashed below the minimum)
@@ -151,6 +159,7 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Appli
 	application.MaxRelays = sdk.ZeroInt()
 	// set the application in store
 	k.SetApplication(ctx, application)
+	ctx.Logger().Info("Force Unstaked application " + application.Address.String())
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

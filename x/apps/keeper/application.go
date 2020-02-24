@@ -22,6 +22,8 @@ func (k Keeper) SetApplication(ctx sdk.Context, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalApplication(k.cdc, application)
 	store.Set(types.KeyForAppByAllApps(application.Address), bz)
+	ctx.Logger().Info("Setting App on Main Store " + application.Address.String())
+
 }
 
 // get the set of all applications with no limits from the main store

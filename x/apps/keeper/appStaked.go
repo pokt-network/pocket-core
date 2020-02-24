@@ -13,6 +13,7 @@ func (k Keeper) SetStakedApplication(ctx sdk.Context, application types.Applicat
 	}
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForAppInStakingSet(application), application.Address)
+	ctx.Logger().Info("Setting App on Staking Set " + application.Address.String())
 }
 
 // Get the denomination of coins.
@@ -24,10 +25,12 @@ func (k Keeper) StakeDenom(ctx sdk.Context) string {
 func (k Keeper) deleteApplicationFromStakingSet(ctx sdk.Context, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForAppInStakingSet(application))
+	ctx.Logger().Info("Removing App From Staking Set " + application.Address.String())
 }
 
 // Update the staked tokens of an existing application, update the applications power index key
 func (k Keeper) removeApplicationTokens(ctx sdk.Context, application types.Application, tokensToRemove sdk.Int) types.Application {
+	ctx.Logger().Info("Removing Application Tokens, tokensToRemove: " + tokensToRemove.String() + " App Address: " + application.Address.String())
 	k.deleteApplicationFromStakingSet(ctx, application)
 	application = application.RemoveStakedTokens(tokensToRemove)
 	k.SetApplication(ctx, application)
