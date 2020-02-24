@@ -286,6 +286,9 @@ func TestSendRawTx(t *testing.T) {
 }
 
 func TestClaimTx(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
 	genBz, validators, app := fiveValidatorsOneAppGenesis()
 	kb := getInMemoryKeybase()
 	for i := 0; i < 5; i++ {

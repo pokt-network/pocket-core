@@ -41,7 +41,7 @@ jobs:
       - restore_cache:
           key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
       # Run tests
-      - run: go test -p 1 ./...
+      - run: go test -short -p 1 ./...
   # Job to trigger the Pocket Core deployments CI with a specific branch
   trigger-pocket-core-deployments-branches:
     docker:
