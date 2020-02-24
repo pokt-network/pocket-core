@@ -356,7 +356,7 @@ func TestHandleDoubleSign(t *testing.T) {
 					t.FailNow()
 				}
 
-				assert.True(t, signingInfo.Tombstoned)
+				assert.False(t, signingInfo.Tombstoned)
 			}
 		})
 	}
@@ -413,10 +413,10 @@ func TestValidateSlash(t *testing.T) {
 		},
 		{
 			name:   "errors if unstakedValidator",
-			panics: true,
+			panics: false,
 			args:   args{validator: unstakedValidator},
 			expected: expected{
-				validator:      stakedValidator,
+				validator:      unstakedValidator,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
