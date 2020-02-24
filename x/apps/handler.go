@@ -25,12 +25,16 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 }
 
 func handleStake(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Result {
+	ctx.Logger().Info("Begin Staking App Message received from " + sdk.Address(msg.PubKey.Address()).String())
 	// create application object using the message fields
 	application := types.NewApplication(sdk.Address(msg.PubKey.Address()), msg.PubKey, msg.Chains, sdk.ZeroInt())
+	ctx.Logger().Info("Validate App Can Stake " + sdk.Address(msg.PubKey.Address()).String())
 	// check if they can stake
 	if err := k.ValidateApplicationStaking(ctx, application, msg.Value); err != nil {
+		ctx.Logger().Error("Validate App Can Stake Error " + sdk.Address(msg.PubKey.Address()).String())
 		return err.Result()
 	}
+	ctx.Logger().Info("Change App state to Staked " + sdk.Address(msg.PubKey.Address()).String())
 	// change the application state to staked
 	err := k.StakeApplication(ctx, application, msg.Value)
 	if err != nil {
@@ -58,18 +62,21 @@ func handleStake(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Re
 }
 
 func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginAppUnstake, k keeper.Keeper) sdk.Result {
+	ctx.Logger().Info("Begin Unstaking App Message received from " + msg.Address.String())
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the application account and global shares are updated within here
 	application, found := k.GetApplication(ctx, msg.Address)
 	if !found {
+		ctx.Logger().Error("App Not Found " + msg.Address.String())
 		return types.ErrNoApplicationFound(k.Codespace()).Result()
 	}
+	ctx.Logger().Info("Validate Unstaking App " + msg.Address.String())
 	if err := k.ValidateApplicationBeginUnstaking(ctx, application); err != nil {
+		ctx.Logger().Error("App Unstake Validation Not Successful " + msg.Address.String())
 		return err.Result()
 	}
-	if err := k.BeginUnstakingApplication(ctx, application); err != nil {
-		return err.Result()
-	}
+	ctx.Logger().Info("Starting to Unstake App " + msg.Address.String())
+	k.BeginUnstakingApplication(ctx, application)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

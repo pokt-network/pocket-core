@@ -106,12 +106,11 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Context) {
 			}
 			err := k.ValidateApplicationFinishUnstaking(ctx, val)
 			if err != nil {
-				panic(err)
+				ctx.Logger().Error("Could not finish unstaking mature application: " + err.Error())
+				return
 			}
-			err = k.FinishUnstakingApplication(ctx, val)
-			if err != nil {
-				panic(err)
-			}
+			k.FinishUnstakingApplication(ctx, val)
+
 		}
 		store.Delete(unstakingApplicationsIterator.Key())
 	}
