@@ -59,6 +59,8 @@ func handleProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) sdk.Re
 		return sdk.ErrInternal(er.Error()).Result()
 	}
 	// valid claim so award coins for relays
+	ctx.Logger().Info(fmt.Sprintf("reward coins to %v, for %v relays", addr.String(), proof.TotalRelays))
+
 	k.AwardCoinsForRelays(ctx, proof.TotalRelays, addr)
 	er = k.DeleteClaim(ctx, addr, proof.SessionHeader)
 	if er != nil {
@@ -100,6 +102,7 @@ func validateClaimMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim)
 	// generate the session
 	session, err := types.NewSession(app.GetPublicKey().RawString(), msg.Chain, types.BlockHashFromBlockHeight(ctx, msg.SessionBlockHeight), msg.SessionBlockHeight, allNodes, sessionNodeCount)
 	if err != nil {
+		ctx.Logger().Error(fmt.Errorf("Could not generate session with public key: %v,  for chain: %v", app.GetPublicKey().RawString(), msg.Chain).Error())
 		return err
 	}
 	// validate the session

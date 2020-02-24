@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/params"
@@ -22,7 +23,8 @@ func (k Keeper) ClaimExpiration(ctx sdk.Context) (res int64) {
 }
 
 func (k Keeper) SessionFrequency(ctx sdk.Context) int64 {
-	return k.posKeeper.SessionBlockFrequency(ctx)
+	frequency := k.posKeeper.SessionBlockFrequency(ctx)
+	return frequency
 }
 
 func (k Keeper) ProofWaitingPeriod(ctx sdk.Context) (res int64) {
@@ -36,15 +38,17 @@ func (k Keeper) SupportedBlockchains(ctx sdk.Context) (res []string) {
 }
 
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
-	return types.Params{
+	params := types.Params{
 		SessionNodeCount:     k.SessionNodeCount(ctx),
 		ProofWaitingPeriod:   k.ProofWaitingPeriod(ctx),
 		SupportedBlockchains: k.SupportedBlockchains(ctx),
 		ClaimExpiration:      k.ClaimExpiration(ctx),
 	}
+	return params
 }
 
 // set the params object all at once
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	ctx.Logger().Info(fmt.Sprintf("SetParams(Params = %v) \n", params))
 	k.Paramstore.SetParamSet(ctx, &params)
 }
