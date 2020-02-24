@@ -56,6 +56,7 @@ func handleStake(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Resul
 }
 
 func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginUnstake, k keeper.Keeper) sdk.Result {
+	ctx.Logger().Info("Begin Unstaking Message received from " + msg.Address.String())
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the validator account and global shares are updated within here
 	validator, found := k.GetValidator(ctx, msg.Address)
@@ -87,6 +88,7 @@ func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginUnstake, k keeper.
 // Validators must submit a transaction to unjail itself after todo
 // having been jailed (and thus unstaked) for downtime
 func handleMsgUnjail(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper) sdk.Result {
+	ctx.Logger().Info("Unjail Message received from " + msg.ValidatorAddr.String())
 	addr, err := k.ValidateUnjailMessage(ctx, msg)
 	if err != nil {
 		return err.Result()
@@ -103,6 +105,7 @@ func handleMsgUnjail(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper) sdk.
 }
 
 func handleMsgSend(ctx sdk.Context, msg types.MsgSend, k keeper.Keeper) sdk.Result {
+	ctx.Logger().Info("Send Message from " + msg.FromAddress.String() + " received")
 	err := k.SendCoins(ctx, msg.FromAddress, msg.ToAddress, msg.Amount)
 	if err != nil {
 		return err.Result()
@@ -113,6 +116,5 @@ func handleMsgSend(ctx sdk.Context, msg types.MsgSend, k keeper.Keeper) sdk.Resu
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 		),
 	)
-
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }

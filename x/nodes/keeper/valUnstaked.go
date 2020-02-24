@@ -139,12 +139,10 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Context) {
 			}
 			err := k.ValidateValidatorFinishUnstaking(ctx, val)
 			if err != nil {
-				ctx.Logger().Error(err.Error())
+				ctx.Logger().Error("Could not finish unstaking mature validator: " + err.Error())
+				return
 			}
-			err = k.FinishUnstakingValidator(ctx, val)
-			if err != nil {
-				ctx.Logger().Error(err.Error())
-			}
+			k.FinishUnstakingValidator(ctx, val)
 		}
 		store.Delete(unstakingValidatorsIterator.Key())
 	}

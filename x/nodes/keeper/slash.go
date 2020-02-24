@@ -15,6 +15,7 @@ func (k Keeper) BurnValidator(ctx sdk.Context, address sdk.Address, severityPerc
 	curBurn, _ := k.getValidatorBurn(ctx, address)
 	newSeverity := curBurn.Add(severityPercentage)
 	k.setValidatorBurn(ctx, newSeverity, address)
+	ctx.Logger().Info("Custom burn set for " + address.String() + " with a severity of " + severityPercentage.String())
 }
 
 // slash a validator for an infraction committed at a known height
@@ -70,7 +71,7 @@ func (k Keeper) validateSlash(ctx sdk.Context, addr sdk.Address, infractionHeigh
 	}
 	// should not be slashing an unstaked validator
 	if validator.IsUnstaked() {
-		panic(fmt.Errorf("should not be slashing unstaked validator: %s", validator.GetAddress()))
+		logger.Error(fmt.Errorf("should not be slashing unstaked validator: %s", validator.GetAddress()).Error())
 	}
 	return validator
 }
@@ -82,13 +83,9 @@ func (k Keeper) handleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	if err != nil {
 		panic(err)
 	}
-	// We need to retrieve the stake distribution which signed the block, so we subtract ValidatorUpdateDelay from the evidence height.
-	// Note that this *can* result in a negative "distributionHeight", up to -ValidatorUpdateDelay,
 	distributionHeight := infractionHeight - sdk.ValidatorUpdateDelay
-
 	// get the percentage slash penalty fraction
 	fraction := k.SlashFractionDoubleSign(ctx)
-
 	// slash validator
 	// `power` is the int64 power of the validator as provided to/by Tendermint. This value is validator.StakedTokens as
 	// sent to Tendermint via ABCI, and now received as evidence. The fraction is passed in to separately to slash

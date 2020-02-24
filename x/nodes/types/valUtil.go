@@ -15,7 +15,7 @@ type Validators []Validator
 
 func (v Validators) String() (out string) {
 	for _, val := range v {
-		out += val.String() + "\n"
+		out += val.String() + "\n\n"
 	}
 	return strings.TrimSpace(out)
 }

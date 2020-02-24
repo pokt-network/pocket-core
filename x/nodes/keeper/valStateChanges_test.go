@@ -9,37 +9,6 @@ import (
 	"testing"
 )
 
-func TestKeeper_BeginUnstakingValidator(t *testing.T) {
-	type fields struct {
-		keeper Keeper
-	}
-	type args struct {
-		ctx       sdk.Context
-		validator types.Validator
-	}
-	validator := getStakedValidator()
-	context, _, keeper := createTestInput(t, true)
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   sdk.Error
-	}{
-		{"Test BeginUnstakingValidator", fields{keeper: keeper}, args{
-			ctx:       context,
-			validator: validator,
-		}, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			k := tt.fields.keeper
-			if got := k.BeginUnstakingValidator(tt.args.ctx, tt.args.validator); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("BeginUnstakingValidator() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestKeeper_FinishUnstakingValidator(t *testing.T) {
 	type fields struct {
 		keeper Keeper
@@ -69,9 +38,7 @@ func TestKeeper_FinishUnstakingValidator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
 			// todo: add more tests scenarios
-			if got := k.FinishUnstakingValidator(tt.args.ctx, tt.args.validator); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FinishUnstakingValidator() = %v, want %v", got, tt.want)
-			}
+			k.FinishUnstakingValidator(tt.args.ctx, tt.args.validator)
 		})
 	}
 }

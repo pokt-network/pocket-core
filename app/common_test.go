@@ -466,15 +466,15 @@ func oneValTwoNodeGenesisState() []byte {
 	var authGenState auth.GenesisState
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
-		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
-		PubKey:        pubKey,
+		Address: sdk.Address(pubKey.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
 	})
 	// add second account
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
-		Address:       sdk.Address(pubKey2.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
-		PubKey:        pubKey,
+		Address: sdk.Address(pubKey2.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
 	})
 	res2 := memCodec().MustMarshalJSON(authGenState)
 	defaultGenesis[auth.ModuleName] = res2
@@ -538,15 +538,15 @@ func twoValTwoNodeGenesisState() []byte {
 	var authGenState auth.GenesisState
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
-		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
-		PubKey:        pubKey,
+		Address: sdk.Address(pubKey.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
 	})
 	// add second account
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
-		Address:       sdk.Address(pubKey2.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
-		PubKey:        pubKey,
+		Address: sdk.Address(pubKey2.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
 	})
 	res2 := memCodec().MustMarshalJSON(authGenState)
 	defaultGenesis[auth.ModuleName] = res2
@@ -657,9 +657,9 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	var authGenState auth.GenesisState
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
-		Address:       sdk.Address(pubKey.Address()),
-		Coins:         sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
-		PubKey:        pubKey,
+		Address: sdk.Address(pubKey.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
 	})
 	res = memCodec().MustMarshalJSON(authGenState)
 	defaultGenesis[auth.ModuleName] = res
