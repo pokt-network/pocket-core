@@ -22,6 +22,7 @@ func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
 
 // validate the zero knowledge range proof using the proof message and the claim message
 func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc.MsgProof) error {
+	ctx.Logger().Info(fmt.Sprintf("ValidateProof(MsgClaim= %+v, proofMsg= %+v) \n", claimMsg, proofMsg))
 	// generate the needed pseudorandom claimMsg index
 	reqProof, err := k.GetPseudorandomIndex(ctx, claimMsg.TotalRelays, claimMsg.SessionHeader)
 	if err != nil {
@@ -52,6 +53,7 @@ func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc
 
 // generates the required pseudorandom index for the zero knowledge proof
 func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) (int64, error) {
+	ctx.Logger().Info(fmt.Sprintf("GetPseudorandomIndex(totalRelays= %v, header= %+v) \n", totalRelays, header))
 	// get the context for the proof (the proof context is X sessions after the session began)
 	proofContext := ctx.MustGetPrevCtx(header.SessionBlockHeight + k.ProofWaitingPeriod(ctx)*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
@@ -86,6 +88,7 @@ func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header 
 			if err != nil {
 				return 0, err
 			}
+			ctx.Logger().Info(fmt.Sprintf("GetPseudorandom(...) = %v, %v  \n", index, err))
 			return index, err
 		}
 	}
@@ -100,6 +103,7 @@ type pseudorandomGenerator struct {
 
 // auto sends a claim of work based on relays completed
 func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, claimTx func(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root pc.HashSum) (*sdk.TxResponse, error)) {
+	ctx.Logger().Info(fmt.Sprintf("SendClaimTx(client= %v, keybase= %+v) \n", n, keybase,))
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
@@ -143,6 +147,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 
 // auto sends a proof transaction for the claim
 func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.RelayProof) (*sdk.TxResponse, error)) {
+	ctx.Logger().Info(fmt.Sprintf("SendProofTx(client= %v, keybase= %+v) \n", n, keybase,))
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the ProofTX:\n%v", err))
@@ -203,6 +208,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 
 // set the verified invoice
 func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.Address, p pc.StoredInvoice) error {
+	ctx.Logger().Info(fmt.Sprintf("GetInvoice(address= %v, header= %+v) \n", address.String, p))
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
 	key, err := pc.KeyForInvoice(ctx, address, p.SessionHeader)
@@ -215,6 +221,7 @@ func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.Address, p pc.StoredInvo
 
 // retrieve the verified invoice
 func (k Keeper) GetInvoice(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (invoice pc.StoredInvoice, found bool) {
+	ctx.Logger().Info(fmt.Sprintf("GetInvoice(address= %v, header= %+v) \n", address.String(), header))
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForInvoice(ctx, address, header)
 	if err != nil {
@@ -229,7 +236,9 @@ func (k Keeper) GetInvoice(ctx sdk.Context, address sdk.Address, header pc.Sessi
 	return invoice, true
 }
 
+
 func (k Keeper) SetInvoices(ctx sdk.Context, invoices []pc.StoredInvoice) {
+	ctx.Logger().Info(fmt.Sprintf("SetInvoices(invoices %v) \n", invoices))
 	store := ctx.KVStore(k.storeKey)
 	for _, invoice := range invoices {
 		addrbz, err := hex.DecodeString(invoice.ServicerAddress)
@@ -247,6 +256,7 @@ func (k Keeper) SetInvoices(ctx sdk.Context, invoices []pc.StoredInvoice) {
 
 // get all verified invoices for this address
 func (k Keeper) GetInvoices(ctx sdk.Context, address sdk.Address) (invoices []pc.StoredInvoice, err error) {
+	ctx.Logger().Info(fmt.Sprintf("GetInvoices(address %v) \n", address.String()))
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForInvoices(address)
 	if err != nil {
@@ -272,11 +282,13 @@ func (k Keeper) GetAllInvoices(ctx sdk.Context) (invoices []pc.StoredInvoice) {
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
 		invoices = append(invoices, summary)
 	}
+	ctx.Logger().Info(fmt.Sprintf("GetAllInvoices() = %v \n", invoices))
 	return
 }
 
 // claims ----
 func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) error {
+	ctx.Logger().Info(fmt.Sprintf("SetClaim(MsgClaim = %+v) \n", msg))
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(msg)
 	key, err := pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader)
@@ -288,6 +300,7 @@ func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) error {
 }
 
 func (k Keeper) GetClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
+	ctx.Logger().Info(fmt.Sprintf("GetClaim(Address = %v, header = %+v) \n", address.String(), header))
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForClaim(ctx, address, header)
 	if err != nil {
@@ -299,10 +312,12 @@ func (k Keeper) GetClaim(ctx sdk.Context, address sdk.Address, header pc.Session
 		return pc.MsgClaim{}, false
 	}
 	k.cdc.MustUnmarshalBinaryBare(res, &msg)
+	ctx.Logger().Info(fmt.Sprintf("GetClaim(...) = %+v, %v \n", msg, found))
 	return msg, true
 }
 
 func (k Keeper) SetClaims(ctx sdk.Context, claims []pc.MsgClaim) {
+	ctx.Logger().Info(fmt.Sprintf("SetClaim(claims = %v) \n", claims))
 	store := ctx.KVStore(k.storeKey)
 	for _, msg := range claims {
 		bz := k.cdc.MustMarshalBinaryBare(msg)
@@ -315,6 +330,7 @@ func (k Keeper) SetClaims(ctx sdk.Context, claims []pc.MsgClaim) {
 }
 
 func (k Keeper) GetClaims(ctx sdk.Context, address sdk.Address) (proofs []pc.MsgClaim, err error) {
+	ctx.Logger().Info(fmt.Sprintf("SetClaim(claims = %v) \n", address))
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForClaims(address)
 	if err != nil {
@@ -327,10 +343,12 @@ func (k Keeper) GetClaims(ctx sdk.Context, address sdk.Address) (proofs []pc.Msg
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
 		proofs = append(proofs, summary)
 	}
+	ctx.Logger().Info(fmt.Sprintf("SetClaim(...) = %+v, %v \n", proofs, err))
 	return
 }
 
 func (k Keeper) GetAllClaims(ctx sdk.Context) (proofs []pc.MsgClaim) {
+	ctx.Logger().Info(fmt.Sprint("SetClaim() \n"))
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()
@@ -339,10 +357,12 @@ func (k Keeper) GetAllClaims(ctx sdk.Context) (proofs []pc.MsgClaim) {
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
 		proofs = append(proofs, summary)
 	}
+	ctx.Logger().Info(fmt.Sprintf("SetClaim(...) = %+v \n", proofs))
 	return
 }
 
 func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) error {
+	ctx.Logger().Info(fmt.Sprintf("DeleteClaim(Address = %v, header = %+v) \n", address.String(), header))
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForClaim(ctx, address, header)
 	if err != nil {
@@ -354,6 +374,7 @@ func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.Address, header pc.Sess
 
 // get the mature unverified proofs for this address
 func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.Address) (matureProofs []pc.MsgClaim, err error) {
+	ctx.Logger().Info(fmt.Sprintf("GetMatureClaims(Address = %v) \n", address.String()))
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForClaims(address)
 	if err != nil {
@@ -368,11 +389,13 @@ func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.Address) (maturePro
 			matureProofs = append(matureProofs, msg)
 		}
 	}
+	ctx.Logger().Info(fmt.Sprintf("GetMatureClaims(...) = %+v, %v \n", matureProofs, err))
 	return
 }
 
 // delete expired
 func (k Keeper) DeleteExpiredClaims(ctx sdk.Context) {
+	ctx.Logger().Info(fmt.Sprint("DeleteExpiredClaims()"))
 	var msg = pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
@@ -389,14 +412,18 @@ func (k Keeper) DeleteExpiredClaims(ctx sdk.Context) {
 
 // is the proof mature? able to be claimed because the `waiting period` has passed since the sessionBlock
 func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
+	ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(SessionBlockHeight = %v)", sessionBlockHeight))
 	waitingPeriodInBlocks := k.ProofWaitingPeriod(ctx) * k.SessionFrequency(ctx)
 	if ctx.BlockHeight() > waitingPeriodInBlocks+sessionBlockHeight {
+		ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(...) = %v; block height higher than waitingPeriod \n", true))
 		return true
 	}
+	ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(...) = %v; block height lower than waitingPeriod \n", false))
 	return false
 }
 
 func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
+	ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(msgType = %v, Client = %+v, Keybase = %+v)", msgType, n, keybase))
 	// get the coinbase, as it is the sender of the automatic message
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
@@ -432,5 +459,6 @@ func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, key
 		"",
 		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), fee)),
 	).WithKeybase(keybase)
+	ctx.Logger().Info(fmt.Sprintf("ClaimIsMature(...) = %+v, %+v, %v \n", txBuilder, cliCtx, err))
 	return
 }
