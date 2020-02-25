@@ -30,7 +30,7 @@ func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc
 		return err
 	}
 	// if the required claimMsg index does not match the proofMsg leafNode index
-	ctx.Logger().Info(fmt.Sprintf("Check Required claimMsgIdx: %v,  matches proofMsg leafNode Idx %v:\n", reqProof,  int64(proofMsg.MerkleProofs[0].Index)))
+	ctx.Logger().Info(fmt.Sprintf("Check Required claimMsgIdx: %v,  matches proofMsg leafNode Idx %v:\n", reqProof, int64(proofMsg.MerkleProofs[0].Index)))
 	if reqProof != int64(proofMsg.MerkleProofs[0].Index) {
 		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
@@ -108,7 +108,7 @@ type pseudorandomGenerator struct {
 
 // auto sends a claim of work based on relays completed
 func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, claimTx func(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root pc.HashSum) (*sdk.TxResponse, error)) {
-	ctx.Logger().Info(fmt.Sprintf("SendClaimTx(client= %v, keybase= %+v) \n", n, keybase,))
+	ctx.Logger().Info(fmt.Sprintf("SendClaimTx(client= %v, keybase= %+v) \n", n, keybase))
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
@@ -154,7 +154,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 
 // auto sends a proof transaction for the claim
 func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.RelayProof) (*sdk.TxResponse, error)) {
-	ctx.Logger().Info(fmt.Sprintf("SendProofTx(client= %v, keybase= %+v) \n", n, keybase,))
+	ctx.Logger().Info(fmt.Sprintf("SendProofTx(client= %v, keybase= %+v) \n", n, keybase))
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the ProofTX:\n%v", err))
@@ -215,7 +215,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 
 // set the verified invoice
 func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.Address, p pc.StoredInvoice) error {
-	ctx.Logger().Info(fmt.Sprintf("GetInvoice(address= %v, header= %+v) \n", address.String, p))
+	ctx.Logger().Info(fmt.Sprintf("GetInvoice(address= %v, header= %+v) \n", address.String(), p))
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
 	key, err := pc.KeyForInvoice(ctx, address, p.SessionHeader)
@@ -242,7 +242,6 @@ func (k Keeper) GetInvoice(ctx sdk.Context, address sdk.Address, header pc.Sessi
 	k.cdc.MustUnmarshalBinaryBare(res, &invoice)
 	return invoice, true
 }
-
 
 func (k Keeper) SetInvoices(ctx sdk.Context, invoices []pc.StoredInvoice) {
 	ctx.Logger().Info(fmt.Sprintf("SetInvoices(invoices %v) \n", invoices))
