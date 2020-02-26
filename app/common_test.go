@@ -402,6 +402,8 @@ func getTestConfig() (newTMConfig *tmCfg.Config) {
 	newTMConfig.RPC.ListenAddress = defaultListenAddr + "36657"
 	newTMConfig.P2P.ListenAddress = defaultListenAddr + "36656" // Node listen address. (0.0.0.0:0 means any interface, any port)
 	newTMConfig.Consensus = tmCfg.TestConsensusConfig()
+	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(10) * time.Millisecond
+	newTMConfig.Consensus.TimeoutCommit = time.Duration(10) * time.Millisecond
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
 	return
