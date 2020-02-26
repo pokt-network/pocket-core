@@ -56,7 +56,7 @@ func makeTestCodec() *codec.Codec {
 }
 
 // nolint: deadcode unused
-func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, keeper.Keeper, types.SupplyKeeper, types.PosKeeper) {
+func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, keeper.Keeper, types.SupplyKeeper, types.PosKeeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(4)
 
@@ -129,7 +129,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, keeper.Keeper, 
 }
 
 // nolint: unparam deadcode unused
-func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.Account) {
+func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()
 		pubKey := privKey.PublicKey()

@@ -8,7 +8,7 @@ import (
 )
 
 // this is the main call for a service node handling a relay request
-func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
+func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
 	ctx.Logger().Info(fmt.Sprintf("HandleRelay(Relay = %+v)", relay))
 	// get the latest session block height because this relay will correspond with the latest session
 	sessionBlockHeight := k.GetLatestSessionBlock(ctx).BlockHeight()

@@ -7,7 +7,7 @@ import (
 )
 
 // get a single application from the main store
-func (k Keeper) GetApplication(ctx sdk.Context, addr sdk.Address) (application types.Application, found bool) {
+func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types.Application, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForAppByAllApps(addr))
 	if value == nil {
@@ -18,7 +18,7 @@ func (k Keeper) GetApplication(ctx sdk.Context, addr sdk.Address) (application t
 }
 
 // set a application in the main store
-func (k Keeper) SetApplication(ctx sdk.Context, application types.Application) {
+func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalApplication(k.cdc, application)
 	store.Set(types.KeyForAppByAllApps(application.Address), bz)
@@ -27,7 +27,7 @@ func (k Keeper) SetApplication(ctx sdk.Context, application types.Application) {
 }
 
 // get the set of all applications with no limits from the main store
-func (k Keeper) GetAllApplications(ctx sdk.Context) (applications types.Applications) {
+func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications) {
 	applications = make([]types.Application, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
@@ -41,7 +41,7 @@ func (k Keeper) GetAllApplications(ctx sdk.Context) (applications types.Applicat
 }
 
 // return a given amount of all the applications
-func (k Keeper) GetApplications(ctx sdk.Context, maxRetrieve uint16) (applications types.Applications) {
+func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications types.Applications) {
 	store := ctx.KVStore(k.storeKey)
 	applications = make([]types.Application, maxRetrieve)
 
@@ -59,7 +59,7 @@ func (k Keeper) GetApplications(ctx sdk.Context, maxRetrieve uint16) (applicatio
 
 // iterate through the application set and perform the provided function
 func (k Keeper) IterateAndExecuteOverApps(
-	ctx sdk.Context, fn func(index int64, application exported.ApplicationI) (stop bool)) {
+	ctx sdk.Ctx, fn func(index int64, application exported.ApplicationI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
@@ -74,7 +74,7 @@ func (k Keeper) IterateAndExecuteOverApps(
 	}
 }
 
-func (k Keeper) CalculateAppRelays(ctx sdk.Context, application types.Application) sdk.Int {
+func (k Keeper) CalculateAppRelays(ctx sdk.Ctx, application types.Application) sdk.Int {
 	stakingAdjustment := sdk.NewDec(k.StakingAdjustment(ctx))
 	participationRate := sdk.NewDec(1)
 	baseRate := sdk.NewInt(k.BaselineThroughputStakeRate(ctx))

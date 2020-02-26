@@ -15,13 +15,13 @@ import (
 	"strconv"
 )
 
-func BeginBlocker(ctx sdk.Context, _ abci.RequestBeginBlock, k Keeper) {
+func BeginBlocker(ctx sdk.Ctx, _ abci.RequestBeginBlock, k Keeper) {
 	// delete the proofs held within the world state for too long
 	k.DeleteExpiredClaims(ctx)
 }
 
 // validate the zero knowledge range proof using the proof message and the claim message
-func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc.MsgProof) error {
+func (k Keeper) ValidateProof(ctx sdk.Ctx, claimMsg pc.MsgClaim, proofMsg pc.MsgProof) error {
 	// generate the needed pseudorandom claimMsg index
 	ctx.Logger().Info(fmt.Sprintf("Generate psuedorandom proof with %d, at session height of %d", claimMsg.TotalRelays, claimMsg.SessionBlockHeight))
 	reqProof, err := k.GetPseudorandomIndex(ctx, claimMsg.TotalRelays, claimMsg.SessionHeader)
@@ -53,12 +53,12 @@ func (k Keeper) ValidateProof(ctx sdk.Context, claimMsg pc.MsgClaim, proofMsg pc
 
 // struct used for creating the psuedorandom index
 type pseudorandomGenerator struct {
-	blockHash string
-	header    string
+	BlockHash string
+	Header    string
 }
 
 // generates the required pseudorandom index for the zero knowledge proof
-func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header pc.SessionHeader) (int64, error) {
+func (k Keeper) GetPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.SessionHeader) (int64, error) {
 	// get the context for the proof (the proof context is X sessions after the session began)
 	proofContext := ctx.MustGetPrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(ctx)*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
@@ -100,7 +100,7 @@ func (k Keeper) GetPseudorandomIndex(ctx sdk.Context, totalRelays int64, header 
 }
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof) (*sdk.TxResponse, error)) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the ProofTX:\n%v", err))
@@ -152,7 +152,7 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 	}
 }
 
-func newTxBuilderAndCliCtx(ctx sdk.Context, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
+func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	// get the coinbase, as it is the sender of the automatic message
 	kp, err := keybase.GetCoinbase()
 	if err != nil {

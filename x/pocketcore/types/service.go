@@ -22,7 +22,7 @@ type Relay struct {
 	Proof   Proof   `json:"proof"`   // the authentication scheme needed for work
 }
 
-func (r *Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
+func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
 	sessionNodeCount int, allNodes []nodeexported.ValidatorI, app appexported.ApplicationI) sdk.Error {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
@@ -66,7 +66,7 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 }
 
 // store the proofs of work done for the relay batch
-func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64) sdk.Error {
+func (r Relay) HandleProof(ctx sdk.Ctx, sessionBlockHeight int64) sdk.Error {
 	// add the Proof to the global (in memory) collection of proofs
 	return GetEvidenceMap().AddToEvidence(SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,

@@ -63,18 +63,18 @@ func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 }
 
 // inits from genesis
-func (app *pocketCoreApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+func (app *pocketCoreApp) InitChainer(ctx sdk.Ctx, req abci.RequestInitChain) abci.ResponseInitChain {
 	genesisState := cfg.GenesisStateFromFile(app.cdc, genesisPath())
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
 // setups all of the begin blockers for each module
-func (app *pocketCoreApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *pocketCoreApp) BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
 // setups all of the end blockers for each module
-func (app *pocketCoreApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *pocketCoreApp) EndBlocker(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 

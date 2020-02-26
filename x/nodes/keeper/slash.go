@@ -11,7 +11,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-func (k Keeper) BurnValidator(ctx sdk.Context, address sdk.Address, severityPercentage sdk.Dec) {
+func (k Keeper) BurnValidator(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) {
 	curBurn, _ := k.getValidatorBurn(ctx, address)
 	newSeverity := curBurn.Add(severityPercentage)
 	k.setValidatorBurn(ctx, newSeverity, address)
@@ -20,7 +20,7 @@ func (k Keeper) BurnValidator(ctx sdk.Context, address sdk.Address, severityPerc
 
 // slash a validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) slash(ctx sdk.Context, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
+func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
 	// error check slash
 	validator := k.validateSlash(ctx, consAddr, infractionHeight, power, slashFactor)
 	if validator.Address == nil {
@@ -52,7 +52,7 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.Address, infractionHeight, p
 		validator.GetAddress(), slashFactor.String(), tokensToBurn))
 }
 
-func (k Keeper) validateSlash(ctx sdk.Context, addr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
+func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
 	logger := k.Logger(ctx)
 	if slashFactor.LT(sdk.ZeroDec()) {
 		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
@@ -78,7 +78,7 @@ func (k Keeper) validateSlash(ctx sdk.Context, addr sdk.Address, infractionHeigh
 
 // handle a validator signing two blocks at the same height
 // power: power of the double-signing validator at the height of infraction
-func (k Keeper) handleDoubleSign(ctx sdk.Context, addr crypto.Address, infractionHeight int64, timestamp time.Time, power int64) {
+func (k Keeper) handleDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHeight int64, timestamp time.Time, power int64) {
 	address, _, _, err := k.validateDoubleSign(ctx, addr, infractionHeight, timestamp)
 	if err != nil {
 		panic(err)
@@ -101,7 +101,7 @@ func (k Keeper) handleDoubleSign(ctx sdk.Context, addr crypto.Address, infractio
 	// todo fix once tendermint is patched
 }
 
-func (k Keeper) validateDoubleSign(ctx sdk.Context, addr crypto.Address, infractionHeight int64, timestamp time.Time) (address sdk.Address, signInfo types.ValidatorSigningInfo, validator exported.ValidatorI, err sdk.Error) {
+func (k Keeper) validateDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHeight int64, timestamp time.Time) (address sdk.Address, signInfo types.ValidatorSigningInfo, validator exported.ValidatorI, err sdk.Error) {
 	logger := k.Logger(ctx)
 	val, found := k.GetValidator(ctx, sdk.Address(addr))
 	if !found || val.IsUnstaked() {
@@ -136,7 +136,7 @@ func (k Keeper) validateDoubleSign(ctx sdk.Context, addr crypto.Address, infract
 }
 
 // handle a validator signature, must be called once per validator per block
-func (k Keeper) handleValidatorSignature(ctx sdk.Context, address crypto.Address, power int64, signed bool) {
+func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, power int64, signed bool) {
 	logger := k.Logger(ctx)
 	height := ctx.BlockHeight()
 	addr := sdk.Address(address)
@@ -224,7 +224,7 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Context, address crypto.Address
 	k.SetValidatorSigningInfo(ctx, addr, signInfo)
 }
 
-func (k Keeper) getBurnFromSeverity(ctx sdk.Context, address sdk.Address, severityPercentage sdk.Dec) sdk.Int {
+func (k Keeper) getBurnFromSeverity(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) sdk.Int {
 	val := k.mustGetValidator(ctx, address)
 	amount := sdk.TokensFromConsensusPower(val.ConsensusPower())
 	slashAmount := amount.ToDec().Mul(severityPercentage).TruncateInt()
@@ -232,7 +232,7 @@ func (k Keeper) getBurnFromSeverity(ctx sdk.Context, address sdk.Address, severi
 }
 
 // called on begin blocker
-func (k Keeper) burnValidators(ctx sdk.Context) {
+func (k Keeper) burnValidators(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.BurnValidatorKey)
 	defer iterator.Close()
@@ -248,12 +248,12 @@ func (k Keeper) burnValidators(ctx sdk.Context) {
 }
 
 // store functions used to keep track of a validator burn
-func (k Keeper) setValidatorBurn(ctx sdk.Context, amount sdk.Dec, address sdk.Address) {
+func (k Keeper) setValidatorBurn(ctx sdk.Ctx, amount sdk.Dec, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForValidatorBurn(address), amino.MustMarshalBinaryBare(amount))
 }
 
-func (k Keeper) getValidatorBurn(ctx sdk.Context, address sdk.Address) (coins sdk.Dec, found bool) {
+func (k Keeper) getValidatorBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Dec, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValidatorBurn(address))
 	if value == nil {
@@ -264,7 +264,7 @@ func (k Keeper) getValidatorBurn(ctx sdk.Context, address sdk.Address) (coins sd
 	return
 }
 
-func (k Keeper) deleteValidatorBurn(ctx sdk.Context, address sdk.Address) {
+func (k Keeper) deleteValidatorBurn(ctx sdk.Ctx, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorBurn(address))
 }

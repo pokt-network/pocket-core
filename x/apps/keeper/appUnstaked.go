@@ -8,14 +8,14 @@ import (
 )
 
 // Insert a application address to the appropriate position in the unstaking queue
-func (k Keeper) SetUnstakingApplication(ctx sdk.Context, val types.Application) {
+func (k Keeper) SetUnstakingApplication(ctx sdk.Ctx, val types.Application) {
 	applications := k.getUnstakingApplications(ctx, val.UnstakingCompletionTime)
 	applications = append(applications, val.Address)
 	k.setUnstakingApplications(ctx, val.UnstakingCompletionTime, applications)
 }
 
 // DeleteEvidence a application address from the unstaking queue
-func (k Keeper) deleteUnstakingApplication(ctx sdk.Context, val types.Application) {
+func (k Keeper) deleteUnstakingApplication(ctx sdk.Ctx, val types.Application) {
 	applications := k.getUnstakingApplications(ctx, val.UnstakingCompletionTime)
 	var newApplications []sdk.Address
 	for _, addr := range applications {
@@ -31,7 +31,7 @@ func (k Keeper) deleteUnstakingApplication(ctx sdk.Context, val types.Applicatio
 }
 
 // get the set of all unstaking applications with no limits
-func (k Keeper) getAllUnstakingApplications(ctx sdk.Context) (applications []types.Application) {
+func (k Keeper) getAllUnstakingApplications(ctx sdk.Ctx) (applications []types.Application) {
 	applications = make(types.Applications, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.UnstakingAppsKey)
@@ -48,7 +48,7 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Context) (applications []typ
 }
 
 // gets all of the applications who will be unstaked at exactly this time
-func (k Keeper) getUnstakingApplications(ctx sdk.Context, unstakingTime time.Time) (valAddrs []sdk.Address) {
+func (k Keeper) getUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) (valAddrs []sdk.Address) {
 	valAddrs = make([]sdk.Address, 0)
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.KeyForUnstakingApps(unstakingTime))
@@ -60,26 +60,26 @@ func (k Keeper) getUnstakingApplications(ctx sdk.Context, unstakingTime time.Tim
 }
 
 // Sets applications in unstaking queue at a certain unstaking time
-func (k Keeper) setUnstakingApplications(ctx sdk.Context, unstakingTime time.Time, keys []sdk.Address) {
+func (k Keeper) setUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time, keys []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(keys)
 	store.Set(types.KeyForUnstakingApps(unstakingTime), bz)
 }
 
 // Deletes all the applications for a specific unstaking time
-func (k Keeper) deleteUnstakingApplications(ctx sdk.Context, unstakingTime time.Time) {
+func (k Keeper) deleteUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForUnstakingApps(unstakingTime))
 }
 
 // iterator for all unstaking applications up to a certain time
-func (k Keeper) unstakingApplicationsIterator(ctx sdk.Context, endTime time.Time) sdk.Iterator {
+func (k Keeper) unstakingApplicationsIterator(ctx sdk.Ctx, endTime time.Time) sdk.Iterator {
 	store := ctx.KVStore(k.storeKey)
 	return store.Iterator(types.UnstakingAppsKey, sdk.InclusiveEndBytes(types.KeyForUnstakingApps(endTime)))
 }
 
 // Returns a list of all the mature applications
-func (k Keeper) getMatureApplications(ctx sdk.Context) (matureValsAddrs []sdk.Address) {
+func (k Keeper) getMatureApplications(ctx sdk.Ctx) (matureValsAddrs []sdk.Address) {
 	matureValsAddrs = make([]sdk.Address, 0)
 	unstakingValsIterator := k.unstakingApplicationsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValsIterator.Close()
@@ -92,7 +92,7 @@ func (k Keeper) getMatureApplications(ctx sdk.Context) (matureValsAddrs []sdk.Ad
 }
 
 // Unstakes all the unstaking applications that have finished their unstaking period
-func (k Keeper) unstakeAllMatureApplications(ctx sdk.Context) {
+func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
 	unstakingApplicationsIterator := k.unstakingApplicationsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingApplicationsIterator.Close()

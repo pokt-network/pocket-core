@@ -8,7 +8,7 @@ import (
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
 		case types.MsgStake:
@@ -26,7 +26,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 	}
 }
 
-func handleStake(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Result {
+func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper) sdk.Result {
 	// create validator object using the message fields
 	validator := types.NewValidator(sdk.Address(msg.PublicKey.Address()), msg.PublicKey, msg.Chains, msg.ServiceURL, sdk.ZeroInt())
 	// check if they can stake
@@ -55,7 +55,7 @@ func handleStake(ctx sdk.Context, msg types.MsgStake, k keeper.Keeper) sdk.Resul
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginUnstake, k keeper.Keeper) sdk.Result {
+func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginUnstake, k keeper.Keeper) sdk.Result {
 	ctx.Logger().Info("Begin Unstaking Message received from " + msg.Address.String())
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the validator account and global shares are updated within here
@@ -87,7 +87,7 @@ func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginUnstake, k keeper.
 
 // Validators must submit a transaction to unjail itself after todo
 // having been jailed (and thus unstaked) for downtime
-func handleMsgUnjail(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper) sdk.Result {
+func handleMsgUnjail(ctx sdk.Ctx, msg types.MsgUnjail, k keeper.Keeper) sdk.Result {
 	ctx.Logger().Info("Unjail Message received from " + msg.ValidatorAddr.String())
 	addr, err := k.ValidateUnjailMessage(ctx, msg)
 	if err != nil {
@@ -104,7 +104,7 @@ func handleMsgUnjail(ctx sdk.Context, msg types.MsgUnjail, k keeper.Keeper) sdk.
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func handleMsgSend(ctx sdk.Context, msg types.MsgSend, k keeper.Keeper) sdk.Result {
+func handleMsgSend(ctx sdk.Ctx, msg types.MsgSend, k keeper.Keeper) sdk.Result {
 	ctx.Logger().Info("Send Message from " + msg.FromAddress.String() + " received")
 	err := k.SendCoins(ctx, msg.FromAddress, msg.ToAddress, msg.Amount)
 	if err != nil {

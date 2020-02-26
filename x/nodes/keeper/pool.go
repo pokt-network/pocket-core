@@ -8,28 +8,28 @@ import (
 )
 
 // GetStakedTokens total staking tokens supply which is staked
-func (k Keeper) GetStakedTokens(ctx sdk.Context) sdk.Int {
+func (k Keeper) GetStakedTokens(ctx sdk.Ctx) sdk.Int {
 	stakedPool := k.GetStakedPool(ctx)
 	return stakedPool.GetCoins().AmountOf(k.StakeDenom(ctx))
 }
 
 // GetUnstakedTokens returns the amount of not staked tokens
-func (k Keeper) GetUnstakedTokens(ctx sdk.Context) (unstakedTokens sdk.Int) {
+func (k Keeper) GetUnstakedTokens(ctx sdk.Ctx) (unstakedTokens sdk.Int) {
 	return k.TotalTokens(ctx).Sub(k.GetStakedPool(ctx).GetCoins().AmountOf(k.StakeDenom(ctx)))
 }
 
 // TotalTokens staking tokens from the total supply
-func (k Keeper) TotalTokens(ctx sdk.Context) sdk.Int {
+func (k Keeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
 	return k.supplyKeeper.GetSupply(ctx).GetTotal().AmountOf(k.StakeDenom(ctx))
 }
 
 // GetStakedPool returns the staked tokens pool's module account
-func (k Keeper) GetStakedPool(ctx sdk.Context) (stakedPool exported.ModuleAccountI) {
+func (k Keeper) GetStakedPool(ctx sdk.Ctx) (stakedPool exported.ModuleAccountI) {
 	return k.supplyKeeper.GetModuleAccount(ctx, types.StakedPoolName)
 }
 
 // moves coins from the module account to the validator -> used in unstaking
-func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Context, validator types.Validator) {
+func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, validator types.Validator) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), validator.StakedTokens))
 	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.Address(validator.Address), coins)
 	if err != nil {
@@ -38,7 +38,7 @@ func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Context, validator types.Valid
 }
 
 // moves coins from the module account to validator -> used in staking
-func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Context, validator types.Validator, amount sdk.Int) sdk.Error {
+func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, validator types.Validator, amount sdk.Int) sdk.Error {
 	if amount.LT(sdk.ZeroInt()) {
 		return sdk.ErrInternal("cannot send a negative")
 	}
@@ -48,7 +48,7 @@ func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Context, validator types.Valid
 }
 
 // burnStakedTokens removes coins from the staked pool module account
-func (k Keeper) burnStakedTokens(ctx sdk.Context, amt sdk.Int) sdk.Error {
+func (k Keeper) burnStakedTokens(ctx sdk.Ctx, amt sdk.Int) sdk.Error {
 	if !amt.IsPositive() {
 		return nil
 	}
@@ -56,6 +56,6 @@ func (k Keeper) burnStakedTokens(ctx sdk.Context, amt sdk.Int) sdk.Error {
 	return k.supplyKeeper.BurnCoins(ctx, types.StakedPoolName, coins)
 }
 
-func (k Keeper) getFeePool(ctx sdk.Context) (feePool exported.ModuleAccountI) {
+func (k Keeper) getFeePool(ctx sdk.Ctx) (feePool exported.ModuleAccountI) {
 	return k.supplyKeeper.GetModuleAccount(ctx, auth.FeeCollectorName)
 }

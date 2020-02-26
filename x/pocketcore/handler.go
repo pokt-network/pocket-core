@@ -10,7 +10,7 @@ import (
 
 // NewHandler returns a handler for "pocketCore" type messages.
 func NewHandler(keeper keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
 		case types.MsgClaim:
 			return handleClaimMsg(ctx, keeper, msg)
@@ -23,7 +23,7 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	}
 }
 
-func handleClaimMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim) sdk.Result {
+func handleClaimMsg(ctx sdk.Ctx, keeper keeper.Keeper, msg types.MsgClaim) sdk.Result {
 	// validate the proof message
 	if err := validateClaimMsg(ctx, keeper, msg); err != nil {
 		return err.Result()
@@ -43,7 +43,7 @@ func handleClaimMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim) s
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func handleProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) sdk.Result {
+func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, msg types.MsgProof) sdk.Result {
 	// validate the claim proof
 	addr, proof, err := validateProofMsg(ctx, k, msg)
 	if err != nil {
@@ -76,7 +76,7 @@ func handleProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) sdk.Re
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func validateClaimMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim) sdk.Error {
+func validateClaimMsg(ctx sdk.Ctx, keeper keeper.Keeper, msg types.MsgClaim) sdk.Error {
 	// if is not a pocket supported blockchain then return not supported error
 	if !keeper.IsPocketSupportedBlockchain(ctx.MustGetPrevCtx(msg.SessionBlockHeight), msg.Chain) {
 		return types.NewChainNotSupportedErr(types.ModuleName)
@@ -117,7 +117,7 @@ func validateClaimMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgClaim)
 	return nil
 }
 
-func validateProofMsg(ctx sdk.Context, keeper keeper.Keeper, msg types.MsgProof) (servicerAddr sdk.Address, proof types.MsgClaim, sdkError sdk.Error) {
+func validateProofMsg(ctx sdk.Ctx, keeper keeper.Keeper, msg types.MsgProof) (servicerAddr sdk.Address, proof types.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the proof
 	pk, err := crypto.NewPublicKey(msg.Leaf.ServicerPubKey)
 	if err != nil {

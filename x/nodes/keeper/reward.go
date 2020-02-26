@@ -9,7 +9,7 @@ import (
 )
 
 // award coins to an address (will be called at the beginning of the next block)
-func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.Address) {
+func (k Keeper) AwardCoinsTo(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
 	award, _ := k.getValidatorAward(ctx, address)
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
 	k.setValidatorAward(ctx, award.Add(coins), address)
@@ -17,7 +17,7 @@ func (k Keeper) AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.Addres
 }
 
 // blockReward handles distribution of the collected fees
-func (k Keeper) blockReward(ctx sdk.Context, previousProposer sdk.Address) {
+func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	logger := k.Logger(ctx)
 	// fetch and clear the collected fees for distribution, since this is
 	// called in BeginBlock, collected fees will be from the previous block
@@ -89,7 +89,7 @@ func (k Keeper) blockReward(ctx sdk.Context, previousProposer sdk.Address) {
 	}
 }
 
-func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Context) sdk.Int {
+func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Ctx) sdk.Int {
 	total := sdk.ZeroInt()
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
@@ -103,14 +103,14 @@ func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Context) sdk.Int {
 }
 
 // store functions used to keep track of a validator award
-func (k Keeper) setValidatorAward(ctx sdk.Context, amount sdk.Int, address sdk.Address) {
+func (k Keeper) setValidatorAward(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.KeyForValidatorAward(address)
 	val := amino.MustMarshalBinaryBare(amount)
 	store.Set(key, val)
 }
 
-func (k Keeper) getValidatorAward(ctx sdk.Context, address sdk.Address) (coins sdk.Int, found bool) {
+func (k Keeper) getValidatorAward(ctx sdk.Ctx, address sdk.Address) (coins sdk.Int, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValidatorAward(address))
 	if value == nil {
@@ -121,13 +121,13 @@ func (k Keeper) getValidatorAward(ctx sdk.Context, address sdk.Address) (coins s
 	return coins, true
 }
 
-func (k Keeper) deleteValidatorAward(ctx sdk.Context, address sdk.Address) {
+func (k Keeper) deleteValidatorAward(ctx sdk.Ctx, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorAward(address))
 }
 
 // called on begin blocker
-func (k Keeper) mintNodeRelayRewards(ctx sdk.Context) {
+func (k Keeper) mintNodeRelayRewards(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
 	defer iterator.Close()
@@ -144,7 +144,7 @@ func (k Keeper) mintNodeRelayRewards(ctx sdk.Context) {
 }
 
 // Mints sdk.Coins and sends them to an address
-func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.Address) sdk.Result {
+func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	mintErr := k.supplyKeeper.MintCoins(ctx, types.StakedPoolName, coins)
 	if mintErr != nil {
@@ -162,7 +162,7 @@ func (k Keeper) mint(ctx sdk.Context, amount sdk.Int, address sdk.Address) sdk.R
 }
 
 // get the proposer public key for this block
-func (k Keeper) GetPreviousProposer(ctx sdk.Context) (consAddr sdk.Address) {
+func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.ProposerKey)
 	if b == nil {
@@ -173,16 +173,16 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Context) (consAddr sdk.Address) {
 }
 
 // set the proposer public key for this block
-func (k Keeper) SetPreviousProposer(ctx sdk.Context, consAddr sdk.Address) {
+func (k Keeper) SetPreviousProposer(ctx sdk.Ctx, consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(consAddr)
 	store.Set(types.ProposerKey, b)
 }
 
-func (k Keeper) getProposerAllocaiton(ctx sdk.Context) sdk.Int {
+func (k Keeper) getProposerAllocaiton(ctx sdk.Ctx) sdk.Int {
 	return sdk.NewInt(k.ProposerAllocation(ctx))
 }
 
-func (k Keeper) getDAOAllocation(ctx sdk.Context) sdk.Int {
+func (k Keeper) getDAOAllocation(ctx sdk.Ctx) sdk.Int {
 	return sdk.NewInt(k.DAOAllocation(ctx))
 }

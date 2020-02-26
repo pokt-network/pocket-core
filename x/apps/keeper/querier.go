@@ -11,7 +11,7 @@ import (
 
 // creates a querier for staking REST endpoints
 func NewQuerier(k Keeper) sdk.Querier {
-	return func(ctx sdk.Context, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
+	return func(ctx sdk.Ctx, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
 		case types.QueryApplications:
 			return queryApplications(ctx, req, k)
@@ -35,7 +35,7 @@ func NewQuerier(k Keeper) sdk.Querier {
 	}
 }
 
-func queryApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryAppsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
@@ -56,7 +56,7 @@ func queryApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte
 	return res, nil
 }
 
-func queryUnstakingApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryUnstakingApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryUnstakingApplicationsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
@@ -78,7 +78,7 @@ func queryUnstakingApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper
 	return res, nil
 }
 
-func queryStakedApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryStakedApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryStakedApplicationsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
@@ -100,7 +100,7 @@ func queryStakedApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper) (
 	return res, nil
 }
 
-func queryUnstakedApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryUnstakedApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryAppsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
@@ -126,7 +126,7 @@ func queryUnstakedApplications(ctx sdk.Context, req abci.RequestQuery, k Keeper)
 	return res, nil
 }
 
-func queryApplication(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+func queryApplication(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryAppParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
@@ -143,7 +143,7 @@ func queryApplication(ctx sdk.Context, req abci.RequestQuery, k Keeper) ([]byte,
 	return res, nil
 }
 
-func queryStakedPool(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
+func queryStakedPool(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
 	stakedTokens := k.GetStakedTokens(ctx)
 	pool := types.StakingPool(types.NewPool(stakedTokens))
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
@@ -153,7 +153,7 @@ func queryStakedPool(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 	return res, nil
 }
 
-func queryUnstakedPool(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
+func queryUnstakedPool(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
 	unstakedTokens := k.GetUnstakedTokens(ctx)
 	pool := types.StakingPool(types.NewPool(unstakedTokens))
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
@@ -163,7 +163,7 @@ func queryUnstakedPool(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
 	return res, nil
 }
 
-func queryParameters(ctx sdk.Context, k Keeper) ([]byte, sdk.Error) {
+func queryParameters(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
 	params := k.GetParams(ctx)
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, params)
 	if err != nil {

@@ -7,23 +7,23 @@ import (
 )
 
 type PosKeeper interface {
-	AwardCoinsTo(ctx sdk.Context, relays sdk.Int, address sdk.Address)
-	GetStakedTokens(ctx sdk.Context) sdk.Int
-	Validator(ctx sdk.Context, addr sdk.Address) nodesexported.ValidatorI
-	TotalTokens(ctx sdk.Context) sdk.Int
-	BurnValidator(ctx sdk.Context, address sdk.Address, severityPercentage sdk.Dec)
-	JailValidator(ctx sdk.Context, addr sdk.Address)
-	AllValidators(ctx sdk.Context) (validators []nodesexported.ValidatorI)
-	GetStakedValidators(ctx sdk.Context) (validators []nodesexported.ValidatorI)
-	SessionBlockFrequency(ctx sdk.Context) (res int64)
-	StakeDenom(ctx sdk.Context) (res string)
+	AwardCoinsTo(ctx sdk.Ctx, relays sdk.Int, address sdk.Address)
+	GetStakedTokens(ctx sdk.Ctx) sdk.Int
+	Validator(ctx sdk.Ctx, addr sdk.Address) nodesexported.ValidatorI
+	TotalTokens(ctx sdk.Ctx) sdk.Int
+	BurnValidator(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec)
+	JailValidator(ctx sdk.Ctx, addr sdk.Address)
+	AllValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
+	GetStakedValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
+	SessionBlockFrequency(ctx sdk.Ctx) (res int64)
+	StakeDenom(ctx sdk.Ctx) (res string)
 }
 
 type AppsKeeper interface {
-	GetStakedTokens(ctx sdk.Context) sdk.Int
-	Application(ctx sdk.Context, addr sdk.Address) appexported.ApplicationI
-	AllApplications(ctx sdk.Context) (applications []appexported.ApplicationI)
-	TotalTokens(ctx sdk.Context) sdk.Int
-	BurnApplication(ctx sdk.Context, address sdk.Address, severityPercentage sdk.Dec)
-	JailApplication(ctx sdk.Context, addr sdk.Address)
+	GetStakedTokens(ctx sdk.Ctx) sdk.Int
+	Application(ctx sdk.Ctx, addr sdk.Address) appexported.ApplicationI
+	AllApplications(ctx sdk.Ctx) (applications []appexported.ApplicationI)
+	TotalTokens(ctx sdk.Ctx) sdk.Int
+	BurnApplication(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec)
+	JailApplication(ctx sdk.Ctx, addr sdk.Address)
 }

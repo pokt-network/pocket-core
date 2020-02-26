@@ -7,7 +7,7 @@ import (
 )
 
 // get a single validator from the main store
-func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.Address) (validator types.Validator, found bool) {
+func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValByAllVals(addr))
 	if value == nil {
@@ -18,14 +18,14 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.Address) (validator types
 }
 
 // set a validator in the main store
-func (k Keeper) SetValidator(ctx sdk.Context, validator types.Validator) {
+func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidator(k.cdc, validator)
 	store.Set(types.KeyForValByAllVals(validator.Address), bz)
 }
 
 // get the set of all validators with no limits from the main store
-func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []types.Validator) {
+func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
@@ -38,7 +38,7 @@ func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []types.Validator)
 }
 
 // return a given amount of all the validators
-func (k Keeper) GetValidators(ctx sdk.Context, maxRetrieve uint16) (validators []types.Validator) {
+func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	validators = make([]types.Validator, maxRetrieve)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
@@ -54,7 +54,7 @@ func (k Keeper) GetValidators(ctx sdk.Context, maxRetrieve uint16) (validators [
 
 // iterate through the validator set and perform the provided function
 func (k Keeper) IterateAndExecuteOverVals(
-	ctx sdk.Context, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
+	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
