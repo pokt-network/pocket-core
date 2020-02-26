@@ -82,7 +82,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return keeper.NewQuerier(am.keeper)
 }
 
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	if am.keeper.IsSessionBlock(ctx) && ctx.BlockHeight() != 1 {
 		go func() {
 			time.Sleep(time.Duration(rand.Intn(3000)) * time.Millisecond)
@@ -95,11 +95,11 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	keeper.BeginBlocker(ctx, req, am.keeper)
 }
 
-func (am AppModule) EndBlock(sdk.Context, abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(sdk.Ctx, abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
-func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Ctx, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	if data == nil {
 		genesisState = types.DefaultGenesisState()
@@ -109,7 +109,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 	return InitGenesis(ctx, am.keeper, genesisState)
 }
 
-func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
+func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
 	return types.ModuleCdc.MustMarshalJSON(gs)
 }

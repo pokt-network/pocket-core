@@ -19,39 +19,39 @@ func ParamKeyTable() params.KeyTable {
 }
 
 // UnstakingTime
-func (k Keeper) UnStakingTime(ctx sdk.Context) (res time.Duration) {
+func (k Keeper) UnStakingTime(ctx sdk.Ctx) (res time.Duration) {
 	k.Paramstore.Get(ctx, types.KeyUnstakingTime, &res)
 	return
 }
 
-func (k Keeper) BaselineThroughputStakeRate(ctx sdk.Context) (base int64) {
+func (k Keeper) BaselineThroughputStakeRate(ctx sdk.Ctx) (base int64) {
 	k.Paramstore.Get(ctx, types.BaseRelaysPerPOKT, &base)
 	return
 }
 
-func (k Keeper) ParticipationRateOn(ctx sdk.Context) (isOn bool) {
+func (k Keeper) ParticipationRateOn(ctx sdk.Ctx) (isOn bool) {
 	k.Paramstore.Get(ctx, types.ParticipationRateOn, &isOn)
 	return
 }
 
-func (k Keeper) StakingAdjustment(ctx sdk.Context) (adjustment int64) {
+func (k Keeper) StakingAdjustment(ctx sdk.Ctx) (adjustment int64) {
 	k.Paramstore.Get(ctx, types.StabilityAdjustment, &adjustment)
 	return
 }
 
 // MaxApplications - Maximum number of applications
-func (k Keeper) MaxApplications(ctx sdk.Context) (res uint64) {
+func (k Keeper) MaxApplications(ctx sdk.Ctx) (res uint64) {
 	k.Paramstore.Get(ctx, types.KeyMaxApplications, &res)
 	return
 }
 
-func (k Keeper) MinimumStake(ctx sdk.Context) (res int64) {
+func (k Keeper) MinimumStake(ctx sdk.Ctx) (res int64) {
 	k.Paramstore.Get(ctx, types.KeyApplicationMinStake, &res)
 	return
 }
 
 // Get all parameteras as types.Params
-func (k Keeper) GetParams(ctx sdk.Context) types.Params {
+func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 	return types.Params{
 		UnstakingTime:       k.UnStakingTime(ctx),
 		MaxApplications:     k.MaxApplications(ctx),
@@ -63,6 +63,6 @@ func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 }
 
 // set the params
-func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+func (k Keeper) SetParams(ctx sdk.Ctx, params types.Params) {
 	k.Paramstore.SetParamSet(ctx, &params)
 }

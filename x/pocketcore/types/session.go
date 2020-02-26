@@ -41,7 +41,7 @@ func NewSession(appPubKey string, nonNativeChain string, blockHash string, block
 	}, nil
 }
 
-func (s Session) Validate(ctx sdk.Context, node nodeexported.ValidatorI, app appexported.ApplicationI, sessionNodeCount int) sdk.Error {
+func (s Session) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, app appexported.ApplicationI, sessionNodeCount int) sdk.Error {
 	// validate chain
 	if len(s.Chain) == 0 {
 		return NewEmptyNonNativeChainError(ModuleName)
@@ -298,6 +298,6 @@ func (sh SessionHeader) Bytes() []byte {
 	return res
 }
 
-func BlockHashFromBlockHeight(ctx sdk.Context, height int64) string {
+func BlockHashFromBlockHeight(ctx sdk.Ctx, height int64) string {
 	return hex.EncodeToString(ctx.MustGetPrevCtx(height).BlockHeader().LastBlockId.Hash)
 }

@@ -117,7 +117,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 }
 
 // nolint: unparam deadcode unused
-func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.Account) {
+func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()
 		pubKey := privKey.PublicKey()
@@ -131,7 +131,7 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 	return
 }
 
-func addMintedCoinsToModule(t *testing.T, ctx sdk.Context, k *Keeper, module string) {
+func addMintedCoinsToModule(t *testing.T, ctx sdk.Ctx, k *Keeper, module string) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), sdk.NewInt(100000000000)))
 	mintErr := k.supplyKeeper.MintCoins(ctx, module, coins.Add(coins))
 	if mintErr != nil {
@@ -139,7 +139,7 @@ func addMintedCoinsToModule(t *testing.T, ctx sdk.Context, k *Keeper, module str
 	}
 }
 
-func sendFromModuleToAccount(t *testing.T, ctx sdk.Context, k *Keeper, module string, address sdk.Address, amount sdk.Int) {
+func sendFromModuleToAccount(t *testing.T, ctx sdk.Ctx, k *Keeper, module string, address sdk.Address, amount sdk.Int) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, module, sdk.Address(address), coins)
 	if err != nil {

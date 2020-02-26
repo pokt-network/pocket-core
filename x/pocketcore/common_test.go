@@ -103,7 +103,7 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 }
 
 // nolint: deadcode unused
-func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, nodesKeeper.Keeper, appsKeeper.Keeper, keep.Keeper) {
+func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper, appsKeeper.Keeper, keep.Keeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(5)
 
@@ -180,6 +180,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, nodesKeeper.Kee
 	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
 	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, pk.Subspace(nodesTypes.DefaultParamspace), nodesTypes.ModuleName)
+	var res int64
+	nk.Paramstore.Get(ctx, nodesTypes.KeySessionBlock, &res)
 	appk := appsKeeper.NewKeeper(cdc, appsKey, bk, nk, sk, pk.Subspace(appsTypes.DefaultParamspace), appsTypes.ModuleName)
 	keeper := keep.NewPocketCoreKeeper(pocketKey, cdc, nk, appk, hb, pk.Subspace(types.DefaultParamspace), "test")
 	kb := NewTestKeybase()
@@ -208,7 +210,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, nodesKeeper.Kee
 }
 
 // nolint: unparam deadcode unused
-func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.BaseAccount) {
+func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.BaseAccount) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()
 		pubKey := privKey.PublicKey()
@@ -222,7 +224,7 @@ func createTestAccs(ctx sdk.Context, numAccs int, initialCoins sdk.Coins, ak *au
 	return
 }
 
-func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoins sdk.Int, nk *nodesKeeper.Keeper, sk supply.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
+func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins sdk.Int, nk *nodesKeeper.Keeper, sk supply.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
 	ethereum, err := types.NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -310,7 +312,7 @@ func createTestValidators(ctx sdk.Context, numAccs int, valCoins sdk.Int, daoCoi
 	return
 }
 
-func createTestApps(ctx sdk.Context, numAccs int, valCoins sdk.Int, ak appsKeeper.Keeper, sk supply.Keeper) (accs appsTypes.Applications) {
+func createTestApps(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, ak appsKeeper.Keeper, sk supply.Keeper) (accs appsTypes.Applications) {
 	ethereum, err := types.NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",

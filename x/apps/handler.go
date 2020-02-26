@@ -8,7 +8,7 @@ import (
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
 		case types.MsgAppStake:
@@ -24,7 +24,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 	}
 }
 
-func handleStake(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Result {
+func handleStake(ctx sdk.Ctx, msg types.MsgAppStake, k keeper.Keeper) sdk.Result {
 	ctx.Logger().Info("Begin Staking App Message received from " + sdk.Address(msg.PubKey.Address()).String())
 	// create application object using the message fields
 	application := types.NewApplication(sdk.Address(msg.PubKey.Address()), msg.PubKey, msg.Chains, sdk.ZeroInt())
@@ -61,7 +61,7 @@ func handleStake(ctx sdk.Context, msg types.MsgAppStake, k keeper.Keeper) sdk.Re
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginAppUnstake, k keeper.Keeper) sdk.Result {
+func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginAppUnstake, k keeper.Keeper) sdk.Result {
 	ctx.Logger().Info("Begin Unstaking App Message received from " + msg.Address.String())
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the application account and global shares are updated within here
@@ -95,7 +95,7 @@ func handleMsgBeginUnstake(ctx sdk.Context, msg types.MsgBeginAppUnstake, k keep
 
 // Applications must submit a transaction to unjail itself after todo
 // having been jailed (and thus unstaked) for downtime
-func handleMsgUnjail(ctx sdk.Context, msg types.MsgAppUnjail, k keeper.Keeper) sdk.Result {
+func handleMsgUnjail(ctx sdk.Ctx, msg types.MsgAppUnjail, k keeper.Keeper) sdk.Result {
 	consAddr, err := k.ValidateUnjailMessage(ctx, msg)
 	if err != nil {
 		return err.Result()

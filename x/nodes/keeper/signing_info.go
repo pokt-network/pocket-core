@@ -6,7 +6,7 @@ import (
 )
 
 // get signing information for the validator by address
-func (k Keeper) GetValidatorSigningInfo(ctx sdk.Context, addr sdk.Address) (info types.ValidatorSigningInfo, found bool) {
+func (k Keeper) GetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) (info types.ValidatorSigningInfo, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.GetValidatorSigningInfoKey(addr))
 	if bz == nil {
@@ -19,13 +19,13 @@ func (k Keeper) GetValidatorSigningInfo(ctx sdk.Context, addr sdk.Address) (info
 }
 
 // set signing information for the validator by address
-func (k Keeper) SetValidatorSigningInfo(ctx sdk.Context, addr sdk.Address, info types.ValidatorSigningInfo) {
+func (k Keeper) SetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address, info types.ValidatorSigningInfo) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(info)
 	store.Set(types.GetValidatorSigningInfoKey(addr), bz)
 }
 
-func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Context,
+func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Ctx,
 	handler func(addr sdk.Address, info types.ValidatorSigningInfo) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	iter := sdk.KVStorePrefixIterator(store, types.ValidatorSigningInfoKey)
@@ -40,7 +40,7 @@ func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Context,
 	}
 }
 
-func (k Keeper) valMissedAt(ctx sdk.Context, addr sdk.Address, index int64) (missed bool) {
+func (k Keeper) valMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64) (missed bool) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.GetValMissedBlockKey(addr, index))
 	if bz == nil { // lazy: treat empty key as not missed
@@ -51,13 +51,13 @@ func (k Keeper) valMissedAt(ctx sdk.Context, addr sdk.Address, index int64) (mis
 	return
 }
 
-func (k Keeper) SetValidatorMissedAt(ctx sdk.Context, addr sdk.Address, index int64, missed bool) {
+func (k Keeper) SetValidatorMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64, missed bool) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(missed)
 	store.Set(types.GetValMissedBlockKey(addr, index), bz)
 }
 
-func (k Keeper) clearValidatorMissed(ctx sdk.Context, addr sdk.Address) {
+func (k Keeper) clearValidatorMissed(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	iter := sdk.KVStorePrefixIterator(store, types.GetValMissedBlockPrefixKey(addr))
 	defer iter.Close()
@@ -67,7 +67,7 @@ func (k Keeper) clearValidatorMissed(ctx sdk.Context, addr sdk.Address) {
 }
 
 // Stored by *validator* address (not operator address)
-func (k Keeper) IterateAndExecuteOverMissedArray(ctx sdk.Context,
+func (k Keeper) IterateAndExecuteOverMissedArray(ctx sdk.Ctx,
 	address sdk.Address, handler func(index int64, missed bool) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	index := int64(0)

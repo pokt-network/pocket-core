@@ -48,7 +48,7 @@ func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator
 	return validator
 }
 
-func (k Keeper) mustGetValidator(ctx sdk.Context, addr sdk.Address) types.Validator {
+func (k Keeper) mustGetValidator(ctx sdk.Ctx, addr sdk.Address) types.Validator {
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
 		panic(fmt.Sprintf("validator record not found for address: %X\n", addr))
@@ -57,7 +57,7 @@ func (k Keeper) mustGetValidator(ctx sdk.Context, addr sdk.Address) types.Valida
 }
 
 // wrapper for GetValidator call
-func (k Keeper) Validator(ctx sdk.Context, address sdk.Address) exported.ValidatorI {
+func (k Keeper) Validator(ctx sdk.Ctx, address sdk.Address) exported.ValidatorI {
 	val, found := k.GetValidator(ctx, address)
 	if !found {
 		return nil
@@ -65,7 +65,7 @@ func (k Keeper) Validator(ctx sdk.Context, address sdk.Address) exported.Validat
 	return val
 }
 
-func (k Keeper) AllValidators(ctx sdk.Context) (validators []exported.ValidatorI) {
+func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
@@ -77,7 +77,7 @@ func (k Keeper) AllValidators(ctx sdk.Context) (validators []exported.ValidatorI
 	return validators
 }
 
-func (k Keeper) GetStakedValidators(ctx sdk.Context) (validators []exported.ValidatorI) {
+func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.StakedValidatorsKey)
 	defer iterator.Close()
@@ -93,7 +93,7 @@ func (k Keeper) GetStakedValidators(ctx sdk.Context) (validators []exported.Vali
 type valPowerMap map[[sdk.AddrLen]byte][]byte
 
 // get the prevState validator set
-func (k Keeper) getPrevStatePowerMap(ctx sdk.Context) valPowerMap {
+func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
 	prevState := make(valPowerMap)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)

@@ -9,7 +9,7 @@ import (
 )
 
 // validate check called before staking
-func (k Keeper) ValidateApplicationStaking(ctx sdk.Context, application types.Application, amount sdk.Int) sdk.Error {
+func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Application, amount sdk.Int) sdk.Error {
 	// convert the amount to sdk.Coin
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	// attempt to get the application from the world state
@@ -45,7 +45,7 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Context, application types.Ap
 }
 
 // store ops when a application stakes
-func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application, amount sdk.Int) sdk.Error {
+func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amount sdk.Int) sdk.Error {
 	// send the coins from address to staked module account
 	err := k.coinsFromUnstakedToStaked(ctx, application, amount)
 	if err != nil {
@@ -64,7 +64,7 @@ func (k Keeper) StakeApplication(ctx sdk.Context, application types.Application,
 	return nil
 }
 
-func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Context, application types.Application) sdk.Error {
+func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Ctx, application types.Application) sdk.Error {
 	// must be staked to begin unstaking
 	if !application.IsStaked() {
 		return types.ErrApplicationStatus(k.codespace)
@@ -80,7 +80,7 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Context, application t
 }
 
 // store ops when application begins to unstake -> starts the unstaking timer
-func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.Application) {
+func (k Keeper) BeginUnstakingApplication(ctx sdk.Ctx, application types.Application) sdk.Error {
 	// get params
 	params := k.GetParams(ctx)
 	// delete the application from the staking set, as it is technically staked but not going to participate
@@ -96,7 +96,7 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Context, application types.App
 	ctx.Logger().Info("Began unstaking App " + application.Address.String())
 }
 
-func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Context, application types.Application) sdk.Error {
+func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Ctx, application types.Application) sdk.Error {
 	if !application.IsUnstaking() {
 		return types.ErrApplicationStatus(k.codespace)
 	}
@@ -111,7 +111,7 @@ func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Context, application 
 }
 
 // store ops to unstake a application -> called after unstaking time is up
-func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Application) {
+func (k Keeper) FinishUnstakingApplication(ctx sdk.Ctx, application types.Application) {
 	// delete the application from the unstaking queue
 	k.deleteUnstakingApplication(ctx, application)
 	// amount unstaked = stakedTokens
@@ -143,7 +143,7 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Context, application types.Ap
 }
 
 // force unstake (called when slashed below the minimum)
-func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Application) sdk.Error {
+func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Application) sdk.Error {
 	// delete the application from staking set as they are unstaked
 	k.deleteApplicationFromStakingSet(ctx, application)
 	// amount unstaked = stakedTokens
@@ -177,7 +177,7 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Context, application types.Appli
 }
 
 // send a application to jail
-func (k Keeper) JailApplication(ctx sdk.Context, addr sdk.Address) {
+func (k Keeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	application := k.mustGetApplicationByConsAddr(ctx, addr)
 	if application.Jailed {
 		panic(fmt.Sprintf("cannot jail already jailed application, application: %v\n", application))
@@ -189,7 +189,7 @@ func (k Keeper) JailApplication(ctx sdk.Context, addr sdk.Address) {
 	logger.Info(fmt.Sprintf("application %s jailed", addr))
 }
 
-func (k Keeper) ValidateUnjailMessage(ctx sdk.Context, msg types.MsgAppUnjail) (addr sdk.Address, err sdk.Error) {
+func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgAppUnjail) (addr sdk.Address, err sdk.Error) {
 	application := k.Application(ctx, msg.AppAddr)
 	if application == nil {
 		return nil, types.ErrNoApplicationForAddress(k.Codespace())
@@ -210,7 +210,7 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Context, msg types.MsgAppUnjail) (
 }
 
 // remove a application from jail
-func (k Keeper) UnjailApplication(ctx sdk.Context, addr sdk.Address) {
+func (k Keeper) UnjailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	application := k.mustGetApplicationByConsAddr(ctx, addr)
 	if !application.Jailed {
 		panic(fmt.Sprintf("cannot unjail already unjailed application, application: %v\n", application))

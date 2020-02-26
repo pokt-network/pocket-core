@@ -16,7 +16,7 @@ var (
 	ClaimKey   = []byte{0x02} // key for non-verified proofs
 )
 
-func KeyForReceipt(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]byte, error) {
+func KeyForReceipt(ctx sdk.Ctx, addr sdk.Address, header SessionHeader) ([]byte, error) {
 	if err := header.ValidateHeader(); err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func KeyForReceipts(addr sdk.Address) ([]byte, error) {
 	return append(ReceiptKey, addr.Bytes()...), nil
 }
 
-func KeyForClaim(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]byte, error) {
+func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader) ([]byte, error) {
 	if err := header.ValidateHeader(); err != nil {
 		return nil, err
 	}

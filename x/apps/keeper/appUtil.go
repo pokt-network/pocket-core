@@ -46,7 +46,7 @@ func (k Keeper) appCaching(value []byte, addr sdk.Address) types.Application {
 	return application
 }
 
-func (k Keeper) mustGetApplication(ctx sdk.Context, addr sdk.Address) types.Application {
+func (k Keeper) mustGetApplication(ctx sdk.Ctx, addr sdk.Address) types.Application {
 	application, found := k.GetApplication(ctx, addr)
 	if !found {
 		panic(fmt.Sprintf("application record not found for address: %X\n", addr))
@@ -54,7 +54,7 @@ func (k Keeper) mustGetApplication(ctx sdk.Context, addr sdk.Address) types.Appl
 	return application
 }
 
-func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Context, consAddr sdk.Address) types.Application {
+func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Ctx, consAddr sdk.Address) types.Application {
 	application, found := k.GetApplication(ctx, consAddr)
 	if !found {
 		panic(fmt.Errorf("application with consensus-Address %s not found", consAddr))
@@ -63,7 +63,7 @@ func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Context, consAddr sdk.Addre
 }
 
 // wrapper for GetApplication call
-func (k Keeper) Application(ctx sdk.Context, address sdk.Address) exported.ApplicationI {
+func (k Keeper) Application(ctx sdk.Ctx, address sdk.Address) exported.ApplicationI {
 	app, found := k.GetApplication(ctx, address)
 	if !found {
 		return nil
@@ -72,7 +72,7 @@ func (k Keeper) Application(ctx sdk.Context, address sdk.Address) exported.Appli
 }
 
 // wrapper for GetApplicationByConsAddress call
-func (k Keeper) applicationByConsAddr(ctx sdk.Context, addr sdk.Address) exported.ApplicationI {
+func (k Keeper) applicationByConsAddr(ctx sdk.Ctx, addr sdk.Address) exported.ApplicationI {
 	app, found := k.GetApplication(ctx, addr)
 	if !found {
 		return nil
@@ -80,7 +80,7 @@ func (k Keeper) applicationByConsAddr(ctx sdk.Context, addr sdk.Address) exporte
 	return app
 }
 
-func (k Keeper) AllApplications(ctx sdk.Context) (apps []exported.ApplicationI) {
+func (k Keeper) AllApplications(ctx sdk.Ctx) (apps []exported.ApplicationI) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()

@@ -11,7 +11,7 @@ import (
 // 2) mint any custom awards for each validator
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
-func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
+func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx)
@@ -44,7 +44,7 @@ func BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock, k Keeper) {
 }
 
 // Called every block, update validator set
-func EndBlocker(ctx sdk.Context, k Keeper) []abci.ValidatorUpdate {
+func EndBlocker(ctx sdk.Ctx, k Keeper) []abci.ValidatorUpdate {
 	// Calculate validator set changes.
 	// NOTE: UpdateTendermintValidators has to come before unstakeAllMatureValidators.
 	validatorUpdates := k.UpdateTendermintValidators(ctx)

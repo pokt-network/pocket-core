@@ -7,7 +7,7 @@ import (
 	"github.com/tendermint/go-amino"
 )
 
-func (k Keeper) BurnApplication(ctx sdk.Context, address sdk.Address, severityPercentage sdk.Dec) {
+func (k Keeper) BurnApplication(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) {
 	curBurn, _ := k.getApplicationBurn(ctx, address)
 	newSeverity := curBurn.Add(severityPercentage)
 	k.setApplicationBurn(ctx, newSeverity, address)
@@ -15,7 +15,7 @@ func (k Keeper) BurnApplication(ctx sdk.Context, address sdk.Address, severityPe
 
 // slash a application for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) slash(ctx sdk.Context, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
+func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
 	// error check slash
 	application := k.validateSlash(ctx, consAddr, infractionHeight, power, slashFactor)
 	if application.Address == nil {
@@ -47,7 +47,7 @@ func (k Keeper) slash(ctx sdk.Context, consAddr sdk.Address, infractionHeight, p
 		application.GetAddress(), slashFactor.String(), tokensToBurn))
 }
 
-func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Application {
+func (k Keeper) validateSlash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Application {
 	logger := k.Logger(ctx)
 	if slashFactor.LT(sdk.ZeroDec()) {
 		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
@@ -71,7 +71,7 @@ func (k Keeper) validateSlash(ctx sdk.Context, consAddr sdk.Address, infractionH
 	return application
 }
 
-func (k Keeper) getBurnFromSeverity(ctx sdk.Context, address sdk.Address, severityPercentage sdk.Dec) sdk.Int {
+func (k Keeper) getBurnFromSeverity(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) sdk.Int {
 	app := k.mustGetApplication(ctx, address)
 	amount := sdk.TokensFromConsensusPower(app.ConsensusPower())
 	slashAmount := amount.ToDec().Mul(severityPercentage).TruncateInt()
@@ -79,7 +79,7 @@ func (k Keeper) getBurnFromSeverity(ctx sdk.Context, address sdk.Address, severi
 }
 
 // called on begin blocker
-func (k Keeper) burnApplications(ctx sdk.Context) {
+func (k Keeper) burnApplications(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.BurnApplicationKey)
 	defer iterator.Close()
@@ -95,12 +95,12 @@ func (k Keeper) burnApplications(ctx sdk.Context) {
 }
 
 // store functions used to keep track of a application burn
-func (k Keeper) setApplicationBurn(ctx sdk.Context, amount sdk.Dec, address sdk.Address) {
+func (k Keeper) setApplicationBurn(ctx sdk.Ctx, amount sdk.Dec, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForAppBurn(address), amino.MustMarshalBinaryBare(amount))
 }
 
-func (k Keeper) getApplicationBurn(ctx sdk.Context, address sdk.Address) (coins sdk.Dec, found bool) {
+func (k Keeper) getApplicationBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Dec, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForAppBurn(address))
 	if value == nil {
@@ -111,7 +111,7 @@ func (k Keeper) getApplicationBurn(ctx sdk.Context, address sdk.Address) (coins 
 	return
 }
 
-func (k Keeper) deleteApplicationBurn(ctx sdk.Context, address sdk.Address) {
+func (k Keeper) deleteApplicationBurn(ctx sdk.Ctx, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForAppBurn(address))
 }

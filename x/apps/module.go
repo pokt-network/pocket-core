@@ -95,7 +95,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // InitGenesis performs genesis initialization for the pos module. It returns
 // no application updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Ctx, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	if data == nil {
 		genesisState = types.DefaultGenesisState()
@@ -108,18 +108,18 @@ func (am AppModule) InitGenesis(ctx sdk.Context, data json.RawMessage) []abci.Va
 
 // ExportGenesis returns the exported genesis state as raw bytes for the staking
 // module.
-func (am AppModule) ExportGenesis(ctx sdk.Context) json.RawMessage {
+func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
 	return types.ModuleCdc.MustMarshalJSON(gs)
 }
 
 // module begin-block
-func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	keeper.BeginBlocker(ctx, req, am.keeper)
 }
 
 // EndBlock returns the end blocker for the staking module. It returns no application
 // updates.
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return keeper.EndBlocker(ctx, am.keeper)
 }
