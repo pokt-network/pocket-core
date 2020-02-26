@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"path"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/posmint/crypto"
@@ -56,7 +57,7 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 		return "", err
 	}
 	// do basic http request on the relay
-	res, er := executeHTTPRequest(r.Payload.Data, url, r.Payload.Method, r.Payload.Headers)
+	res, er := executeHTTPRequest(r.Payload.Data, url, r.Payload.Path, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
 		return res, NewHTTPExecutionError(ModuleName, er)
 	}
@@ -151,8 +152,8 @@ type relayResponse struct {
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
-func executeHTTPRequest(payload string, url string, method string, headers map[string]string) (string, error) { // todo improved http responses
-	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(payload)))
+func executeHTTPRequest(payload string, url string, relayPath string, method string, headers map[string]string) (string, error) { // todo improved http responses
+	req, err := http.NewRequest(method, path.Clean(url + relayPath), bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return "", err
 	}
