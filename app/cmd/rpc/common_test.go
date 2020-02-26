@@ -398,6 +398,8 @@ func getInMemHostedChains() pocketTypes.HostedBlockchains {
 func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg = tmCfg.TestConfig()
 	tmConfg.RPC.ListenAddress = defaultTMURI
+	tmConfg.Consensus.CreateEmptyBlocksInterval = time.Duration(10) * time.Millisecond
+	tmConfg.Consensus.TimeoutCommit = time.Duration(10) * time.Millisecond
 	return
 }
 
