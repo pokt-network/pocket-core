@@ -91,7 +91,7 @@ func ErrNoValidatorForAddress(codespace sdk.CodespaceType) sdk.Error {
 }
 
 func ErrValidatorJailed(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeValidatorJailed, "validator still jailed, cannot yet be unjailed")
+	return sdk.NewError(codespace, CodeValidatorJailed, "validator jailed")
 }
 
 func ErrValidatorNotJailed(codespace sdk.CodespaceType) sdk.Error {
