@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestInvoice_GenerateMerkleRoot(t *testing.T) {
+func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	clientPrivateKey := getRandomPrivateKey()
@@ -35,7 +35,7 @@ func TestInvoice_GenerateMerkleRoot(t *testing.T) {
 		t.Fatalf(er.Error())
 	}
 	validAAT.ApplicationSignature = hex.EncodeToString(appSig)
-	i := Invoice{
+	i := Evidence{
 		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,
@@ -93,7 +93,7 @@ func TestInvoice_GenerateMerkleRoot(t *testing.T) {
 	assert.NotZero(t, root.Sum)
 }
 
-func TestInvoice_GenerateMerkleProof(t *testing.T) {
+func TestEvidence_GenerateMerkleProof(t *testing.T) {
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	clientPrivateKey := getRandomPrivateKey()
@@ -120,7 +120,7 @@ func TestInvoice_GenerateMerkleProof(t *testing.T) {
 		t.Fatalf(er.Error())
 	}
 	validAAT.ApplicationSignature = hex.EncodeToString(appSig)
-	i := Invoice{
+	i := Evidence{
 		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,
@@ -182,7 +182,7 @@ func TestInvoice_GenerateMerkleProof(t *testing.T) {
 	assert.True(t, math.Abs(float64(cousinIndex-index)) < 3)
 }
 
-func TestInvoice_VerifyMerkleProof(t *testing.T) {
+func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	clientPrivateKey := getRandomPrivateKey()
@@ -209,7 +209,7 @@ func TestInvoice_VerifyMerkleProof(t *testing.T) {
 		t.Fatalf(er.Error())
 	}
 	validAAT.ApplicationSignature = hex.EncodeToString(appSig)
-	i := Invoice{
+	i := Evidence{
 		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,
@@ -259,7 +259,7 @@ func TestInvoice_VerifyMerkleProof(t *testing.T) {
 			},
 		},
 	}
-	i2 := Invoice{
+	i2 := Evidence{
 		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,

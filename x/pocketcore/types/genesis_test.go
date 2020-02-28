@@ -36,7 +36,7 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains: nil,
 			ClaimExpiration:      0,
 		},
-		Proofs: []StoredInvoice{{
+		Proofs: []StoredEvidence{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -63,7 +63,7 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains: []string{nn},
 			ClaimExpiration:      50,
 		},
-		Proofs: []StoredInvoice{{
+		Proofs: []StoredEvidence{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -90,7 +90,7 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains: []string{nn},
 			ClaimExpiration:      50,
 		},
-		Proofs: []StoredInvoice{{
+		Proofs: []StoredEvidence{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -117,7 +117,7 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains: []string{nn},
 			ClaimExpiration:      50,
 		},
-		Proofs: []StoredInvoice{{
+		Proofs: []StoredEvidence{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -198,7 +198,7 @@ func TestDefaultGenesisState(t *testing.T) {
 			SupportedBlockchains: []string{nn},
 			ClaimExpiration:      50,
 		},
-		Proofs: []StoredInvoice{{
+		Proofs: []StoredEvidence{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,

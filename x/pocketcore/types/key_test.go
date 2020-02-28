@@ -68,11 +68,11 @@ package types
 //		Chain:              ethereum,
 //		SessionBlockHeight: -1,
 //	}
-//	assert.Panics(t, func() { KeyForInvoice(ctx, getRandomValidatorAddress(), invalidSessHeader) })
+//	assert.Panics(t, func() { KeyForEvidence(ctx, getRandomValidatorAddress(), invalidSessHeader) })
 //	// invalid address
 //	invalidAddr := types.Address{}
-//	assert.Panics(t, func() { KeyForInvoice(ctx, invalidAddr, sh) })
-//	key := KeyForInvoice(ctx, getRandomValidatorAddress(), sh)
+//	assert.Panics(t, func() { KeyForEvidence(ctx, invalidAddr, sh) })
+//	key := KeyForEvidence(ctx, getRandomValidatorAddress(), sh)
 //	assert.NotNil(t, key)
 //	assert.NotEmpty(t, key)
 //}
@@ -80,8 +80,8 @@ package types
 //func TestKeyForProofs(t *testing.T) {
 //	// invalid address
 //	invalidAddr := types.Address{}
-//	assert.Panics(t, func() { KeyForInvoices(invalidAddr) })
-//	key := KeyForInvoices(getRandomValidatorAddress())
+//	assert.Panics(t, func() { KeyForEvidences(invalidAddr) })
+//	key := KeyForEvidences(getRandomValidatorAddress())
 //	assert.NotNil(t, key)
 //	assert.NotEmpty(t, key)
 //	assert.Len(t, key, 21)

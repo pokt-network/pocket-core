@@ -3,12 +3,12 @@ package keeper
 //func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 //	ctx, _, _, _, keeper := createTestInput(t, false)
 //	npk, validHeader := simulateRelays(t, 1)
-//	i, found := types.GetAllInvoices().GetInvoice(validHeader)
+//	i, found := types.GetAllEvidences().GetEvidence(validHeader)
 //	if !found {
-//		t.Fatalf("Set invoice not found")
+//		t.Fatalf("Set evidence not found")
 //	}
 //	root := i.GenerateMerkleRoot()
-//	totalRelays := types.GetAllInvoices().GetTotalRelays(validHeader)
+//	totalRelays := types.GetAllEvidences().GetTotalRelays(validHeader)
 //	assert.Equal(t, totalRelays, int64(9))
 //	// generate a claim message
 //	claimMsg := types.MsgClaim{
@@ -20,15 +20,15 @@ package keeper
 //	// generate the pseudorandom proof
 //	neededLeafIndex := keeper.GetPseudorandomIndex(ctx, totalRelays, validHeader)
 //	// create the proof message
-//	inv, found := types.GetAllInvoices().GetInvoice(validHeader)
+//	inv, found := types.GetAllEvidences().GetEvidence(validHeader)
 //	if !found {
-//		t.Fatalf("Set invoice not found 2")
+//		t.Fatalf("Set evidence not found 2")
 //	}
 //	merkleProofs, cousinIndex := inv.GenerateMerkleProof(int(neededLeafIndex))
 //	// get leaf and cousin node
-//	leafNode := types.GetAllInvoices().GetProof(validHeader, int(neededLeafIndex))
+//	leafNode := types.GetAllEvidences().GetProof(validHeader, int(neededLeafIndex))
 //	// get leaf and cousin node
-//	cousinNode := types.GetAllInvoices().GetProof(validHeader, cousinIndex)
+//	cousinNode := types.GetAllEvidences().GetProof(validHeader, cousinIndex)
 //	// create proof message
 //	proofMsg := types.MsgProof{
 //		MerkleProofs: merkleProofs,
@@ -181,46 +181,46 @@ package keeper
 //		Chain:              ethereum,
 //		SessionBlockHeight: blockHeight,
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay1.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay1.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay2.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay2.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay3.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay3.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay4.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay4.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay5.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay5.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay6.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay6.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay7.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay7.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay8.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay8.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
-//	err = types.GetAllInvoices().AddToInvoice(validHeader, validRelay9.Proof)
+//	err = types.GetAllEvidences().AddToEvidence(validHeader, validRelay9.Proof)
 //	if err != nil {
 //		t.Fatalf(err.Error())
 //	}
 //	return npk, validHeader
 //}
 //
-//func TestKeeper_GetSetInvoice(t *testing.T) {
+//func TestKeeper_GetSetEvidence(t *testing.T) {
 //	ctx, _, _, _, keeper := createTestInput(t, false)
 //	appPrivateKey := getRandomPrivateKey()
 //	appPubKey := appPrivateKey.PublicKey().RawString()
@@ -241,18 +241,18 @@ package keeper
 //		Chain:              ethereum,
 //		SessionBlockHeight: 1,
 //	}
-//	storedInvoice := types.StoredInvoice{
+//	storedEvidence := types.StoredEvidence{
 //		SessionHeader:   validHeader,
 //		ServicerAddress: sdk.Address(npk.Address()).String(),
 //		TotalRelays:     2000,
 //	}
-//	keeper.SetInvoice(ctx, sdk.Address(sdk.Address(npk.Address())), storedInvoice)
-//	inv, found := keeper.GetInvoice(ctx, sdk.Address(sdk.Address(npk.Address())), validHeader)
+//	keeper.SetEvidence(ctx, sdk.Address(sdk.Address(npk.Address())), storedEvidence)
+//	inv, found := keeper.GetEvidence(ctx, sdk.Address(sdk.Address(npk.Address())), validHeader)
 //	assert.True(t, found)
-//	assert.Equal(t, inv, storedInvoice)
+//	assert.Equal(t, inv, storedEvidence)
 //}
 //
-//func TestKeeper_GetSetInvoices(t *testing.T) {
+//func TestKeeper_GetSetEvidences(t *testing.T) {
 //	ctx, _, _, _, keeper := createTestInput(t, false)
 //	appPrivateKey := getRandomPrivateKey()
 //	appPubKey := appPrivateKey.PublicKey().RawString()
@@ -281,24 +281,24 @@ package keeper
 //		Chain:              ethereum,
 //		SessionBlockHeight: 1,
 //	}
-//	storedInvoice := types.StoredInvoice{
+//	storedEvidence := types.StoredEvidence{
 //		SessionHeader:   validHeader,
 //		ServicerAddress: sdk.Address(npk.Address()).String(),
 //		TotalRelays:     2000,
 //	}
-//	storedInvoice2 := types.StoredInvoice{
+//	storedEvidence2 := types.StoredEvidence{
 //		SessionHeader:   validHeader2,
 //		ServicerAddress: sdk.Address(npk.Address()).String(),
 //		TotalRelays:     2000,
 //	}
-//	invoices := []types.StoredInvoice{storedInvoice, storedInvoice2}
-//	keeper.SetInvoices(ctx, invoices)
-//	inv := keeper.GetInvoices(ctx, sdk.Address(sdk.Address(npk.Address())))
-//	assert.Contains(t, inv, storedInvoice)
-//	assert.Contains(t, inv, storedInvoice2)
+//	evidences := []types.StoredEvidence{storedEvidence, storedEvidence2}
+//	keeper.SetEvidences(ctx, evidences)
+//	inv := keeper.GetEvidences(ctx, sdk.Address(sdk.Address(npk.Address())))
+//	assert.Contains(t, inv, storedEvidence)
+//	assert.Contains(t, inv, storedEvidence2)
 //}
 //
-//func TestKeeper_GetAllInvoices(t *testing.T) {
+//func TestKeeper_GetAllEvidences(t *testing.T) {
 //	ctx, _, _, _, keeper := createTestInput(t, false)
 //	appPrivateKey := getRandomPrivateKey()
 //	appPubKey := appPrivateKey.PublicKey().RawString()
@@ -320,27 +320,27 @@ package keeper
 //		Chain:              ethereum,
 //		SessionBlockHeight: 1,
 //	}
-//	storedInvoice := types.StoredInvoice{
+//	storedEvidence := types.StoredEvidence{
 //		SessionHeader:   validHeader,
 //		ServicerAddress: sdk.Address(npk.Address()).String(),
 //		TotalRelays:     2000,
 //	}
-//	storedInvoice2 := types.StoredInvoice{
+//	storedEvidence2 := types.StoredEvidence{
 //		SessionHeader:   validHeader,
 //		ServicerAddress: sdk.Address(npk2.Address()).String(),
 //		TotalRelays:     2000,
 //	}
-//	invoices := []types.StoredInvoice{storedInvoice, storedInvoice2}
-//	keeper.SetInvoices(ctx, invoices)
-//	inv := keeper.GetAllInvoices(ctx)
-//	assert.Contains(t, inv, storedInvoice)
-//	assert.Contains(t, inv, storedInvoice2)
+//	evidences := []types.StoredEvidence{storedEvidence, storedEvidence2}
+//	keeper.SetEvidences(ctx, evidences)
+//	inv := keeper.GetAllEvidences(ctx)
+//	assert.Contains(t, inv, storedEvidence)
+//	assert.Contains(t, inv, storedEvidence2)
 //}
 //
 //func TestKeeper_GetSetClaim(t *testing.T) {
 //	ctx, _, _, _, keeper := createTestInput(t, false)
 //	npk, validHeader := simulateRelays(t, 1)
-//	i, found := types.GetAllInvoices().GetInvoice(validHeader)
+//	i, found := types.GetAllEvidences().GetEvidence(validHeader)
 //	assert.True(t, found)
 //	claim := types.MsgClaim{
 //		SessionHeader: validHeader,
@@ -358,9 +358,9 @@ package keeper
 //	ctx, _, _, _, keeper := createTestInput(t, false)
 //	npk, validHeader := simulateRelays(t, 1)
 //	npk2, validHeader2 := simulateRelays(t, 1)
-//	i, found := types.GetAllInvoices().GetInvoice(validHeader)
+//	i, found := types.GetAllEvidences().GetEvidence(validHeader)
 //	assert.True(t, found)
-//	i2, found := types.GetAllInvoices().GetInvoice(validHeader2)
+//	i2, found := types.GetAllEvidences().GetEvidence(validHeader2)
 //	assert.True(t, found)
 //	claim1 := types.MsgClaim{
 //		SessionHeader: validHeader,
@@ -393,9 +393,9 @@ package keeper
 //	ctx, _, _, _, keeper := createTestInput(t, false)
 //	npk, validHeader := simulateRelays(t, 1)
 //	npk2, validHeader2 := simulateRelays(t, 999)
-//	i, found := types.GetAllInvoices().GetInvoice(validHeader)
+//	i, found := types.GetAllEvidences().GetEvidence(validHeader)
 //	assert.True(t, found)
-//	i2, found := types.GetAllInvoices().GetInvoice(validHeader2)
+//	i2, found := types.GetAllEvidences().GetEvidence(validHeader2)
 //	assert.True(t, found)
 //	matureClaim := types.MsgClaim{
 //		SessionHeader: validHeader,
@@ -421,9 +421,9 @@ package keeper
 //	ctx, _, _, _, keeper := createTestInput(t, false)
 //	npk, validHeader := simulateRelays(t, 1)
 //	npk2, validHeader2 := simulateRelays(t, 999)
-//	i, found := types.GetAllInvoices().GetInvoice(validHeader)
+//	i, found := types.GetAllEvidences().GetEvidence(validHeader)
 //	assert.True(t, found)
-//	i2, found := types.GetAllInvoices().GetInvoice(validHeader2)
+//	i2, found := types.GetAllEvidences().GetEvidence(validHeader2)
 //	assert.True(t, found)
 //	expiredClaim := types.MsgClaim{
 //		SessionHeader: validHeader,

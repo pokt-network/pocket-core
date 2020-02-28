@@ -6,7 +6,7 @@ import (
 
 type GenesisState struct {
 	Params Params          `json:"params" yaml:"params"`
-	Proofs []StoredInvoice `json:"proofs"`
+	Proofs []StoredEvidence `json:"proofs"`
 	Claims []MsgClaim      `json:"claims"`
 }
 

@@ -75,7 +75,7 @@ func (k Keeper) SetPrevStateValPower(ctx sdk.Context, addr sdk.Address, power in
 	store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
 }
 
-// DeleteInvoice the power of a SINGLE staked validator from the previous state
+// DeleteEvidence the power of a SINGLE staked validator from the previous state
 func (k Keeper) DeletePrevStateValPower(ctx sdk.Context, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorPrevStateStateByPower(addr))

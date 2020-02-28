@@ -36,7 +36,7 @@ func TestQueryParameters(t *testing.T) {
 }
 
 //
-//func TestQueryInvoice(t *testing.T) {
+//func TestQueryEvidence(t *testing.T) {
 //	ctx, _, _, _, k := createTestInput(t, false)
 //	appPrivateKey := getRandomPrivateKey()
 //	appPubKey := appPrivateKey.PublicKey().RawString()
@@ -57,13 +57,13 @@ func TestQueryParameters(t *testing.T) {
 //		Chain:              ethereum,
 //		SessionBlockHeight: 1,
 //	}
-//	storedInvoice := types.StoredInvoice{
+//	storedEvidence := types.StoredEvidence{
 //		SessionHeader:   validHeader,
 //		ServicerAddress: npk.Address().String(),
 //		TotalRelays:     2000,
 //	}
-//	k.SetInvoice(ctx, sdk.Address(npk.Address()), storedInvoice)
-//	bz, er := types.ModuleCdc.MarshalJSON(types.QueryInvoiceParams{
+//	k.SetEvidence(ctx, sdk.Address(npk.Address()), storedEvidence)
+//	bz, er := types.ModuleCdc.MarshalJSON(types.QueryEvidenceParams{
 //		Address: sdk.Address(npk.Address()),
 //		Header: types.SessionHeader{
 //			ApplicationPubKey:  appPubKey,
@@ -74,37 +74,37 @@ func TestQueryParameters(t *testing.T) {
 //	assert.Nil(t, er)
 //	request := abci.RequestQuery{
 //		Data:                 bz,
-//		Path:                 types.QueryInvoice,
+//		Path:                 types.QueryEvidence,
 //		Height:               ctx.BlockHeight(),
 //		Prove:                false,
 //		XXX_NoUnkeyedLiteral: struct{}{},
 //		XXX_unrecognized:     nil,
 //		XXX_sizecache:        0,
 //	}
-//	resbz, err := queryInvoice(ctx, request, k)
+//	resbz, err := queryEvidence(ctx, request, k)
 //	assert.Nil(t, err)
-//	var stored types.StoredInvoice
+//	var stored types.StoredEvidence
 //	er = types.ModuleCdc.UnmarshalJSON(resbz, &stored)
 //	assert.Nil(t, er)
-//	assert.Equal(t, stored, storedInvoice)
-//	// invoices query
-//	var stored2 []types.StoredInvoice
-//	bz2, er2 := types.ModuleCdc.MarshalJSON(types.QueryInvoicesParams{
+//	assert.Equal(t, stored, storedEvidence)
+//	// evidences query
+//	var stored2 []types.StoredEvidence
+//	bz2, er2 := types.ModuleCdc.MarshalJSON(types.QueryEvidencesParams{
 //		Address: sdk.Address(npk.Address()),
 //	})
 //	assert.Nil(t, er2)
 //	request2 := abci.RequestQuery{
 //		Data:                 bz2,
-//		Path:                 types.QueryInvoices,
+//		Path:                 types.QueryEvidences,
 //		Height:               ctx.BlockHeight(),
 //		Prove:                false,
 //		XXX_NoUnkeyedLiteral: struct{}{},
 //		XXX_unrecognized:     nil,
 //		XXX_sizecache:        0,
 //	}
-//	resbz2, err := queryInvoices(ctx, request2, k)
+//	resbz2, err := queryEvidences(ctx, request2, k)
 //	assert.Nil(t, err)
 //	er = types.ModuleCdc.UnmarshalJSON(resbz2, &stored2)
 //	assert.Nil(t, er)
-//	assert.Equal(t, stored2, []types.StoredInvoice{storedInvoice})
+//	assert.Equal(t, stored2, []types.StoredEvidence{storedEvidence})
 //}

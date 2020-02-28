@@ -16,7 +16,7 @@ func TestInitExportGenesis(t *testing.T) {
 	}
 	genesisState := types.GenesisState{
 		Params: p,
-		Proofs: []types.StoredInvoice(nil),
+		Proofs: []types.StoredEvidence(nil),
 		Claims: []types.MsgClaim(nil),
 	}
 	InitGenesis(ctx, k, genesisState)
