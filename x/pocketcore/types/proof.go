@@ -18,38 +18,38 @@ type Proof struct {
 	Signature          string `json:"signature"`
 }
 
-func (rp Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, verifyPubKey string) sdk.Error {
+func (p Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, verifyPubKey string) sdk.Error {
 	// validate the session block height
-	if rp.SessionBlockHeight != sessionBlockHeight {
+	if p.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
 	}
 	// validate blockchain
-	if err := HashVerification(rp.Blockchain); err != nil {
+	if err := HashVerification(p.Blockchain); err != nil {
 		return err
 	}
 	invoiceHeader := SessionHeader{
-		ApplicationPubKey:  rp.Token.ApplicationPublicKey,
-		Chain:              rp.Blockchain,
-		SessionBlockHeight: rp.SessionBlockHeight,
+		ApplicationPubKey:  p.Token.ApplicationPublicKey,
+		Chain:              p.Blockchain,
+		SessionBlockHeight: p.SessionBlockHeight,
 	}
 	// validate not over service
 	totalRelays := GetAllInvoices().GetTotalRelays(invoiceHeader)
-	if !GetAllInvoices().IsUniqueProof(invoiceHeader, rp) {
+	if !GetAllInvoices().IsUniqueProof(invoiceHeader, p) {
 		return NewDuplicateProofError(ModuleName)
 	}
 	if totalRelays >= int64(math.Ceil(float64(maxRelays)/float64(numberOfChains))/(float64(sessionNodeCount))) {
 		return NewOverServiceError(ModuleName)
 	}
 	// validate the public key correctness
-	if rp.ServicerPubKey != verifyPubKey {
+	if p.ServicerPubKey != verifyPubKey {
 		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
 	}
 	// ensure the blockchain is supported
-	if !hb.ContainsFromString(rp.Blockchain) {
+	if !hb.ContainsFromString(p.Blockchain) {
 		return NewUnsupportedBlockchainNodeError(ModuleName)
 	}
 	// validate the Proof public key format
-	if err := PubKeyVerification(rp.ServicerPubKey); err != nil {
+	if err := PubKeyVerification(p.ServicerPubKey); err != nil {
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
 	// validate the verify public key format
@@ -57,10 +57,10 @@ func (rp Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, 
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
 	// validate the service token
-	if err := rp.Token.Validate(); err != nil {
+	if err := p.Token.Validate(); err != nil {
 		return NewInvalidTokenError(ModuleName, err)
 	}
-	return SignatureVerification(rp.Token.ClientPublicKey, rp.HashString(), rp.Signature)
+	return SignatureVerification(p.Token.ClientPublicKey, p.HashString(), p.Signature)
 }
 
 // structure used to json marshal the Proof
@@ -74,14 +74,14 @@ type relayProof struct {
 }
 
 // convert the Proof to bytes
-func (rp Proof) Bytes() []byte {
+func (p Proof) Bytes() []byte {
 	res, err := json.Marshal(relayProof{
-		Entropy:            rp.Entropy,
-		ServicerPubKey:     rp.ServicerPubKey,
-		Blockchain:         rp.Blockchain,
-		SessionBlockHeight: rp.SessionBlockHeight,
+		Entropy:            p.Entropy,
+		ServicerPubKey:     p.ServicerPubKey,
+		Blockchain:         p.Blockchain,
+		SessionBlockHeight: p.SessionBlockHeight,
 		Signature:          "", // omit the signature
-		Token:              rp.Token.HashString(),
+		Token:              p.Token.HashString(),
 	})
 	if err != nil {
 		panic(fmt.Sprintf("an error occured converting the relay proof to bytes:\n%v", err))
@@ -90,14 +90,14 @@ func (rp Proof) Bytes() []byte {
 }
 
 // convert the Proof to bytes
-func (rp Proof) BytesWithSignature() []byte {
+func (p Proof) BytesWithSignature() []byte {
 	res, err := json.Marshal(relayProof{
-		Entropy:            rp.Entropy,
-		ServicerPubKey:     rp.ServicerPubKey,
-		Blockchain:         rp.Blockchain,
-		SessionBlockHeight: rp.SessionBlockHeight,
-		Signature:          rp.Signature,
-		Token:              rp.Token.HashString(),
+		Entropy:            p.Entropy,
+		ServicerPubKey:     p.ServicerPubKey,
+		Blockchain:         p.Blockchain,
+		SessionBlockHeight: p.SessionBlockHeight,
+		Signature:          p.Signature,
+		Token:              p.Token.HashString(),
 	})
 	if err != nil {
 		panic(fmt.Sprintf("an error occured converting the relay proof to bytes with signature:\n%v", err))
@@ -106,23 +106,23 @@ func (rp Proof) BytesWithSignature() []byte {
 }
 
 // addr the Proof bytes
-func (rp Proof) Hash() []byte {
-	res := rp.Bytes()
+func (p Proof) Hash() []byte {
+	res := p.Bytes()
 	return Hash(res)
 }
 
 // hex encode the Proof addr
-func (rp Proof) HashString() string {
-	return hex.EncodeToString(rp.Hash())
+func (p Proof) HashString() string {
+	return hex.EncodeToString(p.Hash())
 }
 
 // addr the Proof bytes
-func (rp Proof) HashWithSignature() []byte {
-	res := rp.BytesWithSignature()
+func (p Proof) HashWithSignature() []byte {
+	res := p.BytesWithSignature()
 	return Hash(res)
 }
 
 // hex encode the Proof addr
-func (rp Proof) HashStringWithSignature() string {
-	return hex.EncodeToString(rp.HashWithSignature())
+func (p Proof) HashStringWithSignature() string {
+	return hex.EncodeToString(p.HashWithSignature())
 }
