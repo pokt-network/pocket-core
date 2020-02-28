@@ -47,7 +47,7 @@ func (k Keeper) SetUnstakingValidator(ctx sdk.Context, val types.Validator) {
 	k.setUnstakingValidators(ctx, val.UnstakingCompletionTime, validators)
 }
 
-// DeleteInvoice a validator address from the unstaking queue
+// DeleteEvidence a validator address from the unstaking queue
 func (k Keeper) deleteUnstakingValidator(ctx sdk.Context, val types.Validator) {
 	validators := k.getUnstakingValidators(ctx, val.UnstakingCompletionTime)
 	var newValidators []sdk.Address

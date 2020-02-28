@@ -68,7 +68,7 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 // store the proofs of work done for the relay batch
 func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64) sdk.Error {
 	// add the Proof to the global (in memory) collection of proofs
-	return GetAllInvoices().AddToInvoice(SessionHeader{
+	return GetAllEvidences().AddToEvidence(SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
 		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: sessionBlockHeight,

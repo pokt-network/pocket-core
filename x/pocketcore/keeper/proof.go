@@ -114,39 +114,39 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
 		return
 	}
-	// get all the invoices held in memory
-	invoices := pc.GetAllInvoices()
-	// for every invoice in Invoices
-	for _, invoice := range (*invoices).M {
-		if len(invoice.Proofs) < 5 {
-			invoices.DeleteInvoice(invoice.SessionHeader)
+	// get all the evidences held in memory
+	evidences := pc.GetAllEvidences()
+	// for every evidence in Evidences
+	for _, evidence := range (*evidences).M {
+		if len(evidence.Proofs) < 5 {
+			evidences.DeleteEvidence(evidence.SessionHeader)
 			continue
 		}
-		// if the blockchain in the invoice is not supported then delete it because nodes don't get paid for unsupported blockchains
-		ctx.Logger().Info(fmt.Sprintf("check if invoice supported for chain %v \n", invoice.SessionHeader.Chain))
-		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(invoice.SessionHeader.SessionBlockHeight), invoice.SessionHeader.Chain) && invoice.TotalRelays > 0 {
-			invoices.DeleteInvoice(invoice.SessionHeader)
+		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid for unsupported blockchains
+		ctx.Logger().Info(fmt.Sprintf("check if evidence supported for chain %v \n", evidence.SessionHeader.Chain))
+		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) && evidence.TotalRelays > 0 {
+			evidences.DeleteEvidence(evidence.SessionHeader)
 			continue
 		}
-		// check the current state to see if the unverified invoice has already been sent and processed (if so, then skip this invoice)
-		ctx.Logger().Info(fmt.Sprintf("get claim for address: %v with header %+v", sdk.Address(kp.GetAddress()).String(), invoice.SessionHeader))
-		if _, found := k.GetClaim(ctx, sdk.Address(kp.GetAddress()), invoice.SessionHeader); found {
+		// check the current state to see if the unverified evidence has already been sent and processed (if so, then skip this evidence)
+		ctx.Logger().Info(fmt.Sprintf("get claim for address: %v with header %+v", sdk.Address(kp.GetAddress()).String(), evidence.SessionHeader))
+		if _, found := k.GetClaim(ctx, sdk.Address(kp.GetAddress()), evidence.SessionHeader); found {
 			continue
 		}
-		if k.ClaimIsMature(ctx, invoice.SessionBlockHeight) {
-			invoices.DeleteInvoice(invoice.SessionHeader)
+		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
+			evidences.DeleteEvidence(evidence.SessionHeader)
 			continue
 		}
-		// generate the merkle root for this invoice
-		root := invoice.GenerateMerkleRoot()
+		// generate the merkle root for this evidence
+		root := evidence.GenerateMerkleRoot()
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgClaimName, n, keybase, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
 			return
 		}
-		// send in the invoice header, the total relays completed, and the merkle root (ensures data integrity)
-		if _, err := claimTx(keybase, cliCtx, txBuilder, invoice.SessionHeader, invoice.TotalRelays, root); err != nil {
+		// send in the evidence header, the total relays completed, and the merkle root (ensures data integrity)
+		if _, err := claimTx(keybase, cliCtx, txBuilder, evidence.SessionHeader, evidence.TotalRelays, root); err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
 		}
 	}
@@ -171,9 +171,9 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 	// for every proof of the mature set
 	for _, proof := range proofs {
 		// if the proof is found to be verified in the world state, you can delete it from the cache and not send again
-		if _, found := k.GetInvoice(ctx, addr, proof.SessionHeader); found {
+		if _, found := k.GetEvidence(ctx, addr, proof.SessionHeader); found {
 			// remove from the local cache
-			pc.GetAllInvoices().DeleteInvoice(proof.SessionHeader)
+			pc.GetAllEvidences().DeleteEvidence(proof.SessionHeader)
 			//// remove from the temporary world state
 			//err := k.DeleteClaim(ctx, addr, proof.SessionHeader)
 			//if err != nil {
@@ -182,10 +182,10 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 			continue
 		}
 		// generate the proof of relay object using the found proof and local cache
-		inv := pc.Invoice{
+		inv := pc.Evidence{
 			SessionHeader: proof.SessionHeader,
 			TotalRelays:   proof.TotalRelays,
-			Proofs:        pc.GetAllInvoices().GetProofs(proof.SessionHeader),
+			Proofs:        pc.GetAllEvidences().GetProofs(proof.SessionHeader),
 		}
 		// generate the needed pseudorandom proof using the information found in the first transaction
 		reqProof, err := k.GetPseudorandomIndex(ctx, proof.TotalRelays, proof.SessionHeader)
@@ -195,8 +195,8 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 		// get the merkle proof object for the pseudorandom proof index
 		branch, cousinIndex := inv.GenerateMerkleProof(int(reqProof))
 		// get the leaf for the required pseudorandom proof index
-		leaf := pc.GetAllInvoices().GetProof(proof.SessionHeader, int(reqProof))
-		cousin := pc.GetAllInvoices().GetProof(proof.SessionHeader, cousinIndex)
+		leaf := pc.GetAllEvidences().GetProof(proof.SessionHeader, int(reqProof))
+		cousin := pc.GetAllEvidences().GetProof(proof.SessionHeader, cousinIndex)
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, keybase, k)
 		if err != nil {
@@ -211,14 +211,14 @@ func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 	}
 }
 
-// stored invoices (already proved)
+// stored evidences (already proved)
 
-// set the verified invoice
-func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.Address, p pc.StoredInvoice) error {
-	ctx.Logger().Info(fmt.Sprintf("GetInvoice(address= %v, header= %+v) \n", address.String(), p))
+// set the verified evidence
+func (k Keeper) SetEvidence(ctx sdk.Context, address sdk.Address, p pc.StoredEvidence) error {
+	ctx.Logger().Info(fmt.Sprintf("GetEvidence(address= %v, header= %+v) \n", address.String(), p))
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
-	key, err := pc.KeyForInvoice(ctx, address, p.SessionHeader)
+	key, err := pc.KeyForEvidence(ctx, address, p.SessionHeader)
 	if err != nil {
 		return err
 	}
@@ -226,69 +226,69 @@ func (k Keeper) SetInvoice(ctx sdk.Context, address sdk.Address, p pc.StoredInvo
 	return nil
 }
 
-// retrieve the verified invoice
-func (k Keeper) GetInvoice(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (invoice pc.StoredInvoice, found bool) {
-	ctx.Logger().Info(fmt.Sprintf("GetInvoice(address= %v, header= %+v) \n", address.String(), header))
+// retrieve the verified evidence
+func (k Keeper) GetEvidence(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (evidence pc.StoredEvidence, found bool) {
+	ctx.Logger().Info(fmt.Sprintf("GetEvidence(address= %v, header= %+v) \n", address.String(), header))
 	store := ctx.KVStore(k.storeKey)
-	key, err := pc.KeyForInvoice(ctx, address, header)
+	key, err := pc.KeyForEvidence(ctx, address, header)
 	if err != nil {
-		ctx.Logger().Error("There was a problem creating a key for the invoice:\n" + err.Error())
-		return pc.StoredInvoice{}, false
+		ctx.Logger().Error("There was a problem creating a key for the evidence:\n" + err.Error())
+		return pc.StoredEvidence{}, false
 	}
 	res := store.Get(key)
 	if res == nil {
-		return pc.StoredInvoice{}, false
+		return pc.StoredEvidence{}, false
 	}
-	k.cdc.MustUnmarshalBinaryBare(res, &invoice)
-	return invoice, true
+	k.cdc.MustUnmarshalBinaryBare(res, &evidence)
+	return evidence, true
 }
 
-func (k Keeper) SetInvoices(ctx sdk.Context, invoices []pc.StoredInvoice) {
-	ctx.Logger().Info(fmt.Sprintf("SetInvoices(invoices %v) \n", invoices))
+func (k Keeper) SetEvidences(ctx sdk.Context, evidences []pc.StoredEvidence) {
+	ctx.Logger().Info(fmt.Sprintf("SetEvidences(evidences %v) \n", evidences))
 	store := ctx.KVStore(k.storeKey)
-	for _, invoice := range invoices {
-		addrbz, err := hex.DecodeString(invoice.ServicerAddress)
+	for _, evidence := range evidences {
+		addrbz, err := hex.DecodeString(evidence.ServicerAddress)
 		if err != nil {
-			panic(fmt.Sprintf("an error occured setting the invoices:\n%v", err))
+			panic(fmt.Sprintf("an error occured setting the evidences:\n%v", err))
 		}
-		bz := k.cdc.MustMarshalBinaryBare(invoice)
-		key, err := pc.KeyForInvoice(ctx, addrbz, invoice.SessionHeader)
+		bz := k.cdc.MustMarshalBinaryBare(evidence)
+		key, err := pc.KeyForEvidence(ctx, addrbz, evidence.SessionHeader)
 		if err != nil {
-			panic(fmt.Sprintf("an error occured setting the invoices:\n%v", err))
+			panic(fmt.Sprintf("an error occured setting the evidences:\n%v", err))
 		}
 		store.Set(key, bz)
 	}
 }
 
-// get all verified invoices for this address
-func (k Keeper) GetInvoices(ctx sdk.Context, address sdk.Address) (invoices []pc.StoredInvoice, err error) {
-	ctx.Logger().Info(fmt.Sprintf("GetInvoices(address %v) \n", address.String()))
+// get all verified evidences for this address
+func (k Keeper) GetEvidences(ctx sdk.Context, address sdk.Address) (evidences []pc.StoredEvidence, err error) {
+	ctx.Logger().Info(fmt.Sprintf("GetEvidences(address %v) \n", address.String()))
 	store := ctx.KVStore(k.storeKey)
-	key, err := pc.KeyForInvoices(address)
+	key, err := pc.KeyForEvidences(address)
 	if err != nil {
 		return nil, err
 	}
 	iterator := sdk.KVStorePrefixIterator(store, key)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		var summary pc.StoredInvoice
+		var summary pc.StoredEvidence
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
-		invoices = append(invoices, summary)
+		evidences = append(evidences, summary)
 	}
 	return
 }
 
-// get all invoices for this address
-func (k Keeper) GetAllInvoices(ctx sdk.Context) (invoices []pc.StoredInvoice) {
+// get all evidences for this address
+func (k Keeper) GetAllEvidences(ctx sdk.Context) (evidences []pc.StoredEvidence) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, pc.InvoiceKey)
+	iterator := sdk.KVStorePrefixIterator(store, pc.EvidenceKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		var summary pc.StoredInvoice
+		var summary pc.StoredEvidence
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
-		invoices = append(invoices, summary)
+		evidences = append(evidences, summary)
 	}
-	ctx.Logger().Info(fmt.Sprintf("GetAllInvoices() = %v \n", invoices))
+	ctx.Logger().Info(fmt.Sprintf("GetAllEvidences() = %v \n", evidences))
 	return
 }
 

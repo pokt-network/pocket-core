@@ -6,8 +6,8 @@ import (
 
 // query endpoints supported by the staking Querier
 const (
-	QueryInvoice              = "invoice"
-	QueryInvoices             = "invoices"
+	QueryEvidence              = "evidence"
+	QueryEvidences             = "evidences"
 	QuerySupportedBlockchains = "supportedBlockchains"
 	QueryRelay                = "relay"
 	QueryDispatch             = "dispatch"
@@ -22,11 +22,11 @@ type QueryDispatchParams struct {
 	SessionHeader `json:"header"`
 }
 
-type QueryInvoiceParams struct {
+type QueryEvidenceParams struct {
 	Address sdk.Address   `json:"address"`
 	Header  SessionHeader `json:"header"`
 }
 
-type QueryInvoicesParams struct {
+type QueryEvidencesParams struct {
 	Address sdk.Address `json:"address"`
 }

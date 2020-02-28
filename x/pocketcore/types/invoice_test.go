@@ -6,11 +6,11 @@ import (
 	"testing"
 )
 
-func TestGetAllInvoices(t *testing.T) {
-	assert.NotNil(t, GetAllInvoices().M)
+func TestGetAllEvidences(t *testing.T) {
+	assert.NotNil(t, GetAllEvidences().M)
 }
 
-func TestAllInvoices_AddGetInvoice(t *testing.T) {
+func TestAllEvidences_AddGetEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -42,14 +42,14 @@ func TestAllInvoices_AddGetInvoice(t *testing.T) {
 		},
 		Signature: "",
 	}
-	err = GetAllInvoices().AddToInvoice(header, proof)
+	err = GetAllEvidences().AddToEvidence(header, proof)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	assert.True(t, reflect.DeepEqual(GetAllInvoices().GetProof(header, 0), proof))
+	assert.True(t, reflect.DeepEqual(GetAllEvidences().GetProof(header, 0), proof))
 }
 
-func TestAllInvoices_DeleteInvoice(t *testing.T) {
+func TestAllEvidences_DeleteEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -81,17 +81,17 @@ func TestAllInvoices_DeleteInvoice(t *testing.T) {
 		},
 		Signature: "",
 	}
-	err = GetAllInvoices().AddToInvoice(header, proof)
+	err = GetAllEvidences().AddToEvidence(header, proof)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	assert.True(t, reflect.DeepEqual(GetAllInvoices().GetProof(header, 0), proof))
-	GetAllInvoices().GetProof(header, 0)
-	GetAllInvoices().DeleteInvoice(header)
-	assert.Empty(t, GetAllInvoices().GetProof(header, 0))
+	assert.True(t, reflect.DeepEqual(GetAllEvidences().GetProof(header, 0), proof))
+	GetAllEvidences().GetProof(header, 0)
+	GetAllEvidences().DeleteEvidence(header)
+	assert.Empty(t, GetAllEvidences().GetProof(header, 0))
 }
 
-func TestAllInvoices_GetProofs(t *testing.T) {
+func TestAllEvidences_GetProofs(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -136,19 +136,19 @@ func TestAllInvoices_GetProofs(t *testing.T) {
 		},
 		Signature: "",
 	}
-	err = GetAllInvoices().AddToInvoice(header, proof)
-	err = GetAllInvoices().AddToInvoice(header, proof2)
+	err = GetAllEvidences().AddToEvidence(header, proof)
+	err = GetAllEvidences().AddToEvidence(header, proof2)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	proofs := GetAllInvoices().GetProofs(header)
+	proofs := GetAllEvidences().GetProofs(header)
 	assert.NotNil(t, proofs)
 	assert.Len(t, proofs, 2)
 	assert.Equal(t, proofs[0], proof)
 	assert.Equal(t, proofs[1], proof2)
 }
 
-func TestAllInvoices_GetTotalRelays(t *testing.T) {
+func TestAllEvidences_GetTotalRelays(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -198,11 +198,11 @@ func TestAllInvoices_GetTotalRelays(t *testing.T) {
 		},
 		Signature: "",
 	}
-	err = GetAllInvoices().AddToInvoice(header, proof)
-	err = GetAllInvoices().AddToInvoice(header, proof2)
-	err = GetAllInvoices().AddToInvoice(header2, proof2) // different header so shouldn't be counted
+	err = GetAllEvidences().AddToEvidence(header, proof)
+	err = GetAllEvidences().AddToEvidence(header, proof2)
+	err = GetAllEvidences().AddToEvidence(header2, proof2) // different header so shouldn't be counted
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	assert.Equal(t, GetAllInvoices().GetTotalRelays(header), int64(2))
+	assert.Equal(t, GetAllEvidences().GetTotalRelays(header), int64(2))
 }

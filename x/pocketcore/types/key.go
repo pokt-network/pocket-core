@@ -12,11 +12,11 @@ const (
 )
 
 var (
-	InvoiceKey = []byte{0x01} // key for the verified proofs
+	EvidenceKey = []byte{0x01} // key for the verified proofs
 	ClaimKey   = []byte{0x02} // key for non-verified proofs
 )
 
-func KeyForInvoice(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]byte, error) {
+func KeyForEvidence(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]byte, error) {
 	if err := header.ValidateHeader(); err != nil {
 		return nil, err
 	}
@@ -30,14 +30,14 @@ func KeyForInvoice(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]b
 	sessionCtx := ctx.MustGetPrevCtx(header.SessionBlockHeight)
 	sessionBlockHeader := sessionCtx.BlockHeader()
 	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
-	return append(append(append(InvoiceKey, addr.Bytes()...), appPubKey...), sessionHash...), nil
+	return append(append(append(EvidenceKey, addr.Bytes()...), appPubKey...), sessionHash...), nil
 }
 
-func KeyForInvoices(addr sdk.Address) ([]byte, error) {
+func KeyForEvidences(addr sdk.Address) ([]byte, error) {
 	if err := AddressVerification(addr.String()); err != nil {
 		return nil, err
 	}
-	return append(InvoiceKey, addr.Bytes()...), nil
+	return append(EvidenceKey, addr.Bytes()...), nil
 }
 
 func KeyForClaim(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]byte, error) {

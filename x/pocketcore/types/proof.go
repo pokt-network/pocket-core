@@ -27,14 +27,14 @@ func (p Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, s
 	if err := HashVerification(p.Blockchain); err != nil {
 		return err
 	}
-	invoiceHeader := SessionHeader{
+	evidenceHeader := SessionHeader{
 		ApplicationPubKey:  p.Token.ApplicationPublicKey,
 		Chain:              p.Blockchain,
 		SessionBlockHeight: p.SessionBlockHeight,
 	}
 	// validate not over service
-	totalRelays := GetAllInvoices().GetTotalRelays(invoiceHeader)
-	if !GetAllInvoices().IsUniqueProof(invoiceHeader, p) {
+	totalRelays := GetAllEvidences().GetTotalRelays(evidenceHeader)
+	if !GetAllEvidences().IsUniqueProof(evidenceHeader, p) {
 		return NewDuplicateProofError(ModuleName)
 	}
 	if totalRelays >= int64(math.Ceil(float64(maxRelays)/float64(numberOfChains))/(float64(sessionNodeCount))) {
