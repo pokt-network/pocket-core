@@ -12,11 +12,11 @@ const (
 )
 
 var (
-	EvidenceKey = []byte{0x01} // key for the verified proofs
+	ReceiptKey = []byte{0x01} // key for the verified proofs
 	ClaimKey   = []byte{0x02} // key for non-verified proofs
 )
 
-func KeyForEvidence(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]byte, error) {
+func KeyForReceipt(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]byte, error) {
 	if err := header.ValidateHeader(); err != nil {
 		return nil, err
 	}
@@ -30,14 +30,14 @@ func KeyForEvidence(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]
 	sessionCtx := ctx.MustGetPrevCtx(header.SessionBlockHeight)
 	sessionBlockHeader := sessionCtx.BlockHeader()
 	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
-	return append(append(append(EvidenceKey, addr.Bytes()...), appPubKey...), sessionHash...), nil
+	return append(append(append(ReceiptKey, addr.Bytes()...), appPubKey...), sessionHash...), nil
 }
 
-func KeyForEvidences(addr sdk.Address) ([]byte, error) {
+func KeyForReceipts(addr sdk.Address) ([]byte, error) {
 	if err := AddressVerification(addr.String()); err != nil {
 		return nil, err
 	}
-	return append(EvidenceKey, addr.Bytes()...), nil
+	return append(ReceiptKey, addr.Bytes()...), nil
 }
 
 func KeyForClaim(ctx sdk.Context, addr sdk.Address, header SessionHeader) ([]byte, error) {

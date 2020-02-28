@@ -670,7 +670,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	var pocketGenesisState pocketTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
 	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
-	pocketGenesisState.Params.ProofWaitingPeriod = 10
+	pocketGenesisState.Params.ClaimSubmissionWindow = 10
 	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
 	defaultGenesis[pocketTypes.ModuleName] = res3
 	genState = defaultGenesis

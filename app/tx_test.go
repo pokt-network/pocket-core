@@ -319,7 +319,7 @@ func TestClaimTx(t *testing.T) {
 			t.Fatal(err)
 		}
 		proof.Signature = hex.EncodeToString(sig)
-		err = pocketTypes.GetAllEvidences().AddToEvidence(pocketTypes.SessionHeader{
+		err = pocketTypes.GetEvidenceMap().AddToEvidence(pocketTypes.SessionHeader{
 			ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
 			Chain:              dummyChainsHash,
 			SessionBlockHeight: 1,

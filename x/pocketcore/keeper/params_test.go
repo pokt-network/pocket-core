@@ -37,12 +37,12 @@ func TestKeeper_SessionFrequency(t *testing.T) {
 	assert.Equal(t, int64(nodeTypes.DefaultSessionBlocktime), sessFrequency)
 }
 
-func TestKeeper_ProofWaitingPeriod(t *testing.T) {
+func TestKeeper_ClaimSubmissionWindow(t *testing.T) {
 	ctx, _, _, _, keeper := createTestInput(t, false)
-	proofWaiting := keeper.ProofWaitingPeriod(ctx)
+	proofWaiting := keeper.ClaimSubmissionWindow(ctx)
 	assert.NotNil(t, proofWaiting)
 	assert.NotEmpty(t, proofWaiting)
-	assert.Equal(t, types.DefaultProofWaitingPeriod, proofWaiting)
+	assert.Equal(t, types.DefaultClaimSubmissionWindow, proofWaiting)
 }
 
 func TestKeeper_SupportedBlockchains(t *testing.T) {
@@ -54,10 +54,10 @@ func TestKeeper_SupportedBlockchains(t *testing.T) {
 func TestKeeper_GetParams(t *testing.T) {
 	ctx, _, _, _, k := createTestInput(t, false)
 	p := types.Params{
-		SessionNodeCount:     k.SessionNodeCount(ctx),
-		ProofWaitingPeriod:   k.ProofWaitingPeriod(ctx),
-		SupportedBlockchains: k.SupportedBlockchains(ctx),
-		ClaimExpiration:      k.ClaimExpiration(ctx),
+		SessionNodeCount:      k.SessionNodeCount(ctx),
+		ClaimSubmissionWindow: k.ClaimSubmissionWindow(ctx),
+		SupportedBlockchains:  k.SupportedBlockchains(ctx),
+		ClaimExpiration:       k.ClaimExpiration(ctx),
 	}
 	paramz := k.GetParams(ctx)
 	assert.NotNil(t, paramz)
@@ -70,9 +70,9 @@ func TestKeeper_SetParams(t *testing.T) {
 	pwp := int64(22)
 	sb := []string{"ethereum"}
 	p := types.Params{
-		SessionNodeCount:     sessionNodeCount,
-		ProofWaitingPeriod:   pwp,
-		SupportedBlockchains: sb,
+		SessionNodeCount:      sessionNodeCount,
+		ClaimSubmissionWindow: pwp,
+		SupportedBlockchains:  sb,
 	}
 	k.SetParams(ctx, p)
 	paramz := k.GetParams(ctx)

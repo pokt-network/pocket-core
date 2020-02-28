@@ -50,7 +50,7 @@ func handleProofMsg(ctx sdk.Context, k keeper.Keeper, msg types.MsgProof) sdk.Re
 		return err.Result()
 	}
 	// set the proof in the world state
-	er := k.SetEvidence(ctx, addr, types.StoredEvidence{
+	er := k.SetReceipt(ctx, addr, types.Receipt{
 		SessionHeader:   proof.SessionHeader,
 		TotalRelays:     proof.TotalRelays,
 		ServicerAddress: addr.String(),

@@ -33,8 +33,8 @@ func (p Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, s
 		SessionBlockHeight: p.SessionBlockHeight,
 	}
 	// validate not over service
-	totalRelays := GetAllEvidences().GetTotalRelays(evidenceHeader)
-	if !GetAllEvidences().IsUniqueProof(evidenceHeader, p) {
+	totalRelays := GetEvidenceMap().GetTotalRelays(evidenceHeader)
+	if !GetEvidenceMap().IsUniqueProof(evidenceHeader, p) {
 		return NewDuplicateProofError(ModuleName)
 	}
 	if totalRelays >= int64(math.Ceil(float64(maxRelays)/float64(numberOfChains))/(float64(sessionNodeCount))) {

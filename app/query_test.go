@@ -236,7 +236,7 @@ func TestQueryPocketParams(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
 		assert.Equal(t, int64(5), got.SessionNodeCount)
-		assert.Equal(t, int64(3), got.ProofWaitingPeriod)
+		assert.Equal(t, int64(3), got.ClaimSubmissionWindow)
 		assert.Equal(t, int64(100), got.ClaimExpiration)
 		assert.Contains(t, got.SupportedBlockchains, dummyChainsHash)
 	}
@@ -267,7 +267,7 @@ func TestQueryProofs(t *testing.T) {
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		got, err := pocket.QueryProofs(memCodec(), memCli, cb.GetAddress(), 0)
+		got, err := pocket.QueryReceipts(memCodec(), memCli, cb.GetAddress(), 0)
 		assert.Nil(t, err)
 		assert.Nil(t, got)
 	}
@@ -293,7 +293,7 @@ func TestQueryProof(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := pocket.QueryProof(memCodec(), kp.GetAddress(), memCli, dummyChainsHash, kp.PublicKey.RawString(), 1, 0)
+		got, err := pocket.QueryReceipt(memCodec(), kp.GetAddress(), memCli, dummyChainsHash, kp.PublicKey.RawString(), 1, 0)
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
 	}
@@ -436,7 +436,7 @@ func TestQueryRelay(t *testing.T) {
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 		select {
 		case <-evtChan:
-			inv, found := types.GetAllEvidences().GetEvidence(types.SessionHeader{
+			inv, found := types.GetEvidenceMap().GetEvidence(types.SessionHeader{
 				ApplicationPubKey:  aat.ApplicationPublicKey,
 				Chain:              relay.Proof.Blockchain,
 				SessionBlockHeight: relay.Proof.SessionBlockHeight,

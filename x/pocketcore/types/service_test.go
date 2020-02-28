@@ -287,7 +287,7 @@ func TestRelay_HandleProof(t *testing.T) {
 	}
 	err = validRelay.HandleProof(newContext(t, false), 1)
 	assert.Nil(t, err)
-	res := GetAllEvidences().GetProof(SessionHeader{
+	res := GetEvidenceMap().GetProof(SessionHeader{
 		ApplicationPubKey:  appPubKey,
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
