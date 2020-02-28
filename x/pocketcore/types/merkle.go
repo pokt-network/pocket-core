@@ -21,8 +21,8 @@ type MerkleProof struct {
 
 type MerkleProofs [2]MerkleProof
 
-// verifies the RelayProof from the leaf/cousin node data, the merkle root, and the RelayProof object
-func (mp MerkleProofs) Validate(root HashSum, leaf, cousin RelayProof, totalRelays int64) bool {
+// verifies the Proof from the leaf/cousin node data, the merkle root, and the Proof object
+func (mp MerkleProofs) Validate(root HashSum, leaf, cousin Proof, totalRelays int64) bool {
 	// check if levels and total relays is valid
 	numOfLevels, valid := levelsIsValid(len(mp[0].HashSums), len(mp[1].HashSums), totalRelays)
 	if !valid {
@@ -88,19 +88,19 @@ func (mp MerkleProofs) Validate(root HashSum, leaf, cousin RelayProof, totalRela
 	return reflect.DeepEqual(root, verifier[0]) && reflect.DeepEqual(root, verifier[1])
 }
 
-// generates the merkle RelayProof object from the leaf node data and the index
-func GenerateProofs(p []RelayProof, index int) (merkleProofs MerkleProofs, cousinIndex int) {
+// generates the merkle Proof object from the leaf node data and the index
+func GenerateProofs(p []Proof, index int) (merkleProofs MerkleProofs, cousinIndex int) {
 	data, _ := sortAndStructure(p)
 	dataCopy := make([]HashSum, len(data))
 	// Copy from the original map to the target map
 	copy(dataCopy, data)
 	// calculate cousin index
 	cousinIndex = getCousinIndex(len(p), index)
-	// generate RelayProof for leaf
+	// generate Proof for leaf
 	merkleProofs[0] = merkleProof(data, index, &MerkleProof{})
 	// reset leaf index
 	merkleProofs[0].Index = index
-	// generate RelayProof for cousin
+	// generate Proof for cousin
 	merkleProofs[1] = merkleProof(dataCopy, cousinIndex, &MerkleProof{})
 	// reset cousin index
 	merkleProofs[1].Index = cousinIndex
@@ -109,13 +109,13 @@ func GenerateProofs(p []RelayProof, index int) (merkleProofs MerkleProofs, cousi
 }
 
 // generates the merkle root from leaf node data
-func GenerateRoot(data []RelayProof) (r HashSum, sortedData []RelayProof) {
+func GenerateRoot(data []Proof) (r HashSum, sortedData []Proof) {
 	d, sortedProofs := sortAndStructure(data)
 	return root(d), sortedProofs
 }
 
-// takes RelayProof data, sorts, and structures them as a `balanced` merkle tree
-func sortAndStructure(relayProofs []RelayProof) (d []HashSum, sortedProofs []RelayProof) {
+// takes Proof data, sorts, and structures them as a `balanced` merkle tree
+func sortAndStructure(relayProofs []Proof) (d []HashSum, sortedProofs []Proof) {
 	// we need a tree of proper length. Get the # of relayProofs
 	numberOfProofs := len(relayProofs)
 	properLength := nextPowerOfTwo(uint(numberOfProofs))
@@ -123,7 +123,7 @@ func sortAndStructure(relayProofs []RelayProof) (d []HashSum, sortedProofs []Rel
 	data := make([]HashSum, properLength)
 	// first, let's tHash the data
 	for i, p := range relayProofs {
-		// save the hash and sum of the RelayProof in the new tree slice
+		// save the hash and sum of the Proof in the new tree slice
 		data[i].Hash = hash(p.Hash())
 		data[i].Sum = sumFromHash(data[i].Hash)
 	}
@@ -134,7 +134,7 @@ func sortAndStructure(relayProofs []RelayProof) (d []HashSum, sortedProofs []Rel
 			Sum:  uint64(math.MaxUint32),
 		}
 	}
-	relayProofs = append(relayProofs, make([]RelayProof, int(properLength)-numberOfProofs)...)
+	relayProofs = append(relayProofs, make([]Proof, int(properLength)-numberOfProofs)...)
 	// sort the slice based on the numerical value of the tHash data
 	data, relayProofs = quickSort(data, relayProofs)
 	return data, relayProofs[:numberOfProofs]
@@ -151,7 +151,7 @@ func root(data []HashSum) HashSum {
 	return data[0]
 }
 
-// recursive RelayProof function that generates the RelayProof object one level at a time
+// recursive Proof function that generates the Proof object one level at a time
 func merkleProof(data []HashSum, index int, p *MerkleProof) MerkleProof {
 	if index%2 == 1 { // odd index so sibling to the left
 		p.HashSums = append(p.HashSums, data[index-1])
@@ -292,7 +292,7 @@ func uint64ToBytes(a uint64) (bz []byte) {
 }
 
 // sort the hash sum and the proofs by hash sum
-func quickSort(hs []HashSum, p []RelayProof) ([]HashSum, []RelayProof) {
+func quickSort(hs []HashSum, p []Proof) ([]HashSum, []Proof) {
 	hsLen := len(hs)
 	if hsLen <= 1 {
 		return hs, p

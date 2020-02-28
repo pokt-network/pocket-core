@@ -39,7 +39,7 @@ func TestProof_Validate(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	validProof := RelayProof{
+	validProof := Proof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -65,23 +65,23 @@ func TestProof_Validate(t *testing.T) {
 	// invalidProof sessionBlockHeight
 	invalidProofSessionBlock := validProof
 	invalidProofSessionBlock.SessionBlockHeight = -1
-	// invalid RelayProof servicer public key
+	// invalid Proof servicer public key
 	invalidProofServicerPubKey := validProof
 	invalidProofServicerPubKey.ServicerPubKey = ""
-	// invalid RelayProof wrong verify pub key
+	// invalid Proof wrong verify pub key
 	wrongVerifyPubKey := getRandomPubKey().RawString()
 	invalidProofServicerPubKeyVerify := validProof
 	invalidProofServicerPubKeyVerify.ServicerPubKey = wrongVerifyPubKey
-	// invalid RelayProof blockchain
+	// invalid Proof blockchain
 	invalidProofBlockchain := validProof
 	invalidProofBlockchain.Blockchain = ""
-	// invalid RelayProof nothosted blockchain
+	// invalid Proof nothosted blockchain
 	invalidProofNotHostedBlockchain := validProof
 	invalidProofNotHostedBlockchain.Blockchain = bitcoin
-	// invalid RelayProof AAT
+	// invalid Proof AAT
 	invalidProofInvalidAAT := validProof
 	invalidProofInvalidAAT.Token.ApplicationSignature = hex.EncodeToString(clientSignature) // wrong signature
-	// invalid RelayProof no client signature
+	// invalid Proof no client signature
 	invalidProofClientSignature := validProof
 	invalidProofClientSignature.Signature = hex.EncodeToString(appSignature) // wrong signature
 	// over max relays
@@ -90,7 +90,7 @@ func TestProof_Validate(t *testing.T) {
 	overNumberOfChains := 2
 	tests := []struct {
 		name             string
-		proof            RelayProof
+		proof            Proof
 		maxRelays        int64
 		numOfChains      int
 		sessionNodeCount int
@@ -99,7 +99,7 @@ func TestProof_Validate(t *testing.T) {
 		hasError         bool
 	}{
 		{
-			name:             "Invalid RelayProof: session block",
+			name:             "Invalid Proof: session block",
 			proof:            invalidProofSessionBlock,
 			maxRelays:        100,
 			numOfChains:      2,
@@ -109,7 +109,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid RelayProof: servicer pub key",
+			name:             "Invalid Proof: servicer pub key",
 			proof:            invalidProofServicerPubKey,
 			maxRelays:        100,
 			numOfChains:      2,
@@ -119,7 +119,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid RelayProof: verify pub key",
+			name:             "Invalid Proof: verify pub key",
 			proof:            invalidProofServicerPubKeyVerify,
 			maxRelays:        100,
 			numOfChains:      2,
@@ -129,7 +129,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid RelayProof: blockchain",
+			name:             "Invalid Proof: blockchain",
 			proof:            invalidProofBlockchain,
 			maxRelays:        100,
 			numOfChains:      2,
@@ -139,7 +139,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid RelayProof: not hosted chain",
+			name:             "Invalid Proof: not hosted chain",
 			proof:            invalidProofNotHostedBlockchain,
 			maxRelays:        100,
 			numOfChains:      2,
@@ -149,7 +149,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid RelayProof: invalid AAT",
+			name:             "Invalid Proof: invalid AAT",
 			proof:            invalidProofInvalidAAT,
 			maxRelays:        100,
 			numOfChains:      2,
@@ -159,7 +159,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid RelayProof: client signature",
+			name:             "Invalid Proof: client signature",
 			proof:            invalidProofClientSignature,
 			maxRelays:        100,
 			numOfChains:      2,
@@ -169,7 +169,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid RelayProof: over max relays",
+			name:             "Invalid Proof: over max relays",
 			proof:            validProof,
 			maxRelays:        overMaxRelays,
 			numOfChains:      2,
@@ -179,7 +179,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid RelayProof: over number of chains",
+			name:             "Invalid Proof: over number of chains",
 			proof:            validProof,
 			maxRelays:        1,
 			numOfChains:      overNumberOfChains,
@@ -189,7 +189,7 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Valid RelayProof",
+			name:             "Valid Proof",
 			proof:            validProof,
 			maxRelays:        100,
 			numOfChains:      2,
@@ -220,7 +220,7 @@ func TestProof_Bytes(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	pro := RelayProof{
+	pro := Proof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -255,7 +255,7 @@ func TestProof_HashAndHashString(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	pro := RelayProof{
+	pro := Proof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,

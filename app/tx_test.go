@@ -306,7 +306,7 @@ func TestClaimTx(t *testing.T) {
 			panic(err)
 		}
 		aat.ApplicationSignature = hex.EncodeToString(sig)
-		proof := pocketTypes.RelayProof{
+		proof := pocketTypes.Proof{
 			Entropy:            int64(rand.Int()),
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),

@@ -155,7 +155,7 @@ func TestMsgProof_GetSigners(t *testing.T) {
 	addr := types.Address(pk.Address())
 	signers := MsgProof{
 		MerkleProofs: [2]MerkleProof{},
-		Leaf: RelayProof{
+		Leaf: Proof{
 			Entropy:            0,
 			SessionBlockHeight: 0,
 			ServicerPubKey:     pk.RawString(),
@@ -226,7 +226,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 					},
 				},
 			}},
-		Leaf: RelayProof{
+		Leaf: Proof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey,
@@ -239,7 +239,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 			},
 			Signature: "",
 		},
-		Cousin: RelayProof{
+		Cousin: Proof{
 			Entropy:            2,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey,
@@ -297,37 +297,37 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 		hasError bool
 	}{
 		{
-			name:     "Invalid RelayProof Message, signature",
+			name:     "Invalid Proof Message, signature",
 			msg:      invalidProofMsgSignature,
 			hasError: true,
 		},
 		{
-			name:     "Invalid RelayProof Message, session block height",
+			name:     "Invalid Proof Message, session block height",
 			msg:      invalidProofMsgSessionBlkHeight,
 			hasError: true,
 		},
 		{
-			name:     "Invalid RelayProof Message, hashsum",
+			name:     "Invalid Proof Message, hashsum",
 			msg:      invalidProofMsgHashes,
 			hasError: true,
 		},
 		{
-			name:     "Invalid RelayProof Message, leafnode index",
+			name:     "Invalid Proof Message, leafnode index",
 			msg:      invalidProofMsgIndex,
 			hasError: true,
 		},
 		{
-			name:     "Invalid RelayProof Message, token",
+			name:     "Invalid Proof Message, token",
 			msg:      invalidProofMsgToken,
 			hasError: true,
 		},
 		{
-			name:     "Invalid RelayProof Message, blockchain",
+			name:     "Invalid Proof Message, blockchain",
 			msg:      invalidProofMsgBlkchn,
 			hasError: true,
 		},
 		{
-			name:     "Valid RelayProof Message",
+			name:     "Valid Proof Message",
 			msg:      validProofMessage,
 			hasError: false,
 		},

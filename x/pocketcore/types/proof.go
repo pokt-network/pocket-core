@@ -8,8 +8,8 @@ import (
 	"math"
 )
 
-// RelayProof per relay
-type RelayProof struct {
+// Proof per relay
+type Proof struct {
 	Entropy            int64  `json:"entropy"`
 	SessionBlockHeight int64  `json:"session_block_height"`
 	ServicerPubKey     string `json:"servicer_pub_key"`
@@ -18,7 +18,7 @@ type RelayProof struct {
 	Signature          string `json:"signature"`
 }
 
-func (rp RelayProof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, verifyPubKey string) sdk.Error {
+func (rp Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, verifyPubKey string) sdk.Error {
 	// validate the session block height
 	if rp.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
@@ -48,7 +48,7 @@ func (rp RelayProof) Validate(maxRelays int64, numberOfChains, sessionNodeCount 
 	if !hb.ContainsFromString(rp.Blockchain) {
 		return NewUnsupportedBlockchainNodeError(ModuleName)
 	}
-	// validate the RelayProof public key format
+	// validate the Proof public key format
 	if err := PubKeyVerification(rp.ServicerPubKey); err != nil {
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
@@ -63,7 +63,7 @@ func (rp RelayProof) Validate(maxRelays int64, numberOfChains, sessionNodeCount 
 	return SignatureVerification(rp.Token.ClientPublicKey, rp.HashString(), rp.Signature)
 }
 
-// structure used to json marshal the RelayProof
+// structure used to json marshal the Proof
 type relayProof struct {
 	Entropy            int64  `json:"entropy"`
 	SessionBlockHeight int64  `json:"session_block_height"`
@@ -73,8 +73,8 @@ type relayProof struct {
 	Token              string `json:"token"`
 }
 
-// convert the RelayProof to bytes
-func (rp RelayProof) Bytes() []byte {
+// convert the Proof to bytes
+func (rp Proof) Bytes() []byte {
 	res, err := json.Marshal(relayProof{
 		Entropy:            rp.Entropy,
 		ServicerPubKey:     rp.ServicerPubKey,
@@ -89,8 +89,8 @@ func (rp RelayProof) Bytes() []byte {
 	return res
 }
 
-// convert the RelayProof to bytes
-func (rp RelayProof) BytesWithSignature() []byte {
+// convert the Proof to bytes
+func (rp Proof) BytesWithSignature() []byte {
 	res, err := json.Marshal(relayProof{
 		Entropy:            rp.Entropy,
 		ServicerPubKey:     rp.ServicerPubKey,
@@ -105,24 +105,24 @@ func (rp RelayProof) BytesWithSignature() []byte {
 	return res
 }
 
-// addr the RelayProof bytes
-func (rp RelayProof) Hash() []byte {
+// addr the Proof bytes
+func (rp Proof) Hash() []byte {
 	res := rp.Bytes()
 	return Hash(res)
 }
 
-// hex encode the RelayProof addr
-func (rp RelayProof) HashString() string {
+// hex encode the Proof addr
+func (rp Proof) HashString() string {
 	return hex.EncodeToString(rp.Hash())
 }
 
-// addr the RelayProof bytes
-func (rp RelayProof) HashWithSignature() []byte {
+// addr the Proof bytes
+func (rp Proof) HashWithSignature() []byte {
 	res := rp.BytesWithSignature()
 	return Hash(res)
 }
 
-// hex encode the RelayProof addr
-func (rp RelayProof) HashStringWithSignature() string {
+// hex encode the Proof addr
+func (rp Proof) HashStringWithSignature() string {
 	return hex.EncodeToString(rp.HashWithSignature())
 }

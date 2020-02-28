@@ -78,7 +78,7 @@ func (p Params) Validate() error {
 		return errors.New("invalid claim expiration")
 	}
 	if p.ClaimExpiration < p.ProofWaitingPeriod {
-		return errors.New("unverified RelayProof expiration is far too short, must be greater than RelayProof waiting period")
+		return errors.New("unverified Proof expiration is far too short, must be greater than Proof waiting period")
 	}
 	return nil
 }

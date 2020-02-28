@@ -357,7 +357,7 @@ func TestRelayGenerator(t *testing.T) {
 		Payload: types.Payload{
 			Data: query,
 		},
-		Proof: types.RelayProof{
+		Proof: types.Proof{
 			Entropy:            int64(common.RandInt()),
 			SessionBlockHeight: sessionBlockheight,
 			ServicerPubKey:     nodePublicKey,
@@ -408,7 +408,7 @@ func TestQueryRelay(t *testing.T) {
 		Payload: types.Payload{
 			Data: expectedRequest,
 		},
-		Proof: types.RelayProof{
+		Proof: types.Proof{
 			Entropy:            32598345349034509,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),

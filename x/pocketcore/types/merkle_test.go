@@ -42,7 +42,7 @@ func TestInvoice_GenerateMerkleRoot(t *testing.T) {
 			SessionBlockHeight: 1,
 		},
 		TotalRelays: 5,
-		Proofs: []RelayProof{
+		Proofs: []Proof{
 			{
 				Entropy:            3238283,
 				SessionBlockHeight: 1,
@@ -127,7 +127,7 @@ func TestInvoice_GenerateMerkleProof(t *testing.T) {
 			SessionBlockHeight: 1,
 		},
 		TotalRelays: 5,
-		Proofs: []RelayProof{
+		Proofs: []Proof{
 			{
 				Entropy:            3238283,
 				SessionBlockHeight: 1,
@@ -216,7 +216,7 @@ func TestInvoice_VerifyMerkleProof(t *testing.T) {
 			SessionBlockHeight: 1,
 		},
 		TotalRelays: 5,
-		Proofs: []RelayProof{
+		Proofs: []Proof{
 			{
 				Entropy:            83,
 				SessionBlockHeight: 1,
@@ -266,7 +266,7 @@ func TestInvoice_VerifyMerkleProof(t *testing.T) {
 			SessionBlockHeight: 1,
 		},
 		TotalRelays: 9,
-		Proofs: []RelayProof{
+		Proofs: []Proof{
 			{
 				Entropy:            82398289423,
 				SessionBlockHeight: 1,

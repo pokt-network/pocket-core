@@ -18,8 +18,8 @@ const DEFAULTHTTPMETHOD = "POST"
 
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
-	Payload Payload    `json:"payload"`    // the data payload of the request
-	Proof   RelayProof `json:"relayProof"` // the authentication scheme needed for work
+	Payload Payload `json:"payload"`    // the data payload of the request
+	Proof   Proof   `json:"proof"` // the authentication scheme needed for work
 }
 
 func (r *Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
@@ -28,7 +28,7 @@ func (r *Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb Hoste
 	if err := r.Payload.Validate(); err != nil {
 		return NewEmptyPayloadDataError(ModuleName)
 	}
-	// validate the RelayProof
+	// validate the Proof
 	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, sessionBlockHeight, hb, node.GetPublicKey().RawString()); err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 
 // store the proofs of work done for the relay batch
 func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64) sdk.Error {
-	// add the RelayProof to the global (in memory) collection of proofs
+	// add the Proof to the global (in memory) collection of proofs
 	return GetAllInvoices().AddToInvoice(SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
 		Chain:              r.Proof.Blockchain,
@@ -104,10 +104,10 @@ func (p Payload) Validate() sdk.Error {
 
 // response structure for the relay
 type RelayResponse struct {
-	Signature   string     `json:"signature"`   // signature from the node in hex
-	RequestHash string     `json:"RequestHash"` // the hash of the relay request
-	Response    string     `json:"payload"`     // response to relay
-	Proof       RelayProof `json:"RelayProof"`  // to be signed by the client
+	Signature   string `json:"signature"`   // signature from the node in hex
+	RequestHash string `json:"RequestHash"` // the hash of the relay request
+	Response    string `json:"payload"`     // response to relay
+	Proof       Proof  `json:"Proof"`  // to be signed by the client
 }
 
 // node validates the response after signing
@@ -149,7 +149,7 @@ type relayResponse struct {
 	Signature   string `json:"signature"`
 	Response    string `json:"payload"`
 	RequestHash string `json:"RequestHash"`
-	Proof       string `json:"RelayProof"`
+	Proof       string `json:"Proof"`
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint

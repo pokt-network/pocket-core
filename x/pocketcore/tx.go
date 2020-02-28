@@ -29,7 +29,7 @@ func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuil
 }
 
 // transaction to prove the
-func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]types.MerkleProof, leafNode, cousinNode types.RelayProof) (*sdk.TxResponse, error) {
+func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]types.MerkleProof, leafNode, cousinNode types.Proof) (*sdk.TxResponse, error) {
 	msg := types.MsgProof{
 		MerkleProofs: branches,
 		Leaf:         leafNode,
