@@ -9,14 +9,14 @@ import (
 func TestInitExportGenesis(t *testing.T) {
 	ctx, _, _, k := createTestInput(t, false)
 	p := types.Params{
-		SessionNodeCount:     10,
-		ProofWaitingPeriod:   22,
-		SupportedBlockchains: []string{"eth"},
-		ClaimExpiration:      55,
+		SessionNodeCount:      10,
+		ClaimSubmissionWindow: 22,
+		SupportedBlockchains:  []string{"eth"},
+		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{
 		Params: p,
-		Proofs: []types.StoredEvidence(nil),
+		Proofs: []types.Receipt(nil),
 		Claims: []types.MsgClaim(nil),
 	}
 	InitGenesis(ctx, k, genesisState)

@@ -189,13 +189,13 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
-func NodeProofs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func NodeReceipts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = heightAddrParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryProofs(params.Address, params.Height)
+	res, err := app.QueryReceipts(params.Address, params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -208,7 +208,7 @@ func NodeProofs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteResponse(w, string(j), r.URL.Path, r.Host)
 }
 
-type queryNodeProof struct {
+type queryNodeReceipts struct {
 	Address      string `json:"address"`
 	Blockchain   string `json:"blockchain"`
 	AppPubKey    string `json:"app_pubkey"`
@@ -216,13 +216,13 @@ type queryNodeProof struct {
 	Height       int64  `json:"height"`
 }
 
-func NodeProof(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = queryNodeProof{}
+func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = queryNodeReceipts{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryProof(params.Blockchain, params.AppPubKey, params.Address, params.SBlockHeight, params.Height)
+	res, err := app.QueryReceipt(params.Blockchain, params.AppPubKey, params.Address, params.SBlockHeight, params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

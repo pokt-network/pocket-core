@@ -19,14 +19,14 @@ func TestAppModule_Name(t *testing.T) {
 
 func TestAppModule_InitExportGenesis(t *testing.T) {
 	p := types.Params{
-		SessionNodeCount:     10,
-		ProofWaitingPeriod:   22,
-		SupportedBlockchains: []string{"eth"},
-		ClaimExpiration:      55,
+		SessionNodeCount:      10,
+		ClaimSubmissionWindow: 22,
+		SupportedBlockchains:  []string{"eth"},
+		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{
 		Params: p,
-		Proofs: []types.StoredEvidence(nil),
+		Proofs: []types.Receipt(nil),
 		Claims: []types.MsgClaim(nil),
 	}
 	ctx, nk, ak, k := createTestInput(t, false)
@@ -80,25 +80,25 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 	_, nk, ak, k := createTestInput(t, false)
 	am := NewAppModule(k, nk, ak)
 	p := types.Params{
-		SessionNodeCount:     10,
-		ProofWaitingPeriod:   22,
-		SupportedBlockchains: []string{hex.EncodeToString(types.Hash([]byte("eth")))},
-		ClaimExpiration:      55,
+		SessionNodeCount:      10,
+		ClaimSubmissionWindow: 22,
+		SupportedBlockchains:  []string{hex.EncodeToString(types.Hash([]byte("eth")))},
+		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{
 		Params: p,
-		Proofs: []types.StoredEvidence(nil),
+		Proofs: []types.Receipt(nil),
 		Claims: []types.MsgClaim(nil),
 	}
 	p2 := types.Params{
-		SessionNodeCount:     -1,
-		ProofWaitingPeriod:   22,
-		SupportedBlockchains: []string{"eth"},
-		ClaimExpiration:      55,
+		SessionNodeCount:      -1,
+		ClaimSubmissionWindow: 22,
+		SupportedBlockchains:  []string{"eth"},
+		ClaimExpiration:       55,
 	}
 	genesisState2 := types.GenesisState{
 		Params: p2,
-		Proofs: []types.StoredEvidence(nil),
+		Proofs: []types.Receipt(nil),
 		Claims: []types.MsgClaim(nil),
 	}
 	validBz, err := types.ModuleCdc.MarshalJSON(genesisState)

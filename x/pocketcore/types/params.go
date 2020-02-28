@@ -10,10 +10,10 @@ import (
 // POS params default values
 const (
 	// DefaultParamspace for params keeper
-	DefaultParamspace         = ModuleName
-	DefaultSessionNodeCount   = int64(5)
-	DefaultProofWaitingPeriod = int64(3)
-	DefaultClaimExpiration    = int64(100) // sessions
+	DefaultParamspace            = ModuleName
+	DefaultSessionNodeCount      = int64(5)
+	DefaultClaimSubmissionWindow = int64(3)
+	DefaultClaimExpiration       = int64(100) // sessions
 )
 
 var (
@@ -22,27 +22,27 @@ var (
 
 // nolint - Keys for parameter access
 var (
-	KeySessionNodeCount     = []byte("SessionNodeCount")
-	KeyProofWaitingPeriod   = []byte("ProofWaitingPeriod")
-	KeySupportedBlockchains = []byte("SupportedBlockchains")
-	KeyClaimExpiration      = []byte("ClaimExpiration")
+	KeySessionNodeCount      = []byte("SessionNodeCount")
+	KeyClaimSubmissionWindow = []byte("ClaimSubmissionWindow")
+	KeySupportedBlockchains  = []byte("SupportedBlockchains")
+	KeyClaimExpiration       = []byte("ClaimExpiration")
 )
 
 var _ params.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	SessionNodeCount     int64    `json:"session_node_count"`
-	ProofWaitingPeriod   int64    `json:"proof_waiting_period"`
-	SupportedBlockchains []string `json:"supported_blockchains"`
-	ClaimExpiration      int64    `json:"claim_expiration"` // per session
+	SessionNodeCount      int64    `json:"session_node_count"`
+	ClaimSubmissionWindow int64    `json:"proof_waiting_period"`
+	SupportedBlockchains  []string `json:"supported_blockchains"`
+	ClaimExpiration       int64    `json:"claim_expiration"` // per session
 }
 
 // Implements params.ParamSet
 func (p *Params) ParamSetPairs() params.ParamSetPairs {
 	return params.ParamSetPairs{
 		{Key: KeySessionNodeCount, Value: &p.SessionNodeCount},
-		{Key: KeyProofWaitingPeriod, Value: &p.ProofWaitingPeriod},
+		{Key: KeyClaimSubmissionWindow, Value: &p.ClaimSubmissionWindow},
 		{Key: KeySupportedBlockchains, Value: &p.SupportedBlockchains},
 		{Key: KeyClaimExpiration, Value: &p.ClaimExpiration},
 	}
@@ -51,10 +51,10 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		SessionNodeCount:     DefaultSessionNodeCount,
-		ProofWaitingPeriod:   DefaultProofWaitingPeriod,
-		SupportedBlockchains: DefaultSupportedBlockchains,
-		ClaimExpiration:      DefaultClaimExpiration,
+		SessionNodeCount:      DefaultSessionNodeCount,
+		ClaimSubmissionWindow: DefaultClaimSubmissionWindow,
+		SupportedBlockchains:  DefaultSupportedBlockchains,
+		ClaimExpiration:       DefaultClaimExpiration,
 	}
 }
 
@@ -63,7 +63,7 @@ func (p Params) Validate() error {
 	if p.SessionNodeCount > 25 || p.SessionNodeCount < 1 {
 		return errors.New("Invalid session node count")
 	}
-	if p.ProofWaitingPeriod < 2 {
+	if p.ClaimSubmissionWindow < 2 {
 		return errors.New("waiting period must be at least 2 sessions")
 	}
 	if len(p.SupportedBlockchains) == 0 {
@@ -77,7 +77,7 @@ func (p Params) Validate() error {
 	if p.ClaimExpiration < 0 {
 		return errors.New("invalid claim expiration")
 	}
-	if p.ClaimExpiration < p.ProofWaitingPeriod {
+	if p.ClaimExpiration < p.ClaimSubmissionWindow {
 		return errors.New("unverified Proof expiration is far too short, must be greater than Proof waiting period")
 	}
 	return nil
@@ -94,12 +94,12 @@ func (p Params) Equal(p2 Params) bool {
 func (p Params) String() string {
 	return fmt.Sprintf(`Params:
   SessionNodeCount:          %d
-  ProofWaitingPeriod:        %d
+  ClaimSubmissionWindow:        %d
   Supported Blockchains      %v
   ClaimExpiration            %d
 `,
 		p.SessionNodeCount,
-		p.ProofWaitingPeriod,
+		p.ClaimSubmissionWindow,
 		p.SupportedBlockchains,
 		p.ClaimExpiration)
 }

@@ -18,8 +18,8 @@ const DEFAULTHTTPMETHOD = "POST"
 
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
-	Payload Payload `json:"payload"`    // the data payload of the request
-	Proof   Proof   `json:"proof"` // the authentication scheme needed for work
+	Payload Payload `json:"payload"` // the data payload of the request
+	Proof   Proof   `json:"proof"`   // the authentication scheme needed for work
 }
 
 func (r *Relay) Validate(ctx sdk.Context, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
@@ -68,7 +68,7 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 // store the proofs of work done for the relay batch
 func (r Relay) HandleProof(ctx sdk.Context, sessionBlockHeight int64) sdk.Error {
 	// add the Proof to the global (in memory) collection of proofs
-	return GetAllEvidences().AddToEvidence(SessionHeader{
+	return GetEvidenceMap().AddToEvidence(SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
 		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: sessionBlockHeight,
@@ -107,7 +107,7 @@ type RelayResponse struct {
 	Signature   string `json:"signature"`   // signature from the node in hex
 	RequestHash string `json:"RequestHash"` // the hash of the relay request
 	Response    string `json:"payload"`     // response to relay
-	Proof       Proof  `json:"Proof"`  // to be signed by the client
+	Proof       Proof  `json:"Proof"`       // to be signed by the client
 }
 
 // node validates the response after signing

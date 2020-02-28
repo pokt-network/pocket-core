@@ -78,7 +78,7 @@ var getCoinbase = &cobra.Command{
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "delete  <address>",
-	Short: "DeleteEvidence an account",
+	Short: "Delete an account",
 	Long:  `Deletes a keypair from the keybase. Will prompt the user for the account passphrase`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)

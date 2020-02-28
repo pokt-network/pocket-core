@@ -33,7 +33,7 @@ func TestParams_Validate(t *testing.T) {
 	invalidParamsSessionNodes.SessionNodeCount = -1
 	// invalid waiting period
 	invalidParamsWaitingPeriod := validParams
-	invalidParamsWaitingPeriod.ProofWaitingPeriod = -1
+	invalidParamsWaitingPeriod.ClaimSubmissionWindow = -1
 	// invalid supported chains
 	invalidParamsSupported := validParams
 	invalidParamsSupported.SupportedBlockchains = []string{"invalid"}
@@ -80,10 +80,10 @@ func TestParams_Validate(t *testing.T) {
 
 func TestDefaultParams(t *testing.T) {
 	assert.True(t, Params{
-		SessionNodeCount:     DefaultSessionNodeCount,
-		ProofWaitingPeriod:   DefaultProofWaitingPeriod,
-		SupportedBlockchains: DefaultSupportedBlockchains,
-		ClaimExpiration:      DefaultClaimExpiration,
+		SessionNodeCount:      DefaultSessionNodeCount,
+		ClaimSubmissionWindow: DefaultClaimSubmissionWindow,
+		SupportedBlockchains:  DefaultSupportedBlockchains,
+		ClaimExpiration:       DefaultClaimExpiration,
 	}.Equal(DefaultParams()))
 }
 

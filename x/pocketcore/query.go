@@ -10,9 +10,9 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func QueryProof(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.StoredEvidence, error) {
+func QueryReceipt(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.Receipt, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
-	params := types.QueryEvidenceParams{
+	params := types.QueryReceiptParams{
 		Address: addr,
 		Header: types.SessionHeader{
 			Chain:              blockchain,
@@ -24,11 +24,11 @@ func QueryProof(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, blockc
 	if err != nil {
 		return nil, err
 	}
-	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryEvidence), bz)
+	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryReceipt), bz)
 	if err != nil {
 		return nil, err
 	}
-	var ps types.StoredEvidence
+	var ps types.Receipt
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err
@@ -36,17 +36,17 @@ func QueryProof(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, blockc
 	return &ps, nil
 }
 
-func QueryProofs(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, height int64) ([]types.StoredEvidence, error) {
+func QueryReceipts(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, height int64) ([]types.Receipt, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryEvidencesParams{
+	params := types.QueryReceiptsParams{
 		Address: addr,
 	}
 	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
 		return nil, err
 	}
-	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryEvidences), bz)
-	var ps []types.StoredEvidence
+	proofSummaryBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryReceipts), bz)
+	var ps []types.Receipt
 	err = cdc.UnmarshalJSON(proofSummaryBz, &ps)
 	if err != nil {
 		return nil, err

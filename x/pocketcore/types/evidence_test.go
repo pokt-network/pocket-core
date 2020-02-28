@@ -6,11 +6,11 @@ import (
 	"testing"
 )
 
-func TestGetAllEvidences(t *testing.T) {
-	assert.NotNil(t, GetAllEvidences().M)
+func TestGetAllEvidence(t *testing.T) {
+	assert.NotNil(t, GetEvidenceMap().M)
 }
 
-func TestAllEvidences_AddGetEvidence(t *testing.T) {
+func TestAllEvidence_AddGetEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -42,14 +42,14 @@ func TestAllEvidences_AddGetEvidence(t *testing.T) {
 		},
 		Signature: "",
 	}
-	err = GetAllEvidences().AddToEvidence(header, proof)
+	err = GetEvidenceMap().AddToEvidence(header, proof)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	assert.True(t, reflect.DeepEqual(GetAllEvidences().GetProof(header, 0), proof))
+	assert.True(t, reflect.DeepEqual(GetEvidenceMap().GetProof(header, 0), proof))
 }
 
-func TestAllEvidences_DeleteEvidence(t *testing.T) {
+func TestAllEvidence_DeleteEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -81,17 +81,17 @@ func TestAllEvidences_DeleteEvidence(t *testing.T) {
 		},
 		Signature: "",
 	}
-	err = GetAllEvidences().AddToEvidence(header, proof)
+	err = GetEvidenceMap().AddToEvidence(header, proof)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	assert.True(t, reflect.DeepEqual(GetAllEvidences().GetProof(header, 0), proof))
-	GetAllEvidences().GetProof(header, 0)
-	GetAllEvidences().DeleteEvidence(header)
-	assert.Empty(t, GetAllEvidences().GetProof(header, 0))
+	assert.True(t, reflect.DeepEqual(GetEvidenceMap().GetProof(header, 0), proof))
+	GetEvidenceMap().GetProof(header, 0)
+	GetEvidenceMap().DeleteEvidence(header)
+	assert.Empty(t, GetEvidenceMap().GetProof(header, 0))
 }
 
-func TestAllEvidences_GetProofs(t *testing.T) {
+func TestAllEvidence_GetProofs(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -136,19 +136,19 @@ func TestAllEvidences_GetProofs(t *testing.T) {
 		},
 		Signature: "",
 	}
-	err = GetAllEvidences().AddToEvidence(header, proof)
-	err = GetAllEvidences().AddToEvidence(header, proof2)
+	err = GetEvidenceMap().AddToEvidence(header, proof)
+	err = GetEvidenceMap().AddToEvidence(header, proof2)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	proofs := GetAllEvidences().GetProofs(header)
+	proofs := GetEvidenceMap().GetProofs(header)
 	assert.NotNil(t, proofs)
 	assert.Len(t, proofs, 2)
 	assert.Equal(t, proofs[0], proof)
 	assert.Equal(t, proofs[1], proof2)
 }
 
-func TestAllEvidences_GetTotalRelays(t *testing.T) {
+func TestAllEvidence_GetTotalRelays(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -198,11 +198,11 @@ func TestAllEvidences_GetTotalRelays(t *testing.T) {
 		},
 		Signature: "",
 	}
-	err = GetAllEvidences().AddToEvidence(header, proof)
-	err = GetAllEvidences().AddToEvidence(header, proof2)
-	err = GetAllEvidences().AddToEvidence(header2, proof2) // different header so shouldn't be counted
+	err = GetEvidenceMap().AddToEvidence(header, proof)
+	err = GetEvidenceMap().AddToEvidence(header, proof2)
+	err = GetEvidenceMap().AddToEvidence(header2, proof2) // different header so shouldn't be counted
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	assert.Equal(t, GetAllEvidences().GetTotalRelays(header), int64(2))
+	assert.Equal(t, GetEvidenceMap().GetTotalRelays(header), int64(2))
 }

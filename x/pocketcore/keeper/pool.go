@@ -30,7 +30,7 @@ func (k Keeper) GetTotalTokens(ctx sdk.Context) (res sdk.Int) {
 
 // get the total staked tokens for both nodes and apps
 func (k Keeper) GetTotalStakedTokens(ctx sdk.Context) (res sdk.Int) {
-	res =  k.GetNodesStakedTokens(ctx).Add(k.GetAppStakedTokens(ctx))
+	res = k.GetNodesStakedTokens(ctx).Add(k.GetAppStakedTokens(ctx))
 	return
 }
 

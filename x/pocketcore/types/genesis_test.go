@@ -31,12 +31,12 @@ func TestValidateGenesis(t *testing.T) {
 	}
 	invalidParams := GenesisState{
 		Params: Params{
-			SessionNodeCount:     0,
-			ProofWaitingPeriod:   0,
-			SupportedBlockchains: nil,
-			ClaimExpiration:      0,
+			SessionNodeCount:      0,
+			ClaimSubmissionWindow: 0,
+			SupportedBlockchains:  nil,
+			ClaimExpiration:       0,
 		},
-		Proofs: []StoredEvidence{{
+		Proofs: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -58,12 +58,12 @@ func TestValidateGenesis(t *testing.T) {
 	}
 	invalidProofs := GenesisState{
 		Params: Params{
-			SessionNodeCount:     1,
-			ProofWaitingPeriod:   5,
-			SupportedBlockchains: []string{nn},
-			ClaimExpiration:      50,
+			SessionNodeCount:      1,
+			ClaimSubmissionWindow: 5,
+			SupportedBlockchains:  []string{nn},
+			ClaimExpiration:       50,
 		},
-		Proofs: []StoredEvidence{{
+		Proofs: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -85,12 +85,12 @@ func TestValidateGenesis(t *testing.T) {
 	}
 	invalidClaims := GenesisState{
 		Params: Params{
-			SessionNodeCount:     1,
-			ProofWaitingPeriod:   5,
-			SupportedBlockchains: []string{nn},
-			ClaimExpiration:      50,
+			SessionNodeCount:      1,
+			ClaimSubmissionWindow: 5,
+			SupportedBlockchains:  []string{nn},
+			ClaimExpiration:       50,
 		},
-		Proofs: []StoredEvidence{{
+		Proofs: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -112,12 +112,12 @@ func TestValidateGenesis(t *testing.T) {
 	}
 	validGenesisState := GenesisState{
 		Params: Params{
-			SessionNodeCount:     1,
-			ProofWaitingPeriod:   5,
-			SupportedBlockchains: []string{nn},
-			ClaimExpiration:      50,
+			SessionNodeCount:      1,
+			ClaimSubmissionWindow: 5,
+			SupportedBlockchains:  []string{nn},
+			ClaimExpiration:       50,
 		},
-		Proofs: []StoredEvidence{{
+		Proofs: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -193,12 +193,12 @@ func TestDefaultGenesisState(t *testing.T) {
 	}
 	validGenesisState := GenesisState{
 		Params: Params{
-			SessionNodeCount:     1,
-			ProofWaitingPeriod:   5,
-			SupportedBlockchains: []string{nn},
-			ClaimExpiration:      50,
+			SessionNodeCount:      1,
+			ClaimSubmissionWindow: 5,
+			SupportedBlockchains:  []string{nn},
+			ClaimExpiration:       50,
 		},
-		Proofs: []StoredEvidence{{
+		Proofs: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -219,10 +219,10 @@ func TestDefaultGenesisState(t *testing.T) {
 		}},
 	}
 	DefaultGenState := GenesisState{Params: Params{
-		SessionNodeCount:     DefaultSessionNodeCount,
-		ProofWaitingPeriod:   DefaultProofWaitingPeriod,
-		SupportedBlockchains: DefaultSupportedBlockchains,
-		ClaimExpiration:      DefaultClaimExpiration,
+		SessionNodeCount:      DefaultSessionNodeCount,
+		ClaimSubmissionWindow: DefaultClaimSubmissionWindow,
+		SupportedBlockchains:  DefaultSupportedBlockchains,
+		ClaimExpiration:       DefaultClaimExpiration,
 	}}
 	tests := []struct {
 		name         string

@@ -23,8 +23,8 @@ func init() {
 	queryCmd.AddCommand(queryApp)
 	queryCmd.AddCommand(queryNodeParams)
 	queryCmd.AddCommand(queryAppParams)
-	queryCmd.AddCommand(queryNodeProofs)
-	queryCmd.AddCommand(queryNodeProof)
+	queryCmd.AddCommand(queryNodeReceipts)
+	queryCmd.AddCommand(queryNodeReceipt)
 	queryCmd.AddCommand(queryPocketParams)
 	queryCmd.AddCommand(queryPocketSupportedChains)
 	queryCmd.AddCommand(querySupply)
@@ -364,11 +364,11 @@ var queryAppParams = &cobra.Command{
 	},
 }
 
-var queryNodeProofs = &cobra.Command{
-	Use:   "node-proofs <nodeAddr> <height>",
-	Short: "Gets node proofs",
+var queryNodeReceipts = &cobra.Command{
+	Use:   "node-receipts <nodeAddr> <height>",
+	Short: "Gets node receipts for work completed",
 	Args:  cobra.MinimumNArgs(1),
-	Long:  `Returns the list of all Relay Batch proofs submitted by <nodeAddr> at <height>.`,
+	Long:  `Returns the list of all verified proof of work submitted by <nodeAddr> at <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -382,7 +382,7 @@ var queryNodeProofs = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryProofs(args[0], int64(height))
+		res, err := app.QueryReceipts(args[0], int64(height))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -394,10 +394,10 @@ var queryNodeProofs = &cobra.Command{
 	},
 }
 
-var queryNodeProof = &cobra.Command{
-	Use:   "node-proof <nodeAddr> <appPubKey> <networkId> <sessionHeight> <height>`",
-	Short: "Gets node proof",
-	Long:  `Gets node proof for specific session`,
+var queryNodeReceipt = &cobra.Command{
+	Use:   "node-receipt <nodeAddr> <appPubKey> <networkId> <sessionHeight> <height>`",
+	Short: "Gets node receipt for work completed",
+	Long:  `Gets node receipt for verified proof of work submitted for a specific session`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -416,7 +416,7 @@ var queryNodeProof = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		res, err := app.QueryProof(args[2], args[1], args[0], int64(sessionheight), int64(height))
+		res, err := app.QueryReceipt(args[2], args[1], args[0], int64(sessionheight), int64(height))
 		if err != nil {
 			fmt.Println(err)
 			return

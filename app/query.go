@@ -121,20 +121,20 @@ func QueryAppParams(height int64) (params appsTypes.Params, err error) {
 	return apps.QueryPOSParams(Codec(), getTMClient(), height)
 }
 
-func QueryProofs(addr string, height int64) (proofs []pocketTypes.StoredEvidence, err error) {
+func QueryReceipts(addr string, height int64) (proofs []pocketTypes.Receipt, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	return pocket.QueryProofs(Codec(), getTMClient(), a, height)
+	return pocket.QueryReceipts(Codec(), getTMClient(), a, height)
 }
 
-func QueryProof(blockchain, appPubKey, addr string, sessionblockHeight, height int64) (proof *pocketTypes.StoredEvidence, err error) {
+func QueryReceipt(blockchain, appPubKey, addr string, sessionblockHeight, height int64) (proof *pocketTypes.Receipt, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	return pocket.QueryProof(Codec(), a, getTMClient(), blockchain, appPubKey, sessionblockHeight, height)
+	return pocket.QueryReceipt(Codec(), a, getTMClient(), blockchain, appPubKey, sessionblockHeight, height)
 }
 
 func QueryPocketSupportedBlockchains(height int64) ([]string, error) {
