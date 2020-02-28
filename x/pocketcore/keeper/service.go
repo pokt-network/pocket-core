@@ -45,7 +45,7 @@ func (k Keeper) HandleRelay(ctx sdk.Context, relay pc.Relay) (*pc.RelayResponse,
 	resp := &pc.RelayResponse{
 		RequestHash: relay.HashString(),
 		Response:    respPayload,
-		Proof: pc.RelayProof{
+		Proof: pc.Proof{
 			Blockchain:         relay.Proof.Blockchain,
 			SessionBlockHeight: sessionBlockHeight,
 			ServicerPubKey:     selfNode.GetPublicKey().RawString(),

@@ -401,7 +401,7 @@ func TestRPC_Relay(t *testing.T) {
 		Payload: pocketTypes.Payload{
 			Data: expectedRequest,
 		},
-		Proof: pocketTypes.RelayProof{
+		Proof: pocketTypes.Proof{
 			Entropy:            32598345349034509,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),

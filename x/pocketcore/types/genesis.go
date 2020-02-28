@@ -24,7 +24,7 @@ func ValidateGenesis(data GenesisState) error {
 			return err
 		}
 		if proof.TotalRelays <= 0 {
-			return errors.New("total relays for RelayProof is negative")
+			return errors.New("total relays for Proof is negative")
 		}
 	}
 	// validate each claim

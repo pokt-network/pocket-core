@@ -69,11 +69,11 @@ func (msg MsgClaim) GetSigners() []sdk.Address {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-// MsgProof proves the previous claim by providing the merkle RelayProof and the leaf node
+// MsgProof proves the previous claim by providing the merkle Proof and the leaf node
 type MsgProof struct {
 	MerkleProofs MerkleProofs `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
-	Leaf         RelayProof   `json:"leaf"`          // the needed to verify the RelayProof
-	Cousin       RelayProof   `json:"cousin"`        // the cousin needed to verify the RelayProof
+	Leaf         Proof        `json:"leaf"`          // the needed to verify the Proof
+	Cousin       Proof        `json:"cousin"`        // the cousin needed to verify the Proof
 }
 
 func (msg MsgProof) Route() string { return RouterKey }
@@ -131,11 +131,11 @@ func (msg MsgProof) ValidateBasic() sdk.Error {
 	if err := msg.Leaf.Token.Validate(); err != nil {
 		return NewInvalidTokenError(ModuleName, err)
 	}
-	// verify the client signature on the RelayProof
+	// verify the client signature on the Proof
 	if err := SignatureVerification(msg.Leaf.Token.ClientPublicKey, msg.Leaf.HashString(), msg.Leaf.Signature); err != nil {
 		return err
 	}
-	// verify the client signature on the RelayProof
+	// verify the client signature on the Proof
 	if err := SignatureVerification(msg.Cousin.Token.ClientPublicKey, msg.Cousin.HashString(), msg.Cousin.Signature); err != nil {
 		return err
 	}

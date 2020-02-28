@@ -258,7 +258,7 @@ func (sk SessionKey) Validate() sdk.Error {
 	return HashVerification(hex.EncodeToString(sk))
 }
 
-// RelayProof of relay header
+// Proof of relay header
 type SessionHeader struct {
 	ApplicationPubKey  string `json:"app_public_key"`
 	Chain              string `json:"chain"`

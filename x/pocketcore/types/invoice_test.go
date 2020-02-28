@@ -29,7 +29,7 @@ func TestAllInvoices_AddGetInvoice(t *testing.T) {
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
-	proof := RelayProof{
+	proof := Proof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -68,7 +68,7 @@ func TestAllInvoices_DeleteInvoice(t *testing.T) {
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
-	proof := RelayProof{
+	proof := Proof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -110,7 +110,7 @@ func TestAllInvoices_GetProofs(t *testing.T) {
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
-	proof := RelayProof{
+	proof := Proof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -123,7 +123,7 @@ func TestAllInvoices_GetProofs(t *testing.T) {
 		},
 		Signature: "",
 	}
-	proof2 := RelayProof{
+	proof2 := Proof{
 		Entropy:            1, // just for testing equality
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -172,7 +172,7 @@ func TestAllInvoices_GetTotalRelays(t *testing.T) {
 		Chain:              ethereum,
 		SessionBlockHeight: 101,
 	}
-	proof := RelayProof{
+	proof := Proof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -185,7 +185,7 @@ func TestAllInvoices_GetTotalRelays(t *testing.T) {
 		},
 		Signature: "",
 	}
-	proof2 := RelayProof{
+	proof2 := Proof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,

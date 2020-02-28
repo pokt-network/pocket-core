@@ -153,7 +153,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 }
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.RelayProof) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof) (*sdk.TxResponse, error)) {
 	ctx.Logger().Info(fmt.Sprintf("SendProofTx(client= %v, keybase= %+v) \n", n, keybase))
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
