@@ -76,7 +76,7 @@ func TestValidators_String(t *testing.T) {
 		wantOut string
 	}{
 		{"String Test", v, fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
-			"ServiceURL:\t\t%s\nChains:\t\t\t%vUnstaking Completion Time:\t\t%v",
+			"ServiceURL:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v",
 			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "google.com", []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, time.Unix(0, 0).UTC(),
 		)},
 	}

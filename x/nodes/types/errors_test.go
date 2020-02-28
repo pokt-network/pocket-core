@@ -327,7 +327,7 @@ func TestErrValidatorJailed(t *testing.T) {
 		args args
 		want types.Error
 	}{
-		{"Validator Jailed", args{codespace: codespace}, types.NewError(codespace, CodeValidatorJailed, "validator still jailed, cannot yet be unjailed")},
+		{"Validator Jailed", args{codespace: codespace}, types.NewError(codespace, CodeValidatorJailed, "validator jailed")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
