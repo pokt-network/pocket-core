@@ -158,7 +158,6 @@ func init() {
 var queryNodes = &cobra.Command{
 	Use:   "nodes --staking-status=<nodeStakingStatus> <height>",
 	Short: "Gets nodes",
-	Args:  cobra.MinimumNArgs(1),
 	Long:  `Returns the list of all nodes known at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
