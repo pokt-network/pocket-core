@@ -11,7 +11,7 @@ import (
 )
 
 // auto sends a claim of work based on relays completed
-func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keybase, claimTx func(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root pc.HashSum) (*sdk.TxResponse, error)) {
+func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, claimTx func(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalRelays int64, root pc.HashSum) (*sdk.TxResponse, error)) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
@@ -55,7 +55,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Context, n client.Client, keybase keys.Keyba
 	}
 }
 
-func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) error {
+func (k Keeper) SetClaim(ctx sdk.Ctx, msg pc.MsgClaim) error {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(msg)
 	key, err := pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader)
@@ -66,7 +66,7 @@ func (k Keeper) SetClaim(ctx sdk.Context, msg pc.MsgClaim) error {
 	return nil
 }
 
-func (k Keeper) GetClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
+func (k Keeper) GetClaim(ctx sdk.Ctx, address sdk.Address, header pc.SessionHeader) (msg pc.MsgClaim, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForClaim(ctx, address, header)
 	if err != nil {
@@ -81,7 +81,7 @@ func (k Keeper) GetClaim(ctx sdk.Context, address sdk.Address, header pc.Session
 	return msg, true
 }
 
-func (k Keeper) SetClaims(ctx sdk.Context, claims []pc.MsgClaim) {
+func (k Keeper) SetClaims(ctx sdk.Ctx, claims []pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	for _, msg := range claims {
 		bz := k.cdc.MustMarshalBinaryBare(msg)
@@ -93,7 +93,7 @@ func (k Keeper) SetClaims(ctx sdk.Context, claims []pc.MsgClaim) {
 	}
 }
 
-func (k Keeper) GetClaims(ctx sdk.Context, address sdk.Address) (proofs []pc.MsgClaim, err error) {
+func (k Keeper) GetClaims(ctx sdk.Ctx, address sdk.Address) (proofs []pc.MsgClaim, err error) {
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForClaims(address)
 	if err != nil {
@@ -110,7 +110,7 @@ func (k Keeper) GetClaims(ctx sdk.Context, address sdk.Address) (proofs []pc.Msg
 	return
 }
 
-func (k Keeper) GetAllClaims(ctx sdk.Context) (proofs []pc.MsgClaim) {
+func (k Keeper) GetAllClaims(ctx sdk.Ctx) (proofs []pc.MsgClaim) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()
@@ -122,7 +122,7 @@ func (k Keeper) GetAllClaims(ctx sdk.Context) (proofs []pc.MsgClaim) {
 	return
 }
 
-func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.Address, header pc.SessionHeader) error {
+func (k Keeper) DeleteClaim(ctx sdk.Ctx, address sdk.Address, header pc.SessionHeader) error {
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForClaim(ctx, address, header)
 	if err != nil {
@@ -133,7 +133,7 @@ func (k Keeper) DeleteClaim(ctx sdk.Context, address sdk.Address, header pc.Sess
 }
 
 // get the mature unverified proofs for this address
-func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.Address) (matureProofs []pc.MsgClaim, err error) {
+func (k Keeper) GetMatureClaims(ctx sdk.Ctx, address sdk.Address) (matureProofs []pc.MsgClaim, err error) {
 	store := ctx.KVStore(k.storeKey)
 	key, err := pc.KeyForClaims(address)
 	if err != nil {
@@ -152,7 +152,7 @@ func (k Keeper) GetMatureClaims(ctx sdk.Context, address sdk.Address) (maturePro
 }
 
 // is the claim mature? able to be proved because the `waiting period` has passed since the sessionBlock
-func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
+func (k Keeper) ClaimIsMature(ctx sdk.Ctx, sessionBlockHeight int64) bool {
 	waitingPeriodInBlocks := k.ClaimSubmissionWindow(ctx) * k.SessionFrequency(ctx)
 	if ctx.BlockHeight() > waitingPeriodInBlocks+sessionBlockHeight {
 		return true
@@ -161,7 +161,7 @@ func (k Keeper) ClaimIsMature(ctx sdk.Context, sessionBlockHeight int64) bool {
 }
 
 // delete expired claims
-func (k Keeper) DeleteExpiredClaims(ctx sdk.Context) {
+func (k Keeper) DeleteExpiredClaims(ctx sdk.Ctx) {
 	var msg = pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, pc.ClaimKey)

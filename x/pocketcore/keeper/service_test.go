@@ -48,7 +48,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 			Path:    "",
 			Headers: nil,
 		},
-		Proof: types.RelayProof{
+		Proof: types.Proof{
 			Entropy:            1,
 			SessionBlockHeight: 1000,
 			ServicerPubKey:     nodePubKey,
@@ -86,6 +86,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
 	mockCtx.On("MustGetPrevCtx", int64(1000)).Return(ctx)
 	mockCtx.On("MustGetPrevCtx", keeper.GetLatestSessionBlockHeight(mockCtx)).Return(ctx)
+	mockCtx.On("Logger").Return(ctx.Logger())
 
 	resp, err := keeper.HandleRelay(mockCtx, validRelay)
 	assert.Nil(t, err)

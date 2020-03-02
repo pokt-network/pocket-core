@@ -80,7 +80,7 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Ctx, application types
 }
 
 // store ops when application begins to unstake -> starts the unstaking timer
-func (k Keeper) BeginUnstakingApplication(ctx sdk.Ctx, application types.Application) sdk.Error {
+func (k Keeper) BeginUnstakingApplication(ctx sdk.Ctx, application types.Application) {
 	// get params
 	params := k.GetParams(ctx)
 	// delete the application from the staking set, as it is technically staked but not going to participate

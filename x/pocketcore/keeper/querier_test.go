@@ -57,7 +57,7 @@ func TestQueryInvoice(t *testing.T) {
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
-	storedInvoice := types.Receipt{
+	receipt := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: npk.Address().String(),
 		TotalRelays:     2000,
@@ -66,8 +66,9 @@ func TestQueryInvoice(t *testing.T) {
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", k.storeKey).Return(ctx.KVStore(k.storeKey))
 	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
-	k.SetInvoice(mockCtx, addr, storedInvoice)
-	bz, er := types.ModuleCdc.MarshalJSON(types.QueryInvoiceParams{
+	mockCtx.On("Logger").Return(ctx.Logger())
+	k.SetReceipt(mockCtx, addr, receipt)
+	bz, er := types.ModuleCdc.MarshalJSON(types.QueryReceiptParams{
 		Address: sdk.Address(npk.Address()),
 		Header: types.SessionHeader{
 			ApplicationPubKey:  appPubKey,
@@ -78,7 +79,7 @@ func TestQueryInvoice(t *testing.T) {
 	assert.Nil(t, er)
 	request := abci.RequestQuery{
 		Data:                 bz,
-		Path:                 types.QueryInvoice,
+		Path:                 types.QueryReceipt,
 		Height:               ctx.BlockHeight(),
 		Prove:                false,
 		XXX_NoUnkeyedLiteral: struct{}{},
@@ -91,16 +92,16 @@ func TestQueryInvoice(t *testing.T) {
 	var stored types.Receipt
 	er = types.ModuleCdc.UnmarshalJSON(resbz, &stored)
 	assert.Nil(t, er)
-	assert.Equal(t, stored, storedInvoice)
-	// invoices query
+	assert.Equal(t, stored, receipt)
+	// receipts query
 	var stored2 []types.Receipt
-	bz2, er2 := types.ModuleCdc.MarshalJSON(types.QueryInvoicesParams{
+	bz2, er2 := types.ModuleCdc.MarshalJSON(types.QueryReceiptParams{
 		Address: sdk.Address(npk.Address()),
 	})
 	assert.Nil(t, er2)
 	request2 := abci.RequestQuery{
 		Data:                 bz2,
-		Path:                 types.QueryInvoices,
+		Path:                 types.QueryReceipt,
 		Height:               ctx.BlockHeight(),
 		Prove:                false,
 		XXX_NoUnkeyedLiteral: struct{}{},
@@ -111,5 +112,5 @@ func TestQueryInvoice(t *testing.T) {
 	assert.Nil(t, err)
 	er = types.ModuleCdc.UnmarshalJSON(resbz2, &stored2)
 	assert.Nil(t, er)
-	assert.Equal(t, stored2, []types.Receipt{storedInvoice})
+	assert.Equal(t, stored2, []types.Receipt{receipt})
 }

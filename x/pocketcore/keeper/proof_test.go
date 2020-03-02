@@ -10,16 +10,16 @@ import (
 
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
-	npk, memInvoices, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk, evidenceMap, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 
 	// create a session header
-	i, found := memInvoices.GetInvoice(header)
+	evidence, found := evidenceMap.GetEvidence(header)
 	if !found {
 		t.Fatalf("Set invoice not found")
 	}
 
-	root := i.GenerateMerkleRoot()
-	totalRelays := memInvoices.GetTotalRelays(header)
+	root := evidence.GenerateMerkleRoot()
+	totalRelays := evidenceMap.GetTotalRelays(header)
 	assert.Equal(t, totalRelays, int64(5))
 	// generate a claim message
 	claimMsg := types.MsgClaim{
@@ -32,22 +32,23 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight +  keeper.ProofWaitingPeriod(ctx)*keeper.SessionFrequency(ctx)).Return(ctx)
+	mockCtx.On("Logger").Return(ctx.Logger())
+	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx)
 
 	// generate the pseudorandom proof
 	neededLeafIndex, er := keeper.GetPseudorandomIndex(mockCtx, totalRelays, header)
 	assert.Nil(t, er)
 
 	// create the proof message
-	inv, found := memInvoices.GetInvoice(header)
+	ev, found := evidenceMap.GetEvidence(header)
 	if !found {
-		t.Fatalf("Set invoice not found 2")
+		t.Fatalf("Set evidence not found 2")
 	}
-	merkleProofs, cousinIndex := inv.GenerateMerkleProof(int(neededLeafIndex))
+	merkleProofs, cousinIndex := ev.GenerateMerkleProof(int(neededLeafIndex))
 	// get leaf and cousin node
-	leafNode := memInvoices.GetProof(header, int(neededLeafIndex))
+	leafNode := evidenceMap.GetProof(header, int(neededLeafIndex))
 	// get leaf and cousin node
-	cousinNode := memInvoices.GetProof(header, cousinIndex)
+	cousinNode := evidenceMap.GetProof(header, cousinIndex)
 	// create proof message
 	proofMsg := types.MsgProof{
 		MerkleProofs: merkleProofs,
@@ -63,14 +64,14 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 
 func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 	var totalRelays []int = []int{10, 1000, 10000000}
-	for _, relays := range totalRelays{
+	for _, relays := range totalRelays {
 		ctx, _, _, _, keeper, keys := createTestInput(t, false)
 		_, _, header, _, _ := simulateRelays(t, keeper, &ctx, 999)
 
 		mockCtx := new(Ctx)
 		mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 		mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-		mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight +  keeper.ProofWaitingPeriod(ctx)*keeper.SessionFrequency(ctx)).Return(ctx)
+		mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx)
 
 		// generate the pseudorandom proof
 		neededLeafIndex, err := keeper.GetPseudorandomIndex(mockCtx, int64(relays), header)
@@ -79,8 +80,8 @@ func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 	}
 }
 
-func TestKeeper_GetSetInvoice(t *testing.T) {
-	ctx, _, _, _, keeper,_ := createTestInput(t, false)
+func TestKeeper_GetSetReceipt(t *testing.T) {
+	ctx, _, _, _, keeper, _ := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
@@ -100,23 +101,24 @@ func TestKeeper_GetSetInvoice(t *testing.T) {
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
-	storedInvoice := types.StoredInvoice{
+	receipt := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
 		TotalRelays:     2000,
 	}
-	addr :=  sdk.Address(sdk.Address(npk.Address()))
+	addr := sdk.Address(sdk.Address(npk.Address()))
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
-	keeper.SetInvoice(mockCtx, addr, storedInvoice)
+	mockCtx.On("Logger").Return(ctx.Logger())
+	keeper.SetReceipt(mockCtx, addr, receipt)
 
-	inv, found := keeper.GetInvoice(mockCtx, sdk.Address(sdk.Address(npk.Address())), validHeader)
+	inv, found := keeper.GetReceipt(mockCtx, sdk.Address(sdk.Address(npk.Address())), validHeader)
 	assert.True(t, found)
-	assert.Equal(t, inv, storedInvoice)
+	assert.Equal(t, inv, receipt)
 }
 
-func TestKeeper_GetSetInvoices(t *testing.T) {
+func TestKeeper_GetSetReceipts(t *testing.T) {
 	ctx, _, _, _, keeper, _ := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
@@ -145,25 +147,26 @@ func TestKeeper_GetSetInvoices(t *testing.T) {
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
-	storedInvoice := types.StoredInvoice{
+	receipt := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
 		TotalRelays:     2000,
 	}
-	storedInvoice2 := types.StoredInvoice{
+	receipt2 := types.Receipt{
 		SessionHeader:   validHeader2,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
 		TotalRelays:     2000,
 	}
-	invoices := []types.StoredInvoice{storedInvoice, storedInvoice2}
+	receipts := []types.Receipt{receipt, receipt2}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
-	keeper.SetInvoices(mockCtx, invoices)
-	inv, er := keeper.GetInvoices(mockCtx, sdk.Address(sdk.Address(npk.Address())))
+	mockCtx.On("Logger").Return(ctx.Logger())
+	keeper.SetReceipts(mockCtx, receipts)
+	inv, er := keeper.GetReceipts(mockCtx, sdk.Address(sdk.Address(npk.Address())))
 	assert.Nil(t, er)
-	assert.Contains(t, inv, storedInvoice)
-	assert.Contains(t, inv, storedInvoice2)
+	assert.Contains(t, inv, receipt)
+	assert.Contains(t, inv, receipt2)
 }
 
 func TestKeeper_GetAllInvoices(t *testing.T) {
@@ -188,34 +191,35 @@ func TestKeeper_GetAllInvoices(t *testing.T) {
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
-	storedInvoice := types.StoredInvoice{
+	receipt := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
 		TotalRelays:     2000,
 	}
-	storedInvoice2 := types.StoredInvoice{
+	receipt2 := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk2.Address()).String(),
 		TotalRelays:     2000,
 	}
-	invoices := []types.StoredInvoice{storedInvoice, storedInvoice2}
+	receipts := []types.Receipt{receipt, receipt2}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
-	keeper.SetInvoices(mockCtx, invoices)
-	inv := keeper.GetAllInvoices(mockCtx)
-	assert.Contains(t, inv, storedInvoice)
-	assert.Contains(t, inv, storedInvoice2)
+	mockCtx.On("Logger").Return(ctx.Logger())
+	keeper.SetReceipts(mockCtx, receipts)
+	inv := keeper.GetAllReceipts(mockCtx)
+	assert.Contains(t, inv, receipt)
+	assert.Contains(t, inv, receipt2)
 }
 
 func TestKeeper_GetSetClaim(t *testing.T) {
 	ctx, _, _, _, keeper, _ := createTestInput(t, false)
-	npk, inMemInvoices, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	i, found := inMemInvoices.GetInvoice(header)
+	npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	evidence, found := evidences.GetEvidence(header)
 	assert.True(t, found)
 	claim := types.MsgClaim{
 		SessionHeader: header,
-		MerkleRoot:    i.GenerateMerkleRoot(),
+		MerkleRoot:    evidence.GenerateMerkleRoot(),
 		TotalRelays:   9,
 		FromAddress:   sdk.Address(npk.Address()),
 	}
@@ -233,13 +237,13 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 	var claims []types.MsgClaim
 	var pubKeys []crypto.PublicKey
 
-	for i := 0; i<2; i++ {
-		npk, inMemInvoices, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-		i, found := inMemInvoices.GetInvoice(header)
+	for i := 0; i < 2; i++ {
+		npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+		evidence, found := evidences.GetEvidence(header)
 		assert.True(t, found)
 		claim := types.MsgClaim{
 			SessionHeader: header,
-			MerkleRoot:    i.GenerateMerkleRoot(),
+			MerkleRoot:    evidence.GenerateMerkleRoot(),
 			TotalRelays:   9,
 			FromAddress:   sdk.Address(sdk.Address(npk.Address())),
 		}
@@ -249,6 +253,7 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("MustGetPrevCtx", claims[0].SessionBlockHeight).Return(ctx)
+	mockCtx.On("Logger").Return(ctx.Logger())
 	keeper.SetClaims(mockCtx, claims)
 	// todo store npk & headers
 	for idx, pk := range pubKeys {
@@ -267,12 +272,12 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 
 func TestKeeper_GetMatureClaims(t *testing.T) {
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
-	npk, inMemInvoices, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	npk2, inMemInvoices2, header2, _, _ := simulateRelays(t, keeper, &ctx, 999)
+	npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk2, evidences2, header2, _, _ := simulateRelays(t, keeper, &ctx, 999)
 
-	i, found := inMemInvoices.GetInvoice(header)
+	i, found := evidences.GetEvidence(header)
 	assert.True(t, found)
-	i2, found := inMemInvoices2.GetInvoice(header2)
+	i2, found := evidences2.GetEvidence(header2)
 	assert.True(t, found)
 
 	matureClaim := types.MsgClaim{
@@ -312,12 +317,12 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 
 func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
-	npk, inMemInvoices, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	npk2, inMemInvoices2, header2, _, _ := simulateRelays(t, keeper, &ctx, 999)
+	npk, inevidenceMap, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk2, inevidenceMap2, header2, _, _ := simulateRelays(t, keeper, &ctx, 999)
 
-	i, found := inMemInvoices.GetInvoice(header)
+	i, found := inevidenceMap.GetEvidence(header)
 	assert.True(t, found)
-	i2, found := inMemInvoices2.GetInvoice(header2)
+	i2, found := inevidenceMap2.GetEvidence(header2)
 	assert.True(t, found)
 	expiredClaim := types.MsgClaim{
 		SessionHeader: header,

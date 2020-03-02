@@ -45,6 +45,7 @@ func TestKeeper_Dispatch(t *testing.T) {
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
 	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
+	mockCtx.On("Logger").Return(ctx.Logger())
 	res, err := keeper.Dispatch(mockCtx, validHeader)
 	assert.Nil(t, err)
 	assert.Equal(t, res.SessionHeader.Chain, ethereum)
