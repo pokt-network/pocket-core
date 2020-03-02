@@ -63,10 +63,11 @@ func (k Keeper) GetPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 	proofContext := ctx.MustGetPrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(ctx)*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
 	proofBlockHeader := proofContext.BlockHeader()
-	r, err := json.Marshal(pseudorandomGenerator{
-		blockHash: hex.EncodeToString(proofBlockHeader.GetLastBlockId().Hash), // block hash
-		header:    header.HashString(),                                        // header hashstring
-	})
+	blockHash := hex.EncodeToString(proofBlockHeader.GetLastBlockId().Hash)
+	headerHash := header.HashString()
+	pseudoGenerator := pseudorandomGenerator{blockHash, headerHash}
+
+	r, err := json.Marshal(pseudoGenerator)
 	if err != nil {
 		return 0, err
 	}
