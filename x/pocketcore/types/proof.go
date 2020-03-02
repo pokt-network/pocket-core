@@ -8,8 +8,16 @@ import (
 	"math"
 )
 
-// Proof per relay
-type Proof struct {
+type Proof interface {
+	Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, verifyPubKey string) sdk.Error
+	Hash() []byte
+	HashString() string
+	HashWithSignature() []byte
+	HashStringWithSignature() string
+}
+
+// RelayProof per relay
+type RelayProof struct {
 	Entropy            int64  `json:"entropy"`
 	SessionBlockHeight int64  `json:"session_block_height"`
 	ServicerPubKey     string `json:"servicer_pub_key"`
@@ -18,7 +26,7 @@ type Proof struct {
 	Signature          string `json:"signature"`
 }
 
-func (p Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, verifyPubKey string) sdk.Error {
+func (p RelayProof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, verifyPubKey string) sdk.Error {
 	// validate the session block height
 	if p.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
@@ -48,7 +56,7 @@ func (p Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, s
 	if !hb.ContainsFromString(p.Blockchain) {
 		return NewUnsupportedBlockchainNodeError(ModuleName)
 	}
-	// validate the Proof public key format
+	// validate the RelayProof public key format
 	if err := PubKeyVerification(p.ServicerPubKey); err != nil {
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
@@ -63,8 +71,8 @@ func (p Proof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, s
 	return SignatureVerification(p.Token.ClientPublicKey, p.HashString(), p.Signature)
 }
 
-// structure used to json marshal the Proof
-type relayProof struct {
+// structure used to json marshal the RelayProof
+type relayRelayProof struct {
 	Entropy            int64  `json:"entropy"`
 	SessionBlockHeight int64  `json:"session_block_height"`
 	ServicerPubKey     string `json:"servicer_pub_key"`
@@ -73,9 +81,9 @@ type relayProof struct {
 	Token              string `json:"token"`
 }
 
-// convert the Proof to bytes
-func (p Proof) Bytes() []byte {
-	res, err := json.Marshal(relayProof{
+// convert the RelayProof to bytes
+func (p RelayProof) Bytes() []byte {
+	res, err := json.Marshal(relayRelayProof{
 		Entropy:            p.Entropy,
 		ServicerPubKey:     p.ServicerPubKey,
 		Blockchain:         p.Blockchain,
@@ -84,14 +92,14 @@ func (p Proof) Bytes() []byte {
 		Token:              p.Token.HashString(),
 	})
 	if err != nil {
-		panic(fmt.Sprintf("an error occured converting the relay proof to bytes:\n%v", err))
+		panic(fmt.Sprintf("an error occured converting the relay RelayProof to bytes:\n%v", err))
 	}
 	return res
 }
 
-// convert the Proof to bytes
-func (p Proof) BytesWithSignature() []byte {
-	res, err := json.Marshal(relayProof{
+// convert the RelayProof to bytes
+func (p RelayProof) BytesWithSignature() []byte {
+	res, err := json.Marshal(relayRelayProof{
 		Entropy:            p.Entropy,
 		ServicerPubKey:     p.ServicerPubKey,
 		Blockchain:         p.Blockchain,
@@ -100,29 +108,29 @@ func (p Proof) BytesWithSignature() []byte {
 		Token:              p.Token.HashString(),
 	})
 	if err != nil {
-		panic(fmt.Sprintf("an error occured converting the relay proof to bytes with signature:\n%v", err))
+		panic(fmt.Sprintf("an error occured converting the relay RelayProof to bytes with signature:\n%v", err))
 	}
 	return res
 }
 
-// addr the Proof bytes
-func (p Proof) Hash() []byte {
+// addr the RelayProof bytes
+func (p RelayProof) Hash() []byte {
 	res := p.Bytes()
 	return Hash(res)
 }
 
-// hex encode the Proof addr
-func (p Proof) HashString() string {
+// hex encode the RelayProof addr
+func (p RelayProof) HashString() string {
 	return hex.EncodeToString(p.Hash())
 }
 
-// addr the Proof bytes
-func (p Proof) HashWithSignature() []byte {
+// addr the RelayProof bytes
+func (p RelayProof) HashWithSignature() []byte {
 	res := p.BytesWithSignature()
 	return Hash(res)
 }
 
-// hex encode the Proof addr
-func (p Proof) HashStringWithSignature() string {
+// hex encode the RelayProof addr
+func (p RelayProof) HashStringWithSignature() string {
 	return hex.EncodeToString(p.HashWithSignature())
 }

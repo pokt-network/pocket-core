@@ -155,7 +155,7 @@ func TestMsgProof_GetSigners(t *testing.T) {
 	addr := types.Address(pk.Address())
 	signers := MsgProof{
 		MerkleProofs: [2]MerkleProof{},
-		Leaf: Proof{
+		Leaf: RelayProof{
 			Entropy:            0,
 			SessionBlockHeight: 0,
 			ServicerPubKey:     pk.RawString(),
@@ -226,7 +226,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 					},
 				},
 			}},
-		Leaf: Proof{
+		Leaf: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey,
@@ -239,7 +239,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 			},
 			Signature: "",
 		},
-		Cousin: Proof{
+		Cousin: RelayProof{
 			Entropy:            2,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey,

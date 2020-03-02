@@ -48,7 +48,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 			Path:    "",
 			Headers: nil,
 		},
-		Proof: types.Proof{
+		Proof: types.RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1000,
 			ServicerPubKey:     nodePubKey,

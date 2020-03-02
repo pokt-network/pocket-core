@@ -438,7 +438,7 @@ func createProof(private, client crypto.Ed25519PrivateKey, npk crypto.PublicKey,
 		panic(err)
 	}
 	aat.ApplicationSignature = hex.EncodeToString(sig)
-	proof := types.Proof{
+	proof := types.RelayProof{
 		Entropy:            int64(entropy + 1),
 		SessionBlockHeight: 1000,
 		ServicerPubKey:     npk.RawString(),
