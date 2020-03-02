@@ -17,10 +17,10 @@ const (
 
 // MsgClaim claims that you completed `TotalRelays` and provides the merkle root for data integrity
 type MsgClaim struct {
-	SessionHeader `json:"header"` // header information for identification
-	MerkleRoot    HashSum         `json:"merkle_root"`  // merkle root for data integrity
-	TotalRelays   int64           `json:"total_relays"` // total number of relays
-	FromAddress   sdk.Address     `json:"from_address"` // claimant
+	SessionHeader `json:"header"`                   // header information for identification
+	MerkleRoot    HashSum     `json:"merkle_root"`  // merkle root for data integrity
+	TotalRelays   int64       `json:"total_relays"` // total number of relays
+	FromAddress   sdk.Address `json:"from_address"` // claimant
 }
 
 func (msg MsgClaim) Route() string { return RouterKey }
@@ -72,8 +72,8 @@ func (msg MsgClaim) GetSigners() []sdk.Address {
 // MsgProof proves the previous claim by providing the merkle Proof and the leaf node
 type MsgProof struct {
 	MerkleProofs MerkleProofs `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
-	Leaf         Proof        `json:"leaf"`          // the needed to verify the Proof
-	Cousin       Proof        `json:"cousin"`        // the cousin needed to verify the Proof
+	Leaf         RelayProof   `json:"leaf"`          // the needed to verify the Proof
+	Cousin       RelayProof   `json:"cousin"`        // the cousin needed to verify the Proof
 }
 
 func (msg MsgProof) Route() string { return RouterKey }

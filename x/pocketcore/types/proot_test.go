@@ -39,7 +39,7 @@ func TestProof_Validate(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	validProof := Proof{
+	validProof := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -220,7 +220,7 @@ func TestProof_Bytes(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	pro := Proof{
+	pro := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
@@ -237,7 +237,7 @@ func TestProof_Bytes(t *testing.T) {
 	proof2.Signature = hex.EncodeToString([]byte("fake Signature"))
 	assert.Equal(t, pro.Hash(), proof2.Hash())
 	assert.NotEqual(t, pro.HashWithSignature(), proof2.HashWithSignature())
-	var p relayProof
+	var p RelayProof
 	assert.Nil(t, json.Unmarshal(pro.Bytes(), &p))
 }
 
@@ -255,7 +255,7 @@ func TestProof_HashAndHashString(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	pro := Proof{
+	pro := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,

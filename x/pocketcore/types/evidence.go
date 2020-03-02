@@ -6,15 +6,15 @@ import (
 )
 
 var (
-	globalEvidenceMap *EvidenceMap // holds every Proof of the node
+	globalEvidenceMap *EvidenceMap // holds all evidence from relays and challenges
 	evidenceMapOnce   sync.Once    // ensure only made once
 )
 
 // Proof of relay per application
 type Evidence struct {
-	SessionHeader `json:"evidence_header"` // the session h serves as an identifier for the evidence
-	TotalRelays   int64                    `json:"total_relays"` // the total number of relays completed
-	Proofs        []Proof                  `json:"proofs"`       // a slice of Proof objects (Proof per relay)
+	SessionHeader `json:"evidence_header"`      // the session h serves as an identifier for the evidence
+	TotalRelays   int64   `json:"total_relays"` // the total number of relays completed
+	Proofs        []Proof `json:"proofs"`       // a slice of Proof objects (Proof per relay)
 }
 
 // generate the merkle root of an evidence
@@ -32,7 +32,7 @@ func (e *Evidence) GenerateMerkleProof(index int) (proofs MerkleProofs, cousinIn
 // every `evidence` the node holds in memory
 type EvidenceMap struct {
 	M map[string]Evidence `json:"evidence_map"` // map[evidenceKey] -> Evidence
-	l sync.Mutex          // a lock in the case of concurrent calls
+	l sync.Mutex                                // a lock in the case of concurrent calls
 }
 
 // get all evidence the node holds
@@ -127,7 +127,7 @@ func (e EvidenceMap) GetProof(h SessionHeader, index int) Proof {
 	evidence := e.M[h.HashString()].Proofs
 	// do a nil check before indexing
 	if evidence == nil {
-		return Proof{}
+		return nil
 	}
 	// return the Proof at specific index
 	return evidence[index]

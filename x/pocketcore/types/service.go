@@ -18,8 +18,8 @@ const DEFAULTHTTPMETHOD = "POST"
 
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
-	Payload Payload `json:"payload"` // the data payload of the request
-	Proof   Proof   `json:"proof"`   // the authentication scheme needed for work
+	Payload Payload    `json:"payload"` // the data payload of the request
+	Proof   RelayProof `json:"proof"`   // the authentication scheme needed for work
 }
 
 func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
@@ -104,10 +104,10 @@ func (p Payload) Validate() sdk.Error {
 
 // response structure for the relay
 type RelayResponse struct {
-	Signature   string `json:"signature"`    // signature from the node in hex
-	RequestHash string `json:"request_hash"` // the hash of the relay request
-	Response    string `json:"payload"`      // response to relay
-	Proof       Proof  `json:"Proof"`        // to be signed by the client
+	Signature   string     `json:"signature"`   // signature from the node in hex
+	RequestHash string     `json:"request_hash"` // the hash of the relay request
+	Response    string     `json:"payload"`     // response to relay
+	Proof       RelayProof `json:"Proof"`       // to be signed by the client
 }
 
 // node validates the response after signing

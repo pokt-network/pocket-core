@@ -47,7 +47,7 @@ func TestRelay_Validate(t *testing.T) {
 			Path:    "",
 			Headers: nil,
 		},
-		Proof: Proof{
+		Proof: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     nodePubKey,
@@ -215,7 +215,7 @@ func TestRelay_Execute(t *testing.T) {
 			Path:    "",
 			Headers: nil,
 		},
-		Proof: Proof{
+		Proof: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     nodePubKey,
@@ -271,7 +271,7 @@ func TestRelay_HandleProof(t *testing.T) {
 			Path:    "",
 			Headers: nil,
 		},
-		Proof: Proof{
+		Proof: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     nodePubKey,
@@ -306,7 +306,7 @@ func TestRelayResponse_BytesAndHash(t *testing.T) {
 		Signature:   "",
 		RequestHash: appPublicKey, // fake
 		Response:    "foo",
-		Proof: Proof{
+		Proof: RelayProof{
 			Entropy:            230942034,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     nodePubKey,
