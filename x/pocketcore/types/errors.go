@@ -74,6 +74,7 @@ const ( // todo re-number
 	CodeOverServiceError                 = 1181
 	CodeCousinLeafEquivalentError        = 1182
 	CodeInvalidRootError                 = 1183
+	CodeRequestHash                      = 1184
 )
 
 var (
@@ -120,6 +121,7 @@ var (
 	KeybaseError                     = errors.New("the keybase is invalid: ")
 	SelfNotFoundError                = errors.New("the self node is not within the world state")
 	AppNotFoundError                 = errors.New("the app could not be found in the world state")
+	RequestHashError                 = errors.New("the request hash does not match the payload hash")
 	InvalidHostedChainError          = errors.New("invalid hosted chain error")
 	ChainNotHostedError              = errors.New("the blockchain requested is not hosted")
 	NodeNotFoundErr                  = errors.New("the node is not found in world state")
@@ -276,6 +278,10 @@ func NewSigDecodeError(codespace sdk.CodespaceType) sdk.Error {
 
 func NewInvalidSignatureSizeError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidSignatureSizeError, InvalidSignatureSizeError.Error())
+}
+
+func NewRequestHashError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeRequestHash, RequestHashError.Error())
 }
 
 func NewDuplicateProofError(codespace sdk.CodespaceType) sdk.Error {

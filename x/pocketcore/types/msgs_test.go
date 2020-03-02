@@ -157,6 +157,7 @@ func TestMsgProof_GetSigners(t *testing.T) {
 		MerkleProofs: [2]MerkleProof{},
 		Leaf: RelayProof{
 			Entropy:            0,
+			RequestHash:        pk.RawString(), // fake
 			SessionBlockHeight: 0,
 			ServicerPubKey:     pk.RawString(),
 			Blockchain:         "",
@@ -231,6 +232,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey,
 			Blockchain:         ethereum,
+			RequestHash:        servicerPubKey, // fake
 			Token: AAT{
 				Version:              "0.0.1",
 				ApplicationPublicKey: appPubKey,
@@ -243,6 +245,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 			Entropy:            2,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey,
+			RequestHash:        servicerPubKey, // fake
 			Blockchain:         ethereum,
 			Token: AAT{
 				Version:              "0.0.1",

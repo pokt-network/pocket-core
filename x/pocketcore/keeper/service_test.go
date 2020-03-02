@@ -41,16 +41,18 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	kp, _ := keeper.Keybase.GetCoinbase()
 	npk := kp.PublicKey
 	nodePubKey := npk.RawString()
+	p := types.Payload{
+		Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
+		Method:  "",
+		Path:    "",
+		Headers: nil,
+	}
 	validRelay := types.Relay{
-		Payload: types.Payload{
-			Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
-			Method:  "",
-			Path:    "",
-			Headers: nil,
-		},
+		Payload: p,
 		Proof: types.RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1000,
+			RequestHash:        p.HashString(),
 			ServicerPubKey:     nodePubKey,
 			Blockchain:         ethereum,
 			Token: types.AAT{

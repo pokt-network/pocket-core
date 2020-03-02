@@ -308,6 +308,7 @@ func TestClaimTx(t *testing.T) {
 		aat.ApplicationSignature = hex.EncodeToString(sig)
 		proof := pocketTypes.RelayProof{
 			Entropy:            int64(rand.Int()),
+			RequestHash:        hex.EncodeToString(pocketTypes.Hash([]byte("fake"))),
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
 			Blockchain:         dummyChainsHash,

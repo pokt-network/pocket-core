@@ -22,13 +22,13 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 	// for every evidence in EvidenceMap
 	for _, evidence := range (*evidenceMap).M {
 		if len(evidence.Proofs) < 5 {
-			evidenceMap.DeleteEvidence(evidence.SessionHeader)
+			evidenceMap.DeleteEvidence(evidence.SessionHeader, pc.RelayEvidence) // todo maybe can use same for challenge?
 			continue
 		}
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid for unsupported blockchains
-		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) && evidence.TotalRelays > 0 {
+		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) && evidence.NumOfProofs > 0 {
 			ctx.Logger().Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
-			evidenceMap.DeleteEvidence(evidence.SessionHeader)
+			evidenceMap.DeleteEvidence(evidence.SessionHeader, pc.RelayEvidence)
 			continue
 		}
 		// check the current state to see if the unverified evidence has already been sent and processed (if so, then skip this evidence)
@@ -37,7 +37,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			continue
 		}
 		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
-			evidenceMap.DeleteEvidence(evidence.SessionHeader)
+			evidenceMap.DeleteEvidence(evidence.SessionHeader, pc.RelayEvidence)
 			continue
 		}
 		// generate the merkle root for this evidence
@@ -49,7 +49,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			return
 		}
 		// send in the evidence header, the total relays completed, and the merkle root (ensures data integrity)
-		if _, err := claimTx(keybase, cliCtx, txBuilder, evidence.SessionHeader, evidence.TotalRelays, root); err != nil {
+		if _, err := claimTx(keybase, cliCtx, txBuilder, evidence.SessionHeader, evidence.NumOfProofs, root); err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
 		}
 	}

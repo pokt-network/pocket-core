@@ -352,13 +352,15 @@ func TestRelayGenerator(t *testing.T) {
 		panic(err)
 	}
 	aat.ApplicationSignature = hex.EncodeToString(sig)
+	payload := types.Payload{
+		Data: query,
+	}
 	// setup relay
 	relay := types.Relay{
-		Payload: types.Payload{
-			Data: query,
-		},
+		Payload: payload,
 		Proof: types.RelayProof{
 			Entropy:            int64(common.RandInt()),
+			RequestHash:        payload.HashString(),
 			SessionBlockHeight: sessionBlockheight,
 			ServicerPubKey:     nodePublicKey,
 			Blockchain:         supportedBlockchain,
@@ -403,13 +405,15 @@ func TestQueryRelay(t *testing.T) {
 		panic(err)
 	}
 	aat.ApplicationSignature = hex.EncodeToString(sig)
+	payload := types.Payload{
+		Data: expectedRequest,
+	}
 	// setup relay
 	relay := types.Relay{
-		Payload: types.Payload{
-			Data: expectedRequest,
-		},
+		Payload: payload,
 		Proof: types.RelayProof{
 			Entropy:            32598345349034509,
+			RequestHash:        payload.HashString(),
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
 			Blockchain:         dummyChainsHash,
@@ -440,10 +444,10 @@ func TestQueryRelay(t *testing.T) {
 				ApplicationPubKey:  aat.ApplicationPublicKey,
 				Chain:              relay.Proof.Blockchain,
 				SessionBlockHeight: relay.Proof.SessionBlockHeight,
-			})
+			}, types.RelayEvidence)
 			assert.True(t, found)
 			assert.NotNil(t, inv)
-			assert.Equal(t, inv.TotalRelays, int64(1))
+			assert.Equal(t, inv.NumOfProofs, int64(1))
 			cleanup()
 			stopCli()
 			gock.Off()
