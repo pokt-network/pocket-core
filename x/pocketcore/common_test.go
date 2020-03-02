@@ -180,8 +180,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
 	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, pk.Subspace(nodesTypes.DefaultParamspace), nodesTypes.ModuleName)
-	var res int64
-	nk.Paramstore.Get(ctx, nodesTypes.KeySessionBlock, &res)
 	appk := appsKeeper.NewKeeper(cdc, appsKey, bk, nk, sk, pk.Subspace(appsTypes.DefaultParamspace), appsTypes.ModuleName)
 	keeper := keep.NewPocketCoreKeeper(pocketKey, cdc, nk, appk, hb, pk.Subspace(types.DefaultParamspace), "test")
 	kb := NewTestKeybase()

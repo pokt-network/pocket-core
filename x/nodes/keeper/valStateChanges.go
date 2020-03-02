@@ -190,7 +190,7 @@ func (k Keeper) ReleaseWaitingValidators(ctx sdk.Ctx) {
 }
 
 // store ops when validator begins to unstake -> starts the unstaking timer
-func (k Keeper) BeginUnstakingValidator(ctx sdk.Ctx, validator types.Validator) sdk.Error {
+func (k Keeper) BeginUnstakingValidator(ctx sdk.Ctx, validator types.Validator) {
 	// get params
 	params := k.GetParams(ctx)
 	// delete the validator from the staking set, as it is technically staked but not going to participate
