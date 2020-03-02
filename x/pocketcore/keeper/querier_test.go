@@ -36,7 +36,7 @@ func TestQueryParameters(t *testing.T) {
 	assert.Equal(t, params, p)
 }
 
-func TestQueryInvoice(t *testing.T) {
+func TestQueryReceipt(t *testing.T) {
 	ctx, _, _, _, k, _ := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()

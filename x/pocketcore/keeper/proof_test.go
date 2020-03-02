@@ -11,8 +11,6 @@ import (
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
 	npk, evidenceMap, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-
-	// create a session header
 	evidence, found := evidenceMap.GetEvidence(header)
 	if !found {
 		t.Fatalf("Set invoice not found")
@@ -226,7 +224,8 @@ func TestKeeper_GetSetClaim(t *testing.T) {
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight).Return(ctx)
-	keeper.SetClaim(mockCtx, claim)
+	err := keeper.SetClaim(mockCtx, claim)
+	assert.Nil(t, err)
 	c, found := keeper.GetClaim(mockCtx, sdk.Address(npk.Address()), header)
 	assert.True(t, found)
 	assert.Equal(t, claim, c)
