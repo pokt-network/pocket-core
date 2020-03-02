@@ -104,10 +104,10 @@ func (p Payload) Validate() sdk.Error {
 
 // response structure for the relay
 type RelayResponse struct {
-	Signature   string `json:"signature"`   // signature from the node in hex
-	RequestHash string `json:"RequestHash"` // the hash of the relay request
-	Response    string `json:"payload"`     // response to relay
-	Proof       Proof  `json:"Proof"`       // to be signed by the client
+	Signature   string `json:"signature"`    // signature from the node in hex
+	RequestHash string `json:"request_hash"` // the hash of the relay request
+	Response    string `json:"payload"`      // response to relay
+	Proof       Proof  `json:"Proof"`        // to be signed by the client
 }
 
 // node validates the response after signing
@@ -148,7 +148,7 @@ func (rr RelayResponse) HashString() string {
 type relayResponse struct {
 	Signature   string `json:"signature"`
 	Response    string `json:"payload"`
-	RequestHash string `json:"RequestHash"`
+	RequestHash string `json:"request_hash"`
 	Proof       string `json:"Proof"`
 }
 
