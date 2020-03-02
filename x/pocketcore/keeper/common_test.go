@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	context "context"
+	"context"
 	"encoding/hex"
 	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -440,6 +440,7 @@ func createProof(private, client crypto.Ed25519PrivateKey, npk crypto.PublicKey,
 	aat.ApplicationSignature = hex.EncodeToString(sig)
 	proof := types.RelayProof{
 		Entropy:            int64(entropy + 1),
+		RequestHash:        aat.HashString(), // fake
 		SessionBlockHeight: 1000,
 		ServicerPubKey:     npk.RawString(),
 		Blockchain:         chain,

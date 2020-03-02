@@ -15,12 +15,12 @@ const (
 	MsgProofName = "proof"
 )
 
-// MsgClaim claims that you completed `TotalRelays` and provides the merkle root for data integrity
+// MsgClaim claims that you completed `NumOfProofs` and provides the merkle root for data integrity
 type MsgClaim struct {
-	SessionHeader `json:"header"`                   // header information for identification
-	MerkleRoot    HashSum     `json:"merkle_root"`  // merkle root for data integrity
-	TotalRelays   int64       `json:"total_relays"` // total number of relays
-	FromAddress   sdk.Address `json:"from_address"` // claimant
+	SessionHeader `json:"header"` // header information for identification
+	MerkleRoot    HashSum         `json:"merkle_root"`  // merkle root for data integrity
+	TotalRelays   int64           `json:"total_relays"` // total number of relays
+	FromAddress   sdk.Address     `json:"from_address"` // claimant
 }
 
 func (msg MsgClaim) Route() string { return RouterKey }
@@ -109,6 +109,14 @@ func (msg MsgProof) ValidateBasic() sdk.Error {
 	}
 	// verify the blockchain addr format
 	if err := HashVerification(msg.Cousin.Blockchain); err != nil {
+		return err
+	}
+	// verify the request hash format
+	if err := HashVerification(msg.Leaf.RequestHash); err != nil {
+		return err
+	}
+	// verify the request hash format
+	if err := HashVerification(msg.Cousin.RequestHash); err != nil {
 		return err
 	}
 	// verify non negative index

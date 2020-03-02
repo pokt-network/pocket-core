@@ -43,8 +43,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	}
 	// generate response object
 	resp := &pc.RelayResponse{
-		RequestHash: relay.HashString(),
-		Response:    respPayload,
+		Response: respPayload,
 		Proof: pc.RelayProof{
 			Blockchain:         relay.Proof.Blockchain,
 			SessionBlockHeight: sessionBlockHeight,

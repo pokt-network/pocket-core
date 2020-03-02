@@ -396,13 +396,15 @@ func TestRPC_Relay(t *testing.T) {
 		panic(err)
 	}
 	aat.ApplicationSignature = hex.EncodeToString(sig)
+	payload := pocketTypes.Payload{
+		Data: expectedRequest,
+	}
 	// setup relay
 	relay := pocketTypes.Relay{
-		Payload: pocketTypes.Payload{
-			Data: expectedRequest,
-		},
+		Payload: payload,
 		Proof: pocketTypes.RelayProof{
 			Entropy:            32598345349034509,
+			RequestHash:        payload.HashString(),
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
 			Blockchain:         dummyChainsHash,

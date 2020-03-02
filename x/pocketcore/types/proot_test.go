@@ -39,10 +39,12 @@ func TestProof_Validate(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+	payload := Payload{Data: "fake"}
 	validProof := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
+		RequestHash:        payload.HashString(), // fake
 		Blockchain:         ethereum,
 		Token: AAT{
 			Version:              "0.0.1",
@@ -81,6 +83,9 @@ func TestProof_Validate(t *testing.T) {
 	// invalid Proof AAT
 	invalidProofInvalidAAT := validProof
 	invalidProofInvalidAAT.Token.ApplicationSignature = hex.EncodeToString(clientSignature) // wrong signature
+	// invalid Proof Request Hash
+	invalidProofRequestHash := validProof
+	invalidProofRequestHash.RequestHash = servicerPubKey
 	// invalid Proof no client signature
 	invalidProofClientSignature := validProof
 	invalidProofClientSignature.Signature = hex.EncodeToString(appSignature) // wrong signature
@@ -189,6 +194,16 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
+			name:             "Invalid Proof: invalid request hash from payload",
+			proof:            invalidProofRequestHash,
+			maxRelays:        5,
+			numOfChains:      2,
+			sessionNodeCount: 0,
+			verifyPubKey:     servicerPubKey,
+			hb:               hbs,
+			hasError:         true,
+		},
+		{
 			name:             "Valid Proof",
 			proof:            validProof,
 			maxRelays:        100,
@@ -201,7 +216,7 @@ func TestProof_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.proof.Validate(tt.maxRelays, tt.numOfChains, tt.sessionNodeCount, 1, tt.hb, tt.verifyPubKey) != nil, tt.hasError)
+			assert.Equal(t, tt.proof.Validate(tt.maxRelays, tt.numOfChains, tt.sessionNodeCount, 1, tt.hb, payload.HashString(), tt.verifyPubKey) != nil, tt.hasError)
 		})
 	}
 }
@@ -224,6 +239,7 @@ func TestProof_Bytes(t *testing.T) {
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
+		RequestHash:        servicerPubKey, // fake
 		Blockchain:         ethereum,
 		Token: AAT{
 			Version:              "0.0.1",
@@ -259,6 +275,7 @@ func TestProof_HashAndHashString(t *testing.T) {
 		Entropy:            0,
 		SessionBlockHeight: 1,
 		ServicerPubKey:     servicerPubKey,
+		RequestHash:        servicerPubKey, // fake
 		Blockchain:         ethereum,
 		Token: AAT{
 			Version:              "0.0.1",

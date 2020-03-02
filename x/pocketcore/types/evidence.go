@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	sdk "github.com/pokt-network/posmint/types"
 	"sync"
 )
@@ -12,9 +13,9 @@ var (
 
 // Proof of relay per application
 type Evidence struct {
-	SessionHeader `json:"evidence_header"`      // the session h serves as an identifier for the evidence
-	TotalRelays   int64   `json:"total_relays"` // the total number of relays completed
-	Proofs        []Proof `json:"proofs"`       // a slice of Proof objects (Proof per relay)
+	SessionHeader `json:"evidence_header"` // the session h serves as an identifier for the evidence
+	NumOfProofs   int64                    `json:"num_of_¬proofs"` // the total number of proofs in the evidence
+	Proofs        []Proof                  `json:"proofs"`         // a slice of Proof objects (Proof per relay or challenge)
 }
 
 // generate the merkle root of an evidence
@@ -32,7 +33,7 @@ func (e *Evidence) GenerateMerkleProof(index int) (proofs MerkleProofs, cousinIn
 // every `evidence` the node holds in memory
 type EvidenceMap struct {
 	M map[string]Evidence `json:"evidence_map"` // map[evidenceKey] -> Evidence
-	l sync.Mutex                                // a lock in the case of concurrent calls
+	l sync.Mutex          // a lock in the case of concurrent calls
 }
 
 // get all evidence the node holds
@@ -48,8 +49,8 @@ func GetEvidenceMap() *EvidenceMap {
 	return globalEvidenceMap
 }
 
-func (e EvidenceMap) GetEvidence(h SessionHeader) (evidence Evidence, found bool) {
-	key := h.HashString()
+func (e EvidenceMap) GetEvidence(h SessionHeader, evidenceType EvidenceType) (evidence Evidence, found bool) {
+	key := e.KeyForEvidence(h, evidenceType)
 	// lock the shared data
 	e.l.Lock()
 	defer e.l.Unlock()
@@ -58,19 +59,19 @@ func (e EvidenceMap) GetEvidence(h SessionHeader) (evidence Evidence, found bool
 }
 
 // delete evidence
-func (e EvidenceMap) DeleteEvidence(h SessionHeader) {
+func (e EvidenceMap) DeleteEvidence(h SessionHeader, evidenceType EvidenceType) {
 	// lock the shared data
 	e.l.Lock()
 	defer e.l.Unlock()
+	key := e.KeyForEvidence(h, evidenceType)
 	// delete the value corresponding to the h
-	delete(e.M, h.HashString())
+	delete(e.M, key)
 }
 
 // add the Proof to the EvidenceMap object
 func (e EvidenceMap) AddToEvidence(h SessionHeader, p Proof) sdk.Error {
 	var evidence Evidence
-	// generate the key for this specific Proof
-	key := h.HashString()
+	key := e.KeyForEvidenceByProof(h, p)
 	// lock the shared data
 	e.l.Lock()
 	defer e.l.Unlock()
@@ -81,19 +82,19 @@ func (e EvidenceMap) AddToEvidence(h SessionHeader, p Proof) sdk.Error {
 		// if Proof is not already stored, initialize all
 		evidence.SessionHeader = h
 		evidence.Proofs = make([]Proof, 0)
-		evidence.TotalRelays = 0
+		evidence.NumOfProofs = 0
 	}
 	// add Proof to the proofs object
 	evidence.Proofs = append(evidence.Proofs, p)
 	// increment total relay count
-	evidence.TotalRelays = evidence.TotalRelays + 1
+	evidence.NumOfProofs = evidence.NumOfProofs + 1
 	// update POR
 	e.M[key] = evidence
 	return nil
 }
 
 func (e EvidenceMap) IsUniqueProof(h SessionHeader, p Proof) bool {
-	key := h.HashString()
+	key := e.KeyForEvidenceByProof(h, p)
 	// lock the shared data
 	e.l.Lock()
 	defer e.l.Unlock()
@@ -115,16 +116,17 @@ func (e EvidenceMap) GetTotalRelays(h SessionHeader) int64 {
 	e.l.Lock()
 	defer e.l.Unlock()
 	// return the proofs object, corresponding to the h
-	return e.M[h.HashString()].TotalRelays
+	return e.M[e.KeyForEvidence(h, RelayEvidence)].NumOfProofs
 }
 
 // retrieve the single Proof from the all proofs object
-func (e EvidenceMap) GetProof(h SessionHeader, index int) Proof {
+func (e EvidenceMap) GetProof(h SessionHeader, evidenceType EvidenceType, index int) Proof {
 	// lock the shared data
 	e.l.Lock()
 	defer e.l.Unlock()
+	key := e.KeyForEvidence(h, evidenceType)
 	// return the proofs object, corresponding to the h
-	evidence := e.M[h.HashString()].Proofs
+	evidence := e.M[key].Proofs
 	// do a nil check before indexing
 	if evidence == nil {
 		return nil
@@ -134,12 +136,50 @@ func (e EvidenceMap) GetProof(h SessionHeader, index int) Proof {
 }
 
 // retrieve the proofs from the all proofs object
-func (e EvidenceMap) GetProofs(h SessionHeader) []Proof {
+func (e EvidenceMap) GetProofs(h SessionHeader, evidenceType EvidenceType) []Proof {
 	// lock the shared data
 	e.l.Lock()
 	defer e.l.Unlock()
+	key := e.KeyForEvidence(h, evidenceType)
 	// return the proofs object, corresponding to the h
-	return e.M[h.HashString()].Proofs
+	return e.M[key].Proofs
+}
+
+// type to distinguish the types of evidence
+
+type EvidenceType int
+
+const (
+	RelayEvidence EvidenceType = iota + 1
+	ChallengeEvidence
+)
+
+func (et EvidenceType) Byte() byte {
+	switch et {
+	case RelayEvidence:
+		return 0
+	case ChallengeEvidence:
+		return 1
+	default:
+		panic("unrecognized evidence type")
+	}
+}
+
+func (e EvidenceMap) KeyForEvidence(h SessionHeader, evidenceType EvidenceType) string {
+	return hex.EncodeToString(append(h.Hash(), evidenceType.Byte()))
+}
+func (e EvidenceMap) KeyForEvidenceByProof(h SessionHeader, p Proof) string {
+	var evidenceType EvidenceType
+	switch p.(type) {
+	case RelayProof:
+		evidenceType = RelayEvidence
+	case ChallengeProofCorruptedRequest:
+		evidenceType = ChallengeEvidence
+	case ChallengeProofInvalidData:
+		evidenceType = ChallengeEvidence
+	}
+	// generate the key for this specific Proof
+	return e.KeyForEvidence(h, evidenceType)
 }
 
 // structure used to store the proof of work

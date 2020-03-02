@@ -40,17 +40,19 @@ func TestRelay_Validate(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+	p := Payload{
+		Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
+		Method:  "",
+		Path:    "",
+		Headers: nil,
+	}
 	validRelay := Relay{
-		Payload: Payload{
-			Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
-			Method:  "",
-			Path:    "",
-			Headers: nil,
-		},
+		Payload: p,
 		Proof: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     nodePubKey,
+			RequestHash:        p.HashString(),
 			Blockchain:         ethereum,
 			Token: AAT{
 				Version:              "0.0.1",
@@ -208,17 +210,19 @@ func TestRelay_Execute(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+	p := Payload{
+		Data:    "foo",
+		Method:  "POST",
+		Path:    "",
+		Headers: nil,
+	}
 	validRelay := Relay{
-		Payload: Payload{
-			Data:    "foo",
-			Method:  "POST",
-			Path:    "",
-			Headers: nil,
-		},
+		Payload: p,
 		Proof: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     nodePubKey,
+			RequestHash:        p.HashString(),
 			Blockchain:         ethereum,
 			Token: AAT{
 				Version:              "0.0.1",
@@ -264,16 +268,18 @@ func TestRelay_HandleProof(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+	p := Payload{
+		Data:    "foo",
+		Method:  "POST",
+		Path:    "",
+		Headers: nil,
+	}
 	validRelay := Relay{
-		Payload: Payload{
-			Data:    "foo",
-			Method:  "POST",
-			Path:    "",
-			Headers: nil,
-		},
+		Payload: p,
 		Proof: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
+			RequestHash:        p.HashString(),
 			ServicerPubKey:     nodePubKey,
 			Blockchain:         ethereum,
 			Token: AAT{
@@ -291,7 +297,7 @@ func TestRelay_HandleProof(t *testing.T) {
 		ApplicationPubKey:  appPubKey,
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
-	}, 0)
+	}, RelayEvidence, 0)
 	assert.True(t, reflect.DeepEqual(validRelay.Proof, res))
 }
 
@@ -303,12 +309,12 @@ func TestRelayResponse_BytesAndHash(t *testing.T) {
 	cliPrivKey := getRandomPrivateKey()
 	cliPublicKey := cliPrivKey.PublicKey().RawString()
 	relayResp := RelayResponse{
-		Signature:   "",
-		RequestHash: appPublicKey, // fake
-		Response:    "foo",
+		Signature: "",
+		Response:  "foo",
 		Proof: RelayProof{
 			Entropy:            230942034,
 			SessionBlockHeight: 1,
+			RequestHash:        nodePubKey,
 			ServicerPubKey:     nodePubKey,
 			Blockchain:         hex.EncodeToString(hash([]byte("foo"))),
 			Token: AAT{

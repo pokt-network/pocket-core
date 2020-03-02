@@ -11,7 +11,7 @@ import (
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
 	npk, evidenceMap, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	evidence, found := evidenceMap.GetEvidence(header)
+	evidence, found := evidenceMap.GetEvidence(header, types.RelayEvidence)
 	if !found {
 		t.Fatalf("Set invoice not found")
 	}
@@ -38,15 +38,15 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	assert.Nil(t, er)
 
 	// create the proof message
-	ev, found := evidenceMap.GetEvidence(header)
+	ev, found := evidenceMap.GetEvidence(header, types.RelayEvidence)
 	if !found {
 		t.Fatalf("Set evidence not found 2")
 	}
 	merkleProofs, cousinIndex := ev.GenerateMerkleProof(int(neededLeafIndex))
 	// get leaf and cousin node
-	leafNode := evidenceMap.GetProof(header, int(neededLeafIndex))
+	leafNode := evidenceMap.GetProof(header, types.RelayEvidence, int(neededLeafIndex))
 	// get leaf and cousin node
-	cousinNode := evidenceMap.GetProof(header, cousinIndex)
+	cousinNode := evidenceMap.GetProof(header, types.RelayEvidence, cousinIndex)
 	// create proof message
 	proofMsg := types.MsgProof{
 		MerkleProofs: merkleProofs,
@@ -213,7 +213,7 @@ func TestKeeper_GetAllInvoices(t *testing.T) {
 func TestKeeper_GetSetClaim(t *testing.T) {
 	ctx, _, _, _, keeper, _ := createTestInput(t, false)
 	npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	evidence, found := evidences.GetEvidence(header)
+	evidence, found := evidences.GetEvidence(header, types.RelayEvidence)
 	assert.True(t, found)
 	claim := types.MsgClaim{
 		SessionHeader: header,
@@ -238,7 +238,7 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 
 	for i := 0; i < 2; i++ {
 		npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-		evidence, found := evidences.GetEvidence(header)
+		evidence, found := evidences.GetEvidence(header, types.RelayEvidence)
 		assert.True(t, found)
 		claim := types.MsgClaim{
 			SessionHeader: header,
@@ -274,9 +274,9 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 	npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 	npk2, evidences2, header2, _, _ := simulateRelays(t, keeper, &ctx, 999)
 
-	i, found := evidences.GetEvidence(header)
+	i, found := evidences.GetEvidence(header, types.RelayEvidence)
 	assert.True(t, found)
-	i2, found := evidences2.GetEvidence(header2)
+	i2, found := evidences2.GetEvidence(header2, types.RelayEvidence)
 	assert.True(t, found)
 
 	matureClaim := types.MsgClaim{
@@ -319,9 +319,9 @@ func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	npk, inevidenceMap, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 	npk2, inevidenceMap2, header2, _, _ := simulateRelays(t, keeper, &ctx, 999)
 
-	i, found := inevidenceMap.GetEvidence(header)
+	i, found := inevidenceMap.GetEvidence(header, types.RelayEvidence)
 	assert.True(t, found)
-	i2, found := inevidenceMap2.GetEvidence(header2)
+	i2, found := inevidenceMap2.GetEvidence(header2, types.RelayEvidence)
 	assert.True(t, found)
 	expiredClaim := types.MsgClaim{
 		SessionHeader: header,
