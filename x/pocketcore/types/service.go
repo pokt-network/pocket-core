@@ -29,6 +29,10 @@ func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlo
 	if err := r.Payload.Validate(); err != nil {
 		return NewEmptyPayloadDataError(ModuleName)
 	}
+	// validate the metadata
+	if err := r.Meta.Validate(ctx); err != nil {
+		return err
+	}
 	// validate the Proof
 	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, sessionBlockHeight, hb, r.RequestHashString(), node.GetPublicKey().RawString()); err != nil {
 		return err
@@ -140,6 +144,13 @@ func (p Payload) MarshalJSON() ([]byte, error) {
 
 type RelayMeta struct {
 	BlockHeight int64 `json:"block_height"`
+}
+
+func (m RelayMeta) Validate(ctx sdk.Ctx) sdk.Error {
+	if ctx.BlockHeight()+5 < m.BlockHeight || ctx.BlockHeight()-5 > m.BlockHeight {
+		return NewOutOfSyncRequestError(ModuleName)
+	}
+	return nil
 }
 
 // response structure for the relay

@@ -75,6 +75,7 @@ const ( // todo re-number
 	CodeCousinLeafEquivalentError        = 1182
 	CodeInvalidRootError                 = 1183
 	CodeRequestHash                      = 1184
+	CodeOutOfSyncRequestError            = 1185
 )
 
 var (
@@ -151,6 +152,7 @@ var (
 	CousinLeafEquivalentError        = errors.New("the cousin and leaf cannot be equal")
 	InvalidRootError                 = errors.New("the merkle root passed is invalid")
 	MerkleNodeNotFoundError          = errors.New("the merkle node cannot be found")
+	OutOfSyncRequestError            = errors.New("the request block height is out of sync with the current block height")
 )
 
 func NewOverServiceError(codespace sdk.CodespaceType) sdk.Error {
@@ -298,6 +300,10 @@ func NewResponseSignatureError(codespace sdk.CodespaceType) sdk.Error {
 
 func NewEmptyResponseError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyResponseError, EmptyResponseError.Error())
+}
+
+func NewOutOfSyncRequestError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeOutOfSyncRequestError, OutOfSyncRequestError.Error())
 }
 
 func NewInvalidIncrementCounterError(codespace sdk.CodespaceType) sdk.Error {
