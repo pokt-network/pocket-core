@@ -52,7 +52,6 @@ func TestKeeper_HandleRelay(t *testing.T) {
 		Proof: types.RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1000,
-			RequestHash:        p.HashString(),
 			ServicerPubKey:     nodePubKey,
 			Blockchain:         ethereum,
 			Token: types.AAT{
@@ -64,6 +63,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 			Signature: "",
 		},
 	}
+	validRelay.Proof.RequestHash = validRelay.RequestHashString()
 	appSig, er := appPrivateKey.Sign(validRelay.Proof.Token.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())

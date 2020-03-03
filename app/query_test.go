@@ -360,7 +360,6 @@ func TestRelayGenerator(t *testing.T) {
 		Payload: payload,
 		Proof: types.RelayProof{
 			Entropy:            int64(common.RandInt()),
-			RequestHash:        payload.HashString(),
 			SessionBlockHeight: sessionBlockheight,
 			ServicerPubKey:     nodePublicKey,
 			Blockchain:         supportedBlockchain,
@@ -368,6 +367,7 @@ func TestRelayGenerator(t *testing.T) {
 			Signature:          "",
 		},
 	}
+	relay.Proof.RequestHash = relay.RequestHashString()
 	sig, err = appPrivateKey.Sign(relay.Proof.Hash())
 	if err != nil {
 		panic(err)
@@ -411,9 +411,9 @@ func TestQueryRelay(t *testing.T) {
 	// setup relay
 	relay := types.Relay{
 		Payload: payload,
+		Meta:    types.RelayMeta{BlockHeight: 1},
 		Proof: types.RelayProof{
 			Entropy:            32598345349034509,
-			RequestHash:        payload.HashString(),
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
 			Blockchain:         dummyChainsHash,
@@ -421,6 +421,7 @@ func TestQueryRelay(t *testing.T) {
 			Signature:          "",
 		},
 	}
+	relay.Proof.RequestHash = relay.RequestHashString()
 	sig, err = appPrivateKey.Sign(relay.Proof.Hash())
 	if err != nil {
 		panic(err)

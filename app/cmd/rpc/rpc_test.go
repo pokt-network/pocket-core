@@ -402,9 +402,9 @@ func TestRPC_Relay(t *testing.T) {
 	// setup relay
 	relay := pocketTypes.Relay{
 		Payload: payload,
+		Meta:    pocketTypes.RelayMeta{BlockHeight: 1},
 		Proof: pocketTypes.RelayProof{
 			Entropy:            32598345349034509,
-			RequestHash:        payload.HashString(),
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
 			Blockchain:         dummyChainsHash,
@@ -412,6 +412,7 @@ func TestRPC_Relay(t *testing.T) {
 			Signature:          "",
 		},
 	}
+	relay.Proof.RequestHash = relay.RequestHashString()
 	sig, err = appPrivateKey.Sign(relay.Proof.Hash())
 	if err != nil {
 		panic(err)

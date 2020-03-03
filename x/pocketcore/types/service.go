@@ -19,6 +19,7 @@ const DEFAULTHTTPMETHOD = "POST"
 // a read / write API request from a hosted (non native) blockchain
 type Relay struct {
 	Payload Payload    `json:"payload"` // the data payload of the request
+	Meta    RelayMeta  `json:"meta"`    // metadata for the relay request
 	Proof   RelayProof `json:"proof"`   // the authentication scheme needed for work
 }
 
@@ -29,7 +30,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlo
 		return NewEmptyPayloadDataError(ModuleName)
 	}
 	// validate the Proof
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, sessionBlockHeight, hb, r.Payload.HashString(), node.GetPublicKey().RawString()); err != nil {
+	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, sessionBlockHeight, hb, r.RequestHashString(), node.GetPublicKey().RawString()); err != nil {
 		return err
 	}
 	// generate the session
@@ -75,6 +76,22 @@ func (r Relay) HandleProof(ctx sdk.Ctx, sessionBlockHeight int64) sdk.Error {
 	}, r.Proof)
 }
 
+func (r Relay) RequestHash() []byte {
+	relay := Relay{
+		Payload: r.Payload,
+		Meta:    r.Meta,
+	}
+	res, err := json.Marshal(relay)
+	if err != nil {
+		panic(fmt.Sprintf("cannot marshal relay request hash: %s", err.Error()))
+	}
+	return res
+}
+
+func (r Relay) RequestHashString() string {
+	return hex.EncodeToString(r.RequestHash())
+}
+
 // the payload of the relay
 type Payload struct {
 	Data    string            `json:"data"`    // the actual data string for the external chain
@@ -104,6 +121,25 @@ func (p Payload) Validate() sdk.Error {
 		return NewEmptyPayloadDataError(ModuleName)
 	}
 	return nil
+}
+
+type payload struct {
+	Data   string `json:"data"`
+	Method string `json:"method"`
+	Path   string `json:"path"`
+}
+
+func (p Payload) MarshalJSON() ([]byte, error) {
+	pay := payload{
+		Data:   p.Data,
+		Method: p.Method,
+		Path:   p.Path,
+	}
+	return json.Marshal(pay)
+}
+
+type RelayMeta struct {
+	BlockHeight int64 `json:"block_height"`
 }
 
 // response structure for the relay

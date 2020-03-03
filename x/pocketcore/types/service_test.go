@@ -52,7 +52,6 @@ func TestRelay_Validate(t *testing.T) {
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     nodePubKey,
-			RequestHash:        p.HashString(),
 			Blockchain:         ethereum,
 			Token: AAT{
 				Version:              "0.0.1",
@@ -63,6 +62,7 @@ func TestRelay_Validate(t *testing.T) {
 			Signature: "",
 		},
 	}
+	validRelay.Proof.RequestHash = validRelay.RequestHashString()
 	appSig, er := appPrivateKey.Sign(validRelay.Proof.Token.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
@@ -222,7 +222,6 @@ func TestRelay_Execute(t *testing.T) {
 			Entropy:            1,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     nodePubKey,
-			RequestHash:        p.HashString(),
 			Blockchain:         ethereum,
 			Token: AAT{
 				Version:              "0.0.1",
@@ -233,6 +232,7 @@ func TestRelay_Execute(t *testing.T) {
 			Signature: "",
 		},
 	}
+	validRelay.Proof.RequestHash = validRelay.RequestHashString()
 	defer gock.Off() // Flush pending mocks after test execution
 
 	gock.New("https://server.com").
@@ -279,7 +279,6 @@ func TestRelay_HandleProof(t *testing.T) {
 		Proof: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
-			RequestHash:        p.HashString(),
 			ServicerPubKey:     nodePubKey,
 			Blockchain:         ethereum,
 			Token: AAT{
@@ -291,6 +290,7 @@ func TestRelay_HandleProof(t *testing.T) {
 			Signature: "",
 		},
 	}
+	validRelay.Proof.RequestHash = validRelay.RequestHashString()
 	err = validRelay.HandleProof(newContext(t, false), 1)
 	assert.Nil(t, err)
 	res := GetEvidenceMap().GetProof(SessionHeader{
