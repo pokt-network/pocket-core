@@ -17,10 +17,13 @@ type Proof interface {
 }
 
 type ChallengeProofInvalidData struct {
+	MajorityResponse [2]RelayResponse
+	MinorityResponse RelayResponse
 }
 
 func (c ChallengeProofInvalidData) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, payloadHash, verifyPubKey string) sdk.Error {
-	panic("implement me")
+	// no need to verify valid relay because nodes would never respond to an invalid relay
+	panic("")
 }
 
 func (c ChallengeProofInvalidData) Hash() []byte {
@@ -40,6 +43,7 @@ func (c ChallengeProofInvalidData) HashStringWithSignature() string {
 }
 
 type ChallengeProofCorruptedRequest struct {
+	CorruptResponse RelayResponse
 }
 
 func (c ChallengeProofCorruptedRequest) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, payloadHash, verifyPubKey string) sdk.Error {
