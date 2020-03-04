@@ -40,7 +40,7 @@ func KeyForReceipts(addr sdk.Address) ([]byte, error) {
 	return append(ReceiptKey, addr.Bytes()...), nil
 }
 
-func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader) ([]byte, error) {
+func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
 	if err := header.ValidateHeader(); err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader) ([]byte, e
 	sessionCtx := ctx.MustGetPrevCtx(header.SessionBlockHeight)
 	sessionBlockHeader := sessionCtx.BlockHeader()
 	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
-	return append(append(append(ClaimKey, addr.Bytes()...), appPubKey...), sessionHash...), nil
+	return append(append(append(append(ClaimKey, addr.Bytes()...), appPubKey...), sessionHash...), evidenceType.Byte()), nil
 }
 
 func KeyForClaims(addr sdk.Address) ([]byte, error) {

@@ -2,8 +2,6 @@ package types
 
 import (
 	"encoding/hex"
-	"fmt"
-	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"reflect"
 )
@@ -18,9 +16,10 @@ const (
 // MsgClaim claims that you completed `NumOfProofs` and provides the merkle root for data integrity
 type MsgClaim struct {
 	SessionHeader `json:"header"` // header information for identification
-	MerkleRoot    HashSum         `json:"merkle_root"`  // merkle root for data integrity
-	TotalRelays   int64           `json:"total_relays"` // total number of relays
-	FromAddress   sdk.Address     `json:"from_address"` // claimant
+	MerkleRoot    HashSum         `json:"merkle_root"`   // merkle root for data integrity
+	TotalProofs   int64           `json:"total_relays"`  // total number of relays
+	FromAddress   sdk.Address     `json:"from_address"`  // claimant
+	EvidenceType  EvidenceType    `json:"evidence_type"` // relay or challenge?
 }
 
 func (msg MsgClaim) Route() string { return RouterKey }
@@ -34,8 +33,8 @@ func (msg MsgClaim) ValidateBasic() sdk.Error {
 	if msg.SessionBlockHeight < 1 {
 		return NewEmptyBlockIDError(ModuleName)
 	}
-	// validate non negative total relays
-	if msg.TotalRelays <= 0 {
+	// validate greater than 5 relays (need 5 for the tree structure)
+	if msg.TotalProofs < 5 {
 		return NewEmptyProofsError(ModuleName)
 	}
 	// validate the public key format
@@ -53,6 +52,9 @@ func (msg MsgClaim) ValidateBasic() sdk.Error {
 	// ensure non zero root sum
 	if msg.MerkleRoot.Sum == 0 {
 		return NewInvalidRootError(ModuleName)
+	}
+	if msg.EvidenceType == 0 {
+		return NewNoEvidenceTypeErr(ModuleName)
 	}
 	return nil
 }
@@ -72,8 +74,8 @@ func (msg MsgClaim) GetSigners() []sdk.Address {
 // MsgProof proves the previous claim by providing the merkle Proof and the leaf node
 type MsgProof struct {
 	MerkleProofs MerkleProofs `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
-	Leaf         RelayProof   `json:"leaf"`          // the needed to verify the Proof
-	Cousin       RelayProof   `json:"cousin"`        // the cousin needed to verify the Proof
+	Leaf         Proof        `json:"leaf"`          // the needed to verify the Proof
+	Cousin       Proof        `json:"cousin"`        // the cousin needed to verify the Proof
 }
 
 func (msg MsgProof) Route() string { return RouterKey }
@@ -87,46 +89,6 @@ func (msg MsgProof) ValidateBasic() sdk.Error {
 	if msg.MerkleProofs[0].Index == msg.MerkleProofs[1].Index {
 		return NewInvalidLeafCousinProofsComboError(ModuleName)
 	}
-	// verify the session block height is positive
-	if msg.Leaf.SessionBlockHeight < 0 {
-		return NewInvalidBlockHeightError(ModuleName)
-	}
-	// verify the session block height is positive
-	if msg.Cousin.SessionBlockHeight < 0 {
-		return NewInvalidBlockHeightError(ModuleName)
-	}
-	// verify the public key format for the leaf
-	if err := PubKeyVerification(msg.Leaf.ServicerPubKey); err != nil {
-		return err
-	}
-	// verify the public key format for the cousin
-	if err := PubKeyVerification(msg.Cousin.ServicerPubKey); err != nil {
-		return err
-	}
-	// verify the blockchain addr format
-	if err := HashVerification(msg.Leaf.Blockchain); err != nil {
-		return err
-	}
-	// verify the blockchain addr format
-	if err := HashVerification(msg.Cousin.Blockchain); err != nil {
-		return err
-	}
-	// verify the request hash format
-	if err := HashVerification(msg.Leaf.RequestHash); err != nil {
-		return err
-	}
-	// verify the request hash format
-	if err := HashVerification(msg.Cousin.RequestHash); err != nil {
-		return err
-	}
-	// verify non negative index
-	if msg.Leaf.Entropy <= 0 {
-		return NewInvalidIncrementCounterError(ModuleName)
-	}
-	// verify non negative index
-	if msg.Cousin.Entropy <= 0 {
-		return NewInvalidIncrementCounterError(ModuleName)
-	}
 	// ensure leaf does not equal cousin
 	if reflect.DeepEqual(msg.Leaf, msg.Cousin) {
 		return NewCousinLeafEquivalentError(ModuleName)
@@ -135,16 +97,10 @@ func (msg MsgProof) ValidateBasic() sdk.Error {
 	if reflect.DeepEqual(msg.MerkleProofs[0].HashSums, msg.MerkleProofs[1].HashSums) {
 		return NewCousinLeafEquivalentError(ModuleName)
 	}
-	// verify a valid token
-	if err := msg.Leaf.Token.Validate(); err != nil {
-		return NewInvalidTokenError(ModuleName, err)
-	}
-	// verify the client signature on the Proof
-	if err := SignatureVerification(msg.Leaf.Token.ClientPublicKey, msg.Leaf.HashString(), msg.Leaf.Signature); err != nil {
+	if err := msg.Leaf.ValidateBasic(); err != nil {
 		return err
 	}
-	// verify the client signature on the Proof
-	if err := SignatureVerification(msg.Cousin.Token.ClientPublicKey, msg.Cousin.HashString(), msg.Cousin.Signature); err != nil {
+	if err := msg.Cousin.ValidateBasic(); err != nil {
 		return err
 	}
 	return nil
@@ -157,9 +113,5 @@ func (msg MsgProof) GetSignBytes() []byte {
 
 // GetSigners defines whose signature is required
 func (msg MsgProof) GetSigners() []sdk.Address {
-	pk, err := crypto.NewPublicKey(msg.Leaf.ServicerPubKey)
-	if err != nil {
-		panic(fmt.Sprintf("an error occured getting the signer for the proof message, %v", err))
-	}
-	return []sdk.Address{sdk.Address(pk.Address())}
+	return msg.Leaf.GetSigners()
 }

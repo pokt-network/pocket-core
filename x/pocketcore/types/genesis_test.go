@@ -51,9 +51,10 @@ func TestValidateGenesis(t *testing.T) {
 				Chain:              nn,
 				SessionBlockHeight: 1,
 			},
-			MerkleRoot:  root,
-			TotalRelays: 1000,
-			FromAddress: types.Address(servicerAddr),
+			MerkleRoot:   root,
+			TotalProofs:  1000,
+			FromAddress:  types.Address(servicerAddr),
+			EvidenceType: RelayEvidence,
 		}},
 	}
 	invalidProofs := GenesisState{
@@ -78,9 +79,10 @@ func TestValidateGenesis(t *testing.T) {
 				Chain:              nn,
 				SessionBlockHeight: 1,
 			},
-			MerkleRoot:  root,
-			TotalRelays: 1000,
-			FromAddress: types.Address(servicerAddr),
+			MerkleRoot:   root,
+			TotalProofs:  1000,
+			FromAddress:  types.Address(servicerAddr),
+			EvidenceType: RelayEvidence,
 		}},
 	}
 	invalidClaims := GenesisState{
@@ -105,9 +107,10 @@ func TestValidateGenesis(t *testing.T) {
 				Chain:              nn,
 				SessionBlockHeight: 1,
 			},
-			MerkleRoot:  root,
-			TotalRelays: -1000,
-			FromAddress: types.Address(servicerAddr),
+			MerkleRoot:   root,
+			TotalProofs:  -1000,
+			FromAddress:  types.Address(servicerAddr),
+			EvidenceType: RelayEvidence,
 		}},
 	}
 	validGenesisState := GenesisState{
@@ -132,9 +135,10 @@ func TestValidateGenesis(t *testing.T) {
 				Chain:              nn,
 				SessionBlockHeight: 1,
 			},
-			MerkleRoot:  root,
-			TotalRelays: 1000,
-			FromAddress: types.Address(servicerAddr),
+			MerkleRoot:   root,
+			TotalProofs:  1000,
+			FromAddress:  types.Address(servicerAddr),
+			EvidenceType: RelayEvidence,
 		}},
 	}
 	tests := []struct {
@@ -214,7 +218,7 @@ func TestDefaultGenesisState(t *testing.T) {
 				SessionBlockHeight: 1,
 			},
 			MerkleRoot:  root,
-			TotalRelays: 1000,
+			TotalProofs: 1000,
 			FromAddress: types.Address(servicerAddr),
 		}},
 	}

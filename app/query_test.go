@@ -411,7 +411,7 @@ func TestQueryRelay(t *testing.T) {
 	// setup relay
 	relay := types.Relay{
 		Payload: payload,
-		Meta:    types.RelayMeta{BlockHeight: 1},
+		Meta:    types.RelayMeta{BlockHeight: 5}, // todo race condition here
 		Proof: types.RelayProof{
 			Entropy:            32598345349034509,
 			SessionBlockHeight: 1,

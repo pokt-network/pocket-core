@@ -18,6 +18,18 @@ func (k Keeper) BurnValidator(ctx sdk.Ctx, address sdk.Address, severityPercenta
 	ctx.Logger().Info("Custom burn set for " + address.String() + " with a severity of " + severityPercentage.String())
 }
 
+func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address) {
+	coins := k.RelaysToTokensMultiplier(ctx).Mul(challenges)
+	val, found := k.GetValidator(ctx, address)
+	if !found {
+		ctx.Logger().Error("validator trying to burn for challenges, not found: possibly force unstaked?")
+		return
+	}
+	// what percent of entire stake will be burned?
+	percentageBurn := coins.ToDec().Quo(val.StakedTokens.ToDec())
+	k.BurnValidator(ctx, address, percentageBurn)
+}
+
 // slash a validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
 func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {

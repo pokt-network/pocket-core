@@ -402,7 +402,7 @@ func TestRPC_Relay(t *testing.T) {
 	// setup relay
 	relay := pocketTypes.Relay{
 		Payload: payload,
-		Meta:    pocketTypes.RelayMeta{BlockHeight: 1},
+		Meta:    pocketTypes.RelayMeta{BlockHeight: 5}, // todo race condition here
 		Proof: pocketTypes.RelayProof{
 			Entropy:            32598345349034509,
 			SessionBlockHeight: 1,

@@ -48,7 +48,7 @@ func TestKeeper_ClaimSubmissionWindow(t *testing.T) {
 func TestKeeper_SupportedBlockchains(t *testing.T) {
 	ctx, _, _, _, keeper, _ := createTestInput(t, false)
 	supportedBlockchains := keeper.SupportedBlockchains(ctx)
-	assert.Equal(t, types.DefaultSupportedBlockchains, supportedBlockchains)
+	assert.Equal(t, []string{getTestSupportedBlockchain()}, supportedBlockchains)
 }
 
 func TestKeeper_GetParams(t *testing.T) {

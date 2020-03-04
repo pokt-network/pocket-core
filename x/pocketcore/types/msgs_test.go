@@ -21,7 +21,7 @@ func TestMsgClaim_GetSigners(t *testing.T) {
 	signers := MsgClaim{
 		SessionHeader: SessionHeader{},
 		MerkleRoot:    HashSum{},
-		TotalRelays:   0,
+		TotalProofs:   0,
 		FromAddress:   addr,
 	}.GetSigners()
 	assert.Len(t, signers, 1)
@@ -53,9 +53,10 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 			Chain:              ethereum,
 			SessionBlockHeight: 1,
 		},
-		MerkleRoot:  root,
-		TotalRelays: 100,
-		FromAddress: nodeAddress,
+		MerkleRoot:   root,
+		TotalProofs:  100,
+		FromAddress:  nodeAddress,
+		EvidenceType: RelayEvidence,
 	}
 	invalidClaimMessageRoot := MsgClaim{
 		SessionHeader: SessionHeader{
@@ -67,8 +68,9 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 			Hash: []byte("bad_root"),
 			Sum:  0,
 		},
-		TotalRelays: 100,
-		FromAddress: nodeAddress,
+		TotalProofs:  100,
+		FromAddress:  nodeAddress,
+		EvidenceType: RelayEvidence,
 	}
 	invalidClaimMessageRelays := MsgClaim{
 		SessionHeader: SessionHeader{
@@ -76,9 +78,10 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 			Chain:              ethereum,
 			SessionBlockHeight: 1,
 		},
-		MerkleRoot:  root,
-		TotalRelays: -1,
-		FromAddress: nodeAddress,
+		MerkleRoot:   root,
+		TotalProofs:  -1,
+		FromAddress:  nodeAddress,
+		EvidenceType: RelayEvidence,
 	}
 	invalidClaimMessageFromAddress := MsgClaim{
 		SessionHeader: SessionHeader{
@@ -86,9 +89,20 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 			Chain:              ethereum,
 			SessionBlockHeight: 1,
 		},
+		MerkleRoot:   root,
+		TotalProofs:  -1,
+		FromAddress:  types.Address{},
+		EvidenceType: RelayEvidence,
+	}
+	invalidClaimMessageNoEvidence := MsgClaim{
+		SessionHeader: SessionHeader{
+			ApplicationPubKey:  appPubKey,
+			Chain:              ethereum,
+			SessionBlockHeight: 1,
+		},
 		MerkleRoot:  root,
-		TotalRelays: -1,
-		FromAddress: types.Address{},
+		TotalProofs: 100,
+		FromAddress: nodeAddress,
 	}
 	validClaimMessage := MsgClaim{
 		SessionHeader: SessionHeader{
@@ -96,9 +110,10 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 			Chain:              ethereum,
 			SessionBlockHeight: 1,
 		},
-		MerkleRoot:  root,
-		TotalRelays: 100,
-		FromAddress: nodeAddress,
+		MerkleRoot:   root,
+		TotalProofs:  100,
+		FromAddress:  nodeAddress,
+		EvidenceType: RelayEvidence,
 	}
 	tests := []struct {
 		name     string
@@ -123,6 +138,11 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 		{
 			name:     "Invalid Claim Message, From Address",
 			msg:      invalidClaimMessageFromAddress,
+			hasError: true,
+		},
+		{
+			name:     "Invalid Claim Message, No Evidence",
+			msg:      invalidClaimMessageNoEvidence,
 			hasError: true,
 		},
 		{
@@ -256,44 +276,58 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 			Signature: "",
 		},
 	}
-	signature, er := appPrivKey.Sign(validProofMessage.Leaf.Token.Hash())
+	vprLeaf := validProofMessage.Leaf.(RelayProof)
+	vprCousin := validProofMessage.Cousin.(RelayProof)
+	signature, er := appPrivKey.Sign(vprLeaf.Token.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
-	validProofMessage.Leaf.Token.ApplicationSignature = hex.EncodeToString(signature)
+	vprLeaf.Token.ApplicationSignature = hex.EncodeToString(signature)
 	clientSig, er := clientPrivKey.Sign(validProofMessage.Leaf.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
-	validProofMessage.Leaf.Signature = hex.EncodeToString(clientSig)
-	signature2, er := appPrivKey.Sign(validProofMessage.Cousin.Token.Hash())
+	vprLeaf.Signature = hex.EncodeToString(clientSig)
+	signature2, er := appPrivKey.Sign(vprCousin.Token.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
-	validProofMessage.Cousin.Token.ApplicationSignature = hex.EncodeToString(signature2)
+	vprCousin.Token.ApplicationSignature = hex.EncodeToString(signature2)
 	clientSig2, er := clientPrivKey.Sign(validProofMessage.Cousin.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
-	validProofMessage.Cousin.Signature = hex.EncodeToString(clientSig2)
+	vprCousin.Signature = hex.EncodeToString(clientSig2)
+	validProofMessage.Leaf = vprLeaf
+	validProofMessage.Cousin = vprCousin
 	// invalid entropy
 	invalidProofMsgIndex := validProofMessage
-	invalidProofMsgIndex.Leaf.Entropy = 0
+	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	vprLeaf.Entropy = 0
+	invalidProofMsgIndex.Leaf = vprLeaf
 	// invalid hash sum
 	invalidProofMsgHashes := validProofMessage
 	invalidProofMsgHashes.MerkleProofs[0].HashSums = []HashSum{}
 	// invalid session block height
 	invalidProofMsgSessionBlkHeight := validProofMessage
-	invalidProofMsgSessionBlkHeight.Leaf.SessionBlockHeight = -1
+	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	vprLeaf.SessionBlockHeight = -1
+	invalidProofMsgSessionBlkHeight.Leaf = vprLeaf
 	// invalid token
 	invalidProofMsgToken := validProofMessage
-	invalidProofMsgToken.Leaf.Token.ApplicationSignature = ""
+	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	vprLeaf.Token.ApplicationSignature = ""
+	invalidProofMsgToken.Leaf = vprLeaf
 	// invalid blockchain
 	invalidProofMsgBlkchn := validProofMessage
-	invalidProofMsgBlkchn.Leaf.Blockchain = ""
+	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	vprLeaf.Blockchain = ""
+	invalidProofMsgBlkchn.Leaf = vprLeaf
 	// invalid signature
 	invalidProofMsgSignature := validProofMessage
-	invalidProofMsgSignature.Leaf.Signature = hex.EncodeToString(clientSig2)
+	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	vprLeaf.Signature = hex.EncodeToString(clientSig2)
+	invalidProofMsgSignature.Leaf = vprLeaf
 	tests := []struct {
 		name     string
 		msg      MsgProof
