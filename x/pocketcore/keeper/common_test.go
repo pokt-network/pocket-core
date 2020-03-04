@@ -47,8 +47,8 @@ var (
 )
 
 type simulateRelayKeys struct {
-	private crypto.Ed25519PrivateKey
-	client  crypto.Ed25519PrivateKey
+	private crypto.PrivateKey
+	client  crypto.PrivateKey
 }
 
 func NewTestKeybase() keys.Keybase {
@@ -194,6 +194,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
 	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, pk.Subspace(nodesTypes.DefaultParamspace), nodesTypes.ModuleName)
 	appk := appsKeeper.NewKeeper(cdc, appsKey, bk, nk, sk, pk.Subspace(appsTypes.DefaultParamspace), appsTypes.ModuleName)
+	appk.SetApplication(ctx, getTestApplication())
 	keeper := NewPocketCoreKeeper(pocketKey, cdc, nk, appk, hb, pk.Subspace(types.DefaultParamspace), "test")
 	kb := NewTestKeybase()
 	_, err = kb.Create("test")
@@ -216,9 +217,53 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	vals := createTestValidators(ctx, int(nAccs), sdk.NewInt(10000000), sdk.ZeroInt(), &nk, sk, kb)
 	appk.SetParams(ctx, appsTypes.DefaultParams())
 	nk.SetParams(ctx, nodesTypes.DefaultParams())
-	keeper.SetParams(ctx, types.DefaultParams())
-
+	defaultPocketParams := types.DefaultParams()
+	defaultPocketParams.SupportedBlockchains = []string{getTestSupportedBlockchain()}
+	keeper.SetParams(ctx, defaultPocketParams)
 	return ctx, vals, ap, accs, keeper, keys
+}
+
+var (
+	testApp            appsTypes.Application
+	testAppPrivateKey  crypto.PrivateKey
+	testSupportedChain string
+)
+
+func getTestSupportedBlockchain() string {
+	if testSupportedChain == "" {
+		testSupportedChain, _ = types.NonNativeChain{
+			Ticker:  "eth",
+			Netid:   "4",
+			Version: "v1.9.9",
+			Client:  "geth",
+			Inter:   "",
+		}.HashString()
+	}
+	return testSupportedChain
+}
+
+func getTestApplicationPrivateKey() crypto.PrivateKey {
+	if testAppPrivateKey == nil {
+		testAppPrivateKey = getRandomPrivateKey()
+	}
+	return testAppPrivateKey
+}
+
+func getTestApplication() appsTypes.Application {
+	if testApp.Address == nil {
+		pk := getTestApplicationPrivateKey().PublicKey()
+		testApp = appsTypes.Application{
+			Address:                 sdk.Address(pk.Address()),
+			PublicKey:               pk,
+			Jailed:                  false,
+			Status:                  2,
+			Chains:                  []string{getTestSupportedBlockchain()},
+			StakedTokens:            sdk.NewInt(10000000),
+			MaxRelays:               sdk.NewInt(10000000),
+			UnstakingCompletionTime: time.Time{},
+		}
+	}
+	return testApp
 }
 
 // nolint: unparam deadcode unused
@@ -397,13 +442,10 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-
-	privateKey := getRandomPrivateKey()
-	appPubKey := privateKey.PublicKey().RawString()
 	clientKey := getRandomPrivateKey()
 
 	validHeader = types.SessionHeader{
-		ApplicationPubKey:  appPubKey,
+		ApplicationPubKey:  getTestApplication().PublicKey.RawString(),
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
@@ -415,7 +457,7 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 
 	// NOTE Add a minimum of 5 proofs to memInvoice to be able to create a merkle tree
 	for j := 0; j < maxRelays; j++ {
-		proof := createProof(privateKey, clientKey, npk, ethereum, j)
+		proof := createProof(getTestApplicationPrivateKey(), clientKey, npk, ethereum, j)
 		evidenceMap.AddToEvidence(validHeader, proof)
 	}
 	mockCtx := new(Ctx)
@@ -423,10 +465,10 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(*ctx)
 	mockCtx.On("Logger").Return((*ctx).Logger())
 	k.SetReceipts(mockCtx, []types.Receipt{receipt})
-	keys = simulateRelayKeys{privateKey, clientKey}
+	keys = simulateRelayKeys{getTestApplicationPrivateKey(), clientKey}
 	return
 }
-func createProof(private, client crypto.Ed25519PrivateKey, npk crypto.PublicKey, chain string, entropy int) types.Proof {
+func createProof(private, client crypto.PrivateKey, npk crypto.PublicKey, chain string, entropy int) types.Proof {
 	aat := types.AAT{
 		Version:              "0.0.1",
 		ApplicationPublicKey: private.PublicKey().RawString(),
@@ -441,7 +483,7 @@ func createProof(private, client crypto.Ed25519PrivateKey, npk crypto.PublicKey,
 	proof := types.RelayProof{
 		Entropy:            int64(entropy + 1),
 		RequestHash:        aat.HashString(), // fake
-		SessionBlockHeight: 1000,
+		SessionBlockHeight: 1,
 		ServicerPubKey:     npk.RawString(),
 		Blockchain:         chain,
 		Token:              aat,

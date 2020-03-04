@@ -157,6 +157,18 @@ func (sn SessionNodes) Contains(nodeVerify nodeexported.ValidatorI) bool { // to
 	return false
 }
 
+func (sn SessionNodes) ContainsAddress(addr sdk.Address) bool { // todo use a map instead of a slice to save time
+	if addr == nil {
+		return false
+	}
+	for _, node := range sn {
+		if node.GetAddress().String() == addr.String() {
+			return true
+		}
+	}
+	return false
+}
+
 // A node linked to it's computational distance
 type nodeDistance struct {
 	Node     nodeexported.ValidatorI

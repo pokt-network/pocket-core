@@ -9,7 +9,7 @@ import (
 )
 
 // award coins to an address (will be called at the beginning of the next block)
-func (k Keeper) AwardCoinsTo(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
+func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
 	award, _ := k.getValidatorAward(ctx, address)
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
 	k.setValidatorAward(ctx, award.Add(coins), address)

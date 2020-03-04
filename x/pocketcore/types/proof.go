@@ -4,67 +4,21 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"math"
 )
 
 type Proof interface {
-	Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, payloadHash, verifyPubKey string) sdk.Error
 	Hash() []byte
 	HashString() string
-	HashWithSignature() []byte
-	HashStringWithSignature() string
+	ValidateBasic() sdk.Error
+	GetSigners() []sdk.Address
+	SessionHeader() SessionHeader
+	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error
 }
 
-type ChallengeProofInvalidData struct {
-	MajorityResponse [2]RelayResponse
-	MinorityResponse RelayResponse
-}
-
-func (c ChallengeProofInvalidData) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, payloadHash, verifyPubKey string) sdk.Error {
-	// no need to verify valid relay because nodes would never respond to an invalid relay
-	panic("")
-}
-
-func (c ChallengeProofInvalidData) Hash() []byte {
-	panic("implement me")
-}
-
-func (c ChallengeProofInvalidData) HashString() string {
-	panic("implement me")
-}
-
-func (c ChallengeProofInvalidData) HashWithSignature() []byte {
-	panic("implement me")
-}
-
-func (c ChallengeProofInvalidData) HashStringWithSignature() string {
-	panic("implement me")
-}
-
-type ChallengeProofCorruptedRequest struct {
-	CorruptResponse RelayResponse
-}
-
-func (c ChallengeProofCorruptedRequest) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, payloadHash, verifyPubKey string) sdk.Error {
-	panic("implement me")
-}
-
-func (c ChallengeProofCorruptedRequest) Hash() []byte {
-	panic("implement me")
-}
-
-func (c ChallengeProofCorruptedRequest) HashString() string {
-	panic("implement me")
-}
-
-func (c ChallengeProofCorruptedRequest) HashWithSignature() []byte {
-	panic("implement me")
-}
-
-func (c ChallengeProofCorruptedRequest) HashStringWithSignature() string {
-	panic("implement me")
-}
+var _ Proof = RelayProof{}
 
 // RelayProof per relay
 type RelayProof struct {
@@ -77,7 +31,23 @@ type RelayProof struct {
 	Signature          string `json:"signature"`
 }
 
-func (rp RelayProof) Validate(maxRelays int64, numberOfChains, sessionNodeCount int, sessionBlockHeight int64, hb HostedBlockchains, payloadHash, verifyPubKey string) sdk.Error {
+func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64, verifyPubKey string) sdk.Error {
+	// validate the public key correctness
+	if rp.ServicerPubKey != verifyPubKey {
+		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
+	}
+	// validate the verify public key format
+	if err := PubKeyVerification(verifyPubKey); err != nil {
+		return NewInvalidNodePubKeyError(ModuleName)
+	}
+	err := rp.Validate(appSupportedBlockchains, sessionNodeCount, sessionBlockHeight)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error {
 	// validate the session block height
 	if rp.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
@@ -86,44 +56,65 @@ func (rp RelayProof) Validate(maxRelays int64, numberOfChains, sessionNodeCount 
 	if err := HashVerification(rp.Blockchain); err != nil {
 		return err
 	}
-	// validate request hash
-	if payloadHash != rp.RequestHash {
-		return NewRequestHashError(ModuleName)
-	}
-	evidenceHeader := SessionHeader{
-		ApplicationPubKey:  rp.Token.ApplicationPublicKey,
-		Chain:              rp.Blockchain,
-		SessionBlockHeight: rp.SessionBlockHeight,
-	}
-	// validate not over service
-	totalRelays := GetEvidenceMap().GetTotalRelays(evidenceHeader)
-	if !GetEvidenceMap().IsUniqueProof(evidenceHeader, rp) {
-		return NewDuplicateProofError(ModuleName)
-	}
-	if totalRelays >= int64(math.Ceil(float64(maxRelays)/float64(numberOfChains))/(float64(sessionNodeCount))) {
-		return NewOverServiceError(ModuleName)
-	}
-	// validate the public key correctness
-	if rp.ServicerPubKey != verifyPubKey {
-		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
-	}
-	// ensure the blockchain is supported
-	if !hb.ContainsFromString(rp.Blockchain) {
-		return NewUnsupportedBlockchainNodeError(ModuleName)
-	}
 	// validate the RelayProof public key format
 	if err := PubKeyVerification(rp.ServicerPubKey); err != nil {
 		return NewInvalidNodePubKeyError(ModuleName)
 	}
-	// validate the verify public key format
-	if err := PubKeyVerification(verifyPubKey); err != nil {
-		return NewInvalidNodePubKeyError(ModuleName)
+	// check for supported blockchain
+	c1 := false
+	for _, chain := range appSupportedBlockchains {
+		if rp.Blockchain == chain {
+			c1 = true
+		}
+	}
+	if !c1 {
+		return NewUnsupportedBlockchainAppError(ModuleName)
 	}
 	// validate the service token
 	if err := rp.Token.Validate(); err != nil {
 		return NewInvalidTokenError(ModuleName, err)
 	}
 	return SignatureVerification(rp.Token.ClientPublicKey, rp.HashString(), rp.Signature)
+}
+
+func (rp RelayProof) ValidateBasic() sdk.Error {
+	// verify the session block height is positive
+	if rp.SessionBlockHeight < 0 {
+		return NewInvalidBlockHeightError(ModuleName)
+	}
+	// verify the public key format for the leaf
+	if err := PubKeyVerification(rp.ServicerPubKey); err != nil {
+		return err
+	}
+	// verify the blockchain addr format
+	if err := HashVerification(rp.Blockchain); err != nil {
+		return err
+	}
+	// verify the request hash format
+	if err := HashVerification(rp.RequestHash); err != nil {
+		return err
+	}
+	// verify non negative index
+	if rp.Entropy <= 0 {
+		return NewInvalidEntropyError(ModuleName)
+	}
+	// verify a valid token
+	if err := rp.Token.Validate(); err != nil {
+		return NewInvalidTokenError(ModuleName, err)
+	}
+	// verify the client signature on the Proof
+	if err := SignatureVerification(rp.Token.ClientPublicKey, rp.HashString(), rp.Signature); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (rp RelayProof) SessionHeader() SessionHeader {
+	return SessionHeader{
+		ApplicationPubKey:  rp.Token.ApplicationPublicKey,
+		Chain:              rp.Blockchain,
+		SessionBlockHeight: rp.SessionBlockHeight,
+	}
 }
 
 // structure used to json marshal the RelayProof
@@ -191,4 +182,232 @@ func (rp RelayProof) HashWithSignature() []byte {
 // hex encode the RelayProof addr
 func (rp RelayProof) HashStringWithSignature() string {
 	return hex.EncodeToString(rp.HashWithSignature())
+}
+
+func (rp RelayProof) GetSigners() []sdk.Address {
+	pk, err := crypto.NewPublicKey(rp.ServicerPubKey)
+	if err != nil {
+		panic(fmt.Sprintf("an error occured getting the signer for the RelayProof: \n%v", err))
+	}
+	return []sdk.Address{sdk.Address(pk.Address())}
+}
+
+type ChallengeProofInvalidData struct {
+	MajorityResponses [2]RelayResponse `json:"majority_responses"`
+	MinorityResponse  RelayResponse    `json:"minority_response"`
+	ReporterAddress   sdk.Address      `json:"address"`
+}
+
+var _ Proof = ChallengeProofInvalidData{}
+
+// validate local is used to validate a challenge request directly from a client
+func (c ChallengeProofInvalidData) ValidateLocal(maxRelays int64, supportedBlockchains []string, numberOfChains, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
+	// get the header to retrieve the evidence object
+	h := SessionHeader{
+		ApplicationPubKey:  c.MinorityResponse.Proof.Token.ApplicationPublicKey,
+		Chain:              c.MinorityResponse.Proof.Blockchain,
+		SessionBlockHeight: c.MinorityResponse.Proof.SessionBlockHeight,
+	}
+	// check for overflow on # of proofs
+	evidence, _ := GetEvidenceMap().GetEvidence(h, ChallengeEvidence)
+	if evidence.NumOfProofs >= int64(math.Ceil(float64(maxRelays)/float64(numberOfChains))/(float64(sessionNodeCount))) {
+		return NewOverServiceError(ModuleName)
+	}
+	// check if verifyPubKey in session (must be in session to do challenges)
+	if !sessionNodes.ContainsAddress(selfAddr) {
+		return NewNodeNotInSessionError(ModuleName)
+	}
+	err := c.Validate(supportedBlockchains, sessionNodeCount, c.MinorityResponse.Proof.SessionBlockHeight)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// validate is used to validate a challenge request
+func (c ChallengeProofInvalidData) Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error {
+	majResponse := c.MajorityResponses[0]
+	majResponse2 := c.MajorityResponses[1]
+	// check for duplicates
+	if majResponse.Proof.ServicerPubKey == majResponse2.Proof.ServicerPubKey ||
+		majResponse2.Proof.ServicerPubKey == c.MinorityResponse.Proof.ServicerPubKey ||
+		c.MinorityResponse.Proof.ServicerPubKey == majResponse.Proof.ServicerPubKey {
+		return NewDuplicatePublicKeyError(ModuleName)
+	}
+	// check for identical request hashes
+	if majResponse.Proof.RequestHash != majResponse2.Proof.RequestHash ||
+		majResponse2.Proof.RequestHash != c.MinorityResponse.Proof.RequestHash ||
+		majResponse.Proof.RequestHash != c.MinorityResponse.Proof.RequestHash {
+		return NewMismatchedRequestHashError(ModuleName)
+	}
+	// check for identical app public keys
+	if majResponse.Proof.Token.ApplicationPublicKey != majResponse2.Proof.Token.ApplicationPublicKey ||
+		majResponse2.Proof.Token.ApplicationPublicKey != c.MinorityResponse.Proof.Token.ApplicationPublicKey ||
+		majResponse.Proof.Token.ApplicationPublicKey != c.MinorityResponse.Proof.Token.ApplicationPublicKey {
+		return NewMismatchedAppPubKeyError(ModuleName)
+	}
+	// check for identical session heights
+	if majResponse.Proof.SessionBlockHeight != majResponse2.Proof.SessionBlockHeight ||
+		majResponse2.Proof.SessionBlockHeight != c.MinorityResponse.Proof.SessionBlockHeight ||
+		majResponse.Proof.SessionBlockHeight != c.MinorityResponse.Proof.SessionBlockHeight {
+		return NewMismatchedSessionHeightError(ModuleName)
+	}
+	// check for identical external blockchains
+	if majResponse.Proof.Blockchain != majResponse2.Proof.Blockchain ||
+		majResponse2.Proof.Blockchain != c.MinorityResponse.Proof.Blockchain ||
+		majResponse.Proof.Blockchain != c.MinorityResponse.Proof.Blockchain {
+		return NewMismatchedBlockchainsError(ModuleName)
+	}
+	// check for a true majority minority response
+	majResp, majResp2, minResp := sortJSONResponse(majResponse.Response), sortJSONResponse(majResponse2.Response), sortJSONResponse(c.MinorityResponse.Response)
+	if majResp != majResp2 || minResp == majResp {
+		return NewNoMajorityResponseError(ModuleName)
+	}
+	// check for supported blockchain
+	c1, c2, c3 := false, false, false
+	for _, chain := range appSupportedBlockchains {
+		if majResponse.Proof.Blockchain == chain {
+			c1 = true
+		}
+		if majResponse2.Proof.Blockchain == chain {
+			c2 = true
+		}
+		if c.MinorityResponse.Proof.Blockchain == chain {
+			c3 = true
+		}
+	}
+	if !c1 || !c2 || !c3 {
+		return NewUnsupportedBlockchainAppError(ModuleName)
+	}
+	// check signatures
+	pubKey1, err := crypto.NewPublicKey(majResponse.Proof.ServicerPubKey)
+	if err != nil {
+		return NewPubKeyError(ModuleName, err)
+	}
+	pubKey2, err := crypto.NewPublicKey(majResponse2.Proof.ServicerPubKey)
+	if err != nil {
+		return NewPubKeyError(ModuleName, err)
+	}
+	pubKey3, err := crypto.NewPublicKey(c.MinorityResponse.Proof.ServicerPubKey)
+	if err != nil {
+		return NewPubKeyError(ModuleName, err)
+	}
+	sig1, err := hex.DecodeString(majResponse.Signature)
+	if err != nil {
+		return NewSignatureError(ModuleName, err)
+	}
+	sig2, err := hex.DecodeString(majResponse2.Signature)
+	if err != nil {
+		return NewSignatureError(ModuleName, err)
+	}
+	sig3, err := hex.DecodeString(c.MinorityResponse.Signature)
+	if err != nil {
+		return NewSignatureError(ModuleName, err)
+	}
+	if !pubKey1.VerifyBytes(majResponse.Hash(), sig1) {
+		return NewInvalidSignatureError(ModuleName)
+	}
+	if !pubKey2.VerifyBytes(majResponse2.Hash(), sig2) {
+		return NewInvalidSignatureError(ModuleName)
+	}
+	if !pubKey3.VerifyBytes(c.MinorityResponse.Hash(), sig3) {
+		return NewInvalidSignatureError(ModuleName)
+	}
+	return nil
+}
+
+func (c ChallengeProofInvalidData) ValidateBasic() sdk.Error {
+	if c.ReporterAddress == nil {
+		return NewEmptyAddressError(ModuleName)
+	}
+	majResp, majResp2 := c.MajorityResponses[0], c.MajorityResponses[1]
+	// verify the session block height is positive
+	if c.MinorityResponse.Proof.SessionBlockHeight < 0 || majResp.Proof.SessionBlockHeight < 0 || majResp2.Proof.SessionBlockHeight < 0 {
+		return NewInvalidBlockHeightError(ModuleName)
+	}
+	// verify the public key format for the leaf
+	if err, err2, err3 := PubKeyVerification(c.MinorityResponse.Proof.ServicerPubKey),
+		PubKeyVerification(majResp.Proof.ServicerPubKey),
+		PubKeyVerification(majResp2.Proof.ServicerPubKey); err != nil || err2 != nil || err3 != nil {
+		return err
+	}
+	// verify the public key format for the leaf
+	if err, err2, err3 := HashVerification(c.MinorityResponse.Proof.Blockchain),
+		HashVerification(majResp.Proof.Blockchain),
+		HashVerification(majResp2.Proof.Blockchain); err != nil || err2 != nil || err3 != nil {
+		return err
+	}
+	// verify the request hash format
+	if err, err2, err3 := HashVerification(c.MinorityResponse.Proof.RequestHash),
+		HashVerification(majResp.Proof.RequestHash),
+		HashVerification(majResp2.Proof.RequestHash); err != nil || err2 != nil || err3 != nil {
+		return err
+	}
+	// verify non negative entropy
+	if c.MinorityResponse.Proof.Entropy < 0 || majResp.Proof.Entropy < 0 || majResp2.Proof.Entropy < 0 {
+		return NewInvalidEntropyError(ModuleName)
+	}
+	return nil
+}
+
+func (c ChallengeProofInvalidData) SessionHeader() SessionHeader {
+	return SessionHeader{
+		ApplicationPubKey:  c.MinorityResponse.Proof.Token.ApplicationPublicKey,
+		Chain:              c.MinorityResponse.Proof.Blockchain,
+		SessionBlockHeight: c.MinorityResponse.Proof.SessionBlockHeight,
+	}
+}
+
+type challengeProofInvalidData struct {
+	MajorityResponses [2]relayResponse
+	MinorityResponse  relayResponse
+}
+
+func (c ChallengeProofInvalidData) Bytes() []byte {
+	majResp, majResp2 := c.MajorityResponses[0], c.MajorityResponses[1]
+	bz, err := json.Marshal(challengeProofInvalidData{
+		MajorityResponses: [2]relayResponse{
+			{
+				Signature: majResp.Signature,
+				Response:  majResp.Response,
+				Proof:     majResp.Proof.HashStringWithSignature(),
+			},
+			{
+				Signature: majResp2.Signature,
+				Response:  majResp2.Response,
+				Proof:     majResp2.Proof.HashStringWithSignature(),
+			},
+		},
+		MinorityResponse: relayResponse{
+			Signature: c.MinorityResponse.Signature,
+			Response:  c.MinorityResponse.Response,
+			Proof:     c.MinorityResponse.Proof.HashStringWithSignature(),
+		},
+	})
+	if err != nil {
+		panic(fmt.Sprintf("an error occured converting the challengeproof to bytes\n%v", err))
+	}
+	return bz
+}
+
+func (c ChallengeProofInvalidData) Hash() []byte {
+	return Hash(c.Bytes())
+}
+
+func (c ChallengeProofInvalidData) HashString() string {
+	return hex.EncodeToString(c.Hash())
+}
+
+func (c ChallengeProofInvalidData) GetSigners() []sdk.Address {
+	return []sdk.Address{c.ReporterAddress}
+}
+
+func ProofToEvidenceType(p Proof) EvidenceType {
+	switch p.(type) {
+	case RelayProof:
+		return RelayEvidence
+	case ChallengeProofInvalidData:
+		return ChallengeEvidence
+	}
+	panic(fmt.Sprintf("error in converting proof to evidence: Unknown Evidence Type -> %v", p))
 }

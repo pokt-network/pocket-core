@@ -10,16 +10,17 @@ import (
 )
 
 // transaction that sends the total number of relays (claim), the merkle root (for data integrity), and the header (for identification)
-func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalRelays int64, root types.HashSum) (*sdk.TxResponse, error) {
+func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalProofs int64, root types.HashSum, evidenceType types.EvidenceType) (*sdk.TxResponse, error) {
 	kp, err := keybase.GetCoinbase()
 	if err != nil {
 		return nil, err
 	}
 	msg := types.MsgClaim{
 		SessionHeader: header,
-		TotalRelays:   totalRelays,
+		TotalProofs:   totalProofs,
 		MerkleRoot:    root,
 		FromAddress:   kp.GetAddress(),
+		EvidenceType:  evidenceType,
 	}
 	err = msg.ValidateBasic()
 	if err != nil {
@@ -32,8 +33,8 @@ func ClaimTx(keybase keys.Keybase, cliCtx util.CLIContext, txBuilder auth.TxBuil
 func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]types.MerkleProof, leafNode, cousinNode types.Proof) (*sdk.TxResponse, error) {
 	msg := types.MsgProof{
 		MerkleProofs: branches,
-		Leaf:         leafNode.(types.RelayProof), // todo could possibly be generic for challenges?
-		Cousin:       cousinNode.(types.RelayProof),
+		Leaf:         leafNode,
+		Cousin:       cousinNode,
 	}
 	err := msg.ValidateBasic()
 	if err != nil {

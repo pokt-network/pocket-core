@@ -76,6 +76,15 @@ const ( // todo re-number
 	CodeInvalidRootError                 = 1183
 	CodeRequestHash                      = 1184
 	CodeOutOfSyncRequestError            = 1185
+	CodeUnsupportedBlockchainError       = 1186
+	CodeDuplicatePublicKeyError          = 1187
+	CodeMismatchedRequestHashError       = 1188
+	CodeNewMismatchedAppPubKeyError      = 1189
+	CodeMismatchedSessionHeightError     = 1190
+	CodeMismatchedBlockchainsError       = 1191
+	CodeNoMajorityResponseError          = 1192
+	CodeNodeNotInSessionError            = 1193
+	CodeNoEvidenceTypeErr                = 1194
 )
 
 var (
@@ -86,6 +95,7 @@ var (
 	InvalidTokenSignatureErorr       = errors.New("the application signature on the AAT is not valid")
 	NegativeICCounterError           = errors.New("the IC counter is less than 0")
 	MaximumIncrementCounterError     = errors.New("the increment counter exceeds the maximum allowed relays")
+	NodeNotInSessionError            = errors.New("the node is not within the session")
 	InvalidNodePubKeyError           = errors.New("the node public key in the service Proof does not match this nodes public key")
 	InvalidTokenError                = errors.New("the application authentication token is invalid")
 	EmptyProofsError                 = errors.New("the service proofs object is empty")
@@ -95,6 +105,7 @@ var (
 	ResponseSignatureError           = errors.New("response signing errored out: ")
 	EmptyBlockchainError             = errors.New("the blockchain included in the relay request is empty")
 	EmptyPayloadDataError            = errors.New("the payload data of the relay request is empty")
+	UnsupportedBlockchainError       = errors.New("the blockchain in this request is not supported")
 	UnsupportedBlockchainAppError    = errors.New("the blockchain in the relay request is not supported for this app")
 	UnsupportedBlockchainNodeError   = errors.New("the blockchain in the relay request is not supported on this node")
 	HttpStatusCodeError              = errors.New("HTTP status code returned not okay: ")
@@ -141,7 +152,7 @@ var (
 	InvalidHashLengthError           = errors.New("the addr length is not valid")
 	InvalidLeafCousinProofsCombo     = errors.New("the merkle relayProof combo for the cousin and leaf is invalid")
 	EmptyAddressError                = errors.New("the address provided is empty")
-	ClaimNotFoundError               = errors.New("the unverified Proof was not found for the key given")
+	ClaimNotFoundError               = errors.New("the claim was not found for the key given")
 	InvalidMerkleVerifyError         = errors.New("claim resulted in an invalid merkle Proof")
 	EmptyMerkleTreeError             = errors.New("the merkle tree is empty")
 	NodeNotFoundError                = errors.New("the node of the merkle tree requested is not found")
@@ -153,7 +164,21 @@ var (
 	InvalidRootError                 = errors.New("the merkle root passed is invalid")
 	MerkleNodeNotFoundError          = errors.New("the merkle node cannot be found")
 	OutOfSyncRequestError            = errors.New("the request block height is out of sync with the current block height")
+	DuplicatePublicKeyError          = errors.New("the public key is duplicated in the proof")
+	MismatchedRequestHashError       = errors.New("the request hashes included in the proof do not match")
+	MismatchedAppPubKeyError         = errors.New("the application public keys included in the proofs do not match")
+	MismatchedSessionHeightError     = errors.New("the session block heights included in the proofs do not match")
+	MismatchedBlockchainsError       = errors.New("the non-native blockchains provided in the proofs do not match")
+	NoMajorityResponseError          = errors.New("no majority can be established between all of the responses")
+	NoEvidenceTypeErr                = errors.New("the evidence type is not supplied in the claim message")
 )
+
+func NewUnsupportedBlockchainError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeUnsupportedBlockchainError, UnsupportedBlockchainError.Error())
+}
+func NewNodeNotInSessionError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeNodeNotInSessionError, NodeNotInSessionError.Error())
+}
 
 func NewOverServiceError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeOverServiceError, OverServiceError.Error())
@@ -222,8 +247,36 @@ func NewPubKeyError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodePubKeyError, PubKeyError.Error()+err.Error())
 }
 
+func NewMismatchedRequestHashError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeMismatchedRequestHashError, MismatchedRequestHashError.Error())
+}
+
+func NewMismatchedAppPubKeyError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeNewMismatchedAppPubKeyError, MismatchedAppPubKeyError.Error())
+}
+
+func NewMismatchedSessionHeightError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeMismatchedSessionHeightError, MismatchedSessionHeightError.Error())
+}
+
+func NewMismatchedBlockchainsError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeMismatchedBlockchainsError, MismatchedBlockchainsError.Error())
+}
+
+func NewNoMajorityResponseError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeNoMajorityResponseError, NoMajorityResponseError.Error())
+}
+
+func NewDuplicatePublicKeyError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeDuplicatePublicKeyError, DuplicatePublicKeyError.Error())
+}
+
 func NewChainNotSupportedErr(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeChainNotSupportedErr, ChainNotSupportedErr.Error())
+}
+
+func NewNoEvidenceTypeErr(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeNoEvidenceTypeErr, NoEvidenceTypeErr.Error())
 }
 
 func NewHexDecodeError(codespace sdk.CodespaceType, err error) sdk.Error {
@@ -306,7 +359,7 @@ func NewOutOfSyncRequestError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeOutOfSyncRequestError, OutOfSyncRequestError.Error())
 }
 
-func NewInvalidIncrementCounterError(codespace sdk.CodespaceType) sdk.Error {
+func NewInvalidEntropyError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidIncrementCounterError, InvalidIncrementCounterError.Error())
 }
 

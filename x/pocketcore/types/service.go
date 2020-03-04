@@ -10,6 +10,7 @@ import (
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strings"
 )
@@ -33,8 +34,30 @@ func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlo
 	if err := r.Meta.Validate(ctx); err != nil {
 		return err
 	}
+	// validate the relay hash = request hash
+	if r.Proof.RequestHash != r.RequestHashString() {
+		return NewRequestHashError(ModuleName)
+	}
+	// ensure the blockchain is supported locally
+	if !hb.ContainsFromString(r.Proof.Blockchain) {
+		return NewUnsupportedBlockchainNodeError(ModuleName)
+	}
+	evidenceHeader := SessionHeader{
+		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
+		Chain:              r.Proof.Blockchain,
+		SessionBlockHeight: r.Proof.SessionBlockHeight,
+	}
+	// validate unique relay
+	totalRelays := GetEvidenceMap().GetTotalRelays(evidenceHeader)
+	if !GetEvidenceMap().IsUniqueProof(evidenceHeader, r.Proof) {
+		return NewDuplicateProofError(ModuleName)
+	}
+	// validate not over service
+	if totalRelays >= int64(math.Ceil(float64(app.GetMaxRelays().Int64())/float64(len(app.GetChains())))/(float64(sessionNodeCount))) {
+		return NewOverServiceError(ModuleName)
+	}
 	// validate the Proof
-	if err := r.Proof.Validate(app.GetMaxRelays().Int64(), len(app.GetChains()), sessionNodeCount, sessionBlockHeight, hb, r.RequestHashString(), node.GetPublicKey().RawString()); err != nil {
+	if err := r.Proof.ValidateLocal(app.GetChains(), sessionNodeCount, sessionBlockHeight, node.GetPublicKey().RawString()); err != nil {
 		return err
 	}
 	// generate the session
@@ -192,10 +215,9 @@ func (rr RelayResponse) HashString() string {
 }
 
 type relayResponse struct {
-	Signature   string `json:"signature"`
-	Response    string `json:"payload"`
-	RequestHash string `json:"request_hash"`
-	Proof       string `json:"Proof"`
+	Signature string `json:"signature"`
+	Response  string `json:"payload"`
+	Proof     string `json:"Proof"`
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
@@ -221,4 +243,16 @@ func executeHTTPRequest(payload string, url string, method string, headers map[s
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	return string(body), nil
+}
+
+func sortJSONResponse(response string) string {
+	var rawJSON map[string]interface{}
+	if err := json.Unmarshal([]byte(response), &rawJSON); err != nil {
+		return response // couldn't unmarshal into json
+	}
+	bz, err := json.Marshal(rawJSON)
+	if err != nil {
+		return response
+	}
+	return string(bz)
 }

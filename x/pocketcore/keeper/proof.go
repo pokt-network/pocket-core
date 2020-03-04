@@ -20,33 +20,123 @@ func BeginBlocker(ctx sdk.Ctx, _ abci.RequestBeginBlock, k Keeper) {
 	k.DeleteExpiredClaims(ctx)
 }
 
-// validate the zero knowledge range proof using the proof message and the claim message
-func (k Keeper) ValidateProof(ctx sdk.Ctx, claimMsg pc.MsgClaim, proofMsg pc.MsgProof) error {
-	// generate the needed pseudorandom claimMsg index
-	ctx.Logger().Info(fmt.Sprintf("Generate psuedorandom proof with %d, at session height of %d", claimMsg.TotalRelays, claimMsg.SessionBlockHeight))
-	reqProof, err := k.GetPseudorandomIndex(ctx, claimMsg.TotalRelays, claimMsg.SessionHeader)
+// auto sends a proof transaction for the claim
+func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof) (*sdk.TxResponse, error)) {
+	kp, err := keybase.GetCoinbase()
 	if err != nil {
-		return err
+		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the ProofTX:\n%v", err))
+		return
+	}
+	// get the self address
+	addr := kp.GetAddress()
+	// get all mature (waiting period has passed) claims for your address
+	claims, err := k.GetMatureClaims(ctx, addr)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the ProofTX:\n%v", err))
+		return
+	}
+	// for every claim of the mature set
+	for _, claim := range claims {
+		// if the claim is found to be verified in the world state, you can delete it from the cache and not send again
+		if _, found := k.GetReceipt(ctx, addr, claim.SessionHeader); found {
+			// remove from the local cache
+			pc.GetEvidenceMap().DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+			continue
+		}
+		// check to see if evidence is stored in cache
+		evidence, found := pc.GetEvidenceMap().GetEvidence(claim.SessionHeader, claim.EvidenceType)
+		if !found || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
+			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim"))
+			continue
+		}
+		// generate the needed pseudorandom index using the information found in the first transaction
+		index, err := k.getPseudorandomIndex(ctx, claim.TotalProofs, claim.SessionHeader)
+		if err != nil {
+			ctx.Logger().Error(err.Error())
+		}
+		// get the merkle proof object for the pseudorandom index
+		branch, cousinIndex := evidence.GenerateMerkleProof(int(index))
+		// get the leaf and cousin for the required pseudorandom index
+		leaf := pc.GetEvidenceMap().GetProof(claim.SessionHeader, claim.EvidenceType, int(index))
+		cousin := pc.GetEvidenceMap().GetProof(claim.SessionHeader, claim.EvidenceType, cousinIndex)
+		// generate the auto txbuilder and clictx
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, keybase, k)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the ProofTX:\n%v", err))
+			return
+		}
+		// send the claim TX
+		_, err = proofTx(cliCtx, txBuilder, branch, leaf, cousin)
+		if err != nil {
+			ctx.Logger().Error(err.Error())
+		}
+	}
+}
+
+func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.Address, claim pc.MsgClaim, sdkError sdk.Error) {
+	// get the public key from the claim
+	addrs := proof.GetSigners()
+	if len(addrs) < 1 {
+		return nil, pc.MsgClaim{}, pc.NewEmptyAddressError(pc.ModuleName)
+	}
+	addr := addrs[0]
+	// get the claim for the address
+	claim, found := k.GetClaim(ctx, addr, proof.Leaf.SessionHeader(), pc.ProofToEvidenceType(proof.Leaf))
+	// if the claim is not found for this claim
+	if !found {
+		return nil, pc.MsgClaim{}, pc.NewClaimNotFoundError(pc.ModuleName)
+	}
+	// validate the proof
+	ctx.Logger().Info(fmt.Sprintf("Generate psuedorandom proof with %d, at session height of %d", claim.TotalProofs, claim.SessionBlockHeight))
+	reqProof, err := k.getPseudorandomIndex(ctx, claim.TotalProofs, claim.SessionHeader)
+	if err != nil {
+		return nil, pc.MsgClaim{}, sdk.ErrInternal(err.Error())
 	}
 	// if the required proof message index does not match the leaf node index
-	if reqProof != int64(proofMsg.MerkleProofs[0].Index) {
-		return pc.NewInvalidProofsError(pc.ModuleName)
+	if reqProof != int64(proof.MerkleProofs[0].Index) {
+		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
 	}
-	// validate level count on claimMsg by total relays
-	levelCount := len(proofMsg.MerkleProofs[0].HashSums)
-	if levelCount != int(math.Ceil(math.Log2(float64(claimMsg.TotalRelays)))) {
-		return pc.NewInvalidProofsError(pc.ModuleName)
+	// validate level count on claim by total relays
+	levelCount := len(proof.MerkleProofs[0].HashSums)
+	if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
+		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
 	}
-	if !proofMsg.MerkleProofs.Validate(claimMsg.MerkleRoot, proofMsg.Leaf, proofMsg.Cousin, claimMsg.TotalRelays) {
-		return pc.NewInvalidMerkleVerifyError(pc.ModuleName)
+	// validate the merkle proof
+	if !proof.MerkleProofs.Validate(claim.MerkleRoot, proof.Leaf, proof.Cousin, claim.TotalProofs) {
+		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
-	// check the validity of the token
-	if err := proofMsg.Leaf.Token.Validate(); err != nil {
-		return err
+	// get the session context
+	sessionCtx := ctx.MustGetPrevCtx(claim.SessionBlockHeight)
+	// get the application
+	application, found := k.GetAppFromPublicKey(ctx, claim.ApplicationPubKey)
+	if !found {
+		return nil, pc.MsgClaim{}, pc.NewAppNotFoundError(pc.ModuleName)
 	}
-	// verify the client signature
-	if err := pc.SignatureVerification(proofMsg.Leaf.Token.ClientPublicKey, proofMsg.Leaf.HashString(), proofMsg.Leaf.Signature); err != nil {
-		return err
+	// validate the proof depending on the type of proof it is
+	er := proof.Leaf.Validate(application.GetChains(), int(k.SessionNodeCount(sessionCtx)), claim.SessionBlockHeight)
+	if er != nil {
+		return nil, pc.MsgClaim{}, er
+	}
+	// return the needed info to the handler
+	return addr, claim, nil
+}
+
+func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) sdk.Error {
+	switch proof.Leaf.(type) {
+	case pc.RelayProof:
+		ctx.Logger().Info(fmt.Sprintf("reward coins to %s, for %d relays", claim.FromAddress.String(), claim.TotalProofs))
+		k.AwardCoinsForRelays(ctx, claim.TotalProofs, claim.FromAddress)
+		err := k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.RelayEvidence)
+		if err != nil {
+			return sdk.ErrInternal(err.Error())
+		}
+	case pc.ChallengeProofInvalidData:
+		ctx.Logger().Info(fmt.Sprintf("burning coins from %s, for %d valid challenges", claim.FromAddress.String(), claim.TotalProofs))
+		k.BurnCoinsForChallenges(ctx, claim.TotalProofs, claim.FromAddress)
+		err := k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.ChallengeEvidence)
+		if err != nil {
+			return sdk.ErrInternal(err.Error())
+		}
 	}
 	return nil
 }
@@ -58,7 +148,7 @@ type pseudorandomGenerator struct {
 }
 
 // generates the required pseudorandom index for the zero knowledge proof
-func (k Keeper) GetPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.SessionHeader) (int64, error) {
+func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.SessionHeader) (int64, error) {
 	// get the context for the proof (the proof context is X sessions after the session began)
 	proofContext := ctx.MustGetPrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(ctx)*k.SessionFrequency(ctx)) // next session block hash
 	// get the pseudorandomGenerator json bytes
@@ -66,7 +156,6 @@ func (k Keeper) GetPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 	blockHash := hex.EncodeToString(proofBlockHeader.GetLastBlockId().Hash)
 	headerHash := header.HashString()
 	pseudoGenerator := pseudorandomGenerator{blockHash, headerHash}
-
 	r, err := json.Marshal(pseudoGenerator)
 	if err != nil {
 		return 0, err
@@ -100,59 +189,7 @@ func (k Keeper) GetPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 	return 0, nil
 }
 
-// auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof) (*sdk.TxResponse, error)) {
-	kp, err := keybase.GetCoinbase()
-	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the ProofTX:\n%v", err))
-		return
-	}
-	// get the self address
-	addr := kp.GetAddress()
-	// get all mature (waiting period has passed) claims for your address
-	claims, err := k.GetMatureClaims(ctx, addr)
-	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the ProofTX:\n%v", err))
-		return
-	}
-	// for every claim of the mature set
-	for _, claim := range claims {
-		// if the claim is found to be verified in the world state, you can delete it from the cache and not send again
-		if _, found := k.GetReceipt(ctx, addr, claim.SessionHeader); found {
-			// remove from the local cache
-			pc.GetEvidenceMap().DeleteEvidence(claim.SessionHeader, pc.RelayEvidence)
-			continue
-		}
-		// check to see if evidence is stored in cache
-		evidence, found := pc.GetEvidenceMap().GetEvidence(claim.SessionHeader, pc.RelayEvidence)
-		if !found || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
-			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim"))
-			continue
-		}
-		// generate the needed pseudorandom index using the information found in the first transaction
-		index, err := k.GetPseudorandomIndex(ctx, claim.TotalRelays, claim.SessionHeader)
-		if err != nil {
-			ctx.Logger().Error(err.Error())
-		}
-		// get the merkle proof object for the pseudorandom index
-		branch, cousinIndex := evidence.GenerateMerkleProof(int(index))
-		// get the leaf and cousin for the required pseudorandom index
-		leaf := pc.GetEvidenceMap().GetProof(claim.SessionHeader, pc.RelayEvidence, int(index))
-		cousin := pc.GetEvidenceMap().GetProof(claim.SessionHeader, pc.RelayEvidence, cousinIndex)
-		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, keybase, k)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the ProofTX:\n%v", err))
-			return
-		}
-		// send the claim TX
-		_, err = proofTx(cliCtx, txBuilder, branch, leaf, cousin)
-		if err != nil {
-			ctx.Logger().Error(err.Error())
-		}
-	}
-}
-
+// todo move this once password management is fixed
 func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	// get the coinbase, as it is the sender of the automatic message
 	kp, err := keybase.GetCoinbase()

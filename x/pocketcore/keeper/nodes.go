@@ -43,6 +43,10 @@ func (k Keeper) GetSelfNode(ctx sdk.Ctx) (node exported.ValidatorI, er sdk.Error
 
 // award coins to nodes for relays completed
 func (k Keeper) AwardCoinsForRelays(ctx sdk.Ctx, relays int64, toAddr sdk.Address) {
-	ctx.Logger().Info(fmt.Sprintf("AwardsCoinsForRelays(relays = %v, toAddr = %v) \n", relays, toAddr.String()))
-	k.posKeeper.AwardCoinsTo(ctx, sdk.NewInt(relays), toAddr)
+	k.posKeeper.RewardForRelays(ctx, sdk.NewInt(relays), toAddr)
+}
+
+// award coins to nodes for relays completed
+func (k Keeper) BurnCoinsForChallenges(ctx sdk.Ctx, relays int64, toAddr sdk.Address) {
+	k.posKeeper.RewardForRelays(ctx, sdk.NewInt(relays), toAddr)
 }

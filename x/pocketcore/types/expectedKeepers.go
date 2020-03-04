@@ -7,11 +7,11 @@ import (
 )
 
 type PosKeeper interface {
-	AwardCoinsTo(ctx sdk.Ctx, relays sdk.Int, address sdk.Address)
+	RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address)
 	GetStakedTokens(ctx sdk.Ctx) sdk.Int
 	Validator(ctx sdk.Ctx, addr sdk.Address) nodesexported.ValidatorI
 	TotalTokens(ctx sdk.Ctx) sdk.Int
-	BurnValidator(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec)
+	BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address)
 	JailValidator(ctx sdk.Ctx, addr sdk.Address)
 	AllValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
 	GetStakedValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)

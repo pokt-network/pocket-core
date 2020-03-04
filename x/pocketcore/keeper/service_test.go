@@ -24,7 +24,6 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	}
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
 	mockCtx := new(Ctx)
-
 	ak := keeper.appKeeper.(appsKeeper.Keeper)
 	clientPrivateKey := getRandomPrivateKey()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
@@ -49,6 +48,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	}
 	validRelay := types.Relay{
 		Payload: p,
+		Meta:    types.RelayMeta{BlockHeight: 1000},
 		Proof: types.RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1000,

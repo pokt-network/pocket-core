@@ -249,7 +249,7 @@ func TestKeeper_AwardCoinsTo(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		{"Test AwardCoinsTo", fields{keeper: keeper},
+		{"Test RewardForRelays", fields{keeper: keeper},
 			args{
 				ctx:     context,
 				relays:  sdk.ZeroInt(),
@@ -261,7 +261,7 @@ func TestKeeper_AwardCoinsTo(t *testing.T) {
 			k := tt.fields.keeper
 
 			k.setValidatorAward(tt.args.ctx, sdk.ZeroInt(), tt.args.address)
-			k.AwardCoinsTo(tt.args.ctx, tt.args.relays, tt.args.address)
+			k.RewardForRelays(tt.args.ctx, tt.args.relays, tt.args.address)
 
 		})
 	}

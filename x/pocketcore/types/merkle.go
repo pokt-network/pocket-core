@@ -124,7 +124,7 @@ func sortAndStructure(relayProofs []Proof) (d []HashSum, sortedProofs []Proof) {
 	// first, let's tHash the data
 	for i, p := range relayProofs {
 		// save the hash and sum of the Proof in the new tree slice
-		data[i].Hash = hash(p.Hash())
+		data[i].Hash = hash(p.Hash()) // todo should this be hash with signature for RelayProofs?
 		data[i].Sum = sumFromHash(data[i].Hash)
 	}
 	// for the rest, add the max uint32

@@ -89,10 +89,6 @@ func TestProof_Validate(t *testing.T) {
 	// invalid Proof no client signature
 	invalidProofClientSignature := validProof
 	invalidProofClientSignature.Signature = hex.EncodeToString(appSignature) // wrong signature
-	// over max relays
-	overMaxRelays := int64(0)
-	// over number of chains
-	overNumberOfChains := 2
 	tests := []struct {
 		name             string
 		proof            Proof
@@ -124,28 +120,8 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid Proof: verify pub key",
-			proof:            invalidProofServicerPubKeyVerify,
-			maxRelays:        100,
-			numOfChains:      2,
-			sessionNodeCount: 5,
-			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
-			hasError:         true,
-		},
-		{
 			name:             "Invalid Proof: blockchain",
 			proof:            invalidProofBlockchain,
-			maxRelays:        100,
-			numOfChains:      2,
-			sessionNodeCount: 5,
-			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
-			hasError:         true,
-		},
-		{
-			name:             "Invalid Proof: not hosted chain",
-			proof:            invalidProofNotHostedBlockchain,
 			maxRelays:        100,
 			numOfChains:      2,
 			sessionNodeCount: 5,
@@ -174,26 +150,6 @@ func TestProof_Validate(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid Proof: over max relays",
-			proof:            validProof,
-			maxRelays:        overMaxRelays,
-			numOfChains:      2,
-			sessionNodeCount: 5,
-			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
-			hasError:         true,
-		},
-		{
-			name:             "Invalid Proof: over number of chains",
-			proof:            validProof,
-			maxRelays:        1,
-			numOfChains:      overNumberOfChains,
-			sessionNodeCount: 0,
-			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
-			hasError:         true,
-		},
-		{
 			name:             "Invalid Proof: invalid request hash from payload",
 			proof:            invalidProofRequestHash,
 			maxRelays:        5,
@@ -216,7 +172,7 @@ func TestProof_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.proof.Validate(tt.maxRelays, tt.numOfChains, tt.sessionNodeCount, 1, tt.hb, payload.HashString(), tt.verifyPubKey) != nil, tt.hasError)
+			assert.Equal(t, tt.proof.(RelayProof).Validate([]string{getTestSupportedBlockchain()}, tt.sessionNodeCount, 1) != nil, tt.hasError)
 		})
 	}
 }

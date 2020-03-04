@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func TestRelay_Validate(t *testing.T) {
+func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique relay here
 	clientPrivateKey := getRandomPrivateKey()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
 	appPrivateKey := getRandomPrivateKey()

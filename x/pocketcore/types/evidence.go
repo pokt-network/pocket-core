@@ -103,7 +103,7 @@ func (e EvidenceMap) IsUniqueProof(h SessionHeader, p Proof) bool {
 		evidence := e.M[key]
 		// iterate over evidence to see if unique // todo efficiency (store hashes in map)
 		for _, proof := range evidence.Proofs {
-			if proof.HashStringWithSignature() == p.HashStringWithSignature() {
+			if proof.HashString() == p.HashString() {
 				return false
 			}
 		}
@@ -145,6 +145,10 @@ func (e EvidenceMap) GetProofs(h SessionHeader, evidenceType EvidenceType) []Pro
 	return e.M[key].Proofs
 }
 
+func (e EvidenceMap) Clear() {
+	globalEvidenceMap = &EvidenceMap{M: make(map[string]Evidence)}
+}
+
 // type to distinguish the types of evidence
 
 type EvidenceType int
@@ -173,13 +177,21 @@ func (e EvidenceMap) KeyForEvidenceByProof(h SessionHeader, p Proof) string {
 	switch p.(type) {
 	case RelayProof:
 		evidenceType = RelayEvidence
-	case ChallengeProofCorruptedRequest:
-		evidenceType = ChallengeEvidence
 	case ChallengeProofInvalidData:
 		evidenceType = ChallengeEvidence
 	}
 	// generate the key for this specific Proof
 	return e.KeyForEvidence(h, evidenceType)
+}
+
+func EvidenceTypeFromProof(p Proof) EvidenceType {
+	switch p.(type) {
+	case RelayProof:
+		return RelayEvidence
+	case ChallengeProofInvalidData:
+		return ChallengeEvidence
+	}
+	panic("unsupported evidence type")
 }
 
 // structure used to store the proof of work

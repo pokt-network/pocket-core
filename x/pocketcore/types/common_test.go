@@ -47,6 +47,23 @@ func makeTestCodec() *codec.Codec {
 	return cdc
 }
 
+var (
+	testSupportedChain string
+)
+
+func getTestSupportedBlockchain() string {
+	if testSupportedChain == "" {
+		testSupportedChain, _ = NonNativeChain{
+			Ticker:  "eth",
+			Netid:   "4",
+			Version: "v1.9.9",
+			Client:  "geth",
+			Inter:   "",
+		}.HashString()
+	}
+	return testSupportedChain
+}
+
 // nolint: deadcode unused
 func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
