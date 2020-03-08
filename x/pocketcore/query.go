@@ -10,7 +10,7 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func QueryReceipt(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, blockchain, appPubKey string, sessionBlockHeight, heightOfQuery int64) (*types.Receipt, error) {
+func QueryReceipt(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, blockchain, appPubKey, receiptType string, sessionBlockHeight, heightOfQuery int64) (*types.Receipt, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(heightOfQuery)
 	params := types.QueryReceiptParams{
 		Address: addr,
@@ -19,6 +19,7 @@ func QueryReceipt(cdc *codec.Codec, addr sdk.Address, tmNode client.Client, bloc
 			SessionBlockHeight: sessionBlockHeight,
 			ApplicationPubKey:  appPubKey,
 		},
+		Type: receiptType,
 	}
 	bz, err := cdc.MarshalJSON(params)
 	if err != nil {

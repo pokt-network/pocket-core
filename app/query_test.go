@@ -293,7 +293,7 @@ func TestQueryProof(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := pocket.QueryReceipt(memCodec(), kp.GetAddress(), memCli, dummyChainsHash, kp.PublicKey.RawString(), 1, 0)
+		got, err := pocket.QueryReceipt(memCodec(), kp.GetAddress(), memCli, dummyChainsHash, kp.PublicKey.RawString(), "relay", 1, 0)
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
 	}
