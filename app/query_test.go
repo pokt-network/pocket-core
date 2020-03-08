@@ -381,7 +381,7 @@ func TestRelayGenerator(t *testing.T) {
 }
 
 func TestQueryRelay(t *testing.T) {
-	genBz, validators, app := fiveValidatorsOneAppGenesis()
+	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	// setup relay endpoint
 	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
 	expectedResponse := "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"
@@ -458,7 +458,7 @@ func TestQueryRelay(t *testing.T) {
 }
 
 func TestQueryDispatch(t *testing.T) {
-	genBz, validators, app := fiveValidatorsOneAppGenesis()
+	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	_, kb, cleanup := NewInMemoryTendermintNode(t, genBz)
 	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 	assert.Nil(t, err)
@@ -475,7 +475,7 @@ func TestQueryDispatch(t *testing.T) {
 		res, err := pocket.QueryDispatch(memCodec(), memCli, key)
 		assert.Nil(t, err)
 		for _, val := range validators {
-			assert.Contains(t, res.SessionNodes, val)
+			assert.Contains(t, res.Session.SessionNodes, val)
 		}
 		cleanup()
 		stopCli()

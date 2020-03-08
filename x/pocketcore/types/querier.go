@@ -11,11 +11,16 @@ const (
 	QuerySupportedBlockchains = "supportedBlockchains"
 	QueryRelay                = "relay"
 	QueryDispatch             = "dispatch"
+	QueryChallenge            = "challenge"
 	QueryParameters           = "parameters"
 )
 
 type QueryRelayParams struct {
 	Relay `json:"relay"`
+}
+
+type QueryChallengeParams struct {
+	Challenge ChallengeProofInvalidData `json:"challengeProof"`
 }
 
 type QueryDispatchParams struct {
@@ -25,6 +30,7 @@ type QueryDispatchParams struct {
 type QueryReceiptParams struct {
 	Address sdk.Address   `json:"address"`
 	Header  SessionHeader `json:"header"`
+	Type    string        `json:"type"`
 }
 
 type QueryReceiptsParams struct {

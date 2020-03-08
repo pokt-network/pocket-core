@@ -22,7 +22,7 @@ func TestKeeper_GetSetClaim(t *testing.T) {
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	err := keeper.SetClaim(mockCtx, claim)
 	assert.Nil(t, err)
 	c, found := keeper.GetClaim(mockCtx, sdk.Address(npk.Address()), header, types.RelayEvidence)
@@ -51,7 +51,7 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("MustGetPrevCtx", claims[0].SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", claims[0].SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
 	keeper.SetClaims(mockCtx, claims)
 	// todo store npk & headers
@@ -96,7 +96,7 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
 
 	claims := []types.MsgClaim{matureClaim, immatureClaim}
@@ -107,7 +107,7 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 	mockCtx = new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("BlockHeight").Return(int64(1))
 
 	c2, err := keeper.GetMatureClaims(mockCtx, sdk.Address(npk2.Address()))
@@ -143,8 +143,8 @@ func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight).Return(ctx)
-	mockCtx.On("MustGetPrevCtx", header2.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
+	mockCtx.On("PrevCtx", header2.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("BlockHeight").Return(int64(2501)) // NOTE minimum height to start expiring from block 1
 
 	claims := []types.MsgClaim{expiredClaim, notExpired}

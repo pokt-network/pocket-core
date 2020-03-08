@@ -184,19 +184,10 @@ func (e EvidenceMap) KeyForEvidenceByProof(h SessionHeader, p Proof) string {
 	return e.KeyForEvidence(h, evidenceType)
 }
 
-func EvidenceTypeFromProof(p Proof) EvidenceType {
-	switch p.(type) {
-	case RelayProof:
-		return RelayEvidence
-	case ChallengeProofInvalidData:
-		return ChallengeEvidence
-	}
-	panic("unsupported evidence type")
-}
-
 // structure used to store the proof of work
 type Receipt struct {
 	SessionHeader   `json:"header"`
-	ServicerAddress string `json:"address"`
-	TotalRelays     int64  `json:"relays"`
+	ServicerAddress string       `json:"address"`
+	Total           int64        `json:"total"`
+	EvidenceType    EvidenceType `json:"evidence_type"`
 }

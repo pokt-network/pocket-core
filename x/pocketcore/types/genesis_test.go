@@ -43,7 +43,7 @@ func TestValidateGenesis(t *testing.T) {
 				SessionBlockHeight: 1,
 			},
 			ServicerAddress: servicerAddr.String(),
-			TotalRelays:     100,
+			Total:           100,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
@@ -71,7 +71,7 @@ func TestValidateGenesis(t *testing.T) {
 				SessionBlockHeight: 1,
 			},
 			ServicerAddress: servicerAddr.String(),
-			TotalRelays:     -1,
+			Total:           -1,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
@@ -99,7 +99,7 @@ func TestValidateGenesis(t *testing.T) {
 				SessionBlockHeight: 1,
 			},
 			ServicerAddress: servicerAddr.String(),
-			TotalRelays:     100,
+			Total:           100,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
@@ -127,7 +127,7 @@ func TestValidateGenesis(t *testing.T) {
 				SessionBlockHeight: 1,
 			},
 			ServicerAddress: servicerAddr.String(),
-			TotalRelays:     100,
+			Total:           100,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
@@ -209,7 +209,7 @@ func TestDefaultGenesisState(t *testing.T) {
 				SessionBlockHeight: 1,
 			},
 			ServicerAddress: servicerAddr.String(),
-			TotalRelays:     100,
+			Total:           100,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{

@@ -29,11 +29,11 @@ const ( // todo re-number
 	CodeUnsupportedBlockchainNodeError   = 1136
 	CodeNotStakedBlockchainError         = 1137
 	CodeHTTPExecutionError               = 1138
-	CodeInvalidIncrementCounterError     = 1139
+	CodeInvalidEntropyError              = 1139
 	CodeEmptyResponseError               = 1140
 	CodeResponseSignatureError           = 1141
 	CodeNegativeICCounterError           = 1142
-	CodeMaximumIncrementCounterError     = 1143
+	CodeMaximumEntropyError              = 1143
 	CodeInvalidNodePubKeyError           = 1144
 	CodeTicketsNotFoundError             = 1145
 	CodeDuplicateTicketError             = 1146
@@ -94,13 +94,13 @@ var (
 	MissingClientPublicKeyError      = errors.New("the client public key included in the AAT is not valid")
 	InvalidTokenSignatureErorr       = errors.New("the application signature on the AAT is not valid")
 	NegativeICCounterError           = errors.New("the IC counter is less than 0")
-	MaximumIncrementCounterError     = errors.New("the increment counter exceeds the maximum allowed relays")
+	MaximumEntropyError              = errors.New("the entropy exceeds the maximum allowed relays")
 	NodeNotInSessionError            = errors.New("the node is not within the session")
 	InvalidNodePubKeyError           = errors.New("the node public key in the service Proof does not match this nodes public key")
 	InvalidTokenError                = errors.New("the application authentication token is invalid")
 	EmptyProofsError                 = errors.New("the service proofs object is empty")
-	DuplicateProofError              = errors.New("the Proof at index[increment counter] is not empty")
-	InvalidIncrementCounterError     = errors.New("the increment counter included in the relay request is invalid")
+	DuplicateProofError              = errors.New("the Proof with specific hash already found, check entropy")
+	InvalidEntropyError              = errors.New("the entropy included in the relay request is invalid")
 	EmptyResponseError               = errors.New("the relay response payload is empty")
 	ResponseSignatureError           = errors.New("response signing errored out: ")
 	EmptyBlockchainError             = errors.New("the blockchain included in the relay request is empty")
@@ -147,7 +147,7 @@ var (
 	InvalidChainError                = errors.New("the non native chain passed was invalid: ")
 	JSONMarshalError                 = errors.New("unable to marshal object into json: ")
 	InvalidBlockchainHashLength      = errors.New("the addr length is invalid")
-	InvalidBlockHeightError          = errors.New("the block height passed has been invalid")
+	InvalidBlockHeightError          = errors.New("the block height passed is invalid")
 	InvalidAppPubKeyError            = errors.New("the app public key is invalid")
 	InvalidHashLengthError           = errors.New("the addr length is not valid")
 	InvalidLeafCousinProofsCombo     = errors.New("the merkle relayProof combo for the cousin and leaf is invalid")
@@ -360,7 +360,7 @@ func NewOutOfSyncRequestError(codespace sdk.CodespaceType) sdk.Error {
 }
 
 func NewInvalidEntropyError(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidIncrementCounterError, InvalidIncrementCounterError.Error())
+	return sdk.NewError(codespace, CodeInvalidEntropyError, InvalidEntropyError.Error())
 }
 
 func NewHTTPExecutionError(codespace sdk.CodespaceType, err error) sdk.Error {

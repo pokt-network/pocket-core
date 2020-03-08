@@ -12,7 +12,7 @@ import (
 func TestSignatureVerification(t *testing.T) {
 	testData := []byte("test")
 	badVerifyData := hex.EncodeToString([]byte("bad"))
-	privateKey := getRandomPrivateKey()
+	privateKey := GetRandomPrivateKey()
 	goodVerifyPubKey := privateKey.PublicKey().RawString()
 	badVerifyPublicKey := getRandomPubKey().RawString()
 	signature, err := privateKey.Sign(testData)
@@ -60,7 +60,7 @@ func TestSignatureVerification(t *testing.T) {
 }
 
 func TestPubKeyVerification(t *testing.T) {
-	privateKeyBytes := [ed255192.PrivateKeySize]byte(getRandomPrivateKey())
+	privateKeyBytes := [ed255192.PrivateKeySize]byte(GetRandomPrivateKey())
 	privateKey := hex.EncodeToString(privateKeyBytes[:])
 	pubKeyWrongECBytes := [secp256k1.PubKeySecp256k1Size]byte(secp256k1.GenPrivKey().PubKey().(secp256k1.PubKeySecp256k1))
 	pkWrongEC := hex.EncodeToString(pubKeyWrongECBytes[:])

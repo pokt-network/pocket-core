@@ -14,9 +14,9 @@ import (
 )
 
 func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique relay here
-	clientPrivateKey := getRandomPrivateKey()
+	clientPrivateKey := GetRandomPrivateKey()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
-	appPrivateKey := getRandomPrivateKey()
+	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
@@ -194,9 +194,9 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 }
 
 func TestRelay_Execute(t *testing.T) {
-	clientPrivateKey := getRandomPrivateKey()
+	clientPrivateKey := GetRandomPrivateKey()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
-	appPrivateKey := getRandomPrivateKey()
+	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
@@ -252,9 +252,9 @@ func TestRelay_Execute(t *testing.T) {
 }
 
 func TestRelay_HandleProof(t *testing.T) {
-	clientPrivateKey := getRandomPrivateKey()
+	clientPrivateKey := GetRandomPrivateKey()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
-	appPrivateKey := getRandomPrivateKey()
+	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
@@ -291,7 +291,7 @@ func TestRelay_HandleProof(t *testing.T) {
 		},
 	}
 	validRelay.Proof.RequestHash = validRelay.RequestHashString()
-	err = validRelay.HandleProof(newContext(t, false), 1)
+	err = validRelay.Proof.Handle()
 	assert.Nil(t, err)
 	res := GetEvidenceMap().GetProof(SessionHeader{
 		ApplicationPubKey:  appPubKey,
@@ -302,11 +302,11 @@ func TestRelay_HandleProof(t *testing.T) {
 }
 
 func TestRelayResponse_BytesAndHash(t *testing.T) {
-	nodePrivKey := getRandomPrivateKey()
+	nodePrivKey := GetRandomPrivateKey()
 	nodePubKey := nodePrivKey.PublicKey().RawString()
-	appPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
 	appPublicKey := appPrivKey.PublicKey().RawString()
-	cliPrivKey := getRandomPrivateKey()
+	cliPrivKey := GetRandomPrivateKey()
 	cliPublicKey := cliPrivKey.PublicKey().RawString()
 	relayResp := RelayResponse{
 		Signature: "",

@@ -51,8 +51,9 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	// set the claim in the world state
 	er := k.SetReceipt(ctx, addr, types.Receipt{
 		SessionHeader:   claim.SessionHeader,
-		TotalRelays:     claim.TotalProofs,
+		Total:           claim.TotalProofs,
 		ServicerAddress: addr.String(),
+		EvidenceType:    proof.Leaf.EvidenceType(),
 	})
 	if er != nil {
 		return sdk.ErrInternal(er.Error()).Result()

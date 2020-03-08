@@ -38,7 +38,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 	// for every claim of the mature set
 	for _, claim := range claims {
 		// if the claim is found to be verified in the world state, you can delete it from the cache and not send again
-		if _, found := k.GetReceipt(ctx, addr, claim.SessionHeader); found {
+		if _, found := k.GetReceipt(ctx, addr, claim.SessionHeader, claim.EvidenceType); found {
 			// remove from the local cache
 			pc.GetEvidenceMap().DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
 			continue
@@ -53,6 +53,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		index, err := k.getPseudorandomIndex(ctx, claim.TotalProofs, claim.SessionHeader)
 		if err != nil {
 			ctx.Logger().Error(err.Error())
+			continue
 		}
 		// get the merkle proof object for the pseudorandom index
 		branch, cousinIndex := evidence.GenerateMerkleProof(int(index))
@@ -65,7 +66,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the ProofTX:\n%v", err))
 			return
 		}
-		// send the claim TX
+		// send the proof TX
 		_, err = proofTx(cliCtx, txBuilder, branch, leaf, cousin)
 		if err != nil {
 			ctx.Logger().Error(err.Error())
@@ -81,7 +82,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	}
 	addr := addrs[0]
 	// get the claim for the address
-	claim, found := k.GetClaim(ctx, addr, proof.Leaf.SessionHeader(), pc.ProofToEvidenceType(proof.Leaf))
+	claim, found := k.GetClaim(ctx, addr, proof.Leaf.SessionHeader(), proof.Leaf.EvidenceType())
 	// if the claim is not found for this claim
 	if !found {
 		return nil, pc.MsgClaim{}, pc.NewClaimNotFoundError(pc.ModuleName)
@@ -106,7 +107,10 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// get the session context
-	sessionCtx := ctx.MustGetPrevCtx(claim.SessionBlockHeight)
+	sessionCtx, err := ctx.PrevCtx(claim.SessionBlockHeight)
+	if err != nil {
+		return nil, pc.MsgClaim{}, sdk.ErrInternal(err.Error())
+	}
 	// get the application
 	application, found := k.GetAppFromPublicKey(ctx, claim.ApplicationPubKey)
 	if !found {
@@ -150,7 +154,10 @@ type pseudorandomGenerator struct {
 // generates the required pseudorandom index for the zero knowledge proof
 func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.SessionHeader) (int64, error) {
 	// get the context for the proof (the proof context is X sessions after the session began)
-	proofContext := ctx.MustGetPrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(ctx)*k.SessionFrequency(ctx)) // next session block hash
+	proofContext, err := ctx.PrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(ctx)*k.SessionFrequency(ctx)) // next session block hash
+	if err != nil {
+		return 0, err
+	}
 	// get the pseudorandomGenerator json bytes
 	proofBlockHeader := proofContext.BlockHeader()
 	blockHash := hex.EncodeToString(proofBlockHeader.GetLastBlockId().Hash)
