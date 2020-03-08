@@ -214,6 +214,7 @@ type queryNodeReceipts struct {
 	AppPubKey    string `json:"app_pubkey"`
 	SBlockHeight int64  `json:"session_block_height"`
 	Height       int64  `json:"height"`
+	ReceiptType string `json:"receipt_type"`
 }
 
 func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -222,7 +223,7 @@ func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryReceipt(params.Blockchain, params.AppPubKey, params.Address, params.SBlockHeight, params.Height)
+	res, err := app.QueryReceipt(params.Blockchain, params.AppPubKey, params.Address, params.ReceiptType, params.SBlockHeight, params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

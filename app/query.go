@@ -129,12 +129,12 @@ func QueryReceipts(addr string, height int64) (proofs []pocketTypes.Receipt, err
 	return pocket.QueryReceipts(Codec(), getTMClient(), a, height)
 }
 
-func QueryReceipt(blockchain, appPubKey, addr string, sessionblockHeight, height int64) (proof *pocketTypes.Receipt, err error) {
+func QueryReceipt(blockchain, appPubKey, addr, receipt string, sessionblockHeight, height int64) (proof *pocketTypes.Receipt, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	return pocket.QueryReceipt(Codec(), a, getTMClient(), blockchain, appPubKey, sessionblockHeight, height)
+	return pocket.QueryReceipt(Codec(), a, getTMClient(), blockchain, appPubKey,  receipt, sessionblockHeight, height)
 }
 
 func QueryPocketSupportedBlockchains(height int64) ([]string, error) {

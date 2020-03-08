@@ -394,13 +394,13 @@ var queryNodeReceipts = &cobra.Command{
 }
 
 var queryNodeReceipt = &cobra.Command{
-	Use:   "node-receipt <nodeAddr> <appPubKey> <networkId> <sessionHeight> <height>`",
+	Use:   "node-receipt <nodeAddr> <appPubKey> <receiptType> <networkId> <sessionHeight> <height>`",
 	Short: "Gets node receipt for work completed",
 	Long:  `Gets node receipt for verified proof of work submitted for a specific session`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
-		if len(args) == 4 {
+		if len(args) == 5 {
 			height = 0 // latest
 		} else {
 			var err error
@@ -410,12 +410,12 @@ var queryNodeReceipt = &cobra.Command{
 				return
 			}
 		}
-		sessionheight, err := strconv.Atoi(args[3])
+		sessionheight, err := strconv.Atoi(args[4])
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		res, err := app.QueryReceipt(args[2], args[1], args[0], int64(sessionheight), int64(height))
+		res, err := app.QueryReceipt(args[3], args[1], args[0], args[2], int64(sessionheight), int64(height))
 		if err != nil {
 			fmt.Println(err)
 			return
