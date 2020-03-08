@@ -33,8 +33,8 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
 	mockCtx.On("KVStore", keys["application"]).Return(ctx.KVStore(keys["application"]))
 	mockCtx.On("Logger").Return(ctx.Logger())
-	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight).Return(ctx)
-	mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx)
+	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
+	mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx, nil)
 
 	// generate the pseudorandom proof
 	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header)
@@ -76,7 +76,7 @@ func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 		mockCtx := new(Ctx)
 		mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 		mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-		mockCtx.On("MustGetPrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx)
+		mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx, nil)
 
 		// generate the pseudorandom proof
 		neededLeafIndex, err := keeper.getPseudorandomIndex(mockCtx, int64(relays), header)
@@ -104,21 +104,22 @@ func TestKeeper_GetSetReceipt(t *testing.T) {
 	validHeader := types.SessionHeader{
 		ApplicationPubKey:  appPubKey,
 		Chain:              ethereum,
-		SessionBlockHeight: 1,
+		SessionBlockHeight: 976,
 	}
 	receipt := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
-		TotalRelays:     2000,
+		Total:           2000,
+		EvidenceType:    types.RelayEvidence,
 	}
 	addr := sdk.Address(sdk.Address(npk.Address()))
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
 	keeper.SetReceipt(mockCtx, addr, receipt)
 
-	inv, found := keeper.GetReceipt(mockCtx, sdk.Address(sdk.Address(npk.Address())), validHeader)
+	inv, found := keeper.GetReceipt(mockCtx, sdk.Address(npk.Address()), validHeader, receipt.EvidenceType)
 	assert.True(t, found)
 	assert.Equal(t, inv, receipt)
 }
@@ -155,17 +156,19 @@ func TestKeeper_GetSetReceipts(t *testing.T) {
 	receipt := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
-		TotalRelays:     2000,
+		Total:           2000,
+		EvidenceType:    types.RelayEvidence,
 	}
 	receipt2 := types.Receipt{
 		SessionHeader:   validHeader2,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
-		TotalRelays:     2000,
+		Total:           2000,
+		EvidenceType:    types.RelayEvidence,
 	}
 	receipts := []types.Receipt{receipt, receipt2}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
 	keeper.SetReceipts(mockCtx, receipts)
 	inv, er := keeper.GetReceipts(mockCtx, sdk.Address(sdk.Address(npk.Address())))
@@ -199,17 +202,19 @@ func TestKeeper_GetAllReceipts(t *testing.T) {
 	receipt := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
-		TotalRelays:     2000,
+		Total:           2000,
+		EvidenceType:    types.RelayEvidence,
 	}
 	receipt2 := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk2.Address()).String(),
-		TotalRelays:     2000,
+		Total:           2000,
+		EvidenceType:    types.RelayEvidence,
 	}
 	receipts := []types.Receipt{receipt, receipt2}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
 	keeper.SetReceipts(mockCtx, receipts)
 	inv := keeper.GetAllReceipts(mockCtx)

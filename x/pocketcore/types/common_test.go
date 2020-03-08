@@ -21,9 +21,6 @@ import (
 
 // nolint: deadcode unused
 var (
-	multiPerm    = "multiple permissions account"
-	randomPerm   = "random permission"
-	holder       = "holder"
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
@@ -98,12 +95,12 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	return ctx
 }
 
-func getRandomPrivateKey() crypto.Ed25519PrivateKey {
+func GetRandomPrivateKey() crypto.Ed25519PrivateKey {
 	return crypto.Ed25519PrivateKey{}.GenPrivateKey().(crypto.Ed25519PrivateKey)
 }
 
 func getRandomPubKey() crypto.Ed25519PublicKey {
-	pk := getRandomPrivateKey()
+	pk := GetRandomPrivateKey()
 	return pk.PublicKey().(crypto.Ed25519PublicKey)
 }
 

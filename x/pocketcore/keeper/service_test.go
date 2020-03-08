@@ -48,10 +48,10 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	}
 	validRelay := types.Relay{
 		Payload: p,
-		Meta:    types.RelayMeta{BlockHeight: 1000},
+		Meta:    types.RelayMeta{BlockHeight: 976},
 		Proof: types.RelayProof{
 			Entropy:            1,
-			SessionBlockHeight: 1000,
+			SessionBlockHeight: 976,
 			ServicerPubKey:     nodePubKey,
 			Blockchain:         ethereum,
 			Token: types.AAT{
@@ -86,8 +86,8 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
 	mockCtx.On("KVStore", keys["application"]).Return(ctx.KVStore(keys["application"]))
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
-	mockCtx.On("MustGetPrevCtx", int64(1000)).Return(ctx)
-	mockCtx.On("MustGetPrevCtx", keeper.GetLatestSessionBlockHeight(mockCtx)).Return(ctx)
+	mockCtx.On("PrevCtx", int64(976)).Return(ctx, nil)
+	mockCtx.On("PrevCtx", keeper.GetLatestSessionBlockHeight(mockCtx)).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
 
 	resp, err := keeper.HandleRelay(mockCtx, validRelay)

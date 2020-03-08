@@ -55,38 +55,34 @@ func TestQueryReceipt(t *testing.T) {
 	validHeader := types.SessionHeader{
 		ApplicationPubKey:  appPubKey,
 		Chain:              ethereum,
-		SessionBlockHeight: 1,
+		SessionBlockHeight: 976,
 	}
 	receipt := types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: npk.Address().String(),
-		TotalRelays:     2000,
+		Total:           2000,
+		EvidenceType:    types.RelayEvidence,
 	}
 	addr := sdk.Address(sdk.Address(npk.Address()))
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", k.storeKey).Return(ctx.KVStore(k.storeKey))
-	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
-	k.SetReceipt(mockCtx, addr, receipt)
+	er := k.SetReceipt(mockCtx, addr, receipt)
+	if er != nil {
+		t.Fatal(er)
+	}
 	bz, er := types.ModuleCdc.MarshalJSON(types.QueryReceiptParams{
 		Address: sdk.Address(npk.Address()),
-		Header: types.SessionHeader{
-			ApplicationPubKey:  appPubKey,
-			Chain:              ethereum,
-			SessionBlockHeight: 1000,
-		},
+		Header:  validHeader,
+		Type:    "relay",
 	})
 	assert.Nil(t, er)
 	request := abci.RequestQuery{
-		Data:                 bz,
-		Path:                 types.QueryReceipt,
-		Height:               ctx.BlockHeight(),
-		Prove:                false,
-		XXX_NoUnkeyedLiteral: struct{}{},
-		XXX_unrecognized:     nil,
-		XXX_sizecache:        0,
+		Data:   bz,
+		Path:   types.QueryReceipt,
+		Height: ctx.BlockHeight(),
 	}
-
 	resbz, err := queryReceipt(ctx, request, k)
 	assert.Nil(t, err)
 	var stored types.Receipt
@@ -95,7 +91,7 @@ func TestQueryReceipt(t *testing.T) {
 	assert.Equal(t, stored, receipt)
 	// receipts query
 	var stored2 []types.Receipt
-	bz2, er2 := types.ModuleCdc.MarshalJSON(types.QueryReceiptParams{
+	bz2, er2 := types.ModuleCdc.MarshalJSON(types.QueryReceiptsParams{
 		Address: sdk.Address(npk.Address()),
 	})
 	assert.Nil(t, er2)

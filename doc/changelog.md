@@ -10,3 +10,9 @@
 - Added Relay Request Hash (Hash of payload + meta) to RelayProof object
 - Added Block to Dispatch Request
 - Added Relay Meta field to relay request
+- Added Challenge Functionality
+- Added Challenge Request to RPC
+- Changed dispatch response to an actual structure and not just a session
+- Added block height to dispatch response
+- Removed all MustGetPrevCtx and used PrevCtx for panic safety
+- Changed receipt structure (added evidence type)

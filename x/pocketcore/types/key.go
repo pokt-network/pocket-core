@@ -16,7 +16,7 @@ var (
 	ClaimKey   = []byte{0x02} // key for non-verified proofs
 )
 
-func KeyForReceipt(ctx sdk.Ctx, addr sdk.Address, header SessionHeader) ([]byte, error) {
+func KeyForReceipt(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
 	if err := header.ValidateHeader(); err != nil {
 		return nil, err
 	}
@@ -27,10 +27,13 @@ func KeyForReceipt(ctx sdk.Ctx, addr sdk.Address, header SessionHeader) ([]byte,
 	if err != nil {
 		return nil, err
 	}
-	sessionCtx := ctx.MustGetPrevCtx(header.SessionBlockHeight)
+	sessionCtx, err := ctx.PrevCtx(header.SessionBlockHeight)
+	if err != nil {
+		return nil, err
+	}
 	sessionBlockHeader := sessionCtx.BlockHeader()
 	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
-	return append(append(append(ReceiptKey, addr.Bytes()...), appPubKey...), sessionHash...), nil
+	return append(append(append(append(ReceiptKey, addr.Bytes()...), appPubKey...), sessionHash...), evidenceType.Byte()), nil
 }
 
 func KeyForReceipts(addr sdk.Address) ([]byte, error) {
@@ -51,7 +54,10 @@ func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceTy
 	if err != nil {
 		return nil, err
 	}
-	sessionCtx := ctx.MustGetPrevCtx(header.SessionBlockHeight)
+	sessionCtx, err := ctx.PrevCtx(header.SessionBlockHeight)
+	if err != nil {
+		return nil, err
+	}
 	sessionBlockHeader := sessionCtx.BlockHeader()
 	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
 	return append(append(append(append(ClaimKey, addr.Bytes()...), appPubKey...), sessionHash...), evidenceType.Byte()), nil

@@ -310,6 +310,6 @@ func (sh SessionHeader) Bytes() []byte {
 	return res
 }
 
-func BlockHashFromBlockHeight(ctx sdk.Ctx, height int64) string {
-	return hex.EncodeToString(ctx.MustGetPrevCtx(height).BlockHeader().LastBlockId.Hash)
+func BlockHash(ctx sdk.Context) string {
+	return hex.EncodeToString(ctx.BlockHeader().LastBlockId.Hash)
 }

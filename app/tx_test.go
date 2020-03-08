@@ -289,7 +289,7 @@ func TestClaimTx(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-	genBz, validators, app := fiveValidatorsOneAppGenesis()
+	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	kb := getInMemoryKeybase()
 	for i := 0; i < 5; i++ {
 		appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
@@ -344,4 +344,175 @@ func TestClaimTx(t *testing.T) {
 			stopCli()
 		}
 	}
+}
+
+func TestClaimTxChallenge(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
+	pocketTypes.GetEvidenceMap().Clear()
+	genBz, keys, _, _ := fiveValidatorsOneAppGenesis()
+	challenges := NewValidChallengeProof(t, keys, 5)
+	for _, c := range challenges {
+		err := c.Handle()
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+	}
+	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	select {
+	case res := <-evtChan:
+		if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
+			t.Fatal("claim message was not received first")
+		}
+		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		select {
+		case res := <-evtChan:
+			if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
+				t.Fatal("proof message was not received afterward")
+			}
+			cleanup()
+			stopCli()
+		}
+	}
+}
+
+func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOfChallenges int) (challenge []pocketTypes.ChallengeProofInvalidData) {
+	appPrivateKey := privateKeys[1]
+	servicerPrivKey1 := privateKeys[4]
+	servicerPrivKey2 := privateKeys[2]
+	servicerPrivKey3 := privateKeys[3]
+	clientPrivateKey := servicerPrivKey3
+	appPubKey := appPrivateKey.PublicKey().RawString()
+	servicerPubKey := servicerPrivKey1.PublicKey().RawString()
+	servicerPubKey2 := servicerPrivKey2.PublicKey().RawString()
+	servicerPubKey3 := servicerPrivKey3.PublicKey().RawString()
+	reporterPrivKey := privateKeys[0]
+	reporterPubKey := reporterPrivKey.PublicKey()
+	reporterAddr := reporterPubKey.Address()
+	clientPubKey := clientPrivateKey.PublicKey().RawString()
+	var proofs []pocketTypes.ChallengeProofInvalidData
+	for i := 0; i < numOfChallenges; i++ {
+		validProof := pocketTypes.RelayProof{
+			Entropy:            int64(rand.Intn(500000)),
+			SessionBlockHeight: 1,
+			ServicerPubKey:     servicerPubKey,
+			RequestHash:        clientPubKey, // fake
+			Blockchain:         dummyChainsHash,
+			Token: pocketTypes.AAT{
+				Version:              "0.0.1",
+				ApplicationPublicKey: appPubKey,
+				ClientPublicKey:      clientPubKey,
+				ApplicationSignature: "",
+			},
+			Signature: "",
+		}
+		appSignature, er := appPrivateKey.Sign(validProof.Token.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		validProof.Token.ApplicationSignature = hex.EncodeToString(appSignature)
+		clientSignature, er := clientPrivateKey.Sign(validProof.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		validProof.Signature = hex.EncodeToString(clientSignature)
+		// valid proof 2
+		validProof2 := pocketTypes.RelayProof{
+			Entropy:            0,
+			SessionBlockHeight: 1,
+			ServicerPubKey:     servicerPubKey2,
+			RequestHash:        clientPubKey, // fake
+			Blockchain:         dummyChainsHash,
+			Token: pocketTypes.AAT{
+				Version:              "0.0.1",
+				ApplicationPublicKey: appPubKey,
+				ClientPublicKey:      clientPubKey,
+				ApplicationSignature: "",
+			},
+			Signature: "",
+		}
+		appSignature, er = appPrivateKey.Sign(validProof2.Token.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		validProof2.Token.ApplicationSignature = hex.EncodeToString(appSignature)
+		clientSignature, er = clientPrivateKey.Sign(validProof2.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		validProof2.Signature = hex.EncodeToString(clientSignature)
+		// valid proof 3
+		validProof3 := pocketTypes.RelayProof{
+			Entropy:            0,
+			SessionBlockHeight: 1,
+			ServicerPubKey:     servicerPubKey3,
+			RequestHash:        clientPubKey, // fake
+			Blockchain:         dummyChainsHash,
+			Token: pocketTypes.AAT{
+				Version:              "0.0.1",
+				ApplicationPublicKey: appPubKey,
+				ClientPublicKey:      clientPubKey,
+				ApplicationSignature: "",
+			},
+			Signature: "",
+		}
+		appSignature, er = appPrivateKey.Sign(validProof3.Token.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		validProof3.Token.ApplicationSignature = hex.EncodeToString(appSignature)
+		clientSignature, er = clientPrivateKey.Sign(validProof3.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		validProof3.Signature = hex.EncodeToString(clientSignature)
+		// create responses
+		majorityResponsePayload := `{"id":67,"jsonrpc":"2.0","result":"Mist/v0.9.3/darwin/go1.4.1"}`
+		minorityResponsePayload := `{"id":67,"jsonrpc":"2.0","result":"Mist/v0.9.3/darwin/go1.4.2"}`
+		// majority response 1
+		majResp1 := pocketTypes.RelayResponse{
+			Signature: "",
+			Response:  majorityResponsePayload,
+			Proof:     validProof,
+		}
+		sig, er := servicerPrivKey1.Sign(majResp1.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		majResp1.Signature = hex.EncodeToString(sig)
+		// majority response 2
+		majResp2 := pocketTypes.RelayResponse{
+			Signature: "",
+			Response:  majorityResponsePayload,
+			Proof:     validProof2,
+		}
+		sig, er = servicerPrivKey2.Sign(majResp2.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		majResp2.Signature = hex.EncodeToString(sig)
+		// minority response
+		minResp := pocketTypes.RelayResponse{
+			Signature: "",
+			Response:  minorityResponsePayload,
+			Proof:     validProof3,
+		}
+		sig, er = servicerPrivKey3.Sign(minResp.Hash())
+		if er != nil {
+			t.Fatalf(er.Error())
+		}
+		minResp.Signature = hex.EncodeToString(sig)
+		// create valid challenge proof
+		proofs = append(proofs, pocketTypes.ChallengeProofInvalidData{
+			MajorityResponses: [2]pocketTypes.RelayResponse{
+				majResp1,
+				majResp2,
+			},
+			MinorityResponse: minResp,
+			ReporterAddress:  sdk.Address(reporterAddr),
+		})
+	}
+	return proofs
 }

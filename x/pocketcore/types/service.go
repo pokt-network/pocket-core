@@ -60,8 +60,13 @@ func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlo
 	if err := r.Proof.ValidateLocal(app.GetChains(), sessionNodeCount, sessionBlockHeight, node.GetPublicKey().RawString()); err != nil {
 		return err
 	}
+	// get the sessionContext
+	sessionContext, er := ctx.PrevCtx(sessionBlockHeight)
+	if er != nil {
+		return sdk.ErrInternal(er.Error())
+	}
 	// generate the session
-	session, err := NewSession(app.GetPublicKey().RawString(), r.Proof.Blockchain, BlockHashFromBlockHeight(ctx, sessionBlockHeight), sessionBlockHeight, allNodes, sessionNodeCount)
+	session, err := NewSession(app.GetPublicKey().RawString(), r.Proof.Blockchain, BlockHash(sessionContext), sessionBlockHeight, allNodes, sessionNodeCount)
 	if err != nil {
 		return err
 	}
@@ -91,16 +96,6 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 		return res, NewHTTPExecutionError(ModuleName, er)
 	}
 	return res, nil
-}
-
-// store the proofs of work done for the relay batch
-func (r Relay) HandleProof(ctx sdk.Ctx, sessionBlockHeight int64) sdk.Error {
-	// add the Proof to the global (in memory) collection of proofs
-	return GetEvidenceMap().AddToEvidence(SessionHeader{
-		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
-		Chain:              r.Proof.Blockchain,
-		SessionBlockHeight: sessionBlockHeight,
-	}, r.Proof)
 }
 
 func (r Relay) RequestHash() []byte {
@@ -218,6 +213,15 @@ type relayResponse struct {
 	Signature string `json:"signature"`
 	Response  string `json:"payload"`
 	Proof     string `json:"Proof"`
+}
+
+type ChallengeResponse struct {
+	Response string `json:"response"`
+}
+
+type DispatchResponse struct {
+	Session     Session `json:"session"`
+	BlockHeight int64   `json:"block_height"`
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint

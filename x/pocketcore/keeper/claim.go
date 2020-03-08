@@ -26,7 +26,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			ctx.Logger().Error("evidence of length zero was found in evidence map")
 			continue
 		}
-		evidenceType := pc.EvidenceTypeFromProof(evidence.Proofs[0])
+		evidenceType := evidence.Proofs[0].EvidenceType()
 		if evidenceLength < 5 {
 			evidenceMap.DeleteEvidence(evidence.SessionHeader, evidenceType)
 			continue
@@ -65,12 +65,15 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) sdk.Error {
 	if claim.EvidenceType == 0 {
 		return pc.NewNoEvidenceTypeErr(pc.ModuleName)
 	}
+	// get the session context
+	sessionContext, er := ctx.PrevCtx(claim.SessionBlockHeight)
+	if er != nil {
+		return sdk.ErrInternal(er.Error())
+	}
 	// if is not a pocket supported blockchain then return not supported error
-	if !k.IsPocketSupportedBlockchain(ctx.MustGetPrevCtx(claim.SessionBlockHeight), claim.Chain) {
+	if !k.IsPocketSupportedBlockchain(sessionContext, claim.Chain) {
 		return pc.NewChainNotSupportedErr(pc.ModuleName)
 	}
-	// get the session context
-	sessionContext := ctx.MustGetPrevCtx(claim.SessionBlockHeight)
 	// get the node from the k at the time of the session
 	node, found := k.GetNode(sessionContext, claim.FromAddress)
 	// if not found return not found error
@@ -88,7 +91,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) sdk.Error {
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
 	// generate the session
-	session, err := pc.NewSession(app.GetPublicKey().RawString(), claim.Chain, pc.BlockHashFromBlockHeight(ctx, claim.SessionBlockHeight), claim.SessionBlockHeight, allNodes, sessionNodeCount)
+	session, err := pc.NewSession(app.GetPublicKey().RawString(), claim.Chain, pc.BlockHash(sessionContext), claim.SessionBlockHeight, allNodes, sessionNodeCount)
 	if err != nil {
 		ctx.Logger().Error(fmt.Errorf("Could not generate session with public key: %s,  for chain: %s", app.GetPublicKey().RawString(), claim.Chain).Error())
 		return err
@@ -217,7 +220,11 @@ func (k Keeper) DeleteExpiredClaims(ctx sdk.Ctx) {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &msg)
-		sessionContext := ctx.MustGetPrevCtx(msg.SessionBlockHeight)
+		sessionContext, err := ctx.PrevCtx(msg.SessionBlockHeight)
+		if err != nil {
+			ctx.Logger().Error("a claim in the world state had a context that was unable to be retrieved, using current params as expiration")
+			sessionContext = ctx.(sdk.Context)
+		}
 		// if more sessions has passed than the expiration of unverified pseudorandomGenerator, delete from set
 		if (ctx.BlockHeight()-msg.SessionBlockHeight)/k.SessionFrequency(sessionContext) >= k.ClaimExpiration(sessionContext) {
 			store.Delete(iterator.Key())

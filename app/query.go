@@ -149,6 +149,10 @@ func QueryRelay(r pocketTypes.Relay) (*pocketTypes.RelayResponse, error) {
 	return pocket.QueryRelay(Codec(), getTMClient(), r)
 }
 
-func QueryDispatch(header pocketTypes.SessionHeader) (*pocketTypes.Session, error) {
+func QueryChallenge(c pocketTypes.ChallengeProofInvalidData) (*pocketTypes.ChallengeResponse, error) {
+	return pocket.QueryChallenge(Codec(), getTMClient(), c)
+}
+
+func QueryDispatch(header pocketTypes.SessionHeader) (*pocketTypes.DispatchResponse, error) {
 	return pocket.QueryDispatch(Codec(), getTMClient(), header)
 }

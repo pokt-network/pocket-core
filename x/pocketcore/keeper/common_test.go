@@ -149,7 +149,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 		},
 	)
 	ctx = ctx.WithBlockHeader(abci.Header{
-		Height: 1000,
+		Height: 976,
 		Time:   time.Time{},
 		LastBlockId: abci.BlockID{
 			Hash: types.Hash([]byte("fake")),
@@ -452,7 +452,8 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	receipt = types.Receipt{
 		SessionHeader:   validHeader,
 		ServicerAddress: sdk.Address(npk.Address()).String(),
-		TotalRelays:     2000,
+		Total:           2000,
+		EvidenceType:    types.RelayEvidence,
 	}
 
 	// NOTE Add a minimum of 5 proofs to memInvoice to be able to create a merkle tree
@@ -462,7 +463,7 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", k.storeKey).Return((*ctx).KVStore(k.storeKey))
-	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(*ctx)
+	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(*ctx, nil)
 	mockCtx.On("Logger").Return((*ctx).Logger())
 	k.SetReceipts(mockCtx, []types.Receipt{receipt})
 	keys = simulateRelayKeys{getTestApplicationPrivateKey(), clientKey}

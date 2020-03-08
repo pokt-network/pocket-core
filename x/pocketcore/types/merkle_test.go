@@ -9,9 +9,9 @@ import (
 )
 
 func TestEvidence_GenerateMerkleRoot(t *testing.T) {
-	appPrivateKey := getRandomPrivateKey()
+	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
-	clientPrivateKey := getRandomPrivateKey()
+	clientPrivateKey := GetRandomPrivateKey()
 	clientPublicKey := clientPrivateKey.PublicKey().RawString()
 	nodePubKey := getRandomPubKey()
 	ethereum, err := NonNativeChain{
@@ -99,9 +99,9 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 }
 
 func TestEvidence_GenerateMerkleProof(t *testing.T) {
-	appPrivateKey := getRandomPrivateKey()
+	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
-	clientPrivateKey := getRandomPrivateKey()
+	clientPrivateKey := GetRandomPrivateKey()
 	clientPublicKey := clientPrivateKey.PublicKey().RawString()
 	nodePubKey := getRandomPubKey()
 	ethereum, err := NonNativeChain{
@@ -193,9 +193,9 @@ func TestEvidence_GenerateMerkleProof(t *testing.T) {
 }
 
 func TestEvidence_VerifyMerkleProof(t *testing.T) {
-	appPrivateKey := getRandomPrivateKey()
+	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
-	clientPrivateKey := getRandomPrivateKey()
+	clientPrivateKey := GetRandomPrivateKey()
 	clientPublicKey := clientPrivateKey.PublicKey().RawString()
 	nodePubKey := getRandomPubKey()
 	ethereum, err := NonNativeChain{

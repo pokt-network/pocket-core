@@ -201,9 +201,9 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	servicerPubKey := getRandomPubKey().RawString()
-	clientPrivKey := getRandomPrivateKey()
+	clientPrivKey := GetRandomPrivateKey()
 	clientPubKey := clientPrivKey.PublicKey().RawString()
-	appPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
 	appPubKey := appPrivKey.PublicKey().RawString()
 	hash1 := hash([]byte("fake1"))
 	hash2 := hash([]byte("fake2"))

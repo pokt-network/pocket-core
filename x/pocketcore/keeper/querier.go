@@ -6,6 +6,7 @@ import (
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"strings"
 )
 
 // creates a querier for staking REST endpoints
@@ -24,10 +25,29 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryRelay(ctx, req, k)
 		case types.QueryDispatch:
 			return queryDispatch(ctx, req, k)
+		case types.QueryChallenge:
+			return queryChallenge(ctx, req, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown staking query endpoint")
 		}
 	}
+}
+
+func queryChallenge(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	var params types.QueryChallengeParams
+	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
+	}
+	response, er := k.HandleChallenge(ctx, params.Challenge)
+	if er != nil {
+		return nil, er
+	}
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, response)
+	if err != nil {
+		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
+	}
+	return res, nil
 }
 
 func queryRelay(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
@@ -89,7 +109,16 @@ func queryReceipt(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Err
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	evidence, _ := k.GetReceipt(ctx, params.Address, params.Header)
+	var et types.EvidenceType
+	switch strings.ToLower(params.Type) {
+	case "relay":
+		et = types.RelayEvidence
+	case "challenge":
+		et = types.ChallengeEvidence
+	default:
+		return nil, sdk.ErrInternal("type in the receipt query is not recognized: (relay or challenge)")
+	}
+	evidence, _ := k.GetReceipt(ctx, params.Address, params.Header, et)
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, evidence)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))

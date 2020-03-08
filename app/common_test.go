@@ -258,6 +258,10 @@ func getInMemoryKeybase() keys.Keybase {
 	return inMemKB
 }
 
+func getRandomPrivateKey() crypto.Ed25519PrivateKey {
+	return crypto.Ed25519PrivateKey{}.GenPrivateKey().(crypto.Ed25519PrivateKey)
+}
+
 func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
@@ -564,7 +568,7 @@ func twoValTwoNodeGenesisState() []byte {
 	return j
 }
 
-func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validators, app appsTypes.Application) {
+func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, validators nodesTypes.Validators, app appsTypes.Application) {
 	kb := getInMemoryKeybase()
 	// create keypairs
 	kp1, err := kb.GetCoinbase()
@@ -575,12 +579,19 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	if err != nil {
 		panic(err)
 	}
-	// get public keys
+	pk1, err := kb.ExportPrivateKeyObject(kp1.GetAddress(), "test")
+	if err != nil {
+		panic(err)
+	}
+	pk2, err := kb.ExportPrivateKeyObject(kp2.GetAddress(), "test")
+	var kys []crypto.PrivateKey
+	kys = append(kys, pk1, pk2, crypto.GenerateEd25519PrivKey(), crypto.GenerateEd25519PrivKey(), crypto.GenerateEd25519PrivKey())
+	// get public kys
 	pubKey := kp1.PublicKey
-	pubKey2 := crypto.GenerateEd25519PrivKey().PublicKey()
-	pubKey3 := crypto.GenerateEd25519PrivKey().PublicKey()
-	pubKey4 := crypto.GenerateEd25519PrivKey().PublicKey()
-	pubKey5 := crypto.GenerateEd25519PrivKey().PublicKey()
+	pubKey2 := kp2.PublicKey
+	pubKey3 := kys[2].PublicKey()
+	pubKey4 := kys[3].PublicKey()
+	pubKey5 := kys[4].PublicKey()
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
@@ -675,5 +686,5 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	defaultGenesis[pocketTypes.ModuleName] = res3
 	genState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
-	return j, posGenesisState.Validators, appsGenesisState.Applications[0]
+	return j, kys, posGenesisState.Validators, appsGenesisState.Applications[0]
 }

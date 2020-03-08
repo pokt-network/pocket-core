@@ -7,8 +7,8 @@ import (
 )
 
 func TestAAT_VersionIsIncluded(t *testing.T) {
-	appPrivKey := getRandomPrivateKey()
-	clientPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
+	clientPrivKey := GetRandomPrivateKey()
 	var AATNoVersion = AAT{
 		Version:              "",
 		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
@@ -45,8 +45,8 @@ func TestAAT_VersionIsIncluded(t *testing.T) {
 }
 
 func TestAAT_VersionIsSupported(t *testing.T) {
-	appPrivKey := getRandomPrivateKey()
-	clientPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
+	clientPrivKey := GetRandomPrivateKey()
 	var AATNotSupportedVersion = AAT{
 		Version:              "0.0.11",
 		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
@@ -83,8 +83,8 @@ func TestAAT_VersionIsSupported(t *testing.T) {
 }
 
 func TestAAT_ValidateVersion(t *testing.T) {
-	appPrivKey := getRandomPrivateKey()
-	clientPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
+	clientPrivKey := GetRandomPrivateKey()
 	var AATVersionMissing = AAT{
 		Version:              "",
 		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
@@ -132,7 +132,7 @@ func TestAAT_ValidateVersion(t *testing.T) {
 }
 
 func TestAAT_ValidateMessage(t *testing.T) {
-	appPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
 	clientPubKey := getRandomPubKey()
 	var AATInvalidAppPubKey = AAT{
 		Version:              "0.0.1",
@@ -181,8 +181,8 @@ func TestAAT_ValidateMessage(t *testing.T) {
 }
 
 func TestAAT_ValidateSignature(t *testing.T) {
-	appPrivKey := getRandomPrivateKey()
-	clientPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
+	clientPrivKey := GetRandomPrivateKey()
 	var AATMissingSignature = AAT{
 		Version:              "0.0.1",
 		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
@@ -242,8 +242,8 @@ func TestAAT_ValidateSignature(t *testing.T) {
 }
 
 func TestAAT_HashString(t *testing.T) {
-	appPrivKey := getRandomPrivateKey()
-	clientPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
+	clientPrivKey := GetRandomPrivateKey()
 	var AAT = AAT{
 		Version:              "0.0.1",
 		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),
@@ -255,8 +255,8 @@ func TestAAT_HashString(t *testing.T) {
 }
 
 func TestAAT_Validate(t *testing.T) {
-	appPrivKey := getRandomPrivateKey()
-	clientPrivKey := getRandomPrivateKey()
+	appPrivKey := GetRandomPrivateKey()
+	clientPrivKey := GetRandomPrivateKey()
 	var AAT = AAT{
 		Version:              "0.0.1",
 		ApplicationPublicKey: appPrivKey.PublicKey().RawString(),

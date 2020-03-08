@@ -43,33 +43,23 @@ func TestKeeper_Dispatch(t *testing.T) {
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("KVStore", keys["pos"]).Return(ctx.KVStore(keys["pos"]))
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-	mockCtx.On("MustGetPrevCtx", validHeader.SessionBlockHeight).Return(ctx)
+	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
 	mockCtx.On("Logger").Return(ctx.Logger())
 	res, err := keeper.Dispatch(mockCtx, validHeader)
 	assert.Nil(t, err)
-	assert.Equal(t, res.SessionHeader.Chain, ethereum)
-	assert.Equal(t, res.SessionHeader.SessionBlockHeight, int64(976))
-	assert.Equal(t, res.SessionHeader.ApplicationPubKey, appPubKey)
-	assert.Equal(t, res.SessionHeader, validHeader)
-	assert.Len(t, res.SessionNodes, 5)
+	assert.Equal(t, res.Session.SessionHeader.Chain, ethereum)
+	assert.Equal(t, res.Session.SessionHeader.SessionBlockHeight, int64(976))
+	assert.Equal(t, res.Session.SessionHeader.ApplicationPubKey, appPubKey)
+	assert.Equal(t, res.Session.SessionHeader, validHeader)
+	assert.Len(t, res.Session.SessionNodes, 5)
 	_, err = keeper.Dispatch(mockCtx, invalidHeader)
 	assert.NotNil(t, err)
 }
 
 func TestKeeper_IsSessionBlock(t *testing.T) {
 	notSessionContext, _, _, _, keeper, _ := createTestInput(t, false)
-	assert.False(t, keeper.IsSessionBlock(notSessionContext))
-}
-
-func TestKeeper_GetLatestSessionBlock(t *testing.T) {
-	ctx, _, _, _, keeper, keys := createTestInput(t, false)
-
-	mockCtx := new(Ctx)
-	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
-	mockCtx.On("MustGetPrevCtx", keeper.GetLatestSessionBlockHeight(mockCtx)).Return(ctx)
-	assert.Equal(t, ctx.BlockHeight(), keeper.GetLatestSessionBlock(mockCtx).BlockHeight())
+	assert.False(t, keeper.IsSessionBlock(notSessionContext.WithBlockHeight(977)))
 }
 
 func TestKeeper_IsPocketSupportedBlockchain(t *testing.T) {

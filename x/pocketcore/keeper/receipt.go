@@ -10,10 +10,10 @@ import (
 // Receipts (stored proof of work completed)
 // set the verified proof of work (receipt)
 func (k Keeper) SetReceipt(ctx sdk.Ctx, address sdk.Address, p pc.Receipt) error {
-	ctx.Logger().Info(fmt.Sprintf("GetReceipt(address= %v, header= %+v) \n", address.String(), p))
+	ctx.Logger().Info(fmt.Sprintf("SetReceipt(address= %v, header= %+v) \n", address.String(), p))
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryBare(p)
-	key, err := pc.KeyForReceipt(ctx, address, p.SessionHeader)
+	key, err := pc.KeyForReceipt(ctx, address, p.SessionHeader, p.EvidenceType)
 	if err != nil {
 		return err
 	}
@@ -22,10 +22,10 @@ func (k Keeper) SetReceipt(ctx sdk.Ctx, address sdk.Address, p pc.Receipt) error
 }
 
 // retrieve the verified proof of work (receipt)
-func (k Keeper) GetReceipt(ctx sdk.Ctx, address sdk.Address, header pc.SessionHeader) (receipt pc.Receipt, found bool) {
+func (k Keeper) GetReceipt(ctx sdk.Ctx, address sdk.Address, header pc.SessionHeader, evidenceType pc.EvidenceType) (receipt pc.Receipt, found bool) {
 	ctx.Logger().Info(fmt.Sprintf("GetReceipt(address= %v, header= %+v) \n", address.String(), header))
 	store := ctx.KVStore(k.storeKey)
-	key, err := pc.KeyForReceipt(ctx, address, header)
+	key, err := pc.KeyForReceipt(ctx, address, header, evidenceType)
 	if err != nil {
 		ctx.Logger().Error("There was a problem creating a key for the receipt:\n" + err.Error())
 		return pc.Receipt{}, false
@@ -48,7 +48,7 @@ func (k Keeper) SetReceipts(ctx sdk.Ctx, receipts []pc.Receipt) {
 			panic(fmt.Sprintf("an error occured setting the receipts:\n%v", err))
 		}
 		bz := k.cdc.MustMarshalBinaryBare(receipt)
-		key, err := pc.KeyForReceipt(ctx, addrbz, receipt.SessionHeader)
+		key, err := pc.KeyForReceipt(ctx, addrbz, receipt.SessionHeader, receipt.EvidenceType)
 		if err != nil {
 			panic(fmt.Sprintf("an error occured setting the receipts:\n%v", err))
 		}

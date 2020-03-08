@@ -23,7 +23,7 @@ func ValidateGenesis(data GenesisState) error {
 		if err := proof.ValidateHeader(); err != nil {
 			return err
 		}
-		if proof.TotalRelays <= 0 {
+		if proof.Total <= 0 {
 			return errors.New("total relays for Proof is negative")
 		}
 	}

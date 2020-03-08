@@ -104,7 +104,31 @@ func QueryRelay(cdc *codec.Codec, tmNode client.Client, relay types.Relay) (*typ
 	return &response, nil
 }
 
-func QueryDispatch(cdc *codec.Codec, tmNode client.Client, header types.SessionHeader) (*types.Session, error) {
+func QueryChallenge(cdc *codec.Codec, tmNode client.Client, challengeProof types.ChallengeProofInvalidData) (*types.ChallengeResponse, error) {
+	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(0)
+	params := types.QueryChallengeParams{
+		Challenge: challengeProof,
+	}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryChallenge), bz)
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, errors.New("nil response error")
+	}
+	var response types.ChallengeResponse
+	err = cdc.UnmarshalJSON(res, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+func QueryDispatch(cdc *codec.Codec, tmNode client.Client, header types.SessionHeader) (*types.DispatchResponse, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(0)
 	params := types.QueryDispatchParams{
 		SessionHeader: header,
@@ -117,7 +141,7 @@ func QueryDispatch(cdc *codec.Codec, tmNode client.Client, header types.SessionH
 	if err != nil {
 		return nil, err
 	}
-	var response types.Session
+	var response types.DispatchResponse
 	err = cdc.UnmarshalJSON(res, &response)
 	if err != nil {
 		return nil, err

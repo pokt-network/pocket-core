@@ -16,6 +16,8 @@ type Proof interface {
 	GetSigners() []sdk.Address
 	SessionHeader() SessionHeader
 	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error
+	Handle() sdk.Error
+	EvidenceType() EvidenceType
 }
 
 var _ Proof = RelayProof{}
@@ -95,7 +97,7 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 		return err
 	}
 	// verify non negative index
-	if rp.Entropy <= 0 {
+	if rp.Entropy < 0 {
 		return NewInvalidEntropyError(ModuleName)
 	}
 	// verify a valid token
@@ -115,6 +117,10 @@ func (rp RelayProof) SessionHeader() SessionHeader {
 		Chain:              rp.Blockchain,
 		SessionBlockHeight: rp.SessionBlockHeight,
 	}
+}
+
+func (rp RelayProof) EvidenceType() EvidenceType {
+	return RelayEvidence
 }
 
 // structure used to json marshal the RelayProof
@@ -184,6 +190,11 @@ func (rp RelayProof) HashStringWithSignature() string {
 	return hex.EncodeToString(rp.HashWithSignature())
 }
 
+func (rp RelayProof) Handle() sdk.Error {
+	// add the Proof to the global (in memory) collection of proofs
+	return GetEvidenceMap().AddToEvidence(rp.SessionHeader(), rp)
+}
+
 func (rp RelayProof) GetSigners() []sdk.Address {
 	pk, err := crypto.NewPublicKey(rp.ServicerPubKey)
 	if err != nil {
@@ -201,7 +212,7 @@ type ChallengeProofInvalidData struct {
 var _ Proof = ChallengeProofInvalidData{}
 
 // validate local is used to validate a challenge request directly from a client
-func (c ChallengeProofInvalidData) ValidateLocal(maxRelays int64, supportedBlockchains []string, numberOfChains, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
+func (c ChallengeProofInvalidData) ValidateLocal(maxRelays, sessionblockHeight int64, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
 	// get the header to retrieve the evidence object
 	h := SessionHeader{
 		ApplicationPubKey:  c.MinorityResponse.Proof.Token.ApplicationPublicKey,
@@ -210,14 +221,14 @@ func (c ChallengeProofInvalidData) ValidateLocal(maxRelays int64, supportedBlock
 	}
 	// check for overflow on # of proofs
 	evidence, _ := GetEvidenceMap().GetEvidence(h, ChallengeEvidence)
-	if evidence.NumOfProofs >= int64(math.Ceil(float64(maxRelays)/float64(numberOfChains))/(float64(sessionNodeCount))) {
+	if evidence.NumOfProofs >= int64(math.Ceil(float64(maxRelays)/float64(len(supportedBlockchains)))/(float64(sessionNodeCount))) {
 		return NewOverServiceError(ModuleName)
 	}
 	// check if verifyPubKey in session (must be in session to do challenges)
 	if !sessionNodes.ContainsAddress(selfAddr) {
 		return NewNodeNotInSessionError(ModuleName)
 	}
-	err := c.Validate(supportedBlockchains, sessionNodeCount, c.MinorityResponse.Proof.SessionBlockHeight)
+	err := c.Validate(supportedBlockchains, sessionNodeCount, sessionblockHeight)
 	if err != nil {
 		return err
 	}
@@ -321,31 +332,35 @@ func (c ChallengeProofInvalidData) ValidateBasic() sdk.Error {
 		return NewEmptyAddressError(ModuleName)
 	}
 	majResp, majResp2 := c.MajorityResponses[0], c.MajorityResponses[1]
-	// verify the session block height is positive
-	if c.MinorityResponse.Proof.SessionBlockHeight < 0 || majResp.Proof.SessionBlockHeight < 0 || majResp2.Proof.SessionBlockHeight < 0 {
-		return NewInvalidBlockHeightError(ModuleName)
+	if _, err := hex.DecodeString(majResp.Signature); err != nil {
+		return NewSigDecodeError(ModuleName)
 	}
-	// verify the public key format for the leaf
-	if err, err2, err3 := PubKeyVerification(c.MinorityResponse.Proof.ServicerPubKey),
-		PubKeyVerification(majResp.Proof.ServicerPubKey),
-		PubKeyVerification(majResp2.Proof.ServicerPubKey); err != nil || err2 != nil || err3 != nil {
+	if _, err := hex.DecodeString(majResp2.Signature); err != nil {
+		return NewSigDecodeError(ModuleName)
+	}
+	if _, err := hex.DecodeString(c.MinorityResponse.Signature); err != nil {
+		return NewSigDecodeError(ModuleName)
+	}
+	if err := majResp.Validate(); err != nil {
 		return err
 	}
-	// verify the public key format for the leaf
-	if err, err2, err3 := HashVerification(c.MinorityResponse.Proof.Blockchain),
-		HashVerification(majResp.Proof.Blockchain),
-		HashVerification(majResp2.Proof.Blockchain); err != nil || err2 != nil || err3 != nil {
+	if err := majResp2.Validate(); err != nil {
 		return err
 	}
-	// verify the request hash format
-	if err, err2, err3 := HashVerification(c.MinorityResponse.Proof.RequestHash),
-		HashVerification(majResp.Proof.RequestHash),
-		HashVerification(majResp2.Proof.RequestHash); err != nil || err2 != nil || err3 != nil {
+	if err := c.MinorityResponse.Validate(); err != nil {
 		return err
 	}
-	// verify non negative entropy
-	if c.MinorityResponse.Proof.Entropy < 0 || majResp.Proof.Entropy < 0 || majResp2.Proof.Entropy < 0 {
-		return NewInvalidEntropyError(ModuleName)
+	if err := majResp.Proof.ValidateBasic(); err != nil {
+		return err
+	}
+	if err := majResp2.Proof.ValidateBasic(); err != nil {
+		return err
+	}
+	if err := c.MinorityResponse.Proof.ValidateBasic(); err != nil {
+		return err
+	}
+	if c.MinorityResponse.Proof.RequestHash != majResp.Proof.RequestHash || majResp.Proof.RequestHash != majResp2.Proof.RequestHash {
+		return NewMismatchedRequestHashError(ModuleName)
 	}
 	return nil
 }
@@ -402,12 +417,11 @@ func (c ChallengeProofInvalidData) GetSigners() []sdk.Address {
 	return []sdk.Address{c.ReporterAddress}
 }
 
-func ProofToEvidenceType(p Proof) EvidenceType {
-	switch p.(type) {
-	case RelayProof:
-		return RelayEvidence
-	case ChallengeProofInvalidData:
-		return ChallengeEvidence
-	}
-	panic(fmt.Sprintf("error in converting proof to evidence: Unknown Evidence Type -> %v", p))
+func (c ChallengeProofInvalidData) Handle() sdk.Error {
+	// add the Proof to the global (in memory) collection of proofs
+	return GetEvidenceMap().AddToEvidence(c.SessionHeader(), c)
+}
+
+func (c ChallengeProofInvalidData) EvidenceType() EvidenceType {
+	return ChallengeEvidence
 }
