@@ -381,6 +381,9 @@ func TestRelayGenerator(t *testing.T) {
 }
 
 func TestQueryRelay(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	// setup relay endpoint
 	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
