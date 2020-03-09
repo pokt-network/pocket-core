@@ -113,7 +113,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Rquest the app at the specified height
+        description: Rquest the app at the specified height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -124,7 +124,7 @@ paths:
         required: true
       responses:
         200:
-          description: Returns the app at the specified height
+          description: Returns the app at the specified height,  height = 0 is used as latest
           content:
             application/json:
               schema:
@@ -136,7 +136,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns the app parameters at the specified height
+        description: Returns the app parameters at the specified height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -158,7 +158,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Request the list of all applications known at the specified height and staking status
+        description: Request the list of all applications known at the specified height and staking status, empty ("") staking_status returns all apps
         content:
           application/json:
             schema:
@@ -181,7 +181,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Request the balance of the specified address at the specified height
+        description: Request the balance of the specified address at the specified height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -192,7 +192,7 @@ paths:
         required: true
       responses:
         200:
-          description: Returns the balance of the specified address at the specified height
+          description: Returns the balance of the specified address at the specified height,  height = 0 is used as latest
           content:
             application/json:
               schema:
@@ -206,7 +206,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns the block structure at the specified height
+        description: Returns the block structure at the specified height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -250,7 +250,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns the node at the specified height
+        description: Returns the node at the specified height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -273,7 +273,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns the node parameters at the specified height
+        description: Returns the node parameters at the specified height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -315,7 +315,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns the list of all Relay Batch proofs submitted by node address at height
+        description: Returns the list of all Relay Batch proofs submitted by node address at height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -338,7 +338,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Request the list of all nodes known at the specified height and staking status
+        description: Request the list of all nodes known at the specified height and staking status , empty ("") staking_status returns all nodes
         content:
           application/json:
             schema:
@@ -361,7 +361,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns the pocket parameters at the specified height
+        description: Returns the pocket parameters at the specified height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -383,7 +383,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns the list of node params specified in the height
+        description: Returns the list of node params specified in the height,  height = 0 is used as latest
         content:
           application/json:
             schema:
@@ -405,7 +405,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns the list Network Identifiers supported by the network at the specified height
+        description: Returns the list Network Identifiers supported by the network at the specified height,  height = 0 is used as latest
         content:
           application/json:
             schema:
