@@ -214,7 +214,7 @@ type queryNodeReceipts struct {
 	AppPubKey    string `json:"app_pubkey"`
 	SBlockHeight int64  `json:"session_block_height"`
 	Height       int64  `json:"height"`
-	ReceiptType string `json:"receipt_type"`
+	ReceiptType  string `json:"receipt_type"`
 }
 
 func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

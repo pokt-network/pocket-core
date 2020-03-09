@@ -46,7 +46,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		// check to see if evidence is stored in cache
 		evidence, found := pc.GetEvidenceMap().GetEvidence(claim.SessionHeader, claim.EvidenceType)
 		if !found || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
-			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim"))
+			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
 			continue
 		}
 		// generate the needed pseudorandom index using the information found in the first transaction
@@ -88,7 +88,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return nil, pc.MsgClaim{}, pc.NewClaimNotFoundError(pc.ModuleName)
 	}
 	// validate the proof
-	ctx.Logger().Info(fmt.Sprintf("Generate psuedorandom proof with %d, at session height of %d", claim.TotalProofs, claim.SessionBlockHeight))
+	ctx.Logger().Info(fmt.Sprintf("Generate psuedorandom proof with %d proofs, at session height of %d, for app: %s", claim.TotalProofs, claim.SessionBlockHeight, claim.ApplicationPubKey))
 	reqProof, err := k.getPseudorandomIndex(ctx, claim.TotalProofs, claim.SessionHeader)
 	if err != nil {
 		return nil, pc.MsgClaim{}, sdk.ErrInternal(err.Error())

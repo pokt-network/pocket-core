@@ -341,3 +341,14 @@ func TestRelayResponse_BytesAndHash(t *testing.T) {
 	relayResp.Signature = hex.EncodeToString(nodeSig)
 	assert.Equal(t, storedHashString, relayResp.HashString())
 }
+
+func TestSortJSON(t *testing.T) {
+	// out of order json arrays
+	j1 := `{"foo":0,"bar":1}`
+	j2 := `{"bar":1,"foo":0}`
+	// sort
+	objs := sortJSONResponse(j1)
+	objs2 := sortJSONResponse(j2)
+	// compare
+	assert.Equal(t, objs, objs2)
+}
