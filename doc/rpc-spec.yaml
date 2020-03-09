@@ -35,7 +35,7 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: "1.0.0"
+                example: "0.0.1"
   /client/dispatch:
     post:
       tags:
@@ -953,6 +953,9 @@ components:
       properties:
         session:
           $ref: '#/components/schemas/Session'
+        block_height:
+          type: integer
+          format: int64
     Session:
       type: object
       properties:
