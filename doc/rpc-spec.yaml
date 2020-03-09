@@ -1,0 +1,1151 @@
+openapi: 3.0.1
+info:
+  title: Pocket Network
+  description: This is the API definition Pocket Network core RPC calls. Pocket is a distributed network that relays data requests and responses to and from any blockchain system. Pocket verifies all relayed data and proportionally rewards the participating nodes with native cryptographic tokens.
+  termsOfService: https://pokt.network/terms/
+  contact:
+    email: hola@pokt.network
+  license:
+    name: MIT License
+    url: https://github.com/pokt-network/pocket-core/LICENSE.md
+  version: 0.0.1
+externalDocs:
+  description: Find out more about Pocket Network
+  url: https://pokt.network
+servers:
+  - url: http://localhost:8081/v1
+  - url: http://35.236.208.175:8081/v1
+tags:
+  - name: version
+    description: Version of the Pocket API
+  - name: client
+    description: Dispatch and relay services
+  - name: query
+    description: Blockchain queries
+paths:
+  /:
+    get:
+      tags:
+        - version
+      summary: Get the current version of the Pocket Network API
+      responses:
+        200:
+          description: Version
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "1.0.0"
+  /client/dispatch:
+    post:
+      tags:
+        - client
+      requestBody:
+        description: Sends a dispatch request to the network and get the nodes that will be servicing your requests for the session.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDispatchRequest'
+      responses:
+        200:
+          description: A list of dispatch/service nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryDispatchResponse'
+  /client/relay:
+    post:
+      tags:
+        - client
+      requestBody:
+        description: Request to be relayed to a target blockchain
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRelayRequest'
+      responses:
+        200:
+          description: Response from the relayed request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryRelayResponse'
+  /client/rawtx:
+    post:
+      tags:
+        - client
+      requestBody:
+        description: Raw transaction to be relayed to a target address
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRawTXRequest'
+      responses:
+        200:
+          description: Response from the relayed raw request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryRawTXResponse'
+  /client/challenge:
+    post:
+      tags:
+        - client
+      requestBody:
+        description: Request a Challenge for invalid data served through relay
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryChallengeRequest'
+      responses:
+        200:
+          description: Returns Challenge Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryChallengeResponse'
+  /query/app:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Rquest the app at the specified height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAddressHeight'
+            example:
+              address: "4920ce1d787c60e2eaeff366c79e8aa2b82525f1"
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Returns the app at the specified height
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        400:
+          description: Failed to retrieve the applications
+  /query/appparams:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the app parameters at the specified height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Application parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationParams'
+        400:
+          description: Failed to retrieve the application information
+  /query/apps:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Request the list of all applications known at the specified height and staking status
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryStakingHeight'
+            example:
+              staking_status: "staked"
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Returns the list of all applications known at the specified height and staking status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Applications'
+        400:
+          description: Failed to retrieve the applications
+  /query/balance:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Request the balance of the specified address at the specified height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAddressHeight'
+            example:
+              address: "1b1973906ee85993e994422eddeab89f385a00a4"
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Returns the balance of the specified address at the specified height
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryBalanceResponse'
+              example:
+                balance: 149973957302365
+        400:
+          description: Failed to retrieve Information
+  /query/block:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the block structure at the specified height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryBlock'
+            example:
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Block data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryBlockResponse'
+        400:
+          description: Failed to retrieve the block information
+  /query/height:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the current height
+        content:
+          application/json:
+            schema:
+              {}
+        required: false
+      responses:
+        200:
+          description: Block height
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryHeightResponse'
+              example:
+                height: 2
+        400:
+          description: Failed to retrieve the block height information
+  /query/node:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the node at the specified height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAddressHeight'
+            example:
+              address: "0xA5DE6D4184016708c1040c355F1c958192276DB5"
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Node details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node'
+        400:
+          description: Failed to retrieve the node information
+  /query/nodeparams:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the node parameters at the specified height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Node parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeParams'
+        400:
+          description: Failed to retrieve the node information
+  /query/nodereceipt:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the node receipt for specific session
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryNodeReceipt'
+        required: true
+      responses:
+        200:
+          description: Node proofs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredReceipt'
+        400:
+          description: Failed to retrieve the node proof information
+  /query/nodereceipts:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the list of all Relay Batch proofs submitted by node address at height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAddressHeight'
+            example:
+              address: "0xA5DE6D4184016708c1040c355F1c958192276DB5"
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Node proofs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryNodeReceiptsResponse'
+        400:
+          description: Failed to retrieve the node proof information
+  /query/nodes:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Request the list of all nodes known at the specified height and staking status
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryStakingHeight'
+            example:
+              staking_status: "staked"
+              height: 2
+        required: true
+      responses:
+        200:
+          description:  Returns the list of all nodes known at the specified height and staking status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryNodesResponse'
+        400:
+          description: Failed to retrieve the nodes' information
+  /query/pocketparams:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the pocket parameters at the specified height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Pocket Network parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PocketParams'
+        400:
+          description: Failed to retrieve the application information
+  /query/supply:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the list of node params specified in the height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Pocket Network parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuerySupplyResponse'
+        400:
+          description: Failed to retrieve the supply information
+  /query/supportedchains:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the list Network Identifiers supported by the network at the specified height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        200:
+          description: Pocket Network parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuerySupportedChainsResponse'
+        400:
+          description: Failed to retrieve the application information
+  /query/tx:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the transaction by the hash
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryTX'
+            example:
+              hash: "0x197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22"
+        required: true
+      responses:
+        200:
+          description: Transaction data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryTXResponse'
+        400:
+          description: Failed to retrieve the transaction information
+components:
+  schemas:
+    ABCIEvent:
+      type: object
+      properties:
+        type:
+          type: string
+        attributes:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+    ABCIMessageLog:
+      type: object
+      properties:
+        msg_index:
+          type: integer
+          format: uint16
+          description: Ordered index of the log message
+        success:
+          type: boolean
+          description: Success or failure?
+        log:
+          type: string
+          description: Full text of the log
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/ABCIEvent'
+    Application:
+      type: object
+      properties:
+        address:
+          type: string
+          description: The hex address of the application
+        public_key:
+          type: string
+          description: The hex public key of the application
+        jailed:
+          type: boolean
+          description: Has the application been jailed from staked status
+          default: false
+        status:
+          type: integer
+          description: Application status
+        chains:
+          type: array
+          items:
+            type: string
+          description: Blockchains supported
+        tokens:
+          type: string
+          description: How many tokens has this node staked in uPOKT
+        max_relays:
+          type: integer
+          format: int64
+          description: Maximum number of relays supported
+        unstaking_time:
+          type: string
+          description: If unstaking, the minimum time for the validator to complete unstaking
+    ApplicationParams:
+      type: object
+      properties:
+        unstaking_time:
+          type: string
+          description: duration of unstaking
+        max_applications:
+          type: integer
+          format: uint64
+          description: maximum number of applications
+        app_stake_minimum:
+          type: integer
+          format: int64
+          description: minimum amount needed to stake as an application
+        base_relays_per_pokt:
+          type: integer
+          format: int64
+          description: base relays per POKT coin staked
+        stability_adjustment:
+          type: integer
+          format: int64
+          description: the stability adjustment from the governance
+        participation_rate_on:
+          type: boolean
+          description: the participation rate affects the amount minted based on staked ratio
+    Applications:
+      type: array
+      items:
+        $ref: "#/components/schemas/Application"
+    Block:
+      type: object
+      properties:
+        header:
+          $ref: '#/components/schemas/BlockHeader'
+        data:
+          type: string
+          description: Data hash of the block
+        evidence:
+          type: string
+          description: Evidence hash
+        lastCommit:
+          $ref: '#/components/schemas/Commit'
+    Blockchain:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the blockchain
+        net_id:
+          type: string
+          description: Network identifier
+    BlockHeader:
+      type: object
+      properties:
+        version:
+          $ref: '#/components/schemas/Consensus'
+        chain_id:
+          type: string
+        height:
+          type: integer
+          format: int64
+        time:
+          type: string
+        num_txs:
+          type: integer
+          format: int64
+        total_txs:
+          type: integer
+          format: int64
+        last_block_id:
+          $ref: '#/components/schemas/BlockID'
+        last_commit_hash:
+          type: string
+        data_hash:
+          type: string
+        validators_hash:
+          type: string
+        next_validators_hash:
+          type: string
+        consensus_hash:
+          type: string
+        app_hash:
+          type: string
+        last_results_hash:
+          type: string
+        evidence_hash:
+          type: string
+        proposer_address:
+          type: string
+    BlockID:
+      type: object
+      properties:
+        hash:
+          type: string
+        parts:
+          $ref: '#/components/schemas/PartSetHeader'
+    BlockMeta:
+      type: object
+      properties:
+        block_id:
+          $ref: '#/components/schemas/BlockID'
+        blockHeader:
+          $ref: '#/components/schemas/BlockHeader'
+    Commit:
+      type: object
+      properties:
+        block_id:
+          $ref: '#/components/schemas/BlockID'
+        commit_signature:
+          $ref: '#/components/schemas/CommitSignature'
+    CommitSignature:
+      type: object
+      properties:
+        type:
+          type: string
+        height:
+          type: integer
+          format: int64
+        round:
+          type: integer
+        block_id:
+          $ref: '#/components/schemas/BlockID'
+        timestamp:
+          type: string
+        validator_address:
+          type: string
+        validator_index:
+          type: integer
+          format: int32
+        signature:
+          type: string
+    Consensus:
+      type: object
+      properties:
+        block:
+          type: integer
+          format: int64
+        app:
+          type: integer
+          format: int64
+    Node:
+      type: object
+      properties:
+        address:
+          type: string
+          description: The hex address of the validator
+        chains:
+          type: array
+          items:
+            type: string
+          description: Blockchains supported
+        jailed:
+          type: boolean
+          description: Has the validator been jailed from staked status
+          default: false
+        public_key:
+          type: string
+          description: The validator public hex key
+        service_url:
+          type: string
+          description: The validator service url
+        status:
+          type: integer
+          description: Validator status
+        tokens:
+          type: string
+          description: How many tokens has this node staked in uPOKT
+        unstaking_time:
+          type: string
+          description: If unstaking, the minimum time for the validator to complete unstaking
+    NodeParams:
+      type: object
+      properties:
+        unstaking_time:
+          type: string
+          format: 'date-time'
+          description: How much time must pass between the begin_unstaking_tx and the node transitioning to unstaked status
+        max_validators:
+          type: integer
+          format: int64
+          description: Maximum number of validators in the network at any given block
+        stake_denom:
+          type: string
+          description: The monetary denomination of the coins in the network `uPOKT`
+        stake_minimum:
+          type: integer
+          format: int64
+          description: Minimum amount of uPOKT needed to stake in the network as a node
+        session_block_frequency:
+          type: integer
+          format: int64
+          description: How many blocks are in a session
+        dao_allocation:
+          type: integer
+          format: int64
+          description: Award percentage of the mint for the DAO
+        proposer_allocation:
+          type: integer
+          format: int32
+          description: Award percentage of the mint for the proposer
+        max_evidence_age:
+          type: string
+          description: Maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)
+        signed_blocks_window:
+          type: integer
+          format: int64
+          description: Window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks
+        min_signed_per_window:
+          type: integer
+          format: int64
+          description: Minimum number of blocks the node must sign per window
+        downtime_jail_duration:
+          type: integer
+          format: int64
+          description: Minimum amount of time node must spend in jail after missing blocks
+        slash_fraction_double_sign:
+          type: integer
+          format: int64
+          description: The factor of which a node is slashed for a double sign
+        slash_fraction_downtime:
+          type: integer
+          format: int64
+          description: The factor of which a node is slashed for a double sign
+    PartSetHeader:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+        hash:
+          type: string
+    PocketParams:
+      type: object
+      properties:
+        session_node_count:
+          type: integer
+          format: int64
+          description: Number of nodes in this session
+        proof_waiting_period:
+          type: integer
+          format: int64
+          description: Proof waiting period
+        supported_blockchains:
+          type: array
+          description: Supported blockchains
+          items:
+            type: string
+        claim_expiration:
+          type: integer
+          format: int64
+          description: Claim expiration
+    RelayProof:
+      type: object
+      properties:
+        request_hash:
+          type: string
+          description: request hash identifier
+        entropy:
+          type: integer
+          format: int64
+          description: Entropy value to add uniqueness
+        session_block_height:
+          type: integer
+          format: int64
+          description: Height of the session
+        servicer_pub_key:
+          type: string
+          description: Servicer public hex public key
+        blockchain:
+          type: string
+          description: Blockchain hex string
+        aat:
+          $ref: '#/components/schemas/AAT'
+        signature:
+          type: string
+          description: client's signature in hex
+    AAT:
+      type: object
+      properties:
+        version:
+          type: string
+        app_pub_key:
+          type: string
+          description: Application hex public key
+        client_pub_key:
+          type: string
+          description: Application hex public key associated with a client
+        signature:
+          type: string
+          description: Application's signature in hex
+    RelayHeader:
+      type: object
+      additionalProperties:
+        type: string
+    RelayMetadata:
+      description: metadata for the relay request
+      type: object
+      properties:
+        block_height:
+          type: integer
+          format: int64
+    RelayPayload:
+      description: the data payload of the request
+      type: object
+      properties:
+        data:
+          type: string
+          description: The actual data of the request string for the external chain
+        method:
+          type: string
+          description: The HTTP CRUD method
+        path:
+          type: string
+          description: The REST path
+        headers:
+          $ref: '#/components/schemas/RelayHeader'
+    SessionHeader:
+      type: object
+      properties:
+        app_public_key:
+          type: string
+          description: Application hex public key associated with a client
+        chain:
+          type: string
+          description: Network Identified in hex
+        session_height:
+          type: integer
+          format: int64
+          description: Height of the session
+    SimpleProof:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+        index:
+          type: integer
+          format: int64
+        leaf_hash:
+          type: string
+        aunts:
+          type: array
+          items:
+            type: string
+    StoredReceipt:
+      type: object
+      properties:
+        session_header:
+          $ref: '#/components/schemas/SessionHeader'
+        servicer_address:
+          type: string
+        total_relays:
+          type: integer
+          format: int64
+    Transaction:
+      type: object
+      properties:
+        hash:
+          type: string
+          description: Hash of the transaction
+        height:
+          type: integer
+          format: int64
+          description: Blockheight of the transaction
+        index:
+          type: integer
+          format: int64
+        tx_result:
+          $ref: '#/components/schemas/TxResult'
+        tx:
+          type: string
+          description: Raw data of the transaction
+        proof:
+          $ref: '#/components/schemas/TXProof'
+    TxResult:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        data:
+          type: string
+        log:
+          type: string
+        info:
+          type: string
+        gas_wanted:
+          type: integer
+          format: int64
+        gas_used:
+          type: integer
+          format: int64
+        events:
+          type: array
+          items:
+            type: string
+        codespace:
+          type: string
+    TXProof:
+      type: object
+      description: Proof of the transaction
+      properties:
+        root_hash:
+          type: string
+        data:
+          type: string
+        proof:
+          $ref: '#/components/schemas/SimpleProof'
+    QueryAddressHeight:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+        address:
+          type: string
+    QueryBalanceResponse:
+      type: object
+      properties:
+        balance:
+          type: integer
+          format: int64
+    QueryBlock:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+    QueryBlockResponse:
+      type: object
+      properties:
+        block:
+          $ref: '#/components/schemas/Block'
+        block_meta:
+          $ref: '#/components/schemas/BlockMeta'
+    QueryDispatchRequest:
+      type: object
+      properties:
+        session_header:
+          $ref: '#/components/schemas/SessionHeader'
+    QueryDispatchResponse:
+      type: object
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+    Session:
+      type: object
+      properties:
+        header:
+          $ref: '#/components/schemas/SessionHeader'
+        key:
+          type: string
+          format: byte
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+    QueryHeight:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+    QueryHeightResponse:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+    QueryNodeReceipt:
+      type: object
+      properties:
+        address:
+          type: string
+          description: Node address
+        blockchain:
+          type: string
+        app_pubkey:
+          type: string
+          description: Application hex public key associated with a client
+        session_block_height:
+          type: integer
+          format: int64
+          description: Session block height
+        height:
+          type: integer
+          format: int64
+          description: Height of the session
+    QueryNodeReceiptsResponse:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/StoredReceipt'
+    QueryNodesResponse:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+    QueryRawTXRequest:
+      type: object
+      properties:
+        address:
+          type: string
+        raw_hex_bytes:
+          type: string
+    QueryRawTXResponse:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+          description: Blockheight of the transaction
+        txhash:
+          type: string
+          description: Hash of the transaction
+        code:
+          type: integer
+          format: uint32
+          description: Result code returned (0 is OK; everything else is error)
+        data:
+          type: string
+          description: Raw transaction data
+        raw_log:
+          type: string
+          description: Raw transaction log
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ABCIMessageLog'
+          description: ABCI Tendermint Logs
+        info:
+          type: string
+        gas_wanted:
+          type: integer
+          format: int64
+        gas_used:
+          type: integer
+          format: int64
+        codespace:
+          type: string
+        timestamp:
+          type: string
+          description: Timestamp of the transaction
+    QueryRelayRequest:
+      type: object
+      properties:
+        payload:
+          $ref: '#/components/schemas/RelayPayload'
+        meta:
+          $ref: '#/components/schemas/RelayMetadata'
+        proof:
+          $ref: '#/components/schemas/RelayProof'
+    QueryRelayResponse:
+      type: object
+      properties:
+        signature:
+          type: string
+          description: Signature from the node in hex
+        payload:
+          type: string
+          description: string response to relay
+        proof:
+          $ref: '#/components/schemas/RelayProof'
+    QueryChallengeRequest:
+      type: object
+      properties:
+        majority_responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryRelayResponse'
+          minItems: 1
+          maxItems: 2
+        minority_response:
+          $ref: '#/components/schemas/QueryRelayResponse'
+        address:
+          description: reporter address
+          type: string
+          format: byte
+    QueryChallengeResponse:
+      type: object
+      properties:
+        response:
+          type: string
+    QueryStakingHeight:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+        staking_status:
+          type: string
+          enum: ["staked", "unstaked", "unstaking", ""]
+    QuerySupplyResponse:
+      type: object
+      properties:
+        node_staked:
+          type: integer
+          format: int64
+          description: Amount staked by the node in uPOKT
+        app_staked:
+          type: integer
+          format: int64
+          description: Amount staked by the app in uPOKT
+        dao:
+          type: integer
+          format: int64
+          description: DAO amount in uPOKT
+        total_staked:
+          type: integer
+          format: int64
+          description: Total amount staked in uPOKT
+        total_unstaked:
+          type: integer
+          format: int64
+          description: Total amount unstaked in uPOKT
+        total:
+          type: integer
+          format: int64
+          description: Total amount in uPOKT
+    QuerySupportedChainsResponse:
+      type: object
+      properties:
+        supported_chains:
+          type: array
+          description: Supported blockchains
+          items:
+            type: string
+    QueryTX:
+      type: object
+      properties:
+        hash:
+          type: string
+    QueryTXResponse:
+      type: object
+      properties:
+        transaction:
+          $ref: '#/components/schemas/Transaction'

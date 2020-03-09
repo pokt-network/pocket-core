@@ -35,8 +35,14 @@ func TestRPC_QueryHeight(t *testing.T) {
 		q := newQueryRequest("height", nil)
 		rec := httptest.NewRecorder()
 		Height(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
-		assert.Equal(t, "1", resp)
+		resp := getJSONResponse(rec)
+
+		var height queryHeightResponse
+		err := json.Unmarshal([]byte(resp), &height)
+		assert.Nil(t, err)
+		assert.NotEmpty(t, height.Height)
+
+		assert.Equal(t, int64(1), height.Height)
 	}
 	cleanup()
 	stopCli()
@@ -114,13 +120,15 @@ func TestRPC_QueryBalance(t *testing.T) {
 		q := newQueryRequest("balance", newBody(params))
 		rec := httptest.NewRecorder()
 		Balance(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
+		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
-		var balance types.Int
-		err = json.Unmarshal([]byte(resp), &balance)
+
+		var b queryBalanceResponse
+		err = json.Unmarshal([]byte(resp), &b)
 		assert.Nil(t, err)
-		assert.NotZero(t, balance)
+		assert.NotZero(t, b.Balance)
+
 	}
 	cleanup()
 	stopCli()
