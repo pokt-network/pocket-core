@@ -129,7 +129,7 @@ func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAndStakingStatusParams{Height: 5, StakingStatus: ""}
+	var params = heightAndStakingStatusParams{Height: 0, StakingStatus: ""}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
