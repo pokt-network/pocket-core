@@ -2,13 +2,15 @@ package rpc
 
 import (
 	"encoding/json"
+	"math/big"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
 	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -352,12 +354,12 @@ func SupportedChains(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 }
 
 type querySupplyResponse struct {
-	NodeStaked    int64 `json:"node_staked"`
-	AppStaked     int64 `json:"app_staked"`
-	Dao           int64 `json:"dao"`
-	TotalStaked   int64 `json:"total_staked"`
-	TotalUnstaked int64 `json:"total_unstaked"`
-	Total         int64 `json:"total"`
+	NodeStaked    int64    `json:"node_staked"`
+	AppStaked     int64    `json:"app_staked"`
+	Dao           int64    `json:"dao"`
+	TotalStaked   *big.Int `json:"total_staked"`
+	TotalUnstaked *big.Int `json:"total_unstaked"`
+	Total         *big.Int `json:"total"`
 }
 
 func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -388,9 +390,9 @@ func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		NodeStaked:    nodesStake.Int64(),
 		AppStaked:     appsStaked.Int64(),
 		Dao:           dao.Int64(),
-		TotalStaked:   totalStaked.Int64(),
-		TotalUnstaked: totalUnstaked.Int64(),
-		Total:         total.Int64(),
+		TotalStaked:   totalStaked.BigInt(),
+		TotalUnstaked: totalUnstaked.BigInt(),
+		Total:         total.BigInt(),
 	}, "", "  ")
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())

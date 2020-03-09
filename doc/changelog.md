@@ -6,7 +6,7 @@
 - Changed RPC and from `node-proof` to `node-receipt`
 - Update posmint module to use sdk.Ctx interface
 - Fix `pseudorandomGenerator` unexported properties would return empty json
-- Evidence now holds proof interface to allow for challenge proofs 
+- Evidence now holds proof interface to allow for challenge proofs
 - Added Relay Request Hash (Hash of payload + meta) to RelayProof object
 - Added Block to Dispatch Request
 - Added Relay Meta field to relay request
@@ -16,3 +16,4 @@
 - Added block height to dispatch response
 - Removed all MustGetPrevCtx and used PrevCtx for panic safety
 - Changed receipt structure (added evidence type)
+- Change `querySupplyResponse` struct to use `totalStaked`, `totalUnstaked` & `Total` as `*big.Int` due to memory overflow
