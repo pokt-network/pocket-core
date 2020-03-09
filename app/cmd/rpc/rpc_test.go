@@ -370,6 +370,9 @@ func TestRPC_StakeNode(t *testing.T) {
 }
 
 func TestRPC_Relay(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
 	kb := getInMemoryKeybase()
 	genBZ, validators, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
