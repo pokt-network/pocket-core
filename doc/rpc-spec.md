@@ -19,6 +19,13 @@ Each RPC Function will be in the following format:
 
 ALl RPC calls in Pocket Core will be HTTP `POST`
 
+### RPC-SPEC in OPENAPI / SWAGGER
+
+please see rcp-spec.yaml
+
+this document is for references only and will be deprecated soon.
+
+
 ### Client Namespace
 The default namespace contains functions that are pertinent to the execution of the Pocket Node.
 
