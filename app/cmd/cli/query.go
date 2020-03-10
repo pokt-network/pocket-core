@@ -29,7 +29,6 @@ func init() {
 	queryCmd.AddCommand(queryPocketParams)
 	queryCmd.AddCommand(queryPocketSupportedChains)
 	queryCmd.AddCommand(querySupply)
-	queryCmd.AddCommand(version)
 }
 
 var queryCmd = &cobra.Command{
@@ -94,14 +93,6 @@ var queryHeight = &cobra.Command{
 			return
 		}
 		fmt.Printf("Block Height: %d\n", res)
-	},
-}
-var version = &cobra.Command{
-	Use:   "version",
-	Short: "Get current version",
-	Long:  `Returns the version`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s\n", CLIVersion)
 	},
 }
 
