@@ -2,12 +2,13 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/pokt-network/pocket-core/app"
 	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/spf13/cobra"
-	"strconv"
-	"strings"
 )
 
 func init() {
@@ -28,6 +29,7 @@ func init() {
 	queryCmd.AddCommand(queryPocketParams)
 	queryCmd.AddCommand(queryPocketSupportedChains)
 	queryCmd.AddCommand(querySupply)
+	queryCmd.AddCommand(version)
 }
 
 var queryCmd = &cobra.Command{
@@ -92,6 +94,14 @@ var queryHeight = &cobra.Command{
 			return
 		}
 		fmt.Printf("Block Height: %d\n", res)
+	},
+}
+var version = &cobra.Command{
+	Use:   "version",
+	Short: "Get current version",
+	Long:  `Returns the version`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Version: %s\n", CLIVersion)
 	},
 }
 

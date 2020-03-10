@@ -21,6 +21,11 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
+const (
+	Tag     = "RC-"
+	Version = "0.2.0"
+)
+
 // NewPocketCoreApp is a constructor function for pocketCoreApp
 func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
 	app := newPocketBaseApp(logger, db, baseAppOptions...)

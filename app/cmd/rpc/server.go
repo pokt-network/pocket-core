@@ -2,16 +2,17 @@ package rpc
 
 import (
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/app"
 )
 
-const (
-	APIVersion = "0.2.0"
-)
+var APIVersion = fmt.Sprintf("%s%s", app.Tag, app.Version)
 
 func StartRPC(port string) {
 	log.Fatal(http.ListenAndServe(":"+port, Router(GetRoutes())))
