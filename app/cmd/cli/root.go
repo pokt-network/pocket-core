@@ -59,6 +59,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&blockTime, "blockTime", 1, "how often should the network create blocks")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
+	rootCmd.AddCommand(version)
 }
 
 // startCmd represents the start command
@@ -99,4 +100,13 @@ var resetCmd = &cobra.Command{
 	Short: "reset pocket-core",
 	Long:  `Reset the Pocket node`,
 	Run:   app.ResetWorldState,
+}
+
+var version = &cobra.Command{
+	Use:   "version",
+	Short: "Get current version",
+	Long:  `Returns the version`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Version: %s\n", CLIVersion)
+	},
 }
