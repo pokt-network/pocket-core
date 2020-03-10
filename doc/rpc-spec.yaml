@@ -2,19 +2,19 @@ openapi: 3.0.1
 info:
   title: Pocket Network
   description: This is the API definition Pocket Network core RPC calls. Pocket is a distributed network that relays data requests and responses to and from any blockchain system. Pocket verifies all relayed data and proportionally rewards the participating nodes with native cryptographic tokens.
-  termsOfService: https://pokt.network/terms/
+  termsOfService: 'https://pokt.network/terms/'
   contact:
     email: hola@pokt.network
   license:
     name: MIT License
-    url: https://github.com/pokt-network/pocket-core/LICENSE.md
+    url: 'https://github.com/pokt-network/pocket-core/LICENSE.md'
   version: 0.0.1
 externalDocs:
   description: Find out more about Pocket Network
-  url: https://pokt.network
+  url: 'https://pokt.network'
 servers:
-  - url: http://localhost:8081/v1
-  - url: http://35.236.208.175:8081/v1
+  - url: 'http://localhost:8081/v1'
+  - url: 'http://35.236.208.175:8081/v1'
 tags:
   - name: version
     description: Version of the Pocket API
@@ -29,13 +29,13 @@ paths:
         - version
       summary: Get the current version of the Pocket Network API
       responses:
-        200:
+        '200':
           description: Version
           content:
             text/plain:
               schema:
                 type: string
-                example: "0.0.1"
+                example: 0.0.1
   /client/dispatch:
     post:
       tags:
@@ -48,12 +48,66 @@ paths:
             schema:
               $ref: '#/components/schemas/QueryDispatchRequest'
       responses:
-        200:
+        '200':
           description: A list of dispatch/service nodes
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryDispatchResponse'
+              example:
+                block_height: 5
+                session:
+                  header:
+                    app_public_key: e9477af9b42001280033bab76670eac4274cb7321e52280ceba964e1c61db87c
+                    chain: 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                    session_height: 1
+                  key: OmEeJO2o6xvbldJxFpqI0rRVwVtBTmRGGSlGqzxGzgk=
+                  nodes:
+                    - address: afaa802b1736396d31825f60487e4da030ea85bb
+                      chains:
+                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                      jailed: false
+                      public_key: a01bc947f512a971131474986cc0c8cb3caed6bcfca076e6b78ac2b838ebefed
+                      service_url: '0.0.0.0:8081'
+                      status: 2
+                      tokens: '1000000000000000000'
+                      unstaking_time: '0001-01-01T00:00:00Z'
+                    - address: 88967bf78114d5ea56e1a02fb3fd2cac3607d674
+                      chains:
+                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                      jailed: false
+                      public_key: c61954ba119bbbb2c1efa1d44f5f4001438566fd8aee2892387ef55ded82c159
+                      service_url: '0.0.0.0:8081'
+                      status: 2
+                      tokens: '10000000'
+                      unstaking_time: '0001-01-01T00:00:00Z'
+                    - address: a0c005c63f97a13e540e6bb484821d77f3fdaf75
+                      chains:
+                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                      jailed: false
+                      public_key: db07958aa0035fbb3e7e2575fbbb062a7d5ef5580cd0fe80142a4df5d31a316a
+                      service_url: '0.0.0.0:8081'
+                      status: 2
+                      tokens: '10000000'
+                      unstaking_time: '0001-01-01T00:00:00Z'
+                    - address: e3b15b922be9cabbe3b4a3a788dec8dc95c8f3dc
+                      chains:
+                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                      jailed: false
+                      public_key: a9c5d4463d5e233dd9437a2044a6595fe69ced34716a8e1c8ad86d3196f3fd78
+                      service_url: '0.0.0.0:8081'
+                      status: 2
+                      tokens: '10000000'
+                      unstaking_time: '0001-01-01T00:00:00Z'
+                    - address: fa11cff20c510fa1588915bd48391fee802822c8
+                      chains:
+                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                      jailed: false
+                      public_key: b62798f50be7055073f8b2f19ca4b2262a2c82f2ab16fc907e9db1cce551ffce
+                      service_url: '0.0.0.0:8081'
+                      status: 2
+                      tokens: '10000000'
+                      unstaking_time: '0001-01-01T00:00:00Z'
   /client/relay:
     post:
       tags:
@@ -66,12 +120,27 @@ paths:
             schema:
               $ref: '#/components/schemas/QueryRelayRequest'
       responses:
-        200:
+        '200':
           description: Response from the relayed request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryRelayResponse'
+              example:
+                Proof:
+                  aat:
+                    app_pub_key: ba7107264037ed8a310fad0f708c3dc7eb3bca8f3a680bb8b216602f10ebe265
+                    client_pub_key: ba7107264037ed8a310fad0f708c3dc7eb3bca8f3a680bb8b216602f10ebe265
+                    signature: 8282c4d78729f0b6bd1182c8e60c8af2c4fbac0ed90fbf3ea994f4f234bffd36f9f28badc17e5236f3329faa90c77672472256c45851f619173a0ed6240eca0c
+                    version: 0.0.1
+                  blockchain: 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                  entropy: 0
+                  request_hash: ''
+                  servicer_pub_key: 5ad4a47a843151e18099c9752c23f392e7e918af88ed28fa8ca2b31a6c2a7a1e
+                  session_block_height: 1
+                  signature: ''
+                payload: '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
+                signature: e7c347971c0a53f9d63fb5681e35a4c89d97e7c6703c0e3980c2a70dbc56cb0db11e24eb078a9ffbaf7f78970ff0ce2478d7485301e39c5950c45028283ef709
   /client/rawtx:
     post:
       tags:
@@ -84,12 +153,25 @@ paths:
             schema:
               $ref: '#/components/schemas/QueryRawTXRequest'
       responses:
-        200:
+        '200':
           description: Response from the relayed raw request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryRawTXResponse'
+              example:
+                height: '0'
+                txhash: 5F7D1B8AA14025F6F5E50B35CE7BC7BD6F7153FCF4840138E3CB6C1E5B5C7E78
+                raw_log: '[{"msg_index":0,"success":true,"log":"","events":[{"type":"message","attributes":[{"key":"action","value":"send"}]}]}]'
+                logs:
+                  - msg_index: 0
+                    success: true
+                    log: ''
+                    events:
+                      - type: message
+                        attributes:
+                          - key: action
+                            value: send
   /client/challenge:
     post:
       tags:
@@ -102,7 +184,7 @@ paths:
             schema:
               $ref: '#/components/schemas/QueryChallengeRequest'
       responses:
-        200:
+        '200':
           description: Returns Challenge Response
           content:
             application/json:
@@ -113,30 +195,30 @@ paths:
       tags:
         - query
       requestBody:
-        description: Rquest the app at the specified height,  height = 0 is used as latest
+        description: 'Rquest the app at the specified height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryAddressHeight'
             example:
-              address: "4920ce1d787c60e2eaeff366c79e8aa2b82525f1"
+              address: 4920ce1d787c60e2eaeff366c79e8aa2b82525f1
               height: 2
         required: true
       responses:
-        200:
-          description: Returns the app at the specified height,  height = 0 is used as latest
+        '200':
+          description: 'Returns the app at the specified height,  height = 0 is used as latest'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Application'
-        400:
+        '400':
           description: Failed to retrieve the applications
   /query/appparams:
     post:
       tags:
         - query
       requestBody:
-        description: Returns the app parameters at the specified height,  height = 0 is used as latest
+        description: 'Returns the app parameters at the specified height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
@@ -145,68 +227,68 @@ paths:
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Application parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApplicationParams'
-        400:
+        '400':
           description: Failed to retrieve the application information
   /query/apps:
     post:
       tags:
         - query
       requestBody:
-        description: Request the list of all applications known at the specified height and staking status, empty ("") staking_status returns all apps
+        description: 'Request the list of all applications known at the specified height and staking status, empty ("") staking_status returns all apps'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryStakingHeight'
             example:
-              staking_status: "staked"
+              staking_status: staked
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Returns the list of all applications known at the specified height and staking status
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Applications'
-        400:
+        '400':
           description: Failed to retrieve the applications
   /query/balance:
     post:
       tags:
         - query
       requestBody:
-        description: Request the balance of the specified address at the specified height,  height = 0 is used as latest
+        description: 'Request the balance of the specified address at the specified height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryAddressHeight'
             example:
-              address: "1b1973906ee85993e994422eddeab89f385a00a4"
+              address: 1b1973906ee85993e994422eddeab89f385a00a4
               height: 2
         required: true
       responses:
-        200:
-          description: Returns the balance of the specified address at the specified height,  height = 0 is used as latest
+        '200':
+          description: 'Returns the balance of the specified address at the specified height,  height = 0 is used as latest'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryBalanceResponse'
               example:
-                balance: 149973957302365
-        400:
+                balance: 1000000000
+        '400':
           description: Failed to retrieve Information
   /query/block:
     post:
       tags:
         - query
       requestBody:
-        description: Returns the block structure at the specified height,  height = 0 is used as latest
+        description: 'Returns the block structure at the specified height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
@@ -215,13 +297,78 @@ paths:
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Block data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryBlockResponse'
-        400:
+              example:
+                block:
+                  data:
+                    txs: null
+                  evidence:
+                    evidence: null
+                  header:
+                    app_hash: ''
+                    chain_id: pocket-test
+                    consensus_hash: 90B6C64F69FDCF9746F038BD2D27DFFFAE814E19EA6F974C740896AA62EDDA1D
+                    data_hash: ''
+                    evidence_hash: ''
+                    height: '1'
+                    last_block_id:
+                      hash: ''
+                      parts:
+                        hash: ''
+                        total: '0'
+                    last_commit_hash: ''
+                    last_results_hash: ''
+                    next_validators_hash: AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0
+                    num_txs: '0'
+                    proposer_address: AD8EAF52981A102068AA1FE4108E5520542078C3
+                    time: '2020-03-10T00:04:35.159615Z'
+                    total_txs: '0'
+                    validators_hash: AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0
+                    version:
+                      app: '0'
+                      block: '10'
+                  last_commit:
+                    block_id:
+                      hash: ''
+                      parts:
+                        hash: ''
+                        total: '0'
+                    precommits: null
+                block_meta:
+                  block_id:
+                    hash: D0A2AB1DE2FB356AEBF4CD9B18EA6E6754323512196858557787358C279E0473
+                    parts:
+                      hash: 581F3CCD645EB60EC4F16575F1C73393C9405C76E42C6C5D14938875FE4912F5
+                      total: '1'
+                  header:
+                    app_hash: ''
+                    chain_id: pocket-test
+                    consensus_hash: 90B6C64F69FDCF9746F038BD2D27DFFFAE814E19EA6F974C740896AA62EDDA1D
+                    data_hash: ''
+                    evidence_hash: ''
+                    height: '1'
+                    last_block_id:
+                      hash: ''
+                      parts:
+                        hash: ''
+                        total: '0'
+                    last_commit_hash: ''
+                    last_results_hash: ''
+                    next_validators_hash: AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0
+                    num_txs: '0'
+                    proposer_address: AD8EAF52981A102068AA1FE4108E5520542078C3
+                    time: '2020-03-10T00:04:35.159615Z'
+                    total_txs: '0'
+                    validators_hash: AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0
+                    version:
+                      app: '0'
+                      block: '10'
+        '400':
           description: Failed to retrieve the block information
   /query/height:
     post:
@@ -231,49 +378,58 @@ paths:
         description: Returns the current height
         content:
           application/json:
-            schema:
-              {}
+            schema: {}
         required: false
       responses:
-        200:
+        '200':
           description: Block height
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryHeightResponse'
               example:
-                height: 2
-        400:
+                height: 10
+        '400':
           description: Failed to retrieve the block height information
   /query/node:
     post:
       tags:
         - query
       requestBody:
-        description: Returns the node at the specified height,  height = 0 is used as latest
+        description: 'Returns the node at the specified height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryAddressHeight'
             example:
-              address: "0xA5DE6D4184016708c1040c355F1c958192276DB5"
+              address: '0xA5DE6D4184016708c1040c355F1c958192276DB5'
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Node details
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Node'
-        400:
+              example:
+                address: 05d98fbedf63cd4b4e337ef488ec2ad7e5072cb2
+                chains:
+                  - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                jailed: false
+                public_key: bac2790f5786d4e016ed1f03a54205ba99b949e6a3c4b4641317977dfedfce79
+                service_url: '0.0.0.0:8081'
+                status: 2
+                tokens: '1000000000000000'
+                unstaking_time: '0001-01-01T00:00:00Z'
+        '400':
           description: Failed to retrieve the node information
   /query/nodeparams:
     post:
       tags:
         - query
       requestBody:
-        description: Returns the node parameters at the specified height,  height = 0 is used as latest
+        description: 'Returns the node parameters at the specified height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
@@ -282,13 +438,13 @@ paths:
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Node parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NodeParams'
-        400:
+        '400':
           description: Failed to retrieve the node information
   /query/nodereceipt:
     post:
@@ -302,66 +458,76 @@ paths:
               $ref: '#/components/schemas/QueryNodeReceipt'
         required: true
       responses:
-        200:
+        '200':
           description: Node proofs
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/StoredReceipt'
-        400:
+        '400':
           description: Failed to retrieve the node proof information
   /query/nodereceipts:
     post:
       tags:
         - query
       requestBody:
-        description: Returns the list of all Relay Batch proofs submitted by node address at height,  height = 0 is used as latest
+        description: 'Returns the list of all Relay Batch proofs submitted by node address at height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryAddressHeight'
             example:
-              address: "0xA5DE6D4184016708c1040c355F1c958192276DB5"
+              address: '0xA5DE6D4184016708c1040c355F1c958192276DB5'
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Node proofs
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryNodeReceiptsResponse'
-        400:
+        '400':
           description: Failed to retrieve the node proof information
   /query/nodes:
     post:
       tags:
         - query
       requestBody:
-        description: Request the list of all nodes known at the specified height and staking status , empty ("") staking_status returns all nodes
+        description: 'Request the list of all nodes known at the specified height and staking status , empty ("") staking_status returns all nodes'
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryStakingHeight'
             example:
-              staking_status: "staked"
+              staking_status: staked
               height: 2
         required: true
       responses:
-        200:
-          description:  Returns the list of all nodes known at the specified height and staking status
+        '200':
+          description: Returns the list of all nodes known at the specified height and staking status
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryNodesResponse'
-        400:
+              example:
+                - address: 98a18a38aa6826a55dccce19f607e3171cf1436e
+                  public_key: d6b3785f00961059d2a5c6448cae7ddb02475de79c22261687a92cb905ff0de9
+                  jailed: false
+                  status: 2
+                  tokens: '1000000000000000'
+                  service_url: '0.0.0.0:8081'
+                  chains:
+                    - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                  unstaking_time: '0001-01-01T00:00:00Z'
+        '400':
           description: Failed to retrieve the nodes' information
   /query/pocketparams:
     post:
       tags:
         - query
       requestBody:
-        description: Returns the pocket parameters at the specified height,  height = 0 is used as latest
+        description: 'Returns the pocket parameters at the specified height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
@@ -370,20 +536,20 @@ paths:
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Pocket Network parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PocketParams'
-        400:
+        '400':
           description: Failed to retrieve the application information
   /query/supply:
     post:
       tags:
         - query
       requestBody:
-        description: Returns the list of node params specified in the height,  height = 0 is used as latest
+        description: 'Returns the list of node params specified in the height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
@@ -392,20 +558,20 @@ paths:
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Pocket Network parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QuerySupplyResponse'
-        400:
+        '400':
           description: Failed to retrieve the supply information
   /query/supportedchains:
     post:
       tags:
         - query
       requestBody:
-        description: Returns the list Network Identifiers supported by the network at the specified height,  height = 0 is used as latest
+        description: 'Returns the list Network Identifiers supported by the network at the specified height,  height = 0 is used as latest'
         content:
           application/json:
             schema:
@@ -414,13 +580,13 @@ paths:
               height: 2
         required: true
       responses:
-        200:
+        '200':
           description: Pocket Network parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QuerySupportedChainsResponse'
-        400:
+        '400':
           description: Failed to retrieve the application information
   /query/tx:
     post:
@@ -433,16 +599,16 @@ paths:
             schema:
               $ref: '#/components/schemas/QueryTX'
             example:
-              hash: "0x197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22"
+              hash: '0x197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22'
         required: true
       responses:
-        200:
+        '200':
           description: Transaction data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryTXResponse'
-        400:
+        '400':
           description: Failed to retrieve the transaction information
 components:
   schemas:
@@ -507,7 +673,7 @@ components:
           description: Maximum number of relays supported
         unstaking_time:
           type: string
-          description: If unstaking, the minimum time for the validator to complete unstaking
+          description: 'If unstaking, the minimum time for the validator to complete unstaking'
     ApplicationParams:
       type: object
       properties:
@@ -536,7 +702,7 @@ components:
     Applications:
       type: array
       items:
-        $ref: "#/components/schemas/Application"
+        $ref: '#/components/schemas/Application'
     Block:
       type: object
       properties:
@@ -677,13 +843,13 @@ components:
           description: How many tokens has this node staked in uPOKT
         unstaking_time:
           type: string
-          description: If unstaking, the minimum time for the validator to complete unstaking
+          description: 'If unstaking, the minimum time for the validator to complete unstaking'
     NodeParams:
       type: object
       properties:
         unstaking_time:
           type: string
-          format: 'date-time'
+          format: date-time
           description: How much time must pass between the begin_unstaking_tx and the node transitioning to unstaked status
         max_validators:
           type: integer
@@ -1007,12 +1173,9 @@ components:
           items:
             $ref: '#/components/schemas/StoredReceipt'
     QueryNodesResponse:
-      type: object
-      properties:
-        nodes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Node'
+      type: array
+      items:
+        $ref: '#/components/schemas/Node'
     QueryRawTXRequest:
       type: object
       properties:
@@ -1106,7 +1269,11 @@ components:
           format: int64
         staking_status:
           type: string
-          enum: ["staked", "unstaked", "unstaking", ""]
+          enum:
+            - staked
+            - unstaked
+            - unstaking
+            - ''
     QuerySupplyResponse:
       type: object
       properties:
