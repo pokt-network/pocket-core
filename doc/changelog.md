@@ -17,3 +17,4 @@
 - Removed all MustGetPrevCtx and used PrevCtx for panic safety
 - Changed receipt structure (added evidence type)
 - Change `querySupplyResponse` struct to use `totalStaked`, `totalUnstaked` & `Total` as `*big.Int` due to memory overflow
+- Added RPC SPEC doc in yaml and json with swagger support
