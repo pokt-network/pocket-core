@@ -119,6 +119,25 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryRelayRequest'
+            example:
+              payload:
+                data: '"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64'
+                method: ''
+                path: ''
+              meta:
+                block_height: 5
+              proof:
+                request_hash: 7b227061796c6f6164223a7b2264617461223a225c226a736f6e7270635c223a5c22322e305c222c5c226d6574686f645c223a5c22776562335f736861335c222c5c22706172616d735c223a5b5c223078363836353663366336663230373736663732366336345c225d2c5c2269645c223a3634222c226d6574686f64223a22222c2270617468223a22227d2c226d657461223a7b22626c6f636b5f686569676874223a357d2c2270726f6f66223a7b22726571756573745f68617368223a22222c22656e74726f7079223a302c2273657373696f6e5f626c6f636b5f686569676874223a302c2273657276696365725f7075625f6b6579223a22222c22626c6f636b636861696e223a22222c22616174223a7b2276657273696f6e223a22222c226170705f7075625f6b6579223a22222c22636c69656e745f7075625f6b6579223a22222c227369676e6174757265223a22227d2c227369676e6174757265223a22227d7d
+                entropy: 32598345349034508
+                session_block_height: 1
+                servicer_pub_key: 76eb9563b731af2711f326deeaebef166ce1de42c2b60c5c9f50f996fbd318ad
+                blockchain: 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                aat:
+                  version: 0.0.1
+                  app_pub_key: 81068fcc400b476a332b1dcd17943cb05ffd4a3a030c6309de9bf02d8d91cd70
+                  client_pub_key: 81068fcc400b476a332b1dcd17943cb05ffd4a3a030c6309de9bf02d8d91cd70
+                  signature: c5923bd5a663d7bb3c990504a98008e4d32ab7c57a8689d9a494fa29274b497396cbffa9523a7acf8cdff8227b96a8bb3e2e1c1b008de32041aa86c68d0f2b08
+                signature: e3e3a18fee96d25d913d2c62fc32febe58400cda17958916047945252a72adf96a92557774ba051c87a9c03e554136ef23b0de1bec167050e5be099bac52590d
       responses:
         '200':
           description: Response from the relayed request
@@ -206,7 +225,7 @@ paths:
         required: true
       responses:
         '200':
-          description: 'Returns account at the specified height'
+          description: Returns account at the specified height
           content:
             application/json:
               schema:
