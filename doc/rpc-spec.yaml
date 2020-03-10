@@ -190,6 +190,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryChallengeResponse'
+  /query/account:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: 'Request account at the specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAddressHeight'
+            example:
+              address: 4920ce1d787c60e2eaeff366c79e8aa2b82525f1
+              height: 2
+        required: true
+      responses:
+        '200':
+          description: 'Returns account at the specified height'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+        '400':
+          description: Failed to retrieve the account
   /query/app:
     post:
       tags:
@@ -643,6 +666,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ABCIEvent'
+    Account:
+      type: object
+      properties:
+        address:
+          type: string
+        coins:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coin'
+        public_key:
+          type: array
+          items:
+            type: integer
+    Coin:
+      type: object
+      properties:
+        amount:
+          type: string
+        denom:
+          type: string
     Application:
       type: object
       properties:
