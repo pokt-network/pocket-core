@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	APIVersion = "0.0.1"
+	APIVersion = "0.2.0"
 )
 
 func StartRPC(port string) {
