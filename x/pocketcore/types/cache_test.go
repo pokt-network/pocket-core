@@ -170,6 +170,7 @@ func TestSetGetSession(t *testing.T) {
 }
 
 func TestIteratorValue(t *testing.T) {
+	ClearSessionCache()
 	InitCacheTest()
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	SetSession(session)
