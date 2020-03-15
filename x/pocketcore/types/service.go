@@ -48,8 +48,9 @@ func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlo
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
 	// validate unique relay
-	totalRelays := GetEvidenceMap().GetTotalRelays(evidenceHeader)
-	if !GetEvidenceMap().IsUniqueProof(evidenceHeader, r.Proof) {
+	totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence)
+	// get evidence key by proof
+	if !IsUniqueProof(evidenceHeader, r.Proof) {
 		return NewDuplicateProofError(ModuleName)
 	}
 	// validate not over service
@@ -65,13 +66,26 @@ func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlo
 	if er != nil {
 		return sdk.ErrInternal(er.Error())
 	}
-	// generate the session
-	session, err := NewSession(app.GetPublicKey().RawString(), r.Proof.Blockchain, BlockHash(sessionContext), sessionBlockHeight, allNodes, sessionNodeCount)
-	if err != nil {
-		return err
+	// generate the header
+	header := SessionHeader{
+		ApplicationPubKey:  app.GetPublicKey().RawString(),
+		Chain:              r.Proof.Blockchain,
+		SessionBlockHeight: sessionBlockHeight,
+	}
+	// check cache
+	session, found := GetSession(header)
+	// if not found generate the session
+	if !found {
+		var err sdk.Error
+		session, err = NewSession(header, BlockHash(sessionContext), allNodes, sessionNodeCount)
+		if err != nil {
+			return err
+		}
+		// add to cache
+		SetSession(session)
 	}
 	// validate the session
-	err = session.Validate(ctx, node, app, sessionNodeCount)
+	err := session.Validate(ctx, node, app, sessionNodeCount)
 	if err != nil {
 		return err
 	}

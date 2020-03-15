@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/common"
 	tmTypes "github.com/tendermint/tendermint/types"
+	db "github.com/tendermint/tm-db"
 	"math/rand"
 	"strings"
 	"testing"
@@ -289,6 +290,8 @@ func TestClaimTx(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	// init cache in memory
+	pocketTypes.InitCache("data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100)
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	kb := getInMemoryKeybase()
 	for i := 0; i < 5; i++ {
@@ -320,23 +323,25 @@ func TestClaimTx(t *testing.T) {
 			t.Fatal(err)
 		}
 		proof.Signature = hex.EncodeToString(sig)
-		err = pocketTypes.GetEvidenceMap().AddToEvidence(pocketTypes.SessionHeader{
+		pocketTypes.SetProof(pocketTypes.SessionHeader{
 			ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
 			Chain:              dummyChainsHash,
 			SessionBlockHeight: 1,
-		}, proof)
+		}, pocketTypes.RelayEvidence, proof)
 		assert.Nil(t, err)
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	select {
 	case res := <-evtChan:
+		fmt.Println(res)
 		if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 			t.Fatal("claim message was not received first")
 		}
 		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		select {
 		case res := <-evtChan:
+			fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 				t.Fatal("proof message was not received afterward")
 			}
@@ -350,14 +355,11 @@ func TestClaimTxChallenge(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-	pocketTypes.GetEvidenceMap().Clear()
+	pocketTypes.InitCache("data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100)
 	genBz, keys, _, _ := fiveValidatorsOneAppGenesis()
 	challenges := NewValidChallengeProof(t, keys, 5)
 	for _, c := range challenges {
-		err := c.Handle()
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
+		c.Handle()
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)

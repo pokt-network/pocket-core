@@ -10,8 +10,8 @@ import (
 
 func TestKeeper_GetSetClaim(t *testing.T) {
 	ctx, _, _, _, keeper, _ := createTestInput(t, false)
-	npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	evidence, found := evidences.GetEvidence(header, types.RelayEvidence)
+	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	evidence, found := types.GetEvidence(header, types.RelayEvidence)
 	assert.True(t, found)
 	claim := types.MsgClaim{
 		SessionHeader: header,
@@ -36,8 +36,8 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 	var pubKeys []crypto.PublicKey
 
 	for i := 0; i < 2; i++ {
-		npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-		evidence, found := evidences.GetEvidence(header, types.RelayEvidence)
+		npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+		evidence, found := types.GetEvidence(header, types.RelayEvidence)
 		assert.True(t, found)
 		claim := types.MsgClaim{
 			SessionHeader: header,
@@ -71,12 +71,12 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 
 func TestKeeper_GetMatureClaims(t *testing.T) {
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
-	npk, evidences, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	npk2, evidences2, header2, _, _ := simulateRelays(t, keeper, &ctx, 999)
+	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk2, header2, _, _ := simulateRelays(t, keeper, &ctx, 20)
 
-	i, found := evidences.GetEvidence(header, types.RelayEvidence)
+	i, found := types.GetEvidence(header, types.RelayEvidence)
 	assert.True(t, found)
-	i2, found := evidences2.GetEvidence(header2, types.RelayEvidence)
+	i2, found := types.GetEvidence(header2, types.RelayEvidence)
 	assert.True(t, found)
 
 	matureClaim := types.MsgClaim{
@@ -118,12 +118,12 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 
 func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
-	npk, inevidenceMap, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	npk2, inevidenceMap2, header2, _, _ := simulateRelays(t, keeper, &ctx, 999)
+	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk2, header2, _, _ := simulateRelays(t, keeper, &ctx, 20)
 
-	i, found := inevidenceMap.GetEvidence(header, types.RelayEvidence)
+	i, found := types.GetEvidence(header, types.RelayEvidence)
 	assert.True(t, found)
-	i2, found := inevidenceMap2.GetEvidence(header2, types.RelayEvidence)
+	i2, found := types.GetEvidence(header2, types.RelayEvidence)
 	assert.True(t, found)
 	expiredClaim := types.MsgClaim{
 		SessionHeader: header,

@@ -69,3 +69,21 @@ func KeyForClaims(addr sdk.Address) ([]byte, error) {
 	}
 	return append(ClaimKey, addr.Bytes()...), nil
 }
+
+func KeyForEvidence(header SessionHeader, evidenceType EvidenceType) []byte {
+	return append(header.Hash(), evidenceType.Byte())
+}
+
+func KeyForEvidenceByProof(header SessionHeader, p Proof) []byte {
+	var evidenceType EvidenceType
+	switch p.(type) {
+	case RelayProof:
+		evidenceType = RelayEvidence
+	case ChallengeProofInvalidData:
+		evidenceType = ChallengeEvidence
+	default:
+		panic("unrecognized evidence type (key for evidence by proof)")
+	}
+	// generate the key for this specific Proof
+	return KeyForEvidence(header, evidenceType)
+}

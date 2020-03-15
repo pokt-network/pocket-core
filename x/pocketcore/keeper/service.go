@@ -36,10 +36,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
-	if err := relay.Proof.Handle(); err != nil {
-		ctx.Logger().Error(fmt.Errorf("could not handle proof for %v", sessionBlockHeight).Error())
-		return nil, err
-	}
+	relay.Proof.Handle()
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains)
 	if err != nil {
@@ -66,8 +63,6 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 }
 
 func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidData) (*pc.ChallengeResponse, sdk.Error) {
-	// retrieve all service nodes available from world state to do session generation (the session data is needed to service)
-	allNodes := k.GetAllNodes(ctx)
 	// get self node (your validator) from the current state
 	selfNode, err := k.GetSelfNode(ctx)
 	if err != nil {
@@ -81,22 +76,34 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	}
 	// get the application that staked on behalf of the client
 	app, found := k.GetAppFromPublicKey(ctx, challenge.MinorityResponse.Proof.Token.ApplicationPublicKey)
-	// generate the session // todo caching
-	session, err := pc.NewSession(app.GetPublicKey().RawString(), challenge.MinorityResponse.Proof.Blockchain, pc.BlockHash(sessionCtx), sessionBlkHeight, allNodes, int(k.SessionNodeCount(sessionCtx)))
-	if err != nil {
-		return nil, err
+	// generate header
+	header := pc.SessionHeader{
+		ApplicationPubKey:  app.GetPublicKey().RawString(),
+		Chain:              challenge.MinorityResponse.Proof.Blockchain,
+		SessionBlockHeight: sessionCtx.BlockHeight(),
+	}
+	// check cache
+	session, found := pc.GetSession(header)
+	// if not found generate the session
+	if !found {
+		var err sdk.Error
+		nodes := k.GetAllNodes(ctx)
+		session, err = pc.NewSession(header, pc.BlockHash(sessionCtx), nodes, int(k.SessionNodeCount(sessionCtx)))
+		if err != nil {
+			return nil, err
+		}
+		// add to cache
+		pc.SetSession(session)
 	}
 	if !found {
 		return nil, pc.NewAppNotFoundError(pc.ModuleName)
 	}
+	// validate the challenge
 	err = challenge.ValidateLocal(app.GetMaxRelays().Int64(), sessionBlkHeight, app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode.GetAddress())
 	if err != nil {
 		return nil, err
 	}
 	// store the challenge in memory
-	err = challenge.Handle()
-	if err != nil {
-		return nil, err
-	}
+	challenge.Handle()
 	return nil, nil
 }

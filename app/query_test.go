@@ -444,7 +444,7 @@ func TestQueryRelay(t *testing.T) {
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 		select {
 		case <-evtChan:
-			inv, found := types.GetEvidenceMap().GetEvidence(types.SessionHeader{
+			inv, found := types.GetEvidence(types.SessionHeader{
 				ApplicationPubKey:  aat.ApplicationPublicKey,
 				Chain:              relay.Proof.Blockchain,
 				SessionBlockHeight: relay.Proof.SessionBlockHeight,

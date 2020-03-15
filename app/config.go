@@ -99,6 +99,8 @@ func InitConfig(datadir string) string {
 	InitDataDirectory(datadir)
 	// init the keyfiles
 	pswrd := InitKeyfiles()
+	// init cache
+	InitPocketCoreCache(datadir)
 	// init genesis
 	InitGenesis()
 	return pswrd
@@ -254,6 +256,10 @@ func InitKeyfiles() string {
 		}
 	}
 	return password
+}
+
+func InitPocketCoreCache(dataDir string) {
+	types.InitCache(dataDir, dataDir, dbm.GoLevelDBBackend, dbm.GoLevelDBBackend, 100, 100)
 }
 
 // get the global keybase

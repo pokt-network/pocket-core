@@ -40,11 +40,11 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		// if the claim is found to be verified in the world state, you can delete it from the cache and not send again
 		if _, found := k.GetReceipt(ctx, addr, claim.SessionHeader, claim.EvidenceType); found {
 			// remove from the local cache
-			pc.GetEvidenceMap().DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+			pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
 			continue
 		}
 		// check to see if evidence is stored in cache
-		evidence, found := pc.GetEvidenceMap().GetEvidence(claim.SessionHeader, claim.EvidenceType)
+		evidence, found := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType)
 		if !found || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
 			continue
@@ -58,8 +58,8 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		// get the merkle proof object for the pseudorandom index
 		branch, cousinIndex := evidence.GenerateMerkleProof(int(index))
 		// get the leaf and cousin for the required pseudorandom index
-		leaf := pc.GetEvidenceMap().GetProof(claim.SessionHeader, claim.EvidenceType, int(index))
-		cousin := pc.GetEvidenceMap().GetProof(claim.SessionHeader, claim.EvidenceType, cousinIndex)
+		leaf := pc.GetProof(claim.SessionHeader, claim.EvidenceType, index)
+		cousin := pc.GetProof(claim.SessionHeader, claim.EvidenceType, int64(cousinIndex))
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, keybase, k)
 		if err != nil {

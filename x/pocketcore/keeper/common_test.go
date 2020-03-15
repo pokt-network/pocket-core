@@ -220,6 +220,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	defaultPocketParams := types.DefaultParams()
 	defaultPocketParams.SupportedBlockchains = []string{getTestSupportedBlockchain()}
 	keeper.SetParams(ctx, defaultPocketParams)
+	types.InitCache("data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100)
 	return ctx, vals, ap, accs, keeper, keys
 }
 
@@ -428,10 +429,8 @@ func getRandomPubKey() crypto.Ed25519PublicKey {
 func getRandomValidatorAddress() sdk.Address {
 	return sdk.Address(getRandomPubKey().Address())
 }
-func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk crypto.PublicKey, evidenceMap *types.EvidenceMap, validHeader types.SessionHeader, keys simulateRelayKeys, receipt types.Receipt) {
+func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk crypto.PublicKey, validHeader types.SessionHeader, keys simulateRelayKeys, receipt types.Receipt) {
 	npk = getRandomPubKey()
-	evidenceMap = types.GetEvidenceMap()
-
 	ethereum, err := types.NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -443,7 +442,6 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 		t.Fatalf(err.Error())
 	}
 	clientKey := getRandomPrivateKey()
-
 	validHeader = types.SessionHeader{
 		ApplicationPubKey:  getTestApplication().PublicKey.RawString(),
 		Chain:              ethereum,
@@ -459,7 +457,7 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	// NOTE Add a minimum of 5 proofs to memInvoice to be able to create a merkle tree
 	for j := 0; j < maxRelays; j++ {
 		proof := createProof(getTestApplicationPrivateKey(), clientKey, npk, ethereum, j)
-		evidenceMap.AddToEvidence(validHeader, proof)
+		types.SetProof(validHeader, types.RelayEvidence, proof)
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", k.storeKey).Return((*ctx).KVStore(k.storeKey))

@@ -16,7 +16,7 @@ type Proof interface {
 	GetSigners() []sdk.Address
 	SessionHeader() SessionHeader
 	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error
-	Handle() sdk.Error
+	Handle()
 	EvidenceType() EvidenceType
 }
 
@@ -190,9 +190,9 @@ func (rp RelayProof) HashStringWithSignature() string {
 	return hex.EncodeToString(rp.HashWithSignature())
 }
 
-func (rp RelayProof) Handle() sdk.Error {
+func (rp RelayProof) Handle() {
 	// add the Proof to the global (in memory) collection of proofs
-	return GetEvidenceMap().AddToEvidence(rp.SessionHeader(), rp)
+	SetProof(rp.SessionHeader(), RelayEvidence, rp)
 }
 
 func (rp RelayProof) GetSigners() []sdk.Address {
@@ -220,7 +220,7 @@ func (c ChallengeProofInvalidData) ValidateLocal(maxRelays, sessionblockHeight i
 		SessionBlockHeight: c.MinorityResponse.Proof.SessionBlockHeight,
 	}
 	// check for overflow on # of proofs
-	evidence, _ := GetEvidenceMap().GetEvidence(h, ChallengeEvidence)
+	evidence, _ := GetEvidence(h, ChallengeEvidence)
 	if evidence.NumOfProofs >= int64(math.Ceil(float64(maxRelays)/float64(len(supportedBlockchains)))/(float64(sessionNodeCount))) {
 		return NewOverServiceError(ModuleName)
 	}
@@ -417,9 +417,9 @@ func (c ChallengeProofInvalidData) GetSigners() []sdk.Address {
 	return []sdk.Address{c.ReporterAddress}
 }
 
-func (c ChallengeProofInvalidData) Handle() sdk.Error {
+func (c ChallengeProofInvalidData) Handle() {
 	// add the Proof to the global (in memory) collection of proofs
-	return GetEvidenceMap().AddToEvidence(c.SessionHeader(), c)
+	SetProof(c.SessionHeader(), ChallengeEvidence, c)
 }
 
 func (c ChallengeProofInvalidData) EvidenceType() EvidenceType {

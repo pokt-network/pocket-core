@@ -56,6 +56,8 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	}
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
+	// init cache in memory
+	pocketTypes.InitCache("data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100)
 	// start the in memory node
 	err := tendermintNode.Start()
 	// assert that it is not nil
@@ -70,6 +72,8 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		if err != nil {
 			panic(err)
 		}
+		pocketTypes.ClearEvidence()
+		pocketTypes.ClearSessionCache()
 		inMemKB = nil
 		return
 	}
@@ -398,8 +402,10 @@ func getInMemHostedChains() pocketTypes.HostedBlockchains {
 func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg = tmCfg.TestConfig()
 	tmConfg.RPC.ListenAddress = defaultTMURI
-	tmConfg.Consensus.CreateEmptyBlocksInterval = time.Duration(10) * time.Millisecond
-	tmConfg.Consensus.TimeoutCommit = time.Duration(10) * time.Millisecond
+	tmConfg.Consensus.CreateEmptyBlocks = true // Set this to false to only produce blocks when there are txs or when the AppHash changes
+	tmConfg.Consensus.SkipTimeoutCommit = false
+	tmConfg.Consensus.CreateEmptyBlocksInterval = time.Duration(50) * time.Millisecond
+	tmConfg.Consensus.TimeoutCommit = time.Duration(50) * time.Millisecond
 	return
 }
 

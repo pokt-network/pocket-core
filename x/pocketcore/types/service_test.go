@@ -20,6 +20,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
+	InitCacheTest()
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -190,6 +191,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			assert.Equal(t, tt.relay.Validate(newContext(t, false), tt.node,
 				tt.hb, 1, 5, tt.allNodes, tt.app) != nil, tt.hasError)
 		})
+		ClearSessionCache()
 	}
 }
 
@@ -291,9 +293,9 @@ func TestRelay_HandleProof(t *testing.T) {
 		},
 	}
 	validRelay.Proof.RequestHash = validRelay.RequestHashString()
-	err = validRelay.Proof.Handle()
+	validRelay.Proof.Handle()
 	assert.Nil(t, err)
-	res := GetEvidenceMap().GetProof(SessionHeader{
+	res := GetProof(SessionHeader{
 		ApplicationPubKey:  appPubKey,
 		Chain:              ethereum,
 		SessionBlockHeight: 1,

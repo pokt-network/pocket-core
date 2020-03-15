@@ -60,7 +60,6 @@ func TestNewSessionNodes(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-
 	fakePubKey1, err := crypto.NewPublicKey("36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab81")
 	if err != nil {
 		t.Fatalf(err.Error())
