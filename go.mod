@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/btcsuite/btcd v0.0.0-20190824003749-130ea5bddde3 // indirect
 	github.com/go-kit/kit v0.9.0
+	github.com/hashicorp/golang-lru v0.5.4
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.11.0 // indirect

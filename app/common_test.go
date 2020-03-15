@@ -54,6 +54,8 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	}
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
+	// init cache in memory
+	pocketTypes.InitCache("data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100)
 	// start the in memory node
 	err := tendermintNode.Start()
 	// assert that it is not nil
@@ -68,6 +70,8 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		if err != nil {
 			panic(err)
 		}
+		pocketTypes.ClearEvidence()
+		pocketTypes.ClearSessionCache()
 		inMemKB = nil
 		return
 	}
@@ -297,7 +301,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	loggerFile, _ := os.Open(os.DevNull)
 	c := config{
 		TmConfig: getTestConfig(),
-		Logger:   log.NewTMLogger(log.NewSyncWriter(loggerFile)),
+		Logger:   log.NewTMLogger(loggerFile),
 	}
 	db := dbm.NewMemDB()
 	traceWriter, err := openTraceWriter(c.TraceWriter)
@@ -406,6 +410,8 @@ func getTestConfig() (newTMConfig *tmCfg.Config) {
 	newTMConfig.RPC.ListenAddress = defaultListenAddr + "36657"
 	newTMConfig.P2P.ListenAddress = defaultListenAddr + "36656" // Node listen address. (0.0.0.0:0 means any interface, any port)
 	newTMConfig.Consensus = tmCfg.TestConsensusConfig()
+	newTMConfig.Consensus.CreateEmptyBlocks = true // Set this to false to only produce blocks when there are txs or when the AppHash changes
+	newTMConfig.Consensus.SkipTimeoutCommit = false
 	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(10) * time.Millisecond
 	newTMConfig.Consensus.TimeoutCommit = time.Duration(10) * time.Millisecond
 	newTMConfig.P2P.MaxNumInboundPeers = 40

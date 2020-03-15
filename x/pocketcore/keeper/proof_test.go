@@ -8,16 +8,15 @@ import (
 )
 
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
-	types.GetEvidenceMap().Clear()
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
-	npk, evidenceMap, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	evidence, found := evidenceMap.GetEvidence(header, types.RelayEvidence)
+	types.ClearEvidence()
+	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	evidence, found := types.GetEvidence(header, types.RelayEvidence)
 	if !found {
-		t.Fatalf("Set invoice not found")
+		t.Fatalf("Set evidence not found")
 	}
-
 	root := evidence.GenerateMerkleRoot()
-	totalRelays := evidenceMap.GetTotalRelays(header)
+	totalRelays := types.GetTotalProofs(header, types.RelayEvidence)
 	assert.Equal(t, totalRelays, int64(5))
 	// generate a claim message
 	claimMsg := types.MsgClaim{
@@ -27,7 +26,6 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 		FromAddress:   sdk.Address(npk.Address()),
 		EvidenceType:  types.RelayEvidence,
 	}
-
 	mockCtx := &Ctx{}
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
@@ -39,17 +37,11 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	// generate the pseudorandom proof
 	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header)
 	assert.Nil(t, er)
-
-	// create the proof message
-	ev, found := evidenceMap.GetEvidence(header, types.RelayEvidence)
-	if !found {
-		t.Fatalf("Set evidence not found 2")
-	}
-	merkleProofs, cousinIndex := ev.GenerateMerkleProof(int(neededLeafIndex))
+	merkleProofs, cousinIndex := evidence.GenerateMerkleProof(int(neededLeafIndex))
 	// get leaf and cousin node
-	leafNode := evidenceMap.GetProof(header, types.RelayEvidence, int(neededLeafIndex))
+	leafNode := types.GetProof(header, types.RelayEvidence, neededLeafIndex)
 	// get leaf and cousin node
-	cousinNode := evidenceMap.GetProof(header, types.RelayEvidence, cousinIndex)
+	cousinNode := types.GetProof(header, types.RelayEvidence, int64(cousinIndex))
 	// create proof message
 	proofMsg := types.MsgProof{
 		MerkleProofs: merkleProofs,
@@ -68,11 +60,14 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 }
 
 func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
-	var totalRelays []int = []int{10, 1000, 10000000}
+	var totalRelays []int = []int{10, 100, 10000000}
 	for _, relays := range totalRelays {
 		ctx, _, _, _, keeper, keys := createTestInput(t, false)
-		_, _, header, _, _ := simulateRelays(t, keeper, &ctx, 999)
-
+		header := types.SessionHeader{
+			ApplicationPubKey:  "asdlfj",
+			Chain:              "lkajsdf",
+			SessionBlockHeight: 1,
+		}
 		mockCtx := new(Ctx)
 		mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 		mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))

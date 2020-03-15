@@ -90,6 +90,8 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 			am.keeper.SendClaimTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ClaimTx)
 			// auto claim the proofs
 			am.keeper.SendProofTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ProofTx)
+			// clear session cache and db
+			types.ClearSessionCache()
 		}()
 	}
 	keeper.BeginBlocker(ctx, req, am.keeper)

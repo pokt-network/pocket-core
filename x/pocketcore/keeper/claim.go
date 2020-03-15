@@ -17,10 +17,10 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the claimTX:\n%v", err))
 		return
 	}
-	// get all the evidenceMap held in memory
-	evidenceMap := pc.GetEvidenceMap()
-	// for every evidence in EvidenceMap
-	for _, evidence := range (*evidenceMap).M {
+	iter := pc.EvidenceIterator()
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		evidence := iter.Value()
 		evidenceLength := len(evidence.Proofs)
 		if evidenceLength == 0 {
 			ctx.Logger().Error("evidence of length zero was found in evidence map")
@@ -28,13 +28,13 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		}
 		evidenceType := evidence.Proofs[0].EvidenceType()
 		if evidenceLength < 5 {
-			evidenceMap.DeleteEvidence(evidence.SessionHeader, evidenceType)
+			pc.DeleteEvidence(evidence.SessionHeader, evidenceType)
 			continue
 		}
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid for unsupported blockchains
 		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) && evidence.NumOfProofs > 0 {
 			ctx.Logger().Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
-			evidenceMap.DeleteEvidence(evidence.SessionHeader, evidenceType)
+			pc.DeleteEvidence(evidence.SessionHeader, evidenceType)
 			continue
 		}
 		// check the current state to see if the unverified evidence has already been sent and processed (if so, then skip this evidence)
@@ -43,7 +43,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			continue
 		}
 		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
-			evidenceMap.DeleteEvidence(evidence.SessionHeader, evidenceType)
+			pc.DeleteEvidence(evidence.SessionHeader, evidenceType)
 			continue
 		}
 		// generate the merkle root for this evidence
@@ -74,7 +74,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) sdk.Error {
 	if !k.IsPocketSupportedBlockchain(sessionContext, claim.Chain) {
 		return pc.NewChainNotSupportedErr(pc.ModuleName)
 	}
-	// get the node from the k at the time of the session
+	// get the node from the keeper at the time of the session
 	node, found := k.GetNode(sessionContext, claim.FromAddress)
 	// if not found return not found error
 	if !found {
@@ -86,18 +86,24 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) sdk.Error {
 	if !found {
 		return pc.NewAppNotFoundError(pc.ModuleName)
 	}
-	// get all the available service nodes at the time of the session
-	allNodes := k.GetAllNodes(sessionContext)
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
-	// generate the session
-	session, err := pc.NewSession(app.GetPublicKey().RawString(), claim.Chain, pc.BlockHash(sessionContext), claim.SessionBlockHeight, allNodes, sessionNodeCount)
-	if err != nil {
-		ctx.Logger().Error(fmt.Errorf("Could not generate session with public key: %s,  for chain: %s", app.GetPublicKey().RawString(), claim.Chain).Error())
-		return err
+	// check cache
+	session, found := pc.GetSession(claim.SessionHeader)
+	// if not found generate the session
+	if !found {
+		var err sdk.Error
+		nodes := k.GetAllNodes(ctx)
+		session, err = pc.NewSession(claim.SessionHeader, pc.BlockHash(sessionContext), nodes, sessionNodeCount)
+		if err != nil {
+			ctx.Logger().Error(fmt.Errorf("Could not generate session with public key: %s,  for chain: %s", app.GetPublicKey().RawString(), claim.Chain).Error())
+			return err
+		}
+		// add to cache
+		pc.SetSession(session)
 	}
 	// validate the session
-	err = session.Validate(ctx, node, app, sessionNodeCount)
+	err := session.Validate(ctx, node, app, sessionNodeCount)
 	if err != nil {
 		return err
 	}

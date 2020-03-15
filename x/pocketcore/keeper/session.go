@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"encoding/hex"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 )
@@ -17,13 +16,20 @@ func (k Keeper) Dispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.Dispat
 	if er != nil {
 		return nil, sdk.ErrInternal(er.Error())
 	}
-	sessionBlkHeader := sessionCtx.BlockHeader()
-	nodes := k.GetAllNodes(ctx)
-	session, err := types.NewSession(header.ApplicationPubKey, header.Chain, hex.EncodeToString(sessionBlkHeader.LastBlockId.Hash), header.SessionBlockHeight, nodes, int(k.SessionNodeCount(ctx)))
-	if err != nil {
-		return nil, err
+	// check cache
+	session, found := types.GetSession(header)
+	// if not found generate the session
+	if !found {
+		var err sdk.Error
+		nodes := k.GetAllNodes(ctx)
+		session, err = types.NewSession(header, types.BlockHash(sessionCtx), nodes, int(k.SessionNodeCount(sessionCtx)))
+		if err != nil {
+			return nil, err
+		}
+		// add to cache
+		types.SetSession(session)
 	}
-	return &types.DispatchResponse{Session: *session, BlockHeight: ctx.BlockHeight()}, nil
+	return &types.DispatchResponse{Session: session, BlockHeight: ctx.BlockHeight()}, nil
 }
 
 // is the context block a session block?

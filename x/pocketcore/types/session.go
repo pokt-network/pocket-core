@@ -18,26 +18,22 @@ type Session struct {
 }
 
 // create a new session from seed data
-func NewSession(appPubKey string, nonNativeChain string, blockHash string, blockHeight int64, allActiveNodes []nodeexported.ValidatorI, sessionNodesCount int) (*Session, sdk.Error) {
+func NewSession(sessionHeader SessionHeader, blockHash string, allActiveNodes []nodeexported.ValidatorI, sessionNodesCount int) (Session, sdk.Error) {
 	// first generate session key
-	sessionKey, err := NewSessionKey(appPubKey, nonNativeChain, blockHash)
+	sessionKey, err := NewSessionKey(sessionHeader.ApplicationPubKey, sessionHeader.Chain, blockHash)
 	if err != nil {
-		return nil, err
+		return Session{}, err
 	}
 	// then generate the service nodes for that session
-	sessionNodes, err := NewSessionNodes(nonNativeChain, sessionKey, allActiveNodes, sessionNodesCount)
+	sessionNodes, err := NewSessionNodes(sessionHeader.Chain, sessionKey, allActiveNodes, sessionNodesCount)
 	if err != nil {
-		return nil, err
+		return Session{}, err
 	}
 	// then populate the structure and return
-	return &Session{
-		SessionKey: sessionKey,
-		SessionHeader: SessionHeader{
-			ApplicationPubKey:  appPubKey,
-			Chain:              nonNativeChain,
-			SessionBlockHeight: blockHeight,
-		},
-		SessionNodes: sessionNodes,
+	return Session{
+		SessionKey:    sessionKey,
+		SessionHeader: sessionHeader,
+		SessionNodes:  sessionNodes,
 	}, nil
 }
 
