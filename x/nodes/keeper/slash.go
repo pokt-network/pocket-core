@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
-	"time"
 
 	sdk "github.com/pokt-network/posmint/types"
 )
@@ -93,7 +94,8 @@ func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight in
 func (k Keeper) handleDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHeight int64, timestamp time.Time, power int64) {
 	address, _, _, err := k.validateDoubleSign(ctx, addr, infractionHeight, timestamp)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error(err.Error())
+		return
 	}
 	distributionHeight := infractionHeight - sdk.ValidatorUpdateDelay
 	// get the percentage slash penalty fraction

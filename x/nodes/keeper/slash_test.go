@@ -2,13 +2,14 @@ package keeper
 
 import (
 	"fmt"
+	"reflect"
+	"testing"
+	"time"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/crypto"
-	"reflect"
-	"testing"
-	"time"
 )
 
 func TestGetAndSetValidatorBurn(t *testing.T) {
@@ -288,32 +289,32 @@ func TestHandleDoubleSign(t *testing.T) {
 		validator      types.Validator
 		tombstoned     bool
 		message        string
+		found          bool
 		pubKeyRelation bool
 	}
 	tests := []struct {
-		name   string
-		panics bool
+		name string
 		args
 		expected
 	}{
 		{
-			name:   "handles double signature",
-			panics: false,
-			args:   args{validator: stakedValidator, power: int64(10)},
+			name: "handles double signature",
+			args: args{validator: stakedValidator, power: int64(10)},
 			expected: expected{
 				validator:      stakedValidator,
 				pubKeyRelation: true,
+				found:          true,
 				tombstoned:     false,
 			},
 		},
 		{
-			name:   "ignores double signature on tombstoned validator",
-			panics: true,
-			args:   args{validator: stakedValidator},
+			name: "ignores double signature on tombstoned validator",
+			args: args{validator: stakedValidator},
 			expected: expected{
 				validator:      stakedValidator,
 				pubKeyRelation: true,
 				tombstoned:     true,
+				found:          true,
 				message:        fmt.Sprintf("ERROR:\nCodespace: pos\nCode: 113\nMessage: \"Warning: validator is already tombstoned\"\n"),
 			},
 		},
@@ -331,33 +332,19 @@ func TestHandleDoubleSign(t *testing.T) {
 				JailedUntil: time.Unix(0, 0),
 			}
 
-			switch test.panics {
-			case true:
-				defer func() {
-					err := recover().(error)
-					assert.Equal(t, test.expected.message, err.Error(), "errors do not match")
-				}()
-				if test.expected.tombstoned {
-					signingInfo.Tombstoned = test.expected.tombstoned
-				}
-				infractionHeight := context.BlockHeight()
-				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
-				keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
-			default:
-				if test.expected.tombstoned {
-					signingInfo.Tombstoned = test.expected.tombstoned
-				}
-				infractionHeight := context.BlockHeight()
-				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
-				keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
-
-				signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
-				if !found {
-					t.FailNow()
-				}
-
-				assert.False(t, signingInfo.Tombstoned)
+			if test.expected.tombstoned {
+				signingInfo.Tombstoned = test.expected.tombstoned
 			}
+			infractionHeight := context.BlockHeight()
+			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
+			keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
+
+			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
+			if found != test.expected.found {
+				t.FailNow()
+			}
+
+			assert.Equal(t, test.expected.tombstoned, signingInfo.Tombstoned)
 		})
 	}
 }
