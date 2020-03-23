@@ -23,7 +23,7 @@ import (
 
 const (
 	Tag     = "RC-"
-	Version = "0.2.0"
+	Version = "0.2.1"
 )
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
