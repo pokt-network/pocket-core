@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/params"
 	"github.com/tendermint/go-amino"
 	"reflect"
 	"testing"
@@ -343,7 +342,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   params.ParamSetPairs
+		want   types.ParamSetPairs
 	}{
 		{"Test Set Pairs", fields{
 			UnstakingTime:           DefaultUnstakingTime,

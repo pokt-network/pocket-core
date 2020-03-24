@@ -31,8 +31,6 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryStakedPool(ctx, k)
 		case types.QueryUnstakedPool:
 			return queryUnstakedPool(ctx, k)
-		case types.QueryDAO:
-			return queryDAO(ctx, k)
 		case types.QueryAccountBalance:
 			return queryAccountBalance(ctx, req, k)
 		case types.QueryAccount:
@@ -198,16 +196,6 @@ func queryUnstakedPool(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
 	}
 
-	return res, nil
-}
-
-func queryDAO(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
-	daoPool := k.GetDAOTokens(ctx)
-	pool := types.NewPool(daoPool)
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
-	if err != nil {
-		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
-	}
 	return res, nil
 }
 

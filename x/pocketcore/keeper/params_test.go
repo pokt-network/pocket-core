@@ -3,13 +3,13 @@ package keeper
 import (
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/x/params"
+	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestParamKeyTable(t *testing.T) {
-	p := params.NewKeyTable().RegisterParamSet(&types.Params{})
+	p := sdk.NewKeyTable().RegisterParamSet(&types.Params{})
 	assert.Equal(t, ParamKeyTable(), p)
 }
 

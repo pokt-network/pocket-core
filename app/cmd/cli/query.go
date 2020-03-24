@@ -29,6 +29,9 @@ func init() {
 	queryCmd.AddCommand(queryPocketParams)
 	queryCmd.AddCommand(queryPocketSupportedChains)
 	queryCmd.AddCommand(querySupply)
+	queryCmd.AddCommand(queryUpgrade)
+	queryCmd.AddCommand(queryACL)
+	queryCmd.AddCommand(queryDAOOwner)
 }
 
 var queryCmd = &cobra.Command{
@@ -518,5 +521,83 @@ var querySupply = &cobra.Command{
 			"Dao Supply:\t%v\nTotal Staked:\t%v\nTotalUnstaked:\t%v\nTotal Supply:\t%v\n\n",
 			nodesStake, appsStaked, dao, totalStaked, totalUnstaked, total,
 		)
+	},
+}
+
+var queryDAOOwner = &cobra.Command{
+	Use:   "daoOwner <height>",
+	Short: "Gets the owner of the dao",
+	Long:  `Returns the owner of the DAO (the account that can send/burn coins from the dao)`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+		res, err := app.QueryDaoOwner(int64(height))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Printf("%v\n", res)
+	},
+}
+
+var queryACL = &cobra.Command{
+	Use:   "acl <height>",
+	Short: "Gets the gov acl",
+	Long:  `Returns the access control list of governance params (which account can change the param)`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+		res, err := app.QueryACL(int64(height))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Printf("%v\n", res)
+	},
+}
+
+var queryUpgrade = &cobra.Command{
+	Use:   "upgrade <height>",
+	Short: "Gets the latest gov upgrade",
+	Long:  `Returns the latest protocol upgrade by governance`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		var height int
+		if len(args) == 0 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[0])
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+		res, err := app.QueryUpgrade(int64(height))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Printf("%v\n", res)
 	},
 }

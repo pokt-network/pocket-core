@@ -5,6 +5,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/tendermint/go-amino"
 )
 
@@ -61,7 +62,7 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 			panic(err)
 		}
 		// send to rest dao
-		if err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, types.DAOPoolName, daoRewardCoins); err != nil {
+		if err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, govTypes.DAOAccountName, daoRewardCoins); err != nil {
 			panic(err)
 		}
 		logger.Info(fmt.Sprintf("minted %s to block proposer: %s", propRewardCoins.String(), proposerValidator.GetAddress().String()))

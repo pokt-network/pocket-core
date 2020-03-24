@@ -11,10 +11,13 @@ import (
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	bam "github.com/pokt-network/posmint/baseapp"
+	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
+	"github.com/pokt-network/posmint/x/gov"
+	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -29,19 +32,23 @@ const (
 // NewPocketCoreApp is a constructor function for pocketCoreApp
 func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
 	app := newPocketBaseApp(logger, db, baseAppOptions...)
-	// The ParamsKeeper handles parameter storage for the application
-	app.paramsKeeper = params.NewKeeper(app.cdc, app.keys[params.StoreKey], app.tkeys[params.TStoreKey], params.DefaultCodespace)
+	// setup subspaces
+	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
+	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
+	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
+	appsSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
+	pocketSubspace := sdk.NewSubspace(pocketTypes.DefaultParamspace)
 	// The AccountKeeper handles address -> account lookups
 	app.accountKeeper = auth.NewAccountKeeper(
 		app.cdc,
 		app.keys[auth.StoreKey],
-		app.paramsKeeper.Subspace(auth.DefaultParamspace),
+		authSubspace,
 		auth.ProtoBaseAccount,
 	)
 	// The BankKeeper allows you perform sdk.Coins interactions
 	app.bankKeeper = bank.NewBaseKeeper(
 		app.accountKeeper,
-		app.paramsKeeper.Subspace(bank.DefaultParamspace),
+		bankSubspace,
 		bank.DefaultCodespace,
 		app.ModuleAccountAddrs(),
 	)
@@ -60,7 +67,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.accountKeeper,
 		app.bankKeeper,
 		app.supplyKeeper,
-		app.paramsKeeper.Subspace(nodesTypes.DefaultParamspace),
+		nodesSubspace,
 		nodesTypes.DefaultCodespace,
 	)
 	// The apps keeper handles pocket core applications
@@ -70,7 +77,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.bankKeeper,
 		app.nodesKeeper,
 		app.supplyKeeper,
-		app.paramsKeeper.Subspace(appsTypes.DefaultParamspace),
+		appsSubspace,
 		appsTypes.DefaultCodespace,
 	)
 	// The main pocket core
@@ -80,8 +87,17 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.nodesKeeper,
 		app.appsKeeper,
 		getHostedChains(),
-		app.paramsKeeper.Subspace(pocketTypes.DefaultParamspace),
+		pocketSubspace,
 		getCoinbasePassphrase(),
+	)
+	// The governance keeper
+	app.govKeeper = govKeeper.NewKeeper(
+		app.cdc,
+		app.keys[pocketTypes.StoreKey],
+		app.tkeys[pocketTypes.StoreKey],
+		govTypes.DefaultCodespace,
+		app.supplyKeeper,
+		authSubspace, bankSubspace, nodesSubspace, appsSubspace, pocketSubspace,
 	)
 	// add the keybase to the pocket core keeper
 	app.pocketKeeper.Keybase = MustGetKeybase()
@@ -94,6 +110,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper),
 		apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper),
 		pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper),
+		gov.NewAppModule(app.govKeeper),
 	)
 	// setup the order of begin and end blockers
 	app.mm.SetOrderBeginBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName)
@@ -106,6 +123,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		appsTypes.ModuleName,
 		pocketTypes.ModuleName,
 		supply.ModuleName,
+		gov.ModuleName,
 	)
 	// register all module routes and module queriers
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())

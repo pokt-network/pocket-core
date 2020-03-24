@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/pokt-network/posmint/x/params"
+	"github.com/pokt-network/posmint/types"
 )
 
 // POS params default values
@@ -28,7 +28,7 @@ var (
 	KeyClaimExpiration       = []byte("ClaimExpiration")
 )
 
-var _ params.ParamSet = (*Params)(nil)
+var _ types.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
@@ -39,8 +39,8 @@ type Params struct {
 }
 
 // Implements params.ParamSet
-func (p *Params) ParamSetPairs() params.ParamSetPairs {
-	return params.ParamSetPairs{
+func (p *Params) ParamSetPairs() types.ParamSetPairs {
+	return types.ParamSetPairs{
 		{Key: KeySessionNodeCount, Value: &p.SessionNodeCount},
 		{Key: KeyClaimSubmissionWindow, Value: &p.ClaimSubmissionWindow},
 		{Key: KeySupportedBlockchains, Value: &p.SupportedBlockchains},

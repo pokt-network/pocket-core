@@ -23,7 +23,9 @@ import (
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
+	"github.com/pokt-network/posmint/x/gov"
+	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -90,8 +92,8 @@ var (
 		auth.FeeCollectorName:     nil,
 		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking, supply.Minter},
 		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
-		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking, supply.Minter},
 		nodesTypes.ModuleName:     {supply.Burner, supply.Staking, supply.Minter},
+		govTypes.DAOAccountName:   {supply.Burner, supply.Staking, supply.Minter},
 		appsTypes.ModuleName:      nil,
 	}
 	genState cfg.GenesisState
@@ -117,7 +119,7 @@ type memoryPCApp struct {
 	bankKeeper    bank.Keeper
 	supplyKeeper  supply.Keeper
 	nodesKeeper   nodesKeeper.Keeper
-	paramsKeeper  params.Keeper
+	govKeeper     govKeeper.Keeper
 	pocketKeeper  pocketKeeper.Keeper
 	mm            *module.Manager
 }
@@ -125,19 +127,27 @@ type memoryPCApp struct {
 // NewPocketCoreApp is a constructor function for pocketCoreApp
 func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *memoryPCApp {
 	app := newMemoryPCBaseApp(logger, db, baseAppOptions...)
-	app.paramsKeeper = params.NewKeeper(app.cdc, app.keys[params.StoreKey], app.tkeys[params.TStoreKey], params.DefaultCodespace)
+	// setup subspaces
+	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
+	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
+	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
+	appsSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
+	pocketSubspace := sdk.NewSubspace(pocketTypes.DefaultParamspace)
+	// The AccountKeeper handles address -> account lookups
 	app.accountKeeper = auth.NewAccountKeeper(
 		app.cdc,
 		app.keys[auth.StoreKey],
-		app.paramsKeeper.Subspace(auth.DefaultParamspace),
+		authSubspace,
 		auth.ProtoBaseAccount,
 	)
+	// The BankKeeper allows you perform sdk.Coins interactions
 	app.bankKeeper = bank.NewBaseKeeper(
 		app.accountKeeper,
-		app.paramsKeeper.Subspace(bank.DefaultParamspace),
+		bankSubspace,
 		bank.DefaultCodespace,
 		app.ModuleAccountAddrs(),
 	)
+	// The SupplyKeeper collects transaction fees
 	app.supplyKeeper = supply.NewKeeper(
 		app.cdc,
 		app.keys[supply.StoreKey],
@@ -145,32 +155,44 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		app.bankKeeper,
 		memoryModAccPerms,
 	)
+	// The nodesKeeper keeper handles pocket core nodes
 	app.nodesKeeper = nodesKeeper.NewKeeper(
 		app.cdc,
 		app.keys[nodesTypes.StoreKey],
 		app.accountKeeper,
 		app.bankKeeper,
 		app.supplyKeeper,
-		app.paramsKeeper.Subspace(nodesTypes.DefaultParamspace),
+		nodesSubspace,
 		nodesTypes.DefaultCodespace,
 	)
+	// The apps keeper handles pocket core applications
 	app.appsKeeper = appsKeeper.NewKeeper(
 		app.cdc,
 		app.keys[appsTypes.StoreKey],
 		app.bankKeeper,
 		app.nodesKeeper,
 		app.supplyKeeper,
-		app.paramsKeeper.Subspace(appsTypes.DefaultParamspace),
+		appsSubspace,
 		appsTypes.DefaultCodespace,
 	)
+	// The main pocket core
 	app.pocketKeeper = pocketKeeper.NewPocketCoreKeeper(
 		app.keys[pocketTypes.StoreKey],
 		app.cdc,
 		app.nodesKeeper,
 		app.appsKeeper,
 		getInMemHostedChains(),
-		app.paramsKeeper.Subspace(pocketTypes.DefaultParamspace),
+		pocketSubspace,
 		"test",
+	)
+	// The governance keeper
+	app.govKeeper = govKeeper.NewKeeper(
+		app.cdc,
+		app.keys[pocketTypes.StoreKey],
+		app.tkeys[pocketTypes.StoreKey],
+		govTypes.DefaultCodespace,
+		app.supplyKeeper,
+		authSubspace, bankSubspace, nodesSubspace, appsSubspace, pocketSubspace,
 	)
 	app.pocketKeeper.Keybase = getInMemoryKeybase()
 	app.pocketKeeper.TmNode = getInMemoryTMClient()
@@ -181,6 +203,7 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper),
 		apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper),
 		pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper),
+		gov.NewAppModule(app.govKeeper),
 	)
 	app.mm.SetOrderBeginBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName)
 	app.mm.SetOrderEndBlockers(nodesTypes.ModuleName, appsTypes.ModuleName)
@@ -191,6 +214,7 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		appsTypes.ModuleName,
 		pocketTypes.ModuleName,
 		supply.ModuleName,
+		gov.ModuleName,
 	)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	app.SetInitChainer(app.InitChainer)
@@ -209,8 +233,8 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 func newMemoryPCBaseApp(logger log.Logger, db dbm.DB, options ...func(*bam.BaseApp)) *memoryPCApp {
 	bApp := bam.NewBaseApp("pocket-test", logger, db, auth.DefaultTxDecoder(memCodec()), options...)
 	bApp.SetAppVersion("0.0.0")
-	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, params.StoreKey, pocketTypes.StoreKey)
-	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, params.TStoreKey)
+	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
+	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
 	// Create the application
 	return &memoryPCApp{
 		BaseApp: bApp,
@@ -346,7 +370,7 @@ func memCodec() *codec.Codec {
 			apps.AppModuleBasic{},
 			auth.AppModuleBasic{},
 			bank.AppModuleBasic{},
-			params.AppModuleBasic{},
+			gov.AppModuleBasic{},
 			nodes.AppModuleBasic{},
 			supply.AppModuleBasic{},
 			pocket.AppModuleBasic{},
@@ -445,10 +469,11 @@ func oneValTwoNodeGenesisState() []byte {
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
+		gov.AppModuleBasic{},
 		nodes.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
+		gov.AppModuleBasic{},
 	).DefaultGenesis()
 	// set coinbase as a validator
 	rawPOS := defaultGenesis[nodesTypes.ModuleName]
@@ -487,9 +512,64 @@ func oneValTwoNodeGenesisState() []byte {
 	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
 	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
 	defaultGenesis[pocketTypes.ModuleName] = res3
+	// set default governance in genesis
+	var govGenesisState govTypes.GenesisState
+	rawGov := defaultGenesis[govTypes.ModuleName]
+	memCodec().MustUnmarshalJSON(rawGov, &govGenesisState)
+	mACL := createTestACL(kp1)
+	govGenesisState.Params.ACL = govTypes.BaseACL{M: mACL.GetAll()}
+	govGenesisState.Params.DAOOwner = kp1.GetAddress()
+	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
+	res4 := memCodec().MustMarshalJSON(govGenesisState)
+	defaultGenesis[govTypes.ModuleName] = res4
+	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
+	// end genesis setup
 	genState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j
+}
+
+var testACL govTypes.ACL
+
+func createTestACL(kp keys.KeyPair) govTypes.ACL {
+	if testACL == nil {
+		acl := &govTypes.NonMapACL{}
+		*acl = make([]govTypes.ACLPair, 0)
+		acl.SetOwner("bank/sendenabled", kp.GetAddress())
+		acl.SetOwner("auth/MaxMemoCharacters", kp.GetAddress())
+		acl.SetOwner("auth/TxSigLimit", kp.GetAddress())
+		acl.SetOwner("auth/TxSizeCostPerByte", kp.GetAddress())
+		acl.SetOwner("gov/daoOwner", kp.GetAddress())
+		acl.SetOwner("gov/acl", kp.GetAddress())
+		acl.SetOwner("pos/StakeDenom", kp.GetAddress())
+		acl.SetOwner("pocketcore/SupportedBlockchains", kp.GetAddress())
+		acl.SetOwner("pos/DowntimeJailDuration", kp.GetAddress())
+		acl.SetOwner("pos/SlashFractionDoubleSign", kp.GetAddress())
+		acl.SetOwner("pos/SlashFractionDowntime", kp.GetAddress())
+		acl.SetOwner("application/ApplicationStakeMinimum", kp.GetAddress())
+		acl.SetOwner("pocketcore/ClaimExpiration", kp.GetAddress())
+		acl.SetOwner("pocketcore/SessionNodeCount", kp.GetAddress())
+		acl.SetOwner("pos/MaxValidators", kp.GetAddress())
+		acl.SetOwner("pos/ProposerPercentage", kp.GetAddress())
+		acl.SetOwner("application/StabilityAdjustment", kp.GetAddress())
+		acl.SetOwner("application/AppUnstakingTime", kp.GetAddress())
+		acl.SetOwner("application/ParticipationRateOn", kp.GetAddress())
+		acl.SetOwner("pos/MaxEvidenceAge", kp.GetAddress())
+		acl.SetOwner("pos/MinSignedPerWindow", kp.GetAddress())
+		acl.SetOwner("pos/StakeMinimum", kp.GetAddress())
+		acl.SetOwner("pos/UnstakingTime", kp.GetAddress())
+		acl.SetOwner("application/BaseRelaysPerPOKT", kp.GetAddress())
+		acl.SetOwner("auth/TxSizeCostPerByte", kp.GetAddress())
+		acl.SetOwner("pocketcore/ClaimSubmissionWindow", kp.GetAddress())
+		acl.SetOwner("pos/DAOAllocation", kp.GetAddress())
+		acl.SetOwner("pos/SignedBlocksWindow", kp.GetAddress())
+		acl.SetOwner("pos/SessionBlockFrequency", kp.GetAddress())
+		acl.SetOwner("application/MaxApplications", kp.GetAddress())
+		acl.SetOwner("gov/daoOwner", kp.GetAddress())
+		acl.SetOwner("gov/upgrade", kp.GetAddress())
+		testACL = acl
+	}
+	return testACL
 }
 
 func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validators, app appsTypes.Application) {
@@ -513,7 +593,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
+		gov.AppModuleBasic{},
 		nodes.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
@@ -600,6 +680,18 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
 	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
 	defaultGenesis[pocketTypes.ModuleName] = res3
+	// set default governance in genesis
+	var govGenesisState govTypes.GenesisState
+	rawGov := defaultGenesis[govTypes.ModuleName]
+	memCodec().MustUnmarshalJSON(rawGov, &govGenesisState)
+	nMACL := createTestACL(kp1)
+	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
+	govGenesisState.Params.ACL = govTypes.BaseACL{M: nMACL.GetAll()}
+	govGenesisState.Params.DAOOwner = kp1.GetAddress()
+	govGenesisState.DAOTokens = sdk.NewInt(1000)
+	res4 := memCodec().MustMarshalJSON(govGenesisState)
+	defaultGenesis[govTypes.ModuleName] = res4
+	// end genesis setup
 	genState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j, posGenesisState.Validators, appsGenesisState.Applications[0]

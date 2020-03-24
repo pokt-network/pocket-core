@@ -6,23 +6,6 @@ import (
 	"testing"
 )
 
-func TestDAOPool_String(t *testing.T) {
-	tests := []struct {
-		name string
-		dao  DAOPool
-		want string
-	}{
-		{"EmptyPool", DAOPool(NewPool(sdk.ZeroInt())), "Tokens:Tokens In DAO Tokens: 0"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.dao.String(); got != tt.want {
-				t.Errorf("String() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestNewPool(t *testing.T) {
 	type args struct {
 		tokens sdk.Int

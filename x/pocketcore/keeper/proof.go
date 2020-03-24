@@ -229,6 +229,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase
 	// ensure that the tx builder has the correct tx encoder, chainID, fee, and keybase
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(k.cdc),
+		auth.DefaultTxDecoder(k.cdc),
 		genDoc.Genesis.ChainID,
 		"",
 		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), fee)),

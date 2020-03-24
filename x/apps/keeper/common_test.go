@@ -7,25 +7,24 @@ import (
 	nodestypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types/module"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
+	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"math/rand"
 	"testing"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/store"
+	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
-
-	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/gov"
 )
 
 // nolint: deadcode unused
@@ -33,7 +32,6 @@ var (
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		nodes.AppModuleBasic{},
 	)
@@ -43,11 +41,10 @@ var (
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
-
 	bank.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
 	supply.RegisterCodec(cdc)
-	params.RegisterCodec(cdc)
+	gov.RegisterCodec(cdc)
 	nodestypes.RegisterCodec(cdc)
 	types.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
@@ -62,8 +59,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	nAccs := int64(4)
 
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
+	keyParams := sdk.ParamsKey
+	tkeyParams := sdk.ParamsTKey
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 	nodesKey := sdk.NewKVStoreKey(nodestypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -93,7 +90,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 		auth.FeeCollectorName:     nil,
 		types.StakedPoolName:      {supply.Burner, supply.Staking, supply.Minter},
 		nodestypes.StakedPoolName: {supply.Burner, supply.Staking},
-		nodestypes.DAOPoolName:    {supply.Burner, supply.Staking},
+		govTypes.DAOAccountName:   {supply.Burner, supply.Staking},
 	}
 
 	modAccAddrs := make(map[string]bool)
@@ -101,13 +98,14 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
 	}
 	valTokens := sdk.TokensFromConsensusPower(initPower)
-
-	pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
-	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
+	accSubspace := sdk.NewSubspace(auth.DefaultParamspace)
+	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
+	nodesSubspace := sdk.NewSubspace(nodestypes.DefaultParamspace)
+	appSubspace := sdk.NewSubspace(DefaultParamspace)
+	ak := auth.NewAccountKeeper(cdc, keyAcc, accSubspace, auth.ProtoBaseAccount)
+	bk := bank.NewBaseKeeper(ak, bankSubspace, bank.DefaultCodespace, modAccAddrs)
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-	nk := nodeskeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, pk.Subspace(nodestypes.DefaultParamspace), "pos")
-
+	nk := nodeskeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, nodesSubspace, "pos")
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
 		bank.NewAppModule(bk, ak),
@@ -117,8 +115,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 
 	genesisState := ModuleBasics.DefaultGenesis()
 	moduleManager.InitGenesis(ctx, genesisState)
-
-	appSubspace := pk.Subspace(DefaultParamspace)
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 

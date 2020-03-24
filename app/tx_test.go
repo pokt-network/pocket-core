@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/hex"
-	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -10,6 +9,8 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/types"
 	"github.com/pokt-network/posmint/x/bank"
+	"github.com/pokt-network/posmint/x/gov"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/common"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -60,14 +61,13 @@ func TestUnstakeNode(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	var balance1 sdk.Int
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	select {
 	case <-evtChan:
 		var err error
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		balance1, err = nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
+		_, err = nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
 		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -95,7 +95,6 @@ func TestUnstakeNode(t *testing.T) {
 							assert.Equal(t, got[0].StakedTokens.Int64(), int64(0))
 							addr := got[0].Address
 							balance, err := nodes.QueryAccountBalance(memCodec(), memCli, addr, 0)
-							fmt.Println(balance1, balance)
 							assert.NotZero(t, balance.Int64())
 							tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
 							assert.Nil(t, err)
@@ -271,7 +270,6 @@ func TestSendRawTx(t *testing.T) {
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		var err error
 		txResp, err := nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
-		fmt.Println(txResp.Logs)
 		assert.Nil(t, err)
 		assert.NotNil(t, txResp)
 	}
@@ -286,10 +284,93 @@ func TestSendRawTx(t *testing.T) {
 	stopCli()
 }
 
+func TestChangeParamsTx(t *testing.T) {
+	resetTestACL()
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	kps, err := kb.List()
+	assert.Nil(t, err)
+	kp2 := kps[1]
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var err error
+		a := testACL
+		a.SetOwner("gov/acl", kp2.GetAddress())
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "gov/acl", a, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		acl, err := gov.QueryACL(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		o := acl.GetOwner("gov/acl")
+		assert.Equal(t, kp2.GetAddress().String(), o.String())
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestUpgrade(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	var tx *sdk.TxResponse
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		tx, err = gov.UpgradeTx(memCodec(), memCli, kb, cb.GetAddress(), govTypes.Upgrade{
+			Height:  1000,
+			Version: "2.0.0",
+		}, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		u, err := gov.QueryUpgrade(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.True(t, u.UpgradeVersion() == "2.0.0")
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestDAOTransfer(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	var tx *sdk.TxResponse
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		tx, err = gov.DAOTransferTx(memCodec(), memCli, kb, cb.GetAddress(), nil, sdk.OneInt(), govTypes.DAOBurn.String(), "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		balance, err := gov.QueryDAO(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.True(t, balance.Equal(sdk.NewInt(999)))
+	}
+	cleanup()
+	stopCli()
+}
+
 func TestClaimTx(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	pocketTypes.ClearSessionCache()
+	pocketTypes.ClearEvidence()
 	// init cache in memory
 	pocketTypes.InitCache("data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100)
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
@@ -334,14 +415,12 @@ func TestClaimTx(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	select {
 	case res := <-evtChan:
-		fmt.Println(res)
 		if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 			t.Fatal("claim message was not received first")
 		}
 		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		select {
 		case res := <-evtChan:
-			fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 				t.Fatal("proof message was not received afterward")
 			}
@@ -355,6 +434,8 @@ func TestClaimTxChallenge(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	pocketTypes.ClearSessionCache()
+	pocketTypes.ClearEvidence()
 	pocketTypes.InitCache("data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100)
 	genBz, keys, _, _ := fiveValidatorsOneAppGenesis()
 	challenges := NewValidChallengeProof(t, keys, 5)

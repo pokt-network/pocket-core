@@ -207,11 +207,11 @@ func NewTestSession(t *testing.T, chain string) Session {
 	for i := 0; i < 5; i++ {
 		nodePubKey := getRandomPubKey()
 		vals = append(vals, types.Validator{
-			Address:                 sdk.Address(nodePubKey.Address()),
-			PublicKey:               nodePubKey,
-			Status:                  2,
-			Chains:                  []string{chain},
-			StakedTokens:            sdk.ZeroInt(),
+			Address:      sdk.Address(nodePubKey.Address()),
+			PublicKey:    nodePubKey,
+			Status:       2,
+			Chains:       []string{chain},
+			StakedTokens: sdk.ZeroInt(),
 		})
 	}
 	return Session{

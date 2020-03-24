@@ -21,7 +21,8 @@ import (
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
+	"github.com/pokt-network/posmint/x/gov"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -41,7 +42,7 @@ var (
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
+		gov.AppModuleBasic{},
 		supply.AppModuleBasic{},
 	)
 )
@@ -63,51 +64,11 @@ func makeTestCodec() *codec.Codec {
 	bank.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
 	supply.RegisterCodec(cdc)
-	params.RegisterCodec(cdc)
+	gov.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
 	return cdc
-}
-
-// nolint: deadcode unused
-func newContext(t *testing.T, isCheckTx bool) sdk.Context {
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
-	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
-	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
-	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
-
-	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
-	err := ms.LoadLatestVersion()
-	require.Nil(t, err)
-
-	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, isCheckTx, log.NewNopLogger())
-	ctx = ctx.WithConsensusParams(
-		&abci.ConsensusParams{
-			Validator: &abci.ValidatorParams{
-				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
-			},
-		},
-	)
-	ctx = ctx.WithBlockHeader(abci.Header{
-		Height: 1,
-		Time:   time.Time{},
-		LastBlockId: abci.BlockID{
-			Hash: types.Hash([]byte("fake")),
-		},
-	})
-	return ctx
 }
 
 // nolint: deadcode unused
@@ -116,8 +77,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	nAccs := int64(5)
 
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
+	keyParams := sdk.ParamsKey
+	tkeyParams := sdk.ParamsTKey
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
@@ -161,7 +122,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 		auth.FeeCollectorName:     nil,
 		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
 		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
-		nodesTypes.DAOPoolName:    {supply.Burner, supply.Staking},
+		govTypes.DAOAccountName:   {supply.Burner, supply.Staking},
 	}
 
 	modAccAddrs := make(map[string]bool)
@@ -188,14 +149,18 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 		}},
 	}
 
-	pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
-	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
+	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
+	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
+	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
+	appSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
+	pocketSubspace := sdk.NewSubspace(types.DefaultParamspace)
+	ak := auth.NewAccountKeeper(cdc, keyAcc, authSubspace, auth.ProtoBaseAccount)
+	bk := bank.NewBaseKeeper(ak, bankSubspace, bank.DefaultCodespace, modAccAddrs)
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, pk.Subspace(nodesTypes.DefaultParamspace), nodesTypes.ModuleName)
-	appk := appsKeeper.NewKeeper(cdc, appsKey, bk, nk, sk, pk.Subspace(appsTypes.DefaultParamspace), appsTypes.ModuleName)
+	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, nodesSubspace, nodesTypes.ModuleName)
+	appk := appsKeeper.NewKeeper(cdc, appsKey, bk, nk, sk, appSubspace, appsTypes.ModuleName)
 	appk.SetApplication(ctx, getTestApplication())
-	keeper := NewPocketCoreKeeper(pocketKey, cdc, nk, appk, hb, pk.Subspace(types.DefaultParamspace), "test")
+	keeper := NewPocketCoreKeeper(pocketKey, cdc, nk, appk, hb, pocketSubspace, "test")
 	kb := NewTestKeybase()
 	_, err = kb.Create("test")
 	assert.Nil(t, err)
@@ -343,11 +308,6 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins s
 	if stakedPool == nil {
 		panic(fmt.Sprintf("%s module account has not been set", nodesTypes.StakedPoolName))
 	}
-	// check if the dao pool account exists
-	daoPool := nk.GetDAOPool(ctx)
-	if daoPool == nil {
-		panic(fmt.Sprintf("%s module account has not been set", nodesTypes.DAOPoolName))
-	}
 	// add coins if not provided on genesis (there's an option to provide the coins in genesis)
 	if stakedPool.GetCoins().IsZero() {
 		if err := stakedPool.SetCoins(stakedCoins); err != nil {
@@ -358,13 +318,6 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins s
 		// if it is provided in the genesis file then ensure the two are equal
 		if !stakedPool.GetCoins().IsEqual(stakedCoins) {
 			panic(fmt.Sprintf("%s module account total does not equal the amount in each validator account", nodesTypes.StakedPoolName))
-		}
-	}
-	// if the dao pool has zero tokens (not provided in genesis file)
-	if daoPool.GetCoins().IsZero() {
-		// ad the coins
-		if err := daoPool.SetCoins(sdk.NewCoins(sdk.NewCoin(nk.StakeDenom(ctx), daoCoins))); err != nil {
-			panic(err)
 		}
 	}
 	return

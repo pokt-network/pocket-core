@@ -11,7 +11,7 @@ import (
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -50,8 +50,8 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			nAccs := int64(4)
 
 			keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-			keyParams := sdk.NewKVStoreKey(params.StoreKey)
-			tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
+			keyParams := sdk.ParamsKey
+			tkeyParams := sdk.ParamsTKey
 			keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 			nodesKey := sdk.NewKVStoreKey(nodestypes.StoreKey)
 			appsKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -82,7 +82,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			maccPerms := map[string][]string{
 				auth.FeeCollectorName:     nil,
 				nodestypes.StakedPoolName: {supply.Burner, supply.Staking},
-				nodestypes.DAOPoolName:    {supply.Burner, supply.Staking},
+				govTypes.DAOAccountName:   {supply.Burner, supply.Staking},
 			}
 			if !tt.panics {
 				maccPerms[types.StakedPoolName] = []string{supply.Burner, supply.Staking, supply.Minter}
@@ -94,12 +94,14 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			}
 			valTokens := sdk.TokensFromConsensusPower(initPower)
 
-			pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
-			ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-			bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
+			accSubspace := sdk.NewSubspace(auth.DefaultParamspace)
+			bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
+			nodesSubspace := sdk.NewSubspace(nodestypes.DefaultParamspace)
+			appSubspace := sdk.NewSubspace(DefaultParamspace)
+			ak := auth.NewAccountKeeper(cdc, keyAcc, accSubspace, auth.ProtoBaseAccount)
+			bk := bank.NewBaseKeeper(ak, bankSubspace, bank.DefaultCodespace, modAccAddrs)
 			sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-			nk := nodeskeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, pk.Subspace(nodestypes.DefaultParamspace), "pos")
-
+			nk := nodeskeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, nodesSubspace, "pos")
 			moduleManager := module.NewManager(
 				auth.NewAppModule(ak),
 				bank.NewAppModule(bk, ak),
@@ -109,8 +111,6 @@ func TestKeepers_NewKeeper(t *testing.T) {
 
 			genesisState := ModuleBasics.DefaultGenesis()
 			moduleManager.InitGenesis(ctx, genesisState)
-
-			appSubspace := pk.Subspace(DefaultParamspace)
 			initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 
 			_ = createTestAccs(ctx, int(nAccs), initialCoins, &ak)

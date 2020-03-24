@@ -70,7 +70,7 @@ var startCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		go rpc.StartRPC(pocketRPCPort)
-		tmNode := app.InitApp(datadir, tmNode, strings.ToLower(persistentPeers), strings.ToLower(seeds), tmRPCPort, tmPeersPort, blockTime)
+		tmNode := app.InitApp(app.InitDataDirectory(datadir), tmNode, strings.ToLower(persistentPeers), strings.ToLower(seeds), tmRPCPort, tmPeersPort, blockTime)
 		// We trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel,

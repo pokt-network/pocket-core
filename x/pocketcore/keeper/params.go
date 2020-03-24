@@ -3,12 +3,11 @@ package keeper
 import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/params"
 )
 
 // this file contains getters for all pocket core params
-func ParamKeyTable() params.KeyTable {
-	return params.NewKeyTable().RegisterParamSet(&types.Params{})
+func ParamKeyTable() sdk.KeyTable {
+	return sdk.NewKeyTable().RegisterParamSet(&types.Params{})
 }
 
 func (k Keeper) SessionNodeCount(ctx sdk.Ctx) (res int64) {

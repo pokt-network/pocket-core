@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 func init() {
@@ -27,6 +28,10 @@ func init() {
 	accountsCmd.AddCommand(exportRawCmd)
 	accountsCmd.AddCommand(sendTxCmd)
 	accountsCmd.AddCommand(sendRawTxCmd)
+	accountsCmd.AddCommand(newMultiPublicKey)
+	accountsCmd.AddCommand(signMS)
+	accountsCmd.AddCommand(signNexMS)
+	accountsCmd.AddCommand(buildMultisig)
 }
 
 // accountsCmd represents the accounts namespace command
@@ -376,5 +381,102 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 		}
 
 		fmt.Printf("Account imported successfully:\n%s\n", kp.GetAddress().String())
+	},
+}
+
+// importCmd represents the import command
+var newMultiPublicKey = &cobra.Command{
+	Use:   "create-multi-public <ordered-comma-separated-hex-pubkeys>",
+	Short: "create a multisig public key",
+	Args:  cobra.ExactArgs(1),
+	Long: `create a multisig public key with a comma separated list of hex encoded public keys
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		rawPKs := strings.Split(strings.TrimSpace(args[0]), ",")
+		var pks []crypto.PublicKey
+		for _, pk := range rawPKs {
+			p, err := crypto.NewPublicKey(pk)
+			if err != nil {
+				panic(err)
+			}
+			pks = append(pks, p)
+		}
+		multiSigPubKey := crypto.PublicKeyMultiSignature{PublicKeys: pks}
+		fmt.Printf("Sucessfully generated Multisig Public Key:\n%s\nWith Address:\n%s\n", multiSigPubKey.String(), multiSigPubKey.Address())
+	},
+}
+
+var buildMultisig = &cobra.Command{
+	Use:   "build-MS-Tx <your-signer-address> <ordered-comma-separated-hex-pubkeys> <json-message>",
+	Short: "build and sign a multisic tx",
+	Args:  cobra.MinimumNArgs(3),
+	Long: `build and sign a multisignature transaction from scratch: result is hex encoded std tx object
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		msg := args[1]
+		rawPKs := strings.Split(strings.TrimSpace(args[2]), ",")
+		var pks []crypto.PublicKey
+		for _, pk := range rawPKs {
+			p, err := crypto.NewPublicKey(pk)
+			if err != nil {
+				panic(err)
+			}
+			pks = append(pks, p)
+		}
+		multiSigPubKey := crypto.PublicKeyMultiSignature{PublicKeys: pks}
+		fmt.Println("Enter password: ")
+		bz, err := app.BuildMultisig(args[0], msg, app.Credentials(), multiSigPubKey)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Multisig transaction: \n" + hex.EncodeToString(bz))
+	},
+}
+
+var signMS = &cobra.Command{
+	Use:   "sign-ms-tx <your-signer-address> <hex-amino-stdtx> <ordered-comma-separated-hex-pubkeys>",
+	Short: "sign a multisic tx",
+	Args:  cobra.MinimumNArgs(3),
+	Long: `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		msg := args[1]
+		rawPKs := strings.Split(strings.TrimSpace(args[2]), ",")
+		var pks []crypto.PublicKey
+		for _, pk := range rawPKs {
+			p, err := crypto.NewPublicKey(pk)
+			if err != nil {
+				panic(err)
+			}
+			pks = append(pks, p)
+		}
+		fmt.Println("Enter password: ")
+		bz, err := app.SignMultisigOutOfOrder(args[0], msg, app.Credentials(), pks)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Multisig transaction: \n" + hex.EncodeToString(bz))
+	},
+}
+
+var signNexMS = &cobra.Command{
+	Use:   "sign-ms-next <your-signer-address> <hex-amino-stdtx>",
+	Short: "sign a multisic tx",
+	Args:  cobra.MinimumNArgs(2),
+	Long: `sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
+NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		msg := args[1]
+		fmt.Println("Enter password: ")
+		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials())
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Multisig transaction: \n" + hex.EncodeToString(bz))
 	},
 }

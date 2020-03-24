@@ -4,13 +4,14 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types/module"
+	"github.com/pokt-network/posmint/x/gov"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
-	"math/rand"
-	"testing"
-
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
+	"math/rand"
+	"testing"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -20,8 +21,6 @@ import (
 	"github.com/pokt-network/posmint/store"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
-	//"github.com/pokt-network/posmint/x/supply/internal/types"
 
 	sdk "github.com/pokt-network/posmint/types"
 )
@@ -30,7 +29,7 @@ var (
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
+		gov.AppModuleBasic{},
 		supply.AppModuleBasic{},
 	)
 )
@@ -42,7 +41,7 @@ func makeTestCodec() *codec.Codec {
 	bank.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
 	supply.RegisterCodec(cdc)
-	params.RegisterCodec(cdc)
+	gov.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
@@ -55,8 +54,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	nAccs := int64(4)
 
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
+	keyParams := sdk.ParamsKey
+	tkeyParams := sdk.ParamsTKey
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 
 	db := dbm.NewMemDB()
@@ -81,7 +80,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName: nil,
 		types.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
-		types.DAOPoolName:     {supply.Burner, supply.Staking, supply.Minter},
 		//ADDED THIS CHECK
 		types.ModuleName: {supply.Burner, supply.Staking, supply.Minter},
 	}
@@ -91,9 +89,12 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	}
 	valTokens := sdk.TokensFromConsensusPower(initPower)
 
-	pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
-	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
+	accSubspace := sdk.NewSubspace(auth.DefaultParamspace)
+	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
+	posSubspace := sdk.NewSubspace(DefaultParamspace)
+
+	ak := auth.NewAccountKeeper(cdc, keyAcc, accSubspace, auth.ProtoBaseAccount)
+	bk := bank.NewBaseKeeper(ak, bankSubspace, bank.DefaultCodespace, modAccAddrs)
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
 
 	moduleManager := module.NewManager(
@@ -105,11 +106,10 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	genesisState := ModuleBasics.DefaultGenesis()
 	moduleManager.InitGenesis(ctx, genesisState)
 
-	posSubSpace := pk.Subspace(DefaultParamspace)
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
-	keeper := NewKeeper(cdc, keySupply, ak, bk, sk, posSubSpace, sdk.CodespaceType("pos"))
+	keeper := NewKeeper(cdc, keySupply, ak, bk, sk, posSubspace, "pos")
 
 	params := types.DefaultParams()
 	keeper.SetParams(ctx, params)
@@ -129,6 +129,22 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.A
 		accs = append(accs, &acc)
 	}
 	return
+}
+
+var testACL govTypes.ACL
+
+func createTestACL() govTypes.ACL {
+	if testACL == nil {
+		acl := govTypes.BaseACL{M: make(map[string]sdk.Address)}
+		acl.SetOwner("bank/sendenabled", getRandomValidatorAddress())
+		acl.SetOwner("auth/MaxMemoCharacters", getRandomValidatorAddress())
+		acl.SetOwner("auth/TxSigLimit", getRandomValidatorAddress())
+		acl.SetOwner("auth/TxSizeCostPerByte", getRandomValidatorAddress())
+		acl.SetOwner("gov/daoOwner", getRandomValidatorAddress())
+		acl.SetOwner("gov/acl", getRandomValidatorAddress())
+		testACL = acl
+	}
+	return testACL
 }
 
 func addMintedCoinsToModule(t *testing.T, ctx sdk.Ctx, k *Keeper, module string) {

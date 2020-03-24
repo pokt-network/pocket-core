@@ -179,19 +179,6 @@ func QuerySupply(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (stake
 	return stakedPool.Tokens, unstakedPool.Tokens, nil
 }
 
-func QueryDAO(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (daoCoins sdk.Int, err error) {
-	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	daoPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/dao", types.StoreKey), nil)
-	if err != nil {
-		return sdk.Int{}, err
-	}
-	var daoPool types.DAOPool
-	if err := cdc.UnmarshalJSON(daoPoolBytes, &daoPool); err != nil {
-		return sdk.Int{}, err
-	}
-	return daoPool.Tokens, err
-}
-
 func QueryPOSParams(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Params, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	route := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryParameters)

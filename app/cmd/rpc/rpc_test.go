@@ -354,7 +354,29 @@ func TestRPC_QuerySupply(t *testing.T) {
 	stopCli()
 }
 
-func TestRPC_StakeNode(t *testing.T) {
+func TestRPC_QueryDAOOwner(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var params = heightParams{
+			Height: 0,
+		}
+		q := newQueryRequest("DAOOwner", newBody(params))
+		rec := httptest.NewRecorder()
+		DAOOwner(rec, q, httprouter.Params{})
+		resp := getJSONResponse(rec)
+		assert.NotNil(t, resp)
+		assert.NotEmpty(t, resp)
+		assert.True(t, strings.Contains(string(resp), cb.GetAddress().String()))
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestRPC_QueryUpgrade(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
@@ -362,16 +384,33 @@ func TestRPC_StakeNode(t *testing.T) {
 		var params = heightParams{
 			Height: 0,
 		}
-		q := newQueryRequest("supply", newBody(params))
+		q := newQueryRequest("Upgrade", newBody(params))
 		rec := httptest.NewRecorder()
-		Supply(rec, q, httprouter.Params{})
+		Upgrade(rec, q, httprouter.Params{})
 		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
-		var supply querySupplyResponse
-		err := json.Unmarshal([]byte(resp), &supply)
-		assert.Nil(t, err)
-		assert.NotZero(t, supply.Total)
+		fmt.Println(string(resp))
+		assert.True(t, strings.Contains(string(resp), "2.0.0"))
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestRPCQueryACL(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var params = heightParams{
+			Height: 0,
+		}
+		q := newQueryRequest("ACL", newBody(params))
+		rec := httptest.NewRecorder()
+		ACL(rec, q, httprouter.Params{})
+		resp := getJSONResponse(rec)
+		assert.NotNil(t, resp)
+		assert.NotEmpty(t, resp)
 	}
 	cleanup()
 	stopCli()

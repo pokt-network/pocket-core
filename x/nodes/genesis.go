@@ -59,11 +59,6 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.SupplyKee
 	if stakedPool == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
 	}
-	// check if the dao pool account exists
-	daoPool := keeper.GetDAOPool(ctx)
-	if daoPool == nil {
-		panic(fmt.Sprintf("%s module account has not been set", types.DAOPoolName))
-	}
 	// add coins if not provided on genesis (there's an option to provide the coins in genesis)
 	if stakedPool.GetCoins().IsZero() {
 		if err := stakedPool.SetCoins(stakedCoins); err != nil {
@@ -74,13 +69,6 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.SupplyKee
 		// if it is provided in the genesis file then ensure the two are equal
 		if !stakedPool.GetCoins().IsEqual(stakedCoins) {
 			panic(fmt.Sprintf("%s module account total does not equal the amount in each validator account", types.StakedPoolName))
-		}
-	}
-	// if the dao pool has zero tokens (not provided in genesis file)
-	if daoPool.GetCoins().IsZero() {
-		// ad the coins
-		if err := daoPool.SetCoins(sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(ctx), data.DAO.Tokens))); err != nil {
-			panic(err)
 		}
 	}
 	// don't need to run Tendermint updates if we exported
@@ -151,8 +139,6 @@ func ExportGenesis(ctx sdk.Ctx, keeper keeper.Keeper) types.GenesisState {
 
 		return false
 	})
-	daoTokens := keeper.GetDAOTokens(ctx)
-	daoPool := types.DAOPool{Tokens: daoTokens}
 	prevProposer := keeper.GetPreviousProposer(ctx)
 
 	return types.GenesisState{
@@ -161,7 +147,6 @@ func ExportGenesis(ctx sdk.Ctx, keeper keeper.Keeper) types.GenesisState {
 		PrevStateValidatorPowers: prevStateValidatorPowers,
 		Validators:               validators,
 		Exported:                 true,
-		DAO:                      daoPool,
 		SigningInfos:             signingInfos,
 		MissedBlocks:             missedBlocks,
 		PreviousProposer:         prevProposer,
