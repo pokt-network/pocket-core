@@ -1,3 +1,15 @@
+## RC-0.3.0
+- Added governance module from posmint
+  - Multisignature public keys / tx building to cli
+  - Governance level protocol upgrade signalling
+  - Access control list for params
+  - Ability to edit params TX
+  - Introduced DAO-Owner
+  - Ability to send and receive from DAO
+- Added persistence to Sessions and Evidence through
+  - LRU cache sessions/evidence
+  - Sessions/evidence level-db
+
 ## RC-0.2.1
 - Add version command to CLI
 - Disallow double sign on invalid operations, disallow consensus breaks
