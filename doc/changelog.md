@@ -2,7 +2,7 @@
 - Add version command to CLI
 - Disallow double sign on invalid operations, disallow consensus breaks
 
-## RC-0.2.1
+## RC-0.2.0
 - Renamed RelayProof to Proof (in JSON)
 - Renamed Invoice (memory) to Evidence
 - Renamed StoredInvoice (blockchain persisted) to Receipt
