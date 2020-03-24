@@ -66,8 +66,8 @@ var (
 	cdc *codec.Codec
 	// tendermint node uri
 	tmNodeURI string
-	// passphrase needed for pocket core module
-	passphrase string
+	// privateKey needed for pocket core module
+	privateKeyPath string
 	// the filepath to the genesis.json
 	genesisFP string
 	// the default fileseparator based on OS
@@ -75,17 +75,7 @@ var (
 )
 
 func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string, blockTime int) *node.Node {
-	pswrd := InitConfig(datadir)
-	// setup coinbase password
-	if pswrd == "" {
-		fmt.Println("Pocket core needs your passphrase to start")
-		pswrd = Credentials()
-	}
-	err := confirmCoinbasePassphrase(pswrd)
-	if err != nil {
-		panic("Coinbase Password could not be verified: " + err.Error())
-	}
-	setcoinbasePassphrase(pswrd)
+	InitConfig(datadir)
 	// set tendermint node
 	SetTMNode(tmNode)
 	// init the tendermint node
@@ -223,6 +213,29 @@ func InitKeyfiles() string {
 	var password string
 	datadir := getDataDir()
 
+	//Check if privvalkey file exist
+	if _, err := os.Stat(datadir + fs + privValKeyName); err != nil {
+
+		//if not exist continue creating as other files may be missing
+		if os.IsNotExist(err) {
+
+			password = initFiles(password, datadir)
+
+		} else {
+			//panic on other errors
+			panic(err)
+		}
+
+	} else {
+		// file exist so we can load pk from file.
+		file, _ := loadPKFromFile(getDataDir() + fs + privValKeyName)
+		types.InitPvKeyFile(file)
+	}
+
+	return password
+}
+
+func initFiles(password string, datadir string) string {
 	if _, err := GetKeybase(); err != nil {
 		fmt.Println("Initializing keybase: enter coinbase passphrase")
 		password = Credentials()
@@ -284,6 +297,21 @@ func GetKeybase() (kb.Keybase, error) {
 	return keys, nil
 }
 
+func loadPKFromFile(path string) (privval.FilePVKey, string) {
+
+	keyJSONBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		cmn.Exit(err.Error())
+	}
+	pvKey := privval.FilePVKey{}
+	err = cdc.UnmarshalJSON(keyJSONBytes, &pvKey)
+	if err != nil {
+		cmn.Exit(fmt.Sprintf("Error reading PrivValidator key from %v: %v\n", path, err))
+	}
+
+	return pvKey, path
+}
+
 func privValKey(password string) string {
 	keys := MustGetKeybase()
 	coinbaseKeypair, err := keys.GetCoinbase()
@@ -315,6 +343,8 @@ func privValKey(password string) string {
 	if err != nil {
 		panic(err)
 	}
+	types.InitPvKeyFile(privValKey)
+
 	return password
 }
 
@@ -439,14 +469,6 @@ func confirmCoinbasePassphrase(pswrd string) error {
 		return err
 	}
 	return nil
-}
-
-func setcoinbasePassphrase(pass string) {
-	passphrase = pass
-}
-
-func getCoinbasePassphrase() string {
-	return passphrase
 }
 
 func SetTMNode(n string) {

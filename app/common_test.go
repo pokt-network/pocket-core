@@ -174,7 +174,6 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		app.appsKeeper,
 		getInMemHostedChains(),
 		pocketSubspace,
-		"test",
 	)
 	// The governance keeper
 	app.govKeeper = govKeeper.NewKeeper(
@@ -337,6 +336,8 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	privVal.Key.PrivKey = pk
 	privVal.Key.PubKey = pk.PubKey()
 	privVal.Key.Address = pk.PubKey().Address()
+	pocketTypes.InitPvKeyFile(privVal.Key)
+
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *memoryPCApp {
 		return newMemPCApp(logger, db, bam.SetPruning(store.PruneNothing))
 	}

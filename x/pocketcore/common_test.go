@@ -186,7 +186,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
 	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, nodesSubspace, "pos")
 	appk := appsKeeper.NewKeeper(cdc, appsKey, bk, nk, sk, appSubspace, appsTypes.ModuleName)
-	keeper := keep.NewPocketCoreKeeper(pocketKey, cdc, nk, appk, hb, pocketSubspace, "test")
+	keeper := keep.NewPocketCoreKeeper(pocketKey, cdc, nk, appk, hb, pocketSubspace)
 	kb := NewTestKeybase()
 	_, err = kb.Create("test")
 	assert.Nil(t, err)
