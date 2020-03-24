@@ -21,7 +21,7 @@ import (
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
+	"github.com/pokt-network/posmint/x/gov"
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/spf13/cobra"
 	con "github.com/tendermint/tendermint/config"
@@ -476,7 +476,7 @@ func MakeCodec() {
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
+		gov.AppModuleBasic{},
 		nodes.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
@@ -515,7 +515,7 @@ func newDefaultGenesisState(pubKey crypto.PublicKey) []byte {
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
+		gov.AppModuleBasic{},
 		nodes.AppModuleBasic{},
 		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},

@@ -1,7 +1,6 @@
 package nodes
 
 import (
-	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
@@ -11,7 +10,8 @@ import (
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
+	"github.com/pokt-network/posmint/x/gov"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -28,7 +28,7 @@ var (
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		bank.AppModuleBasic{},
-		params.AppModuleBasic{},
+		gov.AppModuleBasic{},
 		supply.AppModuleBasic{},
 	)
 )
@@ -41,7 +41,7 @@ func makeTestCodec() *codec.Codec {
 	bank.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
 	supply.RegisterCodec(cdc)
-	params.RegisterCodec(cdc)
+	gov.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
@@ -64,8 +64,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	nAccs := int64(4)
 
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
+	keyParams := sdk.ParamsKey
+	tkeyParams := sdk.ParamsTKey
 	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 
 	db := dbm.NewMemDB()
@@ -88,9 +88,9 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	cdc := makeTestCodec()
 
 	maccPerms := map[string][]string{
-		auth.FeeCollectorName: nil,
-		types.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
-		types.DAOPoolName:     {supply.Burner, supply.Staking, supply.Minter},
+		auth.FeeCollectorName:   nil,
+		types.StakedPoolName:    {supply.Burner, supply.Staking, supply.Minter},
+		govTypes.DAOAccountName: {supply.Burner, supply.Staking, supply.Minter},
 	}
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
@@ -98,9 +98,12 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	}
 	valTokens := sdk.TokensFromConsensusPower(initPower)
 
-	pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
-	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
+	accSubspace := sdk.NewSubspace(auth.DefaultParamspace)
+	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
+	posSubspace := sdk.NewSubspace(types.DefaultParamspace)
+
+	ak := auth.NewAccountKeeper(cdc, keyAcc, accSubspace, auth.ProtoBaseAccount)
+	bk := bank.NewBaseKeeper(ak, bankSubspace, bank.DefaultCodespace, modAccAddrs)
 	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
 
 	moduleManager := module.NewManager(
@@ -112,11 +115,10 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	genesisState := ModuleBasics.DefaultGenesis()
 	moduleManager.InitGenesis(ctx, genesisState)
 
-	posSubSpace := pk.Subspace(keeper.DefaultParamspace)
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
-	keeper := keeper.NewKeeper(cdc, keySupply, ak, bk, sk, posSubSpace, sdk.CodespaceType("pos"))
+	keeper := keeper.NewKeeper(cdc, keySupply, ak, bk, sk, posSubspace, sdk.CodespaceType("pos"))
 
 	params := types.DefaultParams()
 	keeper.SetParams(ctx, params)
@@ -220,8 +222,6 @@ func getGenesisStateForTest(ctx sdk.Ctx, keeper keeper.Keeper, defaultparams boo
 
 		return false
 	})
-	daoTokens := keeper.GetDAOTokens(ctx)
-	daoPool := types.DAOPool{Tokens: daoTokens}
 	prevProposer := keeper.GetPreviousProposer(ctx)
 
 	return types.GenesisState{
@@ -230,56 +230,9 @@ func getGenesisStateForTest(ctx sdk.Ctx, keeper keeper.Keeper, defaultparams boo
 		PrevStateValidatorPowers: prevStateValidatorPowers,
 		Validators:               validators,
 		Exported:                 true,
-		DAO:                      daoPool,
 		SigningInfos:             signingInfos,
 		MissedBlocks:             missedBlocks,
 		PreviousProposer:         prevProposer,
 	}
 
-}
-
-func getSupplyKeeperForTest() supply.Keeper {
-
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.NewKVStoreKey(params.StoreKey)
-	tkeyParams := sdk.NewTransientStoreKey(params.TStoreKey)
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
-
-	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
-	err := ms.LoadLatestVersion()
-	if err != nil {
-		fmt.Print("lol")
-	}
-
-	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, true, log.NewNopLogger())
-	ctx = ctx.WithConsensusParams(
-		&abci.ConsensusParams{
-			Validator: &abci.ValidatorParams{
-				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
-			},
-		},
-	)
-	cdc := makeTestCodec()
-
-	maccPerms := map[string][]string{
-		auth.FeeCollectorName: nil,
-		types.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
-		types.DAOPoolName:     {supply.Burner, supply.Staking, supply.Minter},
-	}
-	modAccAddrs := make(map[string]bool)
-	for acc := range maccPerms {
-		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
-	}
-
-	pk := params.NewKeeper(cdc, keyParams, tkeyParams, params.DefaultCodespace)
-	ak := auth.NewAccountKeeper(cdc, keyAcc, pk.Subspace(auth.DefaultParamspace), auth.ProtoBaseAccount)
-	bk := bank.NewBaseKeeper(ak, pk.Subspace(bank.DefaultParamspace), bank.DefaultCodespace, modAccAddrs)
-	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-
-	return sk
 }

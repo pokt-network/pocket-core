@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/pokt-network/posmint/types"
 	"reflect"
 	"testing"
 )
@@ -14,7 +13,6 @@ func TestDefaultGenesisState(t *testing.T) {
 		Params:       DefaultParams(),
 		SigningInfos: make(map[string]ValidatorSigningInfo),
 		MissedBlocks: make(map[string][]MissedBlock),
-		DAO:          DAOPool(NewPool(types.ZeroInt())),
 	}},
 	}
 	for _, tt := range tests {

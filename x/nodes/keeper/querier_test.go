@@ -33,7 +33,6 @@ func Test_NewQuerier(t *testing.T) {
 	jsonresponse, _ := amino.MarshalJSONIndent([]types.Validator{}, "", "  ")
 	jsonresponseSigningInfos, _ := amino.MarshalJSONIndent([]types.ValidatorSigningInfo{}, "", "  ")
 	jsonresponsestakedPool, _ := amino.MarshalJSONIndent(types.StakingPool(types.NewPool(sdk.ZeroInt())), "", "  ")
-	jsonresponseDAO, _ := amino.MarshalJSONIndent(types.NewPool(sdk.ZeroInt()), "", "  ")
 	jsonresponseInt, _ := amino.MarshalJSONIndent("0", "", "  ")
 	jsonresponseForParams, _ := amino.MarshalJSONIndent(keeper.GetParams(context), "", "  ")
 	tests := []struct {
@@ -102,16 +101,6 @@ func Test_NewQuerier(t *testing.T) {
 				k:    keeper,
 			},
 			want:  jsonresponsestakedPool,
-			want1: nil,
-		}, {
-			name: "Test QueryDAO",
-			args: args{
-				ctx:  context,
-				req:  abci.RequestQuery{Data: jsondata, Path: "dao"},
-				path: []string{types.QueryDAO},
-				k:    keeper,
-			},
-			want:  jsonresponseDAO,
 			want1: nil,
 		}, {
 			name: "Test QueryAccountBalance",
@@ -228,38 +217,6 @@ func Test_queryAccountBalance(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("queryAccountBalance() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_queryDAO(t *testing.T) {
-	type args struct {
-		ctx sdk.Context
-		k   Keeper
-	}
-	context, _, keeper := createTestInput(t, true)
-	jsonresponse, _ := amino.MarshalJSONIndent(types.NewPool(sdk.ZeroInt()), "", "  ")
-
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test QueryDao", args{
-			ctx: context,
-			k:   keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryDAO(tt.args.ctx, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryDAO() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryDAO() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

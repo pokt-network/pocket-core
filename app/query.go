@@ -9,6 +9,8 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
+	"github.com/pokt-network/posmint/x/gov"
+	"github.com/pokt-network/posmint/x/gov/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
@@ -86,7 +88,19 @@ func QueryTotalNodeCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err er
 }
 
 func QueryDaoBalance(height int64) (daoCoins sdk.Int, err error) {
-	return nodes.QueryDAO(Codec(), getTMClient(), height)
+	return gov.QueryDAO(Codec(), getTMClient(), height)
+}
+
+func QueryDaoOwner(height int64) (daoOwner sdk.Address, err error) {
+	return gov.QueryDAOOwner(Codec(), getTMClient(), height)
+}
+
+func QueryUpgrade(height int64) (upgrade types.Upgrade, err error) {
+	return gov.QueryUpgrade(Codec(), getTMClient(), height)
+}
+
+func QueryACL(height int64) (acl types.ACL, err error) {
+	return gov.QueryACL(Codec(), getTMClient(), height)
 }
 
 func QueryAllApps(height int64) (appsTypes.Applications, error) {

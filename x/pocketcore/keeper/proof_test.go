@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
@@ -28,8 +29,8 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	}
 	mockCtx := &Ctx{}
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-	mockCtx.On("KVStore", keys["application"]).Return(ctx.KVStore(keys["application"]))
+	mockCtx.On("KVStore", keys[sdk.ParamsKey.Name()]).Return(ctx.KVStore(keys[sdk.ParamsKey.Name()]))
+	mockCtx.On("KVStore", keys[appsTypes.StoreKey]).Return(ctx.KVStore(keys[appsTypes.StoreKey]))
 	mockCtx.On("Logger").Return(ctx.Logger())
 	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx, nil)

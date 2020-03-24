@@ -5,7 +5,6 @@ import (
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/params"
 	"github.com/tendermint/tendermint/rpc/client"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
@@ -18,13 +17,13 @@ type Keeper struct {
 	TmNode             client.Client
 	coinbasePassphrase string // todo infrastructure security task
 	hostedBlockchains  types.HostedBlockchains
-	Paramstore         params.Subspace
+	Paramstore         sdk.Subspace
 	storeKey           sdk.StoreKey // Unexposed key to access store from sdk.Context
 	cdc                *codec.Codec // The wire codec for binary encoding/decoding.
 }
 
 // NewPocketCoreKeeper creates new instances of the pocketcore Keeper
-func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains types.HostedBlockchains, paramstore params.Subspace, passphrase string) Keeper {
+func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains types.HostedBlockchains, paramstore sdk.Subspace, passphrase string) Keeper {
 	return Keeper{
 		storeKey:           storeKey,
 		cdc:                cdc,

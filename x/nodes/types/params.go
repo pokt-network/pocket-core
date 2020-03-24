@@ -7,7 +7,6 @@ import (
 
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/params"
 )
 
 // POS params default values
@@ -46,7 +45,7 @@ var (
 	DefaultSlashFractionDowntime   = sdk.NewDec(1).Quo(sdk.NewDec(100))
 )
 
-var _ params.ParamSet = (*Params)(nil)
+var _ sdk.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
@@ -66,9 +65,9 @@ type Params struct {
 	SlashFractionDowntime   sdk.Dec       `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`       // the factor of which a node is slashed for missing blocks
 }
 
-// Implements params.ParamSet
-func (p *Params) ParamSetPairs() params.ParamSetPairs {
-	return params.ParamSetPairs{
+// Implements sdk.ParamSet
+func (p *Params) ParamSetPairs() sdk.ParamSetPairs {
+	return sdk.ParamSetPairs{
 		{Key: KeyUnstakingTime, Value: &p.UnstakingTime},
 		{Key: KeyMaxValidators, Value: &p.MaxValidators},
 		{Key: KeyStakeDenom, Value: &p.StakeDenom},

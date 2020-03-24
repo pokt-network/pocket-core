@@ -81,7 +81,6 @@ func Height(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-
 	WriteJSONResponse(w, string(height), r.URL.Path, r.Host)
 }
 
@@ -413,4 +412,61 @@ func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	WriteJSONResponse(w, string(res), r.URL.Path, r.Host)
+}
+
+func DAOOwner(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = heightParams{Height: 0}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.QueryDaoOwner(0)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	s, err := json.Marshal(res)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteResponse(w, string(s), r.URL.Path, r.Host)
+}
+
+func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = heightParams{Height: 0}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.QueryUpgrade(0)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	s, err := json.Marshal(res)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteResponse(w, string(s), r.URL.Path, r.Host)
+}
+
+func ACL(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = heightParams{Height: 0}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.QueryACL(params.Height)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	j, err := app.Codec().MarshalJSON(res)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteResponse(w, string(j), r.URL.Path, r.Host)
 }

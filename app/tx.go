@@ -5,6 +5,8 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/gov"
+	"github.com/pokt-network/posmint/x/gov/types"
 	"net/url"
 )
 
@@ -99,4 +101,32 @@ func UnstakeApp(fromAddr, passphrase string) (*sdk.TxResponse, error) {
 		return nil, err
 	}
 	return apps.UnstakeTx(Codec(), getTMClient(), MustGetKeybase(), fa, passphrase)
+}
+
+func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.Int, action string) (*sdk.TxResponse, error) {
+	fa, err := sdk.AddressFromHex(fromAddr)
+	if err != nil {
+		return nil, err
+	}
+	ta, err := sdk.AddressFromHex(toAddr)
+	if err != nil {
+		return nil, err
+	}
+	return gov.DAOTransferTx(Codec(), getTMClient(), MustGetKeybase(), fa, ta, amount, action, passphrase)
+}
+
+func ChangeParam(fromAddr, paramACLKey string, paramValue interface{}, passphrase string) (*sdk.TxResponse, error) {
+	fa, err := sdk.AddressFromHex(fromAddr)
+	if err != nil {
+		return nil, err
+	}
+	return gov.ChangeParamsTx(Codec(), getTMClient(), MustGetKeybase(), fa, paramACLKey, paramValue, passphrase)
+}
+
+func Upgrade(fromAddr string, upgrade types.Upgrade, passphrase string) (*sdk.TxResponse, error) {
+	fa, err := sdk.AddressFromHex(fromAddr)
+	if err != nil {
+		return nil, err
+	}
+	return gov.UpgradeTx(Codec(), getTMClient(), MustGetKeybase(), fa, upgrade, passphrase)
 }

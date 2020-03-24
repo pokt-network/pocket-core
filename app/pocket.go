@@ -15,7 +15,9 @@ import (
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
+	"github.com/pokt-network/posmint/x/gov"
+	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -37,7 +39,7 @@ type pocketCoreApp struct {
 	bankKeeper    bank.Keeper
 	supplyKeeper  supply.Keeper
 	nodesKeeper   nodesKeeper.Keeper
-	paramsKeeper  params.Keeper
+	govKeeper     govKeeper.Keeper
 	pocketKeeper  pocketKeeper.Keeper
 	// Module Manager
 	mm *module.Manager
@@ -50,9 +52,10 @@ func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 	// set version of the baseapp
 	bApp.SetAppVersion(appVersion)
 	// setup the key value store keys
-	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, params.StoreKey, pocketTypes.StoreKey)
+	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
 	// setup the transient store keys
-	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, params.TStoreKey)
+	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
+	// add params keys too
 	// Create the application
 	return &pocketCoreApp{
 		BaseApp: bApp,
@@ -111,7 +114,7 @@ var (
 		auth.FeeCollectorName:     {supply.Burner, supply.Minter, supply.Staking},
 		nodesTypes.StakedPoolName: {supply.Burner, supply.Minter, supply.Staking},
 		appsTypes.StakedPoolName:  {supply.Burner, supply.Minter, supply.Staking},
-		nodesTypes.DAOPoolName:    {supply.Burner, supply.Minter, supply.Staking},
+		govTypes.DAOAccountName:   {supply.Burner, supply.Minter, supply.Staking},
 		nodesTypes.ModuleName:     {supply.Burner, supply.Minter, supply.Staking},
 		appsTypes.ModuleName:      nil,
 	}

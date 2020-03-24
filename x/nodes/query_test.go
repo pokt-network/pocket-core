@@ -102,38 +102,6 @@ func TestQueryChainHeight(t *testing.T) {
 	}
 }
 
-func TestQueryDAO(t *testing.T) {
-	type args struct {
-		cdc    *codec.Codec
-		tmNode client.Client
-		height int64
-	}
-	tests := []struct {
-		name         string
-		args         args
-		wantDaoCoins sdk.Int
-		wantErr      bool
-	}{
-		{"Test QueryDAo", args{
-			cdc:    makeTestCodec(),
-			tmNode: GetTestTendermintClient(),
-			height: 0,
-		}, sdk.Int{}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotDaoCoins, err := QueryDAO(tt.args.cdc, tt.args.tmNode, tt.args.height)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("QueryDAO() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotDaoCoins, tt.wantDaoCoins) {
-				t.Errorf("QueryDAO() gotDaoCoins = %v, want %v", gotDaoCoins, tt.wantDaoCoins)
-			}
-		})
-	}
-}
-
 func TestQueryNodeStatus(t *testing.T) {
 	type args struct {
 		tmNode client.Client

@@ -10,6 +10,8 @@ import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/posmint/x/gov"
+	types2 "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/iavl/common"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -125,9 +127,56 @@ func TestQueryDaoBalance(t *testing.T) {
 	select {
 	case <-evtChan:
 		var err error
-		got, err := nodes.QueryDAO(memCodec(), memCli, 0)
+		got, err := gov.QueryDAO(memCodec(), memCli, 0)
 		assert.Nil(t, err)
-		assert.Equal(t, big.NewInt(0), got.BigInt())
+		assert.Equal(t, big.NewInt(1000), got.BigInt())
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestQueryACL(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var err error
+		got, err := gov.QueryACL(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, got, types2.BaseACL{M: testACL.GetAll()})
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestQueryDaoOwner(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	if err != nil {
+		t.Fatal(err)
+	}
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var err error
+		got, err := gov.QueryDAOOwner(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, got.String(), cb.GetAddress().String())
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestQueryUpgrade(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var err error
+		got, err := gov.QueryUpgrade(memCodec(), memCli, 0)
+		assert.Nil(t, err)
+		assert.Equal(t, got.UpgradeHeight(), int64(10000))
 	}
 	cleanup()
 	stopCli()

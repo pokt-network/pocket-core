@@ -8,7 +8,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/params"
+	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
@@ -23,8 +23,9 @@ type Keeper struct {
 	cdc                *codec.Codec
 	accountKeeper      auth.AccountKeeper
 	coinKeeper         bank.Keeper
+	govKeeper          govKeeper.Keeper
 	supplyKeeper       types.SupplyKeeper
-	Paramstore         params.Subspace
+	Paramstore         sdk.Subspace
 	validatorCache     map[string]cachedValidator
 	validatorCacheList *list.List
 
@@ -34,7 +35,7 @@ type Keeper struct {
 
 // NewKeeper creates a new staking Keeper instance
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper auth.AccountKeeper, coinKeeper bank.Keeper, supplyKeeper types.SupplyKeeper,
-	paramstore params.Subspace, codespace sdk.CodespaceType) Keeper {
+	paramstore sdk.Subspace, codespace sdk.CodespaceType) Keeper {
 	// ensure staked module accounts are set
 	if addr := supplyKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
