@@ -9,6 +9,10 @@
 - Added persistence to Sessions and Evidence through
   - LRU cache sessions/evidence
   - Sessions/evidence level-db
+- Added Start without passphrase on pocket core
+  - sign msgs with private key or keybase
+  - removed password from keeper
+  - Updated POSMint version
 
 ## RC-0.2.1
 - Add version command to CLI
