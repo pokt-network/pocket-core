@@ -85,6 +85,7 @@ const ( // todo re-number
 	CodeNoMajorityResponseError          = 1192
 	CodeNodeNotInSessionError            = 1193
 	CodeNoEvidenceTypeErr                = 1194
+	CodeInvalidPkFileErr                 = 1195
 )
 
 var (
@@ -171,6 +172,7 @@ var (
 	MismatchedBlockchainsError       = errors.New("the non-native blockchains provided in the proofs do not match")
 	NoMajorityResponseError          = errors.New("no majority can be established between all of the responses")
 	NoEvidenceTypeErr                = errors.New("the evidence type is not supplied in the claim message")
+	InvalidPkFileErr                 = errors.New("the PK File is not found")
 )
 
 func NewUnsupportedBlockchainError(codespace sdk.CodespaceType) sdk.Error {
@@ -432,4 +434,8 @@ func NewHTTPStatusCodeError(codespace sdk.CodespaceType, statusCode int) sdk.Err
 
 func NewInvalidTokenError(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidTokenError, InvalidTokenError.Error()+" : "+err.Error())
+}
+
+func NewInvalidPKError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidPkFileErr, InvalidPkFileErr.Error())
 }

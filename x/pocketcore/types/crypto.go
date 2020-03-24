@@ -6,6 +6,7 @@ import (
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
+	"github.com/tendermint/tendermint/privval"
 	_ "golang.org/x/crypto/sha3"
 )
 
@@ -13,6 +14,7 @@ var (
 	Hasher     = sha.SHA3_256
 	HashLength = sha.SHA3_256.Size()
 	AddrLength = tmhash.TruncatedSize
+	FilePVKey  = privval.FilePVKey{}
 )
 
 // verify the signature using strings
@@ -36,6 +38,18 @@ func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
 		return NewInvalidSignatureError(ModuleName)
 	}
 	return nil
+}
+
+func InitPvKeyFile(filePVKey privval.FilePVKey) {
+	FilePVKey = filePVKey
+}
+
+func GetPvKeyFile() (privval.FilePVKey, sdk.Error) {
+	if FilePVKey.PrivKey == nil {
+		return FilePVKey, NewInvalidPKError(ModuleName)
+	} else {
+		return FilePVKey, nil
+	}
 }
 
 // verify the public key format

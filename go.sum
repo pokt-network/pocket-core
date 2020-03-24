@@ -165,6 +165,8 @@ github.com/pokt-network/posmint v0.0.0-20200302134028-19da81a1d77e/go.mod h1:uqt
 github.com/pokt-network/posmint v0.0.0-20200310191302-ae65cfbaecaf h1:N4el7kEnJ5vC9Ufn0/EHMn+2+xAN3B41fNsYks9oPrU=
 github.com/pokt-network/posmint v0.0.0-20200324150536-ea421654bf00 h1:OfTfh/d9fn6D6AnVQ6AsqxEZjat+wkxVdloK8qRW0XA=
 github.com/pokt-network/posmint v0.0.0-20200324150536-ea421654bf00/go.mod h1:VaJ0KaifHYNDF1BuZ+aG9KAp41BCZVWhZYooDWr0UE0=
+github.com/pokt-network/posmint v0.0.0-20200324191352-6c097b9dc08b h1:fRa1ioWVkMC9PyrrDPmpPsA/oKKLZMmWHWM2XhNbiw8=
+github.com/pokt-network/posmint v0.0.0-20200324191352-6c097b9dc08b/go.mod h1:VaJ0KaifHYNDF1BuZ+aG9KAp41BCZVWhZYooDWr0UE0=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.3 h1:9iH4JKXLzFbOAdtqv/a+j8aewx2Y8lAjAydhbaScPF8=
 github.com/prometheus/client_golang v0.9.3/go.mod h1:/TN21ttK/J9q6uSwhBd54HahCDft0ttaMvbicHlPoso=

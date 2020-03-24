@@ -88,7 +88,6 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.appsKeeper,
 		getHostedChains(),
 		pocketSubspace,
-		getCoinbasePassphrase(),
 	)
 	// The governance keeper
 	app.govKeeper = govKeeper.NewKeeper(

@@ -196,7 +196,7 @@ func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 	return 0, nil
 }
 
-// todo move this once password management is fixed
+// todo exchanged password for pk, move or unify
 func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	// get the coinbase, as it is the sender of the automatic message
 	kp, err := keybase.GetCoinbase()
@@ -211,7 +211,12 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase
 		return txBuilder, cliCtx, err
 	}
 	// create a client context for sending
-	cliCtx = util.NewCLIContext(n, fromAddr, k.coinbasePassphrase).WithCodec(k.cdc)
+	cliCtx = util.NewCLIContext(n, fromAddr, "").WithCodec(k.cdc)
+	pk, err := k.GetPKFromFile(ctx)
+	if err != nil {
+		return txBuilder, cliCtx, err
+	}
+	cliCtx.PrivateKey = pk
 	// broadcast synchronously
 	cliCtx.BroadcastMode = util.BroadcastSync
 	// get the account to ensure balance

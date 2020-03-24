@@ -11,27 +11,25 @@ import (
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	posKeeper          types.PosKeeper
-	appKeeper          types.AppsKeeper
-	Keybase            keys.Keybase
-	TmNode             client.Client
-	coinbasePassphrase string // todo infrastructure security task
-	hostedBlockchains  types.HostedBlockchains
-	Paramstore         sdk.Subspace
-	storeKey           sdk.StoreKey // Unexposed key to access store from sdk.Context
-	cdc                *codec.Codec // The wire codec for binary encoding/decoding.
+	posKeeper         types.PosKeeper
+	appKeeper         types.AppsKeeper
+	Keybase           keys.Keybase
+	TmNode            client.Client
+	hostedBlockchains types.HostedBlockchains
+	Paramstore        sdk.Subspace
+	storeKey          sdk.StoreKey // Unexposed key to access store from sdk.Context
+	cdc               *codec.Codec // The wire codec for binary encoding/decoding.
 }
 
 // NewPocketCoreKeeper creates new instances of the pocketcore Keeper
-func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains types.HostedBlockchains, paramstore sdk.Subspace, passphrase string) Keeper {
+func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
 	return Keeper{
-		storeKey:           storeKey,
-		cdc:                cdc,
-		posKeeper:          posKeeper,
-		appKeeper:          appKeeper,
-		coinbasePassphrase: passphrase,
-		hostedBlockchains:  hostedChains,
-		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),
+		storeKey:          storeKey,
+		cdc:               cdc,
+		posKeeper:         posKeeper,
+		appKeeper:         appKeeper,
+		hostedBlockchains: hostedChains,
+		Paramstore:        paramstore.WithKeyTable(ParamKeyTable()),
 	}
 }
 

@@ -5,9 +5,11 @@ import (
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	cfg "github.com/pokt-network/posmint/config"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/h2non/gock.v1"
+	"os"
 	"testing"
 )
 
@@ -74,6 +76,16 @@ func TestKeeper_HandleRelay(t *testing.T) {
 		t.Fatalf(er.Error())
 	}
 	validRelay.Proof.Signature = hex.EncodeToString(clientSig)
+
+	os.MkdirAll("data", os.ModePerm)
+	privval := cfg.LoadOrGenFilePV("data/priv_val_key.json", "data/priv_val_state.json")
+
+	defer func() {
+		os.RemoveAll("data")
+
+	}()
+	types.InitPvKeyFile(privval.Key)
+
 	defer gock.Off() // Flush pending mocks after test execution
 
 	gock.New("https://www.google.com").

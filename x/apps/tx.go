@@ -5,6 +5,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto/keys"
+	"github.com/pokt-network/posmint/crypto/keys/mintkey"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
@@ -42,8 +43,17 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 		panic(err)
 	}
 	chainID := genDoc.Genesis.ChainID
+	kp, err := keybase.Get(fromAddr)
+	if err != nil {
+		panic(err)
+	}
+	privkey, err := mintkey.UnarmorDecryptPrivKey(kp.PrivKeyArmor, passphrase)
+	if err != nil {
+		panic(err)
+	}
 	cliCtx = util.NewCLIContext(tmNode, fromAddr, passphrase).WithCodec(cdc)
 	cliCtx.BroadcastMode = util.BroadcastSync
+	cliCtx.PrivateKey = privkey
 	accGetter := auth.NewAccountRetriever(cliCtx)
 	err = accGetter.EnsureExists(fromAddr)
 	if err != nil {
