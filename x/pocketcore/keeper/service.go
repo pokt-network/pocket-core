@@ -45,12 +45,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// generate response object
 	resp := &pc.RelayResponse{
 		Response: respPayload,
-		Proof: pc.RelayProof{
-			Blockchain:         relay.Proof.Blockchain,
-			SessionBlockHeight: sessionBlockHeight,
-			ServicerPubKey:     selfNode.GetPublicKey().RawString(),
-			Token:              relay.Proof.Token,
-		},
+		Proof:    relay.Proof,
 	}
 	// sign the response
 	pk, er := k.GetPKFromFile(ctx)

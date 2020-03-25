@@ -14,6 +14,9 @@
   - removed password from keeper
   - Updated POSMint version
 - Removed default genesis and seeds
+- Prevent unstaking time reset if not equals 0 (for vesting)
+- Relay Response now has the entire proof when sent back to the client 
+- 
 
 ## RC-0.2.1
 - Add version command to CLI
