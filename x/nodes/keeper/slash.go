@@ -294,7 +294,7 @@ func (k Keeper) burnValidators(ctx sdk.Ctx) {
 	iterator := sdk.KVStorePrefixIterator(store, types.BurnValidatorKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		severity := sdk.Int{}
+		severity := sdk.ZeroInt()
 		address := sdk.Address(types.AddressFromKey(iterator.Key()))
 		amino.MustUnmarshalBinaryBare(iterator.Value(), &severity)
 		k.simpleSlash(ctx, address, severity)
@@ -313,10 +313,13 @@ func (k Keeper) getValidatorBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.In
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValidatorBurn(address))
 	if value == nil {
-		return coins, false
+		return sdk.ZeroInt(), false
 	}
 	found = true
-	k.cdc.MustUnmarshalBinaryBare(value, &coins)
+	err := k.cdc.UnmarshalBinaryBare(value, &coins)
+	if err != nil {
+		coins = sdk.ZeroInt()
+	}
 	return
 }
 

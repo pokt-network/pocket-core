@@ -48,5 +48,5 @@ func (k Keeper) AwardCoinsForRelays(ctx sdk.Ctx, relays int64, toAddr sdk.Addres
 
 // award coins to nodes for relays completed
 func (k Keeper) BurnCoinsForChallenges(ctx sdk.Ctx, relays int64, toAddr sdk.Address) {
-	k.posKeeper.RewardForRelays(ctx, sdk.NewInt(relays), toAddr)
+	k.posKeeper.BurnForChallenge(ctx, sdk.NewInt(relays), toAddr)
 }

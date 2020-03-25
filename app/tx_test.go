@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/hex"
+	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -452,6 +453,7 @@ func TestClaimTxChallenge(t *testing.T) {
 		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		select {
 		case res := <-evtChan:
+			fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 				t.Fatal("proof message was not received afterward")
 			}

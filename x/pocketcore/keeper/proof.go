@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
@@ -136,11 +137,18 @@ func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) 
 		}
 	case pc.ChallengeProofInvalidData:
 		ctx.Logger().Info(fmt.Sprintf("burning coins from %s, for %d valid challenges", claim.FromAddress.String(), claim.TotalProofs))
-		k.BurnCoinsForChallenges(ctx, claim.TotalProofs, claim.FromAddress)
-		err := k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.ChallengeEvidence)
+		pk := proof.Leaf.(pc.ChallengeProofInvalidData).MinorityResponse.Proof.ServicerPubKey
+		pubKey, err := crypto.NewPublicKey(pk)
+		if err != nil {
+			return sdk.ErrInvalidPubKey(err.Error())
+		}
+		k.BurnCoinsForChallenges(ctx, claim.TotalProofs, sdk.Address(pubKey.Address()))
+		err = k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.ChallengeEvidence)
 		if err != nil {
 			return sdk.ErrInternal(err.Error())
 		}
+		// small reward for the challenge proof invalid data
+		k.AwardCoinsForRelays(ctx, claim.TotalProofs/100, claim.FromAddress)
 	}
 	return nil
 }
