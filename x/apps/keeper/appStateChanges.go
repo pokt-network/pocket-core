@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/libs/common"
-	tmTypes "github.com/tendermint/tendermint/types"
 )
 
 // validate check called before staking
@@ -26,7 +26,12 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 	} else {
 		// ensure public key type is supported
 		if ctx.ConsensusParams() != nil {
-			tmPubKey := tmTypes.TM2PB.PubKey(application.PublicKey.PubKey())
+			tmPubKey, err := crypto.CheckConsensusPubKey(application.PublicKey.PubKey())
+			if err != nil {
+				return types.ErrApplicationPubKeyTypeNotSupported(k.Codespace(),
+					err.Error(),
+					ctx.ConsensusParams().Validator.PubKeyTypes)
+			}
 			if !common.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
 				return types.ErrApplicationPubKeyTypeNotSupported(k.Codespace(),
 					tmPubKey.Type,
