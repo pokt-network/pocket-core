@@ -3,11 +3,10 @@ package keeper
 import (
 	"bytes"
 	"fmt"
+	"github.com/pokt-network/posmint/crypto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/common"
 	"time"
-
-	tmTypes "github.com/tendermint/tendermint/types"
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
@@ -96,7 +95,12 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	} else {
 		// check the consensus params
 		if ctx.ConsensusParams() != nil {
-			tmPubKey := tmTypes.TM2PB.PubKey(validator.PublicKey.PubKey())
+			tmPubKey, err := crypto.CheckConsensusPubKey(validator.PublicKey.PubKey())
+			if err != nil {
+				return types.ErrValidatorPubKeyTypeNotSupported(k.Codespace(),
+					err.Error(),
+					ctx.ConsensusParams().Validator.PubKeyTypes)
+			}
 			if !common.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
 				return types.ErrValidatorPubKeyTypeNotSupported(k.Codespace(),
 					tmPubKey.Type,
