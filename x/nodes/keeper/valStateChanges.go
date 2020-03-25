@@ -198,7 +198,10 @@ func (k Keeper) BeginUnstakingValidator(ctx sdk.Ctx, validator types.Validator) 
 	// set the status
 	validator = validator.UpdateStatus(sdk.Unstaking)
 	// set the unstaking completion time and completion height appropriately
-	validator.UnstakingCompletionTime = ctx.BlockHeader().Time.Add(params.UnstakingTime)
+	// set the unstaking completion time and completion height appropriately
+	if validator.UnstakingCompletionTime.IsZero() {
+		validator.UnstakingCompletionTime = ctx.BlockHeader().Time.Add(params.UnstakingTime)
+	}
 	// save the now unstaked validator record and power index
 	k.SetValidator(ctx, validator)
 	// Adds to unstaking validator queue
