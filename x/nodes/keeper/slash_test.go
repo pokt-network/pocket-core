@@ -16,11 +16,11 @@ func TestGetAndSetValidatorBurn(t *testing.T) {
 	stakedValidator := getStakedValidator()
 
 	type args struct {
-		amount    sdk.Dec
+		amount    sdk.Int
 		validator types.Validator
 	}
 	type expected struct {
-		amount sdk.Dec
+		amount sdk.Int
 		found  bool
 	}
 	tests := []struct {
@@ -30,13 +30,13 @@ func TestGetAndSetValidatorBurn(t *testing.T) {
 	}{
 		{
 			name:     "can get and set validator burn",
-			args:     args{amount: sdk.NewDec(10), validator: stakedValidator},
-			expected: expected{amount: sdk.NewDec(10), found: true},
+			args:     args{amount: sdk.NewInt(10), validator: stakedValidator},
+			expected: expected{amount: sdk.NewInt(10), found: true},
 		},
 		{
 			name:     "returns no coins if not set",
-			args:     args{amount: sdk.NewDec(10), validator: stakedValidator},
-			expected: expected{amount: sdk.NewDec(0), found: false},
+			args:     args{amount: sdk.NewInt(10), validator: stakedValidator},
+			expected: expected{amount: sdk.NewInt(0), found: false},
 		},
 	}
 	for _, test := range tests {
@@ -49,8 +49,6 @@ func TestGetAndSetValidatorBurn(t *testing.T) {
 			assert.Equal(t, test.expected.found, found, "found does not match expected")
 			if test.expected.found {
 				assert.True(t, test.expected.amount.Equal(coins), "received coins are not the expected coins")
-			} else {
-				assert.True(t, coins.IsNil(), "did not get empty coins")
 			}
 		})
 	}
@@ -58,14 +56,14 @@ func TestGetAndSetValidatorBurn(t *testing.T) {
 
 func TestDeleteValidatorBurn(t *testing.T) {
 	stakedValidator := getStakedValidator()
-	var emptyCoins sdk.Dec
+	var emptyCoins sdk.Int
 
 	type args struct {
-		amount    sdk.Dec
+		amount    sdk.Int
 		validator types.Validator
 	}
 	type expected struct {
-		amount  sdk.Dec
+		amount  sdk.Int
 		found   bool
 		message string
 	}
@@ -78,7 +76,7 @@ func TestDeleteValidatorBurn(t *testing.T) {
 		{
 			name:     "deletes validator burn",
 			panics:   false,
-			args:     args{amount: sdk.NewDec(10), validator: stakedValidator},
+			args:     args{amount: sdk.NewInt(10), validator: stakedValidator},
 			expected: expected{amount: emptyCoins, found: false},
 		},
 	}
@@ -89,7 +87,9 @@ func TestDeleteValidatorBurn(t *testing.T) {
 			keeper.deleteValidatorBurn(context, test.args.validator.Address)
 			coins, found := keeper.getValidatorBurn(context, test.args.validator.Address)
 			assert.Equal(t, test.expected.found, found, "found does not match expected")
-			assert.True(t, coins.IsNil(), "received coins are not the expected coins")
+			if found {
+				assert.True(t, coins.IsZero(), "received coins are not the expected coins")
+			}
 		})
 	}
 }
@@ -584,11 +584,11 @@ func TestBurnValidators(t *testing.T) {
 	primaryStakedValidator := getStakedValidator()
 
 	type args struct {
-		amount    sdk.Dec
+		amount    sdk.Int
 		validator types.Validator
 	}
 	type expected struct {
-		amount    sdk.Dec
+		amount    sdk.Int
 		found     bool
 		validator types.Validator
 	}
@@ -600,11 +600,11 @@ func TestBurnValidators(t *testing.T) {
 		{
 			name: "can get and set validator burn",
 			args: args{
-				amount:    sdk.NewDec(100),
+				amount:    sdk.NewInt(100000000000),
 				validator: primaryStakedValidator,
 			},
 			expected: expected{
-				amount:    sdk.ZeroDec(),
+				amount:    sdk.ZeroInt(),
 				found:     true,
 				validator: primaryStakedValidator,
 			},
@@ -618,14 +618,14 @@ func TestBurnValidators(t *testing.T) {
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.validator.Address, test.args.validator.StakedTokens)
 			keeper.setValidatorBurn(context, test.args.amount, test.args.validator.Address)
 			keeper.burnValidators(context)
-
 			primaryCryptoAddr := test.args.validator.GetAddress()
-
 			primaryValidator, found := keeper.GetValidator(context, primaryCryptoAddr)
 			if !found {
 				t.Fail()
 			}
-			assert.True(t, test.expected.amount.Equal(primaryValidator.StakedTokens.ToDec()))
+			fmt.Println(test.expected.amount)
+			fmt.Println(primaryValidator.StakedTokens)
+			assert.True(t, test.expected.amount.Equal(primaryValidator.StakedTokens))
 		})
 	}
 }
@@ -678,9 +678,9 @@ func TestKeeper_BurnValidator(t *testing.T) {
 	context, _, keeper := createTestInput(t, true)
 
 	type args struct {
-		ctx                sdk.Context
-		address            sdk.Address
-		severityPercentage sdk.Dec
+		ctx     sdk.Context
+		address sdk.Address
+		amount  sdk.Int
 	}
 	tests := []struct {
 		name   string
@@ -689,9 +689,9 @@ func TestKeeper_BurnValidator(t *testing.T) {
 	}{
 		{"Test BurnValidator", fields{Keeper: keeper},
 			args{
-				ctx:                context,
-				address:            primaryStakedValidator.Address,
-				severityPercentage: sdk.ZeroDec(),
+				ctx:     context,
+				address: primaryStakedValidator.Address,
+				amount:  sdk.ZeroInt(),
 			}},
 	}
 	for _, tt := range tests {
@@ -700,7 +700,7 @@ func TestKeeper_BurnValidator(t *testing.T) {
 			k.SetValidator(context, primaryStakedValidator)
 			store := tt.args.ctx.KVStore(k.storeKey)
 			store.Set(types.KeyForValidatorBurn(tt.args.address), k.cdc.MustMarshalBinaryBare(sdk.NewDec(1)))
-			k.BurnValidator(tt.args.ctx, tt.args.address, tt.args.severityPercentage)
+			k.BurnValidator(tt.args.ctx, tt.args.address, tt.args.amount)
 			burn, found := keeper.getValidatorBurn(tt.args.ctx, tt.args.address)
 			assert.True(t, found)
 			assert.NotNil(t, burn)

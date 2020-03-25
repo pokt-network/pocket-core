@@ -12,11 +12,11 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-func (k Keeper) BurnValidator(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) {
+func (k Keeper) BurnValidator(ctx sdk.Ctx, address sdk.Address, amount sdk.Int) {
 	curBurn, _ := k.getValidatorBurn(ctx, address)
-	newSeverity := curBurn.Add(severityPercentage)
+	newSeverity := curBurn.Add(amount)
 	k.setValidatorBurn(ctx, newSeverity, address)
-	ctx.Logger().Info("Custom burn set for " + address.String() + " with a severity of " + severityPercentage.String())
+	ctx.Logger().Info("Custom burn set for " + address.String() + " with a severity of " + amount.String())
 }
 
 func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address) {
@@ -26,9 +26,52 @@ func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Ad
 		ctx.Logger().Error("validator trying to burn for challenges, not found: possibly force unstaked?")
 		return
 	}
-	// what percent of entire stake will be burned?
-	percentageBurn := coins.ToDec().Quo(val.StakedTokens.ToDec())
-	k.BurnValidator(ctx, address, percentageBurn)
+	k.BurnValidator(ctx, val.Address, coins)
+}
+
+func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) {
+	// error check slash
+	validator := k.validateSimpleSlash(ctx, addr, amount)
+	if validator.Address == nil {
+		return // invalid simple slash
+	}
+	// cannot decrease balance below zero
+	tokensToBurn := sdk.MinInt(amount, validator.StakedTokens)
+	tokensToBurn = sdk.MaxInt(tokensToBurn, sdk.ZeroInt()) // defensive.
+	validator = k.removeValidatorTokens(ctx, validator, tokensToBurn)
+	err := k.burnStakedTokens(ctx, tokensToBurn)
+	if err != nil {
+		panic(err)
+	}
+	// if falls below minimum force burn all of the stake
+	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
+		err := k.ForceValidatorUnstake(ctx, validator)
+		if err != nil {
+			panic(err)
+		}
+	}
+	// Log that a slash occurred
+	ctx.Logger().Info(fmt.Sprintf("validator %s simple slashed; burned %s tokens",
+		validator.GetAddress(), amount.String()))
+}
+
+func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) types.Validator {
+	logger := k.Logger(ctx)
+	if amount.LTE(sdk.ZeroInt()) {
+		panic(fmt.Errorf("attempted to simple slash with a negative slash factor: %v", amount))
+	}
+	validator, found := k.GetValidator(ctx, addr)
+	if !found {
+		logger.Error(fmt.Sprintf( // could've been overslashed and removed
+			"WARNING: Ignored attempt to simple slash a nonexistent validator with address %s, we recommend you investigate immediately",
+			addr))
+		return types.Validator{}
+	}
+	// should not be slashing an unstaked validator
+	if validator.IsUnstaked() {
+		logger.Error(fmt.Errorf("should not be simple slashing unstaked validator: %s", validator.GetAddress()).Error())
+	}
+	return validator
 }
 
 // slash a validator for an infraction committed at a known height
@@ -251,23 +294,22 @@ func (k Keeper) burnValidators(ctx sdk.Ctx) {
 	iterator := sdk.KVStorePrefixIterator(store, types.BurnValidatorKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		severity := sdk.Dec{}
+		severity := sdk.Int{}
 		address := sdk.Address(types.AddressFromKey(iterator.Key()))
 		amino.MustUnmarshalBinaryBare(iterator.Value(), &severity)
-		val := k.mustGetValidator(ctx, address)
-		k.slash(ctx, address, ctx.BlockHeight(), val.ConsensusPower(), severity)
+		k.simpleSlash(ctx, address, severity)
 		// remove from the burn store
 		store.Delete(iterator.Key())
 	}
 }
 
 // store functions used to keep track of a validator burn
-func (k Keeper) setValidatorBurn(ctx sdk.Ctx, amount sdk.Dec, address sdk.Address) {
+func (k Keeper) setValidatorBurn(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForValidatorBurn(address), amino.MustMarshalBinaryBare(amount))
 }
 
-func (k Keeper) getValidatorBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Dec, found bool) {
+func (k Keeper) getValidatorBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Int, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValidatorBurn(address))
 	if value == nil {

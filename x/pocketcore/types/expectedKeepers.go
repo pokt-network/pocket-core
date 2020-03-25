@@ -24,6 +24,5 @@ type AppsKeeper interface {
 	Application(ctx sdk.Ctx, addr sdk.Address) appexported.ApplicationI
 	AllApplications(ctx sdk.Ctx) (applications []appexported.ApplicationI)
 	TotalTokens(ctx sdk.Ctx) sdk.Int
-	BurnApplication(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec)
 	JailApplication(ctx sdk.Ctx, addr sdk.Address)
 }

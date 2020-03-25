@@ -7,26 +7,23 @@ import (
 	"github.com/tendermint/go-amino"
 )
 
-func (k Keeper) BurnApplication(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) {
+func (k Keeper) BurnApplication(ctx sdk.Ctx, address sdk.Address, amount sdk.Int) {
 	curBurn, _ := k.getApplicationBurn(ctx, address)
-	newSeverity := curBurn.Add(severityPercentage)
+	newSeverity := curBurn.Add(amount)
 	k.setApplicationBurn(ctx, newSeverity, address)
 }
 
-// slash a application for an infraction committed at a known height
+// simpleSlash a application for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
-	// error check slash
-	application := k.validateSlash(ctx, consAddr, infractionHeight, power, slashFactor)
+func (k Keeper) simpleSlash(ctx sdk.Ctx, consAddr sdk.Address, amount sdk.Int) {
+	// error check simpleSlash
+	application := k.validateSimpleSlash(ctx, consAddr, amount)
 	if application.Address == nil {
-		return // invalid slash
+		return // invalid simpleSlash
 	}
 	logger := k.Logger(ctx)
-	// Amount of slashing = slash slashFactor * power at time of infraction
-	amount := sdk.TokensFromConsensusPower(power)
-	slashAmount := amount.ToDec().Mul(slashFactor).TruncateInt()
 	// cannot decrease balance below zero
-	tokensToBurn := sdk.MinInt(slashAmount, application.StakedTokens)
+	tokensToBurn := sdk.MinInt(amount, application.StakedTokens)
 	tokensToBurn = sdk.MaxInt(tokensToBurn, sdk.ZeroInt()) // defensive.
 	// Deduct from application's staked tokens and update the application.
 	// Burn the slashed tokens from the pool account and decrease the total supply.
@@ -42,26 +39,21 @@ func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power
 			panic(err)
 		}
 	}
-	// Log that a slash occurred
-	logger.Info(fmt.Sprintf("application %s slashed by slash factor of %s; burned %v tokens",
-		application.GetAddress(), slashFactor.String(), tokensToBurn))
+	// Log that a simpleSlash occurred
+	logger.Info(fmt.Sprintf("application %s simple slashed: burned %v tokens",
+		application.GetAddress(), amount.String()))
 }
 
-func (k Keeper) validateSlash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Application {
+func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) types.Application {
 	logger := k.Logger(ctx)
-	if slashFactor.LT(sdk.ZeroDec()) {
-		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
+	if amount.LTE(sdk.ZeroInt()) {
+		panic(fmt.Errorf("attempted to simpleSlash with a negative simpleSlash factor: %v", amount))
 	}
-	if infractionHeight > ctx.BlockHeight() {
-		panic(fmt.Errorf( // Can't slash infractions in the future
-			"impossible attempt to slash future infraction at height %d but we are at height %d",
-			infractionHeight, ctx.BlockHeight()))
-	}
-	application, found := k.GetApplication(ctx, consAddr)
+	application, found := k.GetApplication(ctx, addr)
 	if !found {
 		logger.Error(fmt.Sprintf( // could've been overslashed and removed
-			"WARNING: Ignored attempt to slash a nonexistent application with address %s, we recommend you investigate immediately",
-			consAddr))
+			"WARNING: Ignored attempt to simpleSlash a nonexistent application with address %s, we recommend you investigate immediately",
+			addr))
 		return types.Application{}
 	}
 	// should not be slashing an unstaked application
@@ -84,23 +76,22 @@ func (k Keeper) burnApplications(ctx sdk.Ctx) {
 	iterator := sdk.KVStorePrefixIterator(store, types.BurnApplicationKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		severity := sdk.Dec{}
+		severity := sdk.Int{}
 		address := sdk.Address(types.AddressFromKey(iterator.Key()))
 		amino.MustUnmarshalBinaryBare(iterator.Value(), &severity)
-		val := k.mustGetApplication(ctx, address)
-		k.slash(ctx, address, ctx.BlockHeight(), val.ConsensusPower(), severity)
+		k.simpleSlash(ctx, address, severity)
 		// remove from the burn store
 		store.Delete(iterator.Key())
 	}
 }
 
 // store functions used to keep track of a application burn
-func (k Keeper) setApplicationBurn(ctx sdk.Ctx, amount sdk.Dec, address sdk.Address) {
+func (k Keeper) setApplicationBurn(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForAppBurn(address), amino.MustMarshalBinaryBare(amount))
 }
 
-func (k Keeper) getApplicationBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Dec, found bool) {
+func (k Keeper) getApplicationBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Int, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForAppBurn(address))
 	if value == nil {

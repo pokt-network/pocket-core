@@ -93,7 +93,7 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Ctx, application types.Applica
 	// set the status
 	application = application.UpdateStatus(sdk.Unstaking)
 	// set the unstaking completion time and completion height appropriately
-	if application.UnstakingCompletionTime.IsZero() {
+	if application.UnstakingCompletionTime.Second() == 0 {
 		application.UnstakingCompletionTime = ctx.BlockHeader().Time.Add(params.UnstakingTime)
 	}
 	// save the now unstaked application record and power index
