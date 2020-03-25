@@ -13,6 +13,7 @@
   - sign msgs with private key or keybase
   - removed password from keeper
   - Updated POSMint version
+- Removed default genesis and seeds
 
 ## RC-0.2.1
 - Add version command to CLI

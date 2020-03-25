@@ -22,6 +22,7 @@ import (
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/gov"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/pokt-network/posmint/x/supply"
 	"github.com/spf13/cobra"
 	con "github.com/tendermint/tendermint/config"
@@ -32,6 +33,7 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/rpc/client"
+	tmType "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
@@ -116,7 +118,7 @@ func InitGenesis() {
 				panic(err)
 			}
 			// write to the file
-			_, err = jsonFile.Write([]byte(testnetGenesis))
+			_, err = jsonFile.Write(newDefaultGenesisState())
 			if err != nil {
 				panic(err)
 			}
@@ -532,7 +534,16 @@ func newKeybase(passphrase string) error {
 	return nil
 }
 
-func newDefaultGenesisState(pubKey crypto.PublicKey) []byte {
+func newDefaultGenesisState() []byte {
+	keyb, err := GetKeybase()
+	if err != nil {
+		panic(err)
+	}
+	cb, err := keyb.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	pubKey := cb.PublicKey
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
@@ -554,9 +565,78 @@ func newDefaultGenesisState(pubKey crypto.PublicKey) []byte {
 			StakedTokens: sdk.NewInt(10000000)})
 	res := types.ModuleCdc.MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
-
+	// set default governance in genesis
+	var govGenesisState govTypes.GenesisState
+	rawGov := defaultGenesis[govTypes.ModuleName]
+	Codec().MustUnmarshalJSON(rawGov, &govGenesisState)
+	mACL := createDummyACL(pubKey)
+	govGenesisState.Params.ACL = govTypes.BaseACL{M: mACL.GetAll()}
+	govGenesisState.Params.DAOOwner = sdk.Address(pubKey.Address())
+	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
+	res4 := Codec().MustMarshalJSON(govGenesisState)
+	defaultGenesis[govTypes.ModuleName] = res4
+	// end genesis setup
 	j, _ := types.ModuleCdc.MarshalJSONIndent(defaultGenesis, "", "    ")
+	j, _ = types.ModuleCdc.MarshalJSONIndent(tmType.GenesisDoc{
+		GenesisTime: time.Now(),
+		ChainID:     "pocket-test",
+		ConsensusParams: &tmType.ConsensusParams{
+			Block: tmType.BlockParams{
+				MaxBytes:   15000,
+				MaxGas:     -1,
+				TimeIotaMs: 1,
+			},
+			Evidence: tmType.EvidenceParams{
+				MaxAge: 1000000,
+			},
+			Validator: tmType.ValidatorParams{
+				PubKeyTypes: []string{"ed25519"},
+			},
+		},
+		Validators: nil,
+		AppHash:    nil,
+		AppState:   j,
+	}, "", "    ")
 	return j
+}
+
+func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
+	addr := sdk.Address(kp.Address())
+	acl := &govTypes.NonMapACL{}
+	*acl = make([]govTypes.ACLPair, 0)
+	acl.SetOwner("bank/sendenabled", addr)
+	acl.SetOwner("auth/MaxMemoCharacters", addr)
+	acl.SetOwner("auth/TxSigLimit", addr)
+	acl.SetOwner("auth/TxSizeCostPerByte", addr)
+	acl.SetOwner("gov/daoOwner", addr)
+	acl.SetOwner("gov/acl", addr)
+	acl.SetOwner("pos/StakeDenom", addr)
+	acl.SetOwner("pocketcore/SupportedBlockchains", addr)
+	acl.SetOwner("pos/DowntimeJailDuration", addr)
+	acl.SetOwner("pos/SlashFractionDoubleSign", addr)
+	acl.SetOwner("pos/SlashFractionDowntime", addr)
+	acl.SetOwner("application/ApplicationStakeMinimum", addr)
+	acl.SetOwner("pocketcore/ClaimExpiration", addr)
+	acl.SetOwner("pocketcore/SessionNodeCount", addr)
+	acl.SetOwner("pos/MaxValidators", addr)
+	acl.SetOwner("pos/ProposerPercentage", addr)
+	acl.SetOwner("application/StabilityAdjustment", addr)
+	acl.SetOwner("application/AppUnstakingTime", addr)
+	acl.SetOwner("application/ParticipationRateOn", addr)
+	acl.SetOwner("pos/MaxEvidenceAge", addr)
+	acl.SetOwner("pos/MinSignedPerWindow", addr)
+	acl.SetOwner("pos/StakeMinimum", addr)
+	acl.SetOwner("pos/UnstakingTime", addr)
+	acl.SetOwner("application/BaseRelaysPerPOKT", addr)
+	acl.SetOwner("auth/TxSizeCostPerByte", addr)
+	acl.SetOwner("pocketcore/ClaimSubmissionWindow", addr)
+	acl.SetOwner("pos/DAOAllocation", addr)
+	acl.SetOwner("pos/SignedBlocksWindow", addr)
+	acl.SetOwner("pos/SessionBlockFrequency", addr)
+	acl.SetOwner("application/MaxApplications", addr)
+	acl.SetOwner("gov/daoOwner", addr)
+	acl.SetOwner("gov/upgrade", addr)
+	return acl
 }
 
 // XXX: this is totally unsafe.
