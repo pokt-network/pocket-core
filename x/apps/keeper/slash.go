@@ -76,7 +76,7 @@ func (k Keeper) burnApplications(ctx sdk.Ctx) {
 	iterator := sdk.KVStorePrefixIterator(store, types.BurnApplicationKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		severity := sdk.Int{}
+		severity := sdk.ZeroInt()
 		address := sdk.Address(types.AddressFromKey(iterator.Key()))
 		amino.MustUnmarshalBinaryBare(iterator.Value(), &severity)
 		k.simpleSlash(ctx, address, severity)
@@ -95,7 +95,7 @@ func (k Keeper) getApplicationBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForAppBurn(address))
 	if value == nil {
-		return coins, false
+		return sdk.ZeroInt(), false
 	}
 	found = true
 	k.cdc.MustUnmarshalBinaryBare(value, &coins)
