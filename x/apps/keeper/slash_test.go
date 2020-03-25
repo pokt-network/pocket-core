@@ -12,11 +12,11 @@ func TestGetAndSetApplicationBurn(t *testing.T) {
 	stakedApplication := getStakedApplication()
 
 	type args struct {
-		amount      sdk.Dec
+		amount      sdk.Int
 		application types.Application
 	}
 	type expected struct {
-		amount sdk.Dec
+		amount sdk.Int
 		found  bool
 	}
 	tests := []struct {
@@ -26,13 +26,13 @@ func TestGetAndSetApplicationBurn(t *testing.T) {
 	}{
 		{
 			name:     "can get and set application burn",
-			args:     args{amount: sdk.NewDec(10), application: stakedApplication},
-			expected: expected{amount: sdk.NewDec(10), found: true},
+			args:     args{amount: sdk.NewInt(10), application: stakedApplication},
+			expected: expected{amount: sdk.NewInt(10), found: true},
 		},
 		{
 			name:     "returns no coins if not set",
-			args:     args{amount: sdk.NewDec(10), application: stakedApplication},
-			expected: expected{amount: sdk.NewDec(0), found: false},
+			args:     args{amount: sdk.NewInt(10), application: stakedApplication},
+			expected: expected{amount: sdk.NewInt(0), found: false},
 		},
 	}
 	for _, test := range tests {
@@ -45,8 +45,6 @@ func TestGetAndSetApplicationBurn(t *testing.T) {
 			assert.Equal(t, test.expected.found, found, "found does not match expected")
 			if test.expected.found {
 				assert.True(t, test.expected.amount.Equal(coins), "received coins are not the expected coins")
-			} else {
-				assert.True(t, coins.IsNil(), "did not get empty coins")
 			}
 		})
 	}
@@ -54,14 +52,14 @@ func TestGetAndSetApplicationBurn(t *testing.T) {
 
 func TestDeleteApplicationBurn(t *testing.T) {
 	stakedApplication := getStakedApplication()
-	var emptyCoins sdk.Dec
+	var emptyCoins sdk.Int
 
 	type args struct {
-		amount      sdk.Dec
+		amount      sdk.Int
 		application types.Application
 	}
 	type expected struct {
-		amount  sdk.Dec
+		amount  sdk.Int
 		found   bool
 		message string
 	}
@@ -74,7 +72,7 @@ func TestDeleteApplicationBurn(t *testing.T) {
 		{
 			name:     "deletes application burn",
 			panics:   false,
-			args:     args{amount: sdk.NewDec(10), application: stakedApplication},
+			args:     args{amount: sdk.NewInt(10), application: stakedApplication},
 			expected: expected{amount: emptyCoins, found: false},
 		},
 	}
@@ -83,9 +81,8 @@ func TestDeleteApplicationBurn(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.setApplicationBurn(context, test.args.amount, test.args.application.Address)
 			keeper.deleteApplicationBurn(context, test.args.application.Address)
-			coins, found := keeper.getApplicationBurn(context, test.args.application.Address)
+			_, found := keeper.getApplicationBurn(context, test.args.application.Address)
 			assert.Equal(t, test.expected.found, found, "found does not match expected")
-			assert.True(t, coins.IsNil(), "received coins are not the expected coins")
 		})
 	}
 }
@@ -99,7 +96,7 @@ func TestValidateSlash(t *testing.T) {
 		application      types.Application
 		power            int64
 		increasedContext int64
-		slashFraction    sdk.Dec
+		slashFraction    sdk.Int
 		maxMissed        int64
 	}
 	type expected struct {
@@ -118,9 +115,9 @@ func TestValidateSlash(t *testing.T) {
 		expected
 	}{
 		{
-			name:   "validates slash",
+			name:   "validates simpleSlash",
 			panics: false,
-			args:   args{application: stakedApplication, slashFraction: sdk.NewDec(90)},
+			args:   args{application: stakedApplication, slashFraction: sdk.NewInt(90)},
 			expected: expected{
 				application:    stakedApplication,
 				found:          true,
@@ -131,7 +128,7 @@ func TestValidateSlash(t *testing.T) {
 		{
 			name:   "empty application if not found",
 			panics: false,
-			args:   args{application: stakedApplication, slashFraction: sdk.NewDec(90)},
+			args:   args{application: stakedApplication, slashFraction: sdk.NewInt(90)},
 			expected: expected{
 				application:    stakedApplication,
 				found:          true,
@@ -142,7 +139,7 @@ func TestValidateSlash(t *testing.T) {
 		{
 			name:   "errors if unstakedApplication",
 			panics: true,
-			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(90)},
+			args:   args{application: unstakedApplication, slashFraction: sdk.NewInt(90)},
 			expected: expected{
 				application:    stakedApplication,
 				found:          true,
@@ -155,28 +152,14 @@ func TestValidateSlash(t *testing.T) {
 		{
 			name:   "errors with invalid slashFactor",
 			panics: true,
-			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(-10)},
+			args:   args{application: unstakedApplication, slashFraction: sdk.NewInt(-10)},
 			expected: expected{
 				application:    stakedApplication,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
 				fraction:       true,
-				message:        fmt.Sprintf("attempted to slash with a negative slash factor: %v", sdk.NewDec(-10)),
-			},
-		},
-		{
-			name:   "errors with wrong infraction height",
-			panics: true,
-			args:   args{application: unstakedApplication, slashFraction: sdk.NewDec(90)},
-			expected: expected{
-				application:    stakedApplication,
-				found:          true,
-				pubKeyRelation: true,
-				tombstoned:     false,
-				fraction:       false,
-				customHeight:   true,
-				message:        fmt.Sprintf("impossible attempt to slash future infraction at height %d but we are at height %d", 100, 0),
+				message:        fmt.Sprintf("attempted to simpleSlash with a negative simpleSlash factor: %v", sdk.NewInt(-10)),
 			},
 		},
 	}
@@ -189,8 +172,6 @@ func TestValidateSlash(t *testing.T) {
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.application.Address, supplySize)
 			}
-
-			infractionHeight := context.BlockHeight()
 			fraction := test.args.slashFraction
 
 			switch test.panics {
@@ -199,13 +180,9 @@ func TestValidateSlash(t *testing.T) {
 					err := recover().(error)
 					assert.Equal(t, test.expected.message, err.Error(), "message error does not match")
 				}()
-				if test.expected.customHeight {
-					updatedContext := context.WithBlockHeight(100)
-					infractionHeight = updatedContext.BlockHeight()
-				}
-				_ = keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
+				_ = keeper.validateSimpleSlash(context, sdk.Address(cryptoAddr), fraction)
 			default:
-				val := keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
+				val := keeper.validateSimpleSlash(context, sdk.Address(cryptoAddr), fraction)
 				if test.expected.found {
 					assert.Equal(t, test.expected.application, val)
 				} else {
@@ -224,7 +201,7 @@ func TestSlash(t *testing.T) {
 		application      types.Application
 		power            int64
 		increasedContext int64
-		slashFraction    sdk.Dec
+		slashFraction    sdk.Int
 		maxMissed        int64
 	}
 	type expected struct {
@@ -244,15 +221,15 @@ func TestSlash(t *testing.T) {
 		expected
 	}{
 		{
-			name:   "slash application coins",
+			name:   "simpleSlash application coins",
 			panics: false,
-			args:   args{application: stakedApplication, power: int64(1), slashFraction: sdk.NewDec(100)},
+			args:   args{application: stakedApplication, power: int64(1), slashFraction: sdk.NewInt(100000000000)},
 			expected: expected{
 				application:    stakedApplication,
 				found:          true,
 				pubKeyRelation: true,
 				tombstoned:     false,
-				stakedTokens:   stakedApplication.StakedTokens.Sub(sdk.NewInt(100000000)),
+				stakedTokens:   sdk.ZeroInt(),
 			},
 		},
 	}
@@ -264,17 +241,9 @@ func TestSlash(t *testing.T) {
 				keeper.SetApplication(context, test.args.application)
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.args.application.Address, supplySize)
-				v, found := keeper.GetApplication(context, sdk.Address(cryptoAddr))
-				if !found {
-					t.FailNow()
-				}
-
-				fmt.Println(v)
 			}
-			infractionHeight := context.BlockHeight()
 			fraction := test.args.slashFraction
-
-			keeper.slash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
+			keeper.simpleSlash(context, sdk.Address(cryptoAddr), fraction)
 			application, found := keeper.GetApplication(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.Fail()
@@ -288,11 +257,11 @@ func TestBurnApplications(t *testing.T) {
 	primaryStakedApplication := getStakedApplication()
 
 	type args struct {
-		amount      sdk.Dec
+		amount      sdk.Int
 		application types.Application
 	}
 	type expected struct {
-		amount      sdk.Dec
+		amount      sdk.Int
 		found       bool
 		application types.Application
 	}
@@ -304,11 +273,11 @@ func TestBurnApplications(t *testing.T) {
 		{
 			name: "can get and set application burn",
 			args: args{
-				amount:      sdk.NewDec(100),
+				amount:      sdk.NewInt(1000000000000),
 				application: primaryStakedApplication,
 			},
 			expected: expected{
-				amount:      sdk.ZeroDec(),
+				amount:      sdk.ZeroInt(),
 				found:       true,
 				application: primaryStakedApplication,
 			},
@@ -329,7 +298,7 @@ func TestBurnApplications(t *testing.T) {
 			if !found {
 				t.Fail()
 			}
-			assert.True(t, test.expected.amount.Equal(primaryApplication.StakedTokens.ToDec()))
+			assert.True(t, test.expected.amount.Equal(primaryApplication.StakedTokens))
 		})
 	}
 }
