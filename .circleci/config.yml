@@ -104,7 +104,7 @@ workflows:
           filters:
             tags:
               only:
-                - /^rc-.*/
+                - /^RC-.*/
                 - /^stable-.*/
             branches:
               ignore: /.*/
