@@ -9,6 +9,7 @@ import (
 func init() {
 	rootCmd.AddCommand(utilCmd)
 	utilCmd.AddCommand(generateChainCmd)
+	utilCmd.AddCommand(exportAppStateCmd)
 }
 
 // accountsCmd represents the accounts namespace command
@@ -39,5 +40,21 @@ var generateChainCmd = &cobra.Command{
 			return
 		}
 		fmt.Printf("Pocket Network Identifier: %s\n", res)
+	},
+}
+
+var exportAppStateCmd = &cobra.Command{
+	Use:   "export-state <output-file>",
+	Short: "export current state genesis",
+	Long:  `Export the current app state in a genesis file`,
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		err := app.ExportState(args[1])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Printf("Successfully exported state")
 	},
 }

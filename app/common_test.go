@@ -321,10 +321,10 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 			AppState:   genesisState,
 		}, nil
 	}
-	//loggerFile, _ := os.Open(os.DevNull)
+	loggerFile, _ := os.Open(os.DevNull)
 	c := config{
 		TmConfig: getTestConfig(),
-		Logger:   log.NewTMLogger(os.Stdout),
+		Logger:   log.NewTMLogger(loggerFile),
 	}
 	db := dbm.NewMemDB()
 	traceWriter, err := openTraceWriter(c.TraceWriter)
@@ -359,9 +359,12 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
+	testPCA = app
 	app.SetTendermintNode(tmNode)
 	return tmNode, kb
 }
+
+var testPCA *memoryPCApp
 
 func memCodec() *codec.Codec {
 	if memCDC == nil {

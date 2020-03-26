@@ -52,3 +52,17 @@ func TestBuildSignMultisig(t *testing.T) {
 	cleanup()
 	stopCli()
 }
+
+func TestExportState(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		res, err := testPCA.ExportAppState(false, nil)
+		assert.Nil(t, err)
+		assert.NotNil(t, res)
+	}
+	cleanup()
+	stopCli()
+}
+
