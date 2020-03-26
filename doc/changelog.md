@@ -17,6 +17,8 @@
 - Prevent unstaking time reset if not equals 0 (for vesting)
 - Relay Response now has the entire proof when sent back to the client 
 - Simplified slashing with static burn for validators and apps (non consensus burns)
+- Payment for challenge tx
+- Added export app command to cli
 
 ## RC-0.2.1
 - Add version command to CLI
