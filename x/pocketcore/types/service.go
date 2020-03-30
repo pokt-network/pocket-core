@@ -113,10 +113,12 @@ func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) 
 }
 
 func (r Relay) RequestHash() []byte {
-	relay := Relay{
-		Payload: r.Payload,
-		Meta:    r.Meta,
-	}
+
+	relay := struct {
+		Payload Payload   `json:"payload"` // the data payload of the request
+		Meta    RelayMeta `json:"meta"`    // metadata for the relay request
+	}{r.Payload, r.Meta}
+
 	res, err := json.Marshal(relay)
 	if err != nil {
 		panic(fmt.Sprintf("cannot marshal relay request hash: %s", err.Error()))
