@@ -11,8 +11,8 @@ import (
 )
 
 func TestAppModule_Name(t *testing.T) {
-	_, nk, ak, k := createTestInput(t, false)
-	am := NewAppModule(k, nk, ak)
+	_, _, _, k := createTestInput(t, false)
+	am := NewAppModule(k)
 	assert.Equal(t, am.Name(), types.ModuleName)
 	assert.Equal(t, am.Name(), types.ModuleName)
 }
@@ -29,8 +29,8 @@ func TestAppModule_InitExportGenesis(t *testing.T) {
 		Proofs: []types.Receipt(nil),
 		Claims: []types.MsgClaim(nil),
 	}
-	ctx, nk, ak, k := createTestInput(t, false)
-	am := NewAppModule(k, nk, ak)
+	ctx, _, _, k := createTestInput(t, false)
+	am := NewAppModule(k)
 	data, err := types.ModuleCdc.MarshalJSON(genesisState)
 	assert.Nil(t, err)
 	am.InitGenesis(ctx, data)
@@ -47,38 +47,38 @@ func TestAppModule_InitExportGenesis(t *testing.T) {
 }
 
 func TestAppModule_NewQuerierHandler(t *testing.T) {
-	_, nk, ak, k := createTestInput(t, false)
-	am := NewAppModule(k, nk, ak)
+	_, _, _, k := createTestInput(t, false)
+	am := NewAppModule(k)
 	assert.Equal(t, reflect.ValueOf(keeper.NewQuerier(k)).String(), reflect.ValueOf(am.NewQuerierHandler()).String())
 }
 
 func TestAppModule_Route(t *testing.T) {
-	_, nk, ak, k := createTestInput(t, false)
-	am := NewAppModule(k, nk, ak)
+	_, _, _, k := createTestInput(t, false)
+	am := NewAppModule(k)
 	assert.Equal(t, am.Route(), types.RouterKey)
 }
 
 func TestAppModule_QuerierRoute(t *testing.T) {
-	_, nk, ak, k := createTestInput(t, false)
-	am := NewAppModule(k, nk, ak)
+	_, _, _, k := createTestInput(t, false)
+	am := NewAppModule(k)
 	assert.Equal(t, am.QuerierRoute(), types.ModuleName)
 }
 
 func TestAppModule_EndBlock(t *testing.T) {
-	ctx, nk, ak, k := createTestInput(t, false)
-	am := NewAppModule(k, nk, ak)
+	ctx, _, _, k := createTestInput(t, false)
+	am := NewAppModule(k)
 	assert.Equal(t, am.EndBlock(ctx, abci.RequestEndBlock{}), []abci.ValidatorUpdate{})
 }
 
 func TestAppModuleBasic_DefaultGenesis(t *testing.T) {
-	_, nk, ak, k := createTestInput(t, false)
-	am := NewAppModule(k, nk, ak)
+	_, _, _, k := createTestInput(t, false)
+	am := NewAppModule(k)
 	assert.Equal(t, []byte(am.DefaultGenesis()), []byte(types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())))
 }
 
 func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
-	_, nk, ak, k := createTestInput(t, false)
-	am := NewAppModule(k, nk, ak)
+	_, _, _, k := createTestInput(t, false)
+	am := NewAppModule(k)
 	p := types.Params{
 		SessionNodeCount:      10,
 		ClaimSubmissionWindow: 22,

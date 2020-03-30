@@ -24,7 +24,7 @@ var (
 	testnet         bool
 )
 
-var CLIVersion = fmt.Sprintf("%s%s", app.Tag, app.Version)
+var CLIVersion = fmt.Sprintf("%s", app.AppVersion)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -107,6 +107,6 @@ var version = &cobra.Command{
 	Short: "Get current version",
 	Long:  `Returns the version`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version: %s\n", CLIVersion)
+		fmt.Printf("AppVersion: %s\n", CLIVersion)
 	},
 }

@@ -470,3 +470,12 @@ func ACL(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	WriteResponse(w, string(j), r.URL.Path, r.Host)
 }
+
+func State(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	res, err := app.ExportState()
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteRaw(w, string(res), r.URL.Path, r.Host)
+}

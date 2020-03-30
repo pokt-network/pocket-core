@@ -76,6 +76,9 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	}
 	// get the application that staked on behalf of the client
 	app, found := k.GetAppFromPublicKey(ctx, challenge.MinorityResponse.Proof.Token.ApplicationPublicKey)
+	if !found {
+		return nil, pc.NewAppNotFoundError(pc.ModuleName)
+	}
 	// generate header
 	header := pc.SessionHeader{
 		ApplicationPubKey:  app.GetPublicKey().RawString(),
@@ -94,9 +97,6 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 		}
 		// add to cache
 		pc.SetSession(session)
-	}
-	if !found {
-		return nil, pc.NewAppNotFoundError(pc.ModuleName)
 	}
 	// validate the challenge
 	err = challenge.ValidateLocal(app.GetMaxRelays().Int64(), sessionBlkHeight, app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode.GetAddress())

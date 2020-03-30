@@ -22,11 +22,9 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/gov"
 	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
-	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
@@ -90,10 +88,10 @@ func TestNewInMemory(t *testing.T) {
 var (
 	memoryModAccPerms = map[string][]string{
 		auth.FeeCollectorName:     nil,
-		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking, supply.Minter},
-		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
-		nodesTypes.ModuleName:     {supply.Burner, supply.Staking, supply.Minter},
-		govTypes.DAOAccountName:   {supply.Burner, supply.Staking, supply.Minter},
+		nodesTypes.StakedPoolName: {auth.Burner, auth.Staking, auth.Minter},
+		appsTypes.StakedPoolName:  {auth.Burner, auth.Staking, auth.Minter},
+		nodesTypes.ModuleName:     {auth.Burner, auth.Staking, auth.Minter},
+		govTypes.DAOAccountName:   {auth.Burner, auth.Staking, auth.Minter},
 		appsTypes.ModuleName:      nil,
 	}
 	genState cfg.GenesisState
@@ -114,10 +112,8 @@ type memoryPCApp struct {
 	cdc           *codec.Codec
 	keys          map[string]*sdk.KVStoreKey
 	tkeys         map[string]*sdk.TransientStoreKey
-	accountKeeper auth.AccountKeeper
+	accountKeeper auth.Keeper
 	appsKeeper    appsKeeper.Keeper
-	bankKeeper    bank.Keeper
-	supplyKeeper  supply.Keeper
 	nodesKeeper   nodesKeeper.Keeper
 	govKeeper     govKeeper.Keeper
 	pocketKeeper  pocketKeeper.Keeper
@@ -129,30 +125,14 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 	app := newMemoryPCBaseApp(logger, db, baseAppOptions...)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
-	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
 	appsSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
 	pocketSubspace := sdk.NewSubspace(pocketTypes.DefaultParamspace)
-	// The AccountKeeper handles address -> account lookups
-	app.accountKeeper = auth.NewAccountKeeper(
+	// The AuthKeeper handles address -> account lookups
+	app.accountKeeper = auth.NewKeeper(
 		app.cdc,
 		app.keys[auth.StoreKey],
 		authSubspace,
-		auth.ProtoBaseAccount,
-	)
-	// The BankKeeper allows you perform sdk.Coins interactions
-	app.bankKeeper = bank.NewBaseKeeper(
-		app.accountKeeper,
-		bankSubspace,
-		bank.DefaultCodespace,
-		app.ModuleAccountAddrs(),
-	)
-	// The SupplyKeeper collects transaction fees
-	app.supplyKeeper = supply.NewKeeper(
-		app.cdc,
-		app.keys[supply.StoreKey],
-		app.accountKeeper,
-		app.bankKeeper,
 		memoryModAccPerms,
 	)
 	// The nodesKeeper keeper handles pocket core nodes
@@ -160,8 +140,6 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		app.cdc,
 		app.keys[nodesTypes.StoreKey],
 		app.accountKeeper,
-		app.bankKeeper,
-		app.supplyKeeper,
 		nodesSubspace,
 		nodesTypes.DefaultCodespace,
 	)
@@ -169,9 +147,8 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 	app.appsKeeper = appsKeeper.NewKeeper(
 		app.cdc,
 		app.keys[appsTypes.StoreKey],
-		app.bankKeeper,
 		app.nodesKeeper,
-		app.supplyKeeper,
+		app.accountKeeper,
 		appsSubspace,
 		appsTypes.DefaultCodespace,
 	)
@@ -190,34 +167,30 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		app.keys[pocketTypes.StoreKey],
 		app.tkeys[pocketTypes.StoreKey],
 		govTypes.DefaultCodespace,
-		app.supplyKeeper,
-		authSubspace, bankSubspace, nodesSubspace, appsSubspace, pocketSubspace,
+		app.accountKeeper,
+		authSubspace, nodesSubspace, appsSubspace, pocketSubspace,
 	)
 	app.pocketKeeper.Keybase = getInMemoryKeybase()
 	app.pocketKeeper.TmNode = getInMemoryTMClient()
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper),
-		apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper),
-		pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper),
+		nodes.NewAppModule(app.nodesKeeper),
+		apps.NewAppModule(app.appsKeeper),
+		pocket.NewAppModule(app.pocketKeeper),
 		gov.NewAppModule(app.govKeeper),
 	)
 	app.mm.SetOrderBeginBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName)
 	app.mm.SetOrderEndBlockers(nodesTypes.ModuleName, appsTypes.ModuleName)
 	app.mm.SetOrderInitGenesis(
 		auth.ModuleName,
-		bank.ModuleName,
 		nodesTypes.ModuleName,
 		appsTypes.ModuleName,
 		pocketTypes.ModuleName,
-		supply.ModuleName,
 		gov.ModuleName,
 	)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	app.SetInitChainer(app.InitChainer)
-	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper))
+	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper))
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 	app.MountKVStores(app.keys)
@@ -231,8 +204,8 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 
 func newMemoryPCBaseApp(logger log.Logger, db dbm.DB, options ...func(*bam.BaseApp)) *memoryPCApp {
 	bApp := bam.NewBaseApp("pocket-test", logger, db, auth.DefaultTxDecoder(memCodec()), options...)
-	bApp.SetAppVersion("0.0.0")
-	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
+	bApp.SetAppVersion("0.3.0")
+	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
 	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
 	// Create the application
 	return &memoryPCApp{
@@ -262,7 +235,7 @@ func (app *memoryPCApp) LoadHeight(height int64) error {
 func (app *memoryPCApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range memoryModAccPerms {
-		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
+		modAccAddrs[auth.NewModuleAddress(acc).String()] = true
 	}
 
 	return modAccAddrs
@@ -270,7 +243,7 @@ func (app *memoryPCApp) ModuleAccountAddrs() map[string]bool {
 
 func (app *memoryPCApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
 	// as if they could withdraw from the start of the next block
-	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()}).WithAppVersion("0.0.0")
 	genState := app.mm.ExportGenesis(ctx)
 	appState, err = codec.MarshalJSONIndent(app.cdc, genState)
 	if err != nil {
@@ -370,10 +343,8 @@ func memCodec() *codec.Codec {
 		module.NewBasicManager(
 			apps.AppModuleBasic{},
 			auth.AppModuleBasic{},
-			bank.AppModuleBasic{},
 			gov.AppModuleBasic{},
 			nodes.AppModuleBasic{},
-			supply.AppModuleBasic{},
 			pocket.AppModuleBasic{},
 		).RegisterCodec(memCDC)
 		sdk.RegisterCodec(memCDC)
@@ -469,10 +440,8 @@ func oneValTwoNodeGenesisState() []byte {
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
 		gov.AppModuleBasic{},
 		nodes.AppModuleBasic{},
-		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
 		gov.AppModuleBasic{},
 	).DefaultGenesis()
@@ -536,10 +505,8 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 	if testACL == nil {
 		acl := &govTypes.NonMapACL{}
 		*acl = make([]govTypes.ACLPair, 0)
-		acl.SetOwner("bank/sendenabled", kp.GetAddress())
 		acl.SetOwner("auth/MaxMemoCharacters", kp.GetAddress())
 		acl.SetOwner("auth/TxSigLimit", kp.GetAddress())
-		acl.SetOwner("auth/TxSizeCostPerByte", kp.GetAddress())
 		acl.SetOwner("gov/daoOwner", kp.GetAddress())
 		acl.SetOwner("gov/acl", kp.GetAddress())
 		acl.SetOwner("pos/StakeDenom", kp.GetAddress())
@@ -560,7 +527,6 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 		acl.SetOwner("pos/StakeMinimum", kp.GetAddress())
 		acl.SetOwner("pos/UnstakingTime", kp.GetAddress())
 		acl.SetOwner("application/BaseRelaysPerPOKT", kp.GetAddress())
-		acl.SetOwner("auth/TxSizeCostPerByte", kp.GetAddress())
 		acl.SetOwner("pocketcore/ClaimSubmissionWindow", kp.GetAddress())
 		acl.SetOwner("pos/DAOAllocation", kp.GetAddress())
 		acl.SetOwner("pos/SignedBlocksWindow", kp.GetAddress())
@@ -593,10 +559,8 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
 		gov.AppModuleBasic{},
 		nodes.AppModuleBasic{},
-		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
 	).DefaultGenesis()
 	// setup validators

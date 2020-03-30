@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/supply/exported"
+	"github.com/pokt-network/posmint/x/auth/exported"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"

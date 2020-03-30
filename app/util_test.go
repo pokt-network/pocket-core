@@ -65,4 +65,3 @@ func TestExportState(t *testing.T) {
 	cleanup()
 	stopCli()
 }
-

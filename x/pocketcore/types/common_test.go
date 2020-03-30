@@ -7,8 +7,6 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/bank"
-	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -22,8 +20,6 @@ import (
 var (
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
-		supply.AppModuleBasic{},
 	)
 )
 
@@ -31,9 +27,7 @@ var (
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
-	bank.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
-	supply.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 
@@ -62,12 +56,10 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
@@ -87,7 +79,7 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 		LastBlockId: abci.BlockID{
 			Hash: hash([]byte("fake")),
 		},
-	})
+	}).WithAppVersion("0.0.0")
 	return ctx
 }
 

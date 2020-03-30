@@ -10,7 +10,7 @@ import (
 // InitGenesis sets up the module based on the genesis state
 // First TM block is at height 1, so state updates applied from
 // genesis.json are in block 0.
-func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.SupplyKeeper, posKeeper types.PosKeeper, data types.GenesisState) {
+func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeeper, posKeeper types.PosKeeper, data types.GenesisState) {
 	stakedTokens := sdk.ZeroInt()
 	ctx = ctx.WithBlockHeight(1 - sdk.ValidatorUpdateDelay)
 	// set the parameters from the data

@@ -10,9 +10,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/bank"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
-	"github.com/pokt-network/posmint/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -52,14 +50,12 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 			keyParams := sdk.ParamsKey
 			tkeyParams := sdk.ParamsTKey
-			keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 			nodesKey := sdk.NewKVStoreKey(nodestypes.StoreKey)
 			appsKey := sdk.NewKVStoreKey(types.StoreKey)
 
 			db := dbm.NewMemDB()
 			ms := store.NewCommitMultiStore(db)
 			ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-			ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
@@ -69,7 +65,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 				t.FailNow()
 			}
 
-			ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, true, log.NewNopLogger())
+			ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, true, log.NewNopLogger()).WithAppVersion("0.0.0")
 			ctx = ctx.WithConsensusParams(
 				&abci.ConsensusParams{
 					Validator: &abci.ValidatorParams{
@@ -81,34 +77,28 @@ func TestKeepers_NewKeeper(t *testing.T) {
 
 			maccPerms := map[string][]string{
 				auth.FeeCollectorName:     nil,
-				nodestypes.StakedPoolName: {supply.Burner, supply.Staking},
-				govTypes.DAOAccountName:   {supply.Burner, supply.Staking},
+				nodestypes.StakedPoolName: {auth.Burner, auth.Staking},
+				govTypes.DAOAccountName:   {auth.Burner, auth.Staking},
 			}
 			if !tt.panics {
-				maccPerms[types.StakedPoolName] = []string{supply.Burner, supply.Staking, supply.Minter}
+				maccPerms[types.StakedPoolName] = []string{auth.Burner, auth.Staking, auth.Minter}
 			}
 
 			modAccAddrs := make(map[string]bool)
 			for acc := range maccPerms {
-				modAccAddrs[supply.NewModuleAddress(acc).String()] = true
+				modAccAddrs[auth.NewModuleAddress(acc).String()] = true
 			}
 			valTokens := sdk.TokensFromConsensusPower(initPower)
 
 			accSubspace := sdk.NewSubspace(auth.DefaultParamspace)
-			bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
 			nodesSubspace := sdk.NewSubspace(nodestypes.DefaultParamspace)
 			appSubspace := sdk.NewSubspace(DefaultParamspace)
-			ak := auth.NewAccountKeeper(cdc, keyAcc, accSubspace, auth.ProtoBaseAccount)
-			bk := bank.NewBaseKeeper(ak, bankSubspace, bank.DefaultCodespace, modAccAddrs)
-			sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-			nk := nodeskeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, nodesSubspace, "pos")
+			ak := auth.NewKeeper(cdc, keyAcc, accSubspace, maccPerms)
+			nk := nodeskeeper.NewKeeper(cdc, nodesKey, ak, nodesSubspace, "pos")
 			moduleManager := module.NewManager(
 				auth.NewAppModule(ak),
-				bank.NewAppModule(bk, ak),
-				supply.NewAppModule(sk, ak),
-				nodes.NewAppModule(nk, ak, sk),
+				nodes.NewAppModule(nk),
 			)
-
 			genesisState := ModuleBasics.DefaultGenesis()
 			moduleManager.InitGenesis(ctx, genesisState)
 			initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
@@ -123,7 +113,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 					}
 				}()
 			}
-			_ = NewKeeper(cdc, keySupply, bk, nk, sk, appSubspace, "apps")
+			_ = NewKeeper(cdc, appsKey, nk, ak, appSubspace, "apps")
 		})
 	}
 }

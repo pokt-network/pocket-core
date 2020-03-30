@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
@@ -169,4 +170,8 @@ func QueryChallenge(c pocketTypes.ChallengeProofInvalidData) (*pocketTypes.Chall
 
 func QueryDispatch(header pocketTypes.SessionHeader) (*pocketTypes.DispatchResponse, error) {
 	return pocket.QueryDispatch(Codec(), getTMClient(), header)
+}
+
+func QueryState() (appState json.RawMessage, err error) {
+	return pca.ExportAppState(false, nil)
 }

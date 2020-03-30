@@ -189,8 +189,9 @@ func TestQuerySupply(t *testing.T) {
 	case <-evtChan:
 		gotStaked, gotUnstaked, err := nodes.QuerySupply(memCodec(), memCli, 0)
 		assert.Nil(t, err)
+		fmt.Println(gotStaked, gotUnstaked)
 		assert.True(t, gotStaked.Equal(sdk.NewInt(1000000000000000)))
-		assert.True(t, gotUnstaked.Equal(sdk.NewInt(2000000000)))
+		assert.True(t, gotUnstaked.Equal(sdk.NewInt(2000001000)))
 	}
 	cleanup()
 	stopCli()

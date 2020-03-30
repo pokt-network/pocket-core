@@ -188,7 +188,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.relay.Validate(newContext(t, false), tt.node,
+			assert.Equal(t, tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), tt.node,
 				tt.hb, 1, 5, tt.allNodes, tt.app) != nil, tt.hasError)
 		})
 		ClearSessionCache()
