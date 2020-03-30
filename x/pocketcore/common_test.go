@@ -17,10 +17,8 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/gov"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
-	"github.com/pokt-network/posmint/x/supply"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -38,9 +36,7 @@ var (
 	holder       = "holder"
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
 		gov.AppModuleBasic{},
-		supply.AppModuleBasic{},
 	)
 )
 
@@ -52,10 +48,7 @@ func NewTestKeybase() keys.Keybase {
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
-
-	bank.RegisterCodec(cdc)
 	auth.RegisterCodec(cdc)
-	supply.RegisterCodec(cdc)
 	gov.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
@@ -68,7 +61,7 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
+	keySupply := sdk.NewKVStoreKey(auth.StoreKey)
 	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
 	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -100,7 +93,7 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 			Hash: types.Hash([]byte("fake")),
 		},
 	})
-	return ctx
+	return ctx.WithAppVersion("0.0.0")
 }
 
 // nolint: deadcode unused
@@ -111,7 +104,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
-	keySupply := sdk.NewKVStoreKey(supply.StoreKey)
 	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
 	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -119,7 +111,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
@@ -147,14 +138,14 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName:     nil,
-		appsTypes.StakedPoolName:  {supply.Burner, supply.Staking, supply.Minter},
-		nodesTypes.StakedPoolName: {supply.Burner, supply.Staking},
-		govTypes.DAOAccountName:   {supply.Burner, supply.Staking},
+		appsTypes.StakedPoolName:  {auth.Burner, auth.Staking, auth.Minter},
+		nodesTypes.StakedPoolName: {auth.Burner, auth.Staking},
+		govTypes.DAOAccountName:   {auth.Burner, auth.Staking},
 	}
 
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
-		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
+		modAccAddrs[auth.NewModuleAddress(acc).String()] = true
 	}
 	valTokens := sdk.TokensFromConsensusPower(initPower)
 
@@ -177,15 +168,12 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	}
 
 	accSubspace := sdk.NewSubspace(auth.DefaultParamspace)
-	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
 	appSubspace := sdk.NewSubspace(types.DefaultParamspace)
 	pocketSubspace := sdk.NewSubspace(types.DefaultParamspace)
-	ak := auth.NewAccountKeeper(cdc, keyAcc, accSubspace, auth.ProtoBaseAccount)
-	bk := bank.NewBaseKeeper(ak, bankSubspace, bank.DefaultCodespace, modAccAddrs)
-	sk := supply.NewKeeper(cdc, keySupply, ak, bk, maccPerms)
-	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, bk, sk, nodesSubspace, "pos")
-	appk := appsKeeper.NewKeeper(cdc, appsKey, bk, nk, sk, appSubspace, appsTypes.ModuleName)
+	ak := auth.NewKeeper(cdc, keyAcc, accSubspace, maccPerms)
+	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, nodesSubspace, "pos")
+	appk := appsKeeper.NewKeeper(cdc, appsKey, nk, ak, appSubspace, appsTypes.ModuleName)
 	keeper := keep.NewPocketCoreKeeper(pocketKey, cdc, nk, appk, hb, pocketSubspace)
 	kb := NewTestKeybase()
 	_, err = kb.Create("test")
@@ -195,17 +183,15 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	keeper.Keybase = kb
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
-		bank.NewAppModule(bk, ak),
-		supply.NewAppModule(sk, ak),
-		nodes.NewAppModule(nk, ak, sk),
-		apps.NewAppModule(appk, sk, nk),
+		nodes.NewAppModule(nk),
+		apps.NewAppModule(appk),
 	)
 	genesisState := ModuleBasics.DefaultGenesis()
 	moduleManager.InitGenesis(ctx, genesisState)
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	_ = createTestAccs(ctx, int(nAccs), initialCoins, &ak)
-	_ = createTestApps(ctx, int(nAccs), sdk.NewInt(10000000), appk, sk)
-	_ = createTestValidators(ctx, int(nAccs), sdk.NewInt(10000000), sdk.ZeroInt(), &nk, sk, kb)
+	_ = createTestApps(ctx, int(nAccs), sdk.NewInt(10000000), appk, ak)
+	_ = createTestValidators(ctx, int(nAccs), sdk.NewInt(10000000), sdk.ZeroInt(), &nk, ak, kb)
 	appk.SetParams(ctx, appsTypes.DefaultParams())
 	nk.SetParams(ctx, nodesTypes.DefaultParams())
 	keeper.SetParams(ctx, types.DefaultParams())
@@ -213,7 +199,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 }
 
 // nolint: unparam deadcode unused
-func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.AccountKeeper) (accs []auth.BaseAccount) {
+func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.Keeper) (accs []auth.BaseAccount) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()
 		pubKey := privKey.PublicKey()
@@ -227,7 +213,7 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.A
 	return
 }
 
-func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins sdk.Int, nk *nodesKeeper.Keeper, sk supply.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
+func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins sdk.Int, nk *nodesKeeper.Keeper, ak auth.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
 	ethereum, err := types.NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",
@@ -293,7 +279,7 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins s
 		if err := stakedPool.SetCoins(stakedCoins); err != nil {
 			panic(err)
 		}
-		sk.SetModuleAccount(ctx, stakedPool)
+		ak.SetModuleAccount(ctx, stakedPool)
 	} else {
 		// if it is provided in the genesis file then ensure the two are equal
 		if !stakedPool.GetCoins().IsEqual(stakedCoins) {
@@ -303,7 +289,7 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins s
 	return
 }
 
-func createTestApps(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, ak appsKeeper.Keeper, sk supply.Keeper) (accs appsTypes.Applications) {
+func createTestApps(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, ak appsKeeper.Keeper, sk auth.Keeper) (accs appsTypes.Applications) {
 	ethereum, err := types.NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",

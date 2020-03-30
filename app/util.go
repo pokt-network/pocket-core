@@ -8,7 +8,6 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/gov"
 	"github.com/tendermint/tendermint/types"
-	"os"
 	"time"
 )
 
@@ -58,13 +57,10 @@ func SignMultisigOutOfOrder(fromAddr, txHex, passphrase string, keys []crypto.Pu
 	return gov.SignMulti(Codec(), fa, bz, keys, getTMClient(), MustGetKeybase(), passphrase)
 }
 
-func ExportState(filepath string) error {
-	if pca == nil {
-		return NewNilPocketCoreAppError()
-	}
+func ExportState() (string, error) {
 	j, err := pca.ExportAppState(false, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 	j, _ = Codec().MarshalJSONIndent(types.GenesisDoc{
 		GenesisTime: time.Now(),
@@ -86,20 +82,18 @@ func ExportState(filepath string) error {
 		AppHash:    nil,
 		AppState:   j,
 	}, "", "    ")
-	// create a new file
-	jsonFile, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	return SortJSON(j), err
+}
+
+func SortJSON(toSortJSON []byte) string {
+	var c interface{}
+	err := json.Unmarshal(toSortJSON, &c)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	// write to the file
-	_, err = jsonFile.Write(newDefaultGenesisState())
+	js, err := json.MarshalIndent(c, "", "    ")
 	if err != nil {
-		return err
+		panic(err)
 	}
-	// close the file
-	err = jsonFile.Close()
-	if err != nil {
-		return err
-	}
-	return nil
+	return string(js)
 }

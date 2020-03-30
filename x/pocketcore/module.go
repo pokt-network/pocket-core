@@ -46,18 +46,14 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 
 type AppModule struct {
 	AppModuleBasic
-	keeper     keeper.Keeper
-	posKeeper  types.PosKeeper
-	appsKeeper types.AppsKeeper
+	keeper keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule Object
-func NewAppModule(keeper keeper.Keeper, posKeeper types.PosKeeper, appsKeeper types.AppsKeeper) AppModule {
+func NewAppModule(keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-		posKeeper:      posKeeper,
-		appsKeeper:     appsKeeper,
 	}
 }
 

@@ -26,7 +26,7 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	feeCollector := k.getFeePool(ctx)
 	feesCollected := feeCollector.GetCoins()
 	// transfer collected fees to the pos module account
-	err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, auth.FeeCollectorName, types.ModuleName, feesCollected)
+	err := k.AccountKeeper.SendCoinsFromModuleToModule(ctx, auth.FeeCollectorName, types.ModuleName, feesCollected)
 	if err != nil {
 		panic(err)
 	}
@@ -48,21 +48,21 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 		// create the dao coins
 		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
 		// mint the coins for the proposer to the module account
-		err := k.supplyKeeper.MintCoins(ctx, types.ModuleName, propRewardCoins)
+		err := k.AccountKeeper.MintCoins(ctx, types.ModuleName, propRewardCoins)
 		if err != nil {
 			panic(err)
 		}
 		// mint the coins for the dao to the module account
-		err = k.supplyKeeper.MintCoins(ctx, types.ModuleName, daoRewardCoins)
+		err = k.AccountKeeper.MintCoins(ctx, types.ModuleName, daoRewardCoins)
 		if err != nil {
 			panic(err)
 		}
 		// send to validator
-		if err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposerValidator.GetAddress(), propRewardCoins); err != nil {
+		if err := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposerValidator.GetAddress(), propRewardCoins); err != nil {
 			panic(err)
 		}
 		// send to rest dao
-		if err := k.supplyKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, govTypes.DAOAccountName, daoRewardCoins); err != nil {
+		if err := k.AccountKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, govTypes.DAOAccountName, daoRewardCoins); err != nil {
 			panic(err)
 		}
 		logger.Info(fmt.Sprintf("minted %s to block proposer: %s", propRewardCoins.String(), proposerValidator.GetAddress().String()))
@@ -147,11 +147,11 @@ func (k Keeper) mintNodeRelayRewards(ctx sdk.Ctx) {
 // Mints sdk.Coins and sends them to an address
 func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	mintErr := k.supplyKeeper.MintCoins(ctx, types.StakedPoolName, coins)
+	mintErr := k.AccountKeeper.MintCoins(ctx, types.StakedPoolName, coins)
 	if mintErr != nil {
 		return mintErr.Result()
 	}
-	sendErr := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, address, coins)
+	sendErr := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, address, coins)
 	if sendErr != nil {
 		return sendErr.Result()
 	}

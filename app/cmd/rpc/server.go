@@ -12,7 +12,7 @@ import (
 	"github.com/pokt-network/pocket-core/app"
 )
 
-var APIVersion = fmt.Sprintf("%s%s", app.Tag, app.Version)
+var APIVersion = fmt.Sprintf("%s", app.AppVersion)
 
 func StartRPC(port string) {
 	log.Fatal(http.ListenAndServe(":"+port, Router(GetRoutes())))
@@ -47,7 +47,7 @@ type Routes []Route
 
 func GetRoutes() Routes {
 	routes := Routes{
-		Route{Name: "Version", Method: "GET", Path: "/v1", HandlerFunc: Version},
+		Route{Name: "AppVersion", Method: "GET", Path: "/v1", HandlerFunc: Version},
 		Route{Name: "Dispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
 		Route{Name: "Service", Method: "POST", Path: "/v1/client/relay", HandlerFunc: Relay},
 		Route{Name: "Challenge", Method: "POST", Path: "/v1/client/challenge", HandlerFunc: Challenge},
@@ -71,6 +71,7 @@ func GetRoutes() Routes {
 		Route{Name: "QueryDAOOwner", Method: "POST", Path: "/v1/query/daoowner", HandlerFunc: DAOOwner},
 		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
 		Route{Name: "QueryACL", Method: "POST", Path: "/v1/query/acl", HandlerFunc: ACL},
+		Route{Name: "QueryState", Method: "GET", Path: "/v1/query/state", HandlerFunc: State},
 	}
 	return routes
 }
@@ -86,6 +87,14 @@ func WriteResponse(w http.ResponseWriter, jsn, path, ip string) {
 		if err != nil {
 			panic(err)
 		}
+	}
+}
+
+func WriteRaw(w http.ResponseWriter, jsn, path, ip string) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	_, err := w.Write([]byte(jsn))
+	if err != nil {
+		panic(err)
 	}
 }
 func WriteJSONResponse(w http.ResponseWriter, jsn, path, ip string) {

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
+	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/types"
-	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/gov"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/stretchr/testify/assert"
@@ -200,10 +200,10 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
 	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
-		[]sdk.Msg{bank.MsgSend{
+		[]sdk.Msg{types2.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
-			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1))),
+			Amount:      sdk.NewInt(1),
 		}},
 		[]crypto.PrivateKey{pk},
 		common.RandInt64(),
@@ -211,10 +211,10 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	assert.Nil(t, err)
 	// create the transaction
 	txBz2, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
-		[]sdk.Msg{bank.MsgSend{
+		[]sdk.Msg{types2.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
-			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1))),
+			Amount:      sdk.NewInt(1),
 		}},
 		[]crypto.PrivateKey{pk},
 		common.RandInt64(),
@@ -257,10 +257,10 @@ func TestSendRawTx(t *testing.T) {
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
 	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
-		[]sdk.Msg{bank.MsgSend{
+		[]sdk.Msg{types2.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
-			Amount:      sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1))),
+			Amount:      sdk.NewInt(1),
 		}},
 		[]crypto.PrivateKey{pk},
 		common.RandInt64(),

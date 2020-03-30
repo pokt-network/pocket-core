@@ -6,7 +6,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/bank"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
@@ -19,9 +18,8 @@ var _ types.ApplicationSet = Keeper{}
 type Keeper struct {
 	storeKey             sdk.StoreKey
 	cdc                  *codec.Codec
-	coinKeeper           bank.Keeper
-	supplyKeeper         types.SupplyKeeper
-	posKeeper            types.PosKeeper
+	AccountsKeeper       types.AuthKeeper
+	POSKeeper            types.PosKeeper
 	Paramstore           sdk.Subspace
 	applicationCache     map[string]cachedApplication
 	applicationCacheList *list.List
@@ -31,7 +29,7 @@ type Keeper struct {
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, coinKeeper bank.Keeper, posKeeper types.PosKeeper, supplyKeeper types.SupplyKeeper,
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, supplyKeeper types.AuthKeeper,
 	paramstore sdk.Subspace, codespace sdk.CodespaceType) Keeper {
 
 	// ensure staked module accounts are set
@@ -42,9 +40,8 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, coinKeeper bank.Keeper, posKe
 	return Keeper{
 		storeKey:             key,
 		cdc:                  cdc,
-		coinKeeper:           coinKeeper,
-		supplyKeeper:         supplyKeeper,
-		posKeeper:            posKeeper,
+		AccountsKeeper:       supplyKeeper,
+		POSKeeper:            posKeeper,
 		Paramstore:           paramstore.WithKeyTable(ParamKeyTable()),
 		applicationCache:     make(map[string]cachedApplication, aminoCacheSize),
 		applicationCacheList: list.New(),

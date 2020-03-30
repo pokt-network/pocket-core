@@ -166,7 +166,7 @@ func TestMint(t *testing.T) {
 			default:
 				result := keeper.mint(context, test.amount, test.address)
 				assert.Contains(t, result.Log, test.expected, "does not contain message")
-				coins := keeper.coinKeeper.GetCoins(context, sdk.Address(test.address))
+				coins := keeper.AccountKeeper.GetCoins(context, sdk.Address(test.address))
 				assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), test.amount)).IsEqual(coins), "coins should match")
 			}
 		})
@@ -196,7 +196,7 @@ func TestMintValidatorAwards(t *testing.T) {
 			keeper.setValidatorAward(context, test.amount, test.address)
 
 			keeper.mintNodeRelayRewards(context)
-			coins := keeper.coinKeeper.GetCoins(context, sdk.Address(test.address))
+			coins := keeper.AccountKeeper.GetCoins(context, sdk.Address(test.address))
 			expected := keeper.NodeCutOfReward(context).Mul(test.amount).Quo(sdk.NewInt(100))
 			assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), expected)).IsEqual(coins), "coins should match")
 		})

@@ -14,11 +14,9 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/gov"
 	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
-	"github.com/pokt-network/posmint/x/supply"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	db "github.com/tendermint/tm-db"
@@ -34,10 +32,8 @@ type pocketCoreApp struct {
 	keys  map[string]*sdk.KVStoreKey
 	tkeys map[string]*sdk.TransientStoreKey
 	// Keepers for each module
-	accountKeeper auth.AccountKeeper
+	accountKeeper auth.Keeper
 	appsKeeper    appsKeeper.Keeper
-	bankKeeper    bank.Keeper
-	supplyKeeper  supply.Keeper
 	nodesKeeper   nodesKeeper.Keeper
 	govKeeper     govKeeper.Keeper
 	pocketKeeper  pocketKeeper.Keeper
@@ -50,9 +46,9 @@ func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), options...)
 	// set version of the baseapp
-	bApp.SetAppVersion(appVersion)
+	bApp.SetAppVersion(AppVersion)
 	// setup the key value store keys
-	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, supply.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
+	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
 	// setup the transient store keys
 	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
 	// add params keys too
@@ -90,7 +86,7 @@ func (app *pocketCoreApp) LoadHeight(height int64) error {
 func (app *pocketCoreApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range moduleAccountPermissions {
-		modAccAddrs[supply.NewModuleAddress(acc).String()] = true
+		modAccAddrs[auth.NewModuleAddress(acc).String()] = true
 	}
 
 	return modAccAddrs
@@ -99,9 +95,9 @@ func (app *pocketCoreApp) ModuleAccountAddrs() map[string]bool {
 // exports the app state to json
 func (app *pocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
 	// as if they could withdraw from the start of the next block
-	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()}).WithAppVersion(app.AppVersion())
 	genState := app.mm.ExportGenesis(ctx)
-	appState, err = codec.MarshalJSONIndent(app.cdc, genState)
+	appState, err = Codec().MarshalJSONIndent(genState, "", "    ")
 	if err != nil {
 		return nil, err
 	}
@@ -111,16 +107,15 @@ func (app *pocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []str
 var (
 	// module account permissions
 	moduleAccountPermissions = map[string][]string{
-		auth.FeeCollectorName:     {supply.Burner, supply.Minter, supply.Staking},
-		nodesTypes.StakedPoolName: {supply.Burner, supply.Minter, supply.Staking},
-		appsTypes.StakedPoolName:  {supply.Burner, supply.Minter, supply.Staking},
-		govTypes.DAOAccountName:   {supply.Burner, supply.Minter, supply.Staking},
-		nodesTypes.ModuleName:     {supply.Burner, supply.Minter, supply.Staking},
+		auth.FeeCollectorName:     {auth.Burner, auth.Minter, auth.Staking},
+		nodesTypes.StakedPoolName: {auth.Burner, auth.Minter, auth.Staking},
+		appsTypes.StakedPoolName:  {auth.Burner, auth.Minter, auth.Staking},
+		govTypes.DAOAccountName:   {auth.Burner, auth.Minter, auth.Staking},
+		nodesTypes.ModuleName:     {auth.Burner, auth.Minter, auth.Staking},
 		appsTypes.ModuleName:      nil,
 	}
 )
 
 const (
-	appName    = "pocket-core"
-	appVersion = "0.0.1"
+	appName = "pocket-core"
 )

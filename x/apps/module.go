@@ -49,18 +49,14 @@ func (AppModuleBasic) ValidateGenesis(bz json.RawMessage) error {
 // AppModule implements an application module for the staking module.
 type AppModule struct {
 	AppModuleBasic
-	keeper       keeper.Keeper
-	supplyKeeper types.SupplyKeeper
-	posKeeper    types.PosKeeper
+	keeper keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(keeper keeper.Keeper, supplyKeeper types.SupplyKeeper, posKeeper types.PosKeeper) AppModule {
+func NewAppModule(keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-		supplyKeeper:   supplyKeeper,
-		posKeeper:      posKeeper,
 	}
 }
 
@@ -102,7 +98,7 @@ func (am AppModule) InitGenesis(ctx sdk.Ctx, data json.RawMessage) []abci.Valida
 	} else {
 		types.ModuleCdc.MustUnmarshalJSON(data, &genesisState)
 	}
-	InitGenesis(ctx, am.keeper, am.supplyKeeper, am.posKeeper, genesisState)
+	InitGenesis(ctx, am.keeper, am.keeper.AccountsKeeper, am.keeper.POSKeeper, genesisState)
 	return []abci.ValidatorUpdate{}
 }
 

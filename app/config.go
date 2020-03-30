@@ -20,10 +20,8 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/gov"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
-	"github.com/pokt-network/posmint/x/supply"
 	"github.com/spf13/cobra"
 	con "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli/flags"
@@ -502,10 +500,8 @@ func MakeCodec() {
 	module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
 		gov.AppModuleBasic{},
 		nodes.AppModuleBasic{},
-		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
 	).RegisterCodec(cdc)
 	// register the sdk types
@@ -550,12 +546,23 @@ func newDefaultGenesisState() []byte {
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
-		bank.AppModuleBasic{},
 		gov.AppModuleBasic{},
 		nodes.AppModuleBasic{},
-		supply.AppModuleBasic{},
 		pocket.AppModuleBasic{},
 	).DefaultGenesis()
+	// setup account genesis
+	rawAuth := defaultGenesis[auth.ModuleName]
+	var accountGenesis auth.GenesisState
+	types.ModuleCdc.MustUnmarshalJSON(rawAuth, &accountGenesis)
+	accountGenesis.Accounts = append(accountGenesis.Accounts, &auth.BaseAccount{
+		Address: cb.GetAddress(),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000))),
+		PubKey:  nil,
+	})
+	res := Codec().MustMarshalJSON(accountGenesis)
+	defaultGenesis[auth.ModuleName] = res
+	// set default governance in genesis
+	// setup pos genesis
 	rawPOS := defaultGenesis[nodesTypes.ModuleName]
 	var posGenesisState nodesTypes.GenesisState
 	types.ModuleCdc.MustUnmarshalJSON(rawPOS, &posGenesisState)
@@ -566,7 +573,7 @@ func newDefaultGenesisState() []byte {
 			Chains:       []string{dummyChainsHash},
 			ServiceURL:   dummyServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
-	res := types.ModuleCdc.MustMarshalJSON(posGenesisState)
+	res = types.ModuleCdc.MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
 	// set default governance in genesis
 	var govGenesisState govTypes.GenesisState
@@ -575,7 +582,7 @@ func newDefaultGenesisState() []byte {
 	mACL := createDummyACL(pubKey)
 	govGenesisState.Params.ACL = govTypes.BaseACL{M: mACL.GetAll()}
 	govGenesisState.Params.DAOOwner = sdk.Address(pubKey.Address())
-	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
+	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(0, "0")
 	res4 := Codec().MustMarshalJSON(govGenesisState)
 	defaultGenesis[govTypes.ModuleName] = res4
 	// end genesis setup
@@ -607,10 +614,8 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 	addr := sdk.Address(kp.Address())
 	acl := &govTypes.NonMapACL{}
 	*acl = make([]govTypes.ACLPair, 0)
-	acl.SetOwner("bank/sendenabled", addr)
 	acl.SetOwner("auth/MaxMemoCharacters", addr)
 	acl.SetOwner("auth/TxSigLimit", addr)
-	acl.SetOwner("auth/TxSizeCostPerByte", addr)
 	acl.SetOwner("gov/daoOwner", addr)
 	acl.SetOwner("gov/acl", addr)
 	acl.SetOwner("pos/StakeDenom", addr)
@@ -631,7 +636,6 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 	acl.SetOwner("pos/StakeMinimum", addr)
 	acl.SetOwner("pos/UnstakingTime", addr)
 	acl.SetOwner("application/BaseRelaysPerPOKT", addr)
-	acl.SetOwner("auth/TxSizeCostPerByte", addr)
 	acl.SetOwner("pocketcore/ClaimSubmissionWindow", addr)
 	acl.SetOwner("pos/DAOAllocation", addr)
 	acl.SetOwner("pos/SignedBlocksWindow", addr)

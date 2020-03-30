@@ -5,7 +5,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/supply/exported"
+	"github.com/pokt-network/posmint/x/auth/exported"
 )
 
 // StakedRatio the fraction of the staking tokens which are currently staked
@@ -32,18 +32,18 @@ func (k Keeper) GetUnstakedTokens(ctx sdk.Ctx) (unstakedTokens sdk.Int) {
 
 // TotalTokens staking tokens from the total supply
 func (k Keeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
-	return k.supplyKeeper.GetSupply(ctx).GetTotal().AmountOf(k.StakeDenom(ctx))
+	return k.AccountsKeeper.GetSupply(ctx).GetTotal().AmountOf(k.StakeDenom(ctx))
 }
 
 // GetStakedPool returns the staked tokens pool's module account
 func (k Keeper) GetStakedPool(ctx sdk.Ctx) (stakedPool exported.ModuleAccountI) {
-	return k.supplyKeeper.GetModuleAccount(ctx, types.StakedPoolName)
+	return k.AccountsKeeper.GetModuleAccount(ctx, types.StakedPoolName)
 }
 
 // moves coins from the module account to the application -> used in unstaking
 func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, application types.Application) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), application.StakedTokens))
-	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, application.Address, coins)
+	err := k.AccountsKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, application.Address, coins)
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +55,7 @@ func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, application types.Applica
 		return errors.New("cannot stake a negative amount of coins")
 	}
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	err := k.supplyKeeper.SendCoinsFromAccountToModule(ctx, sdk.Address(application.Address), types.StakedPoolName, coins)
+	err := k.AccountsKeeper.SendCoinsFromAccountToModule(ctx, sdk.Address(application.Address), types.StakedPoolName, coins)
 	if err != nil {
 		return err
 	}
@@ -68,9 +68,9 @@ func (k Keeper) burnStakedTokens(ctx sdk.Ctx, amt sdk.Int) sdk.Error {
 		return nil
 	}
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amt))
-	return k.supplyKeeper.BurnCoins(ctx, types.StakedPoolName, coins)
+	return k.AccountsKeeper.BurnCoins(ctx, types.StakedPoolName, coins)
 }
 
 func (k Keeper) getFeePool(ctx sdk.Ctx) (feePool exported.ModuleAccountI) {
-	return k.supplyKeeper.GetModuleAccount(ctx, auth.FeeCollectorName)
+	return k.AccountsKeeper.GetModuleAccount(ctx, auth.FeeCollectorName)
 }

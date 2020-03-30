@@ -6,8 +6,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/bank"
 	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
 	"github.com/tendermint/tendermint/libs/log"
 )
@@ -21,10 +19,8 @@ var _ types.ValidatorSet = Keeper{}
 type Keeper struct {
 	storeKey           sdk.StoreKey
 	cdc                *codec.Codec
-	accountKeeper      auth.AccountKeeper
-	coinKeeper         bank.Keeper
 	govKeeper          govKeeper.Keeper
-	supplyKeeper       types.SupplyKeeper
+	AccountKeeper      types.AuthKeeper
 	Paramstore         sdk.Subspace
 	validatorCache     map[string]cachedValidator
 	validatorCacheList *list.List
@@ -34,18 +30,16 @@ type Keeper struct {
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper auth.AccountKeeper, coinKeeper bank.Keeper, supplyKeeper types.SupplyKeeper,
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeeper,
 	paramstore sdk.Subspace, codespace sdk.CodespaceType) Keeper {
 	// ensure staked module accounts are set
-	if addr := supplyKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
+	if addr := accountKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
 	}
 	return Keeper{
 		storeKey:           key,
 		cdc:                cdc,
-		accountKeeper:      accountKeeper,
-		coinKeeper:         coinKeeper,
-		supplyKeeper:       supplyKeeper,
+		AccountKeeper:      accountKeeper,
 		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),
 		validatorCache:     make(map[string]cachedValidator, aminoCacheSize),
 		validatorCacheList: list.New(),

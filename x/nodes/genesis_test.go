@@ -41,7 +41,7 @@ func TestInitGenesis(t *testing.T) {
 	type args struct {
 		ctx          sdk.Context
 		keeper       keeper.Keeper
-		supplyKeeper types.SupplyKeeper
+		supplyKeeper types.AuthKeeper
 		data         types.GenesisState
 	}
 

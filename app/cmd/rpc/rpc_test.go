@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/x/nodes"
+	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	authTypes "github.com/pokt-network/posmint/x/auth/types"
-	"github.com/pokt-network/posmint/x/bank"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/common"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
@@ -528,10 +528,10 @@ func TestRPC_RawTX(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
 	txBz, err := auth.DefaultTxEncoder(memCodec())(authTypes.NewTestTx(types.Context{}.WithChainID("pocket-test"),
-		[]types.Msg{bank.MsgSend{
+		[]types.Msg{types2.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
-			Amount:      types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(1))),
+			Amount:      types.NewInt(1),
 		}},
 		[]crypto.PrivateKey{pk},
 		common.RandInt64(),

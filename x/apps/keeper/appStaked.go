@@ -18,7 +18,7 @@ func (k Keeper) SetStakedApplication(ctx sdk.Ctx, application types.Application)
 
 // Get the denomination of coins.
 func (k Keeper) StakeDenom(ctx sdk.Ctx) string {
-	return k.posKeeper.StakeDenom(ctx)
+	return k.POSKeeper.StakeDenom(ctx)
 }
 
 // delete application from staked set

@@ -80,7 +80,7 @@ func (k Keeper) CalculateAppRelays(ctx sdk.Ctx, application types.Application) s
 	baseRate := sdk.NewInt(k.BaselineThroughputStakeRate(ctx))
 	if k.ParticipationRateOn(ctx) {
 		appStakedCoins := k.GetStakedTokens(ctx)
-		nodeStakedCoins := k.posKeeper.GetStakedTokens(ctx)
+		nodeStakedCoins := k.POSKeeper.GetStakedTokens(ctx)
 		totalTokens := k.TotalTokens(ctx)
 		participationRate = appStakedCoins.Add(nodeStakedCoins).ToDec().Quo(totalTokens.ToDec())
 	}

@@ -14,19 +14,16 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/bank"
 	"github.com/pokt-network/posmint/x/gov"
 	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
-	"github.com/pokt-network/posmint/x/supply"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 )
 
 const (
-	Tag     = "RC-"
-	Version = "0.2.1"
+	AppVersion = "RC-0.3.0"
 )
 
 // NewPocketCoreApp is a constructor function for pocketCoreApp
@@ -34,30 +31,14 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	app := newPocketBaseApp(logger, db, baseAppOptions...)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
-	bankSubspace := sdk.NewSubspace(bank.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
 	appsSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
 	pocketSubspace := sdk.NewSubspace(pocketTypes.DefaultParamspace)
-	// The AccountKeeper handles address -> account lookups
-	app.accountKeeper = auth.NewAccountKeeper(
+	// The AuthKeeper handles address -> account lookups
+	app.accountKeeper = auth.NewKeeper(
 		app.cdc,
 		app.keys[auth.StoreKey],
 		authSubspace,
-		auth.ProtoBaseAccount,
-	)
-	// The BankKeeper allows you perform sdk.Coins interactions
-	app.bankKeeper = bank.NewBaseKeeper(
-		app.accountKeeper,
-		bankSubspace,
-		bank.DefaultCodespace,
-		app.ModuleAccountAddrs(),
-	)
-	// The SupplyKeeper collects transaction fees
-	app.supplyKeeper = supply.NewKeeper(
-		app.cdc,
-		app.keys[supply.StoreKey],
-		app.accountKeeper,
-		app.bankKeeper,
 		moduleAccountPermissions,
 	)
 	// The nodesKeeper keeper handles pocket core nodes
@@ -65,8 +46,6 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.cdc,
 		app.keys[nodesTypes.StoreKey],
 		app.accountKeeper,
-		app.bankKeeper,
-		app.supplyKeeper,
 		nodesSubspace,
 		nodesTypes.DefaultCodespace,
 	)
@@ -74,9 +53,8 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	app.appsKeeper = appsKeeper.NewKeeper(
 		app.cdc,
 		app.keys[appsTypes.StoreKey],
-		app.bankKeeper,
 		app.nodesKeeper,
-		app.supplyKeeper,
+		app.accountKeeper,
 		appsSubspace,
 		appsTypes.DefaultCodespace,
 	)
@@ -95,8 +73,8 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.keys[pocketTypes.StoreKey],
 		app.tkeys[pocketTypes.StoreKey],
 		govTypes.DefaultCodespace,
-		app.supplyKeeper,
-		authSubspace, bankSubspace, nodesSubspace, appsSubspace, pocketSubspace,
+		app.accountKeeper,
+		authSubspace, nodesSubspace, appsSubspace, pocketSubspace,
 	)
 	// add the keybase to the pocket core keeper
 	app.pocketKeeper.Keybase = MustGetKeybase()
@@ -104,11 +82,9 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	// setup module manager
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper),
-		bank.NewAppModule(app.bankKeeper, app.accountKeeper),
-		supply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		nodes.NewAppModule(app.nodesKeeper, app.accountKeeper, app.supplyKeeper),
-		apps.NewAppModule(app.appsKeeper, app.supplyKeeper, app.nodesKeeper),
-		pocket.NewAppModule(app.pocketKeeper, app.nodesKeeper, app.appsKeeper),
+		nodes.NewAppModule(app.nodesKeeper),
+		apps.NewAppModule(app.appsKeeper),
+		pocket.NewAppModule(app.pocketKeeper),
 		gov.NewAppModule(app.govKeeper),
 	)
 	// setup the order of begin and end blockers
@@ -117,23 +93,22 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	// setup the order of Genesis
 	app.mm.SetOrderInitGenesis(
 		auth.ModuleName,
-		bank.ModuleName,
 		nodesTypes.ModuleName,
 		appsTypes.ModuleName,
 		pocketTypes.ModuleName,
-		supply.ModuleName,
 		gov.ModuleName,
 	)
 	// register all module routes and module queriers
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	// The initChainer handles translating the genesis.json file into initial state for the network
 	app.SetInitChainer(app.InitChainer)
-	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper, app.supplyKeeper))
+	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper))
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 	// initialize stores
 	app.MountKVStores(app.keys)
 	app.MountTransientStores(app.tkeys)
+	app.SetAppVersion(AppVersion)
 	// load the latest persistent version of the store
 	err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
 	if err != nil {

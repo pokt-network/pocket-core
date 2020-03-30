@@ -228,9 +228,8 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase
 	// broadcast synchronously
 	cliCtx.BroadcastMode = util.BroadcastSync
 	// get the account to ensure balance
-	accGetter := auth.NewAccountRetriever(cliCtx)
 	// retrieve the account for a balance check (and ensure it exists)
-	account, err := accGetter.GetAccount(fromAddr)
+	account, err := cliCtx.GetAccount(fromAddr)
 	if err != nil {
 		return txBuilder, cliCtx, err
 	}

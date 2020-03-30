@@ -88,8 +88,8 @@ func TestAppModule_BeginBlock(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 	type args struct {
 		ctx sdk.Context
@@ -117,8 +117,6 @@ func TestAppModule_BeginBlock(t *testing.T) {
 			am := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			am.BeginBlock(tt.args.ctx, tt.args.req)
 		})
@@ -129,8 +127,8 @@ func TestAppModule_EndBlock(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 	type args struct {
 		ctx sdk.Context
@@ -160,8 +158,6 @@ func TestAppModule_EndBlock(t *testing.T) {
 			am := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			if got := am.EndBlock(tt.args.ctx, tt.args.in1); !reflect.DeepEqual(len(got), len(tt.want)) {
 				t.Errorf("EndBlock() = %v, want %v", got, tt.want)
@@ -174,8 +170,8 @@ func TestAppModule_ExportGenesis(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 	context, _, k := createTestInput(t, true)
 
@@ -201,8 +197,6 @@ func TestAppModule_ExportGenesis(t *testing.T) {
 			am := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			if got := am.ExportGenesis(tt.args.ctx); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ExportGenesis() = %s, want %s", got, tt.want)
@@ -215,8 +209,8 @@ func TestAppModule_InitGenesis(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 	type args struct {
 		ctx  sdk.Context
@@ -235,8 +229,6 @@ func TestAppModule_InitGenesis(t *testing.T) {
 			am := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			if got := am.InitGenesis(tt.args.ctx, tt.args.data); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("InitGenesis() = %v, want %v", got, tt.want)
@@ -249,8 +241,8 @@ func TestAppModule_Name(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 	tests := []struct {
 		name   string
@@ -264,8 +256,6 @@ func TestAppModule_Name(t *testing.T) {
 			ap := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			if got := ap.Name(); got != tt.want {
 				t.Errorf("Name() = %v, want %v", got, tt.want)
@@ -278,8 +268,8 @@ func TestAppModule_NewHandler(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 
 	_, _, k := createTestInput(t, true)
@@ -301,8 +291,6 @@ func TestAppModule_NewHandler(t *testing.T) {
 			am := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			am.NewHandler()
 		})
@@ -313,8 +301,8 @@ func TestAppModule_NewQuerierHandler(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 	tests := []struct {
 		name   string
@@ -333,8 +321,6 @@ func TestAppModule_NewQuerierHandler(t *testing.T) {
 			am := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			am.NewQuerierHandler()
 		})
@@ -345,8 +331,8 @@ func TestAppModule_QuerierRoute(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 
 	_, _, k := createTestInput(t, true)
@@ -368,8 +354,6 @@ func TestAppModule_QuerierRoute(t *testing.T) {
 			ap := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			if got := ap.QuerierRoute(); got != tt.want {
 				t.Errorf("QuerierRoute() = %v, want %v", got, tt.want)
@@ -382,8 +366,8 @@ func TestAppModule_Route(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AccountKeeper
-		supplyKeeper   types.SupplyKeeper
+		accountKeeper  types.AuthKeeper
+		supplyKeeper   types.AuthKeeper
 	}
 	_, _, keeper := createTestInput(t, true)
 	tests := []struct {
@@ -403,8 +387,6 @@ func TestAppModule_Route(t *testing.T) {
 			ap := AppModule{
 				AppModuleBasic: tt.fields.AppModuleBasic,
 				keeper:         tt.fields.keeper,
-				accountKeeper:  tt.fields.accountKeeper,
-				supplyKeeper:   tt.fields.supplyKeeper,
 			}
 			if got := ap.Route(); got != tt.want {
 				t.Errorf("Route() = %v, want %v", got, tt.want)
@@ -416,8 +398,8 @@ func TestAppModule_Route(t *testing.T) {
 func TestNewAppModule(t *testing.T) {
 	type args struct {
 		keeper        keeper.Keeper
-		accountKeeper types.AccountKeeper
-		supplyKeeper  types.SupplyKeeper
+		accountKeeper types.AuthKeeper
+		supplyKeeper  types.AuthKeeper
 	}
 	tests := []struct {
 		name string
@@ -428,7 +410,7 @@ func TestNewAppModule(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAppModule(tt.args.keeper, tt.args.accountKeeper, tt.args.supplyKeeper); !reflect.DeepEqual(got, tt.want) {
+			if got := NewAppModule(tt.args.keeper); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewAppModule() = %v, want %v", got, tt.want)
 			}
 		})

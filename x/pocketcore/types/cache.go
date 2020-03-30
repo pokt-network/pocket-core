@@ -119,7 +119,7 @@ func DeleteSession(header SessionHeader) {
 }
 
 func ClearSessionCache() {
-	if globalSessionCache!= nil {
+	if globalSessionCache != nil {
 		globalSessionCache.Clear()
 	}
 }
@@ -173,7 +173,7 @@ func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) {
 }
 
 func ClearEvidence() {
-	if globalEvidenceCache!= nil {
+	if globalEvidenceCache != nil {
 		globalEvidenceCache.Clear()
 	}
 }

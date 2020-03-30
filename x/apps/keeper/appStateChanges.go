@@ -43,7 +43,7 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 	if amount.LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		return types.ErrMinimumStake(k.codespace)
 	}
-	if !k.coinKeeper.HasCoins(ctx, application.Address, coin) {
+	if !k.AccountsKeeper.HasCoins(ctx, application.Address, coin) {
 		return types.ErrNotEnoughCoins(k.codespace)
 	}
 	return nil

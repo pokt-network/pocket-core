@@ -13,7 +13,7 @@ import (
 
 func TestNewSessionKey(t *testing.T) {
 	appPubKey := getRandomPubKey()
-	ctx := newContext(t, false)
+	ctx := newContext(t, false).WithAppVersion("0.0.0")
 	blockhash := hex.EncodeToString(ctx.BlockHeader().LastBlockId.Hash)
 	ethereum, err := NonNativeChain{
 		Ticker:  "eth",
