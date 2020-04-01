@@ -580,7 +580,7 @@ func newDefaultGenesisState() []byte {
 	rawGov := defaultGenesis[govTypes.ModuleName]
 	Codec().MustUnmarshalJSON(rawGov, &govGenesisState)
 	mACL := createDummyACL(pubKey)
-	govGenesisState.Params.ACL = govTypes.BaseACL{M: mACL.GetAll()}
+	govGenesisState.Params.ACL = mACL
 	govGenesisState.Params.DAOOwner = sdk.Address(pubKey.Address())
 	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(0, "0")
 	res4 := Codec().MustMarshalJSON(govGenesisState)
@@ -612,8 +612,8 @@ func newDefaultGenesisState() []byte {
 
 func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 	addr := sdk.Address(kp.Address())
-	acl := &govTypes.NonMapACL{}
-	*acl = make([]govTypes.ACLPair, 0)
+	acl := govTypes.ACL{}
+	acl = make([]govTypes.ACLPair, 0)
 	acl.SetOwner("auth/MaxMemoCharacters", addr)
 	acl.SetOwner("auth/TxSigLimit", addr)
 	acl.SetOwner("gov/daoOwner", addr)

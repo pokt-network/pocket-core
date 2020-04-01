@@ -501,7 +501,7 @@ func oneValTwoNodeGenesisState() []byte {
 	memCodec().MustUnmarshalJSON(rawGov, &govGenesisState)
 	nMACL := createTestACL(kp1)
 	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
-	govGenesisState.Params.ACL = govTypes.BaseACL{M: nMACL.GetAll()}
+	govGenesisState.Params.ACL = nMACL
 	govGenesisState.Params.DAOOwner = kp1.GetAddress()
 	govGenesisState.DAOTokens = sdk.NewInt(1000)
 	res4 := memCodec().MustMarshalJSON(govGenesisState)
@@ -520,8 +520,8 @@ func resetTestACL() {
 
 func createTestACL(kp keys.KeyPair) govTypes.ACL {
 	if testACL == nil {
-		acl := &govTypes.NonMapACL{}
-		*acl = make([]govTypes.ACLPair, 0)
+		acl := govTypes.ACL{}
+		acl = make([]govTypes.ACLPair, 0)
 		acl.SetOwner("auth/MaxMemoCharacters", kp.GetAddress())
 		acl.SetOwner("auth/TxSigLimit", kp.GetAddress())
 		acl.SetOwner("gov/daoOwner", kp.GetAddress())
@@ -627,7 +627,7 @@ func twoValTwoNodeGenesisState() []byte {
 	memCodec().MustUnmarshalJSON(rawGov, &govGenesisState)
 	nMACL := createTestACL(kp1)
 	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
-	govGenesisState.Params.ACL = govTypes.BaseACL{M: nMACL.GetAll()}
+	govGenesisState.Params.ACL = nMACL
 	govGenesisState.Params.DAOOwner = kp1.GetAddress()
 	govGenesisState.DAOTokens = sdk.NewInt(1000)
 	res4 := memCodec().MustMarshalJSON(govGenesisState)
@@ -758,7 +758,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 	memCodec().MustUnmarshalJSON(rawGov, &govGenesisState)
 	nMACL := createTestACL(kp1)
 	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
-	govGenesisState.Params.ACL = govTypes.BaseACL{M: nMACL.GetAll()}
+	govGenesisState.Params.ACL = nMACL
 	govGenesisState.Params.DAOOwner = kp1.GetAddress()
 	govGenesisState.DAOTokens = sdk.NewInt(1000)
 	res4 := memCodec().MustMarshalJSON(govGenesisState)
