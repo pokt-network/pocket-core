@@ -134,7 +134,7 @@ func (r Relay) RequestHashString() string {
 type Payload struct {
 	Data    string            `json:"data"`              // the actual data string for the external chain
 	Method  string            `json:"method"`            // the http CRUD method
-	Path    string            `json:"path"`              // the REST Pathx
+	Path    string            `json:"path"`              // the REST Path
 	Headers map[string]string `json:"headers,omitempty"` // http headers
 }
 
