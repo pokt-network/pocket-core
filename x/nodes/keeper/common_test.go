@@ -118,7 +118,7 @@ var testACL govTypes.ACL
 
 func createTestACL() govTypes.ACL {
 	if testACL == nil {
-		acl := govTypes.BaseACL{M: make(map[string]sdk.Address)}
+		acl := govTypes.ACL(make([]govTypes.ACLPair, 0))
 		acl.SetOwner("auth/MaxMemoCharacters", getRandomValidatorAddress())
 		acl.SetOwner("auth/TxSigLimit", getRandomValidatorAddress())
 		acl.SetOwner("gov/daoOwner", getRandomValidatorAddress())

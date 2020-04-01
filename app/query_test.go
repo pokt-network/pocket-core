@@ -11,7 +11,6 @@ import (
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/gov"
-	types2 "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/iavl/common"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -143,7 +142,7 @@ func TestQueryACL(t *testing.T) {
 		var err error
 		got, err := gov.QueryACL(memCodec(), memCli, 0)
 		assert.Nil(t, err)
-		assert.Equal(t, got, types2.BaseACL{M: testACL.GetAll()})
+		assert.Equal(t, got, testACL)
 	}
 	cleanup()
 	stopCli()
