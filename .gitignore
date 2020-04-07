@@ -22,4 +22,7 @@ logs/Logs
 tests/unit/*.log
 tests/unit/*.json
 
+# VS Code config
+.vscode
+
 
