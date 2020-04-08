@@ -3,6 +3,14 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	fp "path/filepath"
+	"strings"
+	"syscall"
+	"time"
+
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/mitchellh/go-homedir"
@@ -34,13 +42,6 @@ import (
 	tmType "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
-	"io"
-	"io/ioutil"
-	"os"
-	fp "path/filepath"
-	"strings"
-	"syscall"
-	"time"
 )
 
 const (
@@ -168,6 +169,8 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, block
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
 	newTMConfig.LogLevel = "*:info, *:error"
+	newTMConfig.TxIndex.Indexer = "kv"
+	newTMConfig.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
 	logger, err := flags.ParseLogLevel(newTMConfig.LogLevel, logger, "info")
 	if err != nil {
 		panic(err)
