@@ -10,7 +10,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.8.1 // indirect
-	github.com/pokt-network/posmint v0.0.0-20200401233902-4ae5ed395520
+	github.com/pokt-network/posmint v0.0.0-20200408132421-02f37272f4ce
 	github.com/prometheus/client_golang v1.1.0 // indirect
 	github.com/prometheus/procfs v0.0.4 // indirect
 	github.com/spf13/cobra v0.0.5

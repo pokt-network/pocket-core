@@ -169,6 +169,8 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, block
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
 	newTMConfig.LogLevel = "*:info, *:error"
+	newTMConfig.TxIndex.Indexer = "kv"
+	newTMConfig.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
 	logger, err := flags.ParseLogLevel(newTMConfig.LogLevel, logger, "info")
 	if err != nil {
 		panic(err)
