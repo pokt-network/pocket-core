@@ -16,6 +16,8 @@ func init() {
 	queryCmd.AddCommand(queryBlock)
 	queryCmd.AddCommand(queryHeight)
 	queryCmd.AddCommand(queryTx)
+	queryCmd.AddCommand(queryAccountTxs)
+	queryCmd.AddCommand(queryBlockTxs)
 	queryCmd.AddCommand(queryNodes)
 	queryCmd.AddCommand(queryBalance)
 	queryCmd.AddCommand(queryAccount)
@@ -76,6 +78,71 @@ var queryTx = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		res, err := app.QueryTx(args[0])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
+	},
+}
+
+var queryAccountTxs = &cobra.Command{
+	Use:   "account-txs <address> <page> <per_page>",
+	Short: "Get the transactions sent by the address, paginated by page and per_page",
+	Args:  cobra.RangeArgs(1, 3),
+	Long:  `Returns the transactions sent by the address`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		page := 1
+		perPage := 30
+		if len(args) == 2 {
+			parsedPage, err := strconv.ParseInt(args[1], 10, 64)
+			if err != nil {
+				page = int(parsedPage)
+			}
+		}
+		if len(args) == 3 {
+			parsedPerPage, err := strconv.ParseInt(args[2], 10, 64)
+			if err != nil {
+				perPage = int(parsedPerPage)
+			}
+		}
+		res, err := app.QueryAccountTxs(args[0], page, perPage)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
+	},
+}
+
+var queryBlockTxs = &cobra.Command{
+	Use:   "block-txs <height> <page> <per_page>",
+	Short: "Get the transactions at a certain block height, paginated by page and per_page",
+	Args:  cobra.RangeArgs(1, 3),
+	Long:  `Returns the transactions in the block height`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.SetTMNode(tmNode)
+		page := 1
+		perPage := 30
+		if len(args) == 2 {
+			parsedPage, err := strconv.ParseInt(args[1], 10, 64)
+			if err != nil {
+				page = int(parsedPage)
+			}
+		}
+		if len(args) == 3 {
+			parsedPerPage, err := strconv.ParseInt(args[2], 10, 64)
+			if err != nil {
+				perPage = int(parsedPerPage)
+			}
+		}
+		height, parsingErr := strconv.ParseInt(args[0], 10, 64)
+		if parsingErr != nil {
+			fmt.Println(parsingErr)
+			return
+		}
+		res, err := app.QueryBlockTxs(height, page, perPage)
 		if err != nil {
 			fmt.Println(err)
 			return
