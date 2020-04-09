@@ -1071,10 +1071,7 @@
 			}
 		  },
 		  "public_key": {
-			"type": "array",
-			"items": {
-			  "type": "integer"
-			}
+			"type": "string"
 		  }
 		}
 	  },

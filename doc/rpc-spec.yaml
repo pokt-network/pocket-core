@@ -739,9 +739,7 @@ components:
           items:
             $ref: '#/components/schemas/Coin'
         public_key:
-          type: array
-          items:
-            type: integer
+          type: string
     Coin:
       type: object
       properties:

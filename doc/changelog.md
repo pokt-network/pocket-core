@@ -20,6 +20,10 @@
 - Payment for challenge tx
 - Added export app command to cli
 - Changed Struct used to generate RequestHash to remove empty proof object
+- Changed public key field json marshalling
+  - update POSMint version
+  - transitive change in Account JSON response for RPC
+  - Updated rpc-spec to reflect change
 
 ## RC-0.2.1
 - Add version command to CLI
