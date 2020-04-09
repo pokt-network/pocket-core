@@ -3,6 +3,14 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	fp "path/filepath"
+	"strings"
+	"syscall"
+	"time"
+
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/mitchellh/go-homedir"
@@ -34,13 +42,6 @@ import (
 	tmType "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
-	"io"
-	"io/ioutil"
-	"os"
-	fp "path/filepath"
-	"strings"
-	"syscall"
-	"time"
 )
 
 const (
@@ -557,7 +558,7 @@ func newDefaultGenesisState() []byte {
 	accountGenesis.Accounts = append(accountGenesis.Accounts, &auth.BaseAccount{
 		Address: cb.GetAddress(),
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000))),
-		PubKey:  nil,
+		PubKey:  pubKey,
 	})
 	res := Codec().MustMarshalJSON(accountGenesis)
 	defaultGenesis[auth.ModuleName] = res
