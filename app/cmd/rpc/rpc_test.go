@@ -25,6 +25,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestRPC_QueryHeight(t *testing.T) {
@@ -100,6 +101,82 @@ func TestRPC_QueryTX(t *testing.T) {
 		err := json.Unmarshal([]byte(resp), &resTX)
 		assert.Nil(t, err)
 		assert.NotEmpty(t, resTX.Height)
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestRPC_QueryAccountTXs(t *testing.T) {
+	var tx *types.TxResponse
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCLI, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var err error
+		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		kb := getInMemoryKeybase()
+		cb, err := kb.GetCoinbase()
+		assert.Nil(t, err)
+		tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		kb := getInMemoryKeybase()
+		cb, err := kb.GetCoinbase()
+		assert.Nil(t, err)
+		var params = paginatedAddressParams{
+			Address: cb.GetAddress().String(),
+		}
+		q := newQueryRequest("accounttxs", newBody(params))
+		rec := httptest.NewRecorder()
+		AccountTxs(rec, q, httprouter.Params{})
+		resp := getJSONResponse(rec)
+		assert.NotNil(t, resp)
+		assert.NotEmpty(t, resp)
+		fmt.Printf("%s", []byte(resp))
+		var resTXs core_types.ResultTxSearch
+		unmarshalErr := json.Unmarshal([]byte(resp), &resTXs)
+		assert.Nil(t, unmarshalErr)
+		assert.NotEmpty(t, resTXs.Txs)
+		assert.NotZero(t, resTXs.TotalCount)
+	}
+	cleanup()
+	stopCli()
+}
+
+func TestRPC_QueryBlockTXs(t *testing.T) {
+	var tx *types.TxResponse
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	memCLI, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	select {
+	case <-evtChan:
+		var err error
+		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		kb := getInMemoryKeybase()
+		cb, err := kb.GetCoinbase()
+		assert.Nil(t, err)
+		tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
+		assert.Nil(t, err)
+	}
+	select {
+	case <-evtChan:
+		var params = paginatedHeightParams{
+			Height: tx.Height,
+		}
+		q := newQueryRequest("blocktxs", newBody(params))
+		rec := httptest.NewRecorder()
+		BlockTxs(rec, q, httprouter.Params{})
+		resp := getJSONResponse(rec)
+		assert.NotNil(t, resp)
+		assert.NotEmpty(t, resp)
+		fmt.Printf("%s", []byte(resp))
+		var resTXs core_types.ResultTxSearch
+		unmarshalErr := json.Unmarshal([]byte(resp), &resTXs)
+		assert.Nil(t, unmarshalErr)
+		assert.NotEmpty(t, resTXs.Txs)
+		assert.NotZero(t, resTXs.TotalCount)
 	}
 	cleanup()
 	stopCli()

@@ -34,6 +34,18 @@ type heightAndStakingStatusParams struct {
 	StakingStatus string `json:"staking_status"`
 }
 
+type paginatedAddressParams struct {
+	Address string `json:"address"`
+	Page    int    `json:"page,omitempty"`
+	PerPage int    `json:"per_page,omitempty"`
+}
+
+type paginatedHeightParams struct {
+	Height  int64 `json:"height"`
+	Page    int   `json:"page,omitempty"`
+	PerPage int   `json:"per_page,omitempty"`
+}
+
 func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = heightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
@@ -55,6 +67,42 @@ func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	res, err := app.QueryTx(params.Hash)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+	}
+	s, er := json.MarshalIndent(res, "", "  ")
+	if er != nil {
+		WriteErrorResponse(w, 400, er.Error())
+		return
+	}
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
+}
+
+func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = paginatedAddressParams{}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.QueryAccountTxs(params.Address, params.Page, params.PerPage)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+	}
+	s, er := json.MarshalIndent(res, "", "  ")
+	if er != nil {
+		WriteErrorResponse(w, 400, er.Error())
+		return
+	}
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
+}
+
+func BlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = paginatedHeightParams{}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.QueryBlockTxs(params.Height, params.Page, params.PerPage)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
