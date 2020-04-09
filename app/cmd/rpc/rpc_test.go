@@ -25,7 +25,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestRPC_QueryHeight(t *testing.T) {
@@ -162,18 +161,34 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		var params = paginatedHeightParams{
-			Height: tx.Height,
+		// Step 1: Get the transaction by it's hash
+		var params = hashParams{
+			Hash: tx.TxHash,
 		}
-		q := newQueryRequest("blocktxs", newBody(params))
+		q := newQueryRequest("tx", newBody(params))
 		rec := httptest.NewRecorder()
-		BlockTxs(rec, q, httprouter.Params{})
+		Tx(rec, q, httprouter.Params{})
 		resp := getJSONResponse(rec)
 		assert.NotNil(t, resp)
 		assert.NotEmpty(t, resp)
-		fmt.Printf("%s", []byte(resp))
+		var resTX core_types.ResultTx
+		err := json.Unmarshal([]byte(resp), &resTX)
+		assert.Nil(t, err)
+		assert.NotEmpty(t, resTX.Height)
+
+		// Step 2: Get the transaction by it's height
+		var heightParams = paginatedHeightParams{
+			Height: resTX.Height,
+		}
+		heightQ := newQueryRequest("blocktxs", newBody(heightParams))
+		heightRec := httptest.NewRecorder()
+		BlockTxs(heightRec, heightQ, httprouter.Params{})
+		heightResp := getJSONResponse(heightRec)
+		fmt.Printf("%s", []byte(heightResp))
+		assert.NotNil(t, heightResp)
+		assert.NotEmpty(t, heightResp)
 		var resTXs core_types.ResultTxSearch
-		unmarshalErr := json.Unmarshal([]byte(resp), &resTXs)
+		unmarshalErr := json.Unmarshal([]byte(heightResp), &resTXs)
 		assert.Nil(t, unmarshalErr)
 		assert.NotEmpty(t, resTXs.Txs)
 		assert.NotZero(t, resTXs.TotalCount)
