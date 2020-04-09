@@ -402,6 +402,8 @@ func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg.Consensus.SkipTimeoutCommit = false
 	tmConfg.Consensus.CreateEmptyBlocksInterval = time.Duration(50) * time.Millisecond
 	tmConfg.Consensus.TimeoutCommit = time.Duration(50) * time.Millisecond
+	tmConfg.TxIndex.Indexer = "kv"
+	tmConfg.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
 	return
 }
 

@@ -12,6 +12,11 @@ import (
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
+const (
+	defaultPage    = 1
+	defaultPerPage = 30
+)
+
 func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (sdk.Int, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryAccountParams{Address: addr}
@@ -201,6 +206,42 @@ func QueryTransaction(tmNode rpcclient.Client, hash string) (*ctypes.ResultTx, e
 		return nil, err
 	}
 	return tx, nil
+}
+
+func validatePageAndPerPage(page, perPage int) (resPage, resPerPage int) {
+	resPage = defaultPage
+	resPerPage = defaultPerPage
+	if page > 0 {
+		resPage = page
+	}
+	if perPage > 0 {
+		resPerPage = perPage
+	}
+	return resPage, resPerPage
+}
+
+func QueryAccountTransactions(tmNode rpcclient.Client, addr string, page, perPage int) (*ctypes.ResultTxSearch, error) {
+	_, err := hex.DecodeString(addr)
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf("message.sender='%s'", addr)
+	page, perPage = validatePageAndPerPage(page, perPage)
+	result, err := tmNode.TxSearch(query, false, page, perPage)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func QueryBlockTransactions(tmNode rpcclient.Client, height int64, page, perPage int) (*ctypes.ResultTxSearch, error) {
+	query := fmt.Sprintf("tx.height=%d", height)
+	page, perPage = validatePageAndPerPage(page, perPage)
+	result, err := tmNode.TxSearch(query, false, page, perPage)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func QueryBlock(tmNode rpcclient.Client, height *int64) ([]byte, error) {
