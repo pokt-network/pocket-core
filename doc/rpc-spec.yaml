@@ -652,6 +652,50 @@ paths:
                 $ref: '#/components/schemas/QueryTXResponse'
         '400':
           description: Failed to retrieve the transaction information
+  /query/accounttxs:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns all transactions sent by the address
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAccountTXs'
+            example:
+              address: '197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22'
+        required: true
+      responses:
+        '200':
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryAccountTXsResponse'
+        '400':
+          description: Failed to retrieve the transaction information
+  /query/blocktxs:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns all transactions at a certain block height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryBlockTXs'
+            example:
+              height: 99
+        required: true
+      responses:
+        '200':
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryBlockTXsResponse'
+        '400':
+          description: Failed to retrieve the transaction information
 components:
   schemas:
     ABCIEvent:
@@ -1381,3 +1425,43 @@ components:
       properties:
         transaction:
           $ref: '#/components/schemas/Transaction'
+    QueryAccountTXs:
+      type: object
+      properties:
+        address:
+          type: string
+        page:
+          type: integer
+        per_page:
+          type: integer
+      required:
+        - address
+    QueryAccountTXsResponse:
+      type: object
+      properties:
+        txs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        total_count:
+          type: string
+    QueryBlockTXs:
+      type: object
+      properties:
+        height:
+          type: integer
+        page:
+          type: integer
+        per_page:
+          type: integer
+      required:
+        - height
+    QueryBlockTXsResponse:
+      type: object
+      properties:
+        txs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        total_count:
+          type: string
