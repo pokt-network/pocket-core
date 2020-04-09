@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(appCmd)
+	rootCmd.AddCommand(govCmd)
 	govCmd.AddCommand(govDAOTransfer)
 	govCmd.AddCommand(govChangeParam)
 	govCmd.AddCommand(govUpgrade)
