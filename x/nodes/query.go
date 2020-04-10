@@ -13,8 +13,11 @@ import (
 )
 
 const (
-	defaultPage    = 1
-	defaultPerPage = 30
+	defaultPage        = 1
+	defaultPerPage     = 30
+	customQuery        = "custom/%s/%s"
+	messageSenderQuery = "message.sender='%s'"
+	txHeightQuery      = "tx.height=%d"
 )
 
 func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (sdk.Int, error) {
@@ -24,7 +27,7 @@ func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Add
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
-	path := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryAccountBalance)
+	path := fmt.Sprintf(customQuery, types.StoreKey, types.QueryAccountBalance)
 	balanceBz, _, err := cliCtx.QueryWithData(path, bz)
 	if err != nil {
 		return sdk.ZeroInt(), err
@@ -44,7 +47,7 @@ func QueryAccount(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, h
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryAccount)
+	path := fmt.Sprintf(customQuery, types.StoreKey, types.QueryAccount)
 	balanceBz, _, err := cliCtx.QueryWithData(path, bz)
 	if err != nil {
 		return nil, err
@@ -92,7 +95,7 @@ func QueryStakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int
 	if err != nil {
 		return nil, err
 	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryStakedValidators), bz)
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryStakedValidators), bz)
 	if err != nil {
 		return types.Validators{}, err
 	}
@@ -114,7 +117,7 @@ func QueryUnstakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height i
 	if err != nil {
 		return nil, err
 	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakedValidators), bz)
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakedValidators), bz)
 	if err != nil {
 		return types.Validators{}, err
 	}
@@ -136,7 +139,7 @@ func QueryUnstakingValidators(cdc *codec.Codec, tmNode rpcclient.Client, height 
 	if err != nil {
 		return nil, err
 	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakingValidators), bz)
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakingValidators), bz)
 	if err != nil {
 		return types.Validators{}, err
 	}
@@ -165,11 +168,11 @@ func QuerySigningInfo(cdc *codec.Codec, tmNode rpcclient.Client, height int64, c
 
 func QuerySupply(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryStakedPool), nil)
+	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryStakedPool), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}
-	unstakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakedPool), nil)
+	unstakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakedPool), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}
@@ -186,7 +189,7 @@ func QuerySupply(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (stake
 
 func QueryPOSParams(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Params, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	route := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryParameters)
+	route := fmt.Sprintf(customQuery, types.StoreKey, types.QueryParameters)
 	bz, _, err := cliCtx.QueryWithData(route, nil)
 	if err != nil {
 		return types.Params{}, err
@@ -225,7 +228,7 @@ func QueryAccountTransactions(tmNode rpcclient.Client, addr string, page, perPag
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf("message.sender='%s'", addr)
+	query := fmt.Sprintf(messageSenderQuery, addr)
 	page, perPage = validatePageAndPerPage(page, perPage)
 	result, err := tmNode.TxSearch(query, false, page, perPage)
 	if err != nil {
@@ -235,7 +238,7 @@ func QueryAccountTransactions(tmNode rpcclient.Client, addr string, page, perPag
 }
 
 func QueryBlockTransactions(tmNode rpcclient.Client, height int64, page, perPage int) (*ctypes.ResultTxSearch, error) {
-	query := fmt.Sprintf("tx.height=%d", height)
+	query := fmt.Sprintf(txHeightQuery, height)
 	page, perPage = validatePageAndPerPage(page, perPage)
 	result, err := tmNode.TxSearch(query, false, page, perPage)
 	if err != nil {
