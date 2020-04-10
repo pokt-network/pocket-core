@@ -87,8 +87,8 @@ var queryTx = &cobra.Command{
 }
 
 func validatePagePerPageArgs(args []string) (page int, perPage int) {
-	page := 0
-	perPage := 0
+	page = 0
+	perPage = 0
 	if len(args) == 2 {
 		parsedPage, err := strconv.Atoi(args[1])
 		if err != nil {
