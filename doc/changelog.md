@@ -24,6 +24,7 @@
   - update POSMint version
   - transitive change in Account JSON response for RPC
   - Updated rpc-spec to reflect change
+- Updated POSMint to address duplicated minting logs
 
 ## RC-0.2.1
 - Add version command to CLI
