@@ -86,6 +86,24 @@ var queryTx = &cobra.Command{
 	},
 }
 
+func validatePagePerPageArgs(args []string) (page int, perPage int) {
+	page := 0
+	perPage := 0
+	if len(args) == 2 {
+		parsedPage, err := strconv.Atoi(args[1])
+		if err != nil {
+			page = parsedPage
+		}
+	}
+	if len(args) == 3 {
+		parsedPerPage, err := strconv.Atoi(args[2])
+		if err != nil {
+			perPage = parsedPerPage
+		}
+	}
+	return page, perPage
+}
+
 var queryAccountTxs = &cobra.Command{
 	Use:   "account-txs <address> <page> <per_page>",
 	Short: "Get the transactions sent by the address, paginated by page and per_page",
@@ -93,20 +111,7 @@ var queryAccountTxs = &cobra.Command{
 	Long:  `Returns the transactions sent by the address`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
-		page := 1
-		perPage := 30
-		if len(args) == 2 {
-			parsedPage, err := strconv.ParseInt(args[1], 10, 64)
-			if err != nil {
-				page = int(parsedPage)
-			}
-		}
-		if len(args) == 3 {
-			parsedPerPage, err := strconv.ParseInt(args[2], 10, 64)
-			if err != nil {
-				perPage = int(parsedPerPage)
-			}
-		}
+		page, perPage := validatePagePerPageArgs(args)
 		res, err := app.QueryAccountTxs(args[0], page, perPage)
 		if err != nil {
 			fmt.Println(err)
@@ -123,20 +128,7 @@ var queryBlockTxs = &cobra.Command{
 	Long:  `Returns the transactions in the block height`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
-		page := 1
-		perPage := 30
-		if len(args) == 2 {
-			parsedPage, err := strconv.ParseInt(args[1], 10, 64)
-			if err != nil {
-				page = int(parsedPage)
-			}
-		}
-		if len(args) == 3 {
-			parsedPerPage, err := strconv.ParseInt(args[2], 10, 64)
-			if err != nil {
-				perPage = int(parsedPerPage)
-			}
-		}
+		page, perPage := validatePagePerPageArgs(args)
 		height, parsingErr := strconv.ParseInt(args[0], 10, 64)
 		if parsingErr != nil {
 			fmt.Println(parsingErr)
