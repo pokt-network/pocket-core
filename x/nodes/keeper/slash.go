@@ -205,8 +205,8 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, po
 	if !val.IsJailed() {
 		pubkey := val.PublicKey
 		// fetch signing info
-		signInfo, sifound := k.GetValidatorSigningInfo(ctx, addr)
-		if !sifound {
+		signInfo, isFound := k.GetValidatorSigningInfo(ctx, addr)
+		if !isFound {
 			panic(fmt.Sprintf("Expected signing info for validator %s but not found", addr))
 		}
 		// this is a relative index, so it counts blocks the validator *should* have signed
@@ -240,10 +240,12 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, po
 					sdk.NewAttribute(types.AttributeKeyHeight, fmt.Sprintf("%d", height)),
 				),
 			)
-			//show log on first missing block sign after successful sign, if missed again this should not pop up and clutter the logs
+			//show log on first missing block sign after successful sign,
+			//if missed again this should not pop up and clutter the logs
 			if !previous && missed {
 				logger.Info(
-					fmt.Sprintf("Absent validator %s (%s) at height %d, %d missed, threshold %d", addr, pubkey, height, signInfo.MissedBlocksCounter, k.MinSignedPerWindow(ctx)))
+					fmt.Sprintf("Absent validator %s (%s) at height %d, %d missed, threshold %d",
+						addr, pubkey, height, signInfo.MissedBlocksCounter, k.MinSignedPerWindow(ctx)))
 			}
 		}
 		minHeight := signInfo.StartHeight + k.SignedBlocksWindow(ctx)
