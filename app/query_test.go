@@ -4,6 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"testing"
+	"time"
+
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
@@ -15,9 +19,6 @@ import (
 	"github.com/tendermint/iavl/common"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
-	"math/big"
-	"testing"
-	"time"
 )
 
 func TestQueryBlock(t *testing.T) {
@@ -64,9 +65,8 @@ func TestQueryTx(t *testing.T) {
 		assert.NotNil(t, tx)
 	}
 	select {
-	case res := <-evtChan:
+	case <-evtChan:
 		time.Sleep(time.Second * 1)
-		fmt.Println(res.Data.(tmTypes.EventDataTx))
 		got, err := nodes.QueryTransaction(memCli, tx.TxHash)
 		assert.Nil(t, err)
 		validator, err := nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
@@ -422,11 +422,10 @@ func TestRelayGenerator(t *testing.T) {
 		panic(err)
 	}
 	relay.Proof.Signature = hex.EncodeToString(sig)
-	res, err := json.MarshalIndent(relay, "", "  ")
+	_, err = json.MarshalIndent(relay, "", "  ")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(res))
 }
 
 func TestQueryRelay(t *testing.T) {
