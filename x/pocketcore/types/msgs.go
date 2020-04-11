@@ -2,8 +2,9 @@ package types
 
 import (
 	"encoding/hex"
-	sdk "github.com/pokt-network/posmint/types"
 	"reflect"
+
+	sdk "github.com/pokt-network/posmint/types"
 )
 
 // RouterKey is the module name router key
@@ -22,8 +23,18 @@ type MsgClaim struct {
 	EvidenceType  EvidenceType    `json:"evidence_type"` // relay or challenge?
 }
 
+// Route provides router key for msg
 func (msg MsgClaim) Route() string { return RouterKey }
-func (msg MsgClaim) Type() string  { return MsgClaimName }
+
+// Type provides msg name
+func (msg MsgClaim) Type() string { return MsgClaimName }
+
+// GetFee get fee for msg
+func (msg MsgClaim) GetFee() sdk.Int {
+	return sdk.NewInt(PocketFeeMap[msg.Type()])
+}
+
+// ValidateBasic quick validity check for staking an application
 func (msg MsgClaim) ValidateBasic() sdk.Error {
 	// validate a non empty chain
 	if msg.Chain == "" {
@@ -78,8 +89,18 @@ type MsgProof struct {
 	Cousin       Proof        `json:"cousin"`        // the cousin needed to verify the Proof
 }
 
+// Route provides router key for msg
 func (msg MsgProof) Route() string { return RouterKey }
-func (msg MsgProof) Type() string  { return MsgProofName }
+
+// Type provides msg name
+func (msg MsgProof) Type() string { return MsgProofName }
+
+// GetFee get fee for msg
+func (msg MsgProof) GetFee() sdk.Int {
+	return sdk.NewInt(PocketFeeMap[msg.Type()])
+}
+
+// ValidateBasic quick validity check for staking an application
 func (msg MsgProof) ValidateBasic() sdk.Error {
 	// verify valid number of levels for merkle proofs
 	if len(msg.MerkleProofs[0].HashSums) < 3 || len(msg.MerkleProofs[0].HashSums) != len(msg.MerkleProofs[1].HashSums) {

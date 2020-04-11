@@ -2,6 +2,7 @@ package nodes
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -97,7 +98,7 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 	if err != nil {
 		panic(err)
 	}
-	fee := sdk.NewInt(types.NodeFeeMap[msg.Type()])
+	fee := msg.GetFee()
 	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LTE(fee) { // todo get stake denom
 		panic(fmt.Sprintf("insufficient funds: the fee needed is %v", fee))
 	}

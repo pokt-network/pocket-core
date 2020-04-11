@@ -19,6 +19,7 @@ const (
 )
 
 //----------------------------------------------------------------------------------------------------------------------
+
 // MsgAppStake - struct for staking transactions
 type MsgAppStake struct {
 	PubKey crypto.PublicKey `json:"pubkey" yaml:"pubkey"`
@@ -26,7 +27,7 @@ type MsgAppStake struct {
 	Value  sdk.Int          `json:"value" yaml:"value"`
 }
 
-// Return address(es) that must sign over msg.GetSignBytes()
+// GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgAppStake) GetSigners() []sdk.Address {
 	addrs := []sdk.Address{sdk.Address(msg.PubKey.Address())}
 	return addrs
@@ -38,7 +39,7 @@ func (msg MsgAppStake) GetSignBytes() []byte {
 	return sdk.MustSortJSON(bz)
 }
 
-// Quick validity check for staking an application
+// ValidateBasic quick validity check for staking an application
 func (msg MsgAppStake) ValidateBasic() sdk.Error {
 	if msg.PubKey == nil || msg.PubKey.RawString() == "" {
 		return ErrNilApplicationAddr(DefaultCodespace)
@@ -57,16 +58,25 @@ func (msg MsgAppStake) ValidateBasic() sdk.Error {
 	return nil
 }
 
+// Route provides router key for msg
 func (msg MsgAppStake) Route() string { return RouterKey }
-func (msg MsgAppStake) Type() string  { return MsgAppStakeName }
+
+// Type provides msg name
+func (msg MsgAppStake) Type() string { return MsgAppStakeName }
+
+// GetFee get fee for msg
+func (msg MsgAppStake) GetFee() sdk.Int {
+	return sdk.NewInt(AppFeeMap[msg.Type()])
+}
 
 //----------------------------------------------------------------------------------------------------------------------
+
 // MsgBeginAppUnstake - struct for unstaking transaciton
 type MsgBeginAppUnstake struct {
 	Address sdk.Address `json:"application_address" yaml:"application_address"`
 }
 
-// Return address(es) that must sign over msg.GetSignBytes()
+// GetSigners address(es) that must sign over msg.GetSignBytes()
 func (msg MsgBeginAppUnstake) GetSigners() []sdk.Address {
 	return []sdk.Address{msg.Address}
 }
@@ -77,7 +87,7 @@ func (msg MsgBeginAppUnstake) GetSignBytes() []byte {
 	return sdk.MustSortJSON(bz)
 }
 
-// Quick validity check for staking an application
+// ValidateBasic quick validity check for staking an application
 func (msg MsgBeginAppUnstake) ValidateBasic() sdk.Error {
 	if msg.Address.Empty() {
 		return ErrNilApplicationAddr(DefaultCodespace)
@@ -85,19 +95,36 @@ func (msg MsgBeginAppUnstake) ValidateBasic() sdk.Error {
 	return nil
 }
 
+// Route provides router key for msg
 func (msg MsgBeginAppUnstake) Route() string { return RouterKey }
-func (msg MsgBeginAppUnstake) Type() string  { return MsgAppUnstakeName }
+
+// Type provides msg name
+func (msg MsgBeginAppUnstake) Type() string { return MsgAppUnstakeName }
+
+// GetFee get fee for msg
+func (msg MsgBeginAppUnstake) GetFee() sdk.Int {
+	return sdk.NewInt(AppFeeMap[msg.Type()])
+}
 
 //----------------------------------------------------------------------------------------------------------------------
+
 // MsgAppUnjail - struct for unjailing jailed application
 type MsgAppUnjail struct {
 	AppAddr sdk.Address `json:"address" yaml:"address"` // address of the application operator
 }
 
+// Route provides router key for msg
 func (msg MsgAppUnjail) Route() string { return RouterKey }
-func (msg MsgAppUnjail) Type() string  { return MsgAppUnjailName }
 
-// Return address(es) that must sign over msg.GetSignBytes()
+// Type provides msg name
+func (msg MsgAppUnjail) Type() string { return MsgAppUnjailName }
+
+// GetFee get fee for msg
+func (msg MsgAppUnjail) GetFee() sdk.Int {
+	return sdk.NewInt(AppFeeMap[msg.Type()])
+}
+
+// GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgAppUnjail) GetSigners() []sdk.Address {
 	return []sdk.Address{msg.AppAddr}
 }
@@ -108,7 +135,7 @@ func (msg MsgAppUnjail) GetSignBytes() []byte {
 	return sdk.MustSortJSON(bz)
 }
 
-// Quick validity check for staking an application
+// ValidateBasic quick validity check for staking an application
 func (msg MsgAppUnjail) ValidateBasic() sdk.Error {
 	if msg.AppAddr.Empty() {
 		return ErrBadApplicationAddr(DefaultCodespace)
