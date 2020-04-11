@@ -461,6 +461,7 @@ var queryNodeReceipt = &cobra.Command{
 	Use:   "node-receipt <nodeAddr> <appPubKey> <receiptType> <networkId> <sessionHeight> <height>`",
 	Short: "Gets node receipt for work completed",
 	Long:  `Gets node receipt for verified proof of work submitted for a specific session`,
+	Args:  cobra.MinimumNArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
