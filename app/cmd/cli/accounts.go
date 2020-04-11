@@ -3,14 +3,15 @@ package cli
 import (
 	"encoding/hex"
 	"fmt"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
 	"github.com/pokt-network/posmint/types"
 	"github.com/spf13/cobra"
-	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 func init() {
@@ -39,14 +40,15 @@ var accountsCmd = &cobra.Command{
 	Use:   "accounts",
 	Short: "account management",
 	Long: `The accounts namespace handles all account related interactions,
-from creating and deleting accounts, to importing and exporting accounts.`,
+from creating and deleting accounts; to importing and exporting accounts.`,
 }
 
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new account",
-	Long:  `Creates and persists a new account in the Keybase. Will prompt the user for a passphrase to encrypt the generated keypair.`,
+	Long: `Creates and persists a new account in the Keybase.
+Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := keys.New(app.KeybaseName, app.InitDataDirectory(datadir)+string(filepath.Separator)+app.KBDirectoryName)
@@ -62,7 +64,7 @@ var createCmd = &cobra.Command{
 
 var getCoinbase = &cobra.Command{
 	Use:   "get-coinbase",
-	Short: "Gets the coinbase account from the keybase",
+	Short: "Retrieves the coinbase account from the keybase",
 	Long:  `Retrieves the coinbase account from the pocket core keybase`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
@@ -84,7 +86,8 @@ var getCoinbase = &cobra.Command{
 var deleteCmd = &cobra.Command{
 	Use:   "delete  <address>",
 	Short: "Delete an account",
-	Long:  `Deletes a keypair from the keybase. Will prompt the user for the account passphrase`,
+	Long: `Deletes a keypair from the keybase.
+Will prompt the user for the account passphrase`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -98,7 +101,7 @@ var deleteCmd = &cobra.Command{
 			fmt.Printf("Address Error %s", err)
 			return
 		}
-		fmt.Print("Enter Password: \n")
+		fmt.Print("Enter passphrase: \n")
 		err = kb.Delete(addr, app.Credentials())
 		if err != nil {
 			fmt.Printf("Error Deleting Account, check your credentials")
@@ -111,9 +114,10 @@ var deleteCmd = &cobra.Command{
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all accounts",
-	Long: `Lists all the account addresses stored in the keybase. Example output:
-(0) b3746D30F2A579a2efe7F2F6E8E06277a78054C1
-(1) ab514F27e98DE7E3ecE3789b511dA955C3F09Bbc`,
+	Long: `Lists all the account addresses stored in the keybase.
+Example output:
+	(0) b3746D30F2A579a2efe7F2F6E8E06277a78054C1
+	(1) ab514F27e98DE7E3ecE3789b511dA955C3F09Bbc`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -136,8 +140,11 @@ var listCmd = &cobra.Command{
 var showCmd = &cobra.Command{
 	Use:   "show  <address>",
 	Short: "Shows a pubkey for address",
-	Long:  `Lists an account address and public key`,
-	Args:  cobra.ExactArgs(1),
+	Long: `Lists an account address and public key.
+Example output:
+  Address: 		a8cb9e1c0d98fa3a4e1772ada19b8c7f191e61d7
+  Public Key: ccc15d61fa80c707cb55ccd80b61720abbac13ca56f7896057e889521462052d`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -165,8 +172,9 @@ var showCmd = &cobra.Command{
 var updatePassphraseCmd = &cobra.Command{
 	Use:   "update-passphrase <address>",
 	Short: "Update account passphrase",
-	Long:  `Updates the passphrase for the indicated account. Will prompt the user for the current account passphrase and the new account passphrase.`,
-	Args:  cobra.ExactArgs(1),
+	Long: `Updates the passphrase for the indicated account.
+Will prompt the user for the current account passphrase and the new account passphrase.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -179,9 +187,9 @@ var updatePassphraseCmd = &cobra.Command{
 			fmt.Printf("Address Error, %s", err)
 			return
 		}
-		fmt.Println("Enter Password: ")
+		fmt.Println("Enter passphrase: ")
 		oldpass := app.Credentials()
-		fmt.Println("Enter New Password: ")
+		fmt.Println("Enter new passphrase: ")
 		newpass := app.Credentials()
 		err = kb.Update(addr, oldpass, newpass)
 		if err != nil {
@@ -196,8 +204,9 @@ var updatePassphraseCmd = &cobra.Command{
 var signCmd = &cobra.Command{
 	Use:   "sign <address> <msg>",
 	Short: "Sign a message with an account",
-	Long:  `Digitally signs the specified <msg> using the specified <address> account credentials. Will prompt the user for the account passphrase.`,
-	Args:  cobra.ExactArgs(2),
+	Long: `Digitally signs the specified <msg> using the specified <address> account credentials.
+Will prompt the user for the account passphrase.`,
+	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -215,7 +224,7 @@ var signCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		fmt.Println("Enter Password: ")
+		fmt.Println("Enter passphrase: ")
 		sig, _, err := kb.Sign(addr, app.Credentials(), msg)
 		if err != nil {
 			fmt.Println(err)
@@ -228,8 +237,9 @@ var signCmd = &cobra.Command{
 var importArmoredCmd = &cobra.Command{
 	Use:   "import-armored <armor>",
 	Short: "Import keypair using armor",
-	Long:  `Imports an account using the Encrypted ASCII armored <armor> string. Will prompt the user for a decryption passphrase of the <armor> string and for an encryption passphrase to store in the Keybase.`,
-	Args:  cobra.ExactArgs(1),
+	Long: `Imports an account using the Encrypted ASCII armored <armor> string.
+Will prompt the user for a decryption passphrase of the <armor> string and for an encryption passphrase to store in the Keybase.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -253,10 +263,9 @@ var importArmoredCmd = &cobra.Command{
 var exportCmd = &cobra.Command{
 	Use:   "export <address>",
 	Short: "Export an account",
-	Args:  cobra.ExactArgs(1),
 	Long: `Exports the account with <address>, encrypted and ASCII armored.
-Will prompt the user for the account passphrase and for an encryption passphrase for the exported account.
-`,
+Will prompt the user for the account passphrase and for an encryption passphrase for the exported account.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -286,9 +295,10 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 var exportRawCmd = &cobra.Command{
 	Use:   "export-raw <address>",
 	Short: "Export Plaintext Privkey",
-	Args:  cobra.ExactArgs(1),
-	Long: `Exports the raw private key in hex format. Will prompt the user for the account passphrase.
-NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.*`,
+	Long: `Exports the raw private key in hex format.
+Will prompt the user for the account passphrase.
+NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -316,8 +326,9 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 var sendTxCmd = &cobra.Command{
 	Use:   "send-tx <fromAddr> <toAddr> <amount>",
 	Short: "Send POKT",
-	Long:  `Sends <amount> POKT <fromAddr> to <toAddr>. Prompts the user for <fromAddr> account passphrase.`,
-	Args:  cobra.ExactArgs(3),
+	Long: `Sends <amount> POKT <fromAddr> to <toAddr>.
+Prompts the user for <fromAddr> account passphrase.`,
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		amount, err := strconv.Atoi(args[2])
@@ -325,7 +336,7 @@ var sendTxCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		fmt.Println("Enter Password: ")
+		fmt.Println("Enter passphrase: ")
 		res, err := app.SendTransaction(args[0], args[1], app.Credentials(), types.NewInt(int64(amount)))
 		if err != nil {
 			fmt.Println(err)
@@ -361,16 +372,14 @@ var sendRawTxCmd = &cobra.Command{
 var importCmd = &cobra.Command{
 	Use:   "import-raw <private-key-hex>",
 	Short: "import-raw <private-key-hex>",
-	Args:  cobra.ExactArgs(1),
 	Long: `Imports an account using the provided <private-key-hex>
-
-Will prompt the user for a passphrase to encrypt the generated keypair.
-`,
+Will prompt the user for a passphrase to encrypt the generated keypair.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		pkBytes, err := hex.DecodeString(args[0])
 		kb := keys.New(app.KeybaseName, app.InitDataDirectory(datadir)+string(filepath.Separator)+app.KBDirectoryName)
-		fmt.Println("Enter Encrypt Passphrase")
+		fmt.Println("Enter passphrase")
 		ePass := app.Credentials()
 		var pk [crypto.Ed25519PrivKeySize]byte
 		copy(pk[:], pkBytes)
@@ -388,9 +397,8 @@ Will prompt the user for a passphrase to encrypt the generated keypair.
 var newMultiPublicKey = &cobra.Command{
 	Use:   "create-multi-public <ordered-comma-separated-hex-pubkeys>",
 	Short: "create a multisig public key",
+	Long:  `create a multisig public key with a comma separated list of hex encoded public keys`,
 	Args:  cobra.ExactArgs(1),
-	Long: `create a multisig public key with a comma separated list of hex encoded public keys
-`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		rawPKs := strings.Split(strings.TrimSpace(args[0]), ",")
@@ -407,12 +415,12 @@ var newMultiPublicKey = &cobra.Command{
 	},
 }
 
+// TODO add proper example
 var buildMultisig = &cobra.Command{
 	Use:   "build-MS-Tx <your-signer-address> <ordered-comma-separated-hex-pubkeys> <json-message>",
 	Short: "build and sign a multisic tx",
 	Args:  cobra.MinimumNArgs(3),
-	Long: `build and sign a multisignature transaction from scratch: result is hex encoded std tx object
-`,
+	Long:  `build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		msg := args[1]
@@ -426,7 +434,7 @@ var buildMultisig = &cobra.Command{
 			pks = append(pks, p)
 		}
 		multiSigPubKey := crypto.PublicKeyMultiSignature{PublicKeys: pks}
-		fmt.Println("Enter password: ")
+		fmt.Println("Enter passphrase: ")
 		bz, err := app.BuildMultisig(args[0], msg, app.Credentials(), multiSigPubKey)
 		if err != nil {
 			panic(err)
@@ -453,7 +461,7 @@ var signMS = &cobra.Command{
 			}
 			pks = append(pks, p)
 		}
-		fmt.Println("Enter password: ")
+		fmt.Println("Enter passphrase: ")
 		bz, err := app.SignMultisigOutOfOrder(args[0], msg, app.Credentials(), pks)
 		if err != nil {
 			panic(err)
@@ -465,10 +473,9 @@ var signMS = &cobra.Command{
 var signNexMS = &cobra.Command{
 	Use:   "sign-ms-next <your-signer-address> <hex-amino-stdtx>",
 	Short: "sign a multisic tx",
-	Args:  cobra.MinimumNArgs(2),
 	Long: `sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
-NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.
-`,
+NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.`,
+	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		msg := args[1]

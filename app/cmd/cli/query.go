@@ -39,13 +39,14 @@ func init() {
 var queryCmd = &cobra.Command{
 	Use:   "query",
 	Short: "query the blockchain",
-	Long:  ``,
+	Long: `The query namespace handles all queryable interactions,
+From getting Blocks, transactions, height; to getting params`,
 }
 
 var queryBlock = &cobra.Command{
 	Use:   "block <height>",
 	Short: "Get block at height",
-	Long:  `Returns the block structure at the specified height.`,
+	Long:  `Retrieves the block structure at the specified height.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height *int64
@@ -73,8 +74,8 @@ var queryBlock = &cobra.Command{
 var queryTx = &cobra.Command{
 	Use:   "tx <hash>",
 	Short: "Get the transaction by the hash",
+	Long:  `Retrieves the transaction by the hash`,
 	Args:  cobra.ExactArgs(1),
-	Long:  `Returns the transaction by the hash`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		res, err := app.QueryTx(args[0])
@@ -107,8 +108,8 @@ func validatePagePerPageArgs(args []string) (page int, perPage int) {
 var queryAccountTxs = &cobra.Command{
 	Use:   "account-txs <address> <page> <per_page>",
 	Short: "Get the transactions sent by the address, paginated by page and per_page",
+	Long:  `Retrieves the transactions sent by the address`,
 	Args:  cobra.RangeArgs(1, 3),
-	Long:  `Returns the transactions sent by the address`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		page, perPage := validatePagePerPageArgs(args)
@@ -124,8 +125,8 @@ var queryAccountTxs = &cobra.Command{
 var queryBlockTxs = &cobra.Command{
 	Use:   "block-txs <height> <page> <per_page>",
 	Short: "Get the transactions at a certain block height, paginated by page and per_page",
+	Long:  `Retrieves the transactions in the block height`,
 	Args:  cobra.RangeArgs(1, 3),
-	Long:  `Returns the transactions in the block height`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		page, perPage := validatePagePerPageArgs(args)
@@ -146,7 +147,7 @@ var queryBlockTxs = &cobra.Command{
 var queryHeight = &cobra.Command{
 	Use:   "height",
 	Short: "Get current height",
-	Long:  `Returns the current height`,
+	Long:  `Retrieves the current height`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		res, err := app.QueryHeight()
@@ -161,8 +162,8 @@ var queryHeight = &cobra.Command{
 var queryBalance = &cobra.Command{
 	Use:   "balance <accAddr> <height>",
 	Short: "Gets account balance",
+	Long:  `Retrieves the balance of the specified <accAddr> at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
-	Long:  `Returns the balance of the specified <accAddr> at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -188,8 +189,8 @@ var queryBalance = &cobra.Command{
 var queryAccount = &cobra.Command{
 	Use:   "account <accAddr> <height>",
 	Short: "Gets an account",
+	Long:  `Retrieves the account structure for a specific address.`,
 	Args:  cobra.MinimumNArgs(1),
-	Long:  `Returns the account structure for a specific address.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -221,7 +222,7 @@ func init() {
 var queryNodes = &cobra.Command{
 	Use:   "nodes --staking-status=<nodeStakingStatus> <height>",
 	Short: "Gets nodes",
-	Long:  `Returns the list of all nodes known at the specified <height>.`,
+	Long:  `Retrieves the list of all nodes known at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -269,8 +270,8 @@ var queryNodes = &cobra.Command{
 var queryNode = &cobra.Command{
 	Use:   "node <address> <height>",
 	Short: "Gets node from address",
+	Long:  `Retrieves the node at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
-	Long:  `Returns the node at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -296,7 +297,7 @@ var queryNode = &cobra.Command{
 var queryNodeParams = &cobra.Command{
 	Use:   "node-params <height>",
 	Short: "Gets node parameters",
-	Long:  `Returns the node parameters at the specified <height>.`,
+	Long:  `Retrieves the node parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -328,7 +329,7 @@ func init() {
 var queryApps = &cobra.Command{
 	Use:   "apps --staking-status=<nodeStakingStatus> <height>",
 	Short: "Gets apps",
-	Long:  `Returns the list of all applications known at the specified <height>`,
+	Long:  `Retrieves the list of all applications known at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -376,8 +377,8 @@ var queryApps = &cobra.Command{
 var queryApp = &cobra.Command{
 	Use:   "app <address> <height>",
 	Short: "Gets app from address",
+	Long:  `Retrieves the app at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
-	Long:  `Returns the app at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -403,7 +404,7 @@ var queryApp = &cobra.Command{
 var queryAppParams = &cobra.Command{
 	Use:   "app-params <height>",
 	Short: "Gets app parameters",
-	Long:  `Returns the app parameters at the specified <height>.`,
+	Long:  `Retrieves the app parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -429,8 +430,8 @@ var queryAppParams = &cobra.Command{
 var queryNodeReceipts = &cobra.Command{
 	Use:   "node-receipts <nodeAddr> <height>",
 	Short: "Gets node receipts for work completed",
+	Long:  `Retrieves the list of all verified proof of work submitted by <nodeAddr> at <height>.`,
 	Args:  cobra.MinimumNArgs(1),
-	Long:  `Returns the list of all verified proof of work submitted by <nodeAddr> at <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -490,7 +491,7 @@ var queryNodeReceipt = &cobra.Command{
 var queryPocketParams = &cobra.Command{
 	Use:   "pocket-params <height>",
 	Short: "Gets pocket parameters",
-	Long:  `Returns the pocket parameters at the specified <height>.`,
+	Long:  `Retrieves the pocket parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -516,7 +517,7 @@ var queryPocketParams = &cobra.Command{
 var queryPocketSupportedChains = &cobra.Command{
 	Use:   "supported-networks <height>",
 	Short: "Gets pocket supported networks",
-	Long:  `Returns the list Network Identifiers supported by the network at the specified <height>`,
+	Long:  `Retrieves the list Network Identifiers supported by the network at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -543,8 +544,8 @@ var queryPocketSupportedChains = &cobra.Command{
 
 var querySupply = &cobra.Command{
 	Use:   "supply <height>",
-	Short: "Returns",
-	Long:  `Returns the list of node params specified in the <height>`,
+	Short: "Gets the supply at <height>",
+	Long:  `Retrieves the list of node params specified in the <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -586,7 +587,7 @@ var querySupply = &cobra.Command{
 var queryDAOOwner = &cobra.Command{
 	Use:   "daoOwner <height>",
 	Short: "Gets the owner of the dao",
-	Long:  `Returns the owner of the DAO (the account that can send/burn coins from the dao)`,
+	Long:  `Retrieves the owner of the DAO (the account that can send/burn coins from the dao)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -612,7 +613,7 @@ var queryDAOOwner = &cobra.Command{
 var queryACL = &cobra.Command{
 	Use:   "acl <height>",
 	Short: "Gets the gov acl",
-	Long:  `Returns the access control list of governance params (which account can change the param)`,
+	Long:  `Retrieves the access control list of governance params (which account can change the param)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -638,7 +639,7 @@ var queryACL = &cobra.Command{
 var queryUpgrade = &cobra.Command{
 	Use:   "upgrade <height>",
 	Short: "Gets the latest gov upgrade",
-	Long:  `Returns the latest protocol upgrade by governance`,
+	Long:  `Retrieves the latest protocol upgrade by governance`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int

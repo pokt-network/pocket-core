@@ -3,11 +3,12 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/posmint/types"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 func init() {
@@ -20,7 +21,8 @@ func init() {
 var govCmd = &cobra.Command{
 	Use:   "gov",
 	Short: "governance management",
-	Long:  ``,
+	Long: `The gov namespace handles all governance related interactions,
+from DAOTransfer, change parameters; to performing protocol Upgrades. `,
 }
 
 var govDAOTransfer = &cobra.Command{
@@ -55,8 +57,9 @@ var govDAOTransfer = &cobra.Command{
 var govChangeParam = &cobra.Command{
 	Use:   "change_param <fromAddr> <paramKey module/param> <paramValue (jsonObj)>",
 	Short: "Edit a param in the network",
-	Long:  `If authorized, submit a tx to change any param from any module`,
-	Args:  cobra.ExactArgs(3),
+	Long: `If authorized, submit a tx to change any param from any module.
+Will prompt the user for the <fromAddr> account passphrase.`,
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		fmt.Println("Enter Password: ")
@@ -77,8 +80,9 @@ var govChangeParam = &cobra.Command{
 var govUpgrade = &cobra.Command{
 	Use:   "upgrade <fromAddr> <atHeight> <version>",
 	Short: "Upgrade the protocol",
-	Long:  `If authorized, upgrade the protocol`,
-	Args:  cobra.ExactArgs(3),
+	Long: `If authorized, upgrade the protocol.
+Will prompt the user for the <fromAddr> account passphrase.`,
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		i, err := strconv.Atoi(args[1])
