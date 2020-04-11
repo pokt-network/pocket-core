@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +16,7 @@ func init() {
 var utilCmd = &cobra.Command{
 	Use:   "util",
 	Short: "utilities",
-	Long:  ``,
+	Long:  `The util namespace contains helpful tooling.`,
 }
 
 var generateChainCmd = &cobra.Command{

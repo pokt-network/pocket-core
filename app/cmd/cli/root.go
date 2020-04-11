@@ -50,8 +50,8 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "help message for toggle")
 	rootCmd.PersistentFlags().StringVar(&datadir, "datadir", "", "data directory (default is $HOME/.pocket/")
 	rootCmd.PersistentFlags().StringVar(&tmNode, "node", "", "takes a remote endpoint in the form <protocol>://<host>:<port>")
-	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
-	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: <ID>@<IP>:<PORT>")
+	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
+	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	rootCmd.PersistentFlags().StringVar(&tmRPCPort, "tmRPCPort", "26657", "the port for tendermint rpc")
 	rootCmd.PersistentFlags().StringVar(&tmPeersPort, "tmPeersPort", "26656", "the port for tendermint p2p")
 	rootCmd.PersistentFlags().StringVar(&pocketRPCPort, "pocketRPCPort", "8081", "the port for pocket rpc")
@@ -97,15 +97,15 @@ var startCmd = &cobra.Command{
 // startCmd represents the start command
 var resetCmd = &cobra.Command{
 	Use:   "reset",
-	Short: "reset pocket-core",
-	Long:  `Reset the Pocket node`,
+	Short: "Reset pocket-core",
+	Long:  `Reset the Pocket node daemon`,
 	Run:   app.ResetWorldState,
 }
 
 var version = &cobra.Command{
 	Use:   "version",
 	Short: "Get current version",
-	Long:  `Returns the version`,
+	Long:  `Retrieves the version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("AppVersion: %s\n", CLIVersion)
 	},
