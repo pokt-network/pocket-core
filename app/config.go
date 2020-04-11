@@ -168,6 +168,7 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, block
 	newTMConfig.Consensus.TimeoutCommit = time.Duration(blockTime) * time.Minute
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
+	newTMConfig.P2P.AllowDuplicateIP = true
 	newTMConfig.LogLevel = "*:info, *:error"
 	newTMConfig.TxIndex.Indexer = "kv"
 	newTMConfig.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
