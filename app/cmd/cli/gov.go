@@ -28,8 +28,9 @@ from DAOTransfer, change parameters; to performing protocol Upgrades. `,
 var govDAOTransfer = &cobra.Command{
 	Use:   "transfer <action (dao_burn or dao_transfer)> <amount> <fromAddr> <toAddr> ",
 	Short: "Transfer from DAO",
-	Long:  `If authorized, move funds from the DAO, can burn or transfer`,
-	Args:  cobra.MinimumNArgs(3),
+	Long: `If authorized, move funds from the DAO.
+Actions: [burn, transfer]`,
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var toAddr string

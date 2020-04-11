@@ -88,6 +88,7 @@ var deleteCmd = &cobra.Command{
 	Short: "Delete an account",
 	Long: `Deletes a keypair from the keybase.
 Will prompt the user for the account passphrase`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		kb := app.MustGetKeybase()
@@ -415,11 +416,10 @@ var newMultiPublicKey = &cobra.Command{
 	},
 }
 
-// TODO add proper example
 var buildMultisig = &cobra.Command{
 	Use:   "build-MS-Tx <your-signer-address> <ordered-comma-separated-hex-pubkeys> <json-message>",
 	Short: "build and sign a multisic tx",
-	Args:  cobra.MinimumNArgs(3),
+	Args:  cobra.ExactArgs(3),
 	Long:  `build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
@@ -446,9 +446,8 @@ var buildMultisig = &cobra.Command{
 var signMS = &cobra.Command{
 	Use:   "sign-ms-tx <your-signer-address> <hex-amino-stdtx> <ordered-comma-separated-hex-pubkeys>",
 	Short: "sign a multisic tx",
-	Args:  cobra.MinimumNArgs(3),
-	Long: `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object
-`,
+	Long:  `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object`,
+	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		msg := args[1]
@@ -475,7 +474,7 @@ var signNexMS = &cobra.Command{
 	Short: "sign a multisic tx",
 	Long: `sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
 NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.`,
-	Args: cobra.MinimumNArgs(2),
+	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		msg := args[1]
