@@ -1,12 +1,13 @@
 package keeper
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"reflect"
-	"testing"
 )
 
 func Test_queryApplications(t *testing.T) {
@@ -20,7 +21,9 @@ func Test_queryApplications(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Application{}, "", "  ")
+
+	expectedApplicationsPage := types.ApplicationsPage{Result: []types.Application{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedApplicationsPage, "", "  ")
 	tests := []struct {
 		name  string
 		args  args
@@ -125,7 +128,8 @@ func Test_queryStakedApplications(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Application{}, "", "  ")
+	expectedApplicationsPage := types.ApplicationsPage{Result: []types.Application{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedApplicationsPage, "", "  ")
 	tests := []struct {
 		name  string
 		args  args
@@ -227,7 +231,8 @@ func Test_queryUnstakingApplications(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Application{}, "", "  ")
+	expectedApplicationsPage := types.ApplicationsPage{Result: []types.Application{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedApplicationsPage, "", "  ")
 	tests := []struct {
 		name  string
 		args  args
@@ -264,7 +269,8 @@ func Test_queryUnstakedApplications(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Application{}, "", "  ")
+	expectedApplicationsPage := types.ApplicationsPage{Result: []types.Application{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedApplicationsPage, "", "  ")
 	tests := []struct {
 		name  string
 		args  args
@@ -305,7 +311,8 @@ func Test_NewQuerier(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Application{}, "", "  ")
+	expectedApplicationsPage := types.ApplicationsPage{Result: []types.Application{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedApplicationsPage, "", "  ")
 	jsonresponseForParams, _ := amino.MarshalJSONIndent(keeper.GetParams(context), "", "  ")
 	tests := []struct {
 		name  string
