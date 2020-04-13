@@ -1,14 +1,15 @@
 package keeper
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"reflect"
-	"testing"
 )
 
 func Test_NewQuerier(t *testing.T) {
@@ -30,7 +31,8 @@ func Test_NewQuerier(t *testing.T) {
 		Address: conAddress,
 	})
 
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Validator{}, "", "  ")
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 	jsonresponseSigningInfos, _ := amino.MarshalJSONIndent([]types.ValidatorSigningInfo{}, "", "  ")
 	jsonresponsestakedPool, _ := amino.MarshalJSONIndent(types.StakingPool(types.NewPool(sdk.ZeroInt())), "", "  ")
 	jsonresponseInt, _ := amino.MarshalJSONIndent("0", "", "  ")
@@ -382,7 +384,8 @@ func Test_queryStakedValidators(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Validator{}, "", "  ")
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {
 		name  string
@@ -457,7 +460,8 @@ func Test_queryUnstakedValidators(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Validator{}, "", "  ")
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {
 		name  string
@@ -499,7 +503,8 @@ func Test_queryUnstakingValidators(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Validator{}, "", "  ")
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {
 		name  string
@@ -580,7 +585,8 @@ func Test_queryValidators(t *testing.T) {
 		Page:  1,
 		Limit: 1,
 	})
-	jsonresponse, _ := amino.MarshalJSONIndent([]types.Validator{}, "", "  ")
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
+	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {
 		name  string

@@ -1,13 +1,14 @@
 package nodes
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
-	"reflect"
-	"testing"
 )
 
 func TestQueryAccountBalance(t *testing.T) {

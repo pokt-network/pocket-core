@@ -3,6 +3,7 @@ package nodes
 import (
 	"encoding/hex"
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
@@ -74,15 +75,53 @@ func QueryValidator(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address,
 
 func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	resKVs, _, err := cliCtx.QuerySubspace(types.AllValidatorsKey, types.StoreKey)
+	params := types.QueryStakedValidatorsParams{
+		Page:  1,
+		Limit: 10000,
+	}
+
+	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
-		return types.Validators{}, err
+		return nil, err
 	}
-	validators := make(types.Validators, 0)
-	for _, kv := range resKVs {
-		validators = append(validators, types.MustUnmarshalValidator(cdc, kv.Value))
+	validators := types.Validators{}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryValidators), bz)
+	if err != nil {
+		return validators, err
 	}
+
+	err = cdc.UnmarshalJSON(res, &validators)
+	if err != nil {
+		return validators, err
+	}
+
 	return validators, nil
+	/*
+		paginate := func(objectLength, page, limit, defLimit) (start, end, pages, page int64) {
+			if page == 0 {
+				return -1, -1, -1, -1
+			} else if limit == 0 {
+				limit = defLimit
+			}
+
+			start = (page - 1) * limit
+			end = limit + start
+			pagesSize := end - start
+			pages = objectLength / pageSize
+
+			if end >= numObjs {
+			end = numObjs
+			}
+
+		if start >= numObjs {
+			return -1, -1, -1, -1
+		}
+
+		return start, end, pages, page
+		}
+		begin, end, page, totalPage = paginate(len(validators), begin, limit, defLimit)
+		return ValidatorsPage{validators[begin,end],totalPage, page}, nil
+	*/
 }
 
 func QueryStakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {

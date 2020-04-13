@@ -3,8 +3,9 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"github.com/pokt-network/posmint/crypto"
 	"time"
+
+	"github.com/pokt-network/posmint/crypto"
 
 	sdk "github.com/pokt-network/posmint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -20,6 +21,12 @@ type Validator struct {
 	ServiceURL              string           `json:"service_url" yaml:"service_url"`       // url where the pocket service api is hosted
 	StakedTokens            sdk.Int          `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
+}
+
+type ValidatorsPage struct {
+	Result Validators `json:"result"`
+	Total  int        `json:"total_pages"`
+	Page   int        `json:"page"`
 }
 
 // NewValidator - initialize a new validator
