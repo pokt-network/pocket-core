@@ -240,14 +240,6 @@ var queryNodes = &cobra.Command{
 				fmt.Println(err)
 				return
 			}
-			// page, err = strconv.Atoi(args[1])
-			// if err != nil {
-			// 	page = 1
-			// }
-			// limit, err = strconv.Atoi(args[2])
-			// if err != nil {
-			// 	limit = 10000
-			// }
 		}
 		var res nodeTypes.ValidatorsPage
 		var err error
@@ -336,7 +328,7 @@ func init() {
 }
 
 var queryApps = &cobra.Command{
-	Use:   "apps --staking-status=<nodeStakingStatus> <height>",
+	Use:   "apps --staking-status=<nodeStakingStatus> --page=<page> --limit=<limit> <height>",
 	Short: "Gets apps",
 	Long:  `Retrieves the list of all applications known at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -352,31 +344,27 @@ var queryApps = &cobra.Command{
 				return
 			}
 		}
-		var res appTypes.Applications
+		var res appTypes.ApplicationsPage
 		var err error
 		switch strings.ToLower(appStakingStatus) {
 		case "":
 			// no status passed
-			res, err = app.QueryAllApps(int64(height))
+			res, err = app.QueryAllApps(int64(height), page, limit)
 		case "staked":
 			// staked nodes
-			res, err = app.QueryStakedApps(int64(height))
+			res, err = app.QueryStakedApps(int64(height), page, limit)
 		case "unstaked":
 			// unstaked nodes
-			res, err = app.QueryUnstakedApps(int64(height))
+			res, err = app.QueryUnstakedApps(int64(height), page, limit)
 		case "unstaking":
 			// unstaking nodes
-			res, err = app.QueryUnstakingApps(int64(height))
+			res, err = app.QueryUnstakingApps(int64(height), page, limit)
 		default:
 			fmt.Printf("invalid staking status, can be staked, unstaked, unstaking, or empty")
 			return
 		}
 		if err != nil {
 			fmt.Println(err)
-			return
-		}
-		if res == nil {
-			fmt.Println("nil Apps result")
 			return
 		}
 		fmt.Printf("Apps:\n%s\n", res.String())
