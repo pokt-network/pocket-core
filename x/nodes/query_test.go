@@ -230,7 +230,7 @@ func TestQueryStakedValidators(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := QueryStakedValidators(tt.args.cdc, tt.args.tmNode, tt.args.height)
+			got, err := QueryStakedValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, 1, 1)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QueryStakedValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -328,7 +328,7 @@ func TestQueryUnstakedValidators(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := QueryUnstakedValidators(tt.args.cdc, tt.args.tmNode, tt.args.height)
+			got, err := QueryUnstakedValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, 1, 1)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QueryUnstakedValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -360,7 +360,7 @@ func TestQueryUnstakingValidators(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := QueryUnstakingValidators(tt.args.cdc, tt.args.tmNode, tt.args.height)
+			got, err := QueryUnstakingValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, 1, 1)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QueryUnstakingValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -426,7 +426,7 @@ func TestQueryValidators(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := QueryValidators(tt.args.cdc, tt.args.tmNode, tt.args.height)
+			got, err := QueryValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, 1, 1)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QueryValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return

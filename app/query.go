@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
@@ -56,8 +57,8 @@ func QueryAccount(addr string, height int64) (account *auth.BaseAccount, err err
 	return nodes.QueryAccount(Codec(), getTMClient(), a, height)
 }
 
-func QueryAllNodes(height int64) (nodesTypes.Validators, error) {
-	return nodes.QueryValidators(Codec(), getTMClient(), height)
+func QueryAllNodes(height int64, page, limit int) (nodesTypes.ValidatorsPage, error) {
+	return nodes.QueryValidators(Codec(), getTMClient(), height, page, limit)
 }
 
 func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err error) {
@@ -68,16 +69,16 @@ func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err e
 	return nodes.QueryValidator(Codec(), getTMClient(), a, height)
 }
 
-func QueryUnstakingNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return nodes.QueryUnstakingValidators(Codec(), getTMClient(), height)
+func QueryUnstakingNodes(height int64, page, limit int) (nodesTypes.ValidatorsPage, error) {
+	return nodes.QueryUnstakingValidators(Codec(), getTMClient(), height, page, limit)
 }
 
-func QueryStakedNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return nodes.QueryStakedValidators(Codec(), getTMClient(), height)
+func QueryStakedNodes(height int64, page, limit int) (nodesTypes.ValidatorsPage, error) {
+	return nodes.QueryStakedValidators(Codec(), getTMClient(), height, page, limit)
 }
 
-func QueryUnstakedNodes(height int64) (validators nodesTypes.Validators, err error) {
-	return nodes.QueryUnstakedValidators(Codec(), getTMClient(), height)
+func QueryUnstakedNodes(height int64, page, limit int) (nodesTypes.ValidatorsPage, error) {
+	return nodes.QueryUnstakedValidators(Codec(), getTMClient(), height, page, limit)
 }
 
 func QueryNodeParams(height int64) (params nodesTypes.Params, err error) {
