@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -27,6 +28,12 @@ type ValidatorsPage struct {
 	Result Validators `json:"result"`
 	Total  int        `json:"total_pages"`
 	Page   int        `json:"page"`
+}
+
+// Marshals struct into JSON
+func (vP ValidatorsPage) JSON() (out []byte, err error) {
+	// each element should be a JSON
+	return json.Marshal(vP)
 }
 
 // NewValidator - initialize a new validator

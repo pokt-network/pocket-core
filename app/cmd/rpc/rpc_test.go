@@ -5,6 +5,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
+	"strings"
+	"testing"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
@@ -18,13 +26,6 @@ import (
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"strconv"
-	"strings"
-	"testing"
 )
 
 func TestRPC_QueryHeight(t *testing.T) {
@@ -230,8 +231,8 @@ func TestRPC_QueryAccount(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	type Coins struct {
-		denom  string `json:string`
-		amount int    `json:amount`
+		denom  string `json:"denom"`
+		amount int    `json:"amount"`
 	}
 	select {
 	case <-evtChan:
@@ -263,11 +264,15 @@ func TestRPC_QueryNodes(t *testing.T) {
 		var params = heightAndStakingStatusParams{
 			Height:        0,
 			StakingStatus: "staked",
+			Page:          1,
+			PerPage:       1,
 		}
 		q := newQueryRequest("nodes", newBody(params))
 		rec := httptest.NewRecorder()
 		Nodes(rec, q, httprouter.Params{})
-		assert.True(t, strings.Contains(rec.Body.String(), cb.GetAddress().String()))
+		body := rec.Body.String()
+		address := cb.GetAddress().String()
+		assert.True(t, strings.Contains(body, address))
 	}
 	cleanup()
 	stopCli()

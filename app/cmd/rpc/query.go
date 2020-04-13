@@ -32,6 +32,8 @@ type heightAddrParams struct {
 type heightAndStakingStatusParams struct {
 	Height        int64  `json:"height"`
 	StakingStatus string `json:"staking_status"`
+	Page          int    `json:"page,omitempty"`
+	PerPage       int    `json:"per_page,omitempty"`
 }
 
 type paginatedAddressParams struct {
@@ -181,21 +183,21 @@ func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	var res nodeTypes.Validators
+	var res nodeTypes.ValidatorsPage
 	var err error
 	switch strings.ToLower(params.StakingStatus) {
 	case "":
 		// no status passed
-		res, err = app.QueryAllNodes(params.Height)
+		res, err = app.QueryAllNodes(params.Height, params.Page, params.PerPage)
 	case "staked":
 		// staked nodes
-		res, err = app.QueryStakedNodes(params.Height)
+		res, err = app.QueryStakedNodes(params.Height, params.Page, params.PerPage)
 	case "unstaked":
 		// unstaked nodes
-		res, err = app.QueryUnstakedNodes(params.Height)
+		res, err = app.QueryUnstakedNodes(params.Height, params.Page, params.PerPage)
 	case "unstaking":
 		// unstaking nodes
-		res, err = app.QueryUnstakingNodes(params.Height)
+		res, err = app.QueryUnstakingNodes(params.Height, params.Page, params.PerPage)
 	default:
 		panic("invalid staking status, can be staked, unstaked, unstaking, or empty")
 	}

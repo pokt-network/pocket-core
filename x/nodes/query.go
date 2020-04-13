@@ -21,6 +21,16 @@ const (
 	txHeightQuery      = "tx.height=%d"
 )
 
+func checkPagination(page, limit int) (int, int) {
+	if page < 0 {
+		page = 1
+	}
+	if limit < 0 {
+		limit = 10000
+	}
+	return page, limit
+}
+
 func QueryAccountBalance(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address, height int64) (sdk.Int, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	params := types.QueryAccountParams{Address: addr}
@@ -73,121 +83,99 @@ func QueryValidator(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address,
 	return types.MustUnmarshalValidator(cdc, res), nil
 }
 
-func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
+func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, page, limit int) (types.ValidatorsPage, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
+	page, limit = checkPagination(page, limit)
 	params := types.QueryStakedValidatorsParams{
-		Page:  1,
-		Limit: 10000,
+		Page:  page,
+		Limit: limit,
 	}
 
 	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
-		return nil, err
+		return types.ValidatorsPage{}, err
 	}
-	validators := types.Validators{}
+	validatorsPage := types.ValidatorsPage{}
 	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryValidators), bz)
 	if err != nil {
-		return validators, err
+		return validatorsPage, err
 	}
 
-	err = cdc.UnmarshalJSON(res, &validators)
+	err = cdc.UnmarshalJSON(res, &validatorsPage)
 	if err != nil {
-		return validators, err
+		return validatorsPage, err
 	}
 
-	return validators, nil
-	/*
-		paginate := func(objectLength, page, limit, defLimit) (start, end, pages, page int64) {
-			if page == 0 {
-				return -1, -1, -1, -1
-			} else if limit == 0 {
-				limit = defLimit
-			}
-
-			start = (page - 1) * limit
-			end = limit + start
-			pagesSize := end - start
-			pages = objectLength / pageSize
-
-			if end >= numObjs {
-			end = numObjs
-			}
-
-		if start >= numObjs {
-			return -1, -1, -1, -1
-		}
-
-		return start, end, pages, page
-		}
-		begin, end, page, totalPage = paginate(len(validators), begin, limit, defLimit)
-		return ValidatorsPage{validators[begin,end],totalPage, page}, nil
-	*/
+	return validatorsPage, nil
 }
 
-func QueryStakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
+func QueryStakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, page, limit int) (types.ValidatorsPage, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
+	page, limit = checkPagination(page, limit)
 	params := types.QueryStakedValidatorsParams{
-		Page:  1,
-		Limit: 10000,
+		Page:  page,
+		Limit: limit,
 	}
 	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
-		return nil, err
+		return types.ValidatorsPage{}, err
 	}
 	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryStakedValidators), bz)
 	if err != nil {
-		return types.Validators{}, err
+		return types.ValidatorsPage{}, err
 	}
-	validators := types.Validators{}
-	err = cdc.UnmarshalJSON(res, &validators)
+	validatorsPage := types.ValidatorsPage{}
+	err = cdc.UnmarshalJSON(res, &validatorsPage)
 	if err != nil {
-		return validators, err
+		return validatorsPage, err
 	}
-	return validators, nil
+	return validatorsPage, nil
 }
 
-func QueryUnstakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
+func QueryUnstakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, page, limit int) (types.ValidatorsPage, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
+	page, limit = checkPagination(page, limit)
 	params := types.QueryUnstakedValidatorsParams{
-		Page:  1,
-		Limit: 10000,
+		Page:  page,
+		Limit: limit,
 	}
 	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
-		return nil, err
+		return types.ValidatorsPage{}, err
 	}
 	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakedValidators), bz)
 	if err != nil {
-		return types.Validators{}, err
+		return types.ValidatorsPage{}, err
 	}
-	validators := types.Validators{}
-	err = cdc.UnmarshalJSON(res, &validators)
+	ValidatorsPage := types.ValidatorsPage{}
+	err = cdc.UnmarshalJSON(res, &ValidatorsPage)
 	if err != nil {
-		return validators, err
+		return ValidatorsPage, err
 	}
-	return validators, nil
+	return ValidatorsPage, nil
 }
 
-func QueryUnstakingValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Validators, error) {
+func QueryUnstakingValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, page, limit int) (types.ValidatorsPage, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
+	page, limit = checkPagination(page, limit)
 	params := types.QueryUnstakingValidatorsParams{
 		Page:  1,
 		Limit: 10000,
 	}
 	bz, err := cdc.MarshalJSON(params)
 	if err != nil {
-		return nil, err
+		return types.ValidatorsPage{}, err
 	}
 	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakingValidators), bz)
 	if err != nil {
-		return types.Validators{}, err
+		return types.ValidatorsPage{}, err
 	}
-	validators := types.Validators{}
-	err = cdc.UnmarshalJSON(res, &validators)
+	validatorsPage := types.ValidatorsPage{}
+	err = cdc.UnmarshalJSON(res, &validatorsPage)
 	if err != nil {
-		return validators, err
+		return validatorsPage, err
 	}
-	return validators, nil
+	return validatorsPage, nil
 }
 
 func QuerySigningInfo(cdc *codec.Codec, tmNode rpcclient.Client, height int64, consAddr sdk.Address) (types.ValidatorSigningInfo, error) {
