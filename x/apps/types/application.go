@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -26,6 +27,17 @@ type ApplicationsPage struct {
 	Result Applications `json:"result"`
 	Total  int          `json:"total_pages"`
 	Page   int          `json:"page"`
+}
+
+// Marshals struct into JSON
+func (aP ApplicationsPage) JSON() (out []byte, err error) {
+	// each element should be a JSON
+	return json.Marshal(aP)
+}
+
+// String returns a human readable string representation of a validator page
+func (aP ApplicationsPage) String() string {
+	return fmt.Sprintf("Total:\t\t%d\nPage:\t\t%d\nResult:\t\t\n====\n%s\n====\n", aP.Total, aP.Page, aP.Result.String())
 }
 
 // NewApplication - initialize a new instance of an application
