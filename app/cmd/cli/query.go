@@ -214,15 +214,20 @@ var queryAccount = &cobra.Command{
 }
 
 var nodeStakingStatus string
+var page int
+var limit int
 
 func init() {
 	queryNodes.Flags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
+	queryNodes.Flags().IntVar(&page, "page", 1, "mark the page you want")
+	queryNodes.Flags().IntVar(&limit, "limit", 10000, "reduce the amount of results")
 }
 
 var queryNodes = &cobra.Command{
-	Use:   "nodes --staking-status=<nodeStakingStatus> <height>",
+	Use:   "nodes --staking-status=<nodeStakingStatus> --page=<page> --limit=<limit> <height>",
 	Short: "Gets nodes",
 	Long:  `Retrieves the list of all nodes known at the specified <height>.`,
+	// Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.SetTMNode(tmNode)
 		var height int
@@ -235,32 +240,36 @@ var queryNodes = &cobra.Command{
 				fmt.Println(err)
 				return
 			}
+			// page, err = strconv.Atoi(args[1])
+			// if err != nil {
+			// 	page = 1
+			// }
+			// limit, err = strconv.Atoi(args[2])
+			// if err != nil {
+			// 	limit = 10000
+			// }
 		}
-		var res nodeTypes.Validators
+		var res nodeTypes.ValidatorsPage
 		var err error
 		switch strings.ToLower(nodeStakingStatus) {
 		case "":
 			// no status passed
-			res, err = app.QueryAllNodes(int64(height))
+			res, err = app.QueryAllNodes(int64(height), page, limit)
 		case "staked":
 			// staked nodes
-			res, err = app.QueryStakedNodes(int64(height))
+			res, err = app.QueryStakedNodes(int64(height), page, limit)
 		case "unstaked":
 			// unstaked nodes
-			res, err = app.QueryUnstakedNodes(int64(height))
+			res, err = app.QueryUnstakedNodes(int64(height), page, limit)
 		case "unstaking":
 			// unstaking nodes
-			res, err = app.QueryUnstakingNodes(int64(height))
+			res, err = app.QueryUnstakingNodes(int64(height), page, limit)
 		default:
 			fmt.Println("invalid staking status, can be staked, unstaked, unstaking, or empty")
 			return
 		}
 		if err != nil {
 			fmt.Println(err)
-			return
-		}
-		if res == nil {
-			fmt.Println("nil nodes result")
 			return
 		}
 		fmt.Printf("Nodes\n%s\n", res.String())
