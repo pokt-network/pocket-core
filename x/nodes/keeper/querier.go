@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"fmt"
+	"math"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
@@ -43,6 +45,22 @@ func NewQuerier(k Keeper) sdk.Querier {
 	}
 }
 
+func paginate(page, limit int, validators []types.Validator, MaxValidators int) types.ValidatorsPage {
+	validatorsLen := len(validators)
+	start, end := util.Paginate(validatorsLen, page, limit, MaxValidators)
+
+	if start < 0 || end < 0 {
+		validators = []types.Validator{}
+	} else {
+		validators = validators[start:end]
+	}
+	totalPages := int(math.Ceil(float64(validatorsLen) / float64(end-start)))
+	if totalPages < 1 {
+		totalPages = 1
+	}
+	validatorsPage := types.ValidatorsPage{Result: validators, Total: totalPages, Page: page}
+	return validatorsPage
+}
 func queryValidators(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
 	var params types.QueryValidatorsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
@@ -50,13 +68,8 @@ func queryValidators(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 	validators := k.GetAllValidators(ctx)
-	start, end := util.Paginate(len(validators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
-	if start < 0 || end < 0 {
-		validators = []types.Validator{}
-	} else {
-		validators = validators[start:end]
-	}
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validators)
+	validatorsPage := paginate(params.Page, params.Limit, validators, int(k.GetParams(ctx).MaxValidators))
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validatorsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
@@ -97,14 +110,10 @@ func queryUnstakingValidators(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]b
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
+
 	validators := k.getAllUnstakingValidators(ctx)
-	start, end := util.Paginate(len(validators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
-	if start < 0 || end < 0 {
-		validators = []types.Validator{}
-	} else {
-		validators = validators[start:end]
-	}
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validators)
+	validatorsPage := paginate(params.Page, params.Limit, validators, int(k.GetParams(ctx).MaxValidators))
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validatorsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
@@ -119,13 +128,8 @@ func queryStakedValidators(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 	validators := k.getStakedValidators(ctx)
-	start, end := util.Paginate(len(validators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
-	if start < 0 || end < 0 {
-		validators = []types.Validator{}
-	} else {
-		validators = validators[start:end]
-	}
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validators)
+	validatorsPage := paginate(params.Page, params.Limit, validators, int(k.GetParams(ctx).MaxValidators))
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validatorsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
@@ -146,13 +150,8 @@ func queryUnstakedValidators(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]by
 			unstakedValidators = append(unstakedValidators, v)
 		}
 	}
-	start, end := util.Paginate(len(unstakedValidators), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
-	if start < 0 || end < 0 {
-		unstakedValidators = []types.Validator{}
-	} else {
-		unstakedValidators = unstakedValidators[start:end]
-	}
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, unstakedValidators)
+	unstakedValidatorsPage := paginate(params.Page, params.Limit, unstakedValidators, int(k.GetParams(ctx).MaxValidators))
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, unstakedValidatorsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
