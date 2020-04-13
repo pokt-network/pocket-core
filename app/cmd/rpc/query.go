@@ -307,21 +307,21 @@ func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	var res appTypes.Applications
+	var res appTypes.ApplicationsPage
 	var err error
 	switch strings.ToLower(params.StakingStatus) {
 	case "":
 		// no status passed
-		res, err = app.QueryAllApps(params.Height)
+		res, err = app.QueryAllApps(params.Height, params.Page, params.PerPage)
 	case "staked":
 		// staked nodes
-		res, err = app.QueryStakedApps(params.Height)
+		res, err = app.QueryStakedApps(params.Height, params.Page, params.PerPage)
 	case "unstaked":
 		// unstaked nodes
-		res, err = app.QueryUnstakedApps(params.Height)
+		res, err = app.QueryUnstakedApps(params.Height, params.Page, params.PerPage)
 	case "unstaking":
 		// unstaking nodes
-		res, err = app.QueryUnstakingApps(params.Height)
+		res, err = app.QueryUnstakingApps(params.Height, params.Page, params.PerPage)
 	default:
 		panic("invalid staking status, can be staked, unstaked, unstaking, or empty")
 	}

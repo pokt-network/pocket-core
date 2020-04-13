@@ -333,11 +333,15 @@ func TestRPC_QueryApps(t *testing.T) {
 		var params = heightAndStakingStatusParams{
 			Height:        0,
 			StakingStatus: "staked",
+			Page:          1,
+			PerPage:       10000,
 		}
 		q := newQueryRequest("apps", newBody(params))
 		rec := httptest.NewRecorder()
 		Apps(rec, q, httprouter.Params{})
-		assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String()))
+		body := rec.Body.String()
+		address := app.GetAddress().String()
+		assert.True(t, strings.Contains(body, address))
 	}
 	cleanup()
 	stopCli()
