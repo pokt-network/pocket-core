@@ -3,8 +3,9 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"github.com/pokt-network/posmint/crypto"
 	"time"
+
+	"github.com/pokt-network/posmint/crypto"
 
 	sdk "github.com/pokt-network/posmint/types"
 )
@@ -19,6 +20,12 @@ type Application struct {
 	StakedTokens            sdk.Int          `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	MaxRelays               sdk.Int          `json:"max_relays" yaml:"max_relays"`         // maximum number of relays allowed
 	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the application to complete unstaking
+}
+
+type ApplicationsPage struct {
+	Result Applications `json:"result"`
+	Total  int          `json:"total_pages"`
+	Page   int          `json:"page"`
 }
 
 // NewApplication - initialize a new instance of an application

@@ -2,12 +2,15 @@ package pos
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/tendermint/tendermint/rpc/client"
 )
+
+var customQuery = "custom/%s/%s"
 
 func QueryApplication(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, height int64) (types.Application, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
@@ -23,14 +26,24 @@ func QueryApplication(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, 
 
 func QueryApplications(cdc *codec.Codec, tmNode client.Client, height int64) (types.Applications, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	resKVs, _, err := cliCtx.QuerySubspace(types.AllApplicationsKey, types.StoreKey)
+	params := types.QueryStakedApplicationsParams{
+		Page:  1,
+		Limit: 10000,
+	}
+	bz, err := cdc.MarshalJSON(params)
+	if err != nil {
+		return nil, err
+	}
+	applications := types.Applications{}
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryApplications), bz)
 	if err != nil {
 		return types.Applications{}, err
 	}
-	applications := make(types.Applications, 0)
-	for _, kv := range resKVs {
-		applications = append(applications, types.MustUnmarshalApplication(cdc, kv.Value))
+	err = cdc.UnmarshalJSON(res, &applications)
+	if err != nil {
+		return applications, err
 	}
+
 	return applications, nil
 }
 
@@ -44,7 +57,7 @@ func QueryStakedApplications(cdc *codec.Codec, tmNode client.Client, height int6
 	if err != nil {
 		return nil, err
 	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryStakedApplications), bz)
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryStakedApplications), bz)
 	if err != nil {
 		return types.Applications{}, err
 	}
@@ -66,7 +79,7 @@ func QueryUnstakedApplications(cdc *codec.Codec, tmNode client.Client, height in
 	if err != nil {
 		return nil, err
 	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakedApplications), bz)
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakedApplications), bz)
 	if err != nil {
 		return types.Applications{}, err
 	}
@@ -88,7 +101,7 @@ func QueryUnstakingApplications(cdc *codec.Codec, tmNode client.Client, height i
 	if err != nil {
 		return nil, err
 	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUnstakingApplications), bz)
+	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakingApplications), bz)
 	if err != nil {
 		return types.Applications{}, err
 	}
@@ -102,11 +115,11 @@ func QueryUnstakingApplications(cdc *codec.Codec, tmNode client.Client, height i
 
 func QuerySupply(cdc *codec.Codec, tmNode client.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryAppStakedPool), nil)
+	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryAppStakedPool), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}
-	unstakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryAppUnstakedPool), nil)
+	unstakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryAppUnstakedPool), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}
@@ -123,7 +136,7 @@ func QuerySupply(cdc *codec.Codec, tmNode client.Client, height int64) (stakedCo
 
 func QueryPOSParams(cdc *codec.Codec, tmNode client.Client, height int64) (types.Params, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	route := fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryParameters)
+	route := fmt.Sprintf(customQuery, types.StoreKey, types.QueryParameters)
 	bz, _, err := cliCtx.QueryWithData(route, nil)
 	if err != nil {
 		return types.Params{}, err

@@ -2,12 +2,31 @@ package keeper
 
 import (
 	"fmt"
+	"math"
+
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/util"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
+
+func paginate(page, limit int, validators []types.Application, MaxValidators int) types.ApplicationsPage {
+	validatorsLen := len(validators)
+	start, end := util.Paginate(validatorsLen, page, limit, MaxValidators)
+
+	if start < 0 || end < 0 {
+		validators = []types.Application{}
+	} else {
+		validators = validators[start:end]
+	}
+	totalPages := int(math.Ceil(float64(validatorsLen) / float64(end-start)))
+	if totalPages < 1 {
+		totalPages = 1
+	}
+	applicationsPage := types.ApplicationsPage{Result: validators, Total: totalPages, Page: page}
+	return applicationsPage
+}
 
 // creates a querier for staking REST endpoints
 func NewQuerier(k Keeper) sdk.Querier {
@@ -42,13 +61,8 @@ func queryApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sd
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 	applications := k.GetAllApplications(ctx)
-	start, end := util.Paginate(len(applications), params.Page, params.Limit, int(k.GetParams(ctx).MaxApplications))
-	if start < 0 || end < 0 {
-		applications = []types.Application{}
-	} else {
-		applications = applications[start:end]
-	}
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applications)
+	applicationsPage := paginate(params.Page, params.Limit, applications, int(k.GetParams(ctx).MaxApplications))
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applicationsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
@@ -62,15 +76,10 @@ func queryUnstakingApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	applications := k.getAllUnstakingApplications(ctx)
-	start, end := util.Paginate(len(applications), params.Page, params.Limit, int(k.GetParams(ctx).MaxApplications))
-	if start < 0 || end < 0 {
-		applications = []types.Application{}
-	} else {
-		applications = applications[start:end]
-	}
 
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applications)
+	applications := k.getAllUnstakingApplications(ctx)
+	applicationsPage := paginate(params.Page, params.Limit, applications, int(k.GetParams(ctx).MaxApplications))
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applicationsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
@@ -84,15 +93,10 @@ func queryStakedApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]by
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	applications := k.getStakedApplications(ctx)
-	start, end := util.Paginate(len(applications), params.Page, params.Limit, int(k.GetParams(ctx).MaxApplications))
-	if start < 0 || end < 0 {
-		applications = []types.Application{}
-	} else {
-		applications = applications[start:end]
-	}
 
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applications)
+	applications := k.getStakedApplications(ctx)
+	applicationsPage := paginate(params.Page, params.Limit, applications, int(k.GetParams(ctx).MaxApplications))
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applicationsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
@@ -113,13 +117,8 @@ func queryUnstakedApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]
 			unstakedApps = append(unstakedApps, app)
 		}
 	}
-	start, end := util.Paginate(len(unstakedApps), params.Page, params.Limit, int(k.GetParams(ctx).MaxApplications))
-	if start < 0 || end < 0 {
-		unstakedApps = []types.Application{}
-	} else {
-		unstakedApps = unstakedApps[start:end]
-	}
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, unstakedApps)
+	unstakedAppsPage := paginate(params.Page, params.Limit, unstakedApps, int(k.GetParams(ctx).MaxApplications))
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, unstakedAppsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
