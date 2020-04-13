@@ -36,6 +36,11 @@ func (vP ValidatorsPage) JSON() (out []byte, err error) {
 	return json.Marshal(vP)
 }
 
+// String returns a human readable string representation of a validator page
+func (vP ValidatorsPage) String() string {
+	return fmt.Sprintf("Total:\t\t%d\nPage:\t\t%d\nResult:\t\t\n====\n%s\n====\n", vP.Total, vP.Page, vP.Result.String())
+}
+
 // NewValidator - initialize a new validator
 func NewValidator(addr sdk.Address, consPubKey crypto.PublicKey, chains []string, serviceURL string, tokensToStake sdk.Int) Validator {
 	return Validator{
