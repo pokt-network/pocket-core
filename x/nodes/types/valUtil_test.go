@@ -3,13 +3,14 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/tendermint/go-amino"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/pokt-network/posmint/crypto"
+	sdk "github.com/pokt-network/posmint/types"
+	"github.com/tendermint/go-amino"
 )
 
 func TestValidators_JSON(t *testing.T) {
@@ -76,12 +77,14 @@ func TestValidators_String(t *testing.T) {
 		wantOut string
 	}{
 		{"String Test", v, fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
-			"ServiceURL:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v",
+			"ServiceURL:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v"+
+			"\n----",
 			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "google.com", []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, time.Unix(0, 0).UTC(),
 		)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			if gotOut := tt.v.String(); gotOut != tt.wantOut {
 				t.Errorf("String() = \n%v \nwant \b%v", gotOut, tt.wantOut)
 			}

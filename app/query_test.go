@@ -92,9 +92,9 @@ func TestQueryValidators(t *testing.T) {
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		got, err := nodes.QueryValidators(memCodec(), memCli, 1)
+		got, err := nodes.QueryValidators(memCodec(), memCli, 1, 1, 1)
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
+		assert.Equal(t, 1, len(got.Result))
 	}
 	cleanup()
 	stopCli()
@@ -217,9 +217,9 @@ func TestQueryStakedValidator(t *testing.T) {
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		got, err := nodes.QueryStakedValidators(memCodec(), memCli, 0)
+		got, err := nodes.QueryStakedValidators(memCodec(), memCli, 0, 1, 1)
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
+		assert.Equal(t, 1, len(got.Result))
 	}
 	cleanup()
 	stopCli()

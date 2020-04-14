@@ -2,10 +2,11 @@ package types
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
-	"strings"
 
 	"fmt"
 	"math/rand"
@@ -82,7 +83,7 @@ func TestApplicationUtil_String(t *testing.T) {
 		{
 			name: "serializes applicaitons into string",
 			args: Applications{application},
-			want: fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nChains:\t\t\t%v\nMaxRelays:\t\t%d\nStatus:\t\t\t%s\nTokens:\t\t\t%s\nUnstaking Time:\t%v",
+			want: fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nChains:\t\t\t%v\nMaxRelays:\t\t%d\nStatus:\t\t\t%s\nTokens:\t\t\t%s\nUnstaking Time:\t%v\n----\n",
 				application.Address,
 				application.PublicKey.RawString(),
 				application.Jailed,
