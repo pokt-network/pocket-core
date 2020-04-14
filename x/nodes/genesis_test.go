@@ -142,7 +142,7 @@ func Test_validateGenesisStateValidators(t *testing.T) {
 		{"Test ValidateGenesisStateValidators 3 jailed staked", args{
 			validators:   []types.Validator{val1},
 			minimumStake: sdk.OneInt(),
-		}, true},
+		}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
