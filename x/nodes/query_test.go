@@ -235,8 +235,8 @@ func TestQueryStakedValidators(t *testing.T) {
 				t.Errorf("QueryStakedValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("QueryStakedValidators() got = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(len(got.Result), len(tt.want)) {
+				t.Errorf("QueryStakedValidators() got = %v, want %v", got.Result, tt.want)
 			}
 		})
 	}
@@ -333,7 +333,7 @@ func TestQueryUnstakedValidators(t *testing.T) {
 				t.Errorf("QueryUnstakedValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(len(got.Result), len(tt.want)) {
 				t.Errorf("QueryUnstakedValidators() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -365,7 +365,7 @@ func TestQueryUnstakingValidators(t *testing.T) {
 				t.Errorf("QueryUnstakingValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(len(got.Result), len(tt.want)) {
 				t.Errorf("QueryUnstakingValidators() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -431,7 +431,7 @@ func TestQueryValidators(t *testing.T) {
 				t.Errorf("QueryValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(len(got.Result), len(tt.want)) {
 				t.Errorf("QueryValidators() got = %v, want %v", got, tt.want)
 			}
 		})

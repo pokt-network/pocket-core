@@ -38,20 +38,20 @@ func TestUnstakeApp(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0)
+		got, err := apps.QueryApplications(memCodec(), memCli, 0, 1, 1)
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
+		assert.Equal(t, 1, len(got.Result))
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryUnstakingApplications(memCodec(), memCli, 0)
+		got, err := apps.QueryUnstakingApplications(memCodec(), memCli, 0, 1, 1)
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
-		got, err = apps.QueryStakedApplications(memCodec(), memCli, 0)
+		assert.Equal(t, 1, len(got.Result))
+		got, err = apps.QueryStakedApplications(memCodec(), memCli, 0, 1, 1)
 		assert.Nil(t, err)
-		assert.Equal(t, 0, len(got))
+		assert.Equal(t, 0, len(got.Result))
 	}
 	cleanup()
 	stopCli()
@@ -80,21 +80,21 @@ func TestUnstakeNode(t *testing.T) {
 			select {
 			case res := <-evtChan:
 				if len(res.Events["begin_unstake.module"]) == 1 {
-					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0)
+					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0, 1, 1)
 					assert.Nil(t, err)
-					assert.Equal(t, 1, len(got))
-					got, err = nodes.QueryStakedValidators(memCodec(), memCli, 0)
+					assert.Equal(t, 1, len(got.Result))
+					got, err = nodes.QueryStakedValidators(memCodec(), memCli, 0, 1, 1)
 					assert.Nil(t, err)
-					assert.Equal(t, 1, len(got))
+					assert.Equal(t, 1, len(got.Result))
 					memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlockHeader)
 					select {
 					case res := <-evtChan:
 						if len(res.Events["unstake.module"]) == 1 {
-							got, err := nodes.QueryUnstakedValidators(memCodec(), memCli, 0)
+							got, err := nodes.QueryUnstakedValidators(memCodec(), memCli, 0, 1, 1)
 							assert.Nil(t, err)
-							assert.Equal(t, 1, len(got))
-							assert.Equal(t, got[0].StakedTokens.Int64(), int64(0))
-							addr := got[0].Address
+							assert.Equal(t, 1, len(got.Result))
+							assert.Equal(t, got.Result[0].StakedTokens.Int64(), int64(0))
+							addr := got.Result[0].Address
 							balance, err := nodes.QueryAccountBalance(memCodec(), memCli, addr, 0)
 							assert.NotZero(t, balance.Int64())
 							tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
@@ -152,9 +152,9 @@ func TestStakeApp(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0)
+		got, err := apps.QueryApplications(memCodec(), memCli, 0, 1, 1)
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got))
+		assert.Equal(t, 1, len(got.Result))
 	}
 	stopCli()
 	cleanup()
