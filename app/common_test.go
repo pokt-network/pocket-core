@@ -3,6 +3,11 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"os"
+	"testing"
+	"time"
+
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -37,10 +42,6 @@ import (
 	cTypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"io"
-	"os"
-	"testing"
-	"time"
 )
 
 func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
@@ -264,6 +265,7 @@ func getRandomPrivateKey() crypto.Ed25519PrivateKey {
 }
 
 func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
+	// TODO add a second validator
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	if err != nil {
