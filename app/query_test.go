@@ -105,6 +105,37 @@ func TestQueryValidators(t *testing.T) {
 	cleanup()
 	stopCli()
 }
+func TestQueryApps(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	kp, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	var tx *sdk.TxResponse
+	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+
+	select {
+	case <-evtChan:
+		var err error
+		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
+		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
+		assert.Nil(t, err)
+		assert.NotNil(t, tx)
+	}
+	select {
+	case <-evtChan:
+		got, err := apps.QueryApplications(memCodec(), memCli, 0, 1, 1)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(got.Result))
+		got, err = apps.QueryApplications(memCodec(), memCli, 0, 2, 1)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(got.Result))
+		got, err = apps.QueryApplications(memCodec(), memCli, 0, 1, 2)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(got.Result))
+	}
+	stopCli()
+	cleanup()
+}
 
 func TestQueryValidator(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
@@ -196,7 +227,7 @@ func TestQuerySupply(t *testing.T) {
 		assert.Nil(t, err)
 		fmt.Println(gotStaked, gotUnstaked)
 		assert.True(t, gotStaked.Equal(sdk.NewInt(1000000000000000)))
-		assert.True(t, gotUnstaked.Equal(sdk.NewInt(2000001000)))
+		assert.True(t, gotUnstaked.Equal(sdk.NewInt(2010001000)))
 	}
 	cleanup()
 	stopCli()

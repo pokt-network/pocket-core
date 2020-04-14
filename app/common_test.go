@@ -473,6 +473,24 @@ func oneValTwoNodeGenesisState() []byte {
 			StakedTokens: sdk.NewInt(1000000000000000)})
 	res := memCodec().MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
+
+	// setup application
+	rawApps := defaultGenesis[appsTypes.ModuleName]
+	var appsGenesisState appsTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawApps, &appsGenesisState)
+	// app 1
+	appsGenesisState.Applications = append(appsGenesisState.Applications, appsTypes.Application{
+		Address:                 kp2.GetAddress(),
+		PublicKey:               kp2.PublicKey,
+		Jailed:                  false,
+		Status:                  sdk.Staked,
+		Chains:                  []string{dummyChainsHash},
+		StakedTokens:            sdk.NewInt(10000000),
+		MaxRelays:               sdk.NewInt(100000),
+		UnstakingCompletionTime: time.Time{},
+	})
+	res2 := memCodec().MustMarshalJSON(appsGenesisState)
+	defaultGenesis[appsTypes.ModuleName] = res2
 	// set coinbase as account holding coins
 	rawAccounts := defaultGenesis[auth.ModuleName]
 	var authGenState auth.GenesisState
@@ -488,15 +506,15 @@ func oneValTwoNodeGenesisState() []byte {
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:  pubKey,
 	})
-	res2 := memCodec().MustMarshalJSON(authGenState)
-	defaultGenesis[auth.ModuleName] = res2
+	res3 := memCodec().MustMarshalJSON(authGenState)
+	defaultGenesis[auth.ModuleName] = res3
 	// set default chain for module
 	rawPocket := defaultGenesis[pocketTypes.ModuleName]
 	var pocketGenesisState pocketTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
 	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
-	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
-	defaultGenesis[pocketTypes.ModuleName] = res3
+	res4 := memCodec().MustMarshalJSON(pocketGenesisState)
+	defaultGenesis[pocketTypes.ModuleName] = res4
 	// set default governance in genesis
 	var govGenesisState govTypes.GenesisState
 	rawGov := defaultGenesis[govTypes.ModuleName]
@@ -506,8 +524,8 @@ func oneValTwoNodeGenesisState() []byte {
 	govGenesisState.Params.ACL = nMACL
 	govGenesisState.Params.DAOOwner = kp1.GetAddress()
 	govGenesisState.DAOTokens = sdk.NewInt(1000)
-	res4 := memCodec().MustMarshalJSON(govGenesisState)
-	defaultGenesis[govTypes.ModuleName] = res4
+	res5 := memCodec().MustMarshalJSON(govGenesisState)
+	defaultGenesis[govTypes.ModuleName] = res5
 	// end genesis setup
 	genState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
