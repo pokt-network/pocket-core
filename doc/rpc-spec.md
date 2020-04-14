@@ -77,7 +77,7 @@ The `query` namespace handles all queries to the current world state built on th
     request: `heightAddrParams`
 
 - /v1/query/nodes
-> Query Nodes in the pocket network by height and staking_status, empty ("") staking_status returns all nodes
+> Query Nodes in the pocket network by height and staking_status, empty ("") staking_status returns a page of nodes
 
     request: `heightAndStakingStatusParams`
 
@@ -104,7 +104,7 @@ The `query` namespace handles all queries to the current world state built on th
     response: `pocketTypes.Receipt`
 
 - /v1/query/apps
-> Query Apps in the pocket network by height and staking_status, empty ("") staking_status returns all apps
+> Query Apps in the pocket network by height and staking_status, empty ("") staking_status returns a page of apps
 
     request: `heightAndStakingStatusParams`
 
@@ -134,4 +134,3 @@ The `query` namespace handles all queries to the current world state built on th
     request `heightParams`
 
     response: `querySupplyResponse`
-

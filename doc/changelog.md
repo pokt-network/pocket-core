@@ -25,6 +25,8 @@
   - transitive change in Account JSON response for RPC
   - Updated rpc-spec to reflect change
 - Updated POSMint to address duplicated minting logs
+- Add pagination to Application Queries for RPC & CLI
+- Add pagination to Nodes Queries for RPC & CLI
 
 ## RC-0.2.1
 - Add version command to CLI

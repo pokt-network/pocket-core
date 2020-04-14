@@ -282,7 +282,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: 'Request the list of all applications known at the specified height and staking status, empty ("") staking_status returns all apps'
+        description: 'Request a page of applications known at the specified height and staking status, empty ("") staking_status returns all apps, page < 1 returns the first page, per_page < 1 returns 10000 elements per page'
         content:
           application/json:
             schema:
@@ -290,6 +290,8 @@ paths:
             example:
               staking_status: staked
               height: 2
+              page: 1
+              per_page: 100
         required: true
       responses:
         '200':
@@ -297,7 +299,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Applications'
+                $ref: '#/components/schemas/QueryAppsResponse'
         '400':
           description: Failed to retrieve the applications
   /query/balance:
@@ -536,7 +538,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: 'Request the list of all nodes known at the specified height and staking status , empty ("") staking_status returns all nodes'
+        description: 'Request a page of nodes known at the specified height and staking status , empty ("") staking_status returns all nodes, page < 1 returns the first page, per_page < 1 returns 10000 elements per page'
         content:
           application/json:
             schema:
@@ -544,6 +546,8 @@ paths:
             example:
               staking_status: staked
               height: 2
+              page: 1
+              per_page: 100
         required: true
       responses:
         '200':
@@ -553,15 +557,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/QueryNodesResponse'
               example:
-                - address: 98a18a38aa6826a55dccce19f607e3171cf1436e
-                  public_key: d6b3785f00961059d2a5c6448cae7ddb02475de79c22261687a92cb905ff0de9
-                  jailed: false
-                  status: 2
-                  tokens: '1000000000000000'
-                  service_url: '0.0.0.0:8081'
-                  chains:
-                    - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
-                  unstaking_time: '0001-01-01T00:00:00Z'
+                result:
+                  - address: 98a18a38aa6826a55dccce19f607e3171cf1436e
+                    public_key: d6b3785f00961059d2a5c6448cae7ddb02475de79c22261687a92cb905ff0de9
+                    jailed: false
+                    status: 2
+                    tokens: '1000000000000000'
+                    service_url: '0.0.0.0:8081'
+                    chains:
+                      - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                    unstaking_time: '0001-01-01T00:00:00Z'
+                page: 1
+                total_pages: 100
         '400':
           description: Failed to retrieve the nodes' information
   /query/pocketparams:
@@ -1277,9 +1284,35 @@ components:
           items:
             $ref: '#/components/schemas/StoredReceipt'
     QueryNodesResponse:
-      type: array
-      items:
-        $ref: '#/components/schemas/Node'
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        page:
+          type: integer
+          format: int64
+          description: current page
+        total_pages:
+          type: integer
+          format: int64
+          description: maximum amount of pages
+    QueryAppsResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Application'
+        page:
+          type: integer
+          format: int64
+          description: current page
+        total_pages:
+          type: integer
+          format: int64
+          description: maximum amount of pages
     QueryRawTXRequest:
       type: object
       properties:
@@ -1369,6 +1402,12 @@ components:
       type: object
       properties:
         height:
+          type: integer
+          format: int64
+        page:
+          type: integer
+          format: int64
+        per_page:
           type: integer
           format: int64
         staking_status:

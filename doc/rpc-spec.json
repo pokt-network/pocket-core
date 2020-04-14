@@ -435,7 +435,7 @@
 		  "query"
 		],
 		"requestBody": {
-		  "description": "Request the list of all applications known at the specified height and staking status, empty (\"\") staking_status returns all apps",
+		  "description": "Request a page of applications known at the specified height and staking status, empty (\"\") staking_status returns all apps",
 		  "content": {
 			"application/json": {
 			  "schema": {
@@ -443,7 +443,9 @@
 			  },
 			  "example": {
 				"staking_status": "staked",
-				"height": 2
+				"height": 2,
+				"page": 1,
+				"limit": 100
 			  }
 			}
 		  },
@@ -451,11 +453,11 @@
 		},
 		"responses": {
 		  "200": {
-			"description": "Returns the list of all applications known at the specified height and staking status",
+			"description": "Returns a page of applications known at the specified height and staking status, within the limit per page",
 			"content": {
 			  "application/json": {
 				"schema": {
-				  "$ref": "#/components/schemas/Applications"
+				  "$ref": "#/components/schemas/QueryAppsResponse"
 				}
 			  }
 			}
@@ -820,7 +822,7 @@
 		  "query"
 		],
 		"requestBody": {
-		  "description": "Request the list of all nodes known at the specified height and staking status , empty (\"\") staking_status returns all nodes",
+		  "description": "Request a page nodes known at the specified height and staking status , empty (\"\") staking_status returns all nodes",
 		  "content": {
 			"application/json": {
 			  "schema": {
@@ -828,7 +830,9 @@
 			  },
 			  "example": {
 				"staking_status": "staked",
-				"height": 2
+				"height": 2,
+				"page": 1,
+				"limit": 100
 			  }
 			}
 		  },
@@ -836,28 +840,32 @@
 		},
 		"responses": {
 		  "200": {
-			"description": "Returns the list of all nodes known at the specified height and staking status",
+			"description": "Returns a page of nodes known at the specified height and staking status, within the limit per page",
 			"content": {
 			  "application/json": {
 				"schema": {
 				  "$ref": "#/components/schemas/QueryNodesResponse"
 				},
-				"example": [
-				  {
-					"address": "98a18a38aa6826a55dccce19f607e3171cf1436e",
-					"public_key": "d6b3785f00961059d2a5c6448cae7ddb02475de79c22261687a92cb905ff0de9",
-					"jailed": false,
-					"status": 2,
-					"tokens": "1000000000000000",
-					"service_url": "0.0.0.0:8081",
-					"chains": [
-					  "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+				"example": {
+					"result": [
+				  	{
+							"address": "98a18a38aa6826a55dccce19f607e3171cf1436e",
+							"public_key": "d6b3785f00961059d2a5c6448cae7ddb02475de79c22261687a92cb905ff0de9",
+							"jailed": false,
+							"status": 2,
+							"tokens": "1000000000000000",
+							"service_url": "0.0.0.0:8081",
+							"chains": [
+							  "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+							],
+							"unstaking_time": "0001-01-01T00:00:00Z"
+						}
 					],
-					"unstaking_time": "0001-01-01T00:00:00Z"
-				  }
-				]
-			  }
+			  "page": 1,
+			   "total_pages": 10
+			 }
 			}
+		}
 		  },
 		  "400": {
 			"description": "Failed to retrieve the nodes' information"
@@ -1839,9 +1847,45 @@
 		}
 	  },
 	  "QueryNodesResponse": {
-		"type": "array",
-		"items": {
-		  "$ref": "#/components/schemas/Node"
+		"type": "object",
+		"properties": {
+			"result": {
+				"type": "array",
+				"items": {
+		  		"$ref": "#/components/schemas/Node"
+				},
+			"page": {
+				"type": "integer",
+				"format": "int64",
+				"description": "current page"
+			},
+			"total_pages": {
+				"type": "integer",
+				"format": "int64",
+				"description": "maximum amount of available pages"
+			}
+			}
+		}
+	  },
+	  "QueryAppsResponse": {
+		"type": "object",
+		"properties": {
+			"result": {
+				"type": "array",
+				"items": {
+		  		"$ref": "#/components/schemas/Application"
+				},
+			"page": {
+				"type": "integer",
+				"format": "int64",
+				"description": "current page"
+			},
+			"total_pages": {
+				"type": "integer",
+				"format": "int64",
+				"description": "maximum amount of available pages"
+			}
+			}
 		}
 	  },
 	  "QueryRawTXRequest": {
@@ -1970,6 +2014,14 @@
 		"type": "object",
 		"properties": {
 		  "height": {
+			"type": "integer",
+			"format": "int64"
+		  },
+		  "page": {
+			"type": "integer",
+			"format": "int64"
+		  },
+		  "per_page": {
 			"type": "integer",
 			"format": "int64"
 		  },
