@@ -51,7 +51,7 @@ func TestUnstakeApp(t *testing.T) {
 		assert.Equal(t, 1, len(got.Result))
 		got, err = apps.QueryStakedApplications(memCodec(), memCli, 0, 1, 1)
 		assert.Nil(t, err)
-		assert.Equal(t, 0, len(got.Result))
+		assert.Equal(t, 1, len(got.Result)) // default genesis application
 	}
 	cleanup()
 	stopCli()
@@ -152,9 +152,9 @@ func TestStakeApp(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0, 1, 1)
+		got, err := apps.QueryApplications(memCodec(), memCli, 0, 1, 2)
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got.Result))
+		assert.Equal(t, 2, len(got.Result))
 	}
 	stopCli()
 	cleanup()
