@@ -373,6 +373,14 @@ func Test_queryStakedPool(t *testing.T) {
 }
 
 func Test_queryStakedValidators(t *testing.T) {
+
+	stakedValidator := getStakedValidator()
+	unstakedValidator := getUnstakedValidator()
+	unstakingValidator := getUnstakingValidator()
+	stakedJailedValidator := getStakedJailedValidator()
+
+	validators := types.Validators{stakedValidator, unstakedValidator, unstakingValidator, stakedJailedValidator}
+
 	type args struct {
 		ctx sdk.Context
 		req abci.RequestQuery
@@ -380,11 +388,25 @@ func Test_queryStakedValidators(t *testing.T) {
 	}
 
 	context, _, keeper := createTestInput(t, true)
+	for _, validator := range validators {
+		keeper.SetValidator(context, validator)
+		if validator.IsStaked() {
+			keeper.SetStakedValidator(context, validator)
+		}
+		if validator.IsJailed() {
+			//correctly set up jailed on state to test removal of staking set by jailing
+			validator.Jailed = false
+			keeper.SetValidator(context, validator)
+			keeper.SetStakedValidator(context, validator)
+			keeper.JailValidator(context, validator.Address)
+		}
+	}
+
 	jsondata, _ := amino.MarshalJSON(types.QueryStakedValidatorsParams{
 		Page:  1,
-		Limit: 1,
+		Limit: 4,
 	})
-	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator}, Total: 4, Page: 1}
 	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {
@@ -574,6 +596,13 @@ func Test_queryValidator(t *testing.T) {
 }
 
 func Test_queryValidators(t *testing.T) {
+	stakedValidator := getStakedValidator()
+	unstakedValidator := getUnstakedValidator()
+	unstakingValidator := getUnstakingValidator()
+	stakedJailedValidator := getStakedJailedValidator()
+
+	validators := types.Validators{stakedValidator, unstakedValidator, unstakingValidator, stakedJailedValidator}
+
 	type args struct {
 		ctx sdk.Context
 		req abci.RequestQuery
@@ -581,11 +610,15 @@ func Test_queryValidators(t *testing.T) {
 	}
 
 	context, _, keeper := createTestInput(t, true)
+	for _, validator := range validators {
+		keeper.SetValidator(context, validator)
+	}
+
 	jsondata, _ := amino.MarshalJSON(types.QueryValidatorsParams{
 		Page:  1,
-		Limit: 1,
+		Limit: 10,
 	})
-	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator, unstakedValidator, stakedJailedValidator, unstakingValidator}, Total: 10, Page: 1}
 	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {

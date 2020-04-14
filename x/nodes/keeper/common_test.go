@@ -180,6 +180,13 @@ func getUnstakingValidator() types.Validator {
 	v := getValidator()
 	return v.UpdateStatus(sdk.Unstaking)
 }
+
+func getStakedJailedValidator() types.Validator {
+	v := getValidator()
+	v.Jailed = true
+	return v
+}
+
 func modifyFn(i *int) func(index int64, Validator exported.ValidatorI) (stop bool) {
 	return func(index int64, validator exported.ValidatorI) (stop bool) {
 		val := validator.(types.Validator)
