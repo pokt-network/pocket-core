@@ -88,13 +88,19 @@ func TestQueryNodeStatus(t *testing.T) {
 }
 
 func TestQueryValidators(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, _, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		got, err := nodes.QueryValidators(memCodec(), memCli, 1, 1, 1)
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got.Result))
+		got, err = nodes.QueryValidators(memCodec(), memCli, 1, 2, 1)
+		assert.Nil(t, err)
+		assert.Equal(t, 1, len(got.Result))
+		got, err = nodes.QueryValidators(memCodec(), memCli, 1, 1, 1000)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, len(got.Result))
 	}
 	cleanup()
 	stopCli()
@@ -350,7 +356,7 @@ func TestQueryProof(t *testing.T) {
 	stopCli()
 }
 
-func TestQueryStakedApp(t *testing.T) {
+func TestQueryStakedpp(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
