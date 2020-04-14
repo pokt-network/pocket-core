@@ -1,5 +1,5 @@
 # Pocket Core CLI Interface Specification
-## Version 0.0.1
+## Version RC-0.3.0
 
 ### Overview
 This document serves as a specification for the Command Line Interface of the Pocket Core application. There's no protocol verification for these commands because they map closely to protocol functions.
@@ -284,11 +284,13 @@ Block Height: <current block height>
 Account balance: <balance of the account>
 ```
 
-- `pocket query all-nodes --staking-status=<stakingStatus> <height>`
-> Returns the list of all nodes known at the specified `<height>`.
+- `pocket query nodes --staking-status=<stakingStatus> --page=<page> --limit=<limit> <height>`
+> Returns a page containing a list of nodes known at the specified `<height>`.
 >
 > Options:
 > - `--staking-status`: Filters the node list with a staking status. Supported statuses are: `STAKED`, `UNSTAKED` and `UNSTAKING`.
+> - `--page`: The current page you want to query.
+> - `--limit`: The maximum amount of nodes per page.
 >
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
@@ -319,11 +321,13 @@ Account balance: <balance of the account>
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
-- `pocket query all-apps --staking-status=<stakingStatus> <height>`
-> Returns the list of all applications known at the specified `<height>`.
+- `pocket query apps --staking-status=<stakingStatus> --page=<page> --limit=<limit> <height>`
+> Returns a page containing a  list of applications known at the specified `<height>`.
 >
 > Options:
 > - `--staking-status`: Filters the node list with a staking status. Supported statuses are: `STAKED`, `UNSTAKED` and `UNSTAKING`.
+> - `--page`: The current page you want to query.
+> - `--limit`: The maximum amount of nodes per page.
 >
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
@@ -369,4 +373,3 @@ Account balance: <balance of the account>
 >
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
-
