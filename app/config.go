@@ -405,7 +405,7 @@ func getTMClient() client.Client {
 }
 
 // get the hosted chains variable
-func getHostedChains() types.HostedBlockchains {
+func getHostedChains() *types.HostedBlockchains {
 	filepath := getDataDir() + fs + "config"
 	// create the chains path
 	var chainsPath = filepath + fs + chainsName
@@ -462,7 +462,7 @@ func getHostedChains() types.HostedBlockchains {
 		panic(NewInvalidChainsError(err))
 	}
 	// return the map
-	return types.HostedBlockchains{M: m}
+	return &types.HostedBlockchains{M: m}
 }
 
 func confirmCoinbasePassphrase(pswrd string) error {
