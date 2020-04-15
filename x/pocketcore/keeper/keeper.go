@@ -15,14 +15,14 @@ type Keeper struct {
 	appKeeper         types.AppsKeeper
 	Keybase           keys.Keybase
 	TmNode            client.Client
-	hostedBlockchains types.HostedBlockchains
+	hostedBlockchains *types.HostedBlockchains
 	Paramstore        sdk.Subspace
 	storeKey          sdk.StoreKey // Unexposed key to access store from sdk.Context
 	cdc               *codec.Codec // The wire codec for binary encoding/decoding.
 }
 
 // NewPocketCoreKeeper creates new instances of the pocketcore Keeper
-func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
+func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
 	return Keeper{
 		storeKey:          storeKey,
 		cdc:               cdc,
@@ -34,7 +34,7 @@ func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper type
 }
 
 // get the non native chains hosted locally on this node
-func (k Keeper) GetHostedBlockchains() types.HostedBlockchains {
+func (k Keeper) GetHostedBlockchains() *types.HostedBlockchains {
 	return k.hostedBlockchains
 }
 

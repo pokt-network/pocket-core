@@ -24,7 +24,7 @@ type Relay struct {
 	Proof   RelayProof `json:"proof"`   // the authentication scheme needed for work
 }
 
-func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlockchains, sessionBlockHeight int64,
+func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb *HostedBlockchains, sessionBlockHeight int64,
 	sessionNodeCount int, allNodes []nodeexported.ValidatorI, app appexported.ApplicationI) sdk.Error {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
@@ -97,7 +97,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, node nodeexported.ValidatorI, hb HostedBlo
 }
 
 // executes the relay on the non-native blockchain specified
-func (r Relay) Execute(hostedBlockchains HostedBlockchains) (string, sdk.Error) {
+func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error) {
 	// retrieve the hosted blockchain url requested
 	url, err := hostedBlockchains.GetChainURL(r.Proof.Blockchain)
 	if err != nil {

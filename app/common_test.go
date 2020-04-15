@@ -394,8 +394,8 @@ func getBackgroundContext() (context.Context, func()) {
 	return context.WithCancel(context.Background())
 }
 
-func getInMemHostedChains() pocketTypes.HostedBlockchains {
-	return pocketTypes.HostedBlockchains{
+func getInMemHostedChains() *pocketTypes.HostedBlockchains {
+	return &pocketTypes.HostedBlockchains{
 		M: map[string]pocketTypes.HostedBlockchain{dummyChainsHash: {Hash: dummyChainsHash, URL: dummyChainsURL}},
 	}
 }
