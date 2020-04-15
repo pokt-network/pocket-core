@@ -406,7 +406,7 @@ func Test_queryStakedValidators(t *testing.T) {
 		Page:  1,
 		Limit: 4,
 	})
-	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator}, Total: 4, Page: 1}
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator}, Total: 1, Page: 1}
 	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {
@@ -618,7 +618,7 @@ func Test_queryValidators(t *testing.T) {
 		Page:  1,
 		Limit: 10,
 	})
-	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator, unstakedValidator, stakedJailedValidator, unstakingValidator}, Total: 10, Page: 1}
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator, unstakedValidator, stakedJailedValidator, unstakingValidator}, Total: 1, Page: 1}
 	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {
