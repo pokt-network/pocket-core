@@ -18,7 +18,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/tendermint/go-amino v0.15.0
 	github.com/tendermint/iavl v0.12.4
-	github.com/tendermint/tendermint v0.32.9
+	github.com/tendermint/tendermint v0.32.10
 	github.com/tendermint/tm-db v0.2.0
 	github.com/wealdtech/go-merkletree v1.0.0
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
