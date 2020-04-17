@@ -223,7 +223,7 @@ func (n nodeDistances) Less(i, j int) bool {
 		if n[i].distance[a] < n[j].distance[a] {
 			return true
 		}
-		if n[i].distance[a] < n[i].distance[a] {
+		if n[j].distance[a] < n[i].distance[a] {
 			return false
 		}
 	}
