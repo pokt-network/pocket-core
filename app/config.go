@@ -171,8 +171,9 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, block
 	newTMConfig.Consensus.CreateEmptyBlocks = true                  // Set this to false to only produce blocks when there are txs or when the AppHash changes
 	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(blockTime) * time.Minute
 	newTMConfig.Consensus.TimeoutCommit = time.Duration(blockTime) * time.Minute
-	newTMConfig.P2P.MaxNumInboundPeers = 40
-	newTMConfig.P2P.MaxNumOutboundPeers = 10
+	newTMConfig.P2P.MaxNumInboundPeers = 1000
+	newTMConfig.P2P.MaxNumOutboundPeers = 1000
+	newTMConfig.P2P.AllowDuplicateIP = true
 	newTMConfig.LogLevel = "*:info, *:error"
 	logger, err := flags.ParseLogLevel(newTMConfig.LogLevel, logger, "info")
 	if err != nil {
