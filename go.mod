@@ -10,7 +10,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.8.1 // indirect
-	github.com/pokt-network/posmint v0.0.0-20200415205759-f9fe52cadf8d
+	github.com/pokt-network/posmint v0.0.0-20200417215711-e2afb3f483f3
 	github.com/prometheus/client_golang v1.1.0 // indirect
 	github.com/prometheus/procfs v0.0.4 // indirect
 	github.com/spf13/cobra v0.0.5
@@ -28,4 +28,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 )
 
-replace github.com/h2non/gock => gopkg.in/h2non/gock.v1 v1.0.14
+replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20200416214829-c67ffb7bf00f
