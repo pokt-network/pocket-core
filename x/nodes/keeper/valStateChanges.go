@@ -170,7 +170,7 @@ func (k Keeper) ReleaseWaitingValidators(ctx sdk.Ctx) {
 	for _, val := range vals {
 		val, found := k.GetValidator(ctx, val.Address)
 		if !found {
-			ctx.Logger().Error(fmt.Sprintf("Unable to begin unstaking validator, validator not found! %s"), val.Address.String())
+			ctx.Logger().Error(fmt.Sprintf("Unable to begin unstaking validator, validator not found! %s", val.Address.String()))
 		}
 		if err := k.ValidateValidatorBeginUnstaking(ctx, val); err == nil {
 			// if able to begin unstaking
