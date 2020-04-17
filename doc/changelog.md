@@ -22,3 +22,7 @@
 - Changed receipt structure (added evidence type)
 - Change `querySupplyResponse` struct to use `totalStaked`, `totalUnstaked` & `Total` as `*big.Int` due to memory overflow
 - Added RPC SPEC doc in yaml and json with swagger support
+
+## RC-0.2.2
+- Fixed April 17, 2020 consensus failure (0 power consensus failure)
+- Seed patch to allow more incoming connections
