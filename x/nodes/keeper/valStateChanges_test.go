@@ -82,7 +82,7 @@ func TestKeeper_ReleaseWaitingValidators(t *testing.T) {
 		ctx sdk.Context
 	}
 
-	validator := getUnstakingValidator()
+	validator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
 	tests := []struct {
@@ -90,11 +90,12 @@ func TestKeeper_ReleaseWaitingValidators(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		{"Test ReleaseWaitingValidators", fields{keeper: keeper}, args{ctx: context}},
+		{"Test ReleaseWaitingValidators Flow", fields{keeper: keeper}, args{ctx: context}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
+			k.SetValidator(tt.args.ctx, validator)
 			k.SetWaitingValidator(tt.args.ctx, validator)
 			k.ReleaseWaitingValidators(tt.args.ctx)
 		})

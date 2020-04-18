@@ -27,6 +27,10 @@
 - Updated POSMint to address duplicated minting logs
 - Add pagination to Application Queries for RPC & CLI
 - Add pagination to Nodes Queries for RPC & CLI
+- Change on Keeper.hostedBlockchains to avoid a potential deadlock
+- Updated POSMint version and Tendermint to solve security issue found on tendermint 0.32.9
+  - more info: https://github.com/tendermint/tendermint/security/advisories/GHSA-v24h-pjjv-mcp6
+- Fixed WaitingValidators not using latest Validators information/state for unstaking (fixed on RC-0.2.2)
 
 ## RC-0.2.1
 - Add version command to CLI

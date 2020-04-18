@@ -39,7 +39,9 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 			panic("should never retrieve a jailed validator from the staked validators")
 		}
 		if validator.ConsensusPower() == 0 {
-			panic("should never have a zero consensus power validator in the staked set")
+			ctx.Logger().Error(fmt.Sprintf("STAKING VALIDATOR, %s", k.GetStakedValidator(ctx, validator)))
+			ctx.Logger().Error(fmt.Sprintf("STORE QUERY: %s", k.mustGetValidator(ctx, validator.Address)))
+			panic(fmt.Sprintf("should never have a zero consensus power validator in the staked set %s", validator))
 		}
 		// fetch the old power bytes
 		var valAddrBytes [sdk.AddrLen]byte
@@ -170,6 +172,10 @@ func (k Keeper) WaitToBeginUnstakingValidator(ctx sdk.Ctx, validator types.Valid
 func (k Keeper) ReleaseWaitingValidators(ctx sdk.Ctx) {
 	vals := k.GetWaitingValidators(ctx)
 	for _, val := range vals {
+		val, found := k.GetValidator(ctx, val)
+		if !found {
+			ctx.Logger().Error(fmt.Sprintf("Unable to begin unstaking validator, validator not found! %s", val.Address.String()))
+		}
 		if err := k.ValidateValidatorBeginUnstaking(ctx, val); err == nil {
 			// if able to begin unstaking
 			k.BeginUnstakingValidator(ctx, val)

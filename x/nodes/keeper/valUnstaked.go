@@ -9,7 +9,7 @@ import (
 
 func (k Keeper) SetWaitingValidator(ctx sdk.Ctx, val types.Validator) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalValidator(k.cdc, val)
+	bz := k.cdc.MustMarshalBinaryLengthPrefixed(val.Address)
 	store.Set(types.KeyForValWaitingToBeginUnstaking(val.Address), bz)
 }
 
@@ -22,17 +22,18 @@ func (k Keeper) IsWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) bool {
 	return true
 }
 
-func (k Keeper) GetWaitingValidators(ctx sdk.Ctx) (validators []types.Validator) {
-	validators = make([]types.Validator, 0)
+func (k Keeper) GetWaitingValidators(ctx sdk.Ctx) (valAddrs []sdk.Address) {
+	valAddrs = make([]sdk.Address, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.WaitingToBeginUnstakingKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
-		validators = append(validators, validator)
+		var addr sdk.Address
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &addr)
+		valAddrs = append(valAddrs, addr)
 	}
-	return validators
+	return valAddrs
 }
 
 func (k Keeper) DeleteWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) {

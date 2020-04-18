@@ -12,6 +12,12 @@ func (k Keeper) SetStakedValidator(ctx sdk.Ctx, validator types.Validator) {
 	store.Set(types.KeyForValidatorInStakingSet(validator), validator.Address)
 }
 
+// Get staked validator
+func (k Keeper) GetStakedValidator(ctx sdk.Ctx, validator types.Validator) sdk.Address {
+	store := ctx.KVStore(k.storeKey)
+	return store.Get(types.KeyForValidatorInStakingSet(validator))
+}
+
 // delete validator from staked set
 func (k Keeper) deleteValidatorFromStakingSet(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
