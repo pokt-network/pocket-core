@@ -16,11 +16,11 @@ const (
 
 // "MsgClaim" - claims that you completed `NumOfProofs` for relay or challenge and provides the merkle root for data integrity
 type MsgClaim struct {
-	SessionHeader `json:"header"`                     // header information for identification
-	MerkleRoot    HashSum      `json:"merkle_root"`   // merkle root for data integrity
-	TotalProofs   int64        `json:"total_relays"`  // total number of relays
-	FromAddress   sdk.Address  `json:"from_address"`  // claimant's address
-	EvidenceType  EvidenceType `json:"evidence_type"` // relay or challenge?
+	SessionHeader `json:"header"` // header information for identification
+	MerkleRoot    HashSum         `json:"merkle_root"`   // merkle root for data integrity
+	TotalProofs   int64           `json:"total_relays"`  // total number of relays
+	FromAddress   sdk.Address     `json:"from_address"`  // claimant's address
+	EvidenceType  EvidenceType    `json:"evidence_type"` // relay or challenge?
 }
 
 // "GetFee" - Returns the fee (sdk.Int) of the messgae type

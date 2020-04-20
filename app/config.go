@@ -522,16 +522,14 @@ func getHostedChains() *types.HostedBlockchains {
 	return &types.HostedBlockchains{M: m}
 }
 
-func
-Codec() *codec.Codec {
+func Codec() *codec.Codec {
 	if cdc == nil {
 		MakeCodec()
 	}
 	return cdc
 }
 
-func
-MakeCodec() {
+func MakeCodec() {
 	// create a new codec
 	cdc = codec.New()
 	// register all of the app module types
