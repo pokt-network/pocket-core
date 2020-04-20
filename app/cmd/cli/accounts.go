@@ -50,7 +50,7 @@ var createCmd = &cobra.Command{
 Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir+app.FS+app.GlobalConfig.PocketConfig.KeybaseName)
+		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir)
 		fmt.Print("Enter Passphrase: \n")
 		kp, err := kb.Create(app.Credentials())
 		if err != nil {
@@ -378,7 +378,7 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		pkBytes, err := hex.DecodeString(args[0])
-		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir+app.FS+app.GlobalConfig.PocketConfig.KeybaseName)
+		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir)
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()
 		var pk [crypto.Ed25519PrivKeySize]byte

@@ -49,7 +49,6 @@ const (
 	DefaultPVKName                  = "priv_val_key.json"
 	DefaultPVSName                  = "priv_val_state.json"
 	DefaultNKName                   = "node_key.json"
-	DefaultKBDirName                = "keybase"
 	DefaultChainsName               = "chains.json"
 	DefaultGenesisName              = "genesis.json"
 	DefaultRPCPort                  = "8081"
@@ -95,7 +94,6 @@ type PocketConfig struct {
 	EvidenceDBType           dbm.DBBackendType `json:"evidence_db_type"`
 	EvidenceDBName           string            `json:"evidence_db_name"`
 	TendermintURI            string            `json:"tendermint_uri"`
-	KeybaseDir               string            `json:"keybase_dir"`
 	KeybaseName              string            `json:"keybase_name"`
 	RPCPort                  string            `json:"rpc_port"`
 	ClientBlockSyncAllowance int               `json:"client_block_sync_allowance"`
@@ -117,7 +115,6 @@ func DefaultConfig(dataDir string) Config {
 			EvidenceDBType:           DefaultEvidenceDBType,
 			EvidenceDBName:           DefaultEvidenceDBName,
 			TendermintURI:            DefaultTMURI,
-			KeybaseDir:               DefaultKBDirName,
 			KeybaseName:              DefaultKeybaseName,
 			ClientBlockSyncAllowance: DefaultClientBlockSyncAllowance,
 			MaxEvidenceCacheEntires:  DefaultMaxEvidenceCacheEntries,
@@ -361,7 +358,7 @@ func MustGetKeybase() kb.Keybase {
 
 // get the global keybase
 func GetKeybase() (kb.Keybase, error) {
-	keys := kb.New(GlobalConfig.PocketConfig.KeybaseName, GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.PocketConfig.KeybaseDir)
+	keys := kb.New(GlobalConfig.PocketConfig.KeybaseName, GlobalConfig.PocketConfig.DataDir)
 	kps, err := keys.List()
 	if err != nil {
 		return nil, err
@@ -561,7 +558,7 @@ func Credentials() string {
 
 // keybase creation
 func newKeybase(passphrase string) error {
-	keys := kb.New(GlobalConfig.PocketConfig.KeybaseName, GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.PocketConfig.KeybaseDir)
+	keys := kb.New(GlobalConfig.PocketConfig.KeybaseName, GlobalConfig.PocketConfig.DataDir)
 	_, err := keys.Create(passphrase)
 	if err != nil {
 		return err
