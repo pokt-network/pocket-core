@@ -49,6 +49,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	}
 	validRelay := Relay{
 		Payload: p,
+		Meta:    RelayMeta{BlockHeight: 1},
 		Proof: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
@@ -119,14 +120,14 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	noEthereumNodes = append(noEthereumNodes, selfNode)
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{ethereum: {
-			Hash: ethereum,
-			URL:  "www.google.com",
+			ID:  ethereum,
+			URL: "www.google.com",
 		}},
 	}
 	hbNotSupported := HostedBlockchains{
 		M: map[string]HostedBlockchain{bitcoin: {
-			Hash: bitcoin,
-			URL:  "www.google.com",
+			ID:  bitcoin,
+			URL: "www.google.com",
 		}},
 	}
 	pubKey := getRandomPubKey()
@@ -188,8 +189,10 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), tt.node,
-				&tt.hb, 1, 5, tt.allNodes, tt.app) != nil, tt.hasError)
+
+			k := MockPosKeeper{Validators: tt.allNodes}
+			assert.Equal(t, tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, tt.node,
+				&tt.hb, 1, 5, tt.app) != nil, tt.hasError)
 		})
 		ClearSessionCache()
 	}
@@ -244,8 +247,8 @@ func TestRelay_Execute(t *testing.T) {
 
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{ethereum: {
-			Hash: ethereum,
-			URL:  "https://server.com/relay/",
+			ID:  ethereum,
+			URL: "https://server.com/relay/",
 		}},
 	}
 	response, err := validRelay.Execute(&hb)
@@ -293,7 +296,7 @@ func TestRelay_HandleProof(t *testing.T) {
 		},
 	}
 	validRelay.Proof.RequestHash = validRelay.RequestHashString()
-	validRelay.Proof.Handle()
+	validRelay.Proof.Store()
 	assert.Nil(t, err)
 	res := GetProof(SessionHeader{
 		ApplicationPubKey:  appPubKey,
@@ -353,4 +356,53 @@ func TestSortJSON(t *testing.T) {
 	objs2 := sortJSONResponse(j2)
 	// compare
 	assert.Equal(t, objs, objs2)
+}
+
+type MockPosKeeper struct {
+	Validators []exported.ValidatorI
+}
+
+func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
+	panic("implement me")
+}
+
+func (m MockPosKeeper) GetStakedTokens(ctx sdk.Ctx) sdk.Int {
+	panic("implement me")
+}
+
+func (m MockPosKeeper) Validator(ctx sdk.Ctx, addr sdk.Address) exported.ValidatorI {
+	for _, v := range m.Validators {
+		if addr.Equals(v.GetAddress()) {
+			return v
+		}
+	}
+	return nil
+}
+
+func (m MockPosKeeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
+	panic("implement me")
+}
+
+func (m MockPosKeeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address) {
+	panic("implement me")
+}
+
+func (m MockPosKeeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
+	panic("implement me")
+}
+
+func (m MockPosKeeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
+	return m.Validators
+}
+
+func (m MockPosKeeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
+	return m.Validators
+}
+
+func (m MockPosKeeper) BlocksPerSession(ctx sdk.Ctx) (res int64) {
+	panic("implement me")
+}
+
+func (m MockPosKeeper) StakeDenom(ctx sdk.Ctx) (res string) {
+	panic("implement me")
 }

@@ -26,7 +26,7 @@ var generateChainCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		var client, inter string
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		switch len(args) {
 		case 4:
 			client = args[3]

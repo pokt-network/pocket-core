@@ -27,6 +27,7 @@ const (
 	CodeNoChains              CodeType          = 115
 	CodeNoServiceURL          CodeType          = 116
 	CodeWaitingValidator      CodeType          = 117
+	CodeInvalidServiceURL     CodeType          = 118
 )
 
 func ErrValidatorWaitingToUnstake(codespace sdk.CodespaceType) sdk.Error {
@@ -108,4 +109,8 @@ func ErrSelfDelegationTooLowToUnjail(codespace sdk.CodespaceType) sdk.Error {
 
 func ErrNoSigningInfoFound(codespace sdk.CodespaceType, consAddr sdk.Address) sdk.Error {
 	return sdk.NewError(codespace, CodeMissingSigningInfo, fmt.Sprintf("no signing info found for address: %s", consAddr))
+}
+
+func ErrInvalidServiceURL(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidServiceURL, fmt.Sprintf("the service url is not valid: "+err.Error()))
 }

@@ -7,82 +7,100 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// Receipts (stored proof of work completed)
-// set the verified proof of work (receipt)
+// "SetReceipt" - Sets the receipt object for a certain address in the state storage
 func (k Keeper) SetReceipt(ctx sdk.Ctx, address sdk.Address, p pc.Receipt) error {
-	ctx.Logger().Info(fmt.Sprintf("SetReceipt(address= %v, header= %+v) \n", address.String(), p))
+	// retrieve the store
 	store := ctx.KVStore(k.storeKey)
+	// marshal the receipt object into amino bz
 	bz := k.cdc.MustMarshalBinaryBare(p)
+	// generate the key for the receipt
 	key, err := pc.KeyForReceipt(ctx, address, p.SessionHeader, p.EvidenceType)
 	if err != nil {
 		return err
 	}
+	// set kv into store
 	store.Set(key, bz)
 	return nil
 }
 
-// retrieve the verified proof of work (receipt)
+// "GetReceipt" - Retrieves the receipt object for a certain address in the state storage
 func (k Keeper) GetReceipt(ctx sdk.Ctx, address sdk.Address, header pc.SessionHeader, evidenceType pc.EvidenceType) (receipt pc.Receipt, found bool) {
-	ctx.Logger().Info(fmt.Sprintf("GetReceipt(address= %v, header= %+v) \n", address.String(), header))
+	// retrieve the store
 	store := ctx.KVStore(k.storeKey)
+	// generate the key for the receipt
 	key, err := pc.KeyForReceipt(ctx, address, header, evidenceType)
 	if err != nil {
 		ctx.Logger().Error("There was a problem creating a key for the receipt:\n" + err.Error())
 		return pc.Receipt{}, false
 	}
+	// get the bytes from the store
 	res := store.Get(key)
 	if res == nil {
 		return pc.Receipt{}, false
 	}
+	// unmarshal bytes into amino-json
 	k.cdc.MustUnmarshalBinaryBare(res, &receipt)
 	return receipt, true
 }
 
-// set verified proof of work (receipts) in world state
+// "SetReceipts" - Sets many receipt objects in the store
 func (k Keeper) SetReceipts(ctx sdk.Ctx, receipts []pc.Receipt) {
-	ctx.Logger().Info(fmt.Sprintf("SetReceipts(receipts %v) \n", receipts))
+	// retrieve the store
 	store := ctx.KVStore(k.storeKey)
+	// loop through all of the receipts
 	for _, receipt := range receipts {
-		addrbz, err := hex.DecodeString(receipt.ServicerAddress)
+		// get the address
+		addr, err := hex.DecodeString(receipt.ServicerAddress)
 		if err != nil {
 			panic(fmt.Sprintf("an error occured setting the receipts:\n%v", err))
 		}
+		// marshal the receipt into json-amino
 		bz := k.cdc.MustMarshalBinaryBare(receipt)
-		key, err := pc.KeyForReceipt(ctx, addrbz, receipt.SessionHeader, receipt.EvidenceType)
+		// generate the key for the receipt
+		key, err := pc.KeyForReceipt(ctx, addr, receipt.SessionHeader, receipt.EvidenceType)
 		if err != nil {
 			panic(fmt.Sprintf("an error occured setting the receipts:\n%v", err))
 		}
+		// set it in the store
 		store.Set(key, bz)
 	}
 }
 
-// get all verified proof of work (receipts) for this address
+// "GetReceipts" - Retrieves all the receipt objects for a certain address
 func (k Keeper) GetReceipts(ctx sdk.Ctx, address sdk.Address) (receipts []pc.Receipt, err error) {
-	ctx.Logger().Info(fmt.Sprintf("GetReceipts(address %v) \n", address.String()))
+	// retrieve the store
 	store := ctx.KVStore(k.storeKey)
+	// generate the key for the address
 	key, err := pc.KeyForReceipts(address)
 	if err != nil {
 		return nil, err
 	}
+	// iterate through all of the receipts
 	iterator := sdk.KVStorePrefixIterator(store, key)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		var summary pc.Receipt
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
-		receipts = append(receipts, summary)
+		// unmarshal into a new receipt object
+		var receipt pc.Receipt
+		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &receipt)
+		// append the new receipt object to the list
+		receipts = append(receipts, receipt)
 	}
 	return
 }
 
-// get all receipts for this address
+// "GetAllReceipts" - Retrieves all the receipt objects in the storage
 func (k Keeper) GetAllReceipts(ctx sdk.Ctx) (receipts []pc.Receipt) {
+	// get the store
 	store := ctx.KVStore(k.storeKey)
+	// iterate through the  objects
 	iterator := sdk.KVStorePrefixIterator(store, pc.ReceiptKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		var summary pc.Receipt
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &summary)
-		receipts = append(receipts, summary)
+		// unmarshal into a new receipt object
+		var receipt pc.Receipt
+		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &receipt)
+		// append the new receipt object to the list
+		receipts = append(receipts, receipt)
 	}
 	return
 }

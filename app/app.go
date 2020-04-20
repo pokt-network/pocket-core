@@ -59,7 +59,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		appsTypes.DefaultCodespace,
 	)
 	// The main pocket core
-	app.pocketKeeper = pocketKeeper.NewPocketCoreKeeper(
+	app.pocketKeeper = pocketKeeper.NewKeeper(
 		app.keys[pocketTypes.StoreKey],
 		app.cdc,
 		app.nodesKeeper,

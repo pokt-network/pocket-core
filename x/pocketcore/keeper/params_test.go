@@ -29,9 +29,17 @@ func TestKeeper_ClaimExpiration(t *testing.T) {
 	assert.Equal(t, types.DefaultClaimExpiration, claimExpiration)
 }
 
+func TestKeeper_ReplayAttackBurnMultiplier(t *testing.T) {
+	ctx, _, _, _, keeper, _ := createTestInput(t, false)
+	rabm := keeper.ReplayAttackBurnMultiplier(ctx)
+	assert.NotNil(t, rabm)
+	assert.NotEmpty(t, rabm)
+	assert.Equal(t, types.DefaultReplayAttackBurnMultiplier, rabm)
+}
+
 func TestKeeper_SessionFrequency(t *testing.T) {
 	ctx, _, _, _, keeper, _ := createTestInput(t, false)
-	sessFrequency := keeper.SessionFrequency(ctx)
+	sessFrequency := keeper.BlocksPerSession(ctx)
 	assert.NotNil(t, sessFrequency)
 	assert.NotEmpty(t, sessFrequency)
 	assert.Equal(t, int64(nodeTypes.DefaultSessionBlocktime), sessFrequency)
@@ -54,10 +62,11 @@ func TestKeeper_SupportedBlockchains(t *testing.T) {
 func TestKeeper_GetParams(t *testing.T) {
 	ctx, _, _, _, k, _ := createTestInput(t, false)
 	p := types.Params{
-		SessionNodeCount:      k.SessionNodeCount(ctx),
-		ClaimSubmissionWindow: k.ClaimSubmissionWindow(ctx),
-		SupportedBlockchains:  k.SupportedBlockchains(ctx),
-		ClaimExpiration:       k.ClaimExpiration(ctx),
+		SessionNodeCount:           k.SessionNodeCount(ctx),
+		ClaimSubmissionWindow:      k.ClaimSubmissionWindow(ctx),
+		SupportedBlockchains:       k.SupportedBlockchains(ctx),
+		ClaimExpiration:            k.ClaimExpiration(ctx),
+		ReplayAttackBurnMultiplier: k.ReplayAttackBurnMultiplier(ctx),
 	}
 	paramz := k.GetParams(ctx)
 	assert.NotNil(t, paramz)

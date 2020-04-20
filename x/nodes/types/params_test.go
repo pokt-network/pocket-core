@@ -430,7 +430,7 @@ func TestParams_String(t *testing.T) {
   DowntimeJailDuration:    %s
   SlashFractionDoubleSign: %s
   SlashFractionDowntime:   %s
-  SessionBlockFrequency    %d
+  BlocksPerSession    %d
   Proposer Allocation      %d
   DAO allocation           %d`,
 			DefaultUnstakingTime,

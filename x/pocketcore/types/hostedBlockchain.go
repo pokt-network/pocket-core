@@ -5,90 +5,52 @@ import (
 	"sync"
 )
 
+// HostedBlockchain" - An object that represents a local hosted non-native blockchain
 type HostedBlockchain struct {
-	Hash string `json:"addr"`
-	URL  string `json:"url"`
+	ID  string `json:"id"`  // network identifier of the hosted blockchain
+	URL string `json:"url"` // url of the hosted blockchain
 }
 
+// HostedBlockchains" - An object that represents the local hosted non-native blockchains
 type HostedBlockchains struct {
 	M map[string]HostedBlockchain // m[addr] -> addr, url
 	l sync.Mutex
 	o sync.Once
 }
 
-var (
-	globalHostedChains *HostedBlockchains // [HostedBlockchain HashString] -> Hosted HostedBlockchain
-	chainOnce          sync.Once
-)
-
-func GetHostedChains() *HostedBlockchains { // todo getHostedChains never called!
-	chainOnce.Do(func() {
-		globalHostedChains = &HostedBlockchains{
-			M: make(map[string]HostedBlockchain),
-		}
-	})
-	return globalHostedChains
-}
-
-func (c *HostedBlockchains) Add(chain HostedBlockchain) {
+// "Contains" - Checks to see if the hosted chain is within the HostedBlockchains object
+func (c *HostedBlockchains) Contains(id string) bool {
 	c.l.Lock()
 	defer c.l.Unlock()
-	c.M[chain.Hash] = chain
-}
-
-func (c *HostedBlockchains) Delete(chain HostedBlockchain) {
-	c.l.Lock()
-	defer c.l.Unlock()
-	delete(c.M, chain.Hash)
-}
-
-func (c *HostedBlockchains) Len() int {
-	c.l.Lock()
-	defer c.l.Unlock()
-	return len(c.M)
-}
-
-func (c *HostedBlockchains) ContainsFromString(chainHash string) bool {
-	c.l.Lock()
-	defer c.l.Unlock()
-	_, found := c.M[chainHash]
+	// quick map check
+	_, found := c.M[id]
 	return found
 }
 
-func (c *HostedBlockchains) Clear() {
+// "GetChainURL" - Returns the url or error of the hosted blockchain using the hex network identifier
+func (c *HostedBlockchains) GetChainURL(id string) (url string, err sdk.Error) {
 	c.l.Lock()
 	defer c.l.Unlock()
-	c.M = make(map[string]HostedBlockchain)
-}
-
-func (c *HostedBlockchains) GetChain(hexChain string) (HostedBlockchain, sdk.Error) {
-	c.l.Lock()
-	defer c.l.Unlock()
-	res := c.M[hexChain]
-	if res.Hash == "" {
-		return HostedBlockchain{}, NewErrorChainNotHostedError(ModuleName)
-	}
-	return res, nil
-}
-
-func (c *HostedBlockchains) GetChainURL(hexChain string) (url string, err sdk.Error) {
-	c.l.Lock()
-	defer c.l.Unlock()
-	res := c.M[hexChain]
-	if res.Hash == "" {
+	// map check
+	res, found := c.M[id]
+	if !found {
 		return "", NewErrorChainNotHostedError(ModuleName)
 	}
 	return res.URL, nil
 }
 
+// "Validate" - Validates the hosted blockchain object
 func (c *HostedBlockchains) Validate() error {
 	c.l.Lock()
 	defer c.l.Unlock()
+	// loop through all of the chains
 	for _, chain := range c.M {
-		if chain.Hash == "" || chain.URL == "" {
+		// validate not empty
+		if chain.ID == "" || chain.URL == "" {
 			return NewInvalidHostedChainError(ModuleName)
 		}
-		if err := HashVerification(chain.Hash); err != nil {
+		// validate the hash
+		if err := ShortHashVerification(chain.ID); err != nil {
 			return err
 		}
 	}

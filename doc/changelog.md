@@ -27,6 +27,16 @@
 - Updated POSMint to address duplicated minting logs
 - Add pagination to Application Queries for RPC & CLI
 - Add pagination to Nodes Queries for RPC & CLI
+- Converted NonNative Chains to 128 bit encryption (MD5)
+- Renamed sessionFrequency to blocksPerSession
+- Changed `Proof` field from relayResponse to `proof`
+- Changed `Proofs` in genesis struct to `Receipts`
+- Changed HostedBlockchain field from `addr` to `id`
+- Modified the key generation for receipts and claims by using the header hash
+- Added headers back to payload (affects request hash!)
+- New Dispatch Formula See Spec
+- Added configurability for Pocket and Tendermint in a config.json file
+- Patch for Fixed April 17, 2020 consensus failure (0 power consensus failure)
 
 ## RC-0.2.1
 - Add version command to CLI

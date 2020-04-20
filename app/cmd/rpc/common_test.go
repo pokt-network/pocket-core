@@ -58,6 +58,7 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	assert.NotNil(t, keybase)
 	// init cache in memory
 	pocketTypes.InitCache("data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100)
+	pocketTypes.InitClientBlockAllowance(1000)
 	// start the in memory node
 	err := tendermintNode.Start()
 	// assert that it is not nil
@@ -101,7 +102,7 @@ var (
 )
 
 const (
-	dummyChainsHash = "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+	dummyChainsHash = "144C9DEFAC04969C7BFAD8EFAA8EA194"
 	dummyChainsURL  = "https://foo.bar:8080"
 	dummyServiceURL = "0.0.0.0:8081"
 	defaultTMURI    = "tcp://localhost:26657"
@@ -153,7 +154,7 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 		appsTypes.DefaultCodespace,
 	)
 	// The main pocket core
-	app.pocketKeeper = pocketKeeper.NewPocketCoreKeeper(
+	app.pocketKeeper = pocketKeeper.NewKeeper(
 		app.keys[pocketTypes.StoreKey],
 		app.cdc,
 		app.nodesKeeper,
@@ -310,7 +311,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	privVal.Key.PrivKey = pk
 	privVal.Key.PubKey = pk.PubKey()
 	privVal.Key.Address = pk.PubKey().Address()
-	pocketTypes.InitPvKeyFile(privVal.Key)
+	pocketTypes.InitPVKeyFile(privVal.Key)
 
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *memoryPCApp {
 		return newMemPCApp(logger, db, bam.SetPruning(store.PruneNothing))
@@ -391,7 +392,7 @@ func getBackgroundContext() (context.Context, func()) {
 
 func getInMemHostedChains() *pocketTypes.HostedBlockchains {
 	return &pocketTypes.HostedBlockchains{
-		M: map[string]pocketTypes.HostedBlockchain{dummyChainsHash: {Hash: dummyChainsHash, URL: dummyChainsURL}},
+		M: map[string]pocketTypes.HostedBlockchain{dummyChainsHash: {ID: dummyChainsHash, URL: dummyChainsURL}},
 	}
 }
 
@@ -519,6 +520,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 		acl.SetOwner("application/ApplicationStakeMinimum", kp.GetAddress())
 		acl.SetOwner("pocketcore/ClaimExpiration", kp.GetAddress())
 		acl.SetOwner("pocketcore/SessionNodeCount", kp.GetAddress())
+		acl.SetOwner("pocketcore/ReplayAttackBurnMultiplier", kp.GetAddress())
 		acl.SetOwner("pos/MaxValidators", kp.GetAddress())
 		acl.SetOwner("pos/ProposerPercentage", kp.GetAddress())
 		acl.SetOwner("application/StabilityAdjustment", kp.GetAddress())
@@ -532,7 +534,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 		acl.SetOwner("pocketcore/ClaimSubmissionWindow", kp.GetAddress())
 		acl.SetOwner("pos/DAOAllocation", kp.GetAddress())
 		acl.SetOwner("pos/SignedBlocksWindow", kp.GetAddress())
-		acl.SetOwner("pos/SessionBlockFrequency", kp.GetAddress())
+		acl.SetOwner("pos/BlocksPerSession", kp.GetAddress())
 		acl.SetOwner("application/MaxApplications", kp.GetAddress())
 		acl.SetOwner("gov/daoOwner", kp.GetAddress())
 		acl.SetOwner("gov/upgrade", kp.GetAddress())

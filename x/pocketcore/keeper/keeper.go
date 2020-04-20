@@ -21,8 +21,8 @@ type Keeper struct {
 	cdc               *codec.Codec // The wire codec for binary encoding/decoding.
 }
 
-// NewPocketCoreKeeper creates new instances of the pocketcore Keeper
-func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
+// NewKeeper creates new instances of the pocketcore module Keeper
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
 	return Keeper{
 		storeKey:          storeKey,
 		cdc:               cdc,
@@ -33,11 +33,7 @@ func NewPocketCoreKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper type
 	}
 }
 
-// get the non native chains hosted locally on this node
-func (k Keeper) GetHostedBlockchains() *types.HostedBlockchains {
-	return k.hostedBlockchains
-}
-
+// "GetBlock" returns the block from the tendermint node at a certain height
 func (k Keeper) GetBlock(height int) (*core_types.ResultBlock, error) {
 	h := int64(height)
 	return k.TmNode.Block(&h)

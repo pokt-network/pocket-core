@@ -54,8 +54,44 @@ func TestGenerateChain(t *testing.T) {
 			chain, err := GenerateChain(tt.chain.Ticker, tt.chain.Netid, tt.chain.Version, tt.chain.Client, tt.chain.Inter)
 			assert.Equal(t, err != nil, tt.hasError)
 			if !tt.hasError {
-				assert.Nil(t, types.HashVerification(chain))
+				assert.Nil(t, types.ShortHashVerification(chain))
 			}
 		})
 	}
+}
+
+func TestKeeper_GetHostedBlockchains(t *testing.T) {
+	ethereum, err := types.NonNativeChain{
+		Ticker:  "eth",
+		Netid:   "4",
+		Version: "v1.9.9",
+		Client:  "geth",
+		Inter:   "",
+	}.HashString()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	bitcoin, err := types.NonNativeChain{
+		Ticker:  "btc",
+		Netid:   "1",
+		Version: "0.19.0.1",
+		Client:  "",
+		Inter:   "",
+	}.HashString()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	eth := types.HostedBlockchain{
+		ID:  ethereum,
+		URL: "https://www.google.com",
+	}
+	btc := types.HostedBlockchain{
+		ID:  bitcoin,
+		URL: "https://www.google.com",
+	}
+	_, _, _, _, keeper, _ := createTestInput(t, false)
+	hb := keeper.GetHostedBlockchains()
+	assert.NotNil(t, hb)
+	assert.True(t, hb.Contains(eth.ID))
+	assert.False(t, hb.Contains(btc.ID))
 }

@@ -28,6 +28,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/privval"
 	tmStore "github.com/tendermint/tendermint/store"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -35,7 +36,6 @@ import (
 	"time"
 )
 
-// nolint: deadcode unused
 var (
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
@@ -52,7 +52,6 @@ func NewTestKeybase() keys.Keybase {
 	return keys.NewInMemory()
 }
 
-// nolint: deadcode unused
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -68,7 +67,18 @@ func makeTestCodec() *codec.Codec {
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper, map[string]*sdk.KVStoreKey) {
 	initPower := int64(100000000000)
 	nAccs := int64(5)
-
+	kb := NewTestKeybase()
+	_, err := kb.Create("test")
+	assert.Nil(t, err)
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	addr := tmtypes.Address(cb.GetAddress())
+	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
+	types.InitPVKeyFile(privval.FilePVKey{
+		Address: addr,
+		PubKey:  cb.PublicKey,
+		PrivKey: pk,
+	})
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
@@ -89,7 +99,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
-	err := ms.LoadLatestVersion()
+	err = ms.LoadLatestVersion()
 	require.Nil(t, err)
 
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, isCheckTx, log.NewNopLogger())
@@ -135,11 +145,10 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 
 	hb := types.HostedBlockchains{
 		M: map[string]types.HostedBlockchain{ethereum: {
-			Hash: ethereum,
-			URL:  "https://www.google.com",
+			ID:  ethereum,
+			URL: "https://www.google.com",
 		}},
 	}
-
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
 	appSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
@@ -148,11 +157,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, nodesSubspace, nodesTypes.ModuleName)
 	appk := appsKeeper.NewKeeper(cdc, appsKey, nk, ak, appSubspace, appsTypes.ModuleName)
 	appk.SetApplication(ctx, getTestApplication())
-	keeper := NewPocketCoreKeeper(pocketKey, cdc, nk, appk, &hb, pocketSubspace)
-	kb := NewTestKeybase()
-	_, err = kb.Create("test")
-	assert.Nil(t, err)
-	_, err = kb.GetCoinbase()
+	keeper := NewKeeper(pocketKey, cdc, nk, appk, &hb, pocketSubspace)
 	assert.Nil(t, err)
 	keeper.Keybase = kb
 	moduleManager := module.NewManager(
@@ -165,7 +170,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 	ap := createTestApps(ctx, int(nAccs), sdk.NewInt(10000000), appk, ak)
-	vals := createTestValidators(ctx, int(nAccs), sdk.NewInt(10000000), sdk.ZeroInt(), &nk, ak, kb)
+	vals := createTestValidators(ctx, int(nAccs), sdk.ZeroInt(), &nk, ak, kb)
 	appk.SetParams(ctx, appsTypes.DefaultParams())
 	nk.SetParams(ctx, nodesTypes.DefaultParams())
 	defaultPocketParams := types.DefaultParams()
@@ -233,7 +238,7 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.K
 	return
 }
 
-func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins sdk.Int, nk *nodesKeeper.Keeper, ak auth.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
+func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, nk *nodesKeeper.Keeper, ak auth.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
 	ethereum, err := types.NonNativeChain{
 		Ticker:  "eth",
 		Netid:   "4",

@@ -66,7 +66,6 @@ func TestQueryTx(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		time.Sleep(time.Second * 1)
 		got, err := nodes.QueryTransaction(memCli, tx.TxHash)
 		assert.Nil(t, err)
 		validator, err := nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
@@ -307,7 +306,7 @@ func TestQueryPocketSupportedBlockchains(t *testing.T) {
 		got, err := pocket.QueryPocketSupportedBlockchains(memCodec(), memCli, 0)
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
-		assert.Contains(t, got, dummyChainsHash)
+		assert.Contains(t, got, PlaceholderHash)
 	}
 	cleanup()
 	stopCli()
@@ -324,7 +323,7 @@ func TestQueryPocketParams(t *testing.T) {
 		assert.Equal(t, int64(5), got.SessionNodeCount)
 		assert.Equal(t, int64(3), got.ClaimSubmissionWindow)
 		assert.Equal(t, int64(100), got.ClaimExpiration)
-		assert.Contains(t, got.SupportedBlockchains, dummyChainsHash)
+		assert.Contains(t, got.SupportedBlockchains, PlaceholderHash)
 	}
 	cleanup()
 	stopCli()
@@ -379,7 +378,7 @@ func TestQueryProof(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := pocket.QueryReceipt(memCodec(), kp.GetAddress(), memCli, dummyChainsHash, kp.PublicKey.RawString(), "relay", 1, 0)
+		got, err := pocket.QueryReceipt(memCodec(), kp.GetAddress(), memCli, PlaceholderHash, kp.PublicKey.RawString(), "relay", 1, 0)
 		assert.Nil(t, err)
 		assert.NotNil(t, got)
 	}
@@ -469,13 +468,16 @@ func TestQueryRelay(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	const headerKey = "foo"
+	const headerVal = "bar"
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	// setup relay endpoint
 	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
 	expectedResponse := "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"
-	gock.New(dummyChainsURL).
+	gock.New(PlaceholderURL).
 		Post("").
 		BodyString(expectedRequest).
+		MatchHeader(headerKey, headerVal).
 		Reply(200).
 		BodyString(expectedResponse)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, genBz)
@@ -494,7 +496,8 @@ func TestQueryRelay(t *testing.T) {
 	}
 	aat.ApplicationSignature = hex.EncodeToString(sig)
 	payload := types.Payload{
-		Data: expectedRequest,
+		Data:    expectedRequest,
+		Headers: map[string]string{headerKey: headerVal},
 	}
 	// setup relay
 	relay := types.Relay{
@@ -504,7 +507,7 @@ func TestQueryRelay(t *testing.T) {
 			Entropy:            32598345349034509,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
-			Blockchain:         dummyChainsHash,
+			Blockchain:         PlaceholderHash,
 			Token:              aat,
 			Signature:          "",
 		},
@@ -521,7 +524,7 @@ func TestQueryRelay(t *testing.T) {
 		res, err := pocket.QueryRelay(memCodec(), memCli, relay)
 		assert.Nil(t, err)
 		assert.Equal(t, expectedResponse, res.Response)
-		gock.New(dummyChainsURL).
+		gock.New(PlaceholderURL).
 			Post("").
 			BodyString(expectedRequest).
 			Reply(200).
@@ -550,10 +553,10 @@ func TestQueryDispatch(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, genBz)
 	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 	assert.Nil(t, err)
-	// Setup Dispatch Request
+	// Setup HandleDispatch Request
 	key := types.SessionHeader{
 		ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
-		Chain:              dummyChainsHash,
+		Chain:              PlaceholderHash,
 		SessionBlockHeight: 1,
 	}
 	// setup the query

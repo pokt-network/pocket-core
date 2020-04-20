@@ -11,91 +11,134 @@ import (
 )
 
 var (
-	Hasher     = sha.SHA3_256
-	HashLength = sha.SHA3_256.Size()
-	AddrLength = tmhash.TruncatedSize
-	FilePVKey  = privval.FilePVKey{}
+	Hasher            = sha.SHA3_256
+	ShortHasher       = sha.MD5
+	ShortHasherLength = sha.MD5.Size()
+	HashLength        = sha.SHA3_256.Size()
+	AddrLength        = tmhash.TruncatedSize
+	globalPVKeyFile   = privval.FilePVKey{}
 )
 
-// verify the signature using strings
+// "ShortHashVerification"- Verify the shorter hash format (hex string)
+func ShortHashVerification(hash string) sdk.Error {
+	// decode string into bz
+	h, err := hex.DecodeString(hash)
+	if err != nil {
+		return NewHexDecodeError(ModuleName, err)
+	}
+	// ensure length isn't 0
+	if len(h) == 0 {
+		return NewEmptyHashError(ModuleName)
+	}
+	// ensure length
+	if len(h) != ShortHasherLength {
+		return NewInvalidHashLengthError(ModuleName)
+	}
+	return nil
+}
+
+// "SignatureVerification" - Verify the signature using hex strings
 func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
+	// decode the signature from hex
 	sig, err := hex.DecodeString(sigHex)
 	if err != nil {
 		return NewSigDecodeError(ModuleName)
 	}
+	// ensure length is valid
 	if len(sig) != crypto.Ed25519SignatureSize {
 		return NewInvalidSignatureSizeError(ModuleName)
 	}
+	// decode public key from hex
 	pk, err := crypto.NewPublicKey(publicKey)
 	if err != nil {
 		return NewPubKeyDecodeError(ModuleName)
 	}
+	// decode message from hex
 	msg, err := hex.DecodeString(msgHex)
 	if err != nil {
 		return NewMsgDecodeError(ModuleName)
 	}
+	// verify the bz
 	if ok := pk.VerifyBytes(msg, sig); !ok {
 		return NewInvalidSignatureError(ModuleName)
 	}
 	return nil
 }
 
-func InitPvKeyFile(filePVKey privval.FilePVKey) {
-	FilePVKey = filePVKey
+// "InitPVKeyFile" - Initializes the global private validator key variable
+func InitPVKeyFile(filePVKey privval.FilePVKey) {
+	globalPVKeyFile = filePVKey
 }
 
-func GetPvKeyFile() (privval.FilePVKey, sdk.Error) {
-	if FilePVKey.PrivKey == nil {
-		return FilePVKey, NewInvalidPKError(ModuleName)
+// "GetPVKeyFile" - Returns the globalPVKeyFile instance
+func GetPVKeyFile() (privval.FilePVKey, sdk.Error) {
+	if globalPVKeyFile.PrivKey == nil {
+		return globalPVKeyFile, NewInvalidPKError(ModuleName)
 	} else {
-		return FilePVKey, nil
+		return globalPVKeyFile, nil
 	}
 }
 
-// verify the public key format
+// "PubKeyVerification" - Verifies the public key format (hex string)
 func PubKeyVerification(pk string) sdk.Error {
+	// decode the bz
 	pkBz, err := hex.DecodeString(pk)
 	if err != nil {
 		return NewPubKeyDecodeError(ModuleName)
 	}
+	// ensure length
 	if len(pkBz) != crypto.Ed25519PubKeySize {
 		return NewPubKeySizeError(ModuleName)
 	}
 	return nil
 }
 
-// verify the addr format
+// "HashVerification" - Verifies the hash format (hex string)
 func HashVerification(hash string) sdk.Error {
+	// decode the hash
 	h, err := hex.DecodeString(hash)
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
 	}
+	// ensure length isn't 0
 	if len(h) == 0 {
 		return NewEmptyHashError(ModuleName)
 	}
+	// ensure length
 	if len(h) != HashLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
 	return nil
 }
 
+// "AddressVerification" - Verifies the address format (hex strign)
 func AddressVerification(addr string) sdk.Error {
+	// decode the address
 	address, err := hex.DecodeString(addr)
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
 	}
+	// ensure length isn't 0
 	if len(address) == 0 {
 		return NewEmptyAddressError(ModuleName)
 	}
+	// ensure length
 	if len(address) != AddrLength {
 		return NewAddressInvalidLengthError(ModuleName)
 	}
 	return nil
 }
 
-// Converts []byte to SHA3-256 hashed []byte
+// "ID"- Converts []byte to hashed []byte
 func Hash(b []byte) []byte {
 	hasher := Hasher.New()
+	hasher.Write(b)
+	return hasher.Sum(nil)
+}
+
+// "ShortHash" - Converts []byte to short hashed []byte
+func ShortHash(b []byte) []byte {
+	hasher := ShortHasher.New()
 	hasher.Write(b)
 	return hasher.Sum(nil)
 }

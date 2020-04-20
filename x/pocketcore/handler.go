@@ -7,12 +7,14 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// NewHandler returns a handler for "pocketCore" type messages.
+// "NewHandler" - Returns a handler for "pocketCore" type messages.
 func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
 		switch msg := msg.(type) {
+		// handle claim message
 		case types.MsgClaim:
 			return handleClaimMsg(ctx, keeper, msg)
+		// handle proof message
 		case types.MsgProof:
 			return handleProofMsg(ctx, keeper, msg)
 		default:
@@ -22,8 +24,9 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 	}
 }
 
+// "handleClaimMsg" - General handler for the claim message
 func handleClaimMsg(ctx sdk.Ctx, k keeper.Keeper, msg types.MsgClaim) sdk.Result {
-	// validate the proof message
+	// validate the claim message
 	if err := k.ValidateClaim(ctx, msg); err != nil {
 		return err.Result()
 	}
@@ -42,10 +45,15 @@ func handleClaimMsg(ctx sdk.Ctx, k keeper.Keeper, msg types.MsgClaim) sdk.Result
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
+// "handleProofMsg" - General handler for the proof message
 func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Result {
 	// validate the claim claim
 	addr, claim, err := k.ValidateProof(ctx, proof)
 	if err != nil {
+		if err.Code() == types.CodeReplayAttackError {
+			// if is a replay attack, handle accordingly
+			k.HandleReplayAttack(ctx, addr, sdk.NewInt(claim.TotalProofs))
+		}
 		return err.Result()
 	}
 	// set the claim in the world state

@@ -93,7 +93,7 @@ func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Ctx) sdk.Int {
 func (k Keeper) NodeCutOfReward(ctx sdk.Ctx) sdk.Int {
 	daoAllocation := k.DAOAllocation(ctx)
 	proposerAllocation := k.ProposerAllocation(ctx)
-	return sdk.NewInt(100 - daoAllocation - proposerAllocation) // todo parameterize the 1000
+	return sdk.NewInt(100 - daoAllocation - proposerAllocation)
 }
 
 func (k Keeper) DAOAllocation(ctx sdk.Ctx) (res int64) {
@@ -101,7 +101,7 @@ func (k Keeper) DAOAllocation(ctx sdk.Ctx) (res int64) {
 	return
 }
 
-func (k Keeper) SessionBlockFrequency(ctx sdk.Ctx) (res int64) {
+func (k Keeper) BlocksPerSession(ctx sdk.Ctx) (res int64) {
 	k.Paramstore.Get(ctx, types.KeySessionBlock, &res)
 	return
 }
@@ -114,7 +114,7 @@ func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 		StakeDenom:              k.StakeDenom(ctx),
 		StakeMinimum:            k.MinimumStake(ctx),
 		ProposerAllocation:      k.ProposerAllocation(ctx),
-		SessionBlockFrequency:   k.SessionBlockFrequency(ctx),
+		SessionBlockFrequency:   k.BlocksPerSession(ctx),
 		DAOAllocation:           k.DAOAllocation(ctx),
 		MaxEvidenceAge:          k.MaxEvidenceAge(ctx),
 		SignedBlocksWindow:      k.SignedBlocksWindow(ctx),

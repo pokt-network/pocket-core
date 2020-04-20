@@ -13,7 +13,6 @@ import (
 
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
-	"github.com/mitchellh/go-homedir"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
@@ -45,70 +44,188 @@ import (
 )
 
 const (
-	KeybaseName       = "pocket-keybase"
-	privValKeyName    = "priv_val_key.json"
-	privValStateName  = "priv_val_state.json"
-	nodeKeyName       = "node_key.json"
-	KBDirectoryName   = "keybase"
-	chainsName        = "chains.json"
-	dummyChainsHash   = "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-	dummyChainsURL    = "https://foo.bar:8080"
-	dummyServiceURL   = "0.0.0.0:8081"
-	defaultTMURI      = "tcp://localhost:26657"
-	defaultNodeKey    = "node_key.json"
-	defaultValKey     = "priv_val_key.json"
-	defaultValState   = "priv_val_state.json"
-	defaultListenAddr = "tcp://0.0.0.0:"
+	DefaultDDName                   = ".pocket"
+	DefaultKeybaseName              = "pocket-keybase"
+	DefaultPVKName                  = "priv_val_key.json"
+	DefaultPVSName                  = "priv_val_state.json"
+	DefaultNKName                   = "node_key.json"
+	DefaultKBDirName                = "keybase"
+	DefaultChainsName               = "chains.json"
+	DefaultGenesisName              = "genesis.json"
+	DefaultRPCPort                  = "8081"
+	DefaultSessionDBType            = dbm.GoLevelDBBackend
+	DefaultEvidenceDBType           = dbm.GoLevelDBBackend
+	DefaultSessionDBName            = "session"
+	DefaultEvidenceDBName           = "pocket_evidence"
+	DefaultTMURI                    = "tcp://localhost:26657"
+	DefaultMaxSessionCacheEntries   = 100
+	DefaultMaxEvidenceCacheEntries  = 100
+	DefaultListenAddr               = "tcp://0.0.0.0:"
+	DefaultClientBlockSyncAllowance = 10
+	DefaultJSONSortRelayResponses   = true
+	ConfigDirName                   = "config"
+	ConfigFileName                  = "config.json"
+	ApplicationDBName               = "application"
+	PlaceholderHash                 = "144C9DEFAC04969C7BFAD8EFAA8EA194"
+	PlaceholderURL                  = "https://foo.bar:8080"
+	PlaceholderServiceURL           = DefaultListenAddr + DefaultRPCPort
 )
 
 var (
-	datadir string
-	// expose coded to pcInstance module
 	cdc *codec.Codec
-	// tendermint node uri
-	tmNodeURI string
-	// privateKey needed for pocket core module
-	privateKeyPath string
-	// the filepath to the genesis.json
-	genesisFP string
 	// the default fileseparator based on OS
-	fs = string(fp.Separator)
+	FS = string(fp.Separator)
 	// app instance currently running
 	pca *pocketCoreApp
+	// config
+	GlobalConfig Config
 )
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string, blockTime int) *node.Node {
-	InitConfig(datadir)
-	// set tendermint node
-	SetTMNode(tmNode)
-	// init the tendermint node
-	return InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort, blockTime)
+type Config struct {
+	TendermintConfig con.Config   `json:"tendermint_config"`
+	PocketConfig     PocketConfig `json:"pocket_config"`
 }
 
-func InitConfig(datadir string) string {
+type PocketConfig struct {
+	DataDir                  string            `json:"data_dir"`
+	GenesisName              string            `json:"genesis_file"`
+	ChainsName               string            `json:"chains_name"`
+	SessionDBType            dbm.DBBackendType `json:"session_db_type"`
+	SessionDBName            string            `json:"session_db_name"`
+	EvidenceDBType           dbm.DBBackendType `json:"evidence_db_type"`
+	EvidenceDBName           string            `json:"evidence_db_name"`
+	TendermintURI            string            `json:"tendermint_uri"`
+	KeybaseDir               string            `json:"keybase_dir"`
+	KeybaseName              string            `json:"keybase_name"`
+	RPCPort                  string            `json:"rpc_port"`
+	ClientBlockSyncAllowance int               `json:"client_block_sync_allowance"`
+	MaxEvidenceCacheEntires  int               `json:"max_evidence_cache_entries"`
+	MaxSessionCacheEntries   int               `json:"max_session_cache_entries"`
+	JSONSortRelayResponses   bool              `json:"json_sort_relay_responses"`
+}
+
+func DefaultConfig(dataDir string) Config {
+	c := Config{
+		TendermintConfig: *con.DefaultConfig(),
+		PocketConfig: PocketConfig{
+			DataDir:                  dataDir,
+			RPCPort:                  DefaultRPCPort,
+			GenesisName:              DefaultGenesisName,
+			ChainsName:               DefaultChainsName,
+			SessionDBType:            DefaultSessionDBType,
+			SessionDBName:            DefaultSessionDBName,
+			EvidenceDBType:           DefaultEvidenceDBType,
+			EvidenceDBName:           DefaultEvidenceDBName,
+			TendermintURI:            DefaultTMURI,
+			KeybaseDir:               DefaultKBDirName,
+			KeybaseName:              DefaultKeybaseName,
+			ClientBlockSyncAllowance: DefaultClientBlockSyncAllowance,
+			MaxEvidenceCacheEntires:  DefaultMaxEvidenceCacheEntries,
+			MaxSessionCacheEntries:   DefaultMaxSessionCacheEntries,
+			JSONSortRelayResponses:   DefaultJSONSortRelayResponses,
+		},
+	}
+	c.TendermintConfig.SetRoot(dataDir)
+	c.TendermintConfig.NodeKey = DefaultNKName
+	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
+	c.TendermintConfig.PrivValidatorState = DefaultPVSName
+	c.TendermintConfig.P2P.AddrBookStrict = false
+	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
+	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(1) * time.Minute
+	c.TendermintConfig.Consensus.TimeoutCommit = time.Duration(1) * time.Minute
+	c.TendermintConfig.P2P.MaxNumInboundPeers = 250
+	c.TendermintConfig.P2P.MaxNumOutboundPeers = 250
+	c.TendermintConfig.LogLevel = "*:info, *:error"
+	return c
+}
+
+func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node.Node {
 	// setup the codec
 	MakeCodec()
-	// setup data directory
-	InitDataDirectory(datadir)
+	// init config
+	InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 	// init the keyfiles
-	pswrd := InitKeyfiles()
+	InitKeyfiles()
 	// init cache
-	InitPocketCoreCache(datadir)
+	InitPocketCoreConfig()
 	// init genesis
 	InitGenesis()
-	return pswrd
+	// init the tendermint node
+	return InitTendermint()
 }
 
-func InitGenesis() {
-	setGenesisPath(getDataDir() + fs + "config" + fs + "genesis.json")
-	if _, err := os.Stat(genesisPath()); os.IsNotExist(err) {
+func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string) {
+	if datadir == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			panic("could not get home directory for data dir creation: " + err.Error())
+		}
+		datadir = home + FS + DefaultDDName
+	}
+	c := DefaultConfig(datadir)
+	// read from ccnfig file
+	configFilepath := datadir + FS + ConfigDirName + FS + ConfigFileName
+	if _, err := os.Stat(configFilepath); os.IsNotExist(err) {
 		// ensure directory path made
-		err = os.MkdirAll(datadir+fs+"config", os.ModePerm)
+		err = os.MkdirAll(c.PocketConfig.DataDir+FS+ConfigDirName, os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
-		// create the genesis path
-		var genFP = genesisPath()
+	}
+	var jsonFile *os.File
+	defer jsonFile.Close()
+	// if file exists open, else create and open
+	if _, err := os.Stat(configFilepath); err == nil {
+		jsonFile, err = os.OpenFile(configFilepath, os.O_RDWR, os.ModePerm)
+		if err != nil {
+			panic("cannot open config json file: " + err.Error())
+		}
+		b, err := ioutil.ReadAll(jsonFile)
+		if err != nil {
+			panic("cannot read config file: " + err.Error())
+		}
+		err = json.Unmarshal(b, &c)
+		if err != nil {
+			panic("cannot read config file into json: " + err.Error())
+		}
+	} else if os.IsNotExist(err) {
+		// if does not exist create one
+		jsonFile, err = os.OpenFile(configFilepath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+		if err != nil {
+			panic("canot open/create config json file: " + err.Error())
+		}
+		b, err := json.MarshalIndent(c, "", "    ")
+		if err != nil {
+			panic("cannot marshal default config into json: " + err.Error())
+		}
+		// write to the file
+		_, err = jsonFile.Write(b)
+		if err != nil {
+			panic("cannot write default config to json file: " + err.Error())
+		}
+	}
+	// flags trump config file
+	if tmNode != "" {
+		c.PocketConfig.TendermintURI = tmNode
+	}
+	if persistentPeers != "" {
+		c.TendermintConfig.P2P.PersistentPeers = persistentPeers
+	}
+	if seeds != "" {
+		c.TendermintConfig.P2P.Seeds = seeds
+	}
+	if tmRPCPort != "" {
+		c.TendermintConfig.RPC.ListenAddress = DefaultListenAddr + tmRPCPort
+	}
+	if tmPeersPort != "" {
+		c.TendermintConfig.P2P.ListenAddress = DefaultListenAddr + tmPeersPort
+	}
+	GlobalConfig = c
+}
+
+func InitGenesis() {
+	genFP := GlobalConfig.PocketConfig.DataDir + FS + ConfigDirName + FS + GlobalConfig.PocketConfig.GenesisName
+	if _, err := os.Stat(genFP); os.IsNotExist(err) {
 		// if file exists open, else create and open
 		if _, err := os.Stat(genFP); err == nil {
 			return
@@ -132,9 +249,7 @@ func InitGenesis() {
 	}
 }
 
-func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, blockTime int) *node.Node {
-	datadir := getDataDir()
-	// setup the logger
+func InitTendermint() *node.Node {
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
 		if keyvals[0] != kitlevel.Key() {
 			panic(fmt.Sprintf("expected level key to be first, got %v", keyvals[0]))
@@ -150,34 +265,12 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, block
 			return term.FgBgColor{}
 		}
 	})
-
-	// setup tendermint node config
-	newTMConfig := con.DefaultConfig()
-	newTMConfig.SetRoot(datadir)
-	//newTMConfig.DBPath = datadir
-	newTMConfig.NodeKey = defaultNodeKey
-	newTMConfig.PrivValidatorKey = defaultValKey
-	newTMConfig.PrivValidatorState = defaultValState
-	newTMConfig.P2P.AddrBookStrict = false
-	newTMConfig.RPC.ListenAddress = defaultListenAddr + tmRPCPort
-	newTMConfig.P2P.ListenAddress = defaultListenAddr + tmPeersPort // Node listen address. (0.0.0.0:0 means any interface, any port)
-	newTMConfig.P2P.PersistentPeers = persistentPeers               // Comma-delimited ID@host:port persistent peers
-	newTMConfig.P2P.Seeds = seeds                                   // Comma-delimited ID@host:port seed nodes
-	newTMConfig.Consensus.CreateEmptyBlocks = true                  // Set this to false to only produce blocks when there are txs or when the AppHash changes
-	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(blockTime) * time.Minute
-	newTMConfig.Consensus.TimeoutCommit = time.Duration(blockTime) * time.Minute
-	newTMConfig.P2P.MaxNumInboundPeers = 40
-	newTMConfig.P2P.MaxNumOutboundPeers = 10
-	newTMConfig.P2P.AllowDuplicateIP = true
-	newTMConfig.LogLevel = "*:info, *:error"
-	newTMConfig.TxIndex.Indexer = "kv"
-	newTMConfig.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
-	logger, err := flags.ParseLogLevel(newTMConfig.LogLevel, logger, "info")
+	logger, err := flags.ParseLogLevel(GlobalConfig.TendermintConfig.LogLevel, logger, "info")
 	if err != nil {
 		panic(err)
 	}
 	c := cfg.Config{
-		TmConfig:    newTMConfig,
+		TmConfig:    &GlobalConfig.TendermintConfig,
 		Logger:      logger,
 		TraceWriter: "",
 	}
@@ -195,50 +288,23 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, block
 	return tmNode
 }
 
-func InitDataDirectory(d string) string {
-	// check for empty data_dir
-	if d == "" {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		// set the default data directory
-		d = home + fs + ".pocket"
-	}
-	// create the folder if not already created
-	err := os.MkdirAll(d, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
-	datadir = d
-	return d
-}
-
 func InitKeyfiles() string {
 	var password string
-	datadir := getDataDir()
-
-	//Check if privvalkey file exist
-	if _, err := os.Stat(datadir + fs + privValKeyName); err != nil {
-
-		//if not exist continue creating as other files may be missing
+	datadir := GlobalConfig.PocketConfig.DataDir
+	// Check if privvalkey file exist
+	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
+		// if not exist continue creating as other files may be missing
 		if os.IsNotExist(err) {
-
 			password = initFiles(password, datadir)
-
 		} else {
 			//panic on other errors
 			panic(err)
 		}
-
 	} else {
 		// file exist so we can load pk from file.
-		file, _ := loadPKFromFile(getDataDir() + fs + privValKeyName)
-		types.InitPvKeyFile(file)
+		file, _ := loadPKFromFile(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
+		types.InitPVKeyFile(file)
 	}
-
 	return password
 }
 
@@ -254,21 +320,21 @@ func initFiles(password string, datadir string) string {
 			panic(err)
 		}
 	}
-	if _, err := os.Stat(datadir + fs + privValKeyName); err != nil {
+	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
 		if os.IsNotExist(err) {
 			password = privValKey(password)
 		} else {
 			panic(err)
 		}
 	}
-	if _, err := os.Stat(datadir + fs + privValStateName); err != nil {
+	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorState); err != nil {
 		if os.IsNotExist(err) {
 			privValState()
 		} else {
 			panic(err)
 		}
 	}
-	if _, err := os.Stat(datadir + fs + nodeKeyName); err != nil {
+	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.NodeKey); err != nil {
 		if os.IsNotExist(err) {
 			nodeKey(password)
 		} else {
@@ -278,8 +344,10 @@ func initFiles(password string, datadir string) string {
 	return password
 }
 
-func InitPocketCoreCache(dataDir string) {
-	types.InitCache(dataDir, dataDir, dbm.GoLevelDBBackend, dbm.GoLevelDBBackend, 100, 100)
+func InitPocketCoreConfig() {
+	types.InitCache(GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries)
+	types.InitClientBlockAllowance(GlobalConfig.PocketConfig.ClientBlockSyncAllowance)
+	types.InitJSONSorting(GlobalConfig.PocketConfig.JSONSortRelayResponses)
 }
 
 // get the global keybase
@@ -293,7 +361,7 @@ func MustGetKeybase() kb.Keybase {
 
 // get the global keybase
 func GetKeybase() (kb.Keybase, error) {
-	keys := kb.New(KeybaseName, getDataDir()+fs+KBDirectoryName)
+	keys := kb.New(GlobalConfig.PocketConfig.KeybaseName, GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.PocketConfig.KeybaseDir)
 	kps, err := keys.List()
 	if err != nil {
 		return nil, err
@@ -305,7 +373,6 @@ func GetKeybase() (kb.Keybase, error) {
 }
 
 func loadPKFromFile(path string) (privval.FilePVKey, string) {
-
 	keyJSONBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		cmn.Exit(err.Error())
@@ -342,7 +409,7 @@ func privValKey(password string) string {
 	if err != nil {
 		panic(err)
 	}
-	pvFile, err := os.OpenFile(datadir+fs+privValKeyName, os.O_RDWR|os.O_CREATE, 0666)
+	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -350,8 +417,7 @@ func privValKey(password string) string {
 	if err != nil {
 		panic(err)
 	}
-	types.InitPvKeyFile(privValKey)
-
+	types.InitPVKeyFile(privValKey)
 	return password
 }
 
@@ -372,7 +438,7 @@ func nodeKey(password string) {
 	if err != nil {
 		panic(err)
 	}
-	pvFile, err := os.OpenFile(datadir+fs+nodeKeyName, os.O_RDWR|os.O_CREATE, 0666)
+	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.NodeKey, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -387,7 +453,7 @@ func privValState() {
 	if err != nil {
 		panic(err)
 	}
-	pvFile, err := os.OpenFile(datadir+fs+privValStateName, os.O_RDWR|os.O_CREATE, 0666)
+	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorState, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -398,22 +464,16 @@ func privValState() {
 }
 
 func getTMClient() client.Client {
-	if tmNodeURI == "" {
-		return client.NewHTTP(defaultTMURI, "/websocket")
+	if GlobalConfig.PocketConfig.TendermintURI == "" {
+		return client.NewHTTP(DefaultTMURI, "/websocket")
 	}
-	return client.NewHTTP(tmNodeURI, "/websocket")
+	return client.NewHTTP(GlobalConfig.PocketConfig.TendermintURI, "/websocket")
 }
 
 // get the hosted chains variable
 func getHostedChains() *types.HostedBlockchains {
-	filepath := getDataDir() + fs + "config"
 	// create the chains path
-	var chainsPath = filepath + fs + chainsName
-	// ensure directory path made
-	err := os.MkdirAll(filepath, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
+	var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
 	// if file exists open, else create and open
 	var jsonFile *os.File
 	var bz []byte
@@ -426,7 +486,7 @@ func getHostedChains() *types.HostedBlockchains {
 			panic(NewInvalidChainsError(err))
 		}
 		// create dummy input for the file
-		res, err := json.MarshalIndent(map[string]types.HostedBlockchain{dummyChainsHash: {Hash: dummyChainsHash, URL: dummyChainsURL}}, "", "  ")
+		res, err := json.MarshalIndent(map[string]types.HostedBlockchain{PlaceholderHash: {ID: PlaceholderHash, URL: PlaceholderURL}}, "", "  ")
 		if err != nil {
 			panic(NewInvalidChainsError(err))
 		}
@@ -442,7 +502,7 @@ func getHostedChains() *types.HostedBlockchains {
 		}
 	}
 	// reopen the file to read into the variable
-	jsonFile, err = os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		panic(NewInvalidChainsError(err))
 	}
@@ -465,39 +525,16 @@ func getHostedChains() *types.HostedBlockchains {
 	return &types.HostedBlockchains{M: m}
 }
 
-func confirmCoinbasePassphrase(pswrd string) error {
-	keys := MustGetKeybase()
-	kp, err := keys.GetCoinbase()
-	if err != nil {
-		return err
-	}
-	err = (keys).Update(kp.GetAddress(), pswrd, pswrd)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func SetTMNode(n string) {
-	tmNodeURI = n
-}
-
-func setGenesisPath(filepath string) {
-	genesisFP = filepath
-}
-
-func genesisPath() string {
-	return genesisFP
-}
-
-func Codec() *codec.Codec {
+func
+Codec() *codec.Codec {
 	if cdc == nil {
 		MakeCodec()
 	}
 	return cdc
 }
 
-func MakeCodec() {
+func
+MakeCodec() {
 	// create a new codec
 	cdc = codec.New()
 	// register all of the app module types
@@ -522,14 +559,9 @@ func Credentials() string {
 	return strings.TrimSpace(string(bytePassword))
 }
 
-func getDataDir() string {
-	InitDataDirectory(datadir)
-	return datadir
-}
-
 // keybase creation
 func newKeybase(passphrase string) error {
-	keys := kb.New(KeybaseName, getDataDir()+fs+KBDirectoryName)
+	keys := kb.New(GlobalConfig.PocketConfig.KeybaseName, GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.PocketConfig.KeybaseDir)
 	_, err := keys.Create(passphrase)
 	if err != nil {
 		return err
@@ -574,8 +606,8 @@ func newDefaultGenesisState() []byte {
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
 			PublicKey:    pubKey,
 			Status:       sdk.Staked,
-			Chains:       []string{dummyChainsHash},
-			ServiceURL:   dummyServiceURL,
+			Chains:       []string{PlaceholderHash},
+			ServiceURL:   PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	res = types.ModuleCdc.MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
@@ -630,6 +662,7 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 	acl.SetOwner("application/ApplicationStakeMinimum", addr)
 	acl.SetOwner("pocketcore/ClaimExpiration", addr)
 	acl.SetOwner("pocketcore/SessionNodeCount", addr)
+	acl.SetOwner("pocketcore/ReplayAttackBurnMultiplier", addr)
 	acl.SetOwner("pos/MaxValidators", addr)
 	acl.SetOwner("pos/ProposerPercentage", addr)
 	acl.SetOwner("application/StabilityAdjustment", addr)
@@ -643,7 +676,7 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 	acl.SetOwner("pocketcore/ClaimSubmissionWindow", addr)
 	acl.SetOwner("pos/DAOAllocation", addr)
 	acl.SetOwner("pos/SignedBlocksWindow", addr)
-	acl.SetOwner("pos/SessionBlockFrequency", addr)
+	acl.SetOwner("pos/BlocksPerSession", addr)
 	acl.SetOwner("application/MaxApplications", addr)
 	acl.SetOwner("gov/daoOwner", addr)
 	acl.SetOwner("gov/upgrade", addr)
@@ -653,57 +686,44 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 // XXX: this is totally unsafe.
 // it's only suitable for testnets.
 func ResetWorldState(cmd *cobra.Command, args []string) {
-	// setup the logger
-	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
-		if keyvals[0] != kitlevel.Key() {
-			panic(fmt.Sprintf("expected level key to be first, got %v", keyvals[0]))
-		}
-		switch keyvals[1].(kitlevel.Value).String() {
-		case "info":
-			return term.FgBgColor{Fg: term.Green}
-		case "debug":
-			return term.FgBgColor{Fg: term.DarkBlue}
-		case "error":
-			return term.FgBgColor{Fg: term.Red}
-		default:
-			return term.FgBgColor{}
-		}
-	})
-
-	// setup tendermint node config
-	newTMConfig := con.DefaultConfig()
-	newTMConfig.SetRoot(getDataDir())
-
-	ResetAll(newTMConfig.DBDir(), newTMConfig.P2P.AddrBookFile(), getDataDir()+fs+privValKeyName,
-		getDataDir()+fs+privValStateName, logger)
+	ResetAll(GlobalConfig.TendermintConfig.DBDir(),
+		GlobalConfig.TendermintConfig.P2P.AddrBookFile(),
+		GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey,
+		GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorState,
+		log.NewNopLogger())
 }
-
-var keepAddrBook = false
 
 // ResetAll removes address book files plus all data, and resets the privValdiator data.
 // Exported so other CLI tools can use it.
 func ResetAll(dbDir, addrBookFile, privValKeyFile, privValStateFile string, logger log.Logger) {
-	if keepAddrBook {
-		logger.Info("The address book remains intact")
-	} else {
-		removeAddrBook(addrBookFile, logger)
-	}
+	removeAddrBook(addrBookFile, logger)
 	if err := os.RemoveAll(dbDir); err == nil {
 		logger.Info("Removed all blockchain history", "dir", dbDir)
 	} else {
 		logger.Error("Error removing all blockchain history", "dir", dbDir, "err", err)
 	}
 	// recreate the dbDir since the privVal state needs to live there
-	cmn.EnsureDir(dbDir, 0700)
+	err := cmn.EnsureDir(dbDir, 0700)
+	if err != nil {
+		panic(err)
+	}
 	resetFilePV(privValKeyFile, privValStateFile, logger)
 }
 
 func resetFilePV(privValKeyFile, privValStateFile string, logger log.Logger) {
-
 	if _, err := os.Stat(privValKeyFile); err == nil {
-		os.Remove(privValKeyFile)
-		os.Remove(privValStateFile)
-		os.Remove(getDataDir() + fs + nodeKeyName)
+		err := os.Remove(privValKeyFile)
+		if err != nil {
+			panic(err)
+		}
+		err = os.Remove(privValStateFile)
+		if err != nil {
+			panic(err)
+		}
+		err = os.Remove(GlobalConfig.PocketConfig.DataDir + FS + GlobalConfig.TendermintConfig.NodeKey)
+		if err != nil {
+			panic(err)
+		}
 	}
 	logger.Info("Reset private validator file", "keyFile", privValKeyFile,
 		"stateFile", privValStateFile)

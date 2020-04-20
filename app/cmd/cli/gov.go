@@ -32,7 +32,7 @@ var govDAOTransfer = &cobra.Command{
 Actions: [burn, transfer]`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		var toAddr string
 		if len(args) == 4 {
 			toAddr = args[3]
@@ -62,7 +62,7 @@ var govChangeParam = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		fmt.Println("Enter Password: ")
 		var i interface{}
 		err := json.Unmarshal([]byte(args[2]), &i)
@@ -85,7 +85,7 @@ var govUpgrade = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		i, err := strconv.Atoi(args[1])
 		if err != nil {
 			panic(err)

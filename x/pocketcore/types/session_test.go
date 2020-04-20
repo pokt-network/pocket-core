@@ -252,7 +252,8 @@ func TestNewSessionNodes(t *testing.T) {
 	allNodes[9] = node9
 	allNodes[10] = node10
 	allNodes[11] = node11
-	sessionNodes, err := NewSessionNodes(ethereum, fakeSessionKey, allNodes, 5)
+	k := MockPosKeeper{Validators: allNodes}
+	sessionNodes, err := NewSessionNodes(newContext(t, false).WithAppVersion("0.0.0"), newContext(t, false).WithAppVersion("0.0.0"), k, ethereum, fakeSessionKey, 5)
 	assert.Nil(t, err)
 	assert.Len(t, sessionNodes, 5)
 	assert.NotContains(t, sessionNodes, allNodes[0].(nodesTypes.Validator))

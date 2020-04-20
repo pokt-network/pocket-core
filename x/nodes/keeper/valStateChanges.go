@@ -19,7 +19,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 	// get the world state
 	store := ctx.KVStore(k.storeKey)
 	// allow all waiting to begin unstaking to begin unstaking
-	if ctx.BlockHeight()%k.SessionBlockFrequency(ctx) == 0 { // one block before new session (mod 1 would be session block)
+	if ctx.BlockHeight()%k.BlocksPerSession(ctx) == 0 { // one block before new session (mod 1 would be session block)
 		k.ReleaseWaitingValidators(ctx)
 	}
 	maxValidators := k.GetParams(ctx).MaxValidators
@@ -202,7 +202,6 @@ func (k Keeper) BeginUnstakingValidator(ctx sdk.Ctx, validator types.Validator) 
 	// set the status
 	validator = validator.UpdateStatus(sdk.Unstaking)
 	// set the unstaking completion time and completion height appropriately
-	// set the unstaking completion time and completion height appropriately
 	if validator.UnstakingCompletionTime.Second() == 0 {
 		validator.UnstakingCompletionTime = ctx.BlockHeader().Time.Add(params.UnstakingTime)
 	}
@@ -349,11 +348,11 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	validator := k.mustGetValidator(ctx, addr)
 	if !validator.Jailed {
-		panic(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v\n", validator))
+		k.Logger(ctx).Error(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v\n", validator))
+		return
 	}
 	validator.Jailed = false
 	k.SetValidator(ctx, validator)
 	k.SetStakedValidator(ctx, validator)
-	logger := k.Logger(ctx)
-	logger.Info(fmt.Sprintf("validator %s unjailed", addr))
+	k.Logger(ctx).Info(fmt.Sprintf("validator %s unjailed", addr))
 }

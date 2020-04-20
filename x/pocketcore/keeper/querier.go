@@ -9,40 +9,52 @@ import (
 	"strings"
 )
 
-// creates a querier for staking REST endpoints
+// "NewQuerier" - Creates an sdk.Querier for the pocket core module
 func NewQuerier(k Keeper) sdk.Querier {
 	return func(ctx sdk.Ctx, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {
+		// query a receipt for relays or challenges
 		case types.QueryReceipt:
 			return queryReceipt(ctx, req, k)
+		// query all receipts for an account
 		case types.QueryReceipts:
 			return queryReceipts(ctx, req, k)
+		// query pocket supported supported non-native blockchains
 		case types.QuerySupportedBlockchains:
 			return querySupportedBlockchains(ctx, req, k)
+		// query the parameters of the pocketcore module
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
+		// endpoint allowing a client to query a relay to a non-native blockchain
 		case types.QueryRelay:
 			return queryRelay(ctx, req, k)
+		// endpoint allowing a client to receive the nodes for their session
 		case types.QueryDispatch:
 			return queryDispatch(ctx, req, k)
+		// endpoint allowing a client to submit a challenge for an invalid relay-response
 		case types.QueryChallenge:
 			return queryChallenge(ctx, req, k)
 		default:
-			return nil, sdk.ErrUnknownRequest("unknown staking query endpoint")
+			return nil, sdk.ErrUnknownRequest("unknown pocketcore query endpoint")
 		}
 	}
 }
 
+// "queryChallenge" - Is a handler for the challenge query
+// The challenge query allows clients to submit a challenge for invalid relay responses
 func queryChallenge(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	// unmarshal data into a query params object
 	var params types.QueryChallengeParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
+	// handle the challenge from the params
 	response, er := k.HandleChallenge(ctx, params.Challenge)
 	if er != nil {
 		return nil, er
 	}
+	// marshal the response data into amino-json
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, response)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -50,16 +62,21 @@ func queryChallenge(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.E
 	return res, nil
 }
 
+// "queryRelay" - Is a handler for the relay query
+// The relay query allows clients to submit a request to a non-native blockchain
 func queryRelay(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	// unmarshal data into a query params object
 	var params types.QueryRelayParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
+	// handle the relay from the params
 	response, er := k.HandleRelay(ctx, params.Relay)
 	if er != nil {
 		return nil, er
 	}
+	// marshals the response data into amino-json
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, response)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -67,16 +84,21 @@ func queryRelay(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error
 	return res, nil
 }
 
+// "queryDispatch" - Is a handler for the dispatch query
+// The dispatch query allows clients retrieve their session information
 func queryDispatch(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	// unmarshal data into a query params object
 	var params types.QueryDispatchParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	response, er := k.Dispatch(ctx, params.SessionHeader)
+	// handle the dispatch from the params
+	response, er := k.HandleDispatch(ctx, params.SessionHeader)
 	if er != nil {
 		return nil, er
 	}
+	// marshals the response data into amino-json
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, *response)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -84,8 +106,12 @@ func queryDispatch(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Er
 	return res, nil
 }
 
+// "queryParameters" - Is a handler for the parameters query
+// Returns all the parameters in the module
 func queryParameters(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
+	// get the params
 	params := k.GetParams(ctx)
+	// marshal response data into amino-json
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, params)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
@@ -93,8 +119,10 @@ func queryParameters(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
 	return res, nil
 }
 
-// query the supported blockchains
+// "querySupportedBlockchains" - Is a handler for the supported blockchains query
+// Returns the non native chains supported on pocket network
 func querySupportedBlockchains(ctx sdk.Ctx, _ abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	// marshal supported blockchains into amino-json
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, k.SupportedBlockchains(ctx))
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
@@ -102,13 +130,16 @@ func querySupportedBlockchains(ctx sdk.Ctx, _ abci.RequestQuery, k Keeper) ([]by
 	return res, nil
 }
 
-// query the verified proof object for a specific address and header combination
+// "queryReceipt" - Is a handler for the receipt query
+// Returns a receipt for relays or challenges
 func queryReceipt(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	// unmarshal data into a QueryReceiptParams object
 	var params types.QueryReceiptParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
+	// determine the evidence type by switching on the params.Type
 	var et types.EvidenceType
 	switch strings.ToLower(params.Type) {
 	case "relay":
@@ -118,25 +149,31 @@ func queryReceipt(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Err
 	default:
 		return nil, sdk.ErrInternal("type in the receipt query is not recognized: (relay or challenge)")
 	}
-	evidence, _ := k.GetReceipt(ctx, params.Address, params.Header, et)
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, evidence)
+	// retrieve the receipt
+	receipt, _ := k.GetReceipt(ctx, params.Address, params.Header, et)
+	// marshal the data into amino-json bytes
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, receipt)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
 	return res, nil
 }
 
-// query the verified proof object for a particular node address
+// "queryReceipts" - Is a handler for the receipts query
+// Returns all receipts for relays or challenges
 func queryReceipts(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
+	// unmarshal data into a QueryReceiptParams object
 	var params types.QueryReceiptsParams
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
+	// get the receipts object for that address
 	receipts, err := k.GetReceipts(ctx, params.Address)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("an error occured retrieving the receipts: %s", err))
 	}
+	// marshal receipts object into amino-json bytes
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, receipts)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))

@@ -9,32 +9,32 @@ import (
 
 // RouterKey is the module name router key
 const (
-	RouterKey    = ModuleName
-	MsgClaimName = "claim"
-	MsgProofName = "proof"
+	RouterKey    = ModuleName // router name is module name
+	MsgClaimName = "claim"    // name for the claim message
+	MsgProofName = "proof"    // name for the proof message
 )
 
-// MsgClaim claims that you completed `NumOfProofs` and provides the merkle root for data integrity
+// "MsgClaim" - claims that you completed `NumOfProofs` for relay or challenge and provides the merkle root for data integrity
 type MsgClaim struct {
-	SessionHeader `json:"header"` // header information for identification
-	MerkleRoot    HashSum         `json:"merkle_root"`   // merkle root for data integrity
-	TotalProofs   int64           `json:"total_relays"`  // total number of relays
-	FromAddress   sdk.Address     `json:"from_address"`  // claimant
-	EvidenceType  EvidenceType    `json:"evidence_type"` // relay or challenge?
+	SessionHeader `json:"header"`                     // header information for identification
+	MerkleRoot    HashSum      `json:"merkle_root"`   // merkle root for data integrity
+	TotalProofs   int64        `json:"total_relays"`  // total number of relays
+	FromAddress   sdk.Address  `json:"from_address"`  // claimant's address
+	EvidenceType  EvidenceType `json:"evidence_type"` // relay or challenge?
 }
 
-// Route provides router key for msg
-func (msg MsgClaim) Route() string { return RouterKey }
-
-// Type provides msg name
-func (msg MsgClaim) Type() string { return MsgClaimName }
-
-// GetFee get fee for msg
+// "GetFee" - Returns the fee (sdk.Int) of the messgae type
 func (msg MsgClaim) GetFee() sdk.Int {
 	return sdk.NewInt(PocketFeeMap[msg.Type()])
 }
 
-// ValidateBasic quick validity check for staking an application
+// "Route" - Returns module router key
+func (msg MsgClaim) Route() string { return RouterKey }
+
+// "Type" - Returns message name
+func (msg MsgClaim) Type() string { return MsgClaimName }
+
+// "ValidateBasic" - Storeless validity check for claim message
 func (msg MsgClaim) ValidateBasic() sdk.Error {
 	// validate a non empty chain
 	if msg.Chain == "" {
@@ -64,43 +64,47 @@ func (msg MsgClaim) ValidateBasic() sdk.Error {
 	if msg.MerkleRoot.Sum == 0 {
 		return NewInvalidRootError(ModuleName)
 	}
+	// ensure non zero evidence
 	if msg.EvidenceType == 0 {
 		return NewNoEvidenceTypeErr(ModuleName)
+	}
+	if msg.EvidenceType != RelayEvidence && msg.EvidenceType != ChallengeEvidence {
+		return NewInvalidEvidenceErr(ModuleName)
 	}
 	return nil
 }
 
-// GetSignBytes encodes the message for signing
+// "GetSignBytes" - Encodes the message for signing
 func (msg MsgClaim) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }
 
-// GetSigners defines whose signature is required
+// "GetSigners" - Defines whose signature is required
 func (msg MsgClaim) GetSigners() []sdk.Address {
 	return []sdk.Address{sdk.Address(msg.FromAddress)}
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-// MsgProof proves the previous claim by providing the merkle Proof and the leaf node
+// "MsgProof" - Proves the previous claim by providing the merkle Proof and the leaf node
 type MsgProof struct {
 	MerkleProofs MerkleProofs `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
 	Leaf         Proof        `json:"leaf"`          // the needed to verify the Proof
 	Cousin       Proof        `json:"cousin"`        // the cousin needed to verify the Proof
 }
 
-// Route provides router key for msg
-func (msg MsgProof) Route() string { return RouterKey }
-
-// Type provides msg name
-func (msg MsgProof) Type() string { return MsgProofName }
-
-// GetFee get fee for msg
+// "GetFee" - Returns the fee (sdk.Int) of the messgae type
 func (msg MsgProof) GetFee() sdk.Int {
 	return sdk.NewInt(PocketFeeMap[msg.Type()])
 }
 
-// ValidateBasic quick validity check for staking an application
+// "Route" - Returns module router key
+func (msg MsgProof) Route() string { return RouterKey }
+
+// "Type" - Returns message name
+func (msg MsgProof) Type() string { return MsgProofName }
+
+// "ValidateBasic" - Storeless validity check for proof message
 func (msg MsgProof) ValidateBasic() sdk.Error {
 	// verify valid number of levels for merkle proofs
 	if len(msg.MerkleProofs[0].HashSums) < 3 || len(msg.MerkleProofs[0].HashSums) != len(msg.MerkleProofs[1].HashSums) {
@@ -118,16 +122,18 @@ func (msg MsgProof) ValidateBasic() sdk.Error {
 	if reflect.DeepEqual(msg.MerkleProofs[0].HashSums, msg.MerkleProofs[1].HashSums) {
 		return NewCousinLeafEquivalentError(ModuleName)
 	}
+	// validate the leaf
 	if err := msg.Leaf.ValidateBasic(); err != nil {
 		return err
 	}
+	// validate the cousin
 	if err := msg.Cousin.ValidateBasic(); err != nil {
 		return err
 	}
 	return nil
 }
 
-// GetSignBytes encodes the message for signing
+// "GetSignBytes" - Encodes the message for signing
 func (msg MsgProof) GetSignBytes() []byte {
 	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(msg))
 }

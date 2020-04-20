@@ -9,30 +9,32 @@ import (
 	"math"
 )
 
+// "Proof" - An interface representation of an economic proof of work/burn (relay or challenge)
 type Proof interface {
-	Hash() []byte
-	HashString() string
-	ValidateBasic() sdk.Error
-	GetSigners() []sdk.Address
-	SessionHeader() SessionHeader
-	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error
-	Handle()
-	EvidenceType() EvidenceType
+	Hash() []byte                                                                                        // returns cryptographic hash bz
+	HashString() string                                                                                  // returns the hex string representation of the hash
+	ValidateBasic() sdk.Error                                                                            // storeless validation check for the object
+	GetSigners() []sdk.Address                                                                           // returns the main signer(s) for the proof (used in messages)
+	SessionHeader() SessionHeader                                                                        // returns the session header
+	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error // validate the object
+	Store()                                                                                              // handle the proof after validation
+	EvidenceType() EvidenceType                                                                          // return the type of evidence from the proof object
 }
 
-var _ Proof = RelayProof{}
+var _ Proof = RelayProof{} // ensure implements interface at compile time
 
-// RelayProof per relay
+// "RelayProof" - A proof object that represetns one relay finished
 type RelayProof struct {
-	RequestHash        string `json:"request_hash"`
-	Entropy            int64  `json:"entropy"`
-	SessionBlockHeight int64  `json:"session_block_height"`
-	ServicerPubKey     string `json:"servicer_pub_key"`
-	Blockchain         string `json:"blockchain"`
-	Token              AAT    `json:"aat"`
-	Signature          string `json:"signature"`
+	RequestHash        string `json:"request_hash"`         // the hash of the request used for response comparison
+	Entropy            int64  `json:"entropy"`              // a random int64 used for replay prevention on the node verification (merkle) side
+	SessionBlockHeight int64  `json:"session_block_height"` // The height of the session block
+	ServicerPubKey     string `json:"servicer_pub_key"`     // the public key of the servicer in hex
+	Blockchain         string `json:"blockchain"`           // the non-native chain net id in hex
+	Token              AAT    `json:"aat"`                  // the app auth token object
+	Signature          string `json:"signature"`            // the signature in hex
 }
 
+// "ValidateLocal" - Validates the proof object, where the owner of the proof is the local node
 func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64, verifyPubKey string) sdk.Error {
 	// validate the public key correctness
 	if rp.ServicerPubKey != verifyPubKey {
@@ -49,13 +51,14 @@ func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNode
 	return nil
 }
 
+// "Validate" - Validates the relay proof object
 func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error {
 	// validate the session block height
 	if rp.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
 	}
 	// validate blockchain
-	if err := HashVerification(rp.Blockchain); err != nil {
+	if err := ShortHashVerification(rp.Blockchain); err != nil {
 		return err
 	}
 	// validate the RelayProof public key format
@@ -79,9 +82,10 @@ func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount
 	return SignatureVerification(rp.Token.ClientPublicKey, rp.HashString(), rp.Signature)
 }
 
+// "ValidateBasic" - Provides a lighter weight, storeless validation of the relay proof object
 func (rp RelayProof) ValidateBasic() sdk.Error {
 	// verify the session block height is positive
-	if rp.SessionBlockHeight < 0 {
+	if rp.SessionBlockHeight < 1 {
 		return NewInvalidBlockHeightError(ModuleName)
 	}
 	// verify the public key format for the leaf
@@ -89,7 +93,7 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 		return err
 	}
 	// verify the blockchain addr format
-	if err := HashVerification(rp.Blockchain); err != nil {
+	if err := ShortHashVerification(rp.Blockchain); err != nil {
 		return err
 	}
 	// verify the request hash format
@@ -111,6 +115,7 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 	return nil
 }
 
+// "SessionHeader" - Returns the session header corresponding with the proof
 func (rp RelayProof) SessionHeader() SessionHeader {
 	return SessionHeader{
 		ApplicationPubKey:  rp.Token.ApplicationPublicKey,
@@ -119,11 +124,12 @@ func (rp RelayProof) SessionHeader() SessionHeader {
 	}
 }
 
+// "EvidenceType" - Returns the type of the evidence
 func (rp RelayProof) EvidenceType() EvidenceType {
 	return RelayEvidence
 }
 
-// structure used to json marshal the RelayProof
+// "relayProof" - A structure used to json marshal the RelayProof
 type relayProof struct {
 	Entropy            int64  `json:"entropy"`
 	SessionBlockHeight int64  `json:"session_block_height"`
@@ -134,7 +140,7 @@ type relayProof struct {
 	RequestHash        string `json:"request_hash"`
 }
 
-// convert the RelayProof to bytes
+// "Bytes" - Converts the RelayProof to bytes
 func (rp RelayProof) Bytes() []byte {
 	res, err := json.Marshal(relayProof{
 		Entropy:            rp.Entropy,
@@ -151,7 +157,7 @@ func (rp RelayProof) Bytes() []byte {
 	return res
 }
 
-// convert the RelayProof to bytes
+// "BytesWithSignature" - Convert the RelayProof to bytes
 func (rp RelayProof) BytesWithSignature() []byte {
 	res, err := json.Marshal(relayProof{
 		Entropy:            rp.Entropy,
@@ -168,29 +174,30 @@ func (rp RelayProof) BytesWithSignature() []byte {
 	return res
 }
 
-// addr the RelayProof bytes
+// "Hash" - Returns the cryptographic hash of the rp bytes
 func (rp RelayProof) Hash() []byte {
 	res := rp.Bytes()
 	return Hash(res)
 }
 
-// hex encode the RelayProof addr
+// "HashString" - Returns the hex encoded string of the rp hash
 func (rp RelayProof) HashString() string {
 	return hex.EncodeToString(rp.Hash())
 }
 
-// addr the RelayProof bytes
+// "HashWithSignature" - Returns the cryptographic hash of the rp bytes (with signature field)
 func (rp RelayProof) HashWithSignature() []byte {
 	res := rp.BytesWithSignature()
 	return Hash(res)
 }
 
-// hex encode the RelayProof addr
+// "HashStringWithSignature" - Returns the hex encoded string of the rp hash (with signature field)
 func (rp RelayProof) HashStringWithSignature() string {
 	return hex.EncodeToString(rp.HashWithSignature())
 }
 
-func (rp RelayProof) Handle() {
+// "Store" - Handles the relay proof object by adding it to the cache
+func (rp RelayProof) Store() {
 	// add the Proof to the global (in memory) collection of proofs
 	SetProof(rp.SessionHeader(), RelayEvidence, rp)
 }
@@ -198,20 +205,23 @@ func (rp RelayProof) Handle() {
 func (rp RelayProof) GetSigners() []sdk.Address {
 	pk, err := crypto.NewPublicKey(rp.ServicerPubKey)
 	if err != nil {
-		panic(fmt.Sprintf("an error occured getting the signer for the RelayProof: \n%v", err))
+		return nil
 	}
 	return []sdk.Address{sdk.Address(pk.Address())}
 }
 
+// ---------------------------------------------------------------------------------------------------------------------
+
+// "ChallengeProofInvalidData" - Is a challenge of response data using a majority consensus
 type ChallengeProofInvalidData struct {
-	MajorityResponses [2]RelayResponse `json:"majority_responses"`
-	MinorityResponse  RelayResponse    `json:"minority_response"`
-	ReporterAddress   sdk.Address      `json:"address"`
+	MajorityResponses [2]RelayResponse `json:"majority_responses"` // the majority who agreed
+	MinorityResponse  RelayResponse    `json:"minority_response"`  // the minority who disagreed
+	ReporterAddress   sdk.Address      `json:"address"`            // the address of the reporter
 }
 
-var _ Proof = ChallengeProofInvalidData{}
+var _ Proof = ChallengeProofInvalidData{} // compile time interface implementation
 
-// validate local is used to validate a challenge request directly from a client
+// "ValidateLocal" - Validate local is used to validate a challenge request directly from a client
 func (c ChallengeProofInvalidData) ValidateLocal(maxRelays, sessionblockHeight int64, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
 	// get the header to retrieve the evidence object
 	h := SessionHeader{
@@ -235,7 +245,7 @@ func (c ChallengeProofInvalidData) ValidateLocal(maxRelays, sessionblockHeight i
 	return nil
 }
 
-// validate is used to validate a challenge request
+// "Validate" - validate is used to validate a challenge request
 func (c ChallengeProofInvalidData) Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error {
 	majResponse := c.MajorityResponses[0]
 	majResponse2 := c.MajorityResponses[1]
@@ -327,10 +337,13 @@ func (c ChallengeProofInvalidData) Validate(appSupportedBlockchains []string, se
 	return nil
 }
 
+// "ValidateBasic" - Provides a lightweight, storeless validity check
 func (c ChallengeProofInvalidData) ValidateBasic() sdk.Error {
+	// ensure address is not empty
 	if c.ReporterAddress == nil {
 		return NewEmptyAddressError(ModuleName)
 	}
+	// ensure can decode from hex
 	majResp, majResp2 := c.MajorityResponses[0], c.MajorityResponses[1]
 	if _, err := hex.DecodeString(majResp.Signature); err != nil {
 		return NewSigDecodeError(ModuleName)
@@ -341,6 +354,7 @@ func (c ChallengeProofInvalidData) ValidateBasic() sdk.Error {
 	if _, err := hex.DecodeString(c.MinorityResponse.Signature); err != nil {
 		return NewSigDecodeError(ModuleName)
 	}
+	// validate each response individuall
 	if err := majResp.Validate(); err != nil {
 		return err
 	}
@@ -350,6 +364,7 @@ func (c ChallengeProofInvalidData) ValidateBasic() sdk.Error {
 	if err := c.MinorityResponse.Validate(); err != nil {
 		return err
 	}
+	// validate the proofs individually
 	if err := majResp.Proof.ValidateBasic(); err != nil {
 		return err
 	}
@@ -359,12 +374,14 @@ func (c ChallengeProofInvalidData) ValidateBasic() sdk.Error {
 	if err := c.MinorityResponse.Proof.ValidateBasic(); err != nil {
 		return err
 	}
+	// compare the responses and ensure minority is in disagreement w/ the majority responses
 	if c.MinorityResponse.Proof.RequestHash != majResp.Proof.RequestHash || majResp.Proof.RequestHash != majResp2.Proof.RequestHash {
 		return NewMismatchedRequestHashError(ModuleName)
 	}
 	return nil
 }
 
+// "SessionHeader" - Returns the session header for the challenge proof
 func (c ChallengeProofInvalidData) SessionHeader() SessionHeader {
 	return SessionHeader{
 		ApplicationPubKey:  c.MinorityResponse.Proof.Token.ApplicationPublicKey,
@@ -373,11 +390,13 @@ func (c ChallengeProofInvalidData) SessionHeader() SessionHeader {
 	}
 }
 
+// "challengeProofInvalidData" - is used to marshal / unmarshal json
 type challengeProofInvalidData struct {
 	MajorityResponses [2]relayResponse
 	MinorityResponse  relayResponse
 }
 
+// "Bytes" - Bytes representaiton fo the challenge proof object
 func (c ChallengeProofInvalidData) Bytes() []byte {
 	majResp, majResp2 := c.MajorityResponses[0], c.MajorityResponses[1]
 	bz, err := json.Marshal(challengeProofInvalidData{
@@ -405,23 +424,28 @@ func (c ChallengeProofInvalidData) Bytes() []byte {
 	return bz
 }
 
+// "Hash" - The cryptographic hash representation of the challenge bytes
 func (c ChallengeProofInvalidData) Hash() []byte {
 	return Hash(c.Bytes())
 }
 
+// "HashString" - The hex encoded string representation fo the challenge hash
 func (c ChallengeProofInvalidData) HashString() string {
 	return hex.EncodeToString(c.Hash())
 }
 
+// "GetSigners" - Returns the signer(s) for the message
 func (c ChallengeProofInvalidData) GetSigners() []sdk.Address {
 	return []sdk.Address{c.ReporterAddress}
 }
 
-func (c ChallengeProofInvalidData) Handle() {
+// "Store" - Stores the challenge proof (stores in cache)
+func (c ChallengeProofInvalidData) Store() {
 	// add the Proof to the global (in memory) collection of proofs
 	SetProof(c.SessionHeader(), ChallengeEvidence, c)
 }
 
+// "EvidenceType" - Returns the type of the evidence
 func (c ChallengeProofInvalidData) EvidenceType() EvidenceType {
 	return ChallengeEvidence
 }

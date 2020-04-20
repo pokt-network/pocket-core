@@ -25,9 +25,9 @@ func TestAppModule_InitExportGenesis(t *testing.T) {
 		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{
-		Params: p,
-		Proofs: []types.Receipt(nil),
-		Claims: []types.MsgClaim(nil),
+		Params:   p,
+		Receipts: []types.Receipt(nil),
+		Claims:   []types.MsgClaim(nil),
 	}
 	ctx, _, _, k := createTestInput(t, false)
 	am := NewAppModule(k)
@@ -82,13 +82,13 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 	p := types.Params{
 		SessionNodeCount:      10,
 		ClaimSubmissionWindow: 22,
-		SupportedBlockchains:  []string{hex.EncodeToString(types.Hash([]byte("eth")))},
+		SupportedBlockchains:  []string{hex.EncodeToString(types.ShortHash([]byte("eth")))},
 		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{
-		Params: p,
-		Proofs: []types.Receipt(nil),
-		Claims: []types.MsgClaim(nil),
+		Params:   p,
+		Receipts: []types.Receipt(nil),
+		Claims:   []types.MsgClaim(nil),
 	}
 	p2 := types.Params{
 		SessionNodeCount:      -1,
@@ -97,9 +97,9 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 		ClaimExpiration:       55,
 	}
 	genesisState2 := types.GenesisState{
-		Params: p2,
-		Proofs: []types.Receipt(nil),
-		Claims: []types.MsgClaim(nil),
+		Params:   p2,
+		Receipts: []types.Receipt(nil),
+		Claims:   []types.MsgClaim(nil),
 	}
 	validBz, err := types.ModuleCdc.MarshalJSON(genesisState)
 	assert.Nil(t, err)

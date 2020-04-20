@@ -46,14 +46,14 @@ func TestKeeper_Dispatch(t *testing.T) {
 	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
 	mockCtx.On("Logger").Return(ctx.Logger())
-	res, err := keeper.Dispatch(mockCtx, validHeader)
+	res, err := keeper.HandleDispatch(mockCtx, validHeader)
 	assert.Nil(t, err)
 	assert.Equal(t, res.Session.SessionHeader.Chain, ethereum)
 	assert.Equal(t, res.Session.SessionHeader.SessionBlockHeight, int64(976))
 	assert.Equal(t, res.Session.SessionHeader.ApplicationPubKey, appPubKey)
 	assert.Equal(t, res.Session.SessionHeader, validHeader)
 	assert.Len(t, res.Session.SessionNodes, 5)
-	_, err = keeper.Dispatch(mockCtx, invalidHeader)
+	_, err = keeper.HandleDispatch(mockCtx, invalidHeader)
 	assert.NotNil(t, err)
 }
 

@@ -368,17 +368,23 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	index := 4
 	root := i.GenerateMerkleRoot()
 	proofs, cousinIndex := i.GenerateMerkleProof(index)
-	assert.True(t, proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i.Proofs))))
+	res, _ := proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i.Proofs)))
+	assert.True(t, res)
 	index2 := 0
 	root2 := i2.GenerateMerkleRoot()
 	proofs2, cousinIndex2 := i2.GenerateMerkleProof(index2)
-	assert.True(t, proofs2.Validate(root2, i2.Proofs[index2], i2.Proofs[cousinIndex2], int64(len(i2.Proofs))))
+	res, _ = proofs2.Validate(root2, i2.Proofs[index2], i2.Proofs[cousinIndex2], int64(len(i2.Proofs)))
+	assert.True(t, res)
 	// wrong root
-	assert.False(t, proofs.Validate(root2, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i.Proofs))))
+	res, _ = proofs.Validate(root2, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i.Proofs)))
+	assert.False(t, res)
 	// wrong cousin provided
-	assert.False(t, proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex2], int64(len(i.Proofs))))
+	res, _ = proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex2], int64(len(i.Proofs)))
+	assert.False(t, res)
 	// wrong leaf provided
-	assert.False(t, proofs.Validate(root, i.Proofs[index2], i.Proofs[cousinIndex], int64(len(i.Proofs))))
+	res, _ = proofs.Validate(root, i.Proofs[index2], i.Proofs[cousinIndex], int64(len(i.Proofs)))
+	assert.False(t, res)
 	// wrong tree size
-	assert.False(t, proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i2.Proofs))))
+	res, _ = proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i2.Proofs)))
+	assert.False(t, res)
 }
