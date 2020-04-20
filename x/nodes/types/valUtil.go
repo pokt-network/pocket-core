@@ -9,6 +9,8 @@ import (
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
+	"net/url"
+	"strconv"
 )
 
 // Validators is a collection of Validator
@@ -101,6 +103,38 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 		StakedTokens:            bv.StakedTokens,
 		Status:                  bv.Status,
 		UnstakingCompletionTime: bv.UnstakingCompletionTime,
+	}
+	return nil
+}
+
+const (
+	httpsPrefix = "https://"
+	colon       = ":"
+	period      = "."
+)
+
+func ValidateServiceURL(u string) error {
+	u = strings.ToLower(u)
+	_, err := url.ParseRequestURI(u)
+	if err != nil {
+		return ErrInvalidServiceURL(ModuleName, err)
+	}
+	if u[:8] != httpsPrefix {
+		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("invalid url prefix"))
+	}
+	temp := strings.Split(u, colon)
+	if len(temp) != 3 {
+		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("needs :port"))
+	}
+	port, err := strconv.Atoi(temp[2])
+	if err != nil {
+		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("invalid port, cant convert to integer"))
+	}
+	if port > 65535 || port < 0 {
+		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("invalid port, out of valid port range"))
+	}
+	if !strings.Contains(u, period) {
+		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("must contain one '.'"))
 	}
 	return nil
 }

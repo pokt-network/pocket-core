@@ -18,22 +18,25 @@ var (
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
-// app module Basics object
+// "AppModuleBasic" - The fundamental building block of a sdk module
 type AppModuleBasic struct{}
 
+// "Name" - Returns the name of the module
 func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
+// "RegisterCodec" - Registers the codec for the module
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 	types.RegisterCodec(cdc)
 }
 
+// "DefaultGenesis" - Returns the default genesis for the module
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 	return types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
-// Validation check of the Genesis
+// "ValidateGenesis" - Validation check for genesis state bytes
 func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 	var data types.GenesisState
 	err := types.ModuleCdc.UnmarshalJSON(bytes, &data)
@@ -44,12 +47,13 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 	return types.ValidateGenesis(data)
 }
 
+// "AppModule" - The higher level building block for a module
 type AppModule struct {
-	AppModuleBasic
-	keeper keeper.Keeper
+	AppModuleBasic               // a fundamental structure for all mods
+	keeper         keeper.Keeper // responsible for store operations
 }
 
-// NewAppModule creates a new AppModule Object
+// "NewAppModule" - Creates a new AppModule Object
 func NewAppModule(keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
@@ -57,31 +61,35 @@ func NewAppModule(keeper keeper.Keeper) AppModule {
 	}
 }
 
-func (AppModule) Name() string {
-	return types.ModuleName
-}
-
+// "RegisterInvariants" - Unused crisis checking
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {}
 
+// "Route" - returns the route of the module
 func (am AppModule) Route() string {
 	return types.RouterKey
 }
 
+// "NewHandler" - returns the handler for the module
 func (am AppModule) NewHandler() sdk.Handler {
 	return NewHandler(am.keeper)
 }
+
+// "QuerierRoute" - returns the route of the module for queries
 func (am AppModule) QuerierRoute() string {
 	return types.ModuleName
 }
 
+// "NewQuerierHandler" - returns the query handler for the module
 func (am AppModule) NewQuerierHandler() sdk.Querier {
 	return keeper.NewQuerier(am.keeper)
 }
 
+// "BeginBlock" - Functionality that is called at the beginning of (every) block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	if am.keeper.IsSessionBlock(ctx) && ctx.BlockHeight() != 1 {
 		go func() {
-			time.Sleep(time.Duration(rand.Intn(3000)) * time.Millisecond)
+			// use this sleep timer to bypass the beginBlock lock over transactions
+			time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
 			// auto send the proofs
 			am.keeper.SendClaimTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ClaimTx)
 			// auto claim the proofs
@@ -90,13 +98,16 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 			types.ClearSessionCache()
 		}()
 	}
-	keeper.BeginBlocker(ctx, req, am.keeper)
+	// delete the expired claims
+	am.keeper.DeleteExpiredClaims(ctx)
 }
 
+// "EndBlock" - Functionality that is called at the end of (every) block
 func (am AppModule) EndBlock(sdk.Ctx, abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
+// "InitGenesis" - Inits the module genesis from raw json
 func (am AppModule) InitGenesis(ctx sdk.Ctx, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	if data == nil {
@@ -107,6 +118,7 @@ func (am AppModule) InitGenesis(ctx sdk.Ctx, data json.RawMessage) []abci.Valida
 	return InitGenesis(ctx, am.keeper, genesisState)
 }
 
+// "ExportGenesis" - Exports the genesis from raw json
 func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 	gs := ExportGenesis(ctx, am.keeper)
 	return types.ModuleCdc.MustMarshalJSON(gs)

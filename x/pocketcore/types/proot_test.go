@@ -28,7 +28,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	hbs := HostedBlockchains{
-		M: map[string]HostedBlockchain{ethereum: {Hash: ethereum, URL: "https://www.google.com"}},
+		M: map[string]HostedBlockchain{ethereum: {ID: ethereum, URL: "https://www.google.com"}},
 		l: sync.Mutex{},
 		o: sync.Once{},
 	}
@@ -86,7 +86,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 	// invalid Proof AAT
 	invalidProofInvalidAAT := validProof
 	invalidProofInvalidAAT.Token.ApplicationSignature = hex.EncodeToString(clientSignature) // wrong signature
-	// invalid Proof Request Hash
+	// invalid Proof Request ID
 	invalidProofRequestHash := validProof
 	invalidProofRequestHash.RequestHash = servicerPubKey
 	// invalid Proof no client signature

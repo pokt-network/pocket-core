@@ -102,7 +102,7 @@ func TestErrCantHandleEvidence(t *testing.T) {
 		args args
 		want types.Error
 	}{
-		{"Can't Handle Evidence", args{codespace: codespace}, types.NewError(codespace, CodeCantHandleEvidence, "Warning: the DS evidence is unable to be handled")},
+		{"Can't Store Evidence", args{codespace: codespace}, types.NewError(codespace, CodeCantHandleEvidence, "Warning: the DS evidence is unable to be handled")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

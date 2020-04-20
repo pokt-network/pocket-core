@@ -5,14 +5,19 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-func (k Keeper) Dispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.DispatchResponse, sdk.Error) {
+// "HandleDispatch" - Handles a client request for their session information
+func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.DispatchResponse, sdk.Error) {
+	// retrieve the latest session block height
 	latestSessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
+	// set the session block height
 	header.SessionBlockHeight = latestSessionBlockHeight
+	// validate the header
 	err := header.ValidateHeader()
 	if err != nil {
 		return nil, err
 	}
-	sessionCtx, er := ctx.PrevCtx(header.SessionBlockHeight)
+	// get the session context
+	sessionCtx, er := ctx.PrevCtx(latestSessionBlockHeight)
 	if er != nil {
 		return nil, sdk.ErrInternal(er.Error())
 	}
@@ -21,8 +26,7 @@ func (k Keeper) Dispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.Dispat
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
-		nodes := k.GetAllNodes(ctx)
-		session, err = types.NewSession(header, types.BlockHash(sessionCtx), nodes, int(k.SessionNodeCount(sessionCtx)))
+		session, err = types.NewSession(sessionCtx, ctx, k.posKeeper, header, types.BlockHash(sessionCtx), int(k.SessionNodeCount(sessionCtx)))
 		if err != nil {
 			return nil, err
 		}
@@ -32,30 +36,36 @@ func (k Keeper) Dispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.Dispat
 	return &types.DispatchResponse{Session: session, BlockHeight: ctx.BlockHeight()}, nil
 }
 
-// is the context block a session block?
+// "IsSessionBlock" - Returns true if current block, is a session block (beginning of a session)
 func (k Keeper) IsSessionBlock(ctx sdk.Ctx) bool {
-	return ctx.BlockHeight()%k.posKeeper.SessionBlockFrequency(ctx) == 1
+	return ctx.BlockHeight()%k.posKeeper.BlocksPerSession(ctx) == 1
 }
 
-// get the most recent session block from the cont
-func (k Keeper) GetLatestSessionBlockHeight(ctx sdk.Ctx) int64 {
-	var sessionBlockHeight int64
+// "GetLatestSessionBlockHeight" - Returns the latest session block height (first block of the session, (see blocksPerSession))
+func (k Keeper) GetLatestSessionBlockHeight(ctx sdk.Ctx) (sessionBlockHeight int64) {
+	// get the latest block height
 	blockHeight := ctx.BlockHeight()
-	frequency := k.posKeeper.SessionBlockFrequency(ctx)
-	if blockHeight%frequency == 0 {
-		sessionBlockHeight = ctx.BlockHeight() - k.posKeeper.SessionBlockFrequency(ctx) + 1
+	// get the blocks per session
+	blocksPerSession := k.posKeeper.BlocksPerSession(ctx)
+	// if block height / blocks per session remainder is zero, just subtract blocks per session and add 1
+	if blockHeight%blocksPerSession == 0 {
+		sessionBlockHeight = blockHeight - k.posKeeper.BlocksPerSession(ctx) + 1
 	} else {
-		sessionBlockHeight = (ctx.BlockHeight()/k.posKeeper.SessionBlockFrequency(ctx))*k.posKeeper.SessionBlockFrequency(ctx) + 1
+		// calculate the latest session block height by diving the current block height by the blocksPerSession
+		sessionBlockHeight = (blockHeight/blocksPerSession)*blocksPerSession + 1
 	}
-	return sessionBlockHeight
+	return
 }
 
-// is the blockchain supported at this specific context?
+// "IsPocketSupportedBlockchain" - Returns true if network identifier param is supported by pocket
 func (k Keeper) IsPocketSupportedBlockchain(ctx sdk.Ctx, chain string) bool {
+	// loop through supported blockchains (network identifiers)
 	for _, c := range k.SupportedBlockchains(ctx) {
+		// if contains chain return true
 		if c == chain {
 			return true
 		}
 	}
+	// else return false
 	return false
 }

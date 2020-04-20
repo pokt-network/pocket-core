@@ -592,7 +592,7 @@ func TestRPC_Dispatch(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 	assert.Nil(t, err)
-	// Setup Dispatch Request
+	// Setup HandleDispatch Request
 	key := pocketTypes.SessionHeader{
 		ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
 		Chain:              dummyChainsHash,

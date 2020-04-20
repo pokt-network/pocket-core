@@ -6,86 +6,88 @@ import (
 	"strconv"
 )
 
-const ( // todo re-number
-	CodeSessionGenerationError           = 1111
-	CodeHttpStatusCodeError              = 1112
-	CodeInvalidTokenError                = 1114
-	CodePublKeyDecodeError               = 1116
-	CodeEmptyChainError                  = 1118
-	CodeEmptyBlockIDError                = 1119
-	CodeAppPubKeyError                   = 1120
-	CodeEmptyProofsError                 = 1121
-	CodeUnsupportedBlockchainAppError    = 1123
-	CodeInvalidSessionError              = 1124
-	CodeInsufficientNodesError           = 1127
-	CodeEmptyNonNativeChainError         = 1128
-	CodeInvalidSessionKeyError           = 1129
-	CodeFilterNodesError                 = 1130
-	CodeXORError                         = 1131
-	CodeInvalidHashError                 = 1132
-	CodeEmptyBlockHashError              = 1133
-	CodeEmptyBlockchainError             = 1134
-	CodeEmptyPayloadDataError            = 1135
-	CodeUnsupportedBlockchainNodeError   = 1136
-	CodeNotStakedBlockchainError         = 1137
-	CodeHTTPExecutionError               = 1138
-	CodeInvalidEntropyError              = 1139
-	CodeEmptyResponseError               = 1140
-	CodeResponseSignatureError           = 1141
-	CodeNegativeICCounterError           = 1142
-	CodeMaximumEntropyError              = 1143
-	CodeInvalidNodePubKeyError           = 1144
-	CodeTicketsNotFoundError             = 1145
-	CodeDuplicateTicketError             = 1146
-	CodeDuplicateProofError              = 1147
-	CodeInvalidSignatureSizeError        = 1148
-	CodeSigDecodeError                   = 1149
-	CodeMsgDecodeError                   = 1150
-	CodeInvalidSigError                  = 1151
-	CodePubKeySizeError                  = 1152
-	CodeEmptyKeybaseError                = 1153
-	CodeSelfNotFoundError                = 1154
-	CodeAppNotFoundError                 = 1155
-	CodeChainNotHostedError              = 1156
-	CodeInvalidHostedChainsError         = 1157
-	CodeNodeNotFoundError                = 1158
-	CodeInvalidProofsError               = 1159
-	CodeInconsistentPubKeyError          = 1160
-	CodeInvalidChainParamsError          = 1161
-	CodeNewHexDecodeError                = 1162
-	CodeChainNotSupportedErr             = 1163
-	CodePubKeyError                      = 1164
-	CodeSignatureError                   = 1165
-	CodeInvalidChainError                = 1166
-	CodeJSONMarshalError                 = 1167
-	CodeInvalidBlockchainHashLengthError = 1168
-	CodeEmptySessionKeyError             = 1169
-	CodeInvalidBlockHeightError          = 1170
-	CodeInvalidAppPubKeyError            = 1171
-	CodeInvalidHashLengthError           = 1172
-	CodeInvalidLeafCousinProofsCombo     = 1173
-	CodeEmptyAddressError                = 1174
-	CodeClaimNotFoundError               = 1175
-	CodeInvalidMerkleVerifyError         = 1176
-	CodeEmptyMerkleTreeError             = 1177
-	CodeMerkleNodeNotFoundError          = 1178
-	CodeExpiredProofsSubmissionError     = 1179
-	CodeAddressError                     = 1180
-	CodeOverServiceError                 = 1181
-	CodeCousinLeafEquivalentError        = 1182
-	CodeInvalidRootError                 = 1183
-	CodeRequestHash                      = 1184
-	CodeOutOfSyncRequestError            = 1185
-	CodeUnsupportedBlockchainError       = 1186
-	CodeDuplicatePublicKeyError          = 1187
-	CodeMismatchedRequestHashError       = 1188
-	CodeNewMismatchedAppPubKeyError      = 1189
-	CodeMismatchedSessionHeightError     = 1190
-	CodeMismatchedBlockchainsError       = 1191
-	CodeNoMajorityResponseError          = 1192
-	CodeNodeNotInSessionError            = 1193
-	CodeNoEvidenceTypeErr                = 1194
-	CodeInvalidPkFileErr                 = 1195
+const (
+	CodeSessionGenerationError           = 1
+	CodeHttpStatusCodeError              = 2
+	CodeInvalidTokenError                = 4
+	CodeInvalidEvidenceError             = 5
+	CodePublKeyDecodeError               = 6
+	CodeEmptyChainError                  = 8
+	CodeEmptyBlockIDError                = 9
+	CodeAppPubKeyError                   = 10
+	CodeEmptyProofsError                 = 11
+	CodeUnsupportedBlockchainAppError    = 13
+	CodeInvalidSessionError              = 14
+	CodeInsufficientNodesError           = 17
+	CodeEmptyNonNativeChainError         = 18
+	CodeInvalidSessionKeyError           = 19
+	CodeFilterNodesError                 = 20
+	CodeXORError                         = 21
+	CodeInvalidHashError                 = 22
+	CodeEmptyBlockHashError              = 23
+	CodeEmptyBlockchainError             = 24
+	CodeEmptyPayloadDataError            = 25
+	CodeUnsupportedBlockchainNodeError   = 26
+	CodeNotStakedBlockchainError         = 27
+	CodeHTTPExecutionError               = 28
+	CodeInvalidEntropyError              = 29
+	CodeEmptyResponseError               = 30
+	CodeResponseSignatureError           = 31
+	CodeNegativeICCounterError           = 32
+	CodeMaximumEntropyError              = 33
+	CodeInvalidNodePubKeyError           = 34
+	CodeTicketsNotFoundError             = 35
+	CodeDuplicateTicketError             = 36
+	CodeDuplicateProofError              = 37
+	CodeInvalidSignatureSizeError        = 38
+	CodeSigDecodeError                   = 39
+	CodeMsgDecodeError                   = 40
+	CodeInvalidSigError                  = 41
+	CodePubKeySizeError                  = 42
+	CodeEmptyKeybaseError                = 43
+	CodeSelfNotFoundError                = 44
+	CodeAppNotFoundError                 = 45
+	CodeChainNotHostedError              = 46
+	CodeInvalidHostedChainsError         = 47
+	CodeNodeNotFoundError                = 48
+	CodeInvalidProofsError               = 49
+	CodeInconsistentPubKeyError          = 50
+	CodeInvalidChainParamsError          = 51
+	CodeNewHexDecodeError                = 52
+	CodeChainNotSupportedErr             = 53
+	CodePubKeyError                      = 54
+	CodeSignatureError                   = 55
+	CodeInvalidChainError                = 56
+	CodeJSONMarshalError                 = 57
+	CodeInvalidBlockchainHashLengthError = 58
+	CodeEmptySessionKeyError             = 59
+	CodeInvalidBlockHeightError          = 60
+	CodeInvalidAppPubKeyError            = 61
+	CodeInvalidHashLengthError           = 62
+	CodeInvalidLeafCousinProofsCombo     = 63
+	CodeEmptyAddressError                = 64
+	CodeClaimNotFoundError               = 65
+	CodeInvalidMerkleVerifyError         = 66
+	CodeEmptyMerkleTreeError             = 67
+	CodeMerkleNodeNotFoundError          = 68
+	CodeExpiredProofsSubmissionError     = 69
+	CodeAddressError                     = 70
+	CodeOverServiceError                 = 71
+	CodeCousinLeafEquivalentError        = 72
+	CodeInvalidRootError                 = 73
+	CodeRequestHash                      = 74
+	CodeOutOfSyncRequestError            = 75
+	CodeUnsupportedBlockchainError       = 76
+	CodeDuplicatePublicKeyError          = 77
+	CodeMismatchedRequestHashError       = 78
+	CodeNewMismatchedAppPubKeyError      = 79
+	CodeMismatchedSessionHeightError     = 80
+	CodeMismatchedBlockchainsError       = 81
+	CodeNoMajorityResponseError          = 82
+	CodeNodeNotInSessionError            = 83
+	CodeNoEvidenceTypeErr                = 84
+	CodeInvalidPkFileErr                 = 85
+	CodeReplayAttackError                = 86
 )
 
 var (
@@ -173,6 +175,8 @@ var (
 	NoMajorityResponseError          = errors.New("no majority can be established between all of the responses")
 	NoEvidenceTypeErr                = errors.New("the evidence type is not supplied in the claim message")
 	InvalidPkFileErr                 = errors.New("the PK File is not found")
+	InvalidEvidenceErr               = errors.New("the evidence type passed is not valid")
+	ReplayAttackError                = errors.New("the merkle proof is flagged as a replay attack")
 )
 
 func NewUnsupportedBlockchainError(codespace sdk.CodespaceType) sdk.Error {
@@ -204,6 +208,10 @@ func NewEmptyMerkleTreeError(codespace sdk.CodespaceType) sdk.Error {
 
 func NewInvalidMerkleVerifyError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidMerkleVerifyError, InvalidMerkleVerifyError.Error())
+}
+
+func NewReplayAttackError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeReplayAttackError, ReplayAttackError.Error())
 }
 
 func NewClaimNotFoundError(codespace sdk.CodespaceType) sdk.Error {
@@ -279,6 +287,10 @@ func NewChainNotSupportedErr(codespace sdk.CodespaceType) sdk.Error {
 
 func NewNoEvidenceTypeErr(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeNoEvidenceTypeErr, NoEvidenceTypeErr.Error())
+}
+
+func NewInvalidEvidenceErr(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidEvidenceError, InvalidEvidenceErr.Error())
 }
 
 func NewHexDecodeError(codespace sdk.CodespaceType, err error) sdk.Error {

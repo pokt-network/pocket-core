@@ -80,10 +80,11 @@ func TestParams_Validate(t *testing.T) {
 
 func TestDefaultParams(t *testing.T) {
 	assert.True(t, Params{
-		SessionNodeCount:      DefaultSessionNodeCount,
-		ClaimSubmissionWindow: DefaultClaimSubmissionWindow,
-		SupportedBlockchains:  DefaultSupportedBlockchains,
-		ClaimExpiration:       DefaultClaimExpiration,
+		SessionNodeCount:           DefaultSessionNodeCount,
+		ClaimSubmissionWindow:      DefaultClaimSubmissionWindow,
+		SupportedBlockchains:       DefaultSupportedBlockchains,
+		ClaimExpiration:            DefaultClaimExpiration,
+		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
 	}.Equal(DefaultParams()))
 }
 

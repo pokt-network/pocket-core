@@ -36,7 +36,7 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains:  nil,
 			ClaimExpiration:       0,
 		},
-		Proofs: []Receipt{{
+		Receipts: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -44,6 +44,7 @@ func TestValidateGenesis(t *testing.T) {
 			},
 			ServicerAddress: servicerAddr.String(),
 			Total:           100,
+			EvidenceType:    RelayEvidence,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
@@ -64,7 +65,7 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains:  []string{nn},
 			ClaimExpiration:       50,
 		},
-		Proofs: []Receipt{{
+		Receipts: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -72,6 +73,7 @@ func TestValidateGenesis(t *testing.T) {
 			},
 			ServicerAddress: servicerAddr.String(),
 			Total:           -1,
+			EvidenceType:    RelayEvidence,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
@@ -92,7 +94,7 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains:  []string{nn},
 			ClaimExpiration:       50,
 		},
-		Proofs: []Receipt{{
+		Receipts: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -100,6 +102,7 @@ func TestValidateGenesis(t *testing.T) {
 			},
 			ServicerAddress: servicerAddr.String(),
 			Total:           100,
+			EvidenceType:    RelayEvidence,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
@@ -120,7 +123,7 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains:  []string{nn},
 			ClaimExpiration:       50,
 		},
-		Proofs: []Receipt{{
+		Receipts: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -128,6 +131,7 @@ func TestValidateGenesis(t *testing.T) {
 			},
 			ServicerAddress: servicerAddr.String(),
 			Total:           100,
+			EvidenceType:    RelayEvidence,
 		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
@@ -202,7 +206,7 @@ func TestDefaultGenesisState(t *testing.T) {
 			SupportedBlockchains:  []string{nn},
 			ClaimExpiration:       50,
 		},
-		Proofs: []Receipt{{
+		Receipts: []Receipt{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyProof,
 				Chain:              nn,
@@ -223,10 +227,11 @@ func TestDefaultGenesisState(t *testing.T) {
 		}},
 	}
 	DefaultGenState := GenesisState{Params: Params{
-		SessionNodeCount:      DefaultSessionNodeCount,
-		ClaimSubmissionWindow: DefaultClaimSubmissionWindow,
-		SupportedBlockchains:  DefaultSupportedBlockchains,
-		ClaimExpiration:       DefaultClaimExpiration,
+		SessionNodeCount:           DefaultSessionNodeCount,
+		ClaimSubmissionWindow:      DefaultClaimSubmissionWindow,
+		SupportedBlockchains:       DefaultSupportedBlockchains,
+		ClaimExpiration:            DefaultClaimExpiration,
+		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
 	}}
 	tests := []struct {
 		name         string

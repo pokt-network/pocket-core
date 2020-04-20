@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/hex"
+	"fmt"
 	"math/rand"
 	"strings"
 	"testing"
@@ -396,7 +397,7 @@ func TestClaimTx(t *testing.T) {
 			RequestHash:        hex.EncodeToString(pocketTypes.Hash([]byte("fake"))),
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
-			Blockchain:         dummyChainsHash,
+			Blockchain:         PlaceholderHash,
 			Token:              aat,
 			Signature:          "",
 		}
@@ -407,7 +408,7 @@ func TestClaimTx(t *testing.T) {
 		proof.Signature = hex.EncodeToString(sig)
 		pocketTypes.SetProof(pocketTypes.SessionHeader{
 			ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
-			Chain:              dummyChainsHash,
+			Chain:              PlaceholderHash,
 			SessionBlockHeight: 1,
 		}, pocketTypes.RelayEvidence, proof)
 		assert.Nil(t, err)
@@ -441,18 +442,20 @@ func TestClaimTxChallenge(t *testing.T) {
 	genBz, keys, _, _ := fiveValidatorsOneAppGenesis()
 	challenges := NewValidChallengeProof(t, keys, 5)
 	for _, c := range challenges {
-		c.Handle()
+		c.Store()
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	select {
 	case res := <-evtChan:
+		fmt.Println(res)
 		if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 			t.Fatal("claim message was not received first")
 		}
 		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		select {
 		case res := <-evtChan:
+			fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 				t.Fatal("proof message was not received afterward")
 			}
@@ -483,7 +486,7 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOf
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey,
 			RequestHash:        clientPubKey, // fake
-			Blockchain:         dummyChainsHash,
+			Blockchain:         PlaceholderHash,
 			Token: pocketTypes.AAT{
 				Version:              "0.0.1",
 				ApplicationPublicKey: appPubKey,
@@ -508,7 +511,7 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOf
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey2,
 			RequestHash:        clientPubKey, // fake
-			Blockchain:         dummyChainsHash,
+			Blockchain:         PlaceholderHash,
 			Token: pocketTypes.AAT{
 				Version:              "0.0.1",
 				ApplicationPublicKey: appPubKey,
@@ -533,7 +536,7 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOf
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey3,
 			RequestHash:        clientPubKey, // fake
-			Blockchain:         dummyChainsHash,
+			Blockchain:         PlaceholderHash,
 			Token: pocketTypes.AAT{
 				Version:              "0.0.1",
 				ApplicationPublicKey: appPubKey,

@@ -15,9 +15,9 @@ func TestInitExportGenesis(t *testing.T) {
 		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{
-		Params: p,
-		Proofs: []types.Receipt(nil),
-		Claims: []types.MsgClaim(nil),
+		Params:   p,
+		Receipts: []types.Receipt(nil),
+		Claims:   []types.MsgClaim(nil),
 	}
 	InitGenesis(ctx, k, genesisState)
 	assert.Equal(t, k.GetParams(ctx), p)

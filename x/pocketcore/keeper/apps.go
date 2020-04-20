@@ -1,15 +1,13 @@
 package keeper
 
 import (
-	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// get an app from the world state
+// "GetApp" - Retrieves an application from the app store, using the appKeeper (a link to the apps module)
 func (k Keeper) GetApp(ctx sdk.Ctx, address sdk.Address) (a exported.ApplicationI, found bool) {
-	ctx.Logger().Info(fmt.Sprintf("GetApp(Address = %v)", address.String()))
 	a = k.appKeeper.Application(ctx, address)
 	if a == nil {
 		return a, false
@@ -17,9 +15,9 @@ func (k Keeper) GetApp(ctx sdk.Ctx, address sdk.Address) (a exported.Application
 	return a, true
 }
 
-// get an app from a public key string
+// "GetAppFromPublicKey" - Retrieves an application from the app store, using the appKeeper (a link to the apps module)
+// using a hex string public key
 func (k Keeper) GetAppFromPublicKey(ctx sdk.Ctx, pubKey string) (app exported.ApplicationI, found bool) {
-	ctx.Logger().Info(fmt.Sprintf("GetApp(PubKey = %v) \n", pubKey))
 	pk, err := crypto.NewPublicKey(pubKey)
 	if err != nil {
 		return nil, false

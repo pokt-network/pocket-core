@@ -10,30 +10,24 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/rpc/client"
 	"math"
 	"strconv"
 )
 
-func BeginBlocker(ctx sdk.Ctx, _ abci.RequestBeginBlock, k Keeper) {
-	// delete the proofs held within the world state for too long
-	k.DeleteExpiredClaims(ctx)
-}
-
 // auto sends a proof transaction for the claim
 func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof) (*sdk.TxResponse, error)) {
-	kp, err := keybase.GetCoinbase()
+	kp, err := k.GetPKFromFile(ctx)
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the coinbase for the ProofTX:\n%v", err))
+		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
 		return
 	}
 	// get the self address
-	addr := kp.GetAddress()
+	addr := sdk.Address(kp.PublicKey().Address())
 	// get all mature (waiting period has passed) claims for your address
 	claims, err := k.GetMatureClaims(ctx, addr)
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the ProofTX:\n%v", err))
+		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the Proof Transaction:\n%v", err))
 		return
 	}
 	// for every claim of the mature set
@@ -64,7 +58,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, keybase, k)
 		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the ProofTX:\n%v", err))
+			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the Proof Transaction:\n%v", err))
 			return
 		}
 		// send the proof TX
@@ -103,8 +97,14 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
 		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
 	}
-	// validate the merkle proof
-	if !proof.MerkleProofs.Validate(claim.MerkleRoot, proof.Leaf, proof.Cousin, claim.TotalProofs) {
+	// validate the merkle proofs
+	isValid, isReplayAttack := proof.MerkleProofs.Validate(claim.MerkleRoot, proof.Leaf, proof.Cousin, claim.TotalProofs)
+	// if the merkle proof is a replay attack
+	if isReplayAttack {
+		return addr, claim, pc.NewReplayAttackError(pc.ModuleName)
+	}
+	// if is not valid for other reasons
+	if !isValid {
 		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// get the session context
@@ -113,7 +113,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return nil, pc.MsgClaim{}, sdk.ErrInternal(err.Error())
 	}
 	// get the application
-	application, found := k.GetAppFromPublicKey(ctx, claim.ApplicationPubKey)
+	application, found := k.GetAppFromPublicKey(sessionCtx, claim.ApplicationPubKey)
 	if !found {
 		return nil, pc.MsgClaim{}, pc.NewAppNotFoundError(pc.ModuleName)
 	}
@@ -162,7 +162,7 @@ type pseudorandomGenerator struct {
 // generates the required pseudorandom index for the zero knowledge proof
 func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.SessionHeader) (int64, error) {
 	// get the context for the proof (the proof context is X sessions after the session began)
-	proofContext, err := ctx.PrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(ctx)*k.SessionFrequency(ctx)) // next session block hash
+	proofContext, err := ctx.PrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(ctx)*k.BlocksPerSession(ctx)) // next session block hash
 	if err != nil {
 		return 0, err
 	}
@@ -204,15 +204,19 @@ func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 	return 0, nil
 }
 
-// todo exchanged password for pk, move or unify
+func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfChallenges sdk.Int) {
+	ctx.Logger().Error(fmt.Sprintf("Replay Attack Detected: By %s, for %d proofs", address.String(), numberOfChallenges.Int64()))
+	k.posKeeper.BurnForChallenge(ctx, numberOfChallenges.Mul(sdk.NewInt(k.ReplayAttackBurnMultiplier(ctx))), address)
+}
+
 func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
-	// get the coinbase, as it is the sender of the automatic message
-	kp, err := keybase.GetCoinbase()
+	// get the pk, as it is the sender of the automatic message
+	kp, err := k.GetPKFromFile(ctx)
 	if err != nil {
 		return txBuilder, cliCtx, err
 	}
-	// get the from address from the coinbase
-	fromAddr := kp.GetAddress()
+	// get the from address from the pkf
+	fromAddr := sdk.Address(kp.PublicKey().Address())
 	// get the genesis doc from the node for the chainID
 	genDoc, err := n.Genesis()
 	if err != nil {

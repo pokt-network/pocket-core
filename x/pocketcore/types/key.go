@@ -1,89 +1,81 @@
 package types
 
 import (
-	"encoding/hex"
 	sdk "github.com/pokt-network/posmint/types"
 )
 
 const (
-	ModuleName = "pocketcore"
-	StoreKey   = ModuleName
-	TStoreKey  = "transient_" + StoreKey
+	ModuleName = "pocketcore"            // name of the module
+	StoreKey   = ModuleName              // key for state store
+	TStoreKey  = "transient_" + StoreKey // transient key for state store
 )
 
 var (
-	ReceiptKey = []byte{0x01} // key for the verified proofs
-	ClaimKey   = []byte{0x02} // key for non-verified proofs
+	ReceiptKey = []byte{0x01} // key for the verified and stored evidence
+	ClaimKey   = []byte{0x02} // key for pending claims
 )
 
+// "KeyForReceipt" - Generates a key for the receipt object for the state store
 func KeyForReceipt(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
+	// validate the header
 	if err := header.ValidateHeader(); err != nil {
 		return nil, err
 	}
+	// verify the address
 	if err := AddressVerification(addr.String()); err != nil {
 		return nil, err
 	}
-	appPubKey, err := hex.DecodeString(header.ApplicationPubKey)
-	if err != nil {
-		return nil, err
+	// validate the evidence type
+	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
+		return nil, NewInvalidEvidenceErr(ModuleName)
 	}
-	sessionCtx, err := ctx.PrevCtx(header.SessionBlockHeight)
-	if err != nil {
-		return nil, err
-	}
-	sessionBlockHeader := sessionCtx.BlockHeader()
-	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
-	return append(append(append(append(ReceiptKey, addr.Bytes()...), appPubKey...), sessionHash...), evidenceType.Byte()), nil
+	// return the key bz
+	return append(append(append(ReceiptKey, addr.Bytes()...), header.Hash()...), evidenceType.Byte()), nil
 }
 
+// "KeyForReceipts" - Generates a key for the receips object using an address
 func KeyForReceipts(addr sdk.Address) ([]byte, error) {
+	// verify the address passed
 	if err := AddressVerification(addr.String()); err != nil {
 		return nil, err
 	}
+	// return the key bz
 	return append(ReceiptKey, addr.Bytes()...), nil
 }
 
+// "KeyForClaim" - Generates the key for the claim object for the state store
 func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
+	// validat the header
 	if err := header.ValidateHeader(); err != nil {
 		return nil, err
 	}
+	// validate the address
 	if err := AddressVerification(addr.String()); err != nil {
 		return nil, err
 	}
-	appPubKey, err := hex.DecodeString(header.ApplicationPubKey)
-	if err != nil {
-		return nil, err
+	// validate the evidence type
+	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
+		return nil, NewInvalidEvidenceErr(ModuleName)
 	}
-	sessionCtx, err := ctx.PrevCtx(header.SessionBlockHeight)
-	if err != nil {
-		return nil, err
-	}
-	sessionBlockHeader := sessionCtx.BlockHeader()
-	sessionHash := sessionBlockHeader.GetLastBlockId().Hash
-	return append(append(append(append(ClaimKey, addr.Bytes()...), appPubKey...), sessionHash...), evidenceType.Byte()), nil
+	// return the key bz
+	return append(append(append(ClaimKey, addr.Bytes()...), header.Hash()...), evidenceType.Byte()), nil
 }
 
+// "KeyForClaims" - Generates the key for the claims object
 func KeyForClaims(addr sdk.Address) ([]byte, error) {
+	// verify the address
 	if err := AddressVerification(addr.String()); err != nil {
 		return nil, err
 	}
+	// return the key bz
 	return append(ClaimKey, addr.Bytes()...), nil
 }
 
-func KeyForEvidence(header SessionHeader, evidenceType EvidenceType) []byte {
-	return append(header.Hash(), evidenceType.Byte())
-}
-
-func KeyForEvidenceByProof(header SessionHeader, p Proof) []byte {
-	var evidenceType EvidenceType
-	switch p.(type) {
-	case RelayProof:
-		evidenceType = RelayEvidence
-	case ChallengeProofInvalidData:
-		evidenceType = ChallengeEvidence
-	default:
-		panic("unrecognized evidence type (key for evidence by proof)")
+// "KeyForEvidence" - Generates the key for evidence
+func KeyForEvidence(header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
+	// validate the evidence type
+	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
+		return nil, NewInvalidEvidenceErr(ModuleName)
 	}
-	// generate the key for this specific Proof
-	return KeyForEvidence(header, evidenceType)
+	return append(header.Hash(), evidenceType.Byte()), nil
 }

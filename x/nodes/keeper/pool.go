@@ -31,7 +31,7 @@ func (k Keeper) GetStakedPool(ctx sdk.Ctx) (stakedPool exported.ModuleAccountI) 
 // moves coins from the module account to the validator -> used in unstaking
 func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, validator types.Validator) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), validator.StakedTokens))
-	err := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, sdk.Address(validator.Address), coins)
+	err := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, validator.Address, coins)
 	if err != nil {
 		panic(err)
 	}

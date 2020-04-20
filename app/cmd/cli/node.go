@@ -33,7 +33,7 @@ var nodeStakeCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		fromAddr := args[0]
 		amount, err := strconv.Atoi(args[1])
 		if err != nil {
@@ -64,8 +64,8 @@ var nodeUnstakeCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
-		fmt.Println("Enter passphrase: ")
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		fmt.Println("Enter Password: ")
 		res, err := app.UnstakeNode(args[0], app.Credentials())
 		if err != nil {
 			fmt.Println(err)
@@ -82,8 +82,8 @@ var nodeUnjailCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
-		fmt.Println("Enter passphrase: ")
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		fmt.Println("Enter Password: ")
 		res, err := app.UnjailNode(args[0], app.Credentials())
 		if err != nil {
 			fmt.Println(err)

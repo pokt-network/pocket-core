@@ -33,7 +33,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	mockCtx.On("KVStore", keys[appsTypes.StoreKey]).Return(ctx.KVStore(keys[appsTypes.StoreKey]))
 	mockCtx.On("Logger").Return(ctx.Logger())
 	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
-	mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx, nil)
+	mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.BlocksPerSession(ctx)).Return(ctx, nil)
 
 	// generate the pseudorandom proof
 	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header)
@@ -72,7 +72,7 @@ func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 		mockCtx := new(Ctx)
 		mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 		mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-		mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.SessionFrequency(ctx)).Return(ctx, nil)
+		mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.BlocksPerSession(ctx)).Return(ctx, nil)
 
 		// generate the pseudorandom proof
 		neededLeafIndex, err := keeper.getPseudorandomIndex(mockCtx, int64(relays), header)

@@ -34,7 +34,7 @@ var appStakeCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		fromAddr := args[0]
 		amount, err := strconv.Atoi(args[1])
 		if err != nil {
@@ -64,8 +64,8 @@ var appUnstakeCmd = &cobra.Command{
 Prompts the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
-		fmt.Println("Enter passphrase: ")
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		fmt.Println("Enter Password: ")
 		res, err := app.UnstakeApp(args[0], app.Credentials())
 		if err != nil {
 			fmt.Println(err)
@@ -84,7 +84,7 @@ Read the Application Authentication Token documentation for more information.
 NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES IN ORDER TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Println(app.UninitializedKeybaseError)

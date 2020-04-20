@@ -29,11 +29,7 @@ import (
 	"time"
 )
 
-// nolint: deadcode unused
 var (
-	multiPerm    = "multiple permissions account"
-	randomPerm   = "random permission"
-	holder       = "holder"
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
 		gov.AppModuleBasic{},
@@ -54,46 +50,6 @@ func makeTestCodec() *codec.Codec {
 	codec.RegisterCrypto(cdc)
 
 	return cdc
-}
-
-// nolint: deadcode unused
-func newContext(t *testing.T, isCheckTx bool) sdk.Context {
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
-	keyParams := sdk.ParamsKey
-	tkeyParams := sdk.ParamsTKey
-	keySupply := sdk.NewKVStoreKey(auth.StoreKey)
-	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
-	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
-	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
-
-	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keySupply, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
-	err := ms.LoadLatestVersion()
-	require.Nil(t, err)
-
-	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, isCheckTx, log.NewNopLogger())
-	ctx = ctx.WithConsensusParams(
-		&abci.ConsensusParams{
-			Validator: &abci.ValidatorParams{
-				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
-			},
-		},
-	)
-	ctx = ctx.WithBlockHeader(abci.Header{
-		Height: 1,
-		Time:   time.Time{},
-		LastBlockId: abci.BlockID{
-			Hash: types.Hash([]byte("fake")),
-		},
-	})
-	return ctx.WithAppVersion("0.0.0")
 }
 
 // nolint: deadcode unused
@@ -162,8 +118,8 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 
 	hb := types.HostedBlockchains{
 		M: map[string]types.HostedBlockchain{ethereum: {
-			Hash: ethereum,
-			URL:  "https://www.google.com",
+			ID:  ethereum,
+			URL: "https://www.google.com",
 		}},
 	}
 
@@ -174,7 +130,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	ak := auth.NewKeeper(cdc, keyAcc, accSubspace, maccPerms)
 	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, nodesSubspace, "pos")
 	appk := appsKeeper.NewKeeper(cdc, appsKey, nk, ak, appSubspace, appsTypes.ModuleName)
-	keeper := keep.NewPocketCoreKeeper(pocketKey, cdc, nk, appk, &hb, pocketSubspace)
+	keeper := keep.NewKeeper(pocketKey, cdc, nk, appk, &hb, pocketSubspace)
 	kb := NewTestKeybase()
 	_, err = kb.Create("test")
 	assert.Nil(t, err)

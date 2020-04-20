@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"time"
@@ -9,8 +10,7 @@ import (
 
 func (k Keeper) SetWaitingValidator(ctx sdk.Ctx, val types.Validator) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalValidator(k.cdc, val)
-	store.Set(types.KeyForValWaitingToBeginUnstaking(val.Address), bz)
+	store.Set(types.KeyForValWaitingToBeginUnstaking(val.Address), val.Address)
 }
 
 func (k Keeper) IsWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) bool {
@@ -29,7 +29,13 @@ func (k Keeper) GetWaitingValidators(ctx sdk.Ctx) (validators []types.Validator)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		addr := iterator.Value()
+		validator, found := k.GetValidator(ctx, addr)
+		if !found {
+			ctx.Logger().Error(fmt.Sprintf("Could not find waiting validator: %s", addr))
+			k.DeleteWaitingValidator(ctx, addr)
+			return
+		}
 		validators = append(validators, validator)
 	}
 	return validators

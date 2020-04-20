@@ -8,6 +8,9 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
+// "AATGeneration" - Generates an application authentication token with an application public key hex string
+// a client public key hex string, a passphrase and a keybase. The contract is that the keybase contains the app pub key
+// and the passphrase corresponds to the app public key keypair.
 func AATGeneration(appPubKey string, clientPubKey string, passphrase string, keybase keys.Keybase) (pc.AAT, sdk.Error) {
 	// get the public key from string
 	pk, err := crypto.NewPublicKey(appPubKey)
@@ -16,7 +19,7 @@ func AATGeneration(appPubKey string, clientPubKey string, passphrase string, key
 	}
 	// create the aat object
 	aat := pc.AAT{
-		Version:              pc.SUPPORTEDTOKENVERSION,
+		Version:              pc.SupportedTokenVersions[0],
 		ApplicationPublicKey: appPubKey,
 		ClientPublicKey:      clientPubKey,
 		ApplicationSignature: "",
@@ -26,7 +29,7 @@ func AATGeneration(appPubKey string, clientPubKey string, passphrase string, key
 	if err != nil {
 		return pc.AAT{}, pc.NewSignatureError(pc.ModuleName, err)
 	}
-	// stringify the signature
+	// stringify the signature into hex
 	aat.ApplicationSignature = hex.EncodeToString(sig)
 	return aat, nil
 }

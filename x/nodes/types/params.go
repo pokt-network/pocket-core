@@ -36,7 +36,7 @@ var (
 	KeyDowntimeJailDuration        = []byte("DowntimeJailDuration")
 	KeySlashFractionDoubleSign     = []byte("SlashFractionDoubleSign")
 	KeySlashFractionDowntime       = []byte("SlashFractionDowntime")
-	KeySessionBlock                = []byte("SessionBlockFrequency")
+	KeySessionBlock                = []byte("BlocksPerSession")
 	KeyDAOAllocation               = []byte("DAOAllocation")
 	KeyProposerAllocation          = []byte("ProposerPercentage")
 	DoubleSignJailEndTime          = time.Unix(253402300799, 0) // forever
@@ -149,7 +149,7 @@ func (p Params) String() string {
   DowntimeJailDuration:    %s
   SlashFractionDoubleSign: %s
   SlashFractionDowntime:   %s
-  SessionBlockFrequency    %d
+  BlocksPerSession    %d
   Proposer Allocation      %d
   DAO allocation           %d`,
 		p.UnstakingTime,

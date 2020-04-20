@@ -15,7 +15,7 @@ type PosKeeper interface {
 	JailValidator(ctx sdk.Ctx, addr sdk.Address)
 	AllValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
 	GetStakedValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
-	SessionBlockFrequency(ctx sdk.Ctx) (res int64)
+	BlocksPerSession(ctx sdk.Ctx) (res int64)
 	StakeDenom(ctx sdk.Ctx) (res string)
 }
 

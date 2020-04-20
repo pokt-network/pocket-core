@@ -6,46 +6,60 @@ import (
 	"fmt"
 )
 
-const (
-	SUPPORTEDTOKENVERSION = "0.0.1" // todo
+var (
+	// A list of supported token versions
+	// Requires major (semantic) upgrade to update this list
+	SupportedTokenVersions = []string{"0.0.1"}
 )
 
+// "AAT" - Application authentication token, used to authenticate clients for applications
 type AAT struct {
-	Version              string `json:"version"`
-	ApplicationPublicKey string `json:"app_pub_key"`
-	ClientPublicKey      string `json:"client_pub_key"`
-	ApplicationSignature string `json:"signature"`
+	Version              string `json:"version"`        // what version of the token is used?
+	ApplicationPublicKey string `json:"app_pub_key"`    // the app pub key in hex
+	ClientPublicKey      string `json:"client_pub_key"` // the client pub key in hex
+	ApplicationSignature string `json:"signature"`      // the app signature in hex
 }
 
+// "VersionIsIncluded" - Returns if the version is included
 func (a AAT) VersionIsIncluded() bool {
+	// if version is empty return nil
 	if a.Version == "" {
 		return false
 	}
 	return true
 }
 
+// "VersionIsSupported" - Returns if the version of the AAT is supported by the network
 func (a AAT) VersionIsSupported() bool {
-	if a.Version == SUPPORTEDTOKENVERSION {
-		return true
+	for _, v := range SupportedTokenVersions {
+		if a.Version == v {
+			return true
+		}
 	}
 	return false
 }
 
+// "Validate" - Returns an error for an invalid AAT
 func (a AAT) Validate() error {
+	// check the version of the aat
 	if err := a.ValidateVersion(); err != nil {
 		return err
 	}
+	// check the message of the aat
 	if err := a.ValidateMessage(); err != nil {
 		return err
 	}
+	// check the app signature of the aat
 	if err := a.ValidateSignature(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a AAT) Hash() []byte {
-	r, err := json.Marshal(AAT{
+// "Bytes" - Returns the bytes representation of the AAT
+func (a AAT) Bytes() []byte {
+	// using standard json bz
+	b, err := json.Marshal(AAT{
 		ApplicationSignature: "",
 		ApplicationPublicKey: a.ApplicationPublicKey,
 		ClientPublicKey:      a.ClientPublicKey,
@@ -54,24 +68,34 @@ func (a AAT) Hash() []byte {
 	if err != nil {
 		panic(fmt.Sprintf("an error occured hashing the aat:\n%v", err))
 	}
-	return Hash(r)
+	return b
 }
 
+// "ID" - Returns the hash of the AAT bytes
+func (a AAT) Hash() []byte {
+	return Hash(a.Bytes())
+}
+
+// "HashString" - Returns the string representation of the AAT hash
 func (a AAT) HashString() string {
+	// using standard library hex
 	return hex.EncodeToString(a.Hash())
 }
 
+// "ValidateVersion" - Confirms the version field of the AAT
 func (a AAT) ValidateVersion() error {
 	// check for valid version
 	if !a.VersionIsIncluded() {
 		return MissingTokenVersionError
 	}
+	// check if version is supported
 	if !a.VersionIsSupported() {
 		return UnsupportedTokenVersionError
 	}
 	return nil
 }
 
+// "ValidateMessage" - Confirms the message field of the AAT
 func (a AAT) ValidateMessage() error {
 	// check for valid application public key
 	if len(a.ApplicationPublicKey) == 0 {
@@ -80,6 +104,7 @@ func (a AAT) ValidateMessage() error {
 	if err := PubKeyVerification(a.ApplicationPublicKey); err != nil {
 		return err
 	}
+	// check if client public key is valid
 	if len(a.ClientPublicKey) == 0 {
 		return MissingClientPublicKeyError
 	}
@@ -89,9 +114,11 @@ func (a AAT) ValidateMessage() error {
 	return nil
 }
 
+// "ValidateSignature" - Confirms the signature field of the AAT
 func (a AAT) ValidateSignature() error {
 	// check for valid signature
 	messageHash := a.HashString()
+	// verifies the signature with the message of the AAT
 	if err := SignatureVerification(a.ApplicationPublicKey, messageHash, a.ApplicationSignature); err != nil {
 		return InvalidTokenSignatureErorr
 	}

@@ -7,7 +7,6 @@ require (
 	github.com/go-kit/kit v0.9.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/julienschmidt/httprouter v1.2.0
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.8.1 // indirect
 	github.com/pokt-network/posmint v0.0.0-20200415205759-f9fe52cadf8d

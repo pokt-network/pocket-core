@@ -48,7 +48,7 @@ type Routes []Route
 func GetRoutes() Routes {
 	routes := Routes{
 		Route{Name: "AppVersion", Method: "GET", Path: "/v1", HandlerFunc: Version},
-		Route{Name: "Dispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
+		Route{Name: "HandleDispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
 		Route{Name: "Service", Method: "POST", Path: "/v1/client/relay", HandlerFunc: Relay},
 		Route{Name: "Challenge", Method: "POST", Path: "/v1/client/challenge", HandlerFunc: Challenge},
 		Route{Name: "SendRawTx", Method: "POST", Path: "/v1/client/rawtx", HandlerFunc: SendRawTx},

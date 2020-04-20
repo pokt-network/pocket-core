@@ -3,7 +3,6 @@ package cli
 import (
 	"encoding/hex"
 	"fmt"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -50,8 +49,8 @@ var createCmd = &cobra.Command{
 	Long: `Creates and persists a new account in the Keybase.
 Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
-		kb := keys.New(app.KeybaseName, app.InitDataDirectory(datadir)+string(filepath.Separator)+app.KBDirectoryName)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir+app.FS+app.GlobalConfig.PocketConfig.KeybaseName)
 		fmt.Print("Enter Passphrase: \n")
 		kp, err := kb.Create(app.Credentials())
 		if err != nil {
@@ -67,7 +66,7 @@ var getCoinbase = &cobra.Command{
 	Short: "Retrieves the coinbase account from the keybase",
 	Long:  `Retrieves the coinbase account from the pocket core keybase`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -90,7 +89,7 @@ var deleteCmd = &cobra.Command{
 Will prompt the user for the account passphrase`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -120,7 +119,7 @@ Example output:
 	(0) b3746D30F2A579a2efe7F2F6E8E06277a78054C1
 	(1) ab514F27e98DE7E3ecE3789b511dA955C3F09Bbc`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -147,7 +146,7 @@ Example output:
   Public Key: ccc15d61fa80c707cb55ccd80b61720abbac13ca56f7896057e889521462052d`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -177,7 +176,7 @@ var updatePassphraseCmd = &cobra.Command{
 Will prompt the user for the current account passphrase and the new account passphrase.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -209,7 +208,7 @@ var signCmd = &cobra.Command{
 Will prompt the user for the account passphrase.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -242,7 +241,7 @@ var importArmoredCmd = &cobra.Command{
 Will prompt the user for a decryption passphrase of the <armor> string and for an encryption passphrase to store in the Keybase.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -268,7 +267,7 @@ var exportCmd = &cobra.Command{
 Will prompt the user for the account passphrase and for an encryption passphrase for the exported account.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -301,7 +300,7 @@ Will prompt the user for the account passphrase.
 NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Printf(app.UninitializedKeybaseError.Error())
@@ -331,7 +330,7 @@ var sendTxCmd = &cobra.Command{
 Prompts the user for <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		amount, err := strconv.Atoi(args[2])
 		if err != nil {
 			fmt.Println(err)
@@ -354,7 +353,7 @@ var sendRawTxCmd = &cobra.Command{
 	Long:  `Sends presigned transaction through the tendermint node`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		bz, err := hex.DecodeString(args[1])
 		if err != nil {
 			fmt.Println(err)
@@ -377,10 +376,10 @@ var importCmd = &cobra.Command{
 Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		pkBytes, err := hex.DecodeString(args[0])
-		kb := keys.New(app.KeybaseName, app.InitDataDirectory(datadir)+string(filepath.Separator)+app.KBDirectoryName)
-		fmt.Println("Enter passphrase")
+		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir+app.FS+app.GlobalConfig.PocketConfig.KeybaseName)
+		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()
 		var pk [crypto.Ed25519PrivKeySize]byte
 		copy(pk[:], pkBytes)
@@ -401,7 +400,7 @@ var newMultiPublicKey = &cobra.Command{
 	Long:  `create a multisig public key with a comma separated list of hex encoded public keys`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		rawPKs := strings.Split(strings.TrimSpace(args[0]), ",")
 		var pks []crypto.PublicKey
 		for _, pk := range rawPKs {
@@ -422,7 +421,7 @@ var buildMultisig = &cobra.Command{
 	Args:  cobra.ExactArgs(3),
 	Long:  `build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		msg := args[1]
 		rawPKs := strings.Split(strings.TrimSpace(args[2]), ",")
 		var pks []crypto.PublicKey
@@ -449,7 +448,7 @@ var signMS = &cobra.Command{
 	Long:  `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object`,
 	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		msg := args[1]
 		rawPKs := strings.Split(strings.TrimSpace(args[2]), ",")
 		var pks []crypto.PublicKey
@@ -476,7 +475,7 @@ var signNexMS = &cobra.Command{
 NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.SetTMNode(tmNode)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		msg := args[1]
 		fmt.Println("Enter password: ")
 		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials())
