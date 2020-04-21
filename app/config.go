@@ -681,6 +681,7 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 // XXX: this is totally unsafe.
 // it's only suitable for testnets.
 func ResetWorldState(cmd *cobra.Command, args []string) {
+	loadGlobaConfigForReset(cmd)
 	ResetAll(GlobalConfig.TendermintConfig.DBDir(),
 		GlobalConfig.TendermintConfig.P2P.AddrBookFile(),
 		GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey,
@@ -688,7 +689,22 @@ func ResetWorldState(cmd *cobra.Command, args []string) {
 		log.NewNopLogger())
 }
 
-// ResetAll removes address book files plus all data, and resets the privValdiator data.
+func loadGlobaConfigForReset(cmd *cobra.Command) {
+	var datadir string
+	if cmd.Flag("datadir").DefValue == cmd.Flag("datadir").Value.String() {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			panic("could not get home directory for data dir creation: " + err.Error())
+		}
+		datadir = home + FS + DefaultDDName
+	} else {
+		datadir = cmd.Flag("datadir").Value.String()
+	}
+	c := DefaultConfig(datadir)
+	GlobalConfig = c
+}
+
+// ResetAll removes address book files plus all data, and resets the privValidator data.
 // Exported so other CLI tools can use it.
 func ResetAll(dbDir, addrBookFile, privValKeyFile, privValStateFile string, logger log.Logger) {
 	removeAddrBook(addrBookFile, logger)
