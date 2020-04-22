@@ -17,8 +17,10 @@ jobs:
     steps:
       # Checkout the code
       - checkout
-      # Installa dependencies
+      # Install dependencies
       - run: ./deps.sh
+      # Install cleveldb dependencies
+      - run: apt-get install libleveldb-dev
       # Build the binary
       - run: go build -tags cleveldb app/cmd/pocket_core/main.go
       # Cache build
