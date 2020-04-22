@@ -175,6 +175,7 @@ func InitTendermint(persistentPeers, seeds, tmRPCPort, tmPeersPort string, block
 	newTMConfig.P2P.MaxNumOutboundPeers = 1000
 	newTMConfig.P2P.AllowDuplicateIP = true
 	newTMConfig.LogLevel = "*:info, *:error"
+	newTMConfig.DBBackend = "cleveldb"
 	logger, err := flags.ParseLogLevel(newTMConfig.LogLevel, logger, "info")
 	if err != nil {
 		panic(err)

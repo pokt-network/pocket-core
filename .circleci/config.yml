@@ -20,7 +20,7 @@ jobs:
       # Installa dependencies
       - run: ./deps.sh
       # Build the binary
-      - run: go build app/cmd/pocket_core/main.go
+      - run: go build -tags cleveldb app/cmd/pocket_core/main.go
       # Cache build
       - save_cache:
           key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
