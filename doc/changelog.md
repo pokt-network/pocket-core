@@ -29,3 +29,6 @@
 
 ## RC-0.2.3
 - Changed Tendermint's dbbackend to cleveldb after multiple validator crashes on April's 20th load test.
+
+## RC-0.2.4
+- Removed trailing slash when performing a relay when there's no path present in the relay payload.
