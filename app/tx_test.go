@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/hex"
 	"fmt"
+	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 	"math/rand"
 	"strings"
 	"testing"
@@ -39,7 +40,9 @@ func TestUnstakeApp(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0, 1, 1)
+		got, err := apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+			Page:  1,
+			Limit: 1})
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got.Result))
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
@@ -47,10 +50,18 @@ func TestUnstakeApp(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryUnstakingApplications(memCodec(), memCli, 0, 1, 1)
+		got, err := apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+			Page:          1,
+			Limit:         1,
+			StakingStatus: 1,
+		})
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got.Result))
-		got, err = apps.QueryStakedApplications(memCodec(), memCli, 0, 1, 1)
+		got, err = apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+			Page:          1,
+			Limit:         1,
+			StakingStatus: 2,
+		})
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got.Result)) // default genesis application
 	}
@@ -81,20 +92,19 @@ func TestUnstakeNode(t *testing.T) {
 			select {
 			case res := <-evtChan:
 				if len(res.Events["begin_unstake.module"]) == 1 {
-					got, err := nodes.QueryUnstakingValidators(memCodec(), memCli, 0, 1, 1)
+					got, err := nodes.QueryValidators(memCodec(), memCli, 0, types2.QueryValidatorsParams{StakingStatus: 1, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1}) // unstaking
 					assert.Nil(t, err)
 					assert.Equal(t, 1, len(got.Result))
-					got, err = nodes.QueryStakedValidators(memCodec(), memCli, 0, 1, 1)
+					got, err = nodes.QueryValidators(memCodec(), memCli, 0, types2.QueryValidatorsParams{StakingStatus: 2, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1}) // staked
 					assert.Nil(t, err)
 					assert.Equal(t, 1, len(got.Result))
 					memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlockHeader)
 					select {
 					case res := <-evtChan:
 						if len(res.Events["unstake.module"]) == 1 {
-							got, err := nodes.QueryUnstakedValidators(memCodec(), memCli, 0, 1, 1)
+							got, err := nodes.QueryValidators(memCodec(), memCli, 0, types2.QueryValidatorsParams{StakingStatus: 0, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1})
 							assert.Nil(t, err)
 							assert.Equal(t, 1, len(got.Result))
-							assert.Equal(t, got.Result[0].StakedTokens.Int64(), int64(0))
 							addr := got.Result[0].Address
 							balance, err := nodes.QueryAccountBalance(memCodec(), memCli, addr, 0)
 							assert.NotZero(t, balance.Int64())
@@ -153,7 +163,10 @@ func TestStakeApp(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0, 1, 2)
+		got, err := apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+			Page:  1,
+			Limit: 2,
+		})
 		assert.Nil(t, err)
 		assert.Equal(t, 2, len(got.Result))
 	}

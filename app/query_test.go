@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	types3 "github.com/pokt-network/pocket-core/x/apps/types"
+	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	"math/big"
 	"testing"
 	"time"
@@ -91,13 +93,13 @@ func TestQueryValidators(t *testing.T) {
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		got, err := nodes.QueryValidators(memCodec(), memCli, 1, 1, 1)
+		got, err := nodes.QueryValidators(memCodec(), memCli, 1, types2.QueryValidatorsParams{Page: 1, Limit: 1})
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got.Result))
-		got, err = nodes.QueryValidators(memCodec(), memCli, 1, 2, 1)
+		got, err = nodes.QueryValidators(memCodec(), memCli, 1, types2.QueryValidatorsParams{Page: 2, Limit: 1})
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got.Result))
-		got, err = nodes.QueryValidators(memCodec(), memCli, 1, 1, 1000)
+		got, err = nodes.QueryValidators(memCodec(), memCli, 1, types2.QueryValidatorsParams{Page: 1, Limit: 1000})
 		assert.Nil(t, err)
 		assert.Equal(t, 2, len(got.Result))
 	}
@@ -122,13 +124,22 @@ func TestQueryApps(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0, 1, 1)
+		got, err := apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+			Page:  1,
+			Limit: 1,
+		})
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got.Result))
-		got, err = apps.QueryApplications(memCodec(), memCli, 0, 2, 1)
+		got, err = apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+			Page:  2,
+			Limit: 1,
+		})
 		assert.Nil(t, err)
 		assert.Equal(t, 1, len(got.Result))
-		got, err = apps.QueryApplications(memCodec(), memCli, 0, 1, 2)
+		got, err = apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+			Page:  1,
+			Limit: 2,
+		})
 		assert.Nil(t, err)
 		assert.Equal(t, 2, len(got.Result))
 	}
@@ -243,19 +254,6 @@ func TestQueryPOSParams(t *testing.T) {
 		assert.Equal(t, int64(1000000), got.StakeMinimum)
 		assert.Equal(t, int64(10), got.DAOAllocation)
 		assert.Equal(t, sdk.DefaultStakeDenom, got.StakeDenom)
-	}
-	cleanup()
-	stopCli()
-}
-
-func TestQueryStakedValidator(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		got, err := nodes.QueryStakedValidators(memCodec(), memCli, 0, 1, 1)
-		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got.Result))
 	}
 	cleanup()
 	stopCli()

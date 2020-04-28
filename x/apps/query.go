@@ -33,14 +33,10 @@ func QueryApplication(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, 
 	return types.MustUnmarshalApplication(cdc, res), nil
 }
 
-func QueryApplications(cdc *codec.Codec, tmNode client.Client, height int64, page, limit int) (types.ApplicationsPage, error) {
+func QueryApplications(cdc *codec.Codec, tmNode client.Client, height int64, opts types.QueryApplicationsWithOpts) (types.ApplicationsPage, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	page, limit = checkPagination(page, limit)
-	params := types.QueryStakedApplicationsParams{
-		Page:  page,
-		Limit: limit,
-	}
-	bz, err := cdc.MarshalJSON(params)
+	opts.Page, opts.Limit = checkPagination(opts.Page, opts.Limit)
+	bz, err := cdc.MarshalJSON(opts)
 	if err != nil {
 		return types.ApplicationsPage{}, err
 	}
@@ -55,75 +51,6 @@ func QueryApplications(cdc *codec.Codec, tmNode client.Client, height int64, pag
 	}
 
 	return ApplicationsPage, nil
-}
-
-func QueryStakedApplications(cdc *codec.Codec, tmNode client.Client, height int64, page, limit int) (types.ApplicationsPage, error) {
-	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	page, limit = checkPagination(page, limit)
-	params := types.QueryStakedApplicationsParams{
-		Page:  page,
-		Limit: limit,
-	}
-	bz, err := cdc.MarshalJSON(params)
-	if err != nil {
-		return types.ApplicationsPage{}, err
-	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryStakedApplications), bz)
-	if err != nil {
-		return types.ApplicationsPage{}, err
-	}
-	appsPage := types.ApplicationsPage{}
-	err = cdc.UnmarshalJSON(res, &appsPage)
-	if err != nil {
-		return appsPage, err
-	}
-	return appsPage, nil
-}
-
-func QueryUnstakedApplications(cdc *codec.Codec, tmNode client.Client, height int64, page, limit int) (types.ApplicationsPage, error) {
-	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	page, limit = checkPagination(page, limit)
-	params := types.QueryStakedApplicationsParams{
-		Page:  page,
-		Limit: limit,
-	}
-	bz, err := cdc.MarshalJSON(params)
-	if err != nil {
-		return types.ApplicationsPage{}, err
-	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakedApplications), bz)
-	if err != nil {
-		return types.ApplicationsPage{}, err
-	}
-	appsPage := types.ApplicationsPage{}
-	err = cdc.UnmarshalJSON(res, &appsPage)
-	if err != nil {
-		return appsPage, err
-	}
-	return appsPage, nil
-}
-
-func QueryUnstakingApplications(cdc *codec.Codec, tmNode client.Client, height int64, page, limit int) (types.ApplicationsPage, error) {
-	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	page, limit = checkPagination(page, limit)
-	params := types.QueryStakedApplicationsParams{
-		Page:  page,
-		Limit: limit,
-	}
-	bz, err := cdc.MarshalJSON(params)
-	if err != nil {
-		return types.ApplicationsPage{}, err
-	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakingApplications), bz)
-	if err != nil {
-		return types.ApplicationsPage{}, err
-	}
-	appsPage := types.ApplicationsPage{}
-	err = cdc.UnmarshalJSON(res, &appsPage)
-	if err != nil {
-		return appsPage, err
-	}
-	return appsPage, nil
 }
 
 func QuerySupply(cdc *codec.Codec, tmNode client.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {

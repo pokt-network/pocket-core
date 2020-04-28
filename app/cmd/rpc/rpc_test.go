@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -261,11 +262,13 @@ func TestRPC_QueryNodes(t *testing.T) {
 		kb := getInMemoryKeybase()
 		cb, err := kb.GetCoinbase()
 		assert.Nil(t, err)
-		var params = heightAndStakingStatusParams{
-			Height:        0,
-			StakingStatus: "staked",
-			Page:          1,
-			PerPage:       1,
+		var params = heightAndValidatorsOptsParams{
+			Height: 0,
+			Opts: types2.QueryValidatorsParams{
+				StakingStatus: types.Staked,
+				Page:          1,
+				Limit:         1,
+			},
 		}
 		q := newQueryRequest("nodes", newBody(params))
 		rec := httptest.NewRecorder()
@@ -330,11 +333,13 @@ func TestRPC_QueryApps(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightAndStakingStatusParams{
-			Height:        0,
-			StakingStatus: "staked",
-			Page:          1,
-			PerPage:       10000,
+		var params = heightAndApplicationsOptsParams{
+			Height: 0,
+			Opts: types3.QueryApplicationsWithOpts{
+				StakingStatus: types.Staked,
+				Page:          1,
+				Limit:         10000,
+			},
 		}
 		q := newQueryRequest("apps", newBody(params))
 		rec := httptest.NewRecorder()

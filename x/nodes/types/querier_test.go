@@ -139,24 +139,3 @@ func TestNewQueryValidatorParams(t *testing.T) {
 		})
 	}
 }
-
-func TestNewQueryValidatorsParams(t *testing.T) {
-	type args struct {
-		page  int
-		limit int
-	}
-	tests := []struct {
-		name string
-		args args
-		want QueryValidatorsParams
-	}{
-		{"Default Test", args{page: 1, limit: 1}, QueryValidatorsParams{Page: 1, Limit: 1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewQueryValidatorsParams(tt.args.page, tt.args.limit); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewQueryValidatorsParams() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

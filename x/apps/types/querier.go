@@ -6,14 +6,11 @@ import (
 
 // query endpoints supported by the staking Querier
 const (
-	QueryApplications          = "applications"
-	QueryApplication           = "application"
-	QueryUnstakingApplications = "unstaking_applications"
-	QueryStakedApplications    = "staked_applications"
-	QueryUnstakedApplications  = "unstaked_applications"
-	QueryAppStakedPool         = "appStakedPool"
-	QueryAppUnstakedPool       = "appUnstakedPool"
-	QueryParameters            = "parameters"
+	QueryApplications    = "applications"
+	QueryApplication     = "application"
+	QueryAppStakedPool   = "appStakedPool"
+	QueryAppUnstakedPool = "appUnstakedPool"
+	QueryParameters      = "parameters"
 )
 
 type QueryAppParams struct {
@@ -38,22 +35,34 @@ type QueryUnstakingApplicationsParams struct {
 	Page, Limit int
 }
 
-func NewQueryUnstakingApplicationsParams(page, limit int) QueryUnstakingApplicationsParams {
-	return QueryUnstakingApplicationsParams{page, limit}
+type QueryApplicationsWithOpts struct {
+	Page          int             `json:"page"`
+	Limit         int             `json:"per_page"`
+	StakingStatus sdk.StakeStatus `json:"staking_status"`
+	Blockchain    string          `json:"blockchain"`
+}
+
+func (opts QueryApplicationsWithOpts) IsValid(app Application) bool {
+	if opts.StakingStatus != 0 {
+		if opts.StakingStatus != app.Status {
+			return false
+		}
+	}
+	if opts.Blockchain != "" {
+		var contains bool
+		for _, chain := range app.Chains {
+			if chain == opts.Blockchain {
+				contains = true
+				break
+			}
+		}
+		if !contains {
+			return false
+		}
+	}
+	return true
 }
 
 type QueryStakedApplicationsParams struct {
 	Page, Limit int
-}
-
-func NewQueryStakedApplicationsParams(page, limit int) QueryStakedApplicationsParams {
-	return QueryStakedApplicationsParams{page, limit}
-}
-
-type QueryUnstakedApplicationsParams struct {
-	Page, Limit int
-}
-
-func NewQueryUnstakedApplicationsParams(page, limit int) QueryUnstakedApplicationsParams {
-	return QueryUnstakedApplicationsParams{page, limit}
 }

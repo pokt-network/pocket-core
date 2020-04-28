@@ -20,7 +20,7 @@ func Test_NewQuerier(t *testing.T) {
 		k    Keeper
 	}
 	context, _, keeper := createTestInput(t, true)
-	jsondata, _ := amino.MarshalJSON(types.QueryUnstakingValidatorsParams{
+	jsondata, _ := amino.MarshalJSON(types.QueryValidatorsParams{
 		Page:  1,
 		Limit: 1,
 	})
@@ -44,27 +44,6 @@ func Test_NewQuerier(t *testing.T) {
 		want1 sdk.Error
 	}{
 		{
-			name: "Test queryUnstakingValidators",
-			args: args{
-				ctx:  context,
-				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
-				path: []string{types.QueryUnstakingValidators},
-				k:    keeper,
-			},
-			want:  jsonresponse,
-			want1: nil,
-		},
-		{
-			name: "Test queryUnstakedValidators",
-			args: args{
-				ctx:  context,
-				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
-				path: []string{types.QueryUnstakedValidators},
-				k:    keeper,
-			},
-			want:  jsonresponse,
-			want1: nil,
-		}, {
 			name: "Test QuerySigningInfo",
 			args: args{
 				ctx:  context,
@@ -113,17 +92,6 @@ func Test_NewQuerier(t *testing.T) {
 				k:    keeper,
 			},
 			want:  jsonresponseInt,
-			want1: nil,
-		},
-		{
-			name: "Test queryStakedValidators",
-			args: args{
-				ctx:  context,
-				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
-				path: []string{types.QueryStakedValidators},
-				k:    keeper,
-			},
-			want:  jsonresponse,
 			want1: nil,
 		},
 		{
@@ -372,71 +340,6 @@ func Test_queryStakedPool(t *testing.T) {
 	}
 }
 
-func Test_queryStakedValidators(t *testing.T) {
-
-	stakedValidator := getStakedValidator()
-	unstakedValidator := getUnstakedValidator()
-	unstakingValidator := getUnstakingValidator()
-	stakedJailedValidator := getStakedJailedValidator()
-
-	validators := types.Validators{stakedValidator, unstakedValidator, unstakingValidator, stakedJailedValidator}
-
-	type args struct {
-		ctx sdk.Context
-		req abci.RequestQuery
-		k   Keeper
-	}
-
-	context, _, keeper := createTestInput(t, true)
-	for _, validator := range validators {
-		keeper.SetValidator(context, validator)
-		if validator.IsStaked() {
-			keeper.SetStakedValidator(context, validator)
-		}
-		if validator.IsJailed() {
-			//correctly set up jailed on state to test removal of staking set by jailing
-			validator.Jailed = false
-			keeper.SetValidator(context, validator)
-			keeper.SetStakedValidator(context, validator)
-			keeper.JailValidator(context, validator.Address)
-		}
-	}
-
-	jsondata, _ := amino.MarshalJSON(types.QueryStakedValidatorsParams{
-		Page:  1,
-		Limit: 4,
-	})
-	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator}, Total: 1, Page: 1}
-	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
-
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test queryStakedValidators", args{
-			ctx: context,
-			req: abci.RequestQuery{
-				Data: jsondata,
-				Path: "staked_validators",
-			},
-			k: keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryStakedValidators(tt.args.ctx, tt.args.req, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryStakedValidators() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryStakedValidators() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
 func Test_queryUnstakedPool(t *testing.T) {
 	type args struct {
 		ctx sdk.Context
@@ -465,89 +368,6 @@ func Test_queryUnstakedPool(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("queryUnstakedPool() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_queryUnstakedValidators(t *testing.T) {
-	type args struct {
-		ctx sdk.Context
-		req abci.RequestQuery
-		k   Keeper
-	}
-
-	context, _, keeper := createTestInput(t, true)
-	jsondata, _ := amino.MarshalJSON(types.QueryValidatorsParams{
-		Page:  1,
-		Limit: 1,
-	})
-	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
-	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
-
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test queryUnstakedValidators", args{
-			ctx: context,
-			req: abci.RequestQuery{
-				Data: jsondata,
-				Path: "unstaked_validators",
-			},
-			k: keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryUnstakedValidators(tt.args.ctx, tt.args.req, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryUnstakedValidators() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryUnstakedValidators() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_queryUnstakingValidators(t *testing.T) {
-	type args struct {
-		ctx sdk.Context
-		req abci.RequestQuery
-		k   Keeper
-	}
-
-	context, _, keeper := createTestInput(t, true)
-	jsondata, _ := amino.MarshalJSON(types.QueryUnstakingValidatorsParams{
-		Page:  1,
-		Limit: 1,
-	})
-	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
-	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
-
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test queryUnstakinValidators", args{
-			ctx: context,
-			req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
-			k:   keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryUnstakingValidators(tt.args.ctx, tt.args.req, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryUnstakingValidators() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryUnstakingValidators() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -597,28 +417,21 @@ func Test_queryValidator(t *testing.T) {
 
 func Test_queryValidators(t *testing.T) {
 	stakedValidator := getStakedValidator()
-	unstakedValidator := getUnstakedValidator()
-	unstakingValidator := getUnstakingValidator()
-	stakedJailedValidator := getStakedJailedValidator()
-
-	validators := types.Validators{stakedValidator, unstakedValidator, unstakingValidator, stakedJailedValidator}
-
+	validators := types.Validators{stakedValidator}
 	type args struct {
 		ctx sdk.Context
 		req abci.RequestQuery
 		k   Keeper
 	}
-
 	context, _, keeper := createTestInput(t, true)
 	for _, validator := range validators {
 		keeper.SetValidator(context, validator)
 	}
-
 	jsondata, _ := amino.MarshalJSON(types.QueryValidatorsParams{
 		Page:  1,
-		Limit: 10,
+		Limit: 1,
 	})
-	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator, unstakedValidator, stakedJailedValidator, unstakingValidator}, Total: 1, Page: 1}
+	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{stakedValidator}, Total: 1, Page: 1}
 	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 
 	tests := []struct {

@@ -2,14 +2,12 @@ package rpc
 
 import (
 	"encoding/json"
-	"math/big"
-	"net/http"
-	"strings"
-
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
 	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	"math/big"
+	"net/http"
 )
 
 func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -27,6 +25,16 @@ type hashParams struct {
 type heightAddrParams struct {
 	Height  int64  `json:"height"`
 	Address string `json:"address"`
+}
+
+type heightAndValidatorsOptsParams struct {
+	Height int64                           `json:"height"`
+	Opts   nodeTypes.QueryValidatorsParams `json:"opts"`
+}
+
+type heightAndApplicationsOptsParams struct {
+	Height int64                              `json:"height"`
+	Opts   appTypes.QueryApplicationsWithOpts `json:"opts"`
 }
 
 type heightAndStakingStatusParams struct {
@@ -178,29 +186,12 @@ func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAndStakingStatusParams{Height: 0, StakingStatus: ""}
+	var params = heightAndValidatorsOptsParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	var res nodeTypes.ValidatorsPage
-	var err error
-	switch strings.ToLower(params.StakingStatus) {
-	case "":
-		// no status passed
-		res, err = app.QueryAllNodes(params.Height, params.Page, params.PerPage)
-	case "staked":
-		// staked nodes
-		res, err = app.QueryStakedNodes(params.Height, params.Page, params.PerPage)
-	case "unstaked":
-		// unstaked nodes
-		res, err = app.QueryUnstakedNodes(params.Height, params.Page, params.PerPage)
-	case "unstaking":
-		// unstaking nodes
-		res, err = app.QueryUnstakingNodes(params.Height, params.Page, params.PerPage)
-	default:
-		panic("invalid staking status, can be staked, unstaked, unstaking, or empty")
-	}
+	res, err := app.QueryNodes(params.Height, params.Opts)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -302,29 +293,12 @@ func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAndStakingStatusParams{Height: 0}
+	var params = heightAndApplicationsOptsParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	var res appTypes.ApplicationsPage
-	var err error
-	switch strings.ToLower(params.StakingStatus) {
-	case "":
-		// no status passed
-		res, err = app.QueryAllApps(params.Height, params.Page, params.PerPage)
-	case "staked":
-		// staked nodes
-		res, err = app.QueryStakedApps(params.Height, params.Page, params.PerPage)
-	case "unstaked":
-		// unstaked nodes
-		res, err = app.QueryUnstakedApps(params.Height, params.Page, params.PerPage)
-	case "unstaking":
-		// unstaking nodes
-		res, err = app.QueryUnstakingApps(params.Height, params.Page, params.PerPage)
-	default:
-		panic("invalid staking status, can be staked, unstaked, unstaking, or empty")
-	}
+	res, err := app.QueryApps(params.Height, params.Opts)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

@@ -2,11 +2,12 @@ package cli
 
 import (
 	"fmt"
+	types2 "github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/pokt-network/posmint/types"
 	"strconv"
 	"strings"
 
 	"github.com/pokt-network/pocket-core/app"
-	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/spf13/cobra"
 )
@@ -106,8 +107,8 @@ func validatePagePerPageArgs(args []string) (page int, perPage int) {
 }
 
 var queryAccountTxs = &cobra.Command{
-	Use:   "account-txs <address> <page> <per_page>",
-	Short: "Get the transactions sent by the address, paginated by page and per_page",
+	Use:   "account-txs <address> <nodePage> <per_page>",
+	Short: "Get the transactions sent by the address, paginated by nodePage and per_page",
 	Long:  `Retrieves the transactions sent by the address`,
 	Args:  cobra.RangeArgs(1, 3),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -123,8 +124,8 @@ var queryAccountTxs = &cobra.Command{
 }
 
 var queryBlockTxs = &cobra.Command{
-	Use:   "block-txs <height> <page> <per_page>",
-	Short: "Get the transactions at a certain block height, paginated by page and per_page",
+	Use:   "block-txs <height> <nodePage> <per_page>",
+	Short: "Get the transactions at a certain block height, paginated by nodePage and per_page",
 	Long:  `Retrieves the transactions in the block height`,
 	Args:  cobra.RangeArgs(1, 3),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -214,17 +215,21 @@ var queryAccount = &cobra.Command{
 }
 
 var nodeStakingStatus string
-var page int
-var limit int
+var nodeJailedStatus string
+var blockchain string
+var nodePage int
+var nodeLimit int
 
 func init() {
 	queryNodes.Flags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
-	queryNodes.Flags().IntVar(&page, "page", 1, "mark the page you want")
-	queryNodes.Flags().IntVar(&limit, "limit", 10000, "reduce the amount of results")
+	queryNodes.Flags().StringVar(&nodeJailedStatus, "jailed-status", "", "the jailed status of the node")
+	queryNodes.Flags().StringVar(&blockchain, "blockchain", "", "the network identifier these nodes support")
+	queryNodes.Flags().IntVar(&nodePage, "nodePage", 1, "mark the nodePage you want")
+	queryNodes.Flags().IntVar(&nodeLimit, "nodeLimit", 10000, "reduce the amount of results")
 }
 
 var queryNodes = &cobra.Command{
-	Use:   "nodes --staking-status=<nodeStakingStatus> --page=<page> --limit=<limit> <height>",
+	Use:   "nodes --staking-status <staked or unstaking> --jailed-status <jailed or unjailed> --blockchain <network id> --nodePage=<nodePage> --nodeLimit=<nodeLimit> <height>",
 	Short: "Gets nodes",
 	Long:  `Retrieves the list of all nodes known at the specified <height>.`,
 	// Args:  cobra.ExactArgs(3),
@@ -241,25 +246,33 @@ var queryNodes = &cobra.Command{
 				return
 			}
 		}
-		var res nodeTypes.ValidatorsPage
 		var err error
-		switch strings.ToLower(nodeStakingStatus) {
-		case "":
-			// no status passed
-			res, err = app.QueryAllNodes(int64(height), page, limit)
-		case "staked":
-			// staked nodes
-			res, err = app.QueryStakedNodes(int64(height), page, limit)
-		case "unstaked":
-			// unstaked nodes
-			res, err = app.QueryUnstakedNodes(int64(height), page, limit)
-		case "unstaking":
-			// unstaking nodes
-			res, err = app.QueryUnstakingNodes(int64(height), page, limit)
-		default:
-			fmt.Println("invalid staking status, can be staked, unstaked, unstaking, or empty")
-			return
+		opts := nodeTypes.QueryValidatorsParams{
+			Blockchain: blockchain,
+			Page:       nodePage,
+			Limit:      nodeLimit,
 		}
+		if nodeStakingStatus != "" {
+			switch strings.ToLower(nodeStakingStatus) {
+			case "staked":
+				opts.StakingStatus = types.Staked
+			case "unstaking":
+				opts.StakingStatus = types.Unstaking
+			default:
+				fmt.Println(fmt.Errorf("unkown staking status <staked or unstaking>"))
+			}
+		}
+		if nodeJailedStatus != "" {
+			switch strings.ToLower(nodeStakingStatus) {
+			case "jailed":
+				opts.JailedStatus = 1
+			case "unjailed":
+				opts.JailedStatus = 2
+			default:
+				fmt.Println(fmt.Errorf("unkown jailed status <jailed or unjailed>"))
+			}
+		}
+		res, err := app.QueryNodes(int64(height), opts)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -322,13 +335,16 @@ var queryNodeParams = &cobra.Command{
 }
 
 var appStakingStatus string
+var appPage, appLimit int
 
 func init() {
 	queryApps.Flags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
+	queryApps.Flags().IntVar(&nodePage, "appPage", 1, "mark the page you want")
+	queryApps.Flags().IntVar(&nodeLimit, "appLimit", 10000, "reduce the amount of results")
 }
 
 var queryApps = &cobra.Command{
-	Use:   "apps --staking-status=<nodeStakingStatus> --page=<page> --limit=<limit> <height>",
+	Use:   "apps --staking-status=<nodeStakingStatus> --nodePage=<nodePage> --nodeLimit=<nodeLimit> <height>",
 	Short: "Gets apps",
 	Long:  `Retrieves the list of all applications known at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -344,25 +360,22 @@ var queryApps = &cobra.Command{
 				return
 			}
 		}
-		var res appTypes.ApplicationsPage
-		var err error
-		switch strings.ToLower(appStakingStatus) {
-		case "":
-			// no status passed
-			res, err = app.QueryAllApps(int64(height), page, limit)
-		case "staked":
-			// staked nodes
-			res, err = app.QueryStakedApps(int64(height), page, limit)
-		case "unstaked":
-			// unstaked nodes
-			res, err = app.QueryUnstakedApps(int64(height), page, limit)
-		case "unstaking":
-			// unstaking nodes
-			res, err = app.QueryUnstakingApps(int64(height), page, limit)
-		default:
-			fmt.Printf("invalid staking status, can be staked, unstaked, unstaking, or empty")
-			return
+		opts := types2.QueryApplicationsWithOpts{
+			Blockchain: blockchain,
+			Page:       appPage,
+			Limit:      appLimit,
 		}
+		if appStakingStatus != "" {
+			switch strings.ToLower(nodeStakingStatus) {
+			case "staked":
+				opts.StakingStatus = types.Staked
+			case "unstaking":
+				opts.StakingStatus = types.Unstaking
+			default:
+				fmt.Println(fmt.Errorf("unkown staking status <staked or unstaking>"))
+			}
+		}
+		res, err := app.QueryApps(int64(height), opts)
 		if err != nil {
 			fmt.Println(err)
 			return

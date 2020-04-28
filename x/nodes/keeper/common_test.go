@@ -71,28 +71,23 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	maccPerms := map[string][]string{
 		auth.FeeCollectorName: nil,
 		types.StakedPoolName:  {auth.Burner, auth.Staking, auth.Minter},
-		//ADDED THIS CHECK
-		types.ModuleName: {auth.Burner, auth.Staking, auth.Minter},
+		types.ModuleName:      {auth.Burner, auth.Staking, auth.Minter},
 	}
 	modAccAddrs := make(map[string]bool)
 	for acc := range maccPerms {
 		modAccAddrs[auth.NewModuleAddress(acc).String()] = true
 	}
 	valTokens := sdk.TokensFromConsensusPower(initPower)
-
 	accSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	posSubspace := sdk.NewSubspace(DefaultParamspace)
 	ak := auth.NewKeeper(cdc, keyAcc, accSubspace, maccPerms)
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
 	)
-
 	genesisState := ModuleBasics.DefaultGenesis()
 	moduleManager.InitGenesis(ctx, genesisState)
-
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
-
 	keeper := NewKeeper(cdc, keyPOS, ak, posSubspace, "pos")
 	params := types.DefaultParams()
 	keeper.SetParams(ctx, params)

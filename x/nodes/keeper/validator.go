@@ -37,6 +37,20 @@ func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	return validators
 }
 
+func (k Keeper) GetAllValidatorsWithOpts(ctx sdk.Ctx, opts types.QueryValidatorsParams) (validators []types.Validator) {
+	validators = make([]types.Validator, 0)
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		if opts.IsValid(validator) {
+			validators = append(validators, validator)
+		}
+	}
+	return validators
+}
+
 // return a given amount of all the validators
 func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []types.Validator) {
 	store := ctx.KVStore(k.storeKey)

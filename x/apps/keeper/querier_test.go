@@ -17,7 +17,7 @@ func Test_queryApplications(t *testing.T) {
 		k   Keeper
 	}
 	context, _, keeper := createTestInput(t, true)
-	jsondata, _ := amino.MarshalJSON(types.QueryAppsParams{
+	jsondata, _ := amino.MarshalJSON(types.QueryApplicationsWithOpts{
 		Page:  1,
 		Limit: 1,
 	})
@@ -40,10 +40,10 @@ func Test_queryApplications(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, got1 := queryApplications(tt.args.ctx, tt.args.req, tt.args.k)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryUnstakingValidators() got = %v, want %v", got, tt.want)
+				t.Errorf("queryApplications() got = %v, want %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryUnstakingValidators() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("queryApplicaitons() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -117,47 +117,6 @@ func Test_queryParameters(t *testing.T) {
 	}
 }
 
-func Test_queryStakedApplications(t *testing.T) {
-	type args struct {
-		ctx sdk.Context
-		req abci.RequestQuery
-		k   Keeper
-	}
-	context, _, keeper := createTestInput(t, true)
-	jsondata, _ := amino.MarshalJSON(types.QueryStakedApplicationsParams{
-		Page:  1,
-		Limit: 1,
-	})
-	expectedApplicationsPage := types.ApplicationsPage{Result: []types.Application{}, Total: 1, Page: 1}
-	jsonresponse, _ := amino.MarshalJSONIndent(expectedApplicationsPage, "", "  ")
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test queryStakedValidators", args{
-			ctx: context,
-			req: abci.RequestQuery{
-				Data: jsondata,
-				Path: "staked_validators",
-			},
-			k: keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryStakedApplications(tt.args.ctx, tt.args.req, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryStakedValidators() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryStakedValidators() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
 func Test_queryStakedPool(t *testing.T) {
 	type args struct {
 		ctx sdk.Context
@@ -220,85 +179,6 @@ func Test_queryUnstakedPool(t *testing.T) {
 	}
 }
 
-func Test_queryUnstakingApplications(t *testing.T) {
-	type args struct {
-		ctx sdk.Context
-		req abci.RequestQuery
-		k   Keeper
-	}
-	context, _, keeper := createTestInput(t, true)
-	jsondata, _ := amino.MarshalJSON(types.QueryUnstakingApplicationsParams{
-		Page:  1,
-		Limit: 1,
-	})
-	expectedApplicationsPage := types.ApplicationsPage{Result: []types.Application{}, Total: 1, Page: 1}
-	jsonresponse, _ := amino.MarshalJSONIndent(expectedApplicationsPage, "", "  ")
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test queryUnstakinValidators", args{
-			ctx: context,
-			req: abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
-			k:   keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryUnstakingApplications(tt.args.ctx, tt.args.req, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryUnstakingValidators() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryUnstakingValidators() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_queryUnstakedApplications(t *testing.T) {
-	type args struct {
-		ctx sdk.Context
-		req abci.RequestQuery
-		k   Keeper
-	}
-	context, _, keeper := createTestInput(t, true)
-	jsondata, _ := amino.MarshalJSON(types.QueryAppsParams{
-		Page:  1,
-		Limit: 1,
-	})
-	expectedApplicationsPage := types.ApplicationsPage{Result: []types.Application{}, Total: 1, Page: 1}
-	jsonresponse, _ := amino.MarshalJSONIndent(expectedApplicationsPage, "", "  ")
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test queryUnstakedValidators", args{
-			ctx: context,
-			req: abci.RequestQuery{
-				Data: jsondata,
-				Path: "unstaked_validators",
-			},
-			k: keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryUnstakedApplications(tt.args.ctx, tt.args.req, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryUnstakedValidators() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryUnstakedValidators() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
 func Test_NewQuerier(t *testing.T) {
 	type args struct {
 		ctx  sdk.Context
@@ -307,7 +187,7 @@ func Test_NewQuerier(t *testing.T) {
 		k    Keeper
 	}
 	context, _, keeper := createTestInput(t, true)
-	jsondata, _ := amino.MarshalJSON(types.QueryUnstakingApplicationsParams{
+	jsondata, _ := amino.MarshalJSON(types.QueryApplicationsWithOpts{
 		Page:  1,
 		Limit: 1,
 	})
@@ -320,39 +200,6 @@ func Test_NewQuerier(t *testing.T) {
 		want  []byte
 		want1 sdk.Error
 	}{
-		{
-			name: "Test queryUnstakingApplications",
-			args: args{
-				ctx:  context,
-				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
-				path: []string{types.QueryUnstakingApplications},
-				k:    keeper,
-			},
-			want:  jsonresponse,
-			want1: nil,
-		},
-		{
-			name: "Test queryUnstakedApplications",
-			args: args{
-				ctx:  context,
-				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
-				path: []string{types.QueryUnstakedApplications},
-				k:    keeper,
-			},
-			want:  jsonresponse,
-			want1: nil,
-		},
-		{
-			name: "Test queryStakedApplications",
-			args: args{
-				ctx:  context,
-				req:  abci.RequestQuery{Data: jsondata, Path: "unstaking_validators"},
-				path: []string{types.QueryStakedApplications},
-				k:    keeper,
-			},
-			want:  jsonresponse,
-			want1: nil,
-		},
 		{
 			name: "Test queryParams",
 			args: args{

@@ -286,12 +286,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QueryStakingHeight'
+              $ref: '#/components/schemas/QueryHeightAndApplicationsOpts'
             example:
-              staking_status: staked
               height: 2
-              page: 1
-              per_page: 100
+              opts:
+                staking_status: 2
+                page: 1
+                per_page: 100
         required: true
       responses:
         '200':
@@ -538,16 +539,19 @@ paths:
       tags:
         - query
       requestBody:
-        description: 'Request a page of nodes known at the specified height and staking status , empty ("") staking_status returns all nodes, page < 1 returns the first page, per_page < 1 returns 10000 elements per page'
+        description: 'Request a page of nodes known at the specified height and with options, empty options returns all validators, page < 1 returns the first page, per_page < 1 returns 10000 elements per page'
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QueryStakingHeight'
+              $ref: '#/components/schemas/QueryHeightAndValidatorsOpts'
             example:
-              staking_status: staked
+              opts:
+                staking_status: 0x02
+                page: 1
+                per_page: 100
+                chain: ""
+                JailedStatus: 1
               height: 2
-              page: 1
-              per_page: 100
         required: true
       responses:
         '200':
@@ -1398,7 +1402,7 @@ components:
       properties:
         response:
           type: string
-    QueryStakingHeight:
+    QueryHeightAndValidatorsOpts:
       type: object
       properties:
         height:
@@ -1411,12 +1415,36 @@ components:
           type: integer
           format: int64
         staking_status:
-          type: string
+          type: integer
           enum:
-            - staked
-            - unstaked
-            - unstaking
-            - ''
+            - 1 // unstaking
+            - 2 // staked
+        jailed_status:
+          type: integer
+          enum:
+            - 1 // jailed
+            - 2 // unjailed
+        blockchain:
+          type: string
+    QueryHeightAndApplicationsOpts:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+        page:
+          type: integer
+          format: int64
+        per_page:
+          type: integer
+          format: int64
+        staking_status:
+          type: integer
+          enum:
+            - 1 // unstaking
+            - 2 // staked
+        blockchain:
+          type: string
     QuerySupplyResponse:
       type: object
       properties:

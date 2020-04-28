@@ -83,15 +83,10 @@ func QueryValidator(cdc *codec.Codec, tmNode rpcclient.Client, addr sdk.Address,
 	return types.MustUnmarshalValidator(cdc, res), nil
 }
 
-func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, page, limit int) (types.ValidatorsPage, error) {
+func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, opts types.QueryValidatorsParams) (types.ValidatorsPage, error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	page, limit = checkPagination(page, limit)
-	params := types.QueryStakedValidatorsParams{
-		Page:  page,
-		Limit: limit,
-	}
-
-	bz, err := cdc.MarshalJSON(params)
+	opts.Page, opts.Limit = checkPagination(opts.Page, opts.Limit)
+	bz, err := cdc.MarshalJSON(opts)
 	if err != nil {
 		return types.ValidatorsPage{}, err
 	}
@@ -106,75 +101,6 @@ func QueryValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, pa
 		return validatorsPage, err
 	}
 
-	return validatorsPage, nil
-}
-
-func QueryStakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, page, limit int) (types.ValidatorsPage, error) {
-	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	page, limit = checkPagination(page, limit)
-	params := types.QueryStakedValidatorsParams{
-		Page:  page,
-		Limit: limit,
-	}
-	bz, err := cdc.MarshalJSON(params)
-	if err != nil {
-		return types.ValidatorsPage{}, err
-	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryStakedValidators), bz)
-	if err != nil {
-		return types.ValidatorsPage{}, err
-	}
-	validatorsPage := types.ValidatorsPage{}
-	err = cdc.UnmarshalJSON(res, &validatorsPage)
-	if err != nil {
-		return validatorsPage, err
-	}
-	return validatorsPage, nil
-}
-
-func QueryUnstakedValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, page, limit int) (types.ValidatorsPage, error) {
-	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	page, limit = checkPagination(page, limit)
-	params := types.QueryUnstakedValidatorsParams{
-		Page:  page,
-		Limit: limit,
-	}
-	bz, err := cdc.MarshalJSON(params)
-	if err != nil {
-		return types.ValidatorsPage{}, err
-	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakedValidators), bz)
-	if err != nil {
-		return types.ValidatorsPage{}, err
-	}
-	ValidatorsPage := types.ValidatorsPage{}
-	err = cdc.UnmarshalJSON(res, &ValidatorsPage)
-	if err != nil {
-		return ValidatorsPage, err
-	}
-	return ValidatorsPage, nil
-}
-
-func QueryUnstakingValidators(cdc *codec.Codec, tmNode rpcclient.Client, height int64, page, limit int) (types.ValidatorsPage, error) {
-	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	page, limit = checkPagination(page, limit)
-	params := types.QueryUnstakingValidatorsParams{
-		Page:  1,
-		Limit: 10000,
-	}
-	bz, err := cdc.MarshalJSON(params)
-	if err != nil {
-		return types.ValidatorsPage{}, err
-	}
-	res, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakingValidators), bz)
-	if err != nil {
-		return types.ValidatorsPage{}, err
-	}
-	validatorsPage := types.ValidatorsPage{}
-	err = cdc.UnmarshalJSON(res, &validatorsPage)
-	if err != nil {
-		return validatorsPage, err
-	}
 	return validatorsPage, nil
 }
 
