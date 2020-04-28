@@ -36,12 +36,6 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryApplications(ctx, req, k)
 		case types.QueryApplication:
 			return queryApplication(ctx, req, k)
-		case types.QueryUnstakingApplications:
-			return queryUnstakingApplications(ctx, req, k)
-		case types.QueryStakedApplications:
-			return queryStakedApplications(ctx, req, k)
-		case types.QueryUnstakedApplications:
-			return queryUnstakedApplications(ctx, req, k)
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
 		case types.QueryAppStakedPool:
@@ -55,73 +49,18 @@ func NewQuerier(k Keeper) sdk.Querier {
 }
 
 func queryApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryAppsParams
+	var params types.QueryApplicationsWithOpts
 	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
 	if err != nil {
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
-	applications := k.GetAllApplications(ctx)
+	applications := k.GetAllApplicationsWithOpts(ctx, params)
 	applicationsPage := paginate(params.Page, params.Limit, applications, int(k.GetParams(ctx).MaxApplications))
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applicationsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}
 
-	return res, nil
-}
-
-func queryUnstakingApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryUnstakingApplicationsParams
-	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
-	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
-	}
-
-	applications := k.getAllUnstakingApplications(ctx)
-	applicationsPage := paginate(params.Page, params.Limit, applications, int(k.GetParams(ctx).MaxApplications))
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applicationsPage)
-	if err != nil {
-		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
-	}
-
-	return res, nil
-}
-
-func queryStakedApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryStakedApplicationsParams
-	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
-	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
-	}
-
-	applications := k.getStakedApplications(ctx)
-	applicationsPage := paginate(params.Page, params.Limit, applications, int(k.GetParams(ctx).MaxApplications))
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, applicationsPage)
-	if err != nil {
-		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
-	}
-
-	return res, nil
-}
-
-func queryUnstakedApplications(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error) {
-	var params types.QueryAppsParams
-	err := types.ModuleCdc.UnmarshalJSON(req.Data, &params)
-	if err != nil {
-		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
-	}
-	apps := k.GetAllApplications(ctx)
-	unstakedApps := make([]types.Application, 0)
-	for _, app := range apps {
-		if app.Status == sdk.Unstaked {
-			unstakedApps = append(unstakedApps, app)
-		}
-	}
-	unstakedAppsPage := paginate(params.Page, params.Limit, unstakedApps, int(k.GetParams(ctx).MaxApplications))
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, unstakedAppsPage)
-	if err != nil {
-		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
-	}
 	return res, nil
 }
 

@@ -79,7 +79,7 @@ The `query` namespace handles all queries to the current world state built on th
 - /v1/query/nodes
 > Query Nodes in the pocket network by height and staking_status, empty ("") staking_status returns a page of nodes
 
-    request: `heightAndStakingStatusParams`
+    request: `heightAndValidatorsOpts`
 
 - /v1/query/node
 > Query a specific node by address and height
@@ -106,7 +106,7 @@ The `query` namespace handles all queries to the current world state built on th
 - /v1/query/apps
 > Query Apps in the pocket network by height and staking_status, empty ("") staking_status returns a page of apps
 
-    request: `heightAndStakingStatusParams`
+    request: `heightAndApplicationsOpts`
 
 - /v1/query/app
 > Query a specific app by address and height

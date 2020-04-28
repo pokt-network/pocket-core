@@ -57,8 +57,8 @@ func QueryAccount(addr string, height int64) (account *auth.BaseAccount, err err
 	return nodes.QueryAccount(Codec(), getTMClient(), a, height)
 }
 
-func QueryAllNodes(height int64, page, limit int) (nodesTypes.ValidatorsPage, error) {
-	return nodes.QueryValidators(Codec(), getTMClient(), height, page, limit)
+func QueryNodes(height int64, opts nodesTypes.QueryValidatorsParams) (nodesTypes.ValidatorsPage, error) {
+	return nodes.QueryValidators(Codec(), getTMClient(), height, opts)
 }
 
 func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err error) {
@@ -67,18 +67,6 @@ func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err e
 		return validator, err
 	}
 	return nodes.QueryValidator(Codec(), getTMClient(), a, height)
-}
-
-func QueryUnstakingNodes(height int64, page, limit int) (nodesTypes.ValidatorsPage, error) {
-	return nodes.QueryUnstakingValidators(Codec(), getTMClient(), height, page, limit)
-}
-
-func QueryStakedNodes(height int64, page, limit int) (nodesTypes.ValidatorsPage, error) {
-	return nodes.QueryStakedValidators(Codec(), getTMClient(), height, page, limit)
-}
-
-func QueryUnstakedNodes(height int64, page, limit int) (nodesTypes.ValidatorsPage, error) {
-	return nodes.QueryUnstakedValidators(Codec(), getTMClient(), height, page, limit)
 }
 
 func QueryNodeParams(height int64) (params nodesTypes.Params, err error) {
@@ -113,8 +101,8 @@ func QueryACL(height int64) (acl types.ACL, err error) {
 	return gov.QueryACL(Codec(), getTMClient(), height)
 }
 
-func QueryAllApps(height int64, page, limit int) (appsTypes.ApplicationsPage, error) {
-	return apps.QueryApplications(Codec(), getTMClient(), height, page, limit)
+func QueryApps(height int64, opts appsTypes.QueryApplicationsWithOpts) (appsTypes.ApplicationsPage, error) {
+	return apps.QueryApplications(Codec(), getTMClient(), height, opts)
 }
 
 func QueryApp(addr string, height int64) (validator appsTypes.Application, err error) {
@@ -123,18 +111,6 @@ func QueryApp(addr string, height int64) (validator appsTypes.Application, err e
 		return validator, err
 	}
 	return apps.QueryApplication(Codec(), getTMClient(), a, height)
-}
-
-func QueryUnstakingApps(height int64, page, limit int) (appsTypes.ApplicationsPage, error) {
-	return apps.QueryUnstakingApplications(Codec(), getTMClient(), height, page, limit)
-}
-
-func QueryStakedApps(height int64, page, limit int) (appsTypes.ApplicationsPage, error) {
-	return apps.QueryStakedApplications(Codec(), getTMClient(), height, page, limit)
-}
-
-func QueryUnstakedApps(height int64, page, limit int) (appsTypes.ApplicationsPage, error) {
-	return apps.QueryUnstakedApplications(Codec(), getTMClient(), height, page, limit)
 }
 
 func QueryTotalAppCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {

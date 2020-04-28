@@ -1,2104 +1,2279 @@
 {
-  "openapi": "3.0.1",
-  "info": {
-	"title": "Pocket Network",
-	"description": "This is the API definition Pocket Network core RPC calls. Pocket is a distributed network that relays data requests and responses to and from any blockchain system. Pocket verifies all relayed data and proportionally rewards the participating nodes with native cryptographic tokens.",
-	"termsOfService": "https://pokt.network/terms/",
-	"contact": {
-	  "email": "hola@pokt.network"
-	},
-	"license": {
-	  "name": "MIT License",
-	  "url": "https://github.com/pokt-network/pocket-core/LICENSE.md"
-	},
-	"version": "0.2.0"
-  },
-  "externalDocs": {
-	"description": "Find out more about Pocket Network",
-	"url": "https://pokt.network"
-  },
-  "servers": [
-	{
-	  "url": "http://localhost:8081/v1"
-	},
-	{
-	  "url": "http://35.236.208.175:8081/v1"
-	}
-  ],
-  "tags": [
-	{
-	  "name": "version",
-	  "description": "Version of the Pocket API"
-	},
-	{
-	  "name": "client",
-	  "description": "Dispatch and relay services"
-	},
-	{
-	  "name": "query",
-	  "description": "Blockchain queries"
-	}
-  ],
-  "paths": {
-	"/": {
-	  "get": {
-		"tags": [
-		  "version"
-		],
-		"summary": "Get the current version of the Pocket Network API",
-		"responses": {
-		  "200": {
-			"description": "Version",
-			"content": {
-			  "text/plain": {
-				"schema": {
-				  "type": "string",
-				  "example": "0.0.1"
-				}
-			  }
-			}
-		  }
-		}
-	  }
-	},
-	"/client/dispatch": {
-	  "post": {
-		"tags": [
-		  "client"
-		],
-		"requestBody": {
-		  "description": "Sends a dispatch request to the network and get the nodes that will be servicing your requests for the session.",
-		  "required": true,
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryDispatchRequest"
-			  }
-			}
-		  }
+	"openapi": "3.0.1",
+	"info": {
+		"title": "Pocket Network",
+		"description": "This is the API definition Pocket Network core RPC calls. Pocket is a distributed network that relays data requests and responses to and from any blockchain system. Pocket verifies all relayed data and proportionally rewards the participating nodes with native cryptographic tokens.",
+		"termsOfService": "https://pokt.network/terms/",
+		"contact": {
+			"email": "hola@pokt.network"
 		},
-		"responses": {
-		  "200": {
-			"description": "A list of dispatch/service nodes",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryDispatchResponse"
-				},
-				"example": {
-				  "block_height": 5,
-				  "session": {
-					"header": {
-					  "app_public_key": "e9477af9b42001280033bab76670eac4274cb7321e52280ceba964e1c61db87c",
-					  "chain": "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80",
-					  "session_height": 1
-					},
-					"key": "OmEeJO2o6xvbldJxFpqI0rRVwVtBTmRGGSlGqzxGzgk=",
-					"nodes": [
-					  {
-						"address": "afaa802b1736396d31825f60487e4da030ea85bb",
-						"chains": [
-						  "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-						],
-						"jailed": false,
-						"public_key": "a01bc947f512a971131474986cc0c8cb3caed6bcfca076e6b78ac2b838ebefed",
-						"service_url": "0.0.0.0:8081",
-						"status": 2,
-						"tokens": "1000000000000000000",
-						"unstaking_time": "0001-01-01T00:00:00Z"
-					  },
-					  {
-						"address": "88967bf78114d5ea56e1a02fb3fd2cac3607d674",
-						"chains": [
-						  "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-						],
-						"jailed": false,
-						"public_key": "c61954ba119bbbb2c1efa1d44f5f4001438566fd8aee2892387ef55ded82c159",
-						"service_url": "0.0.0.0:8081",
-						"status": 2,
-						"tokens": "10000000",
-						"unstaking_time": "0001-01-01T00:00:00Z"
-					  },
-					  {
-						"address": "a0c005c63f97a13e540e6bb484821d77f3fdaf75",
-						"chains": [
-						  "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-						],
-						"jailed": false,
-						"public_key": "db07958aa0035fbb3e7e2575fbbb062a7d5ef5580cd0fe80142a4df5d31a316a",
-						"service_url": "0.0.0.0:8081",
-						"status": 2,
-						"tokens": "10000000",
-						"unstaking_time": "0001-01-01T00:00:00Z"
-					  },
-					  {
-						"address": "e3b15b922be9cabbe3b4a3a788dec8dc95c8f3dc",
-						"chains": [
-						  "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-						],
-						"jailed": false,
-						"public_key": "a9c5d4463d5e233dd9437a2044a6595fe69ced34716a8e1c8ad86d3196f3fd78",
-						"service_url": "0.0.0.0:8081",
-						"status": 2,
-						"tokens": "10000000",
-						"unstaking_time": "0001-01-01T00:00:00Z"
-					  },
-					  {
-						"address": "fa11cff20c510fa1588915bd48391fee802822c8",
-						"chains": [
-						  "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-						],
-						"jailed": false,
-						"public_key": "b62798f50be7055073f8b2f19ca4b2262a2c82f2ab16fc907e9db1cce551ffce",
-						"service_url": "0.0.0.0:8081",
-						"status": 2,
-						"tokens": "10000000",
-						"unstaking_time": "0001-01-01T00:00:00Z"
-					  }
-					]
-				  }
-				}
-			  }
-			}
-		  }
-		}
-	  }
-	},
-	"/client/relay": {
-	  "post": {
-		"tags": [
-		  "client"
-		],
-		"requestBody": {
-		  "description": "Request to be relayed to a target blockchain",
-		  "required": true,
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryRelayRequest"
-			  },
-			  "example": {
-				"payload": {
-				  "data": "\"jsonrpc\":\"2.0\",\"method\":\"web3_sha3\",\"params\":[\"0x68656c6c6f20776f726c64\"],\"id\":64",
-				  "method": "",
-				  "path": ""
-				},
-				"meta": {
-				  "block_height": 5
-				},
-				"proof": {
-				  "request_hash": "7b227061796c6f6164223a7b2264617461223a225c226a736f6e7270635c223a5c22322e305c222c5c226d6574686f645c223a5c22776562335f736861335c222c5c22706172616d735c223a5b5c223078363836353663366336663230373736663732366336345c225d2c5c2269645c223a3634222c226d6574686f64223a22222c2270617468223a22227d2c226d657461223a7b22626c6f636b5f686569676874223a357d2c2270726f6f66223a7b22726571756573745f68617368223a22222c22656e74726f7079223a302c2273657373696f6e5f626c6f636b5f686569676874223a302c2273657276696365725f7075625f6b6579223a22222c22626c6f636b636861696e223a22222c22616174223a7b2276657273696f6e223a22222c226170705f7075625f6b6579223a22222c22636c69656e745f7075625f6b6579223a22222c227369676e6174757265223a22227d2c227369676e6174757265223a22227d7d",
-				  "entropy": 32598345349034508,
-				  "session_block_height": 1,
-				  "servicer_pub_key": "76eb9563b731af2711f326deeaebef166ce1de42c2b60c5c9f50f996fbd318ad",
-				  "blockchain": "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80",
-				  "aat": {
-					"version": "0.0.1",
-					"app_pub_key": "81068fcc400b476a332b1dcd17943cb05ffd4a3a030c6309de9bf02d8d91cd70",
-					"client_pub_key": "81068fcc400b476a332b1dcd17943cb05ffd4a3a030c6309de9bf02d8d91cd70",
-					"signature": "c5923bd5a663d7bb3c990504a98008e4d32ab7c57a8689d9a494fa29274b497396cbffa9523a7acf8cdff8227b96a8bb3e2e1c1b008de32041aa86c68d0f2b08"
-				  },
-				  "signature": "e3e3a18fee96d25d913d2c62fc32febe58400cda17958916047945252a72adf96a92557774ba051c87a9c03e554136ef23b0de1bec167050e5be099bac52590d"
-				}
-			  }
-			}
-		  }
+		"license": {
+			"name": "MIT License",
+			"url": "https://github.com/pokt-network/pocket-core/LICENSE.md"
 		},
-		"responses": {
-		  "200": {
-			"description": "Response from the relayed request",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryRelayResponse"
-				},
-				"example": {
-				  "Proof": {
-					"aat": {
-					  "app_pub_key": "ba7107264037ed8a310fad0f708c3dc7eb3bca8f3a680bb8b216602f10ebe265",
-					  "client_pub_key": "ba7107264037ed8a310fad0f708c3dc7eb3bca8f3a680bb8b216602f10ebe265",
-					  "signature": "8282c4d78729f0b6bd1182c8e60c8af2c4fbac0ed90fbf3ea994f4f234bffd36f9f28badc17e5236f3329faa90c77672472256c45851f619173a0ed6240eca0c",
-					  "version": "0.0.1"
-					},
-					"blockchain": "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80",
-					"entropy": 0,
-					"request_hash": "",
-					"servicer_pub_key": "5ad4a47a843151e18099c9752c23f392e7e918af88ed28fa8ca2b31a6c2a7a1e",
-					"session_block_height": 1,
-					"signature": ""
-				  },
-				  "payload": "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad",
-				  "signature": "e7c347971c0a53f9d63fb5681e35a4c89d97e7c6703c0e3980c2a70dbc56cb0db11e24eb078a9ffbaf7f78970ff0ce2478d7485301e39c5950c45028283ef709"
-				}
-			  }
-			}
-		  }
-		}
-	  }
+		"version": "0.2.0"
 	},
-	"/client/rawtx": {
-	  "post": {
-		"tags": [
-		  "client"
-		],
-		"requestBody": {
-		  "description": "Raw transaction to be relayed to a target address",
-		  "required": true,
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryRawTXRequest"
-			  }
-			}
-		  }
+	"externalDocs": {
+		"description": "Find out more about Pocket Network",
+		"url": "https://pokt.network"
+	},
+	"servers": [
+		{
+			"url": "http://localhost:8081/v1"
 		},
-		"responses": {
-		  "200": {
-			"description": "Response from the relayed raw request",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryRawTXResponse"
-				},
-				"example": {
-				  "height": "0",
-				  "txhash": "5F7D1B8AA14025F6F5E50B35CE7BC7BD6F7153FCF4840138E3CB6C1E5B5C7E78",
-				  "raw_log": "[{\"msg_index\":0,\"success\":true,\"log\":\"\",\"events\":[{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"send\"}]}]}]",
-				  "logs": [
-					{
-					  "msg_index": 0,
-					  "success": true,
-					  "log": "",
-					  "events": [
-						{
-						  "type": "message",
-						  "attributes": [
-							{
-							  "key": "action",
-							  "value": "send"
+		{
+			"url": "http://35.236.208.175:8081/v1"
+		}
+	],
+	"tags": [
+		{
+			"name": "version",
+			"description": "Version of the Pocket API"
+		},
+		{
+			"name": "client",
+			"description": "Dispatch and relay services"
+		},
+		{
+			"name": "query",
+			"description": "Blockchain queries"
+		}
+	],
+	"paths": {
+		"/": {
+			"get": {
+				"tags": [
+					"version"
+				],
+				"summary": "Get the current version of the Pocket Network API",
+				"responses": {
+					"200": {
+						"description": "Version",
+						"content": {
+							"text/plain": {
+								"schema": {
+									"type": "string",
+									"example": "0.0.1"
+								}
 							}
-						  ]
 						}
-					  ]
 					}
-				  ]
 				}
-			  }
 			}
-		  }
-		}
-	  }
-	},
-	"/client/challenge": {
-	  "post": {
-		"tags": [
-		  "client"
-		],
-		"requestBody": {
-		  "description": "Request a Challenge for invalid data served through relay",
-		  "required": true,
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryChallengeRequest"
-			  }
-			}
-		  }
 		},
-		"responses": {
-		  "200": {
-			"description": "Returns Challenge Response",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryChallengeResponse"
-				}
-			  }
-			}
-		  }
-		}
-	  }
-	},
-	"/query/account": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Request account at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryAddressHeight"
-			  },
-			  "example": {
-				"address": "4920ce1d787c60e2eaeff366c79e8aa2b82525f1",
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Returns account at the specified height",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/Account"
-				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the account"
-		  }
-		}
-	  }
-	},
-	"/query/app": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Rquest the app at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryAddressHeight"
-			  },
-			  "example": {
-				"address": "4920ce1d787c60e2eaeff366c79e8aa2b82525f1",
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Returns the app at the specified height,  height = 0 is used as latest",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/Application"
-				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the applications"
-		  }
-		}
-	  }
-	},
-	"/query/appparams": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the app parameters at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryHeight"
-			  },
-			  "example": {
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Application parameters",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/ApplicationParams"
-				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the application information"
-		  }
-		}
-	  }
-	},
-	"/query/apps": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Request a page of applications known at the specified height and staking status, empty (\"\") staking_status returns all apps",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryStakingHeight"
-			  },
-			  "example": {
-				"staking_status": "staked",
-				"height": 2,
-				"page": 1,
-				"limit": 100
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Returns a page of applications known at the specified height and staking status, within the limit per page",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryAppsResponse"
-				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the applications"
-		  }
-		}
-	  }
-	},
-	"/query/balance": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Request the balance of the specified address at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryAddressHeight"
-			  },
-			  "example": {
-				"address": "1b1973906ee85993e994422eddeab89f385a00a4",
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Returns the balance of the specified address at the specified height,  height = 0 is used as latest",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryBalanceResponse"
+		"/client/dispatch": {
+			"post": {
+				"tags": [
+					"client"
+				],
+				"requestBody": {
+					"description": "Sends a dispatch request to the network and get the nodes that will be servicing your requests for the session.",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryDispatchRequest"
+							}
+						}
+					}
 				},
-				"example": {
-				  "balance": 1000000000
+				"responses": {
+					"200": {
+						"description": "A list of dispatch/service nodes",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryDispatchResponse"
+								},
+								"example": {
+									"block_height": 5,
+									"session": {
+										"header": {
+											"app_public_key": "e9477af9b42001280033bab76670eac4274cb7321e52280ceba964e1c61db87c",
+											"chain": "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80",
+											"session_height": 1
+										},
+										"key": "OmEeJO2o6xvbldJxFpqI0rRVwVtBTmRGGSlGqzxGzgk=",
+										"nodes": [
+											{
+												"address": "afaa802b1736396d31825f60487e4da030ea85bb",
+												"chains": [
+													"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+												],
+												"jailed": false,
+												"public_key": "a01bc947f512a971131474986cc0c8cb3caed6bcfca076e6b78ac2b838ebefed",
+												"service_url": "0.0.0.0:8081",
+												"status": 2,
+												"tokens": "1000000000000000000",
+												"unstaking_time": "0001-01-01T00:00:00Z"
+											},
+											{
+												"address": "88967bf78114d5ea56e1a02fb3fd2cac3607d674",
+												"chains": [
+													"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+												],
+												"jailed": false,
+												"public_key": "c61954ba119bbbb2c1efa1d44f5f4001438566fd8aee2892387ef55ded82c159",
+												"service_url": "0.0.0.0:8081",
+												"status": 2,
+												"tokens": "10000000",
+												"unstaking_time": "0001-01-01T00:00:00Z"
+											},
+											{
+												"address": "a0c005c63f97a13e540e6bb484821d77f3fdaf75",
+												"chains": [
+													"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+												],
+												"jailed": false,
+												"public_key": "db07958aa0035fbb3e7e2575fbbb062a7d5ef5580cd0fe80142a4df5d31a316a",
+												"service_url": "0.0.0.0:8081",
+												"status": 2,
+												"tokens": "10000000",
+												"unstaking_time": "0001-01-01T00:00:00Z"
+											},
+											{
+												"address": "e3b15b922be9cabbe3b4a3a788dec8dc95c8f3dc",
+												"chains": [
+													"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+												],
+												"jailed": false,
+												"public_key": "a9c5d4463d5e233dd9437a2044a6595fe69ced34716a8e1c8ad86d3196f3fd78",
+												"service_url": "0.0.0.0:8081",
+												"status": 2,
+												"tokens": "10000000",
+												"unstaking_time": "0001-01-01T00:00:00Z"
+											},
+											{
+												"address": "fa11cff20c510fa1588915bd48391fee802822c8",
+												"chains": [
+													"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+												],
+												"jailed": false,
+												"public_key": "b62798f50be7055073f8b2f19ca4b2262a2c82f2ab16fc907e9db1cce551ffce",
+												"service_url": "0.0.0.0:8081",
+												"status": 2,
+												"tokens": "10000000",
+												"unstaking_time": "0001-01-01T00:00:00Z"
+											}
+										]
+									}
+								}
+							}
+						}
+					}
 				}
-			  }
 			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve Information"
-		  }
-		}
-	  }
-	},
-	"/query/block": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the block structure at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryBlock"
-			  },
-			  "example": {
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
 		},
-		"responses": {
-		  "200": {
-			"description": "Block data",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryBlockResponse"
+		"/client/relay": {
+			"post": {
+				"tags": [
+					"client"
+				],
+				"requestBody": {
+					"description": "Request to be relayed to a target blockchain",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryRelayRequest"
+							},
+							"example": {
+								"payload": {
+									"data": "\"jsonrpc\":\"2.0\",\"method\":\"web3_sha3\",\"params\":[\"0x68656c6c6f20776f726c64\"],\"id\":64",
+									"method": "",
+									"path": ""
+								},
+								"meta": {
+									"block_height": 5
+								},
+								"proof": {
+									"request_hash": "7b227061796c6f6164223a7b2264617461223a225c226a736f6e7270635c223a5c22322e305c222c5c226d6574686f645c223a5c22776562335f736861335c222c5c22706172616d735c223a5b5c223078363836353663366336663230373736663732366336345c225d2c5c2269645c223a3634222c226d6574686f64223a22222c2270617468223a22227d2c226d657461223a7b22626c6f636b5f686569676874223a357d2c2270726f6f66223a7b22726571756573745f68617368223a22222c22656e74726f7079223a302c2273657373696f6e5f626c6f636b5f686569676874223a302c2273657276696365725f7075625f6b6579223a22222c22626c6f636b636861696e223a22222c22616174223a7b2276657273696f6e223a22222c226170705f7075625f6b6579223a22222c22636c69656e745f7075625f6b6579223a22222c227369676e6174757265223a22227d2c227369676e6174757265223a22227d7d",
+									"entropy": 32598345349034508,
+									"session_block_height": 1,
+									"servicer_pub_key": "76eb9563b731af2711f326deeaebef166ce1de42c2b60c5c9f50f996fbd318ad",
+									"blockchain": "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80",
+									"aat": {
+										"version": "0.0.1",
+										"app_pub_key": "81068fcc400b476a332b1dcd17943cb05ffd4a3a030c6309de9bf02d8d91cd70",
+										"client_pub_key": "81068fcc400b476a332b1dcd17943cb05ffd4a3a030c6309de9bf02d8d91cd70",
+										"signature": "c5923bd5a663d7bb3c990504a98008e4d32ab7c57a8689d9a494fa29274b497396cbffa9523a7acf8cdff8227b96a8bb3e2e1c1b008de32041aa86c68d0f2b08"
+									},
+									"signature": "e3e3a18fee96d25d913d2c62fc32febe58400cda17958916047945252a72adf96a92557774ba051c87a9c03e554136ef23b0de1bec167050e5be099bac52590d"
+								}
+							}
+						}
+					}
 				},
-				"example": {
-				  "block": {
+				"responses": {
+					"200": {
+						"description": "Response from the relayed request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryRelayResponse"
+								},
+								"example": {
+									"Proof": {
+										"aat": {
+											"app_pub_key": "ba7107264037ed8a310fad0f708c3dc7eb3bca8f3a680bb8b216602f10ebe265",
+											"client_pub_key": "ba7107264037ed8a310fad0f708c3dc7eb3bca8f3a680bb8b216602f10ebe265",
+											"signature": "8282c4d78729f0b6bd1182c8e60c8af2c4fbac0ed90fbf3ea994f4f234bffd36f9f28badc17e5236f3329faa90c77672472256c45851f619173a0ed6240eca0c",
+											"version": "0.0.1"
+										},
+										"blockchain": "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80",
+										"entropy": 0,
+										"request_hash": "",
+										"servicer_pub_key": "5ad4a47a843151e18099c9752c23f392e7e918af88ed28fa8ca2b31a6c2a7a1e",
+										"session_block_height": 1,
+										"signature": ""
+									},
+									"payload": "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad",
+									"signature": "e7c347971c0a53f9d63fb5681e35a4c89d97e7c6703c0e3980c2a70dbc56cb0db11e24eb078a9ffbaf7f78970ff0ce2478d7485301e39c5950c45028283ef709"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/client/rawtx": {
+			"post": {
+				"tags": [
+					"client"
+				],
+				"requestBody": {
+					"description": "Raw transaction to be relayed to a target address",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryRawTXRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Response from the relayed raw request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryRawTXResponse"
+								},
+								"example": {
+									"height": "0",
+									"txhash": "5F7D1B8AA14025F6F5E50B35CE7BC7BD6F7153FCF4840138E3CB6C1E5B5C7E78",
+									"raw_log": "[{\"msg_index\":0,\"success\":true,\"log\":\"\",\"events\":[{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"send\"}]}]}]",
+									"logs": [
+										{
+											"msg_index": 0,
+											"success": true,
+											"log": "",
+											"events": [
+												{
+													"type": "message",
+													"attributes": [
+														{
+															"key": "action",
+															"value": "send"
+														}
+													]
+												}
+											]
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/client/challenge": {
+			"post": {
+				"tags": [
+					"client"
+				],
+				"requestBody": {
+					"description": "Request a Challenge for invalid data served through relay",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryChallengeRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Returns Challenge Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryChallengeResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/query/account": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Request account at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryAddressHeight"
+							},
+							"example": {
+								"address": "4920ce1d787c60e2eaeff366c79e8aa2b82525f1",
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Returns account at the specified height",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Account"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the account"
+					}
+				}
+			}
+		},
+		"/query/app": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Rquest the app at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryAddressHeight"
+							},
+							"example": {
+								"address": "4920ce1d787c60e2eaeff366c79e8aa2b82525f1",
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Returns the app at the specified height,  height = 0 is used as latest",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Application"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the applications"
+					}
+				}
+			}
+		},
+		"/query/appparams": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the app parameters at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryHeight"
+							},
+							"example": {
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Application parameters",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApplicationParams"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the application information"
+					}
+				}
+			}
+		},
+		"/query/apps": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Request a page of applications known at the specified height and staking status, empty (\"\") staking_status returns all apps, page < 1 returns the first page, per_page < 1 returns 10000 elements per page",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryHeightAndApplicationsOpts"
+							},
+							"example": {
+								"height": 2,
+								"opts": {
+									"staking_status": 2,
+									"page": 1,
+									"per_page": 100
+								}
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Returns the list of all applications known at the specified height and staking status",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryAppsResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the applications"
+					}
+				}
+			}
+		},
+		"/query/balance": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Request the balance of the specified address at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryAddressHeight"
+							},
+							"example": {
+								"address": "1b1973906ee85993e994422eddeab89f385a00a4",
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Returns the balance of the specified address at the specified height,  height = 0 is used as latest",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryBalanceResponse"
+								},
+								"example": {
+									"balance": 1000000000
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve Information"
+					}
+				}
+			}
+		},
+		"/query/block": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the block structure at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryBlock"
+							},
+							"example": {
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Block data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryBlockResponse"
+								},
+								"example": {
+									"block": {
+										"data": {
+											"txs": null
+										},
+										"evidence": {
+											"evidence": null
+										},
+										"header": {
+											"app_hash": "",
+											"chain_id": "pocket-test",
+											"consensus_hash": "90B6C64F69FDCF9746F038BD2D27DFFFAE814E19EA6F974C740896AA62EDDA1D",
+											"data_hash": "",
+											"evidence_hash": "",
+											"height": "1",
+											"last_block_id": {
+												"hash": "",
+												"parts": {
+													"hash": "",
+													"total": "0"
+												}
+											},
+											"last_commit_hash": "",
+											"last_results_hash": "",
+											"next_validators_hash": "AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0",
+											"num_txs": "0",
+											"proposer_address": "AD8EAF52981A102068AA1FE4108E5520542078C3",
+											"time": "2020-03-10T00:04:35.159615Z",
+											"total_txs": "0",
+											"validators_hash": "AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0",
+											"version": {
+												"app": "0",
+												"block": "10"
+											}
+										},
+										"last_commit": {
+											"block_id": {
+												"hash": "",
+												"parts": {
+													"hash": "",
+													"total": "0"
+												}
+											},
+											"precommits": null
+										}
+									},
+									"block_meta": {
+										"block_id": {
+											"hash": "D0A2AB1DE2FB356AEBF4CD9B18EA6E6754323512196858557787358C279E0473",
+											"parts": {
+												"hash": "581F3CCD645EB60EC4F16575F1C73393C9405C76E42C6C5D14938875FE4912F5",
+												"total": "1"
+											}
+										},
+										"header": {
+											"app_hash": "",
+											"chain_id": "pocket-test",
+											"consensus_hash": "90B6C64F69FDCF9746F038BD2D27DFFFAE814E19EA6F974C740896AA62EDDA1D",
+											"data_hash": "",
+											"evidence_hash": "",
+											"height": "1",
+											"last_block_id": {
+												"hash": "",
+												"parts": {
+													"hash": "",
+													"total": "0"
+												}
+											},
+											"last_commit_hash": "",
+											"last_results_hash": "",
+											"next_validators_hash": "AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0",
+											"num_txs": "0",
+											"proposer_address": "AD8EAF52981A102068AA1FE4108E5520542078C3",
+											"time": "2020-03-10T00:04:35.159615Z",
+											"total_txs": "0",
+											"validators_hash": "AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0",
+											"version": {
+												"app": "0",
+												"block": "10"
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the block information"
+					}
+				}
+			}
+		},
+		"/query/height": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the current height",
+					"content": {
+						"application/json": {
+							"schema": {}
+						}
+					},
+					"required": false
+				},
+				"responses": {
+					"200": {
+						"description": "Block height",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryHeightResponse"
+								},
+								"example": {
+									"height": 10
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the block height information"
+					}
+				}
+			}
+		},
+		"/query/node": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the node at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryAddressHeight"
+							},
+							"example": {
+								"address": "0xA5DE6D4184016708c1040c355F1c958192276DB5",
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Node details",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Node"
+								},
+								"example": {
+									"address": "05d98fbedf63cd4b4e337ef488ec2ad7e5072cb2",
+									"chains": [
+										"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+									],
+									"jailed": false,
+									"public_key": "bac2790f5786d4e016ed1f03a54205ba99b949e6a3c4b4641317977dfedfce79",
+									"service_url": "0.0.0.0:8081",
+									"status": 2,
+									"tokens": "1000000000000000",
+									"unstaking_time": "0001-01-01T00:00:00Z"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the node information"
+					}
+				}
+			}
+		},
+		"/query/nodeparams": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the node parameters at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryHeight"
+							},
+							"example": {
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Node parameters",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NodeParams"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the node information"
+					}
+				}
+			}
+		},
+		"/query/nodereceipt": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the node receipt for specific session",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryNodeReceipt"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Node proofs",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StoredReceipt"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the node proof information"
+					}
+				}
+			}
+		},
+		"/query/nodereceipts": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the list of all Relay Batch proofs submitted by node address at height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryAddressHeight"
+							},
+							"example": {
+								"address": "0xA5DE6D4184016708c1040c355F1c958192276DB5",
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Node proofs",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryNodeReceiptsResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the node proof information"
+					}
+				}
+			}
+		},
+		"/query/nodes": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Request a page of nodes known at the specified height and with options, empty options returns all validators, page < 1 returns the first page, per_page < 1 returns 10000 elements per page",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryHeightAndValidatorsOpts"
+							},
+							"example": {
+								"opts": {
+									"staking_status": 2,
+									"page": 1,
+									"per_page": 100,
+									"chain": "",
+									"JailedStatus": 1
+								},
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Returns the list of all nodes known at the specified height and staking status",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryNodesResponse"
+								},
+								"example": {
+									"result": [
+										{
+											"address": "98a18a38aa6826a55dccce19f607e3171cf1436e",
+											"public_key": "d6b3785f00961059d2a5c6448cae7ddb02475de79c22261687a92cb905ff0de9",
+											"jailed": false,
+											"status": 2,
+											"tokens": "1000000000000000",
+											"service_url": "0.0.0.0:8081",
+											"chains": [
+												"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
+											],
+											"unstaking_time": "0001-01-01T00:00:00Z"
+										}
+									],
+									"page": 1,
+									"total_pages": 100
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the nodes' information"
+					}
+				}
+			}
+		},
+		"/query/pocketparams": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the pocket parameters at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryHeight"
+							},
+							"example": {
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Pocket Network parameters",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PocketParams"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the application information"
+					}
+				}
+			}
+		},
+		"/query/supply": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the list of node params specified in the height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryHeight"
+							},
+							"example": {
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Pocket Network parameters",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QuerySupplyResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the supply information"
+					}
+				}
+			}
+		},
+		"/query/supportedchains": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the list Network Identifiers supported by the network at the specified height,  height = 0 is used as latest",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryHeight"
+							},
+							"example": {
+								"height": 2
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Pocket Network parameters",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QuerySupportedChainsResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the application information"
+					}
+				}
+			}
+		},
+		"/query/tx": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns the transaction by the hash",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryTX"
+							},
+							"example": {
+								"hash": "0x197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Transaction data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryTXResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the transaction information"
+					}
+				}
+			}
+		},
+		"/query/accounttxs": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns all transactions sent by the address",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryAccountTXs"
+							},
+							"example": {
+								"address": "197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Transaction list",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryAccountTXsResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the transaction information"
+					}
+				}
+			}
+		},
+		"/query/blocktxs": {
+			"post": {
+				"tags": [
+					"query"
+				],
+				"requestBody": {
+					"description": "Returns all transactions at a certain block height",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/QueryBlockTXs"
+							},
+							"example": {
+								"height": 99
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Transaction list",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/QueryBlockTXsResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Failed to retrieve the transaction information"
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"ABCIEvent": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string"
+					},
+					"attributes": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"key": {
+									"type": "string"
+								},
+								"value": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			},
+			"ABCIMessageLog": {
+				"type": "object",
+				"properties": {
+					"msg_index": {
+						"type": "integer",
+						"format": "uint16",
+						"description": "Ordered index of the log message"
+					},
+					"success": {
+						"type": "boolean",
+						"description": "Success or failure?"
+					},
+					"log": {
+						"type": "string",
+						"description": "Full text of the log"
+					},
+					"events": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ABCIEvent"
+						}
+					}
+				}
+			},
+			"Account": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"type": "string"
+					},
+					"coins": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Coin"
+						}
+					},
+					"public_key": {
+						"type": "string"
+					}
+				}
+			},
+			"Coin": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "string"
+					},
+					"denom": {
+						"type": "string"
+					}
+				}
+			},
+			"Application": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"type": "string",
+						"description": "The hex address of the application"
+					},
+					"public_key": {
+						"type": "string",
+						"description": "The hex public key of the application"
+					},
+					"jailed": {
+						"type": "boolean",
+						"description": "Has the application been jailed from staked status",
+						"default": false
+					},
+					"status": {
+						"type": "integer",
+						"description": "Application status"
+					},
+					"chains": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"description": "Blockchains supported"
+					},
+					"tokens": {
+						"type": "string",
+						"description": "How many tokens has this node staked in uPOKT"
+					},
+					"max_relays": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Maximum number of relays supported"
+					},
+					"unstaking_time": {
+						"type": "string",
+						"description": "If unstaking, the minimum time for the validator to complete unstaking"
+					}
+				}
+			},
+			"ApplicationParams": {
+				"type": "object",
+				"properties": {
+					"unstaking_time": {
+						"type": "string",
+						"description": "duration of unstaking"
+					},
+					"max_applications": {
+						"type": "integer",
+						"format": "uint64",
+						"description": "maximum number of applications"
+					},
+					"app_stake_minimum": {
+						"type": "integer",
+						"format": "int64",
+						"description": "minimum amount needed to stake as an application"
+					},
+					"base_relays_per_pokt": {
+						"type": "integer",
+						"format": "int64",
+						"description": "base relays per POKT coin staked"
+					},
+					"stability_adjustment": {
+						"type": "integer",
+						"format": "int64",
+						"description": "the stability adjustment from the governance"
+					},
+					"participation_rate_on": {
+						"type": "boolean",
+						"description": "the participation rate affects the amount minted based on staked ratio"
+					}
+				}
+			},
+			"Applications": {
+				"type": "array",
+				"items": {
+					"$ref": "#/components/schemas/Application"
+				}
+			},
+			"Block": {
+				"type": "object",
+				"properties": {
+					"header": {
+						"$ref": "#/components/schemas/BlockHeader"
+					},
 					"data": {
-					  "txs": null
+						"type": "string",
+						"description": "Data hash of the block"
 					},
 					"evidence": {
-					  "evidence": null
+						"type": "string",
+						"description": "Evidence hash"
 					},
-					"header": {
-					  "app_hash": "",
-					  "chain_id": "pocket-test",
-					  "consensus_hash": "90B6C64F69FDCF9746F038BD2D27DFFFAE814E19EA6F974C740896AA62EDDA1D",
-					  "data_hash": "",
-					  "evidence_hash": "",
-					  "height": "1",
-					  "last_block_id": {
-						"hash": "",
-						"parts": {
-						  "hash": "",
-						  "total": "0"
-						}
-					  },
-					  "last_commit_hash": "",
-					  "last_results_hash": "",
-					  "next_validators_hash": "AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0",
-					  "num_txs": "0",
-					  "proposer_address": "AD8EAF52981A102068AA1FE4108E5520542078C3",
-					  "time": "2020-03-10T00:04:35.159615Z",
-					  "total_txs": "0",
-					  "validators_hash": "AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0",
-					  "version": {
-						"app": "0",
-						"block": "10"
-					  }
-					},
-					"last_commit": {
-					  "block_id": {
-						"hash": "",
-						"parts": {
-						  "hash": "",
-						  "total": "0"
-						}
-					  },
-					  "precommits": null
+					"lastCommit": {
+						"$ref": "#/components/schemas/Commit"
 					}
-				  },
-				  "block_meta": {
+				}
+			},
+			"Blockchain": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Name of the blockchain"
+					},
+					"net_id": {
+						"type": "string",
+						"description": "Network identifier"
+					}
+				}
+			},
+			"BlockHeader": {
+				"type": "object",
+				"properties": {
+					"version": {
+						"$ref": "#/components/schemas/Consensus"
+					},
+					"chain_id": {
+						"type": "string"
+					},
+					"height": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"time": {
+						"type": "string"
+					},
+					"num_txs": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"total_txs": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"last_block_id": {
+						"$ref": "#/components/schemas/BlockID"
+					},
+					"last_commit_hash": {
+						"type": "string"
+					},
+					"data_hash": {
+						"type": "string"
+					},
+					"validators_hash": {
+						"type": "string"
+					},
+					"next_validators_hash": {
+						"type": "string"
+					},
+					"consensus_hash": {
+						"type": "string"
+					},
+					"app_hash": {
+						"type": "string"
+					},
+					"last_results_hash": {
+						"type": "string"
+					},
+					"evidence_hash": {
+						"type": "string"
+					},
+					"proposer_address": {
+						"type": "string"
+					}
+				}
+			},
+			"BlockID": {
+				"type": "object",
+				"properties": {
+					"hash": {
+						"type": "string"
+					},
+					"parts": {
+						"$ref": "#/components/schemas/PartSetHeader"
+					}
+				}
+			},
+			"BlockMeta": {
+				"type": "object",
+				"properties": {
 					"block_id": {
-					  "hash": "D0A2AB1DE2FB356AEBF4CD9B18EA6E6754323512196858557787358C279E0473",
-					  "parts": {
-						"hash": "581F3CCD645EB60EC4F16575F1C73393C9405C76E42C6C5D14938875FE4912F5",
-						"total": "1"
-					  }
+						"$ref": "#/components/schemas/BlockID"
 					},
-					"header": {
-					  "app_hash": "",
-					  "chain_id": "pocket-test",
-					  "consensus_hash": "90B6C64F69FDCF9746F038BD2D27DFFFAE814E19EA6F974C740896AA62EDDA1D",
-					  "data_hash": "",
-					  "evidence_hash": "",
-					  "height": "1",
-					  "last_block_id": {
-						"hash": "",
-						"parts": {
-						  "hash": "",
-						  "total": "0"
-						}
-					  },
-					  "last_commit_hash": "",
-					  "last_results_hash": "",
-					  "next_validators_hash": "AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0",
-					  "num_txs": "0",
-					  "proposer_address": "AD8EAF52981A102068AA1FE4108E5520542078C3",
-					  "time": "2020-03-10T00:04:35.159615Z",
-					  "total_txs": "0",
-					  "validators_hash": "AC2B8D79A789E27A51E809BED90DCA8EA0E640CA134F9ADDD1B4510E8CE8C1C0",
-					  "version": {
-						"app": "0",
-						"block": "10"
-					  }
+					"blockHeader": {
+						"$ref": "#/components/schemas/BlockHeader"
 					}
-				  }
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the block information"
-		  }
-		}
-	  }
-	},
-	"/query/height": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the current height",
-		  "content": {
-			"application/json": {
-			  "schema": {}
-			}
-		  },
-		  "required": false
-		},
-		"responses": {
-		  "200": {
-			"description": "Block height",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryHeightResponse"
-				},
-				"example": {
-				  "height": 10
+			},
+			"Commit": {
+				"type": "object",
+				"properties": {
+					"block_id": {
+						"$ref": "#/components/schemas/BlockID"
+					},
+					"commit_signature": {
+						"$ref": "#/components/schemas/CommitSignature"
+					}
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the block height information"
-		  }
-		}
-	  }
-	},
-	"/query/node": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the node at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryAddressHeight"
-			  },
-			  "example": {
-				"address": "0xA5DE6D4184016708c1040c355F1c958192276DB5",
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Node details",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/Node"
-				},
-				"example": {
-				  "address": "05d98fbedf63cd4b4e337ef488ec2ad7e5072cb2",
-				  "chains": [
-					"36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-				  ],
-				  "jailed": false,
-				  "public_key": "bac2790f5786d4e016ed1f03a54205ba99b949e6a3c4b4641317977dfedfce79",
-				  "service_url": "0.0.0.0:8081",
-				  "status": 2,
-				  "tokens": "1000000000000000",
-				  "unstaking_time": "0001-01-01T00:00:00Z"
+			},
+			"CommitSignature": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string"
+					},
+					"height": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"round": {
+						"type": "integer"
+					},
+					"block_id": {
+						"$ref": "#/components/schemas/BlockID"
+					},
+					"timestamp": {
+						"type": "string"
+					},
+					"validator_address": {
+						"type": "string"
+					},
+					"validator_index": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"signature": {
+						"type": "string"
+					}
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the node information"
-		  }
-		}
-	  }
-	},
-	"/query/nodeparams": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the node parameters at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryHeight"
-			  },
-			  "example": {
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Node parameters",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/NodeParams"
+			},
+			"Consensus": {
+				"type": "object",
+				"properties": {
+					"block": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"app": {
+						"type": "integer",
+						"format": "int64"
+					}
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the node information"
-		  }
-		}
-	  }
-	},
-	"/query/nodereceipt": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the node receipt for specific session",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryNodeReceipt"
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Node proofs",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/StoredReceipt"
+			},
+			"Node": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"type": "string",
+						"description": "The hex address of the validator"
+					},
+					"chains": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"description": "Blockchains supported"
+					},
+					"jailed": {
+						"type": "boolean",
+						"description": "Has the validator been jailed from staked status",
+						"default": false
+					},
+					"public_key": {
+						"type": "string",
+						"description": "The validator public hex key"
+					},
+					"service_url": {
+						"type": "string",
+						"description": "The validator service url"
+					},
+					"status": {
+						"type": "integer",
+						"description": "Validator status"
+					},
+					"tokens": {
+						"type": "string",
+						"description": "How many tokens has this node staked in uPOKT"
+					},
+					"unstaking_time": {
+						"type": "string",
+						"description": "If unstaking, the minimum time for the validator to complete unstaking"
+					}
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the node proof information"
-		  }
-		}
-	  }
-	},
-	"/query/nodereceipts": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the list of all Relay Batch proofs submitted by node address at height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryAddressHeight"
-			  },
-			  "example": {
-				"address": "0xA5DE6D4184016708c1040c355F1c958192276DB5",
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Node proofs",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryNodeReceiptsResponse"
+			},
+			"NodeParams": {
+				"type": "object",
+				"properties": {
+					"unstaking_time": {
+						"type": "string",
+						"format": "date-time",
+						"description": "How much time must pass between the begin_unstaking_tx and the node transitioning to unstaked status"
+					},
+					"max_validators": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Maximum number of validators in the network at any given block"
+					},
+					"stake_denom": {
+						"type": "string",
+						"description": "The monetary denomination of the coins in the network `uPOKT`"
+					},
+					"stake_minimum": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Minimum amount of uPOKT needed to stake in the network as a node"
+					},
+					"session_block_frequency": {
+						"type": "integer",
+						"format": "int64",
+						"description": "How many blocks are in a session"
+					},
+					"dao_allocation": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Award percentage of the mint for the DAO"
+					},
+					"proposer_allocation": {
+						"type": "integer",
+						"format": "int32",
+						"description": "Award percentage of the mint for the proposer"
+					},
+					"max_evidence_age": {
+						"type": "string",
+						"description": "Maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)"
+					},
+					"signed_blocks_window": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks"
+					},
+					"min_signed_per_window": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Minimum number of blocks the node must sign per window"
+					},
+					"downtime_jail_duration": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Minimum amount of time node must spend in jail after missing blocks"
+					},
+					"slash_fraction_double_sign": {
+						"type": "integer",
+						"format": "int64",
+						"description": "The factor of which a node is slashed for a double sign"
+					},
+					"slash_fraction_downtime": {
+						"type": "integer",
+						"format": "int64",
+						"description": "The factor of which a node is slashed for a double sign"
+					}
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the node proof information"
-		  }
-		}
-	  }
-	},
-	"/query/nodes": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Request a page nodes known at the specified height and staking status , empty (\"\") staking_status returns all nodes",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryStakingHeight"
-			  },
-			  "example": {
-				"staking_status": "staked",
-				"height": 2,
-				"page": 1,
-				"limit": 100
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Returns a page of nodes known at the specified height and staking status, within the limit per page",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryNodesResponse"
-				},
-				"example": {
-					"result": [
-				  	{
-							"address": "98a18a38aa6826a55dccce19f607e3171cf1436e",
-							"public_key": "d6b3785f00961059d2a5c6448cae7ddb02475de79c22261687a92cb905ff0de9",
-							"jailed": false,
-							"status": 2,
-							"tokens": "1000000000000000",
-							"service_url": "0.0.0.0:8081",
-							"chains": [
-							  "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"
-							],
-							"unstaking_time": "0001-01-01T00:00:00Z"
+			},
+			"PartSetHeader": {
+				"type": "object",
+				"properties": {
+					"total": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"hash": {
+						"type": "string"
+					}
+				}
+			},
+			"PocketParams": {
+				"type": "object",
+				"properties": {
+					"session_node_count": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Number of nodes in this session"
+					},
+					"proof_waiting_period": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Proof waiting period"
+					},
+					"supported_blockchains": {
+						"type": "array",
+						"description": "Supported blockchains",
+						"items": {
+							"type": "string"
 						}
-					],
-			  "page": 1,
-			   "total_pages": 10
-			 }
-			}
-		}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the nodes' information"
-		  }
-		}
-	  }
-	},
-	"/query/pocketparams": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the pocket parameters at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryHeight"
-			  },
-			  "example": {
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Pocket Network parameters",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/PocketParams"
+					},
+					"claim_expiration": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Claim expiration"
+					}
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the application information"
-		  }
-		}
-	  }
-	},
-	"/query/supply": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the list of node params specified in the height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryHeight"
-			  },
-			  "example": {
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Pocket Network parameters",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QuerySupplyResponse"
+			},
+			"RelayProof": {
+				"type": "object",
+				"properties": {
+					"request_hash": {
+						"type": "string",
+						"description": "request hash identifier"
+					},
+					"entropy": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Entropy value to add uniqueness"
+					},
+					"session_block_height": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Height of the session"
+					},
+					"servicer_pub_key": {
+						"type": "string",
+						"description": "Servicer public hex public key"
+					},
+					"blockchain": {
+						"type": "string",
+						"description": "Blockchain hex string"
+					},
+					"aat": {
+						"$ref": "#/components/schemas/AAT"
+					},
+					"signature": {
+						"type": "string",
+						"description": "client's signature in hex"
+					}
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the supply information"
-		  }
-		}
-	  }
-	},
-	"/query/supportedchains": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the list Network Identifiers supported by the network at the specified height,  height = 0 is used as latest",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryHeight"
-			  },
-			  "example": {
-				"height": 2
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Pocket Network parameters",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QuerySupportedChainsResponse"
+			},
+			"AAT": {
+				"type": "object",
+				"properties": {
+					"version": {
+						"type": "string"
+					},
+					"app_pub_key": {
+						"type": "string",
+						"description": "Application hex public key"
+					},
+					"client_pub_key": {
+						"type": "string",
+						"description": "Application hex public key associated with a client"
+					},
+					"signature": {
+						"type": "string",
+						"description": "Application's signature in hex"
+					}
 				}
-			  }
-			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the application information"
-		  }
-		}
-	  }
-	},
-	"/query/tx": {
-	  "post": {
-		"tags": [
-		  "query"
-		],
-		"requestBody": {
-		  "description": "Returns the transaction by the hash",
-		  "content": {
-			"application/json": {
-			  "schema": {
-				"$ref": "#/components/schemas/QueryTX"
-			  },
-			  "example": {
-				"hash": "0x197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22"
-			  }
-			}
-		  },
-		  "required": true
-		},
-		"responses": {
-		  "200": {
-			"description": "Transaction data",
-			"content": {
-			  "application/json": {
-				"schema": {
-				  "$ref": "#/components/schemas/QueryTXResponse"
+			},
+			"RelayHeader": {
+				"type": "object",
+				"additionalProperties": {
+					"type": "string"
 				}
-			  }
+			},
+			"RelayMetadata": {
+				"description": "metadata for the relay request",
+				"type": "object",
+				"properties": {
+					"block_height": {
+						"type": "integer",
+						"format": "int64"
+					}
+				}
+			},
+			"RelayPayload": {
+				"description": "the data payload of the request",
+				"type": "object",
+				"properties": {
+					"data": {
+						"type": "string",
+						"description": "The actual data of the request string for the external chain"
+					},
+					"method": {
+						"type": "string",
+						"description": "The HTTP CRUD method"
+					},
+					"path": {
+						"type": "string",
+						"description": "The REST path"
+					},
+					"headers": {
+						"$ref": "#/components/schemas/RelayHeader"
+					}
+				}
+			},
+			"SessionHeader": {
+				"type": "object",
+				"properties": {
+					"app_public_key": {
+						"type": "string",
+						"description": "Application hex public key associated with a client"
+					},
+					"chain": {
+						"type": "string",
+						"description": "Network Identified in hex"
+					},
+					"session_height": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Height of the session"
+					}
+				}
+			},
+			"SimpleProof": {
+				"type": "object",
+				"properties": {
+					"total": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"index": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"leaf_hash": {
+						"type": "string"
+					},
+					"aunts": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"StoredReceipt": {
+				"type": "object",
+				"properties": {
+					"session_header": {
+						"$ref": "#/components/schemas/SessionHeader"
+					},
+					"servicer_address": {
+						"type": "string"
+					},
+					"total_relays": {
+						"type": "integer",
+						"format": "int64"
+					}
+				}
+			},
+			"Transaction": {
+				"type": "object",
+				"properties": {
+					"hash": {
+						"type": "string",
+						"description": "Hash of the transaction"
+					},
+					"height": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Blockheight of the transaction"
+					},
+					"index": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"tx_result": {
+						"$ref": "#/components/schemas/TxResult"
+					},
+					"tx": {
+						"type": "string",
+						"description": "Raw data of the transaction"
+					},
+					"proof": {
+						"$ref": "#/components/schemas/TXProof"
+					}
+				}
+			},
+			"TxResult": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"data": {
+						"type": "string"
+					},
+					"log": {
+						"type": "string"
+					},
+					"info": {
+						"type": "string"
+					},
+					"gas_wanted": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"gas_used": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"events": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"codespace": {
+						"type": "string"
+					}
+				}
+			},
+			"TXProof": {
+				"type": "object",
+				"description": "Proof of the transaction",
+				"properties": {
+					"root_hash": {
+						"type": "string"
+					},
+					"data": {
+						"type": "string"
+					},
+					"proof": {
+						"$ref": "#/components/schemas/SimpleProof"
+					}
+				}
+			},
+			"QueryAddressHeight": {
+				"type": "object",
+				"properties": {
+					"height": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"address": {
+						"type": "string"
+					}
+				}
+			},
+			"QueryBalanceResponse": {
+				"type": "object",
+				"properties": {
+					"balance": {
+						"type": "integer",
+						"format": "int64"
+					}
+				}
+			},
+			"QueryBlock": {
+				"type": "object",
+				"properties": {
+					"height": {
+						"type": "integer",
+						"format": "int64"
+					}
+				}
+			},
+			"QueryBlockResponse": {
+				"type": "object",
+				"properties": {
+					"block": {
+						"$ref": "#/components/schemas/Block"
+					},
+					"block_meta": {
+						"$ref": "#/components/schemas/BlockMeta"
+					}
+				}
+			},
+			"QueryDispatchRequest": {
+				"type": "object",
+				"properties": {
+					"session_header": {
+						"$ref": "#/components/schemas/SessionHeader"
+					}
+				}
+			},
+			"QueryDispatchResponse": {
+				"type": "object",
+				"properties": {
+					"session": {
+						"$ref": "#/components/schemas/Session"
+					},
+					"block_height": {
+						"type": "integer",
+						"format": "int64"
+					}
+				}
+			},
+			"Session": {
+				"type": "object",
+				"properties": {
+					"header": {
+						"$ref": "#/components/schemas/SessionHeader"
+					},
+					"key": {
+						"type": "string",
+						"format": "byte"
+					},
+					"nodes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Node"
+						}
+					}
+				}
+			},
+			"QueryHeight": {
+				"type": "object",
+				"properties": {
+					"height": {
+						"type": "integer",
+						"format": "int64"
+					}
+				}
+			},
+			"QueryHeightResponse": {
+				"type": "object",
+				"properties": {
+					"height": {
+						"type": "integer",
+						"format": "int64"
+					}
+				}
+			},
+			"QueryNodeReceipt": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"type": "string",
+						"description": "Node address"
+					},
+					"blockchain": {
+						"type": "string"
+					},
+					"app_pubkey": {
+						"type": "string",
+						"description": "Application hex public key associated with a client"
+					},
+					"session_block_height": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Session block height"
+					},
+					"height": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Height of the session"
+					}
+				}
+			},
+			"QueryNodeReceiptsResponse": {
+				"type": "object",
+				"properties": {
+					"nodes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/StoredReceipt"
+						}
+					}
+				}
+			},
+			"QueryNodesResponse": {
+				"type": "object",
+				"properties": {
+					"result": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Node"
+						}
+					},
+					"page": {
+						"type": "integer",
+						"format": "int64",
+						"description": "current page"
+					},
+					"total_pages": {
+						"type": "integer",
+						"format": "int64",
+						"description": "maximum amount of pages"
+					}
+				}
+			},
+			"QueryAppsResponse": {
+				"type": "object",
+				"properties": {
+					"result": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Application"
+						}
+					},
+					"page": {
+						"type": "integer",
+						"format": "int64",
+						"description": "current page"
+					},
+					"total_pages": {
+						"type": "integer",
+						"format": "int64",
+						"description": "maximum amount of pages"
+					}
+				}
+			},
+			"QueryRawTXRequest": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"type": "string"
+					},
+					"raw_hex_bytes": {
+						"type": "string"
+					}
+				}
+			},
+			"QueryRawTXResponse": {
+				"type": "object",
+				"properties": {
+					"height": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Blockheight of the transaction"
+					},
+					"txhash": {
+						"type": "string",
+						"description": "Hash of the transaction"
+					},
+					"code": {
+						"type": "integer",
+						"format": "uint32",
+						"description": "Result code returned (0 is OK; everything else is error)"
+					},
+					"data": {
+						"type": "string",
+						"description": "Raw transaction data"
+					},
+					"raw_log": {
+						"type": "string",
+						"description": "Raw transaction log"
+					},
+					"logs": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ABCIMessageLog"
+						},
+						"description": "ABCI Tendermint Logs"
+					},
+					"info": {
+						"type": "string"
+					},
+					"gas_wanted": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"gas_used": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"codespace": {
+						"type": "string"
+					},
+					"timestamp": {
+						"type": "string",
+						"description": "Timestamp of the transaction"
+					}
+				}
+			},
+			"QueryRelayRequest": {
+				"type": "object",
+				"properties": {
+					"payload": {
+						"$ref": "#/components/schemas/RelayPayload"
+					},
+					"meta": {
+						"$ref": "#/components/schemas/RelayMetadata"
+					},
+					"proof": {
+						"$ref": "#/components/schemas/RelayProof"
+					}
+				}
+			},
+			"QueryRelayResponse": {
+				"type": "object",
+				"properties": {
+					"signature": {
+						"type": "string",
+						"description": "Signature from the node in hex"
+					},
+					"payload": {
+						"type": "string",
+						"description": "string response to relay"
+					},
+					"proof": {
+						"$ref": "#/components/schemas/RelayProof"
+					}
+				}
+			},
+			"QueryChallengeRequest": {
+				"type": "object",
+				"properties": {
+					"majority_responses": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/QueryRelayResponse"
+						},
+						"minItems": 1,
+						"maxItems": 2
+					},
+					"minority_response": {
+						"$ref": "#/components/schemas/QueryRelayResponse"
+					},
+					"address": {
+						"description": "reporter address",
+						"type": "string",
+						"format": "byte"
+					}
+				}
+			},
+			"QueryChallengeResponse": {
+				"type": "object",
+				"properties": {
+					"response": {
+						"type": "string"
+					}
+				}
+			},
+			"QueryHeightAndValidatorsOpts": {
+				"type": "object",
+				"properties": {
+					"height": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"page": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"per_page": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"staking_status": {
+						"type": "integer",
+						"enum": [
+							"1 // unstaking",
+							"2 // staked"
+						]
+					},
+					"jailed_status": {
+						"type": "integer",
+						"enum": [
+							"1 // jailed",
+							"2 // unjailed"
+						]
+					},
+					"blockchain": {
+						"type": "string"
+					}
+				}
+			},
+			"QueryHeightAndApplicationsOpts": {
+				"type": "object",
+				"properties": {
+					"height": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"page": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"per_page": {
+						"type": "integer",
+						"format": "int64"
+					},
+					"staking_status": {
+						"type": "integer",
+						"enum": [
+							"1 // unstaking",
+							"2 // staked"
+						]
+					},
+					"blockchain": {
+						"type": "string"
+					}
+				}
+			},
+			"QuerySupplyResponse": {
+				"type": "object",
+				"properties": {
+					"node_staked": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Amount staked by the node in uPOKT"
+					},
+					"app_staked": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Amount staked by the app in uPOKT"
+					},
+					"dao": {
+						"type": "integer",
+						"format": "int64",
+						"description": "DAO amount in uPOKT"
+					},
+					"total_staked": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Total amount staked in uPOKT"
+					},
+					"total_unstaked": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Total amount unstaked in uPOKT"
+					},
+					"total": {
+						"type": "integer",
+						"format": "int64",
+						"description": "Total amount in uPOKT"
+					}
+				}
+			},
+			"QuerySupportedChainsResponse": {
+				"type": "object",
+				"properties": {
+					"supported_chains": {
+						"type": "array",
+						"description": "Supported blockchains",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"QueryTX": {
+				"type": "object",
+				"properties": {
+					"hash": {
+						"type": "string"
+					}
+				}
+			},
+			"QueryTXResponse": {
+				"type": "object",
+				"properties": {
+					"transaction": {
+						"$ref": "#/components/schemas/Transaction"
+					}
+				}
+			},
+			"QueryAccountTXs": {
+				"type": "object",
+				"properties": {
+					"address": {
+						"type": "string"
+					},
+					"page": {
+						"type": "integer"
+					},
+					"per_page": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"address"
+				]
+			},
+			"QueryAccountTXsResponse": {
+				"type": "object",
+				"properties": {
+					"txs": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Transaction"
+						}
+					},
+					"total_count": {
+						"type": "string"
+					}
+				}
+			},
+			"QueryBlockTXs": {
+				"type": "object",
+				"properties": {
+					"height": {
+						"type": "integer"
+					},
+					"page": {
+						"type": "integer"
+					},
+					"per_page": {
+						"type": "integer"
+					}
+				},
+				"required": [
+					"height"
+				]
+			},
+			"QueryBlockTXsResponse": {
+				"type": "object",
+				"properties": {
+					"txs": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Transaction"
+						}
+					},
+					"total_count": {
+						"type": "string"
+					}
+				}
 			}
-		  },
-		  "400": {
-			"description": "Failed to retrieve the transaction information"
-		  }
 		}
-	  }
 	}
-  },
-  "components": {
-	"schemas": {
-	  "ABCIEvent": {
-		"type": "object",
-		"properties": {
-		  "type": {
-			"type": "string"
-		  },
-		  "attributes": {
-			"type": "array",
-			"items": {
-			  "type": "object",
-			  "properties": {
-				"key": {
-				  "type": "string"
-				},
-				"value": {
-				  "type": "string"
-				}
-			  }
-			}
-		  }
-		}
-	  },
-	  "ABCIMessageLog": {
-		"type": "object",
-		"properties": {
-		  "msg_index": {
-			"type": "integer",
-			"format": "uint16",
-			"description": "Ordered index of the log message"
-		  },
-		  "success": {
-			"type": "boolean",
-			"description": "Success or failure?"
-		  },
-		  "log": {
-			"type": "string",
-			"description": "Full text of the log"
-		  },
-		  "events": {
-			"type": "array",
-			"items": {
-			  "$ref": "#/components/schemas/ABCIEvent"
-			}
-		  }
-		}
-	  },
-	  "Account": {
-		"type": "object",
-		"properties": {
-		  "address": {
-			"type": "string"
-		  },
-		  "coins": {
-			"type": "array",
-			"items": {
-			  "$ref": "#/components/schemas/Coin"
-			}
-		  },
-		  "public_key": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "Coin": {
-		"type": "object",
-		"properties": {
-		  "amount": {
-			"type": "string"
-		  },
-		  "denom": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "Application": {
-		"type": "object",
-		"properties": {
-		  "address": {
-			"type": "string",
-			"description": "The hex address of the application"
-		  },
-		  "public_key": {
-			"type": "string",
-			"description": "The hex public key of the application"
-		  },
-		  "jailed": {
-			"type": "boolean",
-			"description": "Has the application been jailed from staked status",
-			"default": false
-		  },
-		  "status": {
-			"type": "integer",
-			"description": "Application status"
-		  },
-		  "chains": {
-			"type": "array",
-			"items": {
-			  "type": "string"
-			},
-			"description": "Blockchains supported"
-		  },
-		  "tokens": {
-			"type": "string",
-			"description": "How many tokens has this node staked in uPOKT"
-		  },
-		  "max_relays": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Maximum number of relays supported"
-		  },
-		  "unstaking_time": {
-			"type": "string",
-			"description": "If unstaking, the minimum time for the validator to complete unstaking"
-		  }
-		}
-	  },
-	  "ApplicationParams": {
-		"type": "object",
-		"properties": {
-		  "unstaking_time": {
-			"type": "string",
-			"description": "duration of unstaking"
-		  },
-		  "max_applications": {
-			"type": "integer",
-			"format": "uint64",
-			"description": "maximum number of applications"
-		  },
-		  "app_stake_minimum": {
-			"type": "integer",
-			"format": "int64",
-			"description": "minimum amount needed to stake as an application"
-		  },
-		  "base_relays_per_pokt": {
-			"type": "integer",
-			"format": "int64",
-			"description": "base relays per POKT coin staked"
-		  },
-		  "stability_adjustment": {
-			"type": "integer",
-			"format": "int64",
-			"description": "the stability adjustment from the governance"
-		  },
-		  "participation_rate_on": {
-			"type": "boolean",
-			"description": "the participation rate affects the amount minted based on staked ratio"
-		  }
-		}
-	  },
-	  "Applications": {
-		"type": "array",
-		"items": {
-		  "$ref": "#/components/schemas/Application"
-		}
-	  },
-	  "Block": {
-		"type": "object",
-		"properties": {
-		  "header": {
-			"$ref": "#/components/schemas/BlockHeader"
-		  },
-		  "data": {
-			"type": "string",
-			"description": "Data hash of the block"
-		  },
-		  "evidence": {
-			"type": "string",
-			"description": "Evidence hash"
-		  },
-		  "lastCommit": {
-			"$ref": "#/components/schemas/Commit"
-		  }
-		}
-	  },
-	  "Blockchain": {
-		"type": "object",
-		"properties": {
-		  "name": {
-			"type": "string",
-			"description": "Name of the blockchain"
-		  },
-		  "net_id": {
-			"type": "string",
-			"description": "Network identifier"
-		  }
-		}
-	  },
-	  "BlockHeader": {
-		"type": "object",
-		"properties": {
-		  "version": {
-			"$ref": "#/components/schemas/Consensus"
-		  },
-		  "chain_id": {
-			"type": "string"
-		  },
-		  "height": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "time": {
-			"type": "string"
-		  },
-		  "num_txs": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "total_txs": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "last_block_id": {
-			"$ref": "#/components/schemas/BlockID"
-		  },
-		  "last_commit_hash": {
-			"type": "string"
-		  },
-		  "data_hash": {
-			"type": "string"
-		  },
-		  "validators_hash": {
-			"type": "string"
-		  },
-		  "next_validators_hash": {
-			"type": "string"
-		  },
-		  "consensus_hash": {
-			"type": "string"
-		  },
-		  "app_hash": {
-			"type": "string"
-		  },
-		  "last_results_hash": {
-			"type": "string"
-		  },
-		  "evidence_hash": {
-			"type": "string"
-		  },
-		  "proposer_address": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "BlockID": {
-		"type": "object",
-		"properties": {
-		  "hash": {
-			"type": "string"
-		  },
-		  "parts": {
-			"$ref": "#/components/schemas/PartSetHeader"
-		  }
-		}
-	  },
-	  "BlockMeta": {
-		"type": "object",
-		"properties": {
-		  "block_id": {
-			"$ref": "#/components/schemas/BlockID"
-		  },
-		  "blockHeader": {
-			"$ref": "#/components/schemas/BlockHeader"
-		  }
-		}
-	  },
-	  "Commit": {
-		"type": "object",
-		"properties": {
-		  "block_id": {
-			"$ref": "#/components/schemas/BlockID"
-		  },
-		  "commit_signature": {
-			"$ref": "#/components/schemas/CommitSignature"
-		  }
-		}
-	  },
-	  "CommitSignature": {
-		"type": "object",
-		"properties": {
-		  "type": {
-			"type": "string"
-		  },
-		  "height": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "round": {
-			"type": "integer"
-		  },
-		  "block_id": {
-			"$ref": "#/components/schemas/BlockID"
-		  },
-		  "timestamp": {
-			"type": "string"
-		  },
-		  "validator_address": {
-			"type": "string"
-		  },
-		  "validator_index": {
-			"type": "integer",
-			"format": "int32"
-		  },
-		  "signature": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "Consensus": {
-		"type": "object",
-		"properties": {
-		  "block": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "app": {
-			"type": "integer",
-			"format": "int64"
-		  }
-		}
-	  },
-	  "Node": {
-		"type": "object",
-		"properties": {
-		  "address": {
-			"type": "string",
-			"description": "The hex address of the validator"
-		  },
-		  "chains": {
-			"type": "array",
-			"items": {
-			  "type": "string"
-			},
-			"description": "Blockchains supported"
-		  },
-		  "jailed": {
-			"type": "boolean",
-			"description": "Has the validator been jailed from staked status",
-			"default": false
-		  },
-		  "public_key": {
-			"type": "string",
-			"description": "The validator public hex key"
-		  },
-		  "service_url": {
-			"type": "string",
-			"description": "The validator service url"
-		  },
-		  "status": {
-			"type": "integer",
-			"description": "Validator status"
-		  },
-		  "tokens": {
-			"type": "string",
-			"description": "How many tokens has this node staked in uPOKT"
-		  },
-		  "unstaking_time": {
-			"type": "string",
-			"description": "If unstaking, the minimum time for the validator to complete unstaking"
-		  }
-		}
-	  },
-	  "NodeParams": {
-		"type": "object",
-		"properties": {
-		  "unstaking_time": {
-			"type": "string",
-			"format": "date-time",
-			"description": "How much time must pass between the begin_unstaking_tx and the node transitioning to unstaked status"
-		  },
-		  "max_validators": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Maximum number of validators in the network at any given block"
-		  },
-		  "stake_denom": {
-			"type": "string",
-			"description": "The monetary denomination of the coins in the network `uPOKT`"
-		  },
-		  "stake_minimum": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Minimum amount of uPOKT needed to stake in the network as a node"
-		  },
-		  "session_block_frequency": {
-			"type": "integer",
-			"format": "int64",
-			"description": "How many blocks are in a session"
-		  },
-		  "dao_allocation": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Award percentage of the mint for the DAO"
-		  },
-		  "proposer_allocation": {
-			"type": "integer",
-			"format": "int32",
-			"description": "Award percentage of the mint for the proposer"
-		  },
-		  "max_evidence_age": {
-			"type": "string",
-			"description": "Maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)"
-		  },
-		  "signed_blocks_window": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks"
-		  },
-		  "min_signed_per_window": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Minimum number of blocks the node must sign per window"
-		  },
-		  "downtime_jail_duration": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Minimum amount of time node must spend in jail after missing blocks"
-		  },
-		  "slash_fraction_double_sign": {
-			"type": "integer",
-			"format": "int64",
-			"description": "The factor of which a node is slashed for a double sign"
-		  },
-		  "slash_fraction_downtime": {
-			"type": "integer",
-			"format": "int64",
-			"description": "The factor of which a node is slashed for a double sign"
-		  }
-		}
-	  },
-	  "PartSetHeader": {
-		"type": "object",
-		"properties": {
-		  "total": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "hash": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "PocketParams": {
-		"type": "object",
-		"properties": {
-		  "session_node_count": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Number of nodes in this session"
-		  },
-		  "proof_waiting_period": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Proof waiting period"
-		  },
-		  "supported_blockchains": {
-			"type": "array",
-			"description": "Supported blockchains",
-			"items": {
-			  "type": "string"
-			}
-		  },
-		  "claim_expiration": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Claim expiration"
-		  }
-		}
-	  },
-	  "RelayProof": {
-		"type": "object",
-		"properties": {
-		  "request_hash": {
-			"type": "string",
-			"description": "request hash identifier"
-		  },
-		  "entropy": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Entropy value to add uniqueness"
-		  },
-		  "session_block_height": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Height of the session"
-		  },
-		  "servicer_pub_key": {
-			"type": "string",
-			"description": "Servicer public hex public key"
-		  },
-		  "blockchain": {
-			"type": "string",
-			"description": "Blockchain hex string"
-		  },
-		  "aat": {
-			"$ref": "#/components/schemas/AAT"
-		  },
-		  "signature": {
-			"type": "string",
-			"description": "client's signature in hex"
-		  }
-		}
-	  },
-	  "AAT": {
-		"type": "object",
-		"properties": {
-		  "version": {
-			"type": "string"
-		  },
-		  "app_pub_key": {
-			"type": "string",
-			"description": "Application hex public key"
-		  },
-		  "client_pub_key": {
-			"type": "string",
-			"description": "Application hex public key associated with a client"
-		  },
-		  "signature": {
-			"type": "string",
-			"description": "Application's signature in hex"
-		  }
-		}
-	  },
-	  "RelayHeader": {
-		"type": "object",
-		"additionalProperties": {
-		  "type": "string"
-		}
-	  },
-	  "RelayMetadata": {
-		"description": "metadata for the relay request",
-		"type": "object",
-		"properties": {
-		  "block_height": {
-			"type": "integer",
-			"format": "int64"
-		  }
-		}
-	  },
-	  "RelayPayload": {
-		"description": "the data payload of the request",
-		"type": "object",
-		"properties": {
-		  "data": {
-			"type": "string",
-			"description": "The actual data of the request string for the external chain"
-		  },
-		  "method": {
-			"type": "string",
-			"description": "The HTTP CRUD method"
-		  },
-		  "path": {
-			"type": "string",
-			"description": "The REST path"
-		  },
-		  "headers": {
-			"$ref": "#/components/schemas/RelayHeader"
-		  }
-		}
-	  },
-	  "SessionHeader": {
-		"type": "object",
-		"properties": {
-		  "app_public_key": {
-			"type": "string",
-			"description": "Application hex public key associated with a client"
-		  },
-		  "chain": {
-			"type": "string",
-			"description": "Network Identified in hex"
-		  },
-		  "session_height": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Height of the session"
-		  }
-		}
-	  },
-	  "SimpleProof": {
-		"type": "object",
-		"properties": {
-		  "total": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "index": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "leaf_hash": {
-			"type": "string"
-		  },
-		  "aunts": {
-			"type": "array",
-			"items": {
-			  "type": "string"
-			}
-		  }
-		}
-	  },
-	  "StoredReceipt": {
-		"type": "object",
-		"properties": {
-		  "session_header": {
-			"$ref": "#/components/schemas/SessionHeader"
-		  },
-		  "servicer_address": {
-			"type": "string"
-		  },
-		  "total_relays": {
-			"type": "integer",
-			"format": "int64"
-		  }
-		}
-	  },
-	  "Transaction": {
-		"type": "object",
-		"properties": {
-		  "hash": {
-			"type": "string",
-			"description": "Hash of the transaction"
-		  },
-		  "height": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Blockheight of the transaction"
-		  },
-		  "index": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "tx_result": {
-			"$ref": "#/components/schemas/TxResult"
-		  },
-		  "tx": {
-			"type": "string",
-			"description": "Raw data of the transaction"
-		  },
-		  "proof": {
-			"$ref": "#/components/schemas/TXProof"
-		  }
-		}
-	  },
-	  "TxResult": {
-		"type": "object",
-		"properties": {
-		  "code": {
-			"type": "integer",
-			"format": "int32"
-		  },
-		  "data": {
-			"type": "string"
-		  },
-		  "log": {
-			"type": "string"
-		  },
-		  "info": {
-			"type": "string"
-		  },
-		  "gas_wanted": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "gas_used": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "events": {
-			"type": "array",
-			"items": {
-			  "type": "string"
-			}
-		  },
-		  "codespace": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "TXProof": {
-		"type": "object",
-		"description": "Proof of the transaction",
-		"properties": {
-		  "root_hash": {
-			"type": "string"
-		  },
-		  "data": {
-			"type": "string"
-		  },
-		  "proof": {
-			"$ref": "#/components/schemas/SimpleProof"
-		  }
-		}
-	  },
-	  "QueryAddressHeight": {
-		"type": "object",
-		"properties": {
-		  "height": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "address": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "QueryBalanceResponse": {
-		"type": "object",
-		"properties": {
-		  "balance": {
-			"type": "integer",
-			"format": "int64"
-		  }
-		}
-	  },
-	  "QueryBlock": {
-		"type": "object",
-		"properties": {
-		  "height": {
-			"type": "integer",
-			"format": "int64"
-		  }
-		}
-	  },
-	  "QueryBlockResponse": {
-		"type": "object",
-		"properties": {
-		  "block": {
-			"$ref": "#/components/schemas/Block"
-		  },
-		  "block_meta": {
-			"$ref": "#/components/schemas/BlockMeta"
-		  }
-		}
-	  },
-	  "QueryDispatchRequest": {
-		"type": "object",
-		"properties": {
-		  "session_header": {
-			"$ref": "#/components/schemas/SessionHeader"
-		  }
-		}
-	  },
-	  "QueryDispatchResponse": {
-		"type": "object",
-		"properties": {
-		  "session": {
-			"$ref": "#/components/schemas/Session"
-		  },
-		  "block_height": {
-			"type": "integer",
-			"format": "int64"
-		  }
-		}
-	  },
-	  "Session": {
-		"type": "object",
-		"properties": {
-		  "header": {
-			"$ref": "#/components/schemas/SessionHeader"
-		  },
-		  "key": {
-			"type": "string",
-			"format": "byte"
-		  },
-		  "nodes": {
-			"type": "array",
-			"items": {
-			  "$ref": "#/components/schemas/Node"
-			}
-		  }
-		}
-	  },
-	  "QueryHeight": {
-		"type": "object",
-		"properties": {
-		  "height": {
-			"type": "integer",
-			"format": "int64"
-		  }
-		}
-	  },
-	  "QueryHeightResponse": {
-		"type": "object",
-		"properties": {
-		  "height": {
-			"type": "integer",
-			"format": "int64"
-		  }
-		}
-	  },
-	  "QueryNodeReceipt": {
-		"type": "object",
-		"properties": {
-		  "address": {
-			"type": "string",
-			"description": "Node address"
-		  },
-		  "blockchain": {
-			"type": "string"
-		  },
-		  "app_pubkey": {
-			"type": "string",
-			"description": "Application hex public key associated with a client"
-		  },
-		  "session_block_height": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Session block height"
-		  },
-		  "height": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Height of the session"
-		  }
-		}
-	  },
-	  "QueryNodeReceiptsResponse": {
-		"type": "object",
-		"properties": {
-		  "nodes": {
-			"type": "array",
-			"items": {
-			  "$ref": "#/components/schemas/StoredReceipt"
-			}
-		  }
-		}
-	  },
-	  "QueryNodesResponse": {
-		"type": "object",
-		"properties": {
-			"result": {
-				"type": "array",
-				"items": {
-		  		"$ref": "#/components/schemas/Node"
-				},
-			"page": {
-				"type": "integer",
-				"format": "int64",
-				"description": "current page"
-			},
-			"total_pages": {
-				"type": "integer",
-				"format": "int64",
-				"description": "maximum amount of available pages"
-			}
-			}
-		}
-	  },
-	  "QueryAppsResponse": {
-		"type": "object",
-		"properties": {
-			"result": {
-				"type": "array",
-				"items": {
-		  		"$ref": "#/components/schemas/Application"
-				},
-			"page": {
-				"type": "integer",
-				"format": "int64",
-				"description": "current page"
-			},
-			"total_pages": {
-				"type": "integer",
-				"format": "int64",
-				"description": "maximum amount of available pages"
-			}
-			}
-		}
-	  },
-	  "QueryRawTXRequest": {
-		"type": "object",
-		"properties": {
-		  "address": {
-			"type": "string"
-		  },
-		  "raw_hex_bytes": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "QueryRawTXResponse": {
-		"type": "object",
-		"properties": {
-		  "height": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Blockheight of the transaction"
-		  },
-		  "txhash": {
-			"type": "string",
-			"description": "Hash of the transaction"
-		  },
-		  "code": {
-			"type": "integer",
-			"format": "uint32",
-			"description": "Result code returned (0 is OK; everything else is error)"
-		  },
-		  "data": {
-			"type": "string",
-			"description": "Raw transaction data"
-		  },
-		  "raw_log": {
-			"type": "string",
-			"description": "Raw transaction log"
-		  },
-		  "logs": {
-			"type": "array",
-			"items": {
-			  "$ref": "#/components/schemas/ABCIMessageLog"
-			},
-			"description": "ABCI Tendermint Logs"
-		  },
-		  "info": {
-			"type": "string"
-		  },
-		  "gas_wanted": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "gas_used": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "codespace": {
-			"type": "string"
-		  },
-		  "timestamp": {
-			"type": "string",
-			"description": "Timestamp of the transaction"
-		  }
-		}
-	  },
-	  "QueryRelayRequest": {
-		"type": "object",
-		"properties": {
-		  "payload": {
-			"$ref": "#/components/schemas/RelayPayload"
-		  },
-		  "meta": {
-			"$ref": "#/components/schemas/RelayMetadata"
-		  },
-		  "proof": {
-			"$ref": "#/components/schemas/RelayProof"
-		  }
-		}
-	  },
-	  "QueryRelayResponse": {
-		"type": "object",
-		"properties": {
-		  "signature": {
-			"type": "string",
-			"description": "Signature from the node in hex"
-		  },
-		  "payload": {
-			"type": "string",
-			"description": "string response to relay"
-		  },
-		  "proof": {
-			"$ref": "#/components/schemas/RelayProof"
-		  }
-		}
-	  },
-	  "QueryChallengeRequest": {
-		"type": "object",
-		"properties": {
-		  "majority_responses": {
-			"type": "array",
-			"items": {
-			  "$ref": "#/components/schemas/QueryRelayResponse"
-			},
-			"minItems": 1,
-			"maxItems": 2
-		  },
-		  "minority_response": {
-			"$ref": "#/components/schemas/QueryRelayResponse"
-		  },
-		  "address": {
-			"description": "reporter address",
-			"type": "string",
-			"format": "byte"
-		  }
-		}
-	  },
-	  "QueryChallengeResponse": {
-		"type": "object",
-		"properties": {
-		  "response": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "QueryStakingHeight": {
-		"type": "object",
-		"properties": {
-		  "height": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "page": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "per_page": {
-			"type": "integer",
-			"format": "int64"
-		  },
-		  "staking_status": {
-			"type": "string",
-			"enum": [
-			  "staked",
-			  "unstaked",
-			  "unstaking",
-			  ""
-			]
-		  }
-		}
-	  },
-	  "QuerySupplyResponse": {
-		"type": "object",
-		"properties": {
-		  "node_staked": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Amount staked by the node in uPOKT"
-		  },
-		  "app_staked": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Amount staked by the app in uPOKT"
-		  },
-		  "dao": {
-			"type": "integer",
-			"format": "int64",
-			"description": "DAO amount in uPOKT"
-		  },
-		  "total_staked": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Total amount staked in uPOKT"
-		  },
-		  "total_unstaked": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Total amount unstaked in uPOKT"
-		  },
-		  "total": {
-			"type": "integer",
-			"format": "int64",
-			"description": "Total amount in uPOKT"
-		  }
-		}
-	  },
-	  "QuerySupportedChainsResponse": {
-		"type": "object",
-		"properties": {
-		  "supported_chains": {
-			"type": "array",
-			"description": "Supported blockchains",
-			"items": {
-			  "type": "string"
-			}
-		  }
-		}
-	  },
-	  "QueryTX": {
-		"type": "object",
-		"properties": {
-		  "hash": {
-			"type": "string"
-		  }
-		}
-	  },
-	  "QueryTXResponse": {
-		"type": "object",
-		"properties": {
-		  "transaction": {
-			"$ref": "#/components/schemas/Transaction"
-		  }
-		}
-	  }
-	}
-  }
 }

@@ -40,6 +40,21 @@ func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications
 	return applications
 }
 
+// get the set of all applications with no limits from the main store
+func (k Keeper) GetAllApplicationsWithOpts(ctx sdk.Ctx, opts types.QueryApplicationsWithOpts) (applications types.Applications) {
+	applications = make([]types.Application, 0)
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
+
+		applications = append(applications, application)
+	}
+	return applications
+}
+
 // return a given amount of all the applications
 func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications types.Applications) {
 	store := ctx.KVStore(k.storeKey)

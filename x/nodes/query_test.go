@@ -209,38 +209,6 @@ func TestQuerySigningInfo(t *testing.T) {
 	}
 }
 
-func TestQueryStakedValidators(t *testing.T) {
-	type args struct {
-		cdc    *codec.Codec
-		tmNode client.Client
-		height int64
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    types.Validators
-		wantErr bool
-	}{
-		{"Test QueryStakedValidators", args{
-			cdc:    makeTestCodec(),
-			tmNode: GetTestTendermintClient(),
-			height: 0,
-		}, types.Validators{}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := QueryStakedValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, 1, 1)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("QueryStakedValidators() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(len(got.Result), len(tt.want)) {
-				t.Errorf("QueryStakedValidators() got = %v, want %v", got.Result, tt.want)
-			}
-		})
-	}
-}
-
 func TestQuerySupply(t *testing.T) {
 	type args struct {
 		cdc    *codec.Codec
@@ -307,70 +275,6 @@ func TestQueryTransaction(t *testing.T) {
 	}
 }
 
-func TestQueryUnstakedValidators(t *testing.T) {
-	type args struct {
-		cdc    *codec.Codec
-		tmNode client.Client
-		height int64
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    types.Validators
-		wantErr bool
-	}{
-		{"Test QueryUnstakedValidators", args{
-			cdc:    makeTestCodec(),
-			tmNode: GetTestTendermintClient(),
-			height: 0,
-		}, types.Validators{}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := QueryUnstakedValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, 1, 1)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("QueryUnstakedValidators() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(len(got.Result), len(tt.want)) {
-				t.Errorf("QueryUnstakedValidators() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestQueryUnstakingValidators(t *testing.T) {
-	type args struct {
-		cdc    *codec.Codec
-		tmNode client.Client
-		height int64
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    types.Validators
-		wantErr bool
-	}{
-		{"Test QueryUnstakingValidators", args{
-			cdc:    makeTestCodec(),
-			tmNode: GetTestTendermintClient(),
-			height: 0,
-		}, types.Validators{}, true},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := QueryUnstakingValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, 1, 1)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("QueryUnstakingValidators() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(len(got.Result), len(tt.want)) {
-				t.Errorf("QueryUnstakingValidators() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestQueryValidator(t *testing.T) {
 	type args struct {
 		cdc    *codec.Codec
@@ -425,7 +329,10 @@ func TestQueryValidators(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := QueryValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, 1, 1)
+			got, err := QueryValidators(tt.args.cdc, tt.args.tmNode, tt.args.height, types.QueryValidatorsParams{
+				Page:  1,
+				Limit: 1,
+			})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QueryValidators() error = %v, wantErr %v", err, tt.wantErr)
 				return
