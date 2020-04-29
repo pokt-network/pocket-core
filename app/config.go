@@ -52,8 +52,8 @@ const (
 	DefaultChainsName               = "chains.json"
 	DefaultGenesisName              = "genesis.json"
 	DefaultRPCPort                  = "8081"
-	DefaultSessionDBType            = dbm.GoLevelDBBackend
-	DefaultEvidenceDBType           = dbm.GoLevelDBBackend
+	DefaultSessionDBType            = dbm.CLevelDBBackend
+	DefaultEvidenceDBType           = dbm.CLevelDBBackend
 	DefaultSessionDBName            = "session"
 	DefaultEvidenceDBName           = "pocket_evidence"
 	DefaultTMURI                    = "tcp://localhost:26657"
@@ -62,6 +62,9 @@ const (
 	DefaultListenAddr               = "tcp://0.0.0.0:"
 	DefaultClientBlockSyncAllowance = 10
 	DefaultJSONSortRelayResponses   = true
+	DefaultDBBackend                = "cleveldb"
+	DefaultTxIndexer                = "kv"
+	DefaultTxIndexTags              = "tx.hash,tx.height,message.sender"
 	ConfigDirName                   = "config"
 	ConfigFileName                  = "config.json"
 	ApplicationDBName               = "application"
@@ -133,9 +136,9 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.P2P.MaxNumInboundPeers = 250
 	c.TendermintConfig.P2P.MaxNumOutboundPeers = 250
 	c.TendermintConfig.LogLevel = "*:info, *:error"
-	c.TendermintConfig.TxIndex.Indexer = "kv"
-	c.TendermintConfig.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
-	c.TendermintConfig.DBBackend = "cleveldb"
+	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
+	c.TendermintConfig.TxIndex.IndexTags = DefaultTxIndexTags
+	c.TendermintConfig.DBBackend = DefaultDBBackend
 	return c
 }
 
