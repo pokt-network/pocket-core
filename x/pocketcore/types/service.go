@@ -109,7 +109,10 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error)
 	if err != nil {
 		return "", err
 	}
-	url = strings.Trim(url, `/`) + "/" + strings.Trim(r.Payload.Path, `/`)
+	url = strings.Trim(url, `/`)
+	if len(r.Payload.Path) > 0 {
+		url = url + "/" + strings.Trim(r.Payload.Path, `/`)
+	}
 	// do basic http request on the relay
 	res, er := executeHTTPRequest(r.Payload.Data, url, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
