@@ -241,7 +241,7 @@ func TestRelay_Execute(t *testing.T) {
 	defer gock.Off() // Flush pending mocks after test execution
 
 	gock.New("https://server.com").
-		Post("/relay/").
+		Post("/relay").
 		Reply(200).
 		BodyString("bar")
 
