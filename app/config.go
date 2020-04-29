@@ -81,6 +81,8 @@ var (
 	pca *pocketCoreApp
 	// config
 	GlobalConfig Config
+	// HTTP CLIENT FOR TENDERMINT
+	tmClient *client.HTTP
 )
 
 type Config struct {
@@ -467,10 +469,14 @@ func privValState() {
 }
 
 func getTMClient() client.Client {
-	if GlobalConfig.PocketConfig.TendermintURI == "" {
-		return client.NewHTTP(DefaultTMURI, "/websocket")
+	if tmClient == nil {
+		if GlobalConfig.PocketConfig.TendermintURI == "" {
+			tmClient = client.NewHTTP(DefaultTMURI, "/websocket")
+		} else {
+			tmClient = client.NewHTTP(GlobalConfig.PocketConfig.TendermintURI, "/websocket")
+		}
 	}
-	return client.NewHTTP(GlobalConfig.PocketConfig.TendermintURI, "/websocket")
+	return tmClient
 }
 
 // get the hosted chains variable
