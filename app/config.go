@@ -133,6 +133,9 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.P2P.MaxNumInboundPeers = 250
 	c.TendermintConfig.P2P.MaxNumOutboundPeers = 250
 	c.TendermintConfig.LogLevel = "*:info, *:error"
+	c.TendermintConfig.TxIndex.Indexer = "kv"
+	c.TendermintConfig.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
+	c.TendermintConfig.DBBackend = "cleveldb"
 	return c
 }
 
