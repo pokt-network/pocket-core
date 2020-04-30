@@ -112,6 +112,7 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 
 const (
 	httpsPrefix = "https://"
+	httpPrefix  = "http://"
 	colon       = ":"
 	period      = "."
 )
@@ -122,7 +123,7 @@ func ValidateServiceURL(u string) sdk.Error {
 	if err != nil {
 		return ErrInvalidServiceURL(ModuleName, err)
 	}
-	if u[:8] != httpsPrefix {
+	if u[:8] != httpsPrefix && u[:7] != httpPrefix {
 		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("invalid url prefix"))
 	}
 	temp := strings.Split(u, colon)
