@@ -45,7 +45,7 @@ import (
 )
 
 const (
-	dummyChainsHash = "144C9DEFAC04969C7BFAD8EFAA8EA194"
+	dummyChainsHash = "00"
 )
 
 func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
@@ -516,7 +516,7 @@ func oneValTwoNodeGenesisState() []byte {
 	rawPocket := defaultGenesis[pocketTypes.ModuleName]
 	var pocketGenesisState pocketTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
-	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
+	pocketGenesisState.Params.SupportedBlockchains = []string{"00"}
 	res4 := memCodec().MustMarshalJSON(pocketGenesisState)
 	defaultGenesis[pocketTypes.ModuleName] = res4
 	// set default governance in genesis

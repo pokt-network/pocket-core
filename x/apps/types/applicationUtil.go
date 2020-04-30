@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -21,7 +22,7 @@ func (a Applications) String() (out string) {
 	return strings.TrimSpace(out)
 }
 
-// HashString returns a human readable string representation of a application.
+// String returns a human readable string representation of a application.
 func (a Application) String() string {
 	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nChains:\t\t\t%v\nMaxRelays:\t\t%d\nStatus:\t\t\t%s\nTokens:\t\t\t%s\nUnstaking Time:\t%v\n----\n",
 		a.Address, a.PublicKey.RawString(), a.Jailed, a.Chains, a.MaxRelays.Int64(), a.Status, a.StakedTokens, a.UnstakingCompletionTime,
@@ -100,4 +101,27 @@ func MustUnmarshalApplication(cdc *codec.Codec, valBytes []byte) Application {
 func UnmarshalApplication(cdc *codec.Codec, appBytes []byte) (application Application, err error) {
 	err = cdc.UnmarshalBinaryLengthPrefixed(appBytes, &application)
 	return application, err
+}
+
+// TODO shared code among modules below
+
+const (
+	NetworkIdentifierLength = 2
+)
+
+func ValidateNetworkIdentifier(chain string) sdk.Error {
+	// decode string into bz
+	h, err := hex.DecodeString(chain)
+	if err != nil {
+		return ErrInvalidNetworkIdentifier(ModuleName, err)
+	}
+	// ensure length isn't 0
+	if len(h) == 0 {
+		return ErrInvalidNetworkIdentifier(ModuleName, fmt.Errorf("net id is empty"))
+	}
+	// ensure length
+	if len(h) > NetworkIdentifierLength {
+		return ErrInvalidNetworkIdentifier(ModuleName, fmt.Errorf("net id length is > %d", NetworkIdentifierLength))
+	}
+	return nil
 }

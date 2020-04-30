@@ -284,7 +284,6 @@ func executeHTTPRequest(payload string, url string, method string, headers map[s
 	}
 	// execute the request
 	resp, err := (&http.Client{}).Do(req)
-	defer resp.Body.Close()
 	if err != nil {
 		return "", err
 	}
@@ -293,7 +292,11 @@ func executeHTTPRequest(payload string, url string, method string, headers map[s
 		return "", NewHTTPStatusCodeError(ModuleName, resp.StatusCode)
 	}
 	// read all bz
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
 	if globalSortJSONResponses {
 		body = []byte(sortJSONResponse(string(body)))
 	}

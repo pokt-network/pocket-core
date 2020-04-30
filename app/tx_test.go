@@ -29,7 +29,7 @@ func TestUnstakeApp(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	var chains = []string{"00"}
 	select {
 	case <-evtChan:
 		var err error
@@ -70,7 +70,7 @@ func TestUnstakeApp(t *testing.T) {
 }
 
 func TestUnstakeNode(t *testing.T) {
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	var chains = []string{"00"}
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -108,7 +108,7 @@ func TestUnstakeNode(t *testing.T) {
 							addr := got.Result[0].Address
 							balance, err := nodes.QueryAccountBalance(memCodec(), memCli, addr, 0)
 							assert.NotZero(t, balance.Int64())
-							tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
+							tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
 							assert.Nil(t, err)
 							assert.NotNil(t, tx)
 							assert.True(t, strings.Contains(tx.Logs.String(), `"success":true`))
@@ -131,12 +131,12 @@ func TestStakeNode(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	var chains = []string{"00"}
 	select {
 	case <-evtChan:
 		var err error
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode:8080", sdk.NewInt(10000000), kp, "test")
+		tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
 		assert.True(t, strings.Contains(tx.Logs.String(), `"success":true`))
@@ -151,7 +151,7 @@ func TestStakeApp(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	var chains = []string{"00"}
 
 	select {
 	case <-evtChan:

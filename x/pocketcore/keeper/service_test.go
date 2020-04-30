@@ -12,16 +12,7 @@ import (
 )
 
 func TestKeeper_HandleRelay(t *testing.T) {
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
 	mockCtx := new(Ctx)
 	ak := keeper.appKeeper.(appsKeeper.Keeper)
@@ -76,7 +67,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	validRelay.Proof.Signature = hex.EncodeToString(clientSig)
 	defer gock.Off() // Flush pending mocks after test execution
 
-	gock.New("https://www.google.com").
+	gock.New("https://www.google.com:443").
 		Post("/").
 		Reply(200).
 		BodyString("bar")

@@ -21,26 +21,8 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
 	InitCacheTest()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	bitcoin, err := NonNativeChain{
-		Ticker:  "btc",
-		Netid:   "1",
-		Version: "0.19.0.1",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
+	bitcoin := hex.EncodeToString([]byte{02})
 	p := Payload{
 		Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",
 		Method:  "",
@@ -84,7 +66,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum, bitcoin},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -97,7 +79,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			Jailed:                  false,
 			Status:                  sdk.Staked,
 			Chains:                  []string{ethereum, bitcoin},
-			ServiceURL:              "www.google.com",
+			ServiceURL:              "https://www.google.com:443",
 			StakedTokens:            sdk.NewInt(100000),
 			UnstakingCompletionTime: time.Time{},
 		})
@@ -111,7 +93,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			Jailed:                  false,
 			Status:                  sdk.Staked,
 			Chains:                  []string{bitcoin},
-			ServiceURL:              "www.google.com",
+			ServiceURL:              "https://www.google.com:443",
 			StakedTokens:            sdk.NewInt(100000),
 			UnstakingCompletionTime: time.Time{},
 		})
@@ -121,13 +103,13 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{ethereum: {
 			ID:  ethereum,
-			URL: "www.google.com",
+			URL: "https://www.google.com:443",
 		}},
 	}
 	hbNotSupported := HostedBlockchains{
 		M: map[string]HostedBlockchain{bitcoin: {
 			ID:  bitcoin,
-			URL: "www.google.com",
+			URL: "https://www.google.com:443",
 		}},
 	}
 	pubKey := getRandomPubKey()
@@ -205,16 +187,7 @@ func TestRelay_Execute(t *testing.T) {
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	p := Payload{
 		Data:    "foo",
 		Method:  "POST",
@@ -263,16 +236,7 @@ func TestRelay_HandleProof(t *testing.T) {
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	p := Payload{
 		Data:    "foo",
 		Method:  "POST",
@@ -297,7 +261,6 @@ func TestRelay_HandleProof(t *testing.T) {
 	}
 	validRelay.Proof.RequestHash = validRelay.RequestHashString()
 	validRelay.Proof.Store()
-	assert.Nil(t, err)
 	res := GetProof(SessionHeader{
 		ApplicationPubKey:  appPubKey,
 		Chain:              ethereum,

@@ -82,7 +82,7 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 	p := types.Params{
 		SessionNodeCount:      10,
 		ClaimSubmissionWindow: 22,
-		SupportedBlockchains:  []string{hex.EncodeToString(types.ShortHash([]byte("eth")))},
+		SupportedBlockchains:  []string{hex.EncodeToString([]byte{01})},
 		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{

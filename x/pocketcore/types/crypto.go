@@ -11,16 +11,15 @@ import (
 )
 
 var (
-	Hasher            = sha.SHA3_256
-	ShortHasher       = sha.MD5
-	ShortHasherLength = sha.MD5.Size()
-	HashLength        = sha.SHA3_256.Size()
-	AddrLength        = tmhash.TruncatedSize
-	globalPVKeyFile   = privval.FilePVKey{}
+	Hasher                  = sha.SHA3_256
+	HashLength              = sha.SHA3_256.Size()
+	NetworkIdentifierLength = 2
+	AddrLength              = tmhash.TruncatedSize
+	globalPVKeyFile         = privval.FilePVKey{}
 )
 
-// "ShortHashVerification"- Verify the shorter hash format (hex string)
-func ShortHashVerification(hash string) sdk.Error {
+// "NetworkIdentifierVerification"- Verify the netID format (hex string)
+func NetworkIdentifierVerification(hash string) sdk.Error {
 	// decode string into bz
 	h, err := hex.DecodeString(hash)
 	if err != nil {
@@ -31,7 +30,7 @@ func ShortHashVerification(hash string) sdk.Error {
 		return NewEmptyHashError(ModuleName)
 	}
 	// ensure length
-	if len(h) != ShortHasherLength {
+	if len(h) > NetworkIdentifierLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
 	return nil
@@ -132,13 +131,6 @@ func AddressVerification(addr string) sdk.Error {
 // "ID"- Converts []byte to hashed []byte
 func Hash(b []byte) []byte {
 	hasher := Hasher.New()
-	hasher.Write(b)
-	return hasher.Sum(nil)
-}
-
-// "ShortHash" - Converts []byte to short hashed []byte
-func ShortHash(b []byte) []byte {
-	hasher := ShortHasher.New()
 	hasher.Write(b)
 	return hasher.Sum(nil)
 }

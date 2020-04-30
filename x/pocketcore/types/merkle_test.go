@@ -14,16 +14,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 	clientPrivateKey := GetRandomPrivateKey()
 	clientPublicKey := clientPrivateKey.PublicKey().RawString()
 	nodePubKey := getRandomPubKey()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	validAAT := AAT{
 		Version:              "0.0.1",
 		ApplicationPublicKey: appPubKey,
@@ -104,16 +95,7 @@ func TestEvidence_GenerateMerkleProof(t *testing.T) {
 	clientPrivateKey := GetRandomPrivateKey()
 	clientPublicKey := clientPrivateKey.PublicKey().RawString()
 	nodePubKey := getRandomPubKey()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	validAAT := AAT{
 		Version:              "0.0.1",
 		ApplicationPublicKey: appPubKey,
@@ -198,16 +180,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	clientPrivateKey := GetRandomPrivateKey()
 	clientPublicKey := clientPrivateKey.PublicKey().RawString()
 	nodePubKey := getRandomPubKey()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	validAAT := AAT{
 		Version:              "0.0.1",
 		ApplicationPublicKey: appPubKey,

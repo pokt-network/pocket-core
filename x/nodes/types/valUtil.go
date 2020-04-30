@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -23,7 +24,7 @@ func (v Validators) String() (out string) {
 	return strings.TrimSpace(out)
 }
 
-// HashString returns a human readable string representation of a validator.
+// String returns a human readable string representation of a validator.
 func (v Validator) String() string {
 	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
 		"ServiceURL:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v"+
@@ -107,13 +108,15 @@ func (v *Validator) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// TODO shared code among modules below
+
 const (
 	httpsPrefix = "https://"
 	colon       = ":"
 	period      = "."
 )
 
-func ValidateServiceURL(u string) error {
+func ValidateServiceURL(u string) sdk.Error {
 	u = strings.ToLower(u)
 	_, err := url.ParseRequestURI(u)
 	if err != nil {
@@ -135,6 +138,27 @@ func ValidateServiceURL(u string) error {
 	}
 	if !strings.Contains(u, period) {
 		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("must contain one '.'"))
+	}
+	return nil
+}
+
+const (
+	NetworkIdentifierLength = 2
+)
+
+func ValidateNetworkIdentifier(chain string) sdk.Error {
+	// decode string into bz
+	h, err := hex.DecodeString(chain)
+	if err != nil {
+		return ErrInvalidNetworkIdentifier(ModuleName, err)
+	}
+	// ensure length isn't 0
+	if len(h) == 0 {
+		return ErrInvalidNetworkIdentifier(ModuleName, fmt.Errorf("net id is empty"))
+	}
+	// ensure length
+	if len(h) > NetworkIdentifierLength {
+		return ErrInvalidNetworkIdentifier(ModuleName, fmt.Errorf("net id length is > %d", NetworkIdentifierLength))
 	}
 	return nil
 }

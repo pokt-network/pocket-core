@@ -54,12 +54,13 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 		return ErrNoChains(DefaultCodespace)
 	}
 	for _, chain := range msg.Chains {
-		if len(chain) == 0 {
-			return ErrNoChains(DefaultCodespace)
+		err := ValidateNetworkIdentifier(chain)
+		if err != nil {
+			return err
 		}
 	}
-	if len(msg.ServiceURL) == 0 {
-		return ErrNoServiceURL(DefaultCodespace)
+	if err := ValidateServiceURL(msg.ServiceURL); err != nil {
+		return err
 	}
 	return nil
 }

@@ -26,7 +26,7 @@ func NewPool(tokens sdk.Int) Pool {
 	}
 }
 
-// HashString returns a human readable string representation of a pool.
+// String returns a human readable string representation of a pool.
 func (bp StakingPool) String() string {
 	return fmt.Sprintf(`Staked Tokens:      %s`, bp.Tokens)
 }

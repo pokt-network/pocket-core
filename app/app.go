@@ -64,7 +64,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.cdc,
 		app.nodesKeeper,
 		app.appsKeeper,
-		getHostedChains(),
+		NewHostedChains(),
 		pocketSubspace,
 	)
 	// The governance keeper

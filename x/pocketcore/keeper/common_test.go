@@ -132,21 +132,12 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	}
 	valTokens := sdk.TokensFromConsensusPower(initPower)
 
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 
 	hb := types.HostedBlockchains{
 		M: map[string]types.HostedBlockchain{ethereum: {
 			ID:  ethereum,
-			URL: "https://www.google.com",
+			URL: "https://www.google.com:443",
 		}},
 	}
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
@@ -188,13 +179,7 @@ var (
 
 func getTestSupportedBlockchain() string {
 	if testSupportedChain == "" {
-		testSupportedChain, _ = types.NonNativeChain{
-			Ticker:  "eth",
-			Netid:   "4",
-			Version: "v1.9.9",
-			Client:  "geth",
-			Inter:   "",
-		}.HashString()
+		testSupportedChain = hex.EncodeToString([]byte{01})
 	}
 	return testSupportedChain
 }
@@ -239,21 +224,12 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.K
 }
 
 func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, nk *nodesKeeper.Keeper, ak auth.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		panic(err)
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	for i := 0; i < numAccs-1; i++ {
 		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
 		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
-		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com", valCoins)
+		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com:443", valCoins)
 		// set the vals from the data
 		nk.SetValidator(ctx, val)
 		nk.SetStakedValidator(ctx, val)
@@ -272,9 +248,9 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, nk *nodesK
 	// add self node to it
 	kp, er := kb.GetCoinbase()
 	if er != nil {
-		panic(err)
+		panic(er)
 	}
-	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com", valCoins)
+	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com:443", valCoins)
 	// set the vals from the data
 	nk.SetValidator(ctx, val)
 	nk.SetStakedValidator(ctx, val)
@@ -315,16 +291,7 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, nk *nodesK
 }
 
 func createTestApps(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, ak appsKeeper.Keeper, sk auth.Keeper) (accs appsTypes.Applications) {
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		panic(err)
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
 		pubKey := privKey.PublicKey()
@@ -375,16 +342,7 @@ func getRandomValidatorAddress() sdk.Address {
 }
 func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk crypto.PublicKey, validHeader types.SessionHeader, keys simulateRelayKeys, receipt types.Receipt) {
 	npk = getRandomPubKey()
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	clientKey := getRandomPrivateKey()
 	validHeader = types.SessionHeader{
 		ApplicationPubKey:  getTestApplication().PublicKey.RawString(),

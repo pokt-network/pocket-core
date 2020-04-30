@@ -8,17 +8,8 @@ import (
 )
 
 func TestHostedBlockchains_GetChainURL(t *testing.T) {
-	url := "https://www.google.com"
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	url := "https://www.google.com:443"
+	ethereum := hex.EncodeToString([]byte{01})
 	testHostedBlockchain := HostedBlockchain{
 		ID:  ethereum,
 		URL: url,
@@ -34,27 +25,9 @@ func TestHostedBlockchains_GetChainURL(t *testing.T) {
 }
 
 func TestHostedBlockchains_ContainsFromString(t *testing.T) {
-	url := "https://www.google.com"
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	bitcoin, err := NonNativeChain{
-		Ticker:  "btc",
-		Netid:   "1",
-		Version: "0.19.0.1",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	url := "https://www.google.com:443"
+	ethereum := hex.EncodeToString([]byte{01})
+	bitcoin := hex.EncodeToString([]byte{02})
 	testHostedBlockchain := HostedBlockchain{
 		ID:  ethereum,
 		URL: url,
@@ -69,17 +42,8 @@ func TestHostedBlockchains_ContainsFromString(t *testing.T) {
 }
 
 func TestHostedBlockchains_Validate(t *testing.T) {
-	url := "https://www.google.com"
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	url := "https://www.google.com:443"
+	ethereum := hex.EncodeToString([]byte{01})
 	testHostedBlockchain := HostedBlockchain{
 		ID:  ethereum,
 		URL: url,

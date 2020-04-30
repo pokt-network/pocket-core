@@ -2,43 +2,44 @@ package cli
 
 import (
 	"fmt"
-
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	rootCmd.AddCommand(utilCmd)
-	utilCmd.AddCommand(generateChainCmd)
+	utilCmd.AddCommand(chainsGenCmd)
+	utilCmd.AddCommand(chainsDelCmd)
 }
 
-// accountsCmd represents the accounts namespace command
 var utilCmd = &cobra.Command{
 	Use:   "util",
-	Short: "utilities",
-	Long:  `The util namespace contains helpful tooling.`,
+	Short: "utility functions",
+	Long:  `The util namespace handles all utility functions`,
 }
 
-var generateChainCmd = &cobra.Command{
-	Use:   "generate-chain <ticker> <netid> <version> <client> <interface>",
-	Short: "generate a chain identifier",
-	Long:  `Creates a Network Identifier hash, used as a parameter for both node and App stake.`,
-	Args:  cobra.MinimumNArgs(3),
+var chainsGenCmd = &cobra.Command{
+	Use:   "generate-chains",
+	Short: "Generates chains file",
+	Long:  `Generate the chains file for network identifiers`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var client, inter string
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		switch len(args) {
-		case 4:
-			client = args[3]
-		case 5:
-			client = args[3]
-			inter = args[4]
+		c := app.NewHostedChains()
+		fmt.Println(app.GlobalConfig.PocketConfig.ChainsName + " contains: \n")
+		for _, chain := range c.M {
+			fmt.Println(chain.ID + " @ " + chain.URL)
 		}
-		res, err := app.GenerateChain(args[0], args[1], args[2], client, inter)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Printf("Pocket Network Identifier: %s\n", res)
+		fmt.Println("If incorrect: please remove the chains.json with the " + chainsDelCmd.NameAndAliases() + " command")
+	},
+}
+
+var chainsDelCmd = &cobra.Command{
+	Use:   "delete-chains",
+	Short: "Delete chains file",
+	Long:  `Delete the chains file for network identifiers`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.DeleteHostedChains()
+		fmt.Println("successfully deleted " + app.GlobalConfig.PocketConfig.ChainsName)
 	},
 }
