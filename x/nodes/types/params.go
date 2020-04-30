@@ -136,7 +136,7 @@ func (p Params) Equal(p2 Params) bool {
 	return bytes.Equal(bz1, bz2)
 }
 
-// HashString returns a human readable string representation of the parameters.
+// String returns a human readable string representation of the parameters.
 func (p Params) String() string {
 	return fmt.Sprintf(`Params:
   Unstaking Time:          %s

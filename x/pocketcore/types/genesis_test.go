@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"reflect"
@@ -13,16 +14,7 @@ func TestValidateGenesis(t *testing.T) {
 	appPubKeyClaim := getRandomPubKey().RawString()
 	pk := getRandomPubKey()
 	servicerAddr := pk.Address()
-	nn, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	nn := hex.EncodeToString([]byte{01})
 	rootHash := Hash([]byte("fakeRoot"))
 	rootSum := binary.LittleEndian.Uint64(rootHash)
 	root := HashSum{
@@ -183,16 +175,7 @@ func TestDefaultGenesisState(t *testing.T) {
 	appPubKeyClaim := getRandomPubKey().RawString()
 	pk := getRandomPubKey()
 	servicerAddr := pk.Address()
-	nn, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	nn := hex.EncodeToString([]byte{01})
 	rootHash := Hash([]byte("fakeRoot"))
 	rootSum := binary.LittleEndian.Uint64(rootHash)
 	root := HashSum{

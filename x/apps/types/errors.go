@@ -21,6 +21,7 @@ const (
 	CodeNotEnoughCoins        CodeType          = 112
 	CodeInvalidStakeAmount    CodeType          = 115
 	CodeNoChains              CodeType          = 116
+	CodeInvalidNetworkID      CodeType          = 117
 )
 
 func ErrNoChains(codespace sdk.CodespaceType) sdk.Error {
@@ -79,4 +80,8 @@ func ErrMissingAppStake(codespace sdk.CodespaceType) sdk.Error {
 
 func ErrStakeTooLow(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeApplicationNotJailed, "application's self delegation less than min stake, cannot be unjailed")
+}
+
+func ErrInvalidNetworkIdentifier(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidNetworkID, "the applications network identifier is not valid: "+err.Error())
 }

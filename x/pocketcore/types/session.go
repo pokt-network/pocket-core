@@ -278,7 +278,7 @@ func NewSessionKey(appPubKey string, chain string, blockHash string) (SessionKey
 		return nil, err
 	}
 	// validate chain
-	if err := ShortHashVerification(chain); err != nil {
+	if err := NetworkIdentifierVerification(chain); err != nil {
 		return nil, NewEmptyChainError(ModuleName)
 	}
 	// validate block addr
@@ -317,7 +317,7 @@ func (sh SessionHeader) ValidateHeader() sdk.Error {
 		return err
 	}
 	// verify the chain hash
-	if err := ShortHashVerification(sh.Chain); err != nil {
+	if err := NetworkIdentifierVerification(sh.Chain); err != nil {
 		return err
 	}
 	// verify the block height

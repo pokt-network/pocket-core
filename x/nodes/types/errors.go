@@ -10,24 +10,25 @@ import (
 type CodeType = sdk.CodeType
 
 const (
-	DefaultCodespace          sdk.CodespaceType = ModuleName
-	CodeInvalidValidator      CodeType          = 101
-	CodeInvalidDelegation     CodeType          = 102
-	CodeInvalidInput          CodeType          = 103
-	CodeValidatorJailed       CodeType          = 104
-	CodeValidatorNotJailed    CodeType          = 105
-	CodeMissingSelfDelegation CodeType          = 106
-	CodeMissingSigningInfo    CodeType          = 108
-	CodeBadSend               CodeType          = 109
-	CodeInvalidStatus         CodeType          = 110
-	CodeMinimumStake          CodeType          = 111
-	CodeNotEnoughCoins        CodeType          = 112
-	CodeValidatorTombstoned   CodeType          = 113
-	CodeCantHandleEvidence    CodeType          = 114
-	CodeNoChains              CodeType          = 115
-	CodeNoServiceURL          CodeType          = 116
-	CodeWaitingValidator      CodeType          = 117
-	CodeInvalidServiceURL     CodeType          = 118
+	DefaultCodespace             sdk.CodespaceType = ModuleName
+	CodeInvalidValidator         CodeType          = 101
+	CodeInvalidDelegation        CodeType          = 102
+	CodeInvalidInput             CodeType          = 103
+	CodeValidatorJailed          CodeType          = 104
+	CodeValidatorNotJailed       CodeType          = 105
+	CodeMissingSelfDelegation    CodeType          = 106
+	CodeMissingSigningInfo       CodeType          = 108
+	CodeBadSend                  CodeType          = 109
+	CodeInvalidStatus            CodeType          = 110
+	CodeMinimumStake             CodeType          = 111
+	CodeNotEnoughCoins           CodeType          = 112
+	CodeValidatorTombstoned      CodeType          = 113
+	CodeCantHandleEvidence       CodeType          = 114
+	CodeNoChains                 CodeType          = 115
+	CodeNoServiceURL             CodeType          = 116
+	CodeWaitingValidator         CodeType          = 117
+	CodeInvalidServiceURL        CodeType          = 118
+	CodeInvalidNetworkIdentifier CodeType          = 119
 )
 
 func ErrValidatorWaitingToUnstake(codespace sdk.CodespaceType) sdk.Error {
@@ -113,4 +114,8 @@ func ErrNoSigningInfoFound(codespace sdk.CodespaceType, consAddr sdk.Address) sd
 
 func ErrInvalidServiceURL(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidServiceURL, fmt.Sprintf("the service url is not valid: "+err.Error()))
+}
+
+func ErrInvalidNetworkIdentifier(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidNetworkIdentifier, fmt.Sprintf("the network Identifier is not valid: "+err.Error()))
 }

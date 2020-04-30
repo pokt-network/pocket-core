@@ -50,7 +50,7 @@ func (c *HostedBlockchains) Validate() error {
 			return NewInvalidHostedChainError(ModuleName)
 		}
 		// validate the hash
-		if err := ShortHashVerification(chain.ID); err != nil {
+		if err := NetworkIdentifierVerification(chain.ID); err != nil {
 			return err
 		}
 	}

@@ -15,23 +15,8 @@ func TestNewSessionKey(t *testing.T) {
 	appPubKey := getRandomPubKey()
 	ctx := newContext(t, false).WithAppVersion("0.0.0")
 	blockhash := hex.EncodeToString(ctx.BlockHeader().LastBlockId.Hash)
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	bitcoin, err := NonNativeChain{
-		Ticker:  "btc",
-		Netid:   "1",
-		Version: "0.19.0.1",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
+	bitcoin := hex.EncodeToString([]byte{02})
 	key1, err := NewSessionKey(appPubKey.RawString(), ethereum, blockhash)
 	assert.Nil(t, err)
 	assert.NotNil(t, key1)
@@ -108,16 +93,7 @@ func TestNewSessionNodes(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	var allNodes []exported.ValidatorI
 	node12 := nodesTypes.Validator{
 		Address:                 sdk.Address(fakePubKey12.Address()),
@@ -125,7 +101,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -135,7 +111,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -145,7 +121,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -155,7 +131,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -165,7 +141,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -175,7 +151,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -185,7 +161,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -195,7 +171,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -205,7 +181,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -215,7 +191,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -225,7 +201,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
@@ -235,7 +211,7 @@ func TestNewSessionNodes(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  []string{ethereum},
-		ServiceURL:              "www.google.com",
+		ServiceURL:              "https://www.google.com:443",
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}

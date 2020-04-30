@@ -39,6 +39,10 @@
 - Patch for Fixed April 17, 2020 consensus failure (0 power consensus failure)
 - Added new endpoints to retrieve transactions from a block (/v1/query/blocktxs) or a new sender (/v1/query/accounttxs)
 - Updated RPC call for Querying Validators and Apps (See Opts in RPC Spec)
+- Updated chains.json to be a slice instead of a mapping
+- Chanded defer.body.close() position until after error checking in pocketcore/types/service.go executeHttpRequest
+- Added protocol level enforcement of network identifier format
+- Added protocol level enforcement of service url `https`
 
 ## RC-0.2.1
 - Add version command to CLI

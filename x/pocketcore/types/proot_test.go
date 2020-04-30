@@ -17,31 +17,13 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	hbs := HostedBlockchains{
-		M: map[string]HostedBlockchain{ethereum: {ID: ethereum, URL: "https://www.google.com"}},
+		M: map[string]HostedBlockchain{ethereum: {ID: ethereum, URL: "https://www.google.com:443"}},
 		l: sync.Mutex{},
 		o: sync.Once{},
 	}
-	bitcoin, err := NonNativeChain{
-		Ticker:  "btc",
-		Netid:   "1",
-		Version: "0.19.0.1",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	bitcoin := hex.EncodeToString([]byte{02})
 	payload := Payload{Data: "fake"}
 	validProof := RelayProof{
 		Entropy:            0,
@@ -184,16 +166,7 @@ func TestRelayProof_Bytes(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	pro := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
@@ -220,16 +193,7 @@ func TestRelayProof_HashAndHashString(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	pro := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
@@ -256,16 +220,7 @@ func TestRelayProof_ValidateBasic(t *testing.T) {
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	validProof := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
@@ -372,16 +327,7 @@ func TestRelayProof_SessionHeader(t *testing.T) {
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	validProof := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,
@@ -485,16 +431,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 	}
 	minResp.Signature = hex.EncodeToString(sig)
 	invalidProofAllMajority.MinorityResponse = minResp
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatal(err)
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	sessionNodes := SessionNodes{
 		types.Validator{
 			Address:   sdk.Address(ser1PubKey.Address()),
@@ -604,16 +541,7 @@ func NewValidChallengeProof(t *testing.T) (challenge ChallengeProofInvalidData, 
 	reporterPubKey := reporterPrivKey.PublicKey()
 	reporterAddr := reporterPubKey.Address()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatal(err)
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	validProof := RelayProof{
 		Entropy:            0,
 		SessionBlockHeight: 1,

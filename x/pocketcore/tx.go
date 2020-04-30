@@ -40,11 +40,6 @@ func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]types
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, []sdk.Msg{msg})
 }
 
-// "GenerateChain" - Exported call to generate a non-native chain id
-func GenerateChain(ticker, netid, version, client, inter string) (string, error) {
-	return keeper.GenerateChain(ticker, netid, version, client, inter)
-}
-
 // "GenerateAAT" - Exported call to generate an application authentication token
 func GenerateAAT(keybase keys.Keybase, appPubKey, cliPubKey, passphrase string) (types.AAT, error) {
 	return keeper.AATGeneration(appPubKey, cliPubKey, passphrase, keybase)

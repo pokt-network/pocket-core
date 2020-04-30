@@ -76,7 +76,7 @@ func (p Params) Validate() error {
 	}
 	// verify each supported blockchain
 	for _, chain := range p.SupportedBlockchains {
-		if err := ShortHashVerification(chain); err != nil {
+		if err := NetworkIdentifierVerification(chain); err != nil {
 			return err
 		}
 	}

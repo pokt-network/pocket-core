@@ -58,7 +58,7 @@ func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount
 		return NewInvalidBlockHeightError(ModuleName)
 	}
 	// validate blockchain
-	if err := ShortHashVerification(rp.Blockchain); err != nil {
+	if err := NetworkIdentifierVerification(rp.Blockchain); err != nil {
 		return err
 	}
 	// validate the RelayProof public key format
@@ -93,7 +93,7 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 		return err
 	}
 	// verify the blockchain addr format
-	if err := ShortHashVerification(rp.Blockchain); err != nil {
+	if err := NetworkIdentifierVerification(rp.Blockchain); err != nil {
 		return err
 	}
 	// verify the request hash format

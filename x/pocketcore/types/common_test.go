@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/store"
@@ -40,13 +41,7 @@ var (
 
 func getTestSupportedBlockchain() string {
 	if testSupportedChain == "" {
-		testSupportedChain, _ = NonNativeChain{
-			Ticker:  "eth",
-			Netid:   "4",
-			Version: "v1.9.9",
-			Client:  "geth",
-			Inter:   "",
-		}.HashString()
+		testSupportedChain = hex.EncodeToString([]byte{01})
 	}
 	return testSupportedChain
 }

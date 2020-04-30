@@ -26,14 +26,14 @@ func TestNewApplication(t *testing.T) {
 		args args
 		want Application
 	}{
-		{"defaultApplication", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com"},
+		{"defaultApplication", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"00"}, "google.com"},
 			Application{
 				Address:                 sdk.Address(pub.Address()),
 				PublicKey:               pub,
 				Jailed:                  false,
 				Status:                  sdk.Staked,
 				StakedTokens:            sdk.ZeroInt(),
-				Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+				Chains:                  []string{"00"},
 				UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: staked
 			}},
 	}
@@ -1002,8 +1002,8 @@ func TestApplication_GetChains(t *testing.T) {
 	}{
 		{
 			"defaultApplication",
-			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com"},
-			[]string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"00"}, "google.com"},
+			[]string{"00"},
 		},
 	}
 	for _, tt := range tests {
@@ -1035,7 +1035,7 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 	}{
 		{
 			"defaultApplication",
-			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com", sdk.NewInt(1)},
+			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"00"}, "google.com", sdk.NewInt(1)},
 			sdk.NewInt(1),
 		},
 	}

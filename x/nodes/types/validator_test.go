@@ -27,15 +27,15 @@ func TestNewValidator(t *testing.T) {
 		args args
 		want Validator
 	}{
-		{"defaultValidator", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}, "google.com"},
+		{"defaultValidator", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"00"}, "https://www.google.com:443"},
 			Validator{
 				Address:                 sdk.Address(pub.Address()),
 				PublicKey:               pub,
 				Jailed:                  false,
 				Status:                  sdk.Staked,
 				StakedTokens:            sdk.ZeroInt(),
-				Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
-				ServiceURL:              "google.com",
+				Chains:                  []string{"00"},
+				ServiceURL:              "https://www.google.com:443",
 				UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: staked
 			}},
 	}
@@ -989,7 +989,7 @@ func TestValidator_GetServiceURL(t *testing.T) {
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Staked,
-			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+			Chains:                  []string{"00"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
@@ -1039,11 +1039,11 @@ func TestValidator_GetChains(t *testing.T) {
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Staked,
-			Chains:                  []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+			Chains:                  []string{"00"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}},
+		}, []string{"00"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

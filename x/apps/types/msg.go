@@ -51,8 +51,8 @@ func (msg MsgAppStake) ValidateBasic() sdk.Error {
 		return ErrNoChains(DefaultCodespace)
 	}
 	for _, chain := range msg.Chains {
-		if len(chain) == 0 {
-			return ErrNoChains(DefaultCodespace)
+		if err := ValidateNetworkIdentifier(chain); err != nil {
+			return err
 		}
 	}
 	return nil

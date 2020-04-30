@@ -159,7 +159,7 @@ func getApplication() types.Application {
 		Jailed:       false,
 		Status:       sdk.Staked,
 		MaxRelays:    sdk.NewInt(100000000000),
-		Chains:       []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+		Chains:       []string{"00"},
 	}
 }
 

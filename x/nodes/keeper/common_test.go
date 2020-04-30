@@ -157,8 +157,8 @@ func getValidator() types.Validator {
 		PublicKey:    pub,
 		Jailed:       false,
 		Status:       sdk.Staked,
-		ServiceURL:   "google.com",
-		Chains:       []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"},
+		ServiceURL:   "https://www.google.com:443",
+		Chains:       []string{"00"},
 	}
 }
 

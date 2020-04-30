@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"fmt"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
@@ -25,7 +25,7 @@ func init() {
 
 	msgAppStake = MsgAppStake{
 		PubKey: pub,
-		Chains: []string{"886ba5bcb77e1064530052fed1a3f145"},
+		Chains: []string{"00"},
 		Value:  sdk.NewInt(10),
 	}
 	msgAppUnjail = MsgAppUnjail{sdk.Address(pub.Address())}
@@ -151,8 +151,8 @@ func TestMsgApp_ValidateBasic(t *testing.T) {
 		},
 		{
 			name: "returns err",
-			args: args{MsgAppStake{PubKey: msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"a"}}},
-			want: types.NewInvalidHashLengthError("pocketcore"),
+			args: args{MsgAppStake{PubKey: msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"aaaaaa"}}},
+			want: ErrInvalidNetworkIdentifier("application", fmt.Errorf("net id length is > 2")),
 		},
 		{
 			name: "returns nil if valid address",

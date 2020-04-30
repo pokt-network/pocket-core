@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"math/rand"
@@ -378,7 +379,7 @@ func TestMsgStake_GetSignBytes(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	chains := []string{"00"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
@@ -427,7 +428,7 @@ func TestMsgStake_GetSigners(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	chains := []string{"00"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
@@ -469,7 +470,7 @@ func TestMsgStake_Route(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	chains := []string{"00"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
@@ -511,7 +512,7 @@ func TestMsgStake_Type(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	chains := []string{"00"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
@@ -553,9 +554,9 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
 	rand.Read(pub[:])
-	chains := []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	chains := []string{"00"}
 	value := sdk.OneInt()
-	surl := "www.pokt.network"
+	surl := "https://www.pokt.network:8080"
 
 	tests := []struct {
 		name   string
@@ -585,13 +586,13 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 			Chains:     []string{""},
 			Value:      value,
 			ServiceURL: surl,
-		}, ErrNoChains(DefaultCodespace)},
+		}, ErrInvalidNetworkIdentifier(DefaultCodespace, fmt.Errorf("net id is empty"))},
 		{"Test Validate Basic bad serviceURL", fields{
 			PubKey:     pub,
 			Chains:     chains,
 			Value:      value,
 			ServiceURL: "",
-		}, ErrNoServiceURL(DefaultCodespace)},
+		}, ErrInvalidServiceURL(DefaultCodespace, fmt.Errorf("parse : empty url"))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

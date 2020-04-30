@@ -212,6 +212,15 @@ func validateGenesisStateValidators(validators []types.Validator, minimumStake s
 		if !val.IsUnstaked() && val.StakedTokens.LTE(minimumStake) {
 			return fmt.Errorf("validator has less than minimum stake: %v", val)
 		}
+		if err := types.ValidateServiceURL(val.ServiceURL); err != nil {
+			return types.ErrInvalidServiceURL(types.ModuleName, err)
+		}
+		for _, chain := range val.Chains {
+			err := types.ValidateNetworkIdentifier(chain)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return
 }

@@ -112,7 +112,7 @@ func TestQueryApps(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	var chains = []string{"00"}
 
 	select {
 	case <-evtChan:
@@ -364,7 +364,7 @@ func TestQueryProof(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	var chains = []string{"00"}
 
 	select {
 	case <-evtChan:
@@ -390,7 +390,7 @@ func TestQueryStakedpp(t *testing.T) {
 	assert.Nil(t, err)
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"b60d7bdd334cd3768d43f14a05c7fe7e886ba5bcb77e1064530052fed1a3f145"}
+	var chains = []string{"00"}
 
 	select {
 	case <-evtChan:

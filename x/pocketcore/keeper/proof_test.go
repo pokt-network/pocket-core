@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/hex"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
@@ -86,16 +87,7 @@ func TestKeeper_GetSetReceipt(t *testing.T) {
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	// create a session header
 	validHeader := types.SessionHeader{
 		ApplicationPubKey:  appPubKey,
@@ -127,16 +119,7 @@ func TestKeeper_GetSetReceipts(t *testing.T) {
 	appPrivateKey2 := getRandomPrivateKey()
 	appPubKey2 := appPrivateKey2.PublicKey().RawString()
 	npk := getRandomPubKey()
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	// create a session header
 	validHeader := types.SessionHeader{
 		ApplicationPubKey:  appPubKey,
@@ -179,16 +162,7 @@ func TestKeeper_GetAllReceipts(t *testing.T) {
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	npk2 := getRandomPubKey()
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	// create a session header
 	validHeader := types.SessionHeader{
 		ApplicationPubKey:  appPubKey,

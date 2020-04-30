@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -16,16 +17,7 @@ func TestParams_Equal(t *testing.T) {
 }
 
 func TestParams_Validate(t *testing.T) {
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	validParams := DefaultParams()
 	validParams.SupportedBlockchains = []string{ethereum}
 	// invalid session node count

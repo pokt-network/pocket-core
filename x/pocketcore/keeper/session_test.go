@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/hex"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -10,23 +11,8 @@ func TestKeeper_Dispatch(t *testing.T) {
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
-	ethereum, err := types.NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	bitcoin, err := types.NonNativeChain{
-		Ticker:  "btc",
-		Netid:   "1",
-		Version: "0.19.0.1",
-		Client:  "",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
+	bitcoin := hex.EncodeToString([]byte{02})
 	// create a session header
 	validHeader := types.SessionHeader{
 		ApplicationPubKey:  appPubKey,

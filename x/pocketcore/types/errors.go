@@ -88,6 +88,7 @@ const (
 	CodeNoEvidenceTypeErr                = 84
 	CodeInvalidPkFileErr                 = 85
 	CodeReplayAttackError                = 86
+	CodeInvalidNetworkIDError            = 87
 )
 
 var (
@@ -149,10 +150,10 @@ var (
 	SignatureError                   = errors.New("there was a problem signing the message: ")
 	InvalidChainError                = errors.New("the non native chain passed was invalid: ")
 	JSONMarshalError                 = errors.New("unable to marshal object into json: ")
-	InvalidBlockchainHashLength      = errors.New("the addr length is invalid")
+	InvalidNetworkIDLengthError      = errors.New("the netid length is invalid")
 	InvalidBlockHeightError          = errors.New("the block height passed is invalid")
 	InvalidAppPubKeyError            = errors.New("the app public key is invalid")
-	InvalidHashLengthError           = errors.New("the addr length is not valid")
+	InvalidHashLengthError           = errors.New("the hash length is not valid")
 	InvalidLeafCousinProofsCombo     = errors.New("the merkle relayProof combo for the cousin and leaf is invalid")
 	EmptyAddressError                = errors.New("the address provided is empty")
 	ClaimNotFoundError               = errors.New("the claim was not found for the key given")
@@ -236,6 +237,9 @@ func NewInvalidRootError(codespace sdk.CodespaceType) sdk.Error {
 
 func NewInvalidHashLengthError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidHashLengthError, InvalidHashLengthError.Error())
+}
+func NewInvalidNetIDLengthError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidNetworkIDError, InvalidNetworkIDLengthError.Error())
 }
 func NewInvalidAppPubKeyError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidAppPubKeyError, InvalidAppPubKeyError.Error())

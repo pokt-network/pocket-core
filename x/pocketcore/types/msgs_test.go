@@ -31,16 +31,7 @@ func TestMsgClaim_GetSigners(t *testing.T) {
 func TestMsgClaim_ValidateBasic(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	nodeAddress := getRandomValidatorAddress()
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	rootHash := Hash([]byte("fakeRoot"))
 	rootSum := binary.LittleEndian.Uint64(rootHash)
 	root := HashSum{
@@ -190,16 +181,7 @@ func TestMsgProof_GetSigners(t *testing.T) {
 }
 
 func TestMsgProof_ValidateBasic(t *testing.T) {
-	ethereum, err := NonNativeChain{
-		Ticker:  "eth",
-		Netid:   "4",
-		Version: "v1.9.9",
-		Client:  "geth",
-		Inter:   "",
-	}.HashString()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
+	ethereum := hex.EncodeToString([]byte{01})
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPrivKey := GetRandomPrivateKey()
 	clientPubKey := clientPrivKey.PublicKey().RawString()
