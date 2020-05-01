@@ -37,7 +37,6 @@
 - New Dispatch Formula See Spec
 - Added configurability for Pocket and Tendermint in a config.json file
 - Patch for Fixed April 17, 2020 consensus failure (0 power consensus failure)
-- Added new endpoints to retrieve transactions from a block (/v1/query/blocktxs) or a new sender (/v1/query/accounttxs)
 - Updated RPC call for Querying Validators and Apps (See Opts in RPC Spec)
 - Updated chains.json to be a slice instead of a mapping
 - Chanded defer.body.close() position until after error checking in pocketcore/types/service.go executeHttpRequest
@@ -45,6 +44,10 @@
 - Added protocol level enforcement of service url `https`
 - Updated the import-armored and export commands for better UX keeping backward compatibility with pre RC 0.3.0 .
 - Fixed issue querying apps/validators was ignoring the blockchain key
+- Added protocol level enforcement of service url `https|http`
+- Added `/v1/query/blocktxs` and `/v1/query/acounttxs` to get the list of transactions in a block or sent/received by an account respectively.
+- Added `query account-txs` and `query block-txs` to the CLI matching the above mentioned endpoints.
+- Fixed `getTMClient()` function to avoid Tendermint opening files every time a Relay/Dispatch.
 
 ## RC-0.2.1
 - Add version command to CLI
