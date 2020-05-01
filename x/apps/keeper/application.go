@@ -49,8 +49,9 @@ func (k Keeper) GetAllApplicationsWithOpts(ctx sdk.Ctx, opts types.QueryApplicat
 
 	for ; iterator.Valid(); iterator.Next() {
 		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
-
-		applications = append(applications, application)
+		if opts.IsValid(application) {
+			applications = append(applications, application)
+		}
 	}
 	return applications
 }
