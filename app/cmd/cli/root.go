@@ -21,6 +21,7 @@ var (
 	pocketRPCPort   string
 	blockTime       int
 	testnet         bool
+	simulateRelay   bool
 )
 
 var CLIVersion = fmt.Sprintf("%s", app.AppVersion)
@@ -56,6 +57,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&pocketRPCPort, "pocketRPCPort", "", "the port for pocket rpc")
 	rootCmd.PersistentFlags().IntVar(&blockTime, "blockTime", 1, "how often should the network create blocks")
 	rootCmd.PersistentFlags().BoolVar(&testnet, "testnet", false, "would you like to connect to Pocket Network testnet")
+	rootCmd.PersistentFlags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
@@ -68,7 +70,7 @@ var startCmd = &cobra.Command{
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort)
+		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, simulateRelay)
 		// trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel,

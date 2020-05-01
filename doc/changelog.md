@@ -70,3 +70,5 @@
 - Changed receipt structure (added evidence type)
 - Change `querySupplyResponse` struct to use `totalStaked`, `totalUnstaked` & `Total` as `*big.Int` due to memory overflow
 - Added RPC SPEC doc in yaml and json with swagger support
+- Add off chain relay RPC for testing purposes, wont' create proof & does not affect validator
+- Add flag to to simulate relays, default false.
