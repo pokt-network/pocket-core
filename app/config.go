@@ -301,7 +301,7 @@ func InitKeyfiles() string {
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
 		// if not exist continue creating as other files may be missing
 		if os.IsNotExist(err) {
-			fmt.Println(fmt.Errorf("validator address not set! please run set-validator"))
+			panic(fmt.Errorf("validator address not set! please run set-validator"))
 		} else {
 			//panic on other errors
 			panic(err)
