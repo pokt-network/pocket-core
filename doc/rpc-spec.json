@@ -836,7 +836,7 @@
 									"page": 1,
 									"per_page": 100,
 									"chain": "",
-									"JailedStatus": 1
+									"jailed_status": 1
 								},
 								"height": 2
 							}

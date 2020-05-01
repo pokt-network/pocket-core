@@ -193,7 +193,6 @@ func ValidateGenesis(data types.GenesisState) error {
 	if signedWindow < 10 {
 		return fmt.Errorf("Signed blocks window must be at least 10, is %d", signedWindow)
 	}
-
 	return nil
 }
 
