@@ -592,7 +592,7 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 			Chains:     chains,
 			Value:      value,
 			ServiceURL: "",
-		}, ErrInvalidServiceURL(DefaultCodespace, fmt.Errorf("parse \"\": empty url"))},
+		}, ErrInvalidServiceURL(DefaultCodespace, fmt.Errorf("parse : empty url"))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
