@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -13,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/x/nodes"
@@ -553,7 +554,8 @@ func TestRPC_Relay(t *testing.T) {
 	}
 	aat.ApplicationSignature = hex.EncodeToString(sig)
 	payload := pocketTypes.Payload{
-		Data: expectedRequest,
+		Data:   expectedRequest,
+		Method: "POST",
 	}
 	// setup relay
 	relay := pocketTypes.Relay{
@@ -664,6 +666,30 @@ func TestRPC_RawTX(t *testing.T) {
 	cleanup()
 	stopCli()
 }
+func TestRPC_SimRelay(t *testing.T) {
+	// setup relay endpoint
+	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
+	expectedResponse := "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"
+	defer gock.Off()
+	gock.New(dummyChainsURL).
+		Post("").
+		BodyString(expectedRequest).
+		Reply(200).
+		BodyString(expectedResponse)
+	payload := pocketTypes.Payload{
+		Data:   expectedRequest,
+		Method: "POST",
+	}
+	simParams := simRelayParams{
+		Url:     dummyChainsURL,
+		Payload: payload,
+	}
+	req := newClientRequest("sim", newBody(simParams))
+	rec := httptest.NewRecorder()
+	SimRequest(rec, req, httprouter.Params{})
+	resp := getResponse(rec)
+	assert.Equal(t, resp, expectedResponse)
+}
 
 func newBody(params interface{}) io.Reader {
 	bz, err := json.Marshal(params)
@@ -700,6 +726,7 @@ func getResponse(rec *httptest.ResponseRecorder) string {
 	if strings.Contains(string(b), "error") {
 		return string(b)
 	}
+
 	resp, err := strconv.Unquote(string(b))
 	if err != nil {
 		panic("could not unquote resp: " + err.Error())
