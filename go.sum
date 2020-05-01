@@ -154,6 +154,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pokt-network/posmint v0.0.0-20200417215711-e2afb3f483f3 h1:ii8UzHXX86pPfsszQOLaPAjKEGvmPv+hONLI36rPo48=
 github.com/pokt-network/posmint v0.0.0-20200417215711-e2afb3f483f3/go.mod h1:/Q6zRipV1L9ZML5kGMP5+J5lMoo+B/njn5ncf4gpIrc=
+github.com/pokt-network/posmint v0.0.0-20200430194516-7c37ad6120ae h1:Hl1ASAgpyh7YDRZNqpWnskHBMasOvF5oV46ieB09gZs=
+github.com/pokt-network/posmint v0.0.0-20200430194516-7c37ad6120ae/go.mod h1:/Q6zRipV1L9ZML5kGMP5+J5lMoo+B/njn5ncf4gpIrc=
 github.com/pokt-network/tendermint v0.32.11-0.20200416214829-c67ffb7bf00f h1:einsDo1okTcUPYYYYiC8MfDRHsD7IKI/6dnlTymWc6Q=
 github.com/pokt-network/tendermint v0.32.11-0.20200416214829-c67ffb7bf00f/go.mod h1:klZB7nl3GZZ9jPNaNHPYjNyoWW7mMx+5AXAN8Ov7bmY=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=

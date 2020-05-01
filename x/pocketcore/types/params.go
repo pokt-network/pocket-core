@@ -70,10 +70,6 @@ func (p Params) Validate() error {
 	if p.ClaimSubmissionWindow < 2 {
 		return errors.New("waiting period must be at least 2 sessions")
 	}
-	// supported blockchain constraints (the default of no supported chains, is invalid)
-	if len(p.SupportedBlockchains) == 0 {
-		return errors.New("no supported blockchains")
-	}
 	// verify each supported blockchain
 	for _, chain := range p.SupportedBlockchains {
 		if err := NetworkIdentifierVerification(chain); err != nil {

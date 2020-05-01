@@ -53,8 +53,8 @@ const (
 	DefaultChainsName               = "chains.json"
 	DefaultGenesisName              = "genesis.json"
 	DefaultRPCPort                  = "8081"
-	DefaultSessionDBType            = dbm.CLevelDBBackend
-	DefaultEvidenceDBType           = dbm.CLevelDBBackend
+	DefaultSessionDBType            = dbm.GoLevelDBBackend
+	DefaultEvidenceDBType           = dbm.GoLevelDBBackend
 	DefaultSessionDBName            = "session"
 	DefaultEvidenceDBName           = "pocket_evidence"
 	DefaultTMURI                    = "tcp://localhost:26657"
@@ -63,7 +63,7 @@ const (
 	DefaultListenAddr               = "tcp://0.0.0.0:"
 	DefaultClientBlockSyncAllowance = 10
 	DefaultJSONSortRelayResponses   = true
-	DefaultDBBackend                = "cleveldb"
+	DefaultDBBackend                = string(dbm.GoLevelDBBackend)
 	DefaultTxIndexer                = "kv"
 	DefaultTxIndexTags              = "tx.hash,tx.height,message.sender"
 	ConfigDirName                   = "config"
@@ -71,7 +71,7 @@ const (
 	ApplicationDBName               = "application"
 	PlaceholderHash                 = "00"
 	PlaceholderURL                  = "https://foo.bar:8080"
-	PlaceholderServiceURL           = DefaultListenAddr + DefaultRPCPort
+	PlaceholderServiceURL           = PlaceholderURL
 )
 
 var (
@@ -146,8 +146,6 @@ func DefaultConfig(dataDir string) Config {
 }
 
 func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node.Node {
-	// setup the codec
-	MakeCodec()
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 	// init the keyfiles
@@ -161,6 +159,8 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort str
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string) {
+	// setup the codec
+	MakeCodec()
 	if datadir == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
@@ -301,7 +301,7 @@ func InitKeyfiles() string {
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
 		// if not exist continue creating as other files may be missing
 		if os.IsNotExist(err) {
-			password = initFiles(password, datadir)
+			fmt.Println(fmt.Errorf("validator address not set! please run set-validator"))
 		} else {
 			//panic on other errors
 			panic(err)
@@ -314,12 +314,12 @@ func InitKeyfiles() string {
 	return password
 }
 
-func initFiles(password string, datadir string) string {
+func initFiles(address sdk.Address, password string, datadir string) string {
 	if _, err := GetKeybase(); err != nil {
-		fmt.Println("Initializing keybase: enter coinbase passphrase")
+		fmt.Println("Initializing keybase: enter validator passphrase")
 		password = Credentials()
 		if password == "" {
-			panic("you must have a coinbase password")
+			panic("you must have a validator account password")
 		}
 		err := newKeybase(password)
 		if err != nil {
@@ -328,7 +328,7 @@ func initFiles(password string, datadir string) string {
 	}
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
 		if os.IsNotExist(err) {
-			password = privValKey(password)
+			password = privValKey(address, password)
 		} else {
 			panic(err)
 		}
@@ -342,7 +342,7 @@ func initFiles(password string, datadir string) string {
 	}
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.NodeKey); err != nil {
 		if os.IsNotExist(err) {
-			nodeKey(password)
+			nodeKey(address, password)
 		} else {
 			panic(err)
 		}
@@ -392,17 +392,13 @@ func loadPKFromFile(path string) (privval.FilePVKey, string) {
 	return pvKey, path
 }
 
-func privValKey(password string) string {
+func privValKey(address sdk.Address, password string) string {
 	keys := MustGetKeybase()
-	coinbaseKeypair, err := keys.GetCoinbase()
-	if err != nil {
-		panic(err)
-	}
 	if password == "" {
-		fmt.Println("Initializing keyfiles: enter coinbase passphrase")
+		fmt.Println("Initializing keyfiles: enter validator account passphrase")
 		password = Credentials()
 	}
-	res, err := (keys).ExportPrivateKeyObject(coinbaseKeypair.GetAddress(), password)
+	res, err := (keys).ExportPrivateKeyObject(address, password)
 	if err != nil {
 		panic(err)
 	}
@@ -427,13 +423,9 @@ func privValKey(password string) string {
 	return password
 }
 
-func nodeKey(password string) {
+func nodeKey(address sdk.Address, password string) {
 	keys := MustGetKeybase()
-	coinbaseKeypair, err := keys.GetCoinbase()
-	if err != nil {
-		panic(err)
-	}
-	res, err := (keys).ExportPrivateKeyObject(coinbaseKeypair.GetAddress(), password)
+	res, err := (keys).ExportPrivateKeyObject(address, password)
 	if err != nil {
 		panic(err)
 	}
@@ -655,6 +647,18 @@ func newKeybase(passphrase string) error {
 	return nil
 }
 
+func SetValidator(address sdk.Address, passphrase string) {
+	resetFilePV(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey, GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorState, log.NewNopLogger())
+	privValKey(address, passphrase)
+	privValState()
+	nodeKey(address, passphrase)
+}
+
+func GetPrivValFile() (file privval.FilePVKey) {
+	file, _ = loadPKFromFile(GlobalConfig.PocketConfig.DataDir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
+	return
+}
+
 func newDefaultGenesisState() []byte {
 	keyb, err := GetKeybase()
 	if err != nil {
@@ -811,18 +815,9 @@ func ResetAll(dbDir, addrBookFile, privValKeyFile, privValStateFile string, logg
 
 func resetFilePV(privValKeyFile, privValStateFile string, logger log.Logger) {
 	if _, err := os.Stat(privValKeyFile); err == nil {
-		err := os.Remove(privValKeyFile)
-		if err != nil {
-			panic(err)
-		}
-		err = os.Remove(privValStateFile)
-		if err != nil {
-			panic(err)
-		}
-		err = os.Remove(GlobalConfig.PocketConfig.DataDir + FS + GlobalConfig.TendermintConfig.NodeKey)
-		if err != nil {
-			panic(err)
-		}
+		os.Remove(privValKeyFile)
+		os.Remove(privValStateFile)
+		os.Remove(GlobalConfig.PocketConfig.DataDir + FS + GlobalConfig.TendermintConfig.NodeKey)
 	}
 	logger.Info("Reset private validator file", "keyFile", privValKeyFile,
 		"stateFile", privValStateFile)

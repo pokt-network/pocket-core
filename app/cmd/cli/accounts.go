@@ -16,7 +16,8 @@ import (
 func init() {
 	rootCmd.AddCommand(accountsCmd)
 	accountsCmd.AddCommand(createCmd)
-	accountsCmd.AddCommand(getCoinbase)
+	accountsCmd.AddCommand(getValidator)
+	accountsCmd.AddCommand(setValidator)
 	accountsCmd.AddCommand(deleteCmd)
 	accountsCmd.AddCommand(listCmd)
 	accountsCmd.AddCommand(showCmd)
@@ -61,10 +62,10 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	},
 }
 
-var getCoinbase = &cobra.Command{
-	Use:   "get-coinbase",
-	Short: "Retrieves the coinbase account from the keybase",
-	Long:  `Retrieves the coinbase account from the pocket core keybase`,
+var getValidator = &cobra.Command{
+	Use:   "get-validator",
+	Short: "Retrieves the main validator from the priv_val file",
+	Long:  `Retrieves the main validator from the priv_val file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
@@ -72,12 +73,25 @@ var getCoinbase = &cobra.Command{
 			fmt.Printf(app.UninitializedKeybaseError.Error())
 			return
 		}
-		coinbase, err := kb.GetCoinbase()
+		val := app.GetPrivValFile()
+		fmt.Printf("Validator Address:%s\n", val.Address)
+	},
+}
+
+var setValidator = &cobra.Command{
+	Use:   "set-validator <address>",
+	Short: "Sets the main validator account for tendermint",
+	Long:  `Sets the main validator account that will be used across all Tendermint functions`,
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
-			fmt.Printf("Could not get coinbase, %s", err)
+			fmt.Printf("Address Error %s", err)
 			return
 		}
-		fmt.Printf("Coinbase Account:%s\n", coinbase.GetAddress())
+		fmt.Println("Enter the password:")
+		app.SetValidator(addr, app.Credentials())
 	},
 }
 

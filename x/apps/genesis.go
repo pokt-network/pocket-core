@@ -92,6 +92,12 @@ func validateGenesisStateApplications(applications []types.Application, minimumS
 		if !app.IsUnstaked() && app.StakedTokens.LTE(minimumStake) {
 			return fmt.Errorf("application has less than minimum stake: %v", app)
 		}
+		for _, chain := range app.Chains {
+			err := types.ValidateNetworkIdentifier(chain)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return
 }
