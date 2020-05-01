@@ -89,6 +89,7 @@ const (
 	CodeInvalidPkFileErr                 = 85
 	CodeReplayAttackError                = 86
 	CodeInvalidNetworkIDError            = 87
+	CodeInvalidExpirationHeightErr       = 88
 )
 
 var (
@@ -178,6 +179,7 @@ var (
 	InvalidPkFileErr                 = errors.New("the PK File is not found")
 	InvalidEvidenceErr               = errors.New("the evidence type passed is not valid")
 	ReplayAttackError                = errors.New("the merkle proof is flagged as a replay attack")
+	InvalidExpirationHeightErr       = errors.New("the expiration height included in the claim message is invalid (should not be set)")
 )
 
 func NewUnsupportedBlockchainError(codespace sdk.CodespaceType) sdk.Error {
@@ -295,6 +297,10 @@ func NewNoEvidenceTypeErr(codespace sdk.CodespaceType) sdk.Error {
 
 func NewInvalidEvidenceErr(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidEvidenceError, InvalidEvidenceErr.Error())
+}
+
+func NewInvalidExpirationHeightErr(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidExpirationHeightErr, InvalidExpirationHeightErr.Error())
 }
 
 func NewHexDecodeError(codespace sdk.CodespaceType, err error) sdk.Error {

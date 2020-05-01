@@ -134,13 +134,21 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 func (k Keeper) SetClaim(ctx sdk.Ctx, msg pc.MsgClaim) error {
 	// retrieve the store
 	store := ctx.KVStore(k.storeKey)
-	// marshal the message into amino
-	bz := k.cdc.MustMarshalBinaryBare(msg)
 	// generate the store key
 	key, err := pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader, msg.EvidenceType)
 	if err != nil {
 		return err
 	}
+	// generate the expiration height upon setting
+	if msg.ExpirationHeight == 0 {
+		sessionCtx, err := ctx.PrevCtx(msg.SessionBlockHeight)
+		if err != nil {
+			return err
+		}
+		msg.ExpirationHeight = ctx.BlockHeight() + k.ClaimExpiration(sessionCtx)*k.BlocksPerSession(sessionCtx)
+	}
+	// marshal the message into amino
+	bz := k.cdc.MustMarshalBinaryBare(msg)
 	// set in the store
 	store.Set(key, bz)
 	return nil
@@ -170,17 +178,12 @@ func (k Keeper) GetClaim(ctx sdk.Ctx, address sdk.Address, header pc.SessionHead
 // "SetClaims" - Sets all the claim messages in the state storage.
 // (Needed for genesis initializing)
 func (k Keeper) SetClaims(ctx sdk.Ctx, claims []pc.MsgClaim) {
-	// retrieve the store
-	store := ctx.KVStore(k.storeKey)
 	// loop through all of the claim messages one by one and set them
 	for _, msg := range claims {
-		bz := k.cdc.MustMarshalBinaryBare(msg)
-		// generate the key for the claim
-		key, err := pc.KeyForClaim(ctx, msg.FromAddress, msg.SessionHeader, msg.EvidenceType)
+		err := k.SetClaim(ctx, msg)
 		if err != nil {
-			panic(fmt.Sprintf("an error occured setting the claims:\n%v", err))
+			ctx.Logger().Error("an error occurred setting the claim:\n", msg)
 		}
-		store.Set(key, bz)
 	}
 }
 
@@ -273,13 +276,8 @@ func (k Keeper) DeleteExpiredClaims(ctx sdk.Ctx) {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &msg)
-		sessionContext, err := ctx.PrevCtx(msg.SessionBlockHeight)
-		if err != nil {
-			ctx.Logger().Error("a claim in the world state had a context that was unable to be retrieved, using current params as expiration")
-			sessionContext = ctx.(sdk.Context)
-		}
 		// if more sessions has passed than the expiration of the claim's genesis, delete it from the set
-		if (ctx.BlockHeight()-msg.SessionBlockHeight)/k.BlocksPerSession(sessionContext) >= k.ClaimExpiration(sessionContext) {
+		if msg.ExpirationHeight <= ctx.BlockHeight() {
 			store.Delete(iterator.Key())
 		}
 	}

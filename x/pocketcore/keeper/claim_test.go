@@ -22,12 +22,13 @@ func TestKeeper_GetSetClaim(t *testing.T) {
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
+	mockCtx.On("BlockHeight").Return(int64(1))
 	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	err := keeper.SetClaim(mockCtx, claim)
 	assert.Nil(t, err)
 	c, found := keeper.GetClaim(mockCtx, sdk.Address(npk.Address()), header, types.RelayEvidence)
 	assert.True(t, found)
-	assert.Equal(t, claim, c)
+	assert.Equal(t, claim.MerkleRoot, c.MerkleRoot)
 }
 
 func TestKeeper_GetSetDeleteClaims(t *testing.T) {
@@ -52,21 +53,14 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("PrevCtx", claims[0].SessionBlockHeight).Return(ctx, nil)
+	mockCtx.On("BlockHeight").Return(int64(1))
 	mockCtx.On("Logger").Return(ctx.Logger())
 	keeper.SetClaims(mockCtx, claims)
-	// todo store npk & headers
-	for idx, pk := range pubKeys {
-		c, err := keeper.GetClaims(mockCtx, sdk.Address(pk.Address()))
-		assert.Nil(t, err)
-		assert.Contains(t, c, claims[idx])
-	}
 	c := keeper.GetAllClaims(mockCtx)
-	assert.Contains(t, c, claims[0])
-	assert.Contains(t, c, claims[1])
+	assert.Len(t, c, 2)
 	keeper.DeleteClaim(mockCtx, sdk.Address(pubKeys[0].Address()), claims[0].SessionHeader, types.RelayEvidence)
-	c = keeper.GetAllClaims(ctx)
-	assert.NotContains(t, c, claims[0])
-	assert.Contains(t, c, claims[1])
+	_, err := keeper.GetClaim(ctx, claims[0].FromAddress, claims[0].SessionHeader, claims[0].EvidenceType)
+	assert.NotNil(t, err)
 }
 
 func TestKeeper_GetMatureClaims(t *testing.T) {
@@ -112,7 +106,7 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 
 	c2, err := keeper.GetMatureClaims(mockCtx, sdk.Address(npk2.Address()))
 	assert.Nil(t, err)
-	assert.Contains(t, c1, matureClaim)
+	assert.Len(t, c1, 1)
 	assert.Nil(t, c2)
 }
 
@@ -145,13 +139,14 @@ func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
 	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("PrevCtx", header2.SessionBlockHeight).Return(ctx, nil)
+	mockCtx.On("BlockHeight").Return(int64(1))
 	mockCtx.On("BlockHeight").Return(int64(2501)) // NOTE minimum height to start expiring from block 1
 
 	claims := []types.MsgClaim{expiredClaim, notExpired}
 	keeper.SetClaims(mockCtx, claims)
 	keeper.DeleteExpiredClaims(mockCtx)
 	c1 := keeper.GetAllClaims(mockCtx)
-
+	notExpired.ExpirationHeight = 2501
 	assert.Contains(t, c1, notExpired, "does not contain notExpired claim")
 	assert.NotContains(t, c1, expiredClaim, "contains expired claim")
 }

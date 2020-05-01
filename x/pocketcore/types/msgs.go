@@ -16,11 +16,12 @@ const (
 
 // "MsgClaim" - claims that you completed `NumOfProofs` for relay or challenge and provides the merkle root for data integrity
 type MsgClaim struct {
-	SessionHeader `json:"header"` // header information for identification
-	MerkleRoot    HashSum         `json:"merkle_root"`   // merkle root for data integrity
-	TotalProofs   int64           `json:"total_relays"`  // total number of relays
-	FromAddress   sdk.Address     `json:"from_address"`  // claimant's address
-	EvidenceType  EvidenceType    `json:"evidence_type"` // relay or challenge?
+	SessionHeader    `json:"header"` // header information for identification
+	MerkleRoot       HashSum         `json:"merkle_root"`   // merkle root for data integrity
+	TotalProofs      int64           `json:"total_relays"`  // total number of relays
+	FromAddress      sdk.Address     `json:"from_address"`  // claimant's address
+	EvidenceType     EvidenceType    `json:"evidence_type"` // relay or challenge?
+	ExpirationHeight int64           `json:"expiration_height"`
 }
 
 // "GetFee" - Returns the fee (sdk.Int) of the messgae type
@@ -70,6 +71,9 @@ func (msg MsgClaim) ValidateBasic() sdk.Error {
 	}
 	if msg.EvidenceType != RelayEvidence && msg.EvidenceType != ChallengeEvidence {
 		return NewInvalidEvidenceErr(ModuleName)
+	}
+	if msg.ExpirationHeight != 0 {
+		return NewInvalidExpirationHeightErr(ModuleName)
 	}
 	return nil
 }
