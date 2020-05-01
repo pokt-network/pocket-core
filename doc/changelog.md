@@ -43,6 +43,8 @@
 - Chanded defer.body.close() position until after error checking in pocketcore/types/service.go executeHttpRequest
 - Added protocol level enforcement of network identifier format
 - Added protocol level enforcement of service url `https`
+- Updated the import-armored and export commands for better UX keeping backward compatibility with pre RC 0.3.0 .
+- Fixed issue where querying apps/validators was ignoring the blockchain key
 
 ## RC-0.2.1
 - Add version command to CLI
