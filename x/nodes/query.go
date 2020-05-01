@@ -14,11 +14,12 @@ import (
 )
 
 const (
-	defaultPage        = 1
-	defaultPerPage     = 30
-	customQuery        = "custom/%s/%s"
-	messageSenderQuery = "message.sender='%s'"
-	txHeightQuery      = "tx.height=%d"
+	defaultPage            = 1
+	defaultPerPage         = 30
+	customQuery            = "custom/%s/%s"
+	messageSenderQuery     = "message.sender='%s'"
+	transferRecipientQuery = "transfer.recipient='%s'"
+	txHeightQuery          = "tx.height=%d"
 )
 
 func checkPagination(page, limit int) (int, int) {
@@ -176,24 +177,29 @@ func validatePageAndPerPage(page, perPage int) (resPage, resPerPage int) {
 	return resPage, resPerPage
 }
 
-func QueryAccountTransactions(tmNode rpcclient.Client, addr string, page, perPage int) (*ctypes.ResultTxSearch, error) {
+func QueryAccountTransactions(tmNode rpcclient.Client, addr string, page, perPage int, recipient bool, prove bool) (*ctypes.ResultTxSearch, error) {
 	_, err := hex.DecodeString(addr)
 	if err != nil {
 		return nil, err
 	}
-	query := fmt.Sprintf(messageSenderQuery, addr)
+	var query string
+	if recipient == true {
+		query = fmt.Sprintf(transferRecipientQuery, addr)
+	} else {
+		query = fmt.Sprintf(messageSenderQuery, addr)
+	}
 	page, perPage = validatePageAndPerPage(page, perPage)
-	result, err := tmNode.TxSearch(query, false, page, perPage)
+	result, err := tmNode.TxSearch(query, prove, page, perPage)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func QueryBlockTransactions(tmNode rpcclient.Client, height int64, page, perPage int) (*ctypes.ResultTxSearch, error) {
+func QueryBlockTransactions(tmNode rpcclient.Client, height int64, page, perPage int, prove bool) (*ctypes.ResultTxSearch, error) {
 	query := fmt.Sprintf(txHeightQuery, height)
 	page, perPage = validatePageAndPerPage(page, perPage)
-	result, err := tmNode.TxSearch(query, false, page, perPage)
+	result, err := tmNode.TxSearch(query, prove, page, perPage)
 	if err != nil {
 		return nil, err
 	}
