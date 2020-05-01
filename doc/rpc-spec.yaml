@@ -1499,6 +1499,10 @@ components:
           type: integer
         per_page:
           type: integer
+        prove:
+          type: boolean
+        received:
+          type: boolean
       required:
         - address
     QueryAccountTXsResponse:
@@ -1519,6 +1523,8 @@ components:
           type: integer
         per_page:
           type: integer
+        prove:
+          type: boolean
       required:
         - height
     QueryBlockTXsResponse:
