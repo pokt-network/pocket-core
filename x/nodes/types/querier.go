@@ -30,7 +30,7 @@ func NewQueryValidatorParams(validatorAddr sdk.Address) QueryValidatorParams {
 type QueryValidatorsParams struct {
 	StakingStatus sdk.StakeStatus `json:"staking_status"`
 	JailedStatus  int             `json:"jailed_status"`
-	Blockchain    string          `json:"chain"`
+	Blockchain    string          `json:"blockchain"`
 	Page          int             `json:"page"`
 	Limit         int             `json:"per_page"`
 }
