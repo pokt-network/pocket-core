@@ -25,12 +25,16 @@ func QueryTx(hash string) (*core_types.ResultTx, error) {
 	return nodes.QueryTransaction(getTMClient(), hash)
 }
 
-func QueryAccountTxs(addr string, page, perPage int) (*core_types.ResultTxSearch, error) {
-	return nodes.QueryAccountTransactions(getTMClient(), addr, page, perPage)
+func QueryAccountTxs(addr string, page, perPage int, prove bool) (*core_types.ResultTxSearch, error) {
+	return nodes.QueryAccountTransactions(getTMClient(), addr, page, perPage, false, prove)
 }
 
-func QueryBlockTxs(height int64, page, perPage int) (*core_types.ResultTxSearch, error) {
-	return nodes.QueryBlockTransactions(getTMClient(), height, page, perPage)
+func QueryRecipientTxs(addr string, page, perPage int, prove bool) (*core_types.ResultTxSearch, error) {
+	return nodes.QueryAccountTransactions(getTMClient(), addr, page, perPage, true, prove)
+}
+
+func QueryBlockTxs(height int64, page, perPage int, prove bool) (*core_types.ResultTxSearch, error) {
+	return nodes.QueryBlockTransactions(getTMClient(), height, page, perPage, prove)
 }
 
 func QueryHeight() (chainHeight int64, err error) {
