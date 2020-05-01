@@ -65,7 +65,7 @@ const (
 	DefaultJSONSortRelayResponses   = true
 	DefaultDBBackend                = string(dbm.GoLevelDBBackend)
 	DefaultTxIndexer                = "kv"
-	DefaultTxIndexTags              = "tx.hash,tx.height,message.sender"
+	DefaultTxIndexTags              = "tx.hash,tx.height,message.sender,transfer.recipient"
 	ConfigDirName                   = "config"
 	ConfigFileName                  = "config.json"
 	ApplicationDBName               = "application"
