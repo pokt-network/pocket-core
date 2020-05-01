@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 	"strings"
 
@@ -249,23 +250,26 @@ Will prompt the user for the account passphrase.`,
 }
 
 var importArmoredCmd = &cobra.Command{
-	Use:   "import-armored <armor>",
+	Use:   "import-armored <path/to/armoredKeyFile>",
 	Short: "Import keypair using armor",
-	Long: `Imports an account using the Encrypted ASCII armored <armor> string.
-Will prompt the user for a decryption passphrase of the <armor> string and for an encryption passphrase to store in the Keybase.`,
+	Long: `Imports an account using the Encrypted ASCII armored file.
+Will prompt the user for a decryption passphrase of the armored ASCII file and for an encryption passphrase to store in the Keybase.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		kb := app.MustGetKeybase()
-		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
-			return
-		}
+		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir)
+
 		fmt.Println("Enter decrypt pass")
 		dPass := app.Credentials()
 		fmt.Println("Enter encrypt pass")
 		ePass := app.Credentials()
-		kp, err := kb.ImportPrivKey(args[0], dPass, ePass)
+
+		b, err := ioutil.ReadFile(args[0])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		kp, err := kb.ImportPrivKey(string(b), dPass, ePass)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -273,9 +277,14 @@ Will prompt the user for a decryption passphrase of the <armor> string and for a
 		fmt.Printf("Account imported successfully:\n%s", kp.GetAddress().String())
 	},
 }
+var filePath string
+
+func init() {
+	exportCmd.Flags().StringVar(&filePath, "file", "exportedkey", "the path/name of the file for account export")
+}
 
 var exportCmd = &cobra.Command{
-	Use:   "export <address>",
+	Use:   "export <address> --file <path/filename>",
 	Short: "Export an account",
 	Long: `Exports the account with <address>, encrypted and ASCII armored.
 Will prompt the user for the account passphrase and for an encryption passphrase for the exported account.`,
@@ -296,11 +305,21 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 		dPass := app.Credentials()
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()
-		pk, err := kb.ExportPrivKeyEncryptedArmor(addr, dPass, ePass)
+		fmt.Println("Enter an optional Hint for remembering the Passphrase")
+		hint := app.Credentials()
+
+		pk, err := kb.ExportPrivKeyEncryptedArmor(addr, dPass, ePass, hint)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		err = ioutil.WriteFile(filePath, []byte(pk), 0644)
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println("Check --file, if exporting to a folder the folder must exist")
+			return
+		}
+
 		fmt.Printf("Exported Armor Private Key:\n%s\n", pk)
 	},
 }
