@@ -835,7 +835,7 @@
 									"staking_status": 2,
 									"page": 1,
 									"per_page": 100,
-									"chain": "",
+									"blockchain": "",
 									"jailed_status": 1
 								},
 								"height": 2
