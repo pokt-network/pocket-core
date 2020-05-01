@@ -49,6 +49,16 @@
 - Added `query account-txs` and `query block-txs` to the CLI matching the above mentioned endpoints.
 - Fixed `getTMClient()` function to avoid Tendermint opening files every time a Relay/Dispatch.
 
+## RC-0.2.4
+- Removed trailing slash when performing a relay when there's no path present in the relay payload.
+
+## RC-0.2.3
+- Changed Tendermint's dbbackend to cleveldb after multiple validator crashes on April's 20th load test.
+
+## RC-0.2.2
+- Fixed April 17, 2020 consensus failure (0 power consensus failure)
+Seed patch to allow more incoming connections
+
 ## RC-0.2.1
 - Add version command to CLI
 - Disallow double sign on invalid operations, disallow consensus breaks
