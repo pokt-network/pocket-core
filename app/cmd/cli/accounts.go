@@ -1,9 +1,11 @@
 package cli
 
 import (
+	"bufio"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 
@@ -250,7 +252,7 @@ Will prompt the user for the account passphrase.`,
 }
 
 var importArmoredCmd = &cobra.Command{
-	Use:   "import-armored <path/to/armoredKeyFile>",
+	Use:   "import-armored <path/to/armoredJson>",
 	Short: "Import keypair using armor",
 	Long: `Imports an account using the Encrypted ASCII armored file.
 Will prompt the user for a decryption passphrase of the armored ASCII file and for an encryption passphrase to store in the Keybase.`,
@@ -280,14 +282,14 @@ Will prompt the user for a decryption passphrase of the armored ASCII file and f
 var filePath string
 
 func init() {
-	exportCmd.Flags().StringVar(&filePath, "file", "exportedkey", "the path/name of the file for account export")
+	exportCmd.Flags().StringVar(&filePath, "path", "", "the /path/to/export/location where you want to save the file")
 }
 
 var exportCmd = &cobra.Command{
-	Use:   "export <address> --file <path/filename>",
+	Use:   "export <address> --path <path>",
 	Short: "Export an account",
-	Long: `Exports the account with <address>, encrypted and ASCII armored.
-Will prompt the user for the account passphrase and for an encryption passphrase for the exported account.`,
+	Long: `Exports the account with <address>, to a file encrypted and ASCII armored in a location specified with --path , if you dont provide a path it will store it on the folder where its running.
+Will prompt the user for the account passphrase and for an encryption passphrase for the exported account. Also prompt for an optional hint for the password`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
@@ -306,21 +308,38 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()
 		fmt.Println("Enter an optional Hint for remembering the Passphrase")
-		hint := app.Credentials()
+		reader := bufio.NewReader(os.Stdin)
+		hint, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		hint = strings.TrimSuffix(hint, "\n")
 
 		pk, err := kb.ExportPrivKeyEncryptedArmor(addr, dPass, ePass, hint)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		err = ioutil.WriteFile(filePath, []byte(pk), 0644)
+		var fname string
+
+		if strings.HasSuffix(filePath, "/") || filePath == "" {
+			fname = "pocket-acccount-" + addr.String() + ".json"
+
+		} else {
+			fname = "/pocket-acccount-" + addr.String() + ".json"
+		}
+
+		err = ioutil.WriteFile(filePath+fname, []byte(pk), 0644)
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println("Check --file, if exporting to a folder the folder must exist")
+			fmt.Println("Check --path, if exporting to a folder the folder must exist")
 			return
 		}
 
 		fmt.Printf("Exported Armor Private Key:\n%s\n", pk)
+		fmt.Println("Export Completed")
 	},
 }
 
