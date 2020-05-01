@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/types"
@@ -10,6 +11,7 @@ import (
 	"github.com/pokt-network/pocket-core/app"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/spf13/cobra"
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 func init() {
@@ -88,60 +90,82 @@ var queryTx = &cobra.Command{
 	},
 }
 
-func validatePagePerPageArgs(args []string) (page int, perPage int) {
+func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int, prove bool, received bool) {
 	page = 0
 	perPage = 0
-	if len(args) == 2 {
+	prove = false
+	received = false
+	if len(args) >= 2 {
 		parsedPage, err := strconv.Atoi(args[1])
-		if err != nil {
+		if err == nil {
 			page = parsedPage
 		}
 	}
-	if len(args) == 3 {
+	if len(args) >= 3 {
 		parsedPerPage, err := strconv.Atoi(args[2])
-		if err != nil {
+		if err == nil {
 			perPage = parsedPerPage
 		}
 	}
-	return page, perPage
+	if len(args) >= 4 {
+		parsedProve, err := strconv.ParseBool(args[3])
+		if err == nil {
+			prove = parsedProve
+		}
+	}
+	if len(args) == 5 {
+		parsedReceived, err := strconv.ParseBool(args[4])
+		if err == nil {
+			received = parsedReceived
+		}
+	}
+	return page, perPage, prove, received
 }
 
 var queryAccountTxs = &cobra.Command{
-	Use:   "account-txs <address> <nodePage> <per_page>",
-	Short: "Get the transactions sent by the address, paginated by nodePage and per_page",
+	Use:   "account-txs <address> <page> <per_page> <prove> <received>",
+	Short: "Get the transactions sent by the address, paginated by page and per_page",
 	Long:  `Retrieves the transactions sent by the address`,
-	Args:  cobra.RangeArgs(1, 3),
+	Args:  cobra.RangeArgs(1, 5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		page, perPage := validatePagePerPageArgs(args)
-		res, err := app.QueryAccountTxs(args[0], page, perPage)
+		page, perPage, prove, received := validatePagePerPageProveReceivedArgs(args)
+		var res *core_types.ResultTxSearch
+		var err error
+		if received == true {
+			res, err = app.QueryRecipientTxs(args[0], page, perPage, prove)
+		} else {
+			res, err = app.QueryAccountTxs(args[0], page, perPage, prove)
+		}
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(res)
+		jsonRes, _ := json.Marshal(res)
+		fmt.Println(fmt.Sprintf("%s", jsonRes))
 	},
 }
 
 var queryBlockTxs = &cobra.Command{
-	Use:   "block-txs <height> <nodePage> <per_page>",
-	Short: "Get the transactions at a certain block height, paginated by nodePage and per_page",
+	Use:   "block-txs <height> <page> <per_page> <prove>",
+	Short: "Get the transactions at a certain block height, paginated by page and per_page",
 	Long:  `Retrieves the transactions in the block height`,
-	Args:  cobra.RangeArgs(1, 3),
+	Args:  cobra.RangeArgs(1, 4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		page, perPage := validatePagePerPageArgs(args)
+		page, perPage, prove, _ := validatePagePerPageProveReceivedArgs(args)
 		height, parsingErr := strconv.ParseInt(args[0], 10, 64)
 		if parsingErr != nil {
 			fmt.Println(parsingErr)
 			return
 		}
-		res, err := app.QueryBlockTxs(height, page, perPage)
+		res, err := app.QueryBlockTxs(height, page, perPage, prove)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(res)
+		jsonRes, _ := json.Marshal(res)
+		fmt.Println(fmt.Sprintf("%s", jsonRes))
 	},
 }
 

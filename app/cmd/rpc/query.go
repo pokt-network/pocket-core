@@ -6,6 +6,7 @@ import (
 	"github.com/pokt-network/pocket-core/app"
 	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	"math/big"
 	"net/http"
 )
@@ -45,15 +46,18 @@ type heightAndStakingStatusParams struct {
 }
 
 type paginatedAddressParams struct {
-	Address string `json:"address"`
-	Page    int    `json:"page,omitempty"`
-	PerPage int    `json:"per_page,omitempty"`
+	Address  string `json:"address"`
+	Page     int    `json:"page,omitempty"`
+	PerPage  int    `json:"per_page,omitempty"`
+	Received bool   `json:"received,omitempty"`
+	Prove    bool   `json:"Prove,omitempty"`
 }
 
 type paginatedHeightParams struct {
 	Height  int64 `json:"height"`
 	Page    int   `json:"page,omitempty"`
 	PerPage int   `json:"per_page,omitempty"`
+	Prove   bool  `json:"Prove,omitempty"`
 }
 
 func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -94,7 +98,14 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryAccountTxs(params.Address, params.Page, params.PerPage)
+	var res *core_types.ResultTxSearch
+	var err error
+	if params.Received == false {
+		res, err = app.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove)
+	} else {
+		res, err = app.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove)
+	}
+
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
@@ -112,7 +123,7 @@ func BlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryBlockTxs(params.Height, params.Page, params.PerPage)
+	res, err := app.QueryBlockTxs(params.Height, params.Page, params.PerPage, params.Prove)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
