@@ -84,7 +84,7 @@ func GetRoutes() Routes {
 		Route{Name: "QueryDAOOwner", Method: "POST", Path: "/v1/query/daoowner", HandlerFunc: DAOOwner},
 		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
 		Route{Name: "QueryACL", Method: "POST", Path: "/v1/query/acl", HandlerFunc: ACL},
-		Route{Name: "QueryState", Method: "GET", Path: "/v1/query/state", HandlerFunc: State},
+		Route{Name: "QueryState", Method: "POST", Path: "/v1/query/state", HandlerFunc: State},
 		Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: SimRequest},
 	}
 	return routes
