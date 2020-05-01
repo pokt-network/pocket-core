@@ -9,7 +9,6 @@ import (
 	"github.com/pokt-network/posmint/x/gov"
 	"github.com/stretchr/testify/assert"
 	tmTypes "github.com/tendermint/tendermint/types"
-	"os"
 	"testing"
 )
 
@@ -65,27 +64,4 @@ func TestExportState(t *testing.T) {
 	}
 	cleanup()
 	stopCli()
-}
-
-func TestSetCoinbase(t *testing.T) {
-	//addr, err := hex.DecodeString("861b925751edc2c4711b7f774de14379287fba43")
-	//if err != nil {
-	//	t.Fatalf(err.Error())
-	//}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	dd := home + "/.pocket"
-	InitConfig(dd, "", "", "", "", "")
-	GetPrivValFile()
-	kb, err := GetKeybase()
-	if err != nil {
-		panic(err)
-	}
-	pk, err := kb.GetCoinbase()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(pk.GetAddress())
 }
