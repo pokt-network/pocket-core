@@ -50,14 +50,14 @@ type paginatedAddressParams struct {
 	Page     int    `json:"page,omitempty"`
 	PerPage  int    `json:"per_page,omitempty"`
 	Received bool   `json:"received,omitempty"`
-	Prove    bool   `json:"Prove,omitempty"`
+	Prove    bool   `json:"prove,omitempty"`
 }
 
 type paginatedHeightParams struct {
 	Height  int64 `json:"height"`
 	Page    int   `json:"page,omitempty"`
 	PerPage int   `json:"per_page,omitempty"`
-	Prove   bool  `json:"Prove,omitempty"`
+	Prove   bool  `json:"prove,omitempty"`
 }
 
 func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
