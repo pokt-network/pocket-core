@@ -40,8 +40,6 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return queryParameters(ctx, k)
 		case types.QueryAppStakedPool:
 			return queryStakedPool(ctx, k)
-		case types.QueryAppUnstakedPool:
-			return queryUnstakedPool(ctx, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown staking query endpoint")
 		}
@@ -83,18 +81,7 @@ func queryApplication(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk
 
 func queryStakedPool(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
 	stakedTokens := k.GetStakedTokens(ctx)
-	pool := types.StakingPool(types.NewPool(stakedTokens))
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
-	if err != nil {
-		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
-	}
-	return res, nil
-}
-
-func queryUnstakedPool(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
-	unstakedTokens := k.GetUnstakedTokens(ctx)
-	pool := types.StakingPool(types.NewPool(unstakedTokens))
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, stakedTokens)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
 	}

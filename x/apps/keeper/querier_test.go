@@ -123,7 +123,7 @@ func Test_queryStakedPool(t *testing.T) {
 		k   Keeper
 	}
 	context, _, keeper := createTestInput(t, true)
-	jsonresponse, _ := amino.MarshalJSONIndent(types.StakingPool(types.NewPool(sdk.ZeroInt())), "", "  ")
+	jsonresponse, _ := amino.MarshalJSONIndent(sdk.ZeroInt(), "", "  ")
 	tests := []struct {
 		name  string
 		args  args
@@ -143,37 +143,6 @@ func Test_queryStakedPool(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("queryStakedPool() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_queryUnstakedPool(t *testing.T) {
-	type args struct {
-		ctx sdk.Context
-		k   Keeper
-	}
-	context, _, keeper := createTestInput(t, true)
-	jsonresponse, _ := amino.MarshalJSONIndent(types.StakingPool(types.NewPool(sdk.ZeroInt())), "", "  ")
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test QueryUnstakedPool", args{
-			ctx: context,
-			k:   keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryUnstakedPool(tt.args.ctx, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryUnstakedPool() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryUnstakedPool() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

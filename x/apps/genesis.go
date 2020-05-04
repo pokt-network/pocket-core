@@ -45,6 +45,8 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 			panic(fmt.Sprintf("%s module account total does not equal the amount in each application account", types.StakedPoolName))
 		}
 	}
+	// add coins to the total supply
+	keeper.AccountsKeeper.SetSupply(ctx, keeper.AccountsKeeper.GetSupply(ctx).Inflate(stakedCoins))
 	// set the params set in the keeper
 	keeper.Paramstore.SetParamSet(ctx, &data.Params)
 }

@@ -108,12 +108,6 @@ func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
 				}
 				keeper.coinsFromStakedToUnstaked(context, tt.application)
 			default:
-				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100))
-				keeper.coinsFromStakedToUnstaked(context, tt.application)
-				if got := keeper.GetUnstakedTokens(context); !tt.amount.Equal(got) {
-					t.Errorf("KeeperCoins.FromStakedToUnstaked()= %v, want %v", got, tt.amount)
-				}
 			}
 		})
 	}

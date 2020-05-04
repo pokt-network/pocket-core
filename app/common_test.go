@@ -179,10 +179,10 @@ func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseA
 	app.mm.SetOrderBeginBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName)
 	app.mm.SetOrderEndBlockers(nodesTypes.ModuleName, appsTypes.ModuleName)
 	app.mm.SetOrderInitGenesis(
+		auth.ModuleName,
 		nodesTypes.ModuleName,
 		appsTypes.ModuleName,
 		pocketTypes.ModuleName,
-		auth.ModuleName,
 		gov.ModuleName,
 	)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())

@@ -120,25 +120,23 @@ func QuerySigningInfo(cdc *codec.Codec, tmNode rpcclient.Client, height int64, c
 	return signingInfo, nil
 }
 
-func QuerySupply(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (stakedCoins sdk.Int, unstakedCoins sdk.Int, err error) {
+func QuerySupply(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (stakedCoins sdk.Int, totalTokens sdk.Int, err error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
 	stakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryStakedPool), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}
-	unstakedPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryUnstakedPool), nil)
+	if err := cdc.UnmarshalJSON(stakedPoolBytes, &stakedCoins); err != nil {
+		return sdk.Int{}, sdk.Int{}, err
+	}
+	totalTokensBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf(customQuery, types.StoreKey, types.QueryTotalSupply), nil)
 	if err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}
-	var stakedPool types.StakingPool
-	if err := cdc.UnmarshalJSON(stakedPoolBytes, &stakedPool); err != nil {
+	if err := cdc.UnmarshalJSON(totalTokensBytes, &totalTokens); err != nil {
 		return sdk.Int{}, sdk.Int{}, err
 	}
-	var unstakedPool types.StakingPool
-	if err := cdc.UnmarshalJSON(unstakedPoolBytes, &unstakedPool); err != nil {
-		return sdk.Int{}, sdk.Int{}, err
-	}
-	return stakedPool.Tokens, unstakedPool.Tokens, nil
+	return
 }
 
 func QueryPOSParams(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (types.Params, error) {

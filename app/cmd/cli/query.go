@@ -594,12 +594,12 @@ var querySupply = &cobra.Command{
 				return
 			}
 		}
-		nodesStake, nodesUnstaked, err := app.QueryTotalNodeCoins(int64(height))
+		nodesStake, total, err := app.QueryTotalNodeCoins(int64(height))
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		appsStaked, appsUnstaked, err := app.QueryTotalAppCoins(int64(height))
+		appsStaked, err := app.QueryTotalAppCoins(int64(height))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -610,8 +610,7 @@ var querySupply = &cobra.Command{
 			return
 		}
 		totalStaked := nodesStake.Add(appsStaked).Add(dao)
-		totalUnstaked := nodesUnstaked.Add(appsUnstaked).Sub(nodesStake).Sub(appsStaked)
-		total := totalStaked.Add(totalUnstaked)
+		totalUnstaked := total.Sub(totalStaked)
 		fmt.Printf("Nodes Staked:\t%v\nApps Staked:\t%v\n"+
 			"Dao Supply:\t%v\nTotal Staked:\t%v\nTotalUnstaked:\t%v\nTotal Supply:\t%v\n\n",
 			nodesStake, appsStaked, dao, totalStaked, totalUnstaked, total,

@@ -11,6 +11,7 @@ const (
 	QueryStakedPool     = "stakedPool"
 	QueryUnstakedPool   = "unstakedPool"
 	QueryParameters     = "parameters"
+	QueryTotalSupply    = "total_supply"
 	QuerySigningInfo    = "signingInfo"
 	QuerySigningInfos   = "signingInfos"
 	QueryAccountBalance = "account_balance"
