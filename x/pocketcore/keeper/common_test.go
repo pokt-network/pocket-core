@@ -167,7 +167,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	defaultPocketParams := types.DefaultParams()
 	defaultPocketParams.SupportedBlockchains = []string{getTestSupportedBlockchain()}
 	keeper.SetParams(ctx, defaultPocketParams)
-	types.InitCache("data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100)
+	types.InitCache("data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session")
 	return ctx, vals, ap, accs, keeper, keys
 }
 
