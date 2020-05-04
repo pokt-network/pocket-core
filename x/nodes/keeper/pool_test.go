@@ -106,11 +106,6 @@ func TestCoinsFromStakedToUnstaked(t *testing.T) {
 				}
 				keeper.coinsFromStakedToUnstaked(context, test.validator)
 			default:
-				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, sdk.NewInt(100))
-				keeper.coinsFromStakedToUnstaked(context, test.validator)
-				unstaked := keeper.GetUnstakedTokens(context)
-				assert.True(t, test.amount.Equal(unstaked), "values do not match")
 			}
 		})
 	}

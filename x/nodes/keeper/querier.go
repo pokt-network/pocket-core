@@ -25,14 +25,14 @@ func NewQuerier(k Keeper) sdk.Querier {
 			return querySigningInfos(ctx, req, k)
 		case types.QueryStakedPool:
 			return queryStakedPool(ctx, k)
-		case types.QueryUnstakedPool:
-			return queryUnstakedPool(ctx, k)
 		case types.QueryAccountBalance:
 			return queryAccountBalance(ctx, req, k)
 		case types.QueryAccount:
 			return queryAccount(ctx, req, k)
 		case types.QueryParameters:
 			return queryParameters(ctx, k)
+		case types.QueryTotalSupply:
+			return queryTotalSupply(ctx, k)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown staking query endpoint")
 		}
@@ -119,22 +119,19 @@ func queryValidator(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.E
 
 func queryStakedPool(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
 	stakedTokens := k.GetStakedTokens(ctx)
-	pool := types.StakingPool(types.NewPool(stakedTokens))
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, stakedTokens)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
 	}
 	return res, nil
 }
 
-func queryUnstakedPool(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
-	unstakedTokens := k.GetUnstakedTokens(ctx)
-	pool := types.StakingPool(types.NewPool(unstakedTokens))
-	res, err := codec.MarshalJSONIndent(types.ModuleCdc, pool)
+func queryTotalSupply(ctx sdk.Ctx, k Keeper) ([]byte, sdk.Error) {
+	stakedTokens := k.TotalTokens(ctx)
+	res, err := codec.MarshalJSONIndent(types.ModuleCdc, stakedTokens)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("could not marshal result to JSON", err.Error()))
 	}
-
 	return res, nil
 }
 

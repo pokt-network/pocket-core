@@ -25,11 +25,6 @@ func (k Keeper) GetStakedTokens(ctx sdk.Ctx) sdk.Int {
 	return stakedPool.GetCoins().AmountOf(k.StakeDenom(ctx))
 }
 
-// GetUnstakedTokens returns the amount of not staked tokens
-func (k Keeper) GetUnstakedTokens(ctx sdk.Ctx) (unstakedTokens sdk.Int) {
-	return k.TotalTokens(ctx).Sub(k.GetStakedPool(ctx).GetCoins().AmountOf(k.StakeDenom(ctx)))
-}
-
 // TotalTokens staking tokens from the total supply
 func (k Keeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
 	return k.AccountsKeeper.GetSupply(ctx).GetTotal().AmountOf(k.StakeDenom(ctx))

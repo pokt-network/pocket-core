@@ -85,7 +85,7 @@ func QuerySigningInfo(height int64, addr string) (nodesTypes.ValidatorSigningInf
 	return nodes.QuerySigningInfo(Codec(), getTMClient(), height, a)
 }
 
-func QueryTotalNodeCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {
+func QueryTotalNodeCoins(height int64) (staked, total sdk.Int, err error) {
 	return nodes.QuerySupply(Codec(), getTMClient(), height)
 }
 
@@ -117,7 +117,7 @@ func QueryApp(addr string, height int64) (validator appsTypes.Application, err e
 	return apps.QueryApplication(Codec(), getTMClient(), a, height)
 }
 
-func QueryTotalAppCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {
+func QueryTotalAppCoins(height int64) (staked sdk.Int, err error) {
 	return apps.QuerySupply(Codec(), getTMClient(), height)
 }
 

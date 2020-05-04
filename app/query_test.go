@@ -233,11 +233,12 @@ func TestQuerySupply(t *testing.T) {
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		gotStaked, gotUnstaked, err := nodes.QuerySupply(memCodec(), memCli, 0)
+		gotStaked, total, err := nodes.QuerySupply(memCodec(), memCli, 0)
+		fmt.Println(err)
 		assert.Nil(t, err)
-		fmt.Println(gotStaked, gotUnstaked)
+		fmt.Println(gotStaked, total)
 		assert.True(t, gotStaked.Equal(sdk.NewInt(1000000000000000)))
-		assert.True(t, gotUnstaked.Equal(sdk.NewInt(2010001000)))
+		assert.True(t, total.Equal(sdk.NewInt(1000002010001000)))
 	}
 	cleanup()
 	stopCli()

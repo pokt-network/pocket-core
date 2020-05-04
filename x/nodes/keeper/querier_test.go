@@ -34,7 +34,7 @@ func Test_NewQuerier(t *testing.T) {
 	expectedValidatosPage := types.ValidatorsPage{Result: []types.Validator{}, Total: 1, Page: 1}
 	jsonresponse, _ := amino.MarshalJSONIndent(expectedValidatosPage, "", "  ")
 	jsonresponseSigningInfos, _ := amino.MarshalJSONIndent([]types.ValidatorSigningInfo{}, "", "  ")
-	jsonresponsestakedPool, _ := amino.MarshalJSONIndent(types.StakingPool(types.NewPool(sdk.ZeroInt())), "", "  ")
+	jsonresponsestakedPool, _ := amino.MarshalJSONIndent(sdk.ZeroInt(), "", "  ")
 	jsonresponseInt, _ := amino.MarshalJSONIndent("0", "", "  ")
 	jsonresponseForParams, _ := amino.MarshalJSONIndent(keeper.GetParams(context), "", "  ")
 	tests := []struct {
@@ -69,16 +69,6 @@ func Test_NewQuerier(t *testing.T) {
 				ctx:  context,
 				req:  abci.RequestQuery{Data: jsondata, Path: "stakedPool"},
 				path: []string{types.QueryStakedPool},
-				k:    keeper,
-			},
-			want:  jsonresponsestakedPool,
-			want1: nil,
-		}, {
-			name: "Test QueryUnstakedPool",
-			args: args{
-				ctx:  context,
-				req:  abci.RequestQuery{Data: jsondata, Path: "unstakedPool"},
-				path: []string{types.QueryUnstakedPool},
 				k:    keeper,
 			},
 			want:  jsonresponsestakedPool,
@@ -314,7 +304,7 @@ func Test_queryStakedPool(t *testing.T) {
 	}
 
 	context, _, keeper := createTestInput(t, true)
-	jsonresponse, _ := amino.MarshalJSONIndent(types.StakingPool(types.NewPool(sdk.ZeroInt())), "", "  ")
+	jsonresponse, _ := amino.MarshalJSONIndent(sdk.ZeroInt(), "", "  ")
 
 	tests := []struct {
 		name  string
@@ -335,39 +325,6 @@ func Test_queryStakedPool(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("queryStakedPool() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_queryUnstakedPool(t *testing.T) {
-	type args struct {
-		ctx sdk.Context
-		k   Keeper
-	}
-
-	context, _, keeper := createTestInput(t, true)
-	jsonresponse, _ := amino.MarshalJSONIndent(types.StakingPool(types.NewPool(sdk.ZeroInt())), "", "  ")
-
-	tests := []struct {
-		name  string
-		args  args
-		want  []byte
-		want1 sdk.Error
-	}{
-		{"Test QueryUnstakedPool", args{
-			ctx: context,
-			k:   keeper,
-		}, jsonresponse, nil},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := queryUnstakedPool(tt.args.ctx, tt.args.k)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("queryUnstakedPool() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("queryUnstakedPool() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

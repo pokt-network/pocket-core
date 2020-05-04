@@ -71,6 +71,8 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 			panic(fmt.Sprintf("%s module account total does not equal the amount in each validator account", types.StakedPoolName))
 		}
 	}
+	// add coins to the total supply
+	keeper.AccountKeeper.SetSupply(ctx, keeper.AccountKeeper.GetSupply(ctx).Inflate(stakedCoins))
 	// don't need to run Tendermint updates if we exported
 	if data.Exported {
 		for _, lv := range data.PrevStateValidatorPowers {

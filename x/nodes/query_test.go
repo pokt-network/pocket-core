@@ -230,16 +230,13 @@ func TestQuerySupply(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotStakedCoins, gotUnstakedCoins, err := QuerySupply(tt.args.cdc, tt.args.tmNode, tt.args.height)
+			gotStakedCoins, _, err := QuerySupply(tt.args.cdc, tt.args.tmNode, tt.args.height)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QuerySupply() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotStakedCoins, tt.wantStakedCoins) {
 				t.Errorf("QuerySupply() gotStakedCoins = %v, want %v", gotStakedCoins, tt.wantStakedCoins)
-			}
-			if !reflect.DeepEqual(gotUnstakedCoins, tt.wantUnstakedCoins) {
-				t.Errorf("QuerySupply() gotUnstakedCoins = %v, want %v", gotUnstakedCoins, tt.wantUnstakedCoins)
 			}
 		})
 	}

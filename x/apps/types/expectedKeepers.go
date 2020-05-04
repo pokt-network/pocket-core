@@ -16,6 +16,8 @@ type PosKeeper interface {
 type AuthKeeper interface {
 	// get total supply of tokens
 	GetSupply(ctx sdk.Ctx) authexported.SupplyI
+	// set total supply of tokens
+	SetSupply(ctx sdk.Ctx, supply authexported.SupplyI)
 	// get the address of a module account
 	GetModuleAddress(name string) sdk.Address
 	// get the module account structure
