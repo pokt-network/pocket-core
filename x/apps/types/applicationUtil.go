@@ -24,8 +24,8 @@ func (a Applications) String() (out string) {
 
 // String returns a human readable string representation of a application.
 func (a Application) String() string {
-	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nChains:\t\t\t%v\nMaxRelays:\t\t%d\nStatus:\t\t\t%s\nTokens:\t\t\t%s\nUnstaking Time:\t%v\n----\n",
-		a.Address, a.PublicKey.RawString(), a.Jailed, a.Chains, a.MaxRelays.Int64(), a.Status, a.StakedTokens, a.UnstakingCompletionTime,
+	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nChains:\t\t\t%v\nMaxRelays:\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\nUnstaking Time:\t%v\n----\n",
+		a.Address, a.PublicKey.RawString(), a.Jailed, a.Chains, a.MaxRelays, a.Status, a.StakedTokens, a.UnstakingCompletionTime,
 	)
 }
 

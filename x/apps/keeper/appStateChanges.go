@@ -122,7 +122,7 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Ctx, application types.Applic
 	// delete the application from the unstaking queue
 	k.deleteUnstakingApplication(ctx, application)
 	// amount unstaked = stakedTokens
-	amount := sdk.NewInt(application.StakedTokens.Int64())
+	amount := application.StakedTokens
 	// send the tokens from staking module account to application account
 	k.coinsFromStakedToUnstaked(ctx, application)
 	// removed the staked tokens field from application structure

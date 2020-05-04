@@ -231,7 +231,7 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Ctx, validator types.Validator)
 	// delete the validator from the unstaking queue
 	k.deleteUnstakingValidator(ctx, validator)
 	// amount unstaked = stakedTokens
-	amount := sdk.NewInt(validator.StakedTokens.Int64())
+	amount := validator.StakedTokens
 	// send the tokens from staking module account to validator account
 	k.coinsFromStakedToUnstaked(ctx, validator)
 	// removed the staked tokens field from validator structure
