@@ -402,12 +402,12 @@ func SupportedChains(w http.ResponseWriter, r *http.Request, ps httprouter.Param
 }
 
 type querySupplyResponse struct {
-	NodeStaked    int64    `json:"node_staked"`
-	AppStaked     int64    `json:"app_staked"`
-	Dao           int64    `json:"dao"`
-	TotalStaked   *big.Int `json:"total_staked"`
-	TotalUnstaked *big.Int `json:"total_unstaked"`
-	Total         *big.Int `json:"total"`
+	NodeStaked    string `json:"node_staked"`
+	AppStaked     string `json:"app_staked"`
+	Dao           string `json:"dao"`
+	TotalStaked   string `json:"total_staked"`
+	TotalUnstaked string `json:"total_unstaked"`
+	Total         string `json:"total"`
 }
 
 func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -434,12 +434,12 @@ func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	totalStaked := nodesStake.Add(appsStaked).Add(dao)
 	totalUnstaked := total.Sub(totalStaked)
 	res, err := json.MarshalIndent(&querySupplyResponse{
-		NodeStaked:    nodesStake.Int64(),
-		AppStaked:     appsStaked.Int64(),
-		Dao:           dao.Int64(),
-		TotalStaked:   totalStaked.BigInt(),
-		TotalUnstaked: totalUnstaked.BigInt(),
-		Total:         total.BigInt(),
+		NodeStaked:    nodesStake.String(),
+		AppStaked:     appsStaked.String(),
+		Dao:           dao.String(),
+		TotalStaked:   totalStaked.BigInt().String(),
+		TotalUnstaked: totalUnstaked.BigInt().String(),
+		Total:         total.BigInt().String(),
 	}, "", "  ")
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())

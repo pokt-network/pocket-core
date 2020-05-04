@@ -205,7 +205,7 @@ func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 }
 
 func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfChallenges sdk.Int) {
-	ctx.Logger().Error(fmt.Sprintf("Replay Attack Detected: By %s, for %d proofs", address.String(), numberOfChallenges.Int64()))
+	ctx.Logger().Error(fmt.Sprintf("Replay Attack Detected: By %s, for %v proofs", address.String(), numberOfChallenges))
 	k.posKeeper.BurnForChallenge(ctx, numberOfChallenges.Mul(sdk.NewInt(k.ReplayAttackBurnMultiplier(ctx))), address)
 }
 
