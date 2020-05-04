@@ -25,12 +25,12 @@ type CacheStorage struct {
 }
 
 // "InitCache" - Initializes the cache for sessions and evidence
-func InitCache(evidenceDir, sessionDir string, sessionDBType, evidenceDBType db.DBBackendType, maxEvidenceEntries, maxSessionEntries int) {
+func InitCache(evidenceDir, sessionDir string, sessionDBType, evidenceDBType db.DBBackendType, maxEvidenceEntries, maxSessionEntries int, evidenceDBName, sessionDBName string) {
 	cacheOnce.Do(func() {
 		globalEvidenceCache = new(CacheStorage)
 		globalSessionCache = new(CacheStorage)
-		globalEvidenceCache.Init(evidenceDir, "evidence", evidenceDBType, maxEvidenceEntries)
-		globalSessionCache.Init(sessionDir, "session", sessionDBType, maxSessionEntries)
+		globalEvidenceCache.Init(evidenceDir, evidenceDBName, evidenceDBType, maxEvidenceEntries)
+		globalSessionCache.Init(sessionDir, sessionDBName, sessionDBType, maxSessionEntries)
 	})
 }
 
