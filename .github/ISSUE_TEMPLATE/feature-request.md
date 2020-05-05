@@ -3,7 +3,7 @@ name: Feature request
 about: Request a feature for Pocket Core
 title: "[FEATURE REQUEST]"
 labels: enhancement
-assignees: andrewnguyen22
+assignees: ''
 
 ---
 
