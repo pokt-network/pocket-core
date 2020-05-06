@@ -55,10 +55,6 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 	cliCtx = util.NewCLIContext(tmNode, fromAddr, passphrase).WithCodec(cdc)
 	cliCtx.BroadcastMode = util.BroadcastSync
 	cliCtx.PrivateKey = privkey
-	err = cliCtx.EnsureExists(fromAddr)
-	if err != nil {
-		panic(err)
-	}
 	account, err := cliCtx.GetAccount(fromAddr)
 	if err != nil {
 		panic(err)
