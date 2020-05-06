@@ -2,12 +2,13 @@ package types
 
 import (
 	"fmt"
-	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/types"
-	"github.com/tendermint/go-amino"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/posmint/types"
+	"github.com/tendermint/go-amino"
 )
 
 func TestDefaultParams(t *testing.T) {
@@ -17,19 +18,20 @@ func TestDefaultParams(t *testing.T) {
 	}{
 		{"Default Test",
 			Params{
-				UnstakingTime:           DefaultUnstakingTime,
-				MaxValidators:           DefaultMaxValidators,
-				StakeMinimum:            DefaultMinStake,
-				StakeDenom:              types.DefaultStakeDenom,
-				MaxEvidenceAge:          DefaultMaxEvidenceAge,
-				SignedBlocksWindow:      DefaultSignedBlocksWindow,
-				MinSignedPerWindow:      DefaultMinSignedPerWindow,
-				DowntimeJailDuration:    DefaultDowntimeJailDuration,
-				SlashFractionDoubleSign: DefaultSlashFractionDoubleSign,
-				SlashFractionDowntime:   DefaultSlashFractionDowntime,
-				SessionBlockFrequency:   DefaultSessionBlocktime,
-				DAOAllocation:           DefaultDAOAllocation,
-				ProposerAllocation:      DefaultProposerAllocation,
+				UnstakingTime:            DefaultUnstakingTime,
+				MaxValidators:            DefaultMaxValidators,
+				StakeMinimum:             DefaultMinStake,
+				StakeDenom:               types.DefaultStakeDenom,
+				MaxEvidenceAge:           DefaultMaxEvidenceAge,
+				SignedBlocksWindow:       DefaultSignedBlocksWindow,
+				MinSignedPerWindow:       DefaultMinSignedPerWindow,
+				DowntimeJailDuration:     DefaultDowntimeJailDuration,
+				SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
+				SlashFractionDowntime:    DefaultSlashFractionDowntime,
+				SessionBlockFrequency:    DefaultSessionBlocktime,
+				DAOAllocation:            DefaultDAOAllocation,
+				ProposerAllocation:       DefaultProposerAllocation,
+				RelaysToTokensMultiplier: DefaultRelaysToTokensMultiplier,
 			},
 		}}
 	for _, tt := range tests {

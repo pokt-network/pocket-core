@@ -3,6 +3,11 @@ package rpc
 import (
 	"context"
 	"encoding/json"
+	"io"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/pokt-network/pocket-core/app"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
@@ -37,10 +42,6 @@ import (
 	cTypes "github.com/tendermint/tendermint/rpc/core/types"
 	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"io"
-	"os"
-	"testing"
-	"time"
 )
 
 func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
@@ -530,6 +531,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 		acl.SetOwner("pos/MinSignedPerWindow", kp.GetAddress())
 		acl.SetOwner("pos/StakeMinimum", kp.GetAddress())
 		acl.SetOwner("pos/UnstakingTime", kp.GetAddress())
+		acl.SetOwner("pos/RelaysToTokensMultiplier", kp.GetAddress())
 		acl.SetOwner("application/BaseRelaysPerPOKT", kp.GetAddress())
 		acl.SetOwner("pocketcore/ClaimSubmissionWindow", kp.GetAddress())
 		acl.SetOwner("pos/DAOAllocation", kp.GetAddress())

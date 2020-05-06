@@ -12,16 +12,17 @@ import (
 // POS params default values
 const (
 	// DefaultParamspace for params keeper
-	DefaultParamspace                  = ModuleName
-	DefaultUnstakingTime               = time.Hour * 24 * 7 * 3
-	DefaultMaxValidators        uint64 = 100000
-	DefaultMinStake             int64  = 1000000
-	DefaultMaxEvidenceAge              = 60 * 2 * time.Second
-	DefaultSignedBlocksWindow          = int64(100)
-	DefaultDowntimeJailDuration        = 60 * 10 * time.Second
-	DefaultSessionBlocktime            = 25
-	DefaultProposerAllocation          = 1
-	DefaultDAOAllocation               = 10
+	DefaultParamspace                      = ModuleName
+	DefaultUnstakingTime                   = time.Hour * 24 * 7 * 3
+	DefaultMaxValidators            uint64 = 100000
+	DefaultMinStake                 int64  = 1000000
+	DefaultRelaysToTokensMultiplier int64  = 1000
+	DefaultMaxEvidenceAge                  = 60 * 2 * time.Second
+	DefaultSignedBlocksWindow              = int64(100)
+	DefaultDowntimeJailDuration            = 60 * 10 * time.Second
+	DefaultSessionBlocktime                = 25
+	DefaultProposerAllocation              = 1
+	DefaultDAOAllocation                   = 10
 )
 
 // nolint - Keys for parameter access
@@ -36,6 +37,7 @@ var (
 	KeyDowntimeJailDuration        = []byte("DowntimeJailDuration")
 	KeySlashFractionDoubleSign     = []byte("SlashFractionDoubleSign")
 	KeySlashFractionDowntime       = []byte("SlashFractionDowntime")
+	KeyRelaysToTokensMultiplier    = []byte("RelaysToTokensMultiplier")
 	KeySessionBlock                = []byte("BlocksPerSession")
 	KeyDAOAllocation               = []byte("DAOAllocation")
 	KeyProposerAllocation          = []byte("ProposerPercentage")
@@ -49,13 +51,14 @@ var _ sdk.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
-	UnstakingTime         time.Duration `json:"unstaking_time" yaml:"unstaking_time"`                   // how much time must pass between the begin_unstaking_tx and the node going to -> unstaked status
-	MaxValidators         uint64        `json:"max_validators" yaml:"max_validators"`                   // maximum number of validators in the network at any given block
-	StakeDenom            string        `json:"stake_denom" yaml:"stake_denom"`                         // the monetary denomination of the coins in the network `uPOKT` or `uAtom` or `Wei`
-	StakeMinimum          int64         `json:"stake_minimum" yaml:"stake_minimum"`                     // minimum amount of `uPOKT` needed to stake in the network as a node
-	SessionBlockFrequency int64         `json:"session_block_frequency" yaml:"session_block_frequency"` // how many blocks are in a session (pocket network unit)
-	DAOAllocation         int64         `json:"dao_allocation" yaml:"dao_allocation"`
-	ProposerAllocation    int64         `json:"proposer_allocation" yaml:"proposer_allocation"`
+	UnstakingTime            time.Duration `json:"unstaking_time" yaml:"unstaking_time"`                   // how much time must pass between the begin_unstaking_tx and the node going to -> unstaked status
+	MaxValidators            uint64        `json:"max_validators" yaml:"max_validators"`                   // maximum number of validators in the network at any given block
+	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                         // the monetary denomination of the coins in the network `uPOKT` or `uAtom` or `Wei`
+	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`                     // minimum amount of `uPOKT` needed to stake in the network as a node
+	SessionBlockFrequency    int64         `json:"session_block_frequency" yaml:"session_block_frequency"` // how many blocks are in a session (pocket network unit)
+	DAOAllocation            int64         `json:"dao_allocation" yaml:"dao_allocation"`
+	ProposerAllocation       int64         `json:"proposer_allocation" yaml:"proposer_allocation"`
+	RelaysToTokensMultiplier int64         `json:"relays_to_tokens_multiplier" yaml:"relays_to_tokens_multiplier"`
 	// slashing params
 	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`                     // maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)
 	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`             // window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks
@@ -81,25 +84,27 @@ func (p *Params) ParamSetPairs() sdk.ParamSetPairs {
 		{Key: KeySessionBlock, Value: &p.SessionBlockFrequency},
 		{Key: KeyDAOAllocation, Value: &p.DAOAllocation},
 		{Key: KeyProposerAllocation, Value: &p.ProposerAllocation},
+		{Key: KeyRelaysToTokensMultiplier, Value: &p.RelaysToTokensMultiplier},
 	}
 }
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		UnstakingTime:           DefaultUnstakingTime,
-		MaxValidators:           DefaultMaxValidators,
-		StakeMinimum:            DefaultMinStake,
-		StakeDenom:              sdk.DefaultStakeDenom,
-		MaxEvidenceAge:          DefaultMaxEvidenceAge,
-		SignedBlocksWindow:      DefaultSignedBlocksWindow,
-		MinSignedPerWindow:      DefaultMinSignedPerWindow,
-		DowntimeJailDuration:    DefaultDowntimeJailDuration,
-		SlashFractionDoubleSign: DefaultSlashFractionDoubleSign,
-		SlashFractionDowntime:   DefaultSlashFractionDowntime,
-		SessionBlockFrequency:   DefaultSessionBlocktime,
-		DAOAllocation:           DefaultDAOAllocation,
-		ProposerAllocation:      DefaultProposerAllocation,
+		UnstakingTime:            DefaultUnstakingTime,
+		MaxValidators:            DefaultMaxValidators,
+		StakeMinimum:             DefaultMinStake,
+		StakeDenom:               sdk.DefaultStakeDenom,
+		MaxEvidenceAge:           DefaultMaxEvidenceAge,
+		SignedBlocksWindow:       DefaultSignedBlocksWindow,
+		MinSignedPerWindow:       DefaultMinSignedPerWindow,
+		DowntimeJailDuration:     DefaultDowntimeJailDuration,
+		SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
+		SlashFractionDowntime:    DefaultSlashFractionDowntime,
+		SessionBlockFrequency:    DefaultSessionBlocktime,
+		DAOAllocation:            DefaultDAOAllocation,
+		ProposerAllocation:       DefaultProposerAllocation,
+		RelaysToTokensMultiplier: DefaultRelaysToTokensMultiplier,
 	}
 }
 

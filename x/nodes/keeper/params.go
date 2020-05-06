@@ -87,7 +87,9 @@ func (k Keeper) SlashFractionDowntime(ctx sdk.Ctx) (res sdk.Dec) {
 }
 
 func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Ctx) sdk.Int {
-	return sdk.NewInt(1000) // todo parameterize
+	var multiplier int64
+	k.Paramstore.Get(ctx, types.KeyRelaysToTokensMultiplier, &multiplier)
+	return sdk.NewInt(multiplier)
 }
 
 func (k Keeper) NodeCutOfReward(ctx sdk.Ctx) sdk.Int {
