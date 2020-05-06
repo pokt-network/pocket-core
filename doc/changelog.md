@@ -5,6 +5,8 @@
 - Log on debug level upon failure deleting evidence
 - Replace wealdtech/go-merkletree/crypto for golang.org/x/crypto
 - Add RelaysToTokens as pamater for the nodes module
+- removed return on loop from unstakeAllMaturedValidators
+- Remove claim from world state after handled replay attack
 
 ## RC-0.3.0
 - Added governance module from posmint
