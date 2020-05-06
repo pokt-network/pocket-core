@@ -1,5 +1,7 @@
 ## RC-0.4.0
 - Separated Validators By Network ID
+- Remove EnsureExists from app & node modules, redundnacy with GetAccounts
+- Close open connections on TMClients
 
 ## RC-0.3.0
 - Added governance module from posmint
