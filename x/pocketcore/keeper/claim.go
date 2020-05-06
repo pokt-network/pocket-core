@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -35,13 +36,17 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		evidenceType := evidence.Proofs[0].EvidenceType()
 		// if the evidence length is less than 5, it would not satisfy our merkle tree needs
 		if evidenceLength < 5 {
-			pc.DeleteEvidence(evidence.SessionHeader, evidenceType)
+			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
 			continue
 		}
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid/challenged for unsupported blockchains
 		if !k.IsPocketSupportedBlockchain(ctx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) && evidence.NumOfProofs > 0 {
 			ctx.Logger().Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
-			pc.DeleteEvidence(evidence.SessionHeader, evidenceType)
+			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
 			continue
 		}
 		// check the current state to see if the unverified evidence has already been sent and processed (if so, then skip this evidence)
@@ -50,7 +55,9 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		}
 		// if the claim is mature, delete it because we cannot submit a mature claim
 		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
-			pc.DeleteEvidence(evidence.SessionHeader, evidenceType)
+			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
 			continue
 		}
 		// generate the merkle root for this evidence
