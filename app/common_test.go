@@ -347,6 +347,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 var testPCA *memoryPCApp
 
 func memCodec() *codec.Codec {
+
 	if memCDC == nil {
 		memCDC = codec.New()
 		module.NewBasicManager(
@@ -568,6 +569,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 		acl.SetOwner("pos/MinSignedPerWindow", kp.GetAddress())
 		acl.SetOwner("pos/StakeMinimum", kp.GetAddress())
 		acl.SetOwner("pos/UnstakingTime", kp.GetAddress())
+		acl.SetOwner("pos/RelaysToTokensMultiplier", kp.GetAddress())
 		acl.SetOwner("application/BaseRelaysPerPOKT", kp.GetAddress())
 		acl.SetOwner("pocketcore/ClaimSubmissionWindow", kp.GetAddress())
 		acl.SetOwner("pos/DAOAllocation", kp.GetAddress())
