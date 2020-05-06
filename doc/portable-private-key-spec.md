@@ -15,7 +15,7 @@ and mix them with the JSON format that is lightweight and easy readable by human
 Ensuring a safe and portable store for private key.
 
 ### PPK Example
-````
+````json
 {
  "kdf":"bcrypt",
  "salt":"8AA85775977952115075E68278C070A6",
@@ -83,14 +83,11 @@ PPK must contain the following fields:
 ### How to import a private key using PPK format
 
 1) Unmarshall or read the PPK JSON file to be able to use the values stored.
-2) Validate the PPK comply with these validations
-    >**kdf** value equal to `"bcrypt"`
-    >
-    >**salt** value is not `""` (empty)
-    >
-    >**salt** value can be decoded from `hex(base16)`
-    >
-    >**ciphertext** can be decoded from `base64`
+2) Validate the PPK passes these validations
+    - **kdf** value equals to `"bcrypt"`
+    - **salt** value is not `""` (empty)
+    - **salt** value can be decoded from `hex(base16)`
+    - **ciphertext** can be decoded from `base64`
 3) Using base64 decoding, "Unarmor" the **ciphertext** armored string and store it as the `encryptedBytes`
 4) using the decoded **salt** value, the **secparam** as `cost` and the encryption `password` we generate a `hash` using bcrypt
 5) generate a sha256 (32 bytes) from the `hash` generated with bcrypt, this will be used as the decryption `key`
