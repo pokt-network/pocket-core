@@ -173,36 +173,6 @@ func TestMint(t *testing.T) {
 	}
 }
 
-func TestMintValidatorAwards(t *testing.T) {
-	validatorAddress := getRandomValidatorAddress()
-	tests := []struct {
-		name     string
-		amount   sdk.Int
-		expected string
-		address  sdk.Address
-		panics   bool
-	}{
-		{
-			name:     "mints a coin",
-			amount:   sdk.NewInt(90),
-			expected: fmt.Sprintf("was successfully minted to %s", validatorAddress.String()),
-			address:  validatorAddress,
-			panics:   false,
-		},
-	}
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			keeper.setValidatorAward(context, test.amount, test.address)
-
-			keeper.mintNodeRelayRewards(context)
-			coins := keeper.AccountKeeper.GetCoins(context, sdk.Address(test.address))
-			expected := keeper.NodeCutOfReward(context).Mul(test.amount).Quo(sdk.NewInt(100))
-			assert.True(t, sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), expected)).IsEqual(coins), "coins should match")
-		})
-	}
-}
-
 func TestKeeper_GetTotalCustomValidatorAwards(t *testing.T) {
 	type fields struct {
 		keeper Keeper
