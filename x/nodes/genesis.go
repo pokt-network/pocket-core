@@ -31,6 +31,7 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 		// set the validators from the data
 		keeper.SetValidator(ctx, validator)
 		keeper.SetStakedValidator(ctx, validator)
+		keeper.SetStakedValidatorByChains(ctx, validator)
 		// ensure there's a signing info entry for the validator (used in slashing)
 		_, found := keeper.GetValidatorSigningInfo(ctx, validator.GetAddress())
 		if !found {

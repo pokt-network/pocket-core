@@ -55,6 +55,26 @@ func TestGetAndSetStakedValidator(t *testing.T) {
 	}
 }
 
+func TestGetSetDeleteValidatorsByChain(t *testing.T) {
+	stakedValidator := getStakedValidator()
+	context, _, keeper := createTestInput(t, true)
+	keeper.SetValidator(context, stakedValidator)
+	keeper.SetStakedValidatorByChains(context, stakedValidator)
+	vals := keeper.GetValidatorsByChain(context, stakedValidator.Chains[0])
+	assert.Contains(t, vals, stakedValidator)
+	vals = keeper.GetValidatorsByChain(context, stakedValidator.Chains[1])
+	assert.Contains(t, vals, stakedValidator)
+	vals = keeper.GetValidatorsByChain(context, stakedValidator.Chains[2])
+	assert.Contains(t, vals, stakedValidator)
+	keeper.deleteValidatorForChains(context, stakedValidator)
+	vals = keeper.GetValidatorsByChain(context, stakedValidator.Chains[0])
+	assert.NotContains(t, vals, stakedValidator)
+	vals = keeper.GetValidatorsByChain(context, stakedValidator.Chains[1])
+	assert.NotContains(t, vals, stakedValidator)
+	vals = keeper.GetValidatorsByChain(context, stakedValidator.Chains[2])
+	assert.NotContains(t, vals, stakedValidator)
+}
+
 func TestRemoveStakedValidatorTokens(t *testing.T) {
 	stakedValidator := getStakedValidator()
 

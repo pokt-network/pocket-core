@@ -132,6 +132,8 @@ func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sd
 	k.SetValidator(ctx, validator)
 	// save in the staked store
 	k.SetStakedValidator(ctx, validator)
+	// save in the network id stores for quick session generations
+	k.SetStakedValidatorByChains(ctx, validator)
 	// ensure there's a signing info entry for the validator (used in slashing)
 	_, found := k.GetValidatorSigningInfo(ctx, validator.GetAddress())
 	if !found {
@@ -199,6 +201,8 @@ func (k Keeper) BeginUnstakingValidator(ctx sdk.Ctx, validator types.Validator) 
 	params := k.GetParams(ctx)
 	// delete the validator from the staking set, as it is technically staked but not going to participate
 	k.deleteValidatorFromStakingSet(ctx, validator)
+	// delete the validator from each individual chains set
+	k.deleteValidatorForChains(ctx, validator)
 	// set the status
 	validator = validator.UpdateStatus(sdk.Unstaking)
 	// set the unstaking completion time and completion height appropriately
@@ -262,6 +266,8 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sd
 	switch validator.Status {
 	case sdk.Staked:
 		k.deleteValidatorFromStakingSet(ctx, validator)
+		// delete the validator from each individual chains set
+		k.deleteValidatorForChains(ctx, validator)
 	case sdk.Unstaking:
 		k.deleteUnstakingValidator(ctx, validator)
 	default:
