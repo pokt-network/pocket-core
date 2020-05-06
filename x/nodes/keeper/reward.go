@@ -5,7 +5,7 @@ import (
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/tendermint/go-amino"
+	govTypes "github.com/pokt-network/posmint/x/gov/types"
 )
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
@@ -20,6 +20,10 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address
 func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	feesCollector := k.getFeePool(ctx)
 	feesCollected := feesCollector.GetCoins().AmountOf(sdk.DefaultStakeDenom)
+	// check for zero fees
+	if feesCollected.IsZero() {
+		return
+	}
 	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%
 	daoAllocation := sdk.NewDec(k.DAOAllocation(ctx))
 	proposerAllocation := sdk.NewDec(k.ProposerAllocation(ctx))
@@ -32,48 +36,14 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	proposerCut := feesCollected.Sub(daoCut)
 	// send to the two parties
 	feeAddr := feesCollector.GetAddress()
-	k.AccountKeeper.SendCoinsFromAccountToModule(ctx, feeAddr, "", sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
-	k.AccountKeeper.SendCoins(ctx, feeAddr, previousProposer, sdk.NewCoins(sdk.NewCoin(proposerCut, sdk.DefaultStakeDenom)))
-}
-
-// GetTotalCustomValidatorAwards - Retrieve Custom Validator awards
-func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Ctx) sdk.Int {
-	total := sdk.ZeroInt()
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		amount := sdk.Int{}
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &amount)
-		total = total.Add(amount)
+	err := k.AccountKeeper.SendCoinsFromAccountToModule(ctx, feeAddr, govTypes.DAOAccountName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, daoCut)))
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the dao: %s", daoCut.String(), err.Error()))
 	}
-	return total
-}
-
-// setValidatorAward - Store functions used to keep track of a validator award
-func (k Keeper) setValidatorAward(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.KeyForValidatorAward(address)
-	val := amino.MustMarshalBinaryBare(amount)
-	store.Set(key, val)
-}
-
-// getValidatorAward - Retrieve validator award
-func (k Keeper) getValidatorAward(ctx sdk.Ctx, address sdk.Address) (coins sdk.Int, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.KeyForValidatorAward(address))
-	if value == nil {
-		return sdk.ZeroInt(), false
+	err = k.AccountKeeper.SendCoins(ctx, feeAddr, previousProposer, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s", proposerCut.String(), err.Error()))
 	}
-	k.cdc.MustUnmarshalBinaryBare(value, &coins)
-	found = true
-	return coins, true
-}
-
-// deleteValidatorAward - Remove vallidaor award
-func (k Keeper) deleteValidatorAward(ctx sdk.Ctx, address sdk.Address) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyForValidatorAward(address))
 }
 
 // "mint" - takes an amount and mints it to the node staking pool, then sends the coins to the address
@@ -110,14 +80,4 @@ func (k Keeper) SetPreviousProposer(ctx sdk.Ctx, consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(consAddr)
 	store.Set(types.ProposerKey, b)
-}
-
-// getProposerAllocation - Retrieve proposer allocation
-func (k Keeper) getProposerAllocaiton(ctx sdk.Ctx) sdk.Int {
-	return sdk.NewInt(k.ProposerAllocation(ctx))
-}
-
-// getDAOAllocation - Retrieve DAO allocation
-func (k Keeper) getDAOAllocation(ctx sdk.Ctx) sdk.Int {
-	return sdk.NewInt(k.DAOAllocation(ctx))
 }
