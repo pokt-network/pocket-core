@@ -18,147 +18,233 @@ import (
 
 // zero for height = latest
 func QueryBlock(height *int64) (blockJSON []byte, err error) {
-	return nodes.QueryBlock(getTMClient(), height)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err := nodes.QueryBlock(tmClient, height)
+	return res, err
 }
 
-func QueryTx(hash string) (*core_types.ResultTx, error) {
-	return nodes.QueryTransaction(getTMClient(), hash)
+func QueryTx(hash string) (res *core_types.ResultTx, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryTransaction(tmClient, hash)
+	return res, err
 }
 
-func QueryAccountTxs(addr string, page, perPage int, prove bool) (*core_types.ResultTxSearch, error) {
-	return nodes.QueryAccountTransactions(getTMClient(), addr, page, perPage, false, prove)
+func QueryAccountTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryAccountTransactions(tmClient, addr, page, perPage, false, prove)
+	return res, err
+}
+func QueryRecipientTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryAccountTransactions(tmClient, addr, page, perPage, true, prove)
+	return res, err
 }
 
-func QueryRecipientTxs(addr string, page, perPage int, prove bool) (*core_types.ResultTxSearch, error) {
-	return nodes.QueryAccountTransactions(getTMClient(), addr, page, perPage, true, prove)
+func QueryBlockTxs(height int64, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryBlockTransactions(tmClient, height, page, perPage, prove)
+	return
 }
 
-func QueryBlockTxs(height int64, page, perPage int, prove bool) (*core_types.ResultTxSearch, error) {
-	return nodes.QueryBlockTransactions(getTMClient(), height, page, perPage, prove)
+func QueryHeight() (res int64, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryChainHeight(tmClient)
+	return
 }
 
-func QueryHeight() (chainHeight int64, err error) {
-	return nodes.QueryChainHeight(getTMClient())
+func QueryNodeStatus() (res *core_types.ResultStatus, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryNodeStatus(tmClient)
+	return
 }
 
-func QueryNodeStatus() (*core_types.ResultStatus, error) {
-	return nodes.QueryNodeStatus(getTMClient())
-}
-
-func QueryBalance(addr string, height int64) (balance sdk.Int, err error) {
+func QueryBalance(addr string, height int64) (res sdk.Int, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return sdk.NewInt(0), err
 	}
-	return nodes.QueryAccountBalance(Codec(), getTMClient(), a, height)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryAccountBalance(Codec(), tmClient, a, height)
+	return
 }
 
-func QueryAccount(addr string, height int64) (account *auth.BaseAccount, err error) {
+func QueryAccount(addr string, height int64) (res *auth.BaseAccount, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	return nodes.QueryAccount(Codec(), getTMClient(), a, height)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryAccount(Codec(), tmClient, a, height)
+	return
 }
 
-func QueryNodes(height int64, opts nodesTypes.QueryValidatorsParams) (nodesTypes.ValidatorsPage, error) {
-	return nodes.QueryValidators(Codec(), getTMClient(), height, opts)
+func QueryNodes(height int64, opts nodesTypes.QueryValidatorsParams) (res nodesTypes.ValidatorsPage, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryValidators(Codec(), tmClient, height, opts)
+	return
 }
 
-func QueryNode(addr string, height int64) (validator nodesTypes.Validator, err error) {
+func QueryNode(addr string, height int64) (res nodesTypes.Validator, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
-		return validator, err
+		return res, err
 	}
-	return nodes.QueryValidator(Codec(), getTMClient(), a, height)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryValidator(Codec(), tmClient, a, height)
+	return
 }
 
-func QueryNodeParams(height int64) (params nodesTypes.Params, err error) {
-	return nodes.QueryPOSParams(Codec(), getTMClient(), height)
+func QueryNodeParams(height int64) (res nodesTypes.Params, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QueryPOSParams(Codec(), tmClient, height)
+	return
 }
 
-func QuerySigningInfo(height int64, addr string) (nodesTypes.ValidatorSigningInfo, error) {
+func QuerySigningInfo(height int64, addr string) (res nodesTypes.ValidatorSigningInfo, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nodesTypes.ValidatorSigningInfo{}, err
 	}
-	return nodes.QuerySigningInfo(Codec(), getTMClient(), height, a)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = nodes.QuerySigningInfo(Codec(), tmClient, height, a)
+	return
 }
 
-func QueryTotalNodeCoins(height int64) (staked, total sdk.Int, err error) {
-	return nodes.QuerySupply(Codec(), getTMClient(), height)
+func QueryTotalNodeCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	staked, unstaked, err = nodes.QuerySupply(Codec(), tmClient, height)
+	return
 }
 
-func QueryDaoBalance(height int64) (daoCoins sdk.Int, err error) {
-	return gov.QueryDAO(Codec(), getTMClient(), height)
+func QueryDaoBalance(height int64) (res sdk.Int, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = gov.QueryDAO(Codec(), tmClient, height)
+	return
 }
 
-func QueryDaoOwner(height int64) (daoOwner sdk.Address, err error) {
-	return gov.QueryDAOOwner(Codec(), getTMClient(), height)
+func QueryDaoOwner(height int64) (res sdk.Address, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = gov.QueryDAOOwner(Codec(), tmClient, height)
+	return
 }
 
-func QueryUpgrade(height int64) (upgrade types.Upgrade, err error) {
-	return gov.QueryUpgrade(Codec(), getTMClient(), height)
+func QueryUpgrade(height int64) (res types.Upgrade, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = gov.QueryUpgrade(Codec(), tmClient, height)
+	return
 }
 
-func QueryACL(height int64) (acl types.ACL, err error) {
-	return gov.QueryACL(Codec(), getTMClient(), height)
+func QueryACL(height int64) (res types.ACL, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = gov.QueryACL(Codec(), tmClient, height)
+	return
 }
 
-func QueryApps(height int64, opts appsTypes.QueryApplicationsWithOpts) (appsTypes.ApplicationsPage, error) {
-	return apps.QueryApplications(Codec(), getTMClient(), height, opts)
+func QueryApps(height int64, opts appsTypes.QueryApplicationsWithOpts) (res appsTypes.ApplicationsPage, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = apps.QueryApplications(Codec(), tmClient, height, opts)
+	return
 }
 
-func QueryApp(addr string, height int64) (validator appsTypes.Application, err error) {
+func QueryApp(addr string, height int64) (res appsTypes.Application, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
-		return validator, err
+		return res, err
 	}
-	return apps.QueryApplication(Codec(), getTMClient(), a, height)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = apps.QueryApplication(Codec(), tmClient, a, height)
+	return
 }
 
 func QueryTotalAppCoins(height int64) (staked sdk.Int, err error) {
-	return apps.QuerySupply(Codec(), getTMClient(), height)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	staked, err = apps.QuerySupply(Codec(), tmClient, height)
+	return
 }
 
-func QueryAppParams(height int64) (params appsTypes.Params, err error) {
-	return apps.QueryPOSParams(Codec(), getTMClient(), height)
+func QueryAppParams(height int64) (res appsTypes.Params, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = apps.QueryPOSParams(Codec(), tmClient, height)
+	return
 }
 
-func QueryReceipts(addr string, height int64) (proofs []pocketTypes.Receipt, err error) {
+func QueryReceipts(addr string, height int64) (res []pocketTypes.Receipt, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	return pocket.QueryReceipts(Codec(), getTMClient(), a, height)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = pocket.QueryReceipts(Codec(), tmClient, a, height)
+	return
 }
 
-func QueryReceipt(blockchain, appPubKey, addr, receiptType string, sessionblockHeight, height int64) (proof *pocketTypes.Receipt, err error) {
+func QueryReceipt(blockchain, appPubKey, addr, receiptType string, sessionblockHeight, height int64) (res *pocketTypes.Receipt, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	return pocket.QueryReceipt(Codec(), a, getTMClient(), blockchain, appPubKey, receiptType, sessionblockHeight, height)
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = pocket.QueryReceipt(Codec(), a, tmClient, blockchain, appPubKey, receiptType, sessionblockHeight, height)
+	return
 }
 
-func QueryPocketSupportedBlockchains(height int64) ([]string, error) {
-	return pocket.QueryPocketSupportedBlockchains(Codec(), getTMClient(), height)
+func QueryPocketSupportedBlockchains(height int64) (res []string, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = pocket.QueryPocketSupportedBlockchains(Codec(), tmClient, height)
+	return
 }
 
-func QueryPocketParams(height int64) (pocketTypes.Params, error) {
-	return pocket.QueryParams(Codec(), getTMClient(), height)
+func QueryPocketParams(height int64) (res pocketTypes.Params, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = pocket.QueryParams(Codec(), tmClient, height)
+	return
 }
 
-func QueryRelay(r pocketTypes.Relay) (*pocketTypes.RelayResponse, error) {
-	return pocket.QueryRelay(Codec(), getTMClient(), r)
+func QueryRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = pocket.QueryRelay(Codec(), tmClient, r)
+	return
 }
 
-func QueryChallenge(c pocketTypes.ChallengeProofInvalidData) (*pocketTypes.ChallengeResponse, error) {
-	return pocket.QueryChallenge(Codec(), getTMClient(), c)
+func QueryChallenge(c pocketTypes.ChallengeProofInvalidData) (res *pocketTypes.ChallengeResponse, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = pocket.QueryChallenge(Codec(), tmClient, c)
+	return
 }
 
-func QueryDispatch(header pocketTypes.SessionHeader) (*pocketTypes.DispatchResponse, error) {
-	return pocket.QueryDispatch(Codec(), getTMClient(), header)
+func QueryDispatch(header pocketTypes.SessionHeader) (res *pocketTypes.DispatchResponse, err error) {
+	tmClient := getTMClient()
+	defer tmClient.Stop()
+	res, err = pocket.QueryDispatch(Codec(), tmClient, header)
+	return
 }
 
 func QueryState() (appState json.RawMessage, err error) {
