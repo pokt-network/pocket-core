@@ -4,6 +4,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
+	"strconv"
+
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -11,8 +14,6 @@ import (
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/tendermint/tendermint/rpc/client"
-	"math"
-	"strconv"
 )
 
 // auto sends a proof transaction for the claim
@@ -35,7 +36,9 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		// if the claim is found to be verified in the world state, you can delete it from the cache and not send again
 		if _, found := k.GetReceipt(ctx, addr, claim.SessionHeader, claim.EvidenceType); found {
 			// remove from the local cache
-			pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+			if err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
 			continue
 		}
 		// check to see if evidence is stored in cache

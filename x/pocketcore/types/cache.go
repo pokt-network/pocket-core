@@ -3,9 +3,10 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/hashicorp/golang-lru"
-	db "github.com/tendermint/tm-db"
 	"sync"
+
+	lru "github.com/hashicorp/golang-lru"
+	db "github.com/tendermint/tm-db"
 )
 
 var (
@@ -209,14 +210,15 @@ func SetEvidence(evidence Evidence, evidenceType EvidenceType) {
 }
 
 // "DeleteEvidence" - Delete the evidence from the stores
-func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) {
+func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
 	// generate key for evidence
 	key, err := KeyForEvidence(header, evidenceType)
 	if err != nil {
-		return
+		return err
 	}
 	// delete from cache
 	globalEvidenceCache.Delete(key)
+	return nil
 }
 
 // "ClearEvidence" - Clear stores of all evidence
