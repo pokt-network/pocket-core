@@ -53,6 +53,10 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 		if err.Code() == types.CodeReplayAttackError {
 			// if is a replay attack, handle accordingly
 			k.HandleReplayAttack(ctx, addr, sdk.NewInt(claim.TotalProofs))
+			err := k.DeleteClaim(ctx, addr, claim.SessionHeader, claim.EvidenceType)
+			if err != nil {
+				ctx.Logger().Error("Could not delete claim from world state after replay attack detected", "Address", claim.FromAddress)
+			}
 		}
 		return err.Result()
 	}
