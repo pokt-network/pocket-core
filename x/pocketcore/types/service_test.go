@@ -106,12 +106,6 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			URL: "https://www.google.com:443",
 		}},
 	}
-	//hbNotSupported := HostedBlockchains{
-	//	M: map[string]HostedBlockchain{bitcoin: {
-	//		ID:  bitcoin,
-	//		URL: "https://www.google.com:443",
-	//	}},
-	//}
 	pubKey := getRandomPubKey()
 	app := appsType.Application{
 		Address:                 sdk.Address(pubKey.Address()),
