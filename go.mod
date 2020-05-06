@@ -19,8 +19,7 @@ require (
 	github.com/tendermint/iavl v0.12.4
 	github.com/tendermint/tendermint v0.32.10
 	github.com/tendermint/tm-db v0.2.0
-	github.com/wealdtech/go-merkletree v1.0.0
-	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
+	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
 	golang.org/x/sys v0.0.0-20200116001909-b77594299b42 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/h2non/gock.v1 v1.0.15
