@@ -5,90 +5,35 @@ import (
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/tendermint/go-amino"
 )
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
-	award, _ := k.getValidatorAward(ctx, address)
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
-	k.setValidatorAward(ctx, award.Add(coins), address)
-	ctx.Logger().Info("Custom award of " + coins.String() + " set for " + address.String())
+	toNode, toFeeCollector := k.NodeCutOfReward(ctx, coins)
+	k.mint(ctx, toNode, address)
+	k.mint(ctx, toFeeCollector, k.getFeePool(ctx).GetAddress())
 }
 
 // blockReward - Handles distribution of the collected fees
 func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
-	logger := k.Logger(ctx)
-	// fetch and clear the collected fees for distribution, since this is
-	// called in BeginBlock, collected fees will be from the previous block
-	// (and distributed to the previous proposer)
-	feeCollector := k.getFeePool(ctx)
-	feesCollected := feeCollector.GetCoins()
-	// transfer collected fees to the pos module account
-	err := k.AccountKeeper.SendCoinsFromModuleToModule(ctx, auth.FeeCollectorName, types.ModuleName, feesCollected)
-	if err != nil {
-		panic(err)
-	}
-	// get the reward from the total relays completed in the last block
-	rewardForRelays := k.GetTotalCustomValidatorAwards(ctx)
-	// calculate the total reward by adding relays to the fees
-	totalReward := feesCollected.AmountOf(k.StakeDenom(ctx)).Add(rewardForRelays)
-	// calculate previous proposer reward
-	proposerAllocation := k.getProposerAllocaiton(ctx)
-	daoAllocation := k.getDAOAllocation(ctx)
-	// divide up the reward from the proposer reward and the dao reward
-	proposerReward := proposerAllocation.Mul(totalReward).Quo(sdk.NewInt(100)) // truncates
-	daoReward := daoAllocation.Mul(totalReward).Quo(sdk.NewInt(100))           // truncates
-	// get the validator structure
-	proposerValidator, found := k.GetValidator(ctx, previousProposer)
-	if found {
-		// create the proposer coins
-		propRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), proposerReward))
-		// create the dao coins
-		daoRewardCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), daoReward))
-		// mint the coins for the proposer to the module account
-		err := k.AccountKeeper.MintCoins(ctx, types.ModuleName, propRewardCoins)
-		if err != nil {
-			panic(err)
-		}
-		// mint the coins for the dao to the module account
-		err = k.AccountKeeper.MintCoins(ctx, types.ModuleName, daoRewardCoins)
-		if err != nil {
-			panic(err)
-		}
-		// send to validator
-		if err := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposerValidator.GetAddress(), propRewardCoins); err != nil {
-			panic(err)
-		}
-		// send to rest dao
-		if err := k.AccountKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, govTypes.DAOAccountName, daoRewardCoins); err != nil {
-			panic(err)
-		}
-		logger.Info(fmt.Sprintf("minted %s to block proposer: %s", propRewardCoins.String(), proposerValidator.GetAddress().String()))
-		logger.Info(fmt.Sprintf("minted %s to DAO", daoRewardCoins.String()))
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeProposerReward,
-				sdk.NewAttribute(sdk.AttributeKeyAmount, proposerReward.String()),
-				sdk.NewAttribute(types.AttributeKeyValidator, proposerValidator.GetAddress().String()),
-			),
-		)
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeDAOAllocation,
-				sdk.NewAttribute(sdk.AttributeKeyAmount, daoReward.String()),
-			),
-		)
-	} else {
-		logger.Error(fmt.Sprintf(
-			"WARNING: Attempt to allocate proposer rewards to unknown proposer %s. "+
-				"This should happen only if the proposer unstaked completely within a single block, "+
-				"which generally should not happen except in exceptional circumstances (or fuzz testing). "+
-				"We recommend you investigate immediately.",
-			previousProposer.String()))
-	}
+	feesCollector := k.getFeePool(ctx)
+	feesCollected := feesCollector.GetCoins().AmountOf(sdk.DefaultStakeDenom)
+	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%
+	daoAllocation := sdk.NewDec(k.DAOAllocation(ctx))
+	proposerAllocation := sdk.NewDec(k.ProposerAllocation(ctx))
+	totalAllocationWithoutNodeCut := daoAllocation.Add(proposerAllocation)
+	// get the new percentages based on the total. This is needed because the node (relayer) cut has already been allocated
+	daoAllocation = daoAllocation.Quo(totalAllocationWithoutNodeCut)
+	// dao cut calculation truncates int ex: 1.99uPOKT = 1uPOKT
+	daoCut := feesCollected.ToDec().Mul(daoAllocation).TruncateInt()
+	// proposer is whatever is left
+	proposerCut := feesCollected.Sub(daoCut)
+	// send to the two parties
+	feeAddr := feesCollector.GetAddress()
+	k.AccountKeeper.SendCoinsFromAccountToModule(ctx, feeAddr, "", sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
+	k.AccountKeeper.SendCoins(ctx, feeAddr, previousProposer, sdk.NewCoins(sdk.NewCoin(proposerCut, sdk.DefaultStakeDenom)))
 }
 
 // GetTotalCustomValidatorAwards - Retrieve Custom Validator awards
@@ -131,24 +76,7 @@ func (k Keeper) deleteValidatorAward(ctx sdk.Ctx, address sdk.Address) {
 	store.Delete(types.KeyForValidatorAward(address))
 }
 
-// mintNodeRelayRewards - Mint relay rewards
-func (k Keeper) mintNodeRelayRewards(ctx sdk.Ctx) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		amount := sdk.Int{}
-		address := sdk.Address(types.AddressFromKey(iterator.Key()))
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &amount)
-		amount = k.NodeCutOfReward(ctx).Mul(amount).Quo(sdk.NewInt(100)) // truncate
-		k.mint(ctx, amount, address)
-		// remove from the award store
-		store.Delete(iterator.Key())
-		ctx.Logger().Info("Relay reward of " + amount.String() + " minted to" + address.String())
-	}
-}
-
-// mint - Mint sdk.Coins and sends them to an address
+// "mint" - takes an amount and mints it to the node staking pool, then sends the coins to the address
 func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	mintErr := k.AccountKeeper.MintCoins(ctx, types.StakedPoolName, coins)
@@ -159,7 +87,7 @@ func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Resul
 	if sendErr != nil {
 		return sendErr.Result()
 	}
-	logString := fmt.Sprintf("a custom reward of %s was minted to %s", amount.String(), address.String())
+	logString := fmt.Sprintf("a reward of %s was minted to %s", amount.String(), address.String())
 	k.Logger(ctx).Info(logString)
 	return sdk.Result{
 		Log: logString,

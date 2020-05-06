@@ -95,11 +95,20 @@ func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Ctx) sdk.Int {
 	return sdk.NewInt(multiplier)
 }
 
-// NodeCutOfReward - Retrieve node cut of reward
-func (k Keeper) NodeCutOfReward(ctx sdk.Ctx) sdk.Int {
-	daoAllocation := k.DAOAllocation(ctx)
-	proposerAllocation := k.ProposerAllocation(ctx)
-	return sdk.NewInt(100 - daoAllocation - proposerAllocation)
+func (k Keeper) NodeCutOfReward(ctx sdk.Ctx, reward sdk.Int) (toNode sdk.Int, toFeeCollector sdk.Int) {
+	// convert reward to dec
+	r := reward.ToDec()
+	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%
+	daoAllocationPercentage := sdk.NewDec(k.DAOAllocation(ctx)).QuoInt64(int64(100))           // dec percentage
+	proposerAllocationPercentage := sdk.NewDec(k.ProposerAllocation(ctx)).QuoInt64(int64(100)) // dec percentage
+	// the dao and proposer allocations go to the fee collector
+	daoAllocation := r.Mul(daoAllocationPercentage)
+	proposerAllocation := r.Mul(proposerAllocationPercentage)
+	// truncate int ex 1.99 uPOKT goes to 1 uPOKT
+	toFeeCollector = daoAllocation.Add(proposerAllocation).TruncateInt()
+	// the rest goes to the node
+	toNode = reward.Sub(toFeeCollector)
+	return
 }
 
 // DAOAllocation - Retrieve DAO allocation
