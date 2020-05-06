@@ -1,3 +1,6 @@
+## RC-0.4.0
+- Separated Validators By Network ID
+
 ## RC-0.3.0
 - Added governance module from posmint
   - Multisignature public keys / tx building to cli
