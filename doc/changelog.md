@@ -2,6 +2,7 @@
 - Separated Validators By Network ID
 - Remove EnsureExists from app & node modules, redundnacy with GetAccounts
 - Close open connections on TMClients
+- log on debug level upon failure deleting evidence
 
 ## RC-0.3.0
 - Added governance module from posmint
