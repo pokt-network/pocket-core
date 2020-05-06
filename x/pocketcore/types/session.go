@@ -93,15 +93,10 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		return nil, NewInvalidSessionKeyError(ModuleName, err)
 	}
 	// all nodes at session genesis
-	allNodes := keeper.GetStakedValidators(sessionCtx)
-	// validate allNodes
-	if len(allNodes) < sessionNodesCount {
+	nodes := keeper.GetValidatorsByChain(sessionCtx, chain)
+	// validate nodes
+	if len(nodes) < sessionNodesCount {
 		return nil, NewInsufficientNodesError(ModuleName)
-	}
-	// filter `allNodes` by the HASH(chain)
-	nodes, err := filter(allNodes, chain, sessionNodesCount)
-	if err != nil {
-		return nil, NewFilterNodesError(ModuleName, err)
 	}
 	// xor each node's public key and session key
 	nodeDistances, err := xor(nodes, sessionKey)
@@ -129,28 +124,6 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	}
 	// return the top x nodes
 	return nodes[:sessionNodesCount], nil
-}
-
-// "Filter" - filter the nodes by non native chain
-func filter(allActiveNodes []nodeexported.ValidatorI, nonNativeChainHash string, sessionNodesCount int) (SessionNodes, error) {
-	result := make(SessionNodes, 0)
-	for _, node := range allActiveNodes {
-		chains := node.GetChains()
-		contains := false
-		for _, chain := range chains {
-			if chain == nonNativeChainHash {
-				contains = true
-			}
-		}
-		if !contains {
-			continue
-		}
-		result = append(result, node)
-	}
-	if err := result.Validate(sessionNodesCount); err != nil {
-		return nil, err
-	}
-	return result, nil
 }
 
 // "Validate" - Validates the session node object

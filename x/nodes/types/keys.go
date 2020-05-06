@@ -20,6 +20,7 @@ var ( // Keys for store prefixes
 	ValidatorSigningInfoKey         = []byte{0x11} // Prefix for signing info used in slashing
 	ValidatorMissedBlockBitArrayKey = []byte{0x12} // Prefix for missed block bit array used in slashing
 	AllValidatorsKey                = []byte{0x21} // prefix for each key to a validator
+	StakedValidatorsByNetIDKey      = []byte{0x22} // prefix for validators staked by networkID
 	StakedValidatorsKey             = []byte{0x23} // prefix for each key to a staked validator index, sorted by power
 	PrevStateValidatorsPowerKey     = []byte{0x31} // prefix for the key to the validators of the prevState state
 	PrevStateTotalPowerKey          = []byte{0x32} // prefix for the total power of the prevState state
@@ -28,6 +29,19 @@ var ( // Keys for store prefixes
 	BurnValidatorKey                = []byte{0x52} // prefix for awarding validators
 	WaitingToBeginUnstakingKey      = []byte{0x43} // prefix for waiting validators
 )
+
+func KeyForValidatorByNetworkID(addr sdk.Address, networkID []byte) []byte {
+	return append(append(StakedValidatorsByNetIDKey, networkID...), addr.Bytes()...)
+}
+
+func KeyForValidatorsByNetworkID(networkID []byte) []byte {
+	return append(StakedValidatorsByNetIDKey, networkID...)
+}
+
+func AddressForValidatorByNetworkIDKey(key, networkID []byte) sdk.Address {
+	i := len(StakedValidatorsByNetIDKey) + len(networkID)
+	return key[i:]
+}
 
 func KeyForValWaitingToBeginUnstaking(addr sdk.Address) []byte {
 	return append(WaitingToBeginUnstakingKey, addr.Bytes()...)

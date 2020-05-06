@@ -82,7 +82,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	mockCtx.On("Logger").Return(ctx.Logger())
 
 	resp, err := keeper.HandleRelay(mockCtx, validRelay)
-	assert.Nil(t, err)
+	assert.Nil(t, err, err)
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp)
 	assert.Equal(t, resp.Response, "bar")

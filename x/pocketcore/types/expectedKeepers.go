@@ -17,6 +17,7 @@ type PosKeeper interface {
 	GetStakedValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
 	BlocksPerSession(ctx sdk.Ctx) (res int64)
 	StakeDenom(ctx sdk.Ctx) (res string)
+	GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []nodesexported.ValidatorI)
 }
 
 type AppsKeeper interface {

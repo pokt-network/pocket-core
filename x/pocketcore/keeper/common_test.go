@@ -233,6 +233,7 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, nk *nodesK
 		// set the vals from the data
 		nk.SetValidator(ctx, val)
 		nk.SetStakedValidator(ctx, val)
+		nk.SetStakedValidatorByChains(ctx, val)
 		// ensure there's a signing info entry for the val (used in slashing)
 		_, found := nk.GetValidatorSigningInfo(ctx, val.GetAddress())
 		if !found {
@@ -254,6 +255,7 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, nk *nodesK
 	// set the vals from the data
 	nk.SetValidator(ctx, val)
 	nk.SetStakedValidator(ctx, val)
+	nk.SetStakedValidatorByChains(ctx, val)
 	// ensure there's a signing info entry for the val (used in slashing)
 	_, found := nk.GetValidatorSigningInfo(ctx, val.GetAddress())
 	if !found {

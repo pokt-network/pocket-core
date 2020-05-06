@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"encoding/hex"
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
@@ -10,6 +12,57 @@ import (
 func (k Keeper) SetStakedValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForValidatorInStakingSet(validator), validator.Address)
+}
+
+func (k Keeper) SetStakedValidatorByChains(ctx sdk.Ctx, validator types.Validator) {
+	store := ctx.KVStore(k.storeKey)
+	for _, c := range validator.Chains {
+		cBz, err := hex.DecodeString(c)
+		if err != nil {
+			ctx.Logger().Error(fmt.Errorf("could not hex decode chains for validator: %s with network ID: %s", validator.Address, c).Error())
+			continue
+		}
+		store.Set(types.KeyForValidatorByNetworkID(validator.Address, cBz), []byte{}) // use empty byte slice to save space
+	}
+}
+
+// "GetValidatorByChains" - Returns the validator staked by network identifier
+func (k Keeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []exported.ValidatorI) {
+	cBz, err := hex.DecodeString(networkID)
+	if err != nil {
+		ctx.Logger().Error(fmt.Errorf("could not hex decode chains when GetValidatorByChain: with network ID: %s", networkID).Error())
+		return
+	}
+	iterator := k.validatorByChainsIterator(ctx, cBz)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		address := types.AddressForValidatorByNetworkIDKey(iterator.Key(), cBz)
+		validator, found := k.GetValidator(ctx, address)
+		if !found {
+			ctx.Logger().Error(fmt.Errorf("valdiator: %s, not found in the world state for GetValidatorsByChain call", address).Error())
+			continue
+		}
+		validators = append(validators, validator)
+	}
+	return validators
+}
+
+func (k Keeper) deleteValidatorForChains(ctx sdk.Ctx, validator types.Validator) {
+	store := ctx.KVStore(k.storeKey)
+	for _, c := range validator.Chains {
+		cBz, err := hex.DecodeString(c)
+		if err != nil {
+			ctx.Logger().Error(fmt.Errorf("could not hex decode chains for validator: %s with network ID: %s", validator.Address, c).Error())
+			continue
+		}
+		store.Delete(types.KeyForValidatorByNetworkID(validator.Address, cBz))
+	}
+}
+
+// returns an iterator for the current staked validators
+func (k Keeper) validatorByChainsIterator(ctx sdk.Ctx, networkIDBz []byte) sdk.Iterator {
+	store := ctx.KVStore(k.storeKey)
+	return sdk.KVStorePrefixIterator(store, types.KeyForValidatorsByNetworkID(networkIDBz))
 }
 
 // delete validator from staked set

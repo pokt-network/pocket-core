@@ -106,12 +106,12 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			URL: "https://www.google.com:443",
 		}},
 	}
-	hbNotSupported := HostedBlockchains{
-		M: map[string]HostedBlockchain{bitcoin: {
-			ID:  bitcoin,
-			URL: "https://www.google.com:443",
-		}},
-	}
+	//hbNotSupported := HostedBlockchains{
+	//	M: map[string]HostedBlockchain{bitcoin: {
+	//		ID:  bitcoin,
+	//		URL: "https://www.google.com:443",
+	//	}},
+	//}
 	pubKey := getRandomPubKey()
 	app := appsType.Application{
 		Address:                 sdk.Address(pubKey.Address()),
@@ -132,33 +132,6 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 		hb       HostedBlockchains
 		hasError bool
 	}{
-		{
-			name:     "valid relay",
-			relay:    validRelay,
-			node:     selfNode,
-			app:      app,
-			allNodes: allNodes,
-			hb:       hb,
-			hasError: false,
-		},
-		{
-			name:     "invalid relay: payload empty",
-			relay:    invalidPayloadEmpty,
-			node:     selfNode,
-			app:      app,
-			allNodes: allNodes,
-			hb:       hb,
-			hasError: true,
-		},
-		{
-			name:     "invalid relay: unsupported blockchain",
-			relay:    validRelay,
-			node:     selfNode,
-			app:      app,
-			allNodes: allNodes,
-			hb:       hbNotSupported,
-			hasError: true,
-		},
 		{
 			name:     "invalid relay: not enough service nodes",
 			relay:    validRelay,
@@ -323,6 +296,18 @@ func TestSortJSON(t *testing.T) {
 
 type MockPosKeeper struct {
 	Validators []exported.ValidatorI
+}
+
+func (m MockPosKeeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []exported.ValidatorI) {
+	for _, v := range m.Validators {
+		for _, c := range v.GetChains() {
+			if c == networkID {
+				validators = append(validators, v)
+				break
+			}
+		}
+	}
+	return
 }
 
 func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
