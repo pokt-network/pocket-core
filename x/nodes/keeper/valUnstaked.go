@@ -146,7 +146,7 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 			err := k.ValidateValidatorFinishUnstaking(ctx, val)
 			if err != nil {
 				ctx.Logger().Error("Could not finish unstaking mature validator: " + err.Error())
-				return
+				continue
 			}
 			k.FinishUnstakingValidator(ctx, val)
 		}
