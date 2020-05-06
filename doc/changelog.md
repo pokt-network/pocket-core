@@ -8,6 +8,8 @@
 - removed return on loop from unstakeAllMaturedValidators
 - Remove claim from world state after handled replay attack
 - Use sdk.Error for app module keeper coinsFromUnstakedToStaked
+- Updated minting scheme to mint on the tx handler level
+- Fixed minting issue with unused fees
 
 ## RC-0.3.0
 - Added governance module from posmint
