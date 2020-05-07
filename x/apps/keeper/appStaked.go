@@ -34,7 +34,9 @@ func (k Keeper) removeApplicationTokens(ctx sdk.Ctx, application types.Applicati
 	k.deleteApplicationFromStakingSet(ctx, application)
 	application = application.RemoveStakedTokens(tokensToRemove)
 	k.SetApplication(ctx, application)
-	k.SetStakedApplication(ctx, application)
+	if !application.IsJailed() {
+		k.SetStakedApplication(ctx, application)
+	}
 	return application
 }
 

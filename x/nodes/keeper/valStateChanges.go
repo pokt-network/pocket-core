@@ -37,7 +37,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		validator := k.mustGetValidator(ctx, valAddr)
 		// sanity check for no jailed validators
 		if validator.Jailed {
-			panic("should never retrieve a jailed validator from the staked validators")
+			panic("should never retrieve a jailed validator from the staked validators:"+validator.Address.String())
 		}
 		if validator.ConsensusPower() == 0 {
 			panic("should never have a zero consensus power validator in the staked set")
