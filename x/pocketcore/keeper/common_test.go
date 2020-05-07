@@ -361,7 +361,7 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	// NOTE Add a minimum of 5 proofs to memInvoice to be able to create a merkle tree
 	for j := 0; j < maxRelays; j++ {
 		proof := createProof(getTestApplicationPrivateKey(), clientKey, npk, ethereum, j)
-		types.SetProof(validHeader, types.RelayEvidence, proof)
+		types.SetProof(validHeader, types.RelayEvidence, proof, 100000)
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", k.storeKey).Return((*ctx).KVStore(k.storeKey))

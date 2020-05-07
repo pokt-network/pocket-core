@@ -3,10 +3,10 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	"sync"
-
 	lru "github.com/hashicorp/golang-lru"
 	db "github.com/tendermint/tm-db"
+	"github.com/willf/bloom"
+	"sync"
 )
 
 var (
@@ -266,12 +266,13 @@ func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proo
 }
 
 // "SetProof" - Sets a proof object in the evidence, using the header and evidence type
-func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof) {
+func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max int64) {
 	// retireve the evidence
 	evidence, found := GetEvidence(header, evidenceType)
 	// if not found generate the evidence object
 	if !found {
 		evidence = Evidence{
+			Bloom:         bloom.NewWithEstimates(uint(max), .01),
 			SessionHeader: header,
 			NumOfProofs:   0,
 			Proofs:        make([]Proof, 0),
@@ -283,20 +284,13 @@ func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof) {
 	SetEvidence(evidence, evidenceType)
 }
 
-// "IsUniqueProof" - Ensures the proof passed is unique and has not been used before (replay attack)
-func IsUniqueProof(h SessionHeader, p Proof) bool {
-	// retrieve the evidence
-	evidence, found := GetEvidence(h, p.EvidenceType())
+func IsUniqueProof(p Proof) bool {
+	evidence, found := GetEvidence(p.SessionHeader(), p.EvidenceType())
+	// if not found generate the evidence object
 	if !found {
 		return true
 	}
-	// iterate over evidence to see if unique
-	for _, proof := range evidence.Proofs {
-		if proof.HashString() == p.HashString() {
-			return false
-		}
-	}
-	return true
+	return !evidence.Bloom.Test(p.Hash())
 }
 
 // "GetTotalProofs" - Returns the total number of proofs for a piece of evidence

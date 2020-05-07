@@ -1,7 +1,10 @@
 package types
 
+import "github.com/willf/bloom"
+
 // "Evidence" - A proof of work/burn for nodes.
 type Evidence struct {
+	Bloom         *bloom.BloomFilter       `json:"bloom_filter"` // used to check if proof contains
 	SessionHeader `json:"evidence_header"` // the session h serves as an identifier for the evidence
 	NumOfProofs   int64                    `json:"num_of_proofs"` // the total number of proofs in the evidence
 	Proofs        []Proof                  `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)

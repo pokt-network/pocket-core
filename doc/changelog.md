@@ -2,6 +2,7 @@
 - Separated Validators By Network ID
 - Remove EnsureExists from app & node modules, redundnacy with GetAccounts
 - Close open connections on TMClients
+- Added Bloomfilter for efficient uniqueness checkint of proof objects
 - Log on debug level upon failure deleting evidence
 - Replace wealdtech/go-merkletree/crypto for golang.org/x/crypto
 - Add RelaysToTokens as pamater for the nodes module

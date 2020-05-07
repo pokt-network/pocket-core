@@ -17,7 +17,7 @@ type Proof interface {
 	GetSigners() []sdk.Address                                                                           // returns the main signer(s) for the proof (used in messages)
 	SessionHeader() SessionHeader                                                                        // returns the session header
 	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error // validate the object
-	Store()                                                                                              // handle the proof after validation
+	Store(max int64)                                                                                     // handle the proof after validation
 	EvidenceType() EvidenceType                                                                          // return the type of evidence from the proof object
 }
 
@@ -197,9 +197,9 @@ func (rp RelayProof) HashStringWithSignature() string {
 }
 
 // "Store" - Handles the relay proof object by adding it to the cache
-func (rp RelayProof) Store() {
+func (rp RelayProof) Store(maxRelays int64) {
 	// add the Proof to the global (in memory) collection of proofs
-	SetProof(rp.SessionHeader(), RelayEvidence, rp)
+	SetProof(rp.SessionHeader(), RelayEvidence, rp, maxRelays)
 }
 
 func (rp RelayProof) GetSigners() []sdk.Address {
@@ -440,9 +440,9 @@ func (c ChallengeProofInvalidData) GetSigners() []sdk.Address {
 }
 
 // "Store" - Stores the challenge proof (stores in cache)
-func (c ChallengeProofInvalidData) Store() {
+func (c ChallengeProofInvalidData) Store(maxChallenges int64) {
 	// add the Proof to the global (in memory) collection of proofs
-	SetProof(c.SessionHeader(), ChallengeEvidence, c)
+	SetProof(c.SessionHeader(), ChallengeEvidence, c, maxChallenges)
 }
 
 // "EvidenceType" - Returns the type of the evidence
