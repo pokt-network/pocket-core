@@ -74,6 +74,7 @@ func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 		mockCtx := new(Ctx)
 		mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 		mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
+		mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 		mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.BlocksPerSession(ctx)).Return(ctx, nil)
 
 		// generate the pseudorandom proof
