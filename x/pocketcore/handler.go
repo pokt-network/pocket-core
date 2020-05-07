@@ -60,6 +60,11 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 		}
 		return err.Result()
 	}
+	// valid claim message so execute according to type
+	err = k.ExecuteProof(ctx, proof, claim)
+	if err != nil {
+		return err.Result()
+	}
 	// set the claim in the world state
 	er := k.SetReceipt(ctx, addr, types.Receipt{
 		SessionHeader:   claim.SessionHeader,
@@ -69,11 +74,6 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	})
 	if er != nil {
 		return sdk.ErrInternal(er.Error()).Result()
-	}
-	// valid claim message so execute according to type
-	err = k.ExecuteProof(ctx, proof, claim)
-	if err != nil {
-		return err.Result()
 	}
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
