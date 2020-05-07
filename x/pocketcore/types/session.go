@@ -123,7 +123,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		}
 	}
 	// return the top x nodes
-	return nodes[:sessionNodesCount], nil
+	return sessionNodes, nil
 }
 
 // "Validate" - Validates the session node object
