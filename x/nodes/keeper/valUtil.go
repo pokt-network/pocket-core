@@ -3,10 +3,11 @@ package keeper
 import (
 	"bytes"
 	"fmt"
+	"sort"
+
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
-	"sort"
 )
 
 // Cache the amino decoding of validators, as it can be the case that repeated slashing calls
@@ -25,6 +26,7 @@ func newCachedValidator(val types.Validator, marshalled string) cachedValidator 
 	}
 }
 
+// validatorCaching - Retrieve a cached validator
 func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator {
 	// If these amino encoded bytes are in the cache, return the cached validator
 	strValue := string(value)
@@ -48,6 +50,7 @@ func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator
 	return validator
 }
 
+// mustGetValidator - Retrieve validator, panics if no validator is found
 func (k Keeper) mustGetValidator(ctx sdk.Ctx, addr sdk.Address) types.Validator {
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
@@ -56,7 +59,7 @@ func (k Keeper) mustGetValidator(ctx sdk.Ctx, addr sdk.Address) types.Validator 
 	return validator
 }
 
-// wrapper for GetValidator call
+// Validator - wrapper for GetValidator call
 func (k Keeper) Validator(ctx sdk.Ctx, address sdk.Address) exported.ValidatorI {
 	val, found := k.GetValidator(ctx, address)
 	if !found {
@@ -65,6 +68,7 @@ func (k Keeper) Validator(ctx sdk.Ctx, address sdk.Address) exported.ValidatorI 
 	return val
 }
 
+// AllValidators - Retrieve a list of all validators
 func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
@@ -77,6 +81,7 @@ func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	return validators
 }
 
+// GetStakedValidators - Retreive StakedValidators
 func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.StakedValidatorsKey)
@@ -92,7 +97,7 @@ func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.Validato
 // map of validator addresses to serialized power
 type valPowerMap map[[sdk.AddrLen]byte][]byte
 
-// get the prevState validator set
+// getPrevStatePowerMap - Retrieve the prevState validator set
 func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
 	prevState := make(valPowerMap)
 	store := ctx.KVStore(k.storeKey)
@@ -111,7 +116,7 @@ func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
 	return prevState
 }
 
-// given a map of remaining validators to previous staked power
+// sortNoLongerStakedValidators - Given a map of remaining validators to previous staked power
 // returns the list of validators to be unbstaked, sorted by operator address
 func sortNoLongerStakedValidators(prevState valPowerMap) [][]byte {
 	// sort the map keys for determinism

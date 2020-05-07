@@ -28,7 +28,7 @@ func paginate(page, limit int, validators []types.Application, MaxValidators int
 	return applicationsPage
 }
 
-// creates a querier for staking REST endpoints
+// NewQuerier - creates a query router for staking REST endpoints
 func NewQuerier(k Keeper) sdk.Querier {
 	return func(ctx sdk.Ctx, path []string, req abci.RequestQuery) (res []byte, err sdk.Error) {
 		switch path[0] {

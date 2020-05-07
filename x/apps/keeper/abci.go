@@ -6,12 +6,13 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
+// BeginBlocker - Called at the beggining of every block
 func BeginBlocker(ctx sdk.Ctx, _ abci.RequestBeginBlock, k Keeper) {
 	// burn applications triggered by the custom burning interface
 	k.burnApplications(ctx)
 }
 
-// Called every block, update application set
+// EndBlocker - Called at the end of every block, update validator set
 func EndBlocker(ctx sdk.Ctx, k Keeper) []abci.ValidatorUpdate {
 	matureApplications := k.getMatureApplications(ctx)
 	// Unstake all mature applications from the unstakeing queue.

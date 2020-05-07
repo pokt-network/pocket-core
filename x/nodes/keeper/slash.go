@@ -12,6 +12,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
+// BurnValidator - Remove coins from account & supply
 func (k Keeper) BurnValidator(ctx sdk.Ctx, address sdk.Address, amount sdk.Int) {
 	curBurn, _ := k.getValidatorBurn(ctx, address)
 	newSeverity := curBurn.Add(amount)
@@ -19,6 +20,7 @@ func (k Keeper) BurnValidator(ctx sdk.Ctx, address sdk.Address, amount sdk.Int) 
 	ctx.Logger().Info("Custom burn set for " + address.String() + " with a severity of " + amount.String())
 }
 
+// BurnForChallenge - Tries to remove coins from account & supply for a challenged validator
 func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address) {
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(challenges)
 	val, found := k.GetValidator(ctx, address)
@@ -29,6 +31,8 @@ func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Ad
 	k.BurnValidator(ctx, val.Address, coins)
 }
 
+// simpleSlash - Slash validator for an infraction committed at a known height
+// Find the contributing stake at that height and burn the specified slashFactor
 func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) {
 	// error check slash
 	validator := k.validateSimpleSlash(ctx, addr, amount)
@@ -55,6 +59,7 @@ func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) {
 		validator.GetAddress(), amount.String()))
 }
 
+// validateSimpleSlash - Check if simpleSlash is possible
 func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) types.Validator {
 	logger := k.Logger(ctx)
 	if amount.LTE(sdk.ZeroInt()) {
@@ -74,7 +79,7 @@ func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.In
 	return validator
 }
 
-// slash a validator for an infraction committed at a known height
+// slash - Slash a validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
 func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
 	// error check slash
@@ -108,6 +113,7 @@ func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power
 		validator.GetAddress(), slashFactor.String(), tokensToBurn))
 }
 
+// validateSlash - Check if slash  is possible
 func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
 	logger := k.Logger(ctx)
 	if slashFactor.LT(sdk.ZeroDec()) {
@@ -132,8 +138,8 @@ func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight in
 	return validator
 }
 
-// handle a validator signing two blocks at the same height
-// power: power of the double-signing validator at the height of infraction
+// handleDoubleSign - Handle a validator signing two blocks at the same height
+// power: power of the double-signing validator at the height of infractionn
 func (k Keeper) handleDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHeight int64, timestamp time.Time, power int64) {
 	address, _, _, err := k.validateDoubleSign(ctx, addr, infractionHeight, timestamp)
 	if err != nil {
@@ -158,6 +164,7 @@ func (k Keeper) handleDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHei
 	// todo fix once tendermint is patched
 }
 
+// validateDoubleSign - Check if double signature occurred
 func (k Keeper) validateDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHeight int64, timestamp time.Time) (address sdk.Address, signInfo types.ValidatorSigningInfo, validator exported.ValidatorI, err sdk.Error) {
 	logger := k.Logger(ctx)
 	val, found := k.GetValidator(ctx, sdk.Address(addr))
@@ -192,7 +199,7 @@ func (k Keeper) validateDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionH
 	return sdk.Address(addr), signInfo, val, nil
 }
 
-// handle a validator signature, must be called once per validator per block
+// handleValidatorSignature - Handle a validator signature, must be called once per validator per block
 func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, power int64, signed bool) {
 	logger := k.Logger(ctx)
 	height := ctx.BlockHeight()
@@ -284,6 +291,7 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, po
 	}
 }
 
+// getBurnFromSeverity - Retrieve burn from severity of infraction
 func (k Keeper) getBurnFromSeverity(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) sdk.Int {
 	val := k.mustGetValidator(ctx, address)
 	amount := sdk.TokensFromConsensusPower(val.ConsensusPower())
@@ -291,7 +299,7 @@ func (k Keeper) getBurnFromSeverity(ctx sdk.Ctx, address sdk.Address, severityPe
 	return slashAmount
 }
 
-// called on begin blocker
+// burnValidators - Burn tokens for validators
 func (k Keeper) burnValidators(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.BurnValidatorKey)
@@ -306,12 +314,13 @@ func (k Keeper) burnValidators(ctx sdk.Ctx) {
 	}
 }
 
-// store functions used to keep track of a validator burn
+// setValidatorBurn - Store functions used to keep track of a validator burn
 func (k Keeper) setValidatorBurn(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForValidatorBurn(address), amino.MustMarshalBinaryBare(amount))
 }
 
+// getValidatorBurn - Retrieve Validator burn
 func (k Keeper) getValidatorBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Int, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValidatorBurn(address))
@@ -326,6 +335,7 @@ func (k Keeper) getValidatorBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.In
 	return
 }
 
+// deleteValidatorBurn - Remove valdiator burn from store
 func (k Keeper) deleteValidatorBurn(ctx sdk.Ctx, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorBurn(address))

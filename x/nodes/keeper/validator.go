@@ -6,7 +6,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// get a single validator from the main store
+// GetValidator - Retrieve validator with address from the main store
 func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValByAllVals(addr))
@@ -17,14 +17,14 @@ func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Val
 	return validator, true
 }
 
-// set a validator in the main store
+// SetValidator - Store validator in the main store
 func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidator(k.cdc, validator)
 	store.Set(types.KeyForValByAllVals(validator.Address), bz)
 }
 
-// get the set of all validators with no limits from the main store
+// GetAllValidators - Retrieve set of all validators with no limits from the main store
 func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
@@ -37,6 +37,7 @@ func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	return validators
 }
 
+// GetAllValidators - - Retrieve the set of all validators with no limits from the main store
 func (k Keeper) GetAllValidatorsWithOpts(ctx sdk.Ctx, opts types.QueryValidatorsParams) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
@@ -51,7 +52,7 @@ func (k Keeper) GetAllValidatorsWithOpts(ctx sdk.Ctx, opts types.QueryValidators
 	return validators
 }
 
-// return a given amount of all the validators
+// GetValidators - Retrieve a given amount of all the validators
 func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	validators = make([]types.Validator, maxRetrieve)
@@ -66,7 +67,7 @@ func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []typ
 	return validators[:i] // trim if the array length < maxRetrieve
 }
 
-// iterate through the validator set and perform the provided function
+// IterateAndExecuteOverVals - Goes through the validator set and executes handler
 func (k Keeper) IterateAndExecuteOverVals(
 	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)

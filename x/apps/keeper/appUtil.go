@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
@@ -23,6 +24,7 @@ func newCachedApplication(val types.Application, marshalled string) cachedApplic
 	}
 }
 
+// appCaching - Retrieve a cached application
 func (k Keeper) appCaching(value []byte, addr sdk.Address) types.Application {
 	// If these amino encoded bytes are in the cache, return the cached application
 	strValue := string(value)
@@ -46,6 +48,7 @@ func (k Keeper) appCaching(value []byte, addr sdk.Address) types.Application {
 	return application
 }
 
+// mustGetApplication - Retrieve application, panics if no application is found
 func (k Keeper) mustGetApplication(ctx sdk.Ctx, addr sdk.Address) types.Application {
 	application, found := k.GetApplication(ctx, addr)
 	if !found {
@@ -54,6 +57,7 @@ func (k Keeper) mustGetApplication(ctx sdk.Ctx, addr sdk.Address) types.Applicat
 	return application
 }
 
+// mustGetApplicationByConsAddr - Retrieve application using consensus address, panics if no application is found
 func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Ctx, consAddr sdk.Address) types.Application {
 	application, found := k.GetApplication(ctx, consAddr)
 	if !found {
@@ -62,7 +66,7 @@ func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Ctx, consAddr sdk.Address) 
 	return application
 }
 
-// wrapper for GetApplication call
+// Application - wrapper for GetApplication call
 func (k Keeper) Application(ctx sdk.Ctx, address sdk.Address) exported.ApplicationI {
 	app, found := k.GetApplication(ctx, address)
 	if !found {
@@ -71,7 +75,7 @@ func (k Keeper) Application(ctx sdk.Ctx, address sdk.Address) exported.Applicati
 	return app
 }
 
-// wrapper for GetApplicationByConsAddress call
+// applicationByConsAddr - wrapper for GetApplicationByConsAddress call
 func (k Keeper) applicationByConsAddr(ctx sdk.Ctx, addr sdk.Address) exported.ApplicationI {
 	app, found := k.GetApplication(ctx, addr)
 	if !found {
@@ -80,6 +84,7 @@ func (k Keeper) applicationByConsAddr(ctx sdk.Ctx, addr sdk.Address) exported.Ap
 	return app
 }
 
+// AllApplications - Retrieve a list of all applications
 func (k Keeper) AllApplications(ctx sdk.Ctx) (apps []exported.ApplicationI) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)

@@ -6,7 +6,7 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// get a single application from the main store
+// GetApplication - Retrieve a single application from the main store
 func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types.Application, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForAppByAllApps(addr))
@@ -17,7 +17,7 @@ func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types
 	return application, true
 }
 
-// set a application in the main store
+// SetApplication - Add a single application the main store
 func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalApplication(k.cdc, application)
@@ -26,7 +26,7 @@ func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 
 }
 
-// get the set of all applications with no limits from the main store
+// GetAllApplications - Retrieve the set of all applications with no limits from the main store
 func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications) {
 	applications = make([]types.Application, 0)
 	store := ctx.KVStore(k.storeKey)
@@ -40,7 +40,7 @@ func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications
 	return applications
 }
 
-// get the set of all applications with no limits from the main store
+// GetAllApplicationsWithOpts - Retrieve the set of all applications with no limits from the main store
 func (k Keeper) GetAllApplicationsWithOpts(ctx sdk.Ctx, opts types.QueryApplicationsWithOpts) (applications types.Applications) {
 	applications = make([]types.Application, 0)
 	store := ctx.KVStore(k.storeKey)
@@ -56,7 +56,7 @@ func (k Keeper) GetAllApplicationsWithOpts(ctx sdk.Ctx, opts types.QueryApplicat
 	return applications
 }
 
-// return a given amount of all the applications
+// GetApplications - Retrieve a a given amount of all the applications
 func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications types.Applications) {
 	store := ctx.KVStore(k.storeKey)
 	applications = make([]types.Application, maxRetrieve)
@@ -73,7 +73,7 @@ func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications t
 	return applications[:i] // trim if the array length < maxRetrieve
 }
 
-// iterate through the application set and perform the provided function
+// IterateAndExecuteOverApps - Goes through the application set and perform the provided function
 func (k Keeper) IterateAndExecuteOverApps(
 	ctx sdk.Ctx, fn func(index int64, application exported.ApplicationI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)

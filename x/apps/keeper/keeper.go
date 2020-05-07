@@ -3,6 +3,7 @@ package keeper
 import (
 	"container/list"
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
@@ -14,7 +15,7 @@ const aminoCacheSize = 500
 // Implements ApplicationSet interface
 var _ types.ApplicationSet = Keeper{}
 
-// keeper of the staking store
+// Keeper of the staking store
 type Keeper struct {
 	storeKey             sdk.StoreKey
 	cdc                  *codec.Codec
@@ -49,12 +50,12 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, su
 	}
 }
 
-// Logger returns a module-specific logger.
+// Logger - returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Ctx) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// return the codespace
+// Codespace - Retrieve the codespace
 func (k Keeper) Codespace() sdk.CodespaceType {
 	return k.codespace
 }
