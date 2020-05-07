@@ -7,7 +7,6 @@ import (
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	sdk "github.com/pokt-network/posmint/types"
-	"sort"
 )
 
 // "Session" - The relationship between an application and the pocket network
@@ -83,47 +82,55 @@ func (s Session) Validate(node nodeexported.ValidatorI, app appexported.Applicat
 type SessionNodes []nodeexported.ValidatorI
 
 // "NewSessionNodes" - Generates nodes for the session
-func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (SessionNodes, sdk.Error) {
+func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
 	// validate chain
 	if len(chain) == 0 {
 		return nil, NewEmptyNonNativeChainError(ModuleName)
 	}
 	// validate sessionKey
-	if err := sessionKey.Validate(); err != nil {
+	if err = sessionKey.Validate(); err != nil {
 		return nil, NewInvalidSessionKeyError(ModuleName, err)
 	}
 	// all nodes at session genesis
 	nodes := keeper.GetValidatorsByChain(sessionCtx, chain)
+	// get the total number of nodes
+	totalNodes := int64(len(nodes))
 	// validate nodes
 	if len(nodes) < sessionNodesCount {
 		return nil, NewInsufficientNodesError(ModuleName)
 	}
-	// xor each node's public key and session key
-	nodeDistances, err := xor(nodes, sessionKey)
-	if err != nil {
-		return nil, NewXORError(ModuleName, err)
-	}
-	// sort the nodes based off of distance
-	nodes = revSort(nodeDistances)
+	sessionNodes = make(SessionNodes, sessionNodesCount)
 	// only select the nodes if not jailed
-	var sessionNodes []nodeexported.ValidatorI
-	for i := 0; ; i++ {
-		n := nodes[i]
+	for i, numOfNodes := 0, 0; ; i++ {
+		// generate the random index
+		index, err := PseudoRandomGeneration(totalNodes, sessionKey)
+		if err != nil {
+			return nil, sdk.ErrInternal("error with NewSessionNodes generation: " + err.Error())
+		}
+		// hash the session key to provide new entropy
+		sessionKey = Hash(sessionKey)
+		// get the node from the array
+		n := nodes[index]
 		// cross check the node from the `new` or `end` world state
 		res := keeper.Validator(ctx, n.GetAddress())
 		// if not found or jailed, don't add to session and continue
 		if res == nil || res.IsJailed() {
 			continue
 		}
+		if sessionNodes.ContainsAddress(res.GetAddress()) {
+			continue
+		}
 		// else add the node to the session
-		sessionNodes = append(sessionNodes, n)
+		sessionNodes[numOfNodes] = n
+		// increment the number of nodes in the sessionNodes slice
+		numOfNodes++
 		// if maxing out the session count end loop
-		if len(sessionNodes) == sessionNodesCount {
+		if numOfNodes == sessionNodesCount {
 			break
 		}
 	}
-	// return the top x nodes
-	return nodes[:sessionNodesCount], nil
+	// return the nodes
+	return sessionNodes, nil
 }
 
 // "Validate" - Validates the session node object
@@ -157,78 +164,11 @@ func (sn SessionNodes) ContainsAddress(addr sdk.Address) bool {
 	}
 	// loop over the nodes
 	for _, node := range sn {
+		if node == nil {
+			continue
+		}
 		if node.GetAddress().String() == addr.String() {
 			return true
-		}
-	}
-	return false
-}
-
-// "nodeDistance" - A node linked to it's computational distance
-type nodeDistance struct {
-	Node     nodeexported.ValidatorI
-	distance []byte
-}
-
-// "nodeDistances" - A list (slice) of nodeDistance objects
-type nodeDistances []nodeDistance
-
-// "xor" - The sessionNodes.publicKey against the sessionKey to find the computationally closest nodes
-func xor(sessionNodes SessionNodes, sessionkey SessionKey) (nodeDistances, error) {
-	var keyLength = len(sessionkey)
-	// store result in a node distances object
-	result := make([]nodeDistance, len(sessionNodes))
-	// for every node, find the distance between it's pubkey and the sesskey
-	for index, node := range sessionNodes {
-		// get the public key bz
-		pubKeyBz := node.GetPublicKey().RawBytes()
-		// ensure they are the same length
-		if len(pubKeyBz) != keyLength {
-			return nil, MismatchedByteArraysError
-		}
-		// add nod to node distances
-		result[index].Node = node
-		result[index].distance = make([]byte, keyLength)
-		for i := 0; i < keyLength; i++ {
-			// xor the bz
-			result[index].distance[i] = pubKeyBz[i] ^ sessionkey[i]
-		}
-	}
-	return result, nil
-}
-
-// "revSort" - Sort the nodes by shortest computational distance
-func revSort(sessionNodes nodeDistances) SessionNodes {
-	// create the result slice
-	result := make(SessionNodes, len(sessionNodes))
-	// sort the session nodes
-	sort.Sort(sessionNodes)
-	// store the session nodes in an object: SessionNodes
-	for i, node := range sessionNodes {
-		result[i] = node.Node
-	}
-	return result
-}
-
-// "Len" - Returns the length of the node pool -> needed for sort.Sort() interface
-func (n nodeDistances) Len() int { return len(n) }
-
-// "Swap" - Swaps two elements in the node pool -> needed for sort.Sort() interface
-func (n nodeDistances) Swap(i, j int) { n[i], n[j] = n[j], n[i] }
-
-// "Less" - Returns true if node i is less than node j by XOR value (big endian encoding)
-func (n nodeDistances) Less(i, j int) bool {
-	// compare size of byte arrays
-	if len(n[i].distance) < len(n[j].distance) {
-		return false
-	}
-	// bitwise comparison
-	for a := range n[i].distance {
-		if n[i].distance[a] < n[j].distance[a] {
-			return true
-		}
-		if n[j].distance[a] < n[i].distance[a] {
-			return false
 		}
 	}
 	return false
