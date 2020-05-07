@@ -7,23 +7,23 @@ import (
 	"github.com/pokt-network/posmint/x/auth/exported"
 )
 
-// GetStakedTokens total staking tokens supply which is staked
+// GetStakedTokens - Retrieve total staking tokens supply which is staked
 func (k Keeper) GetStakedTokens(ctx sdk.Ctx) sdk.Int {
 	stakedPool := k.GetStakedPool(ctx)
 	return stakedPool.GetCoins().AmountOf(k.StakeDenom(ctx))
 }
 
-// TotalTokens staking tokens from the total supply
+// TotalTokens - Retrieve staking tokens from the total supply
 func (k Keeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
 	return k.AccountKeeper.GetSupply(ctx).GetTotal().AmountOf(k.StakeDenom(ctx))
 }
 
-// GetStakedPool returns the staked tokens pool's module account
+// GetStakedPool - Retrieve the staked tokens pool's module account
 func (k Keeper) GetStakedPool(ctx sdk.Ctx) (stakedPool exported.ModuleAccountI) {
 	return k.AccountKeeper.GetModuleAccount(ctx, types.StakedPoolName)
 }
 
-// moves coins from the module account to the validator -> used in unstaking
+// coinsFromStakedToUnstaked - Transfer coins from the module account to the validator -> used in unstaking
 func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, validator types.Validator) {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), validator.StakedTokens))
 	err := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, validator.Address, coins)
@@ -32,7 +32,7 @@ func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, validator types.Validator
 	}
 }
 
-// moves coins from the module account to validator -> used in staking
+// coinsFromUnstakedToStaked - Transfer coins from the module account to validator -> used in staking
 func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, validator types.Validator, amount sdk.Int) sdk.Error {
 	if amount.LT(sdk.ZeroInt()) {
 		return sdk.ErrInternal("cannot send a negative")
@@ -42,7 +42,7 @@ func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, validator types.Validator
 	return err
 }
 
-// burnStakedTokens removes coins from the staked pool module account
+// burnStakedTokens - Removes coins from the staked pool module account
 func (k Keeper) burnStakedTokens(ctx sdk.Ctx, amt sdk.Int) sdk.Error {
 	if !amt.IsPositive() {
 		return nil
@@ -51,6 +51,7 @@ func (k Keeper) burnStakedTokens(ctx sdk.Ctx, amt sdk.Int) sdk.Error {
 	return k.AccountKeeper.BurnCoins(ctx, types.StakedPoolName, coins)
 }
 
+// getFeePool - Retrieve fee pool
 func (k Keeper) getFeePool(ctx sdk.Ctx) (feePool exported.ModuleAccountI) {
 	return k.AccountKeeper.GetModuleAccount(ctx, auth.FeeCollectorName)
 }

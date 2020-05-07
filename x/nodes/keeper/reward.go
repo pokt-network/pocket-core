@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
@@ -9,7 +10,7 @@ import (
 	"github.com/tendermint/go-amino"
 )
 
-// award coins to an address (will be called at the beginning of the next block)
+// RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
 	award, _ := k.getValidatorAward(ctx, address)
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
@@ -17,7 +18,7 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address
 	ctx.Logger().Info("Custom award of " + coins.String() + " set for " + address.String())
 }
 
-// blockReward handles distribution of the collected fees
+// blockReward - Handles distribution of the collected fees
 func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	logger := k.Logger(ctx)
 	// fetch and clear the collected fees for distribution, since this is
@@ -90,6 +91,7 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	}
 }
 
+// GetTotalCustomValidatorAwards - Retrieve Custom Validator awards
 func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Ctx) sdk.Int {
 	total := sdk.ZeroInt()
 	store := ctx.KVStore(k.storeKey)
@@ -103,7 +105,7 @@ func (k Keeper) GetTotalCustomValidatorAwards(ctx sdk.Ctx) sdk.Int {
 	return total
 }
 
-// store functions used to keep track of a validator award
+// setValidatorAward - Store functions used to keep track of a validator award
 func (k Keeper) setValidatorAward(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.KeyForValidatorAward(address)
@@ -111,6 +113,7 @@ func (k Keeper) setValidatorAward(ctx sdk.Ctx, amount sdk.Int, address sdk.Addre
 	store.Set(key, val)
 }
 
+// getValidatorAward - Retrieve validator award
 func (k Keeper) getValidatorAward(ctx sdk.Ctx, address sdk.Address) (coins sdk.Int, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValidatorAward(address))
@@ -122,12 +125,13 @@ func (k Keeper) getValidatorAward(ctx sdk.Ctx, address sdk.Address) (coins sdk.I
 	return coins, true
 }
 
+// deleteValidatorAward - Remove vallidaor award
 func (k Keeper) deleteValidatorAward(ctx sdk.Ctx, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValidatorAward(address))
 }
 
-// called on begin blocker
+// mintNodeRelayRewards - Mint relay rewards
 func (k Keeper) mintNodeRelayRewards(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AwardValidatorKey)
@@ -144,7 +148,7 @@ func (k Keeper) mintNodeRelayRewards(ctx sdk.Ctx) {
 	}
 }
 
-// Mints sdk.Coins and sends them to an address
+// mint - Mint sdk.Coins and sends them to an address
 func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	mintErr := k.AccountKeeper.MintCoins(ctx, types.StakedPoolName, coins)
@@ -162,7 +166,7 @@ func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Resul
 	}
 }
 
-// get the proposer public key for this block
+// GetPreviousProposer - Retrieve the proposer public key for this block
 func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.ProposerKey)
@@ -173,17 +177,19 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (consAddr sdk.Address) {
 	return
 }
 
-// set the proposer public key for this block
+// SetPreviousProposer -  Store proposer public key for this block
 func (k Keeper) SetPreviousProposer(ctx sdk.Ctx, consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(consAddr)
 	store.Set(types.ProposerKey, b)
 }
 
+// getProposerAllocation - Retrieve proposer allocation
 func (k Keeper) getProposerAllocaiton(ctx sdk.Ctx) sdk.Int {
 	return sdk.NewInt(k.ProposerAllocation(ctx))
 }
 
+// getDAOAllocation - Retrieve DAO allocation
 func (k Keeper) getDAOAllocation(ctx sdk.Ctx) sdk.Int {
 	return sdk.NewInt(k.DAOAllocation(ctx))
 }

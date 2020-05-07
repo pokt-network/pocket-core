@@ -2,18 +2,20 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/go-amino"
 )
 
+// BurnApplication - Remove coins from account & supply
 func (k Keeper) BurnApplication(ctx sdk.Ctx, address sdk.Address, amount sdk.Int) {
 	curBurn, _ := k.getApplicationBurn(ctx, address)
 	newSeverity := curBurn.Add(amount)
 	k.setApplicationBurn(ctx, newSeverity, address)
 }
 
-// simpleSlash a application for an infraction committed at a known height
+// simpleSlash - Slash an application for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
 func (k Keeper) simpleSlash(ctx sdk.Ctx, consAddr sdk.Address, amount sdk.Int) {
 	// error check simpleSlash
@@ -44,6 +46,7 @@ func (k Keeper) simpleSlash(ctx sdk.Ctx, consAddr sdk.Address, amount sdk.Int) {
 		application.GetAddress(), amount.String()))
 }
 
+// validateSimpleSlash - Check if simpleSlash is possible
 func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) types.Application {
 	logger := k.Logger(ctx)
 	if amount.LTE(sdk.ZeroInt()) {
@@ -63,6 +66,7 @@ func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.In
 	return application
 }
 
+// getBurnFromSeverity - Retrieve burn from severity of infraction
 func (k Keeper) getBurnFromSeverity(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) sdk.Int {
 	app := k.mustGetApplication(ctx, address)
 	amount := sdk.TokensFromConsensusPower(app.ConsensusPower())
@@ -70,7 +74,7 @@ func (k Keeper) getBurnFromSeverity(ctx sdk.Ctx, address sdk.Address, severityPe
 	return slashAmount
 }
 
-// called on begin blocker
+// burnApplications - Burn tokens for validators
 func (k Keeper) burnApplications(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.BurnApplicationKey)
@@ -85,12 +89,13 @@ func (k Keeper) burnApplications(ctx sdk.Ctx) {
 	}
 }
 
-// store functions used to keep track of a application burn
+// setApplicationBurn - Store functions used to keep track of a validator burn
 func (k Keeper) setApplicationBurn(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.KeyForAppBurn(address), amino.MustMarshalBinaryBare(amount))
 }
 
+// getApplicaitonBurn - Retrieve application burn
 func (k Keeper) getApplicationBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Int, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForAppBurn(address))
@@ -102,6 +107,7 @@ func (k Keeper) getApplicationBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.
 	return
 }
 
+// deleteValidatorBurn - Remove valdiator burn from store
 func (k Keeper) deleteApplicationBurn(ctx sdk.Ctx, address sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForAppBurn(address))
