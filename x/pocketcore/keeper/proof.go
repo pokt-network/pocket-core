@@ -4,9 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"math"
-	"strconv"
-
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -14,6 +11,7 @@ import (
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/tendermint/tendermint/rpc/client"
+	"math"
 )
 
 // auto sends a proof transaction for the claim
@@ -178,33 +176,8 @@ func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 	if err != nil {
 		return 0, err
 	}
-	// hash the bytes and take the first 15 characters of the string
-	proofsHash := hex.EncodeToString(pc.Hash(r))[:15]
-	var maxValue int64
-	// for each hex character of the hash
-	for i := 15; i > 0; i-- {
-		// parse the integer from this point of the hex string onward
-		maxValue, err = strconv.ParseInt(string(proofsHash[:i]), 16, 64)
-		if err != nil {
-			return 0, err
-
-		}
-		// if the total relays is greater than the resulting integer, this is the pseudorandom chosen proof
-		if totalRelays > maxValue {
-			firstCharacter, err := strconv.ParseInt(string(proofsHash[0]), 16, 64)
-			if err != nil {
-				return 0, err
-			}
-			selection := firstCharacter%int64(i) + 1
-			// parse the integer from this point of the hex string onward
-			index, err := strconv.ParseInt(proofsHash[:selection], 16, 64)
-			if err != nil {
-				return 0, err
-			}
-			return index, err
-		}
-	}
-	return 0, nil
+	return pc.PseudoRandomGeneration(totalRelays, r)
+	//return 0, nil
 }
 
 func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfChallenges sdk.Int) {
