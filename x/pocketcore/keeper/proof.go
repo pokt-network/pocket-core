@@ -158,8 +158,13 @@ type pseudorandomGenerator struct {
 
 // generates the required pseudorandom index for the zero knowledge proof
 func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.SessionHeader) (int64, error) {
+	// get the session context
+	sessionCtx, er := ctx.PrevCtx(header.SessionBlockHeight)
+	if er != nil {
+		return 0, er
+	}
 	// get the context for the proof (the proof context is X sessions after the session began)
-	proofContext, err := ctx.PrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(ctx)*k.BlocksPerSession(ctx)) // next session block hash
+	proofContext, err := ctx.PrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(sessionCtx)*k.BlocksPerSession(sessionCtx)) // next session block hash
 	if err != nil {
 		return 0, err
 	}
