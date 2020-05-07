@@ -22,7 +22,12 @@ const (
 	CodeInvalidStakeAmount    CodeType          = 115
 	CodeNoChains              CodeType          = 116
 	CodeInvalidNetworkID      CodeType          = 117
+	CodeTooManyChains         CodeType          = 118
 )
+
+func ErrTooManyChains(Codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(Codespace, CodeTooManyChains, "application staking for too many chains")
+}
 
 func ErrNoChains(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeNoChains, "validator must stake with hosted blockchains")

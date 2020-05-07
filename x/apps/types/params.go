@@ -20,6 +20,7 @@ const (
 	DefaultBaseRelaysPerPOKT   int64  = 100
 	DefaultStabilityAdjustment int64  = 0
 	DefaultParticipationRateOn bool   = false
+	DefaultMaxChains           int64  = 15
 )
 
 // Keys for parameter access
@@ -30,6 +31,7 @@ var (
 	BaseRelaysPerPOKT      = []byte("BaseRelaysPerPOKT")
 	StabilityAdjustment    = []byte("StabilityAdjustment")
 	ParticipationRateOn    = []byte("ParticipationRateOn")
+	KeyMaximumChains       = []byte("MaximumChains")
 )
 
 var _ types.ParamSet = (*Params)(nil)
@@ -42,6 +44,7 @@ type Params struct {
 	BaseRelaysPerPOKT   int64         `json:"base_relays_per_pokt" yaml:"base_relays_per_pokt"`   // base relays per POKT coin staked
 	StabilityAdjustment int64         `json:"stability_adjustment" yaml:"stability_adjustment"`   // the stability adjustment from the governance
 	ParticipationRateOn bool          `json:"participation_rate_on" yaml:"participation_rate_on"` // the participation rate affects the amount minted based on staked ratio
+	MaxChains           int64         `json:"maximum_chains" yaml:"maximum_chains"`               // the maximum number of chains an app can stake for
 }
 
 // Implements params.ParamSet
@@ -53,6 +56,7 @@ func (p *Params) ParamSetPairs() types.ParamSetPairs {
 		{Key: BaseRelaysPerPOKT, Value: &p.BaseRelaysPerPOKT},
 		{Key: StabilityAdjustment, Value: &p.StabilityAdjustment},
 		{Key: ParticipationRateOn, Value: &p.ParticipationRateOn},
+		{Key: KeyMaximumChains, Value: &p.MaxChains},
 	}
 }
 
@@ -65,6 +69,7 @@ func DefaultParams() Params {
 		BaseRelaysPerPOKT:   DefaultBaseRelaysPerPOKT,
 		StabilityAdjustment: DefaultStabilityAdjustment,
 		ParticipationRateOn: DefaultParticipationRateOn,
+		MaxChains:           DefaultMaxChains,
 	}
 }
 
@@ -98,13 +103,15 @@ func (p Params) String() string {
   Minimum Stake:     	       %d
   BaseRelaysPerPOKT            %d
   Stability Adjustment         %d
-  Participation Rate On        %v,`,
+  Participation Rate On        %v
+  MaxChains                    %d,`,
 		p.UnstakingTime,
 		p.MaxApplications,
 		p.AppStakeMin,
 		p.BaseRelaysPerPOKT,
 		p.StabilityAdjustment,
-		p.ParticipationRateOn)
+		p.ParticipationRateOn,
+		p.MaxChains)
 }
 
 // unmarshal the current pos params value from store key or panic

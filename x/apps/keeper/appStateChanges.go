@@ -13,6 +13,9 @@ import (
 func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Application, amount sdk.Int) sdk.Error {
 	// convert the amount to sdk.Coin
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
+	if int64(len(application.Chains)) > k.MaxChains(ctx) {
+		return types.ErrTooManyChains(types.ModuleName)
+	}
 	// attempt to get the application from the world state
 	app, found := k.GetApplication(ctx, application.Address)
 	// if the application exists

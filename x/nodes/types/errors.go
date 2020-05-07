@@ -29,7 +29,12 @@ const (
 	CodeWaitingValidator         CodeType          = 117
 	CodeInvalidServiceURL        CodeType          = 118
 	CodeInvalidNetworkIdentifier CodeType          = 119
+	CodeTooManyChains            CodeType          = 120
 )
+
+func ErrTooManyChains(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeTooManyChains, "can't stake for this many chains")
+}
 
 func ErrValidatorWaitingToUnstake(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeWaitingValidator, "validator is currently waiting to unstake")

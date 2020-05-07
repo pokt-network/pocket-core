@@ -13,6 +13,7 @@
 - Updated burning to burn on tx handler level
 - Removed slash.go in apps module
 - Ensured validator !isJailed in removeValidatorTokens
+- Added max chains params to nodes and apps module
 
 ## RC-0.3.0
 - Added governance module from posmint
