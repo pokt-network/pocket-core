@@ -2,13 +2,14 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/libs/common"
 )
 
-// validate check called before staking
+// ValidateApplicationStaking - Check application before staking
 func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Application, amount sdk.Int) sdk.Error {
 	// convert the amount to sdk.Coin
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
@@ -49,12 +50,12 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 	return nil
 }
 
-// store ops when a application stakes
+// StakeApplication - Store ops when a application stakes
 func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amount sdk.Int) sdk.Error {
 	// send the coins from address to staked module account
 	err := k.coinsFromUnstakedToStaked(ctx, application, amount)
 	if err != nil {
-		return sdk.ErrInternal(err.Error())
+		return err
 	}
 	// add coins to the staked field
 	application = application.AddStakedTokens(amount)
@@ -69,6 +70,7 @@ func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amo
 	return nil
 }
 
+// ValidateApplicationBeginUnstaking - Check for validator status
 func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Ctx, application types.Application) sdk.Error {
 	// must be staked to begin unstaking
 	if !application.IsStaked() {
@@ -84,7 +86,7 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Ctx, application types
 	return nil
 }
 
-// store ops when application begins to unstake -> starts the unstaking timer
+// BeginUnstakingApplication - Store ops when application begins to unstake -> starts the unstaking timer
 func (k Keeper) BeginUnstakingApplication(ctx sdk.Ctx, application types.Application) {
 	// get params
 	params := k.GetParams(ctx)
@@ -103,6 +105,7 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Ctx, application types.Applica
 	ctx.Logger().Info("Began unstaking App " + application.Address.String())
 }
 
+// ValidateApplicationFinishUnstaking - Check if application can finish unstaking
 func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Ctx, application types.Application) sdk.Error {
 	if !application.IsUnstaking() {
 		return types.ErrApplicationStatus(k.codespace)
@@ -117,7 +120,7 @@ func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Ctx, application type
 	return nil
 }
 
-// store ops to unstake a application -> called after unstaking time is up
+// FinishUnstakingApplication - Store ops to unstake a application -> called after unstaking time is up
 func (k Keeper) FinishUnstakingApplication(ctx sdk.Ctx, application types.Application) {
 	// delete the application from the unstaking queue
 	k.deleteUnstakingApplication(ctx, application)
@@ -149,7 +152,7 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Ctx, application types.Applic
 	})
 }
 
-// force unstake (called when slashed below the minimum)
+// ForceApplicationUnstake - Coerce unstake (called when slashed below the minimum)
 func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Application) sdk.Error {
 	// delete the application from staking set as they are unstaked
 	k.deleteApplicationFromStakingSet(ctx, application)
@@ -183,7 +186,7 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Applicati
 	return nil
 }
 
-// send a application to jail
+// JailApplication - Send a application to jail
 func (k Keeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	application := k.mustGetApplicationByConsAddr(ctx, addr)
 	if application.Jailed {
@@ -196,6 +199,7 @@ func (k Keeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	logger.Info(fmt.Sprintf("application %s jailed", addr))
 }
 
+// ValidateUnjailMessage - Check unjail message
 func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgAppUnjail) (addr sdk.Address, err sdk.Error) {
 	application := k.Application(ctx, msg.AppAddr)
 	if application == nil {
@@ -216,7 +220,7 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgAppUnjail) (addr
 	return
 }
 
-// remove a application from jail
+// UnjailApplication - Remove a application from jail
 func (k Keeper) UnjailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	application := k.mustGetApplicationByConsAddr(ctx, addr)
 	if !application.Jailed {

@@ -7,6 +7,7 @@
 - Add RelaysToTokens as pamater for the nodes module
 - removed return on loop from unstakeAllMaturedValidators
 - Remove claim from world state after handled replay attack
+- Use sdk.Error for app module keeper coinsFromUnstakedToStaked
 
 ## RC-0.3.0
 - Added governance module from posmint
