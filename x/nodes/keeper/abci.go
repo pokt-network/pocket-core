@@ -19,8 +19,6 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 		previousProposer := k.GetPreviousProposer(ctx)
 		k.blockReward(ctx, previousProposer)
 	}
-	// burn any custom validator slashes
-	k.burnValidators(ctx)
 	// record the new proposer for when we payout on the next block
 	addr := sdk.Address(req.Header.ProposerAddress)
 	k.SetPreviousProposer(ctx, addr)

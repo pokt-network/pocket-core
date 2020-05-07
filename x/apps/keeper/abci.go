@@ -6,11 +6,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-// BeginBlocker - Called at the beggining of every block
-func BeginBlocker(ctx sdk.Ctx, _ abci.RequestBeginBlock, k Keeper) {
-	// burn applications triggered by the custom burning interface
-	k.burnApplications(ctx)
-}
+func BeginBlocker(ctx sdk.Ctx, _ abci.RequestBeginBlock, k Keeper) {}
 
 // EndBlocker - Called at the end of every block, update validator set
 func EndBlocker(ctx sdk.Ctx, k Keeper) []abci.ValidatorUpdate {

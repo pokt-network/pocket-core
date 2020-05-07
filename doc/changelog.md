@@ -10,6 +10,9 @@
 - Use sdk.Error for app module keeper coinsFromUnstakedToStaked
 - Updated minting scheme to mint on the tx handler level
 - Fixed minting issue with unused fees
+- Updated burning to burn on tx handler level
+- Removed slash.go in apps module
+- Ensured validator !isJailed in removeValidatorTokens
 
 ## RC-0.3.0
 - Added governance module from posmint

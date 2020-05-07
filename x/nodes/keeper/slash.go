@@ -6,29 +6,15 @@ import (
 
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/crypto"
 
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// BurnValidator - Remove coins from account & supply
-func (k Keeper) BurnValidator(ctx sdk.Ctx, address sdk.Address, amount sdk.Int) {
-	curBurn, _ := k.getValidatorBurn(ctx, address)
-	newSeverity := curBurn.Add(amount)
-	k.setValidatorBurn(ctx, newSeverity, address)
-	ctx.Logger().Info("Custom burn set for " + address.String() + " with a severity of " + amount.String())
-}
-
 // BurnForChallenge - Tries to remove coins from account & supply for a challenged validator
 func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address) {
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(challenges)
-	val, found := k.GetValidator(ctx, address)
-	if !found {
-		ctx.Logger().Error("validator trying to burn for challenges, not found: possibly force unstaked?")
-		return
-	}
-	k.BurnValidator(ctx, val.Address, coins)
+	k.simpleSlash(ctx, address, coins)
 }
 
 // simpleSlash - Slash validator for an infraction committed at a known height
@@ -289,54 +275,4 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, po
 		// Set the updated signing info
 		k.SetValidatorSigningInfo(ctx, addr, signInfo)
 	}
-}
-
-// getBurnFromSeverity - Retrieve burn from severity of infraction
-func (k Keeper) getBurnFromSeverity(ctx sdk.Ctx, address sdk.Address, severityPercentage sdk.Dec) sdk.Int {
-	val := k.mustGetValidator(ctx, address)
-	amount := sdk.TokensFromConsensusPower(val.ConsensusPower())
-	slashAmount := amount.ToDec().Mul(severityPercentage).TruncateInt()
-	return slashAmount
-}
-
-// burnValidators - Burn tokens for validators
-func (k Keeper) burnValidators(ctx sdk.Ctx) {
-	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.BurnValidatorKey)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		severity := sdk.ZeroInt()
-		address := sdk.Address(types.AddressFromKey(iterator.Key()))
-		amino.MustUnmarshalBinaryBare(iterator.Value(), &severity)
-		k.simpleSlash(ctx, address, severity)
-		// remove from the burn store
-		store.Delete(iterator.Key())
-	}
-}
-
-// setValidatorBurn - Store functions used to keep track of a validator burn
-func (k Keeper) setValidatorBurn(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyForValidatorBurn(address), amino.MustMarshalBinaryBare(amount))
-}
-
-// getValidatorBurn - Retrieve Validator burn
-func (k Keeper) getValidatorBurn(ctx sdk.Ctx, address sdk.Address) (coins sdk.Int, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.KeyForValidatorBurn(address))
-	if value == nil {
-		return sdk.ZeroInt(), false
-	}
-	found = true
-	err := k.cdc.UnmarshalBinaryBare(value, &coins)
-	if err != nil {
-		coins = sdk.ZeroInt()
-	}
-	return
-}
-
-// deleteValidatorBurn - Remove valdiator burn from store
-func (k Keeper) deleteValidatorBurn(ctx sdk.Ctx, address sdk.Address) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyForValidatorBurn(address))
 }
