@@ -40,7 +40,7 @@ func TestAllEvidence_AddGetEvidence(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof)
+	SetProof(header, RelayEvidence, proof, 100000)
 	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
 }
 
@@ -69,7 +69,7 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof)
+	SetProof(header, RelayEvidence, proof, 100000)
 	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
 	GetProof(header, RelayEvidence, 0)
 	DeleteEvidence(header, RelayEvidence)
@@ -120,9 +120,9 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof)
-	SetProof(header, RelayEvidence, proof2)
-	SetProof(header2, RelayEvidence, proof2) // different header so shouldn't be counted
+	SetProof(header, RelayEvidence, proof, 100000)
+	SetProof(header, RelayEvidence, proof2, 100000)
+	SetProof(header2, RelayEvidence, proof2, 100000) // different header so shouldn't be counted
 	assert.Equal(t, GetTotalProofs(header, RelayEvidence), int64(2))
 }
 

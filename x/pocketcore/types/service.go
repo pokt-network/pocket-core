@@ -57,7 +57,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 	// validate unique relay
 	totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence)
 	// get evidence key by proof
-	if !IsUniqueProof(evidenceHeader, r.Proof) {
+	if !IsUniqueProof(r.Proof) {
 		return NewDuplicateProofError(ModuleName)
 	}
 	// validate not over service

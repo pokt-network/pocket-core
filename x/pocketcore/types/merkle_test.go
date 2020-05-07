@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"github.com/stretchr/testify/assert"
+	"github.com/willf/bloom"
 	"math"
 	"reflect"
 	"testing"
@@ -27,6 +28,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 	}
 	validAAT.ApplicationSignature = hex.EncodeToString(appSig)
 	i := Evidence{
+		Bloom: bloom.New(10000, 4),
 		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,
@@ -108,6 +110,7 @@ func TestEvidence_GenerateMerkleProof(t *testing.T) {
 	}
 	validAAT.ApplicationSignature = hex.EncodeToString(appSig)
 	i := Evidence{
+		Bloom: bloom.New(10000, 4),
 		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,
@@ -193,6 +196,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	}
 	validAAT.ApplicationSignature = hex.EncodeToString(appSig)
 	i := Evidence{
+		Bloom: bloom.New(10000, 4),
 		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,
@@ -248,6 +252,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 		},
 	}
 	i2 := Evidence{
+		Bloom: bloom.New(10000, 4),
 		SessionHeader: SessionHeader{
 			ApplicationPubKey:  appPubKey,
 			Chain:              ethereum,

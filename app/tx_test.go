@@ -423,7 +423,7 @@ func TestClaimTx(t *testing.T) {
 			ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
 			Chain:              PlaceholderHash,
 			SessionBlockHeight: 1,
-		}, pocketTypes.RelayEvidence, proof)
+		}, pocketTypes.RelayEvidence, proof, 1000000)
 		assert.Nil(t, err)
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
@@ -455,7 +455,7 @@ func TestClaimTxChallenge(t *testing.T) {
 	genBz, keys, _, _ := fiveValidatorsOneAppGenesis()
 	challenges := NewValidChallengeProof(t, keys, 5)
 	for _, c := range challenges {
-		c.Store()
+		c.Store(1000000)
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
