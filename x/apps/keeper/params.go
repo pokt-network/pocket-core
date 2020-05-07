@@ -53,7 +53,13 @@ func (k Keeper) MinimumStake(ctx sdk.Ctx) (res int64) {
 	return
 }
 
-// GetParams - Retrieve all parameters as types.Params
+// MaxChains - Retrieve maximum chains
+func (k Keeper) MaxChains(ctx sdk.Ctx) (res int64) {
+	k.Paramstore.Get(ctx, types.KeyMaximumChains, &res)
+	return
+}
+
+// Get all parameteras as types.Params
 func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 	return types.Params{
 		UnstakingTime:       k.UnStakingTime(ctx),
@@ -62,6 +68,7 @@ func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 		BaseRelaysPerPOKT:   k.BaselineThroughputStakeRate(ctx),
 		ParticipationRateOn: k.ParticipationRateOn(ctx),
 		StabilityAdjustment: k.StakingAdjustment(ctx),
+		MaxChains:           k.MaxChains(ctx),
 	}
 }
 

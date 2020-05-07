@@ -122,6 +122,10 @@ func (k Keeper) BlocksPerSession(ctx sdk.Ctx) (res int64) {
 	k.Paramstore.Get(ctx, types.KeySessionBlock, &res)
 	return
 }
+func (k Keeper) MaxChains(ctx sdk.Ctx) (res int64) {
+	k.Paramstore.Get(ctx, types.KeyMaxChains, &res)
+	return
+}
 
 // GetParams - Retrieve all parameters as types.Params
 func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
@@ -139,6 +143,7 @@ func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 		DowntimeJailDuration:    k.DowntimeJailDuration(ctx),
 		SlashFractionDoubleSign: k.SlashFractionDoubleSign(ctx),
 		SlashFractionDowntime:   k.SlashFractionDowntime(ctx),
+		MaximumChains:           k.MaxChains(ctx),
 	}
 }
 

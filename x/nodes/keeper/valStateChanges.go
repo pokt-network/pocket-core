@@ -84,6 +84,9 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 // ValidateValidatorStaking - Check Valdiator before staking
 func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator, amount sdk.Int) sdk.Error {
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
+	if int64(len(validator.Chains)) > k.MaxChains(ctx) {
+		return types.ErrTooManyChains(types.ModuleName)
+	}
 	// check to see if teh public key has already been register for that validator
 	val, found := k.GetValidator(ctx, validator.Address)
 	if found {

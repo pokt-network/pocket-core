@@ -32,6 +32,7 @@ func TestDefaultParams(t *testing.T) {
 				DAOAllocation:            DefaultDAOAllocation,
 				ProposerAllocation:       DefaultProposerAllocation,
 				RelaysToTokensMultiplier: DefaultRelaysToTokensMultiplier,
+				MaximumChains:            DefaultMaxChains,
 			},
 		}}
 	for _, tt := range tests {
@@ -322,6 +323,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 		DowntimeJailDuration    time.Duration
 		SlashFractionDoubleSign types.Dec
 		SlashFractionDowntime   types.Dec
+		MaximumChains           int64
 	}
 
 	defParam := Params{
@@ -338,6 +340,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 		SlashFractionDowntime:   DefaultSlashFractionDowntime,
 		SessionBlockFrequency:   DefaultSessionBlocktime,
 		DAOAllocation:           DefaultDAOAllocation,
+		MaximumChains:           DefaultMaxChains,
 	}
 	defparamPairs := defParam.ParamSetPairs()
 
@@ -360,6 +363,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 			SlashFractionDowntime:   DefaultSlashFractionDowntime,
 			SessionBlockFrequency:   DefaultSessionBlocktime,
 			DAOAllocation:           DefaultDAOAllocation,
+			MaximumChains:           DefaultMaxChains,
 		}, defparamPairs},
 	}
 	for _, tt := range tests {
@@ -378,6 +382,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 				DowntimeJailDuration:    tt.fields.DowntimeJailDuration,
 				SlashFractionDoubleSign: tt.fields.SlashFractionDoubleSign,
 				SlashFractionDowntime:   tt.fields.SlashFractionDowntime,
+				MaximumChains:           tt.fields.MaximumChains,
 			}
 			if got := p.ParamSetPairs(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ParamSetPairs() = %v, want %v", got, tt.want)
@@ -401,6 +406,7 @@ func TestParams_String(t *testing.T) {
 		DowntimeJailDuration    time.Duration
 		SlashFractionDoubleSign types.Dec
 		SlashFractionDowntime   types.Dec
+		MaximumChains           int64
 	}
 	tests := []struct {
 		name   string
@@ -421,6 +427,7 @@ func TestParams_String(t *testing.T) {
 			SlashFractionDowntime:   DefaultSlashFractionDowntime,
 			SessionBlockFrequency:   DefaultSessionBlocktime,
 			DaoAllocation:           DefaultDAOAllocation,
+			MaximumChains:           DefaultMaxChains,
 		}, fmt.Sprintf(`Params:
   Unstaking Time:          %s
   Max Validators:          %d
@@ -432,9 +439,10 @@ func TestParams_String(t *testing.T) {
   DowntimeJailDuration:    %s
   SlashFractionDoubleSign: %s
   SlashFractionDowntime:   %s
-  BlocksPerSession    %d
+  BlocksPerSession         %d
   Proposer Allocation      %d
-  DAO allocation           %d`,
+  DAO allocation           %d
+  Maximum Chains           %d`,
 			DefaultUnstakingTime,
 			DefaultMaxValidators,
 			types.DefaultStakeDenom,
@@ -447,7 +455,8 @@ func TestParams_String(t *testing.T) {
 			DefaultSlashFractionDowntime,
 			DefaultSessionBlocktime,
 			DefaultProposerAllocation,
-			DefaultDAOAllocation)},
+			DefaultDAOAllocation,
+			DefaultMaxChains)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -465,6 +474,7 @@ func TestParams_String(t *testing.T) {
 				DowntimeJailDuration:    tt.fields.DowntimeJailDuration,
 				SlashFractionDoubleSign: tt.fields.SlashFractionDoubleSign,
 				SlashFractionDowntime:   tt.fields.SlashFractionDowntime,
+				MaximumChains:           tt.fields.MaximumChains,
 			}
 			if got := p.String(); got != tt.want {
 				t.Errorf("String() = %v, want %v", got, tt.want)

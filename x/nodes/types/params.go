@@ -12,17 +12,18 @@ import (
 // POS params default values
 const (
 	// DefaultParamspace for params keeper
+	DefaultRelaysToTokensMultiplier int64  = 1000
 	DefaultParamspace                      = ModuleName
 	DefaultUnstakingTime                   = time.Hour * 24 * 7 * 3
 	DefaultMaxValidators            uint64 = 100000
 	DefaultMinStake                 int64  = 1000000
-	DefaultRelaysToTokensMultiplier int64  = 1000
 	DefaultMaxEvidenceAge                  = 60 * 2 * time.Second
 	DefaultSignedBlocksWindow              = int64(100)
 	DefaultDowntimeJailDuration            = 60 * 10 * time.Second
 	DefaultSessionBlocktime                = 25
 	DefaultProposerAllocation              = 1
 	DefaultDAOAllocation                   = 10
+	DefaultMaxChains                       = 15
 )
 
 // nolint - Keys for parameter access
@@ -41,6 +42,7 @@ var (
 	KeySessionBlock                = []byte("BlocksPerSession")
 	KeyDAOAllocation               = []byte("DAOAllocation")
 	KeyProposerAllocation          = []byte("ProposerPercentage")
+	KeyMaxChains                   = []byte("MaximumChains")
 	DoubleSignJailEndTime          = time.Unix(253402300799, 0) // forever
 	DefaultMinSignedPerWindow      = sdk.NewDecWithPrec(5, 1)
 	DefaultSlashFractionDoubleSign = sdk.NewDec(1).Quo(sdk.NewDec(20))
@@ -51,6 +53,7 @@ var _ sdk.ParamSet = (*Params)(nil)
 
 // Params defines the high level settings for pos module
 type Params struct {
+	RelaysToTokensMultiplier int64         `json:"relays_to_tokens_multiplier" yaml:"relays_to_tokens_multiplier"`
 	UnstakingTime            time.Duration `json:"unstaking_time" yaml:"unstaking_time"`                   // how much time must pass between the begin_unstaking_tx and the node going to -> unstaked status
 	MaxValidators            uint64        `json:"max_validators" yaml:"max_validators"`                   // maximum number of validators in the network at any given block
 	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                         // the monetary denomination of the coins in the network `uPOKT` or `uAtom` or `Wei`
@@ -58,7 +61,7 @@ type Params struct {
 	SessionBlockFrequency    int64         `json:"session_block_frequency" yaml:"session_block_frequency"` // how many blocks are in a session (pocket network unit)
 	DAOAllocation            int64         `json:"dao_allocation" yaml:"dao_allocation"`
 	ProposerAllocation       int64         `json:"proposer_allocation" yaml:"proposer_allocation"`
-	RelaysToTokensMultiplier int64         `json:"relays_to_tokens_multiplier" yaml:"relays_to_tokens_multiplier"`
+	MaximumChains            int64         `json:"maximum_chains" yaml:"maximum_chains"`
 	// slashing params
 	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`                     // maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)
 	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`             // window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks
@@ -85,6 +88,7 @@ func (p *Params) ParamSetPairs() sdk.ParamSetPairs {
 		{Key: KeyDAOAllocation, Value: &p.DAOAllocation},
 		{Key: KeyProposerAllocation, Value: &p.ProposerAllocation},
 		{Key: KeyRelaysToTokensMultiplier, Value: &p.RelaysToTokensMultiplier},
+		{Key: KeyMaxChains, Value: &p.MaximumChains},
 	}
 }
 
@@ -105,6 +109,7 @@ func DefaultParams() Params {
 		DAOAllocation:            DefaultDAOAllocation,
 		ProposerAllocation:       DefaultProposerAllocation,
 		RelaysToTokensMultiplier: DefaultRelaysToTokensMultiplier,
+		MaximumChains:            DefaultMaxChains,
 	}
 }
 
@@ -154,9 +159,10 @@ func (p Params) String() string {
   DowntimeJailDuration:    %s
   SlashFractionDoubleSign: %s
   SlashFractionDowntime:   %s
-  BlocksPerSession    %d
+  BlocksPerSession         %d
   Proposer Allocation      %d
-  DAO allocation           %d`,
+  DAO allocation           %d
+  Maximum Chains           %d`,
 		p.UnstakingTime,
 		p.MaxValidators,
 		p.StakeDenom,
@@ -169,7 +175,8 @@ func (p Params) String() string {
 		p.SlashFractionDowntime,
 		p.SessionBlockFrequency,
 		p.ProposerAllocation,
-		p.DAOAllocation)
+		p.DAOAllocation,
+		p.MaximumChains)
 }
 
 // unmarshal the current pos params value from store key or panic

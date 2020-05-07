@@ -20,6 +20,7 @@ func TestDefaultParams(t *testing.T) {
 				BaseRelaysPerPOKT:   DefaultBaseRelaysPerPOKT,
 				StabilityAdjustment: DefaultStabilityAdjustment,
 				ParticipationRateOn: DefaultParticipationRateOn,
+				MaxChains:           DefaultMaxChains,
 			},
 		}}
 	for _, tt := range tests {
@@ -181,6 +182,7 @@ func TestParams_MustMarshalMarshal(t *testing.T) {
 				MaxApplications:   DefaultMaxApplications,
 				AppStakeMin:       DefaultMinStake,
 				BaseRelaysPerPOKT: DefaultBaseRelaysPerPOKT,
+				MaxChains: DefaultMaxChains,
 			},
 			args{moduleCdc.MustMarshalBinaryLengthPrefixed(DefaultParams())},
 		},
@@ -218,13 +220,15 @@ func TestParams_String(t *testing.T) {
   Minimum Stake:     	       %d
   BaseRelaysPerPOKT            %d
   Stability Adjustment         %d
-  Participation Rate On        %v,`,
+  Participation Rate On        %v
+  Maximum Chains               %d,`,
 				DefaultUnstakingTime,
 				DefaultMaxApplications,
 				DefaultMinStake,
 				DefaultBaseRelaysPerPOKT,
 				DefaultStabilityAdjustment,
-				DefaultParticipationRateOn),
+				DefaultParticipationRateOn,
+				DefaultMaxChains),
 		},
 	}
 	for _, test := range tests {
