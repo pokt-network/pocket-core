@@ -39,18 +39,18 @@ func TestMsgApp_GetSigners(t *testing.T) {
 	tests := []struct {
 		name string
 		args
-		want []sdk.Address
+		want sdk.Address
 	}{
 		{
 			name: "return signers",
 			args: args{msgAppStake},
-			want: []sdk.Address{sdk.Address(msgAppStake.PubKey.Address())},
+			want: sdk.Address(msgAppStake.PubKey.Address()),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.args.msgAppStake.GetSigners(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetSigners() = %v, want %v", got, tt.want)
+			if got := tt.args.msgAppStake.GetSigner(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetSigner() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -177,17 +177,17 @@ func TestMsgBeginAppUnstake_GetSigners(t *testing.T) {
 	tests := []struct {
 		name string
 		args
-		want []sdk.Address
+		want sdk.Address
 	}{
 		{
 			name: "return signers",
 			args: args{msgBeginAppUnstake},
-			want: []sdk.Address{sdk.Address(msgAppStake.PubKey.Address())},
+			want: sdk.Address(msgAppStake.PubKey.Address()),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.args.msgBeginAppUnstake.GetSigners(); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.args.msgBeginAppUnstake.GetSigner(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSigners() = %v, want %v", got, tt.want)
 			}
 		})
@@ -346,17 +346,17 @@ func TestMsgAppUnjail_GetSigners(t *testing.T) {
 	tests := []struct {
 		name string
 		args
-		want []sdk.Address
+		want sdk.Address
 	}{
 		{
 			name: "return signers",
 			args: args{msgAppUnjail},
-			want: []sdk.Address{sdk.Address(msgAppUnjail.AppAddr)},
+			want: sdk.Address(msgAppUnjail.AppAddr),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.args.msgAppUnjail.GetSigners(); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.args.msgAppUnjail.GetSigner(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetSigners() = %v, want %v", got, tt.want)
 			}
 		})

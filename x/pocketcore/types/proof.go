@@ -14,7 +14,7 @@ type Proof interface {
 	Hash() []byte                                                                                        // returns cryptographic hash bz
 	HashString() string                                                                                  // returns the hex string representation of the hash
 	ValidateBasic() sdk.Error                                                                            // storeless validation check for the object
-	GetSigners() []sdk.Address                                                                           // returns the main signer(s) for the proof (used in messages)
+	GetSigner() sdk.Address                                                                              // returns the main signer(s) for the proof (used in messages)
 	SessionHeader() SessionHeader                                                                        // returns the session header
 	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error // validate the object
 	Store(max int64)                                                                                     // handle the proof after validation
@@ -202,12 +202,12 @@ func (rp RelayProof) Store(maxRelays int64) {
 	SetProof(rp.SessionHeader(), RelayEvidence, rp, maxRelays)
 }
 
-func (rp RelayProof) GetSigners() []sdk.Address {
+func (rp RelayProof) GetSigner() sdk.Address {
 	pk, err := crypto.NewPublicKey(rp.ServicerPubKey)
 	if err != nil {
 		return nil
 	}
-	return []sdk.Address{sdk.Address(pk.Address())}
+	return sdk.Address(pk.Address())
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -435,8 +435,8 @@ func (c ChallengeProofInvalidData) HashString() string {
 }
 
 // "GetSigners" - Returns the signer(s) for the message
-func (c ChallengeProofInvalidData) GetSigners() []sdk.Address {
-	return []sdk.Address{c.ReporterAddress}
+func (c ChallengeProofInvalidData) GetSigner() sdk.Address {
+	return c.ReporterAddress
 }
 
 // "Store" - Stores the challenge proof (stores in cache)

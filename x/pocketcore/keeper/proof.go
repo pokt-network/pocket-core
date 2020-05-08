@@ -72,11 +72,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 
 func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.Address, claim pc.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the claim
-	addrs := proof.GetSigners()
-	if len(addrs) < 1 {
-		return nil, pc.MsgClaim{}, pc.NewEmptyAddressError(pc.ModuleName)
-	}
-	addr := addrs[0]
+	addr := proof.GetSigner()
 	// get the claim for the address
 	claim, found := k.GetClaim(ctx, addr, proof.Leaf.SessionHeader(), proof.Leaf.EvidenceType())
 	// if the claim is not found for this claim

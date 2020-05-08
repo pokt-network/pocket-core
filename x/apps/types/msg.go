@@ -28,9 +28,8 @@ type MsgAppStake struct {
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgAppStake) GetSigners() []sdk.Address {
-	addrs := []sdk.Address{sdk.Address(msg.PubKey.Address())}
-	return addrs
+func (msg MsgAppStake) GetSigner() sdk.Address {
+	return sdk.Address(msg.PubKey.Address())
 }
 
 // GetSignBytes returns the message bytes to sign over.
@@ -77,8 +76,8 @@ type MsgBeginAppUnstake struct {
 }
 
 // GetSigners address(es) that must sign over msg.GetSignBytes()
-func (msg MsgBeginAppUnstake) GetSigners() []sdk.Address {
-	return []sdk.Address{msg.Address}
+func (msg MsgBeginAppUnstake) GetSigner() sdk.Address {
+	return msg.Address
 }
 
 // GetSignBytes returns the message bytes to sign over.
@@ -125,8 +124,8 @@ func (msg MsgAppUnjail) GetFee() sdk.Int {
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgAppUnjail) GetSigners() []sdk.Address {
-	return []sdk.Address{msg.AppAddr}
+func (msg MsgAppUnjail) GetSigner() sdk.Address {
+	return msg.AppAddr
 }
 
 // GetSignBytes returns the message bytes to sign over.

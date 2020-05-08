@@ -19,7 +19,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes"
 	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	authTypes "github.com/pokt-network/posmint/x/auth/types"
@@ -636,12 +635,12 @@ func TestRPC_RawTX(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
 	txBz, err := auth.DefaultTxEncoder(memCodec())(authTypes.NewTestTx(types.Context{}.WithChainID("pocket-test"),
-		[]types.Msg{types2.MsgSend{
+		types2.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
 			Amount:      types.NewInt(1),
-		}},
-		[]crypto.PrivateKey{pk},
+		},
+		pk,
 		common.RandInt64(),
 		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))))
 	assert.Nil(t, err)
