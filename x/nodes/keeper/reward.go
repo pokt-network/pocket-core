@@ -11,9 +11,13 @@ import (
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
-	toNode, toFeeCollector := k.NodeCutOfReward(ctx, coins)
-	k.mint(ctx, toNode, address)
-	k.mint(ctx, toFeeCollector, k.getFeePool(ctx).GetAddress())
+	toNode, toFeeCollector := k.NodeReward(ctx, coins)
+	if toNode.IsPositive() {
+		k.mint(ctx, toNode, address)
+	}
+	if toFeeCollector.IsPositive() {
+		k.mint(ctx, toFeeCollector, k.getFeePool(ctx).GetAddress())
+	}
 }
 
 // blockReward - Handles distribution of the collected fees
@@ -27,9 +31,9 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%
 	daoAllocation := sdk.NewDec(k.DAOAllocation(ctx))
 	proposerAllocation := sdk.NewDec(k.ProposerAllocation(ctx))
-	totalAllocationWithoutNodeCut := daoAllocation.Add(proposerAllocation)
+	daoAndProposerAllocationg := daoAllocation.Add(proposerAllocation)
 	// get the new percentages based on the total. This is needed because the node (relayer) cut has already been allocated
-	daoAllocation = daoAllocation.Quo(totalAllocationWithoutNodeCut)
+	daoAllocation = daoAllocation.Quo(daoAndProposerAllocation)
 	// dao cut calculation truncates int ex: 1.99uPOKT = 1uPOKT
 	daoCut := feesCollected.ToDec().Mul(daoAllocation).TruncateInt()
 	// proposer is whatever is left
