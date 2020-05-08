@@ -34,6 +34,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	mockCtx.On("KVStore", keys[appsTypes.StoreKey]).Return(ctx.KVStore(keys[appsTypes.StoreKey]))
 	mockCtx.On("Logger").Return(ctx.Logger())
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
+	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.BlocksPerSession(ctx)).Return(ctx, nil)
 
 	// generate the pseudorandom proof
