@@ -153,6 +153,12 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pokt-network/posmint v0.0.0-20200506171757-fc39b1c13686 h1:iNnjvqVpanERq/BGd21eD+M6sRUoywLMj2yHxmZNK6w=
 github.com/pokt-network/posmint v0.0.0-20200506171757-fc39b1c13686/go.mod h1:/Q6zRipV1L9ZML5kGMP5+J5lMoo+B/njn5ncf4gpIrc=
+github.com/pokt-network/posmint v0.0.0-20200508171231-759f9dfadcc8 h1:Ltp0UyucKE8ZhVb2t+NtmEVGHa2SEgjxpZHAg24KeH4=
+github.com/pokt-network/posmint v0.0.0-20200508171231-759f9dfadcc8/go.mod h1:/Q6zRipV1L9ZML5kGMP5+J5lMoo+B/njn5ncf4gpIrc=
+github.com/pokt-network/posmint v0.0.0-20200508173217-c27c102a5202 h1:APQuu7Jt6YOiT86LlCdiiVpHusj0Rhi767vRW8Sdl4A=
+github.com/pokt-network/posmint v0.0.0-20200508173217-c27c102a5202/go.mod h1:/Q6zRipV1L9ZML5kGMP5+J5lMoo+B/njn5ncf4gpIrc=
+github.com/pokt-network/posmint v0.0.0-20200508183918-b9ba6f13b99f h1:BL8pktFNII/i+TxirfgRnQlWv0+z+TmUF7nC6zV4qOk=
+github.com/pokt-network/posmint v0.0.0-20200508183918-b9ba6f13b99f/go.mod h1:/Q6zRipV1L9ZML5kGMP5+J5lMoo+B/njn5ncf4gpIrc=
 github.com/pokt-network/tendermint v0.32.11-0.20200416214829-c67ffb7bf00f h1:einsDo1okTcUPYYYYiC8MfDRHsD7IKI/6dnlTymWc6Q=
 github.com/pokt-network/tendermint v0.32.11-0.20200416214829-c67ffb7bf00f/go.mod h1:klZB7nl3GZZ9jPNaNHPYjNyoWW7mMx+5AXAN8Ov7bmY=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=

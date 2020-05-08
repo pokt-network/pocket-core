@@ -23,9 +23,8 @@ func TestMsgClaim_GetSigners(t *testing.T) {
 		MerkleRoot:    HashSum{},
 		TotalProofs:   0,
 		FromAddress:   addr,
-	}.GetSigners()
-	assert.Len(t, signers, 1)
-	assert.Equal(t, types.Address(signers[0]), addr)
+	}.GetSigner()
+	assert.Equal(t, types.Address(signers), addr)
 }
 
 func TestMsgClaim_ValidateBasic(t *testing.T) {
@@ -175,9 +174,8 @@ func TestMsgProof_GetSigners(t *testing.T) {
 			Token:              AAT{},
 			Signature:          "",
 		},
-	}.GetSigners()
-	assert.Len(t, signers, 1)
-	assert.Equal(t, signers[0], addr)
+	}.GetSigner()
+	assert.Equal(t, signers, addr)
 }
 
 func TestMsgProof_ValidateBasic(t *testing.T) {

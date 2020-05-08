@@ -31,9 +31,8 @@ type MsgStake struct {
 }
 
 // GetSigners retrun address(es) that must sign over msg.GetSignBytes()
-func (msg MsgStake) GetSigners() []sdk.Address {
-	addrs := []sdk.Address{sdk.Address(msg.PublicKey.Address())}
-	return addrs
+func (msg MsgStake) GetSigner() sdk.Address {
+	return sdk.Address(msg.PublicKey.Address())
 }
 
 // GetSignBytes returns the message bytes to sign over.
@@ -84,8 +83,8 @@ type MsgBeginUnstake struct {
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgBeginUnstake) GetSigners() []sdk.Address {
-	return []sdk.Address{msg.Address}
+func (msg MsgBeginUnstake) GetSigner() sdk.Address {
+	return msg.Address
 }
 
 // GetSignBytes returns the message bytes to sign over.
@@ -121,8 +120,8 @@ type MsgUnjail struct {
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgUnjail) GetSigners() []sdk.Address {
-	return []sdk.Address{msg.ValidatorAddr}
+func (msg MsgUnjail) GetSigner() sdk.Address {
+	return msg.ValidatorAddr
 }
 
 // GetSignBytes returns the message bytes to sign over.
@@ -160,8 +159,8 @@ type MsgSend struct {
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgSend) GetSigners() []sdk.Address {
-	return []sdk.Address{msg.FromAddress}
+func (msg MsgSend) GetSigner() sdk.Address {
+	return msg.FromAddress
 }
 
 // GetSignBytes returns the message bytes to sign over.
