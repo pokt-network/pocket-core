@@ -34,11 +34,10 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	mockCtx.On("KVStore", keys[appsTypes.StoreKey]).Return(ctx.KVStore(keys[appsTypes.StoreKey]))
 	mockCtx.On("Logger").Return(ctx.Logger())
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
-	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.BlocksPerSession(ctx)).Return(ctx, nil)
 
 	// generate the pseudorandom proof
-	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header)
+	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header, mockCtx)
 	assert.Nil(t, er)
 	merkleProofs, cousinIndex := evidence.GenerateMerkleProof(int(neededLeafIndex))
 	// get leaf and cousin node
@@ -74,11 +73,10 @@ func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 		mockCtx := new(Ctx)
 		mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 		mockCtx.On("KVStore", keys["params"]).Return(ctx.KVStore(keys["params"]))
-		mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 		mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.BlocksPerSession(ctx)).Return(ctx, nil)
 
 		// generate the pseudorandom proof
-		neededLeafIndex, err := keeper.getPseudorandomIndex(mockCtx, int64(relays), header)
+		neededLeafIndex, err := keeper.getPseudorandomIndex(mockCtx, int64(relays), header, mockCtx)
 		assert.Nil(t, err)
 		assert.LessOrEqual(t, neededLeafIndex, int64(relays))
 	}
