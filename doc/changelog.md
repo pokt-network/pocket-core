@@ -16,6 +16,8 @@
 - Ensured validator !isJailed in removeValidatorTokens
 - Added max chains params to nodes and apps module
 - Updated POSMint to have 1 msg and 1 signature per tx
+- Change ClaimSubmissionWindow and BlocksPerSession call on getPseudorandomIndex to use the session context
+- Changed getPseudorandomIndex add a new parameter for sessionCtx
 
 ## RC-0.3.0
 - Added governance module from posmint
