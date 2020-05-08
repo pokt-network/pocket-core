@@ -31,7 +31,7 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%
 	daoAllocation := sdk.NewDec(k.DAOAllocation(ctx))
 	proposerAllocation := sdk.NewDec(k.ProposerAllocation(ctx))
-	daoAndProposerAllocationg := daoAllocation.Add(proposerAllocation)
+	daoAndProposerAllocation := daoAllocation.Add(proposerAllocation)
 	// get the new percentages based on the total. This is needed because the node (relayer) cut has already been allocated
 	daoAllocation = daoAllocation.Quo(daoAndProposerAllocation)
 	// dao cut calculation truncates int ex: 1.99uPOKT = 1uPOKT
