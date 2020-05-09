@@ -23,7 +23,9 @@ func (k Keeper) removeValidatorTokens(ctx sdk.Ctx, v types.Validator, tokensToRe
 	k.deleteValidatorFromStakingSet(ctx, v)
 	v = v.RemoveStakedTokens(tokensToRemove)
 	k.SetValidator(ctx, v)
-	k.SetStakedValidator(ctx, v)
+	if !v.Jailed {
+		k.SetStakedValidator(ctx, v)
+	}
 	return v
 }
 
