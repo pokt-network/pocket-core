@@ -17,14 +17,8 @@ var APIVersion = fmt.Sprintf("%s", app.AppVersion)
 func StartRPC(port string, simulation bool) {
 	routes := GetRoutes()
 	if simulation {
-		var simIdx int
-		for i := range routes {
-			if routes[i].Name == "SimulateRequest" {
-				simIdx = i
-				break
-			}
-		}
-		routes = append(routes[:simIdx], routes[simIdx:]...)
+		simRoute := Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: SimRequest}
+		routes = append(routes, simRoute)
 	}
 	log.Fatal(http.ListenAndServe(":"+port, Router(routes)))
 }
@@ -85,7 +79,6 @@ func GetRoutes() Routes {
 		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
 		Route{Name: "QueryACL", Method: "POST", Path: "/v1/query/acl", HandlerFunc: ACL},
 		Route{Name: "QueryState", Method: "POST", Path: "/v1/query/state", HandlerFunc: State},
-		Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: SimRequest},
 	}
 	return routes
 }
