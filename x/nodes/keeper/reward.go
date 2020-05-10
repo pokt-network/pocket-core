@@ -55,10 +55,12 @@ func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Resul
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	mintErr := k.AccountKeeper.MintCoins(ctx, types.StakedPoolName, coins)
 	if mintErr != nil {
+		ctx.Logger().Error(mintErr.Error())
 		return mintErr.Result()
 	}
 	sendErr := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, address, coins)
 	if sendErr != nil {
+		ctx.Logger().Error(mintErr.Error())
 		return sendErr.Result()
 	}
 	logString := fmt.Sprintf("a reward of %s was minted to %s", amount.String(), address.String())
