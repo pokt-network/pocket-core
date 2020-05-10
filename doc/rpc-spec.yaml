@@ -160,6 +160,31 @@ paths:
                   signature: ''
                 payload: '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
                 signature: e7c347971c0a53f9d63fb5681e35a4c89d97e7c6703c0e3980c2a70dbc56cb0db11e24eb078a9ffbaf7f78970ff0ce2478d7485301e39c5950c45028283ef709
+  /client/sim:
+    post:
+      tags:
+        - client
+      requestBody:
+        description: Request to be simulated relayed to a target blockchain
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuerySimRequest'
+            example:
+              payload:
+                data: '"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64'
+                method: ''
+                path: ''
+              chain_url: 'http://0.0.0.0:8545'
+      responses:
+        '200':
+          description: Response from the relayed request
+          content:
+            application/json:
+              example:
+                '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
+
   /client/rawtx:
     post:
       tags:
@@ -1367,6 +1392,17 @@ components:
       properties:
         payload:
           $ref: '#/components/schemas/RelayPayload'
+        meta:
+          $ref: '#/components/schemas/RelayMetadata'
+        proof:
+          $ref: '#/components/schemas/RelayProof'
+    QuerySimRequest:
+      type: object
+      properties:
+        payload:
+          $ref: '#/components/schemas/RelayPayload'
+        chain_url:
+          type: string
         meta:
           $ref: '#/components/schemas/RelayMetadata'
         proof:

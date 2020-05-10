@@ -58,6 +58,7 @@
 - Added `/v1/query/blocktxs` and `/v1/query/acounttxs` to get the list of transactions in a block or sent/received by an account respectively.
 - Added `query account-txs` and `query block-txs` to the CLI matching the above mentioned endpoints.
 - Fixed `getTMClient()` function to avoid Tendermint opening files every time a Relay/Dispatch.
+- Add flag to to simulate relays, default false.
 
 ## RC-0.2.4
 - Removed trailing slash when performing a relay when there's no path present in the relay payload.
@@ -95,4 +96,3 @@ Seed patch to allow more incoming connections
 - Change `querySupplyResponse` struct to use `totalStaked`, `totalUnstaked` & `Total` as `*big.Int` due to memory overflow
 - Added RPC SPEC doc in yaml and json with swagger support
 - Add off chain relay RPC for testing purposes, wont' create proof & does not affect validator
-- Add flag to to simulate relays, default false.
