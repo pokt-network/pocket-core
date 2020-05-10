@@ -20,6 +20,7 @@
 - Changed getPseudorandomIndex add a new parameter for sessionCtx
 - log mint errors
 - Catch error writing json for RPC endpoints
+- log mint errors
 
 ## RC-0.3.0
 - Added governance module from posmint
