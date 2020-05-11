@@ -112,7 +112,10 @@ func WriteJSONResponse(w http.ResponseWriter, jsn, path, ip string) {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 		log.Println(err.Error())
 	}
-	json.NewEncoder(w).Encode(raw)
+	if err := json.NewEncoder(w).Encode(raw); err != nil {
+		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+		log.Println(err.Error())
+	}
 }
 
 func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
