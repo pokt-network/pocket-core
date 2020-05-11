@@ -516,31 +516,3 @@ func TestUnmarshalParams(t *testing.T) {
 		})
 	}
 }
-
-func TestMustUnmarshalParams(t *testing.T) {
-	type args struct {
-		cdc   *codec.Codec
-		value []byte
-	}
-
-	defaultParams := DefaultParams()
-	value, _ := amino.MarshalBinaryLengthPrefixed(DefaultParams())
-
-	tests := []struct {
-		name string
-		args args
-		want Params
-	}{
-		{"Must Unmarshall Test", args{
-			cdc:   codec.New(),
-			value: value,
-		}, defaultParams},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := MustUnmarshalParams(tt.args.cdc, tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MustUnmarshalParams() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

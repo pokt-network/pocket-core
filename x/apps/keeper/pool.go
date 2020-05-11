@@ -35,12 +35,13 @@ func (k Keeper) GetStakedPool(ctx sdk.Ctx) (stakedPool exported.ModuleAccountI) 
 }
 
 // coinsFromStakedToUnstkaed - Transfer coins from the module account to the application -> used in unstaking
-func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, application types.Application) {
+func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, application types.Application) sdk.Error {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), application.StakedTokens))
 	err := k.AccountsKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, application.Address, coins)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // coinsFromUnstakedToStaked - Transfer coins from the module account to application -> used in staking

@@ -5,7 +5,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -13,7 +12,7 @@ func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
 	tests := []struct {
 		name        string
 		application types.Application
-		panics      bool
+		hasError    bool
 		want        interface{}
 	}{
 		{
@@ -25,11 +24,12 @@ func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
 			name:        "errors if application not staked",
 			application: getUnstakedApplication(),
 			want:        types.ErrApplicationStatus("apps"),
+			hasError:    true,
 		},
 		{
 			name:        "validates application",
 			application: getStakedApplication(),
-			panics:      true,
+			hasError:    true,
 			want:        "should not happen: application trying to begin unstaking has less than the minimum stake",
 		},
 	}
@@ -37,13 +37,8 @@ func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			switch tt.panics {
+			switch tt.hasError {
 			case true:
-				defer func() {
-					if err := recover(); err.(string) != tt.want {
-						t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, want %v", err, tt.want)
-					}
-				}()
 				tt.application.StakedTokens = sdk.NewInt(-1)
 				_ = keeper.ValidateApplicationBeginUnstaking(context, tt.application)
 			default:
@@ -101,7 +96,7 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 	tests := []struct {
 		name        string
 		application types.Application
-		panics      bool
+		hasError    bool
 		want        interface{}
 	}{
 		{
@@ -112,7 +107,7 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 		{
 			name:        "already jailed app ",
 			application: jailedApp,
-			panics:      true,
+			hasError:    true,
 			want:        fmt.Sprint("cannot jail already jailed application, application:"),
 		},
 	}
@@ -123,13 +118,8 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 			keeper.SetApplication(context, tt.application)
 			keeper.SetStakedApplication(context, tt.application)
 
-			switch tt.panics {
+			switch tt.hasError {
 			case true:
-				defer func() {
-					if err := recover().(string); !strings.Contains(err, tt.want.(string)) {
-						t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, does not contain %v", err, tt.want)
-					}
-				}()
 				keeper.JailApplication(context, tt.application.GetAddress())
 			default:
 				keeper.JailApplication(context, tt.application.GetAddress())
@@ -148,7 +138,7 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 	tests := []struct {
 		name        string
 		application types.Application
-		panics      bool
+		hasError    bool
 		want        interface{}
 	}{
 		{
@@ -159,7 +149,7 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 		{
 			name:        "already jailed app ",
 			application: getStakedApplication(),
-			panics:      true,
+			hasError:    true,
 			want:        fmt.Sprint("cannot unjail already unjailed application, application:"),
 		},
 	}
@@ -170,13 +160,8 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 			keeper.SetApplication(context, tt.application)
 			keeper.SetStakedApplication(context, tt.application)
 
-			switch tt.panics {
+			switch tt.hasError {
 			case true:
-				defer func() {
-					if err := recover().(string); !strings.Contains(err, tt.want.(string)) {
-						t.Errorf("AppStateChange.ValidateApplicationBeginUnstaking() = got %v, does not contain %v", err, tt.want)
-					}
-				}()
 				keeper.UnjailApplication(context, tt.application.GetAddress())
 			default:
 				keeper.UnjailApplication(context, tt.application.GetAddress())

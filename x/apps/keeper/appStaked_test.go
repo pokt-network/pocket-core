@@ -69,7 +69,7 @@ func TestRemoveStakedApplicationTokens(t *testing.T) {
 	type want struct {
 		tokens       sdk.Int
 		applications []types.Application
-		errorMessage string
+		hasError     bool
 	}
 	tests := []struct {
 		name        string
@@ -90,29 +90,23 @@ func TestRemoveStakedApplicationTokens(t *testing.T) {
 			application: stakedApplication,
 			amount:      sdk.NewInt(-5),
 			panics:      true,
-			want:        want{tokens: sdk.NewInt(99999999995), applications: []types.Application{}, errorMessage: "trying to remove negative tokens"},
+			want:        want{tokens: sdk.NewInt(99999999995), applications: []types.Application{}, hasError: true},
 		},
 	}
-
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetApplication(context, test.application)
 			keeper.SetStakedApplication(context, test.application)
-			switch test.panics {
-			case true:
-				defer func() {
-					err := recover()
-					assert.Contains(t, err, test.want.errorMessage)
-				}()
-				_ = keeper.removeApplicationTokens(context, test.application, test.amount)
-			default:
-				application := keeper.removeApplicationTokens(context, test.application, test.amount)
-				assert.True(t, application.StakedTokens.Equal(test.want.tokens), "application staked tokens is not as want")
-
-				store := context.KVStore(keeper.storeKey)
-				assert.NotNil(t, store.Get(types.KeyForAppInStakingSet(application)))
+			application, err := keeper.removeApplicationTokens(context, test.application, test.amount)
+			if err != nil {
+				assert.True(t, test.want.hasError)
+				return
 			}
+			assert.True(t, application.StakedTokens.Equal(test.want.tokens), "application staked tokens is not as want")
+			store := context.KVStore(keeper.storeKey)
+			assert.NotNil(t, store.Get(types.KeyForAppInStakingSet(application)))
+
 		})
 	}
 }

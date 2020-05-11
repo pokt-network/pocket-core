@@ -92,7 +92,7 @@ func WriteResponse(w http.ResponseWriter, jsn, path, ip string) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		_, err := w.Write(b)
 		if err != nil {
-			panic(err)
+			fmt.Println(fmt.Errorf("error in RPC Handler WriteResponse: %v", err))
 		}
 	}
 }
@@ -101,7 +101,7 @@ func WriteRaw(w http.ResponseWriter, jsn, path, ip string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	_, err := w.Write([]byte(jsn))
 	if err != nil {
-		panic(err)
+		fmt.Println(fmt.Errorf("error in RPC Handler WriteRaw: %v", err))
 	}
 }
 func WriteJSONResponse(w http.ResponseWriter, jsn, path, ip string) {
@@ -110,7 +110,11 @@ func WriteJSONResponse(w http.ResponseWriter, jsn, path, ip string) {
 	var raw map[string]interface{}
 	if err := json.Unmarshal([]byte(jsn), &raw); err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-		log.Println(err.Error())
+		fmt.Println(fmt.Errorf("error in RPC Handler WriteJSONResponse: %v", err))
+	}
+	err := json.NewEncoder(w).Encode(raw)
+	if err != nil {
+		fmt.Println(fmt.Errorf("error in RPC Handler WriteJSONResponse: %v", err))
 	}
 	if err := json.NewEncoder(w).Encode(raw); err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
@@ -125,9 +129,8 @@ func WriteErrorResponse(w http.ResponseWriter, errorCode int, errorMsg string) {
 		Code:    errorCode,
 		Message: errorMsg,
 	})
-	log.Print(err)
 	if err != nil {
-		panic(err)
+		fmt.Println(fmt.Errorf("error in RPC Handler WriteErrorResponse: %v", err))
 	}
 }
 

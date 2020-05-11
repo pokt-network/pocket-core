@@ -1,66 +1,11 @@
 package keeper
 
 import (
-	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"reflect"
-	"strings"
 	"testing"
 )
-
-func TestAppUtil_MustGetApplication(t *testing.T) {
-	stakedApplication := getStakedApplication()
-
-	type args struct {
-		application types.Application
-	}
-	type want struct {
-		application types.Application
-		message     string
-	}
-	tests := []struct {
-		name   string
-		panics bool
-		args
-		want
-	}{
-		{
-			name:   "gets application",
-			panics: false,
-			args:   args{application: stakedApplication},
-			want:   want{application: stakedApplication},
-		},
-		{
-			name:   "errors if no application",
-			panics: true,
-			args:   args{application: stakedApplication},
-			want:   want{message: fmt.Sprintf("application record not found for address: %X\n", stakedApplication.Address)},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			switch tt.panics {
-			case true:
-				defer func() {
-					if got := recover(); !strings.Contains(got.(string), tt.want.message) {
-						t.Errorf("keeperAppUtil.MustGetApplication()= %v, want %v", got, tt.want.application)
-					}
-				}()
-				_ = keeper.mustGetApplication(context, tt.args.application.Address)
-			default:
-				keeper.SetApplication(context, tt.args.application)
-				keeper.SetStakedApplication(context, tt.args.application)
-				if got := keeper.mustGetApplication(context, tt.args.application.Address); !got.Equals(tt.want.application) {
-					t.Errorf("keeperAppUtil.MustGetApplication()= %v, want %v", got, tt.want.application)
-				}
-			}
-		})
-	}
-
-}
 
 func TestAppUtil_Application(t *testing.T) {
 	stakedApplication := getStakedApplication()
@@ -109,107 +54,6 @@ func TestAppUtil_Application(t *testing.T) {
 		})
 	}
 
-}
-
-func TestAppUtil_MustGetApplicationByConsAddr(t *testing.T) {
-	stakedApplication := getStakedApplication()
-	type args struct {
-		application types.Application
-	}
-	type want struct {
-		application types.Application
-		message     string
-	}
-	tests := []struct {
-		name   string
-		panics bool
-		args
-		want
-	}{
-		{
-			name:   "gets application",
-			panics: false,
-			args:   args{application: stakedApplication},
-			want:   want{application: stakedApplication},
-		},
-		{
-			name:   "errors if no application",
-			panics: true,
-			args:   args{application: stakedApplication},
-			want:   want{message: fmt.Sprintf("application with consensus-Address %s not found", stakedApplication.GetAddress())},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			switch tt.panics {
-			case true:
-				defer func() {
-					if err := recover().(error); !reflect.DeepEqual(err.Error(), tt.want.message) {
-						t.Errorf("keeperAppUtil.MustGetApplicationByConsAddr()= %v, want %v", err, tt.want.application)
-					}
-				}()
-				_ = keeper.mustGetApplicationByConsAddr(context, tt.args.application.GetAddress())
-			default:
-				keeper.SetApplication(context, tt.args.application)
-				keeper.SetStakedApplication(context, tt.args.application)
-				if got := keeper.mustGetApplicationByConsAddr(context, tt.args.application.GetAddress()); !got.Equals(tt.want.application) {
-					t.Errorf("keeperAppUtil.MustGetApplicationByConsAddr()= %v, want %v", got, tt.want.application)
-				}
-			}
-		})
-	}
-
-}
-
-func TestAppUtil_ApplicationByConsAddr(t *testing.T) {
-	stakedApplication := getStakedApplication()
-
-	type args struct {
-		application types.Application
-	}
-	type want struct {
-		application types.Application
-		message     string
-		null        bool
-	}
-	tests := []struct {
-		name   string
-		panics bool
-		args
-		want interface{}
-	}{
-		{
-			name: "gets application",
-			args: args{application: stakedApplication},
-			want: stakedApplication,
-		},
-		{
-			name: "nil if not found",
-			args: args{application: stakedApplication},
-			want: nil,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			switch tt.want {
-			case nil:
-				if got := keeper.applicationByConsAddr(context, tt.args.application.GetAddress()); !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("keeperAppUtil.ApplicationByConsAddr()= %v, want %v", got, tt.want)
-				}
-
-			default:
-				keeper.SetApplication(context, tt.args.application)
-				keeper.SetStakedApplication(context, tt.args.application)
-				if got := keeper.applicationByConsAddr(context, tt.args.application.GetAddress()); !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("keeperAppUtil.ApplicationByConsAddr()= %v, want %v", got, tt.want)
-				}
-			}
-		})
-	}
 }
 
 func TestAppUtil_ApplicationCaching(t *testing.T) {

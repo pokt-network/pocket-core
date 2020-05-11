@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
@@ -71,13 +72,14 @@ func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Resul
 }
 
 // GetPreviousProposer - Retrieve the proposer public key for this block
-func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (consAddr sdk.Address) {
+func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.ProposerKey)
 	if b == nil {
-		panic("Previous proposer not set")
+		k.Logger(ctx).Error("Previous proposer not set")
+		os.Exit(1)
 	}
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(b, &consAddr)
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(b, &addr)
 	return
 }
 

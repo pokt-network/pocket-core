@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
@@ -24,12 +25,13 @@ func (k Keeper) GetStakedPool(ctx sdk.Ctx) (stakedPool exported.ModuleAccountI) 
 }
 
 // coinsFromStakedToUnstaked - Transfer coins from the module account to the validator -> used in unstaking
-func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, validator types.Validator) {
+func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, validator types.Validator) error {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), validator.StakedTokens))
 	err := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, validator.Address, coins)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("unable to send coins from staked to unstaked for address: %s", validator.Address)
 	}
+	return nil
 }
 
 // coinsFromUnstakedToStaked - Transfer coins from the module account to validator -> used in staking

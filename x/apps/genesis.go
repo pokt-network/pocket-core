@@ -5,6 +5,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/keeper"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"os"
 )
 
 // InitGenesis sets up the module based on the genesis state
@@ -17,7 +18,8 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 	keeper.SetParams(ctx, data.Params)
 	for _, application := range data.Applications {
 		if application.IsUnstaked() || application.IsUnstaking() {
-			panic(fmt.Sprintf("%v the applications must be staked at genesis", application))
+			fmt.Println(fmt.Errorf("%v the applications must be staked at genesis", application))
+			continue
 		}
 		// calculate relays
 		application.MaxRelays = keeper.CalculateAppRelays(ctx, application)
@@ -32,17 +34,20 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 	// check if the staked pool accounts exists
 	stakedPool := keeper.GetStakedPool(ctx)
 	if stakedPool == nil {
-		panic(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
+		fmt.Println(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
+		os.Exit(1)
 	}
 	// add coins if not provided on genesis
 	if stakedPool.GetCoins().IsZero() {
 		if err := stakedPool.SetCoins(stakedCoins); err != nil {
-			panic(err)
+			fmt.Println(fmt.Sprintf("error setting the coins for module account: %s module account", types.StakedPoolName))
+			os.Exit(1)
 		}
 		supplyKeeper.SetModuleAccount(ctx, stakedPool)
 	} else {
 		if !stakedPool.GetCoins().IsEqual(stakedCoins) {
-			panic(fmt.Sprintf("%s module account total does not equal the amount in each application account", types.StakedPoolName))
+			fmt.Println(fmt.Errorf("%s module account total does not equal the amount in each application account", types.StakedPoolName))
+			os.Exit(1)
 		}
 	}
 	// add coins to the total supply

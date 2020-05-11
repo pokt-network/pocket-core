@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
@@ -35,7 +33,7 @@ func (k Keeper) appCaching(value []byte, addr sdk.Address) types.Application {
 		return valToReturn
 	}
 	// amino bytes weren't found in cache, so amino unmarshal and add it to the cache
-	application := types.MustUnmarshalApplication(k.cdc, value)
+	application, _ := types.UnmarshalApplication(k.cdc, value) // TODO fix error this when cache is updated
 	cachedVal := newCachedApplication(application, strValue)
 	k.applicationCache[strValue] = newCachedApplication(application, strValue)
 	k.applicationCacheList.PushBack(cachedVal)
@@ -44,24 +42,6 @@ func (k Keeper) appCaching(value []byte, addr sdk.Address) types.Application {
 	if k.applicationCacheList.Len() > aminoCacheSize {
 		valToRemove := k.applicationCacheList.Remove(k.applicationCacheList.Front()).(cachedApplication)
 		delete(k.applicationCache, valToRemove.marshalled)
-	}
-	return application
-}
-
-// mustGetApplication - Retrieve application, panics if no application is found
-func (k Keeper) mustGetApplication(ctx sdk.Ctx, addr sdk.Address) types.Application {
-	application, found := k.GetApplication(ctx, addr)
-	if !found {
-		panic(fmt.Sprintf("application record not found for address: %X\n", addr))
-	}
-	return application
-}
-
-// mustGetApplicationByConsAddr - Retrieve application using consensus address, panics if no application is found
-func (k Keeper) mustGetApplicationByConsAddr(ctx sdk.Ctx, consAddr sdk.Address) types.Application {
-	application, found := k.GetApplication(ctx, consAddr)
-	if !found {
-		panic(fmt.Errorf("application with consensus-Address %s not found", consAddr))
 	}
 	return application
 }
@@ -75,23 +55,17 @@ func (k Keeper) Application(ctx sdk.Ctx, address sdk.Address) exported.Applicati
 	return app
 }
 
-// applicationByConsAddr - wrapper for GetApplicationByConsAddress call
-func (k Keeper) applicationByConsAddr(ctx sdk.Ctx, addr sdk.Address) exported.ApplicationI {
-	app, found := k.GetApplication(ctx, addr)
-	if !found {
-		return nil
-	}
-	return app
-}
-
 // AllApplications - Retrieve a list of all applications
 func (k Keeper) AllApplications(ctx sdk.Ctx) (apps []exported.ApplicationI) {
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
-
 	for ; iterator.Valid(); iterator.Next() {
-		app := types.MustUnmarshalApplication(k.cdc, iterator.Value())
+		app, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		if err != nil {
+			k.Logger(ctx).Error("couldn't unmarshal application in AllApplications call: " + string(iterator.Value()) + "\n" + err.Error())
+			continue
+		}
 		apps = append(apps, app)
 	}
 	return apps

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
 	"github.com/pokt-network/pocket-core/x/apps/types"
@@ -39,10 +40,18 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Ctx) (applications []types.A
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var addrs []sdk.Address
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
+		err := k.cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
+		if err != nil {
+			k.Logger(ctx).Error(fmt.Errorf("could not unmarshal unstakingApplications in getAllUnstakingApplications call: %s", string(iterator.Value())).Error())
+			return
+		}
 		for _, addr := range addrs {
-			validator := k.mustGetApplication(ctx, addr)
-			applications = append(applications, validator)
+			app, found := k.GetApplication(ctx, addr)
+			if !found {
+				k.Logger(ctx).Error(fmt.Errorf("application %s in unstakingSet but not found in all applications store", app.Address).Error())
+				continue
+			}
+			applications = append(applications, app)
 		}
 	}
 	return applications
@@ -103,12 +112,13 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 		for _, valAddr := range unstakingVals {
 			val, found := k.GetApplication(ctx, valAddr)
 			if !found {
-				panic("application in the unstaking queue was not found")
+				k.Logger(ctx).Error(fmt.Errorf("application %s, in the unstaking queue was not found", valAddr).Error())
+				continue
 			}
 			err := k.ValidateApplicationFinishUnstaking(ctx, val)
 			if err != nil {
 				ctx.Logger().Error("Could not finish unstaking mature application: " + err.Error())
-				return
+				continue
 			}
 			k.FinishUnstakingApplication(ctx, val)
 

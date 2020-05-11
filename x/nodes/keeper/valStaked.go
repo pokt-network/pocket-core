@@ -74,14 +74,17 @@ func (k Keeper) deleteValidatorFromStakingSet(ctx sdk.Ctx, validator types.Valid
 }
 
 // removeValidatorTokens - Update the staked tokens of an existing validator, update the validators power index key
-func (k Keeper) removeValidatorTokens(ctx sdk.Ctx, v types.Validator, tokensToRemove sdk.Int) types.Validator {
+func (k Keeper) removeValidatorTokens(ctx sdk.Ctx, v types.Validator, tokensToRemove sdk.Int) (types.Validator, error) {
 	k.deleteValidatorFromStakingSet(ctx, v)
-	v = v.RemoveStakedTokens(tokensToRemove)
+	v, err := v.RemoveStakedTokens(tokensToRemove)
+	if err != nil {
+		return v, err
+	}
 	k.SetValidator(ctx, v)
 	if !v.IsJailed() {
 		k.SetStakedValidator(ctx, v)
 	}
-	return v
+	return v, nil
 }
 
 // getStakedValidators - Retrieve the current staked validators sorted by power-rank
@@ -92,7 +95,11 @@ func (k Keeper) getStakedValidators(ctx sdk.Ctx) types.Validators {
 	i := 0
 	for ; iterator.Valid(); iterator.Next() {
 		address := iterator.Value()
-		validator := k.mustGetValidator(ctx, address)
+		validator, found := k.GetValidator(ctx, address)
+		if !found {
+			ctx.Logger().Error("validator not found in the world state")
+			continue
+		}
 		if validator.IsStaked() {
 			validators = append(validators, validator)
 			i++
@@ -116,7 +123,11 @@ func (k Keeper) IterateAndExecuteOverStakedVals(
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
 		address := iterator.Value()
-		validator := k.mustGetValidator(ctx, address)
+		validator, found := k.GetValidator(ctx, address)
+		if !found {
+			k.Logger(ctx).Error(fmt.Errorf("%s is not found int the main validator state", validator.Address).Error())
+			continue
+		}
 		if validator.IsStaked() {
 			stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
 			if stop {

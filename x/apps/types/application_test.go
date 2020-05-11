@@ -62,11 +62,11 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 		tokens sdk.Int
 	}
 	tests := []struct {
-		name   string
-		panics bool
-		fields fields
-		args   args
-		want   interface{}
+		name     string
+		hasError bool
+		fields   fields
+		args     args
+		want     interface{}
 	}{
 		{
 			"Default Add Token Test",
@@ -92,7 +92,7 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 			},
 		},
 		{
-			" panics Add negative amount",
+			" hasError Add negative amount",
 			true,
 			fields{
 				Address:                 sdk.Address(pub.Address()),
@@ -118,17 +118,11 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			switch tt.panics {
+			switch tt.hasError {
 			case true:
-				defer func() {
-					err := recover()
-					if !reflect.DeepEqual(fmt.Sprintf("%v", err), tt.want) {
-						t.Errorf("AddStakedTokens() = %v, want %v", err, tt.want)
-					}
-				}()
-				_ = v.AddStakedTokens(tt.args.tokens)
+				_, _ = v.AddStakedTokens(tt.args.tokens)
 			default:
-				if got := v.AddStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
+				if got, _ := v.AddStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("AddStakedTokens() = %v, want %v", got, tt.want)
 				}
 			}
@@ -892,7 +886,7 @@ func TestApplication_RemoveStakedTokens(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			if got := v.RemoveStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := v.RemoveStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("RemoveStakedTokens() = %v, want %v", got, tt.want)
 			}
 		})

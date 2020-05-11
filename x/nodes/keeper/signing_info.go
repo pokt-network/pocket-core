@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 )
@@ -26,13 +27,15 @@ func (k Keeper) SetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address, info type
 }
 
 // IterateAndExecuteOverValSigningInfo - Goes over signing info validators and executes handler
-func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Ctx,
-	handler func(addr sdk.Address, info types.ValidatorSigningInfo) (stop bool)) {
+func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Ctx, handler func(addr sdk.Address, info types.ValidatorSigningInfo) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	iter := sdk.KVStorePrefixIterator(store, types.ValidatorSigningInfoKey)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
-		address := types.GetValidatorSigningInfoAddress(iter.Key())
+		address, err := types.GetValidatorSigningInfoAddress(iter.Key())
+		if err != nil {
+			ctx.Logger().Error(fmt.Errorf("unable to execute over validator %s error: %v", iter.Key(), err).Error())
+		}
 		var info types.ValidatorSigningInfo
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &info)
 		if handler(address, info) {

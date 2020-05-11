@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
@@ -29,15 +30,18 @@ func (k Keeper) deleteApplicationFromStakingSet(ctx sdk.Ctx, application types.A
 }
 
 // removeApplicationTokens - Update the staked tokens of an existing application, update the applications power index key
-func (k Keeper) removeApplicationTokens(ctx sdk.Ctx, application types.Application, tokensToRemove sdk.Int) types.Application {
+func (k Keeper) removeApplicationTokens(ctx sdk.Ctx, application types.Application, tokensToRemove sdk.Int) (types.Application, error) {
 	ctx.Logger().Info("Removing Application Tokens, tokensToRemove: " + tokensToRemove.String() + " App Address: " + application.Address.String())
 	k.deleteApplicationFromStakingSet(ctx, application)
-	application = application.RemoveStakedTokens(tokensToRemove)
+	application, err := application.RemoveStakedTokens(tokensToRemove)
+	if err != nil {
+		return types.Application{}, err
+	}
 	k.SetApplication(ctx, application)
 	if !application.IsJailed() {
 		k.SetStakedApplication(ctx, application)
 	}
-	return application
+	return application, nil
 }
 
 // getStakedApplications - Retrieve the current staked applications sorted by power-rank
@@ -47,7 +51,11 @@ func (k Keeper) getStakedApplications(ctx sdk.Ctx) types.Applications {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		address := iterator.Value()
-		application := k.mustGetApplication(ctx, address)
+		application, found := k.GetApplication(ctx, address)
+		if !found {
+			k.Logger(ctx).Error(fmt.Errorf("application %s in staking set but not found in all applications store", address).Error())
+			continue
+		}
 		if application.IsStaked() {
 			applications = append(applications, application)
 		}
@@ -70,7 +78,11 @@ func (k Keeper) IterateAndExecuteOverStakedApps(
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
 		address := iterator.Value()
-		application := k.mustGetApplication(ctx, address)
+		application, found := k.GetApplication(ctx, address)
+		if !found {
+			k.Logger(ctx).Error(fmt.Errorf("application %s in staking set but not found in all applications store", address).Error())
+			continue
+		}
 		if application.IsStaked() {
 			stop := fn(i, application) // XXX is this safe will the application unexposed fields be able to get written to?
 			if stop {

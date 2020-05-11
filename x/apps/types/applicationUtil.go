@@ -83,18 +83,9 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MUST return the amino encoded version of this application
-func MustMarshalApplication(cdc *codec.Codec, application Application) []byte {
-	return cdc.MustMarshalBinaryLengthPrefixed(application)
-}
-
-// MUST decode the app from the bytes
-func MustUnmarshalApplication(cdc *codec.Codec, valBytes []byte) Application {
-	application, err := UnmarshalApplication(cdc, valBytes)
-	if err != nil {
-		panic(err)
-	}
-	return application
+// unmarshal the application
+func MarshalApplication(cdc *codec.Codec, application Application) (result []byte, err error) {
+	return cdc.MarshalBinaryLengthPrefixed(application)
 }
 
 // unmarshal the application

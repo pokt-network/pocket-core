@@ -6,6 +6,7 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 	db "github.com/tendermint/tm-db"
 	"github.com/willf/bloom"
+	"os"
 	"sync"
 )
 
@@ -41,7 +42,8 @@ func (cs *CacheStorage) Init(dir, name string, dbType db.DBBackendType, maxEntri
 	var err error
 	cs.Cache, err = lru.New(maxEntries)
 	if err != nil {
-		panic(err)
+		fmt.Println(fmt.Errorf("could not initialize cache storage: " + err.Error()))
+		os.Exit(1)
 	}
 	// intialize the db
 	cs.DB = db.NewDB(name, dbType, dir)
@@ -121,7 +123,8 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 	// if found, unmarshal into session object
 	err := ModuleCdc.UnmarshalJSON(val, &session)
 	if err != nil {
-		panic(fmt.Sprintf("could not unmarshal into session from cache: %s", err.Error()))
+		fmt.Println(fmt.Errorf("could not unmarshal into session from cache: %s with header %v", err.Error(), header))
+		return Session{}, false
 	}
 	return
 }
@@ -133,7 +136,8 @@ func SetSession(session Session) {
 	// marshal into amino-json bz
 	bz, err := ModuleCdc.MarshalJSON(session)
 	if err != nil {
-		panic(fmt.Sprintf("could not marshal into session for cache: %s", err.Error()))
+		fmt.Println(fmt.Errorf("could not marshal into session for cache: %s", err.Error()))
+		return
 	}
 	// set it in stores
 	globalSessionCache.Set(key, bz)
@@ -161,7 +165,8 @@ type SessionIt struct {
 func (si *SessionIt) Value() (session Session) {
 	err := ModuleCdc.UnmarshalJSON(si.Iterator.Value(), &session)
 	if err != nil {
-		panic(fmt.Errorf("can't unmarshal session iterator value into session: %s", err.Error()))
+		fmt.Println(fmt.Errorf("can't unmarshal session iterator value into session: %s", err.Error()))
+		os.Exit(1)
 	}
 	return
 }
@@ -188,7 +193,8 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType) (evidence Evid
 	// unmarshal into evidence obj
 	err = ModuleCdc.UnmarshalJSON(bz, &evidence)
 	if err != nil {
-		panic(fmt.Sprintf("could not unmarshal into evidence from cache: %s", err.Error()))
+		fmt.Println(fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error()))
+		return Evidence{}, false
 	}
 	return
 }
@@ -203,7 +209,8 @@ func SetEvidence(evidence Evidence, evidenceType EvidenceType) {
 	// marshal into bytes to store
 	bz, err := ModuleCdc.MarshalJSON(evidence)
 	if err != nil {
-		panic(fmt.Sprintf("could not marshal into evidence for cache: %s", err.Error()))
+		fmt.Println(fmt.Errorf("could not marshal into evidence for cache: %s", err.Error()))
+		return
 	}
 	// set in storage
 	globalEvidenceCache.Set(key, bz)
@@ -238,7 +245,8 @@ func (ei *EvidenceIt) Value() (evidence Evidence) {
 	// unmarshal the value (bz) into an evidence object
 	err := ModuleCdc.UnmarshalJSON(ei.Iterator.Value(), &evidence)
 	if err != nil {
-		panic(fmt.Errorf("can't unmarshal evidence iterator value into evidence: %s", err.Error()))
+		fmt.Println(fmt.Errorf("can't unmarshal evidence iterator value into evidence: %s", err.Error()))
+		os.Exit(1)
 	}
 	return
 }

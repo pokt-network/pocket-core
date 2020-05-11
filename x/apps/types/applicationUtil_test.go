@@ -178,75 +178,6 @@ func TestApplicationUtil_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestApplicationUtil_MustMarshalApplication(t *testing.T) {
-	type args struct {
-		application Application
-		codec       *codec.Codec
-	}
-	tests := []struct {
-		name string
-		args
-		want []byte
-	}{
-		{
-			name: "marshals application",
-			args: args{application: application, codec: moduleCdc},
-			want: moduleCdc.MustMarshalBinaryLengthPrefixed(application),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := MustMarshalApplication(tt.args.codec, tt.args.application); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MustMarshalApplication()= returns %v but want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestApplicationUtil_MustUnMarshalApplication(t *testing.T) {
-	type args struct {
-		application Application
-		codec       *codec.Codec
-		bz          []byte
-	}
-	tests := []struct {
-		name   string
-		panics bool
-		args
-		want interface{}
-	}{
-		{
-			name:   "can unmarshal application",
-			panics: true,
-			args:   args{bz: []byte{}, codec: moduleCdc},
-			want:   "UnmarshalBinaryLengthPrefixed cannot decode empty bytes",
-		},
-		{
-			name: "can unmarshal application",
-			args: args{bz: MustMarshalApplication(moduleCdc, application), codec: moduleCdc},
-			want: application,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			switch tt.panics {
-			case true:
-				defer func() {
-					err := recover().(error)
-					if !reflect.DeepEqual(fmt.Sprintf("%s", err), tt.want) {
-						t.Errorf("got %v but want %v", err, tt.want)
-					}
-				}()
-				_ = MustUnmarshalApplication(tt.args.codec, tt.args.bz)
-			default:
-				if unmarshaledApp := MustUnmarshalApplication(tt.args.codec, tt.args.bz); !reflect.DeepEqual(unmarshaledApp, tt.want) {
-					t.Errorf("got %v but want %v", unmarshaledApp, tt.want)
-				}
-			}
-		})
-	}
-}
-
 func TestApplicationUtil_UnMarshalApplication(t *testing.T) {
 	type args struct {
 		application Application
@@ -265,7 +196,7 @@ func TestApplicationUtil_UnMarshalApplication(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bz := MustMarshalApplication(tt.args.codec, tt.args.application)
+			bz, _ := MarshalApplication(tt.args.codec, tt.args.application)
 			unmarshaledApp, err := UnmarshalApplication(tt.args.codec, bz)
 			if err != nil {
 				t.Error("could not unmarshal app")

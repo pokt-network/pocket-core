@@ -22,22 +22,28 @@ func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Ad
 func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) {
 	// error check slash
 	validator := k.validateSimpleSlash(ctx, addr, amount)
-	if validator.Address == nil {
+	if validator.Address.Empty() {
 		return // invalid simple slash
 	}
 	// cannot decrease balance below zero
 	tokensToBurn := sdk.MinInt(amount, validator.StakedTokens)
 	tokensToBurn = sdk.MaxInt(tokensToBurn, sdk.ZeroInt()) // defensive.
-	validator = k.removeValidatorTokens(ctx, validator, tokensToBurn)
-	err := k.burnStakedTokens(ctx, tokensToBurn)
+	validator, err := k.removeValidatorTokens(ctx, validator, tokensToBurn)
 	if err != nil {
-		panic(err)
+		k.Logger(ctx).Error("could not remove staked tokens in simpleSlash: " + err.Error() + "\nfor validator " + addr.String())
+		return
+	}
+	err = k.burnStakedTokens(ctx, tokensToBurn)
+	if err != nil {
+		k.Logger(ctx).Error("could not burn staked tokens in simpleSlash: " + err.Error() + "\nfor validator " + addr.String())
+		return
 	}
 	// if falls below minimum force burn all of the stake
 	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		err := k.ForceValidatorUnstake(ctx, validator)
 		if err != nil {
-			panic(err)
+			k.Logger(ctx).Error("could not burn forceUnstake in simpleSlash: " + err.Error() + "\nfor validator " + addr.String())
+			return
 		}
 	}
 	// Log that a slash occurred
@@ -49,7 +55,8 @@ func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) {
 func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) types.Validator {
 	logger := k.Logger(ctx)
 	if amount.LTE(sdk.ZeroInt()) {
-		panic(fmt.Errorf("attempted to simple slash with a negative slash factor: %v", amount))
+		k.Logger(ctx).Error(fmt.Errorf("attempted to simple slash with a negative slash factor: %v", amount).Error())
+		return types.Validator{}
 	}
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
@@ -61,15 +68,16 @@ func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.In
 	// should not be slashing an unstaked validator
 	if validator.IsUnstaked() {
 		logger.Error(fmt.Errorf("should not be simple slashing unstaked validator: %s", validator.GetAddress()).Error())
+		return types.Validator{}
 	}
 	return validator
 }
 
 // slash - Slash a validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
+func (k Keeper) slash(ctx sdk.Ctx, addr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
 	// error check slash
-	validator := k.validateSlash(ctx, consAddr, infractionHeight, power, slashFactor)
+	validator := k.validateSlash(ctx, addr, infractionHeight, power, slashFactor)
 	if validator.Address == nil {
 		return // invalid slash
 	}
@@ -82,16 +90,22 @@ func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power
 	tokensToBurn = sdk.MaxInt(tokensToBurn, sdk.ZeroInt()) // defensive.
 	// Deduct from validator's staked tokens and update the validator.
 	// Burn the slashed tokens from the pool account and decrease the total supply.
-	validator = k.removeValidatorTokens(ctx, validator, tokensToBurn)
-	err := k.burnStakedTokens(ctx, tokensToBurn)
+	validator, err := k.removeValidatorTokens(ctx, validator, tokensToBurn)
 	if err != nil {
-		panic(err)
+		k.Logger(ctx).Error("could not remove staked tokens in slash: " + err.Error() + "\nfor validator " + addr.String())
+		return
+	}
+	err = k.burnStakedTokens(ctx, tokensToBurn)
+	if err != nil {
+		k.Logger(ctx).Error("could not burn staked tokens in slash: " + err.Error() + "\nfor validator " + addr.String())
+		return
 	}
 	// if falls below minimum force burn all of the stake
 	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		err := k.ForceValidatorUnstake(ctx, validator)
 		if err != nil {
-			panic(err)
+			k.Logger(ctx).Error("could not forceUnstake in slash: " + err.Error() + "\nfor validator " + addr.String())
+			return
 		}
 	}
 	// Log that a slash occurred
@@ -103,12 +117,13 @@ func (k Keeper) slash(ctx sdk.Ctx, consAddr sdk.Address, infractionHeight, power
 func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
 	logger := k.Logger(ctx)
 	if slashFactor.LT(sdk.ZeroDec()) {
-		panic(fmt.Errorf("attempted to slash with a negative slash factor: %v", slashFactor))
+		k.Logger(ctx).Error(fmt.Errorf("attempted to simple slash with a negative slash factor: %v", slashFactor).Error())
+		return types.Validator{}
 	}
 	if infractionHeight > ctx.BlockHeight() {
-		panic(fmt.Errorf( // Can't slash infractions in the future
-			"impossible attempt to slash future infraction at height %d but we are at height %d",
+		logger.Error(fmt.Sprintf("impossible attempt to slash future infraction at height %d but we are at height %d",
 			infractionHeight, ctx.BlockHeight()))
+		return types.Validator{}
 	}
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
@@ -120,6 +135,7 @@ func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight in
 	// should not be slashing an unstaked validator
 	if validator.IsUnstaked() {
 		logger.Error(fmt.Errorf("should not be slashing unstaked validator: %s", validator.GetAddress()).Error())
+		return types.Validator{}
 	}
 	return validator
 }
@@ -152,7 +168,6 @@ func (k Keeper) handleDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHei
 
 // validateDoubleSign - Check if double signature occurred
 func (k Keeper) validateDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHeight int64, timestamp time.Time) (address sdk.Address, signInfo types.ValidatorSigningInfo, validator exported.ValidatorI, err sdk.Error) {
-	logger := k.Logger(ctx)
 	val, found := k.GetValidator(ctx, sdk.Address(addr))
 	if !found || val.IsUnstaked() {
 		// Ignore evidence that cannot be handled.
@@ -165,23 +180,18 @@ func (k Keeper) validateDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionH
 	age := t.Sub(timestamp)
 	// Reject evidence if the double-sign is too old
 	if age > k.MaxEvidenceAge(ctx) {
-		logger.Info(fmt.Sprintf("Ignored double sign from %s at height %d, age of %d past max age of %d",
-			sdk.Address(addr), infractionHeight, age, k.MaxEvidenceAge(ctx)))
+		// Ignore evidence that cannot be handled.
+		err = sdk.ErrInternal(fmt.Errorf("ignored double sign from %s at height %d, age of %d past max age of %d", sdk.Address(addr), infractionHeight, age, k.MaxEvidenceAge(ctx)).Error())
 		return
 	}
 	// fetch the validator signing info
 	signInfo, found = k.GetValidatorSigningInfo(ctx, sdk.Address(addr))
 	if !found {
-		panic(fmt.Sprintf("Expected signing info for validator %s but not found", sdk.Address(addr)))
-	}
-	// validator is already tombstoned
-	if signInfo.Tombstoned {
-		logger.Info(fmt.Sprintf("Ignored double sign from %s at height %d, validator already tombstoned", sdk.Address(pubkey.Address()), infractionHeight))
-		err = types.ErrValidatorTombstoned(k.Codespace())
+		err = sdk.ErrInternal(fmt.Sprintf("WARNING: Ignored attempt to slash a nonexistent validator with address %s, we recommend you investigate immediately", addr))
 		return
 	}
 	// double sign confirmed
-	logger.Info(fmt.Sprintf("Confirmed double sign from %s at height %d, age of %d", sdk.Address(pubkey.Address()), infractionHeight, age))
+	k.Logger(ctx).Info(fmt.Sprintf("confirmed double sign from %s at height %d, age of %d", sdk.Address(pubkey.Address()), infractionHeight, age))
 	return sdk.Address(addr), signInfo, val, nil
 }
 
@@ -192,7 +202,8 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, po
 	addr := sdk.Address(address)
 	val, found := k.GetValidator(ctx, addr)
 	if !found {
-		panic(fmt.Sprintf("Validator consensus-address %s not found", addr))
+		logger.Error(fmt.Sprintf("error in handleValidatorSignature: validator with address %s not found", addr))
+		return
 	}
 	//check if validator is not already jailed
 	if !val.IsJailed() {
@@ -200,7 +211,8 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, po
 		// fetch signing info
 		signInfo, isFound := k.GetValidatorSigningInfo(ctx, addr)
 		if !isFound {
-			panic(fmt.Sprintf("Expected signing info for validator %s but not found", addr))
+			logger.Error(fmt.Sprintf("error in handleValidatorSignature: signing info for validator with address %s not found", addr))
+			return
 		}
 		// this is a relative index, so it counts blocks the validator *should* have signed
 		// will use the 0-value default signing info if not present, except for start height

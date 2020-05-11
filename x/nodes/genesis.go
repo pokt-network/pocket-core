@@ -3,6 +3,7 @@ package nodes
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
+	"os"
 	"time"
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -26,7 +27,8 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 	for _, validator := range data.Validators {
 		// if the validator is unstaked, then panic because, we shouldn't have unstaked validators in the genesis file
 		if validator.IsUnstaked() {
-			panic(fmt.Sprintf("%v the validators must be staked or unstaking at genesis", validator))
+			keeper.Logger(ctx).Error(fmt.Errorf("%v the validators must be staked or unstaking at genesis", validator).Error())
+			os.Exit(1)
 		}
 		// set the validators from the data
 		keeper.SetValidator(ctx, validator)
@@ -58,18 +60,21 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 	stakedPool := keeper.GetStakedPool(ctx)
 	// if the stakedPool is nil
 	if stakedPool == nil {
-		panic(fmt.Sprintf("%s module account has not been set", types.StakedPoolName))
+		keeper.Logger(ctx).Error(fmt.Errorf("%s module account has not been set", types.StakedPoolName).Error())
+		os.Exit(1)
 	}
 	// add coins if not provided on genesis (there's an option to provide the coins in genesis)
 	if stakedPool.GetCoins().IsZero() {
 		if err := stakedPool.SetCoins(stakedCoins); err != nil {
-			panic(err)
+			keeper.Logger(ctx).Error(fmt.Errorf("unable to set set coins for %s module account", types.StakedPoolName).Error())
+			os.Exit(1)
 		}
 		supplyKeeper.SetModuleAccount(ctx, stakedPool)
 	} else {
 		// if it is provided in the genesis file then ensure the two are equal
 		if !stakedPool.GetCoins().IsEqual(stakedCoins) {
-			panic(fmt.Sprintf("%s module account total does not equal the amount in each validator account", types.StakedPoolName))
+			keeper.Logger(ctx).Error(fmt.Sprintf("%s module account total does not equal the amount in each validator account", types.StakedPoolName))
+			os.Exit(1)
 		}
 	}
 	// add coins to the total supply
@@ -81,7 +86,8 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 			keeper.SetPrevStateValPower(ctx, lv.Address, lv.Power)
 			validator, found := keeper.GetValidator(ctx, lv.Address)
 			if !found {
-				panic(fmt.Sprintf("validator %s not found", lv.Address))
+				keeper.Logger(ctx).Error(fmt.Sprintf("%s validator not found from exported genesis", lv.Address))
+				continue
 			}
 			update := validator.ABCIValidatorUpdate()
 			update.Power = lv.Power // keep the next-val-set offset, use the prevState power for the first block
@@ -95,7 +101,8 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 	for addr, info := range data.SigningInfos {
 		address, err := sdk.AddressFromHex(addr)
 		if err != nil {
-			panic(err)
+			keeper.Logger(ctx).Error(fmt.Sprintf("unable to convert address from hex in genesis signing info for addr: %s err: %v", addr, err))
+			os.Exit(1)
 		}
 		keeper.SetValidatorSigningInfo(ctx, address, info)
 	}
@@ -103,7 +110,8 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 	for addr, array := range data.MissedBlocks {
 		address, err := sdk.AddressFromHex(addr)
 		if err != nil {
-			panic(err)
+			keeper.Logger(ctx).Error(fmt.Sprintf("unable to convert address from hex in genesis missed blocks for addr: %s err: %v", addr, err))
+			os.Exit(1)
 		}
 		for _, missed := range array {
 			keeper.SetValidatorMissedAt(ctx, address, missed.Index, missed.Missed)

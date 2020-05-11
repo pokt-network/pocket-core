@@ -7,6 +7,7 @@ import (
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"math"
+	"os"
 )
 
 // "Proof" - An interface representation of an economic proof of work/burn (relay or challenge)
@@ -152,7 +153,8 @@ func (rp RelayProof) Bytes() []byte {
 		Token:              rp.Token.HashString(),
 	})
 	if err != nil {
-		panic(fmt.Sprintf("an error occured converting the relay RelayProof to bytes:\n%v", err))
+		fmt.Println(fmt.Errorf("an error occured converting the relay RelayProof to bytes:\n%v", err))
+		os.Exit(1)
 	}
 	return res
 }
@@ -169,7 +171,8 @@ func (rp RelayProof) BytesWithSignature() []byte {
 		Token:              rp.Token.HashString(),
 	})
 	if err != nil {
-		panic(fmt.Sprintf("an error occured converting the relay RelayProof to bytes with signature:\n%v", err))
+		fmt.Println(fmt.Errorf("an error occured converting the relay RelayProof to bytesWithSignature:\n%v", err))
+		os.Exit(1)
 	}
 	return res
 }
@@ -419,7 +422,8 @@ func (c ChallengeProofInvalidData) Bytes() []byte {
 		},
 	})
 	if err != nil {
-		panic(fmt.Sprintf("an error occured converting the challengeproof to bytes\n%v", err))
+		fmt.Println(fmt.Errorf("an error occured converting the challengeproof to bytes\n%v", err))
+		os.Exit(1)
 	}
 	return bz
 }

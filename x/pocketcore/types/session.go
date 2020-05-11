@@ -7,6 +7,7 @@ import (
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	sdk "github.com/pokt-network/posmint/types"
+	"os"
 )
 
 // "Session" - The relationship between an application and the pocket network
@@ -255,7 +256,8 @@ func (sh SessionHeader) HashString() string {
 func (sh SessionHeader) Bytes() []byte {
 	res, err := json.Marshal(sh)
 	if err != nil {
-		panic(fmt.Sprintf("an error occured converting the session header into bytes:\n%v", err))
+		fmt.Println(fmt.Errorf("an error occured converting the session header into bytes:\n%v", err))
+		os.Exit(1)
 	}
 	return res
 }

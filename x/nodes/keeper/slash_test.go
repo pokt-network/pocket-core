@@ -30,33 +30,33 @@ func TestHandleValidatorSignature(t *testing.T) {
 		jail                bool
 	}
 	tests := []struct {
-		name   string
-		panics bool
+		name     string
+		hasError bool
 		args
 		expected
 	}{
 		{
 			name:     "handles a signature",
-			panics:   false,
+			hasError: false,
 			args:     args{validator: stakedValidator, power: int64(10), signed: false},
 			expected: expected{validator: stakedValidator, tombstoned: false, missedBlocksCounter: int64(1)},
 		},
 		{
 			name:     "previously signed signature",
-			panics:   false,
+			hasError: false,
 			args:     args{validator: stakedValidator, power: int64(10), signed: true},
 			expected: expected{validator: stakedValidator, tombstoned: false, missedBlocksCounter: int64(0)},
 		},
 		{
 			name:     "jails if signature with overflown minHeight and maxHeight",
-			panics:   false,
+			hasError: false,
 			args:     args{validator: stakedValidator, power: int64(10), signed: true, increasedContext: 51, maxMissed: 51},
 			expected: expected{validator: stakedValidator, tombstoned: false, missedBlocksCounter: int64(0)},
 		},
 		{
-			name:   "errors if no signed info",
-			panics: true,
-			args:   args{validator: stakedValidator, power: int64(10), signed: false},
+			name:     "errors if no signed info",
+			hasError: true,
+			args:     args{validator: stakedValidator, power: int64(10), signed: false},
 			expected: expected{
 				message: fmt.Sprintf("Expected signing info for validator %s but not found", sdk.Address(stakedValidator.GetPublicKey().Address())),
 			},
@@ -67,16 +67,8 @@ func TestHandleValidatorSignature(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			cryptoAddr := test.args.validator.GetPublicKey().Address()
 			keeper.SetValidator(context, test.args.validator)
-			switch test.panics {
+			switch test.hasError {
 			case true:
-				defer func() {
-					err := recover()
-					assert.Contains(t, test.expected.message, err, "does not contain error ")
-				}()
-				if test.expected.signedInfo {
-					keeper.handleValidatorSignature(context, cryptoAddr, test.args.power, test.args.signed)
-				}
-				keeper.handleValidatorSignature(context, cryptoAddr, test.args.power, test.args.signed)
 			default:
 				signingInfo := types.ValidatorSigningInfo{
 					Address:     test.args.validator.GetAddress(),
@@ -288,15 +280,15 @@ func TestValidateSlash(t *testing.T) {
 		found          bool
 	}
 	tests := []struct {
-		name   string
-		panics bool
+		name     string
+		hasError bool
 		args
 		expected
 	}{
 		{
-			name:   "validates slash",
-			panics: false,
-			args:   args{validator: stakedValidator},
+			name:     "validates slash",
+			hasError: false,
+			args:     args{validator: stakedValidator},
 			expected: expected{
 				validator:      stakedValidator,
 				found:          true,
@@ -305,9 +297,9 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "empty validator if not found",
-			panics: false,
-			args:   args{validator: stakedValidator},
+			name:     "empty validator if not found",
+			hasError: false,
+			args:     args{validator: stakedValidator},
 			expected: expected{
 				validator:      stakedValidator,
 				found:          true,
@@ -316,9 +308,9 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "errors if unstakedValidator",
-			panics: false,
-			args:   args{validator: unstakedValidator},
+			name:     "errors if unstakedValidator",
+			hasError: true,
+			args:     args{validator: unstakedValidator},
 			expected: expected{
 				validator:      unstakedValidator,
 				found:          true,
@@ -329,9 +321,9 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "errors with invalid slashFactor",
-			panics: true,
-			args:   args{validator: unstakedValidator, slashFraction: sdk.NewDec(-10)},
+			name:     "errors with invalid slashFactor",
+			hasError: true,
+			args:     args{validator: unstakedValidator, slashFraction: sdk.NewDec(-10)},
 			expected: expected{
 				validator:      stakedValidator,
 				found:          true,
@@ -342,9 +334,9 @@ func TestValidateSlash(t *testing.T) {
 			},
 		},
 		{
-			name:   "errors with wrong infraction height",
-			panics: true,
-			args:   args{validator: unstakedValidator},
+			name:     "errors with wrong infraction height",
+			hasError: true,
+			args:     args{validator: unstakedValidator},
 			expected: expected{
 				validator:      stakedValidator,
 				found:          true,
@@ -386,18 +378,14 @@ func TestValidateSlash(t *testing.T) {
 			} else {
 				fraction = keeper.SlashFractionDoubleSign(context)
 			}
-
-			switch test.panics {
+			switch test.hasError {
 			case true:
-				defer func() {
-					err := recover().(error)
-					assert.Equal(t, test.expected.message, err.Error(), "message error does not match")
-				}()
 				if test.expected.customHeight {
 					updatedContext := context.WithBlockHeight(100)
 					infractionHeight = updatedContext.BlockHeight()
 				}
-				_ = keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
+				val := keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
+				assert.Equal(t, types.Validator{}, val)
 			default:
 				val := keeper.validateSlash(context, sdk.Address(cryptoAddr), infractionHeight, test.args.power, fraction)
 				if test.expected.found {

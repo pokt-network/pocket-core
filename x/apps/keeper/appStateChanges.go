@@ -61,7 +61,10 @@ func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amo
 		return err
 	}
 	// add coins to the staked field
-	application = application.AddStakedTokens(amount)
+	application, er := application.AddStakedTokens(amount)
+	if er != nil {
+		return sdk.ErrInternal(er.Error())
+	}
 	// calculate relays
 	application.MaxRelays = k.CalculateAppRelays(ctx, application)
 	// set the status to staked
@@ -77,14 +80,14 @@ func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amo
 func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Ctx, application types.Application) sdk.Error {
 	// must be staked to begin unstaking
 	if !application.IsStaked() {
-		return types.ErrApplicationStatus(k.codespace)
+		return sdk.ErrInternal(types.ErrApplicationStatus(k.codespace).Error())
 	}
 	if application.IsJailed() {
-		return types.ErrApplicationJailed(k.codespace)
+		return sdk.ErrInternal(types.ErrApplicationJailed(k.codespace).Error())
 	}
 	// sanity check
 	if application.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		panic("should not happen: application trying to begin unstaking has less than the minimum stake")
+		return sdk.ErrInternal(fmt.Errorf("should not happen: application trying to begin unstaking has less than the minimum stake w/ address: %s", application.Address).Error())
 	}
 	return nil
 }
@@ -118,7 +121,7 @@ func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Ctx, application type
 	}
 	// sanity check
 	if application.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		panic("should not happen: application trying to begin unstaking has less than the minimum stake")
+		return sdk.ErrInternal(fmt.Errorf("should not happen: application trying to begin unstaking has less than the minimum stake w/ address: %s", application.Address).Error())
 	}
 	return nil
 }
@@ -130,9 +133,17 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Ctx, application types.Applic
 	// amount unstaked = stakedTokens
 	amount := application.StakedTokens
 	// send the tokens from staking module account to application account
-	k.coinsFromStakedToUnstaked(ctx, application)
+	err := k.coinsFromStakedToUnstaked(ctx, application)
+	if err != nil {
+		k.Logger(ctx).Error("could not move coins from staked to unstaked for applications module" + err.Error() + "for this app address: " + application.Address.String())
+		// continue with the unstaking
+	}
 	// removed the staked tokens field from application structure
-	application = application.RemoveStakedTokens(amount)
+	application, er := application.RemoveStakedTokens(amount)
+	if er != nil {
+		k.Logger(ctx).Error("could not remove tokens from unstaking application: " + er.Error())
+		// continue with the unstaking
+	}
 	// update the status to unstaked
 	application = application.UpdateStatus(sdk.Unstaked)
 	// reset app relays
@@ -165,7 +176,10 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Applicati
 		return err
 	}
 	// remove their tokens from the field
-	application = application.RemoveStakedTokens(application.StakedTokens)
+	application, er := application.RemoveStakedTokens(application.StakedTokens)
+	if er != nil {
+		return sdk.ErrInternal(er.Error())
+	}
 	// update their status to unstaked
 	application = application.UpdateStatus(sdk.Unstaked)
 	// reset app relays
@@ -191,9 +205,14 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Applicati
 
 // JailApplication - Send a application to jail
 func (k Keeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
-	application := k.mustGetApplicationByConsAddr(ctx, addr)
+	application, found := k.GetApplication(ctx, addr)
+	if !found {
+		k.Logger(ctx).Error(fmt.Errorf("application %s is attempted jailed but not found in all applications store", addr).Error())
+		return
+	}
 	if application.Jailed {
-		panic(fmt.Sprintf("cannot jail already jailed application, application: %v\n", application))
+		k.Logger(ctx).Error(fmt.Sprintf("cannot jail already jailed application, application: %v\n", application))
+		return
 	}
 	application.Jailed = true
 	k.SetApplication(ctx, application)
@@ -204,8 +223,8 @@ func (k Keeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
 
 // ValidateUnjailMessage - Check unjail message
 func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgAppUnjail) (addr sdk.Address, err sdk.Error) {
-	application := k.Application(ctx, msg.AppAddr)
-	if application == nil {
+	application, found := k.GetApplication(ctx, msg.AppAddr)
+	if !found {
 		return nil, types.ErrNoApplicationForAddress(k.Codespace())
 	}
 	// cannot be unjailed if not staked
@@ -225,9 +244,14 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgAppUnjail) (addr
 
 // UnjailApplication - Remove a application from jail
 func (k Keeper) UnjailApplication(ctx sdk.Ctx, addr sdk.Address) {
-	application := k.mustGetApplicationByConsAddr(ctx, addr)
+	application, found := k.GetApplication(ctx, addr)
+	if !found {
+		k.Logger(ctx).Error(fmt.Errorf("application %s is attempted jailed but not found in all applications store", addr).Error())
+		return
+	}
 	if !application.Jailed {
-		panic(fmt.Sprintf("cannot unjail already unjailed application, application: %v\n", application))
+		k.Logger(ctx).Error(fmt.Sprintf("cannot unjail already unjailed application, application: %v\n", application))
+		return
 	}
 	application.Jailed = false
 	k.SetApplication(ctx, application)
