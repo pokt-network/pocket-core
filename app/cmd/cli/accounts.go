@@ -459,6 +459,7 @@ var newMultiPublicKey = &cobra.Command{
 			p, err := crypto.NewPublicKey(pk)
 			if err != nil {
 				fmt.Println(fmt.Errorf("error in public key creation: %v", err))
+				continue
 			}
 			pks = append(pks, p)
 		}
@@ -481,6 +482,7 @@ var buildMultisig = &cobra.Command{
 			p, err := crypto.NewPublicKey(pk)
 			if err != nil {
 				fmt.Println(fmt.Errorf("error creating the public key: %v", err))
+				continue
 			}
 			pks = append(pks, p)
 		}
@@ -508,6 +510,7 @@ var signMS = &cobra.Command{
 			p, err := crypto.NewPublicKey(pk)
 			if err != nil {
 				fmt.Println(fmt.Errorf("error generating public key: %v", err))
+				continue
 			}
 			pks = append(pks, p)
 		}
@@ -533,6 +536,7 @@ NOTE: you MUST be the next signer (in order of public keys in the ms public key 
 		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials())
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing the multisig: %v", err))
+			continue
 		}
 		fmt.Println("Multisig transaction: \n" + hex.EncodeToString(bz))
 	},
