@@ -148,8 +148,8 @@ func PseudoRandomGeneration(total int64, hash []byte) (index int64, err error) {
 			return 0, err
 
 		}
-		// if the total relays is greater than the resulting integer, this is the pseudorandom chosen proof
-		if total > maxValue {
+		// if the total relays is greater or equal than the resulting integer, this is the pseudorandom chosen proof
+		if total >= maxValue {
 			firstCharacter, err := strconv.ParseInt(string(proofsHash[0]), 16, 64)
 			if err != nil {
 				return 0, err
