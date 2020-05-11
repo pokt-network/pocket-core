@@ -19,6 +19,7 @@
 - Change ClaimSubmissionWindow and BlocksPerSession call on getPseudorandomIndex to use the session context
 - Changed getPseudorandomIndex add a new parameter for sessionCtx
 - log mint errors
+- Catch error writing json for RPC endpoints
 
 ## RC-0.3.0
 - Added governance module from posmint
