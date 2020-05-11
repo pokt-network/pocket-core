@@ -158,55 +158,6 @@ func TestParams_Validate(t *testing.T) {
 	}
 }
 
-func TestParams_MustMarshalMarshal(t *testing.T) {
-	type args struct {
-		bz []byte
-	}
-	tests := []struct {
-		name   string
-		panics bool
-		want   interface{}
-		args
-	}{
-		{
-			"panics if empty bytes",
-			true,
-			"UnmarshalBinaryLengthPrefixed cannot decode empty bytes",
-			args{},
-		},
-		{
-			"Unmarshal application",
-			false,
-			Params{
-				UnstakingTime:     DefaultUnstakingTime,
-				MaxApplications:   DefaultMaxApplications,
-				AppStakeMin:       DefaultMinStake,
-				BaseRelaysPerPOKT: DefaultBaseRelaysPerPOKT,
-				MaxChains: DefaultMaxChains,
-			},
-			args{moduleCdc.MustMarshalBinaryLengthPrefixed(DefaultParams())},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			switch tt.panics {
-			case true:
-				defer func() {
-					err := recover().(error)
-					if !reflect.DeepEqual(fmt.Sprintf("%v", err), tt.want) {
-						t.Errorf("MustUnmarshalParams() = %v, \n\nwant %v", err, tt.want)
-					}
-				}()
-				_ = MustUnmarshalParams(moduleCdc, tt.args.bz)
-			default:
-				if got := MustUnmarshalParams(moduleCdc, tt.args.bz); !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("MustUnmarshalParams() = %v, \n\nwant %v", got, tt.want)
-				}
-			}
-		})
-	}
-}
-
 func TestParams_String(t *testing.T) {
 	tests := []struct {
 		name string

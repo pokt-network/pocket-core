@@ -6,8 +6,6 @@ import (
 	"github.com/pokt-network/posmint/types"
 	"math"
 	"time"
-
-	"github.com/pokt-network/posmint/codec"
 )
 
 // POS params default values
@@ -112,22 +110,4 @@ func (p Params) String() string {
 		p.StabilityAdjustment,
 		p.ParticipationRateOn,
 		p.MaxChains)
-}
-
-// unmarshal the current pos params value from store key or panic
-func MustUnmarshalParams(cdc *codec.Codec, value []byte) Params {
-	p, err := UnmarshalParams(cdc, value)
-	if err != nil {
-		panic(err)
-	}
-	return p
-}
-
-// unmarshal the current pos params value from store key
-func UnmarshalParams(cdc *codec.Codec, value []byte) (params Params, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(value, &params)
-	if err != nil {
-		return
-	}
-	return
 }

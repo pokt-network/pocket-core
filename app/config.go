@@ -164,7 +164,8 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort 
 	if datadir == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
-			panic("could not get home directory for data dir creation: " + err.Error())
+			fmt.Println("could not get home directory for data dir creation: " + err.Error())
+			os.Exit(1)
 		}
 		datadir = home + FS + DefaultDDName
 	}
@@ -175,7 +176,8 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort 
 		// ensure directory path made
 		err = os.MkdirAll(c.PocketConfig.DataDir+FS+ConfigDirName, os.ModePerm)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 	var jsonFile *os.File
@@ -184,30 +186,36 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort 
 	if _, err := os.Stat(configFilepath); err == nil {
 		jsonFile, err = os.OpenFile(configFilepath, os.O_RDWR, os.ModePerm)
 		if err != nil {
-			panic("cannot open config json file: " + err.Error())
+			fmt.Println("cannot open config json file: " + err.Error())
+			os.Exit(1)
 		}
 		b, err := ioutil.ReadAll(jsonFile)
 		if err != nil {
-			panic("cannot read config file: " + err.Error())
+			fmt.Println("cannot read config file: " + err.Error())
+			os.Exit(1)
 		}
 		err = json.Unmarshal(b, &c)
 		if err != nil {
-			panic("cannot read config file into json: " + err.Error())
+			fmt.Println("cannot read config file into json: " + err.Error())
+			os.Exit(1)
 		}
 	} else if os.IsNotExist(err) {
 		// if does not exist create one
 		jsonFile, err = os.OpenFile(configFilepath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 		if err != nil {
-			panic("canot open/create config json file: " + err.Error())
+			fmt.Println("canot open/create config json file: " + err.Error())
+			os.Exit(1)
 		}
 		b, err := json.MarshalIndent(c, "", "    ")
 		if err != nil {
-			panic("cannot marshal default config into json: " + err.Error())
+			fmt.Println("cannot marshal default config into json: " + err.Error())
+			os.Exit(1)
 		}
 		// write to the file
 		_, err = jsonFile.Write(b)
 		if err != nil {
-			panic("cannot write default config to json file: " + err.Error())
+			fmt.Println("cannot write default config to json file: " + err.Error())
+			os.Exit(1)
 		}
 	}
 	// flags trump config file
@@ -239,17 +247,20 @@ func InitGenesis() {
 			// if does not exist create one
 			jsonFile, err := os.OpenFile(genFP, os.O_RDWR|os.O_CREATE, os.ModePerm)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 			// write to the file
 			_, err = jsonFile.Write(newDefaultGenesisState())
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 			// close the file
 			err = jsonFile.Close()
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		}
 	}
@@ -258,7 +269,8 @@ func InitGenesis() {
 func InitTendermint() *node.Node {
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
 		if keyvals[0] != kitlevel.Key() {
-			panic(fmt.Sprintf("expected level key to be first, got %v", keyvals[0]))
+			fmt.Println(fmt.Sprintf("expected level key to be first, got %v", keyvals[0]))
+			os.Exit(1)
 		}
 		switch keyvals[1].(kitlevel.Value).String() {
 		case "info":
@@ -273,7 +285,8 @@ func InitTendermint() *node.Node {
 	})
 	logger, err := flags.ParseLogLevel(GlobalConfig.TendermintConfig.LogLevel, logger, "info")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	c := cfg.Config{
 		TmConfig:    &GlobalConfig.TendermintConfig,
@@ -284,10 +297,12 @@ func InitTendermint() *node.Node {
 		return NewPocketCoreApp(logger, db, baseapp.SetPruning(store.PruneNothing))
 	})
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	if err := tmNode.Start(); err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	app.SetTendermintNode(tmNode)
 	pca = app
@@ -301,10 +316,12 @@ func InitKeyfiles() string {
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
 		// if not exist continue creating as other files may be missing
 		if os.IsNotExist(err) {
-			panic(fmt.Errorf("validator address not set! please run set-validator"))
+			fmt.Println(fmt.Errorf("validator address not set! please run set-validator"))
+			os.Exit(1)
 		} else {
 			//panic on other errors
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	} else {
 		// file exist so we can load pk from file.
@@ -319,32 +336,37 @@ func initFiles(address sdk.Address, password string, datadir string) string {
 		fmt.Println("Initializing keybase: enter validator passphrase")
 		password = Credentials()
 		if password == "" {
-			panic("you must have a validator account password")
+			fmt.Println("you must have a validator account password")
+			os.Exit(1)
 		}
 		err := newKeybase(password)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
 		if os.IsNotExist(err) {
 			password = privValKey(address, password)
 		} else {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorState); err != nil {
 		if os.IsNotExist(err) {
 			privValState()
 		} else {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.NodeKey); err != nil {
 		if os.IsNotExist(err) {
 			nodeKey(address, password)
 		} else {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 	return password
@@ -360,7 +382,8 @@ func InitPocketCoreConfig() {
 func MustGetKeybase() kb.Keybase {
 	keys, err := GetKeybase()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	return keys
 }
@@ -400,7 +423,8 @@ func privValKey(address sdk.Address, password string) string {
 	}
 	res, err := (keys).ExportPrivateKeyObject(address, password)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	privValKey := privval.FilePVKey{
 		Address: res.PubKey().Address(),
@@ -409,15 +433,18 @@ func privValKey(address sdk.Address, password string) string {
 	}
 	pvkBz, err := cdc.MarshalJSONIndent(privValKey, "", "  ")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	_, err = pvFile.Write(pvkBz)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	types.InitPVKeyFile(privValKey)
 	return password
@@ -427,37 +454,44 @@ func nodeKey(address sdk.Address, password string) {
 	keys := MustGetKeybase()
 	res, err := (keys).ExportPrivateKeyObject(address, password)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	nodeKey := p2p.NodeKey{
 		PrivKey: res.PrivKey(),
 	}
 	pvkBz, err := cdc.MarshalJSONIndent(nodeKey, "", "  ")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.NodeKey, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	_, err = pvFile.Write(pvkBz)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
 func privValState() {
 	pvkBz, err := cdc.MarshalJSONIndent(privval.FilePVLastSignState{}, "", "  ")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorState, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	_, err = pvFile.Write(pvkBz)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
@@ -485,50 +519,59 @@ func NewHostedChains() *types.HostedBlockchains {
 		// if does not exist create one
 		jsonFile, err = os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 		if err != nil {
-			panic(NewInvalidChainsError(err))
+			fmt.Println(NewInvalidChainsError(err))
+			os.Exit(1)
 		}
 		// generate hosted chains from user input
 		c := GenerateHostedChains()
 		// create dummy input for the file
 		res, err := json.MarshalIndent(c, "", "  ")
 		if err != nil {
-			panic(NewInvalidChainsError(err))
+			fmt.Println(NewInvalidChainsError(err))
+			os.Exit(1)
 		}
 		// write to the file
 		_, err = jsonFile.Write(res)
 		if err != nil {
-			panic(NewInvalidChainsError(err))
+			fmt.Println(NewInvalidChainsError(err))
+			os.Exit(1)
 		}
 		// close the file
 		err = jsonFile.Close()
 		if err != nil {
-			panic(NewInvalidChainsError(err))
+			fmt.Println(NewInvalidChainsError(err))
+			os.Exit(1)
 		}
 	}
 	// reopen the file to read into the variable
 	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
-		panic(NewInvalidChainsError(err))
+		fmt.Println(NewInvalidChainsError(err))
+		os.Exit(1)
 	}
 	bz, err = ioutil.ReadAll(jsonFile)
 	if err != nil {
-		panic(NewInvalidChainsError(err))
+		fmt.Println(NewInvalidChainsError(err))
+		os.Exit(1)
 	}
 	// unmarshal into the structure
 	var hostedChainsSlice []types.HostedBlockchain
 	err = json.Unmarshal(bz, &hostedChainsSlice)
 	if err != nil {
-		panic(NewInvalidChainsError(err))
+		fmt.Println(NewInvalidChainsError(err))
+		os.Exit(1)
 	}
 	// close the file
 	err = jsonFile.Close()
 	if err != nil {
-		panic(NewInvalidChainsError(err))
+		fmt.Println(NewInvalidChainsError(err))
+		os.Exit(1)
 	}
 	m := make(map[string]types.HostedBlockchain)
 	for _, chain := range hostedChainsSlice {
 		if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
 			panic(fmt.Sprintf("invalid ID: %s in network identifier in %s file", chain.ID, GlobalConfig.PocketConfig.ChainsName))
+			os.Exit(1)
 		}
 		m[chain.ID] = chain
 	}
@@ -632,7 +675,7 @@ func MakeCodec() {
 func Credentials() string {
 	bytePassword, err := terminal.ReadPassword(syscall.Stdin)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	return strings.TrimSpace(string(bytePassword))
 }
@@ -662,11 +705,13 @@ func GetPrivValFile() (file privval.FilePVKey) {
 func newDefaultGenesisState() []byte {
 	keyb, err := GetKeybase()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	cb, err := keyb.GetCoinbase()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	pubKey := cb.PublicKey
 	defaultGenesis := module.NewBasicManager(
@@ -782,7 +827,8 @@ func ResetWorldState(cmd *cobra.Command, args []string) {
 	if cmd.Flag("datadir").DefValue == cmd.Flag("datadir").Value.String() {
 		home, err := os.UserHomeDir()
 		if err != nil {
-			panic("could not get home directory for data dir creation: " + err.Error())
+			fmt.Println("could not get home directory for data dir creation: " + err.Error())
+			os.Exit(1)
 		}
 		datadir = home + FS + DefaultDDName
 	} else {
@@ -810,7 +856,8 @@ func ResetAll(dbDir, addrBookFile, privValKeyFile, privValStateFile string, logg
 	// recreate the dbDir since the privVal state needs to live there
 	err := cmn.EnsureDir(dbDir, 0700)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	resetFilePV(privValKeyFile, privValStateFile, logger)
 }

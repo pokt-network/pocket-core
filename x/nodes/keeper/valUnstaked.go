@@ -84,7 +84,11 @@ func (k Keeper) getAllUnstakingValidators(ctx sdk.Ctx) (validators []types.Valid
 		var addrs []sdk.Address
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
 		for _, addr := range addrs {
-			validator := k.mustGetValidator(ctx, addr)
+			validator, found := k.GetValidator(ctx, addr)
+			if !found {
+				ctx.Logger().Error(fmt.Errorf("cannot find validator from unstaking set: %v\n", addr).Error())
+				continue
+			}
 			validators = append(validators, validator)
 		}
 	}

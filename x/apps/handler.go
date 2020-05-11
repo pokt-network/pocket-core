@@ -62,15 +62,11 @@ func handleStake(ctx sdk.Ctx, msg types.MsgAppStake, k keeper.Keeper) sdk.Result
 }
 
 func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginAppUnstake, k keeper.Keeper) sdk.Result {
-	ctx.Logger().Info("Begin Unstaking App Message received from " + msg.Address.String())
-	// move coins from the msg.Address account to a (self-delegation) delegator account
-	// the application account and global shares are updated within here
 	application, found := k.GetApplication(ctx, msg.Address)
 	if !found {
 		ctx.Logger().Error("App Not Found " + msg.Address.String())
 		return types.ErrNoApplicationFound(k.Codespace()).Result()
 	}
-	ctx.Logger().Info("Validate Unstaking App " + msg.Address.String())
 	if err := k.ValidateApplicationBeginUnstaking(ctx, application); err != nil {
 		ctx.Logger().Error("App Unstake Validation Not Successful " + msg.Address.String())
 		return err.Result()

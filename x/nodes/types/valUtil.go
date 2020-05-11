@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -42,7 +43,8 @@ func MustMarshalValidator(cdc *codec.Codec, validator Validator) []byte {
 func MustUnmarshalValidator(cdc *codec.Codec, valBytes []byte) Validator {
 	validator, err := UnmarshalValidator(cdc, valBytes)
 	if err != nil {
-		panic(err)
+		fmt.Println("Cannot unmarshal validator with bytes: ", hex.EncodeToString(valBytes))
+		os.Exit(1)
 	}
 	return validator
 }

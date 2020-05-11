@@ -4,7 +4,6 @@ import (
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/rpc/client"
 	"reflect"
 	"testing"
@@ -68,15 +67,11 @@ func TestSend(t *testing.T) {
 			toAddr:     nil,
 			passphrase: "",
 			amount:     sdk.Int{},
-		}, &sdk.TxResponse{},
+		}, nil,
 			true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() {
-				err := recover().(error)
-				assert.Contains(t, err.Error(), "connection refused", "error does not match")
-			}()
 			got, err := Send(tt.args.cdc, tt.args.tmNode, tt.args.keybase, tt.args.fromAddr, tt.args.toAddr, tt.args.passphrase, tt.args.amount)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Send() error = %v, wantErr %v", err, tt.wantErr)

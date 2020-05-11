@@ -458,7 +458,7 @@ var newMultiPublicKey = &cobra.Command{
 		for _, pk := range rawPKs {
 			p, err := crypto.NewPublicKey(pk)
 			if err != nil {
-				panic(err)
+				fmt.Println(fmt.Errorf("error in public key creation: %v", err))
 			}
 			pks = append(pks, p)
 		}
@@ -480,7 +480,7 @@ var buildMultisig = &cobra.Command{
 		for _, pk := range rawPKs {
 			p, err := crypto.NewPublicKey(pk)
 			if err != nil {
-				panic(err)
+				fmt.Println(fmt.Errorf("error creating the public key: %v", err))
 			}
 			pks = append(pks, p)
 		}
@@ -488,7 +488,7 @@ var buildMultisig = &cobra.Command{
 		fmt.Println("Enter passphrase: ")
 		bz, err := app.BuildMultisig(args[0], msg, app.Credentials(), multiSigPubKey)
 		if err != nil {
-			panic(err)
+			fmt.Println(fmt.Errorf("error building the multisig: %v", err))
 		}
 		fmt.Println("Multisig transaction: \n" + hex.EncodeToString(bz))
 	},
@@ -507,14 +507,14 @@ var signMS = &cobra.Command{
 		for _, pk := range rawPKs {
 			p, err := crypto.NewPublicKey(pk)
 			if err != nil {
-				panic(err)
+				fmt.Println(fmt.Errorf("error generating public key: %v", err))
 			}
 			pks = append(pks, p)
 		}
 		fmt.Println("Enter passphrase: ")
 		bz, err := app.SignMultisigOutOfOrder(args[0], msg, app.Credentials(), pks)
 		if err != nil {
-			panic(err)
+			fmt.Println(fmt.Errorf("error signing multisig: %v", err))
 		}
 		fmt.Println("Multisig transaction: \n" + hex.EncodeToString(bz))
 	},
@@ -532,7 +532,7 @@ NOTE: you MUST be the next signer (in order of public keys in the ms public key 
 		fmt.Println("Enter password: ")
 		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials())
 		if err != nil {
-			panic(err)
+			fmt.Println(fmt.Errorf("error signing the multisig: %v", err))
 		}
 		fmt.Println("Multisig transaction: \n" + hex.EncodeToString(bz))
 	},

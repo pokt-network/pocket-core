@@ -214,7 +214,7 @@ func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	_, err = w.Write(j)
 	if err != nil {
-		panic(err)
+		WriteErrorResponse(w, 400, err.Error())
 	}
 }
 
@@ -321,7 +321,7 @@ func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	_, err = w.Write(j)
 	if err != nil {
-		panic(err)
+		WriteErrorResponse(w, 400, err.Error())
 	}
 }
 

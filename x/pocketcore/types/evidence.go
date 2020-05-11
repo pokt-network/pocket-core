@@ -1,6 +1,9 @@
 package types
 
-import "github.com/willf/bloom"
+import (
+	"fmt"
+	"github.com/willf/bloom"
+)
 
 // "Evidence" - A proof of work/burn for nodes.
 type Evidence struct {
@@ -47,14 +50,14 @@ const (
 )
 
 // "Convert evidence type to bytes
-func (et EvidenceType) Byte() byte {
+func (et EvidenceType) Byte() (byte, error) {
 	switch et {
 	case RelayEvidence:
-		return 0
+		return 0, nil
 	case ChallengeEvidence:
-		return 1
+		return 1, nil
 	default:
-		panic("unrecognized evidence type")
+		return 0, fmt.Errorf("unrecognized evidence type")
 	}
 }
 

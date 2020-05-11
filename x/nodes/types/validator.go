@@ -74,24 +74,24 @@ func (v Validator) ConsensusPower() int64 {
 }
 
 // RemoveStakedTokens removes tokens from a validator
-func (v Validator) RemoveStakedTokens(tokens sdk.Int) Validator {
+func (v Validator) RemoveStakedTokens(tokens sdk.Int) (Validator, error) {
 	if tokens.IsNegative() {
-		panic(fmt.Sprintf("should not happen: trying to remove negative tokens %v", tokens))
+		return Validator{}, fmt.Errorf("should not happen: trying to remove negative tokens: %s from valdiator %s", tokens.String(), v.Address)
 	}
 	if v.StakedTokens.LT(tokens) {
-		panic(fmt.Sprintf("should not happen: only have %v tokens, trying to remove %v", v.StakedTokens, tokens))
+		return Validator{}, fmt.Errorf("should not happen: only have %v tokens, trying to remove %v", v.StakedTokens, tokens)
 	}
 	v.StakedTokens = v.StakedTokens.Sub(tokens)
-	return v
+	return v, nil
 }
 
 // AddStakedTokens tokens to staked field for a validator
-func (v Validator) AddStakedTokens(tokens sdk.Int) Validator {
+func (v Validator) AddStakedTokens(tokens sdk.Int) (Validator, error) {
 	if tokens.IsNegative() {
-		panic(fmt.Sprintf("should not happen: trying to add negative tokens %v", tokens))
+		return Validator{}, fmt.Errorf("should not happen: trying to add negative tokens: %s from valdiator %s", tokens.String(), v.Address)
 	}
 	v.StakedTokens = v.StakedTokens.Add(tokens)
-	return v
+	return v, nil
 }
 
 // compares the vital fields of two validator structures

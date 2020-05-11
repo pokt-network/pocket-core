@@ -52,14 +52,14 @@ func (k Keeper) SetReceipts(ctx sdk.Ctx, receipts []pc.Receipt) {
 		// get the address
 		addr, err := hex.DecodeString(receipt.ServicerAddress)
 		if err != nil {
-			panic(fmt.Sprintf("an error occured setting the receipts:\n%v", err))
+			ctx.Logger().Error(fmt.Errorf("an error occured setting the receipts:\n%v", err).Error())
 		}
 		// marshal the receipt into json-amino
 		bz := k.cdc.MustMarshalBinaryBare(receipt)
 		// generate the key for the receipt
 		key, err := pc.KeyForReceipt(ctx, addr, receipt.SessionHeader, receipt.EvidenceType)
 		if err != nil {
-			panic(fmt.Sprintf("an error occured setting the receipts:\n%v", err))
+			ctx.Logger().Error(fmt.Errorf("an error occured setting the receipts:\n%v", err).Error())
 		}
 		// set it in the store
 		store.Set(key, bz)

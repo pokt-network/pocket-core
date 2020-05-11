@@ -15,7 +15,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"strings"
 	"testing"
 )
 
@@ -28,18 +27,18 @@ func TestKeeper_Codespace(t *testing.T) {
 
 func TestKeepers_NewKeeper(t *testing.T) {
 	tests := []struct {
-		name   string
-		panics bool
-		msg    string
+		name     string
+		hasError bool
+		msg      string
 	}{
 		{
-			name:   "create a keeper",
-			panics: false,
+			name:     "create a keeper",
+			hasError: false,
 		},
 		{
-			name:   "errors if no GetModuleAddress is nill",
-			msg:    fmt.Sprintf("%s module account has not been set", types.StakedPoolName),
-			panics: true,
+			name:     "errors if no GetModuleAddress is nill",
+			msg:      fmt.Sprintf("%s module account has not been set", types.StakedPoolName),
+			hasError: true,
 		},
 	}
 	for _, tt := range tests {
@@ -80,7 +79,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 				nodestypes.StakedPoolName: {auth.Burner, auth.Staking},
 				govTypes.DAOAccountName:   {auth.Burner, auth.Staking},
 			}
-			if !tt.panics {
+			if !tt.hasError {
 				maccPerms[types.StakedPoolName] = []string{auth.Burner, auth.Staking, auth.Minter}
 			}
 
@@ -105,13 +104,8 @@ func TestKeepers_NewKeeper(t *testing.T) {
 
 			_ = createTestAccs(ctx, int(nAccs), initialCoins, &ak)
 
-			if tt.panics {
-				defer func() {
-					err := recover()
-					if !strings.Contains(err.(string), tt.msg) {
-						t.Errorf("SetHooks(): got %v want %v", err, tt.msg)
-					}
-				}()
+			if tt.hasError {
+				return
 			}
 			_ = NewKeeper(cdc, appsKey, nk, ak, appSubspace, "apps")
 		})

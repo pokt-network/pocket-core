@@ -95,7 +95,7 @@ func TestGetValidatorSigningInfoAddress(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotV := GetValidatorSigningInfoAddress(tt.args.key); !reflect.DeepEqual(gotV, tt.wantV) {
+			if gotV, _ := GetValidatorSigningInfoAddress(tt.args.key); !reflect.DeepEqual(gotV, tt.wantV) {
 				t.Errorf("GetValidatorSigningInfoAddress() = %v, want %v", gotV, tt.wantV)
 			}
 		})
@@ -257,41 +257,6 @@ func TestKeyForValidatorPrevStateStateByPower(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := KeyForValidatorPrevStateStateByPower(tt.args.address); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("KeyForValidatorPrevStateStateByPower() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestParseValidatorPowerRankKey(t *testing.T) {
-	type args struct {
-		key []byte
-	}
-
-	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-
-	operAddrInvr := types.CopyBytes(pub.Address())
-	for i, b := range operAddrInvr {
-		operAddrInvr[i] = ^b
-	}
-
-	prk := append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)
-
-	for i, b := range operAddrInvr {
-		operAddrInvr[i] = ^b
-	}
-
-	tests := []struct {
-		name         string
-		args         args
-		wantOperAddr []byte
-	}{
-		{"samplepowerrankKey", args{key: prk}, operAddrInvr},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if gotOperAddr := ParseValidatorPowerRankKey(tt.args.key); !reflect.DeepEqual(gotOperAddr, tt.wantOperAddr) {
-				t.Errorf("ParseValidatorPowerRankKey() = %v, want %v", gotOperAddr, tt.wantOperAddr)
 			}
 		})
 	}

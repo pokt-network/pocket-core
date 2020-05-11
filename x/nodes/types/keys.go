@@ -109,31 +109,18 @@ func getStakedValPowerRankKey(validator Validator) []byte {
 	return key
 }
 
-// parse the validators address from power rank key
-func ParseValidatorPowerRankKey(key []byte) (operAddr []byte) {
-	powerBytesLen := 8
-	if len(key) != 1+powerBytesLen+sdk.AddrLen {
-		panic("Invalid validator power rank key length")
-	}
-	operAddr = sdk.CopyBytes(key[powerBytesLen+1:])
-	for i, b := range operAddr {
-		operAddr[i] = ^b
-	}
-	return operAddr
-}
-
 // generates the key for validator signing information by consensus addr
 func GetValidatorSigningInfoKey(v sdk.Address) []byte {
 	return append(ValidatorSigningInfoKey, v.Bytes()...)
 }
 
 // extract the address from a validator signing info key
-func GetValidatorSigningInfoAddress(key []byte) (v sdk.Address) {
-	addr := key[1:]
+func GetValidatorSigningInfoAddress(key []byte) (addr sdk.Address, err error) {
+	addr = key[1:]
 	if len(addr) != sdk.AddrLen {
-		panic("unexpected key length")
+		err = sdk.ErrInternal("unexpected key length for GetValidatorSigningInfoAddress")
 	}
-	return addr
+	return
 }
 
 // generates the prefix key for missing val who missed block through consensus addr

@@ -153,7 +153,10 @@ func TestValidator_AddStakedTokens(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			if got := v.AddStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
+			if got, err := v.AddStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
+				if err != nil {
+
+				}
 				t.Errorf("AddStakedTokens() = %v, want %v", got, tt.want)
 			}
 		})
@@ -872,7 +875,7 @@ func TestValidator_RemoveStakedTokens(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			if got := v.RemoveStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
+			if got, _ := v.RemoveStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("RemoveStakedTokens() = %v, want %v", got, tt.want)
 			}
 		})

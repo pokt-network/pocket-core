@@ -29,8 +29,12 @@ func KeyForReceipt(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidence
 	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
 		return nil, NewInvalidEvidenceErr(ModuleName)
 	}
+	et, err := evidenceType.Byte()
+	if err != nil {
+		return nil, err
+	}
 	// return the key bz
-	return append(append(append(ReceiptKey, addr.Bytes()...), header.Hash()...), evidenceType.Byte()), nil
+	return append(append(append(ReceiptKey, addr.Bytes()...), header.Hash()...), et), nil
 }
 
 // "KeyForReceipts" - Generates a key for the receips object using an address
@@ -57,8 +61,12 @@ func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceTy
 	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
 		return nil, NewInvalidEvidenceErr(ModuleName)
 	}
+	et, err := evidenceType.Byte()
+	if err != nil {
+		return nil, err
+	}
 	// return the key bz
-	return append(append(append(ClaimKey, addr.Bytes()...), header.Hash()...), evidenceType.Byte()), nil
+	return append(append(append(ClaimKey, addr.Bytes()...), header.Hash()...), et), nil
 }
 
 // "KeyForClaims" - Generates the key for the claims object
@@ -77,5 +85,9 @@ func KeyForEvidence(header SessionHeader, evidenceType EvidenceType) ([]byte, er
 	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
 		return nil, NewInvalidEvidenceErr(ModuleName)
 	}
-	return append(header.Hash(), evidenceType.Byte()), nil
+	et, err := evidenceType.Byte()
+	if err != nil {
+		return nil, err
+	}
+	return append(header.Hash(), et), nil
 }

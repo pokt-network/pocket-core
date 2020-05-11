@@ -30,7 +30,7 @@ func QueryApplication(cdc *codec.Codec, tmNode client.Client, addr sdk.Address, 
 	if len(res) == 0 {
 		return types.Application{}, fmt.Errorf("no application found with address %s", addr)
 	}
-	return types.MustUnmarshalApplication(cdc, res), nil
+	return types.UnmarshalApplication(cdc, res)
 }
 
 func QueryApplications(cdc *codec.Codec, tmNode client.Client, height int64, opts types.QueryApplicationsWithOpts) (types.ApplicationsPage, error) {

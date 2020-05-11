@@ -50,15 +50,6 @@ func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator
 	return validator
 }
 
-// mustGetValidator - Retrieve validator, panics if no validator is found
-func (k Keeper) mustGetValidator(ctx sdk.Ctx, addr sdk.Address) types.Validator {
-	validator, found := k.GetValidator(ctx, addr)
-	if !found {
-		panic(fmt.Sprintf("validator record not found for address: %X\n", addr))
-	}
-	return validator
-}
-
 // Validator - wrapper for GetValidator call
 func (k Keeper) Validator(ctx sdk.Ctx, address sdk.Address) exported.ValidatorI {
 	val, found := k.GetValidator(ctx, address)
@@ -88,7 +79,11 @@ func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.Validato
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		validator := k.mustGetValidator(ctx, iterator.Value())
+		validator, found := k.GetValidator(ctx, iterator.Value())
+		if !found {
+			ctx.Logger().Error(fmt.Errorf("cannot find validator from staking set: %v\n", iterator.Value()).Error())
+			continue
+		}
 		validators = append(validators, validator)
 	}
 	return validators

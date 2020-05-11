@@ -86,7 +86,7 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 	tests := []struct {
 		name      string
 		validator types.Validator
-		panics    bool
+		hasError  bool
 		amount    sdk.Int
 		expected
 	}{
@@ -94,14 +94,14 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 			name:      "removes tokens from validator validators",
 			validator: stakedValidator,
 			amount:    sdk.NewInt(5),
-			panics:    false,
+			hasError:  false,
 			expected:  expected{tokens: sdk.NewInt(99999999995), validators: []types.Validator{}},
 		},
 		{
 			name:      "removes tokens from validator validators",
 			validator: stakedValidator,
 			amount:    sdk.NewInt(-5),
-			panics:    true,
+			hasError:  true,
 			expected:  expected{tokens: sdk.NewInt(99999999995), validators: []types.Validator{}, errorMessage: "trying to remove negative tokens"},
 		},
 	}
@@ -111,15 +111,11 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetValidator(context, test.validator)
 			keeper.SetStakedValidator(context, test.validator)
-			switch test.panics {
+			switch test.hasError {
 			case true:
-				defer func() {
-					err := recover()
-					assert.Contains(t, err, test.expected.errorMessage)
-				}()
-				_ = keeper.removeValidatorTokens(context, test.validator, test.amount)
+				_, _ = keeper.removeValidatorTokens(context, test.validator, test.amount)
 			default:
-				validator := keeper.removeValidatorTokens(context, test.validator, test.amount)
+				validator, _ := keeper.removeValidatorTokens(context, test.validator, test.amount)
 				assert.True(t, validator.StakedTokens.Equal(test.expected.tokens), "validator staked tokens is not as expected")
 
 				store := context.KVStore(keeper.storeKey)

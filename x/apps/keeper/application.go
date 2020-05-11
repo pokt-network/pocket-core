@@ -4,6 +4,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"os"
 )
 
 // GetApplication - Retrieve a single application from the main store
@@ -20,7 +21,11 @@ func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types
 // SetApplication - Add a single application the main store
 func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalApplication(k.cdc, application)
+	bz, err := k.cdc.MarshalBinaryLengthPrefixed(application)
+	if err != nil {
+		k.Logger(ctx).Error("could not marshal application object")
+		os.Exit(1)
+	}
 	store.Set(types.KeyForAppByAllApps(application.Address), bz)
 	ctx.Logger().Info("Setting App on Main Store " + application.Address.String())
 
@@ -34,7 +39,11 @@ func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
+		application, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		if err != nil {
+			k.Logger(ctx).Error("couldn't unmarshal application in GetAllApplications call: " + string(iterator.Value()) + "\n" + err.Error())
+			continue
+		}
 		applications = append(applications, application)
 	}
 	return applications
@@ -48,7 +57,11 @@ func (k Keeper) GetAllApplicationsWithOpts(ctx sdk.Ctx, opts types.QueryApplicat
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
+		application, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		if err != nil {
+			k.Logger(ctx).Error("couldn't unmarshal application in GetAllApplicationsWithOpts call: " + string(iterator.Value()) + "\n" + err.Error())
+			continue
+		}
 		if opts.IsValid(application) {
 			applications = append(applications, application)
 		}
@@ -66,7 +79,11 @@ func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications t
 
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
-		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
+		application, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		if err != nil {
+			k.Logger(ctx).Error("couldn't unmarshal application in GetApplications call: " + string(iterator.Value()) + "\n" + err.Error())
+			continue
+		}
 		applications[i] = application
 		i++
 	}
@@ -81,7 +98,11 @@ func (k Keeper) IterateAndExecuteOverApps(
 	defer iterator.Close()
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
-		application := types.MustUnmarshalApplication(k.cdc, iterator.Value())
+		application, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		if err != nil {
+			k.Logger(ctx).Error("couldn't unmarshal application in IterateAndExecuteOverApps call: " + string(iterator.Value()) + "\n" + err.Error())
+			continue
+		}
 		stop := fn(i, application) // XXX is this safe will the application unexposed fields be able to get written to?
 		if stop {
 			break

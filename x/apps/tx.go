@@ -20,8 +20,11 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 		Value:  amount,
 		Chains: chains, // non native blockchains
 	}
-	txBuilder, cliCtx := newTx(cdc, msg, fromAddr, tmNode, keybase, passphrase)
-	err := msg.ValidateBasic()
+	txBuilder, cliCtx, err := newTx(cdc, msg, fromAddr, tmNode, keybase, passphrase)
+	if err != nil {
+		return nil, err
+	}
+	err = msg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
@@ -30,38 +33,42 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 
 func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
 	msg := types.MsgBeginAppUnstake{Address: address}
-	txBuilder, cliCtx := newTx(cdc, msg, address, tmNode, keybase, passphrase)
-	err := msg.ValidateBasic()
+	txBuilder, cliCtx, err := newTx(cdc, msg, address, tmNode, keybase, passphrase)
+	if err != nil {
+		return nil, err
+	}
+	err = msg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg)
 }
 
-func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
-		panic(err)
+		return
 	}
 	chainID := genDoc.Genesis.ChainID
 	kp, err := keybase.Get(fromAddr)
 	if err != nil {
-		panic(err)
+		return
 	}
 	privkey, err := mintkey.UnarmorDecryptPrivKey(kp.PrivKeyArmor, passphrase)
 	if err != nil {
-		panic(err)
+		return
 	}
 	cliCtx = util.NewCLIContext(tmNode, fromAddr, passphrase).WithCodec(cdc)
 	cliCtx.BroadcastMode = util.BroadcastSync
 	cliCtx.PrivateKey = privkey
 	account, err := cliCtx.GetAccount(fromAddr)
 	if err != nil {
-		panic(err)
+		return
 	}
 	fee := msg.GetFee()
 	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LTE(fee) { // todo get stake denom
-		panic(fmt.Sprintf("insufficient funds: the fee needed is %v", fee))
+		err = fmt.Errorf("insufficient funds: the fee needed is %v", fee)
+		return
 	}
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(cdc),

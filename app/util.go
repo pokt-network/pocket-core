@@ -3,11 +3,13 @@ package app
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/gov"
 	"github.com/tendermint/tendermint/types"
+	"os"
 	"time"
 )
 
@@ -84,11 +86,13 @@ func SortJSON(toSortJSON []byte) string {
 	var c interface{}
 	err := json.Unmarshal(toSortJSON, &c)
 	if err != nil {
-		panic(err)
+		fmt.Println("could not unmarshal json in SortJSON: " + err.Error())
+		os.Exit(1)
 	}
 	js, err := json.MarshalIndent(c, "", "    ")
 	if err != nil {
-		panic(err)
+		fmt.Println("could not marshal back to json in SortJSON: " + err.Error())
+		os.Exit(1)
 	}
 	return string(js)
 }

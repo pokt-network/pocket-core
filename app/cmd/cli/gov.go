@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/pokt-network/pocket-core/app"
@@ -67,7 +68,8 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		var i interface{}
 		err := json.Unmarshal([]byte(args[2]), &i)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 		res, err := app.ChangeParam(args[0], args[1], i, app.Credentials())
 		if err != nil {
@@ -88,7 +90,8 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		i, err := strconv.Atoi(args[1])
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 		u := govTypes.Upgrade{
 			Height:  int64(i),

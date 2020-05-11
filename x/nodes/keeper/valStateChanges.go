@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -34,13 +35,20 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		// get the validator address
 		valAddr := sdk.Address(iterator.Value())
 		// return the validator from the current store
-		validator := k.mustGetValidator(ctx, valAddr)
+		validator, found := k.GetValidator(ctx, valAddr)
+		if !found {
+			k.Logger(ctx).Error("staking validator not found in UpdateTendermintValidators: " + valAddr.String())
+			// Cant delete w/out validator object due to ordering
+			continue
+		}
 		// sanity check for no jailed validators
 		if validator.Jailed {
-			panic("should never retrieve a jailed validator from the staked validators:"+validator.Address.String())
+			k.Logger(ctx).Error("should never retrieve a jailed validator from the staked validators:" + validator.Address.String())
+			continue
 		}
 		if validator.ConsensusPower() == 0 {
-			panic("should never have a zero consensus power validator in the staked set")
+			k.Logger(ctx).Error("should never retrieve a zero power validator from the staked validators:" + validator.Address.String())
+			continue
 		}
 		// fetch the old power bytes
 		var valAddrBytes [sdk.AddrLen]byte
@@ -67,7 +75,11 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 	noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
 	// iterate through the sorted no-longer-staked validators
 	for _, valAddrBytes := range noLongerStaked {
-		validator := k.mustGetValidator(ctx, valAddrBytes)
+		validator, found := k.GetValidator(ctx, valAddrBytes)
+		if !found {
+			ctx.Logger().Error("unable to retrieve `nolongerstaked` validator from the world state: " + hex.EncodeToString(valAddrBytes))
+			continue
+		}
 		// delete from the stake validator index
 		k.DeletePrevStateValPower(ctx, validator.GetAddress())
 		// add to one of the updates for tendermint
@@ -129,7 +141,10 @@ func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sd
 		return err
 	}
 	// add coins to the staked field
-	validator = validator.AddStakedTokens(amount)
+	validator, er := validator.AddStakedTokens(amount)
+	if er != nil {
+		return sdk.ErrInternal(er.Error())
+	}
 	// set the status to staked
 	validator = validator.UpdateStatus(sdk.Staked)
 	// save in the validator store
@@ -163,7 +178,7 @@ func (k Keeper) ValidateValidatorBeginUnstaking(ctx sdk.Ctx, validator types.Val
 	}
 	// sanity check
 	if validator.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		panic("should not happen: validator trying to begin unstaking has less than the minimum stake")
+		return sdk.ErrInternal("should not happen: validator trying to begin unstaking has less than the minimum stake")
 	}
 	return nil
 }
@@ -233,7 +248,7 @@ func (k Keeper) ValidateValidatorFinishUnstaking(ctx sdk.Ctx, validator types.Va
 	}
 	// sanity check
 	if validator.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		panic("should not happen: validator trying to begin unstaking has less than the minimum stake")
+		return sdk.ErrInternal("should not happen: validator trying to begin unstaking has less than the minimum stake")
 	}
 	return nil
 }
@@ -245,9 +260,17 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Ctx, validator types.Validator)
 	// amount unstaked = stakedTokens
 	amount := validator.StakedTokens
 	// send the tokens from staking module account to validator account
-	k.coinsFromStakedToUnstaked(ctx, validator)
+	err := k.coinsFromStakedToUnstaked(ctx, validator)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error())
+		// even if error continue with the unstake
+	}
 	// removed the staked tokens field from validator structure
-	validator = validator.RemoveStakedTokens(amount)
+	validator, err = validator.RemoveStakedTokens(amount)
+	if err != nil {
+		k.Logger(ctx).Error(err.Error())
+		// even if error continue with the unstake
+	}
 	// update the status to unstaked
 	validator = validator.UpdateStatus(sdk.Unstaked)
 	// update the validator in the main store
@@ -279,7 +302,7 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sd
 	case sdk.Unstaking:
 		k.deleteUnstakingValidator(ctx, validator)
 	default:
-		panic(sdk.ErrInternal("trying to force unstake an already unstaked validator"))
+		return sdk.ErrInternal("should not happen: trying to force unstake an already unstaked validator: " + validator.Address.String())
 	}
 	// amount unstaked = stakedTokens
 	err := k.burnStakedTokens(ctx, validator.StakedTokens)
@@ -287,7 +310,10 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sd
 		return err
 	}
 	// remove their tokens from the field
-	validator = validator.RemoveStakedTokens(validator.StakedTokens)
+	validator, er := validator.RemoveStakedTokens(validator.StakedTokens)
+	if er != nil {
+		return sdk.ErrInternal(er.Error())
+	}
 	// update their status to unstaked
 	validator = validator.UpdateStatus(sdk.Unstaked)
 	// set the validator in store
@@ -311,9 +337,14 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sd
 
 // JailValidator - Send a validator to jail
 func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
-	validator := k.mustGetValidator(ctx, addr)
+	validator, found := k.GetValidator(ctx, addr)
+	if !found {
+		ctx.Logger().Error(fmt.Errorf("cannot find jailed validator: %v\n", addr).Error())
+		return
+	}
 	if validator.Jailed {
-		panic(fmt.Sprintf("cannot jail already jailed validator, validator: %v\n", validator))
+		ctx.Logger().Error(fmt.Errorf("cannot jail already jailed validator, validator: %v\n", validator).Error())
+		return
 	}
 	k.deleteValidatorFromStakingSet(ctx, validator)
 	validator.Jailed = true
@@ -361,7 +392,11 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 
 // UnjailValidator - Remove a validator from jail
 func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
-	validator := k.mustGetValidator(ctx, addr)
+	validator, found := k.GetValidator(ctx, addr)
+	if !found {
+		ctx.Logger().Error(fmt.Errorf("cannot unjail validator, validator not found: %v\n", addr).Error())
+		return
+	}
 	if !validator.Jailed {
 		k.Logger(ctx).Error(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v\n", validator))
 		return

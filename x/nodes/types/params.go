@@ -179,15 +179,6 @@ func (p Params) String() string {
 		p.MaximumChains)
 }
 
-// unmarshal the current pos params value from store key or panic
-func MustUnmarshalParams(cdc *codec.Codec, value []byte) Params {
-	p, err := UnmarshalParams(cdc, value)
-	if err != nil {
-		panic(err)
-	}
-	return p
-}
-
 // unmarshal the current pos params value from store key
 func UnmarshalParams(cdc *codec.Codec, value []byte) (params Params, err error) {
 	err = cdc.UnmarshalBinaryLengthPrefixed(value, &params)

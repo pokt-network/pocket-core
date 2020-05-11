@@ -20,20 +20,20 @@ func TestMustGetValidator(t *testing.T) {
 		message   string
 	}
 	tests := []struct {
-		name   string
-		panics bool
+		name     string
+		hasError bool
 		args
 		expected
 	}{
 		{
 			name:     "gets validator",
-			panics:   false,
+			hasError: false,
 			args:     args{validator: stakedValidator},
 			expected: expected{validator: stakedValidator},
 		},
 		{
 			name:     "errors if no validator",
-			panics:   true,
+			hasError: true,
 			args:     args{validator: stakedValidator},
 			expected: expected{message: fmt.Sprintf("validator record not found for address: %X\n", stakedValidator.Address)},
 		},
@@ -42,17 +42,13 @@ func TestMustGetValidator(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
-			switch test.panics {
+			switch test.hasError {
 			case true:
-				defer func() {
-					err := recover()
-					assert.Contains(t, test.expected.message, err, "does not cointain error message")
-				}()
-				_ = keeper.mustGetValidator(context, test.args.validator.Address)
+				_, _ = keeper.GetValidator(context, test.args.validator.Address)
 			default:
 				keeper.SetValidator(context, test.args.validator)
 				keeper.SetStakedValidator(context, test.args.validator)
-				validator := keeper.mustGetValidator(context, test.args.validator.Address)
+				validator, _ := keeper.GetValidator(context, test.args.validator.Address)
 				assert.True(t, validator.Equals(test.expected.validator), "validator does not match")
 			}
 		})
