@@ -111,7 +111,12 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 				return
 			}
 			k.FinishUnstakingApplication(ctx, val)
-
+			ctx.EventManager().EmitEvent(
+				sdk.NewEvent(
+					types.EventTypeCompleteUnstaking,
+					sdk.NewAttribute(types.AttributeKeyApplication, valAddr.String()),
+				),
+			)
 		}
 		store.Delete(unstakingApplicationsIterator.Key())
 	}
