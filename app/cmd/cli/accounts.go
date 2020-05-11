@@ -536,7 +536,6 @@ NOTE: you MUST be the next signer (in order of public keys in the ms public key 
 		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials())
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing the multisig: %v", err))
-			continue
 		}
 		fmt.Println("Multisig transaction: \n" + hex.EncodeToString(bz))
 	},
