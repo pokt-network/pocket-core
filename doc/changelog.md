@@ -24,6 +24,8 @@
 - Changed SendClaimTx to use sessionContext for supportedBlockchains
 - Refactor ABCI BeginBlock for app module, avoid looping twice on mature applications
 - Swapped ExecuteProof and SetReceipt order on handleProofMsg func
+- Updated regex to allow only hex character.
+- Added empty/nil check to claim struct on handleProofMsg
 
 ## RC-0.3.0
 - Added governance module from posmint

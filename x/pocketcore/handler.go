@@ -50,7 +50,7 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	// validate the claim claim
 	addr, claim, err := k.ValidateProof(ctx, proof)
 	if err != nil {
-		if err.Code() == types.CodeReplayAttackError {
+		if err.Code() == types.CodeReplayAttackError && !claim.IsEmpty() {
 			// if is a replay attack, handle accordingly
 			k.HandleReplayAttack(ctx, addr, sdk.NewInt(claim.TotalProofs))
 			err := k.DeleteClaim(ctx, addr, claim.SessionHeader, claim.EvidenceType)

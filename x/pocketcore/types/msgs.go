@@ -88,6 +88,11 @@ func (msg MsgClaim) GetSigner() sdk.Address {
 	return msg.FromAddress
 }
 
+// "IsEmpty" - Returns true if the EvidenceType == 0, this should only happen on initialization and MsgClaim{} calls
+func (msg MsgClaim) IsEmpty() bool {
+	return msg.EvidenceType == 0
+}
+
 // ---------------------------------------------------------------------------------------------------------------------
 
 // "MsgProof" - Proves the previous claim by providing the merkle Proof and the leaf node
