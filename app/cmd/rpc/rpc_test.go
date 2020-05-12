@@ -43,7 +43,6 @@ func TestRPC_QueryHeight(t *testing.T) {
 		err := json.Unmarshal([]byte(resp), &height)
 		assert.Nil(t, err)
 		assert.NotEmpty(t, height.Height)
-
 		assert.Equal(t, int64(1), height.Height)
 	}
 	cleanup()

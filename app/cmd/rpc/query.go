@@ -108,6 +108,7 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
+		return
 	}
 	s, er := json.MarshalIndent(res, "", "  ")
 	if er != nil {
@@ -210,6 +211,7 @@ func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	j, err := res.JSON()
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
+		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	_, err = w.Write(j)
@@ -317,6 +319,7 @@ func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	j, err := res.JSON()
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
+		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	_, err = w.Write(j)

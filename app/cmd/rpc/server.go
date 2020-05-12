@@ -87,7 +87,7 @@ func WriteResponse(w http.ResponseWriter, jsn, path, ip string) {
 	b, err := json.Marshal(jsn)
 	if err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-		log.Println(err.Error())
+		fmt.Println(err.Error())
 	} else {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		_, err := w.Write(b)
@@ -111,14 +111,12 @@ func WriteJSONResponse(w http.ResponseWriter, jsn, path, ip string) {
 	if err := json.Unmarshal([]byte(jsn), &raw); err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 		fmt.Println(fmt.Errorf("error in RPC Handler WriteJSONResponse: %v", err))
+		return
 	}
 	err := json.NewEncoder(w).Encode(raw)
 	if err != nil {
 		fmt.Println(fmt.Errorf("error in RPC Handler WriteJSONResponse: %v", err))
-	}
-	if err := json.NewEncoder(w).Encode(raw); err != nil {
-		WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
-		log.Println(err.Error())
+		return
 	}
 }
 
