@@ -40,7 +40,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
-		reg, err := regexp.Compile("[^,a-zA-Z0-9]+")
+		reg, err := regexp.Compile("[^,a-fA-F0-9]+")
 		if err != nil {
 			log.Fatal(err)
 		}
