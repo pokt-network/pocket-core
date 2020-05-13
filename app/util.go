@@ -3,21 +3,28 @@ package app
 import (
 	"encoding/hex"
 	"encoding/json"
-	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
+	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/gov"
+	"github.com/pokt-network/posmint/x/auth"
 	"github.com/tendermint/tendermint/types"
 	"log"
 	"time"
 )
 
-func GenerateAAT(appPubKey, clientPubKey, passphrase string) (aatjson []byte, err error) {
-	aat, err := pocket.GenerateAAT(MustGetKeybase(), appPubKey, clientPubKey, passphrase)
+func (app PocketCoreApp) GenerateAAT(appPubKey, clientPubKey, passphrase string) (aatjson []byte, err error) {
+	kb, err := GetKeybase()
+	if err != nil {
+		return nil, err
+	}
+	aat, er := pocketKeeper.AATGeneration(appPubKey, clientPubKey, passphrase, kb)
+	if er != nil {
+		return nil, er
+	}
 	return json.MarshalIndent(aat, "", "  ")
 }
 
-func BuildMultisig(fromAddr, jsonMessage, passphrase string, pk crypto.PublicKeyMultiSig) ([]byte, error) {
+func (app PocketCoreApp) BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.PublicKeyMultiSig) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -26,10 +33,19 @@ func BuildMultisig(fromAddr, jsonMessage, passphrase string, pk crypto.PublicKey
 	if err := Codec().UnmarshalJSON([]byte(jsonMessage), &m); err != nil {
 		return nil, err
 	}
-	return gov.BuildAndSignMulti(Codec(), fa, pk, m, getTMClient(), MustGetKeybase(), passphrase)
+	kb, err := GetKeybase()
+	if err != nil {
+		return nil, err
+	}
+	txBuilder := auth.NewTxBuilder(
+		auth.DefaultTxEncoder(cdc),
+		auth.DefaultTxDecoder(cdc),
+		chainID,
+		"", nil).WithKeybase(kb)
+	return txBuilder.BuildAndSignMultisigTransaction(fa, pk, m, passphrase)
 }
 
-func SignMultisigNext(fromAddr, txHex, passphrase string) ([]byte, error) {
+func (app PocketCoreApp) SignMultisigNext(fromAddr, txHex, passphrase, chainID string) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -38,10 +54,19 @@ func SignMultisigNext(fromAddr, txHex, passphrase string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return gov.SignMulti(Codec(), fa, bz, nil, getTMClient(), MustGetKeybase(), passphrase)
+	kb, err := GetKeybase()
+	if err != nil {
+		return nil, err
+	}
+	txBuilder := auth.NewTxBuilder(
+		auth.DefaultTxEncoder(cdc),
+		auth.DefaultTxDecoder(cdc),
+		chainID,
+		"", nil).WithKeybase(kb)
+	return txBuilder.SignMultisigTransaction(fa, nil, passphrase, bz)
 }
 
-func SignMultisigOutOfOrder(fromAddr, txHex, passphrase string, keys []crypto.PublicKey) ([]byte, error) {
+func (app PocketCoreApp) SignMultisigOutOfOrder(fromAddr, txHex, passphrase, chainID string, keys []crypto.PublicKey) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -50,11 +75,20 @@ func SignMultisigOutOfOrder(fromAddr, txHex, passphrase string, keys []crypto.Pu
 	if err != nil {
 		return nil, err
 	}
-	return gov.SignMulti(Codec(), fa, bz, keys, getTMClient(), MustGetKeybase(), passphrase)
+	kb, err := GetKeybase()
+	if err != nil {
+		return nil, err
+	}
+	txBuilder := auth.NewTxBuilder(
+		auth.DefaultTxEncoder(cdc),
+		auth.DefaultTxDecoder(cdc),
+		chainID,
+		"", nil).WithKeybase(kb)
+	return txBuilder.SignMultisigTransaction(fa, keys, passphrase, bz)
 }
 
 func ExportState() (string, error) {
-	j, err := pca.ExportAppState(false, nil)
+	j, err := PCA.ExportAppState(false, nil)
 	if err != nil {
 		return "", err
 	}

@@ -58,7 +58,7 @@ func TestExportState(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		res, err := testPCA.ExportAppState(false, nil)
+		res, err := PCA.ExportAppState(false, nil)
 		assert.Nil(t, err)
 		assert.NotNil(t, res)
 	}

@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/types"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"github.com/pokt-network/pocket-core/app"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/spf13/cobra"
-	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 func init() {
@@ -52,9 +52,9 @@ var queryBlock = &cobra.Command{
 	Long:  `Retrieves the block structure at the specified height.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		var height *int64
+		var height int64
 		if len(args) == 0 {
-			height = nil
+			height = 0
 		} else {
 			var err error
 			parsed, err := strconv.Atoi(args[0])
@@ -63,14 +63,20 @@ var queryBlock = &cobra.Command{
 				return
 			}
 			convert := int64(parsed)
-			height = &convert
+			height = convert
 		}
-		res, err := app.QueryBlock(height)
+		params := rpc.HeightParams{Height: height}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(string(res))
+		res, err := QueryRPC(GetBlockPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -81,7 +87,13 @@ var queryTx = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		res, err := app.QueryTx(args[0])
+		params := rpc.HashParams{Hash: args[0]}
+		j, err := json.Marshal(params)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		res, err := QueryRPC(GetTxPath, j)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -130,19 +142,25 @@ var queryAccountTxs = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		page, perPage, prove, received := validatePagePerPageProveReceivedArgs(args)
-		var res *core_types.ResultTxSearch
 		var err error
-		if received == true {
-			res, err = app.QueryRecipientTxs(args[0], page, perPage, prove)
-		} else {
-			res, err = app.QueryAccountTxs(args[0], page, perPage, prove)
+		params := rpc.PaginateAddrParams{
+			Address:  args[0],
+			Page:     page,
+			PerPage:  perPage,
+			Received: received,
+			Prove:    prove,
 		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		jsonRes, _ := json.Marshal(res)
-		fmt.Println(fmt.Sprintf("%s", jsonRes))
+		res, err := QueryRPC(GetAccountTxsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -159,13 +177,23 @@ var queryBlockTxs = &cobra.Command{
 			fmt.Println(parsingErr)
 			return
 		}
-		res, err := app.QueryBlockTxs(height, page, perPage, prove)
+		params := rpc.PaginatedHeightParams{
+			Height:  height,
+			Page:    page,
+			PerPage: perPage,
+			Prove:   prove,
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		jsonRes, _ := json.Marshal(res)
-		fmt.Println(fmt.Sprintf("%s", jsonRes))
+		res, err := QueryRPC(GetBlockTxsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -175,12 +203,12 @@ var queryHeight = &cobra.Command{
 	Long:  `Retrieves the current height`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		res, err := app.QueryHeight()
+		res, err := QueryRPC(GetHeightPath, []byte{})
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Block Height: %d\n", res)
+		fmt.Println(res)
 	},
 }
 
@@ -202,12 +230,21 @@ var queryBalance = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryBalance(args[0], int64(height))
+		params := rpc.HeightAndAddrParams{
+			Height:  int64(height),
+			Address: args[0],
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Account Balance: %v\n", res)
+		res, err := QueryRPC(GetBalancePath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -229,12 +266,21 @@ var queryAccount = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryAccount(args[0], int64(height))
+		params := rpc.HeightAndAddrParams{
+			Height:  int64(height),
+			Address: args[0],
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("%v\n", res)
+		res, err := QueryRPC(GetAccountPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -296,12 +342,21 @@ var queryNodes = &cobra.Command{
 				fmt.Println(fmt.Errorf("unkown jailed status <jailed or unjailed>"))
 			}
 		}
-		res, err := app.QueryNodes(int64(height), opts)
+		params := rpc.HeightAndValidatorOptsParams{
+			Height: int64(height),
+			Opts:   opts,
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Nodes\n%s\n", res.String())
+		res, err := QueryRPC(GetNodesPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -323,12 +378,21 @@ var queryNode = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryNode(args[0], int64(height))
+		params := rpc.HeightAndAddrParams{
+			Height:  int64(height),
+			Address: args[0],
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(res.String())
+		res, err := QueryRPC(GetNodePath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -349,12 +413,20 @@ var queryNodeParams = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryNodeParams(int64(height))
+		params := rpc.HeightParams{
+			Height: int64(height),
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(res.String())
+		res, err := QueryRPC(GetNodeParamsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -399,12 +471,21 @@ var queryApps = &cobra.Command{
 				fmt.Println(fmt.Errorf("unkown staking status <staked or unstaking>"))
 			}
 		}
-		res, err := app.QueryApps(int64(height), opts)
+		params := rpc.HeightAndApplicaitonOptsParams{
+			Height: int64(height),
+			Opts:   opts,
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Apps:\n%s\n", res.String())
+		res, err := QueryRPC(GetAppsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -426,12 +507,21 @@ var queryApp = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryApp(args[0], int64(height))
+		params := rpc.HeightAndAddrParams{
+			Height:  int64(height),
+			Address: args[0],
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(res.String())
+		res, err := QueryRPC(GetAppPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -452,12 +542,20 @@ var queryAppParams = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryAppParams(int64(height))
+		params := rpc.HeightParams{
+			Height: int64(height),
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(res.String())
+		res, err := QueryRPC(GetAppParamsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -479,15 +577,21 @@ var queryNodeReceipts = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryReceipts(args[0], int64(height))
+		params := rpc.HeightAndAddrParams{
+			Height:  int64(height),
+			Address: args[0],
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println("MerkleProofs:")
-		for _, p := range res {
-			fmt.Printf("%v\n", p)
+		res, err := QueryRPC(GetNodeReceiptsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
+		fmt.Println(res)
 	},
 }
 
@@ -514,12 +618,25 @@ var queryNodeReceipt = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		res, err := app.QueryReceipt(args[3], args[1], args[0], args[2], int64(sessionheight), int64(height))
+		params := rpc.QueryNodeReceiptParam{
+			Address:      args[0],
+			Blockchain:   args[3],
+			AppPubKey:    args[1],
+			SBlockHeight: int64(sessionheight),
+			Height:       int64(height),
+			ReceiptType:  args[2],
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("%v\n", res)
+		res, err := QueryRPC(GetNodeReceiptPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -540,12 +657,20 @@ var queryPocketParams = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryPocketParams(int64(height))
+		params := rpc.HeightParams{
+			Height: int64(height),
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(res.String())
+		res, err := QueryRPC(GetPocketParamsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -566,14 +691,20 @@ var queryPocketSupportedChains = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryPocketSupportedBlockchains(int64(height))
+		params := rpc.HeightParams{
+			Height: int64(height),
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		for i, chain := range res {
-			fmt.Printf("(%d)\t%s\n", i, chain)
+		res, err := QueryRPC(GetSupportedChainsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
+		fmt.Println(res)
 	},
 }
 
@@ -594,27 +725,20 @@ var querySupply = &cobra.Command{
 				return
 			}
 		}
-		nodesStake, total, err := app.QueryTotalNodeCoins(int64(height))
+		params := rpc.HeightParams{
+			Height: int64(height),
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		appsStaked, err := app.QueryTotalAppCoins(int64(height))
+		res, err := QueryRPC(GetSupplyPath, j)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		dao, err := app.QueryDaoBalance(int64(height))
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		totalStaked := nodesStake.Add(appsStaked).Add(dao)
-		totalUnstaked := total.Sub(totalStaked)
-		fmt.Printf("Nodes Staked:\t%v\nApps Staked:\t%v\n"+
-			"Dao Supply:\t%v\nTotal Staked:\t%v\nTotalUnstaked:\t%v\nTotal Supply:\t%v\n\n",
-			nodesStake, appsStaked, dao, totalStaked, totalUnstaked, total,
-		)
+		fmt.Println(res)
 	},
 }
 
@@ -635,12 +759,20 @@ var queryDAOOwner = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryDaoOwner(int64(height))
+		params := rpc.HeightParams{
+			Height: int64(height),
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("%v\n", res)
+		res, err := QueryRPC(GetDAOOwnerPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -661,12 +793,20 @@ var queryACL = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryACL(int64(height))
+		params := rpc.HeightParams{
+			Height: int64(height),
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("%v\n", res)
+		res, err := QueryRPC(GetACLPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
 
@@ -687,11 +827,19 @@ var queryUpgrade = &cobra.Command{
 				return
 			}
 		}
-		res, err := app.QueryUpgrade(int64(height))
+		params := rpc.HeightParams{
+			Height: int64(height),
+		}
+		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("%v\n", res)
+		res, err := QueryRPC(GetUpgradePath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }

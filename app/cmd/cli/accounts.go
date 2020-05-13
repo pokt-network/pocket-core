@@ -3,7 +3,9 @@ package cli
 import (
 	"bufio"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -376,11 +378,11 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 
 // sendTxCmd represents the sendTx command
 var sendTxCmd = &cobra.Command{
-	Use:   "send-tx <fromAddr> <toAddr> <amount>",
+	Use:   "send-tx <fromAddr> <toAddr> <amount> <chainID>",
 	Short: "Send POKT",
 	Long: `Sends <amount> POKT <fromAddr> to <toAddr>.
 Prompts the user for <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(3),
+	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		amount, err := strconv.Atoi(args[2])
@@ -389,12 +391,22 @@ Prompts the user for <fromAddr> account passphrase.`,
 			return
 		}
 		fmt.Println("Enter passphrase: ")
-		res, err := app.SendTransaction(args[0], args[1], app.Credentials(), types.NewInt(int64(amount)))
+		res, err := SendTransaction(args[0], args[1], app.Credentials(), args[3], types.NewInt(int64(amount)))
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Transaction Submitted: %s", res.TxHash)
+		j, err := json.Marshal(res)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		resp, err := QueryRPC(SendRawTxPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(resp)
 	},
 }
 
@@ -411,12 +423,21 @@ var sendRawTxCmd = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		res, err := app.SendRawTx(args[0], bz)
+		p := rpc.SendRawTxParams{
+			Addr:        args[0],
+			RawHexBytes: hex.EncodeToString(bz),
+		}
+		j, err := json.Marshal(p)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("Transaction Submitted: %s", res.TxHash)
+		resp, err := QueryRPC(SendRawTxPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(resp)
 	},
 }
 
@@ -469,9 +490,9 @@ var newMultiPublicKey = &cobra.Command{
 }
 
 var buildMultisig = &cobra.Command{
-	Use:   "build-MS-Tx <your-signer-address> <ordered-comma-separated-hex-pubkeys> <json-message>",
+	Use:   "build-MS-Tx <your-signer-address> <ordered-comma-separated-hex-pubkeys> <json-message> <chainID>",
 	Short: "build and sign a multisic tx",
-	Args:  cobra.ExactArgs(3),
+	Args:  cobra.ExactArgs(4),
 	Long:  `build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
@@ -488,7 +509,7 @@ var buildMultisig = &cobra.Command{
 		}
 		multiSigPubKey := crypto.PublicKeyMultiSignature{PublicKeys: pks}
 		fmt.Println("Enter passphrase: ")
-		bz, err := app.BuildMultisig(args[0], msg, app.Credentials(), multiSigPubKey)
+		bz, err := app.PCA.BuildMultisig(args[0], msg, app.Credentials(), args[3], multiSigPubKey)
 		if err != nil {
 			fmt.Println(fmt.Errorf("error building the multisig: %v", err))
 		}
@@ -497,10 +518,10 @@ var buildMultisig = &cobra.Command{
 }
 
 var signMS = &cobra.Command{
-	Use:   "sign-ms-tx <your-signer-address> <hex-amino-stdtx> <ordered-comma-separated-hex-pubkeys>",
+	Use:   "sign-ms-tx <your-signer-address> <hex-amino-stdtx> <ordered-comma-separated-hex-pubkeys> <chainID>",
 	Short: "sign a multisic tx",
 	Long:  `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object`,
-	Args:  cobra.ExactArgs(3),
+	Args:  cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		msg := args[1]
@@ -515,7 +536,7 @@ var signMS = &cobra.Command{
 			pks = append(pks, p)
 		}
 		fmt.Println("Enter passphrase: ")
-		bz, err := app.SignMultisigOutOfOrder(args[0], msg, app.Credentials(), pks)
+		bz, err := app.PCA.SignMultisigOutOfOrder(args[0], msg, app.Credentials(), args[3], pks)
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing multisig: %v", err))
 		}
@@ -524,16 +545,16 @@ var signMS = &cobra.Command{
 }
 
 var signNexMS = &cobra.Command{
-	Use:   "sign-ms-next <your-signer-address> <hex-amino-stdtx>",
+	Use:   "sign-ms-next <your-signer-address> <hex-amino-stdtx> <chainID>",
 	Short: "sign a multisic tx",
 	Long: `sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
 NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.`,
-	Args: cobra.ExactArgs(2),
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		msg := args[1]
 		fmt.Println("Enter password: ")
-		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials())
+		bz, err := app.PCA.SignMultisigNext(args[0], msg, args[2], app.Credentials())
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing the multisig: %v", err))
 		}

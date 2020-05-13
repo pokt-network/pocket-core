@@ -15,37 +15,30 @@ func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	WriteResponse(w, APIVersion, r.URL.Path, r.Host)
 }
 
-type heightParams struct {
+type HeightParams struct {
 	Height int64 `json:"height"`
 }
 
-type hashParams struct {
+type HashParams struct {
 	Hash string `json:"hash"`
 }
 
-type heightAddrParams struct {
+type HeightAndAddrParams struct {
 	Height  int64  `json:"height"`
 	Address string `json:"address"`
 }
 
-type heightAndValidatorsOptsParams struct {
+type HeightAndValidatorOptsParams struct {
 	Height int64                           `json:"height"`
 	Opts   nodeTypes.QueryValidatorsParams `json:"opts"`
 }
 
-type heightAndApplicationsOptsParams struct {
+type HeightAndApplicaitonOptsParams struct {
 	Height int64                              `json:"height"`
 	Opts   appTypes.QueryApplicationsWithOpts `json:"opts"`
 }
 
-type heightAndStakingStatusParams struct {
-	Height        int64  `json:"height"`
-	StakingStatus string `json:"staking_status"`
-	Page          int    `json:"page,omitempty"`
-	PerPage       int    `json:"per_page,omitempty"`
-}
-
-type paginatedAddressParams struct {
+type PaginateAddrParams struct {
 	Address  string `json:"address"`
 	Page     int    `json:"page,omitempty"`
 	PerPage  int    `json:"per_page,omitempty"`
@@ -53,7 +46,7 @@ type paginatedAddressParams struct {
 	Prove    bool   `json:"prove,omitempty"`
 }
 
-type paginatedHeightParams struct {
+type PaginatedHeightParams struct {
 	Height  int64 `json:"height"`
 	Page    int   `json:"page,omitempty"`
 	PerPage int   `json:"per_page,omitempty"`
@@ -61,12 +54,12 @@ type paginatedHeightParams struct {
 }
 
 func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryBlock(&params.Height)
+	res, err := app.PCA.QueryBlock(&params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -75,12 +68,12 @@ func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = hashParams{}
+	var params = HashParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryTx(params.Hash)
+	res, err := app.PCA.QueryTx(params.Hash)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
@@ -93,7 +86,7 @@ func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = paginatedAddressParams{}
+	var params = PaginateAddrParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -101,9 +94,9 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var res *core_types.ResultTxSearch
 	var err error
 	if params.Received == false {
-		res, err = app.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove)
+		res, err = app.PCA.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove)
 	} else {
-		res, err = app.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove)
+		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove)
 	}
 
 	if err != nil {
@@ -119,12 +112,12 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func BlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = paginatedHeightParams{}
+	var params = PaginatedHeightParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryBlockTxs(params.Height, params.Page, params.PerPage, params.Prove)
+	res, err := app.PCA.QueryBlockTxs(params.Height, params.Page, params.PerPage, params.Prove)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
@@ -141,7 +134,7 @@ type queryHeightResponse struct {
 }
 
 func Height(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	res, err := app.QueryHeight()
+	res, err := app.PCA.QueryHeight()
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -159,12 +152,12 @@ type queryBalanceResponse struct {
 }
 
 func Balance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAddrParams{Height: 0}
+	var params = HeightAndAddrParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	balance, err := app.QueryBalance(params.Address, params.Height)
+	balance, err := app.PCA.QueryBalance(params.Address, params.Height)
 
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
@@ -179,12 +172,12 @@ func Balance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAddrParams{Height: 0}
+	var params = HeightAndAddrParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryAccount(params.Address, params.Height)
+	res, err := app.PCA.QueryAccount(params.Address, params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -198,12 +191,12 @@ func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAndValidatorsOptsParams{}
+	var params = HeightAndValidatorOptsParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryNodes(params.Height, params.Opts)
+	res, err := app.PCA.QueryNodes(params.Height, params.Opts)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -221,12 +214,12 @@ func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Node(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAddrParams{Height: 0}
+	var params = HeightAndAddrParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryNode(params.Address, params.Height)
+	res, err := app.PCA.QueryNode(params.Address, params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -240,12 +233,12 @@ func Node(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryNodeParams(params.Height)
+	res, err := app.PCA.QueryNodeParams(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -259,12 +252,12 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func NodeReceipts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAddrParams{Height: 0}
+	var params = HeightAndAddrParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryReceipts(params.Address, params.Height)
+	res, err := app.PCA.QueryReceipts(params.Address, params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -277,7 +270,7 @@ func NodeReceipts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	WriteResponse(w, string(j), r.URL.Path, r.Host)
 }
 
-type queryNodeReceipts struct {
+type QueryNodeReceiptParam struct {
 	Address      string `json:"address"`
 	Blockchain   string `json:"blockchain"`
 	AppPubKey    string `json:"app_pubkey"`
@@ -287,12 +280,12 @@ type queryNodeReceipts struct {
 }
 
 func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = queryNodeReceipts{}
+	var params = QueryNodeReceiptParam{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryReceipt(params.Blockchain, params.AppPubKey, params.Address, params.ReceiptType, params.SBlockHeight, params.Height)
+	res, err := app.PCA.QueryReceipt(params.Blockchain, params.AppPubKey, params.Address, params.ReceiptType, params.SBlockHeight, params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -306,12 +299,12 @@ func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAndApplicationsOptsParams{}
+	var params = HeightAndApplicaitonOptsParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryApps(params.Height, params.Opts)
+	res, err := app.PCA.QueryApps(params.Height, params.Opts)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -329,12 +322,12 @@ func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func App(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightAddrParams{Height: 0}
+	var params = HeightAndAddrParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryApp(params.Address, params.Height)
+	res, err := app.PCA.QueryApp(params.Address, params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -348,12 +341,12 @@ func App(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func AppParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryAppParams(params.Height)
+	res, err := app.PCA.QueryAppParams(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -367,12 +360,12 @@ func AppParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func PocketParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryPocketParams(params.Height)
+	res, err := app.PCA.QueryPocketParams(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -386,12 +379,12 @@ func PocketParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 }
 
 func SupportedChains(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryPocketSupportedBlockchains(params.Height)
+	res, err := app.PCA.QueryPocketSupportedBlockchains(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -414,22 +407,22 @@ type querySupplyResponse struct {
 }
 
 func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	nodesStake, total, err := app.QueryTotalNodeCoins(params.Height)
+	nodesStake, total, err := app.PCA.QueryTotalNodeCoins(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	appsStaked, err := app.QueryTotalAppCoins(params.Height)
+	appsStaked, err := app.PCA.QueryTotalAppCoins(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	dao, err := app.QueryDaoBalance(params.Height)
+	dao, err := app.PCA.QueryDaoBalance(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -452,12 +445,12 @@ func Supply(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func DAOOwner(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryDaoOwner(0)
+	res, err := app.PCA.QueryDaoOwner(0)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -471,12 +464,12 @@ func DAOOwner(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryUpgrade(0)
+	res, err := app.PCA.QueryUpgrade(0)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -490,12 +483,12 @@ func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func ACL(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = heightParams{Height: 0}
+	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryACL(params.Height)
+	res, err := app.PCA.QueryACL(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

@@ -73,6 +73,7 @@ const (
 	PlaceholderHash                 = "00"
 	PlaceholderURL                  = "https://foo.bar:8080"
 	PlaceholderServiceURL           = PlaceholderURL
+	DefaultRemoteCLIURL             = "http://localhost"
 )
 
 var (
@@ -80,7 +81,7 @@ var (
 	// the default fileseparator based on OS
 	FS = string(fp.Separator)
 	// app instance currently running
-	pca *pocketCoreApp
+	PCA *PocketCoreApp
 	// config
 	GlobalConfig Config
 	// HTTP CLIENT FOR TENDERMINT
@@ -107,6 +108,7 @@ type PocketConfig struct {
 	MaxEvidenceCacheEntires  int               `json:"max_evidence_cache_entries"`
 	MaxSessionCacheEntries   int               `json:"max_session_cache_entries"`
 	JSONSortRelayResponses   bool              `json:"json_sort_relay_responses"`
+	RemoteCLIURL             string            `json:"remote_cli_url"`
 }
 
 func DefaultConfig(dataDir string) Config {
@@ -127,6 +129,7 @@ func DefaultConfig(dataDir string) Config {
 			MaxEvidenceCacheEntires:  DefaultMaxEvidenceCacheEntries,
 			MaxSessionCacheEntries:   DefaultMaxSessionCacheEntries,
 			JSONSortRelayResponses:   DefaultJSONSortRelayResponses,
+			RemoteCLIURL:             DefaultRemoteCLIURL,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
@@ -282,8 +285,8 @@ func InitTendermint() *node.Node {
 		Logger:      logger,
 		TraceWriter: "",
 	}
-	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *pocketCoreApp {
-		return NewPocketCoreApp(logger, db, baseapp.SetPruning(store.PruneNothing))
+	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
+		return NewPocketCoreApp(nil, MustGetKeybase(), getTMClient(), *NewHostedChains(), logger, db, baseapp.SetPruning(store.PruneNothing))
 	})
 	if err != nil {
 		log2.Fatal(err)
@@ -292,7 +295,7 @@ func InitTendermint() *node.Node {
 		log2.Fatal(err)
 	}
 	app.SetTendermintNode(tmNode)
-	pca = app
+	PCA = app
 	return tmNode
 }
 
@@ -487,7 +490,7 @@ func NewHostedChains() *types.HostedBlockchains {
 		// if does not exist create one
 		jsonFile, err = os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 		if err != nil {
-			log2.Fatal(NewInvalidChainsError(err))
+			return &types.HostedBlockchains{} // default to empty object
 		}
 		// generate hosted chains from user input
 		c := GenerateHostedChains()
@@ -772,6 +775,7 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 	acl.SetOwner("pos/BlocksPerSession", addr)
 	acl.SetOwner("application/MaxApplications", addr)
 	acl.SetOwner("gov/daoOwner", addr)
+	acl.SetOwner("pos/RelaysToTokensMultiplier", addr)
 	acl.SetOwner("gov/upgrade", addr)
 	return acl
 }

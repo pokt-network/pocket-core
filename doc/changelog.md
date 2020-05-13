@@ -17,6 +17,9 @@
 - Ensured validator !isJailed in removeValidatorTokens
 - Added max chains params to nodes and apps module
 - Updated POSMint to have 1 msg and 1 signature per tx
+- Added RemoteCLIURL flag and config
+- Removed round trip from tendermint
+- Routed CLI through pocket RPC
 - Change ClaimSubmissionWindow and BlocksPerSession call on getPseudorandomIndex to use the session context
 - Changed getPseudorandomIndex add a new parameter for sessionCtx
 - log mint errors

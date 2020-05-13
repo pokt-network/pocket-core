@@ -15,6 +15,7 @@ import (
 var (
 	datadir         string
 	tmNode          string
+	remoteCLIURL    string
 	persistentPeers string
 	seeds           string
 	tmRPCPort       string
@@ -50,6 +51,7 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "help message for toggle")
 	rootCmd.PersistentFlags().StringVar(&datadir, "datadir", "", "data directory (default is $HOME/.pocket/")
 	rootCmd.PersistentFlags().StringVar(&tmNode, "node", "", "takes a remote endpoint in the form <protocol>://<host>:<port>")
+	rootCmd.PersistentFlags().StringVar(&remoteCLIURL, "remoteCLIURL", "", "takes a remote endpoint in the form of <protocol>://<host> (uses RPC Port)")
 	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	rootCmd.PersistentFlags().StringVar(&tmRPCPort, "tmRPCPort", "", "the port for tendermint rpc")

@@ -23,7 +23,7 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryDispatch(d)
+	res, err := app.PCA.QueryDispatch(d)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -45,7 +45,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryRelay(relay)
+	res, err := app.PCA.QueryRelay(relay)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -67,7 +67,7 @@ func Challenge(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.QueryChallenge(challenge)
+	res, err := app.PCA.QueryChallenge(challenge)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -80,13 +80,13 @@ func Challenge(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
-type sendRawTxParams struct {
+type SendRawTxParams struct {
 	Addr        string `json:"address"`
 	RawHexBytes string `json:"raw_hex_bytes"`
 }
 
 func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = sendRawTxParams{}
+	var params = SendRawTxParams{}
 	if !cors(&w, r) {
 		return
 	}
@@ -99,7 +99,7 @@ func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.SendRawTx(params.Addr, bz)
+	res, err := app.PCA.SendRawTx(params.Addr, bz)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

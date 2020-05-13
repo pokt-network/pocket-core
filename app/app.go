@@ -11,6 +11,8 @@ import (
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	bam "github.com/pokt-network/posmint/baseapp"
+	cfg "github.com/pokt-network/posmint/config"
+	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
@@ -19,6 +21,7 @@ import (
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -26,8 +29,8 @@ const (
 	AppVersion = "RC-0.3.0"
 )
 
-// NewPocketCoreApp is a constructor function for pocketCoreApp
-func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *pocketCoreApp {
+// NewPocketCoreApp is a constructor function for PocketCoreApp
+func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
 	app := newPocketBaseApp(logger, db, baseAppOptions...)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
@@ -64,7 +67,7 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		app.cdc,
 		app.nodesKeeper,
 		app.appsKeeper,
-		NewHostedChains(),
+		&hostedChains,
 		pocketSubspace,
 	)
 	// The governance keeper
@@ -77,8 +80,8 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 		authSubspace, nodesSubspace, appsSubspace, pocketSubspace,
 	)
 	// add the keybase to the pocket core keeper
-	app.pocketKeeper.Keybase = MustGetKeybase()
-	app.pocketKeeper.TmNode = getTMClient()
+	app.pocketKeeper.Keybase = keybase
+	app.pocketKeeper.TmNode = tmClient
 	// setup module manager
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper),
@@ -101,7 +104,11 @@ func NewPocketCoreApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.
 	// register all module routes and module queriers
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
 	// The initChainer handles translating the genesis.json file into initial state for the network
-	app.SetInitChainer(app.InitChainer)
+	if genState == nil {
+		app.SetInitChainer(app.InitChainer)
+	} else {
+		app.SetInitChainer(app.InitChainerWithGenesis)
+	}
 	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper))
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
