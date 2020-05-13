@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math"
 	"net/http"
-	"os"
 	"strings"
 
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
@@ -131,8 +131,7 @@ func (r Relay) RequestHash() []byte {
 	}{r.Payload, r.Meta}
 	res, err := json.Marshal(relay)
 	if err != nil {
-		fmt.Println(fmt.Errorf("cannot marshal relay request hash: %s", err.Error()))
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("cannot marshal relay request hash: %s", err.Error()))
 	}
 	return res
 }
@@ -154,8 +153,7 @@ type Payload struct {
 func (p Payload) Bytes() []byte {
 	bz, err := json.Marshal(p)
 	if err != nil {
-		fmt.Println(fmt.Errorf("an error occured converting the payload to bytes:\n%v", err))
-		os.Exit(1)
+		log.Fatalf(fmt.Errorf("an error occured converting the payload to bytes:\n%v", err).Error())
 	}
 	return bz
 }
@@ -243,8 +241,7 @@ func (rr RelayResponse) Hash() []byte {
 		Proof:     rr.Proof.HashString(),
 	})
 	if err != nil {
-		fmt.Println(fmt.Errorf("an error occured hashing the relay response:\n%v", err))
-		os.Exit(1)
+		log.Fatalf(fmt.Errorf("an error occured hashing the relay response:\n%v", err).Error())
 	}
 	return Hash(seed)
 }

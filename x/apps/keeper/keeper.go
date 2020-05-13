@@ -3,12 +3,11 @@ package keeper
 import (
 	"container/list"
 	"fmt"
-	"os"
-
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/libs/log"
+	log2 "log"
 )
 
 const aminoCacheSize = 500
@@ -36,8 +35,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, su
 
 	// ensure staked module accounts are set
 	if addr := supplyKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
-		fmt.Println(fmt.Errorf("%s module account has not been set", types.StakedPoolName))
-		os.Exit(1)
+		log2.Fatal(fmt.Errorf("%s module account has not been set", types.StakedPoolName))
 	}
 
 	return Keeper{

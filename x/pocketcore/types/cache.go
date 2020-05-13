@@ -6,7 +6,7 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 	db "github.com/tendermint/tm-db"
 	"github.com/willf/bloom"
-	"os"
+	"log"
 	"sync"
 )
 
@@ -42,8 +42,7 @@ func (cs *CacheStorage) Init(dir, name string, dbType db.DBBackendType, maxEntri
 	var err error
 	cs.Cache, err = lru.New(maxEntries)
 	if err != nil {
-		fmt.Println(fmt.Errorf("could not initialize cache storage: " + err.Error()))
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("could not initialize cache storage: " + err.Error()))
 	}
 	// intialize the db
 	cs.DB = db.NewDB(name, dbType, dir)
@@ -165,8 +164,7 @@ type SessionIt struct {
 func (si *SessionIt) Value() (session Session) {
 	err := ModuleCdc.UnmarshalJSON(si.Iterator.Value(), &session)
 	if err != nil {
-		fmt.Println(fmt.Errorf("can't unmarshal session iterator value into session: %s", err.Error()))
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("can't unmarshal session iterator value into session: %s", err.Error()))
 	}
 	return
 }
@@ -245,8 +243,7 @@ func (ei *EvidenceIt) Value() (evidence Evidence) {
 	// unmarshal the value (bz) into an evidence object
 	err := ModuleCdc.UnmarshalJSON(ei.Iterator.Value(), &evidence)
 	if err != nil {
-		fmt.Println(fmt.Errorf("can't unmarshal evidence iterator value into evidence: %s", err.Error()))
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("can't unmarshal evidence iterator value into evidence: %s", err.Error()))
 	}
 	return
 }
