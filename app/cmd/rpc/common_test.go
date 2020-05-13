@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"os"
 	"testing"
@@ -10,13 +9,10 @@ import (
 
 	"github.com/pokt-network/pocket-core/app"
 	apps "github.com/pokt-network/pocket-core/x/apps"
-	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
-	nodesKeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
-	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	bam "github.com/pokt-network/posmint/baseapp"
 	"github.com/pokt-network/posmint/codec"
@@ -28,12 +24,9 @@ import (
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/gov"
-	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/stretchr/testify/assert"
-	abci "github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
-	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
@@ -88,18 +81,9 @@ func TestNewInMemory(t *testing.T) {
 }
 
 var (
-	memoryModAccPerms = map[string][]string{
-		auth.FeeCollectorName:     nil,
-		nodesTypes.StakedPoolName: {auth.Burner, auth.Staking, auth.Minter},
-		appsTypes.StakedPoolName:  {auth.Burner, auth.Staking, auth.Minter},
-		nodesTypes.ModuleName:     {auth.Burner, auth.Staking, auth.Minter},
-		govTypes.DAOAccountName:   {auth.Burner, auth.Staking, auth.Minter},
-		appsTypes.ModuleName:      nil,
-	}
-	genState cfg.GenesisState
-	memCDC   *codec.Codec
-	inMemKB  keys.Keybase
-	memCLI   client.Client
+	memCDC  *codec.Codec
+	inMemKB keys.Keybase
+	memCLI  client.Client
 )
 
 const (
@@ -108,151 +92,6 @@ const (
 	dummyServiceURL = "https://foo.bar:8081"
 	defaultTMURI    = "tcp://localhost:26657"
 )
-
-type memoryPCApp struct {
-	*bam.BaseApp
-	cdc           *codec.Codec
-	keys          map[string]*sdk.KVStoreKey
-	tkeys         map[string]*sdk.TransientStoreKey
-	accountKeeper auth.Keeper
-	appsKeeper    appsKeeper.Keeper
-	nodesKeeper   nodesKeeper.Keeper
-	govKeeper     govKeeper.Keeper
-	pocketKeeper  pocketKeeper.Keeper
-	mm            *module.Manager
-}
-
-// NewPocketCoreApp is a constructor function for pocketCoreApp
-func newMemPCApp(logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *memoryPCApp {
-	app := newMemoryPCBaseApp(logger, db, baseAppOptions...)
-	// setup subspaces
-	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
-	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
-	appsSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
-	pocketSubspace := sdk.NewSubspace(pocketTypes.DefaultParamspace)
-	// The AuthKeeper handles address -> account lookups
-	app.accountKeeper = auth.NewKeeper(
-		app.cdc,
-		app.keys[auth.StoreKey],
-		authSubspace,
-		memoryModAccPerms,
-	)
-	// The nodesKeeper keeper handles pocket core nodes
-	app.nodesKeeper = nodesKeeper.NewKeeper(
-		app.cdc,
-		app.keys[nodesTypes.StoreKey],
-		app.accountKeeper,
-		nodesSubspace,
-		nodesTypes.DefaultCodespace,
-	)
-	// The apps keeper handles pocket core applications
-	app.appsKeeper = appsKeeper.NewKeeper(
-		app.cdc,
-		app.keys[appsTypes.StoreKey],
-		app.nodesKeeper,
-		app.accountKeeper,
-		appsSubspace,
-		appsTypes.DefaultCodespace,
-	)
-	// The main pocket core
-	app.pocketKeeper = pocketKeeper.NewKeeper(
-		app.keys[pocketTypes.StoreKey],
-		app.cdc,
-		app.nodesKeeper,
-		app.appsKeeper,
-		getInMemHostedChains(),
-		pocketSubspace,
-	)
-	// The governance keeper
-	app.govKeeper = govKeeper.NewKeeper(
-		app.cdc,
-		app.keys[pocketTypes.StoreKey],
-		app.tkeys[pocketTypes.StoreKey],
-		govTypes.DefaultCodespace,
-		app.accountKeeper,
-		authSubspace, nodesSubspace, appsSubspace, pocketSubspace,
-	)
-	app.pocketKeeper.Keybase = getInMemoryKeybase()
-	app.pocketKeeper.TmNode = getInMemoryTMClient()
-	app.mm = module.NewManager(
-		auth.NewAppModule(app.accountKeeper),
-		nodes.NewAppModule(app.nodesKeeper),
-		apps.NewAppModule(app.appsKeeper),
-		pocket.NewAppModule(app.pocketKeeper),
-		gov.NewAppModule(app.govKeeper),
-	)
-	app.mm.SetOrderBeginBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName)
-	app.mm.SetOrderEndBlockers(nodesTypes.ModuleName, appsTypes.ModuleName)
-	app.mm.SetOrderInitGenesis(
-		auth.ModuleName,
-		nodesTypes.ModuleName,
-		appsTypes.ModuleName,
-		pocketTypes.ModuleName,
-		gov.ModuleName,
-	)
-	app.mm.RegisterRoutes(app.Router(), app.QueryRouter())
-	app.SetInitChainer(app.InitChainer)
-	app.SetAnteHandler(auth.NewAnteHandler(app.accountKeeper))
-	app.SetBeginBlocker(app.BeginBlocker)
-	app.SetEndBlocker(app.EndBlocker)
-	app.MountKVStores(app.keys)
-	app.MountTransientStores(app.tkeys)
-	err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
-	if err != nil {
-		cmn.Exit(err.Error())
-	}
-	return app
-}
-
-func newMemoryPCBaseApp(logger log.Logger, db dbm.DB, options ...func(*bam.BaseApp)) *memoryPCApp {
-	bApp := bam.NewBaseApp("pocket-test", logger, db, auth.DefaultTxDecoder(memCodec()), options...)
-	bApp.SetAppVersion("0.3.0")
-	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
-	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
-	// Create the application
-	return &memoryPCApp{
-		BaseApp: bApp,
-		cdc:     memCodec(),
-		keys:    k,
-		tkeys:   tkeys,
-	}
-}
-
-func (app *memoryPCApp) InitChainer(ctx sdk.Ctx, req abci.RequestInitChain) abci.ResponseInitChain {
-	return app.mm.InitGenesis(ctx, genState)
-}
-
-func (app *memoryPCApp) BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
-	return app.mm.BeginBlock(ctx, req)
-}
-
-func (app *memoryPCApp) EndBlocker(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
-	return app.mm.EndBlock(ctx, req)
-}
-
-func (app *memoryPCApp) LoadHeight(height int64) error {
-	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
-}
-
-func (app *memoryPCApp) ModuleAccountAddrs() map[string]bool {
-	modAccAddrs := make(map[string]bool)
-	for acc := range memoryModAccPerms {
-		modAccAddrs[auth.NewModuleAddress(acc).String()] = true
-	}
-
-	return modAccAddrs
-}
-
-func (app *memoryPCApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
-	// as if they could withdraw from the start of the next block
-	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()}).WithAppVersion("0.0.0")
-	genState := app.mm.ExportGenesis(ctx)
-	appState, err = codec.MarshalJSONIndent(app.cdc, genState)
-	if err != nil {
-		return nil, err
-	}
-	return appState, nil
-}
 
 func getInMemoryKeybase() keys.Keybase {
 	if inMemKB == nil {
@@ -314,8 +153,13 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	privVal.Key.Address = pk.PubKey().Address()
 	pocketTypes.InitPVKeyFile(privVal.Key)
 
-	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *memoryPCApp {
-		return newMemPCApp(logger, db, bam.SetPruning(store.PruneNothing))
+	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *app.PocketCoreApp {
+		m := map[string]pocketTypes.HostedBlockchain{app.PlaceholderHash: {
+			ID:  app.PlaceholderHash,
+			URL: app.PlaceholderURL,
+		}}
+		p := app.NewPocketCoreApp(app.GenState, getInMemoryKeybase(), getInMemoryTMClient(), pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))
+		return p
 	}
 	//upgradePrivVal(c.TmConfig)
 	dbProvider := func(*node.DBContext) (dbm.DB, error) {
@@ -336,6 +180,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		panic(err)
 	}
 	baseapp.SetTendermintNode(tmNode)
+	app.PCA = baseapp
 	return tmNode, kb
 }
 
@@ -498,7 +343,7 @@ func oneValTwoNodeGenesisState() []byte {
 	defaultGenesis[govTypes.ModuleName] = res4
 	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
 	// end genesis setup
-	genState = defaultGenesis
+	app.GenState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j
 }
@@ -547,7 +392,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 	return testACL
 }
 
-func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validators, app appsTypes.Application) {
+func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validators, a appsTypes.Application) {
 	kb := getInMemoryKeybase()
 	// create keypairs
 	kp1, err := kb.GetCoinbase()
@@ -622,7 +467,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	rawApps := defaultGenesis[appsTypes.ModuleName]
 	var appsGenesisState appsTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawApps, &appsGenesisState)
-	// app 1
+	// a 1
 	appsGenesisState.Applications = append(appsGenesisState.Applications, appsTypes.Application{
 		Address:                 kp2.GetAddress(),
 		PublicKey:               kp2.PublicKey,
@@ -665,7 +510,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	res4 := memCodec().MustMarshalJSON(govGenesisState)
 	defaultGenesis[govTypes.ModuleName] = res4
 	// end genesis setup
-	genState = defaultGenesis
+	app.GenState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j, posGenesisState.Validators, appsGenesisState.Applications[0]
 }

@@ -54,7 +54,7 @@ func TestRPC_QueryBlock(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 1,
 		}
 		q := newQueryRequest("block", newBody(params))
@@ -88,7 +88,7 @@ func TestRPC_QueryTX(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		var params = hashParams{
+		var params = HashParams{
 			Hash: tx.TxHash,
 		}
 		q := newQueryRequest("tx", newBody(params))
@@ -126,7 +126,7 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 		kb := getInMemoryKeybase()
 		cb, err := kb.GetCoinbase()
 		assert.Nil(t, err)
-		var params = paginatedAddressParams{
+		var params = PaginateAddrParams{
 			Address: cb.GetAddress().String(),
 		}
 		q := newQueryRequest("accounttxs", newBody(params))
@@ -163,7 +163,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	select {
 	case <-evtChan:
 		// Step 1: Get the transaction by it's hash
-		var params = hashParams{
+		var params = HashParams{
 			Hash: tx.TxHash,
 		}
 		q := newQueryRequest("tx", newBody(params))
@@ -178,7 +178,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 		assert.NotEmpty(t, resTX.Height)
 
 		// Step 2: Get the transaction by it's height
-		var heightParams = paginatedHeightParams{
+		var heightParams = PaginatedHeightParams{
 			Height: resTX.Height,
 		}
 		heightQ := newQueryRequest("blocktxs", newBody(heightParams))
@@ -206,7 +206,7 @@ func TestRPC_QueryBalance(t *testing.T) {
 		kb := getInMemoryKeybase()
 		cb, err := kb.GetCoinbase()
 		assert.Nil(t, err)
-		var params = heightAddrParams{
+		var params = HeightAndAddrParams{
 			Height:  0,
 			Address: cb.GetAddress().String(),
 		}
@@ -239,7 +239,7 @@ func TestRPC_QueryAccount(t *testing.T) {
 		kb := getInMemoryKeybase()
 		cb, err := kb.GetCoinbase()
 		assert.Nil(t, err)
-		var params = heightAddrParams{
+		var params = HeightAndAddrParams{
 			Height:  0,
 			Address: cb.GetAddress().String(),
 		}
@@ -261,7 +261,7 @@ func TestRPC_QueryNodes(t *testing.T) {
 		kb := getInMemoryKeybase()
 		cb, err := kb.GetCoinbase()
 		assert.Nil(t, err)
-		var params = heightAndValidatorsOptsParams{
+		var params = HeightAndValidatorOptsParams{
 			Height: 0,
 			Opts: types2.QueryValidatorsParams{
 				StakingStatus: types.Staked,
@@ -288,7 +288,7 @@ func TestRPC_QueryNode(t *testing.T) {
 		kb := getInMemoryKeybase()
 		cb, err := kb.GetCoinbase()
 		assert.Nil(t, err)
-		var params = heightAddrParams{
+		var params = HeightAndAddrParams{
 			Height:  0,
 			Address: cb.GetAddress().String(),
 		}
@@ -310,7 +310,7 @@ func TestRPC_QueryApp(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightAddrParams{
+		var params = HeightAndAddrParams{
 			Height:  0,
 			Address: app.GetAddress().String(),
 		}
@@ -332,7 +332,7 @@ func TestRPC_QueryApps(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightAndApplicationsOptsParams{
+		var params = HeightAndApplicaitonOptsParams{
 			Height: 0,
 			Opts: types3.QueryApplicationsWithOpts{
 				StakingStatus: types.Staked,
@@ -357,7 +357,7 @@ func TestRPC_QueryNodeParams(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 0,
 		}
 		q := newQueryRequest("nodeparams", newBody(params))
@@ -378,7 +378,7 @@ func TestRPC_QueryAppParams(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 0,
 		}
 		q := newQueryRequest("appparams", newBody(params))
@@ -399,7 +399,7 @@ func TestRPC_QueryPocketParams(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 0,
 		}
 		q := newQueryRequest("pocketparams", newBody(params))
@@ -419,7 +419,7 @@ func TestRPC_QuerySupportedChains(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 0,
 		}
 		q := newQueryRequest("supportedchains", newBody(params))
@@ -439,7 +439,7 @@ func TestRPC_QuerySupply(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 0,
 		}
 		q := newQueryRequest("supply", newBody(params))
@@ -466,7 +466,7 @@ func TestRPC_QueryDAOOwner(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 0,
 		}
 		q := newQueryRequest("DAOOwner", newBody(params))
@@ -486,7 +486,7 @@ func TestRPC_QueryUpgrade(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 0,
 		}
 		q := newQueryRequest("Upgrade", newBody(params))
@@ -507,7 +507,7 @@ func TestRPCQueryACL(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		var params = heightParams{
+		var params = HeightParams{
 			Height: 0,
 		}
 		q := newQueryRequest("ACL", newBody(params))
@@ -646,7 +646,7 @@ func TestRPC_RawTX(t *testing.T) {
 	select {
 	case <-evtChan:
 		var err error
-		params := sendRawTxParams{
+		params := SendRawTxParams{
 			Addr:        cb.GetAddress().String(),
 			RawHexBytes: hex.EncodeToString(txBz),
 		}

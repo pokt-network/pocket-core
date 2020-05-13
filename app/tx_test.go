@@ -3,14 +3,14 @@ package app
 import (
 	"encoding/hex"
 	"fmt"
-	types3 "github.com/pokt-network/pocket-core/x/apps/types"
+	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"math/rand"
 	"strings"
 	"testing"
 
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/nodes"
-	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
+	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
@@ -40,30 +40,33 @@ func TestUnstakeApp(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+		got, err := PCA.QueryApps(0, appsTypes.QueryApplicationsWithOpts{
 			Page:  1,
 			Limit: 1})
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got.Result))
+		res := got.Result.(appsTypes.Applications)
+		assert.Equal(t, 1, len(res))
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
 		tx, err = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+		got, err := PCA.QueryApps(0, appsTypes.QueryApplicationsWithOpts{
 			Page:          1,
 			Limit:         1,
 			StakingStatus: 1,
 		})
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got.Result))
-		got, err = apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+		res := got.Result.(appsTypes.Applications)
+		assert.Equal(t, 1, len(res))
+		got, err = PCA.QueryApps(0, appsTypes.QueryApplicationsWithOpts{
 			Page:          1,
 			Limit:         1,
 			StakingStatus: 2,
 		})
 		assert.Nil(t, err)
-		assert.Equal(t, 1, len(got.Result)) // default genesis application
+		res = got.Result.(appsTypes.Applications)
+		assert.Equal(t, 1, len(res)) // default genesis application
 	}
 	cleanup()
 	stopCli()
@@ -80,7 +83,7 @@ func TestUnstakeNode(t *testing.T) {
 	case <-evtChan:
 		var err error
 		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		_, err = nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
+		_, err = PCA.QueryBalance(kp.GetAddress().String(), 0)
 		tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
 		assert.Nil(t, err)
 		assert.NotNil(t, tx)
@@ -92,21 +95,25 @@ func TestUnstakeNode(t *testing.T) {
 			select {
 			case res := <-evtChan:
 				if len(res.Events["begin_unstake.module"]) == 1 {
-					got, err := nodes.QueryValidators(memCodec(), memCli, 0, types2.QueryValidatorsParams{StakingStatus: 1, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1}) // unstaking
+					got, err := PCA.QueryNodes(0, nodeTypes.QueryValidatorsParams{StakingStatus: 1, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1}) // unstaking
 					assert.Nil(t, err)
-					assert.Equal(t, 1, len(got.Result))
-					got, err = nodes.QueryValidators(memCodec(), memCli, 0, types2.QueryValidatorsParams{StakingStatus: 2, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1}) // staked
+					res := got.Result.([]nodeTypes.Validator)
+					assert.Equal(t, 1, len(res))
+					got, err = PCA.QueryNodes(0, nodeTypes.QueryValidatorsParams{StakingStatus: 2, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1}) // staked
 					assert.Nil(t, err)
-					assert.Equal(t, 1, len(got.Result))
+					res = got.Result.([]nodeTypes.Validator)
+					assert.Equal(t, 1, len(res))
 					memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlockHeader)
 					select {
 					case res := <-evtChan:
 						if len(res.Events["unstake.module"]) == 1 {
-							got, err := nodes.QueryValidators(memCodec(), memCli, 0, types2.QueryValidatorsParams{StakingStatus: 0, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1})
+							got, err := PCA.QueryNodes(0, nodeTypes.QueryValidatorsParams{StakingStatus: 0, JailedStatus: 0, Blockchain: "", Page: 1, Limit: 1})
 							assert.Nil(t, err)
-							assert.Equal(t, 1, len(got.Result))
-							addr := got.Result[0].Address
-							balance, err := nodes.QueryAccountBalance(memCodec(), memCli, addr, 0)
+							res := got.Result.([]nodeTypes.Validator)
+							assert.Equal(t, 1, len(res))
+							vals := got.Result.([]nodeTypes.Validator)
+							addr := vals[0].Address
+							balance, err := PCA.QueryBalance(addr.String(), 0)
 							assert.NotZero(t, balance.Int64())
 							tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
 							assert.Nil(t, err)
@@ -163,12 +170,13 @@ func TestStakeApp(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		got, err := apps.QueryApplications(memCodec(), memCli, 0, types3.QueryApplicationsWithOpts{
+		got, err := PCA.QueryApps(0, appsTypes.QueryApplicationsWithOpts{
 			Page:  1,
 			Limit: 2,
 		})
 		assert.Nil(t, err)
-		assert.Equal(t, 2, len(got.Result))
+		res := got.Result.(appsTypes.Applications)
+		assert.Equal(t, 2, len(res))
 	}
 	stopCli()
 	cleanup()
@@ -193,10 +201,10 @@ func TestSendTransaction(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		balance, err := nodes.QueryAccountBalance(memCodec(), memCli, kp.GetAddress(), 0)
+		balance, err := PCA.QueryBalance(kp.GetAddress().String(), 0)
 		assert.Nil(t, err)
 		assert.True(t, balance.Equal(transferAmount))
-		balance, err = nodes.QueryAccountBalance(memCodec(), memCli, cb.GetAddress(), 0)
+		balance, err = PCA.QueryBalance(cb.GetAddress().String(), 0)
 		assert.Nil(t, err)
 	}
 	cleanup()
@@ -214,7 +222,7 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
 	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
-		types2.MsgSend{
+		nodeTypes.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
 			Amount:      sdk.NewInt(1),
@@ -225,7 +233,7 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	assert.Nil(t, err)
 	// create the transaction
 	txBz2, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
-		types2.MsgSend{
+		nodeTypes.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
 			Amount:      sdk.NewInt(1),
@@ -260,45 +268,6 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	}
 }
 
-func TestSendRawTx(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	cb, err := kb.GetCoinbase()
-	assert.Nil(t, err)
-	kp, err := kb.Create("test")
-	assert.Nil(t, err)
-	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
-	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	// create the transaction
-	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
-		types2.MsgSend{
-			FromAddress: cb.GetAddress(),
-			ToAddress:   kp.GetAddress(),
-			Amount:      sdk.NewInt(1),
-		},
-		pk,
-		common.RandInt64(),
-		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(100000)))))
-	assert.Nil(t, err)
-	select {
-	case <-evtChan:
-		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		var err error
-		txResp, err := nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
-		assert.Nil(t, err)
-		assert.NotNil(t, txResp)
-	}
-	// next block
-	select {
-	case <-evtChan:
-		res, err := nodes.QueryAccountBalance(memCodec(), memCli, cb.GetAddress(), 0)
-		assert.Nil(t, err)
-		assert.Equal(t, int64(999899999), res.Int64())
-	}
-	cleanup()
-	stopCli()
-}
-
 func TestChangeParamsTx(t *testing.T) {
 	resetTestACL()
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
@@ -320,7 +289,7 @@ func TestChangeParamsTx(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		acl, err := gov.QueryACL(memCodec(), memCli, 0)
+		acl, err := PCA.QueryACL(0)
 		assert.Nil(t, err)
 		o := acl.GetOwner("gov/acl")
 		assert.Equal(t, kp2.GetAddress().String(), o.String())
@@ -348,7 +317,7 @@ func TestUpgrade(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		u, err := gov.QueryUpgrade(memCodec(), memCli, 0)
+		u, err := PCA.QueryUpgrade(0)
 		assert.Nil(t, err)
 		assert.True(t, u.UpgradeVersion() == "2.0.0")
 	}
@@ -372,7 +341,7 @@ func TestDAOTransfer(t *testing.T) {
 	}
 	select {
 	case <-evtChan:
-		balance, err := gov.QueryDAO(memCodec(), memCli, 0)
+		balance, err := PCA.QueryDaoBalance(0)
 		assert.Nil(t, err)
 		assert.True(t, balance.Equal(sdk.NewInt(999)))
 	}

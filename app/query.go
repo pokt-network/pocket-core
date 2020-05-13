@@ -1,252 +1,393 @@
 package app
 
 import (
+	"encoding/hex"
 	"encoding/json"
-
-	apps "github.com/pokt-network/pocket-core/x/apps"
+	"fmt"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/pocket-core/x/nodes"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/gov"
+	"github.com/pokt-network/posmint/x/auth/exported"
+	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/pokt-network/posmint/x/gov/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
+	"math"
+	"reflect"
+	"strings"
+)
+
+const (
+	messageSenderQuery     = "message.sender='%s'"
+	transferRecipientQuery = "transfer.recipient='%s'"
+	txHeightQuery          = "tx.height=%d"
 )
 
 // zero for height = latest
-func QueryBlock(height *int64) (blockJSON []byte, err error) {
-	tmClient := getTMClient()
+func (app PocketCoreApp) QueryBlock(height *int64) (blockJSON []byte, err error) {
+	tmClient := app.GetClient()
 	defer tmClient.Stop()
-	res, err := nodes.QueryBlock(tmClient, height)
-	return res, err
-}
-
-func QueryTx(hash string) (res *core_types.ResultTx, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryTransaction(tmClient, hash)
-	return res, err
-}
-
-func QueryAccountTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryAccountTransactions(tmClient, addr, page, perPage, false, prove)
-	return res, err
-}
-func QueryRecipientTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryAccountTransactions(tmClient, addr, page, perPage, true, prove)
-	return res, err
-}
-
-func QueryBlockTxs(height int64, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryBlockTransactions(tmClient, height, page, perPage, prove)
-	return
-}
-
-func QueryHeight() (res int64, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryChainHeight(tmClient)
-	return
-}
-
-func QueryNodeStatus() (res *core_types.ResultStatus, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryNodeStatus(tmClient)
-	return
-}
-
-func QueryBalance(addr string, height int64) (res sdk.Int, err error) {
-	a, err := sdk.AddressFromHex(addr)
+	b, err := tmClient.Block(height)
 	if err != nil {
-		return sdk.NewInt(0), err
+		return nil, err
 	}
-	tmClient := getTMClient()
+	return codec.Cdc.MarshalJSONIndent(b, "", "  ")
+}
+
+func (app PocketCoreApp) QueryTx(hash string) (res *core_types.ResultTx, err error) {
+	tmClient := app.GetClient()
 	defer tmClient.Stop()
-	res, err = nodes.QueryAccountBalance(Codec(), tmClient, a, height)
+	h, err := hex.DecodeString(hash)
+	if err != nil {
+		return nil, err
+	}
+	res, err = tmClient.Tx(h, false)
 	return
 }
 
-func QueryAccount(addr string, height int64) (res *auth.BaseAccount, err error) {
+func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+	tmClient := app.GetClient()
+	defer tmClient.Stop()
+	_, err = hex.DecodeString(addr)
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf(messageSenderQuery, addr)
+	page, perPage = checkPagination(page, perPage)
+	res, err = tmClient.TxSearch(query, prove, page, perPage)
+	return
+}
+func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+	tmClient := app.GetClient()
+	defer tmClient.Stop()
+	_, err = hex.DecodeString(addr)
+	if err != nil {
+		return nil, err
+	}
+	query := fmt.Sprintf(transferRecipientQuery, addr)
+	page, perPage = checkPagination(page, perPage)
+	res, err = tmClient.TxSearch(query, prove, page, perPage)
+	return
+}
+
+func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+	tmClient := app.GetClient()
+	defer tmClient.Stop()
+	query := fmt.Sprintf(txHeightQuery, height)
+	page, perPage = checkPagination(page, perPage)
+	res, err = tmClient.TxSearch(query, prove, page, perPage)
+	return
+}
+
+func (app PocketCoreApp) QueryHeight() (res int64, err error) {
+	tmClient := app.GetClient()
+	defer tmClient.Stop()
+	status, err := tmClient.Status()
+	if err != nil {
+		return -1, err
+	}
+
+	height := status.SyncInfo.LatestBlockHeight
+	return height, nil
+}
+
+func (app PocketCoreApp) QueryNodeStatus() (res *core_types.ResultStatus, err error) {
+	tmClient := app.GetClient()
+	defer tmClient.Stop()
+	return tmClient.Status()
+}
+
+func (app PocketCoreApp) QueryBalance(addr string, height int64) (res sdk.Int, err error) {
+	acc, err := app.QueryAccount(addr, height)
+	if err != nil {
+		return
+	}
+	return (*acc).GetCoins().AmountOf(sdk.DefaultStakeDenom), nil
+}
+
+func (app PocketCoreApp) QueryAccount(addr string, height int64) (res *exported.Account, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryAccount(Codec(), tmClient, a, height)
-	return
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	acc := app.accountKeeper.GetAccount(ctx, a)
+	return &acc, nil
 }
 
-func QueryNodes(height int64, opts nodesTypes.QueryValidatorsParams) (res nodesTypes.ValidatorsPage, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryValidators(Codec(), tmClient, height, opts)
-	return
+func (app PocketCoreApp) QueryNodes(height int64, opts nodesTypes.QueryValidatorsParams) (res Page, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	opts.Page, opts.Limit = checkPagination(opts.Page, opts.Limit)
+	nodes := app.nodesKeeper.GetAllValidatorsWithOpts(ctx, opts)
+	return paginate(opts.Page, opts.Limit, nodes, int(app.nodesKeeper.GetParams(ctx).MaxValidators))
 }
 
-func QueryNode(addr string, height int64) (res nodesTypes.Validator, err error) {
+func (app PocketCoreApp) QueryNode(addr string, height int64) (res nodesTypes.Validator, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return res, err
 	}
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryValidator(Codec(), tmClient, a, height)
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	res, found := app.nodesKeeper.GetValidator(ctx, a)
+	if !found {
+		err = fmt.Errorf("validator not found for %s", a.String())
+	}
 	return
 }
 
-func QueryNodeParams(height int64) (res nodesTypes.Params, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QueryPOSParams(Codec(), tmClient, height)
-	return
+func (app PocketCoreApp) QueryNodeParams(height int64) (res nodesTypes.Params, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.nodesKeeper.GetParams(ctx), nil
 }
 
-func QuerySigningInfo(height int64, addr string) (res nodesTypes.ValidatorSigningInfo, err error) {
+func (app PocketCoreApp) QuerySigningInfo(height int64, addr string) (res nodesTypes.ValidatorSigningInfo, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nodesTypes.ValidatorSigningInfo{}, err
 	}
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = nodes.QuerySigningInfo(Codec(), tmClient, height, a)
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	res, found := app.nodesKeeper.GetValidatorSigningInfo(ctx, a)
+	if !found {
+		err = fmt.Errorf("signing info not found for %s", a.String())
+	}
 	return
 }
 
-func QueryTotalNodeCoins(height int64) (staked sdk.Int, unstaked sdk.Int, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	staked, unstaked, err = nodes.QuerySupply(Codec(), tmClient, height)
+func (app PocketCoreApp) QueryTotalNodeCoins(height int64) (stakedTokens sdk.Int, totalTokens sdk.Int, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	stakedTokens = app.nodesKeeper.GetStakedTokens(ctx)
+	totalTokens = app.nodesKeeper.TotalTokens(ctx)
 	return
 }
 
-func QueryDaoBalance(height int64) (res sdk.Int, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = gov.QueryDAO(Codec(), tmClient, height)
-	return
+func (app PocketCoreApp) QueryDaoBalance(height int64) (res sdk.Int, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.govKeeper.GetDAOTokens(ctx), nil
 }
 
-func QueryDaoOwner(height int64) (res sdk.Address, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = gov.QueryDAOOwner(Codec(), tmClient, height)
-	return
+func (app PocketCoreApp) QueryDaoOwner(height int64) (res sdk.Address, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.govKeeper.GetDAOOwner(ctx), nil
 }
 
-func QueryUpgrade(height int64) (res types.Upgrade, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = gov.QueryUpgrade(Codec(), tmClient, height)
-	return
+func (app PocketCoreApp) QueryUpgrade(height int64) (res types.Upgrade, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.govKeeper.GetUpgrade(ctx), nil
 }
 
-func QueryACL(height int64) (res types.ACL, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = gov.QueryACL(Codec(), tmClient, height)
-	return
+func (app PocketCoreApp) QueryACL(height int64) (res types.ACL, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.govKeeper.GetACL(ctx), nil
 }
 
-func QueryApps(height int64, opts appsTypes.QueryApplicationsWithOpts) (res appsTypes.ApplicationsPage, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = apps.QueryApplications(Codec(), tmClient, height, opts)
-	return
+func (app PocketCoreApp) QueryApps(height int64, opts appsTypes.QueryApplicationsWithOpts) (res Page, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	opts.Page, opts.Limit = checkPagination(opts.Page, opts.Limit)
+	applications := app.appsKeeper.GetAllApplicationsWithOpts(ctx, opts)
+	return paginate(opts.Page, opts.Limit, applications, int(app.appsKeeper.GetParams(ctx).MaxApplications))
 }
 
-func QueryApp(addr string, height int64) (res appsTypes.Application, err error) {
+func (app PocketCoreApp) QueryApp(addr string, height int64) (res appsTypes.Application, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return res, err
 	}
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = apps.QueryApplication(Codec(), tmClient, a, height)
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	res, found := app.appsKeeper.GetApplication(ctx, a)
+	if !found {
+		err = appsTypes.ErrNoApplicationFound(appsTypes.ModuleName)
+		return
+	}
 	return
 }
 
-func QueryTotalAppCoins(height int64) (staked sdk.Int, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	staked, err = apps.QuerySupply(Codec(), tmClient, height)
-	return
+func (app PocketCoreApp) QueryTotalAppCoins(height int64) (staked sdk.Int, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.appsKeeper.GetStakedTokens(ctx), nil
 }
 
-func QueryAppParams(height int64) (res appsTypes.Params, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = apps.QueryPOSParams(Codec(), tmClient, height)
-	return
+func (app PocketCoreApp) QueryAppParams(height int64) (res appsTypes.Params, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.appsKeeper.GetParams(ctx), nil
 }
 
-func QueryReceipts(addr string, height int64) (res []pocketTypes.Receipt, err error) {
+func (app PocketCoreApp) QueryReceipts(addr string, height int64) (res []pocketTypes.Receipt, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = pocket.QueryReceipts(Codec(), tmClient, a, height)
-	return
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.pocketKeeper.GetReceipts(ctx, a)
 }
 
-func QueryReceipt(blockchain, appPubKey, addr, receiptType string, sessionblockHeight, height int64) (res *pocketTypes.Receipt, err error) {
+func (app PocketCoreApp) QueryReceipt(blockchain, appPubKey, addr, receiptType string, sessionblockHeight, height int64) (res *pocketTypes.Receipt, err error) {
 	a, err := sdk.AddressFromHex(addr)
 	if err != nil {
 		return nil, err
 	}
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = pocket.QueryReceipt(Codec(), a, tmClient, blockchain, appPubKey, receiptType, sessionblockHeight, height)
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	h := pocketTypes.SessionHeader{
+		ApplicationPubKey:  appPubKey,
+		Chain:              blockchain,
+		SessionBlockHeight: sessionblockHeight,
+	}
+	var et pocketTypes.EvidenceType
+	switch strings.ToLower(receiptType) {
+	case "relay":
+		et = pocketTypes.RelayEvidence
+	case "challenge":
+		et = pocketTypes.ChallengeEvidence
+	default:
+		return nil, sdk.ErrInternal("type in the receipt query is not recognized: (relay or challenge)")
+	}
+	app.pocketKeeper.GetReceipt(ctx, a, h, et)
 	return
 }
 
-func QueryPocketSupportedBlockchains(height int64) (res []string, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = pocket.QueryPocketSupportedBlockchains(Codec(), tmClient, height)
+func (app PocketCoreApp) QueryPocketSupportedBlockchains(height int64) (res []string, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	sb := app.pocketKeeper.SupportedBlockchains(ctx)
+	return sb, nil
+}
+
+func (app PocketCoreApp) QueryPocketParams(height int64) (res pocketTypes.Params, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	p := app.pocketKeeper.GetParams(ctx)
+	return p, nil
+}
+
+func (app PocketCoreApp) QueryChallenge(c pocketTypes.ChallengeProofInvalidData) (res *pocketTypes.ChallengeResponse, err error) {
+	ctx, err := app.NewContext(app.LastBlockHeight())
+	if err != nil {
+		return nil, err
+	}
+	return app.pocketKeeper.HandleChallenge(ctx, c)
+}
+
+func (app PocketCoreApp) QueryDispatch(header pocketTypes.SessionHeader) (res *pocketTypes.DispatchResponse, err error) {
+	ctx, err := app.NewContext(app.LastBlockHeight())
+	if err != nil {
+		return nil, err
+	}
+	return app.pocketKeeper.HandleDispatch(ctx, header)
+}
+
+func (app PocketCoreApp) QueryRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, err error) {
+	ctx, err := app.NewContext(app.LastBlockHeight())
+	if err != nil {
+		return nil, err
+	}
+	return app.pocketKeeper.HandleRelay(ctx, r)
+}
+
+func checkPagination(page, limit int) (int, int) {
+	if page < 0 {
+		page = 1
+	}
+	if limit < 0 {
+		limit = 30
+	}
+	return page, limit
+}
+
+func paginate(page, limit int, items interface{}, MaxValidators int) (res Page, error error) {
+	slice, success := takeArg(items, reflect.Slice)
+	if !success {
+		return Page{}, fmt.Errorf("invalid argument, non slice input to paginate")
+	}
+	l := slice.Len()
+	start, end := util.Paginate(l, page, limit, MaxValidators)
+	if start == -1 && end == -1 {
+		return Page{}, nil
+	}
+	if start < 0 || end < 0 {
+		return Page{}, fmt.Errorf("invalid bounds error: start %d finish %d", start, end)
+	} else {
+		items = slice.Slice(start, end).Interface()
+	}
+	totalPages := int(math.Ceil(float64(l) / float64(end-start)))
+	if totalPages < 1 {
+		totalPages = 1
+	}
+	return Page{Result: items, Total: totalPages, Page: page}, nil
+}
+
+func takeArg(arg interface{}, kind reflect.Kind) (val reflect.Value, ok bool) {
+	val = reflect.ValueOf(arg)
+	if val.Kind() == kind {
+		ok = true
+	}
 	return
 }
 
-func QueryPocketParams(height int64) (res pocketTypes.Params, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = pocket.QueryParams(Codec(), tmClient, height)
-	return
+type Page struct {
+	Result interface{} `json:"result"`
+	Total  int         `json:"total_pages"`
+	Page   int         `json:"page"`
 }
 
-func QueryRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = pocket.QueryRelay(Codec(), tmClient, r)
-	return
+// Marshals struct into JSON
+func (p Page) JSON() (out []byte, err error) {
+	// each element should be a JSON
+	return json.Marshal(p)
 }
 
-func QueryChallenge(c pocketTypes.ChallengeProofInvalidData) (res *pocketTypes.ChallengeResponse, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = pocket.QueryChallenge(Codec(), tmClient, c)
-	return
-}
-
-func QueryDispatch(header pocketTypes.SessionHeader) (res *pocketTypes.DispatchResponse, err error) {
-	tmClient := getTMClient()
-	defer tmClient.Stop()
-	res, err = pocket.QueryDispatch(Codec(), tmClient, header)
-	return
-}
-
-func QueryState() (appState json.RawMessage, err error) {
-	return pca.ExportAppState(false, nil)
+// String returns a human readable string representation of a validator page
+func (p Page) String() string {
+	return fmt.Sprintf("Total:\t\t%d\nPage:\t\t%d\nResult:\t\t\n====\n%v\n====\n", p.Total, p.Page, p.Result)
 }

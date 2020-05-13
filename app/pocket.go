@@ -19,11 +19,12 @@ import (
 	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/tendermint/tendermint/rpc/client"
 	db "github.com/tendermint/tm-db"
 )
 
 // pocket core is an extension of baseapp
-type pocketCoreApp struct {
+type PocketCoreApp struct {
 	// extends baseapp
 	*bam.BaseApp
 	// the codec (uses amino)
@@ -42,7 +43,8 @@ type pocketCoreApp struct {
 }
 
 // new pocket core base
-func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)) *pocketCoreApp {
+func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)) *PocketCoreApp {
+	Codec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), options...)
 	// set version of the baseapp
@@ -53,7 +55,7 @@ func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
 	// add params keys too
 	// Create the application
-	return &pocketCoreApp{
+	return &PocketCoreApp{
 		BaseApp: bApp,
 		cdc:     cdc,
 		keys:    k,
@@ -62,28 +64,35 @@ func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 }
 
 // inits from genesis
-func (app *pocketCoreApp) InitChainer(ctx sdk.Ctx, req abci.RequestInitChain) abci.ResponseInitChain {
-	genesisState := cfg.GenesisStateFromFile(app.cdc, GlobalConfig.PocketConfig.DataDir+FS+ConfigDirName+FS+GlobalConfig.PocketConfig.GenesisName)
+func (app *PocketCoreApp) InitChainer(ctx sdk.Ctx, req abci.RequestInitChain) abci.ResponseInitChain {
+	genesisState := cfg.GenesisStateFromFile(cdc, GlobalConfig.PocketConfig.DataDir+FS+ConfigDirName+FS+GlobalConfig.PocketConfig.GenesisName)
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
+var GenState cfg.GenesisState
+
+// inits from genesis
+func (app *PocketCoreApp) InitChainerWithGenesis(ctx sdk.Ctx, req abci.RequestInitChain) abci.ResponseInitChain {
+	return app.mm.InitGenesis(ctx, GenState)
+}
+
 // setups all of the begin blockers for each module
-func (app *pocketCoreApp) BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+func (app *PocketCoreApp) BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	return app.mm.BeginBlock(ctx, req)
 }
 
 // setups all of the end blockers for each module
-func (app *pocketCoreApp) EndBlocker(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
+func (app *PocketCoreApp) EndBlocker(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
 }
 
 // loads the hight from the store
-func (app *pocketCoreApp) LoadHeight(height int64) error {
+func (app *PocketCoreApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the pcInstance's module account addresses.
-func (app *pocketCoreApp) ModuleAccountAddrs() map[string]bool {
+func (app *PocketCoreApp) ModuleAccountAddrs() map[string]bool {
 	modAccAddrs := make(map[string]bool)
 	for acc := range moduleAccountPermissions {
 		modAccAddrs[auth.NewModuleAddress(acc).String()] = true
@@ -93,15 +102,29 @@ func (app *pocketCoreApp) ModuleAccountAddrs() map[string]bool {
 }
 
 // exports the app state to json
-func (app *pocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
+func (app *PocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
 	// as if they could withdraw from the start of the next block
-	ctx := app.NewContext(true, abci.Header{Height: app.LastBlockHeight()}).WithAppVersion(app.AppVersion())
+	ctx, err := app.NewContext(app.LastBlockHeight())
+	if err != nil {
+		return nil, err
+	}
 	genState := app.mm.ExportGenesis(ctx)
 	appState, err = Codec().MarshalJSONIndent(genState, "", "    ")
 	if err != nil {
 		return nil, err
 	}
 	return appState, nil
+}
+
+func (app *PocketCoreApp) NewContext(height int64) (sdk.Ctx, error) {
+	store := app.Store()
+	blockStore := app.BlockStore()
+	ctx := sdk.NewContext(store, abci.Header{}, false, app.Logger()).WithBlockStore(blockStore)
+	return ctx.PrevCtx(height)
+}
+
+func (app *PocketCoreApp) GetClient() client.Client {
+	return app.pocketKeeper.TmNode
 }
 
 var (

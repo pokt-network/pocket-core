@@ -14,9 +14,9 @@ import (
 	"path/filepath"
 )
 
-type AppCreator func(log.Logger, dbm.DB, io.Writer) *pocketCoreApp
+type AppCreator func(log.Logger, dbm.DB, io.Writer) *PocketCoreApp
 
-func NewClient(c config, creator AppCreator) (*node.Node, *pocketCoreApp, error) {
+func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error) {
 	// setup the database
 	db, err := openDB(c.TmConfig.RootDir)
 	if err != nil {
