@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetApp(t *testing.T) {
@@ -11,7 +12,7 @@ func TestGetApp(t *testing.T) {
 	assert.True(t, found)
 	assert.Equal(t, a, apps[0])
 	randomAddr := getRandomValidatorAddress()
-	a, found = keeper.GetApp(ctx, randomAddr)
+	_, found = keeper.GetApp(ctx, randomAddr)
 	assert.False(t, found)
 }
 
@@ -22,6 +23,6 @@ func TestGetAppFromPublicKey(t *testing.T) {
 	assert.True(t, found)
 	assert.Equal(t, a, apps[0])
 	randomPubKey := getRandomPubKey().String()
-	a, found = keeper.GetAppFromPublicKey(ctx, randomPubKey)
+	_, found = keeper.GetAppFromPublicKey(ctx, randomPubKey)
 	assert.False(t, found)
 }

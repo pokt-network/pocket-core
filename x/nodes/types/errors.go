@@ -1,10 +1,11 @@
-// nolint
+//
 package types
 
 import (
 	"fmt"
-	sdk "github.com/pokt-network/posmint/types"
 	"strings"
+
+	sdk "github.com/pokt-network/posmint/types"
 )
 
 type CodeType = sdk.CodeType

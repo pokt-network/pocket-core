@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 )
 
 var (
@@ -115,7 +116,7 @@ func QueryRPC(path string, jsonArgs []byte) (string, error) {
 		var prettyJSON bytes.Buffer
 		err = json.Indent(&prettyJSON, bz, "", "    ")
 		if err == nil {
-			return string(prettyJSON.Bytes()), nil
+			return prettyJSON.String(), nil
 		}
 		return string(bz), nil
 	}

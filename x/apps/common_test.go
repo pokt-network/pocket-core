@@ -1,6 +1,9 @@
 package pos
 
 import (
+	"math/rand"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/apps/keeper"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
@@ -18,13 +21,10 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"math/rand"
-	"testing"
 
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// nolint: deadcode unused
 var (
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
@@ -33,7 +33,6 @@ var (
 	)
 )
 
-// nolint: deadcode unused
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -47,7 +46,6 @@ func makeTestCodec() *codec.Codec {
 	return cdc
 }
 
-// nolint: deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, keeper.Keeper, types.AuthKeeper, types.PosKeeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(4)
@@ -105,7 +103,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, keeper.Keeper, type
 	return ctx, keeper, ak, nk
 }
 
-// nolint: unparam deadcode unused
+// : unparam deadcode unused
 func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.Keeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()

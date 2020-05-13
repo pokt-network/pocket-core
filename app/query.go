@@ -4,6 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
+	"reflect"
+	"strings"
+
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -13,9 +17,6 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/pokt-network/posmint/x/gov/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
-	"math"
-	"reflect"
-	"strings"
 )
 
 const (
@@ -27,7 +28,7 @@ const (
 // zero for height = latest
 func (app PocketCoreApp) QueryBlock(height *int64) (blockJSON []byte, err error) {
 	tmClient := app.GetClient()
-	defer tmClient.Stop()
+	defer func() { _ = tmClient.Stop() }()
 	b, err := tmClient.Block(height)
 	if err != nil {
 		return nil, err
@@ -37,7 +38,7 @@ func (app PocketCoreApp) QueryBlock(height *int64) (blockJSON []byte, err error)
 
 func (app PocketCoreApp) QueryTx(hash string) (res *core_types.ResultTx, err error) {
 	tmClient := app.GetClient()
-	defer tmClient.Stop()
+	defer func() { _ = tmClient.Stop() }()
 	h, err := hex.DecodeString(hash)
 	if err != nil {
 		return nil, err
@@ -48,7 +49,7 @@ func (app PocketCoreApp) QueryTx(hash string) (res *core_types.ResultTx, err err
 
 func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
-	defer tmClient.Stop()
+	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
 	if err != nil {
 		return nil, err
@@ -60,7 +61,7 @@ func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove b
 }
 func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
-	defer tmClient.Stop()
+	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
 	if err != nil {
 		return nil, err
@@ -73,7 +74,7 @@ func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove
 
 func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
-	defer tmClient.Stop()
+	defer func() { _ = tmClient.Stop() }()
 	query := fmt.Sprintf(txHeightQuery, height)
 	page, perPage = checkPagination(page, perPage)
 	res, err = tmClient.TxSearch(query, prove, page, perPage)
@@ -82,7 +83,7 @@ func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bo
 
 func (app PocketCoreApp) QueryHeight() (res int64, err error) {
 	tmClient := app.GetClient()
-	defer tmClient.Stop()
+	defer func() { _ = tmClient.Stop() }()
 	status, err := tmClient.Status()
 	if err != nil {
 		return -1, err
@@ -94,7 +95,7 @@ func (app PocketCoreApp) QueryHeight() (res int64, err error) {
 
 func (app PocketCoreApp) QueryNodeStatus() (res *core_types.ResultStatus, err error) {
 	tmClient := app.GetClient()
-	defer tmClient.Stop()
+	defer func() { _ = tmClient.Stop() }()
 	return tmClient.Status()
 }
 

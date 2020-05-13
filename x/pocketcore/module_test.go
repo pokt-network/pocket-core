@@ -2,12 +2,13 @@ package pocketcore
 
 import (
 	"encoding/hex"
+	"reflect"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"reflect"
-	"testing"
 )
 
 func TestAppModule_Name(t *testing.T) {
@@ -44,6 +45,7 @@ func TestAppModule_InitExportGenesis(t *testing.T) {
 	genesis2bz := am.ExportGenesis(ctx)
 	err = types.ModuleCdc.UnmarshalJSON(genesis2bz, &genesis2)
 	assert.Equal(t, genesis2, types.DefaultGenesisState())
+	assert.Nil(t, err)
 }
 
 func TestAppModule_NewQuerierHandler(t *testing.T) {

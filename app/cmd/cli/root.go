@@ -26,7 +26,7 @@ var (
 	simulateRelay   bool
 )
 
-var CLIVersion = fmt.Sprintf("%s", app.AppVersion)
+var CLIVersion = app.AppVersion
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -79,7 +79,7 @@ var startCmd = &cobra.Command{
 			syscall.SIGTERM,
 			syscall.SIGINT,
 			syscall.SIGQUIT,
-			os.Kill,
+			os.Kill, //nolint
 			os.Interrupt)
 
 		defer func() {

@@ -1,16 +1,16 @@
 package keeper
 
 import (
+	"math/rand"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/gov"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-	"math/rand"
-	"testing"
 
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -29,7 +29,7 @@ var (
 	)
 )
 
-// nolint: deadcode unused
+// : deadcode unused
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -40,7 +40,7 @@ func makeTestCodec() *codec.Codec {
 	return cdc
 }
 
-// nolint: deadcode unused
+// : deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account, Keeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(4)
@@ -94,7 +94,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	return ctx, accs, keeper
 }
 
-// nolint: unparam deadcode unused
+// : unparam deadcode unused
 func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.Keeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()
@@ -107,20 +107,6 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.K
 		accs = append(accs, &acc)
 	}
 	return
-}
-
-var testACL govTypes.ACL
-
-func createTestACL() govTypes.ACL {
-	if testACL == nil {
-		acl := govTypes.ACL(make([]govTypes.ACLPair, 0))
-		acl.SetOwner("auth/MaxMemoCharacters", getRandomValidatorAddress())
-		acl.SetOwner("auth/TxSigLimit", getRandomValidatorAddress())
-		acl.SetOwner("gov/daoOwner", getRandomValidatorAddress())
-		acl.SetOwner("gov/acl", getRandomValidatorAddress())
-		testACL = acl
-	}
-	return testACL
 }
 
 func addMintedCoinsToModule(t *testing.T, ctx sdk.Ctx, k *Keeper, module string) {
@@ -174,12 +160,6 @@ func getUnstakedValidator() types.Validator {
 func getUnstakingValidator() types.Validator {
 	v := getValidator()
 	return v.UpdateStatus(sdk.Unstaking)
-}
-
-func getStakedJailedValidator() types.Validator {
-	v := getValidator()
-	v.Jailed = true
-	return v
 }
 
 func modifyFn(i *int) func(index int64, Validator exported.ValidatorI) (stop bool) {

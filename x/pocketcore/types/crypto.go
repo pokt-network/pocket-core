@@ -3,12 +3,13 @@ package types
 import (
 	sha "crypto"
 	"encoding/hex"
+	"strconv"
+
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/privval"
 	_ "golang.org/x/crypto/sha3"
-	"strconv"
 )
 
 var (
@@ -132,7 +133,7 @@ func AddressVerification(addr string) sdk.Error {
 // "ID"- Converts []byte to hashed []byte
 func Hash(b []byte) []byte {
 	hasher := Hasher.New()
-	hasher.Write(b)
+	hasher.Write(b) //nolint:golint,errcheck
 	return hasher.Sum(nil)
 }
 

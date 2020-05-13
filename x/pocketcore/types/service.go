@@ -186,7 +186,7 @@ type payload struct {
 
 // "MarshalJSON" - Overrides json marshalling
 func (p Payload) MarshalJSON() ([]byte, error) {
-	pay := payload{
+	pay := payload{ //nolint:golint,gosimple
 		Data:    p.Data,
 		Method:  p.Method,
 		Path:    p.Path,

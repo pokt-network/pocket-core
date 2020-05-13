@@ -5,11 +5,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/posmint/crypto"
@@ -75,7 +76,7 @@ var getValidator = &cobra.Command{
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
+			fmt.Println(app.UninitializedKeybaseError.Error())
 			return
 		}
 		val := app.GetPrivValFile()
@@ -111,7 +112,7 @@ Will prompt the user for the account passphrase`,
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
+			fmt.Println(app.UninitializedKeybaseError.Error())
 			return
 
 		}
@@ -141,7 +142,7 @@ Example output:
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
+			fmt.Println(app.UninitializedKeybaseError.Error())
 			return
 		}
 		kp, err := kb.List()
@@ -168,7 +169,7 @@ Example output:
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
+			fmt.Println(app.UninitializedKeybaseError.Error())
 			return
 		}
 		addr, err := types.AddressFromHex(args[0])
@@ -198,7 +199,7 @@ Will prompt the user for the current account passphrase and the new account pass
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
+			fmt.Println(app.UninitializedKeybaseError.Error())
 			return
 		}
 		addr, err := types.AddressFromHex(args[0])
@@ -230,7 +231,7 @@ Will prompt the user for the account passphrase.`,
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
+			fmt.Println(app.UninitializedKeybaseError.Error())
 			return
 		}
 		addr, err := types.AddressFromHex(args[0])
@@ -297,7 +298,7 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
+			fmt.Println(app.UninitializedKeybaseError.Error())
 			return
 		}
 		addr, err := types.AddressFromHex(args[0])
@@ -357,7 +358,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		kb := app.MustGetKeybase()
 		if kb == nil {
-			fmt.Printf(app.UninitializedKeybaseError.Error())
+			fmt.Println(app.UninitializedKeybaseError.Error())
 			return
 		}
 		addr, err := types.AddressFromHex(args[0])
@@ -451,6 +452,10 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		pkBytes, err := hex.DecodeString(args[0])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir)
 		fmt.Println("Enter Encrypt Passphrase")
 		ePass := app.Credentials()

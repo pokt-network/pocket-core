@@ -2,13 +2,14 @@ package rpc
 
 import (
 	"encoding/json"
+	"math/big"
+	"net/http"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
 	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
-	"math/big"
-	"net/http"
 )
 
 func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -93,7 +94,7 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	var res *core_types.ResultTxSearch
 	var err error
-	if params.Received == false {
+	if !params.Received {
 		res, err = app.PCA.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove)
 	} else {
 		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove)

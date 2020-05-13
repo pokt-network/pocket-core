@@ -19,10 +19,6 @@ jobs:
       - checkout
       # Install dependencies
       - run: ./deps.sh
-      # linter
-      - run: golangci-lint run
-      # static analyzer
-      - run: go vet ./...
       # Build the binary
       - run: go build app/cmd/pocket_core/main.go
       # Cache build
@@ -44,6 +40,10 @@ jobs:
       # Restore build cache
       - restore_cache:
           key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
+      # linter
+      - run: golangci-lint run
+      # static analyzer
+      - run: go vet ./...
       # Run tests
       - run: go test -short -p 1 ./...
   # Job to trigger the Pocket Core deployments CI with a specific branch

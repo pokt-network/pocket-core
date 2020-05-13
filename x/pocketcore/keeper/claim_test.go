@@ -59,7 +59,7 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 	keeper.SetClaims(mockCtx, claims)
 	c := keeper.GetAllClaims(mockCtx)
 	assert.Len(t, c, 2)
-	keeper.DeleteClaim(mockCtx, sdk.Address(pubKeys[0].Address()), claims[0].SessionHeader, types.RelayEvidence)
+	_ = keeper.DeleteClaim(mockCtx, sdk.Address(pubKeys[0].Address()), claims[0].SessionHeader, types.RelayEvidence)
 	_, err := keeper.GetClaim(ctx, claims[0].FromAddress, claims[0].SessionHeader, claims[0].EvidenceType)
 	assert.NotNil(t, err)
 }

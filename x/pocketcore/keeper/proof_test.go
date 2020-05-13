@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"encoding/hex"
+	"testing"
+
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
@@ -106,7 +107,7 @@ func TestKeeper_GetSetReceipt(t *testing.T) {
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
-	keeper.SetReceipt(mockCtx, addr, receipt)
+	_ = keeper.SetReceipt(mockCtx, addr, receipt)
 
 	inv, found := keeper.GetReceipt(mockCtx, sdk.Address(npk.Address()), validHeader, receipt.EvidenceType)
 	assert.True(t, found)

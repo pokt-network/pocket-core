@@ -123,6 +123,10 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 		}
 		fmt.Println("Enter passphrase: ")
 		aatBytes, err := app.PCA.GenerateAAT(hex.EncodeToString(res.PublicKey.RawBytes()), args[1], app.Credentials())
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		fmt.Println(string(aatBytes))
 	},
 }

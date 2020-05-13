@@ -275,10 +275,7 @@ func (k Keeper) GetMatureClaims(ctx sdk.Ctx, address sdk.Address) (matureProofs 
 // "ClaimIsMature" - Returns if the claim is past its security waiting period
 func (k Keeper) ClaimIsMature(ctx sdk.Ctx, sessionBlockHeight int64) bool {
 	waitingPeriodInBlocks := k.ClaimSubmissionWindow(ctx) * k.BlocksPerSession(ctx)
-	if ctx.BlockHeight() > waitingPeriodInBlocks+sessionBlockHeight {
-		return true
-	}
-	return false
+	return ctx.BlockHeight() > waitingPeriodInBlocks+sessionBlockHeight
 }
 
 // "DeleteExpiredClaims" - Deletes the expired (claim expiration > # of session passed since claim genesis) claims

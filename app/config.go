@@ -286,7 +286,7 @@ func InitTendermint() *node.Node {
 		TraceWriter: "",
 	}
 	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, MustGetKeybase(), getTMClient(), *NewHostedChains(), logger, db, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, MustGetKeybase(), getTMClient(), NewHostedChains(), logger, db, baseapp.SetPruning(store.PruneNothing))
 	})
 	if err != nil {
 		log2.Fatal(err)
@@ -315,42 +315,6 @@ func InitKeyfiles() string {
 		// file exist so we can load pk from file.
 		file, _ := loadPKFromFile(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
 		types.InitPVKeyFile(file)
-	}
-	return password
-}
-
-func initFiles(address sdk.Address, password string, datadir string) string {
-	if _, err := GetKeybase(); err != nil {
-		fmt.Println("Initializing keybase: enter validator passphrase")
-		password = Credentials()
-		if password == "" {
-			log2.Fatal("you must have a validator account password")
-		}
-		err := newKeybase(password)
-		if err != nil {
-			log2.Fatal(err)
-		}
-	}
-	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
-		if os.IsNotExist(err) {
-			password = privValKey(address, password)
-		} else {
-			log2.Fatal(err)
-		}
-	}
-	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorState); err != nil {
-		if os.IsNotExist(err) {
-			privValState()
-		} else {
-			log2.Fatal(err)
-		}
-	}
-	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.NodeKey); err != nil {
-		if os.IsNotExist(err) {
-			nodeKey(address, password)
-		} else {
-			log2.Fatal(err)
-		}
 	}
 	return password
 }
@@ -639,16 +603,6 @@ func Credentials() string {
 		fmt.Println(err)
 	}
 	return strings.TrimSpace(string(bytePassword))
-}
-
-// keybase creation
-func newKeybase(passphrase string) error {
-	keys := kb.New(GlobalConfig.PocketConfig.KeybaseName, GlobalConfig.PocketConfig.DataDir)
-	_, err := keys.Create(passphrase)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func SetValidator(address sdk.Address, passphrase string) {

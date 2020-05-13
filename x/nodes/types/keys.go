@@ -2,8 +2,9 @@ package types
 
 import (
 	"encoding/binary"
-	sdk "github.com/pokt-network/posmint/types"
 	"time"
+
+	sdk "github.com/pokt-network/posmint/types"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 	RouterKey    = ModuleName                // RouterKey is the msg router key for the staking module
 )
 
-//nolint
+//
 var ( // Keys for store prefixes
 	ProposerKey                     = []byte{0x01} // key for the proposer address used for rewards
 	ValidatorSigningInfoKey         = []byte{0x11} // Prefix for signing info used in slashing

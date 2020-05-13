@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"fmt"
+	"reflect"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"reflect"
-	"testing"
 )
 
 func TestMustGetValidator(t *testing.T) {
@@ -60,12 +61,10 @@ func TestValidatorCaching(t *testing.T) {
 	stakedValidator := getStakedValidator()
 
 	type args struct {
-		bz        []byte
 		validator types.Validator
 	}
 	type expected struct {
 		validator types.Validator
-		message   string
 	}
 	tests := []struct {
 		name   string
@@ -99,12 +98,10 @@ func TestNewValidatorCaching(t *testing.T) {
 	stakedValidator := getStakedValidator()
 
 	type args struct {
-		bz        []byte
 		validator types.Validator
 	}
 	type expected struct {
 		validator types.Validator
-		message   string
 		length    int
 	}
 	tests := []struct {

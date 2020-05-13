@@ -26,7 +26,6 @@ func TestHandleValidatorSignature(t *testing.T) {
 		tombstoned          bool
 		missedBlocksCounter int64
 		message             string
-		signedInfo          bool
 		jail                bool
 	}
 	tests := []struct {
@@ -104,9 +103,7 @@ func TestValidateDoubleSign(t *testing.T) {
 	stakedValidator := getStakedValidator()
 
 	type args struct {
-		validator        types.Validator
-		increasedContext int64
-		maxMissed        int64
+		validator types.Validator
 	}
 	type expected struct {
 		validator      types.Validator
@@ -189,10 +186,8 @@ func TestHandleDoubleSign(t *testing.T) {
 	supplySize := sdk.NewInt(100)
 
 	type args struct {
-		validator        types.Validator
-		increasedContext int64
-		maxMissed        int64
-		power            int64
+		validator types.Validator
+		power     int64
 	}
 	type expected struct {
 		validator      types.Validator
@@ -264,11 +259,9 @@ func TestValidateSlash(t *testing.T) {
 	supplySize := sdk.NewInt(100)
 
 	type args struct {
-		validator        types.Validator
-		power            int64
-		increasedContext int64
-		slashFraction    sdk.Dec
-		maxMissed        int64
+		validator     types.Validator
+		power         int64
+		slashFraction sdk.Dec
 	}
 	type expected struct {
 		validator      types.Validator
@@ -403,19 +396,15 @@ func TestSlash(t *testing.T) {
 	supplySize := sdk.NewInt(50001)
 
 	type args struct {
-		validator        types.Validator
-		power            int64
-		increasedContext int64
-		slashFraction    sdk.Dec
-		maxMissed        int64
+		validator     types.Validator
+		power         int64
+		slashFraction sdk.Dec
 	}
 	type expected struct {
 		validator      types.Validator
 		tombstoned     bool
-		message        string
 		pubKeyRelation bool
 		fraction       bool
-		customHeight   bool
 		found          bool
 		stakedTokens   sdk.Int
 	}
