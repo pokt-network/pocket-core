@@ -322,7 +322,10 @@ func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string
 	fee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, msg.GetFee()))
 	// entroyp
 	entropy := common.RandInt64()
-	signBytes := auth.StdSignBytes(chainID, entropy, fee, msg, "")
+	signBytes, err := auth.StdSignBytes(chainID, entropy, fee, msg, "")
+	if err != nil {
+		return nil, err
+	}
 	sig, err := privkey.Sign(signBytes)
 	if err != nil {
 		return nil, err
