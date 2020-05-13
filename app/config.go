@@ -570,7 +570,7 @@ func NewHostedChains() *types.HostedBlockchains {
 	m := make(map[string]types.HostedBlockchain)
 	for _, chain := range hostedChainsSlice {
 		if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
-			panic(fmt.Sprintf("invalid ID: %s in network identifier in %s file", chain.ID, GlobalConfig.PocketConfig.ChainsName))
+			fmt.Println(fmt.Sprintf("invalid ID: %s in network identifier in %s file", chain.ID, GlobalConfig.PocketConfig.ChainsName))
 			os.Exit(1)
 		}
 		m[chain.ID] = chain
