@@ -230,14 +230,14 @@ func (c ChallengeProofInvalidData) ValidateLocal(maxRelays, sessionblockHeight i
 		Chain:              c.MinorityResponse.Proof.Blockchain,
 		SessionBlockHeight: c.MinorityResponse.Proof.SessionBlockHeight,
 	}
+	// check if verifyPubKey in session (must be in session to do challenges)
+	if !sessionNodes.ContainsAddress(selfAddr) {
+		return NewNodeNotInSessionError(ModuleName)
+	}
 	// check for overflow on # of proofs
 	evidence, _ := GetEvidence(h, ChallengeEvidence)
 	if evidence.NumOfProofs >= int64(math.Ceil(float64(maxRelays)/float64(len(supportedBlockchains)))/(float64(sessionNodeCount))) {
 		return NewOverServiceError(ModuleName)
-	}
-	// check if verifyPubKey in session (must be in session to do challenges)
-	if !sessionNodes.ContainsAddress(selfAddr) {
-		return NewNodeNotInSessionError(ModuleName)
 	}
 	err := c.Validate(supportedBlockchains, sessionNodeCount, sessionblockHeight)
 	if err != nil {
