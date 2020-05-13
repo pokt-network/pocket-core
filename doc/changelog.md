@@ -30,6 +30,7 @@
 - Swapped ExecuteProof and SetReceipt order on handleProofMsg func
 - Updated regex to allow only hex character.
 - Added empty/nil check to claim struct on handleProofMsg
+- Added multiple optimization for efficiency and consistency between validations
 
 ## RC-0.3.0
 - Added governance module from posmint
