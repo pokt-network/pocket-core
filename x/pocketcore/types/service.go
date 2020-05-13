@@ -61,13 +61,13 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 	if !IsUniqueProof(r.Proof) {
 		return NewDuplicateProofError(ModuleName)
 	}
-	// validate not over service
-	if totalRelays >= int64(math.Ceil(float64(app.GetMaxRelays().Int64())/float64(len(app.GetChains())))/(float64(sessionNodeCount))) {
-		return NewOverServiceError(ModuleName)
-	}
 	// validate the Proof
 	if err := r.Proof.ValidateLocal(app.GetChains(), sessionNodeCount, sessionBlockHeight, node.GetPublicKey().RawString()); err != nil {
 		return err
+	}
+	// validate not over service
+	if totalRelays >= int64(math.Ceil(float64(app.GetMaxRelays().Int64())/float64(len(app.GetChains())))/(float64(sessionNodeCount))) {
+		return NewOverServiceError(ModuleName)
 	}
 	// get the sessionContext
 	sessionContext, er := ctx.PrevCtx(sessionBlockHeight)
