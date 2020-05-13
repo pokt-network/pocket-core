@@ -3,6 +3,9 @@ package pocketcore
 import (
 	"encoding/hex"
 	"fmt"
+	"testing"
+	"time"
+
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -26,8 +29,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"testing"
-	"time"
 )
 
 var (
@@ -41,7 +42,7 @@ func NewTestKeybase() keys.Keybase {
 	return keys.NewInMemory()
 }
 
-// nolint: deadcode unused
+// : deadcode unused
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -53,7 +54,7 @@ func makeTestCodec() *codec.Codec {
 	return cdc
 }
 
-// nolint: deadcode unused
+// : deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper, appsKeeper.Keeper, keep.Keeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(5)
@@ -146,7 +147,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	return ctx, nk, appk, keeper
 }
 
-// nolint: unparam deadcode unused
+// : unparam deadcode unused
 func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.Keeper) (accs []auth.BaseAccount) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()
@@ -264,17 +265,4 @@ func createTestApps(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, ak appsKeeper.Ke
 		}
 	}
 	return
-}
-
-func getRandomPrivateKey() crypto.Ed25519PrivateKey {
-	return crypto.Ed25519PrivateKey{}.GenPrivateKey().(crypto.Ed25519PrivateKey)
-}
-
-func getRandomPubKey() crypto.Ed25519PublicKey {
-	pk := getRandomPrivateKey()
-	return pk.PublicKey().(crypto.Ed25519PublicKey)
-}
-
-func getRandomValidatorAddress() sdk.Address {
-	return sdk.Address(getRandomPubKey().Address())
 }

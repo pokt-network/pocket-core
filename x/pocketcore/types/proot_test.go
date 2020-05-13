@@ -3,12 +3,13 @@ package types
 import (
 	"encoding/hex"
 	"encoding/json"
+	"sync"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"sync"
-	"testing"
 )
 
 func TestRelayProof_ValidateLocal(t *testing.T) {
@@ -81,7 +82,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 		numOfChains      int
 		sessionNodeCount int
 		verifyPubKey     string
-		hb               HostedBlockchains
+		hb               *HostedBlockchains
 		hasError         bool
 	}{
 		{
@@ -91,7 +92,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 			numOfChains:      2,
 			sessionNodeCount: 5,
 			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
+			hb:               &hbs,
 			hasError:         true,
 		},
 		{
@@ -101,7 +102,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 			numOfChains:      2,
 			sessionNodeCount: 5,
 			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
+			hb:               &hbs,
 			hasError:         true,
 		},
 		{
@@ -111,7 +112,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 			numOfChains:      2,
 			sessionNodeCount: 5,
 			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
+			hb:               &hbs,
 			hasError:         true,
 		},
 		{
@@ -121,7 +122,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 			numOfChains:      2,
 			sessionNodeCount: 5,
 			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
+			hb:               &hbs,
 			hasError:         true,
 		},
 		{
@@ -131,7 +132,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 			numOfChains:      2,
 			sessionNodeCount: 5,
 			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
+			hb:               &hbs,
 			hasError:         true,
 		},
 		{
@@ -141,7 +142,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 			numOfChains:      2,
 			sessionNodeCount: 0,
 			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
+			hb:               &hbs,
 			hasError:         true,
 		},
 		{
@@ -151,7 +152,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 			numOfChains:      2,
 			sessionNodeCount: 5,
 			verifyPubKey:     servicerPubKey,
-			hb:               hbs,
+			hb:               &hbs,
 			hasError:         false,
 		},
 	}

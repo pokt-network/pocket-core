@@ -2,13 +2,14 @@ package types
 
 import (
 	"encoding/hex"
+	"reflect"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	db "github.com/tendermint/tm-db"
-	"reflect"
-	"testing"
 )
 
 func InitCacheTest() {
@@ -72,7 +73,7 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 	SetProof(header, RelayEvidence, proof, 100000)
 	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
 	GetProof(header, RelayEvidence, 0)
-	DeleteEvidence(header, RelayEvidence)
+	_ = DeleteEvidence(header, RelayEvidence)
 	assert.Empty(t, GetProof(header, RelayEvidence, 0))
 }
 
@@ -134,7 +135,7 @@ func TestSetGetSession(t *testing.T) {
 	s, found := GetSession(session.SessionHeader)
 	assert.True(t, found)
 	assert.Equal(t, s, session)
-	s, found = GetSession(session2.SessionHeader)
+	_, found = GetSession(session2.SessionHeader)
 	assert.False(t, found)
 	SetSession(session2)
 	s, found = GetSession(session2.SessionHeader)

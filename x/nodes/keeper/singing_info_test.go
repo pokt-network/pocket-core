@@ -1,10 +1,11 @@
 package keeper
 
 import (
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGetMissedArray(t *testing.T) {
@@ -89,7 +90,7 @@ func TestKeeper_IterateAndExecuteOverMissedArray(t *testing.T) {
 				handler: func(index int64, missed bool) (stop bool) {
 					localMissedBlocks := []types.MissedBlock{}
 
-					localMissedBlocks = append(localMissedBlocks, types.MissedBlock{index, missed})
+					_ = append(localMissedBlocks, types.MissedBlock{Index: index, Missed: missed})
 					return false
 				},
 			}},

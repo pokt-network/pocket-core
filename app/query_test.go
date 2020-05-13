@@ -4,6 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"reflect"
+	"testing"
+
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
@@ -16,21 +20,17 @@ import (
 	"github.com/tendermint/iavl/common"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
-	"math/big"
-	"reflect"
-	"testing"
 )
 
 func TestQueryBlock(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	height := int64(1)
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryBlock(&height)
-		assert.Nil(t, err)
-		assert.NotNil(t, got)
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryBlock(&height)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+
 	cleanup()
 	stopCli()
 }
@@ -38,12 +38,11 @@ func TestQueryBlock(t *testing.T) {
 func TestQueryChainHeight(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryHeight()
-		assert.Nil(t, err)
-		assert.Equal(t, int64(1), got) // should not be 0 due to empty blocks
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryHeight()
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1), got) // should not be 0 due to empty blocks
+
 	cleanup()
 	stopCli()
 }
@@ -54,25 +53,22 @@ func TestQueryTx(t *testing.T) {
 	assert.Nil(t, err)
 	kp, err := kb.Create("test")
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(1000))
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryTx(tx.TxHash)
-		assert.Nil(t, err)
-		validator, err := PCA.QueryBalance(kp.GetAddress().String(), 0)
-		assert.Nil(t, err)
-		assert.True(t, validator.Equal(sdk.NewInt(1000)))
-		assert.NotNil(t, got)
-	}
+	<-evtChan // Wait for block
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(1000))
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	<-evtChan // Wait for tx
+	got, err := PCA.QueryTx(tx.TxHash)
+	assert.Nil(t, err)
+	validator, err := PCA.QueryBalance(kp.GetAddress().String(), 0)
+	assert.Nil(t, err)
+	assert.True(t, validator.Equal(sdk.NewInt(1000)))
+	assert.NotNil(t, got)
+
 	cleanup()
 	stopCli()
 }
@@ -80,21 +76,20 @@ func TestQueryTx(t *testing.T) {
 func TestQueryValidators(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryNodes(1, types2.QueryValidatorsParams{Page: 1, Limit: 1})
-		assert.Nil(t, err)
-		res := got.Result.([]types2.Validator)
-		assert.Equal(t, 1, len(res))
-		got, err = PCA.QueryNodes(1, types2.QueryValidatorsParams{Page: 2, Limit: 1})
-		assert.Nil(t, err)
-		res = got.Result.([]types2.Validator)
-		assert.Equal(t, 1, len(res))
-		got, err = PCA.QueryNodes(1, types2.QueryValidatorsParams{Page: 1, Limit: 1000})
-		assert.Nil(t, err)
-		res = got.Result.([]types2.Validator)
-		assert.Equal(t, 2, len(res))
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryNodes(1, types2.QueryValidatorsParams{Page: 1, Limit: 1})
+	assert.Nil(t, err)
+	res := got.Result.([]types2.Validator)
+	assert.Equal(t, 1, len(res))
+	got, err = PCA.QueryNodes(1, types2.QueryValidatorsParams{Page: 2, Limit: 1})
+	assert.Nil(t, err)
+	res = got.Result.([]types2.Validator)
+	assert.Equal(t, 1, len(res))
+	got, err = PCA.QueryNodes(1, types2.QueryValidatorsParams{Page: 1, Limit: 1000})
+	assert.Nil(t, err)
+	res = got.Result.([]types2.Validator)
+	assert.Equal(t, 2, len(res))
+
 	cleanup()
 	stopCli()
 }
@@ -102,51 +97,48 @@ func TestQueryApps(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	var chains = []string{"00"}
 
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
+	<-evtChan // Wait for block
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	<-evtChan // Wait for tx
+	got, err := PCA.QueryApps(0, types3.QueryApplicationsWithOpts{
+		Page:  1,
+		Limit: 1,
+	})
+	assert.Nil(t, err)
+	slice, ok := takeArg(got.Result, reflect.Slice)
+	if !ok {
+		t.Fatalf("couldn't convert arg to slice")
 	}
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryApps(0, types3.QueryApplicationsWithOpts{
-			Page:  1,
-			Limit: 1,
-		})
-		assert.Nil(t, err)
-		slice, ok := takeArg(got.Result, reflect.Slice)
-		if !ok {
-			t.Fatalf("couldn't convert arg to slice")
-		}
-		assert.Equal(t, 1, slice.Len())
-		got, err = PCA.QueryApps(0, types3.QueryApplicationsWithOpts{
-			Page:  2,
-			Limit: 1,
-		})
-		assert.Nil(t, err)
-		slice, ok = takeArg(got.Result, reflect.Slice)
-		if !ok {
-			t.Fatalf("couldn't convert arg to slice")
-		}
-		assert.Equal(t, 1, slice.Len())
-		got, err = PCA.QueryApps(0, types3.QueryApplicationsWithOpts{
-			Page:  1,
-			Limit: 2,
-		})
-		assert.Nil(t, err)
-		slice, ok = takeArg(got.Result, reflect.Slice)
-		if !ok {
-			t.Fatalf("couldn't convert arg to slice")
-		}
-		assert.Equal(t, 2, slice.Len())
+	assert.Equal(t, 1, slice.Len())
+	got, err = PCA.QueryApps(0, types3.QueryApplicationsWithOpts{
+		Page:  2,
+		Limit: 1,
+	})
+	assert.Nil(t, err)
+	slice, ok = takeArg(got.Result, reflect.Slice)
+	if !ok {
+		t.Fatalf("couldn't convert arg to slice")
 	}
+	assert.Equal(t, 1, slice.Len())
+	got, err = PCA.QueryApps(0, types3.QueryApplicationsWithOpts{
+		Page:  1,
+		Limit: 2,
+	})
+	assert.Nil(t, err)
+	slice, ok = takeArg(got.Result, reflect.Slice)
+	if !ok {
+		t.Fatalf("couldn't convert arg to slice")
+	}
+	assert.Equal(t, 2, slice.Len())
+
 	stopCli()
 	cleanup()
 }
@@ -158,14 +150,13 @@ func TestQueryValidator(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryNode(cb.GetAddress().String(), 0)
-		assert.Nil(t, err)
-		assert.Equal(t, cb.GetAddress(), got.Address)
-		assert.False(t, got.Jailed)
-		assert.True(t, got.StakedTokens.Equal(sdk.NewInt(1000000000000000)))
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryNode(cb.GetAddress().String(), 0)
+	assert.Nil(t, err)
+	assert.Equal(t, cb.GetAddress(), got.Address)
+	assert.False(t, got.Jailed)
+	assert.True(t, got.StakedTokens.Equal(sdk.NewInt(1000000000000000)))
+
 	cleanup()
 	stopCli()
 }
@@ -173,13 +164,11 @@ func TestQueryValidator(t *testing.T) {
 func TestQueryDaoBalance(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		got, err := gov.QueryDAO(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, big.NewInt(1000), got.BigInt())
-	}
+	<-evtChan // Wait for block
+	got, err := gov.QueryDAO(memCodec(), memCli, 0)
+	assert.Nil(t, err)
+	assert.Equal(t, big.NewInt(1000), got.BigInt())
+
 	cleanup()
 	stopCli()
 }
@@ -187,13 +176,11 @@ func TestQueryDaoBalance(t *testing.T) {
 func TestQueryACL(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		got, err := gov.QueryACL(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, got, testACL)
-	}
+	<-evtChan // Wait for block
+	got, err := gov.QueryACL(memCodec(), memCli, 0)
+	assert.Nil(t, err)
+	assert.Equal(t, got, testACL)
+
 	cleanup()
 	stopCli()
 }
@@ -206,13 +193,11 @@ func TestQueryDaoOwner(t *testing.T) {
 		t.Fatal(err)
 	}
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		got, err := gov.QueryDAOOwner(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, got.String(), cb.GetAddress().String())
-	}
+	<-evtChan // Wait for block
+	got, err := gov.QueryDAOOwner(memCodec(), memCli, 0)
+	assert.Nil(t, err)
+	assert.Equal(t, got.String(), cb.GetAddress().String())
+
 	cleanup()
 	stopCli()
 }
@@ -220,13 +205,12 @@ func TestQueryDaoOwner(t *testing.T) {
 func TestQueryUpgrade(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		got, err := gov.QueryUpgrade(memCodec(), memCli, 0)
-		assert.Nil(t, err)
-		assert.Equal(t, got.UpgradeHeight(), int64(10000))
-	}
+	<-evtChan // Wait for block
+	var err error
+	got, err := gov.QueryUpgrade(memCodec(), memCli, 0)
+	assert.Nil(t, err)
+	assert.Equal(t, got.UpgradeHeight(), int64(10000))
+
 	cleanup()
 	stopCli()
 }
@@ -234,15 +218,14 @@ func TestQueryUpgrade(t *testing.T) {
 func TestQuerySupply(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		gotStaked, total, err := PCA.QueryTotalNodeCoins(0)
-		fmt.Println(err)
-		assert.Nil(t, err)
-		fmt.Println(gotStaked, total)
-		assert.True(t, gotStaked.Equal(sdk.NewInt(1000000000000000)))
-		assert.True(t, total.Equal(sdk.NewInt(1000002010001000)))
-	}
+	<-evtChan // Wait for block
+	gotStaked, total, err := PCA.QueryTotalNodeCoins(0)
+	fmt.Println(err)
+	assert.Nil(t, err)
+	fmt.Println(gotStaked, total)
+	assert.True(t, gotStaked.Equal(sdk.NewInt(1000000000000000)))
+	assert.True(t, total.Equal(sdk.NewInt(1000002010001000)))
+
 	cleanup()
 	stopCli()
 }
@@ -250,15 +233,14 @@ func TestQuerySupply(t *testing.T) {
 func TestQueryPOSParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryNodeParams(0)
-		assert.Nil(t, err)
-		assert.Equal(t, uint64(100000), got.MaxValidators)
-		assert.Equal(t, int64(1000000), got.StakeMinimum)
-		assert.Equal(t, int64(10), got.DAOAllocation)
-		assert.Equal(t, sdk.DefaultStakeDenom, got.StakeDenom)
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryNodeParams(0)
+	assert.Nil(t, err)
+	assert.Equal(t, uint64(100000), got.MaxValidators)
+	assert.Equal(t, int64(1000000), got.StakeMinimum)
+	assert.Equal(t, int64(10), got.DAOAllocation)
+	assert.Equal(t, sdk.DefaultStakeDenom, got.StakeDenom)
+
 	cleanup()
 	stopCli()
 }
@@ -268,14 +250,12 @@ func TestAccountBalance(t *testing.T) {
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		got, err := PCA.QueryBalance(cb.GetAddress().String(), 0)
-		assert.Nil(t, err)
-		assert.NotNil(t, got)
-		assert.Equal(t, got.Int64(), int64(1000000000))
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryBalance(cb.GetAddress().String(), 0)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, got.Int64(), int64(1000000000))
+
 	cleanup()
 	stopCli()
 }
@@ -287,14 +267,12 @@ func TestQuerySigningInfo(t *testing.T) {
 	cbAddr := cb.GetAddress()
 	assert.Nil(t, err)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		got, err := PCA.QuerySigningInfo(0, cbAddr.String())
-		assert.Nil(t, err)
-		assert.NotNil(t, got)
-		assert.Equal(t, got.Address.String(), cbAddr.String())
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QuerySigningInfo(0, cbAddr.String())
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, got.Address.String(), cbAddr.String())
+
 	cleanup()
 	stopCli()
 }
@@ -302,14 +280,13 @@ func TestQuerySigningInfo(t *testing.T) {
 func TestQueryPocketSupportedBlockchains(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		got, err := PCA.QueryPocketSupportedBlockchains(0)
-		assert.Nil(t, err)
-		assert.NotNil(t, got)
-		assert.Contains(t, got, PlaceholderHash)
-	}
+	<-evtChan // Wait for block
+	var err error
+	got, err := PCA.QueryPocketSupportedBlockchains(0)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Contains(t, got, PlaceholderHash)
+
 	cleanup()
 	stopCli()
 }
@@ -317,16 +294,15 @@ func TestQueryPocketSupportedBlockchains(t *testing.T) {
 func TestQueryPocketParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryPocketParams(0)
-		assert.Nil(t, err)
-		assert.NotNil(t, got)
-		assert.Equal(t, int64(5), got.SessionNodeCount)
-		assert.Equal(t, int64(3), got.ClaimSubmissionWindow)
-		assert.Equal(t, int64(100), got.ClaimExpiration)
-		assert.Contains(t, got.SupportedBlockchains, PlaceholderHash)
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryPocketParams(0)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, int64(5), got.SessionNodeCount)
+	assert.Equal(t, int64(3), got.ClaimSubmissionWindow)
+	assert.Equal(t, int64(100), got.ClaimExpiration)
+	assert.Contains(t, got.SupportedBlockchains, PlaceholderHash)
+
 	cleanup()
 	stopCli()
 }
@@ -336,13 +312,12 @@ func TestQueryAccount(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	acc := getUnstakedAccount(kb)
 	assert.NotNil(t, acc)
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryAccount(acc.GetAddress().String(), 0)
-		assert.Nil(t, err)
-		assert.NotNil(t, got)
-		assert.Equal(t, acc.GetAddress(), (*got).GetAddress())
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryAccount(acc.GetAddress().String(), 0)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, acc.GetAddress(), (*got).GetAddress())
+
 	cleanup()
 	stopCli()
 }
@@ -352,12 +327,11 @@ func TestQueryProofs(t *testing.T) {
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryReceipts(cb.GetAddress().String(), 0)
-		assert.Nil(t, err)
-		assert.Nil(t, got)
-	}
+	<-evtChan // Wait for block
+	got, err := PCA.QueryReceipts(cb.GetAddress().String(), 0)
+	assert.Nil(t, err)
+	assert.Nil(t, got)
+
 	cleanup()
 	stopCli()
 }
@@ -370,18 +344,15 @@ func TestQueryProof(t *testing.T) {
 	var tx *sdk.TxResponse
 	var chains = []string{"00"}
 
-	select {
-	case <-evtChan:
-		var err error
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		_, err := PCA.QueryReceipt(PlaceholderHash, kp.PublicKey.RawString(), kp.GetAddress().String(), "relay", 1, 0)
-		assert.Nil(t, err)
-	}
+	<-evtChan // Wait for block
+	tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	<-evtChan // Wait for tx
+	_, err = PCA.QueryReceipt(PlaceholderHash, kp.PublicKey.RawString(), kp.GetAddress().String(), "relay", 1, 0)
+	assert.Nil(t, err)
+
 	cleanup()
 	stopCli()
 }
@@ -390,25 +361,22 @@ func TestQueryStakedpp(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	var chains = []string{"00"}
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		got, err := PCA.QueryApp(kp.GetAddress().String(), 0)
-		assert.Nil(t, err)
-		assert.NotNil(t, got)
-		assert.Equal(t, sdk.Staked, got.Status)
-		assert.Equal(t, false, got.Jailed)
-	}
+	<-evtChan // Wait for block
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	<-evtChan // Wait for  tx
+	got, err := PCA.QueryApp(kp.GetAddress().String(), 0)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, sdk.Staked, got.Status)
+	assert.Equal(t, false, got.Jailed)
+
 	cleanup()
 	stopCli()
 }
@@ -517,34 +485,30 @@ func TestQueryRelay(t *testing.T) {
 		panic(err)
 	}
 	relay.Proof.Signature = hex.EncodeToString(sig)
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	res, err := PCA.QueryRelay(relay)
+	assert.Nil(t, err, err)
+	assert.Equal(t, expectedResponse, res.Response)
+	gock.New(PlaceholderURL).
+		Post("").
+		BodyString(expectedRequest).
+		Reply(200).
+		BodyString(expectedResponse)
+
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		res, err := PCA.QueryRelay(relay)
-		assert.Nil(t, err, err)
-		assert.Equal(t, expectedResponse, res.Response)
-		gock.New(PlaceholderURL).
-			Post("").
-			BodyString(expectedRequest).
-			Reply(200).
-			BodyString(expectedResponse)
-		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
-		select {
-		case <-evtChan:
-			inv, found := types.GetEvidence(types.SessionHeader{
-				ApplicationPubKey:  aat.ApplicationPublicKey,
-				Chain:              relay.Proof.Blockchain,
-				SessionBlockHeight: relay.Proof.SessionBlockHeight,
-			}, types.RelayEvidence)
-			assert.True(t, found)
-			assert.NotNil(t, inv)
-			assert.Equal(t, inv.NumOfProofs, int64(1))
-			cleanup()
-			stopCli()
-			gock.Off()
-			return
-		}
-	}
+	<-evtChan // Wait for tx
+	inv, found := types.GetEvidence(types.SessionHeader{
+		ApplicationPubKey:  aat.ApplicationPublicKey,
+		Chain:              relay.Proof.Blockchain,
+		SessionBlockHeight: relay.Proof.SessionBlockHeight,
+	}, types.RelayEvidence)
+	assert.True(t, found)
+	assert.NotNil(t, inv)
+	assert.Equal(t, inv.NumOfProofs, int64(1))
+	cleanup()
+	stopCli()
+	gock.Off()
 }
 
 func TestQueryDispatch(t *testing.T) {
@@ -560,14 +524,12 @@ func TestQueryDispatch(t *testing.T) {
 	}
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		res, err := PCA.QueryDispatch(key)
-		assert.Nil(t, err)
-		for _, val := range validators {
-			assert.Contains(t, res.Session.SessionNodes, val)
-		}
-		cleanup()
-		stopCli()
+	<-evtChan // Wait for block
+	res, err := PCA.QueryDispatch(key)
+	assert.Nil(t, err)
+	for _, val := range validators {
+		assert.Contains(t, res.Session.SessionNodes, val)
 	}
+	cleanup()
+	stopCli()
 }

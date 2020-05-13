@@ -1,14 +1,15 @@
 package types
 
 import (
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmtypes "github.com/tendermint/tendermint/types"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/pokt-network/posmint/crypto"
+	sdk "github.com/pokt-network/posmint/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 func TestNewValidator(t *testing.T) {
@@ -153,10 +154,7 @@ func TestValidator_AddStakedTokens(t *testing.T) {
 				StakedTokens:            tt.fields.StakedTokens,
 				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
 			}
-			if got, err := v.AddStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
-				if err != nil {
-
-				}
+			if got, _ := v.AddStakedTokens(tt.args.tokens); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("AddStakedTokens() = %v, want %v", got, tt.want)
 			}
 		})

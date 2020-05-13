@@ -30,7 +30,7 @@ const (
 )
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
-func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
+func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
 	app := newPocketBaseApp(logger, db, baseAppOptions...)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
@@ -67,7 +67,7 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 		app.cdc,
 		app.nodesKeeper,
 		app.appsKeeper,
-		&hostedChains,
+		hostedChains,
 		pocketSubspace,
 	)
 	// The governance keeper

@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"testing"
+	"time"
+
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -32,8 +35,6 @@ import (
 	tmStore "github.com/tendermint/tendermint/store"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"testing"
-	"time"
 )
 
 var (
@@ -63,7 +64,7 @@ func makeTestCodec() *codec.Codec {
 	return cdc
 }
 
-// nolint: deadcode unused
+// : deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper, map[string]*sdk.KVStoreKey) {
 	initPower := int64(100000000000)
 	nAccs := int64(5)
@@ -74,6 +75,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	assert.Nil(t, err)
 	addr := tmtypes.Address(cb.GetAddress())
 	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
+	assert.Nil(t, err)
 	types.InitPVKeyFile(privval.FilePVKey{
 		Address: addr,
 		PubKey:  cb.PublicKey,
@@ -208,7 +210,7 @@ func getTestApplication() appsTypes.Application {
 	return testApp
 }
 
-// nolint: unparam deadcode unused
+// : unparam deadcode unused
 func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.Keeper) (accs []auth.BaseAccount) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()

@@ -1,10 +1,11 @@
 package keeper
 
 import (
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGetAndSetlUnstaking(t *testing.T) {
@@ -17,7 +18,6 @@ func TestGetAndSetlUnstaking(t *testing.T) {
 		length           int
 	}
 	type args struct {
-		stakedVal       types.Validator
 		validators      []types.Validator
 		stakedValidator types.Validator
 	}
@@ -71,12 +71,10 @@ func TestDeleteUnstakingValidator(t *testing.T) {
 	stakedValidator := getStakedValidator()
 
 	type expected struct {
-		validators       []types.Validator
 		stakedValidators bool
 		length           int
 	}
 	type args struct {
-		stakedVal       types.Validator
 		validators      []types.Validator
 		stakedValidator types.Validator
 	}
@@ -119,14 +117,11 @@ func TestDeleteUnstakingValidators(t *testing.T) {
 	secondaryStakedValidator := getStakedValidator()
 
 	type expected struct {
-		validators       []types.Validator
 		stakedValidators bool
 		length           int
 	}
 	type args struct {
-		stakedVal       types.Validator
-		validators      []types.Validator
-		stakedValidator types.Validator
+		validators []types.Validator
 	}
 	tests := []struct {
 		name       string
@@ -167,9 +162,7 @@ func TestGetAllMatureValidators(t *testing.T) {
 		length           int
 	}
 	type args struct {
-		stakedVal       types.Validator
-		validators      []types.Validator
-		stakedValidator types.Validator
+		validators []types.Validator
 	}
 	tests := []struct {
 		name       string

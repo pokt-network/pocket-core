@@ -2,38 +2,19 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/posmint/codec"
+	"testing"
+	"time"
+
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/store"
 	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"testing"
-	"time"
 )
-
-// nolint: deadcode unused
-var (
-	ModuleBasics = module.NewBasicManager(
-		auth.AppModuleBasic{},
-	)
-)
-
-// nolint: deadcode unused
-// create a codec used only for testing
-func makeTestCodec() *codec.Codec {
-	var cdc = codec.New()
-	auth.RegisterCodec(cdc)
-	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
-
-	return cdc
-}
 
 var (
 	testSupportedChain string
@@ -46,7 +27,6 @@ func getTestSupportedBlockchain() string {
 	return testSupportedChain
 }
 
-// nolint: deadcode unused
 func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey

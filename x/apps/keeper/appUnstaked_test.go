@@ -1,10 +1,11 @@
 package keeper
 
 import (
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
@@ -17,7 +18,6 @@ func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 		length             int
 	}
 	type args struct {
-		stakedVal         types.Application
 		applications      []types.Application
 		stakedApplication types.Application
 	}
@@ -74,14 +74,11 @@ func TestAppUnstaked_DeleteUnstakingApplication(t *testing.T) {
 	secondStakedApp := getStakedApplication()
 
 	type want struct {
-		applications       []types.Application
 		stakedApplications bool
 		length             int
 	}
 	type args struct {
-		stakedVal         types.Application
-		applications      []types.Application
-		stakedApplication types.Application
+		applications []types.Application
 	}
 	tests := []struct {
 		name         string
@@ -106,11 +103,11 @@ func TestAppUnstaked_DeleteUnstakingApplication(t *testing.T) {
 				keeper.SetApplication(context, application)
 			}
 			keeper.SetUnstakingApplication(context, tt.args.applications[0])
-			got := keeper.getAllUnstakingApplications(context)
+			_ = keeper.getAllUnstakingApplications(context)
 
 			keeper.deleteUnstakingApplication(context, tt.args.applications[1])
 
-			if got = keeper.getAllUnstakingApplications(context); len(got) != tt.want.length {
+			if got := keeper.getAllUnstakingApplications(context); len(got) != tt.want.length {
 				t.Errorf("KeeperCoins.BurnStakedTokens()= %v, want %v", len(got), tt.want.length)
 			}
 		})
@@ -122,14 +119,11 @@ func TestAppUnstaked_DeleteUnstakingApplications(t *testing.T) {
 	secondaryStakedApplication := getStakedApplication()
 
 	type want struct {
-		applications       []types.Application
 		stakedApplications bool
 		length             int
 	}
 	type args struct {
-		stakedVal         types.Application
-		applications      []types.Application
-		stakedApplication types.Application
+		applications []types.Application
 	}
 	tests := []struct {
 		name         string
@@ -170,9 +164,7 @@ func TestAppUnstaked_GetAllMatureApplications(t *testing.T) {
 		length             int
 	}
 	type args struct {
-		stakedVal         types.Application
-		applications      []types.Application
-		stakedApplication types.Application
+		applications []types.Application
 	}
 	tests := []struct {
 		name         string

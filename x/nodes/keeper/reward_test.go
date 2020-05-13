@@ -2,14 +2,13 @@ package keeper
 
 import (
 	"fmt"
+	"testing"
+
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 type args struct {
-	amount      sdk.Int
-	address     sdk.Address
 	consAddress sdk.Address
 }
 

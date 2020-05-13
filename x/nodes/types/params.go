@@ -26,7 +26,7 @@ const (
 	DefaultMaxChains                       = 15
 )
 
-// nolint - Keys for parameter access
+//  - Keys for parameter access
 var (
 	KeyUnstakingTime               = []byte("UnstakingTime")
 	KeyMaxValidators               = []byte("MaxValidators")

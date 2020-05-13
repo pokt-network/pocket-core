@@ -2,9 +2,10 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHostedBlockchains_GetChainURL(t *testing.T) {
@@ -62,27 +63,27 @@ func TestHostedBlockchains_Validate(t *testing.T) {
 	}
 	tests := []struct {
 		name     string
-		hc       HostedBlockchains
+		hc       *HostedBlockchains
 		hasError bool
 	}{
 		{
 			name:     "Invalid HostedBlockchain, no URL",
-			hc:       HostedBlockchains{M: map[string]HostedBlockchain{HCNoURL.URL: HCNoURL}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoURL.URL: HCNoURL}},
 			hasError: true,
 		},
 		{
 			name:     "Invalid HostedBlockchain, no URL",
-			hc:       HostedBlockchains{M: map[string]HostedBlockchain{HCNoHash.URL: HCNoHash}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoHash.URL: HCNoHash}},
 			hasError: true,
 		},
 		{
 			name:     "Invalid HostedBlockchain, invalid ID",
-			hc:       HostedBlockchains{M: map[string]HostedBlockchain{HCInvalidHash.URL: HCInvalidHash}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCInvalidHash.URL: HCInvalidHash}},
 			hasError: true,
 		},
 		{
 			name:     "Valid HostedBlockchain",
-			hc:       HostedBlockchains{M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain}},
 			hasError: false,
 		},
 	}

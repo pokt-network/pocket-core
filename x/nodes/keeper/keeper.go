@@ -3,12 +3,13 @@ package keeper
 import (
 	"container/list"
 	"fmt"
+	log2 "log"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	govKeeper "github.com/pokt-network/posmint/x/gov/keeper"
 	"github.com/tendermint/tendermint/libs/log"
-	log2 "log"
 )
 
 const aminoCacheSize = 500
@@ -20,7 +21,7 @@ var _ types.ValidatorSet = Keeper{}
 type Keeper struct {
 	storeKey           sdk.StoreKey
 	cdc                *codec.Codec
-	govKeeper          govKeeper.Keeper
+	govKeeper          govKeeper.Keeper //nolint:golint,structcheck,unused,deadcode
 	AccountKeeper      types.AuthKeeper
 	Paramstore         sdk.Subspace
 	validatorCache     map[string]cachedValidator

@@ -2,6 +2,8 @@ package app
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/crypto"
@@ -9,7 +11,6 @@ import (
 	"github.com/pokt-network/posmint/x/gov"
 	"github.com/stretchr/testify/assert"
 	tmTypes "github.com/tendermint/tendermint/types"
-	"testing"
 )
 
 func TestBuildSignMultisig(t *testing.T) {
@@ -32,23 +33,21 @@ func TestBuildSignMultisig(t *testing.T) {
 	bz, err = gov.SignMulti(memCodec(), kp2.GetAddress(), bz, kps, getInMemoryTMClient(), kb, "test")
 	assert.Nil(t, err)
 	bz, err = gov.SignMulti(memCodec(), kp3.GetAddress(), bz, nil, getInMemoryTMClient(), kb, "test")
-	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	assert.Nil(t, err)
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	select {
-	case <-evtChan:
-		var err error
-		memCli, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), sdk.Address(pms.Address()), "test", sdk.NewInt(100000))
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
-	}
-	select {
-	case <-evtChan:
-		tx, err := nodes.RawTx(memCodec(), memCli, sdk.Address(pms.Address()), bz)
-		assert.Nil(t, err)
-		fmt.Println(tx)
-		assert.Zero(t, tx.Code)
-	}
+	<-evtChan // Wait for block
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), sdk.Address(pms.Address()), "test", sdk.NewInt(100000))
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	<-evtChan // Wait for tx
+	txRaw, err := nodes.RawTx(memCodec(), memCli, sdk.Address(pms.Address()), bz)
+	assert.Nil(t, err)
+	fmt.Println(tx)
+	assert.Zero(t, txRaw.Code)
+
 	cleanup()
 	stopCli()
 }
@@ -56,12 +55,11 @@ func TestBuildSignMultisig(t *testing.T) {
 func TestExportState(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		res, err := PCA.ExportAppState(false, nil)
-		assert.Nil(t, err)
-		assert.NotNil(t, res)
-	}
+	<-evtChan // Wait for block
+	res, err := PCA.ExportAppState(false, nil)
+	assert.Nil(t, err)
+	assert.NotNil(t, res)
+
 	cleanup()
 	stopCli()
 }

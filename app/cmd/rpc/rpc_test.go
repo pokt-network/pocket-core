@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -32,19 +31,18 @@ import (
 func TestRPC_QueryHeight(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		q := newQueryRequest("height", nil)
-		rec := httptest.NewRecorder()
-		Height(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
+	<-evtChan // Wait for block
+	q := newQueryRequest("height", nil)
+	rec := httptest.NewRecorder()
+	Height(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
 
-		var height queryHeightResponse
-		err := json.Unmarshal([]byte(resp), &height)
-		assert.Nil(t, err)
-		assert.NotEmpty(t, height.Height)
-		assert.Equal(t, int64(1), height.Height)
-	}
+	var height queryHeightResponse
+	err := json.Unmarshal([]byte(resp), &height)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, height.Height)
+	assert.Equal(t, int64(1), height.Height)
+
 	cleanup()
 	stopCli()
 }
@@ -52,22 +50,21 @@ func TestRPC_QueryHeight(t *testing.T) {
 func TestRPC_QueryBlock(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 1,
-		}
-		q := newQueryRequest("block", newBody(params))
-		rec := httptest.NewRecorder()
-		Block(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		var blk core_types.ResultBlock
-		err := memCodec().UnmarshalJSON([]byte(resp), &blk)
-		assert.Nil(t, err)
-		assert.NotEmpty(t, blk.Block.Height)
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 1,
 	}
+	q := newQueryRequest("block", newBody(params))
+	rec := httptest.NewRecorder()
+	Block(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	var blk core_types.ResultBlock
+	err := memCodec().UnmarshalJSON([]byte(resp), &blk)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, blk.Block.Height)
+
 	cleanup()
 	stopCli()
 }
@@ -75,33 +72,30 @@ func TestRPC_QueryBlock(t *testing.T) {
 func TestRPC_QueryTX(t *testing.T) {
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	memCLI, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		kb := getInMemoryKeybase()
-		cb, err := kb.GetCoinbase()
-		assert.Nil(t, err)
-		tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
-		assert.Nil(t, err)
+	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
+	assert.Nil(t, err)
+
+	<-evtChan // Wait for tx
+	var params = HashParams{
+		Hash: tx.TxHash,
 	}
-	select {
-	case <-evtChan:
-		var params = HashParams{
-			Hash: tx.TxHash,
-		}
-		q := newQueryRequest("tx", newBody(params))
-		rec := httptest.NewRecorder()
-		Tx(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		var resTX core_types.ResultTx
-		err := json.Unmarshal([]byte(resp), &resTX)
-		assert.Nil(t, err)
-		assert.NotEmpty(t, resTX.Height)
-	}
+	q := newQueryRequest("tx", newBody(params))
+	rec := httptest.NewRecorder()
+	Tx(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	var resTX core_types.ResultTx
+	err = json.Unmarshal([]byte(resp), &resTX)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, resTX.Height)
+
 	cleanup()
 	stopCli()
 }
@@ -109,39 +103,36 @@ func TestRPC_QueryTX(t *testing.T) {
 func TestRPC_QueryAccountTXs(t *testing.T) {
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	memCLI, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		kb := getInMemoryKeybase()
-		cb, err := kb.GetCoinbase()
-		assert.Nil(t, err)
-		tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
-		assert.Nil(t, err)
-		assert.NotNil(t, tx)
+	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	var err error
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	<-evtChan // Wait for tx
+	kb = getInMemoryKeybase()
+	cb, err = kb.GetCoinbase()
+	assert.Nil(t, err)
+	var params = PaginateAddrParams{
+		Address: cb.GetAddress().String(),
 	}
-	select {
-	case <-evtChan:
-		kb := getInMemoryKeybase()
-		cb, err := kb.GetCoinbase()
-		assert.Nil(t, err)
-		var params = PaginateAddrParams{
-			Address: cb.GetAddress().String(),
-		}
-		q := newQueryRequest("accounttxs", newBody(params))
-		rec := httptest.NewRecorder()
-		AccountTxs(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		fmt.Printf("%s", []byte(resp))
-		var resTXs core_types.ResultTxSearch
-		unmarshalErr := json.Unmarshal([]byte(resp), &resTXs)
-		assert.Nil(t, unmarshalErr)
-		assert.NotEmpty(t, resTXs.Txs)
-		assert.NotZero(t, resTXs.TotalCount)
-	}
+	q := newQueryRequest("accounttxs", newBody(params))
+	rec := httptest.NewRecorder()
+	AccountTxs(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	var resTXs core_types.ResultTxSearch
+	unmarshalErr := json.Unmarshal([]byte(resp), &resTXs)
+	assert.Nil(t, unmarshalErr)
+	assert.NotEmpty(t, resTXs.Txs)
+	assert.NotZero(t, resTXs.TotalCount)
+
 	cleanup()
 	stopCli()
 }
@@ -149,51 +140,48 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 func TestRPC_QueryBlockTXs(t *testing.T) {
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	memCLI, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var err error
-		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventTx)
-		kb := getInMemoryKeybase()
-		cb, err := kb.GetCoinbase()
-		assert.Nil(t, err)
-		tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
-		assert.Nil(t, err)
-	}
-	select {
-	case <-evtChan:
-		// Step 1: Get the transaction by it's hash
-		var params = HashParams{
-			Hash: tx.TxHash,
-		}
-		q := newQueryRequest("tx", newBody(params))
-		rec := httptest.NewRecorder()
-		Tx(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		var resTX core_types.ResultTx
-		err := json.Unmarshal([]byte(resp), &resTX)
-		assert.Nil(t, err)
-		assert.NotEmpty(t, resTX.Height)
+	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan //Wait for block
+	var err error
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
+	assert.Nil(t, err)
 
-		// Step 2: Get the transaction by it's height
-		var heightParams = PaginatedHeightParams{
-			Height: resTX.Height,
-		}
-		heightQ := newQueryRequest("blocktxs", newBody(heightParams))
-		heightRec := httptest.NewRecorder()
-		BlockTxs(heightRec, heightQ, httprouter.Params{})
-		heightResp := getJSONResponse(heightRec)
-		fmt.Printf("%s", []byte(heightResp))
-		assert.NotNil(t, heightResp)
-		assert.NotEmpty(t, heightResp)
-		var resTXs core_types.ResultTxSearch
-		unmarshalErr := json.Unmarshal([]byte(heightResp), &resTXs)
-		assert.Nil(t, unmarshalErr)
-		assert.NotEmpty(t, resTXs.Txs)
-		assert.NotZero(t, resTXs.TotalCount)
+	<-evtChan // Wait for tx
+	// Step 1: Get the transaction by it's hash
+	var params = HashParams{
+		Hash: tx.TxHash,
 	}
+	q := newQueryRequest("tx", newBody(params))
+	rec := httptest.NewRecorder()
+	Tx(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	var resTX core_types.ResultTx
+	err = json.Unmarshal([]byte(resp), &resTX)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, resTX.Height)
+
+	// Step 2: Get the transaction by it's height
+	var heightParams = PaginatedHeightParams{
+		Height: resTX.Height,
+	}
+	heightQ := newQueryRequest("blocktxs", newBody(heightParams))
+	heightRec := httptest.NewRecorder()
+	BlockTxs(heightRec, heightQ, httprouter.Params{})
+	heightResp := getJSONResponse(heightRec)
+	assert.NotNil(t, heightResp)
+	assert.NotEmpty(t, heightResp)
+	var resTXs core_types.ResultTxSearch
+	unmarshalErr := json.Unmarshal([]byte(heightResp), &resTXs)
+	assert.Nil(t, unmarshalErr)
+	assert.NotEmpty(t, resTXs.Txs)
+	assert.NotZero(t, resTXs.TotalCount)
+
 	cleanup()
 	stopCli()
 }
@@ -201,28 +189,27 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 func TestRPC_QueryBalance(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		kb := getInMemoryKeybase()
-		cb, err := kb.GetCoinbase()
-		assert.Nil(t, err)
-		var params = HeightAndAddrParams{
-			Height:  0,
-			Address: cb.GetAddress().String(),
-		}
-		q := newQueryRequest("balance", newBody(params))
-		rec := httptest.NewRecorder()
-		Balance(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
 
-		var b queryBalanceResponse
-		err = json.Unmarshal([]byte(resp), &b)
-		assert.Nil(t, err)
-		assert.NotZero(t, b.Balance)
-
+	<-evtChan // Wait for block
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	var params = HeightAndAddrParams{
+		Height:  0,
+		Address: cb.GetAddress().String(),
 	}
+	q := newQueryRequest("balance", newBody(params))
+	rec := httptest.NewRecorder()
+	Balance(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
+	var b queryBalanceResponse
+	err = json.Unmarshal([]byte(resp), &b)
+	assert.Nil(t, err)
+	assert.NotZero(t, b.Balance)
+
 	cleanup()
 	stopCli()
 }
@@ -230,25 +217,20 @@ func TestRPC_QueryBalance(t *testing.T) {
 func TestRPC_QueryAccount(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	type Coins struct {
-		denom  string `json:"denom"`
-		amount int    `json:"amount"`
+	<-evtChan
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	var params = HeightAndAddrParams{
+		Height:  0,
+		Address: cb.GetAddress().String(),
 	}
-	select {
-	case <-evtChan:
-		kb := getInMemoryKeybase()
-		cb, err := kb.GetCoinbase()
-		assert.Nil(t, err)
-		var params = HeightAndAddrParams{
-			Height:  0,
-			Address: cb.GetAddress().String(),
-		}
-		q := newQueryRequest("account", newBody(params))
-		rec := httptest.NewRecorder()
-		Account(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.Regexp(t, "upokt", string(resp))
-	}
+	q := newQueryRequest("account", newBody(params))
+	rec := httptest.NewRecorder()
+	Account(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.Regexp(t, "upokt", string(resp))
+
 	cleanup()
 	stopCli()
 }
@@ -256,26 +238,26 @@ func TestRPC_QueryAccount(t *testing.T) {
 func TestRPC_QueryNodes(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		kb := getInMemoryKeybase()
-		cb, err := kb.GetCoinbase()
-		assert.Nil(t, err)
-		var params = HeightAndValidatorOptsParams{
-			Height: 0,
-			Opts: types2.QueryValidatorsParams{
-				StakingStatus: types.Staked,
-				Page:          1,
-				Limit:         1,
-			},
-		}
-		q := newQueryRequest("nodes", newBody(params))
-		rec := httptest.NewRecorder()
-		Nodes(rec, q, httprouter.Params{})
-		body := rec.Body.String()
-		address := cb.GetAddress().String()
-		assert.True(t, strings.Contains(body, address))
+
+	<-evtChan // Wait for block
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	var params = HeightAndValidatorOptsParams{
+		Height: 0,
+		Opts: types2.QueryValidatorsParams{
+			StakingStatus: types.Staked,
+			Page:          1,
+			Limit:         1,
+		},
 	}
+	q := newQueryRequest("nodes", newBody(params))
+	rec := httptest.NewRecorder()
+	Nodes(rec, q, httprouter.Params{})
+	body := rec.Body.String()
+	address := cb.GetAddress().String()
+	assert.True(t, strings.Contains(body, address))
+
 	cleanup()
 	stopCli()
 }
@@ -283,23 +265,23 @@ func TestRPC_QueryNodes(t *testing.T) {
 func TestRPC_QueryNode(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		kb := getInMemoryKeybase()
-		cb, err := kb.GetCoinbase()
-		assert.Nil(t, err)
-		var params = HeightAndAddrParams{
-			Height:  0,
-			Address: cb.GetAddress().String(),
-		}
-		q := newQueryRequest("node", newBody(params))
-		rec := httptest.NewRecorder()
-		Node(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(rec.Body.String(), cb.GetAddress().String()))
+
+	<-evtChan // Wait for block
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	var params = HeightAndAddrParams{
+		Height:  0,
+		Address: cb.GetAddress().String(),
 	}
+	q := newQueryRequest("node", newBody(params))
+	rec := httptest.NewRecorder()
+	Node(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), cb.GetAddress().String()))
+
 	cleanup()
 	stopCli()
 }
@@ -308,20 +290,19 @@ func TestRPC_QueryApp(t *testing.T) {
 	gBZ, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightAndAddrParams{
-			Height:  0,
-			Address: app.GetAddress().String(),
-		}
-		q := newQueryRequest("app", newBody(params))
-		rec := httptest.NewRecorder()
-		App(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String()))
+	<-evtChan // Wait for block
+	var params = HeightAndAddrParams{
+		Height:  0,
+		Address: app.GetAddress().String(),
 	}
+	q := newQueryRequest("app", newBody(params))
+	rec := httptest.NewRecorder()
+	App(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String()))
+
 	cleanup()
 	stopCli()
 }
@@ -330,23 +311,22 @@ func TestRPC_QueryApps(t *testing.T) {
 	gBZ, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightAndApplicaitonOptsParams{
-			Height: 0,
-			Opts: types3.QueryApplicationsWithOpts{
-				StakingStatus: types.Staked,
-				Page:          1,
-				Limit:         10000,
-			},
-		}
-		q := newQueryRequest("apps", newBody(params))
-		rec := httptest.NewRecorder()
-		Apps(rec, q, httprouter.Params{})
-		body := rec.Body.String()
-		address := app.GetAddress().String()
-		assert.True(t, strings.Contains(body, address))
+	<-evtChan // Wait for block
+	var params = HeightAndApplicaitonOptsParams{
+		Height: 0,
+		Opts: types3.QueryApplicationsWithOpts{
+			StakingStatus: types.Staked,
+			Page:          1,
+			Limit:         10000,
+		},
 	}
+	q := newQueryRequest("apps", newBody(params))
+	rec := httptest.NewRecorder()
+	Apps(rec, q, httprouter.Params{})
+	body := rec.Body.String()
+	address := app.GetAddress().String()
+	assert.True(t, strings.Contains(body, address))
+
 	cleanup()
 	stopCli()
 }
@@ -355,19 +335,18 @@ func TestRPC_QueryNodeParams(t *testing.T) {
 	gBZ, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 0,
-		}
-		q := newQueryRequest("nodeparams", newBody(params))
-		rec := httptest.NewRecorder()
-		NodeParams(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(rec.Body.String(), "max_validators"))
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 0,
 	}
+	q := newQueryRequest("nodeparams", newBody(params))
+	rec := httptest.NewRecorder()
+	NodeParams(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), "max_validators"))
+
 	cleanup()
 	stopCli()
 }
@@ -376,19 +355,18 @@ func TestRPC_QueryAppParams(t *testing.T) {
 	gBZ, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 0,
-		}
-		q := newQueryRequest("appparams", newBody(params))
-		rec := httptest.NewRecorder()
-		AppParams(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(rec.Body.String(), "max_applications"))
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 0,
 	}
+	q := newQueryRequest("appparams", newBody(params))
+	rec := httptest.NewRecorder()
+	AppParams(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), "max_applications"))
+
 	cleanup()
 	stopCli()
 }
@@ -397,19 +375,18 @@ func TestRPC_QueryPocketParams(t *testing.T) {
 	gBZ, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 0,
-		}
-		q := newQueryRequest("pocketparams", newBody(params))
-		rec := httptest.NewRecorder()
-		PocketParams(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(rec.Body.String(), "chains"))
+	<-evtChan
+	var params = HeightParams{
+		Height: 0,
 	}
+	q := newQueryRequest("pocketparams", newBody(params))
+	rec := httptest.NewRecorder()
+	PocketParams(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), "chains"))
+
 	cleanup()
 	stopCli()
 }
@@ -417,44 +394,41 @@ func TestRPC_QueryPocketParams(t *testing.T) {
 func TestRPC_QuerySupportedChains(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 0,
-		}
-		q := newQueryRequest("supportedchains", newBody(params))
-		rec := httptest.NewRecorder()
-		SupportedChains(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		fmt.Println(resp)
-		assert.True(t, strings.Contains(resp, dummyChainsHash))
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 0,
 	}
+	q := newQueryRequest("supportedchains", newBody(params))
+	rec := httptest.NewRecorder()
+	SupportedChains(rec, q, httprouter.Params{})
+	resp := getResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(resp, dummyChainsHash))
+
 	cleanup()
 	stopCli()
 }
 func TestRPC_QuerySupply(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 0,
-		}
-		q := newQueryRequest("supply", newBody(params))
-		rec := httptest.NewRecorder()
-		Supply(rec, q, httprouter.Params{})
-
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-
-		var supply querySupplyResponse
-		err := json.Unmarshal([]byte(resp), &supply)
-		assert.Nil(t, err)
-		assert.NotZero(t, supply.Total)
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 0,
 	}
+	q := newQueryRequest("supply", newBody(params))
+	rec := httptest.NewRecorder()
+	Supply(rec, q, httprouter.Params{})
+
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
+	var supply querySupplyResponse
+	err := json.Unmarshal([]byte(resp), &supply)
+	assert.Nil(t, err)
+	assert.NotZero(t, supply.Total)
+
 	cleanup()
 	stopCli()
 }
@@ -464,19 +438,18 @@ func TestRPC_QueryDAOOwner(t *testing.T) {
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 0,
-		}
-		q := newQueryRequest("DAOOwner", newBody(params))
-		rec := httptest.NewRecorder()
-		DAOOwner(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		assert.True(t, strings.Contains(string(resp), cb.GetAddress().String()))
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 0,
 	}
+	q := newQueryRequest("DAOOwner", newBody(params))
+	rec := httptest.NewRecorder()
+	DAOOwner(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(string(resp), cb.GetAddress().String()))
+
 	cleanup()
 	stopCli()
 }
@@ -484,20 +457,18 @@ func TestRPC_QueryDAOOwner(t *testing.T) {
 func TestRPC_QueryUpgrade(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 0,
-		}
-		q := newQueryRequest("Upgrade", newBody(params))
-		rec := httptest.NewRecorder()
-		Upgrade(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
-		fmt.Println(string(resp))
-		assert.True(t, strings.Contains(string(resp), "2.0.0"))
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 0,
 	}
+	q := newQueryRequest("Upgrade", newBody(params))
+	rec := httptest.NewRecorder()
+	Upgrade(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(string(resp), "2.0.0"))
+
 	cleanup()
 	stopCli()
 }
@@ -505,18 +476,17 @@ func TestRPC_QueryUpgrade(t *testing.T) {
 func TestRPCQueryACL(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		var params = HeightParams{
-			Height: 0,
-		}
-		q := newQueryRequest("ACL", newBody(params))
-		rec := httptest.NewRecorder()
-		ACL(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		assert.NotNil(t, resp)
-		assert.NotEmpty(t, resp)
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 0,
 	}
+	q := newQueryRequest("ACL", newBody(params))
+	rec := httptest.NewRecorder()
+	ACL(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
 	cleanup()
 	stopCli()
 }
@@ -574,21 +544,20 @@ func TestRPC_Relay(t *testing.T) {
 		panic(err)
 	}
 	relay.Proof.Signature = hex.EncodeToString(sig)
+
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		q := newClientRequest("relay", newBody(relay))
-		rec := httptest.NewRecorder()
-		Relay(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		var response pocketTypes.RelayResponse
-		err := json.Unmarshal(resp, &response)
-		assert.Nil(t, err)
-		assert.Equal(t, expectedResponse, response.Response)
-		cleanup()
-		stopCli()
-	}
+	<-evtChan // Wait for block
+	q := newClientRequest("relay", newBody(relay))
+	rec := httptest.NewRecorder()
+	Relay(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	var response pocketTypes.RelayResponse
+	err = json.Unmarshal(resp, &response)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResponse, response.Response)
+	cleanup()
+	stopCli()
 }
 
 func TestRPC_Dispatch(t *testing.T) {
@@ -605,22 +574,21 @@ func TestRPC_Dispatch(t *testing.T) {
 	}
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	select {
-	case <-evtChan:
-		q := newClientRequest("dispatch", newBody(key))
-		rec := httptest.NewRecorder()
-		Dispatch(rec, q, httprouter.Params{})
-		resp := getJSONResponse(rec)
-		rawResp := string(resp)
-		assert.Regexp(t, key.ApplicationPubKey, rawResp)
-		assert.Regexp(t, key.Chain, rawResp)
+	<-evtChan // Wait for block
+	q := newClientRequest("dispatch", newBody(key))
+	rec := httptest.NewRecorder()
+	Dispatch(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	rawResp := string(resp)
+	assert.Regexp(t, key.ApplicationPubKey, rawResp)
+	assert.Regexp(t, key.Chain, rawResp)
 
-		for _, validator := range validators {
-			assert.Regexp(t, validator.Address.String(), rawResp)
-		}
-		cleanup()
-		stopCli()
+	for _, validator := range validators {
+		assert.Regexp(t, validator.Address.String(), rawResp)
 	}
+	cleanup()
+	stopCli()
+
 }
 
 func TestRPC_RawTX(t *testing.T) {
@@ -643,24 +611,22 @@ func TestRPC_RawTX(t *testing.T) {
 		common.RandInt64(),
 		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))))
 	assert.Nil(t, err)
-	select {
-	case <-evtChan:
-		var err error
-		params := SendRawTxParams{
-			Addr:        cb.GetAddress().String(),
-			RawHexBytes: hex.EncodeToString(txBz),
-		}
-		q := newClientRequest("rawtx", newBody(params))
-		rec := httptest.NewRecorder()
-		SendRawTx(rec, q, httprouter.Params{})
-		resp := getResponse(rec)
-		assert.Nil(t, err)
-		assert.NotNil(t, resp)
-		var response types.TxResponse
-		err = memCodec().UnmarshalJSON([]byte(resp), &response)
-		assert.Nil(t, err)
-		assert.True(t, strings.Contains(response.Logs.String(), `"success":true`))
+	<-evtChan // Wait for block
+	params := SendRawTxParams{
+		Addr:        cb.GetAddress().String(),
+		RawHexBytes: hex.EncodeToString(txBz),
 	}
+	q := newClientRequest("rawtx", newBody(params))
+	rec := httptest.NewRecorder()
+	SendRawTx(rec, q, httprouter.Params{})
+	resp := getResponse(rec)
+	assert.Nil(t, err)
+	assert.NotNil(t, resp)
+	var response types.TxResponse
+	err = memCodec().UnmarshalJSON([]byte(resp), &response)
+	assert.Nil(t, err)
+	assert.True(t, strings.Contains(response.Logs.String(), `"success":true`))
+
 	cleanup()
 	stopCli()
 }

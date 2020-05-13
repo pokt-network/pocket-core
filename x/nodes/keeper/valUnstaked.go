@@ -19,10 +19,7 @@ func (k Keeper) SetWaitingValidator(ctx sdk.Ctx, val types.Validator) {
 func (k Keeper) IsWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) bool {
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValWaitingToBeginUnstaking(valAddr))
-	if value == nil {
-		return false
-	}
-	return true
+	return !(value == nil)
 }
 
 // GetWaitingValidators - Retrieve waiting validators

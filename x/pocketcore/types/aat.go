@@ -24,10 +24,7 @@ type AAT struct {
 // "VersionIsIncluded" - Returns if the version is included
 func (a AAT) VersionIsIncluded() bool {
 	// if version is empty return nil
-	if a.Version == "" {
-		return false
-	}
-	return true
+	return !(a.Version == "")
 }
 
 // "VersionIsSupported" - Returns if the version of the AAT is supported by the network

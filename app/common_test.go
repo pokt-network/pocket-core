@@ -71,7 +71,6 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		pocketTypes.ClearEvidence()
 		pocketTypes.ClearSessionCache()
 		inMemKB = nil
-		return
 	}
 	return
 }
@@ -100,10 +99,6 @@ func getInMemoryKeybase() keys.Keybase {
 		}
 	}
 	return inMemKB
-}
-
-func getRandomPrivateKey() crypto.Ed25519PrivateKey {
-	return crypto.Ed25519PrivateKey{}.GenPrivateKey().(crypto.Ed25519PrivateKey)
 }
 
 func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
@@ -160,7 +155,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 			ID:  PlaceholderHash,
 			URL: PlaceholderURL,
 		}}
-		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))
+		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))
 		return p
 	}
 	upgradePrivVal(c.TmConfig)
@@ -237,12 +232,6 @@ func subscribeTo(t *testing.T, eventType string) (cli client.Client, stopClient 
 
 func getBackgroundContext() (context.Context, func()) {
 	return context.WithCancel(context.Background())
-}
-
-func getInMemHostedChains() *pocketTypes.HostedBlockchains {
-	return &pocketTypes.HostedBlockchains{
-		M: map[string]pocketTypes.HostedBlockchain{dummyChainsHash: {ID: dummyChainsHash, URL: PlaceholderURL}},
-	}
 }
 
 func getTestConfig() (newTMConfig *tmCfg.Config) {
@@ -524,6 +513,9 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 		panic(err)
 	}
 	pk2, err := kb.ExportPrivateKeyObject(kp2.GetAddress(), "test")
+	if err != nil {
+		panic(err)
+	}
 	var kys []crypto.PrivateKey
 	kys = append(kys, pk1, pk2, crypto.GenerateEd25519PrivKey(), crypto.GenerateEd25519PrivKey(), crypto.GenerateEd25519PrivKey())
 	// get public kys

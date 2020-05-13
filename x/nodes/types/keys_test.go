@@ -3,12 +3,13 @@ package types
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/pokt-network/posmint/crypto"
-	"github.com/pokt-network/posmint/types"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/pokt-network/posmint/crypto"
+	"github.com/pokt-network/posmint/types"
 )
 
 func TestAddressFromPrevStateValidatorPowerKey(t *testing.T) {
@@ -91,7 +92,7 @@ func TestGetValidatorSigningInfoAddress(t *testing.T) {
 		args  args
 		wantV types.Address
 	}{
-		{"sampleByteArray", args{append([]byte{0x11}, ca.Bytes()...)}, append(ca.Bytes())},
+		{"sampleByteArray", args{append([]byte{0x11}, ca.Bytes()...)}, ca.Bytes()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

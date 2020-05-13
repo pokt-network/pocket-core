@@ -1,6 +1,9 @@
 package nodes
 
 import (
+	"math/rand"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
@@ -17,11 +20,9 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"math/rand"
-	"testing"
 )
 
-// nolint: deadcode unused
+// : deadcode unused
 var (
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
@@ -29,7 +30,7 @@ var (
 	)
 )
 
-// nolint: deadcode unused
+// : deadcode unused
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
 	var cdc = codec.New()
@@ -51,7 +52,7 @@ func GetTestTendermintClient() client.Client {
 	return client.NewHTTP(tmNodeURI, "/websocket")
 }
 
-// nolint: deadcode unused
+// : deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account, keeper.Keeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(4)
@@ -112,7 +113,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	return ctx, accs, keeper
 }
 
-// nolint: unparam deadcode unused
+// : unparam deadcode unused
 func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.Keeper) (accs []auth.Account) {
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()
@@ -170,16 +171,6 @@ func getStakedValidator() types.Validator {
 	return getValidator()
 }
 
-func getUnstakedValidator() types.Validator {
-	v := getValidator()
-	return v.UpdateStatus(sdk.Unstaked)
-}
-
-func getUnstakingValidator() types.Validator {
-	v := getValidator()
-	return v.UpdateStatus(sdk.Unstaking)
-}
-
 func getGenesisStateForTest(ctx sdk.Ctx, keeper keeper.Keeper, defaultparams bool) types.GenesisState {
 	keeper.SetPreviousProposer(ctx, sdk.GetAddress(getRandomPubKey()))
 	var prm = types.DefaultParams()
@@ -202,7 +193,7 @@ func getGenesisStateForTest(ctx sdk.Ctx, keeper keeper.Keeper, defaultparams boo
 		localMissedBlocks := []types.MissedBlock{}
 
 		keeper.IterateAndExecuteOverMissedArray(ctx, address, func(index int64, missed bool) (stop bool) {
-			localMissedBlocks = append(localMissedBlocks, types.MissedBlock{index, missed})
+			localMissedBlocks = append(localMissedBlocks, types.MissedBlock{Index: index, Missed: missed})
 			return false
 		})
 		missedBlocks[addrstring] = localMissedBlocks

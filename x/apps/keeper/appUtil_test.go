@@ -1,10 +1,11 @@
 package keeper
 
 import (
-	"github.com/pokt-network/pocket-core/x/apps/exported"
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	"reflect"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/x/apps/exported"
+	"github.com/pokt-network/pocket-core/x/apps/types"
 )
 
 func TestAppUtil_Application(t *testing.T) {
@@ -15,7 +16,6 @@ func TestAppUtil_Application(t *testing.T) {
 	}
 	type want struct {
 		application types.Application
-		message     string
 	}
 	tests := []struct {
 		name string
@@ -60,9 +60,7 @@ func TestAppUtil_ApplicationCaching(t *testing.T) {
 	stakedApplication := getStakedApplication()
 
 	type args struct {
-		bz             []byte
-		application    types.Application
-		aminoCacheSize int
+		application types.Application
 	}
 	tests := []struct {
 		name   string

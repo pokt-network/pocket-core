@@ -70,7 +70,6 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		pocketTypes.ClearEvidence()
 		pocketTypes.ClearSessionCache()
 		inMemKB = nil
-		return
 	}
 	return
 }
@@ -158,7 +157,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 			ID:  app.PlaceholderHash,
 			URL: app.PlaceholderURL,
 		}}
-		p := app.NewPocketCoreApp(app.GenState, getInMemoryKeybase(), getInMemoryTMClient(), pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))
+		p := app.NewPocketCoreApp(app.GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))
 		return p
 	}
 	//upgradePrivVal(c.TmConfig)
@@ -236,12 +235,6 @@ func getBackgroundContext() (context.Context, func()) {
 	return context.WithCancel(context.Background())
 }
 
-func getInMemHostedChains() *pocketTypes.HostedBlockchains {
-	return &pocketTypes.HostedBlockchains{
-		M: map[string]pocketTypes.HostedBlockchain{dummyChainsHash: {ID: dummyChainsHash, URL: dummyChainsURL}},
-	}
-}
-
 func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg = tmCfg.TestConfig()
 	tmConfg.RPC.ListenAddress = defaultTMURI
@@ -252,26 +245,6 @@ func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg.TxIndex.Indexer = "kv"
 	tmConfg.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
 	return
-}
-
-func getUnstakedAccount(kb keys.Keybase) *keys.KeyPair {
-	cb, err := kb.GetCoinbase()
-	if err != nil {
-		panic(err)
-	}
-	kps, err := kb.List()
-	if err != nil {
-		panic(err)
-	}
-	if len(kps) > 2 {
-		panic("get unstaked account only works with the default 2 keypairs")
-	}
-	for _, kp := range kps {
-		if kp.PublicKey != cb.PublicKey {
-			return &kp
-		}
-	}
-	return nil
 }
 
 func oneValTwoNodeGenesisState() []byte {

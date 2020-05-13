@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/x/apps/types"
-	sdk "github.com/pokt-network/posmint/types"
 	"reflect"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/x/apps/types"
+	sdk "github.com/pokt-network/posmint/types"
 )
 
 func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
@@ -191,7 +192,7 @@ func TestAppStateChange_StakeApplication(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
-			keeper.StakeApplication(context, tt.application, tt.amount)
+			_ = keeper.StakeApplication(context, tt.application, tt.amount)
 			got, found := keeper.GetApplication(context, tt.application.Address)
 			if !found {
 				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app")

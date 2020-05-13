@@ -2,15 +2,16 @@ package types
 
 import (
 	"encoding/hex"
+	"reflect"
+	"testing"
+	"time"
+
 	appsType "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/h2non/gock.v1"
-	"reflect"
-	"testing"
-	"time"
 )
 
 func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique relay here
@@ -70,20 +71,6 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 		StakedTokens:            sdk.NewInt(100000),
 		UnstakingCompletionTime: time.Time{},
 	}
-	var allNodes []exported.ValidatorI
-	for i := 0; i < 4; i++ {
-		pubKey := getRandomPubKey()
-		allNodes = append(allNodes, nodesTypes.Validator{
-			Address:                 sdk.Address(pubKey.Address()),
-			PublicKey:               pubKey,
-			Jailed:                  false,
-			Status:                  sdk.Staked,
-			Chains:                  []string{ethereum, bitcoin},
-			ServiceURL:              "https://www.google.com:443",
-			StakedTokens:            sdk.NewInt(100000),
-			UnstakingCompletionTime: time.Time{},
-		})
-	}
 	var noEthereumNodes []exported.ValidatorI
 	for i := 0; i < 4; i++ {
 		pubKey := getRandomPubKey()
@@ -98,7 +85,6 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			UnstakingCompletionTime: time.Time{},
 		})
 	}
-	allNodes = append(allNodes, selfNode)
 	noEthereumNodes = append(noEthereumNodes, selfNode)
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{ethereum: {
@@ -123,7 +109,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 		node     nodesTypes.Validator
 		app      appsType.Application
 		allNodes []exported.ValidatorI
-		hb       HostedBlockchains
+		hb       *HostedBlockchains
 		hasError bool
 	}{
 		{
@@ -132,7 +118,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			node:     selfNode,
 			app:      app,
 			allNodes: noEthereumNodes,
-			hb:       hb,
+			hb:       &hb,
 			hasError: true,
 		},
 	}
@@ -141,7 +127,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 
 			k := MockPosKeeper{Validators: tt.allNodes}
 			assert.Equal(t, tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, tt.node,
-				&tt.hb, 1, 5, tt.app) != nil, tt.hasError)
+				tt.hb, 1, 5, tt.app) != nil, tt.hasError)
 		})
 		ClearSessionCache()
 	}

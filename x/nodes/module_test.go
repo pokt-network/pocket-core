@@ -2,13 +2,14 @@ package nodes
 
 import (
 	"encoding/json"
+	"reflect"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"reflect"
-	"testing"
 )
 
 func TestAppModuleBasic_DefaultGenesis(t *testing.T) {
@@ -209,8 +210,6 @@ func TestAppModule_InitGenesis(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AuthKeeper
-		supplyKeeper   types.AuthKeeper
 	}
 	type args struct {
 		ctx  sdk.Context
@@ -241,8 +240,6 @@ func TestAppModule_Name(t *testing.T) {
 	type fields struct {
 		AppModuleBasic AppModuleBasic
 		keeper         keeper.Keeper
-		accountKeeper  types.AuthKeeper
-		supplyKeeper   types.AuthKeeper
 	}
 	tests := []struct {
 		name   string
@@ -397,9 +394,7 @@ func TestAppModule_Route(t *testing.T) {
 
 func TestNewAppModule(t *testing.T) {
 	type args struct {
-		keeper        keeper.Keeper
-		accountKeeper types.AuthKeeper
-		supplyKeeper  types.AuthKeeper
+		keeper keeper.Keeper
 	}
 	tests := []struct {
 		name string

@@ -2,12 +2,13 @@ package keeper
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth/exported"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 func TestCoinsFromUnstakedToStaked(t *testing.T) {
@@ -104,7 +105,7 @@ func TestCoinsFromStakedToUnstaked(t *testing.T) {
 					addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, sdk.NewInt(100))
 				}
-				keeper.coinsFromStakedToUnstaked(context, test.validator)
+				_ = keeper.coinsFromStakedToUnstaked(context, test.validator)
 			default:
 			}
 		})
@@ -147,13 +148,13 @@ func TestBurnStakedTokens(t *testing.T) {
 			case true:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, supplySize)
-				keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				_ = keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
 				err := keeper.burnStakedTokens(context, test.burnAmount)
 				assert.Nil(t, err, "error is not nil")
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, supplySize)
-				keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				_ = keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
 				err := keeper.burnStakedTokens(context, test.burnAmount)
 				if err != nil {
 					t.Fail()
