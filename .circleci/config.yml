@@ -17,8 +17,12 @@ jobs:
     steps:
       # Checkout the code
       - checkout
-      # Installa dependencies
+      # Install dependencies
       - run: ./deps.sh
+      # linter
+      - run: golangci-lint run
+      # static analyzer
+      - run: go vet ./...
       # Build the binary
       - run: go build app/cmd/pocket_core/main.go
       # Cache build
