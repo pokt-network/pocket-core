@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"os"
+	"log"
 )
 
 var (
@@ -67,8 +67,7 @@ func (a AAT) Bytes() []byte {
 		Version:              a.Version,
 	})
 	if err != nil {
-		fmt.Println(fmt.Sprintf("an error occured hashing the aat:\n%v", err))
-		os.Exit(1)
+		log.Fatal(fmt.Sprintf("an error occured hashing the aat:\n%v", err))
 	}
 	return b
 }

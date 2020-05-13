@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
+	"log"
 	"math"
-	"os"
 )
 
 // "Proof" - An interface representation of an economic proof of work/burn (relay or challenge)
@@ -153,8 +153,7 @@ func (rp RelayProof) Bytes() []byte {
 		Token:              rp.Token.HashString(),
 	})
 	if err != nil {
-		fmt.Println(fmt.Errorf("an error occured converting the relay RelayProof to bytes:\n%v", err))
-		os.Exit(1)
+		log.Fatal(fmt.Errorf("an error occured converting the relay RelayProof to bytes:\n%v", err).Error())
 	}
 	return res
 }
@@ -171,8 +170,7 @@ func (rp RelayProof) BytesWithSignature() []byte {
 		Token:              rp.Token.HashString(),
 	})
 	if err != nil {
-		fmt.Println(fmt.Errorf("an error occured converting the relay RelayProof to bytesWithSignature:\n%v", err))
-		os.Exit(1)
+		log.Fatalf(fmt.Errorf("an error occured converting the relay RelayProof to bytesWithSignature:\n%v", err).Error())
 	}
 	return res
 }
@@ -422,8 +420,7 @@ func (c ChallengeProofInvalidData) Bytes() []byte {
 		},
 	})
 	if err != nil {
-		fmt.Println(fmt.Errorf("an error occured converting the challengeproof to bytes\n%v", err))
-		os.Exit(1)
+		log.Fatalf(fmt.Errorf("an error occured converting the challengeproof to bytes\n%v", err).Error())
 	}
 	return bz
 }
