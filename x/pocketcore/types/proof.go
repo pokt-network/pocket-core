@@ -54,17 +54,14 @@ func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNode
 
 // "Validate" - Validates the relay proof object
 func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error {
+	//Basic Validations
+	err := rp.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	// validate the session block height
 	if rp.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)
-	}
-	// validate blockchain
-	if err := NetworkIdentifierVerification(rp.Blockchain); err != nil {
-		return err
-	}
-	// validate the RelayProof public key format
-	if err := PubKeyVerification(rp.ServicerPubKey); err != nil {
-		return NewInvalidNodePubKeyError(ModuleName)
 	}
 	// check for supported blockchain
 	c1 := false
@@ -76,11 +73,7 @@ func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount
 	if !c1 {
 		return NewUnsupportedBlockchainAppError(ModuleName)
 	}
-	// validate the service token
-	if err := rp.Token.Validate(); err != nil {
-		return NewInvalidTokenError(ModuleName, err)
-	}
-	return SignatureVerification(rp.Token.ClientPublicKey, rp.HashString(), rp.Signature)
+	return nil
 }
 
 // "ValidateBasic" - Provides a lighter weight, storeless validation of the relay proof object
