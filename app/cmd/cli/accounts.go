@@ -380,8 +380,8 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 // sendTxCmd represents the sendTx command
 var sendTxCmd = &cobra.Command{
 	Use:   "send-tx <fromAddr> <toAddr> <amount> <chainID>",
-	Short: "Send POKT",
-	Long: `Sends <amount> POKT <fromAddr> to <toAddr>.
+	Short: "Send uPOKT",
+	Long: `Sends <amount> uPOKT <fromAddr> to <toAddr>.
 Prompts the user for <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
