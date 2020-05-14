@@ -521,7 +521,12 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.proof.ValidateLocal(tt.maxRelays, 1, tt.supportedBlockchains, 5, tt.sessionNodes, tt.reporterAddress); (err != nil) != tt.hasError {
+			h := SessionHeader{
+				ApplicationPubKey:  tt.proof.MinorityResponse.Proof.Token.ApplicationPublicKey,
+				Chain:              tt.proof.MinorityResponse.Proof.Blockchain,
+				SessionBlockHeight: tt.proof.MinorityResponse.Proof.SessionBlockHeight,
+			}
+			if err := tt.proof.ValidateLocal(h, tt.maxRelays, tt.supportedBlockchains, 5, tt.sessionNodes, tt.reporterAddress); (err != nil) != tt.hasError {
 				t.Fatalf(err.Error())
 			}
 		})
