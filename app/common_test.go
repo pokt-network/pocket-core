@@ -56,6 +56,9 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	pocketTypes.InitCache("data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session")
 	// start the in memory node
 	err := tendermintNode.Start()
+	if err != nil {
+		panic(err)
+	}
 	// assert that it is not nil
 	assert.Nil(t, err)
 	// provide cleanup function

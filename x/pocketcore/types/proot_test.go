@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"sync"
 	"testing"
 
@@ -403,6 +404,7 @@ func TestChallengeProofInvalidData_ValidateBasic(t *testing.T) {
 }
 
 func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
+	InitCacheTest()
 	validChallengeProofIVD, servicer1PK, servicer2PK, servicer3PK, appPK, _, reporterPK := NewValidChallengeProof(t)
 	ser1PubKey := servicer1PK.PublicKey()
 	ser2PubKey := servicer2PK.PublicKey()
@@ -527,6 +529,8 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 				SessionBlockHeight: tt.proof.MinorityResponse.Proof.SessionBlockHeight,
 			}
 			if err := tt.proof.ValidateLocal(h, tt.maxRelays, tt.supportedBlockchains, 5, tt.sessionNodes, tt.reporterAddress); (err != nil) != tt.hasError {
+				fmt.Println(tt.name)
+				fmt.Println(err)
 				t.Fatalf(err.Error())
 			}
 		})
