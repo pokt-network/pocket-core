@@ -123,8 +123,9 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error)
 	return res, nil
 }
 
-// "Requesthash" - The cryptographic hash representation of the request
-func (r Relay) RequestHash() []byte {
+// "Bytes" - Returns the bytes representation of the Relay
+func (r Relay) Bytes() []byte {
+	//Anonymous Struct used because of #742 empty proof object being marshalled
 	relay := struct {
 		Payload Payload   `json:"payload"` // the data payload of the request
 		Meta    RelayMeta `json:"meta"`    // metadata for the relay request
@@ -133,7 +134,12 @@ func (r Relay) RequestHash() []byte {
 	if err != nil {
 		log.Fatal(fmt.Errorf("cannot marshal relay request hash: %s", err.Error()))
 	}
-	return Hash(res)
+	return res
+}
+
+// "Requesthash" - The cryptographic hash representation of the request
+func (r Relay) RequestHash() []byte {
+	return Hash(r.Bytes())
 }
 
 // "RequestHashString" - The hex string representation of the request hash
