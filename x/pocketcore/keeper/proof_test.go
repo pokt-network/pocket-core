@@ -14,12 +14,12 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
 	types.ClearEvidence()
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	evidence, found := types.GetEvidence(header, types.RelayEvidence)
+	evidence, found := types.GetEvidence(header, types.RelayEvidence, 1000)
 	if !found {
 		t.Fatalf("Set evidence not found")
 	}
 	root := evidence.GenerateMerkleRoot()
-	_, totalRelays := types.GetTotalProofs(header, types.RelayEvidence)
+	_, totalRelays := types.GetTotalProofs(header, types.RelayEvidence, 1000)
 	assert.Equal(t, totalRelays, int64(5))
 	// generate a claim message
 	claimMsg := types.MsgClaim{

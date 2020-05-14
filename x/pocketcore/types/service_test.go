@@ -126,8 +126,9 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 		t.Run(tt.name, func(t *testing.T) {
 
 			k := MockPosKeeper{Validators: tt.allNodes}
-			assert.Equal(t, tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, tt.node,
-				tt.hb, 1, 5, tt.app) != nil, tt.hasError)
+			_, err := tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, tt.node,
+				tt.hb, 1, 5, tt.app)
+			assert.Equal(t, err != nil, tt.hasError)
 		})
 		ClearSessionCache()
 	}

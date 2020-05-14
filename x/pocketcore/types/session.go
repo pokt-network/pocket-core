@@ -8,6 +8,7 @@ import (
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	sdk "github.com/pokt-network/posmint/types"
 	"log"
+	"math"
 )
 
 // "Session" - The relationship between an application and the pocket network
@@ -269,4 +270,8 @@ func (sh SessionHeader) Bytes() []byte {
 // "BlockHash" - Returns the hash from the ctx block header
 func BlockHash(ctx sdk.Context) string {
 	return hex.EncodeToString(ctx.BlockHeader().LastBlockId.Hash)
+}
+
+func MaxPossibleRelays(app appexported.ApplicationI, sessionNodeCount int64) int64 {
+	return int64(math.Ceil(float64(app.GetMaxRelays().Int64())/float64(len(app.GetChains()))) / (float64(sessionNodeCount)))
 }

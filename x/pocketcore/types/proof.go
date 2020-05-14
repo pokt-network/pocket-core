@@ -19,7 +19,6 @@ type Proof interface {
 	SessionHeader() SessionHeader                                                                        // returns the session header
 	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error // validate the object
 	Store(max int64)                                                                                     // handle the proof after validation
-	EvidenceType() EvidenceType                                                                          // return the type of evidence from the proof object
 }
 
 var _ Proof = RelayProof{} // ensure implements interface at compile time
@@ -118,11 +117,6 @@ func (rp RelayProof) SessionHeader() SessionHeader {
 	}
 }
 
-// "EvidenceType" - Returns the type of the evidence
-func (rp RelayProof) EvidenceType() EvidenceType {
-	return RelayEvidence
-}
-
 // "relayProof" - A structure used to json marshal the RelayProof
 type relayProof struct {
 	Entropy            int64  `json:"entropy"`
@@ -218,9 +212,14 @@ var _ Proof = ChallengeProofInvalidData{} // compile time interface implementati
 // "ValidateLocal" - Validate local is used to validate a challenge request directly from a client
 func (c ChallengeProofInvalidData) ValidateLocal(h SessionHeader, maxRelays int64, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
 	sessionblockHeight := h.SessionBlockHeight
+	// calculate the maximum possible challenges
+	maxPossibleChallenges := int64(math.Ceil(float64(maxRelays)/float64(len(supportedBlockchains))) / (float64(sessionNodeCount)))
 	// check for overflow on # of proofs
-	evidence, _ := GetEvidence(h, ChallengeEvidence)
-	if evidence.NumOfProofs >= int64(math.Ceil(float64(maxRelays)/float64(len(supportedBlockchains)))/(float64(sessionNodeCount))) {
+	evidence, er := GetEvidence(h, ChallengeEvidence, maxPossibleChallenges)
+	if er != nil {
+		return sdk.ErrInternal(er.Error())
+	}
+	if evidence.NumOfProofs >= maxPossibleChallenges {
 		return NewOverServiceError(ModuleName)
 	}
 	err := c.Validate(supportedBlockchains, sessionNodeCount, sessionblockHeight)
@@ -428,9 +427,4 @@ func (c ChallengeProofInvalidData) GetSigner() sdk.Address {
 func (c ChallengeProofInvalidData) Store(maxChallenges int64) {
 	// add the Proof to the global (in memory) collection of proofs
 	SetProof(c.SessionHeader(), ChallengeEvidence, c, maxChallenges)
-}
-
-// "EvidenceType" - Returns the type of the evidence
-func (c ChallengeProofInvalidData) EvidenceType() EvidenceType {
-	return ChallengeEvidence
 }

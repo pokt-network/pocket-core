@@ -29,13 +29,15 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	if er != nil {
 		return nil, sdk.ErrInternal(er.Error())
 	}
+	sessionNodeCount := k.SessionNodeCount(sessionCtx)
 	// ensure the validity of the relay
-	if err := relay.Validate(ctx, k.posKeeper, selfNode, hostedBlockchains, sessionBlockHeight, int(k.SessionNodeCount(sessionCtx)), app); err != nil {
+	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, selfNode, hostedBlockchains, sessionBlockHeight, int(sessionNodeCount), app)
+	if err != nil {
 		ctx.Logger().Error(fmt.Errorf("could not validate relay for %v, %v, %v %v, %v", selfNode, hostedBlockchains, sessionBlockHeight, int(k.SessionNodeCount(sessionCtx)), app).Error())
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
-	relay.Proof.Store(app.GetMaxRelays().Int64())
+	relay.Proof.Store(maxPossibleRelays)
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains)
 	if err != nil {

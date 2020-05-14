@@ -70,7 +70,7 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 		SessionHeader:   claim.SessionHeader,
 		Total:           claim.TotalProofs,
 		ServicerAddress: addr.String(),
-		EvidenceType:    proof.Leaf.EvidenceType(),
+		EvidenceType:    claim.EvidenceType,
 	})
 	if er != nil {
 		return sdk.ErrInternal(er.Error()).Result()

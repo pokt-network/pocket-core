@@ -33,7 +33,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			continue
 		}
 		// get the type of the first piece of evidence to know if we are dealing with challenge or relays
-		evidenceType := evidence.Proofs[0].EvidenceType()
+		evidenceType := evidence.EvidenceType
 		// if the evidence length is less than 5, it would not satisfy our merkle tree needs
 		if evidenceLength < 5 {
 			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
@@ -61,6 +61,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		}
 		// if the claim is mature, delete it because we cannot submit a mature claim
 		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
+			fmt.Println("claim is mature @ ", ctx.BlockHeight(), evidence)
 			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}

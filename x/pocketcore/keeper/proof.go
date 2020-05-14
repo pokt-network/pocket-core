@@ -15,7 +15,7 @@ import (
 )
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	kp, err := k.GetPKFromFile(ctx)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
@@ -40,8 +40,8 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			continue
 		}
 		// check to see if evidence is stored in cache
-		evidence, found := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType)
-		if !found || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
+		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, 0)
+		if err != nil || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
 			continue
 		}
@@ -69,7 +69,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			return
 		}
 		// send the proof TX
-		_, err = proofTx(cliCtx, txBuilder, branch, leaf, cousin)
+		_, err = proofTx(cliCtx, txBuilder, branch, leaf, cousin, evidence.EvidenceType)
 		if err != nil {
 			ctx.Logger().Error(err.Error())
 		}
@@ -80,7 +80,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	// get the public key from the claim
 	addr := proof.GetSigner()
 	// get the claim for the address
-	claim, found := k.GetClaim(ctx, addr, proof.Leaf.SessionHeader(), proof.Leaf.EvidenceType())
+	claim, found := k.GetClaim(ctx, addr, proof.Leaf.SessionHeader(), proof.EvidenceType)
 	// if the claim is not found for this claim
 	if !found {
 		return nil, pc.MsgClaim{}, pc.NewClaimNotFoundError(pc.ModuleName)

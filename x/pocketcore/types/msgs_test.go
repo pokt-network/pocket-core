@@ -255,6 +255,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 			},
 			Signature: "",
 		},
+		EvidenceType: RelayEvidence,
 	}
 	vprLeaf := validProofMessage.Leaf.(RelayProof)
 	vprCousin := validProofMessage.Cousin.(RelayProof)
