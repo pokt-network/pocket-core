@@ -133,7 +133,7 @@ func (r Relay) RequestHash() []byte {
 	if err != nil {
 		log.Fatal(fmt.Errorf("cannot marshal relay request hash: %s", err.Error()))
 	}
-	return res
+	return Hash(res)
 }
 
 // "RequestHashString" - The hex string representation of the request hash
