@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math"
 	"net/http"
 	"strings"
 
@@ -33,46 +32,47 @@ type Relay struct {
 
 // "Validate" - Checks the validity of a relay request using store data
 func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.ValidatorI, hb *HostedBlockchains, sessionBlockHeight int64,
-	sessionNodeCount int, app appexported.ApplicationI) sdk.Error {
+	sessionNodeCount int, app appexported.ApplicationI) (maxPossibleRelays int64, err sdk.Error) {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
-		return NewEmptyPayloadDataError(ModuleName)
+		return 0, NewEmptyPayloadDataError(ModuleName)
 	}
 	// validate the metadata
 	if err := r.Meta.Validate(ctx); err != nil {
-		return err
+		return 0, err
 	}
 	// validate the relay hash = request hash
 	if r.Proof.RequestHash != r.RequestHashString() {
-		return NewRequestHashError(ModuleName)
+		return 0, NewRequestHashError(ModuleName)
 	}
 	// ensure the blockchain is supported locally
 	if !hb.Contains(r.Proof.Blockchain) {
-		return NewUnsupportedBlockchainNodeError(ModuleName)
+		return 0, NewUnsupportedBlockchainNodeError(ModuleName)
 	}
 	evidenceHeader := SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
 		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
+	maxPossibleRelays = MaxPossibleRelays(app, int64(sessionNodeCount))
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence)
+	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence, maxPossibleRelays)
 	// get evidence key by proof
 	if !IsUniqueProof(r.Proof, evidence) {
-		return NewDuplicateProofError(ModuleName)
+		return 0, NewDuplicateProofError(ModuleName)
+	}
+	// validate not over service
+	if totalRelays >= maxPossibleRelays {
+		return 0, NewOverServiceError(ModuleName)
 	}
 	// validate the Proof
 	if err := r.Proof.ValidateLocal(app.GetChains(), sessionNodeCount, sessionBlockHeight, node.GetPublicKey().RawString()); err != nil {
-		return err
-	}
-	// validate not over service
-	if totalRelays >= int64(math.Ceil(float64(app.GetMaxRelays().Int64())/float64(len(app.GetChains())))/(float64(sessionNodeCount))) {
-		return NewOverServiceError(ModuleName)
+		return 0, err
 	}
 	// get the sessionContext
 	sessionContext, er := ctx.PrevCtx(sessionBlockHeight)
 	if er != nil {
-		return sdk.ErrInternal(er.Error())
+		return 0, sdk.ErrInternal(er.Error())
 	}
 	// generate the header
 	header := SessionHeader{
@@ -87,21 +87,21 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		var err sdk.Error
 		session, err = NewSession(sessionContext, ctx, keeper, header, BlockHash(sessionContext), sessionNodeCount)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		// add to cache
 		SetSession(session)
 	}
 	// validate the session
-	err := session.Validate(node, app, sessionNodeCount)
+	err = session.Validate(node, app, sessionNodeCount)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	// if the payload method is empty, set it to the default
 	if r.Payload.Method == "" {
 		r.Payload.Method = DEFAULTHTTPMETHOD
 	}
-	return nil
+	return maxPossibleRelays, nil
 }
 
 // "Execute" - Attempts to do a request on the non-native blockchain specified

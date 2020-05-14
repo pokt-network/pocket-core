@@ -177,7 +177,7 @@ func SessionIterator() SessionIt {
 }
 
 // "GetEvidence" - Retrieves the evidence object from the storage
-func GetEvidence(header SessionHeader, evidenceType EvidenceType) (evidence Evidence, found bool) {
+func GetEvidence(header SessionHeader, evidenceType EvidenceType, max int64) (evidence Evidence, err error) {
 	// generate the key for the evidence
 	key, err := KeyForEvidence(header, evidenceType)
 	if err != nil {
@@ -185,22 +185,30 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType) (evidence Evid
 	}
 	// get the bytes from the storage
 	bz, found := globalEvidenceCache.Get(key)
+	if !found && max == 0 {
+		return Evidence{}, fmt.Errorf("evidence not found")
+	}
 	if !found {
-		return
+		return Evidence{
+			Bloom:         bloom.NewWithEstimates(uint(max), .01),
+			SessionHeader: header,
+			NumOfProofs:   0,
+			Proofs:        make([]Proof, 0),
+			EvidenceType:  evidenceType,
+		}, nil
 	}
 	// unmarshal into evidence obj
 	err = ModuleCdc.UnmarshalJSON(bz, &evidence)
 	if err != nil {
-		fmt.Println(fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error()))
-		return Evidence{}, false
+		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
 	}
 	return
 }
 
 // "SetEvidence" - Sets an evidence object in the storage
-func SetEvidence(evidence Evidence, evidenceType EvidenceType) {
+func SetEvidence(evidence Evidence) {
 	// generate the key for the evidence
-	key, err := KeyForEvidence(evidence.SessionHeader, evidenceType)
+	key, err := KeyForEvidence(evidence.SessionHeader, evidence.EvidenceType)
 	if err != nil {
 		return
 	}
@@ -258,8 +266,8 @@ func EvidenceIterator() EvidenceIt {
 // "GetProof" - Returns the Proof object from a specific piece of evidence at a certain index
 func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proof {
 	// retrieve the evidence
-	evidence, found := GetEvidence(header, evidenceType)
-	if !found {
+	evidence, err := GetEvidence(header, evidenceType, 0)
+	if err != nil {
 		return nil
 	}
 	// check for out of bounds
@@ -273,20 +281,15 @@ func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proo
 // "SetProof" - Sets a proof object in the evidence, using the header and evidence type
 func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max int64) {
 	// retireve the evidence
-	evidence, found := GetEvidence(header, evidenceType)
+	evidence, err := GetEvidence(header, evidenceType, max)
 	// if not found generate the evidence object
-	if !found {
-		evidence = Evidence{
-			Bloom:         bloom.NewWithEstimates(uint(max), .01),
-			SessionHeader: header,
-			NumOfProofs:   0,
-			Proofs:        make([]Proof, 0),
-		}
+	if err != nil {
+		log.Fatalf("could not set proof object: %s", err.Error())
 	}
 	// add proof
 	evidence.AddProof(p)
 	// set evidence back
-	SetEvidence(evidence, evidenceType)
+	SetEvidence(evidence)
 }
 
 func IsUniqueProof(p Proof, evidence Evidence) bool {
@@ -294,11 +297,11 @@ func IsUniqueProof(p Proof, evidence Evidence) bool {
 }
 
 // "GetTotalProofs" - Returns the total number of proofs for a piece of evidence
-func GetTotalProofs(h SessionHeader, et EvidenceType) (Evidence, int64) {
+func GetTotalProofs(h SessionHeader, et EvidenceType, maxPossibleRelays int64) (Evidence, int64) {
 	// retrieve the evidence
-	evidence, found := GetEvidence(h, et)
-	if !found {
-		return evidence, 0
+	evidence, err := GetEvidence(h, et, maxPossibleRelays)
+	if err != nil {
+		log.Fatalf("could not get total proofs for evidence: %s", err.Error())
 	}
 	// return number of proofs
 	return evidence, evidence.NumOfProofs

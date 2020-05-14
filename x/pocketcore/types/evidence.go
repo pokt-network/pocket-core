@@ -11,6 +11,7 @@ type Evidence struct {
 	SessionHeader `json:"evidence_header"` // the session h serves as an identifier for the evidence
 	NumOfProofs   int64                    `json:"num_of_proofs"` // the total number of proofs in the evidence
 	Proofs        []Proof                  `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
+	EvidenceType  EvidenceType             `json:"evidence_type"`
 }
 
 // "GenerateMerkleRoot" - Generates the merkle root for an evidence object
@@ -20,7 +21,7 @@ func (e *Evidence) GenerateMerkleRoot() (root HashSum) {
 	// sort the proofs
 	e.Proofs = sortedProofs
 	// set the evidence in cache
-	SetEvidence(*e, e.Proofs[0].EvidenceType())
+	SetEvidence(*e)
 	return
 }
 
@@ -37,7 +38,7 @@ func (e *Evidence) GenerateMerkleProof(index int) (proofs MerkleProofs, cousinIn
 	// generate the merkle proof
 	proofs, cousinIndex = GenerateProofs(e.Proofs, index)
 	// set the evidence in memory
-	SetEvidence(*e, e.Proofs[0].EvidenceType())
+	SetEvidence(*e)
 	return
 }
 

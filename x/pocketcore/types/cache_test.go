@@ -124,7 +124,7 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 	SetProof(header, RelayEvidence, proof, 100000)
 	SetProof(header, RelayEvidence, proof2, 100000)
 	SetProof(header2, RelayEvidence, proof2, 100000) // different header so shouldn't be counted
-	_, totalRelays := GetTotalProofs(header, RelayEvidence)
+	_, totalRelays := GetTotalProofs(header, RelayEvidence, 100000)
 	assert.Equal(t, totalRelays, int64(2))
 }
 

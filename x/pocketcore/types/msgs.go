@@ -100,6 +100,7 @@ type MsgProof struct {
 	MerkleProofs MerkleProofs `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
 	Leaf         Proof        `json:"leaf"`          // the needed to verify the Proof
 	Cousin       Proof        `json:"cousin"`        // the cousin needed to verify the Proof
+	EvidenceType EvidenceType `json:"evidence_type"` // the type of evidence
 }
 
 // "GetFee" - Returns the fee (sdk.Int) of the messgae type
@@ -138,6 +139,9 @@ func (msg MsgProof) ValidateBasic() sdk.Error {
 	// validate the cousin
 	if err := msg.Cousin.ValidateBasic(); err != nil {
 		return err
+	}
+	if _, err := msg.EvidenceType.Byte(); err != nil {
+		return NewInvalidEvidenceErr(ModuleName)
 	}
 	return nil
 }
