@@ -289,22 +289,17 @@ func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max int6
 	SetEvidence(evidence, evidenceType)
 }
 
-func IsUniqueProof(p Proof) bool {
-	evidence, found := GetEvidence(p.SessionHeader(), p.EvidenceType())
-	// if not found generate the evidence object
-	if !found {
-		return true
-	}
+func IsUniqueProof(p Proof, evidence Evidence) bool {
 	return !evidence.Bloom.Test(p.Hash())
 }
 
 // "GetTotalProofs" - Returns the total number of proofs for a piece of evidence
-func GetTotalProofs(h SessionHeader, et EvidenceType) int64 {
+func GetTotalProofs(h SessionHeader, et EvidenceType) (Evidence, int64) {
 	// retrieve the evidence
 	evidence, found := GetEvidence(h, et)
 	if !found {
-		return 0
+		return evidence, 0
 	}
 	// return number of proofs
-	return evidence.NumOfProofs
+	return evidence, evidence.NumOfProofs
 }

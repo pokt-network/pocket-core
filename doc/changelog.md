@@ -25,6 +25,7 @@
 - log mint errors
 - Catch error writing json for RPC endpoints
 - log mint errors
+- Fixed denomination issue in CLI POKT to uPOKT
 - Changed SendClaimTx to use sessionContext for supportedBlockchains
 - Refactor ABCI BeginBlock for app module, avoid looping twice on mature applications
 - Swapped ExecuteProof and SetReceipt order on handleProofMsg func
