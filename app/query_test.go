@@ -497,20 +497,6 @@ func TestQueryRelay(t *testing.T) {
 		BodyString(expectedResponse)
 
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-<<<<<<< HEAD
-	<-evtChan // Wait for tx
-	inv, found := types.GetEvidence(types.SessionHeader{
-		ApplicationPubKey:  aat.ApplicationPublicKey,
-		Chain:              relay.Proof.Blockchain,
-		SessionBlockHeight: relay.Proof.SessionBlockHeight,
-	}, types.RelayEvidence)
-	assert.True(t, found)
-	assert.NotNil(t, inv)
-	assert.Equal(t, inv.NumOfProofs, int64(1))
-	cleanup()
-	stopCli()
-	gock.Off()
-=======
 	select {
 	case <-evtChan:
 		res, err := PCA.QueryRelay(relay)
@@ -538,7 +524,6 @@ func TestQueryRelay(t *testing.T) {
 			return
 		}
 	}
->>>>>>> #873
 }
 
 func TestQueryDispatch(t *testing.T) {
