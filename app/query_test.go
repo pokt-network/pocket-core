@@ -496,7 +496,7 @@ func TestQueryRelay(t *testing.T) {
 		Reply(200).
 		BodyString(expectedResponse)
 
-	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
 		res, err := PCA.QueryRelay(relay)
@@ -507,7 +507,7 @@ func TestQueryRelay(t *testing.T) {
 			BodyString(expectedRequest).
 			Reply(200).
 			BodyString(expectedResponse)
-		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+		_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 		select {
 		case <-evtChan:
 			inv, err := types.GetEvidence(types.SessionHeader{
