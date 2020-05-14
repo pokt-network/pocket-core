@@ -100,7 +100,7 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 		pc.SetSession(session)
 	}
 	// validate the challenge
-	err = challenge.ValidateLocal(app.GetMaxRelays().Int64(), sessionBlkHeight, app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode.GetAddress())
+	err = challenge.ValidateLocal(header, app.GetMaxRelays().Int64(), app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode.GetAddress())
 	if err != nil {
 		return nil, err
 	}

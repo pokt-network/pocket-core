@@ -216,17 +216,8 @@ type ChallengeProofInvalidData struct {
 var _ Proof = ChallengeProofInvalidData{} // compile time interface implementation
 
 // "ValidateLocal" - Validate local is used to validate a challenge request directly from a client
-func (c ChallengeProofInvalidData) ValidateLocal(maxRelays, sessionblockHeight int64, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
-	// get the header to retrieve the evidence object
-	h := SessionHeader{
-		ApplicationPubKey:  c.MinorityResponse.Proof.Token.ApplicationPublicKey,
-		Chain:              c.MinorityResponse.Proof.Blockchain,
-		SessionBlockHeight: c.MinorityResponse.Proof.SessionBlockHeight,
-	}
-	// check if verifyPubKey in session (must be in session to do challenges)
-	if !sessionNodes.ContainsAddress(selfAddr) {
-		return NewNodeNotInSessionError(ModuleName)
-	}
+func (c ChallengeProofInvalidData) ValidateLocal(h SessionHeader, maxRelays int64, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
+	sessionblockHeight := h.SessionBlockHeight
 	// check for overflow on # of proofs
 	evidence, _ := GetEvidence(h, ChallengeEvidence)
 	if evidence.NumOfProofs >= int64(math.Ceil(float64(maxRelays)/float64(len(supportedBlockchains)))/(float64(sessionNodeCount))) {
