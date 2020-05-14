@@ -140,7 +140,11 @@ func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) 
 		}
 	case pc.ChallengeProofInvalidData:
 		ctx.Logger().Info(fmt.Sprintf("burning coins from %s, for %d valid challenges", claim.FromAddress.String(), claim.TotalProofs))
-		pk := proof.Leaf.(pc.ChallengeProofInvalidData).MinorityResponse.Proof.ServicerPubKey
+		proof, ok := proof.Leaf.(pc.ChallengeProofInvalidData)
+		if !ok {
+			return pc.NewInvalidProofsError(pc.ModuleName)
+		}
+		pk := proof.MinorityResponse.Proof.ServicerPubKey
 		pubKey, err := crypto.NewPublicKey(pk)
 		if err != nil {
 			return sdk.ErrInvalidPubKey(err.Error())
