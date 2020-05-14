@@ -26,6 +26,7 @@
 - Catch error writing json for RPC endpoints
 - log mint errors
 - Fixed denomination issue in CLI POKT to uPOKT
+- Updated PopModel so no empty body `{}` is needed in RPC
 - Changed SendClaimTx to use sessionContext for supportedBlockchains
 - Refactor ABCI BeginBlock for app module, avoid looping twice on mature applications
 - Swapped ExecuteProof and SetReceipt order on handleProofMsg func
