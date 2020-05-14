@@ -139,6 +139,9 @@ func PopModel(_ http.ResponseWriter, r *http.Request, _ httprouter.Params, model
 	if err != nil {
 		return err
 	}
+	if len(body) == 0 {
+		return nil
+	}
 	if err := r.Body.Close(); err != nil {
 		return err
 	}
