@@ -499,18 +499,30 @@ func TestQueryRelay(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		inv, err := types.GetEvidence(types.SessionHeader{
-			ApplicationPubKey:  aat.ApplicationPublicKey,
-			Chain:              relay.Proof.Blockchain,
-			SessionBlockHeight: relay.Proof.SessionBlockHeight,
-		}, types.RelayEvidence, 10000)
-		assert.Nil(t, err)
-		assert.NotNil(t, inv)
-		assert.Equal(t, inv.NumOfProofs, int64(1))
-		cleanup()
-		stopCli()
-		gock.Off()
-		return
+		res, err := PCA.QueryRelay(relay)
+		assert.Nil(t, err, err)
+		assert.Equal(t, expectedResponse, res.Response)
+		gock.New(PlaceholderURL).
+			Post("").
+			BodyString(expectedRequest).
+			Reply(200).
+			BodyString(expectedResponse)
+		_, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+		select {
+		case <-evtChan:
+			inv, err := types.GetEvidence(types.SessionHeader{
+				ApplicationPubKey:  aat.ApplicationPublicKey,
+				Chain:              relay.Proof.Blockchain,
+				SessionBlockHeight: relay.Proof.SessionBlockHeight,
+			}, types.RelayEvidence, 10000)
+			assert.Nil(t, err)
+			assert.NotNil(t, inv)
+			assert.Equal(t, inv.NumOfProofs, int64(2))
+			cleanup()
+			stopCli()
+			gock.Off()
+			return
+		}
 	}
 }
 

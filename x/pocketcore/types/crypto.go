@@ -15,7 +15,7 @@ import (
 var (
 	Hasher                  = sha.SHA3_256
 	HashLength              = sha.SHA3_256.Size()
-	NetworkIdentifierLength = 2
+	NetworkIdentifierLength = 4
 	AddrLength              = tmhash.TruncatedSize
 	globalPVKeyFile         = privval.FilePVKey{}
 )
