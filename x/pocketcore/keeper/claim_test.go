@@ -12,8 +12,8 @@ import (
 func TestKeeper_GetSetClaim(t *testing.T) {
 	ctx, _, _, _, keeper, _ := createTestInput(t, false)
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	evidence, found := types.GetEvidence(header, types.RelayEvidence)
-	assert.True(t, found)
+	evidence, err := types.GetEvidence(header, types.RelayEvidence, 10000)
+	assert.Nil(t, err)
 	claim := types.MsgClaim{
 		SessionHeader: header,
 		MerkleRoot:    evidence.GenerateMerkleRoot(),
@@ -25,7 +25,7 @@ func TestKeeper_GetSetClaim(t *testing.T) {
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("BlockHeight").Return(int64(1))
 	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
-	err := keeper.SetClaim(mockCtx, claim)
+	err = keeper.SetClaim(mockCtx, claim)
 	assert.Nil(t, err)
 	c, found := keeper.GetClaim(mockCtx, sdk.Address(npk.Address()), header, types.RelayEvidence)
 	assert.True(t, found)
@@ -39,8 +39,8 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 
 	for i := 0; i < 2; i++ {
 		npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-		evidence, found := types.GetEvidence(header, types.RelayEvidence)
-		assert.True(t, found)
+		evidence, err := types.GetEvidence(header, types.RelayEvidence, 1000)
+		assert.Nil(t, err)
 		claim := types.MsgClaim{
 			SessionHeader: header,
 			MerkleRoot:    evidence.GenerateMerkleRoot(),
@@ -69,10 +69,10 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 	npk2, header2, _, _ := simulateRelays(t, keeper, &ctx, 20)
 
-	i, found := types.GetEvidence(header, types.RelayEvidence)
-	assert.True(t, found)
-	i2, found := types.GetEvidence(header2, types.RelayEvidence)
-	assert.True(t, found)
+	i, err := types.GetEvidence(header, types.RelayEvidence, 1000)
+	assert.Nil(t, err)
+	i2, err := types.GetEvidence(header2, types.RelayEvidence, 1000)
+	assert.Nil(t, err)
 
 	matureClaim := types.MsgClaim{
 		SessionHeader: header,
@@ -116,10 +116,10 @@ func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 	npk2, header2, _, _ := simulateRelays(t, keeper, &ctx, 20)
 
-	i, found := types.GetEvidence(header, types.RelayEvidence)
-	assert.True(t, found)
-	i2, found := types.GetEvidence(header2, types.RelayEvidence)
-	assert.True(t, found)
+	i, err := types.GetEvidence(header, types.RelayEvidence, 1000)
+	assert.Nil(t, err)
+	i2, err := types.GetEvidence(header2, types.RelayEvidence, 1000)
+	assert.Nil(t, err)
 	expiredClaim := types.MsgClaim{
 		SessionHeader: header,
 		MerkleRoot:    i.GenerateMerkleRoot(),

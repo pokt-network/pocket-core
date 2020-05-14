@@ -70,6 +70,7 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		}
 		pocketTypes.ClearEvidence()
 		pocketTypes.ClearSessionCache()
+		PCA=nil
 		inMemKB = nil
 	}
 	return
