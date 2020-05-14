@@ -136,8 +136,13 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 
 // "Validate" - Validates the session node object
 func (sn SessionNodes) Validate(sessionNodesCount int) sdk.Error {
-	if len(sn) < sessionNodesCount || sn[0] == nil {
+	if len(sn) < sessionNodesCount {
 		return NewInsufficientNodesError(ModuleName)
+	}
+	for _, n := range sn {
+		if n == nil {
+			return NewEmptyAddressError(ModuleName)
+		}
 	}
 	return nil
 }
