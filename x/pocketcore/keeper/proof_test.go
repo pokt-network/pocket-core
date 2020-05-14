@@ -19,7 +19,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 		t.Fatalf("Set evidence not found")
 	}
 	root := evidence.GenerateMerkleRoot()
-	totalRelays := types.GetTotalProofs(header, types.RelayEvidence)
+	_, totalRelays := types.GetTotalProofs(header, types.RelayEvidence)
 	assert.Equal(t, totalRelays, int64(5))
 	// generate a claim message
 	claimMsg := types.MsgClaim{

@@ -56,9 +56,9 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
 	// validate unique relay
-	totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence)
+	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence)
 	// get evidence key by proof
-	if !IsUniqueProof(r.Proof) {
+	if !IsUniqueProof(r.Proof, evidence) {
 		return NewDuplicateProofError(ModuleName)
 	}
 	// validate the Proof

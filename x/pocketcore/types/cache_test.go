@@ -124,7 +124,8 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 	SetProof(header, RelayEvidence, proof, 100000)
 	SetProof(header, RelayEvidence, proof2, 100000)
 	SetProof(header2, RelayEvidence, proof2, 100000) // different header so shouldn't be counted
-	assert.Equal(t, GetTotalProofs(header, RelayEvidence), int64(2))
+	_, totalRelays := GetTotalProofs(header, RelayEvidence)
+	assert.Equal(t, totalRelays, int64(2))
 }
 
 func TestSetGetSession(t *testing.T) {
