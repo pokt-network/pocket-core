@@ -14,8 +14,8 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	ctx, _, _, _, keeper, keys := createTestInput(t, false)
 	types.ClearEvidence()
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	evidence, found := types.GetEvidence(header, types.RelayEvidence, 1000)
-	if !found {
+	evidence, err := types.GetEvidence(header, types.RelayEvidence, 1000)
+	if err != nil {
 		t.Fatalf("Set evidence not found")
 	}
 	root := evidence.GenerateMerkleRoot()
