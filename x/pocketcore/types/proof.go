@@ -211,6 +211,10 @@ var _ Proof = ChallengeProofInvalidData{} // compile time interface implementati
 
 // "ValidateLocal" - Validate local is used to validate a challenge request directly from a client
 func (c ChallengeProofInvalidData) ValidateLocal(h SessionHeader, maxRelays int64, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
+	// check if verifyPubKey in session (must be in session to do challenges)
+	if !sessionNodes.ContainsAddress(selfAddr) {
+		return NewNodeNotInSessionError(ModuleName)
+	}
 	sessionblockHeight := h.SessionBlockHeight
 	// calculate the maximum possible challenges
 	maxPossibleChallenges := int64(math.Ceil(float64(maxRelays)/float64(len(supportedBlockchains))) / (float64(sessionNodeCount)))

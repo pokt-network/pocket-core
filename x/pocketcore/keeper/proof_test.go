@@ -51,8 +51,9 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 		MerkleProofs: merkleProofs,
 		Leaf:         leafNode.(types.RelayProof),
 		Cousin:       cousinNode.(types.RelayProof),
+		EvidenceType: types.RelayEvidence,
 	}
-	err := keeper.SetClaim(mockCtx, claimMsg)
+	err = keeper.SetClaim(mockCtx, claimMsg)
 	if err != nil {
 		t.Fatal(err)
 	}
