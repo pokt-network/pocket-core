@@ -8,6 +8,10 @@ import (
 
 // GetValidator - Retrieve validator with address from the main store
 func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
+	validator, found = k.getValidatorFromCache(addr)
+	if found {
+		return validator, found
+	}
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValByAllVals(addr))
 	if value == nil {
@@ -22,6 +26,7 @@ func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidator(k.cdc, validator)
 	store.Set(types.KeyForValByAllVals(validator.Address), bz)
+	k.setOrUpdateInValidatorCache(validator)
 }
 
 // GetAllValidators - Retrieve set of all validators with no limits from the main store
