@@ -448,6 +448,7 @@ func NewHostedChains() *types.HostedBlockchains {
 	var jsonFile *os.File
 	var bz []byte
 	if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
+		log2.Println(fmt.Sprintf("no chains.json found @ %s, defaulting to empty chains", chainsPath))
 		return &types.HostedBlockchains{} // default to empty object
 	}
 	// reopen the file to read into the variable
