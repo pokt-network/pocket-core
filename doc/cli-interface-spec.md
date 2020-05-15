@@ -152,6 +152,7 @@ Exported account: 0x...
 > - `<fromAddr>`: The address of the sender.
 > - `<toAddr>`: The address of the receiver.
 > - `<amount>`: The amount of POKT to be sent.
+> - `<chainID>`: The pocket chain identifier
 > Example output:
 ```
 Transaction submitted with hash: <Transaction Hash>
@@ -168,6 +169,7 @@ Functions for Node management.
 > - `<amount>`: The amount of POKT to stake. Must be higher than the current minimum amount of Node Stake parameter.
 > - `<chains>`: A comma separated list of chain Network Identifiers.
 > - `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
+> - `<chainID>`: The pocket chain identifier
 > Example output:
 ```
 Transaction submitted with hash: <Transaction Hash>
@@ -178,6 +180,7 @@ Transaction submitted with hash: <Transaction Hash>
 >
 > Arguments:
 > - `<fromAddr>`: The address of the sender.
+> - `<chainID>`: The pocket chain identifier
 > Example output:
 ```
 Transaction submitted with hash: <Transaction Hash>
@@ -188,6 +191,7 @@ Transaction submitted with hash: <Transaction Hash>
 >
 > Arguments:
 > - `<fromAddr>`: The address of the sender.
+> - `<chainID>`: The pocket chain identifier
 > Example output:
 ```
 Transaction submitted with hash: <Transaction Hash>
@@ -203,6 +207,7 @@ Functions for Application management.
 > - `<fromAddr>`: The address of the sender.
 > - `<amount>`: The amount of POKT to stake. Must be higher than the current minimum amount of Application Stake parameter.
 > - `<chains>`: A comma separated list of chain Network Identifiers.
+> - `<chainID>`: The pocket chain identifier
 > Example output:
 ```
 Transaction submitted with hash: <Transaction Hash>
@@ -213,6 +218,7 @@ Transaction submitted with hash: <Transaction Hash>
 >
 > Arguments:
 > - `<fromAddr>`: The address of the sender.
+> - `<chainID>`: The pocket chain identifier
 > Example output:
 ```
 Transaction submitted with hash: <Transaction Hash>

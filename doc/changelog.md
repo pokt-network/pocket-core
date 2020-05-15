@@ -36,6 +36,8 @@
 - Added empty/nil check to claim struct on handleProofMsg
 - Added multiple optimization for efficiency and consistency between validations
 - Added basic auth to chains.json
+- Added pagination to receipts query in pocket core *RPC*
+- Removed .md and json RPC spec
 
 ## RC-0.3.0
 - Added governance module from posmint
