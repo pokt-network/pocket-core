@@ -85,7 +85,7 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	}
 	// generate header
 	header := pc.SessionHeader{
-		ApplicationPubKey:  app.GetPublicKey().RawString(),
+		ApplicationPubKey:  challenge.MinorityResponse.Proof.Token.ApplicationPublicKey,
 		Chain:              challenge.MinorityResponse.Proof.Blockchain,
 		SessionBlockHeight: sessionCtx.BlockHeight(),
 	}
