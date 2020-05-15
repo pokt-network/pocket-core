@@ -116,7 +116,7 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error)
 		url = url + "/" + strings.Trim(r.Payload.Path, `/`)
 	}
 	// do basic http request on the relay
-	res, er := executeHTTPRequest(r.Payload.Data, url, chain.BasicAuth, r.Payload.Method, r.Payload.Headers)
+	res, er := executeHTTPRequest(r.Payload.Data, url, globalUserAgent, chain.BasicAuth, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
 		return res, NewHTTPExecutionError(ModuleName, er)
 	}
@@ -276,7 +276,7 @@ type DispatchResponse struct {
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
-func executeHTTPRequest(payload string, url string, basicAuth BasicAuth, method string, headers map[string]string) (string, error) {
+func executeHTTPRequest(payload, url, userAgent string, basicAuth BasicAuth, method string, headers map[string]string) (string, error) {
 	// generate an http request
 	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
@@ -284,6 +284,9 @@ func executeHTTPRequest(payload string, url string, basicAuth BasicAuth, method 
 	}
 	if basicAuth.Username != "" {
 		req.SetBasicAuth(basicAuth.Username, basicAuth.Password)
+	}
+	if userAgent == "" {
+		req.Header.Set("User-Agent", userAgent)
 	}
 	// add headers if needed
 	if len(headers) == 0 {

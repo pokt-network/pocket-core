@@ -13,7 +13,7 @@ import (
 )
 
 func InitCacheTest() {
-	InitCache("data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
+	InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
 }
 
 func TestAllEvidence_AddGetEvidence(t *testing.T) {

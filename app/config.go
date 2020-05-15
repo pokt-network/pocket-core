@@ -73,6 +73,7 @@ const (
 	PlaceholderURL                  = "https://foo.bar:8080"
 	PlaceholderServiceURL           = PlaceholderURL
 	DefaultRemoteCLIURL             = "http://localhost"
+	DefaultUserAgent                = ""
 )
 
 var (
@@ -108,6 +109,7 @@ type PocketConfig struct {
 	MaxSessionCacheEntries   int               `json:"max_session_cache_entries"`
 	JSONSortRelayResponses   bool              `json:"json_sort_relay_responses"`
 	RemoteCLIURL             string            `json:"remote_cli_url"`
+	UserAgent                string            `json:"user_agent"`
 }
 
 func DefaultConfig(dataDir string) Config {
@@ -129,6 +131,7 @@ func DefaultConfig(dataDir string) Config {
 			MaxSessionCacheEntries:   DefaultMaxSessionCacheEntries,
 			JSONSortRelayResponses:   DefaultJSONSortRelayResponses,
 			RemoteCLIURL:             DefaultRemoteCLIURL,
+			UserAgent:                DefaultUserAgent,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
@@ -319,7 +322,7 @@ func InitKeyfiles() string {
 }
 
 func InitPocketCoreConfig() {
-	types.InitCache(GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName)
+	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName)
 	types.InitClientBlockAllowance(GlobalConfig.PocketConfig.ClientBlockSyncAllowance)
 	types.InitJSONSorting(GlobalConfig.PocketConfig.JSONSortRelayResponses)
 }
