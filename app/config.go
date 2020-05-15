@@ -262,7 +262,7 @@ func InitGenesis() {
 func InitTendermint() *node.Node {
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
 		if keyvals[0] != kitlevel.Key() {
-			fmt.Println(fmt.Sprintf("expected level key to be first, got %v", keyvals[0]))
+			fmt.Printf("expected level key to be first, got %v", keyvals[0])
 			log2.Fatal(1)
 		}
 		switch keyvals[1].(kitlevel.Value).String() {

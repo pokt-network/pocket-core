@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -32,12 +31,12 @@ func TestCoinsFromUnstakedToStaked(t *testing.T) {
 			name:      "error if negative ammount",
 			validator: types.Validator{Address: validatorAddress},
 			amount:    sdk.NewInt(-1),
-			expected:  fmt.Sprintf("negative coin amount: -1"),
+			expected:  "negative coin amount: -1",
 			errors:    true,
 		},
 		{name: "error if no supply is set",
 			validator: types.Validator{Address: validatorAddress},
-			expected:  fmt.Sprintf("insufficient account funds"),
+			expected:  "insufficient account funds",
 			amount:    sdk.NewInt(10),
 			errors:    false,
 		},
@@ -87,7 +86,7 @@ func TestCoinsFromStakedToUnstaked(t *testing.T) {
 			name:      "errors if negative ammount",
 			validator: types.Validator{Address: validatorAddress, StakedTokens: sdk.NewInt(-1)},
 			amount:    sdk.NewInt(-1),
-			expected:  fmt.Sprintf("negative coin amount: -1"),
+			expected:  "negative coin amount: -1",
 			panics:    true,
 		},
 	}
