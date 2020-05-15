@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"container/list"
 	"fmt"
 	"sort"
 
@@ -15,39 +16,64 @@ import (
 // simulation. Note this is quite biased though, as the simulator does more slashes than a
 // live chain should, however we require the slashing to be fast as noone pays gas for it.
 type cachedValidator struct {
-	val        types.Validator
-	marshalled string // marshalled amino bytes for the validator object (not operator address)
+	val     types.Validator
+	address sdk.Address
 }
 
-func newCachedValidator(val types.Validator, marshalled string) cachedValidator {
+func newCachedValidator(val types.Validator, address sdk.Address) cachedValidator {
 	return cachedValidator{
-		val:        val,
-		marshalled: marshalled,
+		val:     val,
+		address: address,
 	}
 }
 
 // validatorCaching - Retrieve a cached validator
 func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator {
-	// If these amino encoded bytes are in the cache, return the cached validator
-	strValue := string(value)
-	if val, ok := k.validatorCache[strValue]; ok {
-		valToReturn := val.val
-		// Doesn't mutate the cache's value
-		valToReturn.Address = addr
-		return valToReturn
-	}
-	// amino bytes weren't found in cache, so amino unmarshal and add it to the cache
 	validator := types.MustUnmarshalValidator(k.cdc, value)
-	cachedVal := newCachedValidator(validator, strValue)
-	k.validatorCache[strValue] = newCachedValidator(validator, strValue)
+	cachedVal := newCachedValidator(validator, addr)
+	k.validatorCache[validator.Address.String()] = cachedVal
 	k.validatorCacheList.PushBack(cachedVal)
 
 	// if the cache is too big, pop off the prevState element from it
 	if k.validatorCacheList.Len() > aminoCacheSize {
 		valToRemove := k.validatorCacheList.Remove(k.validatorCacheList.Front()).(cachedValidator)
-		delete(k.validatorCache, valToRemove.marshalled)
+		delete(k.validatorCache, valToRemove.address.String())
 	}
 	return validator
+}
+
+func (k Keeper) getValidatorFromCache(addr sdk.Address) (validator types.Validator, found bool) {
+	if val, ok := k.validatorCache[addr.String()]; ok {
+		valToReturn := val.val
+		// Doesn't mutate the cache's value
+		valToReturn.Address = addr
+		return valToReturn, true
+	} else {
+		return types.Validator{}, false
+	}
+}
+
+func (k Keeper) searchCacheList(validator types.Validator) (e *list.Element, found bool) {
+	for e := k.validatorCacheList.Back(); e != nil; e = e.Prev() {
+		v := e.Value.(cachedValidator)
+		if v.address.String() == validator.Address.String() {
+			return e, true
+		}
+	}
+	return nil, false
+}
+
+func (k Keeper) setOrUpdateInValidatorCache(validator types.Validator) {
+
+	e, found := k.searchCacheList(validator)
+	if found {
+		valToRemove := k.validatorCacheList.Remove(e).(cachedValidator)
+		delete(k.validatorCache, valToRemove.address.String())
+	}
+
+	cachedVal := newCachedValidator(validator, validator.Address)
+	k.validatorCache[validator.Address.String()] = cachedVal
+	k.validatorCacheList.PushBack(cachedVal)
 }
 
 // Validator - wrapper for GetValidator call
