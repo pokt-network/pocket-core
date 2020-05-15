@@ -54,6 +54,13 @@ type PaginatedHeightParams struct {
 	Prove   bool  `json:"prove,omitempty"`
 }
 
+type PaginatedHeightAndAddrParams struct {
+	Height  int64  `json:"height"`
+	Addr    string `json:"address"`
+	Page    int    `json:"page,omitempty"`
+	PerPage int    `json:"per_page,omitempty"`
+}
+
 func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {
@@ -253,7 +260,12 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func NodeReceipts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = HeightAndAddrParams{Height: 0}
+	var params = PaginatedHeightAndAddrParams{
+		Height:  0,
+		Addr:    "",
+		Page:    0,
+		PerPage: 0,
+	}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

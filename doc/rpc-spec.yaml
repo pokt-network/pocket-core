@@ -545,10 +545,12 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/QueryAddressHeight'
+              $ref: '#/components/schemas/QueryPaginatedHeightAndAddrParams'
             example:
               address: '0xA5DE6D4184016708c1040c355F1c958192276DB5'
               height: 2
+              page: 1
+              per_page: 1
         required: true
       responses:
         '200':
@@ -1526,6 +1528,20 @@ components:
       properties:
         transaction:
           $ref: '#/components/schemas/Transaction'
+    QueryPaginatedHeightAndAddrParams:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+        address:
+          type: string
+        page:
+          type: integer
+          format: int64
+        per_page:
+          type: integer
+          format: int64
     QueryAccountTXs:
       type: object
       properties:

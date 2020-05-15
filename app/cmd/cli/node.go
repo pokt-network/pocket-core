@@ -97,7 +97,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var nodeUnjailCmd = &cobra.Command{
-	Use:   "unjail <fromAddr>",
+	Use:   "unjail <fromAddr> <chainID>",
 	Short: "Unjails a node in the network",
 	Long: `Unjails a node from the network, allowing it to participate in service and consensus again.
 Will prompt the user for the <fromAddr> account passphrase.`,
