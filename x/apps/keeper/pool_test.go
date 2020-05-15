@@ -87,7 +87,7 @@ func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
 			name:        "errors if negative ammount",
 			application: types.Application{Address: applicationAddress, StakedTokens: sdk.NewInt(-1)},
 			amount:      sdk.NewInt(-1),
-			want:       "negative coin amount: -1",
+			want:        "negative coin amount: -1",
 			panics:      true,
 		},
 	}

@@ -273,19 +273,13 @@ func (c ChallengeProofInvalidData) Validate(appSupportedBlockchains []string, se
 		return NewNoMajorityResponseError(ModuleName)
 	}
 	// check for supported blockchain
-	c1, c2, c3 := false, false, false
+	supported := false
 	for _, chain := range appSupportedBlockchains {
 		if majResponse.Proof.Blockchain == chain {
-			c1 = true
-		}
-		if majResponse2.Proof.Blockchain == chain {
-			c2 = true
-		}
-		if c.MinorityResponse.Proof.Blockchain == chain {
-			c3 = true
+			supported = true
 		}
 	}
-	if !c1 || !c2 || !c3 {
+	if !supported {
 		return NewUnsupportedBlockchainAppError(ModuleName)
 	}
 	// check signatures
