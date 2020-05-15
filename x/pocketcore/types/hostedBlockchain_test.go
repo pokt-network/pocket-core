@@ -58,7 +58,7 @@ func TestHostedBlockchains_Validate(t *testing.T) {
 		URL: url,
 	}
 	HCInvalidHash := HostedBlockchain{
-		ID:  hex.EncodeToString([]byte("bad")),
+		ID:  hex.EncodeToString([]byte("badlksajfljasdfklj")),
 		URL: url,
 	}
 	tests := []struct {
