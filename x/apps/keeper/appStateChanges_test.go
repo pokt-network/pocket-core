@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -109,7 +108,7 @@ func TestAppStateChange_JailApplication(t *testing.T) {
 			name:        "already jailed app ",
 			application: jailedApp,
 			hasError:    true,
-			want:        fmt.Sprint("cannot jail already jailed application, application:"),
+			want:        "cannot jail already jailed application, application:",
 		},
 	}
 
@@ -151,7 +150,7 @@ func TestAppStateChange_UnjailApplication(t *testing.T) {
 			name:        "already jailed app ",
 			application: getStakedApplication(),
 			hasError:    true,
-			want:        fmt.Sprint("cannot unjail already unjailed application, application:"),
+			want:        "cannot unjail already unjailed application, application:",
 		},
 	}
 

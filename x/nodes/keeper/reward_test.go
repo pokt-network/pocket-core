@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"fmt"
 	"testing"
 
 	sdk "github.com/pokt-network/posmint/types"
@@ -53,14 +52,14 @@ func TestMint(t *testing.T) {
 		{
 			name:     "mints a coin",
 			amount:   sdk.NewInt(90),
-			expected: fmt.Sprintf("a reward of "),
+			expected: "a reward of ",
 			address:  validatorAddress,
 			panics:   false,
 		},
 		{
 			name:     "errors invalid ammount of coins",
 			amount:   sdk.NewInt(-1),
-			expected: fmt.Sprintf("negative coin amount: -1"),
+			expected: "negative coin amount: -1",
 			address:  validatorAddress,
 			panics:   true,
 		},

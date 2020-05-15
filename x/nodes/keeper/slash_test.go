@@ -135,7 +135,7 @@ func TestValidateDoubleSign(t *testing.T) {
 				validator:      stakedValidator,
 				pubKeyRelation: true,
 				tombstoned:     true,
-				message:        fmt.Sprintf("ERROR:\nCodespace: pos\nCode: 113\nMessage: \"Warning: validator is already tombstoned\"\n"),
+				message:        "ERROR:\nCodespace: pos\nCode: 113\nMessage: \"Warning: validator is already tombstoned\"\n",
 			},
 		},
 		{
@@ -146,7 +146,7 @@ func TestValidateDoubleSign(t *testing.T) {
 				validator:      stakedValidator,
 				pubKeyRelation: false,
 				tombstoned:     false,
-				message:        fmt.Sprintf("ERROR:\nCodespace: pos\nCode: 114\nMessage: \"Warning: the DS evidence is unable to be handled\"\n"),
+				message:        "ERROR:\nCodespace: pos\nCode: 114\nMessage: \"Warning: the DS evidence is unable to be handled\"\n",
 			},
 		},
 	}
@@ -219,7 +219,7 @@ func TestHandleDoubleSign(t *testing.T) {
 				pubKeyRelation: true,
 				tombstoned:     true,
 				found:          true,
-				message:        fmt.Sprintf("ERROR:\nCodespace: pos\nCode: 113\nMessage: \"Warning: validator is already tombstoned\"\n"),
+				message:        "ERROR:\nCodespace: pos\nCode: 113\nMessage: \"Warning: validator is already tombstoned\"\n",
 			},
 		},
 	}

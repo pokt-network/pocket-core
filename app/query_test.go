@@ -1,3 +1,4 @@
+// nolint
 package app
 
 import (
@@ -500,6 +501,7 @@ func TestQueryRelay(t *testing.T) {
 	select {
 	case <-evtChan:
 		res, err := PCA.QueryRelay(relay)
+		fmt.Println(relay)
 		assert.Nil(t, err, err)
 		assert.Equal(t, expectedResponse, res.Response)
 		gock.New(PlaceholderURL).
