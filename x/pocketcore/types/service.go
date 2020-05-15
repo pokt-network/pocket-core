@@ -295,10 +295,6 @@ func executeHTTPRequest(payload string, url string, method string, headers map[s
 	if err != nil {
 		return "", err
 	}
-	// ensure code is 200
-	if resp.StatusCode != 200 {
-		return "", NewHTTPStatusCodeError(ModuleName, resp.StatusCode)
-	}
 	// read all bz
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
