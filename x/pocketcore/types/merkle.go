@@ -285,7 +285,7 @@ func hash(data []byte) []byte {
 
 // "parentHash" - Compute the hash of the parent by hashing the hashes, sum and parent
 func parentHash(hash1, hash2 []byte, sum uint64) []byte {
-	return hash(append(append(append(hash1, hash2...), uint64ToBytes(sum)...)))
+	return hash(append(append(hash1, hash2...), uint64ToBytes(sum)...))
 }
 
 // "sumFromHash" - get leaf sum from hash
