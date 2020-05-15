@@ -14,14 +14,11 @@ type HostedBlockchain struct {
 // HostedBlockchains" - An object that represents the local hosted non-native blockchains
 type HostedBlockchains struct {
 	M map[string]HostedBlockchain // m[addr] -> addr, url
-	l sync.Mutex
 	o sync.Once
 }
 
 // "Contains" - Checks to see if the hosted chain is within the HostedBlockchains object
 func (c *HostedBlockchains) Contains(id string) bool {
-	c.l.Lock()
-	defer c.l.Unlock()
 	// quick map check
 	_, found := c.M[id]
 	return found
@@ -29,8 +26,6 @@ func (c *HostedBlockchains) Contains(id string) bool {
 
 // "GetChainURL" - Returns the url or error of the hosted blockchain using the hex network identifier
 func (c *HostedBlockchains) GetChainURL(id string) (url string, err sdk.Error) {
-	c.l.Lock()
-	defer c.l.Unlock()
 	// map check
 	res, found := c.M[id]
 	if !found {
@@ -41,8 +36,6 @@ func (c *HostedBlockchains) GetChainURL(id string) (url string, err sdk.Error) {
 
 // "Validate" - Validates the hosted blockchain object
 func (c *HostedBlockchains) Validate() error {
-	c.l.Lock()
-	defer c.l.Unlock()
 	// loop through all of the chains
 	for _, chain := range c.M {
 		// validate not empty

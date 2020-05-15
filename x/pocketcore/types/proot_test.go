@@ -22,7 +22,6 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 	ethereum := hex.EncodeToString([]byte{01})
 	hbs := HostedBlockchains{
 		M: map[string]HostedBlockchain{ethereum: {ID: ethereum, URL: "https://www.google.com:443"}},
-		l: sync.Mutex{},
 		o: sync.Once{},
 	}
 	bitcoin := hex.EncodeToString([]byte{02})

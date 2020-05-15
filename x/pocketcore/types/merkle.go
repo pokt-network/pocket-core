@@ -54,7 +54,7 @@ func (mp MerkleProofs) Validate(root HashSum, leaf, cousin Proof, totalRelays in
 			// calculate the parent sum and store it where the child used to be
 			verifier[0].Sum += mp[0].HashSums[i].Sum
 			// generate the parent hash and store it where the child used to be
-			verifier[0].Hash = parentHash(mp[0].HashSums[i].Hash, verifier[0].Hash, verifier[0].Sum, 2*mp[0].Index-1)
+			verifier[0].Hash = parentHash(mp[0].HashSums[i].Hash, verifier[0].Hash, verifier[0].Sum)
 		} else { // even index
 			// child sum should be less than sibling sum
 			if verifier[0].Sum >= mp[0].HashSums[i].Sum {
@@ -63,7 +63,7 @@ func (mp MerkleProofs) Validate(root HashSum, leaf, cousin Proof, totalRelays in
 			// calculate the parent sum and store it where the child used to be
 			verifier[0].Sum += mp[0].HashSums[i].Sum
 			// generate the parent hash and store it where the child used to be
-			verifier[0].Hash = parentHash(verifier[0].Hash, mp[0].HashSums[i].Hash, verifier[0].Sum, 2*mp[0].Index+1)
+			verifier[0].Hash = parentHash(verifier[0].Hash, mp[0].HashSums[i].Hash, verifier[0].Sum)
 		}
 		if mp[1].Index%2 == 1 { // odd index
 			// (cousin) child sum should be greater than sibling sum
@@ -73,7 +73,7 @@ func (mp MerkleProofs) Validate(root HashSum, leaf, cousin Proof, totalRelays in
 			// calculate the parent sum and store it where the child used to be
 			verifier[1].Sum += mp[1].HashSums[i].Sum
 			// generate the parent hash and store it where the child used to be
-			verifier[1].Hash = parentHash(mp[1].HashSums[i].Hash, verifier[1].Hash, verifier[1].Sum, 2*mp[1].Index-1)
+			verifier[1].Hash = parentHash(mp[1].HashSums[i].Hash, verifier[1].Hash, verifier[1].Sum)
 		} else {
 			// (cousin) child sum should be less than sibling sum
 			if verifier[1].Sum >= mp[1].HashSums[i].Sum {
@@ -82,7 +82,7 @@ func (mp MerkleProofs) Validate(root HashSum, leaf, cousin Proof, totalRelays in
 			// calculate the parent sum and store it where the child used to be
 			verifier[1].Sum += mp[1].HashSums[i].Sum
 			// generate the parent hash and store it where the child used to be
-			verifier[1].Hash = parentHash(verifier[1].Hash, mp[1].HashSums[i].Hash, verifier[1].Sum, 2*mp[1].Index+1)
+			verifier[1].Hash = parentHash(verifier[1].Hash, mp[1].HashSums[i].Hash, verifier[1].Sum)
 		}
 		// half the indices as we are going up one level
 		mp[0].Index /= 2
@@ -184,7 +184,7 @@ func levelUp(data []HashSum) (nextLevelData []HashSum, atRoot bool) {
 		// calculate the sum
 		data[i/2].Sum = d.Sum + data[i+1].Sum
 		// calculate the parent hash
-		data[i/2].Hash = parentHash(d.Hash, data[i+1].Hash, data[i/2].Sum, 2*i+1)
+		data[i/2].Hash = parentHash(d.Hash, data[i+1].Hash, data[i/2].Sum)
 	}
 	// check to see if at root
 	dataLen := len(data) / 2
@@ -284,8 +284,8 @@ func hash(data []byte) []byte {
 }
 
 // "parentHash" - Compute the hash of the parent by hashing the hashes, sum and parent
-func parentHash(hash1, hash2 []byte, sum uint64, parentIndex int) []byte {
-	return hash(append(append(append(hash1, hash2...), uint64ToBytes(sum)...), uint64ToBytes(uint64(parentIndex))...))
+func parentHash(hash1, hash2 []byte, sum uint64) []byte {
+	return hash(append(append(append(hash1, hash2...), uint64ToBytes(sum)...)))
 }
 
 // "sumFromHash" - get leaf sum from hash

@@ -17,7 +17,6 @@ func TestHostedBlockchains_GetChainURL(t *testing.T) {
 	}
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain},
-		l: sync.Mutex{},
 		o: sync.Once{},
 	}
 	u, err := hb.GetChainURL(ethereum)
@@ -35,7 +34,6 @@ func TestHostedBlockchains_ContainsFromString(t *testing.T) {
 	}
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain},
-		l: sync.Mutex{},
 		o: sync.Once{},
 	}
 	assert.True(t, hb.Contains(ethereum))
