@@ -488,7 +488,7 @@ func TestQueryRelay(t *testing.T) {
 	relay.Proof.Signature = hex.EncodeToString(sig)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	res, err := PCA.QueryRelay(relay)
+	res, err := PCA.HandleRelay(relay)
 	assert.Nil(t, err, err)
 	assert.Equal(t, expectedResponse, res.Response)
 	gock.New(PlaceholderURL).
@@ -500,7 +500,7 @@ func TestQueryRelay(t *testing.T) {
 	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		res, err := PCA.QueryRelay(relay)
+		res, err := PCA.HandleRelay(relay)
 		fmt.Println(relay)
 		assert.Nil(t, err, err)
 		assert.Equal(t, expectedResponse, res.Response)
@@ -542,7 +542,7 @@ func TestQueryDispatch(t *testing.T) {
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
-	res, err := PCA.QueryDispatch(key)
+	res, err := PCA.HandleDispatch(key)
 	assert.Nil(t, err)
 	for _, val := range validators {
 		assert.Contains(t, res.Session.SessionNodes, val)

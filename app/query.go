@@ -312,7 +312,7 @@ func (app PocketCoreApp) QueryPocketParams(height int64) (res pocketTypes.Params
 	return p, nil
 }
 
-func (app PocketCoreApp) QueryChallenge(c pocketTypes.ChallengeProofInvalidData) (res *pocketTypes.ChallengeResponse, err error) {
+func (app PocketCoreApp) HandleChallenge(c pocketTypes.ChallengeProofInvalidData) (res *pocketTypes.ChallengeResponse, err error) {
 	ctx, err := app.NewContext(app.LastBlockHeight())
 	if err != nil {
 		return nil, err
@@ -320,7 +320,7 @@ func (app PocketCoreApp) QueryChallenge(c pocketTypes.ChallengeProofInvalidData)
 	return app.pocketKeeper.HandleChallenge(ctx, c)
 }
 
-func (app PocketCoreApp) QueryDispatch(header pocketTypes.SessionHeader) (res *pocketTypes.DispatchResponse, err error) {
+func (app PocketCoreApp) HandleDispatch(header pocketTypes.SessionHeader) (res *pocketTypes.DispatchResponse, err error) {
 	ctx, err := app.NewContext(app.LastBlockHeight())
 	if err != nil {
 		return nil, err
@@ -328,7 +328,7 @@ func (app PocketCoreApp) QueryDispatch(header pocketTypes.SessionHeader) (res *p
 	return app.pocketKeeper.HandleDispatch(ctx, header)
 }
 
-func (app PocketCoreApp) QueryRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, err error) {
+func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, err error) {
 	ctx, err := app.NewContext(app.LastBlockHeight())
 	if err != nil {
 		return nil, err

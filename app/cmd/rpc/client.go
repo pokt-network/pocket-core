@@ -23,7 +23,7 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.PCA.QueryDispatch(d)
+	res, err := app.PCA.HandleDispatch(d)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -45,7 +45,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.PCA.QueryRelay(relay)
+	res, err := app.PCA.HandleRelay(relay)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -67,7 +67,7 @@ func Challenge(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.PCA.QueryChallenge(challenge)
+	res, err := app.PCA.HandleChallenge(challenge)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
