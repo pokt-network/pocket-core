@@ -26,16 +26,6 @@ type CacheStorage struct {
 	l     sync.Mutex // lock
 }
 
-// "InitCache" - Initializes the cache for sessions and evidence
-func InitCache(evidenceDir, sessionDir string, sessionDBType, evidenceDBType db.DBBackendType, maxEvidenceEntries, maxSessionEntries int, evidenceDBName, sessionDBName string) {
-	cacheOnce.Do(func() {
-		globalEvidenceCache = new(CacheStorage)
-		globalSessionCache = new(CacheStorage)
-		globalEvidenceCache.Init(evidenceDir, evidenceDBName, evidenceDBType, maxEvidenceEntries)
-		globalSessionCache.Init(sessionDir, sessionDBName, sessionDBType, maxSessionEntries)
-	})
-}
-
 // "Init" - Initializes a cache storage object
 func (cs *CacheStorage) Init(dir, name string, dbType db.DBBackendType, maxEntries int) {
 	// init the lru cache with a max entries

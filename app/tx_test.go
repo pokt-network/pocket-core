@@ -328,7 +328,7 @@ func TestClaimTx(t *testing.T) {
 	pocketTypes.ClearSessionCache()
 	pocketTypes.ClearEvidence()
 	// init cache in memory
-	pocketTypes.InitCache("data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
+	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	kb := getInMemoryKeybase()
 	for i := 0; i < 5; i++ {
@@ -388,7 +388,7 @@ func TestClaimTxChallenge(t *testing.T) {
 	}
 	pocketTypes.ClearSessionCache()
 	pocketTypes.ClearEvidence()
-	pocketTypes.InitCache("data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
+	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
 	genBz, keys, _, _ := fiveValidatorsOneAppGenesis()
 	challenges := NewValidChallengeProof(t, keys, 5)
 	for _, c := range challenges {
