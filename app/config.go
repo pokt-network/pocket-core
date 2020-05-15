@@ -1,7 +1,6 @@
 package app
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -448,31 +447,8 @@ func NewHostedChains() *types.HostedBlockchains {
 	// if file exists open, else create and open
 	var jsonFile *os.File
 	var bz []byte
-	if _, err := os.Stat(chainsPath); err == nil {
-		// if file exists
-	} else if os.IsNotExist(err) {
-		// if does not exist create one
-		jsonFile, err = os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
-		if err != nil {
-			return &types.HostedBlockchains{} // default to empty object
-		}
-		// generate hosted chains from user input
-		c := GenerateHostedChains()
-		// create dummy input for the file
-		res, err := json.MarshalIndent(c, "", "  ")
-		if err != nil {
-			log2.Fatal(NewInvalidChainsError(err))
-		}
-		// write to the file
-		_, err = jsonFile.Write(res)
-		if err != nil {
-			log2.Fatal(NewInvalidChainsError(err))
-		}
-		// close the file
-		err = jsonFile.Close()
-		if err != nil {
-			log2.Fatal(NewInvalidChainsError(err))
-		}
+	if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
+		return &types.HostedBlockchains{} // default to empty object
 	}
 	// reopen the file to read into the variable
 	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
@@ -503,64 +479,6 @@ func NewHostedChains() *types.HostedBlockchains {
 	}
 	// return the map
 	return &types.HostedBlockchains{M: m}
-}
-
-const (
-	enterIDPrompt     = `Enter the ID of the network identifier:`
-	enterURLPrompt    = `Enter the URL of the network identifier:`
-	addNewChainPrompt = `Would you like to enter another network identifier? (y/n)`
-	ReadInError       = `An error occurred reading in the information: `
-)
-
-func GenerateHostedChains() (chains []types.HostedBlockchain) {
-	for {
-		var ID, URL, again string
-		fmt.Println(enterIDPrompt)
-		reader := bufio.NewReader(os.Stdin)
-		ID, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println(ReadInError + err.Error())
-			os.Exit(3)
-		}
-		ID = strings.Trim(strings.TrimSpace(ID), "\n")
-		if err := nodesTypes.ValidateNetworkIdentifier(ID); err != nil {
-			fmt.Println(err)
-			fmt.Println("please try again")
-			continue
-		}
-		fmt.Println(enterURLPrompt)
-		URL, err = reader.ReadString('\n')
-		if err != nil {
-			fmt.Println(ReadInError + err.Error())
-			os.Exit(3)
-		}
-		URL = strings.Trim(strings.TrimSpace(URL), "\n")
-		chains = append(chains, types.HostedBlockchain{
-			ID:  ID,
-			URL: URL,
-		})
-		fmt.Println(addNewChainPrompt)
-		for {
-			again, err = reader.ReadString('\n')
-			if err != nil {
-				log2.Fatal(ReadInError + err.Error())
-			}
-			switch strings.TrimSpace(strings.ToLower(again)) {
-			case "y":
-				// break out of switch
-				break
-			case "n":
-				// return chains
-				return
-			default:
-				fmt.Println("unrecognized response, please try again")
-				// try switch again
-				continue
-			}
-			// break out of for loop
-			break
-		}
-	}
 }
 
 func DeleteHostedChains() {
