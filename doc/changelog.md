@@ -35,6 +35,7 @@
 - Updated regex to allow only hex character.
 - Added empty/nil check to claim struct on handleProofMsg
 - Added multiple optimization for efficiency and consistency between validations
+- Added basic auth to chains.json
 
 ## RC-0.3.0
 - Added governance module from posmint

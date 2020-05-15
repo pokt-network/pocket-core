@@ -7,8 +7,14 @@ import (
 
 // HostedBlockchain" - An object that represents a local hosted non-native blockchain
 type HostedBlockchain struct {
-	ID  string `json:"id"`  // network identifier of the hosted blockchain
-	URL string `json:"url"` // url of the hosted blockchain
+	ID        string    `json:"id"`         // network identifier of the hosted blockchain
+	URL       string    `json:"url"`        // url of the hosted blockchain
+	BasicAuth BasicAuth `json:"basic_auth"` // basic http auth optinal
+}
+
+type BasicAuth struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 // HostedBlockchains" - An object that represents the local hosted non-native blockchains
@@ -25,13 +31,22 @@ func (c *HostedBlockchains) Contains(id string) bool {
 }
 
 // "GetChainURL" - Returns the url or error of the hosted blockchain using the hex network identifier
-func (c *HostedBlockchains) GetChainURL(id string) (url string, err sdk.Error) {
+func (c *HostedBlockchains) GetChain(id string) (chain HostedBlockchain, err sdk.Error) {
 	// map check
 	res, found := c.M[id]
 	if !found {
-		return "", NewErrorChainNotHostedError(ModuleName)
+		return HostedBlockchain{}, NewErrorChainNotHostedError(ModuleName)
 	}
-	return res.URL, nil
+	return res, nil
+}
+
+// "GetChainURL" - Returns the url or error of the hosted blockchain using the hex network identifier
+func (c *HostedBlockchains) GetChainURL(id string) (url string, err sdk.Error) {
+	chain, err := c.GetChain(id)
+	if err != nil {
+		return "", err
+	}
+	return chain.URL, nil
 }
 
 // "Validate" - Validates the hosted blockchain object
