@@ -280,7 +280,7 @@ func executeHTTPRequest(payload string, url string, basicAuth BasicAuth, method 
 	// generate an http request
 	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
-		return "", errg
+		return "", err
 	}
 	if basicAuth.Username != "" {
 		req.SetBasicAuth(basicAuth.Username, basicAuth.Password)
