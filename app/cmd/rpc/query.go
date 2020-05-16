@@ -260,17 +260,12 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func NodeReceipts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = PaginatedHeightAndAddrParams{
-		Height:  0,
-		Addr:    "",
-		Page:    0,
-		PerPage: 0,
-	}
+	var params = PaginatedHeightAndAddrParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.PCA.QueryReceipts(params.Address, params.Height)
+	res, err := app.PCA.QueryReceipts(params.Addr, params.Height, params.Page, params.PerPage)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
