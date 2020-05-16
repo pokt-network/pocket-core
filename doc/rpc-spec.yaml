@@ -1170,6 +1170,9 @@ components:
         total_relays:
           type: integer
           format: int64
+        evidence_type:
+          type: integer
+          format: int64
     Transaction:
       type: object
       properties:
@@ -1310,10 +1313,18 @@ components:
     QueryNodeReceiptsResponse:
       type: object
       properties:
-        nodes:
+        result:
           type: array
           items:
             $ref: '#/components/schemas/StoredReceipt'
+        page:
+          type: integer
+          format: int64
+          description: current page
+        total_pages:
+          type: integer
+          format: int64
+          description: maximum amount of pages
     QueryNodesResponse:
       type: object
       properties:
