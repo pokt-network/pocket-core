@@ -40,6 +40,7 @@
 - Added basic auth to chains.json
 - Added pagination to receipts query in pocket core *RPC*
 - Removed .md and json RPC spec
+- Removing orphaned jailed nodes after X amount of Blocks jailed.
 
 ## RC-0.3.0
 - Added governance module from posmint
