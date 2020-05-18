@@ -680,6 +680,7 @@ paths:
               $ref: '#/components/schemas/QueryTX'
             example:
               hash: '0x197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22'
+              prove: false
         required: true
       responses:
         '200':
@@ -1534,6 +1535,8 @@ components:
       properties:
         hash:
           type: string
+        prove:
+          type: boolean
     QueryTXResponse:
       type: object
       properties:

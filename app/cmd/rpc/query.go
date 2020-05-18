@@ -20,8 +20,9 @@ type HeightParams struct {
 	Height int64 `json:"height"`
 }
 
-type HashParams struct {
-	Hash string `json:"hash"`
+type HashAndProveParams struct {
+	Hash  string `json:"hash"`
+	Prove bool   `json:"prove"`
 }
 
 type HeightAndAddrParams struct {
@@ -76,12 +77,12 @@ func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = HashParams{}
+	var params = HashAndProveParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.PCA.QueryTx(params.Hash)
+	res, err := app.PCA.QueryTx(params.Hash, params.Prove)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}

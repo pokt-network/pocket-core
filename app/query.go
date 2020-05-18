@@ -36,14 +36,14 @@ func (app PocketCoreApp) QueryBlock(height *int64) (blockJSON []byte, err error)
 	return codec.Cdc.MarshalJSONIndent(b, "", "  ")
 }
 
-func (app PocketCoreApp) QueryTx(hash string) (res *core_types.ResultTx, err error) {
+func (app PocketCoreApp) QueryTx(hash string, prove bool) (res *core_types.ResultTx, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
 	h, err := hex.DecodeString(hash)
 	if err != nil {
 		return nil, err
 	}
-	res, err = tmClient.Tx(h, false)
+	res, err = tmClient.Tx(h, prove)
 	return
 }
 
