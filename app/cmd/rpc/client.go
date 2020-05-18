@@ -38,7 +38,7 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 type RPCRelayResponse struct {
 	Signature string `json:"signature"`
-	Response string `json:"response"`
+	Response  string `json:"response"`
 	// remove proof object because client already knows about it
 }
 
