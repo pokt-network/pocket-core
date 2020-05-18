@@ -153,9 +153,9 @@ func (msg MsgUnjail) GetFee() sdk.Int {
 
 // MsgSend structure for sending coins
 type MsgSend struct {
-	FromAddress sdk.Address
-	ToAddress   sdk.Address
-	Amount      sdk.Int
+	FromAddress sdk.Address `json:"from_address"`
+	ToAddress   sdk.Address `json:"to_address"`
+	Amount      sdk.Int     `json:"amount"`
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
