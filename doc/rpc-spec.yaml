@@ -1430,8 +1430,6 @@ components:
         payload:
           type: string
           description: string response to relay
-        proof:
-          $ref: '#/components/schemas/RelayProof'
     QueryChallengeRequest:
       type: object
       properties:
