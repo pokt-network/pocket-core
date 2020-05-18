@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/hex"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	appsType "github.com/pokt-network/pocket-core/x/apps/types"
