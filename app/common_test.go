@@ -414,6 +414,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 		acl.SetOwner("gov/upgrade", kp.GetAddress())
 		acl.SetOwner("application/MaximumChains", kp.GetAddress())
 		acl.SetOwner("pos/MaximumChains", kp.GetAddress())
+		acl.SetOwner("pos/MaxJailedBlocks", kp.GetAddress())
 		testACL = acl
 	}
 	return testACL

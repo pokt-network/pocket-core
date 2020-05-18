@@ -647,6 +647,7 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 	acl.SetOwner("pocketcore/ClaimSubmissionWindow", addr)
 	acl.SetOwner("pos/DAOAllocation", addr)
 	acl.SetOwner("pos/MaximumChains", addr)
+	acl.SetOwner("pos/MaxJailedBlocks", addr)
 	acl.SetOwner("pos/SignedBlocksWindow", addr)
 	acl.SetOwner("pos/BlocksPerSession", addr)
 	acl.SetOwner("application/MaxApplications", addr)
