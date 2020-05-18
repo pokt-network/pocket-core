@@ -31,7 +31,7 @@ func (k Keeper) appCaching(value []byte, addr sdk.Address) types.Application {
 	k.applicationCacheList.PushBack(cachedVal)
 
 	// if the cache is too big, pop off the prevState element from it
-	if k.applicationCacheList.Len() > aminoCacheSize {
+	if int64(k.applicationCacheList.Len()) > types.ApplicationCacheSize {
 		appToRemove := k.applicationCacheList.Remove(k.applicationCacheList.Front()).(cachedApplication)
 		delete(k.applicationCache, appToRemove.address.String())
 	}

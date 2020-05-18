@@ -11,8 +11,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 )
 
-const aminoCacheSize = 500
-
 // Implements ValidatorSet interface
 var _ types.ValidatorSet = Keeper{}
 
@@ -42,7 +40,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		cdc:                cdc,
 		AccountKeeper:      accountKeeper,
 		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),
-		validatorCache:     make(map[string]cachedValidator, aminoCacheSize),
+		validatorCache:     make(map[string]cachedValidator, types.ValidatorCacheSize),
 		validatorCacheList: list.New(),
 		codespace:          codespace,
 	}

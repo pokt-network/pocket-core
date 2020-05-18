@@ -15,6 +15,7 @@ import (
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	apps "github.com/pokt-network/pocket-core/x/apps"
+	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
@@ -74,6 +75,8 @@ const (
 	PlaceholderServiceURL           = PlaceholderURL
 	DefaultRemoteCLIURL             = "http://localhost"
 	DefaultUserAgent                = ""
+	DefaultValidatorCacheSize       = 500
+	DefaultApplicationCacheSize     = DefaultValidatorCacheSize
 )
 
 var (
@@ -110,6 +113,8 @@ type PocketConfig struct {
 	JSONSortRelayResponses   bool              `json:"json_sort_relay_responses"`
 	RemoteCLIURL             string            `json:"remote_cli_url"`
 	UserAgent                string            `json:"user_agent"`
+	ValidatorCacheSize       int64             `json:"validator_cache_size"`
+	ApplicationCacheSize     int64             `json:"application_cache_size"`
 }
 
 func DefaultConfig(dataDir string) Config {
@@ -132,6 +137,8 @@ func DefaultConfig(dataDir string) Config {
 			JSONSortRelayResponses:   DefaultJSONSortRelayResponses,
 			RemoteCLIURL:             DefaultRemoteCLIURL,
 			UserAgent:                DefaultUserAgent,
+			ValidatorCacheSize:       DefaultValidatorCacheSize,
+			ApplicationCacheSize:     DefaultApplicationCacheSize,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
@@ -325,6 +332,8 @@ func InitPocketCoreConfig() {
 	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName)
 	types.InitClientBlockAllowance(GlobalConfig.PocketConfig.ClientBlockSyncAllowance)
 	types.InitJSONSorting(GlobalConfig.PocketConfig.JSONSortRelayResponses)
+	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
+	appsTypes.InitConfig(GlobalConfig.PocketConfig.ApplicationCacheSize)
 }
 
 // get the global keybase
