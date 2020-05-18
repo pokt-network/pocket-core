@@ -370,11 +370,13 @@ func TestClaimTx(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 	res := <-evtChan
+	fmt.Println(res)
 	if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 		t.Fatal("claim message was not received first")
 	}
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	res = <-evtChan
+	fmt.Println(res)
 	if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 		t.Fatal("proof message was not received afterward")
 	}

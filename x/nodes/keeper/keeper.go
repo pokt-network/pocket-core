@@ -21,6 +21,7 @@ type Keeper struct {
 	storeKey           sdk.StoreKey
 	cdc                *codec.Codec
 	AccountKeeper      types.AuthKeeper
+	PocketKeeper       types.PocketKeeper // todo combine all modules
 	Paramstore         sdk.Subspace
 	validatorCache     map[string]cachedValidator
 	validatorCacheList *list.List

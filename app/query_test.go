@@ -331,8 +331,7 @@ func TestQueryProofs(t *testing.T) {
 	<-evtChan // Wait for block
 	got, err := PCA.QueryReceipts(cb.GetAddress().String(), 0, 1, 1)
 	assert.Nil(t, err)
-	assert.Nil(t, got)
-
+	assert.Nil(t, got.Result)
 	cleanup()
 	stopCli()
 }

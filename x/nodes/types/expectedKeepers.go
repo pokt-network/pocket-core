@@ -42,6 +42,11 @@ type AuthKeeper interface {
 	GetAccount(ctx sdk.Ctx, addr sdk.Address) authexported.Account
 }
 
+type PocketKeeper interface {
+	// clear the cache of validators for sessions and relays
+	ClearSessionCache()
+}
+
 // ValidatorSet expected properties for the set of all validators (noalias)
 type ValidatorSet interface {
 	// iterate through validators by address, execute func for each validator

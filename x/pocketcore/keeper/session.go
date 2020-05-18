@@ -69,3 +69,7 @@ func (k Keeper) IsPocketSupportedBlockchain(ctx sdk.Ctx, chain string) bool {
 	// else return false
 	return false
 }
+
+func (Keeper) ClearSessionCache() {
+	types.ClearSessionCache()
+}
