@@ -25,4 +25,7 @@ tests/unit/*.json
 # VS Code config
 .vscode
 
+# Data dir
+app/data/*
+
 
