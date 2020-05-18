@@ -24,6 +24,7 @@ const (
 	DefaultProposerAllocation              = 1
 	DefaultDAOAllocation                   = 10
 	DefaultMaxChains                       = 15
+	DefaultMaxJailedBlocks                 = 1000
 )
 
 //  - Keys for parameter access
@@ -43,6 +44,7 @@ var (
 	KeyDAOAllocation               = []byte("DAOAllocation")
 	KeyProposerAllocation          = []byte("ProposerPercentage")
 	KeyMaxChains                   = []byte("MaximumChains")
+	KeyMaxJailedBlocks             = []byte("MaxJailedBlocks")
 	DoubleSignJailEndTime          = time.Unix(253402300799, 0) // forever
 	DefaultMinSignedPerWindow      = sdk.NewDecWithPrec(5, 1)
 	DefaultSlashFractionDoubleSign = sdk.NewDec(1).Quo(sdk.NewDec(20))
@@ -63,6 +65,7 @@ type Params struct {
 	ProposerAllocation       int64         `json:"proposer_allocation" yaml:"proposer_allocation"`
 	MaximumChains            int64         `json:"maximum_chains" yaml:"maximum_chains"`
 	// slashing params
+	MaxJailedBlocks         int64         `json:"max_jailed_blocks" yaml:"max_jailed_blocks"`
 	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`                     // maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)
 	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`             // window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks
 	MinSignedPerWindow      sdk.Dec       `json:"min_signed_per_window" yaml:"min_signed_per_window"`           // minimum number of blocks the node must sign per window
@@ -89,6 +92,7 @@ func (p *Params) ParamSetPairs() sdk.ParamSetPairs {
 		{Key: KeyProposerAllocation, Value: &p.ProposerAllocation},
 		{Key: KeyRelaysToTokensMultiplier, Value: &p.RelaysToTokensMultiplier},
 		{Key: KeyMaxChains, Value: &p.MaximumChains},
+		{Key: KeyMaxJailedBlocks, Value: &p.MaxJailedBlocks},
 	}
 }
 
@@ -110,6 +114,7 @@ func DefaultParams() Params {
 		ProposerAllocation:       DefaultProposerAllocation,
 		RelaysToTokensMultiplier: DefaultRelaysToTokensMultiplier,
 		MaximumChains:            DefaultMaxChains,
+		MaxJailedBlocks:          DefaultMaxJailedBlocks,
 	}
 }
 
@@ -162,7 +167,8 @@ func (p Params) String() string {
   BlocksPerSession         %d
   Proposer Allocation      %d
   DAO allocation           %d
-  Maximum Chains           %d`,
+  Maximum Chains           %d
+  Max Jailed Blocks        %d`,
 		p.UnstakingTime,
 		p.MaxValidators,
 		p.StakeDenom,
@@ -176,7 +182,8 @@ func (p Params) String() string {
 		p.SessionBlockFrequency,
 		p.ProposerAllocation,
 		p.DAOAllocation,
-		p.MaximumChains)
+		p.MaximumChains,
+		p.MaxJailedBlocks)
 }
 
 // unmarshal the current pos params value from store key

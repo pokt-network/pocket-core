@@ -33,6 +33,7 @@ func TestDefaultParams(t *testing.T) {
 				ProposerAllocation:       DefaultProposerAllocation,
 				RelaysToTokensMultiplier: DefaultRelaysToTokensMultiplier,
 				MaximumChains:            DefaultMaxChains,
+				MaxJailedBlocks:          DefaultMaxJailedBlocks,
 			},
 		}}
 	for _, tt := range tests {
@@ -324,6 +325,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 		SlashFractionDoubleSign types.Dec
 		SlashFractionDowntime   types.Dec
 		MaximumChains           int64
+		MaxJailedBlocks         int64
 	}
 
 	defParam := Params{
@@ -341,6 +343,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 		SessionBlockFrequency:   DefaultSessionBlocktime,
 		DAOAllocation:           DefaultDAOAllocation,
 		MaximumChains:           DefaultMaxChains,
+		MaxJailedBlocks:         DefaultMaxJailedBlocks,
 	}
 	defparamPairs := defParam.ParamSetPairs()
 
@@ -364,6 +367,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 			SessionBlockFrequency:   DefaultSessionBlocktime,
 			DAOAllocation:           DefaultDAOAllocation,
 			MaximumChains:           DefaultMaxChains,
+			MaxJailedBlocks:         DefaultMaxJailedBlocks,
 		}, defparamPairs},
 	}
 	for _, tt := range tests {
@@ -383,6 +387,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 				SlashFractionDoubleSign: tt.fields.SlashFractionDoubleSign,
 				SlashFractionDowntime:   tt.fields.SlashFractionDowntime,
 				MaximumChains:           tt.fields.MaximumChains,
+				MaxJailedBlocks:         tt.fields.MaxJailedBlocks,
 			}
 			if got := p.ParamSetPairs(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ParamSetPairs() = %v, want %v", got, tt.want)
@@ -407,6 +412,7 @@ func TestParams_String(t *testing.T) {
 		SlashFractionDoubleSign types.Dec
 		SlashFractionDowntime   types.Dec
 		MaximumChains           int64
+		MaxJailedBlocks         int64
 	}
 	tests := []struct {
 		name   string
@@ -428,6 +434,7 @@ func TestParams_String(t *testing.T) {
 			SessionBlockFrequency:   DefaultSessionBlocktime,
 			DaoAllocation:           DefaultDAOAllocation,
 			MaximumChains:           DefaultMaxChains,
+			MaxJailedBlocks:         DefaultMaxJailedBlocks,
 		}, fmt.Sprintf(`Params:
   Unstaking Time:          %s
   Max Validators:          %d
@@ -442,7 +449,8 @@ func TestParams_String(t *testing.T) {
   BlocksPerSession         %d
   Proposer Allocation      %d
   DAO allocation           %d
-  Maximum Chains           %d`,
+  Maximum Chains           %d
+  Max Jailed Blocks        %d`,
 			DefaultUnstakingTime,
 			DefaultMaxValidators,
 			types.DefaultStakeDenom,
@@ -456,7 +464,8 @@ func TestParams_String(t *testing.T) {
 			DefaultSessionBlocktime,
 			DefaultProposerAllocation,
 			DefaultDAOAllocation,
-			DefaultMaxChains)},
+			DefaultMaxChains,
+			DefaultMaxJailedBlocks)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -475,6 +484,7 @@ func TestParams_String(t *testing.T) {
 				SlashFractionDoubleSign: tt.fields.SlashFractionDoubleSign,
 				SlashFractionDowntime:   tt.fields.SlashFractionDowntime,
 				MaximumChains:           tt.fields.MaximumChains,
+				MaxJailedBlocks:         tt.fields.MaxJailedBlocks,
 			}
 			if got := p.String(); got != tt.want {
 				t.Errorf("String() = %v, want %v", got, tt.want)

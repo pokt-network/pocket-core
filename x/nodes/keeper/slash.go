@@ -205,15 +205,15 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, po
 		logger.Error(fmt.Sprintf("error in handleValidatorSignature: validator with address %s not found", addr))
 		return
 	}
+	pubkey := val.PublicKey
+	// fetch signing info
+	signInfo, isFound := k.GetValidatorSigningInfo(ctx, addr)
+	if !isFound {
+		logger.Error(fmt.Sprintf("error in handleValidatorSignature: signing info for validator with address %s not found", addr))
+		return
+	}
 	//check if validator is not already jailed
 	if !val.IsJailed() {
-		pubkey := val.PublicKey
-		// fetch signing info
-		signInfo, isFound := k.GetValidatorSigningInfo(ctx, addr)
-		if !isFound {
-			logger.Error(fmt.Sprintf("error in handleValidatorSignature: signing info for validator with address %s not found", addr))
-			return
-		}
 		// this is a relative index, so it counts blocks the validator *should* have signed
 		// will use the 0-value default signing info if not present, except for start height
 		index := signInfo.IndexOffset % k.SignedBlocksWindow(ctx)
@@ -283,6 +283,21 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, po
 			signInfo.IndexOffset = 0
 			k.clearValidatorMissed(ctx, addr)
 
+		}
+		// Set the updated signing info
+		k.SetValidatorSigningInfo(ctx, addr, signInfo)
+	} else {
+		//increase JailedBlockCounter
+		signInfo.JailedBlocksCounter++
+		//Compare against MaxJailedBlocks
+		if signInfo.JailedBlocksCounter >= k.MaxJailedBlocks(ctx) {
+			//force unstake orphaned validator
+			err := k.ForceValidatorUnstake(ctx, val)
+			if err != nil {
+				k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addr.String())
+			} else {
+				signInfo.JailedBlocksCounter = 0
+			}
 		}
 		// Set the updated signing info
 		k.SetValidatorSigningInfo(ctx, addr, signInfo)

@@ -17,6 +17,7 @@ func TestValidatorSigningInfo_String(t *testing.T) {
 		JailedUntil         time.Time
 		Tombstoned          bool
 		MissedBlocksCounter int64
+		JailedBlocksCounter int64
 	}
 	var pub ed25519.PubKeyEd25519
 	rand.Read(pub[:])
@@ -36,15 +37,17 @@ func TestValidatorSigningInfo_String(t *testing.T) {
 			JailedUntil:         until,
 			Tombstoned:          false,
 			MissedBlocksCounter: 1,
+			JailedBlocksCounter: 1,
 		}, fmt.Sprintf(`Validator Signing Info:
   Address:               %s
   Start Height:          %d
   Entropy Offset:        %d
   Jailed Until:          %v
   Tombstoned:            %t
-  Missed Blocks Counter: %d`,
+  Missed Blocks Counter: %d
+  Jailed Blocks Counter: %d`,
 			ca, 0, 0, until,
-			false, 1)},
+			false, 1, 1)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -55,6 +58,7 @@ func TestValidatorSigningInfo_String(t *testing.T) {
 				JailedUntil:         tt.fields.JailedUntil,
 				Tombstoned:          tt.fields.Tombstoned,
 				MissedBlocksCounter: tt.fields.MissedBlocksCounter,
+				JailedBlocksCounter: tt.fields.JailedBlocksCounter,
 			}
 			if got := i.String(); got != tt.want {
 				t.Errorf("String() = %v, want %v", got, tt.want)
