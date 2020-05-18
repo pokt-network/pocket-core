@@ -15,6 +15,7 @@ import (
 func init() {
 	rootCmd.AddCommand(govCmd)
 	govCmd.AddCommand(govDAOTransfer)
+	govCmd.AddCommand(govDAOBurn)
 	govCmd.AddCommand(govChangeParam)
 	govCmd.AddCommand(govUpgrade)
 }
@@ -27,7 +28,7 @@ from DAOTransfer, change parameters; to performing protocol Upgrades. `,
 }
 
 var govDAOTransfer = &cobra.Command{
-	Use:   "transfer <action (dao_burn or dao_transfer)> <amount> <fromAddr> <toAddr> <chainID>",
+	Use:   "transfer <amount> <fromAddr> <toAddr> <chainID>",
 	Short: "Transfer from DAO",
 	Long: `If authorized, move funds from the DAO.
 Actions: [burn, transfer]`,
@@ -36,18 +37,17 @@ Actions: [burn, transfer]`,
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
 		var toAddr string
 		if len(args) == 4 {
-			toAddr = args[3]
+			toAddr = args[2]
 		}
-		fromAddr := args[2]
-		action := args[0]
-		amount, err := strconv.Atoi(args[1])
+		fromAddr := args[1]
+		amount, err := strconv.Atoi(args[0])
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials()
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), action, args[3])
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[2])
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -66,6 +66,44 @@ Actions: [burn, transfer]`,
 	},
 }
 
+var govDAOBurn = &cobra.Command{
+	Use:   "burn <amount> <fromAddr> <toAddr> <chainID>",
+	Short: "Burn from DAO",
+	Long: `If authorized, burn funds from the DAO.
+Actions: [burn, transfer]`,
+	Args: cobra.ExactArgs(4),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		var toAddr string
+		if len(args) == 4 {
+			toAddr = args[2]
+		}
+		fromAddr := args[1]
+		amount, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Enter Password: ")
+		pass := app.Credentials()
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[2])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		j, err := json.Marshal(res)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		resp, err := QueryRPC(SendRawTxPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(resp)
+	},
+}
 var govChangeParam = &cobra.Command{
 	Use:   "change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)>",
 	Short: "Edit a param in the network",
