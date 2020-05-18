@@ -33,6 +33,7 @@
 - Refactor ABCI BeginBlock for app module, avoid looping twice on mature applications
 - Swapped ExecuteProof and SetReceipt order on handleProofMsg func
 - Added prove to queryTx call in *RPC* and a flag in CLI
+- Removed Proof Object From Relay Response in *RPC*
 - Updated regex to allow only hex character.
 - Added empty/nil check to claim struct on handleProofMsg
 - Added multiple optimization for efficiency and consistency between validations

@@ -36,6 +36,12 @@ func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
+type RPCRelayResponse struct {
+	Signature string `json:"signature"`
+	Response string `json:"response"`
+	// remove proof object because client already knows about it
+}
+
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var relay = types.Relay{}
 	if !cors(&w, r) {
@@ -50,7 +56,11 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, er := json.Marshal(res)
+	response := RPCRelayResponse{
+		Signature: res.Signature,
+		Response:  res.Response,
+	}
+	j, er := json.Marshal(response)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
