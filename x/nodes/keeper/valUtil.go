@@ -35,7 +35,7 @@ func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator
 	k.validatorCacheList.PushBack(cachedVal)
 
 	// if the cache is too big, pop off the prevState element from it
-	if k.validatorCacheList.Len() > aminoCacheSize {
+	if int64(k.validatorCacheList.Len()) > types.ValidatorCacheSize {
 		valToRemove := k.validatorCacheList.Remove(k.validatorCacheList.Front()).(cachedValidator)
 		delete(k.validatorCache, valToRemove.address.String())
 	}

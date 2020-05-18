@@ -10,8 +10,6 @@ import (
 	log2 "log"
 )
 
-const aminoCacheSize = 500
-
 // Implements ApplicationSet interface
 var _ types.ApplicationSet = Keeper{}
 
@@ -44,7 +42,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, su
 		AccountsKeeper:       supplyKeeper,
 		POSKeeper:            posKeeper,
 		Paramstore:           paramstore.WithKeyTable(ParamKeyTable()),
-		applicationCache:     make(map[string]cachedApplication, aminoCacheSize),
+		applicationCache:     make(map[string]cachedApplication, types.ApplicationCacheSize),
 		applicationCacheList: list.New(),
 		codespace:            codespace,
 	}
