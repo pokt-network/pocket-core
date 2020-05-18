@@ -82,7 +82,7 @@ func TestRPC_QueryTX(t *testing.T) {
 	assert.Nil(t, err)
 
 	<-evtChan // Wait for tx
-	var params = HashParams{
+	var params = HashAndProveParams{
 		Hash: tx.TxHash,
 	}
 	q := newQueryRequest("tx", newBody(params))
@@ -152,7 +152,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 
 	<-evtChan // Wait for tx
 	// Step 1: Get the transaction by it's hash
-	var params = HashParams{
+	var params = HashAndProveParams{
 		Hash: tx.TxHash,
 	}
 	q := newQueryRequest("tx", newBody(params))

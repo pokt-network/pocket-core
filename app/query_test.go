@@ -63,7 +63,7 @@ func TestQueryTx(t *testing.T) {
 	assert.NotNil(t, tx)
 
 	<-evtChan // Wait for tx
-	got, err := PCA.QueryTx(tx.TxHash)
+	got, err := PCA.QueryTx(tx.TxHash, false)
 	assert.Nil(t, err)
 	validator, err := PCA.QueryBalance(kp.GetAddress().String(), 0)
 	assert.Nil(t, err)

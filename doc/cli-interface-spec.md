@@ -154,6 +154,9 @@ Exported account: 0x...
 > - `<amount>`: The amount of POKT to be sent.
 > - `<chainID>`: The pocket chain identifier
 > Example output:
+
+> Flags
+> - `prove`: Get a proof of the transaction
 ```
 Transaction submitted with hash: <Transaction Hash>
 ```

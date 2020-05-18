@@ -80,6 +80,12 @@ var queryBlock = &cobra.Command{
 	},
 }
 
+var prove bool
+
+func init() {
+	queryTx.LocalFlags().BoolVar(&simulateRelay, "proveTx", false, "would you like a proof of the transaction")
+}
+
 var queryTx = &cobra.Command{
 	Use:   "tx <hash>",
 	Short: "Get the transaction by the hash",
@@ -87,7 +93,7 @@ var queryTx = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
-		params := rpc.HashParams{Hash: args[0]}
+		params := rpc.HashAndProveParams{Hash: args[0], Prove: prove}
 		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
