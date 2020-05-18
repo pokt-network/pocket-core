@@ -544,7 +544,6 @@ func TestRPC_Relay(t *testing.T) {
 		panic(err)
 	}
 	relay.Proof.Signature = hex.EncodeToString(sig)
-
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -552,7 +551,7 @@ func TestRPC_Relay(t *testing.T) {
 	rec := httptest.NewRecorder()
 	Relay(rec, q, httprouter.Params{})
 	resp := getJSONResponse(rec)
-	var response pocketTypes.RelayResponse
+	var response RPCRelayResponse
 	err = json.Unmarshal(resp, &response)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResponse, response.Response)

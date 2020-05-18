@@ -293,6 +293,7 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Ctx, validator types.Validator)
 
 // ForceValidatorUnstake - Coerce unstake (called when slashed below the minimum)
 func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sdk.Error {
+	k.ClearValidatorCache()
 	// delete the validator from staking set as they are unstaked
 	switch validator.Status {
 	case sdk.Staked:
@@ -346,6 +347,8 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		ctx.Logger().Error(fmt.Errorf("cannot jail already jailed validator, validator: %v\n", validator).Error())
 		return
 	}
+	// clear caching for sesssions
+	k.ClearValidatorCache()
 	k.deleteValidatorFromStakingSet(ctx, validator)
 	validator.Jailed = true
 	k.SetValidator(ctx, validator)

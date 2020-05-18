@@ -72,6 +72,12 @@ func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []typ
 	return validators[:i] // trim if the array length < maxRetrieve
 }
 
+func (k Keeper) ClearValidatorCache() {
+	if k.PocketKeeper!= nil {
+		k.PocketKeeper.ClearSessionCache()
+	}
+}
+
 // IterateAndExecuteOverVals - Goes through the validator set and executes handler
 func (k Keeper) IterateAndExecuteOverVals(
 	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
