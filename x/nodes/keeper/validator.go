@@ -29,6 +29,13 @@ func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	k.setOrUpdateInValidatorCache(validator)
 }
 
+// SetValidator - Store validator in the main store
+func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
+	k.deleteValidatorFromCache(addr)
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyForValByAllVals(addr))
+}
+
 // GetAllValidators - Retrieve set of all validators with no limits from the main store
 func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
@@ -73,7 +80,7 @@ func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []typ
 }
 
 func (k Keeper) ClearValidatorCache() {
-	if k.PocketKeeper!= nil {
+	if k.PocketKeeper != nil {
 		k.PocketKeeper.ClearSessionCache()
 	}
 }

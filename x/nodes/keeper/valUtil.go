@@ -42,6 +42,10 @@ func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator
 	return validator
 }
 
+func (k Keeper) deleteValidatorFromCache(addr sdk.Address) {
+	delete(k.validatorCache, addr.String())
+}
+
 func (k Keeper) getValidatorFromCache(addr sdk.Address) (validator types.Validator, found bool) {
 	if val, ok := k.validatorCache[addr.String()]; ok {
 		valToReturn := val.val

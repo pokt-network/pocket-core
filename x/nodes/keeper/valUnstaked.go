@@ -155,6 +155,7 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 				continue
 			}
 			k.FinishUnstakingValidator(ctx, val)
+			k.DeleteValidator(ctx, valAddr)
 		}
 		store.Delete(unstakingValidatorsIterator.Key())
 	}
