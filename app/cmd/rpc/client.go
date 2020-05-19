@@ -128,9 +128,6 @@ type simRelayParams struct {
 }
 
 func SimRequest(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	if !cors(&w, r) {
-		return
-	}
 	var params = simRelayParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
