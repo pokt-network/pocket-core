@@ -635,6 +635,7 @@ func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
 	acl.SetOwner("gov/acl", addr)
 	acl.SetOwner("pos/StakeDenom", addr)
 	acl.SetOwner("pocketcore/SupportedBlockchains", addr)
+	acl.SetOwner("pocketcore/MinimumNumberOfProofs", addr)
 	acl.SetOwner("pos/DowntimeJailDuration", addr)
 	acl.SetOwner("pos/SlashFractionDoubleSign", addr)
 	acl.SetOwner("pos/SlashFractionDowntime", addr)
