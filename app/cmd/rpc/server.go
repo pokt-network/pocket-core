@@ -33,9 +33,9 @@ func Router(routes Routes) *httprouter.Router {
 
 func cors(w *http.ResponseWriter, r *http.Request) (isOptions bool) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	return !((*r).Method == "OPTIONS")
+	return ((*r).Method == "OPTIONS")
 }
 
 type Route struct {
@@ -51,8 +51,11 @@ func GetRoutes() Routes {
 	routes := Routes{
 		Route{Name: "AppVersion", Method: "GET", Path: "/v1", HandlerFunc: Version},
 		Route{Name: "HandleDispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
+		Route{Name: "HandleDispatchCORS", Method: "OPTIONS", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
 		Route{Name: "Service", Method: "POST", Path: "/v1/client/relay", HandlerFunc: Relay},
+		Route{Name: "ServiceCORS", Method: "OPTIONS", Path: "/v1/client/relay", HandlerFunc: Relay},
 		Route{Name: "Challenge", Method: "POST", Path: "/v1/client/challenge", HandlerFunc: Challenge},
+		Route{Name: "ChallengeCORS", Method: "OPTIONS", Path: "/v1/client/challenge", HandlerFunc: Challenge},
 		Route{Name: "SendRawTx", Method: "POST", Path: "/v1/client/rawtx", HandlerFunc: SendRawTx},
 		Route{Name: "QueryBlock", Method: "POST", Path: "/v1/query/block", HandlerFunc: Block},
 		Route{Name: "QueryTX", Method: "POST", Path: "/v1/query/tx", HandlerFunc: Tx},

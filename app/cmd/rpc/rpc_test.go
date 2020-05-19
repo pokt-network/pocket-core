@@ -491,6 +491,78 @@ func TestRPCQueryACL(t *testing.T) {
 	stopCli()
 }
 
+const (
+	acaoHeaderKey   = "Access-Control-Allow-Origin"
+	acaoHeaderValue = "*"
+	aclmHeaderKey   = "Access-Control-Allow-Methods"
+	aclmHeaderValue = "POST"
+	acahHeaderKey   = "Access-Control-Allow-Headers"
+	acahHeaderValue = "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization"
+)
+
+func validateResponseCORSHeaders(t *testing.T, headerMap http.Header) {
+	assert.Contains(t, headerMap, acaoHeaderKey)
+	assert.Contains(t, headerMap, aclmHeaderKey)
+	assert.Contains(t, headerMap, acahHeaderKey)
+	assert.Equal(t, headerMap[acaoHeaderKey], []string{acaoHeaderValue})
+	assert.Equal(t, headerMap[aclmHeaderKey], []string{aclmHeaderValue})
+	assert.Equal(t, headerMap[acahHeaderKey], []string{acahHeaderValue})
+}
+
+func TestRPC_ChallengeCORS(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
+	//kb := getInMemoryKeybase()
+	genBZ, _, _ := fiveValidatorsOneAppGenesis()
+	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
+	// setup the query
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	q := newCORSRequest("challenge", newBody(""))
+	rec := httptest.NewRecorder()
+	Challenge(rec, q, httprouter.Params{})
+	validateResponseCORSHeaders(t, rec.HeaderMap)
+	cleanup()
+	stopCli()
+}
+
+func TestRPC_RelayCORS(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
+	//kb := getInMemoryKeybase()
+	genBZ, _, _ := fiveValidatorsOneAppGenesis()
+	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
+	// setup the query
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	q := newCORSRequest("relay", newBody(""))
+	rec := httptest.NewRecorder()
+	Relay(rec, q, httprouter.Params{})
+	validateResponseCORSHeaders(t, rec.HeaderMap)
+	cleanup()
+	stopCli()
+}
+
+func TestRPC_DispatchCORS(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
+	//kb := getInMemoryKeybase()
+	genBZ, _, _ := fiveValidatorsOneAppGenesis()
+	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
+	// setup the query
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	q := newCORSRequest("dispatch", newBody(""))
+	rec := httptest.NewRecorder()
+	Dispatch(rec, q, httprouter.Params{})
+	validateResponseCORSHeaders(t, rec.HeaderMap)
+	cleanup()
+	stopCli()
+}
+
 func TestRPC_Relay(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
@@ -661,6 +733,14 @@ func newBody(params interface{}) io.Reader {
 	}
 	reader := bytes.NewReader(bz)
 	return reader
+}
+
+func newCORSRequest(query string, body io.Reader) *http.Request {
+	req, err := http.NewRequest("OPTIONS", "localhost:8081/v1/client/"+query, body)
+	if err != nil {
+		panic("could not create request: %v")
+	}
+	return req
 }
 
 func newClientRequest(query string, body io.Reader) *http.Request {
