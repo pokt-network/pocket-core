@@ -255,10 +255,6 @@ func getCousinIndex(dataLength, leafIndex int) (cousinIndex int) {
 
 // "levelIsValid" - Ensure that the number of levels in the relayProof is valid
 func levelsIsValid(leafNumOfLevels, cousinNumOfLevels int, totalRelays int64) (numOfLevels int, isValid bool) {
-	// only accept merkle proofs for more than 4 relays
-	if totalRelays < 5 {
-		return leafNumOfLevels, false
-	}
 	if leafNumOfLevels != cousinNumOfLevels {
 		return leafNumOfLevels, false
 	}
