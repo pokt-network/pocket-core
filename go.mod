@@ -9,7 +9,7 @@ require (
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.8.1 // indirect
-	github.com/pokt-network/posmint v0.0.0-20200519154322-6979fb657a3f
+	github.com/pokt-network/posmint v0.0.0-20200519165031-947a85177d7b
 	github.com/prometheus/client_golang v1.1.0 // indirect
 	github.com/prometheus/procfs v0.0.4 // indirect
 	github.com/spf13/cobra v0.0.5
