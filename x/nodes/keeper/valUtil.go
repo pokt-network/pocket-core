@@ -74,6 +74,10 @@ func (k Keeper) setOrUpdateInValidatorCache(validator types.Validator) {
 		valToRemove := k.validatorCacheList.Remove(e).(cachedValidator)
 		delete(k.validatorCache, valToRemove.address.String())
 	}
+	//Dont store unstaked Validators on cache
+	if validator.IsUnstaked() {
+		return
+	}
 
 	cachedVal := newCachedValidator(validator, validator.Address)
 	k.validatorCache[validator.Address.String()] = cachedVal

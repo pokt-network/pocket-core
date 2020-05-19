@@ -149,8 +149,6 @@ func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sd
 	validator = validator.UpdateStatus(sdk.Staked)
 	// save in the validator store
 	k.SetValidator(ctx, validator)
-	// save in the staked store
-	k.SetStakedValidator(ctx, validator)
 	// save in the network id stores for quick session generations
 	k.SetStakedValidatorByChains(ctx, validator)
 	// ensure there's a signing info entry for the validator (used in slashing)
@@ -233,8 +231,6 @@ func (k Keeper) BeginUnstakingValidator(ctx sdk.Ctx, validator types.Validator) 
 	}
 	// save the now unstaked validator record and power index
 	k.SetValidator(ctx, validator)
-	// Adds to unstaking validator queue
-	k.SetUnstakingValidator(ctx, validator)
 	ctx.Logger().Info("Began unstaking validator " + validator.Address.String())
 }
 
@@ -406,6 +402,5 @@ func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	}
 	validator.Jailed = false
 	k.SetValidator(ctx, validator)
-	k.SetStakedValidator(ctx, validator)
 	k.Logger(ctx).Info(fmt.Sprintf("validator %s unjailed", addr))
 }

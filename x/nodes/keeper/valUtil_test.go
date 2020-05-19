@@ -48,7 +48,6 @@ func TestMustGetValidator(t *testing.T) {
 				_, _ = keeper.GetValidator(context, test.args.validator.Address)
 			default:
 				keeper.SetValidator(context, test.args.validator)
-				keeper.SetStakedValidator(context, test.args.validator)
 				validator, _ := keeper.GetValidator(context, test.args.validator.Address)
 				assert.True(t, validator.Equals(test.expected.validator), "validator does not match")
 			}
@@ -84,7 +83,6 @@ func TestValidatorCaching(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetValidator(context, test.args.validator)
-			keeper.SetStakedValidator(context, test.args.validator)
 			store := context.KVStore(keeper.storeKey)
 			bz := store.Get(types.KeyForValByAllVals(test.args.validator.Address))
 			validator := keeper.validatorCaching(bz, test.args.validator.Address)
@@ -122,7 +120,6 @@ func TestNewValidatorCaching(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetValidator(context, test.args.validator)
-			keeper.SetStakedValidator(context, test.args.validator)
 			store := context.KVStore(keeper.storeKey)
 			key := types.KeyForValidatorPrevStateStateByPower(test.args.validator.Address)
 			store.Set(key, test.args.validator.Address)
