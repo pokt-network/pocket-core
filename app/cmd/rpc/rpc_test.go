@@ -522,7 +522,7 @@ func TestRPC_ChallengeCORS(t *testing.T) {
 	q := newCORSRequest("challenge", newBody(""))
 	rec := httptest.NewRecorder()
 	Challenge(rec, q, httprouter.Params{})
-	validateResponseCORSHeaders(t, rec.HeaderMap)
+	validateResponseCORSHeaders(t, rec.Result().Header)
 	cleanup()
 	stopCli()
 }
@@ -540,7 +540,7 @@ func TestRPC_RelayCORS(t *testing.T) {
 	q := newCORSRequest("relay", newBody(""))
 	rec := httptest.NewRecorder()
 	Relay(rec, q, httprouter.Params{})
-	validateResponseCORSHeaders(t, rec.HeaderMap)
+	validateResponseCORSHeaders(t, rec.Result().Header)
 	cleanup()
 	stopCli()
 }
@@ -558,7 +558,7 @@ func TestRPC_DispatchCORS(t *testing.T) {
 	q := newCORSRequest("dispatch", newBody(""))
 	rec := httptest.NewRecorder()
 	Dispatch(rec, q, httprouter.Params{})
-	validateResponseCORSHeaders(t, rec.HeaderMap)
+	validateResponseCORSHeaders(t, rec.Result().Header)
 	cleanup()
 	stopCli()
 }
