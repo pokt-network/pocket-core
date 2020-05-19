@@ -3,10 +3,11 @@ package types
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"github.com/pokt-network/posmint/types"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/pokt-network/posmint/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateGenesis(t *testing.T) {
@@ -215,6 +216,7 @@ func TestDefaultGenesisState(t *testing.T) {
 		SupportedBlockchains:       DefaultSupportedBlockchains,
 		ClaimExpiration:            DefaultClaimExpiration,
 		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
+		MinimumNumberOfProofs:      DefaultMinimumNumberOfProofs,
 	}}
 	tests := []struct {
 		name         string

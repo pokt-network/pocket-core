@@ -3,8 +3,9 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParams_Equal(t *testing.T) {
@@ -77,6 +78,7 @@ func TestDefaultParams(t *testing.T) {
 		SupportedBlockchains:       DefaultSupportedBlockchains,
 		ClaimExpiration:            DefaultClaimExpiration,
 		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
+		MinimumNumberOfProofs:      DefaultMinimumNumberOfProofs,
 	}.Equal(DefaultParams()))
 }
 

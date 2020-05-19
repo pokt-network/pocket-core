@@ -52,6 +52,13 @@ func (k Keeper) SupportedBlockchains(ctx sdk.Ctx) (res []string) {
 	return
 }
 
+// "SupportedBlockchains" - Returns a supported blockchain parameter from the paramstore
+// What blockchains are supported in pocket network (list of network identifier hashes)
+func (k Keeper) MinimumNumberOfProofs(ctx sdk.Ctx) (res int64) {
+	k.Paramstore.Get(ctx, types.KeyMinimumNumberOfProofs, &res)
+	return
+}
+
 // "GetParams" - Returns all module parameters in a `Params` struct
 func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 	return types.Params{
@@ -60,6 +67,7 @@ func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 		SupportedBlockchains:       k.SupportedBlockchains(ctx),
 		ClaimExpiration:            k.ClaimExpiration(ctx),
 		ReplayAttackBurnMultiplier: k.ReplayAttackBurnMultiplier(ctx),
+		MinimumNumberOfProofs:      k.MinimumNumberOfProofs(ctx),
 	}
 }
 

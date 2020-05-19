@@ -43,6 +43,8 @@
 - Removing orphaned jailed nodes after X amount of Blocks jailed.
 - Fixed CORS requests on `/v1/client/dispatch`, `/v1/client/relay` and `/v1/client/challenge`.
 - Split DAOTx transfer & burn to their own CLI commands to avoid user prone errors
+- Added minimum proofs to pocketcore module params
+- Split burn and transfer DAO CLI command, avoid error prone errors
 
 ## RC-0.3.0
 - Added governance module from posmint

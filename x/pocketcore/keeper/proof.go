@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
+
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
 	"github.com/pokt-network/posmint/crypto/keys"
@@ -11,7 +13,6 @@ import (
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/tendermint/tendermint/rpc/client"
-	"math"
 )
 
 // auto sends a proof transaction for the claim
@@ -104,6 +105,10 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	levelCount := len(proof.MerkleProofs[0].HashSums)
 	if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
 		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
+	}
+	// validate number of proofs
+	if params := k.GetParams(ctx); claim.TotalProofs < params.MinimumNumberOfProofs {
+		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// validate the merkle proofs
 	isValid, isReplayAttack := proof.MerkleProofs.Validate(claim.MerkleRoot, proof.Leaf, proof.Cousin, claim.TotalProofs)

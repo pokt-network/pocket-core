@@ -339,6 +339,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 		acl.SetOwner("application/ApplicationStakeMinimum", kp.GetAddress())
 		acl.SetOwner("pocketcore/ClaimExpiration", kp.GetAddress())
 		acl.SetOwner("pocketcore/SessionNodeCount", kp.GetAddress())
+		acl.SetOwner("pocketcore/MinimumNumberOfProofs", kp.GetAddress())
 		acl.SetOwner("pocketcore/ReplayAttackBurnMultiplier", kp.GetAddress())
 		acl.SetOwner("pos/MaxValidators", kp.GetAddress())
 		acl.SetOwner("pos/ProposerPercentage", kp.GetAddress())

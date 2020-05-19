@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+
 	"github.com/pokt-network/posmint/types"
 )
 
@@ -15,6 +16,7 @@ const (
 	DefaultClaimSubmissionWindow      = int64(3)   // default sessions to submit a claim
 	DefaultClaimExpiration            = int64(100) // default sessions to exprie claims
 	DefaultReplayAttackBurnMultiplier = int64(3)   // default replay attack burn multiplier
+	DefaultMinimumNumberOfProofs      = int64(5)   // default minimum number of proofs
 )
 
 var (
@@ -24,6 +26,7 @@ var (
 	KeySupportedBlockchains       = []byte("SupportedBlockchains")
 	KeyClaimExpiration            = []byte("ClaimExpiration")
 	KeyReplayAttackBurnMultiplier = []byte("ReplayAttackBurnMultiplier")
+	KeyMinimumNumberOfProofs      = []byte("MinimumNumberOfProofs")
 )
 
 var _ types.ParamSet = (*Params)(nil)
@@ -35,6 +38,7 @@ type Params struct {
 	SupportedBlockchains       []string `json:"supported_blockchains"`
 	ClaimExpiration            int64    `json:"claim_expiration"` // per session
 	ReplayAttackBurnMultiplier int64    `json:"replay_attack_burn_multiplier"`
+	MinimumNumberOfProofs      int64    `json:"minimum_number_of_proofs"`
 }
 
 // "ParamSetPairs" - returns an kv params object
@@ -46,6 +50,7 @@ func (p *Params) ParamSetPairs() types.ParamSetPairs {
 		{Key: KeySupportedBlockchains, Value: &p.SupportedBlockchains},
 		{Key: KeyClaimExpiration, Value: &p.ClaimExpiration},
 		{Key: KeyReplayAttackBurnMultiplier, Value: p.ReplayAttackBurnMultiplier},
+		{Key: KeyMinimumNumberOfProofs, Value: p.MinimumNumberOfProofs},
 	}
 }
 
@@ -57,6 +62,7 @@ func DefaultParams() Params {
 		SupportedBlockchains:       DefaultSupportedBlockchains,
 		ClaimExpiration:            DefaultClaimExpiration,
 		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
+		MinimumNumberOfProofs:      DefaultMinimumNumberOfProofs,
 	}
 }
 

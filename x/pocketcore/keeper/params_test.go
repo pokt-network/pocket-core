@@ -1,11 +1,12 @@
 package keeper
 
 import (
+	"testing"
+
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestParamKeyTable(t *testing.T) {
@@ -67,6 +68,7 @@ func TestKeeper_GetParams(t *testing.T) {
 		SupportedBlockchains:       k.SupportedBlockchains(ctx),
 		ClaimExpiration:            k.ClaimExpiration(ctx),
 		ReplayAttackBurnMultiplier: k.ReplayAttackBurnMultiplier(ctx),
+		MinimumNumberOfProofs:      k.MinimumNumberOfProofs(ctx),
 	}
 	paramz := k.GetParams(ctx)
 	assert.NotNil(t, paramz)

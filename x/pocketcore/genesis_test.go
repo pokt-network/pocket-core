@@ -1,9 +1,10 @@
 package pocketcore
 
 import (
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestInitExportGenesis(t *testing.T) {
@@ -13,6 +14,7 @@ func TestInitExportGenesis(t *testing.T) {
 		ClaimSubmissionWindow: 22,
 		SupportedBlockchains:  []string{"eth"},
 		ClaimExpiration:       55,
+		MinimumNumberOfProofs: int64(5),
 	}
 	genesisState := types.GenesisState{
 		Params:   p,
