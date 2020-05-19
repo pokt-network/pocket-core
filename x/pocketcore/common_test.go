@@ -171,7 +171,6 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins s
 		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com:443", valCoins)
 		// set the vals from the data
 		nk.SetValidator(ctx, val)
-		nk.SetStakedValidator(ctx, val)
 		// ensure there's a signing info entry for the val (used in slashing)
 		_, found := nk.GetValidatorSigningInfo(ctx, val.GetAddress())
 		if !found {
@@ -192,7 +191,6 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins s
 	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com:443", valCoins)
 	// set the vals from the data
 	nk.SetValidator(ctx, val)
-	nk.SetStakedValidator(ctx, val)
 	// ensure there's a signing info entry for the val (used in slashing)
 	_, found := nk.GetValidatorSigningInfo(ctx, val.GetAddress())
 	if !found {

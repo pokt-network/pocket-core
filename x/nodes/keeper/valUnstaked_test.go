@@ -51,12 +51,6 @@ func TestGetAndSetlUnstaking(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, validator := range test.args.validators {
 				keeper.SetValidator(context, validator)
-				if validator.IsUnstaking() {
-					keeper.SetUnstakingValidator(context, validator)
-				}
-				if validator.IsStaked() {
-					keeper.SetStakedValidator(context, validator)
-				}
 			}
 			validators := keeper.getAllUnstakingValidators(context)
 			if !test.expected.stakedValidators {
@@ -97,12 +91,10 @@ func TestDeleteUnstakingValidator(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, validator := range test.args.validators {
 				keeper.SetValidator(context, validator)
-				keeper.SetUnstakingValidator(context, validator)
 				keeper.deleteUnstakingValidator(context, validator)
 			}
 			if test.expected.stakedValidators {
 				keeper.SetValidator(context, test.args.stakedValidator)
-				keeper.SetStakedValidator(context, test.args.stakedValidator)
 			}
 
 			validators := keeper.getAllUnstakingValidators(context)
@@ -142,7 +134,6 @@ func TestDeleteUnstakingValidators(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, validator := range test.args.validators {
 				keeper.SetValidator(context, validator)
-				keeper.SetUnstakingValidator(context, validator)
 				keeper.deleteUnstakingValidators(context, validator.UnstakingCompletionTime)
 			}
 
@@ -188,7 +179,6 @@ func TestGetAllMatureValidators(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, validator := range test.args.validators {
 				keeper.SetValidator(context, validator)
-				keeper.SetUnstakingValidator(context, validator)
 			}
 			keeper.UpdateTendermintValidators(context)
 			matureValidators := keeper.getMatureValidators(context)
@@ -263,7 +253,6 @@ func TestUnstakingValidatorsIterator(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, validator := range test.validators {
 				keeper.SetValidator(context, validator)
-				keeper.SetStakedValidator(context, validator)
 			}
 
 			it := keeper.unstakingValidatorsIterator(context, context.BlockHeader().Time)

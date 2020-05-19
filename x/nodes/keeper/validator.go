@@ -21,11 +21,23 @@ func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Val
 	return validator, true
 }
 
-// SetValidator - Store validator in the main store
+// SetValidator - Store validator in the main store and state stores (stakingset/ unstakingset)
 func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	bz := types.MustMarshalValidator(k.cdc, validator)
 	store.Set(types.KeyForValByAllVals(validator.Address), bz)
+
+	if validator.IsUnstaking() {
+		// Adds to unstaking validator queue
+		k.SetUnstakingValidator(ctx, validator)
+	}
+	if validator.IsStaked() {
+		if !validator.IsJailed() {
+			// save in the staked store
+			k.SetStakedValidator(ctx, validator)
+		}
+	}
+
 	k.setOrUpdateInValidatorCache(validator)
 }
 

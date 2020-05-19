@@ -81,9 +81,6 @@ func (k Keeper) removeValidatorTokens(ctx sdk.Ctx, v types.Validator, tokensToRe
 		return v, err
 	}
 	k.SetValidator(ctx, v)
-	if !v.IsJailed() {
-		k.SetStakedValidator(ctx, v)
-	}
 	return v, nil
 }
 

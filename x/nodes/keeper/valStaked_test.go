@@ -43,7 +43,6 @@ func TestGetAndSetStakedValidator(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, validator := range test.validators {
 				keeper.SetValidator(context, validator)
-				keeper.SetStakedValidator(context, validator)
 			}
 			validators := keeper.getStakedValidators(context)
 
@@ -110,7 +109,6 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetValidator(context, test.validator)
-			keeper.SetStakedValidator(context, test.validator)
 			switch test.hasError {
 			case true:
 				_, _ = keeper.removeValidatorTokens(context, test.validator, test.amount)
@@ -147,7 +145,6 @@ func TestRemoveDeleteFromStakingSet(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, validator := range test.validators {
 				keeper.SetValidator(context, validator)
-				keeper.SetStakedValidator(context, validator)
 			}
 			for _, validator := range test.validators {
 				keeper.deleteValidatorFromStakingSet(context, validator)
@@ -181,7 +178,6 @@ func TestGetValsIterator(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, validator := range test.validators {
 				keeper.SetValidator(context, validator)
-				keeper.SetStakedValidator(context, validator)
 			}
 
 			it := keeper.stakedValsIterator(context)
@@ -209,7 +205,6 @@ func TestApplicationStaked_IterateAndExecuteOverStakedApps(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, application := range tt.applications {
 				keeper.SetValidator(context, application)
-				keeper.SetStakedValidator(context, application)
 			}
 			got := 0
 			fn := modifyFn(&got)
