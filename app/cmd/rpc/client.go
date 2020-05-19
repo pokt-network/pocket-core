@@ -14,8 +14,9 @@ import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
+// Dispatch supports CORS functionality
 func Dispatch(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	if !cors(&w, r) {
+	if cors(&w, r) {
 		return
 	}
 	d := types.SessionHeader{}
@@ -42,9 +43,10 @@ type RPCRelayResponse struct {
 	// remove proof object because client already knows about it
 }
 
+// Relay supports CORS functionality
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var relay = types.Relay{}
-	if !cors(&w, r) {
+	if cors(&w, r) {
 		return
 	}
 	if err := PopModel(w, r, ps, &relay); err != nil {
@@ -68,9 +70,10 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
+// Challenge supports CORS functionality
 func Challenge(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var challenge = types.ChallengeProofInvalidData{}
-	if !cors(&w, r) {
+	if cors(&w, r) {
 		return
 	}
 	if err := PopModel(w, r, ps, &challenge); err != nil {
@@ -97,9 +100,6 @@ type SendRawTxParams struct {
 
 func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = SendRawTxParams{}
-	if !cors(&w, r) {
-		return
-	}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
