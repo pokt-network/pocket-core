@@ -32,22 +32,22 @@ type Relay struct {
 
 // "Validate" - Checks the validity of a relay request using store data
 func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.ValidatorI, hb *HostedBlockchains, sessionBlockHeight int64,
-	sessionNodeCount int, app appexported.ApplicationI) (maxPossibleRelays int64, err sdk.Error) {
+	sessionNodeCount int, app appexported.ApplicationI) (maxPossibleRelays sdk.Int, err sdk.Error) {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
-		return 0, NewEmptyPayloadDataError(ModuleName)
+		return sdk.ZeroInt(), NewEmptyPayloadDataError(ModuleName)
 	}
 	// validate the metadata
 	if err := r.Meta.Validate(ctx); err != nil {
-		return 0, err
+		return sdk.ZeroInt(), err
 	}
 	// validate the relay hash = request hash
 	if r.Proof.RequestHash != r.RequestHashString() {
-		return 0, NewRequestHashError(ModuleName)
+		return sdk.ZeroInt(), NewRequestHashError(ModuleName)
 	}
 	// ensure the blockchain is supported locally
 	if !hb.Contains(r.Proof.Blockchain) {
-		return 0, NewUnsupportedBlockchainNodeError(ModuleName)
+		return sdk.ZeroInt(), NewUnsupportedBlockchainNodeError(ModuleName)
 	}
 	evidenceHeader := SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
@@ -56,23 +56,23 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 	}
 	maxPossibleRelays = MaxPossibleRelays(app, int64(sessionNodeCount))
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence, maxPossibleRelays)
+	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence, maxPossibleRelays.Int64())
 	// get evidence key by proof
 	if !IsUniqueProof(r.Proof, evidence) {
-		return 0, NewDuplicateProofError(ModuleName)
+		return sdk.ZeroInt(), NewDuplicateProofError(ModuleName)
 	}
 	// validate not over service
-	if totalRelays >= maxPossibleRelays {
-		return 0, NewOverServiceError(ModuleName)
+	if totalRelays >= maxPossibleRelays.Int64() {
+		return sdk.ZeroInt(), NewOverServiceError(ModuleName)
 	}
 	// validate the Proof
 	if err := r.Proof.ValidateLocal(app.GetChains(), sessionNodeCount, sessionBlockHeight, node.GetPublicKey().RawString()); err != nil {
-		return 0, err
+		return sdk.ZeroInt(), err
 	}
 	// get the sessionContext
 	sessionContext, er := ctx.PrevCtx(sessionBlockHeight)
 	if er != nil {
-		return 0, sdk.ErrInternal(er.Error())
+		return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
 	}
 	// generate the header
 	header := SessionHeader{
@@ -87,7 +87,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		var err sdk.Error
 		session, err = NewSession(sessionContext, ctx, keeper, header, BlockHash(sessionContext), sessionNodeCount)
 		if err != nil {
-			return 0, err
+			return sdk.ZeroInt(), err
 		}
 		// add to cache
 		SetSession(session)
@@ -95,7 +95,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 	// validate the session
 	err = session.Validate(node, app, sessionNodeCount)
 	if err != nil {
-		return 0, err
+		return sdk.ZeroInt(), err
 	}
 	// if the payload method is empty, set it to the default
 	if r.Payload.Method == "" {
