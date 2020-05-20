@@ -35,7 +35,7 @@ var appStakeCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		fromAddr := args[0]
 		amount, err := strconv.Atoi(args[1])
 		if err != nil {
@@ -49,7 +49,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		rawChains := reg.ReplaceAllString(args[2], "")
 		chains := strings.Split(rawChains, ",")
 		fmt.Println("Enter passphrase: ")
-		res, err := StakeApp(chains, fromAddr, args[3], app.Credentials(), types.NewInt(int64(amount)))
+		res, err := StakeApp(chains, fromAddr, app.Credentials(), args[3], types.NewInt(int64(amount)))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -75,7 +75,7 @@ var appUnstakeCmd = &cobra.Command{
 Prompts the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		fmt.Println("Enter Password: ")
 		res, err := UnstakeApp(args[0], app.Credentials(), args[1])
 		if err != nil {
@@ -105,7 +105,7 @@ Read the Application Authentication Token documentation for more information.
 NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES IN ORDER TO UNDERSTAND WHAT'S THE RECOMMENDED AAT CONFIGURATION FOR YOUR APPLICATION.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Println(app.UninitializedKeybaseError)

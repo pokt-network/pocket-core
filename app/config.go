@@ -158,9 +158,9 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL string) *node.Node {
 	// init config
-	InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+	InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 	// init the keyfiles
 	InitKeyfiles()
 	// init cache
@@ -171,7 +171,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort str
 	return InitTendermint()
 }
 
-func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort string) {
+func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL string) {
 	// setup the codec
 	MakeCodec()
 	if datadir == "" {
@@ -238,6 +238,9 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort 
 	}
 	if tmPeersPort != "" {
 		c.TendermintConfig.P2P.ListenAddress = DefaultListenAddr + tmPeersPort
+	}
+	if remoteCLIURL != "" {
+		c.PocketConfig.RemoteCLIURL = strings.TrimRight(remoteCLIURL, "/")
 	}
 	GlobalConfig = c
 }

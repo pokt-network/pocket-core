@@ -71,7 +71,7 @@ var startCmd = &cobra.Command{
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, simulateRelay)
 		// trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)

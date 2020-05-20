@@ -57,7 +57,7 @@ func init() {
 			GetAccountPath = route.Path
 		case "QueryApp":
 			GetAppPath = route.Path
-		case "QueryTx":
+		case "QueryTX":
 			GetTxPath = route.Path
 		case "QueryBlock":
 			GetBlockPath = route.Path
@@ -92,7 +92,9 @@ func init() {
 }
 
 func QueryRPC(path string, jsonArgs []byte) (string, error) {
-	cliURL := app.GlobalConfig.PocketConfig.RemoteCLIURL + ":" + app.GlobalConfig.PocketConfig.RPCPort + path
+	//cliURL := app.GlobalConfig.PocketConfig.RemoteCLIURL + ":" + app.GlobalConfig.PocketConfig.RPCPort + path
+	cliURL := app.GlobalConfig.PocketConfig.RemoteCLIURL + path
+	fmt.Println(cliURL)
 	req, err := http.NewRequest("POST", cliURL, bytes.NewBuffer(jsonArgs))
 	if err != nil {
 		return "", err
