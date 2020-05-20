@@ -367,7 +367,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 	return testACL
 }
 
-func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validators, a appsTypes.Application) {
+func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, validators nodesTypes.Validators, application appsTypes.Application) {
 	kb := getInMemoryKeybase()
 	// create keypairs
 	kp1, err := kb.GetCoinbase()
@@ -378,12 +378,22 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	if err != nil {
 		panic(err)
 	}
-	// get public keys
+	pk1, err := kb.ExportPrivateKeyObject(kp1.GetAddress(), "test")
+	if err != nil {
+		panic(err)
+	}
+	pk2, err := kb.ExportPrivateKeyObject(kp2.GetAddress(), "test")
+	if err != nil {
+		panic(err)
+	}
+	var kys []crypto.PrivateKey
+	kys = append(kys, pk1, pk2, crypto.GenerateEd25519PrivKey(), crypto.GenerateEd25519PrivKey(), crypto.GenerateEd25519PrivKey())
+	// get public kys
 	pubKey := kp1.PublicKey
-	pubKey2 := crypto.GenerateEd25519PrivKey().PublicKey()
-	pubKey3 := crypto.GenerateEd25519PrivKey().PublicKey()
-	pubKey4 := crypto.GenerateEd25519PrivKey().PublicKey()
-	pubKey5 := crypto.GenerateEd25519PrivKey().PublicKey()
+	pubKey2 := kp2.PublicKey
+	pubKey3 := kys[2].PublicKey()
+	pubKey4 := kys[3].PublicKey()
+	pubKey5 := kys[4].PublicKey()
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
@@ -401,7 +411,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 			PublicKey:    pubKey,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   dummyServiceURL,
+			ServiceURL:   PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(1000000000000000000)})
 	// validator 2
 	posGenesisState.Validators = append(posGenesisState.Validators,
@@ -409,7 +419,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 			PublicKey:    pubKey2,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   dummyServiceURL,
+			ServiceURL:   PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	// validator 3
 	posGenesisState.Validators = append(posGenesisState.Validators,
@@ -417,7 +427,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 			PublicKey:    pubKey3,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   dummyServiceURL,
+			ServiceURL:   PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	// validator 4
 	posGenesisState.Validators = append(posGenesisState.Validators,
@@ -425,7 +435,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 			PublicKey:    pubKey4,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   dummyServiceURL,
+			ServiceURL:   PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	// validator 5
 	posGenesisState.Validators = append(posGenesisState.Validators,
@@ -433,7 +443,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 			PublicKey:    pubKey5,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   dummyServiceURL,
+			ServiceURL:   PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	// marshal into json
 	res := memCodec().MustMarshalJSON(posGenesisState)
@@ -442,7 +452,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	rawApps := defaultGenesis[appsTypes.ModuleName]
 	var appsGenesisState appsTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawApps, &appsGenesisState)
-	// a 1
+	// application 1
 	appsGenesisState.Applications = append(appsGenesisState.Applications, appsTypes.Application{
 		Address:                 kp2.GetAddress(),
 		PublicKey:               kp2.PublicKey,
@@ -471,6 +481,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	var pocketGenesisState pocketTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
 	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
+	pocketGenesisState.Params.ClaimSubmissionWindow = 10
 	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
 	defaultGenesis[pocketTypes.ModuleName] = res3
 	// set default governance in genesis
@@ -487,7 +498,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, validators nodesTypes.Validato
 	// end genesis setup
 	app.GenState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
-	return j, posGenesisState.Validators, appsGenesisState.Applications[0]
+	return j, kys, posGenesisState.Validators, appsGenesisState.Applications[0]
 }
 
 type config struct {

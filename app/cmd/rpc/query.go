@@ -307,6 +307,44 @@ func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
+func NodeClaim(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = QueryNodeReceiptParam{}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.PCA.QueryClaim(params.Address, params.AppPubKey, params.Blockchain, params.ReceiptType, params.SBlockHeight, params.Height)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	j, err := app.Codec().MarshalJSON(res)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
+func NodeClaims(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = PaginatedHeightAndAddrParams{}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.PCA.QueryClaims(params.Addr, params.Height, params.Page, params.PerPage)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	j, err := app.Codec().MarshalJSON(res)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
 func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = HeightAndApplicaitonOptsParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {

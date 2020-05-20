@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/pokt-network/posmint/crypto"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -26,6 +28,12 @@ import (
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
+)
+
+const (
+	PlaceholderHash       = "00"
+	PlaceholderURL        = "https://foo.bar:8080"
+	PlaceholderServiceURL = PlaceholderURL
 )
 
 func TestRPC_QueryHeight(t *testing.T) {
@@ -287,7 +295,7 @@ func TestRPC_QueryNode(t *testing.T) {
 }
 
 func TestRPC_QueryApp(t *testing.T) {
-	gBZ, _, app := fiveValidatorsOneAppGenesis()
+	gBZ, _, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -308,7 +316,7 @@ func TestRPC_QueryApp(t *testing.T) {
 }
 
 func TestRPC_QueryApps(t *testing.T) {
-	gBZ, _, app := fiveValidatorsOneAppGenesis()
+	gBZ, _, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -332,7 +340,7 @@ func TestRPC_QueryApps(t *testing.T) {
 }
 
 func TestRPC_QueryNodeParams(t *testing.T) {
-	gBZ, _, _ := fiveValidatorsOneAppGenesis()
+	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -352,7 +360,7 @@ func TestRPC_QueryNodeParams(t *testing.T) {
 }
 
 func TestRPC_QueryAppParams(t *testing.T) {
-	gBZ, _, _ := fiveValidatorsOneAppGenesis()
+	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -372,7 +380,7 @@ func TestRPC_QueryAppParams(t *testing.T) {
 }
 
 func TestRPC_QueryPocketParams(t *testing.T) {
-	gBZ, _, _ := fiveValidatorsOneAppGenesis()
+	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan
@@ -568,7 +576,7 @@ func TestRPC_Relay(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 	kb := getInMemoryKeybase()
-	genBZ, validators, app := fiveValidatorsOneAppGenesis()
+	genBZ, _, validators, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	// setup relay endpoint
 	defer gock.Off()
@@ -633,7 +641,7 @@ func TestRPC_Relay(t *testing.T) {
 
 func TestRPC_Dispatch(t *testing.T) {
 	kb := getInMemoryKeybase()
-	genBZ, validators, app := fiveValidatorsOneAppGenesis()
+	genBZ, _, validators, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 	assert.Nil(t, err)
@@ -701,6 +709,71 @@ func TestRPC_RawTX(t *testing.T) {
 	cleanup()
 	stopCli()
 }
+
+func TestRPC_QueryNodeClaims(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	var params = PaginatedHeightAndAddrParams{
+		Height: 0,
+		Addr:   cb.GetAddress().String(),
+	}
+	q := newQueryRequest("nodeclaims", newBody(params))
+	rec := httptest.NewRecorder()
+	NodeClaims(rec, q, httprouter.Params{})
+	getJSONResponse(rec)
+	cleanup()
+	stopCli()
+}
+
+func TestRPC_QueryNodeClaim(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	var params = QueryNodeReceiptParam{
+		Address:      cb.GetAddress().String(),
+		Blockchain:   "00",
+		AppPubKey:    cb.PublicKey.RawString(),
+		SBlockHeight: 1,
+		Height:       0,
+		ReceiptType:  "relay",
+	}
+	q := newQueryRequest("nodeclaim", newBody(params))
+	rec := httptest.NewRecorder()
+	NodeClaim(rec, q, httprouter.Params{})
+	getJSONResponse(rec)
+	cleanup()
+	stopCli()
+}
+
+func TestRPC_Challenge(t *testing.T) {
+	kb := getInMemoryKeybase()
+	genBZ, keys, _, app := fiveValidatorsOneAppGenesis()
+	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
+	_, err := kb.ExportPrivateKeyObject(app.Address, "test")
+	assert.Nil(t, err)
+	// Setup HandleDispatch Request
+	key := NewValidChallengeProof(t, keys)
+	// setup the query
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	q := newClientRequest("challenge", newBody(key))
+	rec := httptest.NewRecorder()
+	Challenge(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	rawResp := string(resp)
+	assert.Equal(t, rec.Code, 200)
+	assert.Contains(t, rawResp, "success")
+	cleanup()
+	stopCli()
+}
+
 func TestRPC_SimRelay(t *testing.T) {
 	// setup relay endpoint
 	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
@@ -785,4 +858,141 @@ func getJSONResponse(rec *httptest.ResponseRecorder) []byte {
 		panic("could not read response: " + err.Error())
 	}
 	return b
+}
+
+func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey) (challenge pocketTypes.ChallengeProofInvalidData) {
+	appPrivateKey := privateKeys[1]
+	servicerPrivKey1 := privateKeys[4]
+	servicerPrivKey2 := privateKeys[2]
+	servicerPrivKey3 := privateKeys[3]
+	clientPrivateKey := servicerPrivKey3
+	appPubKey := appPrivateKey.PublicKey().RawString()
+	servicerPubKey := servicerPrivKey1.PublicKey().RawString()
+	servicerPubKey2 := servicerPrivKey2.PublicKey().RawString()
+	servicerPubKey3 := servicerPrivKey3.PublicKey().RawString()
+	reporterPrivKey := privateKeys[0]
+	reporterPubKey := reporterPrivKey.PublicKey()
+	reporterAddr := reporterPubKey.Address()
+	clientPubKey := clientPrivateKey.PublicKey().RawString()
+	var proof pocketTypes.ChallengeProofInvalidData
+	validProof := pocketTypes.RelayProof{
+		Entropy:            int64(rand.Intn(500000)),
+		SessionBlockHeight: 1,
+		ServicerPubKey:     servicerPubKey,
+		RequestHash:        clientPubKey, // fake
+		Blockchain:         PlaceholderHash,
+		Token: pocketTypes.AAT{
+			Version:              "0.0.1",
+			ApplicationPublicKey: appPubKey,
+			ClientPublicKey:      clientPubKey,
+			ApplicationSignature: "",
+		},
+		Signature: "",
+	}
+	appSignature, er := appPrivateKey.Sign(validProof.Token.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	validProof.Token.ApplicationSignature = hex.EncodeToString(appSignature)
+	clientSignature, er := clientPrivateKey.Sign(validProof.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	validProof.Signature = hex.EncodeToString(clientSignature)
+	// valid proof 2
+	validProof2 := pocketTypes.RelayProof{
+		Entropy:            0,
+		SessionBlockHeight: 1,
+		ServicerPubKey:     servicerPubKey2,
+		RequestHash:        clientPubKey, // fake
+		Blockchain:         PlaceholderHash,
+		Token: pocketTypes.AAT{
+			Version:              "0.0.1",
+			ApplicationPublicKey: appPubKey,
+			ClientPublicKey:      clientPubKey,
+			ApplicationSignature: "",
+		},
+		Signature: "",
+	}
+	appSignature, er = appPrivateKey.Sign(validProof2.Token.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	validProof2.Token.ApplicationSignature = hex.EncodeToString(appSignature)
+	clientSignature, er = clientPrivateKey.Sign(validProof2.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	validProof2.Signature = hex.EncodeToString(clientSignature)
+	// valid proof 3
+	validProof3 := pocketTypes.RelayProof{
+		Entropy:            0,
+		SessionBlockHeight: 1,
+		ServicerPubKey:     servicerPubKey3,
+		RequestHash:        clientPubKey, // fake
+		Blockchain:         PlaceholderHash,
+		Token: pocketTypes.AAT{
+			Version:              "0.0.1",
+			ApplicationPublicKey: appPubKey,
+			ClientPublicKey:      clientPubKey,
+			ApplicationSignature: "",
+		},
+		Signature: "",
+	}
+	appSignature, er = appPrivateKey.Sign(validProof3.Token.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	validProof3.Token.ApplicationSignature = hex.EncodeToString(appSignature)
+	clientSignature, er = clientPrivateKey.Sign(validProof3.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	validProof3.Signature = hex.EncodeToString(clientSignature)
+	// create responses
+	majorityResponsePayload := `{"id":67,"jsonrpc":"2.0","result":"Mist/v0.9.3/darwin/go1.4.1"}`
+	minorityResponsePayload := `{"id":67,"jsonrpc":"2.0","result":"Mist/v0.9.3/darwin/go1.4.2"}`
+	// majority response 1
+	majResp1 := pocketTypes.RelayResponse{
+		Signature: "",
+		Response:  majorityResponsePayload,
+		Proof:     validProof,
+	}
+	sig, er := servicerPrivKey1.Sign(majResp1.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	majResp1.Signature = hex.EncodeToString(sig)
+	// majority response 2
+	majResp2 := pocketTypes.RelayResponse{
+		Signature: "",
+		Response:  majorityResponsePayload,
+		Proof:     validProof2,
+	}
+	sig, er = servicerPrivKey2.Sign(majResp2.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	majResp2.Signature = hex.EncodeToString(sig)
+	// minority response
+	minResp := pocketTypes.RelayResponse{
+		Signature: "",
+		Response:  minorityResponsePayload,
+		Proof:     validProof3,
+	}
+	sig, er = servicerPrivKey3.Sign(minResp.Hash())
+	if er != nil {
+		t.Fatalf(er.Error())
+	}
+	minResp.Signature = hex.EncodeToString(sig)
+	// create valid challenge proof
+	proof = pocketTypes.ChallengeProofInvalidData{
+		MajorityResponses: [2]pocketTypes.RelayResponse{
+			majResp1,
+			majResp2,
+		},
+		MinorityResponse: minResp,
+		ReporterAddress:  types.Address(reporterAddr),
+	}
+	return proof
 }
