@@ -403,7 +403,6 @@ func TestChallengeProofInvalidData_ValidateBasic(t *testing.T) {
 }
 
 func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
-	InitCacheTest()
 	validChallengeProofIVD, servicer1PK, servicer2PK, servicer3PK, appPK, _, reporterPK := NewValidChallengeProof(t)
 	ser1PubKey := servicer1PK.PublicKey()
 	ser2PubKey := servicer2PK.PublicKey()

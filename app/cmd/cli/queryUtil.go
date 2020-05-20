@@ -33,6 +33,8 @@ var (
 	GetPocketParamsPath,
 	GetNodeReceiptPath,
 	GetNodeReceiptsPath,
+	GetNodeClaimsPath,
+	GetNodeClaimPath,
 	GetBlockTxsPath,
 	GetSupplyPath string
 )
@@ -85,6 +87,10 @@ func init() {
 			GetBlockTxsPath = route.Path
 		case "QuerySupply":
 			GetSupplyPath = route.Path
+		case "QueryNodeClaim":
+			GetNodeClaimPath = route.Path
+		case "QueryNodeClaims":
+			GetNodeClaimsPath = route.Path
 		default:
 			continue
 		}

@@ -4,10 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"math"
-	"reflect"
-	"strings"
-
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -17,6 +13,8 @@ import (
 	"github.com/pokt-network/posmint/x/auth/util"
 	"github.com/pokt-network/posmint/x/gov/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
+	"math"
+	"reflect"
 )
 
 const (
@@ -286,14 +284,9 @@ func (app PocketCoreApp) QueryReceipt(blockchain, appPubKey, addr, receiptType s
 		Chain:              blockchain,
 		SessionBlockHeight: sessionblockHeight,
 	}
-	var et pocketTypes.EvidenceType
-	switch strings.ToLower(receiptType) {
-	case "relay":
-		et = pocketTypes.RelayEvidence
-	case "challenge":
-		et = pocketTypes.ChallengeEvidence
-	default:
-		return nil, sdk.ErrInternal("type in the receipt query is not recognized: (relay or challenge)")
+	et, err := pocketTypes.EvidenceTypeFromString(receiptType)
+	if err != nil {
+		return nil, err
 	}
 	app.pocketKeeper.GetReceipt(ctx, a, h, et)
 	return
@@ -306,6 +299,51 @@ func (app PocketCoreApp) QueryPocketSupportedBlockchains(height int64) (res []st
 	}
 	sb := app.pocketKeeper.SupportedBlockchains(ctx)
 	return sb, nil
+}
+
+func (app PocketCoreApp) QueryClaim(address, appPubkey, chain, evidenceType string, sessionBlockHeight int64, height int64) (res *pocketTypes.MsgClaim, err error) {
+	a, err := sdk.AddressFromHex(address)
+	if err != nil {
+		return nil, err
+	}
+	header := pocketTypes.SessionHeader{
+		ApplicationPubKey:  appPubkey,
+		Chain:              chain,
+		SessionBlockHeight: sessionBlockHeight,
+	}
+	err = header.ValidateHeader()
+	if err != nil {
+		return nil, err
+	}
+	et, err := pocketTypes.EvidenceTypeFromString(evidenceType)
+	if err != nil {
+		return nil, err
+	}
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	claim, found := app.pocketKeeper.GetClaim(ctx, a, header, et)
+	if !found {
+		return nil, pocketTypes.NewClaimNotFoundError(pocketTypes.ModuleName)
+	}
+	return &claim, nil
+}
+
+func (app PocketCoreApp) QueryClaims(address string, height int64, page, perPage int) (res []pocketTypes.MsgClaim, err error) {
+	a, err := sdk.AddressFromHex(address)
+	if err != nil {
+		return nil, err
+	}
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	claims, err := app.pocketKeeper.GetClaims(ctx, a)
+	if err != nil {
+		return nil, err
+	}
+	return claims, nil
 }
 
 func (app PocketCoreApp) QueryPocketParams(height int64) (res pocketTypes.Params, err error) {
