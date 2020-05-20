@@ -214,7 +214,7 @@ func TestRelay_HandleProof(t *testing.T) {
 		},
 	}
 	validRelay.Proof.RequestHash = validRelay.RequestHashString()
-	validRelay.Proof.Store(100000)
+	validRelay.Proof.Store(sdk.NewInt(100000))
 	res := GetProof(SessionHeader{
 		ApplicationPubKey:  appPubKey,
 		Chain:              ethereum,

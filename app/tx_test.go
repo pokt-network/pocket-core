@@ -109,7 +109,7 @@ func TestUnstakeNode(t *testing.T) {
 					addr := vals[0].Address
 					balance, err := PCA.QueryBalance(addr.String(), 0)
 					assert.Nil(t, err)
-					assert.NotZero(t, balance.Int64())
+					assert.NotEqual(t, balance, sdk.ZeroInt())
 					tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
 					assert.Nil(t, err)
 					assert.NotNil(t, tx)
@@ -364,7 +364,7 @@ func TestClaimTx(t *testing.T) {
 			ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
 			Chain:              PlaceholderHash,
 			SessionBlockHeight: 1,
-		}, pocketTypes.RelayEvidence, proof, 1000000)
+		}, pocketTypes.RelayEvidence, proof, sdk.NewInt(1000000))
 		assert.Nil(t, err)
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
@@ -394,7 +394,7 @@ func TestClaimTxChallenge(t *testing.T) {
 	genBz, keys, _, _ := fiveValidatorsOneAppGenesis()
 	challenges := NewValidChallengeProof(t, keys, 5)
 	for _, c := range challenges {
-		c.Store(1000000)
+		c.Store(sdk.NewInt(1000000))
 	}
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventTx)

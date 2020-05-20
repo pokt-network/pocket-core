@@ -41,7 +41,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 			continue
 		}
 		// check to see if evidence is stored in cache
-		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, 0)
+		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
 		if err != nil || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
 			continue

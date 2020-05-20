@@ -23,7 +23,7 @@ func TestKeeper_GetAppsStakedTokens(t *testing.T) {
 	ctx, _, apps, _, k, _ := createTestInput(t, false)
 	assert.NotZero(t, len(apps))
 	tokens := apps[0].StakedTokens
-	assert.Equal(t, k.GetAppStakedTokens(ctx).Int64(), tokens.Mul(types.NewInt(int64(len(apps)))).Int64())
+	assert.Equal(t, k.GetAppStakedTokens(ctx), tokens.Mul(types.NewInt(int64(len(apps)))))
 }
 
 func TestKeeper_GetTotalStakedTokens(t *testing.T) {

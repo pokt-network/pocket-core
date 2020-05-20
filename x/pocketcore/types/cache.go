@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	lru "github.com/hashicorp/golang-lru"
+	sdk "github.com/pokt-network/posmint/types"
 	db "github.com/tendermint/tm-db"
 	"github.com/willf/bloom"
 	"log"
@@ -167,7 +168,7 @@ func SessionIterator() SessionIt {
 }
 
 // "GetEvidence" - Retrieves the evidence object from the storage
-func GetEvidence(header SessionHeader, evidenceType EvidenceType, max int64) (evidence Evidence, err error) {
+func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (evidence Evidence, err error) {
 	// generate the key for the evidence
 	key, err := KeyForEvidence(header, evidenceType)
 	if err != nil {
@@ -175,12 +176,12 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max int64) (ev
 	}
 	// get the bytes from the storage
 	bz, found := globalEvidenceCache.Get(key)
-	if !found && max == 0 {
+	if !found && max.Equal(sdk.ZeroInt()) {
 		return Evidence{}, fmt.Errorf("evidence not found")
 	}
 	if !found {
 		return Evidence{
-			Bloom:         bloom.NewWithEstimates(uint(max), .01),
+			Bloom:         bloom.NewWithEstimates(uint(sdk.NewUintFromBigInt(max.BigInt()).Uint64()), .01),
 			SessionHeader: header,
 			NumOfProofs:   0,
 			Proofs:        make([]Proof, 0),
@@ -256,7 +257,7 @@ func EvidenceIterator() EvidenceIt {
 // "GetProof" - Returns the Proof object from a specific piece of evidence at a certain index
 func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proof {
 	// retrieve the evidence
-	evidence, err := GetEvidence(header, evidenceType, 0)
+	evidence, err := GetEvidence(header, evidenceType, sdk.ZeroInt())
 	if err != nil {
 		return nil
 	}
@@ -269,7 +270,7 @@ func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proo
 }
 
 // "SetProof" - Sets a proof object in the evidence, using the header and evidence type
-func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max int64) {
+func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.Int) {
 	// retireve the evidence
 	evidence, err := GetEvidence(header, evidenceType, max)
 	// if not found generate the evidence object
@@ -287,7 +288,7 @@ func IsUniqueProof(p Proof, evidence Evidence) bool {
 }
 
 // "GetTotalProofs" - Returns the total number of proofs for a piece of evidence
-func GetTotalProofs(h SessionHeader, et EvidenceType, maxPossibleRelays int64) (Evidence, int64) {
+func GetTotalProofs(h SessionHeader, et EvidenceType, maxPossibleRelays sdk.Int) (Evidence, int64) {
 	// retrieve the evidence
 	evidence, err := GetEvidence(h, et, maxPossibleRelays)
 	if err != nil {

@@ -56,7 +56,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 	}
 	maxPossibleRelays = MaxPossibleRelays(app, int64(sessionNodeCount))
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence, maxPossibleRelays.Int64())
+	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence, maxPossibleRelays)
 	// get evidence key by proof
 	if !IsUniqueProof(r.Proof, evidence) {
 		return sdk.ZeroInt(), NewDuplicateProofError(ModuleName)

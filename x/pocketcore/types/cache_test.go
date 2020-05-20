@@ -41,7 +41,7 @@ func TestAllEvidence_AddGetEvidence(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof, 100000)
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000))
 	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
 }
 
@@ -70,7 +70,7 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof, 100000)
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000))
 	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
 	GetProof(header, RelayEvidence, 0)
 	_ = DeleteEvidence(header, RelayEvidence)
@@ -121,10 +121,10 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof, 100000)
-	SetProof(header, RelayEvidence, proof2, 100000)
-	SetProof(header2, RelayEvidence, proof2, 100000) // different header so shouldn't be counted
-	_, totalRelays := GetTotalProofs(header, RelayEvidence, 100000)
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000))
+	SetProof(header, RelayEvidence, proof2, sdk.NewInt(100000))
+	SetProof(header2, RelayEvidence, proof2, sdk.NewInt(100000)) // different header so shouldn't be counted
+	_, totalRelays := GetTotalProofs(header, RelayEvidence, sdk.NewInt(100000))
 	assert.Equal(t, totalRelays, int64(2))
 }
 

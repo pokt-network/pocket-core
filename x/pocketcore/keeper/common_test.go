@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"math"
+	"math/big"
 	"testing"
 	"time"
 
@@ -162,7 +164,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	moduleManager.InitGenesis(ctx, genesisState)
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
-	ap := createTestApps(ctx, int(nAccs), sdk.NewInt(10000000), appk, ak)
+	ap := createTestApps(ctx, int(nAccs), sdk.NewIntFromBigInt(new(big.Int).SetUint64(math.MaxUint64)), appk, ak)
 	vals := createTestValidators(ctx, int(nAccs), sdk.ZeroInt(), &nk, ak, kb)
 	appk.SetParams(ctx, appsTypes.DefaultParams())
 	nk.SetParams(ctx, nodesTypes.DefaultParams())
@@ -361,7 +363,7 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	// NOTE Add a minimum of 5 proofs to memInvoice to be able to create a merkle tree
 	for j := 0; j < maxRelays; j++ {
 		proof := createProof(getTestApplicationPrivateKey(), clientKey, npk, ethereum, j)
-		types.SetProof(validHeader, types.RelayEvidence, proof, 100000)
+		types.SetProof(validHeader, types.RelayEvidence, proof, sdk.NewInt(100000))
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", k.storeKey).Return((*ctx).KVStore(k.storeKey))
