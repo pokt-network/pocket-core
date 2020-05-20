@@ -255,7 +255,7 @@ func TestAccountBalance(t *testing.T) {
 	got, err := PCA.QueryBalance(cb.GetAddress().String(), 0)
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
-	assert.Equal(t, got.Int64(), int64(1000000000))
+	assert.Equal(t, got, sdk.NewInt(1000000000))
 
 	cleanup()
 	stopCli()
@@ -515,7 +515,7 @@ func TestQueryRelay(t *testing.T) {
 				ApplicationPubKey:  aat.ApplicationPublicKey,
 				Chain:              relay.Proof.Blockchain,
 				SessionBlockHeight: relay.Proof.SessionBlockHeight,
-			}, types.RelayEvidence, 10000)
+			}, types.RelayEvidence, sdk.NewInt(10000))
 			assert.Nil(t, err)
 			assert.NotNil(t, inv)
 			assert.Equal(t, inv.NumOfProofs, int64(2))

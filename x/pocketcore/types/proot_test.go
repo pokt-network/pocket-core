@@ -459,7 +459,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 	tests := []struct {
 		name                 string
 		proof                ChallengeProofInvalidData
-		maxRelays            int64
+		maxRelays            sdk.Int
 		supportedBlockchains []string
 		sessionNodes         SessionNodes
 		reporterAddress      sdk.Address
@@ -468,7 +468,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 		{
 			name:                 "valid proof",
 			proof:                validChallengeProofIVD,
-			maxRelays:            10000,
+			maxRelays:            sdk.NewInt(100000),
 			supportedBlockchains: []string{ethereum},
 			sessionNodes:         sessionNodes,
 			reporterAddress:      sdk.Address(reporterPubKey.Address()),
@@ -477,7 +477,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 		{
 			name:                 "invalidProof, reporter (self) not in session",
 			proof:                validChallengeProofIVD,
-			maxRelays:            10000,
+			maxRelays:            sdk.NewInt(10000),
 			supportedBlockchains: []string{ethereum},
 			sessionNodes:         sessionNodes,
 			reporterAddress:      sdk.Address([]byte("fake")),
@@ -486,7 +486,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 		{
 			name:                 "invalidProof, duplicate",
 			proof:                invalidProofDup,
-			maxRelays:            10000,
+			maxRelays:            sdk.NewInt(10000),
 			supportedBlockchains: []string{ethereum},
 			sessionNodes:         sessionNodes,
 			reporterAddress:      sdk.Address(reporterPubKey.Address()),
@@ -495,7 +495,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 		{
 			name:                 "invalidProof, no majority",
 			proof:                invalidProofNoMajority,
-			maxRelays:            10000,
+			maxRelays:            sdk.NewInt(10000),
 			supportedBlockchains: []string{ethereum},
 			sessionNodes:         sessionNodes,
 			reporterAddress:      sdk.Address(reporterPubKey.Address()),
@@ -504,7 +504,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 		{
 			name:                 "invalidProof, all majority",
 			proof:                invalidProofAllMajority,
-			maxRelays:            10000,
+			maxRelays:            sdk.NewInt(10000),
 			supportedBlockchains: []string{ethereum},
 			sessionNodes:         sessionNodes,
 			reporterAddress:      sdk.Address(reporterPubKey.Address()),
@@ -513,7 +513,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 		{
 			name:                 "invalidProof, proof overflow",
 			proof:                validChallengeProofIVD,
-			maxRelays:            0,
+			maxRelays:            sdk.ZeroInt(),
 			supportedBlockchains: []string{ethereum},
 			sessionNodes:         sessionNodes,
 			reporterAddress:      sdk.Address(reporterPubKey.Address()),

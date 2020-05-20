@@ -37,7 +37,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
-	relay.Proof.Store(maxPossibleRelays.Int64())
+	relay.Proof.Store(maxPossibleRelays)
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains)
 	if err != nil {
@@ -102,11 +102,11 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 		pc.SetSession(session)
 	}
 	// validate the challenge
-	err = challenge.ValidateLocal(header, app.GetMaxRelays().Int64(), app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode.GetAddress())
+	err = challenge.ValidateLocal(header, app.GetMaxRelays(), app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode.GetAddress())
 	if err != nil {
 		return nil, err
 	}
 	// store the challenge in memory
-	challenge.Store(app.GetMaxRelays().Int64())
+	challenge.Store(app.GetMaxRelays())
 	return nil, nil
 }

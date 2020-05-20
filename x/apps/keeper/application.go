@@ -4,6 +4,8 @@ import (
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/posmint/types"
+	"math"
+	"math/big"
 	"os"
 )
 
@@ -127,5 +129,13 @@ func (k Keeper) CalculateAppRelays(ctx sdk.Ctx, application types.Application) s
 	}
 	basePercentage := baseRate.ToDec().Quo(sdk.NewDec(100))
 	baselineThroughput := basePercentage.Mul(application.StakedTokens.ToDec())
-	return participationRate.Mul(baselineThroughput).Add(stakingAdjustment).TruncateInt()
+	result := participationRate.Mul(baselineThroughput).Add(stakingAdjustment).TruncateInt()
+
+	//bounding Max Amount of relays Value to be 18,446,744,073,709,551,615
+	maxRelays := sdk.NewIntFromBigInt(new(big.Int).SetUint64(math.MaxUint64))
+	if result.GTE(maxRelays) {
+		result = maxRelays
+	}
+
+	return result
 }
