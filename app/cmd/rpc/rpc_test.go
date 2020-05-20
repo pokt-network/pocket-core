@@ -635,15 +635,6 @@ func TestRPC_Relay(t *testing.T) {
 	err = json.Unmarshal(resp, &response)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResponse, response.Response)
-	_, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
-	<-evtChan // Wait for block
-	q = newClientRequest("relay", newBody(relay))
-	rec = httptest.NewRecorder()
-	Relay(rec, q, httprouter.Params{})
-	resp = getJSONResponse(rec)
-	err = json.Unmarshal(resp, &response)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedResponse, response.Response)
 	cleanup()
 	stopCli()
 }
