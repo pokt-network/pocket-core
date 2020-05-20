@@ -34,7 +34,7 @@ var govDAOTransfer = &cobra.Command{
 Actions: [burn, transfer]`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		var toAddr string
 		if len(args) == 4 {
 			toAddr = args[2]
@@ -73,7 +73,7 @@ var govDAOBurn = &cobra.Command{
 Actions: [burn, transfer]`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		var toAddr string
 		if len(args) == 4 {
 			toAddr = args[2]
@@ -111,7 +111,7 @@ var govChangeParam = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		fmt.Println("Enter Password: ")
 		var i interface{}
 		err := json.Unmarshal([]byte(args[3]), &i)
@@ -144,7 +144,7 @@ var govUpgrade = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		i, err := strconv.Atoi(args[1])
 		if err != nil {
 			log.Fatal(err)

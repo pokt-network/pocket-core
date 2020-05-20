@@ -2,7 +2,7 @@ package cli
 
 import (
 	"encoding/hex"
-
+	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	appsType "github.com/pokt-network/pocket-core/x/apps/types"
@@ -10,7 +10,7 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
 	"github.com/pokt-network/posmint/crypto/keys"
-	"github.com/pokt-network/posmint/crypto/keys/mintkey"
+	//"github.com/pokt-network/posmint/crypto/keys/mintkey"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	authTypes "github.com/pokt-network/posmint/x/auth/types"
@@ -169,7 +169,8 @@ func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.
 		return nil, err
 	}
 	for _, chain := range chains {
-		err := pocketTypes.HashVerification(chain)
+		fmt.Println(chain)
+		err := pocketTypes.NetworkIdentifierVerification(chain)
 		if err != nil {
 			return nil, err
 		}
@@ -311,11 +312,6 @@ func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID stri
 }
 
 func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string, keybase keys.Keybase, passphrase string) (transactionBz []byte, err error) {
-	kp, err := keybase.Get(fromAddr)
-	if err != nil {
-		return nil, err
-	}
-	privkey, err := mintkey.UnarmorDecryptPrivKey(kp.PrivKeyArmor, passphrase)
 	if err != nil {
 		return nil, err
 	}
@@ -327,11 +323,11 @@ func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string
 	if err != nil {
 		return nil, err
 	}
-	sig, err := privkey.Sign(signBytes)
+	sig, pubKey, err := keybase.Sign(fromAddr, passphrase, signBytes)
 	if err != nil {
 		return nil, err
 	}
-	s := authTypes.StdSignature{PublicKey: privkey.PublicKey(), Signature: sig}
+	s := authTypes.StdSignature{PublicKey: pubKey, Signature: sig}
 	tx := authTypes.NewStdTx(msg, fee, s, "", entropy)
 	return auth.DefaultTxEncoder(cdc)(tx)
 }

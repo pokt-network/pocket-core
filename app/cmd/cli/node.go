@@ -34,7 +34,7 @@ var nodeStakeCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		fromAddr := args[0]
 		amount, err := strconv.Atoi(args[1])
 		if err != nil {
@@ -75,7 +75,7 @@ var nodeUnstakeCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		fmt.Println("Enter Password: ")
 		res, err := UnstakeNode(args[0], app.Credentials(), args[1])
 		if err != nil {
@@ -103,7 +103,7 @@ var nodeUnjailCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		fmt.Println("Enter Password: ")
 		res, err := UnjailNode(args[0], app.Credentials(), args[1])
 		if err != nil {
