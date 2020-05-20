@@ -522,7 +522,7 @@ func TestRPC_ChallengeCORS(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 	//kb := getInMemoryKeybase()
-	genBZ, _, _ := fiveValidatorsOneAppGenesis()
+	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -540,7 +540,7 @@ func TestRPC_RelayCORS(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 	//kb := getInMemoryKeybase()
-	genBZ, _, _ := fiveValidatorsOneAppGenesis()
+	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -558,7 +558,7 @@ func TestRPC_DispatchCORS(t *testing.T) {
 		t.Skip("skipping in short mode")
 	}
 	//kb := getInMemoryKeybase()
-	genBZ, _, _ := fiveValidatorsOneAppGenesis()
+	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -632,6 +632,15 @@ func TestRPC_Relay(t *testing.T) {
 	Relay(rec, q, httprouter.Params{})
 	resp := getJSONResponse(rec)
 	var response RPCRelayResponse
+	err = json.Unmarshal(resp, &response)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResponse, response.Response)
+	_, stopCli, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	q = newClientRequest("relay", newBody(relay))
+	rec = httptest.NewRecorder()
+	Relay(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
 	err = json.Unmarshal(resp, &response)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResponse, response.Response)

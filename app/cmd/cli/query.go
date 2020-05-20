@@ -610,7 +610,7 @@ var queryNodeClaim = &cobra.Command{
 	Long:  `Gets node pending claim for verified proof of work submitted for a specific session`,
 	Args:  cobra.MinimumNArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		var height int
 		if len(args) == 5 {
 			height = 0 // latest

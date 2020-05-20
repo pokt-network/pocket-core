@@ -33,6 +33,8 @@ func (e *Evidence) AddProof(p Proof) {
 	e.Proofs = append(e.Proofs, p)
 	// increment total proof count
 	e.NumOfProofs = e.NumOfProofs + 1
+	// add proof to bloom filter
+	e.Bloom.Add(p.Hash())
 }
 
 // "GenerateMerkleProof" - Generates the merkle Proof for an evidence
