@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"testing"
 
@@ -31,6 +32,7 @@ func TestMain(m *testing.M) {
 	// init cache in memory
 	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
 	m.Run()
+	os.Exit(0)
 }
 
 func TestUnstakeApp(t *testing.T) {
