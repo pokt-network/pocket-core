@@ -574,7 +574,7 @@ var queryNodeClaims = &cobra.Command{
 	Long:  `Retrieves the list of all pending proof of work submitted by <nodeAddr> at <height>.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		var height int
 		if len(args) == 1 {
 			height = 0 // latest
