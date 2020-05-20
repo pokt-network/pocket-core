@@ -49,18 +49,18 @@ func (cs *CacheStorage) Get(key []byte) ([]byte, bool) {
 	if res, ok := cs.Cache.Get(hex.EncodeToString(key)); ok {
 		return res.([]byte), true
 	}
-	//// not in cache, so search database
-	//bz := cs.DB.Get(key)
-	//if len(bz) == 0 {
-	//	return nil, false
-	//}
-	//var value []byte
-	//err := ModuleCdc.UnmarshalBinaryLengthPrefixed(bz, &value)
-	//if err != nil {
-	//	return nil, false
-	//}
-	//// add to cache
-	//cs.Cache.Add(key, value)
+	// not in cache, so search database
+	bz := cs.DB.Get(key)
+	if len(bz) == 0 {
+		return nil, false
+	}
+	var value []byte
+	err := ModuleCdc.UnmarshalBinaryLengthPrefixed(bz, &value)
+	if err != nil {
+		return nil, false
+	}
+	// add to cache
+	cs.Cache.Add(key, value)
 	return nil, false
 }
 
@@ -184,8 +184,11 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 		return Evidence{}, fmt.Errorf("evidence not found")
 	}
 	if !found {
+		bloomFilter := bloom.NewWithEstimates(uint(sdk.NewUintFromBigInt(max.BigInt()).Uint64()), .01)
+		gobBytes, _ := bloomFilter.GobEncode()
 		return Evidence{
-			Bloom:         bloom.NewWithEstimates(uint(sdk.NewUintFromBigInt(max.BigInt()).Uint64()), .01),
+			Bloom:         *bloomFilter,
+			BloomBytes:    gobBytes,
 			SessionHeader: header,
 			NumOfProofs:   0,
 			Proofs:        make([]Proof, 0),
@@ -194,6 +197,9 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 	}
 	// unmarshal into evidence obj
 	err = ModuleCdc.UnmarshalBinaryLengthPrefixed(bz, &evidence)
+	_ = evidence.Bloom.GobDecode(evidence.BloomBytes)
+	fmt.Printf("Unmarshaled evidence with bloom filter: %v", evidence.Bloom)
+	//fmt.Printf("Unmarshaled evidence with bloom bytes: %v", evidence.BloomBytes)
 	if err != nil {
 		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
 	}
@@ -205,7 +211,13 @@ func SetEvidence(evidence Evidence) {
 	defer timeTrack(time.Now(), "set evidence")
 	// generate the key for the evidence
 	key, err := KeyForEvidence(evidence.SessionHeader, evidence.EvidenceType)
+	//fmt.Printf("Setting evidence: %v \n", evidence)
+	fmt.Printf("Setting evidence bloom filter: %v \n", evidence.Bloom)
+	//fmt.Printf("Setting evidence bloom bytes: %v \n", evidence.BloomBytes)
+	fmt.Printf("Setting evidence key: %v \n", key)
+	fmt.Printf("Setting evidence error: %v \n", err)
 	if err != nil {
+		fmt.Printf("EVIDENCE NEVER SET \n")
 		return
 	}
 	// marshal into bytes to store
@@ -286,12 +298,18 @@ func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.
 		log.Fatalf("could not set proof object: %s", err.Error())
 	}
 	// add proof
+	fmt.Printf("Adding proof with hash %v\n", p.Hash())
 	evidence.AddProof(p)
 	// set evidence back
 	SetEvidence(evidence)
 }
 
 func IsUniqueProof(p Proof, evidence Evidence) bool {
+	// fmt.Printf("%v\n", p)
+	// fmt.Printf("%v\n", evidence)
+	// fmt.Printf("%v\n", evidence.Bloom)
+	fmt.Printf("Checking proof with hash %v\n", p.Hash())
+	fmt.Printf("Bloom filter to check against %v\n", evidence.Bloom)
 	return !evidence.Bloom.Test(p.Hash())
 }
 
