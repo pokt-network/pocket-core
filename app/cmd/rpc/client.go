@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -42,9 +43,14 @@ type RPCRelayResponse struct {
 	Response  string `json:"response"`
 	// remove proof object because client already knows about it
 }
+func timeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	fmt.Printf("%s took %s\n", name, elapsed)
+}
 
 // Relay supports CORS functionality
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer timeTrack(time.Now(), "entire relay")
 	var relay = types.Relay{}
 	if cors(&w, r) {
 		return
