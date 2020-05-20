@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"os"
 	"reflect"
 	"testing"
 
@@ -19,6 +20,7 @@ func InitCacheTest() {
 func TestMain(m *testing.M) {
 	InitCacheTest()
 	m.Run()
+	os.Exit(0)
 }
 
 func TestAllEvidence_AddGetEvidence(t *testing.T) {
