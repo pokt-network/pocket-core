@@ -380,22 +380,22 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 }
 
 func checkPagination(page, limit int) (int, int) {
-	if page < 0 {
+	if page <= 0 {
 		page = 1
 	}
-	if limit < 0 {
+	if limit <= 0 {
 		limit = 30
 	}
 	return page, limit
 }
 
-func paginate(page, limit int, items interface{}, MaxValidators int) (res Page, error error) {
+func paginate(page, limit int, items interface{}, max int) (res Page, error error) {
 	slice, success := takeArg(items, reflect.Slice)
 	if !success {
 		return Page{}, fmt.Errorf("invalid argument, non slice input to paginate")
 	}
 	l := slice.Len()
-	start, end := util.Paginate(l, page, limit, MaxValidators)
+	start, end := util.Paginate(l, page, limit, max)
 	if start == -1 && end == -1 {
 		return Page{}, nil
 	}

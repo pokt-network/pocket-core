@@ -8,6 +8,7 @@ import (
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	sdk "github.com/pokt-network/posmint/types"
 	"log"
+	"time"
 )
 
 // "Session" - The relationship between an application and the pocket network
@@ -19,6 +20,7 @@ type Session struct {
 
 // "NewSession" - create a new session from seed data
 func NewSession(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, sessionHeader SessionHeader, blockHash string, sessionNodesCount int) (Session, sdk.Error) {
+	defer timeTrack(time.Now(), "newSession.validate()")
 	// first generate session key
 	sessionKey, err := NewSessionKey(sessionHeader.ApplicationPubKey, sessionHeader.Chain, blockHash)
 	if err != nil {
@@ -248,6 +250,7 @@ func (sh SessionHeader) ValidateHeader() sdk.Error {
 
 // "Hash" - The cryptographic hash representation of the session header
 func (sh SessionHeader) Hash() []byte {
+	defer timeTrack(time.Now(), "hash sessionheader")
 	res := sh.Bytes()
 	return Hash(res)
 }

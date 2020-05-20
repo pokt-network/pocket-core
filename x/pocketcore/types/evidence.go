@@ -5,6 +5,7 @@ import (
 	"github.com/pokt-network/posmint/types"
 	"github.com/willf/bloom"
 	"strings"
+	"time"
 )
 
 // "Evidence" - A proof of work/burn for nodes.
@@ -29,6 +30,7 @@ func (e *Evidence) GenerateMerkleRoot() (root HashSum) {
 
 // "AddProof" - Adds a proof obj to the evidence field
 func (e *Evidence) AddProof(p Proof) {
+	defer timeTrack(time.Now(), "add proof")
 	// add proof to evidence
 	e.Proofs = append(e.Proofs, p)
 	// increment total proof count

@@ -9,6 +9,7 @@ import (
 	"github.com/willf/bloom"
 	"log"
 	"sync"
+	"time"
 )
 
 var (
@@ -41,35 +42,37 @@ func (cs *CacheStorage) Init(dir, name string, dbType db.DBBackendType, maxEntri
 
 // "Get" - Returns the value from a key
 func (cs *CacheStorage) Get(key []byte) ([]byte, bool) {
+	defer timeTrack(time.Now(), "get from db/cache")
 	cs.l.Lock()
 	defer cs.l.Unlock()
 	// get the object using hex string of key
 	if res, ok := cs.Cache.Get(hex.EncodeToString(key)); ok {
 		return res.([]byte), true
 	}
-	// not in cache, so search database
-	bz := cs.DB.Get(key)
-	if len(bz) == 0 {
-		return nil, false
-	}
-	var value []byte
-	err := ModuleCdc.UnmarshalJSON(bz, &value)
-	if err != nil {
-		return nil, false
-	}
-	// add to cache
-	cs.Cache.Add(key, value)
-	return value, true
+	//// not in cache, so search database
+	//bz := cs.DB.Get(key)
+	//if len(bz) == 0 {
+	//	return nil, false
+	//}
+	//var value []byte
+	//err := ModuleCdc.UnmarshalBinaryLengthPrefixed(bz, &value)
+	//if err != nil {
+	//	return nil, false
+	//}
+	//// add to cache
+	//cs.Cache.Add(key, value)
+	return nil, false
 }
 
 // "Set" - Sets the KV pair in cache and db
 func (cs *CacheStorage) Set(key []byte, val []byte) {
+	defer timeTrack(time.Now(), "set to database")
 	cs.l.Lock()
 	defer cs.l.Unlock()
 	// add to cache
 	cs.Cache.Add(hex.EncodeToString(key), val)
 	// add to database
-	cs.DB.Set(key, val)
+	//cs.DB.Set(key, val)
 }
 
 // "Delete" - Deletes the item from stores
@@ -111,7 +114,7 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 		return Session{}, found
 	}
 	// if found, unmarshal into session object
-	err := ModuleCdc.UnmarshalJSON(val, &session)
+	err := ModuleCdc.UnmarshalBinaryLengthPrefixed(val, &session)
 	if err != nil {
 		fmt.Println(fmt.Errorf("could not unmarshal into session from cache: %s with header %v", err.Error(), header))
 		return Session{}, false
@@ -153,7 +156,7 @@ type SessionIt struct {
 
 // "Value" - returns the value of the iterator (session)
 func (si *SessionIt) Value() (session Session) {
-	err := ModuleCdc.UnmarshalJSON(si.Iterator.Value(), &session)
+	err := ModuleCdc.UnmarshalBinaryLengthPrefixed(si.Iterator.Value(), &session)
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't unmarshal session iterator value into session: %s", err.Error()))
 	}
@@ -169,6 +172,7 @@ func SessionIterator() SessionIt {
 
 // "GetEvidence" - Retrieves the evidence object from the storage
 func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (evidence Evidence, err error) {
+	defer timeTrack(time.Now(), "getEvidence()")
 	// generate the key for the evidence
 	key, err := KeyForEvidence(header, evidenceType)
 	if err != nil {
@@ -189,7 +193,7 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 		}, nil
 	}
 	// unmarshal into evidence obj
-	err = ModuleCdc.UnmarshalJSON(bz, &evidence)
+	err = ModuleCdc.UnmarshalBinaryLengthPrefixed(bz, &evidence)
 	if err != nil {
 		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
 	}
@@ -198,13 +202,16 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 
 // "SetEvidence" - Sets an evidence object in the storage
 func SetEvidence(evidence Evidence) {
+	defer timeTrack(time.Now(), "set evidence")
 	// generate the key for the evidence
 	key, err := KeyForEvidence(evidence.SessionHeader, evidence.EvidenceType)
 	if err != nil {
 		return
 	}
 	// marshal into bytes to store
-	bz, err := ModuleCdc.MarshalJSON(evidence)
+	s := time.Now()
+	bz, err := ModuleCdc.MarshalBinaryLengthPrefixed(evidence)
+	fmt.Println("marshalling in setevidence ", time.Since(s))
 	if err != nil {
 		fmt.Println(fmt.Errorf("could not marshal into evidence for cache: %s", err.Error()))
 		return
@@ -240,7 +247,7 @@ type EvidenceIt struct {
 // "Value" - Returns the evidence object value of the iterator
 func (ei *EvidenceIt) Value() (evidence Evidence) {
 	// unmarshal the value (bz) into an evidence object
-	err := ModuleCdc.UnmarshalJSON(ei.Iterator.Value(), &evidence)
+	err := ModuleCdc.UnmarshalBinaryBare(ei.Iterator.Value(), &evidence)
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't unmarshal evidence iterator value into evidence: %s", err.Error()))
 	}
@@ -271,6 +278,7 @@ func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proo
 
 // "SetProof" - Sets a proof object in the evidence, using the header and evidence type
 func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.Int) {
+	defer timeTrack(time.Now(), "setProof")
 	// retireve the evidence
 	evidence, err := GetEvidence(header, evidenceType, max)
 	// if not found generate the evidence object

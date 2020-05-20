@@ -382,11 +382,11 @@ func TestQueryStakedpp(t *testing.T) {
 }
 
 func TestRelayGenerator(t *testing.T) {
-	const appPrivKey = "e63df045400c136dae909c6bfabfe632dd37e44abbabea3e9fb1f672bd21c04567f0446d45f3e1ba9f3edc957018174cb82871521ca793acdb45898ec4b1c479"
-	const nodePublicKey = "7eb410b363df8f71caf6d3a88f11360b74abbcf7e1293cfbc88a021d966110d5"
+	const appPrivKey = "70906c8e250352e811a6ca994b674c4da1c6ba4be1e0b3edeadaf59979236c96a25e182d490e9722e72ba90eb21fe0124d03bcb75d2bf6f45b2a1d2b1dc92fac"
+	const nodePublicKey = "a25e182d490e9722e72ba90eb21fe0124d03bcb75d2bf6f45b2a1d2b1dc92fac"
 	const sessionBlockheight = 1
 	const query = `{"jsonrpc":"2.0","method":"net_version","params":[],"id":67}`
-	const supportedBlockchain = "49aff8a9f51b268f6fc485ec14fb08466c3ec68c8d86d9b5810ad80546b65f29"
+	const supportedBlockchain = "00"
 	apkBz, err := hex.DecodeString(appPrivKey)
 	if err != nil {
 		panic(err)
@@ -425,10 +425,11 @@ func TestRelayGenerator(t *testing.T) {
 		panic(err)
 	}
 	relay.Proof.Signature = hex.EncodeToString(sig)
-	_, err = json.MarshalIndent(relay, "", "  ")
+	res, err := json.MarshalIndent(relay, "", "  ")
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(string(res))
 }
 
 func TestQueryRelay(t *testing.T) {

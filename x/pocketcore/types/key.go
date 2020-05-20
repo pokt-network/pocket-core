@@ -2,6 +2,7 @@ package types
 
 import (
 	sdk "github.com/pokt-network/posmint/types"
+	"time"
 )
 
 const (
@@ -81,6 +82,7 @@ func KeyForClaims(addr sdk.Address) ([]byte, error) {
 
 // "KeyForEvidence" - Generates the key for evidence
 func KeyForEvidence(header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
+	defer timeTrack(time.Now(), "key for evidence")
 	// validate the evidence type
 	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
 		return nil, NewInvalidEvidenceErr(ModuleName)

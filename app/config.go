@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	tmType "github.com/tendermint/tendermint/types"
 	"io"
 	"io/ioutil"
 	log2 "log"
@@ -41,7 +42,6 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/rpc/client"
-	tmType "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -404,6 +404,7 @@ func privValKey(address sdk.Address, password string) string {
 		log2.Fatal(err)
 	}
 	types.InitPVKeyFile(privValKey)
+	fmt.Println(res.RawString())
 	return password
 }
 
@@ -676,6 +677,22 @@ func newDefaultGenesisState() []byte {
 	})
 	res := Codec().MustMarshalJSON(accountGenesis)
 	defaultGenesis[auth.ModuleName] = res
+	// set address as application too
+	rawApps := defaultGenesis[appsTypes.ModuleName]
+	var appsGenesis appsTypes.GenesisState
+	types.ModuleCdc.MustUnmarshalJSON(rawApps, &appsGenesis)
+	appsGenesis.Applications = append(appsGenesis.Applications, appsTypes.Application{
+		Address:                 cb.GetAddress(),
+		PublicKey:               cb.PublicKey,
+		Jailed:                  false,
+		Status:                  2,
+		Chains:                  []string{PlaceholderHash},
+		StakedTokens:            sdk.NewInt(10000000),
+		MaxRelays:               sdk.NewInt(10000000),
+		UnstakingCompletionTime: time.Time{},
+	})
+	res = Codec().MustMarshalJSON(appsGenesis)
+	defaultGenesis[appsTypes.ModuleName] = res
 	// set default governance in genesis
 	// setup pos genesis
 	rawPOS := defaultGenesis[nodesTypes.ModuleName]
