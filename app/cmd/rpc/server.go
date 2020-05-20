@@ -69,6 +69,8 @@ func GetRoutes() Routes {
 		Route{Name: "QueryNodeParams", Method: "POST", Path: "/v1/query/nodeparams", HandlerFunc: NodeParams},
 		Route{Name: "QueryNodeReceipts", Method: "POST", Path: "/v1/query/nodereceipts", HandlerFunc: NodeReceipts},
 		Route{Name: "QueryNodeReceipt", Method: "POST", Path: "/v1/query/nodereceipt", HandlerFunc: NodeReceipt},
+		Route{Name: "QueryNodeClaims", Method: "POST", Path: "/v1/query/nodeclaims", HandlerFunc: NodeClaims},
+		Route{Name: "QueryNodeClaim", Method: "POST", Path: "/v1/query/nodeclaim", HandlerFunc: NodeClaim},
 		Route{Name: "QueryApps", Method: "POST", Path: "/v1/query/apps", HandlerFunc: Apps},
 		Route{Name: "QueryApp", Method: "POST", Path: "/v1/query/app", HandlerFunc: App},
 		Route{Name: "QueryAppParams", Method: "POST", Path: "/v1/query/appparams", HandlerFunc: AppParams},
