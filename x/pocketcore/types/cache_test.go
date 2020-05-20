@@ -16,8 +16,12 @@ func InitCacheTest() {
 	InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
 }
 
-func TestAllEvidence_AddGetEvidence(t *testing.T) {
+func TestMain(m *testing.M) {
 	InitCacheTest()
+	m.Run()
+}
+
+func TestAllEvidence_AddGetEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -46,7 +50,6 @@ func TestAllEvidence_AddGetEvidence(t *testing.T) {
 }
 
 func TestAllEvidence_DeleteEvidence(t *testing.T) {
-	InitCacheTest()
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -78,7 +81,6 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 }
 
 func TestAllEvidence_GetTotalProofs(t *testing.T) {
-	InitCacheTest()
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -129,7 +131,6 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 }
 
 func TestSetGetSession(t *testing.T) {
-	InitCacheTest()
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	session2 := NewTestSession(t, hex.EncodeToString(Hash([]byte("bar"))))
 	SetSession(session)
@@ -145,8 +146,6 @@ func TestSetGetSession(t *testing.T) {
 }
 
 func TestIteratorValue(t *testing.T) {
-	ClearSessionCache()
-	InitCacheTest()
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	SetSession(session)
 	sessIt := SessionIterator()
@@ -154,7 +153,6 @@ func TestIteratorValue(t *testing.T) {
 }
 
 func TestDeleteSession(t *testing.T) {
-	InitCacheTest()
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	SetSession(session)
 	DeleteSession(session.SessionHeader)
@@ -163,7 +161,6 @@ func TestDeleteSession(t *testing.T) {
 }
 
 func TestClearCache(t *testing.T) {
-	InitCacheTest()
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	SetSession(session)
 	ClearSessionCache()

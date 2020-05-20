@@ -25,6 +25,14 @@ import (
 	db "github.com/tendermint/tm-db"
 )
 
+func TestMain(m *testing.M) {
+	pocketTypes.ClearSessionCache()
+	pocketTypes.ClearEvidence()
+	// init cache in memory
+	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
+	m.Run()
+}
+
 func TestUnstakeApp(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
@@ -325,10 +333,6 @@ func TestClaimTx(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-	pocketTypes.ClearSessionCache()
-	pocketTypes.ClearEvidence()
-	// init cache in memory
-	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	kb := getInMemoryKeybase()
 	for i := 0; i < 5; i++ {
@@ -388,9 +392,6 @@ func TestClaimTxChallenge(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-	pocketTypes.ClearSessionCache()
-	pocketTypes.ClearEvidence()
-	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session")
 	genBz, keys, _, _ := fiveValidatorsOneAppGenesis()
 	challenges := NewValidChallengeProof(t, keys, 5)
 	for _, c := range challenges {

@@ -28,6 +28,7 @@
 - Fixed denomination issue in CLI POKT to uPOKT
 - Updated PopModel so no empty body `{}` is needed in RPC
 - Added evidence type to proof message
+- Added Node claims and claim queries *RPC*
 - Removed chains prompt and defaults to no chains if none found
 - Changed SendClaimTx to use sessionContext for supportedBlockchains
 - Refactor ABCI BeginBlock for app module, avoid looping twice on mature applications

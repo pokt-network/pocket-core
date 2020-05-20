@@ -18,7 +18,7 @@ const (
 type MsgClaim struct {
 	SessionHeader    `json:"header"` // header information for identification
 	MerkleRoot       HashSum         `json:"merkle_root"`   // merkle root for data integrity
-	TotalProofs      int64           `json:"total_relays"`  // total number of relays
+	TotalProofs      int64           `json:"total_proofs"`  // total number of relays
 	FromAddress      sdk.Address     `json:"from_address"`  // claimant's address
 	EvidenceType     EvidenceType    `json:"evidence_type"` // relay or challenge?
 	ExpirationHeight int64           `json:"expiration_height"`

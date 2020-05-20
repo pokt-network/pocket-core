@@ -561,6 +561,49 @@ paths:
                 $ref: '#/components/schemas/QueryNodeReceiptsResponse'
         '400':
           description: Failed to retrieve the node proof information
+  /query/nodeclaims:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the node pending claim for specific session
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryNodeReceipt'
+        required: true
+      responses:
+        '200':
+          description: Node claim
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoredReceipt'
+  /query/nodeclaim:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: 'Returns the list of all pending claims submitted by node address at height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryPaginatedHeightAndAddrParams'
+            example:
+              address: '0xA5DE6D4184016708c1040c355F1c958192276DB5'
+              height: 2
+              page: 1
+              per_page: 1
+        required: true
+      responses:
+        '200':
+          description: Node claims
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryNodeReceiptsResponse'
+        '400':
+          description: Failed to retrieve the node proof information
   /query/nodes:
     post:
       tags:
@@ -1174,6 +1217,35 @@ components:
         evidence_type:
           type: integer
           format: int64
+    MsgClaim:
+      type: object
+      properties:
+        expiration_height:
+          type: integer
+          format: int64
+          description: height when the claim expires
+        evidence_type:
+          type: integer
+          format: int64
+          description: Arbitrary Enum
+        from_address:
+          type: string
+          format: hex bytes
+        total_proofs:
+          type: integer
+        session_header:
+          $ref: '#/components/schemas/SessionHeader'
+        merkle_root:
+          $ref: '#/components/schemas/HashSum'
+    HashSum:
+      type: object
+      properties:
+        hash:
+          type: string
+          description: byte array
+        sum:
+          type: integer
+          description: uint64
     Transaction:
       type: object
       properties:
@@ -1318,6 +1390,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StoredReceipt'
+        page:
+          type: integer
+          format: int64
+          description: current page
+        total_pages:
+          type: integer
+          format: int64
+          description: maximum amount of pages
+    QueryNodeClaimsResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/MsgClaim'
         page:
           type: integer
           format: int64

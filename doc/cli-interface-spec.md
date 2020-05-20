@@ -354,21 +354,40 @@ Account balance: <balance of the account>
 > Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
-- `pocket query node-proofs <nodeAddr> <height>`
-> Returns the list of all Relay Batch proofs submitted by `<nodeAddr>`.
+- `pocket query node-receipts <nodeAddr> <height>`
+> Returns the list of all receipts for work done by `<nodeAddr>`.
 >
 > Arguments:
 > - `<nodeAddr>`: The node address to be queried.
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
+>- `pocket query node-claims <nodeAddr> <height>`
+ > Returns the list of all pending claims submitted by `<nodeAddr>`.
+ >
+ > Arguments:
+ > - `<nodeAddr>`: The node address to be queried.
+ > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
 - `pocket query node-proof <nodeAddr> <appPubKey> <networkId> <sessionHeight> <height>`
-> Returns the Relay Batch proof specific to the arguments.
+> Returns the receipt of work completed specific to the arguments.
 >
 > Arguments:
 > - `<nodeAddr>`: The address of the node that submitted the proof.
 > - `<appPubKey>`: The public key of the application the Node serviced.
 > - `<networkId>`: The Network Identifier of the blockchain that was serviced.
 > - `<sessionHeight>`: The session block for which the proof was submitted.
+> - `<receiptType>`: "relay" or "challenge"
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+- `pocket query node-claim <nodeAddr> <appPubKey> <networkId> <sessionHeight> <height>`
+> Returns the claim specific to the arguments.
+>
+> Arguments:
+> - `<nodeAddr>`: The address of the node that submitted the proof.
+> - `<appPubKey>`: The public key of the application the Node serviced.
+> - `<networkId>`: The Network Identifier of the blockchain that was serviced.
+> - `<sessionHeight>`: The session block for which the proof was submitted.
+> - `<receiptType>`: "relay" or "challenge"
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
 - `pocket query supported-networks <height>`

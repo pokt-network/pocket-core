@@ -21,7 +21,6 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
 	nodePubKey := npk.RawString()
-	InitCacheTest()
 	ethereum := hex.EncodeToString([]byte{01})
 	bitcoin := hex.EncodeToString([]byte{02})
 	p := Payload{

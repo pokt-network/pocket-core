@@ -108,5 +108,5 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	}
 	// store the challenge in memory
 	challenge.Store(app.GetMaxRelays())
-	return nil, nil
+	return &pc.ChallengeResponse{Response: fmt.Sprintf("successfully stored challenge proof for %s", challenge.MinorityResponse.Proof.ServicerPubKey)}, nil
 }

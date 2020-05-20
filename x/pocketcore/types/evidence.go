@@ -2,16 +2,18 @@ package types
 
 import (
 	"fmt"
+	"github.com/pokt-network/posmint/types"
 	"github.com/willf/bloom"
+	"strings"
 )
 
 // "Evidence" - A proof of work/burn for nodes.
 type Evidence struct {
-	Bloom         *bloom.BloomFilter       `json:"bloom_filter"` // used to check if proof contains
-	SessionHeader `json:"evidence_header"` // the session h serves as an identifier for the evidence
-	NumOfProofs   int64                    `json:"num_of_proofs"` // the total number of proofs in the evidence
-	Proofs        []Proof                  `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
-	EvidenceType  EvidenceType             `json:"evidence_type"`
+	Bloom         *bloom.BloomFilter `json:"bloom_filter"` // used to check if proof contains
+	SessionHeader `json:"evidence_header"`                 // the session h serves as an identifier for the evidence
+	NumOfProofs   int64        `json:"num_of_proofs"`      // the total number of proofs in the evidence
+	Proofs        []Proof      `json:"proofs"`             // a slice of Proof objects (Proof per relay or challenge)
+	EvidenceType  EvidenceType `json:"evidence_type"`
 }
 
 // "GenerateMerkleRoot" - Generates the merkle root for an evidence object
@@ -64,8 +66,20 @@ func (et EvidenceType) Byte() (byte, error) {
 
 // "Receipt" - Is a structure used to store proof of evidence after verification
 type Receipt struct {
-	SessionHeader   `json:"header"` // header to identify the session
-	ServicerAddress string          `json:"address"`       // the address responsible
-	Total           int64           `json:"total"`         // the number of proofs
-	EvidenceType    EvidenceType    `json:"evidence_type"` // the type (relay/challenge)
+	SessionHeader   `json:"header"`                     // header to identify the session
+	ServicerAddress string       `json:"address"`       // the address responsible
+	Total           int64        `json:"total"`         // the number of proofs
+	EvidenceType    EvidenceType `json:"evidence_type"` // the type (relay/challenge)
+}
+
+func EvidenceTypeFromString(evidenceType string) (et EvidenceType, err types.Error) {
+	switch strings.ToLower(evidenceType) {
+	case "relay":
+		et = RelayEvidence
+	case "challenge":
+		et = ChallengeEvidence
+	default:
+		err = types.ErrInternal("type in the receipt query is not recognized: (relay or challenge)")
+	}
+	return
 }
