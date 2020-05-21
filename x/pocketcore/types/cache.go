@@ -197,7 +197,6 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 	ep := EvidencePersisted{}
 	err = ModuleCdc.UnmarshalBinaryBare(bz, &ep)
 	if err != nil {
-		fmt.Println(err)
 		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
 	}
 
@@ -206,7 +205,6 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 	err = bloomFilter.GobDecode(ep.BloomBytes)
 	fmt.Println("GobDecode = ", time.Since(s))
 	if err != nil {
-		fmt.Println(err)
 		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
 	}
 
@@ -224,21 +222,13 @@ func SetEvidence(evidence Evidence) {
 	defer timeTrack(time.Now(), "set evidence")
 	// generate the key for the evidence
 	key, err := KeyForEvidence(evidence.SessionHeader, evidence.EvidenceType)
-	//fmt.Printf("Setting evidence: %v \n", evidence)
-	fmt.Printf("Setting evidence bloom filter: %v \n", evidence.Bloom)
-	//fmt.Printf("Setting evidence bloom bytes: %v \n", evidence.BloomBytes)
-	fmt.Printf("Setting evidence key: %v \n", key)
-	fmt.Printf("Setting evidence error: %v \n", err)
 	if err != nil {
-		fmt.Printf("EVIDENCE NEVER SET %v \n", err)
 		return
 	}
 	// marshal into bytes to store
 	s := time.Now()
 	encodedBloom, err := evidence.Bloom.GobEncode()
-	fmt.Println("GobEncode = ", time.Since(s))
 	if err != nil {
-		fmt.Printf("EVIDENCE NEVER SET %v \n", err)
 		return
 	}
 
@@ -252,7 +242,6 @@ func SetEvidence(evidence Evidence) {
 	bz, err := ModuleCdc.MarshalBinaryBare(ep)
 	fmt.Println("marshalling in setevidence ", time.Since(s))
 	if err != nil {
-		fmt.Println(fmt.Errorf("could not marshal into evidence for cache: %s", err.Error()))
 		return
 	}
 	// set in storage
@@ -325,18 +314,12 @@ func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.
 		log.Fatalf("could not set proof object: %s", err.Error())
 	}
 	// add proof
-	fmt.Printf("Adding proof with hash %v\n", p.Hash())
 	evidence.AddProof(p)
 	// set evidence back
 	SetEvidence(evidence)
 }
 
 func IsUniqueProof(p Proof, evidence Evidence) bool {
-	// fmt.Printf("%v\n", p)
-	// fmt.Printf("%v\n", evidence)
-	// fmt.Printf("%v\n", evidence.Bloom)
-	fmt.Printf("Checking proof with hash %v\n", p.Hash())
-	fmt.Printf("Bloom filter to check against %v\n", evidence.Bloom)
 	return !evidence.Bloom.Test(p.Hash())
 }
 
