@@ -55,7 +55,7 @@ func (cs *CacheStorage) Get(key []byte) ([]byte, bool) {
 		return nil, false
 	}
 	var value []byte
-	err := ModuleCdc.UnmarshalBinaryLengthPrefixed(bz, &value)
+	err := ModuleCdc.UnmarshalBinaryBare(bz, &value)
 	if err != nil {
 		return nil, false
 	}
@@ -114,7 +114,7 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 		return Session{}, found
 	}
 	// if found, unmarshal into session object
-	err := ModuleCdc.UnmarshalBinaryLengthPrefixed(val, &session)
+	err := ModuleCdc.UnmarshalBinaryBare(val, &session)
 	if err != nil {
 		fmt.Println(fmt.Errorf("could not unmarshal into session from cache: %s with header %v", err.Error(), header))
 		return Session{}, false
@@ -127,7 +127,7 @@ func SetSession(session Session) {
 	// get the key for the session
 	key := session.SessionHeader.Hash()
 	// marshal into amino-json bz
-	bz, err := ModuleCdc.MarshalJSON(session)
+	bz, err := ModuleCdc.MarshalBinaryBare(session)
 	if err != nil {
 		fmt.Println(fmt.Errorf("could not marshal into session for cache: %s", err.Error()))
 		return
@@ -156,7 +156,7 @@ type SessionIt struct {
 
 // "Value" - returns the value of the iterator (session)
 func (si *SessionIt) Value() (session Session) {
-	err := ModuleCdc.UnmarshalBinaryLengthPrefixed(si.Iterator.Value(), &session)
+	err := ModuleCdc.UnmarshalBinaryBare(si.Iterator.Value(), &session)
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't unmarshal session iterator value into session: %s", err.Error()))
 	}
@@ -185,10 +185,8 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 	}
 	if !found {
 		bloomFilter := bloom.NewWithEstimates(uint(sdk.NewUintFromBigInt(max.BigInt()).Uint64()), .01)
-		gobBytes, _ := bloomFilter.GobEncode()
 		return Evidence{
 			Bloom:         *bloomFilter,
-			BloomBytes:    gobBytes,
 			SessionHeader: header,
 			NumOfProofs:   0,
 			Proofs:        make([]Proof, 0),
@@ -196,14 +194,29 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 		}, nil
 	}
 	// unmarshal into evidence obj
-	err = ModuleCdc.UnmarshalBinaryLengthPrefixed(bz, &evidence)
-	_ = evidence.Bloom.GobDecode(evidence.BloomBytes)
-	fmt.Printf("Unmarshaled evidence with bloom filter: %v", evidence.Bloom)
-	//fmt.Printf("Unmarshaled evidence with bloom bytes: %v", evidence.BloomBytes)
+	ep := EvidencePersisted{}
+	err = ModuleCdc.UnmarshalBinaryBare(bz, &ep)
 	if err != nil {
+		fmt.Println(err)
 		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
 	}
-	return
+
+	bloomFilter := bloom.BloomFilter{}
+	s := time.Now()
+	err = bloomFilter.GobDecode(ep.BloomBytes)
+	fmt.Println("GobDecode = ", time.Since(s))
+	if err != nil {
+		fmt.Println(err)
+		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
+	}
+
+	return Evidence{
+		Bloom:         bloomFilter,
+		SessionHeader: ep.SessionHeader,
+		NumOfProofs:   ep.NumOfProofs,
+		Proofs:        ep.Proofs,
+		EvidenceType:  ep.EvidenceType,
+	}, nil
 }
 
 // "SetEvidence" - Sets an evidence object in the storage
@@ -217,12 +230,26 @@ func SetEvidence(evidence Evidence) {
 	fmt.Printf("Setting evidence key: %v \n", key)
 	fmt.Printf("Setting evidence error: %v \n", err)
 	if err != nil {
-		fmt.Printf("EVIDENCE NEVER SET \n")
+		fmt.Printf("EVIDENCE NEVER SET %v \n", err)
 		return
 	}
 	// marshal into bytes to store
 	s := time.Now()
-	bz, err := ModuleCdc.MarshalBinaryLengthPrefixed(evidence)
+	encodedBloom, err := evidence.Bloom.GobEncode()
+	fmt.Println("GobEncode = ", time.Since(s))
+	if err != nil {
+		fmt.Printf("EVIDENCE NEVER SET %v \n", err)
+		return
+	}
+
+	ep := EvidencePersisted{
+		BloomBytes:    encodedBloom,
+		SessionHeader: evidence.SessionHeader,
+		NumOfProofs:   evidence.NumOfProofs,
+		Proofs:        evidence.Proofs,
+		EvidenceType:  evidence.EvidenceType,
+	}
+	bz, err := ModuleCdc.MarshalBinaryBare(ep)
 	fmt.Println("marshalling in setevidence ", time.Since(s))
 	if err != nil {
 		fmt.Println(fmt.Errorf("could not marshal into evidence for cache: %s", err.Error()))
