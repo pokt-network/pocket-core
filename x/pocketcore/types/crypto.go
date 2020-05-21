@@ -27,11 +27,11 @@ func NetworkIdentifierVerification(hash string) sdk.Error {
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
 	}
-	// ensure length isn't 0
+	// ensure Length isn't 0
 	if len(h) == 0 {
 		return NewEmptyHashError(ModuleName)
 	}
-	// ensure length
+	// ensure Length
 	if len(h) > NetworkIdentifierLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
@@ -45,7 +45,7 @@ func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
 	if err != nil {
 		return NewSigDecodeError(ModuleName)
 	}
-	// ensure length is valid
+	// ensure Length is valid
 	if len(sig) != crypto.Ed25519SignatureSize {
 		return NewInvalidSignatureSizeError(ModuleName)
 	}
@@ -87,7 +87,7 @@ func PubKeyVerification(pk string) sdk.Error {
 	if err != nil {
 		return NewPubKeyDecodeError(ModuleName)
 	}
-	// ensure length
+	// ensure Length
 	if len(pkBz) != crypto.Ed25519PubKeySize {
 		return NewPubKeySizeError(ModuleName)
 	}
@@ -101,11 +101,11 @@ func HashVerification(hash string) sdk.Error {
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
 	}
-	// ensure length isn't 0
+	// ensure Length isn't 0
 	if len(h) == 0 {
 		return NewEmptyHashError(ModuleName)
 	}
-	// ensure length
+	// ensure Length
 	if len(h) != HashLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
@@ -119,11 +119,11 @@ func AddressVerification(addr string) sdk.Error {
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
 	}
-	// ensure length isn't 0
+	// ensure Length isn't 0
 	if len(address) == 0 {
 		return NewEmptyAddressError(ModuleName)
 	}
-	// ensure length
+	// ensure Length
 	if len(address) != AddrLength {
 		return NewAddressInvalidLengthError(ModuleName)
 	}

@@ -122,7 +122,7 @@ func GenerateRoot(data []Proof) (r HashSum, sortedData []Proof) {
 
 // "sortAndStructure" - takes Proof data, sorts, and structures them as a `balanced` merkle tree
 func sortAndStructure(relayProofs []Proof) (d []HashSum, sortedProofs []Proof) {
-	// we need a tree of proper length. Get the # of relayProofs
+	// we need a tree of proper Length. Get the # of relayProofs
 	numberOfProofs := len(relayProofs)
 	properLength := nextPowerOfTwo(uint(numberOfProofs))
 	// initialize the data
@@ -297,9 +297,9 @@ func uint64ToBytes(a uint64) (bz []byte) {
 }
 
 // "quickSort" - Sort the hash sum and the proofs by hash sum
-// CONTRACT hash sum and proofs must be the same length
+// CONTRACT hash sum and proofs must be the same Length
 func quickSort(hs []HashSum, p []Proof) ([]HashSum, []Proof) {
-	// get the length of the hash sums
+	// get the Length of the hash sums
 	hsLen := len(hs)
 	if hsLen <= 1 {
 		return hs, p

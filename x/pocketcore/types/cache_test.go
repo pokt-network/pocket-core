@@ -23,6 +23,29 @@ func TestMain(m *testing.M) {
 	os.Exit(0)
 }
 
+func TestIsUniqueProof(t *testing.T) {
+	h := SessionHeader{
+		ApplicationPubKey:  "0",
+		Chain:              "00",
+		SessionBlockHeight: 0,
+	}
+	e, _ := GetEvidence(h, RelayEvidence, sdk.NewInt(100000))
+	p := RelayProof{
+		Entropy:            1,
+	}
+	p1 := RelayProof{
+		Entropy:            2,
+	}
+	assert.True(t, IsUniqueProof(p, e), "p is unique")
+	e.AddProof(p)
+	SetEvidence(e)
+	e, err := GetEvidence(h, RelayEvidence, sdk.ZeroInt())
+	assert.Nil(t, err)
+	assert.False(t, IsUniqueProof(p, e), "p is no longer unique")
+	assert.True(t, IsUniqueProof(p1, e), "p is unique")
+
+}
+
 func TestAllEvidence_AddGetEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()

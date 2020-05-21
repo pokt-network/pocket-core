@@ -19,7 +19,7 @@ type BasicAuth struct {
 
 // HostedBlockchains" - An object that represents the local hosted non-native blockchains
 type HostedBlockchains struct {
-	M map[string]HostedBlockchain // m[addr] -> addr, url
+	M map[string]HostedBlockchain // M[addr] -> addr, url
 	o sync.Once
 }
 
