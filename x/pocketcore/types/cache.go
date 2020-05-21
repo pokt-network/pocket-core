@@ -41,31 +41,31 @@ func (cs *CacheStorage) Init(dir, name string, dbType db.DBBackendType, maxEntri
 }
 
 // "Get" - Returns the value from a key
-func (cs *CacheStorage) Get(key []byte) ([]byte, bool) {
+func (cs *CacheStorage) Get(key []byte) (interface{}, bool) {
 	defer timeTrack(time.Now(), "get from db/cache")
 	cs.l.Lock()
 	defer cs.l.Unlock()
 	// get the object using hex string of key
 	if res, ok := cs.Cache.Get(hex.EncodeToString(key)); ok {
-		return res.([]byte), true
+		return res, true
 	}
-	// not in cache, so search database
-	bz := cs.DB.Get(key)
-	if len(bz) == 0 {
-		return nil, false
-	}
-	var value []byte
-	err := ModuleCdc.UnmarshalBinaryBare(bz, &value)
-	if err != nil {
-		return nil, false
-	}
+	//// not in cache, so search database
+	//bz := cs.DB.Get(key)
+	//if len(bz) == 0 {
+	//	return nil, false
+	//}
+	//var value []byte
+	//err := ModuleCdc.UnmarshalBinaryBare(bz, &value)
+	//if err != nil {
+	//	return nil, false
+	//}
 	// add to cache
-	cs.Cache.Add(key, value)
+	//cs.Cache.Add(key, value)
 	return nil, false
 }
 
 // "Set" - Sets the KV pair in cache and db
-func (cs *CacheStorage) Set(key []byte, val []byte) {
+func (cs *CacheStorage) Set(key []byte, val interface{}) {
 	defer timeTrack(time.Now(), "set to database")
 	cs.l.Lock()
 	defer cs.l.Unlock()
@@ -113,12 +113,16 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 	if !found {
 		return Session{}, found
 	}
-	// if found, unmarshal into session object
-	err := ModuleCdc.UnmarshalBinaryBare(val, &session)
-	if err != nil {
-		fmt.Println(fmt.Errorf("could not unmarshal into session from cache: %s with header %v", err.Error(), header))
-		return Session{}, false
+	session, ok := val.(Session)
+	if !ok {
+		fmt.Println(fmt.Errorf("could not unmarshal into session from cache with header %v", header))
 	}
+	// if found, unmarshal into session object
+	//err := ModuleCdc.UnmarshalBinaryBare(val, &session)
+	//if err != nil {
+	//	fmt.Println(fmt.Errorf("could not unmarshal into session from cache: %s with header %v", err.Error(), header))
+	//	return Session{}, false
+	//}
 	return
 }
 
@@ -126,14 +130,14 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 func SetSession(session Session) {
 	// get the key for the session
 	key := session.SessionHeader.Hash()
-	// marshal into amino-json bz
-	bz, err := ModuleCdc.MarshalBinaryBare(session)
-	if err != nil {
-		fmt.Println(fmt.Errorf("could not marshal into session for cache: %s", err.Error()))
-		return
-	}
+	//// marshal into amino-json bz
+	//bz, err := ModuleCdc.MarshalBinaryBare(session)
+	//if err != nil {
+	//	fmt.Println(fmt.Errorf("could not marshal into session for cache: %s", err.Error()))
+	//	return
+	//}
 	// set it in stores
-	globalSessionCache.Set(key, bz)
+	globalSessionCache.Set(key, session)
 }
 
 // "DeleteSession" - Deletes a session (value) from the stores
@@ -179,7 +183,7 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 		return
 	}
 	// get the bytes from the storage
-	bz, found := globalEvidenceCache.Get(key)
+	val, found := globalEvidenceCache.Get(key)
 	if !found && max.Equal(sdk.ZeroInt()) {
 		return Evidence{}, fmt.Errorf("evidence not found")
 	}
@@ -193,28 +197,34 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 			EvidenceType:  evidenceType,
 		}, nil
 	}
-	// unmarshal into evidence obj
-	ep := EvidencePersisted{}
-	err = ModuleCdc.UnmarshalBinaryBare(bz, &ep)
-	if err != nil {
-		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
+	evidence, ok := val.(Evidence)
+	if !ok {
+		err = fmt.Errorf("could not unmarshal into session from cache with header %v", header)
+		return
 	}
-
-	bloomFilter := bloom.BloomFilter{}
-	s := time.Now()
-	err = bloomFilter.GobDecode(ep.BloomBytes)
-	fmt.Println("GobDecode = ", time.Since(s))
-	if err != nil {
-		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
-	}
-
-	return Evidence{
-		Bloom:         bloomFilter,
-		SessionHeader: ep.SessionHeader,
-		NumOfProofs:   ep.NumOfProofs,
-		Proofs:        ep.Proofs,
-		EvidenceType:  ep.EvidenceType,
-	}, nil
+	//// unmarshal into evidence obj
+	//ep := EvidencePersisted{}
+	//err = ModuleCdc.UnmarshalBinaryBare(bz, &ep)
+	//if err != nil {
+	//	return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
+	//}
+	//
+	//bloomFilter := bloom.BloomFilter{}
+	//s := time.Now()
+	//err = bloomFilter.GobDecode(ep.BloomBytes)
+	//fmt.Println("GobDecode = ", time.Since(s))
+	//if err != nil {
+	//	return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
+	//}
+	//
+	//return Evidence{
+	//	Bloom:         bloomFilter,
+	//	SessionHeader: ep.SessionHeader,
+	//	NumOfProofs:   ep.NumOfProofs,
+	//	Proofs:        ep.Proofs,
+	//	EvidenceType:  ep.EvidenceType,
+	//}, nil
+	return
 }
 
 // "SetEvidence" - Sets an evidence object in the storage
@@ -226,26 +236,26 @@ func SetEvidence(evidence Evidence) {
 		return
 	}
 	// marshal into bytes to store
-	s := time.Now()
-	encodedBloom, err := evidence.Bloom.GobEncode()
-	if err != nil {
-		return
-	}
-
-	ep := EvidencePersisted{
-		BloomBytes:    encodedBloom,
-		SessionHeader: evidence.SessionHeader,
-		NumOfProofs:   evidence.NumOfProofs,
-		Proofs:        evidence.Proofs,
-		EvidenceType:  evidence.EvidenceType,
-	}
-	bz, err := ModuleCdc.MarshalBinaryBare(ep)
-	fmt.Println("marshalling in setevidence ", time.Since(s))
-	if err != nil {
-		return
-	}
+	//s := time.Now()
+	//encodedBloom, err := evidence.Bloom.GobEncode()
+	//if err != nil {
+	//	return
+	//}
+	//
+	//ep := EvidencePersisted{
+	//	BloomBytes:    encodedBloom,
+	//	SessionHeader: evidence.SessionHeader,
+	//	NumOfProofs:   evidence.NumOfProofs,
+	//	Proofs:        evidence.Proofs,
+	//	EvidenceType:  evidence.EvidenceType,
+	//}
+	////bz, err := ModuleCdc.MarshalBinaryBare(ep)
+	////fmt.Println("marshalling in setevidence ", time.Since(s))
+	////if err != nil {
+	////	return
+	////}
 	// set in storage
-	globalEvidenceCache.Set(key, bz)
+	globalEvidenceCache.Set(key, evidence)
 }
 
 // "DeleteEvidence" - Delete the evidence from the stores
