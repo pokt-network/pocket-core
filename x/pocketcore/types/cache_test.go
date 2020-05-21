@@ -45,6 +45,10 @@ func TestIsUniqueProof(t *testing.T) {
 	assert.True(t, IsUniqueProof(p1, e), "p is unique")
 
 }
+// TODO algorithm
+// cache evidence in memory as `objects`
+// flush to disk periodically using gob encoding 100 ms vs 500 ms amino/protobuf
+// flush if application gracefully shuts down
 
 func TestAllEvidence_AddGetEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
