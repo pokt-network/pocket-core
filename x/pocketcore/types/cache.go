@@ -71,7 +71,6 @@ func (cs *CacheStorage) Get(key []byte, object CacheObject) (interface{}, bool) 
 func (cs *CacheStorage) Set(key []byte, val CacheObject) {
 	if cs.Cache.Len() == cs.Cache.Cap() {
 		err := cs.FlushToDB()
-		fmt.Println("flushing to db")
 		if err != nil {
 			fmt.Printf("cache storage cannot be flushed to database (in set): %s", err.Error())
 		}
