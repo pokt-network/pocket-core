@@ -134,7 +134,7 @@ var (
 	MessageDecodeError               = errors.New("the message could not be hex decoded")
 	SigDecodeError                   = errors.New("the signature could not be message decoded")
 	InvalidSignatureError            = errors.New("the signature could not be verified with the message and pub key")
-	PubKeySizeError                  = errors.New("the public key is not the correct size")
+	PubKeySizeError                  = errors.New("the public key is not the correct cap")
 	KeybaseError                     = errors.New("the keybase is invalid: ")
 	SelfNotFoundError                = errors.New("the self node is not within the world state")
 	AppNotFoundError                 = errors.New("the app could not be found in the world state")

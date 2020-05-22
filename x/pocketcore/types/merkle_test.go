@@ -362,7 +362,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	// wrong leaf provided
 	res, _ = proofs.Validate(root, i.Proofs[index2], i.Proofs[cousinIndex], int64(len(i.Proofs)))
 	assert.False(t, res)
-	// wrong tree size
+	// wrong tree cap
 	res, _ = proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i2.Proofs)))
 	assert.False(t, res)
 }

@@ -40,7 +40,7 @@ func (mp MerkleProofs) Validate(root HashSum, leaf, cousin Proof, totalRelays in
 	// convert cousin to hashsum
 	verifier[1].Hash = hash(cousin.Hash())
 	verifier[1].Sum = sumFromHash(verifier[1].Hash)
-	// replay attack check -> params (leaf, sibling, cousin, cousinSibling, leafIndex, size of the tree)
+	// replay attack check -> params (leaf, sibling, cousin, cousinSibling, leafIndex, cap of the tree)
 	if isReplayAttack(verifier[0], mp[0].HashSums[0], verifier[1], mp[1].HashSums[0], int64(mp[0].Index), totalRelays) {
 		return false, true
 	}
