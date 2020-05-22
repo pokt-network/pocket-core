@@ -24,7 +24,7 @@ var chainsGenCmd = &cobra.Command{
 	Long:  `Generate the chains file for network identifiers`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
-		c := app.NewHostedChains()
+		c := app.NewHostedChains(true)
 		fmt.Println(app.GlobalConfig.PocketConfig.ChainsName + " contains: \n")
 		for _, chain := range c.M {
 			fmt.Println(chain.ID + " @ " + chain.URL)

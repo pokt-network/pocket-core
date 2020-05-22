@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -298,7 +299,7 @@ func InitTendermint() *node.Node {
 		TraceWriter: "",
 	}
 	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, MustGetKeybase(), getTMClient(), NewHostedChains(), logger, db, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, MustGetKeybase(), getTMClient(), NewHostedChains(false), logger, db, baseapp.SetPruning(store.PruneNothing))
 	})
 	if err != nil {
 		log2.Fatal(err)
@@ -456,15 +457,18 @@ func getTMClient() client.Client {
 }
 
 // get the hosted chains variable
-func NewHostedChains() *types.HostedBlockchains {
+func NewHostedChains(generate bool) *types.HostedBlockchains {
 	// create the chains path
 	var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
 	// if file exists open, else create and open
 	var jsonFile *os.File
 	var bz []byte
 	if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
-		log2.Println(fmt.Sprintf("no chains.json found @ %s, defaulting to empty chains", chainsPath))
-		return &types.HostedBlockchains{} // default to empty object
+		if !generate {
+			log2.Println(fmt.Sprintf("no chains.json found @ %s, defaulting to empty chains", chainsPath))
+			return &types.HostedBlockchains{} // default to empty object
+		}
+		return generateChainsJson(jsonFile, err, chainsPath)
 	}
 	// reopen the file to read into the variable
 	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
@@ -495,6 +499,98 @@ func NewHostedChains() *types.HostedBlockchains {
 	}
 	// return the map
 	return &types.HostedBlockchains{M: m}
+}
+
+func generateChainsJson(jsonFile *os.File, err error, chainsPath string) *types.HostedBlockchains {
+	// if does not exist create one
+	jsonFile, err = os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		return &types.HostedBlockchains{} // default to empty object
+	}
+	// generate hosted chains from user input
+	c := GenerateHostedChains()
+	// create dummy input for the file
+	res, err := json.MarshalIndent(c, "", "  ")
+	if err != nil {
+		log2.Fatal(NewInvalidChainsError(err))
+	}
+	// write to the file
+	_, err = jsonFile.Write(res)
+	if err != nil {
+		log2.Fatal(NewInvalidChainsError(err))
+	}
+	// close the file
+	err = jsonFile.Close()
+	if err != nil {
+		log2.Fatal(NewInvalidChainsError(err))
+	}
+	m := make(map[string]types.HostedBlockchain)
+	for _, chain := range c {
+		if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
+			log2.Fatal(fmt.Sprintf("invalid ID: %s in network identifier in %s file", chain.ID, GlobalConfig.PocketConfig.ChainsName))
+		}
+		m[chain.ID] = chain
+	}
+	// return the map
+	return &types.HostedBlockchains{M: m}
+}
+
+const (
+	enterIDPrompt     = `Enter the ID of the network identifier:`
+	enterURLPrompt    = `Enter the URL of the network identifier:`
+	addNewChainPrompt = `Would you like to enter another network identifier? (y/n)`
+	ReadInError       = `An error occurred reading in the information: `
+)
+
+func GenerateHostedChains() (chains []types.HostedBlockchain) {
+	for {
+		var ID, URL, again string
+		fmt.Println(enterIDPrompt)
+		reader := bufio.NewReader(os.Stdin)
+		ID, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(ReadInError + err.Error())
+			os.Exit(3)
+		}
+		ID = strings.Trim(strings.TrimSpace(ID), "\n")
+		if err := nodesTypes.ValidateNetworkIdentifier(ID); err != nil {
+			fmt.Println(err)
+			fmt.Println("please try again")
+			continue
+		}
+		fmt.Println(enterURLPrompt)
+		URL, err = reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(ReadInError + err.Error())
+			os.Exit(3)
+		}
+		URL = strings.Trim(strings.TrimSpace(URL), "\n")
+		chains = append(chains, types.HostedBlockchain{
+			ID:  ID,
+			URL: URL,
+		})
+		fmt.Println(addNewChainPrompt)
+		for {
+			again, err = reader.ReadString('\n')
+			if err != nil {
+				log2.Fatal(ReadInError + err.Error())
+			}
+			switch strings.TrimSpace(strings.ToLower(again)) {
+			case "y":
+				// break out of switch
+				break
+			case "n":
+				// return chains
+				return
+			default:
+				fmt.Println("unrecognized response, please try again")
+				// try switch again
+				continue
+			}
+			// break out of for loop
+			break
+		}
+	}
 }
 
 func DeleteHostedChains() {
