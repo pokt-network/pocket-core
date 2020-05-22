@@ -83,7 +83,6 @@ func (e Evidence) Unmarshal(b []byte) (CacheObject, error) {
 	if err != nil {
 		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache, bloom bytes gob decode: %s", err.Error())
 	}
-	fmt.Println("unmarhsalled evidence with bloom filter\n:", bloomFilter.K())
 	return Evidence{
 		Bloom:         bloomFilter,
 		SessionHeader: e.SessionHeader,

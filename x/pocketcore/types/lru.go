@@ -4,12 +4,13 @@ import (
 	"github.com/hashicorp/golang-lru/simplelru"
 )
 
-// Cache is a thread-safe fixed size LRU cache.
+// Cache is a thread-safe fixed cap LRU cache.
 type Cache struct {
 	lru simplelru.LRUCache
+	cap int
 }
 
-// New creates an LRU of the given size.
+// New creates an LRU of the given cap.
 func New(size int) (*Cache, error) {
 	lru, err := simplelru.NewLRU(size, nil)
 	if err != nil {
@@ -18,6 +19,7 @@ func New(size int) (*Cache, error) {
 	c := &Cache{
 		lru: lru,
 	}
+	c.cap = size
 	return c, nil
 }
 
@@ -90,9 +92,10 @@ func (c *Cache) Remove(key string) (present bool) {
 	return
 }
 
-// Resize changes the cache size.
+// Resize changes the cache capacity.
 func (c *Cache) Resize(size int) (evicted int) {
 	evicted = c.lru.Resize(size)
+	c.cap = size
 	return evicted
 }
 
@@ -134,4 +137,8 @@ func (c *Cache) Keys() []interface{} {
 func (c *Cache) Len() int {
 	length := c.lru.Len()
 	return length
+}
+
+func (c *Cache) Cap() int {
+	return c.cap
 }
