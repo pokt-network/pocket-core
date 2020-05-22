@@ -468,7 +468,7 @@ func NewHostedChains(generate bool) *types.HostedBlockchains {
 			log2.Println(fmt.Sprintf("no chains.json found @ %s, defaulting to empty chains", chainsPath))
 			return &types.HostedBlockchains{} // default to empty object
 		}
-		return generateChainsJson(jsonFile, err, chainsPath)
+		return generateChainsJson(chainsPath)
 	}
 	// reopen the file to read into the variable
 	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
@@ -501,9 +501,10 @@ func NewHostedChains(generate bool) *types.HostedBlockchains {
 	return &types.HostedBlockchains{M: m}
 }
 
-func generateChainsJson(jsonFile *os.File, err error, chainsPath string) *types.HostedBlockchains {
+func generateChainsJson(chainsPath string) *types.HostedBlockchains {
+	var jsonFile *os.File
 	// if does not exist create one
-	jsonFile, err = os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return &types.HostedBlockchains{} // default to empty object
 	}
