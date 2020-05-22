@@ -98,6 +98,10 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 			types.ClearSessionCache()
 		}()
 	}
+	go func() {
+		// flush the cache periodically
+		types.FlushCache()
+	}()
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
 }

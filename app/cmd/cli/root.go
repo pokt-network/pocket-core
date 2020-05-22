@@ -84,6 +84,7 @@ var startCmd = &cobra.Command{
 
 		defer func() {
 			sig := <-signalChannel
+			app.ShutdownPocketCore()
 			err := tmNode.Stop()
 			if err != nil {
 				fmt.Println(err)
