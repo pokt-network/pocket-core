@@ -170,13 +170,6 @@ func TestSetGetSession(t *testing.T) {
 	assert.Equal(t, s, session2)
 }
 
-func TestIteratorValue(t *testing.T) {
-	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
-	SetSession(session)
-	sessIt := SessionIterator()
-	assert.Equal(t, session, sessIt.Value())
-}
-
 func TestDeleteSession(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	SetSession(session)
