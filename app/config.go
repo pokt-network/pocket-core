@@ -340,6 +340,10 @@ func InitPocketCoreConfig() {
 	appsTypes.InitConfig(GlobalConfig.PocketConfig.ApplicationCacheSize)
 }
 
+func ShutdownPocketCore() {
+	types.FlushCache()
+}
+
 // get the global keybase
 func MustGetKeybase() kb.Keybase {
 	keys, err := GetKeybase()
@@ -404,7 +408,6 @@ func privValKey(address sdk.Address, password string) string {
 		log2.Fatal(err)
 	}
 	types.InitPVKeyFile(privValKey)
-	fmt.Println(res.RawString())
 	return password
 }
 

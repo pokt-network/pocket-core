@@ -1,6 +1,9 @@
 package types
 
-import db "github.com/tendermint/tm-db"
+import (
+	"fmt"
+	db "github.com/tendermint/tm-db"
+)
 
 var (
 	globalUserAgent string
@@ -15,4 +18,15 @@ func InitConfig(userAgent, evidenceDir, sessionDir string, sessionDBType, eviden
 		globalSessionCache.Init(sessionDir, sessionDBName, sessionDBType, maxSessionEntries)
 	})
 	globalUserAgent = userAgent
+}
+
+func FlushCache() {
+	err := globalSessionCache.FlushToDB()
+	if err != nil {
+		fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
+	}
+	err = globalEvidenceCache.FlushToDB()
+	if err != nil {
+		fmt.Printf("unable to flush evidence to the database before shutdown!! %s\n", err.Error())
+	}
 }

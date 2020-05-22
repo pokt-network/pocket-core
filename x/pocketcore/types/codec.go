@@ -24,7 +24,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterInterface((*Proof)(nil), nil)
 	cdc.RegisterConcrete(RelayProof{}, "pocketcore/relay_proof", nil)
 	cdc.RegisterConcrete(ChallengeProofInvalidData{}, "pocketcore/challenge_proof_invalid_data", nil)
-	cdc.RegisterConcrete(EvidencePersisted{}, "pocketcore/evidence_persisted", nil)
+	cdc.RegisterConcrete(evidence{}, "pocketcore/evidence_persisted", nil)
 	cdc.RegisterInterface((*exported.ValidatorI)(nil), nil)
 	cdc.RegisterConcrete(nodesTypes.Validator{}, "pos/Validator", nil) // todo does this really need to depend on nodes/types
 }

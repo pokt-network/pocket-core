@@ -3,13 +3,11 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	lru "github.com/hashicorp/golang-lru"
 	sdk "github.com/pokt-network/posmint/types"
 	db "github.com/tendermint/tm-db"
 	"github.com/willf/bloom"
 	"log"
 	"sync"
-	"time"
 )
 
 var (
@@ -23,16 +21,22 @@ var (
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
 type CacheStorage struct {
-	Cache *lru.Cache // lru cache
+	Cache *Cache     // lru cache
 	DB    db.DB      // persisted
-	l     sync.Mutex // lock
+	l     sync.Mutex // lock TODO NOTE: this mutex doesn't guarantee data consistency for gets and sets (max relays could go over)
+}
+
+type CacheObject interface {
+	Marshal() ([]byte, error)
+	Unmarshal(b []byte) (CacheObject, error)
+	Key() ([]byte, error)
 }
 
 // "Init" - Initializes a cache storage object
 func (cs *CacheStorage) Init(dir, name string, dbType db.DBBackendType, maxEntries int) {
 	// init the lru cache with a max entries
 	var err error
-	cs.Cache, err = lru.New(maxEntries)
+	cs.Cache, err = New(maxEntries)
 	if err != nil {
 		log.Fatal(fmt.Errorf("could not initialize cache storage: " + err.Error()))
 	}
@@ -41,38 +45,34 @@ func (cs *CacheStorage) Init(dir, name string, dbType db.DBBackendType, maxEntri
 }
 
 // "Get" - Returns the value from a key
-func (cs *CacheStorage) Get(key []byte) (interface{}, bool) {
-	defer timeTrack(time.Now(), "get from db/cache")
+func (cs *CacheStorage) Get(key []byte, object CacheObject) (interface{}, bool) {
 	cs.l.Lock()
 	defer cs.l.Unlock()
 	// get the object using hex string of key
 	if res, ok := cs.Cache.Get(hex.EncodeToString(key)); ok {
 		return res, true
 	}
-	//// not in cache, so search database
-	//bz := cs.DB.Get(key)
-	//if len(bz) == 0 {
-	//	return nil, false
-	//}
-	//var value []byte
-	//err := ModuleCdc.UnmarshalBinaryBare(bz, &value)
-	//if err != nil {
-	//	return nil, false
-	//}
+	// not in cache, so search database
+	bz := cs.DB.Get(key)
+	if len(bz) == 0 {
+		return nil, false
+	}
+	res, err := object.Unmarshal(bz)
+	if err != nil {
+		fmt.Printf("Error in CacheStorage.Get(): %s\n", err.Error())
+		return nil, true
+	}
 	// add to cache
-	//cs.Cache.Add(key, value)
-	return nil, false
+	cs.Cache.Add(hex.EncodeToString(key), res)
+	return res, true
 }
 
 // "Set" - Sets the KV pair in cache and db
-func (cs *CacheStorage) Set(key []byte, val interface{}) {
-	defer timeTrack(time.Now(), "set to database")
+func (cs *CacheStorage) Set(key []byte, val CacheObject) {
 	cs.l.Lock()
 	defer cs.l.Unlock()
 	// add to cache
 	cs.Cache.Add(hex.EncodeToString(key), val)
-	// add to database
-	//cs.DB.Set(key, val)
 }
 
 // "Delete" - Deletes the item from stores
@@ -83,6 +83,35 @@ func (cs *CacheStorage) Delete(key []byte) {
 	cs.Cache.Remove(hex.EncodeToString(key))
 	// remove from db
 	cs.DB.Delete(key)
+}
+
+func (cs *CacheStorage) FlushToDB() error {
+	cs.l.Lock()
+	defer cs.l.Unlock()
+	// flush all to database
+	for {
+		key, val, ok := cs.Cache.RemoveOldest()
+		if !ok {
+			break
+		}
+		// value should be cache object
+		co, ok := val.(CacheObject)
+		if !ok {
+			return fmt.Errorf("object in cache does not impement the cache object interface")
+		}
+		// marshal object to bytes
+		bz, err := co.Marshal()
+		if err != nil {
+			return fmt.Errorf("error flushing database, marshalling value for DB: %s", err.Error())
+		}
+		kBz, err := hex.DecodeString(key)
+		if err != nil {
+			return fmt.Errorf("error flushing database, couldn't hex decode key: %s", err.Error())
+		}
+		// set to DB
+		cs.DB.Set(kBz, bz)
+	}
+	return nil
 }
 
 // "Clear" - Deletes all items from stores
@@ -109,7 +138,7 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 	// generate the key from the header
 	key := header.Hash()
 	// check stores
-	val, found := globalSessionCache.Get(key)
+	val, found := globalSessionCache.Get(key, session)
 	if !found {
 		return Session{}, found
 	}
@@ -117,12 +146,6 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 	if !ok {
 		fmt.Println(fmt.Errorf("could not unmarshal into session from cache with header %v", header))
 	}
-	// if found, unmarshal into session object
-	//err := ModuleCdc.UnmarshalBinaryBare(val, &session)
-	//if err != nil {
-	//	fmt.Println(fmt.Errorf("could not unmarshal into session from cache: %s with header %v", err.Error(), header))
-	//	return Session{}, false
-	//}
 	return
 }
 
@@ -130,13 +153,6 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 func SetSession(session Session) {
 	// get the key for the session
 	key := session.SessionHeader.Hash()
-	//// marshal into amino-json bz
-	//bz, err := ModuleCdc.MarshalBinaryBare(session)
-	//if err != nil {
-	//	fmt.Println(fmt.Errorf("could not marshal into session for cache: %s", err.Error()))
-	//	return
-	//}
-	// set it in stores
 	globalSessionCache.Set(key, session)
 }
 
@@ -160,9 +176,13 @@ type SessionIt struct {
 
 // "Value" - returns the value of the iterator (session)
 func (si *SessionIt) Value() (session Session) {
-	err := ModuleCdc.UnmarshalBinaryBare(si.Iterator.Value(), &session)
+	s, err := session.Unmarshal(si.Iterator.Value())
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't unmarshal session iterator value into session: %s", err.Error()))
+	}
+	session, ok := s.(Session)
+	if !ok {
+		log.Fatal("can't unmarshal session iterator value into session: cache object is not a session")
 	}
 	return
 }
@@ -176,14 +196,13 @@ func SessionIterator() SessionIt {
 
 // "GetEvidence" - Retrieves the evidence object from the storage
 func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (evidence Evidence, err error) {
-	defer timeTrack(time.Now(), "getEvidence()")
 	// generate the key for the evidence
 	key, err := KeyForEvidence(header, evidenceType)
 	if err != nil {
 		return
 	}
 	// get the bytes from the storage
-	val, found := globalEvidenceCache.Get(key)
+	val, found := globalEvidenceCache.Get(key, evidence)
 	if !found && max.Equal(sdk.ZeroInt()) {
 		return Evidence{}, fmt.Errorf("evidence not found")
 	}
@@ -202,59 +221,16 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 		err = fmt.Errorf("could not unmarshal into session from cache with header %v", header)
 		return
 	}
-	//// unmarshal into evidence obj
-	//ep := EvidencePersisted{}
-	//err = ModuleCdc.UnmarshalBinaryBare(bz, &ep)
-	//if err != nil {
-	//	return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
-	//}
-	//
-	//bloomFilter := bloom.BloomFilter{}
-	//s := time.Now()
-	//err = bloomFilter.GobDecode(ep.BloomBytes)
-	//fmt.Println("GobDecode = ", time.Since(s))
-	//if err != nil {
-	//	return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache: %s", err.Error())
-	//}
-	//
-	//return Evidence{
-	//	Bloom:         bloomFilter,
-	//	SessionHeader: ep.SessionHeader,
-	//	NumOfProofs:   ep.NumOfProofs,
-	//	Proofs:        ep.Proofs,
-	//	EvidenceType:  ep.EvidenceType,
-	//}, nil
 	return
 }
 
 // "SetEvidence" - Sets an evidence object in the storage
 func SetEvidence(evidence Evidence) {
-	defer timeTrack(time.Now(), "set evidence")
 	// generate the key for the evidence
 	key, err := KeyForEvidence(evidence.SessionHeader, evidence.EvidenceType)
 	if err != nil {
 		return
 	}
-	// marshal into bytes to store
-	//s := time.Now()
-	//encodedBloom, err := evidence.Bloom.GobEncode()
-	//if err != nil {
-	//	return
-	//}
-	//
-	//ep := EvidencePersisted{
-	//	BloomBytes:    encodedBloom,
-	//	SessionHeader: evidence.SessionHeader,
-	//	NumOfProofs:   evidence.NumOfProofs,
-	//	Proofs:        evidence.Proofs,
-	//	EvidenceType:  evidence.EvidenceType,
-	//}
-	////bz, err := ModuleCdc.MarshalBinaryBare(ep)
-	////fmt.Println("marshalling in setevidence ", time.Since(s))
-	////if err != nil {
-	////	return
-	////}
-	// set in storage
 	globalEvidenceCache.Set(key, evidence)
 }
 
@@ -289,6 +265,14 @@ func (ei *EvidenceIt) Value() (evidence Evidence) {
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't unmarshal evidence iterator value into evidence: %s", err.Error()))
 	}
+	e, err := evidence.Unmarshal(ei.Iterator.Value())
+	if err != nil {
+		log.Fatal(fmt.Errorf("can't unmarshal evidence iterator value into session: %s", err.Error()))
+	}
+	evidence, ok := e.(Evidence)
+	if !ok {
+		log.Fatal("can't unmarshal evidence iterator value into session: cache object is not evidence")
+	}
 	return
 }
 
@@ -316,7 +300,6 @@ func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proo
 
 // "SetProof" - Sets a proof object in the evidence, using the header and evidence type
 func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.Int) {
-	defer timeTrack(time.Now(), "setProof")
 	// retireve the evidence
 	evidence, err := GetEvidence(header, evidenceType, max)
 	// if not found generate the evidence object

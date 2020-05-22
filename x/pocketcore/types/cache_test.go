@@ -31,24 +31,22 @@ func TestIsUniqueProof(t *testing.T) {
 	}
 	e, _ := GetEvidence(h, RelayEvidence, sdk.NewInt(100000))
 	p := RelayProof{
-		Entropy:            1,
+		Entropy: 1,
 	}
 	p1 := RelayProof{
-		Entropy:            2,
+		Entropy: 2,
 	}
 	assert.True(t, IsUniqueProof(p, e), "p is unique")
 	e.AddProof(p)
 	SetEvidence(e)
-	e, err := GetEvidence(h, RelayEvidence, sdk.ZeroInt())
+	err := globalEvidenceCache.FlushToDB()
+	assert.Nil(t, err, "flushing to db")
+	e, err = GetEvidence(h, RelayEvidence, sdk.ZeroInt())
 	assert.Nil(t, err)
 	assert.False(t, IsUniqueProof(p, e), "p is no longer unique")
 	assert.True(t, IsUniqueProof(p1, e), "p is unique")
 
 }
-// TODO algorithm
-// cache evidence in memory as `objects`
-// flush to disk periodically using gob encoding 100 ms vs 500 ms amino/protobuf
-// flush if application gracefully shuts down
 
 func TestAllEvidence_AddGetEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
