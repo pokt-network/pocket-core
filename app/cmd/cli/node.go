@@ -48,8 +48,9 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		rawChains := reg.ReplaceAllString(args[2], "")
 		chains := strings.Split(rawChains, ",")
 		serviceURI := args[3]
+		chainID := args[4]
 		fmt.Println("Enter Passphrase: ")
-		res, err := StakeNode(chains, serviceURI, fromAddr, args[4], app.Credentials(), types.NewInt(int64(amount)))
+		res, err := StakeNode(chains, serviceURI, fromAddr, app.Credentials(), chainID, types.NewInt(int64(amount)))
 		if err != nil {
 			fmt.Println(err)
 			return
