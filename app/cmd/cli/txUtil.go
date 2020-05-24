@@ -69,7 +69,7 @@ func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string
 		return nil, err
 	}
 	for _, chain := range chains {
-		err := pocketTypes.HashVerification(chain)
+		err := pocketTypes.NetworkIdentifierVerification(chain)
 		if err != nil {
 			return nil, err
 		}
