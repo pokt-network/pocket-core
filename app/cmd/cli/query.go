@@ -3,11 +3,12 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/types"
-	"strconv"
-	"strings"
 
 	"github.com/pokt-network/pocket-core/app"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
@@ -342,7 +343,7 @@ var queryNodes = &cobra.Command{
 			}
 		}
 		if nodeJailedStatus != "" {
-			switch strings.ToLower(nodeStakingStatus) {
+			switch strings.ToLower(nodeJailedStatus) {
 			case "jailed":
 				opts.JailedStatus = 1
 			case "unjailed":
