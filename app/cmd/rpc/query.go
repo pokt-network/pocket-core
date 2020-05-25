@@ -205,6 +205,12 @@ func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
+	if params.Opts.Page == 0 {
+		params.Opts.Page = 1
+	}
+	if params.Opts.Limit == 0 {
+		params.Opts.Limit = 1000
+	}
 	res, err := app.PCA.QueryNodes(params.Height, params.Opts)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
@@ -350,6 +356,12 @@ func Apps(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
+	}
+	if params.Opts.Page == 0 {
+		params.Opts.Page = 1
+	}
+	if params.Opts.Limit == 0 {
+		params.Opts.Limit = 1000
 	}
 	res, err := app.PCA.QueryApps(params.Height, params.Opts)
 	if err != nil {
