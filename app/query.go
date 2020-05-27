@@ -210,6 +210,14 @@ func (app PocketCoreApp) QueryACL(height int64) (res types.ACL, err error) {
 	return app.govKeeper.GetACL(ctx), nil
 }
 
+func (app PocketCoreApp) QueryAllParams(height int64) (paramNames map[string]string, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	return app.govKeeper.GetAllParamNameValue(ctx), nil
+}
+
 func (app PocketCoreApp) QueryApps(height int64, opts appsTypes.QueryApplicationsWithOpts) (res Page, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {

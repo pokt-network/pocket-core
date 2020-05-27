@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
+	"strconv"
 	"testing"
 
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -237,7 +238,7 @@ func TestQueryPOSParams(t *testing.T) {
 	<-evtChan // Wait for block
 	got, err := PCA.QueryNodeParams(0)
 	assert.Nil(t, err)
-	assert.Equal(t, uint64(100000), got.MaxValidators)
+	assert.Equal(t, int64(100000), got.MaxValidators)
 	assert.Equal(t, int64(1000000), got.StakeMinimum)
 	assert.Equal(t, int64(10), got.DAOAllocation)
 	assert.Equal(t, sdk.DefaultStakeDenom, got.StakeDenom)
@@ -549,4 +550,16 @@ func TestQueryDispatch(t *testing.T) {
 	}
 	cleanup()
 	stopCli()
+}
+
+func TestQueryAllParams(t *testing.T) {
+	resetTestACL()
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	res, err := PCA.QueryAllParams(0)
+	assert.Nil(t, err)
+	assert.NotZero(t, len(res))
+
+	baseRelayPorPOKT, _ := strconv.Unquote(res["application/BaseRelaysPerPOKT"])
+	assert.Equal(t, "100", baseRelayPorPOKT)
+	cleanup()
 }

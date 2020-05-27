@@ -35,7 +35,7 @@ func TestDefaultParams(t *testing.T) {
 func TestParams_Equal(t *testing.T) {
 	type fields struct {
 		UnstakingTime              time.Duration `json:"unstaking_time" yaml:"unstaking_time"`       // duration of unstaking
-		MaxApplications            uint64        `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
+		MaxApplications            int64         `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
 		AppStakeMin                int64         `json:"app_stake_minimum" yaml:"app_stake_minimum"` // minimum amount needed to stake
 		BaslineThroughputStakeRate int64
 		StabilityAdjustment        int64
@@ -101,7 +101,7 @@ func TestParams_Equal(t *testing.T) {
 func TestParams_Validate(t *testing.T) {
 	type fields struct {
 		UnstakingTime               time.Duration `json:"unstaking_time" yaml:"unstaking_time"`       // duration of unstaking
-		MaxApplications             uint64        `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
+		MaxApplications             int64         `json:"max_applications" yaml:"max_applications"`   // maximum number of applications
 		AppStakeMin                 int64         `json:"app_stake_minimum" yaml:"app_stake_minimum"` // minimum amount needed to stake
 		BaselineThrouhgputStakeRate int64         `json:"baseline_throughput_stake_rate" yaml:"baseline_throughput_stake_rate"`
 		StabilityAdjustment         int64         `json:"staking_adjustment" yaml:"staking_adjustment"`

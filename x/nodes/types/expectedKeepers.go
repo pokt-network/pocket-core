@@ -64,5 +64,5 @@ type ValidatorSet interface {
 	// unjail a validator
 	UnjailValidator(sdk.Ctx, sdk.Address)
 	// MaxValidators returns the maximum amount of staked validators
-	MaxValidators(sdk.Ctx) uint64
+	MaxValidators(sdk.Ctx) int64
 }

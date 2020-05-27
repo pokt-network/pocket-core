@@ -42,7 +42,7 @@ func (k Keeper) StakingAdjustment(ctx sdk.Ctx) (adjustment int64) {
 }
 
 // MaxApplications - Retrieve maximum number of applications
-func (k Keeper) MaxApplications(ctx sdk.Ctx) (res uint64) {
+func (k Keeper) MaxApplications(ctx sdk.Ctx) (res int64) {
 	k.Paramstore.Get(ctx, types.KeyMaxApplications, &res)
 	return
 }
