@@ -17,7 +17,7 @@ Ensuring a safe and portable store for private key.
 ### PPK Example
 ````json
 {
- "kdf":"bcrypt",
+ "kdf":"scrypt",
  "salt":"8AA85775977952115075E68278C070A6",
  "secparam":"12",
  "hint":"",
@@ -34,7 +34,7 @@ PPK must contain the following fields:
 >
 > The KDF used for password-based symmetric encryption.
 >
-> Currently pocket is using bcrypt as a sole kdf
+> Currently pocket is using scrypt as a sole kdf
 
 #### salt
 > type: `string`
@@ -58,7 +58,15 @@ PPK must contain the following fields:
 
 ### Aditional Elements
 
-#### Symetric cipher
+#### Scrypt params
+>
+>	N    = 32768
+> 	r    = 8
+> 	p    = 1
+> 	keylen = 32
+>
+
+#### Symmetric cipher
 >
 > AES-256-GCM
 >
@@ -69,14 +77,13 @@ PPK must contain the following fields:
 ### How to export a private key using PPK format
 
 1) get the key from the keybase or generate a new one.
-2) using a random `salt` and a desired `password` we generate a `hash` using bcrypt with the desired `cost`
-3) store the used `salt` encoded in hex(base16) and `cost` to be used as **salt** and **secparam** on the PPK
-4) generate a sha256 (32 bytes) from the `hash` generated with bcrypt, this will be used as the encryption `key`
-5) use the `key` to generate a `nonce` consisting of the first 12 bytes of the `key`
-6) Encrypt the raw bytes from the private key using SHA-256-GCM with the `key` and the `nonce`
+2) using a random `salt` and a desired `password` we generate a `key` using Scrypt with the specified params
+3) store the used `salt` encoded in hex(base16) used as **salt** on the PPK
+5) use the `key` to generate a `nonce` or `iv` consisting of the first `secparam` bytes of the `key`
+6) Encrypt the raw bytes from the private key using AES-256-GCM with the `key` and the `nonce`
 7) Using base64 encoding, "Armor" the encrypted bytes and store the string as the **ciphertext**
 8) store an optional `hint` as a reminder for the `password` used to encrypt
-9) create the JSON struct using the values stored, **kdf** value should be "bcrypt"
+9) create the JSON struct using the values stored, **kdf** value should be "scrypt" and **secparam** currently is `12`
 10) store it on a file
 
 
@@ -84,13 +91,12 @@ PPK must contain the following fields:
 
 1) Unmarshall or read the PPK JSON file to be able to use the values stored.
 2) Validate the PPK passes these validations
-    - **kdf** value equals to `"bcrypt"`
+    - **kdf** value equals to `"scrypt"`
     - **salt** value is not `""` (empty)
     - **salt** value can be decoded from `hex(base16)`
     - **ciphertext** can be decoded from `base64`
 3) Using base64 decoding, "Unarmor" the **ciphertext** armored string and store it as the `encryptedBytes`
-4) using the decoded **salt** value, the **secparam** as `cost` and the encryption `password` we generate a `hash` using bcrypt
-5) generate a sha256 (32 bytes) from the `hash` generated with bcrypt, this will be used as the decryption `key`
-6) use the `key` to generate a `nonce` consisting of the first 12 bytes of the `key`
-7) Decrypt the `encryptedBytes` from 3)  using SHA-256-GCM with the `key` and the `nonce`
+4) using the decoded **salt** value, the **secparam** as `cost` and the encryption `password` we generate a `key` using scrypt
+6) use the `key` to generate a `nonce` consisting of the first **secparam** bytes of the `key`
+7) Decrypt the `encryptedBytes` from 3)  using AES-256-GCM with the `key` and the `nonce`
 8) if the password used was the correct one you should have the decrypted private key bytes if not, the password was wrong and should retry from step 4)
