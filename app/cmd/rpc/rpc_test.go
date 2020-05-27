@@ -499,6 +499,24 @@ func TestRPCQueryACL(t *testing.T) {
 	stopCli()
 }
 
+func TestRPCQueryAllParm(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	var params = HeightParams{
+		Height: 0,
+	}
+	q := newQueryRequest("allparams", newBody(params))
+	rec := httptest.NewRecorder()
+	AllParams(rec, q, httprouter.Params{})
+	resp := getResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
+	cleanup()
+	stopCli()
+}
+
 const (
 	acaoHeaderKey   = "Access-Control-Allow-Origin"
 	acaoHeaderValue = "*"

@@ -24,7 +24,7 @@ func (k Keeper) UnStakingTime(ctx sdk.Ctx) (res time.Duration) {
 }
 
 // MaxValidators - Retrieve maximum number of validators
-func (k Keeper) MaxValidators(ctx sdk.Ctx) (res uint64) {
+func (k Keeper) MaxValidators(ctx sdk.Ctx) (res int64) {
 	k.Paramstore.Get(ctx, types.KeyMaxValidators, &res)
 	return
 }

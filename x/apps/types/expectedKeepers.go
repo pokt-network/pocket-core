@@ -61,5 +61,5 @@ type ApplicationSet interface {
 	// unjail a application
 	UnjailApplication(sdk.Ctx, sdk.Address)
 	// MaxApplications returns the maximum amount of staked applications
-	MaxApplications(sdk.Ctx) uint64
+	MaxApplications(sdk.Ctx) int64
 }

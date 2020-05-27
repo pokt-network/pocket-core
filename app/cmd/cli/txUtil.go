@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
@@ -265,10 +266,17 @@ func ChangeParam(fromAddr, paramACLKey string, paramValue interface{}, passphras
 	if err != nil {
 		return nil, err
 	}
+
+	valueBytes, err := json.Marshal(paramValue)
+	//valueBytes, err := app.Codec().MarshalJSON(paramValue)
+	if err != nil {
+		return nil, err
+
+	}
 	msg := govTypes.MsgChangeParam{
 		FromAddress: fa,
 		ParamKey:    paramACLKey,
-		ParamVal:    paramValue,
+		ParamVal:    valueBytes,
 	}
 	err = msg.ValidateBasic()
 	if err != nil {

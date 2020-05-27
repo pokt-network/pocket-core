@@ -12,19 +12,19 @@ import (
 // POS params default values
 const (
 	// DefaultParamspace for params keeper
-	DefaultRelaysToTokensMultiplier int64  = 1000
-	DefaultParamspace                      = ModuleName
-	DefaultUnstakingTime                   = time.Hour * 24 * 7 * 3
-	DefaultMaxValidators            uint64 = 100000
-	DefaultMinStake                 int64  = 1000000
-	DefaultMaxEvidenceAge                  = 60 * 2 * time.Second
-	DefaultSignedBlocksWindow              = int64(100)
-	DefaultDowntimeJailDuration            = 60 * 10 * time.Second
-	DefaultSessionBlocktime                = 25
-	DefaultProposerAllocation              = 1
-	DefaultDAOAllocation                   = 10
-	DefaultMaxChains                       = 15
-	DefaultMaxJailedBlocks                 = 1000
+	DefaultRelaysToTokensMultiplier int64 = 1000
+	DefaultParamspace                     = ModuleName
+	DefaultUnstakingTime                  = time.Hour * 24 * 7 * 3
+	DefaultMaxValidators            int64 = 100000
+	DefaultMinStake                 int64 = 1000000
+	DefaultMaxEvidenceAge                 = 60 * 2 * time.Second
+	DefaultSignedBlocksWindow             = int64(100)
+	DefaultDowntimeJailDuration           = 60 * 10 * time.Second
+	DefaultSessionBlocktime               = 25
+	DefaultProposerAllocation             = 1
+	DefaultDAOAllocation                  = 10
+	DefaultMaxChains                      = 15
+	DefaultMaxJailedBlocks                = 1000
 )
 
 //  - Keys for parameter access
@@ -57,7 +57,7 @@ var _ sdk.ParamSet = (*Params)(nil)
 type Params struct {
 	RelaysToTokensMultiplier int64         `json:"relays_to_tokens_multiplier" yaml:"relays_to_tokens_multiplier"`
 	UnstakingTime            time.Duration `json:"unstaking_time" yaml:"unstaking_time"`                   // how much time must pass between the begin_unstaking_tx and the node going to -> unstaked status
-	MaxValidators            uint64        `json:"max_validators" yaml:"max_validators"`                   // maximum number of validators in the network at any given block
+	MaxValidators            int64         `json:"max_validators" yaml:"max_validators"`                   // maximum number of validators in the network at any given block
 	StakeDenom               string        `json:"stake_denom" yaml:"stake_denom"`                         // the monetary denomination of the coins in the network `uPOKT` or `uAtom` or `Wei`
 	StakeMinimum             int64         `json:"stake_minimum" yaml:"stake_minimum"`                     // minimum amount of `uPOKT` needed to stake in the network as a node
 	SessionBlockFrequency    int64         `json:"session_block_frequency" yaml:"session_block_frequency"` // how many blocks are in a session (pocket network unit)

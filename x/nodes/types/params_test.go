@@ -48,7 +48,7 @@ func TestDefaultParams(t *testing.T) {
 func TestParams_Equal(t *testing.T) {
 	type fields struct {
 		UnstakingTime            time.Duration
-		MaxValidators            uint64
+		MaxValidators            int64
 		StakeDenom               string
 		StakeMinimum             int64
 		ProposerRewardPercentage int8
@@ -138,7 +138,7 @@ func TestParams_Equal(t *testing.T) {
 func TestParams_Validate(t *testing.T) {
 	type fields struct {
 		UnstakingTime      time.Duration `json:"unstaking_time" yaml:"unstaking_time"` // duration of unstaking
-		MaxValidators      uint64        `json:"max_validators" yaml:"max_validators"` // maximum number of validators
+		MaxValidators      int64         `json:"max_validators" yaml:"max_validators"` // maximum number of validators
 		StakeDenom         string        `json:"stake_denom" yaml:"stake_denom"`       // bondable coin denomination
 		StakeMinimum       int64         `json:"stake_minimum" yaml:"stake_minimum"`   // minimum amount needed to stake
 		DaoAllocation      int64
@@ -312,7 +312,7 @@ func TestParams_Validate(t *testing.T) {
 func TestParams_ParamSetPairs(t *testing.T) {
 	type fields struct {
 		UnstakingTime           time.Duration
-		MaxValidators           uint64
+		MaxValidators           int64
 		StakeDenom              string
 		StakeMinimum            int64
 		ProposerAllocation      int64
@@ -399,7 +399,7 @@ func TestParams_ParamSetPairs(t *testing.T) {
 func TestParams_String(t *testing.T) {
 	type fields struct {
 		UnstakingTime           time.Duration
-		MaxValidators           uint64
+		MaxValidators           int64
 		StakeDenom              string
 		StakeMinimum            int64
 		ProposerAllocation      int64
