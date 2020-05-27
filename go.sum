@@ -273,8 +273,8 @@ github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/pokt-network/posmint v0.0.0-20200519165031-947a85177d7b h1:X/LVDD8vbOkDJgqnsy/Px7HwNIRO6Gs1dqELlo3OQHg=
-github.com/pokt-network/posmint v0.0.0-20200519165031-947a85177d7b/go.mod h1:/Q6zRipV1L9ZML5kGMP5+J5lMoo+B/njn5ncf4gpIrc=
+github.com/pokt-network/posmint v0.0.0-20200527153617-9eb5045395c5 h1:emwUdxmGLH98H+KQgF/3Xr5Tta/rqeUySaisl3GT9CA=
+github.com/pokt-network/posmint v0.0.0-20200527153617-9eb5045395c5/go.mod h1:aBSNydLYFRWSpLdoIv6OjUQxpcwsYnge5lzgDMF7/nc=
 github.com/pokt-network/tendermint v0.32.11-0.20200416214829-c67ffb7bf00f h1:einsDo1okTcUPYYYYiC8MfDRHsD7IKI/6dnlTymWc6Q=
 github.com/pokt-network/tendermint v0.32.11-0.20200416214829-c67ffb7bf00f/go.mod h1:klZB7nl3GZZ9jPNaNHPYjNyoWW7mMx+5AXAN8Ov7bmY=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
@@ -352,8 +352,6 @@ github.com/stumble/gorocksdb v0.0.3/go.mod h1:v6IHdFBXk5DJ1K4FZ0xi+eY737quiiBxYt
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=
 github.com/syndtr/goleveldb v1.0.1-0.20190318030020-c3a204f8e965 h1:1oFLiOyVl+W7bnBzGhf7BbIv9loSFQcieWWYIjLqcAw=
 github.com/syndtr/goleveldb v1.0.1-0.20190318030020-c3a204f8e965/go.mod h1:9OrXJhf154huy1nPWmuSrkgjPUtUNhA+Zmy+6AESzuA=
-github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 h1:hqAk8riJvK4RMWx1aInLzndwxKalgi5rTqgfXxOxbEI=
-github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15/go.mod h1:z4YtwM70uOnk8h0pjJYlj3zdYwi9l03By6iAIF5j/Pk=
 github.com/tendermint/go-amino v0.14.1/go.mod h1:i/UKE5Uocn+argJJBb12qTZsCDBcAYMbR92AaJVmKso=
 github.com/tendermint/go-amino v0.15.0 h1:TC4e66P59W7ML9+bxio17CPKnxW3nKIRAYskntMAoRk=
 github.com/tendermint/go-amino v0.15.0/go.mod h1:TQU0M1i/ImAo+tYpZi73AU3V/dKeCoMC9Sphe2ZwGME=
