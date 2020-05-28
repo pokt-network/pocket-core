@@ -210,12 +210,41 @@ func (app PocketCoreApp) QueryACL(height int64) (res types.ACL, err error) {
 	return app.govKeeper.GetACL(ctx), nil
 }
 
-func (app PocketCoreApp) QueryAllParams(height int64) (paramNames map[string]string, err error) {
+type AllParamsReturn struct {
+	AppParams    []string `json:"app_params"`
+	NodeParams   []string `json:"node_params"`
+	PocketParams []string `json:"pocket_params"`
+	GovParams    []string `json:"gov_params"`
+	AuthParams   []string `json:"auth_params"`
+}
+
+func (app PocketCoreApp) QueryAllParams(height int64) (r AllParamsReturn, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {
 		return
 	}
-	return app.govKeeper.GetAllParamNameValue(ctx), nil
+	//get all the parameters from gov module
+	allmap := app.govKeeper.GetAllParamNameValue(ctx)
+
+	//transform for easy handling
+	for k, v := range allmap {
+		sub, param := types.SplitACLKey(k)
+		switch sub {
+		case "pos":
+			r.NodeParams = append(r.NodeParams, fmt.Sprintf("%s : %s", param, v))
+		case "application":
+			r.AppParams = append(r.AppParams, fmt.Sprintf("%s : %s", param, v))
+		case "pocketcore":
+			r.PocketParams = append(r.PocketParams, fmt.Sprintf("%s : %s", param, v))
+		case "gov":
+			r.GovParams = append(r.GovParams, fmt.Sprintf("%s : %s", param, v))
+		case "auth":
+			r.AuthParams = append(r.AuthParams, fmt.Sprintf("%s : %s", param, v))
+		default:
+		}
+	}
+
+	return r, nil
 }
 
 func (app PocketCoreApp) QueryApps(height int64, opts appsTypes.QueryApplicationsWithOpts) (res Page, err error) {
