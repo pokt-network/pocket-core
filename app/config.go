@@ -630,7 +630,6 @@ func MakeCodec() {
 	sdk.RegisterCodec(cdc)
 	// register the crypto types
 	codec.RegisterCrypto(cdc)
-	//cdc.RegisterConcrete([]byte{},"[]byte",nil)
 }
 
 func Credentials() string {

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
-	"strconv"
 	"testing"
 
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -557,9 +556,8 @@ func TestQueryAllParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	res, err := PCA.QueryAllParams(0)
 	assert.Nil(t, err)
-	assert.NotZero(t, len(res))
+	assert.NotNil(t, res)
 
-	baseRelayPorPOKT, _ := strconv.Unquote(res["application/BaseRelaysPerPOKT"])
-	assert.Equal(t, "100", baseRelayPorPOKT)
+	assert.NotZero(t, len(res.AppParams))
 	cleanup()
 }
