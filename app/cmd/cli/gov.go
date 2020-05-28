@@ -28,26 +28,28 @@ from DAOTransfer, change parameters; to performing protocol Upgrades. `,
 }
 
 var govDAOTransfer = &cobra.Command{
-	Use:   "transfer <amount> <fromAddr> <toAddr> <chainID>",
+	Use:   "transfer <amount> <fromAddr> <toAddr> <chainID> <fees>",
 	Short: "Transfer from DAO",
 	Long: `If authorized, move funds from the DAO.
 Actions: [burn, transfer]`,
-	Args: cobra.ExactArgs(4),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
-		var toAddr string
-		if len(args) == 4 {
-			toAddr = args[2]
-		}
+		toAddr := args[2]
 		fromAddr := args[1]
 		amount, err := strconv.Atoi(args[0])
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+		fees, err := strconv.Atoi(args[4])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials()
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[2])
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[2], int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -67,11 +69,11 @@ Actions: [burn, transfer]`,
 }
 
 var govDAOBurn = &cobra.Command{
-	Use:   "burn <amount> <fromAddr> <toAddr> <chainID>",
+	Use:   "burn <amount> <fromAddr> <toAddr> <chainID> <fees>",
 	Short: "Burn from DAO",
 	Long: `If authorized, burn funds from the DAO.
 Actions: [burn, transfer]`,
-	Args: cobra.ExactArgs(4),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		var toAddr string
@@ -84,9 +86,14 @@ Actions: [burn, transfer]`,
 			fmt.Println(err)
 			return
 		}
+		fees, err := strconv.Atoi(args[4])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials()
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[2])
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[2], int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -105,20 +112,20 @@ Actions: [burn, transfer]`,
 	},
 }
 var govChangeParam = &cobra.Command{
-	Use:   "change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)>",
+	Use:   "change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)> <fees>",
 	Short: "Edit a param in the network",
 	Long: `If authorized, submit a tx to change any param from any module.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(4),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		fmt.Println("Enter Password: ")
-		var i interface{}
-		err := json.Unmarshal([]byte(args[3]), &i)
+		fees, err := strconv.Atoi(args[4])
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			return
 		}
-		res, err := ChangeParam(args[0], args[2], i, app.Credentials(), args[1])
+		res, err := ChangeParam(args[0], args[2], []byte(args[3]), app.Credentials(), args[1], int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -138,11 +145,11 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var govUpgrade = &cobra.Command{
-	Use:   "upgrade <fromAddr> <atHeight> <version>, <chainID>",
+	Use:   "upgrade <fromAddr> <atHeight> <version>, <chainID> <fees>",
 	Short: "Upgrade the protocol",
 	Long: `If authorized, upgrade the protocol.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(4),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		i, err := strconv.Atoi(args[1])
@@ -153,8 +160,13 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			Height:  int64(i),
 			Version: args[2],
 		}
+		fees, err := strconv.Atoi(args[4])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		fmt.Println("Enter Password: ")
-		res, err := Upgrade(args[0], u, app.Credentials(), args[3])
+		res, err := Upgrade(args[0], u, app.Credentials(), args[3], int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return

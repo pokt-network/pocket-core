@@ -9,10 +9,11 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.8.1 // indirect
-	github.com/pokt-network/posmint v0.0.0-20200528163158-6d3ccb01e81b
+	github.com/pokt-network/posmint v0.0.0-20200528180517-d0b1dd476d06
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
+	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15 // indirect
 	github.com/tendermint/go-amino v0.15.0
 	github.com/tendermint/iavl v0.12.4
 	github.com/tendermint/tendermint v0.32.10

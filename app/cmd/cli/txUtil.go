@@ -20,7 +20,7 @@ import (
 )
 
 // SendTransaction - Deliver Transaction to node
-func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Int) (*rpc.SendRawTxParams, error) {
+func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Int, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.In
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.In
 }
 
 // StakeNode - Deliver Stake message to node
-func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.Int) (*rpc.SendRawTxParams, error) {
+func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.Int, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string
 }
 
 // UnstakeNode - start unstaking message to node
-func UnstakeNode(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, error) {
+func UnstakeNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ func UnstakeNode(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, er
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func UnstakeNode(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, er
 }
 
 // UnjailNode - Remove node from jail
-func UnjailNode(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, error) {
+func UnjailNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -146,7 +146,7 @@ func UnjailNode(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, err
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func UnjailNode(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, err
 	}, nil
 }
 
-func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.Int) (*rpc.SendRawTxParams, error) {
+func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.Int, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -188,7 +188,7 @@ func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.
 	}, nil
 }
 
-func UnstakeApp(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, error) {
+func UnstakeApp(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -214,7 +214,7 @@ func UnstakeApp(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, err
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +224,7 @@ func UnstakeApp(fromAddr, passphrase, chainID string) (*rpc.SendRawTxParams, err
 	}, nil
 }
 
-func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.Int, action, chainID string) (*rpc.SendRawTxParams, error) {
+func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.Int, action, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -247,7 +247,7 @@ func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.Int, action, chainID 
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +257,7 @@ func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.Int, action, chainID 
 	}, nil
 }
 
-func ChangeParam(fromAddr, paramACLKey string, paramValue interface{}, passphrase, chainID string) (*rpc.SendRawTxParams, error) {
+func ChangeParam(fromAddr, paramACLKey string, paramValue []byte, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -282,7 +282,7 @@ func ChangeParam(fromAddr, paramACLKey string, paramValue interface{}, passphras
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +292,7 @@ func ChangeParam(fromAddr, paramACLKey string, paramValue interface{}, passphras
 	}, nil
 }
 
-func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID string) (*rpc.SendRawTxParams, error) {
+func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -309,7 +309,7 @@ func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID stri
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees)
 	if err != nil {
 		return nil, err
 	}
@@ -319,15 +319,12 @@ func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID stri
 	}, nil
 }
 
-func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string, keybase keys.Keybase, passphrase string) (transactionBz []byte, err error) {
-	if err != nil {
-		return nil, err
-	}
-	// fee
-	fee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, msg.GetFee()))
+func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string, keybase keys.Keybase, passphrase string, fee int64) (transactionBz []byte, err error) {
+	// fees
+	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(fee)))
 	// entroyp
 	entropy := common.RandInt64()
-	signBytes, err := auth.StdSignBytes(chainID, entropy, fee, msg, "")
+	signBytes, err := auth.StdSignBytes(chainID, entropy, fees, msg, "")
 	if err != nil {
 		return nil, err
 	}
@@ -336,6 +333,6 @@ func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string
 		return nil, err
 	}
 	s := authTypes.StdSignature{PublicKey: pubKey, Signature: sig}
-	tx := authTypes.NewStdTx(msg, fee, s, "", entropy)
+	tx := authTypes.NewStdTx(msg, fees, s, "", entropy)
 	return auth.DefaultTxEncoder(cdc)(tx)
 }

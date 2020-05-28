@@ -389,6 +389,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 		acl.SetOwner("application/StabilityAdjustment", kp.GetAddress())
 		acl.SetOwner("auth/MaxMemoCharacters", kp.GetAddress())
 		acl.SetOwner("auth/TxSigLimit", kp.GetAddress())
+		acl.SetOwner("auth/FeeMultipliers", kp.GetAddress())
 		acl.SetOwner("gov/acl", kp.GetAddress())
 		acl.SetOwner("gov/daoOwner", kp.GetAddress())
 		acl.SetOwner("gov/upgrade", kp.GetAddress())

@@ -379,11 +379,11 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 
 // sendTxCmd represents the sendTx command
 var sendTxCmd = &cobra.Command{
-	Use:   "send-tx <fromAddr> <toAddr> <amount> <chainID>",
+	Use:   "send-tx <fromAddr> <toAddr> <amount> <chainID> <fee>",
 	Short: "Send uPOKT",
 	Long: `Sends <amount> uPOKT <fromAddr> to <toAddr>.
 Prompts the user for <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(4),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		amount, err := strconv.Atoi(args[2])
@@ -391,8 +391,13 @@ Prompts the user for <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		fees, err := strconv.Atoi(args[4])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		fmt.Println("Enter passphrase: ")
-		res, err := SendTransaction(args[0], args[1], app.Credentials(), args[3], types.NewInt(int64(amount)))
+		res, err := SendTransaction(args[0], args[1], app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -495,9 +500,9 @@ var newMultiPublicKey = &cobra.Command{
 }
 
 var buildMultisig = &cobra.Command{
-	Use:   "build-MS-Tx <your-signer-address> <ordered-comma-separated-hex-pubkeys> <json-message> <chainID>",
+	Use:   "build-MS-Tx <your-signer-address> <ordered-comma-separated-hex-pubkeys> <json-message> <chainID> <fees>",
 	Short: "build and sign a multisic tx",
-	Args:  cobra.ExactArgs(4),
+	Args:  cobra.ExactArgs(5),
 	Long:  `build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
@@ -514,7 +519,12 @@ var buildMultisig = &cobra.Command{
 		}
 		multiSigPubKey := crypto.PublicKeyMultiSignature{PublicKeys: pks}
 		fmt.Println("Enter passphrase: ")
-		bz, err := app.PCA.BuildMultisig(args[0], msg, app.Credentials(), args[3], multiSigPubKey)
+		fees, err := strconv.Atoi(args[4])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		bz, err := app.PCA.BuildMultisig(args[0], msg, app.Credentials(), args[3], multiSigPubKey, int64(fees))
 		if err != nil {
 			fmt.Println(fmt.Errorf("error building the multisig: %v", err))
 		}
