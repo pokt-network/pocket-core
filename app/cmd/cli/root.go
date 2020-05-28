@@ -24,6 +24,7 @@ var (
 	blockTime       int
 	testnet         bool
 	simulateRelay   bool
+	keybase         bool
 )
 
 var CLIVersion = app.AppVersion
@@ -60,6 +61,7 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&blockTime, "blockTime", 1, "how often should the network create blocks")
 	rootCmd.PersistentFlags().BoolVar(&testnet, "testnet", false, "would you like to connect to Pocket Network testnet")
 	rootCmd.PersistentFlags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
+	rootCmd.Flags().BoolVar(&keybase, "keybase", true, "run wiith keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
@@ -67,11 +69,11 @@ func init() {
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
-	Use:   "start",
+	Use:   "start --keybase=<keybase>",
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL, keybase)
 		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, simulateRelay)
 		// trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
