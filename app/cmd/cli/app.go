@@ -29,11 +29,11 @@ from staking and unstaking; to generating AATs.`,
 }
 
 var appStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <chains> <chainID>",
+	Use:   "stake <fromAddr> <amount> <chains> <chainID> <fees>",
 	Short: "Stake an app into the network",
 	Long: `Stake the app into the network, making it have network throughput.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(4),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 		fromAddr := args[0]
@@ -46,10 +46,15 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		if err != nil {
 			log.Fatal(err)
 		}
+		fees, err := strconv.Atoi(args[4])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		rawChains := reg.ReplaceAllString(args[2], "")
 		chains := strings.Split(rawChains, ",")
 		fmt.Println("Enter passphrase: ")
-		res, err := StakeApp(chains, fromAddr, app.Credentials(), args[3], types.NewInt(int64(amount)))
+		res, err := StakeApp(chains, fromAddr, app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -69,15 +74,20 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var appUnstakeCmd = &cobra.Command{
-	Use:   "unstake <fromAddr> <chainID>",
+	Use:   "unstake <fromAddr> <chainID> <fees>",
 	Short: "Unstake an app from the network",
 	Long: `Unstake an app from the network, changing it's status to Unstaking.
 Prompts the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(3),
+	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		fees, err := strconv.Atoi(args[3])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		fmt.Println("Enter Password: ")
-		res, err := UnstakeApp(args[0], app.Credentials(), args[1])
+		res, err := UnstakeApp(args[0], app.Credentials(), args[1], int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return

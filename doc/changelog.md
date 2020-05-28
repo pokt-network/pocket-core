@@ -47,6 +47,7 @@
 - Added minimum proofs to pocketcore module params
 - Split burn and transfer DAO CLI command, avoid error prone errors
 - Cache flushes to the database periodically instead of per relay for efficiency
+- Added dynamic fees for each message type
 
 ## RC-0.3.0
 - Added governance module from posmint

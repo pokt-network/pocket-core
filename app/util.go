@@ -24,7 +24,7 @@ func (app PocketCoreApp) GenerateAAT(appPubKey, clientPubKey, passphrase string)
 	return json.MarshalIndent(aat, "", "  ")
 }
 
-func (app PocketCoreApp) BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.PublicKeyMultiSig) ([]byte, error) {
+func (app PocketCoreApp) BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.PublicKeyMultiSig, fees int64) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (app PocketCoreApp) BuildMultisig(fromAddr, jsonMessage, passphrase, chainI
 		auth.DefaultTxDecoder(cdc),
 		chainID,
 		"", nil).WithKeybase(kb)
-	return txBuilder.BuildAndSignMultisigTransaction(fa, pk, m, passphrase)
+	return txBuilder.BuildAndSignMultisigTransaction(fa, pk, m, passphrase, fees)
 }
 
 func (app PocketCoreApp) SignMultisigNext(fromAddr, txHex, passphrase, chainID string) ([]byte, error) {

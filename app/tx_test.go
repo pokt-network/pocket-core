@@ -81,6 +81,9 @@ func TestUnstakeApp(t *testing.T) {
 }
 
 func TestUnstakeNode(t *testing.T) {
+	if testing.Short() {
+		t.Skip()
+	}
 	var chains = []string{"00"}
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
@@ -272,18 +275,19 @@ func TestChangeParamsTx(t *testing.T) {
 	a := testACL
 	a.SetOwner("gov/acl", kp2.GetAddress())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "gov/acl", a, "test")
+	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "gov/acl", a, "test", 1000000)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
-
-	<-evtChan // Wait for tx
-	acl, err := PCA.QueryACL(0)
-	assert.Nil(t, err)
-	o := acl.GetOwner("gov/acl")
-	assert.Equal(t, kp2.GetAddress().String(), o.String())
-
-	cleanup()
-	stopCli()
+	select {
+	case res := <-evtChan:
+		fmt.Println(res)
+		acl, err := PCA.QueryACL(0)
+		assert.Nil(t, err)
+		o := acl.GetOwner("gov/acl")
+		assert.Equal(t, kp2.GetAddress().String(), o.String())
+		cleanup()
+		stopCli()
+	}
 }
 
 func TestUpgrade(t *testing.T) {
@@ -297,7 +301,7 @@ func TestUpgrade(t *testing.T) {
 	tx, err = gov.UpgradeTx(memCodec(), memCli, kb, cb.GetAddress(), govTypes.Upgrade{
 		Height:  1000,
 		Version: "2.0.0",
-	}, "test")
+	}, "test", 1000000)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
@@ -318,7 +322,7 @@ func TestDAOTransfer(t *testing.T) {
 	var tx *sdk.TxResponse
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err = gov.DAOTransferTx(memCodec(), memCli, kb, cb.GetAddress(), nil, sdk.OneInt(), govTypes.DAOBurn.String(), "test")
+	tx, err = gov.DAOTransferTx(memCodec(), memCli, kb, cb.GetAddress(), nil, sdk.OneInt(), govTypes.DAOBurn.String(), "test", 1000000)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
