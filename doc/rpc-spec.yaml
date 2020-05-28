@@ -8,13 +8,12 @@ info:
   license:
     name: MIT License
     url: 'https://github.com/pokt-network/pocket-core/LICENSE.md'
-  version: 0.2.0
+  version: 0.4.0
 externalDocs:
   description: Find out more about Pocket Network
   url: 'https://pokt.network'
 servers:
   - url: 'http://localhost:8081/v1'
-  - url: 'http://35.236.208.175:8081/v1'
 tags:
   - name: version
     description: Version of the Pocket API
@@ -282,6 +281,7 @@ paths:
           description: Failed to retrieve the applications
   /query/appparams:
     post:
+      deprecated: true
       tags:
         - query
       requestBody:
@@ -496,6 +496,7 @@ paths:
           description: Failed to retrieve the node information
   /query/nodeparams:
     post:
+      deprecated: true
       tags:
         - query
       requestBody:
@@ -514,6 +515,69 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NodeParams'
+        '400':
+          description: Failed to retrieve the node information
+  /query/allParams:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: 'Returns the node parameters at the specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        '200':
+          description: Node parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllParams'
+              example:
+                app_params:
+                  - 'AppUnstakingTime : "1814400000000000"'
+                  - 'MaximumChains : "15"'
+                  - 'StabilityAdjustment : "0"'
+                  - 'ApplicationStakeMinimum : "1000000"'
+                  - 'MaxApplications : "9223372036854775807"'
+                  - 'BaseRelaysPerPOKT : "100"'
+                  - 'ParticipationRateOn : false'
+                node_params:
+                  - 'BlocksPerSession : "25"'
+                  - 'MinSignedPerWindow : "0.500000000000000000"'
+                  - 'ProposerPercentage : "1"'
+                  - 'StakeMinimum : "1000000"'
+                  - 'MaxEvidenceAge : "120000000000"'
+                  - 'MaximumChains : "15"'
+                  - 'RelaysToTokensMultiplier : "1000"'
+                  - 'SignedBlocksWindow : "100"'
+                  - 'DAOAllocation : "10"'
+                  - 'DowntimeJailDuration : "600000000000"'
+                  - 'MaxValidators : "100000"'
+                  - 'SlashFractionDowntime : "0.010000000000000000"'
+                  - 'UnstakingTime : "1814400000000000"'
+                  - 'MaxJailedBlocks : "1000"'
+                  - 'StakeDenom : "upokt"'
+                  - 'SlashFractionDoubleSign : "0.050000000000000000"'
+                pocket_params:
+                  - 'SupportedBlockchains : ["00"]'
+                  - 'MinimumNumberOfProofs : "5"'
+                  - 'ClaimExpiration : "100"'
+                  - 'ClaimSubmissionWindow : "3"'
+                  - 'ReplayAttackBurnMultiplier : "3"'
+                  - 'SessionNodeCount : "5"'
+                gov_params:
+                  - 'daoOwner : "4c8ee30215db020d65d8e36966adebd91e3dacd7"'
+                  - 'acl : {"type":"gov/non_map_acl","value":[{"acl_key":"auth/MaxMemoCharacters","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"auth/TxSigLimit","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"gov/daoOwner","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"gov/acl","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/StakeDenom","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pocketcore/SupportedBlockchains","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/DowntimeJailDuration","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/SlashFractionDoubleSign","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/SlashFractionDowntime","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"application/ApplicationStakeMinimum","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pocketcore/ClaimExpiration","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pocketcore/SessionNodeCount","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pocketcore/MinimumNumberOfProofs","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pocketcore/ReplayAttackBurnMultiplier","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/MaxValidators","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/ProposerPercentage","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"application/StabilityAdjustment","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"application/AppUnstakingTime","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"application/ParticipationRateOn","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/MaxEvidenceAge","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/MinSignedPerWindow","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/StakeMinimum","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/UnstakingTime","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/RelaysToTokensMultiplier","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"application/BaseRelaysPerPOKT","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pocketcore/ClaimSubmissionWindow","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/DAOAllocation","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/SignedBlocksWindow","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/BlocksPerSession","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"application/MaxApplications","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"gov/upgrade","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"application/MaximumChains","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/MaximumChains","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"},{"acl_key":"pos/MaxJailedBlocks","address":"4c8ee30215db020d65d8e36966adebd91e3dacd7"}]}'
+                  - 'upgrade : {"type":"gov/upgrade","value":{"Height":"10000","Version":"2.0.0"}}'
+                auth_params:
+                  - 'MaxMemoCharacters : "256"'
+                  - 'TxSigLimit : "7"'
+
         '400':
           description: Failed to retrieve the node information
   /query/nodereceipt:
@@ -647,6 +711,7 @@ paths:
           description: Failed to retrieve the nodes' information
   /query/pocketparams:
     post:
+      deprecated: true
       tags:
         - query
       requestBody:
@@ -1030,6 +1095,34 @@ components:
         unstaking_time:
           type: string
           description: 'If unstaking, the minimum time for the validator to complete unstaking'
+    AllParams:
+      type: object
+      properties:
+        app_params:
+          type: array
+          items:
+            type: string
+            description: the APP module params
+        node_params:
+          type: array
+          items:
+            type: string
+            description: the POS module params
+        pocket_params:
+          type: array
+          items:
+            type: string
+            description: the Pocket params
+        gov_params:
+          type: array
+          items:
+            type: string
+            description: the GOV module params
+        auth_params:
+          type: array
+          items:
+            type: string
+            description: the Auth module params
     NodeParams:
       type: object
       properties:
