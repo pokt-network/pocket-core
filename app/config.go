@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	tmType "github.com/tendermint/tendermint/types"
 	"io"
 	"io/ioutil"
 	log2 "log"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	tmType "github.com/tendermint/tendermint/types"
 
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
@@ -159,7 +160,7 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL string) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL string, keybase bool) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
 	// init the keyfiles
@@ -169,7 +170,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, re
 	// init genesis
 	InitGenesis()
 	// init the tendermint node
-	return InitTendermint()
+	return InitTendermint(keybase)
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL string) {
@@ -272,7 +273,7 @@ func InitGenesis() {
 	}
 }
 
-func InitTendermint() *node.Node {
+func InitTendermint(keybase bool) *node.Node {
 	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
 		if keyvals[0] != kitlevel.Key() {
 			fmt.Printf("expected level key to be first, got %v", keyvals[0])
@@ -298,8 +299,15 @@ func InitTendermint() *node.Node {
 		Logger:      logger,
 		TraceWriter: "",
 	}
+	var keys kb.Keybase
+	switch keybase {
+	case false:
+		keys, _ = GetKeybase()
+	default:
+		keys = MustGetKeybase()
+	}
 	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, MustGetKeybase(), getTMClient(), NewHostedChains(false), logger, db, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, keys, getTMClient(), NewHostedChains(false), logger, db, baseapp.SetPruning(store.PruneNothing))
 	})
 	if err != nil {
 		log2.Fatal(err)
