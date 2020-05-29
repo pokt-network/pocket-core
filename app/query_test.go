@@ -237,7 +237,7 @@ func TestQueryPOSParams(t *testing.T) {
 	<-evtChan // Wait for block
 	got, err := PCA.QueryNodeParams(0)
 	assert.Nil(t, err)
-	assert.Equal(t, int64(100000), got.MaxValidators)
+	assert.Equal(t, int64(5000), got.MaxValidators)
 	assert.Equal(t, int64(1000000), got.StakeMinimum)
 	assert.Equal(t, int64(10), got.DAOAllocation)
 	assert.Equal(t, sdk.DefaultStakeDenom, got.StakeDenom)
