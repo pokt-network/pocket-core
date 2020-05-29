@@ -81,9 +81,6 @@ func TestUnstakeApp(t *testing.T) {
 }
 
 func TestUnstakeNode(t *testing.T) {
-	if testing.Short() {
-		t.Skip()
-	}
 	var chains = []string{"00"}
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
@@ -336,9 +333,6 @@ func TestDAOTransfer(t *testing.T) {
 }
 
 func TestClaimTx(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping in short mode")
-	}
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	kb := getInMemoryKeybase()
 	for i := 0; i < 5; i++ {
