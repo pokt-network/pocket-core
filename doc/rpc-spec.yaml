@@ -625,7 +625,7 @@ paths:
                 $ref: '#/components/schemas/QueryNodeReceiptsResponse'
         '400':
           description: Failed to retrieve the node proof information
-  /query/nodeclaims:
+  /query/nodeclaim:
     post:
       tags:
         - query
@@ -643,7 +643,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StoredReceipt'
-  /query/nodeclaim:
+  /query/nodeclaims:
     post:
       tags:
         - query
