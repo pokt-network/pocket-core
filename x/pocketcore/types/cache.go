@@ -267,17 +267,13 @@ type EvidenceIt struct {
 // "Value" - Returns the evidence object value of the iterator
 func (ei *EvidenceIt) Value() (evidence Evidence) {
 	// unmarshal the value (bz) into an evidence object
-	err := ModuleCdc.UnmarshalBinaryBare(ei.Iterator.Value(), &evidence)
+	e, err := evidence.Unmarshal(ei.Iterator.Value())
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't unmarshal evidence iterator value into evidence: %s", err.Error()))
 	}
-	e, err := evidence.Unmarshal(ei.Iterator.Value())
-	if err != nil {
-		log.Fatal(fmt.Errorf("can't unmarshal evidence iterator value into session: %s", err.Error()))
-	}
 	evidence, ok := e.(Evidence)
 	if !ok {
-		log.Fatal("can't unmarshal evidence iterator value into session: cache object is not evidence")
+		log.Fatal("can't unmarshal evidence iterator value into evidence: cache object is not evidence")
 	}
 	return
 }
