@@ -15,7 +15,7 @@ const (
 	DefaultRelaysToTokensMultiplier int64 = 1000
 	DefaultParamspace                     = ModuleName
 	DefaultUnstakingTime                  = time.Hour * 24 * 7 * 3
-	DefaultMaxValidators            int64 = 100000
+	DefaultMaxValidators            int64 = 5000
 	DefaultMinStake                 int64 = 1000000
 	DefaultMaxEvidenceAge                 = 60 * 2 * time.Second
 	DefaultSignedBlocksWindow             = int64(100)
