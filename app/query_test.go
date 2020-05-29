@@ -433,9 +433,6 @@ func TestRelayGenerator(t *testing.T) {
 }
 
 func TestQueryRelay(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping in short mode")
-	}
 	const headerKey = "foo"
 	const headerVal = "bar"
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
@@ -496,35 +493,21 @@ func TestQueryRelay(t *testing.T) {
 		BodyString(expectedRequest).
 		Reply(200).
 		BodyString(expectedResponse)
-
-	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	select {
 	case <-evtChan:
-		res, err := PCA.HandleRelay(relay)
-		fmt.Println(relay)
-		assert.Nil(t, err, err)
-		assert.Equal(t, expectedResponse, res.Response)
-		gock.New(PlaceholderURL).
-			Post("").
-			BodyString(expectedRequest).
-			Reply(200).
-			BodyString(expectedResponse)
-		_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-		select {
-		case <-evtChan:
-			inv, err := types.GetEvidence(types.SessionHeader{
-				ApplicationPubKey:  aat.ApplicationPublicKey,
-				Chain:              relay.Proof.Blockchain,
-				SessionBlockHeight: relay.Proof.SessionBlockHeight,
-			}, types.RelayEvidence, sdk.NewInt(10000))
-			assert.Nil(t, err)
-			assert.NotNil(t, inv)
-			assert.Equal(t, inv.NumOfProofs, int64(2))
-			cleanup()
-			stopCli()
-			gock.Off()
-			return
-		}
+		inv, err := types.GetEvidence(types.SessionHeader{
+			ApplicationPubKey:  aat.ApplicationPublicKey,
+			Chain:              relay.Proof.Blockchain,
+			SessionBlockHeight: relay.Proof.SessionBlockHeight,
+		}, types.RelayEvidence, sdk.NewInt(10000))
+		assert.Nil(t, err)
+		assert.NotNil(t, inv)
+		assert.Equal(t, inv.NumOfProofs, int64(1))
+		cleanup()
+		stopCli()
+		gock.Off()
+		return
 	}
 }
 
