@@ -1,9 +1,9 @@
 package types
 
 const (
-	StakeFee   = 100000
-	UnstakeFee = 100000
-	UnjailFee  = 100000
+	StakeFee   = 10000
+	UnstakeFee = 10000
+	UnjailFee  = 10000
 )
 
 var (
