@@ -277,7 +277,7 @@ func NodeReceipts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, err := app.Codec().MarshalJSON(res)
+	j, err := res.JSON()
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
@@ -343,7 +343,7 @@ func NodeClaims(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	j, err := app.Codec().MarshalJSON(res)
+	j, err := res.JSON()
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
