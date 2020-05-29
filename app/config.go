@@ -75,7 +75,7 @@ const (
 	PlaceholderHash                 = "00"
 	PlaceholderURL                  = "https://foo.bar:8080"
 	PlaceholderServiceURL           = PlaceholderURL
-	DefaultRemoteCLIURL             = "http://localhost"
+	DefaultRemoteCLIURL             = "http://localhost:8081"
 	DefaultUserAgent                = ""
 	DefaultValidatorCacheSize       = 500
 	DefaultApplicationCacheSize     = DefaultValidatorCacheSize
