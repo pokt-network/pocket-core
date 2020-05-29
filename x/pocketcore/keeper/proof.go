@@ -8,7 +8,6 @@ import (
 
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
-	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
@@ -16,7 +15,7 @@ import (
 )
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	kp, err := k.GetPKFromFile(ctx)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
@@ -64,7 +63,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, keybase keys.Keybase, 
 		leaf := pc.GetProof(claim.SessionHeader, claim.EvidenceType, index)
 		cousin := pc.GetProof(claim.SessionHeader, claim.EvidenceType, int64(cousinIndex))
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, keybase, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, kp, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the Proof Transaction:\n%v", err))
 			return
@@ -196,14 +195,9 @@ func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfCha
 	k.posKeeper.BurnForChallenge(ctx, numberOfChallenges.Mul(sdk.NewInt(k.ReplayAttackBurnMultiplier(ctx))), address)
 }
 
-func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase keys.Keybase, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
-	// get the pk, as it is the sender of the automatic message
-	kp, err := k.GetPKFromFile(ctx)
-	if err != nil {
-		return txBuilder, cliCtx, err
-	}
+func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, key crypto.PrivateKey, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	// get the from address from the pkf
-	fromAddr := sdk.Address(kp.PublicKey().Address())
+	fromAddr := sdk.Address(key.PublicKey().Address())
 	// get the genesis doc from the node for the chainID
 	genDoc, err := n.Genesis()
 	if err != nil {
@@ -229,13 +223,13 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, keybase
 	if account.GetCoins().AmountOf(k.posKeeper.StakeDenom(ctx)).LTE(fee) {
 		ctx.Logger().Error(fmt.Sprintf("insufficient funds for the auto %s transaction: the fee needed is %v ", msgType, fee))
 	}
-	// ensure that the tx builder has the correct tx encoder, chainID, fee, and keybase
+	// ensure that the tx builder has the correct tx encoder, chainID, fee
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(k.cdc),
 		auth.DefaultTxDecoder(k.cdc),
 		genDoc.Genesis.ChainID,
 		"",
 		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), fee)),
-	).WithKeybase(keybase)
+	)
 	return
 }

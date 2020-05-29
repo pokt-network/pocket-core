@@ -2,15 +2,16 @@ package keeper
 
 import (
 	"encoding/hex"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"testing"
 )
 
 func TestQuerySupportedBlockchains(t *testing.T) {
-	ctx, _, _, _, k, _ := createTestInput(t, false)
+	ctx, _, _, _, k, _, _ := createTestInput(t, false)
 	p := types.Params{
 		SupportedBlockchains: []string{"ethereum"},
 	}
@@ -24,7 +25,7 @@ func TestQuerySupportedBlockchains(t *testing.T) {
 }
 
 func TestQueryParameters(t *testing.T) {
-	ctx, _, _, _, k, _ := createTestInput(t, false)
+	ctx, _, _, _, k, _, _ := createTestInput(t, false)
 	p := types.Params{
 		SupportedBlockchains: []string{"ethereum"},
 	}
@@ -38,7 +39,7 @@ func TestQueryParameters(t *testing.T) {
 }
 
 func TestQueryReceipt(t *testing.T) {
-	ctx, _, _, _, k, _ := createTestInput(t, false)
+	ctx, _, _, _, k, _, _ := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()

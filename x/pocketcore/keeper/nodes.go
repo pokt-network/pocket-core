@@ -23,7 +23,6 @@ func (k Keeper) GetNode(ctx sdk.Ctx, address sdk.Address) (n exported.ValidatorI
 
 // "GetSelfNode" - Gets self node (private val key) from the world state
 func (k Keeper) GetSelfNode(ctx sdk.Ctx) (node exported.ValidatorI, er sdk.Error) {
-	// get the Keybase address list
 	kp, err := k.GetPKFromFile(ctx)
 	if err != nil {
 		er = pc.NewKeybaseError(pc.ModuleName, err)

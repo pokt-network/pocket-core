@@ -55,7 +55,7 @@ func makeTestCodec() *codec.Codec {
 }
 
 // : deadcode unused
-func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper, appsKeeper.Keeper, keep.Keeper) {
+func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper, appsKeeper.Keeper, keep.Keeper, keys.Keybase) {
 	initPower := int64(100000000000)
 	nAccs := int64(5)
 
@@ -129,7 +129,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	assert.Nil(t, err)
 	_, err = kb.GetCoinbase()
 	assert.Nil(t, err)
-	keeper.Keybase = kb
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
 		nodes.NewAppModule(nk),
@@ -144,7 +143,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	appk.SetParams(ctx, appsTypes.DefaultParams())
 	nk.SetParams(ctx, nodesTypes.DefaultParams())
 	keeper.SetParams(ctx, types.DefaultParams())
-	return ctx, nk, appk, keeper
+	return ctx, nk, appk, keeper, kb
 }
 
 // : unparam deadcode unused

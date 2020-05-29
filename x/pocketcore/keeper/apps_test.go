@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetApp(t *testing.T) {
-	ctx, _, apps, _, keeper, _ := createTestInput(t, false)
+	ctx, _, apps, _, keeper, _, _ := createTestInput(t, false)
 	a, found := keeper.GetApp(ctx, apps[0].Address)
 	assert.True(t, found)
 	assert.Equal(t, a, apps[0])
@@ -17,7 +17,7 @@ func TestGetApp(t *testing.T) {
 }
 
 func TestGetAppFromPublicKey(t *testing.T) {
-	ctx, _, apps, _, keeper, _ := createTestInput(t, false)
+	ctx, _, apps, _, keeper, _, _ := createTestInput(t, false)
 	pk := apps[0].PublicKey.RawString()
 	a, found := keeper.GetAppFromPublicKey(ctx, pk)
 	assert.True(t, found)

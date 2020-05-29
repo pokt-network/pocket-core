@@ -11,7 +11,7 @@ import (
 )
 
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
-	ctx, _, _, _, keeper, keys := createTestInput(t, false)
+	ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
 	types.ClearEvidence()
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
@@ -67,7 +67,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 	var totalRelays []int = []int{10, 100, 10000000}
 	for _, relays := range totalRelays {
-		ctx, _, _, _, keeper, keys := createTestInput(t, false)
+		ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
 		header := types.SessionHeader{
 			ApplicationPubKey:  "asdlfj",
 			Chain:              "lkajsdf",
@@ -86,7 +86,7 @@ func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 }
 
 func TestKeeper_GetSetReceipt(t *testing.T) {
-	ctx, _, _, _, keeper, _ := createTestInput(t, false)
+	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
@@ -116,7 +116,7 @@ func TestKeeper_GetSetReceipt(t *testing.T) {
 }
 
 func TestKeeper_GetSetReceipts(t *testing.T) {
-	ctx, _, _, _, keeper, _ := createTestInput(t, false)
+	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	appPrivateKey2 := getRandomPrivateKey()
@@ -160,7 +160,7 @@ func TestKeeper_GetSetReceipts(t *testing.T) {
 }
 
 func TestKeeper_GetAllReceipts(t *testing.T) {
-	ctx, _, _, _, keeper, _ := createTestInput(t, false)
+	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
 	appPrivateKey := getRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()

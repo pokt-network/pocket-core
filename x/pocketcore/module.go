@@ -2,14 +2,15 @@ package pocketcore
 
 import (
 	"encoding/json"
+	"math/rand"
+	"time"
+
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"math/rand"
-	"time"
 )
 
 // type check to ensure the interface is properly implemented
@@ -91,9 +92,9 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 			// use this sleep timer to bypass the beginBlock lock over transactions
 			time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
 			// auto send the proofs
-			am.keeper.SendClaimTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ClaimTx)
+			am.keeper.SendClaimTx(ctx, am.keeper.TmNode, ClaimTx)
 			// auto claim the proofs
-			am.keeper.SendProofTx(ctx, am.keeper.TmNode, am.keeper.Keybase, ProofTx)
+			am.keeper.SendProofTx(ctx, am.keeper.TmNode, ProofTx)
 			// clear session cache and db
 			types.ClearSessionCache()
 		}()

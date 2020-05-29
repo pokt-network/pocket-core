@@ -2,9 +2,10 @@ package keeper
 
 import (
 	"encoding/hex"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestKeeper_GetHostedBlockchains(t *testing.T) {
@@ -18,7 +19,7 @@ func TestKeeper_GetHostedBlockchains(t *testing.T) {
 		ID:  bitcoin,
 		URL: "https://www.google.com:443",
 	}
-	_, _, _, _, keeper, _ := createTestInput(t, false)
+	_, _, _, _, keeper, _, _ := createTestInput(t, false)
 	hb := keeper.GetHostedBlockchains()
 	assert.NotNil(t, hb)
 	assert.True(t, hb.Contains(eth.ID))

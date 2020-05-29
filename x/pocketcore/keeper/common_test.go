@@ -67,7 +67,7 @@ func makeTestCodec() *codec.Codec {
 }
 
 // : deadcode unused
-func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper, map[string]*sdk.KVStoreKey) {
+func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper, map[string]*sdk.KVStoreKey, keys.Keybase) {
 	initPower := int64(100000000000)
 	nAccs := int64(5)
 	kb := NewTestKeybase()
@@ -154,7 +154,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	appk.SetApplication(ctx, getTestApplication())
 	keeper := NewKeeper(pocketKey, cdc, nk, appk, &hb, pocketSubspace)
 	assert.Nil(t, err)
-	keeper.Keybase = kb
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
 		nodes.NewAppModule(nk),
@@ -172,7 +171,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	defaultPocketParams.SupportedBlockchains = []string{getTestSupportedBlockchain()}
 	keeper.SetParams(ctx, defaultPocketParams)
 	types.InitConfig("", "data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session")
-	return ctx, vals, ap, accs, keeper, keys
+	return ctx, vals, ap, accs, keeper, keys, kb
 }
 
 var (
