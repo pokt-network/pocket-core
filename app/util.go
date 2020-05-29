@@ -3,21 +3,18 @@ package app
 import (
 	"encoding/hex"
 	"encoding/json"
+	"log"
+	"time"
+
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/tendermint/tendermint/types"
-	"log"
-	"time"
 )
 
-func (app PocketCoreApp) GenerateAAT(appPubKey, clientPubKey, passphrase string) (aatjson []byte, err error) {
-	kb, err := GetKeybase()
-	if err != nil {
-		return nil, err
-	}
-	aat, er := pocketKeeper.AATGeneration(appPubKey, clientPubKey, passphrase, kb)
+func (app PocketCoreApp) GenerateAAT(appPubKey, clientPubKey string, key crypto.PrivateKey) (aatjson []byte, err error) {
+	aat, er := pocketKeeper.AATGeneration(appPubKey, clientPubKey, key)
 	if er != nil {
 		return nil, er
 	}

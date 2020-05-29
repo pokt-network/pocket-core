@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/posmint/crypto/keys/mintkey"
 	"github.com/pokt-network/posmint/types"
 	"github.com/spf13/cobra"
 )
@@ -126,13 +127,18 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 			fmt.Printf("Address Error %s", err)
 			return
 		}
-		res, err := kb.Get(addr)
+		kp, err := kb.Get(addr)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		fmt.Println("Enter passphrase: ")
-		aatBytes, err := app.PCA.GenerateAAT(hex.EncodeToString(res.PublicKey.RawBytes()), args[1], app.Credentials())
+		cred := app.Credentials()
+		privkey, err := mintkey.UnarmorDecryptPrivKey(kp.PrivKeyArmor, cred)
+		if err != nil {
+			return
+		}
+		aatBytes, err := app.PCA.GenerateAAT(hex.EncodeToString(kp.PublicKey.RawBytes()), args[1], privkey)
 		if err != nil {
 			fmt.Println(err)
 			return
