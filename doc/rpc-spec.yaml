@@ -665,7 +665,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryNodeReceiptsResponse'
+                $ref: '#/components/schemas/QueryNodeClaimsResponse'
         '400':
           description: Failed to retrieve the node proof information
   /query/nodes:
