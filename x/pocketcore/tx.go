@@ -1,10 +1,8 @@
 package pocketcore
 
 import (
-	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/crypto"
-	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/auth/util"
@@ -40,9 +38,4 @@ func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]types
 		return nil, err
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg)
-}
-
-// "GenerateAAT" - Exported call to generate an application authentication token
-func GenerateAAT(keybase keys.Keybase, appPubKey, cliPubKey, passphrase string) (types.AAT, error) {
-	return keeper.AATGeneration(appPubKey, cliPubKey, passphrase, keybase)
 }
