@@ -9,11 +9,11 @@ import (
 
 // "Evidence" - A proof of work/burn for nodes.
 type Evidence struct {
-	Bloom         bloom.BloomFilter        `json:"bloom_filter"` // used to check if proof contains
-	SessionHeader `json:"evidence_header"` // the session h serves as an identifier for the evidence
-	NumOfProofs   int64                    `json:"num_of_proofs"` // the total number of proofs in the evidence
-	Proofs        []Proof                  `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
-	EvidenceType  EvidenceType             `json:"evidence_type"`
+	Bloom         bloom.BloomFilter `json:"bloom_filter"` // used to check if proof contains
+	SessionHeader `json:"evidence_header"`                // the session h serves as an identifier for the evidence
+	NumOfProofs   int64        `json:"num_of_proofs"`     // the total number of proofs in the evidence
+	Proofs        []Proof      `json:"proofs"`            // a slice of Proof objects (Proof per relay or challenge)
+	EvidenceType  EvidenceType `json:"evidence_type"`
 }
 
 // "GenerateMerkleRoot" - Generates the merkle root for an evidence object
@@ -48,11 +48,11 @@ func (e *Evidence) GenerateMerkleProof(index int) (proofs MerkleProofs, cousinIn
 
 // "Evidence" - A proof of work/burn for nodes.
 type evidence struct {
-	BloomBytes    []byte                   `json:"bloom_bytes"`
-	SessionHeader `json:"evidence_header"` // the session h serves as an identifier for the evidence
-	NumOfProofs   int64                    `json:"num_of_proofs"` // the total number of proofs in the evidence
-	Proofs        []Proof                  `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
-	EvidenceType  EvidenceType             `json:"evidence_type"`
+	BloomBytes    []byte `json:"bloom_bytes"`
+	SessionHeader `json:"evidence_header"`            // the session h serves as an identifier for the evidence
+	NumOfProofs   int64        `json:"num_of_proofs"` // the total number of proofs in the evidence
+	Proofs        []Proof      `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
+	EvidenceType  EvidenceType `json:"evidence_type"`
 }
 
 var _ CacheObject = Evidence{} // satisfies the cache object interface
@@ -83,13 +83,13 @@ func (e Evidence) Unmarshal(b []byte) (CacheObject, error) {
 	if err != nil {
 		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache, bloom bytes gob decode: %s", err.Error())
 	}
-	return Evidence{
+	evidence := Evidence{
 		Bloom:         bloomFilter,
-		SessionHeader: e.SessionHeader,
-		NumOfProofs:   e.NumOfProofs,
-		Proofs:        e.Proofs,
-		EvidenceType:  e.EvidenceType,
-	}, nil
+		SessionHeader: ep.SessionHeader,
+		NumOfProofs:   ep.NumOfProofs,
+		Proofs:        ep.Proofs,
+		EvidenceType:  ep.EvidenceType}
+	return evidence, nil
 }
 
 func (e Evidence) Key() ([]byte, error) {
@@ -118,10 +118,10 @@ func (et EvidenceType) Byte() (byte, error) {
 
 // "Receipt" - Is a structure used to store proof of evidence after verification
 type Receipt struct {
-	SessionHeader   `json:"header"` // header to identify the session
-	ServicerAddress string          `json:"address"`       // the address responsible
-	Total           int64           `json:"total"`         // the number of proofs
-	EvidenceType    EvidenceType    `json:"evidence_type"` // the type (relay/challenge)
+	SessionHeader   `json:"header"`                     // header to identify the session
+	ServicerAddress string       `json:"address"`       // the address responsible
+	Total           int64        `json:"total"`         // the number of proofs
+	EvidenceType    EvidenceType `json:"evidence_type"` // the type (relay/challenge)
 }
 
 func EvidenceTypeFromString(evidenceType string) (et EvidenceType, err types.Error) {
