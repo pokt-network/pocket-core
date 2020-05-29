@@ -3,7 +3,6 @@ package keeper
 import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/crypto/keys"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/rpc/client"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
@@ -13,7 +12,6 @@ import (
 type Keeper struct {
 	posKeeper         types.PosKeeper
 	appKeeper         types.AppsKeeper
-	Keybase           keys.Keybase
 	TmNode            client.Client
 	hostedBlockchains *types.HostedBlockchains
 	Paramstore        sdk.Subspace

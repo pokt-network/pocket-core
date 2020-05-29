@@ -8,7 +8,7 @@ import (
 )
 
 func TestInitExportGenesis(t *testing.T) {
-	ctx, _, _, k := createTestInput(t, false)
+	ctx, _, _, k, _ := createTestInput(t, false)
 	p := types.Params{
 		SessionNodeCount:      10,
 		ClaimSubmissionWindow: 22,

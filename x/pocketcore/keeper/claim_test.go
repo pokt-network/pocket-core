@@ -10,7 +10,7 @@ import (
 )
 
 func TestKeeper_GetSetClaim(t *testing.T) {
-	ctx, _, _, _, keeper, _ := createTestInput(t, false)
+	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(100000))
 	assert.Nil(t, err)
@@ -33,7 +33,7 @@ func TestKeeper_GetSetClaim(t *testing.T) {
 }
 
 func TestKeeper_GetSetDeleteClaims(t *testing.T) {
-	ctx, _, _, _, keeper, _ := createTestInput(t, false)
+	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
 	var claims []types.MsgClaim
 	var pubKeys []crypto.PublicKey
 
@@ -65,7 +65,7 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 }
 
 func TestKeeper_GetMatureClaims(t *testing.T) {
-	ctx, _, _, _, keeper, keys := createTestInput(t, false)
+	ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 	npk2, header2, _, _ := simulateRelays(t, keeper, &ctx, 20)
 
@@ -112,7 +112,7 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 }
 
 func TestKeeper_DeleteExpiredClaims(t *testing.T) {
-	ctx, _, _, _, keeper, keys := createTestInput(t, false)
+	ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
 	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
 	npk2, header2, _, _ := simulateRelays(t, keeper, &ctx, 20)
 

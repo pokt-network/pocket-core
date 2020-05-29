@@ -80,7 +80,6 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 		authSubspace, nodesSubspace, appsSubspace, pocketSubspace,
 	)
 	// add the keybase to the pocket core keeper
-	app.pocketKeeper.Keybase = keybase
 	app.pocketKeeper.TmNode = tmClient
 	// give pocket keeper to nodes module for easy cache clearing
 	app.nodesKeeper.PocketKeeper = app.pocketKeeper

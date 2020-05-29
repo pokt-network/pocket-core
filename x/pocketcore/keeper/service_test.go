@@ -2,18 +2,19 @@ package keeper
 
 import (
 	"encoding/hex"
+	"testing"
+
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/h2non/gock.v1"
-	"testing"
 )
 
 func TestKeeper_HandleRelay(t *testing.T) {
 	ethereum := hex.EncodeToString([]byte{01})
-	ctx, _, _, _, keeper, keys := createTestInput(t, false)
+	ctx, _, _, _, keeper, keys, kb := createTestInput(t, false)
 	mockCtx := new(Ctx)
 	ak := keeper.appKeeper.(appsKeeper.Keeper)
 	clientPrivateKey := getRandomPrivateKey()
@@ -28,7 +29,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	// set the vals from the data
 	ak.SetApplication(ctx, app)
 	ak.SetStakedApplication(ctx, app)
-	kp, _ := keeper.Keybase.GetCoinbase()
+	kp, _ := kb.GetCoinbase()
 	npk := kp.PublicKey
 	nodePubKey := npk.RawString()
 	p := types.Payload{
