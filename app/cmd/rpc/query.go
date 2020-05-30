@@ -282,7 +282,7 @@ func NodeReceipts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 type QueryNodeReceiptParam struct {
@@ -576,7 +576,7 @@ func AllParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func State(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
