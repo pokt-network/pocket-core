@@ -939,7 +939,7 @@ var queryAllParams = &cobra.Command{
 
 var queryParam = &cobra.Command{
 	Use:   "param <key> <height> ",
-	Short: "Get a parameters with the <key>",
+	Short: "Get a parameter with the given key",
 	Long:  `Retrieves the parameter at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
