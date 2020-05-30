@@ -351,7 +351,7 @@ func TestQueryProof(t *testing.T) {
 
 	<-evtChan // Wait for tx
 	_, err = PCA.QueryReceipt(PlaceholderHash, kp.PublicKey.RawString(), kp.GetAddress().String(), "relay", 1, 0)
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 
 	cleanup()
 	stopCli()
