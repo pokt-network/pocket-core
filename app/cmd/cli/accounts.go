@@ -328,10 +328,10 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 		var fname string
 
 		if strings.HasSuffix(filePath, "/") || filePath == "" {
-			fname = "pocket-acccount-" + addr.String() + ".json"
+			fname = "pocket-account-" + addr.String() + ".json"
 
 		} else {
-			fname = "/pocket-acccount-" + addr.String() + ".json"
+			fname = "/pocket-account-" + addr.String() + ".json"
 		}
 
 		err = ioutil.WriteFile(filePath+fname, []byte(pk), 0644)
