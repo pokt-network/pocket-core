@@ -325,8 +325,11 @@ func (app PocketCoreApp) QueryReceipt(blockchain, appPubKey, addr, receiptType s
 	if err != nil {
 		return nil, err
 	}
-	app.pocketKeeper.GetReceipt(ctx, a, h, et)
-	return
+	r, found := app.pocketKeeper.GetReceipt(ctx, a, h, et)
+	if !found {
+		return nil, fmt.Errorf("receipt for node: %s for app: %s with height %d with type %s for chain %s not found", addr, appPubKey, sessionblockHeight, receiptType, blockchain)
+	}
+	return &r, nil
 }
 
 func (app PocketCoreApp) QueryPocketSupportedBlockchains(height int64) (res []string, err error) {
