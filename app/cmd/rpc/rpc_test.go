@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/posmint/crypto"
 	"io"
 	"io/ioutil"
@@ -499,7 +500,7 @@ func TestRPCQueryACL(t *testing.T) {
 	stopCli()
 }
 
-func TestRPCQueryAllParm(t *testing.T) {
+func TestRPCQueryAllParams(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -509,9 +510,31 @@ func TestRPCQueryAllParm(t *testing.T) {
 	q := newQueryRequest("allparams", newBody(params))
 	rec := httptest.NewRecorder()
 	AllParams(rec, q, httprouter.Params{})
-	resp := getResponse(rec)
+	resp := getJSONResponse(rec)
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp)
+
+	cleanup()
+	stopCli()
+}
+
+func TestRPCQueryParam(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	var params = HeightAndKeyParams{
+		Height: 0,
+		Key:    "gov/upgrade",
+	}
+	q := newQueryRequest("param", newBody(params))
+	rec := httptest.NewRecorder()
+	Param(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	unm := app.SingleParamReturn{}
+	_ = json.Unmarshal(resp, &unm)
+	assert.NotEmpty(t, unm.Value)
 
 	cleanup()
 	stopCli()

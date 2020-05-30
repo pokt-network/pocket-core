@@ -15,6 +15,7 @@ import (
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
 	"math"
 	"reflect"
+	"strconv"
 )
 
 const (
@@ -211,11 +212,16 @@ func (app PocketCoreApp) QueryACL(height int64) (res types.ACL, err error) {
 }
 
 type AllParamsReturn struct {
-	AppParams    []string `json:"app_params"`
-	NodeParams   []string `json:"node_params"`
-	PocketParams []string `json:"pocket_params"`
-	GovParams    []string `json:"gov_params"`
-	AuthParams   []string `json:"auth_params"`
+	AppParams    []SingleParamReturn `json:"app_params"`
+	NodeParams   []SingleParamReturn `json:"node_params"`
+	PocketParams []SingleParamReturn `json:"pocket_params"`
+	GovParams    []SingleParamReturn `json:"gov_params"`
+	AuthParams   []SingleParamReturn `json:"auth_params"`
+}
+
+type SingleParamReturn struct {
+	Key   string `json:"param_key"`
+	Value string `json:"param_value"`
 }
 
 func (app PocketCoreApp) QueryAllParams(height int64) (r AllParamsReturn, err error) {
@@ -228,23 +234,64 @@ func (app PocketCoreApp) QueryAllParams(height int64) (r AllParamsReturn, err er
 
 	//transform for easy handling
 	for k, v := range allmap {
-		sub, param := types.SplitACLKey(k)
+		sub, _ := types.SplitACLKey(k)
+		s, err2 := strconv.Unquote(v)
+		if err2 != nil {
+			//ignoring this error as content is a json object
+			s = v
+		}
 		switch sub {
 		case "pos":
-			r.NodeParams = append(r.NodeParams, fmt.Sprintf("%s : %s", param, v))
+			r.NodeParams = append(r.NodeParams, SingleParamReturn{
+				Key:   k,
+				Value: s,
+			})
 		case "application":
-			r.AppParams = append(r.AppParams, fmt.Sprintf("%s : %s", param, v))
+			r.AppParams = append(r.AppParams, SingleParamReturn{
+				Key:   k,
+				Value: s,
+			})
 		case "pocketcore":
-			r.PocketParams = append(r.PocketParams, fmt.Sprintf("%s : %s", param, v))
+			r.PocketParams = append(r.PocketParams, SingleParamReturn{
+				Key:   k,
+				Value: s,
+			})
 		case "gov":
-			r.GovParams = append(r.GovParams, fmt.Sprintf("%s : %s", param, v))
+			r.GovParams = append(r.GovParams, SingleParamReturn{
+				Key:   k,
+				Value: s,
+			})
 		case "auth":
-			r.AuthParams = append(r.AuthParams, fmt.Sprintf("%s : %s", param, v))
+			r.AuthParams = append(r.AuthParams, SingleParamReturn{
+				Key:   k,
+				Value: s,
+			})
 		default:
 		}
 	}
 
 	return r, nil
+}
+
+func (app PocketCoreApp) QueryParam(height int64, paramkey string) (r SingleParamReturn, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	//get all the parameters from gov module
+	allmap := app.govKeeper.GetAllParamNameValue(ctx)
+
+	if val, ok := allmap[paramkey]; ok {
+		r.Key = paramkey
+		s, err2 := strconv.Unquote(val)
+		if err2 != nil {
+			//ignoring this error as content is a json object
+			r.Value = val
+			return r, err
+		}
+		r.Value = s
+	}
+	return
 }
 
 func (app PocketCoreApp) QueryApps(height int64, opts appsTypes.QueryApplicationsWithOpts) (res Page, err error) {

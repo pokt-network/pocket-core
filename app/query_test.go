@@ -544,3 +544,13 @@ func TestQueryAllParams(t *testing.T) {
 	assert.NotZero(t, len(res.AppParams))
 	cleanup()
 }
+func TestQueryParam(t *testing.T) {
+	resetTestACL()
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	res, err := PCA.QueryParam(0, "gov/acl")
+	assert.Nil(t, err)
+	assert.NotNil(t, res)
+
+	assert.NotNil(t, res.Value)
+	cleanup()
+}

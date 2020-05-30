@@ -81,6 +81,7 @@ func GetRoutes() Routes {
 		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
 		Route{Name: "QueryACL", Method: "POST", Path: "/v1/query/acl", HandlerFunc: ACL},
 		Route{Name: "QueryAllParams", Method: "POST", Path: "/v1/query/allparams", HandlerFunc: AllParams},
+		Route{Name: "QueryParam", Method: "POST", Path: "/v1/query/param", HandlerFunc: Param},
 		Route{Name: "QueryState", Method: "POST", Path: "/v1/query/state", HandlerFunc: State},
 	}
 	return routes
