@@ -40,6 +40,7 @@ func init() {
 	queryCmd.AddCommand(queryUpgrade)
 	queryCmd.AddCommand(queryACL)
 	queryCmd.AddCommand(queryAllParams)
+	queryCmd.AddCommand(queryParam)
 	queryCmd.AddCommand(queryDAOOwner)
 }
 
@@ -904,7 +905,7 @@ var queryACL = &cobra.Command{
 
 var queryAllParams = &cobra.Command{
 	Use:   "params <height>",
-	Short: "Gets all parameters [nodes,application,pocketcore]",
+	Short: "Gets all parameters",
 	Long:  `Retrieves the parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
@@ -928,6 +929,41 @@ var queryAllParams = &cobra.Command{
 			return
 		}
 		res, err := QueryRPC(GetAllParamsPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
+	},
+}
+
+var queryParam = &cobra.Command{
+	Use:   "param <key> <height> ",
+	Short: "Get a parameters with the <key>",
+	Long:  `Retrieves the parameter at the specified <height>.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		var height int
+		if len(args) == 1 {
+			height = 0 // latest
+		} else {
+			var err error
+			height, err = strconv.Atoi(args[1])
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+		params := rpc.HeightAndKeyParams{
+			Height: int64(height),
+			Key:    args[0],
+		}
+		j, err := json.Marshal(params)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		res, err := QueryRPC(GetParamPath, j)
 		if err != nil {
 			fmt.Println(err)
 			return

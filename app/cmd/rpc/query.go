@@ -19,6 +19,10 @@ func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 type HeightParams struct {
 	Height int64 `json:"height"`
 }
+type HeightAndKeyParams struct {
+	Height int64  `json:"height"`
+	Key    string `json:"key"`
+}
 
 type HashAndProveParams struct {
 	Hash  string `json:"hash"`
@@ -567,6 +571,24 @@ func AllParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	res, err := app.PCA.QueryAllParams(params.Height)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	j, err := app.Codec().MarshalJSON(res)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+func Param(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = HeightAndKeyParams{Height: 0}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.PCA.QueryParam(params.Height, params.Key)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
