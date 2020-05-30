@@ -333,6 +333,10 @@ func TestDAOTransfer(t *testing.T) {
 }
 
 func TestClaimTx(t *testing.T) {
+	//check this
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	kb := getInMemoryKeybase()
 	for i := 0; i < 5; i++ {
