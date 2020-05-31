@@ -8,7 +8,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/onsi/ginkgo v1.11.0 // indirect
 	github.com/onsi/gomega v1.8.1 // indirect
-	github.com/pokt-network/posmint v0.0.0-20200531030754-d74cdeb233b1
+	github.com/pokt-network/posmint v0.0.0-20200531033107-bb115a2b2c5f
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.4.0
