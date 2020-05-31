@@ -257,7 +257,7 @@ func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.Int, action, chainID 
 	}, nil
 }
 
-func ChangeParam(fromAddr, paramACLKey string, paramValue []byte, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
+func ChangeParam(fromAddr, paramACLKey string, paramValue json.RawMessage, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -267,8 +267,7 @@ func ChangeParam(fromAddr, paramACLKey string, paramValue []byte, passphrase, ch
 		return nil, err
 	}
 
-	valueBytes, err := json.Marshal(paramValue)
-	//valueBytes, err := app.Codec().MarshalJSON(paramValue)
+	valueBytes, err := app.Codec().MarshalJSON(paramValue)
 	if err != nil {
 		return nil, err
 

@@ -258,8 +258,35 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	stopCli()
 
 }
+func TestChangeParamsComplexTypeTx(t *testing.T) {
+	resetTestACL()
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	kps, err := kb.List()
+	assert.Nil(t, err)
+	kp2 := kps[1]
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	a := testACL
+	a.SetOwner("gov/acl", kp2.GetAddress())
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "gov/acl", a, "test", 1000000)
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+	select {
+	case res := <-evtChan:
+		fmt.Println(res)
+		acl, err := PCA.QueryACL(0)
+		assert.Nil(t, err)
+		o := acl.GetOwner("gov/acl")
+		assert.Equal(t, kp2.GetAddress().String(), o.String())
+		cleanup()
+		stopCli()
+	}
+}
 
-func TestChangeParamsTx(t *testing.T) {
+func TestChangeParamsSimpleTx(t *testing.T) {
 	resetTestACL()
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
