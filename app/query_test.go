@@ -554,3 +554,29 @@ func TestQueryParam(t *testing.T) {
 	assert.NotNil(t, res.Value)
 	cleanup()
 }
+
+func TestQueryAccountBalance(t *testing.T) {
+	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	acc := getUnstakedAccount(kb)
+	assert.NotNil(t, acc)
+	<-evtChan // Wait for block
+	got, err := PCA.QueryBalance(acc.GetAddress().String(), 0)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, sdk.NewInt(1000000000), got)
+	cleanup()
+	stopCli()
+}
+
+func TestQueryNonExistingAccountBalance(t *testing.T) {
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	got, err := PCA.QueryBalance("802fddec29f99cae7a601cf648eafced1c062d39", 0)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, sdk.NewInt(0), got)
+	cleanup()
+	stopCli()
+}
