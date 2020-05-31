@@ -547,7 +547,7 @@ func TestQueryAllParams(t *testing.T) {
 func TestQueryParam(t *testing.T) {
 	resetTestACL()
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	res, err := PCA.QueryParam(0, "gov/acl")
+	res, err := PCA.QueryParam(0, "pocketcore/SupportedBlockchains")
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 
