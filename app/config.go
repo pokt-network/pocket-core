@@ -56,17 +56,17 @@ const (
 	DefaultChainsName               = "chains.json"
 	DefaultGenesisName              = "genesis.json"
 	DefaultRPCPort                  = "8081"
-	DefaultSessionDBType            = dbm.GoLevelDBBackend
-	DefaultEvidenceDBType           = dbm.GoLevelDBBackend
+	DefaultSessionDBType            = dbm.CLevelDBBackend
+	DefaultEvidenceDBType           = dbm.CLevelDBBackend
 	DefaultSessionDBName            = "session"
 	DefaultEvidenceDBName           = "pocket_evidence"
 	DefaultTMURI                    = "tcp://localhost:26657"
-	DefaultMaxSessionCacheEntries   = 100
-	DefaultMaxEvidenceCacheEntries  = 100
+	DefaultMaxSessionCacheEntries   = 500
+	DefaultMaxEvidenceCacheEntries  = 500
 	DefaultListenAddr               = "tcp://0.0.0.0:"
 	DefaultClientBlockSyncAllowance = 10
 	DefaultJSONSortRelayResponses   = true
-	DefaultDBBackend                = string(dbm.GoLevelDBBackend)
+	DefaultDBBackend                = string(dbm.CLevelDBBackend)
 	DefaultTxIndexer                = "kv"
 	DefaultTxIndexTags              = "tx.hash,tx.height,message.sender,transfer.recipient"
 	ConfigDirName                   = "config"
@@ -148,15 +148,28 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
 	c.TendermintConfig.PrivValidatorState = DefaultPVSName
 	c.TendermintConfig.P2P.AddrBookStrict = false
-	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
-	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(1) * time.Minute
-	c.TendermintConfig.Consensus.TimeoutCommit = time.Duration(1) * time.Minute
 	c.TendermintConfig.P2P.MaxNumInboundPeers = 250
 	c.TendermintConfig.P2P.MaxNumOutboundPeers = 250
 	c.TendermintConfig.LogLevel = "*:info, *:error"
 	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
 	c.TendermintConfig.TxIndex.IndexTags = DefaultTxIndexTags
 	c.TendermintConfig.DBBackend = DefaultDBBackend
+	c.TendermintConfig.RPC.GRPCMaxOpenConnections = 2500
+	c.TendermintConfig.RPC.MaxOpenConnections = 2500
+	c.TendermintConfig.Mempool.Size = 9000
+	c.TendermintConfig.Mempool.CacheSize = 9000
+	c.TendermintConfig.Consensus.TimeoutPropose = 60000000000
+	c.TendermintConfig.Consensus.TimeoutProposeDelta = 10000000000
+	c.TendermintConfig.Consensus.TimeoutPrevote = 60000000000
+	c.TendermintConfig.Consensus.TimeoutPrevoteDelta = 10000000000
+	c.TendermintConfig.Consensus.TimeoutPrecommit = 60000000000
+	c.TendermintConfig.Consensus.TimeoutPrecommitDelta = 10000000000
+	c.TendermintConfig.Consensus.TimeoutCommit = 780000000000
+	c.TendermintConfig.Consensus.SkipTimeoutCommit = false
+	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
+	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = 900000000000
+	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000
+	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 2000000000
 	return c
 }
 
