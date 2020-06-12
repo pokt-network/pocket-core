@@ -49,7 +49,7 @@ Actions: [burn, transfer]`,
 		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials()
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[2], int64(fees))
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[3], int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -93,7 +93,7 @@ Actions: [burn, transfer]`,
 		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials()
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[2], int64(fees))
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[3], int64(fees))
 		if err != nil {
 			fmt.Println(err)
 			return
