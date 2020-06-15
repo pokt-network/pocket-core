@@ -173,9 +173,9 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL string, keybase bool) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool) *node.Node {
 	// init config
-	InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	// init the keyfiles
 	InitKeyfiles()
 	// init cache
@@ -186,7 +186,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, re
 	return InitTendermint(keybase)
 }
 
-func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL string) {
+func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 	// setup the codec
 	MakeCodec()
 	if datadir == "" {
@@ -247,12 +247,6 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort,
 	}
 	if seeds != "" {
 		c.TendermintConfig.P2P.Seeds = seeds
-	}
-	if tmRPCPort != "" {
-		c.TendermintConfig.RPC.ListenAddress = DefaultListenAddr + tmRPCPort
-	}
-	if tmPeersPort != "" {
-		c.TendermintConfig.P2P.ListenAddress = DefaultListenAddr + tmPeersPort
 	}
 	if remoteCLIURL != "" {
 		c.PocketConfig.RemoteCLIURL = strings.TrimRight(remoteCLIURL, "/")
@@ -333,14 +327,19 @@ func InitTendermint(keybase bool) *node.Node {
 	return tmNode
 }
 
-func InitKeyfiles() string {
-	var password string
+func InitKeyfiles() {
 	datadir := GlobalConfig.PocketConfig.DataDir
 	// Check if privvalkey file exist
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
 		// if not exist continue creating as other files may be missing
 		if os.IsNotExist(err) {
-			log2.Fatal(fmt.Errorf("validator address not set! please run set-validator"))
+			// generate random key for easy orchestration
+			randomKey := crypto.GenerateEd25519PrivKey()
+			privValKey(randomKey)
+			privValState()
+			nodeKey(randomKey)
+			log2.Printf("No Validator Set! Creating Random Key: %s", randomKey.PublicKey().RawString())
+			return
 		} else {
 			//panic on other errors
 			log2.Fatal(err)
@@ -350,7 +349,6 @@ func InitKeyfiles() string {
 		file, _ := loadPKFromFile(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
 		types.InitPVKeyFile(file)
 	}
-	return password
 }
 
 func InitPocketCoreConfig() {
@@ -401,16 +399,7 @@ func loadPKFromFile(path string) (privval.FilePVKey, string) {
 	return pvKey, path
 }
 
-func privValKey(address sdk.Address, password string) string {
-	keys := MustGetKeybase()
-	if password == "" {
-		fmt.Println("Initializing keyfiles: enter validator account passphrase")
-		password = Credentials()
-	}
-	res, err := (keys).ExportPrivateKeyObject(address, password)
-	if err != nil {
-		log2.Fatal(err)
-	}
+func privValKey(res crypto.PrivateKey) {
 	privValKey := privval.FilePVKey{
 		Address: res.PubKey().Address(),
 		PubKey:  res.PubKey(),
@@ -429,15 +418,9 @@ func privValKey(address sdk.Address, password string) string {
 		log2.Fatal(err)
 	}
 	types.InitPVKeyFile(privValKey)
-	return password
 }
 
-func nodeKey(address sdk.Address, password string) {
-	keys := MustGetKeybase()
-	res, err := (keys).ExportPrivateKeyObject(address, password)
-	if err != nil {
-		log2.Fatal(err)
-	}
+func nodeKey(res crypto.PrivateKey) {
 	nodeKey := p2p.NodeKey{
 		PrivKey: res.PrivKey(),
 	}
@@ -663,9 +646,14 @@ func Credentials() string {
 
 func SetValidator(address sdk.Address, passphrase string) {
 	resetFilePV(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey, GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorState, log.NewNopLogger())
-	privValKey(address, passphrase)
+	keys := MustGetKeybase()
+	res, err := (keys).ExportPrivateKeyObject(address, passphrase)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	privValKey(res)
 	privValState()
-	nodeKey(address, passphrase)
+	nodeKey(res)
 }
 
 func GetPrivValFile() (file privval.FilePVKey) {

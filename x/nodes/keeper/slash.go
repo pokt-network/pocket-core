@@ -116,7 +116,7 @@ func (k Keeper) slash(ctx sdk.Ctx, addr sdk.Address, infractionHeight, power int
 // validateSlash - Check if slash  is possible
 func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
 	logger := k.Logger(ctx)
-	if slashFactor.LT(sdk.ZeroDec()) {
+	if slashFactor.LTE(sdk.ZeroDec()) {
 		k.Logger(ctx).Error(fmt.Errorf("attempted to simple slash with a negative slash factor: %v", slashFactor).Error())
 		return types.Validator{}
 	}

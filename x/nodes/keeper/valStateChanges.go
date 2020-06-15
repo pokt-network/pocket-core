@@ -85,6 +85,10 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		// add to one of the updates for tendermint
 		ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked", validator.Address))
 		updates = append(updates, validator.ABCIValidatorUpdate())
+		// if validator was force unstaked, delete the validator from the all validators store
+		if validator.IsUnstaked() {
+			k.DeleteValidator(ctx, validator.Address)
+		}
 	}
 	// set total power on lookup index if there are any updates
 	if len(updates) > 0 {
@@ -104,9 +108,6 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	if found {
 		if !val.IsUnstaked() {
 			return types.ErrValidatorStatus(k.codespace)
-		}
-		if validator.IsJailed() {
-			return types.ErrValidatorJailed(k.codespace)
 		}
 	} else {
 		// check the consensus params
@@ -174,10 +175,6 @@ func (k Keeper) ValidateValidatorBeginUnstaking(ctx sdk.Ctx, validator types.Val
 	if validator.IsJailed() {
 		return types.ErrValidatorJailed(k.codespace)
 	}
-	// sanity check
-	if validator.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		return sdk.ErrInternal("should not happen: validator trying to begin unstaking has less than the minimum stake")
-	}
 	return nil
 }
 
@@ -226,7 +223,7 @@ func (k Keeper) BeginUnstakingValidator(ctx sdk.Ctx, validator types.Validator) 
 	// set the status
 	validator = validator.UpdateStatus(sdk.Unstaking)
 	// set the unstaking completion time and completion height appropriately
-	if validator.UnstakingCompletionTime.Second() == 0 {
+	if validator.UnstakingCompletionTime.IsZero() {
 		validator.UnstakingCompletionTime = ctx.BlockHeader().Time.Add(params.UnstakingTime)
 	}
 	// save the now unstaked validator record and power index
@@ -241,10 +238,6 @@ func (k Keeper) ValidateValidatorFinishUnstaking(ctx sdk.Ctx, validator types.Va
 	}
 	if validator.IsJailed() {
 		return types.ErrValidatorJailed(k.codespace)
-	}
-	// sanity check
-	if validator.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		return sdk.ErrInternal("should not happen: validator trying to begin unstaking has less than the minimum stake")
 	}
 	return nil
 }
@@ -269,6 +262,8 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Ctx, validator types.Validator)
 	}
 	// update the status to unstaked
 	validator = validator.UpdateStatus(sdk.Unstaked)
+	// update the unstaking time
+	validator.UnstakingCompletionTime = time.Time{}
 	// update the validator in the main store
 	k.SetValidator(ctx, validator)
 	ctx.Logger().Info("Finished unstaking validator " + validator.Address.String())
@@ -341,6 +336,10 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	}
 	if validator.Jailed {
 		ctx.Logger().Error(fmt.Errorf("cannot jail already jailed validator, validator: %v\n", validator).Error())
+		return
+	}
+	if validator.IsUnstaked() {
+		ctx.Logger().Error(fmt.Errorf("cannot jail an unstaked validator, validator: %v\n", validator).Error())
 		return
 	}
 	// clear caching for sesssions

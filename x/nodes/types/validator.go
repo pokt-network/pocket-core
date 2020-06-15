@@ -51,7 +51,7 @@ func NewValidator(addr sdk.Address, consPubKey crypto.PublicKey, chains []string
 		Chains:                  chains,
 		StakedTokens:            tokensToStake,
 		ServiceURL:              serviceURL,
-		UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: staked
+		UnstakingCompletionTime: time.Time{},
 	}
 }
 

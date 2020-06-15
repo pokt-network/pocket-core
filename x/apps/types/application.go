@@ -49,7 +49,7 @@ func NewApplication(addr sdk.Address, publicKey crypto.PublicKey, chains []strin
 		Status:                  sdk.Staked,
 		Chains:                  chains,
 		StakedTokens:            tokensToStake,
-		UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: staked
+		UnstakingCompletionTime: time.Time{}, // zero out because status: staked
 	}
 }
 

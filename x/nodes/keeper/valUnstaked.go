@@ -148,6 +148,7 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 			val, found := k.GetValidator(ctx, valAddr)
 			if !found {
 				ctx.Logger().Error("validator in the unstaking queue was not found, possible forced unstake?")
+				continue
 			}
 			err := k.ValidateValidatorFinishUnstaking(ctx, val)
 			if err != nil {
