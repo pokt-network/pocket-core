@@ -56,7 +56,7 @@ var queryBlock = &cobra.Command{
 	Short: "Get block at height",
 	Long:  `Retrieves the block structure at the specified height.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int64
 		if len(args) == 0 {
 			height = 0
@@ -97,7 +97,7 @@ var queryTx = &cobra.Command{
 	Long:  `Retrieves the transaction by the hash`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		params := rpc.HashAndProveParams{Hash: args[0], Prove: prove}
 		j, err := json.Marshal(params)
 		if err != nil {
@@ -152,7 +152,7 @@ var queryAccountTxs = &cobra.Command{
 	Long:  `Retrieves the transactions sent by the address`,
 	Args:  cobra.RangeArgs(1, 5),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		page, perPage, prove, received := validatePagePerPageProveReceivedArgs(args)
 		var err error
 		params := rpc.PaginateAddrParams{
@@ -182,7 +182,7 @@ var queryBlockTxs = &cobra.Command{
 	Long:  `Retrieves the transactions in the block height`,
 	Args:  cobra.RangeArgs(1, 4),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		page, perPage, prove, _ := validatePagePerPageProveReceivedArgs(args)
 		height, parsingErr := strconv.ParseInt(args[0], 10, 64)
 		if parsingErr != nil {
@@ -214,7 +214,7 @@ var queryHeight = &cobra.Command{
 	Short: "Get current height",
 	Long:  `Retrieves the current height`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		res, err := QueryRPC(GetHeightPath, []byte{})
 		if err != nil {
 			fmt.Println(err)
@@ -230,7 +230,7 @@ var queryBalance = &cobra.Command{
 	Long:  `Retrieves the balance of the specified <accAddr> at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 1 {
 			height = 0 // latest
@@ -266,7 +266,7 @@ var queryAccount = &cobra.Command{
 	Long:  `Retrieves the account structure for a specific address.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 1 {
 			height = 0 // latest
@@ -316,7 +316,7 @@ var queryNodes = &cobra.Command{
 	Long:  `Retrieves the list of all nodes known at the specified <height>.`,
 	// Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -378,7 +378,7 @@ var queryNode = &cobra.Command{
 	Long:  `Retrieves the node at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 1 {
 			height = 0 // latest
@@ -413,7 +413,7 @@ var queryNodeParams = &cobra.Command{
 	Short: "Gets node parameters",
 	Long:  `Retrieves the node parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -456,7 +456,7 @@ var queryApps = &cobra.Command{
 	Short: "Gets apps",
 	Long:  `Retrieves the list of all applications known at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -507,7 +507,7 @@ var queryApp = &cobra.Command{
 	Long:  `Retrieves the app at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 1 {
 			height = 0 // latest
@@ -542,7 +542,7 @@ var queryAppParams = &cobra.Command{
 	Short: "Gets app parameters",
 	Long:  `Retrieves the app parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -577,7 +577,7 @@ var queryNodeClaims = &cobra.Command{
 	Long:  `Retrieves the list of all pending proof of work submitted by <nodeAddr> at <height>.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 1 {
 			height = 0 // latest
@@ -613,7 +613,7 @@ var queryNodeClaim = &cobra.Command{
 	Long:  `Gets node pending claim for verified proof of work submitted for a specific session`,
 	Args:  cobra.MinimumNArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 5 {
 			height = 0 // latest
@@ -658,7 +658,7 @@ var queryNodeReceipts = &cobra.Command{
 	Long:  `Retrieves the list of all verified proof of work submitted by <nodeAddr> at <height>.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 1 {
 			height = 0 // latest
@@ -694,7 +694,7 @@ var queryNodeReceipt = &cobra.Command{
 	Long:  `Gets node receipt for verified proof of work submitted for a specific session`,
 	Args:  cobra.MinimumNArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 5 {
 			height = 0 // latest
@@ -738,7 +738,7 @@ var queryPocketParams = &cobra.Command{
 	Short: "Gets pocket parameters",
 	Long:  `Retrieves the pocket parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -772,7 +772,7 @@ var queryPocketSupportedChains = &cobra.Command{
 	Short: "Gets pocket supported networks",
 	Long:  `Retrieves the list Network Identifiers supported by the network at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -806,7 +806,7 @@ var querySupply = &cobra.Command{
 	Short: "Gets the supply at <height>",
 	Long:  `Retrieves the list of node params specified in the <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -840,7 +840,7 @@ var queryDAOOwner = &cobra.Command{
 	Short: "Gets the owner of the dao",
 	Long:  `Retrieves the owner of the DAO (the account that can send/burn coins from the dao)`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -874,7 +874,7 @@ var queryACL = &cobra.Command{
 	Short: "Gets the gov acl",
 	Long:  `Retrieves the access control list of governance params (which account can change the param)`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -908,7 +908,7 @@ var queryAllParams = &cobra.Command{
 	Short: "Gets all parameters",
 	Long:  `Retrieves the parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest
@@ -942,7 +942,7 @@ var queryParam = &cobra.Command{
 	Short: "Get a parameter with the given key",
 	Long:  `Retrieves the parameter at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 1 {
 			height = 0 // latest
@@ -977,7 +977,7 @@ var queryUpgrade = &cobra.Command{
 	Short: "Gets the latest gov upgrade",
 	Long:  `Retrieves the latest protocol upgrade by governance`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
 		if len(args) == 0 {
 			height = 0 // latest

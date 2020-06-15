@@ -34,7 +34,7 @@ var nodeStakeCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fromAddr := args[0]
 		amount, err := strconv.Atoi(args[1])
 		if err != nil {
@@ -80,7 +80,7 @@ var nodeUnstakeCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fees, err := strconv.Atoi(args[2])
 		if err != nil {
 			fmt.Println(err)
@@ -113,7 +113,7 @@ var nodeUnjailCmd = &cobra.Command{
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fees, err := strconv.Atoi(args[2])
 		if err != nil {
 			fmt.Println(err)

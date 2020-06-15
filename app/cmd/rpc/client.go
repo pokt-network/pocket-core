@@ -118,7 +118,7 @@ func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, er.Error())
 		return
 	}
-	WriteResponse(w, string(j), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 type simRelayParams struct {

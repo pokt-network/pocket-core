@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/crypto"
@@ -23,9 +24,6 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 		// ensure unstaked
 		if !app.IsUnstaked() {
 			return types.ErrApplicationStatus(k.codespace)
-		}
-		if app.IsJailed() {
-			return types.ErrApplicationJailed(k.codespace)
 		}
 	} else {
 		// ensure public key type is supported
@@ -85,10 +83,6 @@ func (k Keeper) ValidateApplicationBeginUnstaking(ctx sdk.Ctx, application types
 	if application.IsJailed() {
 		return sdk.ErrInternal(types.ErrApplicationJailed(k.codespace).Error())
 	}
-	// sanity check
-	if application.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		return sdk.ErrInternal(fmt.Errorf("should not happen: application trying to begin unstaking has less than the minimum stake w/ address: %s", application.Address).Error())
-	}
 	return nil
 }
 
@@ -101,7 +95,7 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Ctx, application types.Applica
 	// set the status
 	application = application.UpdateStatus(sdk.Unstaking)
 	// set the unstaking completion time and completion height appropriately
-	if application.UnstakingCompletionTime.Second() == 0 {
+	if application.UnstakingCompletionTime.IsZero() {
 		application.UnstakingCompletionTime = ctx.BlockHeader().Time.Add(params.UnstakingTime)
 	}
 	// save the now unstaked application record and power index
@@ -118,10 +112,6 @@ func (k Keeper) ValidateApplicationFinishUnstaking(ctx sdk.Ctx, application type
 	}
 	if application.IsJailed() {
 		return types.ErrApplicationJailed(k.codespace)
-	}
-	// sanity check
-	if application.StakedTokens.LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		return sdk.ErrInternal(fmt.Errorf("should not happen: application trying to begin unstaking has less than the minimum stake w/ address: %s", application.Address).Error())
 	}
 	return nil
 }
@@ -148,6 +138,8 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Ctx, application types.Applic
 	application = application.UpdateStatus(sdk.Unstaked)
 	// reset app relays
 	application.MaxRelays = sdk.ZeroInt()
+	// update the unstaking time
+	application.UnstakingCompletionTime = time.Time{}
 	// update the application in the main store
 	k.SetApplication(ctx, application)
 	ctx.Logger().Info("Finished unstaking application " + application.Address.String())

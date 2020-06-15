@@ -23,7 +23,7 @@ var chainsGenCmd = &cobra.Command{
 	Short: "Generates chains file",
 	Long:  `Generate the chains file for network identifiers`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		c := app.NewHostedChains(true)
 		fmt.Println(app.GlobalConfig.PocketConfig.ChainsName + " contains: \n")
 		for _, chain := range c.M {
@@ -38,7 +38,7 @@ var chainsDelCmd = &cobra.Command{
 	Short: "Delete chains file",
 	Long:  `Delete the chains file for network identifiers`,
 	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, tmRPCPort, tmPeersPort, remoteCLIURL)
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		app.DeleteHostedChains()
 		fmt.Println("successfully deleted " + app.GlobalConfig.PocketConfig.ChainsName)
 	},
