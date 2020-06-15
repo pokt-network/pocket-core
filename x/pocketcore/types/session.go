@@ -122,14 +122,11 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	// only select the nodes if not jailed
 	for i, numOfNodes := 0, 0; ; i++ {
 		// generate the random index
-		index, err := PseudoRandomGeneration(totalNodes, sessionKey)
-		if err != nil {
-			return nil, sdk.ErrInternal("error with NewSessionNodes generation: " + err.Error())
-		}
+		index := PseudorandomSelection(sdk.NewInt(totalNodes), sessionKey)
 		// hash the session key to provide new entropy
 		sessionKey = Hash(sessionKey)
 		// get the node from the array
-		n := nodes[index]
+		n := nodes[index.Int64()]
 		// cross check the node from the `new` or `end` world state
 		res := keeper.Validator(ctx, n.GetAddress())
 		// if not found or jailed, don't add to session and continue

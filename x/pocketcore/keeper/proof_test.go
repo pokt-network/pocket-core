@@ -1,13 +1,17 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"encoding/hex"
+	"fmt"
+	"math/rand"
 	"testing"
 
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
+	"time"
 )
 
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
@@ -193,4 +197,28 @@ func TestKeeper_GetAllReceipts(t *testing.T) {
 	inv := keeper.GetAllReceipts(mockCtx)
 	assert.Contains(t, inv, receipt)
 	assert.Contains(t, inv, receipt2)
+}
+
+func TestPseudoRandomSelection(t *testing.T) {
+	// maximum index selection
+	const max = uint64(1000)
+	const iterations = 10000
+	// an index account array for proof
+	dataArr := make([]int64, max)
+	// run a for loop for statistics
+	for i := 0; i < iterations; i++ {
+		// create random seed data
+		seed := make([]byte, 8)
+		binary.LittleEndian.PutUint64(seed, rand.New(rand.NewSource(time.Now().UnixNano())).Uint64())
+		// hash for show and convert back to decimal
+		blockHashDecimal := binary.LittleEndian.Uint64(types.Hash(seed))
+		// mod the selection
+		selection := blockHashDecimal % max
+		// increment the data
+		dataArr[selection] = dataArr[selection] + 1
+	}
+	// print the results
+	for i := 0; uint64(i) < max; i++ {
+		fmt.Printf("index %d, was selected %d times\n", i, dataArr[i])
+	}
 }

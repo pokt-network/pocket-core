@@ -3,13 +3,12 @@ package types
 import (
 	sha "crypto"
 	"encoding/hex"
-	"strconv"
-
 	"github.com/pokt-network/posmint/crypto"
 	sdk "github.com/pokt-network/posmint/types"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/privval"
 	_ "golang.org/x/crypto/sha3"
+	"math/big"
 )
 
 var (
@@ -137,32 +136,9 @@ func Hash(b []byte) []byte {
 	return hasher.Sum(nil)
 }
 
-func PseudoRandomGeneration(total int64, hash []byte) (index int64, err error) {
-	// hash the bytes and take the first 15 characters of the string
-	proofsHash := hex.EncodeToString(Hash(hash))[:15]
-	var maxValue int64
-	// for each hex character of the hash
-	for i := 15; i > 0; i-- {
-		// parse the integer from this point of the hex string onward
-		maxValue, err = strconv.ParseInt(string(proofsHash[:i]), 16, 64)
-		if err != nil {
-			return 0, err
-
-		}
-		// if the total relays is greater than the resulting integer, this is the pseudorandom chosen proof
-		if total > maxValue {
-			firstCharacter, err := strconv.ParseInt(string(proofsHash[0]), 16, 64)
-			if err != nil {
-				return 0, err
-			}
-			selection := firstCharacter%int64(i) + 1
-			// parse the integer from this point of the hex string onward
-			index, err := strconv.ParseInt(proofsHash[:selection], 16, 64)
-			if err != nil {
-				return 0, err
-			}
-			return index, err
-		}
-	}
-	return 0, nil
+func PseudorandomSelection(max sdk.Int, hash []byte) (index sdk.Int) {
+	// hash for show and convert back to decimal
+	intHash := sdk.NewIntFromBigInt(new(big.Int).SetBytes(hash[:8]))
+	// mod the selection
+	return intHash.Mod(max)
 }
