@@ -186,8 +186,7 @@ func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 	if err != nil {
 		return 0, err
 	}
-	return pc.PseudoRandomGeneration(totalRelays, r)
-	//return 0, nil
+	return pc.PseudorandomSelection(sdk.NewInt(totalRelays), pc.Hash(r)).Int64(), nil
 }
 
 func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfChallenges sdk.Int) {

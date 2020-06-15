@@ -61,7 +61,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		return sdk.ZeroInt(), NewDuplicateProofError(ModuleName)
 	}
 	// validate not over service
-	if totalRelays >= maxPossibleRelays.Int64() {
+	if sdk.NewInt(totalRelays).GTE(maxPossibleRelays) {
 		return sdk.ZeroInt(), NewOverServiceError(ModuleName)
 	}
 	// validate the Proof
