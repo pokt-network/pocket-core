@@ -33,7 +33,7 @@ type HashRange struct {
 }
 
 func (hr HashRange) isValidRange() bool {
-	if hr.Range.Lower < 0 || hr.Range.Upper <= 0 {
+	if hr.Range.Upper <= 0 {
 		return false
 	}
 	if hr.Range.Lower >= hr.Range.Upper {
