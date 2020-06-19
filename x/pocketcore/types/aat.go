@@ -69,12 +69,12 @@ func (a AAT) Bytes() []byte {
 	return b
 }
 
-// "ID" - Returns the hash of the AAT bytes
+// "ID" - Returns the merkleHash of the AAT bytes
 func (a AAT) Hash() []byte {
 	return Hash(a.Bytes())
 }
 
-// "HashString" - Returns the string representation of the AAT hash
+// "HashString" - Returns the string representation of the AAT merkleHash
 func (a AAT) HashString() string {
 	// using standard library hex
 	return hex.EncodeToString(a.Hash())

@@ -52,7 +52,7 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 		Height: 1,
 		Time:   time.Time{},
 		LastBlockId: abci.BlockID{
-			Hash: hash([]byte("fake")),
+			Hash: merkleHash([]byte("fake")),
 		},
 	}).WithAppVersion("0.0.0")
 	return ctx

@@ -57,7 +57,7 @@ func (c *HostedBlockchains) Validate() error {
 		if chain.ID == "" || chain.URL == "" {
 			return NewInvalidHostedChainError(ModuleName)
 		}
-		// validate the hash
+		// validate the merkleHash
 		if err := NetworkIdentifierVerification(chain.ID); err != nil {
 			return err
 		}

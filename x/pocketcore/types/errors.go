@@ -90,6 +90,7 @@ const (
 	CodeReplayAttackError                = 86
 	CodeInvalidNetworkIDError            = 87
 	CodeInvalidExpirationHeightErr       = 88
+	CodeInvalidMerkleRangeError          = 89
 )
 
 var (
@@ -104,7 +105,7 @@ var (
 	InvalidNodePubKeyError           = errors.New("the node public key in the service Proof does not match this nodes public key")
 	InvalidTokenError                = errors.New("the application authentication token is invalid")
 	EmptyProofsError                 = errors.New("the service proofs object is empty")
-	DuplicateProofError              = errors.New("the Proof with specific hash already found, check entropy")
+	DuplicateProofError              = errors.New("the Proof with specific merkleHash already found, check entropy")
 	InvalidEntropyError              = errors.New("the entropy included in the relay request is invalid")
 	EmptyResponseError               = errors.New("the relay response payload is empty")
 	ResponseSignatureError           = errors.New("response signing errored out: ")
@@ -126,7 +127,7 @@ var (
 	FilterNodesError                 = errors.New("unable to filter nodes: ")
 	XORError                         = errors.New("error XORing the keys: ")
 	PubKeyDecodeError                = errors.New("error decoding the string into hex bytes")
-	InvalidHashError                 = errors.New("the hash is invalid: ")
+	InvalidHashError                 = errors.New("the merkleHash is invalid: ")
 	HTTPExecutionError               = errors.New("error executing the http request: ")
 	TicketsNotFoundError             = errors.New("the tickets requested could not be found")
 	DuplicateTicketError             = errors.New("the ticket is a duplicate")
@@ -138,7 +139,7 @@ var (
 	KeybaseError                     = errors.New("the keybase is invalid: ")
 	SelfNotFoundError                = errors.New("the self node is not within the world state")
 	AppNotFoundError                 = errors.New("the app could not be found in the world state")
-	RequestHashError                 = errors.New("the request hash does not match the payload hash")
+	RequestHashError                 = errors.New("the request merkleHash does not match the payload merkleHash")
 	InvalidHostedChainError          = errors.New("invalid hosted chain error")
 	ChainNotHostedError              = errors.New("the blockchain requested is not hosted")
 	NodeNotFoundErr                  = errors.New("the node is not found in world state")
@@ -154,7 +155,7 @@ var (
 	InvalidNetworkIDLengthError      = errors.New("the netid Length is invalid")
 	InvalidBlockHeightError          = errors.New("the block height passed is invalid")
 	InvalidAppPubKeyError            = errors.New("the app public key is invalid")
-	InvalidHashLengthError           = errors.New("the hash Length is not valid")
+	InvalidHashLengthError           = errors.New("the merkleHash Length is not valid")
 	InvalidLeafCousinProofsCombo     = errors.New("the merkle relayProof combo for the cousin and leaf is invalid")
 	EmptyAddressError                = errors.New("the address provided is empty")
 	ClaimNotFoundError               = errors.New("the claim was not found for the key given")
@@ -180,6 +181,7 @@ var (
 	InvalidEvidenceErr               = errors.New("the evidence type passed is not valid")
 	ReplayAttackError                = errors.New("the merkle proof is flagged as a replay attack")
 	InvalidExpirationHeightErr       = errors.New("the expiration height included in the claim message is invalid (should not be set)")
+	InvalidMerkleRangeError          = errors.New("the merkle hash range is invalid")
 )
 
 func NewUnsupportedBlockchainError(codespace sdk.CodespaceType) sdk.Error {
@@ -297,6 +299,10 @@ func NewNoEvidenceTypeErr(codespace sdk.CodespaceType) sdk.Error {
 
 func NewInvalidEvidenceErr(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidEvidenceError, InvalidEvidenceErr.Error())
+}
+
+func NewInvalidMerkleRangeError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeInvalidMerkleRangeError, InvalidMerkleRangeError.Error())
 }
 
 func NewInvalidExpirationHeightErr(codespace sdk.CodespaceType) sdk.Error {

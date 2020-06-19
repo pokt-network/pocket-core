@@ -2,8 +2,6 @@ package types
 
 import (
 	"encoding/hex"
-	"reflect"
-
 	sdk "github.com/pokt-network/posmint/types"
 )
 
@@ -17,7 +15,7 @@ const (
 // "MsgClaim" - claims that you completed `NumOfProofs` for relay or challenge and provides the merkle root for data integrity
 type MsgClaim struct {
 	SessionHeader    `json:"header"` // header information for identification
-	MerkleRoot       HashSum         `json:"merkle_root"`   // merkle root for data integrity
+	MerkleRoot       HashRange       `json:"merkle_root"`   // merkle root for data integrity
 	TotalProofs      int64           `json:"total_proofs"`  // total number of relays
 	FromAddress      sdk.Address     `json:"from_address"`  // claimant's address
 	EvidenceType     EvidenceType    `json:"evidence_type"` // relay or challenge?
@@ -61,8 +59,12 @@ func (msg MsgClaim) ValidateBasic() sdk.Error {
 	if err := HashVerification(hex.EncodeToString(msg.MerkleRoot.Hash)); err != nil {
 		return err
 	}
-	// ensure non zero root sum
-	if msg.MerkleRoot.Sum == 0 {
+	// ensure non zero root upper range
+	if !msg.MerkleRoot.isValidRange() {
+		return NewInvalidMerkleRangeError(ModuleName)
+	}
+	// ensure zero root lower range
+	if msg.MerkleRoot.Range.Lower != 0 {
 		return NewInvalidRootError(ModuleName)
 	}
 	// ensure non zero evidence
@@ -97,9 +99,8 @@ func (msg MsgClaim) IsEmpty() bool {
 
 // "MsgProof" - Proves the previous claim by providing the merkle Proof and the leaf node
 type MsgProof struct {
-	MerkleProofs MerkleProofs `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
+	MerkleProof  MerkleProof  `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
 	Leaf         Proof        `json:"leaf"`          // the needed to verify the Proof
-	Cousin       Proof        `json:"cousin"`        // the cousin needed to verify the Proof
 	EvidenceType EvidenceType `json:"evidence_type"` // the type of evidence
 }
 
@@ -117,27 +118,15 @@ func (msg MsgProof) Type() string { return MsgProofName }
 // "ValidateBasic" - Storeless validity check for proof message
 func (msg MsgProof) ValidateBasic() sdk.Error {
 	// verify valid number of levels for merkle proofs
-	if len(msg.MerkleProofs[0].HashSums) < 3 || len(msg.MerkleProofs[0].HashSums) != len(msg.MerkleProofs[1].HashSums) {
+	if len(msg.MerkleProof.HashRanges) < 3 {
 		return NewInvalidLeafCousinProofsComboError(ModuleName)
 	}
-	// ensure the two indices are not equal
-	if msg.MerkleProofs[0].Index == msg.MerkleProofs[1].Index {
-		return NewInvalidLeafCousinProofsComboError(ModuleName)
-	}
-	// ensure leaf does not equal cousin
-	if reflect.DeepEqual(msg.Leaf, msg.Cousin) {
-		return NewCousinLeafEquivalentError(ModuleName)
-	}
-	// ensure leaf relayProof does not equal cousin relayProof
-	if reflect.DeepEqual(msg.MerkleProofs[0].HashSums, msg.MerkleProofs[1].HashSums) {
-		return NewCousinLeafEquivalentError(ModuleName)
+	// validate the target range
+	if !msg.MerkleProof.Target.isValidRange() {
+		return NewInvalidMerkleRangeError(ModuleName)
 	}
 	// validate the leaf
 	if err := msg.Leaf.ValidateBasic(); err != nil {
-		return err
-	}
-	// validate the cousin
-	if err := msg.Cousin.ValidateBasic(); err != nil {
 		return err
 	}
 	if _, err := msg.EvidenceType.Byte(); err != nil {

@@ -29,7 +29,7 @@ func TestNewSessionKey(t *testing.T) {
 func TestSessionKey_Validate(t *testing.T) {
 	fakeKey1 := SessionKey([]byte("fakekey"))
 	fakeKey2 := SessionKey([]byte(""))
-	realKey := SessionKey(hash([]byte("validKey")))
+	realKey := SessionKey(merkleHash([]byte("validKey")))
 	assert.NotNil(t, fakeKey1.Validate())
 	assert.NotNil(t, fakeKey2.Validate())
 	assert.Nil(t, realKey.Validate())

@@ -123,7 +123,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	for i, numOfNodes := 0, 0; ; i++ {
 		// generate the random index
 		index := PseudorandomSelection(sdk.NewInt(totalNodes), sessionKey)
-		// hash the session key to provide new entropy
+		// merkleHash the session key to provide new entropy
 		sessionKey = Hash(sessionKey)
 		// get the node from the array
 		n := nodes[index.Int64()]
@@ -195,7 +195,7 @@ func (sn SessionNodes) ContainsAddress(addr sdk.Address) bool {
 	return false
 }
 
-// "SessionKey" - the hash identifier of the session
+// "SessionKey" - the merkleHash identifier of the session
 type SessionKey []byte
 
 // "sessionKey" - Used for custom json
@@ -250,7 +250,7 @@ func (sh SessionHeader) ValidateHeader() sdk.Error {
 	if err := PubKeyVerification(sh.ApplicationPubKey); err != nil {
 		return err
 	}
-	// verify the chain hash
+	// verify the chain merkleHash
 	if err := NetworkIdentifierVerification(sh.Chain); err != nil {
 		return err
 	}
@@ -261,13 +261,13 @@ func (sh SessionHeader) ValidateHeader() sdk.Error {
 	return nil
 }
 
-// "Hash" - The cryptographic hash representation of the session header
+// "Hash" - The cryptographic merkleHash representation of the session header
 func (sh SessionHeader) Hash() []byte {
 	res := sh.Bytes()
 	return Hash(res)
 }
 
-// "HashString" - The hex string representation of the hash
+// "HashString" - The hex string representation of the merkleHash
 func (sh SessionHeader) HashString() string {
 	return hex.EncodeToString(sh.Hash())
 }
@@ -281,7 +281,7 @@ func (sh SessionHeader) Bytes() []byte {
 	return res
 }
 
-// "BlockHash" - Returns the hash from the ctx block header
+// "BlockHash" - Returns the merkleHash from the ctx block header
 func BlockHash(ctx sdk.Context) string {
 	return hex.EncodeToString(ctx.BlockHeader().LastBlockId.Hash)
 }

@@ -15,7 +15,7 @@ import (
 )
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]pc.MerkleProof, leafNode, cousin pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	kp, err := k.GetPKFromFile(ctx)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
@@ -58,10 +58,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 			continue
 		}
 		// get the merkle proof object for the pseudorandom index
-		branch, cousinIndex := evidence.GenerateMerkleProof(int(index))
-		// get the leaf and cousin for the required pseudorandom index
-		leaf := pc.GetProof(claim.SessionHeader, claim.EvidenceType, index)
-		cousin := pc.GetProof(claim.SessionHeader, claim.EvidenceType, int64(cousinIndex))
+		mProof, leaf := evidence.GenerateMerkleProof(int(index))
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, kp, k)
 		if err != nil {
@@ -69,7 +66,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 			return
 		}
 		// send the proof TX
-		_, err = proofTx(cliCtx, txBuilder, branch, leaf, cousin, evidence.EvidenceType)
+		_, err = proofTx(cliCtx, txBuilder, mProof, leaf, evidence.EvidenceType)
 		if err != nil {
 			ctx.Logger().Error(err.Error())
 		}
@@ -97,11 +94,11 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return nil, pc.MsgClaim{}, sdk.ErrInternal(err.Error())
 	}
 	// if the required proof message index does not match the leaf node index
-	if reqProof != int64(proof.MerkleProofs[0].Index) {
+	if reqProof != int64(proof.MerkleProof.TargetIndex) {
 		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate level count on claim by total relays
-	levelCount := len(proof.MerkleProofs[0].HashSums)
+	levelCount := len(proof.MerkleProof.HashRanges)
 	if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
 		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
 	}
@@ -110,11 +107,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// validate the merkle proofs
-	isValid, isReplayAttack := proof.MerkleProofs.Validate(claim.MerkleRoot, proof.Leaf, proof.Cousin, claim.TotalProofs)
-	// if the merkle proof is a replay attack
-	if isReplayAttack {
-		return addr, claim, pc.NewReplayAttackError(pc.ModuleName)
-	}
+	isValid := proof.MerkleProof.Validate(claim.MerkleRoot, proof.Leaf, claim.TotalProofs)
 	// if is not valid for other reasons
 	if !isValid {
 		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)

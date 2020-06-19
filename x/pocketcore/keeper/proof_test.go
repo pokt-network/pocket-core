@@ -45,16 +45,13 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	// generate the pseudorandom proof
 	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header, mockCtx)
 	assert.Nil(t, er)
-	merkleProofs, cousinIndex := evidence.GenerateMerkleProof(int(neededLeafIndex))
+	merkleProofs, _ := evidence.GenerateMerkleProof(int(neededLeafIndex))
 	// get leaf and cousin node
 	leafNode := types.GetProof(header, types.RelayEvidence, neededLeafIndex)
-	// get leaf and cousin node
-	cousinNode := types.GetProof(header, types.RelayEvidence, int64(cousinIndex))
 	// create proof message
 	proofMsg := types.MsgProof{
-		MerkleProofs: merkleProofs,
+		MerkleProof:  merkleProofs,
 		Leaf:         leafNode.(types.RelayProof),
-		Cousin:       cousinNode.(types.RelayProof),
 		EvidenceType: types.RelayEvidence,
 	}
 	err = keeper.SetClaim(mockCtx, claimMsg)

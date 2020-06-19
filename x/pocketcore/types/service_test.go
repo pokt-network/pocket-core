@@ -237,7 +237,7 @@ func TestRelayResponse_BytesAndHash(t *testing.T) {
 			SessionBlockHeight: 1,
 			RequestHash:        nodePubKey,
 			ServicerPubKey:     nodePubKey,
-			Blockchain:         hex.EncodeToString(hash([]byte("foo"))),
+			Blockchain:         hex.EncodeToString(merkleHash([]byte("foo"))),
 			Token: AAT{
 				Version:              "0.0.1",
 				ApplicationPublicKey: appPublicKey,

@@ -3,261 +3,120 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
+	"golang.org/x/crypto/blake2b"
 	"math"
 	"math/rand"
 	"reflect"
-
-	"golang.org/x/crypto/blake2b"
+	"strconv"
 )
 
-// "HashSum" - A structure to represent the hash and the sum at an index in the merkle sum index tree
-type HashSum struct {
-	Hash []byte `json:"hash"`
-	Sum  uint64 `json:"sum"`
+type Range struct {
+	Lower uint64 `json:"lower"`
+	Upper uint64 `json:"upper"`
+}
+
+func (r Range) Bytes() []byte {
+	return append(uint64ToBytes(r.Lower), uint64ToBytes(r.Upper)...)
+}
+
+// "uint64ToBytes" - convert the uint64 to bytes
+func uint64ToBytes(a uint64) (bz []byte) {
+	bz = make([]byte, 8)
+	binary.LittleEndian.PutUint64(bz, a)
+	return
+}
+
+// "HashRange" - A structure to represent the merkleHash and the range at an index in the merkle sum tree
+type HashRange struct {
+	Hash  []byte `json:"merkleHash"`
+	Range Range  `json:"range"`
+}
+
+func (hr HashRange) isValidRange() bool {
+	if hr.Range.Lower < 0 || hr.Range.Upper <= 0 {
+		return false
+	}
+	if hr.Range.Lower >= hr.Range.Upper {
+		return false
+	}
+	return true
 }
 
 // "MerkleProof" - A structure used to verify a leaf of the tree.
 type MerkleProof struct {
-	Index    int       `json:"index"`
-	HashSums []HashSum `json:"hash_sums"`
+	TargetIndex int         `json:"index"`
+	HashRanges  []HashRange `json:"hash_ranges"`
+	Target      HashRange   `json:"target_range"`
 }
 
-// "MerkleProofs" - Two merkle proof objects (needed for replay attack)
-type MerkleProofs [2]MerkleProof
-
 // "Validate" - Verifies the Proof from the leaf/cousin node data, the merkle root, and the Proof object
-func (mp MerkleProofs) Validate(root HashSum, leaf, cousin Proof, totalRelays int64) (isValid bool, isReplay bool) {
-	// check if levels and total relays is valid
-	numOfLevels, valid := levelsIsValid(len(mp[0].HashSums), len(mp[1].HashSums), totalRelays)
-	if !valid {
-		return false, false
+func (mp MerkleProof) Validate(root HashRange, leaf Proof, totalRelays int64) (isValid bool) {
+	// ensure root lower is zero
+	if root.Range.Lower != 0 {
+		return
 	}
-	// verifier is the opposing verification piece to the merkle proofs, with its counterpart, we will verify the tree
-	var verifier [2]HashSum
-	// convert leaf to hashsum
-	verifier[0].Hash = hash(leaf.Hash())
-	verifier[0].Sum = sumFromHash(verifier[0].Hash)
-	// convert cousin to hashsum
-	verifier[1].Hash = hash(cousin.Hash())
-	verifier[1].Sum = sumFromHash(verifier[1].Hash)
-	// replay attack check -> params (leaf, sibling, cousin, cousinSibling, leafIndex, cap of the tree)
-	if isReplayAttack(verifier[0], mp[0].HashSums[0], verifier[1], mp[1].HashSums[0], int64(mp[0].Index), totalRelays) {
-		return false, true
+	// check if levels and total relays is valid
+	numOfLevels, valid := levelsIsValid(len(mp.HashRanges), totalRelays)
+	if !valid {
+		return
+	}
+	// check to see that target merkleHash is leaf merkleHash
+	if !bytes.Equal(mp.Target.Hash, merkleHash(leaf.Bytes())) {
+		return
+	}
+	// check to see that target upper == decimal representation of merkleHash
+	if mp.Target.Range.Upper != sumFromHash(mp.Target.Hash) {
+		return
 	}
 	// execute the for loop for each level
 	for i := 0; i < numOfLevels; i++ {
-		if mp[0].Index%2 == 1 { // odd index
-			// child sum should be greater than sibling sum
-			if verifier[0].Sum <= mp[0].HashSums[i].Sum {
-				return false, false
-			}
-			// calculate the parent sum and store it where the child used to be
-			verifier[0].Sum += mp[0].HashSums[i].Sum
-			// generate the parent hash and store it where the child used to be
-			verifier[0].Hash = parentHash(mp[0].HashSums[i].Hash, verifier[0].Hash, verifier[0].Sum)
-		} else { // even index
-			// child sum should be less than sibling sum
-			if verifier[0].Sum >= mp[0].HashSums[i].Sum {
-				return false, false
-			}
-			// calculate the parent sum and store it where the child used to be
-			verifier[0].Sum += mp[0].HashSums[i].Sum
-			// generate the parent hash and store it where the child used to be
-			verifier[0].Hash = parentHash(verifier[0].Hash, mp[0].HashSums[i].Hash, verifier[0].Sum)
+		// check for valid range
+		if !mp.Target.isValidRange() {
+			return
 		}
-		if mp[1].Index%2 == 1 { // odd index
-			// (cousin) child sum should be greater than sibling sum
-			if verifier[1].Sum <= mp[1].HashSums[i].Sum {
-				return false, false
+		// get sibling from mp object
+		sibling := mp.HashRanges[i]
+		// check to see if sibling is within a valid range
+		if !sibling.isValidRange() {
+			return
+		}
+		if mp.TargetIndex%2 == 1 { // odd target index
+			// target lower should be GTE sibling upper
+			if mp.Target.Range.Lower != sibling.Range.Upper {
+				return
 			}
-			// calculate the parent sum and store it where the child used to be
-			verifier[1].Sum += mp[1].HashSums[i].Sum
-			// generate the parent hash and store it where the child used to be
-			verifier[1].Hash = parentHash(mp[1].HashSums[i].Hash, verifier[1].Hash, verifier[1].Sum)
-		} else {
-			// (cousin) child sum should be less than sibling sum
-			if verifier[1].Sum >= mp[1].HashSums[i].Sum {
-				return false, false
+			// calculate the parent range and store it where the child used to be
+			mp.Target.Range.Lower = sibling.Range.Lower
+			// **upper stays the same**
+			// generate the parent merkleHash and store it where the child used to be
+			mp.Target.Hash = parentHash(sibling.Hash, mp.Target.Hash, mp.Target.Range)
+		} else { // even index
+			// target upper should be LTE sibling lower
+			if mp.Target.Range.Upper != sibling.Range.Lower {
+				return
 			}
-			// calculate the parent sum and store it where the child used to be
-			verifier[1].Sum += mp[1].HashSums[i].Sum
-			// generate the parent hash and store it where the child used to be
-			verifier[1].Hash = parentHash(verifier[1].Hash, mp[1].HashSums[i].Hash, verifier[1].Sum)
+			// calculate the parent range and store it where the child used to be
+			mp.Target.Range.Upper = sibling.Range.Upper
+			// **lower stays the same**
+			// generate the parent merkleHash and store it where the child used to be
+			mp.Target.Hash = parentHash(mp.Target.Hash, sibling.Hash, mp.Target.Range)
 		}
 		// half the indices as we are going up one level
-		mp[0].Index /= 2
-		mp[1].Index /= 2
+		mp.TargetIndex /= 2
 	}
 	// ensure root == verification for leaf and cousin
-	return reflect.DeepEqual(root, verifier[0]) && reflect.DeepEqual(root, verifier[1]), false
+	return reflect.DeepEqual(root, mp.Target)
 }
 
-// "GenerateProofs" - Generates the merkle Proof object from the leaf node data and the index
-func GenerateProofs(p []Proof, index int) (merkleProofs MerkleProofs, cousinIndex int) {
-	data, _ := sortAndStructure(p)
-	dataCopy := make([]HashSum, len(data))
-	// Copy from the original map to the target map
-	copy(dataCopy, data)
-	// calculate cousin index
-	cousinIndex = getCousinIndex(len(p), index)
-	// generate Proof for leaf
-	merkleProofs[0] = merkleProof(data, index, &MerkleProof{})
-	// reset leaf index
-	merkleProofs[0].Index = index
-	// generate Proof for cousin
-	merkleProofs[1] = merkleProof(dataCopy, cousinIndex, &MerkleProof{})
-	// reset cousin index
-	merkleProofs[1].Index = cousinIndex
-	// return merkleProofs object
-	return
+// "sumFromHash" - get leaf sum from merkleHash
+func sumFromHash(hash []byte) uint64 {
+	hashCopy := make([]byte, len(hash))
+	copy(hashCopy, hash)
+	return binary.LittleEndian.Uint64(append(hashCopy[:3], make([]byte, 5)...))
 }
 
-// "GenerateRoot" - generates the merkle root from leaf node data
-func GenerateRoot(data []Proof) (r HashSum, sortedData []Proof) {
-	// structure the leafs
-	d, sortedProofs := sortAndStructure(data)
-	// call the root function and return
-	return root(d), sortedProofs
-}
-
-// "sortAndStructure" - takes Proof data, sorts, and structures them as a `balanced` merkle tree
-func sortAndStructure(relayProofs []Proof) (d []HashSum, sortedProofs []Proof) {
-	// we need a tree of proper Length. Get the # of relayProofs
-	numberOfProofs := len(relayProofs)
-	properLength := nextPowerOfTwo(uint(numberOfProofs))
-	// initialize the data
-	data := make([]HashSum, properLength)
-	// first, let's tHash the data
-	for i, p := range relayProofs {
-		// save the hash and sum of the Proof in the new tree slice
-		data[i].Hash = hash(p.Hash()) // todo should this be hash with signature for RelayProofs? // todo remove double hash
-		data[i].Sum = sumFromHash(data[i].Hash)
-	}
-	// for the rest, add the max uint32
-	for i := numberOfProofs; i < int(properLength); i++ {
-		data[i] = HashSum{
-			Hash: Hash([]byte("0")),
-			Sum:  uint64(math.MaxUint32),
-		}
-	}
-	proofs := make([]Proof, int(properLength)-numberOfProofs)
-	relayProofs = append(relayProofs, proofs...)
-	// sort the slice based on the numerical value of the tHash data
-	data, relayProofs = quickSort(data, relayProofs)
-	return data, relayProofs[:numberOfProofs]
-}
-
-// "root" - Generates the root (highest level) from the hash sum data recursively
-// CONTRACT: dataLength must be > 1 or this breaks
-func root(data []HashSum) HashSum {
-	data, atRoot := levelUp(data)
-	if !atRoot {
-		// if not at root continue to level up
-		root(data)
-	}
-	// if at root return
-	return data[0]
-}
-
-// "merkleProof" - recursive Proof function that generates the Proof object one level at a time
-func merkleProof(data []HashSum, index int, p *MerkleProof) MerkleProof {
-	if index%2 == 1 { // odd index so sibling to the left
-		p.HashSums = append(p.HashSums, data[index-1])
-	} else { // even index so sibling to the right
-		p.HashSums = append(p.HashSums, data[index+1])
-	}
-	data, atRoot := levelUp(data)
-	if !atRoot {
-		// next level Entropy = previous index / 2 (
-		merkleProof(data, index/2, p)
-	}
-	return *p
-}
-
-// "levelUp" - takes the previous level data and converts it to the next level data
-func levelUp(data []HashSum) (nextLevelData []HashSum, atRoot bool) {
-	for i, d := range data {
-		// if odd element, skip
-		if i%2 == 1 {
-			continue
-		}
-		// calculate the sum
-		data[i/2].Sum = d.Sum + data[i+1].Sum
-		// calculate the parent hash
-		data[i/2].Hash = parentHash(d.Hash, data[i+1].Hash, data[i/2].Sum)
-	}
-	// check to see if at root
-	dataLen := len(data) / 2
-	if dataLen == 1 {
-		return data[:dataLen], true
-	}
-	return data[:dataLen], false
-}
-
-// "isReplayAttack" - Check for replay attack by comparing the order and value of a leaf, the sibling, the cousin, and the cousins sibling
-func isReplayAttack(leaf, sibling, cousin, cousinsSibling HashSum, leafIndex int64, treeSize int64) bool {
-	// check equality among all leaves
-	if bytes.Equal(leaf.Hash, sibling.Hash) ||
-		bytes.Equal(leaf.Hash, cousin.Hash) ||
-		bytes.Equal(leaf.Hash, cousinsSibling.Hash) ||
-		bytes.Equal(sibling.Hash, cousin.Hash) ||
-		bytes.Equal(sibling.Hash, cousinsSibling.Hash) ||
-		bytes.Equal(cousin.Hash, sibling.Hash) {
-		return true
-	}
-	if leafIndex == 0 {
-		// if leaf is at the beginning of the tree, the order is leaf -> sibling -> cousin -> sibling cousin
-		return !(leaf.Sum < sibling.Sum && sibling.Sum < cousin.Sum && cousin.Sum < cousinsSibling.Sum)
-	} else if leafIndex == treeSize-1 {
-		// if leaf is at the end of the tree
-		if leafIndex%2 == 0 {
-			// if even index at the end, the order is cousin sibling -> cousin -> leaf -> (sibling is filler value)
-			return !(cousinsSibling.Sum < cousin.Sum && cousin.Sum < leaf.Sum)
-		}
-		// if odd index a the end, the order is sibling cousin -> cousin -> sibling -> leaf
-		return !(cousinsSibling.Sum < cousin.Sum && cousin.Sum < sibling.Sum && sibling.Sum < leaf.Sum)
-	} else {
-		// if the leaf is not at the beginning or the end
-		if leafIndex%2 == 1 {
-			// leaf has odd index so order is sibling -> leaf -> cousin -> cousinSibling
-			return !(sibling.Sum < leaf.Sum && leaf.Sum < cousin.Sum && cousin.Sum < cousinsSibling.Sum)
-		} else {
-			// odd index so order is Cousinsibling -> Cousin -> leaf -> sibling
-			return !(cousinsSibling.Sum < cousin.Sum && cousin.Sum < leaf.Sum && leaf.Sum < sibling.Sum)
-		}
-	}
-}
-
-// "getCousinIndex" - Retrieves the index of the cousin by the leaf index
-func getCousinIndex(dataLength, leafIndex int) (cousinIndex int) {
-	if leafIndex == 0 {
-		// beginning so return cousin of sibling as leafIndex
-		return 2
-	}
-	end := dataLength - 1
-	if leafIndex == end {
-		// at end of tree so return cousin of sibling as leafIndex
-		if leafIndex%2 == 0 {
-			// if even at the end, cousin is one to the left
-			return end - 1
-		}
-		// if odd leafIndex at the end, cousin is two to the left
-		return end - 2
-	}
-	if leafIndex%2 == 1 {
-		// odd leafIndex so cousin to the right
-		return leafIndex + 1
-	} else {
-		// even leafIndex so cousin to the left
-		return leafIndex - 1
-	}
-}
-
-// "levelIsValid" - Ensure that the number of levels in the relayProof is valid
-func levelsIsValid(leafNumOfLevels, cousinNumOfLevels int, totalRelays int64) (numOfLevels int, isValid bool) {
-	if leafNumOfLevels != cousinNumOfLevels {
-		return leafNumOfLevels, false
-	}
+// "newLevelIsValid" - Ensure that the number of levels in the relayProof is valid
+func levelsIsValid(leafNumOfLevels int, totalRelays int64) (numOfLevels int, isValid bool) {
 	return leafNumOfLevels, nextPowerOfTwo(uint(totalRelays)) == uint(math.Pow(2, float64(leafNumOfLevels)))
 }
 
@@ -273,50 +132,157 @@ func nextPowerOfTwo(v uint) uint {
 	return v
 }
 
-// "hash" - the hash function used in the merkle tree
-func hash(data []byte) []byte {
-	hash := blake2b.Sum256((data))
-	return hash[:]
-}
-
-// "parentHash" - Compute the hash of the parent by hashing the hashes, sum and parent
-func parentHash(hash1, hash2 []byte, sum uint64) []byte {
-	return hash(append(append(hash1, hash2...), uint64ToBytes(sum)...))
-}
-
-// "sumFromHash" - get leaf sum from hash
-func sumFromHash(hash []byte) uint64 {
-	return binary.LittleEndian.Uint64(append(hash[:3], make([]byte, 5)...))
-}
-
-// "uint64ToBytes" - convert the uint64 to bytes
-func uint64ToBytes(a uint64) (bz []byte) {
-	bz = make([]byte, 8)
-	binary.LittleEndian.PutUint64(bz, a)
+// "GenerateProofs" - Generates the merkle Proof object from the leaf node data and the index
+func GenerateProofs(p []Proof, index int) (mProof MerkleProof, leaf Proof) {
+	data, proofs := sortAndStructure(p)
+	// make a copy of the data because the merkle proof function will manipulate the slice
+	dataCopy := make([]HashRange, len(data))
+	// Copy from the original map to the target map
+	copy(dataCopy, data)
+	// generate Proof for leaf
+	mProof = merkleProof(data, index, &MerkleProof{})
+	// reset leaf index
+	mProof.TargetIndex = index
+	// get the leaf
+	leaf = proofs[index]
+	// get the targetHashRange
+	mProof.Target = dataCopy[index]
+	// return merkleProofs object
 	return
 }
 
-// "quickSort" - Sort the hash sum and the proofs by hash sum
-// CONTRACT hash sum and proofs must be the same Length
-func quickSort(hs []HashSum, p []Proof) ([]HashSum, []Proof) {
-	// get the Length of the hash sums
-	hsLen := len(hs)
+// "merkleProof" - recursive Proof function that generates the Proof object one level at a time
+func merkleProof(data []HashRange, index int, p *MerkleProof) MerkleProof {
+	if index%2 == 1 { // odd index so sibling to the left
+		p.HashRanges = append(p.HashRanges, data[index-1])
+	} else { // even index so sibling to the right
+		p.HashRanges = append(p.HashRanges, data[index+1])
+	}
+	data, atRoot := levelUp(data)
+	if !atRoot {
+		// next level Entropy = previous index / 2 (
+		merkleProof(data, index/2, p)
+	}
+	return *p
+}
+
+// "newParentHash" - Compute the merkleHash of the parent by hashing the hashes, sum and parent
+func parentHash(hash1, hash2 []byte, r Range) []byte {
+	return merkleHash(append(append(hash1, hash2...), r.Bytes()...))
+}
+
+// "merkleHash" - the merkleHash function used in the merkle tree
+func merkleHash(data []byte) []byte {
+	hash := blake2b.Sum256(data)
+	return hash[:]
+}
+
+// "GenerateRoot" - generates the merkle root from leaf node data
+func GenerateRoot(data []Proof) (r HashRange, sortedData []Proof) {
+	// structure the leafs
+	adjacentHashRanges, sortedProofs := sortAndStructure(data)
+	// call the root function and return
+	return root(adjacentHashRanges), sortedProofs
+}
+
+// "root" - Generates the root (highest level) from the merkleHash range data recursively
+// CONTRACT: dataLength must be > 1 or this breaks
+func root(data []HashRange) HashRange {
+	data, atRoot := levelUp(data)
+	if !atRoot {
+		// if not at root continue to level up
+		root(data)
+	}
+	// if at root return
+	return data[0]
+}
+
+// "levelUp" - takes the previous level data and converts it to the next level data
+func levelUp(data []HashRange) (nextLevelData []HashRange, atRoot bool) {
+	for i, d := range data {
+		// if odd element, skip
+		if i%2 == 1 {
+			continue
+		}
+		// calculate the parent range, the right child upper is new upper
+		data[i/2].Range.Upper = data[i+1].Range.Upper
+		// the left child lower is new lower
+		data[i/2].Range.Lower = data[i].Range.Lower
+		// calculate the parent merkleHash
+		data[i/2].Hash = parentHash(d.Hash, data[i+1].Hash, data[i/2].Range)
+	}
+	// check to see if at root
+	dataLen := len(data) / 2
+	if dataLen == 1 {
+		return data[:dataLen], true
+	}
+	return data[:dataLen], false
+}
+
+// "sortAndStructure" - takes Proof data, sorts, and structures them as a `balanced` merkle tree
+func sortAndStructure(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
+	// get the # of proofs
+	numberOfProofs := len(proofs)
+	// initialize the hashRange
+	hashRanges := make([]HashRange, numberOfProofs)
+	// sort the slice based on the numerical value of the upper value (just the decimal representation of the merkleHash)
+	hashRanges, proofs = quickSortProofs(hashRanges, proofs)
+	// keep track of previous upper (next values lower)
+	lower := uint64(0)
+	// set the lower values of each
+	for i := range proofs {
+		// the range is the previous
+		hashRanges[i].Range.Lower = lower
+		// update the lower
+		lower = hashRanges[i].Range.Upper
+	}
+	// calculate the proper length of the merkle tree
+	properLength := nextPowerOfTwo(uint(numberOfProofs))
+	// generate padding to make it a proper merkle tree
+	padding := make([]HashRange, int(properLength)-numberOfProofs)
+	// add it to the merkleHash rangeds
+	hashRanges = append(hashRanges, padding...)
+	// add padding to the end of the hashRange
+	for i := numberOfProofs; i < int(properLength); i++ {
+		hashRanges[i] = HashRange{
+			Hash:  merkleHash([]byte(strconv.Itoa(i))),
+			Range: Range{Lower: lower, Upper: lower + 1},
+		}
+		lower = hashRanges[i].Range.Upper
+	}
+	return hashRanges, proofs
+}
+
+// "quickSort" - Sort the merkleHash sum and the proofs by merkleHash sum
+// CONTRACT merkleHash sum and proofs must be the same Length
+func quickSortProofs(hr []HashRange, p []Proof) (sortedHR []HashRange, sortedP []Proof) {
+	// get the Length of the merkleHash sums
+	hsLen := len(hr)
 	if hsLen <= 1 {
-		return hs, p
+		return hr, p
+	}
+	// if not initialized, set all the upper values (used for comparison in quicksort)
+	if hr[0].Range.Upper == 0 {
+		for i := range hr {
+			// save the merkleHash and sum of the Proof in the new tree slice
+			hr[i].Hash = merkleHash(p[i].Bytes())
+			// get the inital sum (just the dec val of the merkleHash)
+			hr[i].Range.Upper = sumFromHash(hr[i].Hash)
+		}
 	}
 	// set left to zero and right to end index
 	l, r := 0, hsLen-1
 	// generate random pivot
 	pivot := rand.Int() % hsLen
 	// switch the two
-	hs[pivot], hs[r] = hs[r], hs[pivot]
+	hr[pivot], hr[r] = hr[r], hr[pivot]
 	// duplicate behavior for the proof
 	p[pivot], p[r] = p[r], p[pivot]
 	// loop through each item and compare
-	for i := range hs {
-		if hs[i].Sum < hs[r].Sum {
+	for i := range hr {
+		if hr[i].Range.Upper < hr[r].Range.Upper {
 			// switch the two
-			hs[i], hs[l] = hs[l], hs[i]
+			hr[i], hr[l] = hr[l], hr[i]
 			// duplicate behavior for the proof
 			p[i], p[l] = p[l], p[i]
 			// increment left
@@ -324,11 +290,11 @@ func quickSort(hs []HashSum, p []Proof) ([]HashSum, []Proof) {
 		}
 	}
 	// switch the two
-	hs[l], hs[r] = hs[r], hs[l]
+	hr[l], hr[r] = hr[r], hr[l]
 	// duplicate behavior for the proof
 	p[l], p[r] = p[r], p[l]
 	// recursive quicksort
-	quickSort(hs[:l], p[:l])
-	quickSort(hs[l+1:], p[l+1:])
-	return hs, p
+	quickSortProofs(hr[:l], p[:l])
+	quickSortProofs(hr[l+1:], p[l+1:])
+	return hr, p
 }

@@ -4,8 +4,6 @@ import (
 	"encoding/hex"
 	"github.com/stretchr/testify/assert"
 	"github.com/willf/bloom"
-	"math"
-	"reflect"
 	"testing"
 )
 
@@ -87,8 +85,9 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 	assert.NotNil(t, root.Hash)
 	assert.NotEmpty(t, root.Hash)
 	assert.Nil(t, HashVerification(hex.EncodeToString(root.Hash)))
-	assert.NotNil(t, root.Sum)
-	assert.NotZero(t, root.Sum)
+	assert.True(t, root.isValidRange())
+	assert.Zero(t, root.Range.Lower)
+	assert.NotZero(t, root.Range.Upper)
 }
 
 func TestEvidence_GenerateMerkleProof(t *testing.T) {
@@ -166,15 +165,10 @@ func TestEvidence_GenerateMerkleProof(t *testing.T) {
 		},
 	}
 	index := 4
-	proofs, cousinIndex := i.GenerateMerkleProof(index)
-	assert.NotPanics(t, func() {
-		if reflect.DeepEqual(proofs[0], proofs[1]) {
-			t.Fatalf("Equal MerkleProofs")
-		}
-	})
-	assert.Len(t, proofs[0].HashSums, 3)
-	assert.Len(t, proofs[1].HashSums, 3)
-	assert.True(t, math.Abs(float64(cousinIndex-index)) < 3)
+	proof, leaf := i.GenerateMerkleProof(index)
+	assert.Len(t, proof.HashRanges, 3)
+	assert.Contains(t, i.Proofs, leaf)
+	assert.Equal(t, proof.Target.Hash, merkleHash(leaf.Bytes()))
 }
 
 func TestEvidence_VerifyMerkleProof(t *testing.T) {
@@ -345,24 +339,21 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	}
 	index := 4
 	root := i.GenerateMerkleRoot()
-	proofs, cousinIndex := i.GenerateMerkleProof(index)
-	res, _ := proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i.Proofs)))
+	proofs, leaf := i.GenerateMerkleProof(index)
+	res := proofs.Validate(root, leaf, int64(len(i.Proofs)))
 	assert.True(t, res)
 	index2 := 0
 	root2 := i2.GenerateMerkleRoot()
-	proofs2, cousinIndex2 := i2.GenerateMerkleProof(index2)
-	res, _ = proofs2.Validate(root2, i2.Proofs[index2], i2.Proofs[cousinIndex2], int64(len(i2.Proofs)))
+	proofs2, leaf2 := i2.GenerateMerkleProof(index2)
+	res = proofs2.Validate(root2, leaf2, int64(len(i2.Proofs)))
 	assert.True(t, res)
 	// wrong root
-	res, _ = proofs.Validate(root2, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i.Proofs)))
-	assert.False(t, res)
-	// wrong cousin provided
-	res, _ = proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex2], int64(len(i.Proofs)))
+	res = proofs.Validate(root2, leaf, int64(len(i.Proofs)))
 	assert.False(t, res)
 	// wrong leaf provided
-	res, _ = proofs.Validate(root, i.Proofs[index2], i.Proofs[cousinIndex], int64(len(i.Proofs)))
+	res = proofs.Validate(root, leaf2, int64(len(i.Proofs)))
 	assert.False(t, res)
 	// wrong tree cap
-	res, _ = proofs.Validate(root, i.Proofs[index], i.Proofs[cousinIndex], int64(len(i2.Proofs)))
+	res = proofs.Validate(root, leaf, int64(len(i2.Proofs)))
 	assert.False(t, res)
 }

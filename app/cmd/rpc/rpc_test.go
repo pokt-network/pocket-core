@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/posmint/crypto"
 	"io"
@@ -878,7 +879,8 @@ func getResponse(rec *httptest.ResponseRecorder) string {
 	defer res.Body.Close()
 	b, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		panic("could not read response: " + err.Error())
+		fmt.Println("could not read response: " + err.Error())
+		return ""
 	}
 	if strings.Contains(string(b), "error") {
 		return string(b)
@@ -886,7 +888,8 @@ func getResponse(rec *httptest.ResponseRecorder) string {
 
 	resp, err := strconv.Unquote(string(b))
 	if err != nil {
-		panic("could not unquote resp: " + err.Error())
+		fmt.Println("could not unquote resp: " + err.Error())
+		return string(b)
 	}
 	return resp
 }

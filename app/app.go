@@ -92,8 +92,8 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 		gov.NewAppModule(app.govKeeper),
 	)
 	// setup the order of begin and end blockers
-	app.mm.SetOrderBeginBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName)
-	app.mm.SetOrderEndBlockers(nodesTypes.ModuleName, appsTypes.ModuleName)
+	app.mm.SetOrderBeginBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName, govTypes.ModuleName)
+	app.mm.SetOrderEndBlockers(nodesTypes.ModuleName, appsTypes.ModuleName, pocketTypes.ModuleName, govTypes.ModuleName)
 	// setup the order of Genesis
 	app.mm.SetOrderInitGenesis(
 		auth.ModuleName,
