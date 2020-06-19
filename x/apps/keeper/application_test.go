@@ -52,7 +52,7 @@ func TestApplication_CalculateAppRelays(t *testing.T) {
 		{
 			name:        "calculates App relays",
 			application: application,
-			want:        sdk.NewInt(100000000000),
+			want:        sdk.NewInt(100000),
 		},
 	}
 	for _, tt := range tests {
