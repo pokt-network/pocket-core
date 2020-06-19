@@ -33,7 +33,7 @@ func TestNewApplication(t *testing.T) {
 				Status:                  sdk.Staked,
 				StakedTokens:            sdk.ZeroInt(),
 				Chains:                  []string{"00"},
-				UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: staked
+				UnstakingCompletionTime: time.Time{}, // zero out because status: staked
 			}},
 	}
 	for _, tt := range tests {

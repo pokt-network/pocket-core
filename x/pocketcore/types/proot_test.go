@@ -136,7 +136,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 			hasError:         true,
 		},
 		{
-			name:             "Invalid Proof: invalid request hash from payload",
+			name:             "Invalid Proof: invalid request merkleHash from payload",
 			proof:            invalidProofRequestHash,
 			maxRelays:        5,
 			numOfChains:      2,
@@ -252,10 +252,10 @@ func TestRelayProof_ValidateBasic(t *testing.T) {
 	// invalid public key format
 	invalidPubkeyFormat := validProof
 	invalidPubkeyFormat.ServicerPubKey = "abc"
-	// invalid blockchain hash
+	// invalid blockchain merkleHash
 	invalidBCHash := validProof
 	invalidBCHash.Blockchain = "abc"
-	// invalid request hash
+	// invalid request merkleHash
 	invalidReqHash := validProof
 	invalidReqHash.RequestHash = "abc"
 	// invalid Entropy
@@ -288,12 +288,12 @@ func TestRelayProof_ValidateBasic(t *testing.T) {
 			hasError: true,
 		},
 		{
-			name:     "invalid proof, invalid Blockchain hash",
+			name:     "invalid proof, invalid Blockchain merkleHash",
 			proof:    invalidBCHash,
 			hasError: true,
 		},
 		{
-			name:     "invalid proof, invalid request hash",
+			name:     "invalid proof, invalid request merkleHash",
 			proof:    invalidReqHash,
 			hasError: true,
 		},

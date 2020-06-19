@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"github.com/pokt-network/posmint/types"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +19,7 @@ func TestMsgClaim_GetSigners(t *testing.T) {
 	addr := getRandomValidatorAddress()
 	signers := MsgClaim{
 		SessionHeader: SessionHeader{},
-		MerkleRoot:    HashSum{},
+		MerkleRoot:    HashRange{},
 		TotalProofs:   0,
 		FromAddress:   addr,
 	}.GetSigner()
@@ -32,10 +31,9 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 	nodeAddress := getRandomValidatorAddress()
 	ethereum := hex.EncodeToString([]byte{01})
 	rootHash := Hash([]byte("fakeRoot"))
-	rootSum := binary.LittleEndian.Uint64(rootHash)
-	root := HashSum{
-		Hash: rootHash,
-		Sum:  rootSum,
+	root := HashRange{
+		Hash:  rootHash,
+		Range: Range{Upper: 100},
 	}
 	invalidClaimMessageSH := MsgClaim{
 		SessionHeader: SessionHeader{
@@ -54,9 +52,8 @@ func TestMsgClaim_ValidateBasic(t *testing.T) {
 			Chain:              ethereum,
 			SessionBlockHeight: 1,
 		},
-		MerkleRoot: HashSum{
+		MerkleRoot: HashRange{
 			Hash: []byte("bad_root"),
-			Sum:  0,
 		},
 		TotalProofs:  100,
 		FromAddress:  nodeAddress,
@@ -164,7 +161,7 @@ func TestMsgProof_GetSigners(t *testing.T) {
 	pk := getRandomPubKey()
 	addr := types.Address(pk.Address())
 	signers := MsgProof{
-		MerkleProofs: [2]MerkleProof{},
+		MerkleProof: MerkleProof{},
 		Leaf: RelayProof{
 			Entropy:            0,
 			RequestHash:        pk.RawString(), // fake
@@ -185,48 +182,29 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 	clientPubKey := clientPrivKey.PublicKey().RawString()
 	appPrivKey := GetRandomPrivateKey()
 	appPubKey := appPrivKey.PublicKey().RawString()
-	hash1 := hash([]byte("fake1"))
-	hash2 := hash([]byte("fake2"))
-	hash3 := hash([]byte("fake3"))
-	hash4 := hash([]byte("fake4"))
-	hash5 := hash([]byte("fake5"))
-	hash6 := hash([]byte("fake6"))
+	hash1 := merkleHash([]byte("fake1"))
+	hash2 := merkleHash([]byte("fake2"))
+	hash3 := merkleHash([]byte("fake3"))
+	hash4 := merkleHash([]byte("fake4"))
 	validProofMessage := MsgProof{
-		MerkleProofs: [2]MerkleProof{
-			{
-				Index: 0,
-				HashSums: []HashSum{
-					{
-						Hash: hash1,
-						Sum:  sumFromHash(hash1),
-					},
-					{
-						Hash: hash2,
-						Sum:  sumFromHash(hash2),
-					},
-					{
-						Hash: hash3,
-						Sum:  sumFromHash(hash3),
-					},
+		MerkleProof: MerkleProof{
+			TargetIndex: 0,
+			HashRanges: []HashRange{
+				{
+					Hash:  hash1,
+					Range: Range{0, 1},
+				},
+				{
+					Hash:  hash2,
+					Range: Range{1, 2},
+				},
+				{
+					Hash:  hash3,
+					Range: Range{2, 3},
 				},
 			},
-			{
-				Index: 2,
-				HashSums: []HashSum{
-					{
-						Hash: hash4,
-						Sum:  sumFromHash(hash4),
-					},
-					{
-						Hash: hash5,
-						Sum:  sumFromHash(hash5),
-					},
-					{
-						Hash: hash6,
-						Sum:  sumFromHash(hash6),
-					},
-				},
-			}},
+			Target: HashRange{Hash: hash4, Range: Range{3, 4}},
+		},
 		Leaf: RelayProof{
 			Entropy:            1,
 			SessionBlockHeight: 1,
@@ -241,24 +219,9 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 			},
 			Signature: "",
 		},
-		Cousin: RelayProof{
-			Entropy:            2,
-			SessionBlockHeight: 1,
-			ServicerPubKey:     servicerPubKey,
-			RequestHash:        servicerPubKey, // fake
-			Blockchain:         ethereum,
-			Token: AAT{
-				Version:              "0.0.1",
-				ApplicationPublicKey: appPubKey,
-				ClientPublicKey:      clientPubKey,
-				ApplicationSignature: "",
-			},
-			Signature: "",
-		},
 		EvidenceType: RelayEvidence,
 	}
 	vprLeaf := validProofMessage.Leaf.(RelayProof)
-	vprCousin := validProofMessage.Cousin.(RelayProof)
 	signature, er := appPrivKey.Sign(vprLeaf.Token.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
@@ -269,26 +232,15 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 		t.Fatalf(er.Error())
 	}
 	vprLeaf.Signature = hex.EncodeToString(clientSig)
-	signature2, er := appPrivKey.Sign(vprCousin.Token.Hash())
-	if er != nil {
-		t.Fatalf(er.Error())
-	}
-	vprCousin.Token.ApplicationSignature = hex.EncodeToString(signature2)
-	clientSig2, er := clientPrivKey.Sign(validProofMessage.Cousin.Hash())
-	if er != nil {
-		t.Fatalf(er.Error())
-	}
-	vprCousin.Signature = hex.EncodeToString(clientSig2)
 	validProofMessage.Leaf = vprLeaf
-	validProofMessage.Cousin = vprCousin
 	// invalid entropy
 	invalidProofMsgIndex := validProofMessage
 	vprLeaf = validProofMessage.Leaf.(RelayProof)
 	vprLeaf.Entropy = 0
 	invalidProofMsgIndex.Leaf = vprLeaf
-	// invalid hash sum
+	// invalid merkleHash sum
 	invalidProofMsgHashes := validProofMessage
-	invalidProofMsgHashes.MerkleProofs[0].HashSums = []HashSum{}
+	invalidProofMsgHashes.MerkleProof.HashRanges = []HashRange{}
 	// invalid session block height
 	invalidProofMsgSessionBlkHeight := validProofMessage
 	vprLeaf = validProofMessage.Leaf.(RelayProof)
@@ -307,7 +259,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 	// invalid signature
 	invalidProofMsgSignature := validProofMessage
 	vprLeaf = validProofMessage.Leaf.(RelayProof)
-	vprLeaf.Signature = hex.EncodeToString(clientSig2)
+	vprLeaf.Signature = hex.EncodeToString([]byte("foobar"))
 	invalidProofMsgSignature.Leaf = vprLeaf
 	tests := []struct {
 		name     string
@@ -352,7 +304,8 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.msg.ValidateBasic() != nil, tt.hasError)
+			err := tt.msg.ValidateBasic()
+			assert.Equal(t, err != nil, tt.hasError, err)
 		})
 	}
 }

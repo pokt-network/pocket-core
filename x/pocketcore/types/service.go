@@ -40,7 +40,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 	if err := r.Meta.Validate(ctx); err != nil {
 		return sdk.ZeroInt(), err
 	}
-	// validate the relay hash = request hash
+	// validate the relay merkleHash = request merkleHash
 	if r.Proof.RequestHash != r.RequestHashString() {
 		return sdk.ZeroInt(), NewRequestHashError(ModuleName)
 	}
@@ -131,17 +131,17 @@ func (r Relay) Bytes() []byte {
 	}{r.Payload, r.Meta}
 	res, err := json.Marshal(relay)
 	if err != nil {
-		log.Fatal(fmt.Errorf("cannot marshal relay request hash: %s", err.Error()))
+		log.Fatal(fmt.Errorf("cannot marshal relay request merkleHash: %s", err.Error()))
 	}
 	return res
 }
 
-// "Requesthash" - The cryptographic hash representation of the request
+// "Requesthash" - The cryptographic merkleHash representation of the request
 func (r Relay) RequestHash() []byte {
 	return Hash(r.Bytes())
 }
 
-// "RequestHashString" - The hex string representation of the request hash
+// "RequestHashString" - The hex string representation of the request merkleHash
 func (r Relay) RequestHashString() string {
 	return hex.EncodeToString(r.RequestHash())
 }
@@ -163,7 +163,7 @@ func (p Payload) Bytes() []byte {
 	return bz
 }
 
-// "Hash" - The cryptographic hash representation of the payload object
+// "Hash" - The cryptographic merkleHash representation of the payload object
 func (p Payload) Hash() []byte {
 	return Hash(p.Bytes())
 }
@@ -238,7 +238,7 @@ func (rr RelayResponse) Validate() sdk.Error {
 	return nil
 }
 
-// "Hash" - The cryptographic hash representation of the relay response
+// "Hash" - The cryptographic merkleHash representation of the relay response
 func (rr RelayResponse) Hash() []byte {
 	seed, err := json.Marshal(relayResponse{
 		Signature: "",
@@ -251,7 +251,7 @@ func (rr RelayResponse) Hash() []byte {
 	return Hash(seed)
 }
 
-// "HashString" - The hex string representation of the hash
+// "HashString" - The hex string representation of the merkleHash
 func (rr RelayResponse) HashString() string {
 	return hex.EncodeToString(rr.Hash())
 }

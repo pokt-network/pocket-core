@@ -93,9 +93,9 @@ func PubKeyVerification(pk string) sdk.Error {
 	return nil
 }
 
-// "HashVerification" - Verifies the hash format (hex string)
+// "HashVerification" - Verifies the merkleHash format (hex string)
 func HashVerification(hash string) sdk.Error {
-	// decode the hash
+	// decode the merkleHash
 	h, err := hex.DecodeString(hash)
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
@@ -137,7 +137,7 @@ func Hash(b []byte) []byte {
 }
 
 func PseudorandomSelection(max sdk.Int, hash []byte) (index sdk.Int) {
-	// hash for show and convert back to decimal
+	// merkleHash for show and convert back to decimal
 	intHash := sdk.NewIntFromBigInt(new(big.Int).SetBytes(hash[:8]))
 	// mod the selection
 	return intHash.Mod(max)

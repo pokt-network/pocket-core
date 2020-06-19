@@ -11,8 +11,9 @@ import (
 
 // "Proof" - An interface representation of an economic proof of work/burn (relay or challenge)
 type Proof interface {
-	Hash() []byte                                                                                        // returns cryptographic hash bz
-	HashString() string                                                                                  // returns the hex string representation of the hash
+	Hash() []byte                                                                                        // returns cryptographic hash of bz
+	Bytes() []byte                                                                                       // returns bytes representation
+	HashString() string                                                                                  // returns the hex string representation of the merkleHash
 	ValidateBasic() sdk.Error                                                                            // storeless validation check for the object
 	GetSigner() sdk.Address                                                                              // returns the main signer(s) for the proof (used in messages)
 	SessionHeader() SessionHeader                                                                        // returns the session header
@@ -24,7 +25,7 @@ var _ Proof = RelayProof{} // ensure implements interface at compile time
 
 // "RelayProof" - A proof object that represetns one relay finished
 type RelayProof struct {
-	RequestHash        string `json:"request_hash"`         // the hash of the request used for response comparison
+	RequestHash        string `json:"request_hash"`         // the merkleHash of the request used for response comparison
 	Entropy            int64  `json:"entropy"`              // a random int64 used for replay prevention on the node verification (merkle) side
 	SessionBlockHeight int64  `json:"session_block_height"` // The height of the session block
 	ServicerPubKey     string `json:"servicer_pub_key"`     // the public key of the servicer in hex
@@ -88,7 +89,7 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 	if err := NetworkIdentifierVerification(rp.Blockchain); err != nil {
 		return err
 	}
-	// verify the request hash format
+	// verify the request merkleHash format
 	if err := HashVerification(rp.RequestHash); err != nil {
 		return err
 	}
@@ -161,24 +162,24 @@ func (rp RelayProof) BytesWithSignature() []byte {
 	return res
 }
 
-// "Hash" - Returns the cryptographic hash of the rp bytes
+// "Hash" - Returns the cryptographic merkleHash of the rp bytes
 func (rp RelayProof) Hash() []byte {
 	res := rp.Bytes()
 	return Hash(res)
 }
 
-// "HashString" - Returns the hex encoded string of the rp hash
+// "HashString" - Returns the hex encoded string of the rp merkleHash
 func (rp RelayProof) HashString() string {
 	return hex.EncodeToString(rp.Hash())
 }
 
-// "HashWithSignature" - Returns the cryptographic hash of the rp bytes (with signature field)
+// "HashWithSignature" - Returns the cryptographic merkleHash of the rp bytes (with signature field)
 func (rp RelayProof) HashWithSignature() []byte {
 	res := rp.BytesWithSignature()
 	return Hash(res)
 }
 
-// "HashStringWithSignature" - Returns the hex encoded string of the rp hash (with signature field)
+// "HashStringWithSignature" - Returns the hex encoded string of the rp merkleHash (with signature field)
 func (rp RelayProof) HashStringWithSignature() string {
 	return hex.EncodeToString(rp.HashWithSignature())
 }
@@ -405,12 +406,12 @@ func (c ChallengeProofInvalidData) Bytes() []byte {
 	return bz
 }
 
-// "Hash" - The cryptographic hash representation of the challenge bytes
+// "Hash" - The cryptographic merkleHash representation of the challenge bytes
 func (c ChallengeProofInvalidData) Hash() []byte {
 	return Hash(c.Bytes())
 }
 
-// "HashString" - The hex encoded string representation fo the challenge hash
+// "HashString" - The hex encoded string representation fo the challenge merkleHash
 func (c ChallengeProofInvalidData) HashString() string {
 	return hex.EncodeToString(c.Hash())
 }

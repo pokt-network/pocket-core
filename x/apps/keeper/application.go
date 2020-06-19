@@ -128,7 +128,7 @@ func (k Keeper) CalculateAppRelays(ctx sdk.Ctx, application types.Application) s
 		participationRate = appStakedCoins.Add(nodeStakedCoins).ToDec().Quo(totalTokens.ToDec())
 	}
 	basePercentage := baseRate.ToDec().Quo(sdk.NewDec(100))
-	baselineThroughput := basePercentage.Mul(application.StakedTokens.ToDec())
+	baselineThroughput := basePercentage.Mul(application.StakedTokens.ToDec().Quo(sdk.NewDec(1000000)))
 	result := participationRate.Mul(baselineThroughput).Add(stakingAdjustment).TruncateInt()
 
 	// bounding Max Amount of relays Value to be 18,446,744,073,709,551,615

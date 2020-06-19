@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"reflect"
 	"testing"
@@ -17,10 +16,9 @@ func TestValidateGenesis(t *testing.T) {
 	servicerAddr := pk.Address()
 	nn := hex.EncodeToString([]byte{01})
 	rootHash := Hash([]byte("fakeRoot"))
-	rootSum := binary.LittleEndian.Uint64(rootHash)
-	root := HashSum{
-		Hash: rootHash,
-		Sum:  rootSum,
+	root := HashRange{
+		Hash:  rootHash,
+		Range: Range{0, 100},
 	}
 	invalidParams := GenesisState{
 		Params: Params{
@@ -178,10 +176,9 @@ func TestDefaultGenesisState(t *testing.T) {
 	servicerAddr := pk.Address()
 	nn := hex.EncodeToString([]byte{01})
 	rootHash := Hash([]byte("fakeRoot"))
-	rootSum := binary.LittleEndian.Uint64(rootHash)
-	root := HashSum{
-		Hash: rootHash,
-		Sum:  rootSum,
+	root := HashRange{
+		Hash:  rootHash,
+		Range: Range{0, 100},
 	}
 	validGenesisState := GenesisState{
 		Params: Params{

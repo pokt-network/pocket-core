@@ -6,7 +6,7 @@ require (
 	github.com/go-kit/kit v0.10.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/pokt-network/posmint v0.0.0-20200608164525-31afb5c9bae8
+	github.com/pokt-network/posmint v0.0.0-20200616171213-7e2b40657880
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.4.0
 	github.com/tendermint/go-amino v0.15.0
@@ -19,4 +19,4 @@ require (
 	gopkg.in/h2non/gock.v1 v1.0.15
 )
 
-replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20200609151731-5bd3837f1b82
+replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20200616153411-15dcdd9fbf5f

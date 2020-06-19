@@ -37,7 +37,7 @@ func TestNewValidator(t *testing.T) {
 				StakedTokens:            sdk.ZeroInt(),
 				Chains:                  []string{"00"},
 				ServiceURL:              "https://www.google.com:443",
-				UnstakingCompletionTime: time.Unix(0, 0).UTC(), // zero out because status: staked
+				UnstakingCompletionTime: time.Time{}, // zero out because status: staked
 			}},
 	}
 	for _, tt := range tests {

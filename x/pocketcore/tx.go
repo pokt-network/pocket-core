@@ -9,7 +9,7 @@ import (
 )
 
 // "ClaimTx" - A transaction that sends the total number of proofs (claim), the merkle root (for data integrity), and the header (for identification)
-func ClaimTx(kp crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalProofs int64, root types.HashSum, evidenceType types.EvidenceType) (*sdk.TxResponse, error) {
+func ClaimTx(kp crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header types.SessionHeader, totalProofs int64, root types.HashRange, evidenceType types.EvidenceType) (*sdk.TxResponse, error) {
 	msg := types.MsgClaim{
 		SessionHeader:    header,
 		TotalProofs:      totalProofs,
@@ -26,11 +26,10 @@ func ClaimTx(kp crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuil
 }
 
 // "ProofTx" - A transaction to prove the claim that was previously sent (Merkle Proofs and leaf/cousin)
-func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, branches [2]types.MerkleProof, leafNode, cousinNode types.Proof, evidenceType types.EvidenceType) (*sdk.TxResponse, error) {
+func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof types.MerkleProof, leafNode types.Proof, evidenceType types.EvidenceType) (*sdk.TxResponse, error) {
 	msg := types.MsgProof{
-		MerkleProofs: branches,
+		MerkleProof:  merkleProof,
 		Leaf:         leafNode,
-		Cousin:       cousinNode,
 		EvidenceType: evidenceType,
 	}
 	err := msg.ValidateBasic()
