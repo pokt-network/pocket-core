@@ -1,3 +1,16 @@
+## RC-0.4.1
+- Update default config
+- Fixed Slash() allows zero factor slash
+- Fixed ValidateValidatorStaking checks wrong structure for isJailed
+- Fixed Check Validator Status before jailing
+- Fixed Force Unstaked Validators Never Get Removed
+- Fixed Val unstaked continue if not found
+- Fixed De-escape json from tx.Response
+- Fixed Account-txs and block-txs CLI commands not working
+- Fixed App unstake requires 4 arguments but only needs 3
+- Fixed DAO Transfer & burn invalid signature
+
+
 ## RC-0.4.0
 - Separated Validators By Network ID
 - Remove EnsureExists from app & node modules, redundnacy with GetAccounts
