@@ -284,7 +284,7 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Ctx, validator types.Validator)
 
 // ForceValidatorUnstake - Coerce unstake (called when slashed below the minimum)
 func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sdk.Error {
-	k.ClearValidatorCache()
+	k.ClearSessionCache()
 	// delete the validator from staking set as they are unstaked
 	switch validator.Status {
 	case sdk.Staked:
@@ -343,7 +343,7 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		return
 	}
 	// clear caching for sesssions
-	k.ClearValidatorCache()
+	k.ClearSessionCache()
 	k.deleteValidatorFromStakingSet(ctx, validator)
 	validator.Jailed = true
 	k.SetValidator(ctx, validator)
@@ -353,8 +353,8 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 
 // ValidateUnjailMessage - Check unjail message
 func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sdk.Address, err sdk.Error) {
-	validator := k.Validator(ctx, msg.ValidatorAddr)
-	if validator == nil {
+	validator, found := k.GetValidator(ctx, msg.ValidatorAddr)
+	if !found {
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())
 	}
 	// cannot be unjailed if no self-delegation exists

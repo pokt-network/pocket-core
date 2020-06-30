@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"container/list"
 	"fmt"
 	log2 "log"
 
@@ -21,9 +20,6 @@ type Keeper struct {
 	AccountKeeper      types.AuthKeeper
 	PocketKeeper       types.PocketKeeper // todo combine all modules
 	Paramstore         sdk.Subspace
-	validatorCache     map[string]cachedValidator
-	validatorCacheList *list.List
-
 	// codespace
 	codespace sdk.CodespaceType
 }
@@ -40,8 +36,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		cdc:                cdc,
 		AccountKeeper:      accountKeeper,
 		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),
-		validatorCache:     make(map[string]cachedValidator, types.ValidatorCacheSize),
-		validatorCacheList: list.New(),
 		codespace:          codespace,
 	}
 }
