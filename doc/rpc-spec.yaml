@@ -8,7 +8,7 @@ info:
   license:
     name: MIT License
     url: 'https://github.com/pokt-network/pocket-core/LICENSE.md'
-  version: 0.4.0
+  version: 0.4.1
 externalDocs:
   description: Find out more about Pocket Network
   url: 'https://pokt.network'
