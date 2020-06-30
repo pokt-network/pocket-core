@@ -8,16 +8,12 @@ import (
 
 // GetValidator - Retrieve validator with address from the main store
 func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
-	validator, found = k.getValidatorFromCache(addr)
-	if found {
-		return validator, found
-	}
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValByAllVals(addr))
 	if value == nil {
 		return validator, false
 	}
-	validator = k.validatorCaching(value, addr)
+	validator = types.MustUnmarshalValidator(k.cdc, value)
 	return validator, true
 }
 
@@ -37,13 +33,10 @@ func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 			k.SetStakedValidator(ctx, validator)
 		}
 	}
-
-	k.setOrUpdateInValidatorCache(validator)
 }
 
 // SetValidator - Store validator in the main store
 func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
-	k.deleteValidatorFromCache(addr)
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValByAllVals(addr))
 }
@@ -91,7 +84,7 @@ func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []typ
 	return validators[:i] // trim if the array length < maxRetrieve
 }
 
-func (k Keeper) ClearValidatorCache() {
+func (k Keeper) ClearSessionCache() {
 	if k.PocketKeeper != nil {
 		k.PocketKeeper.ClearSessionCache()
 	}

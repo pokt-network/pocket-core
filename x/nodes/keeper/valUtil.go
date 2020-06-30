@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"bytes"
-	"container/list"
 	"fmt"
 	"sort"
 
@@ -18,70 +17,6 @@ import (
 type cachedValidator struct {
 	val     types.Validator
 	address sdk.Address
-}
-
-func newCachedValidator(val types.Validator, address sdk.Address) cachedValidator {
-	return cachedValidator{
-		val:     val,
-		address: address,
-	}
-}
-
-// validatorCaching - Retrieve a cached validator
-func (k Keeper) validatorCaching(value []byte, addr sdk.Address) types.Validator {
-	validator := types.MustUnmarshalValidator(k.cdc, value)
-	cachedVal := newCachedValidator(validator, addr)
-	k.validatorCache[validator.Address.String()] = cachedVal
-	k.validatorCacheList.PushBack(cachedVal)
-
-	// if the cache is too big, pop off the prevState element from it
-	if int64(k.validatorCacheList.Len()) > types.ValidatorCacheSize {
-		valToRemove := k.validatorCacheList.Remove(k.validatorCacheList.Front()).(cachedValidator)
-		delete(k.validatorCache, valToRemove.address.String())
-	}
-	return validator
-}
-
-func (k Keeper) deleteValidatorFromCache(addr sdk.Address) {
-	delete(k.validatorCache, addr.String())
-}
-
-func (k Keeper) getValidatorFromCache(addr sdk.Address) (validator types.Validator, found bool) {
-	if val, ok := k.validatorCache[addr.String()]; ok {
-		valToReturn := val.val
-		// Doesn't mutate the cache's value
-		valToReturn.Address = addr
-		return valToReturn, true
-	} else {
-		return types.Validator{}, false
-	}
-}
-
-func (k Keeper) searchCacheList(validator types.Validator) (e *list.Element, found bool) {
-	for e := k.validatorCacheList.Back(); e != nil; e = e.Prev() {
-		v := e.Value.(cachedValidator)
-		if v.address.String() == validator.Address.String() {
-			return e, true
-		}
-	}
-	return nil, false
-}
-
-func (k Keeper) setOrUpdateInValidatorCache(validator types.Validator) {
-
-	e, found := k.searchCacheList(validator)
-	if found {
-		valToRemove := k.validatorCacheList.Remove(e).(cachedValidator)
-		delete(k.validatorCache, valToRemove.address.String())
-	}
-	//Dont store unstaked Validators on cache
-	if validator.IsUnstaked() {
-		return
-	}
-
-	cachedVal := newCachedValidator(validator, validator.Address)
-	k.validatorCache[validator.Address.String()] = cachedVal
-	k.validatorCacheList.PushBack(cachedVal)
 }
 
 // Validator - wrapper for GetValidator call
