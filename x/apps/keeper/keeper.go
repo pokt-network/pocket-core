@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"container/list"
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/posmint/codec"
@@ -20,9 +19,6 @@ type Keeper struct {
 	AccountsKeeper       types.AuthKeeper
 	POSKeeper            types.PosKeeper
 	Paramstore           sdk.Subspace
-	applicationCache     map[string]cachedApplication
-	applicationCacheList *list.List
-
 	// codespace
 	codespace sdk.CodespaceType
 }
@@ -42,8 +38,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, su
 		AccountsKeeper:       supplyKeeper,
 		POSKeeper:            posKeeper,
 		Paramstore:           paramstore.WithKeyTable(ParamKeyTable()),
-		applicationCache:     make(map[string]cachedApplication, types.ApplicationCacheSize),
-		applicationCacheList: list.New(),
 		codespace:            codespace,
 	}
 }

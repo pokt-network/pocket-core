@@ -56,39 +56,6 @@ func TestAppUtil_Application(t *testing.T) {
 
 }
 
-func TestAppUtil_ApplicationCaching(t *testing.T) {
-	stakedApplication := getStakedApplication()
-
-	type args struct {
-		application types.Application
-	}
-	tests := []struct {
-		name   string
-		panics bool
-		args
-		want types.Application
-	}{
-		{
-			name: "gets application",
-			args: args{application: stakedApplication},
-			want: stakedApplication,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
-			keeper.SetApplication(context, tt.args.application)
-			keeper.SetStakedApplication(context, tt.args.application)
-			store := context.KVStore(keeper.storeKey)
-			bz := store.Get(types.KeyForAppByAllApps(tt.args.application.Address))
-			if got := keeper.appCaching(bz, tt.args.application.Address); !got.Equals(tt.want) {
-				t.Errorf("keeperAppUtil.ApplicationCaching()= %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestAppUtil_AllApplications(t *testing.T) {
 	stakedApplication := getStakedApplication()
 
