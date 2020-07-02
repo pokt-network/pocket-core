@@ -39,6 +39,7 @@ func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyForValByAllVals(addr))
+	k.DeleteValidatorSigningInfo(ctx, addr)
 }
 
 // GetAllValidators - Retrieve set of all validators with no limits from the main store

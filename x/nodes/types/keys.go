@@ -111,7 +111,7 @@ func getStakedValPowerRankKey(validator Validator) []byte {
 }
 
 // generates the key for validator signing information by consensus addr
-func GetValidatorSigningInfoKey(v sdk.Address) []byte {
+func KeyForValidatorSigningInfo(v sdk.Address) []byte {
 	return append(ValidatorSigningInfoKey, v.Bytes()...)
 }
 

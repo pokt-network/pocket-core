@@ -11,6 +11,7 @@ const (
 	EventTypeProposerReward          = "proposer_reward"
 	EventTypeDAOAllocation           = "dao_allocation"
 	EventTypeSlash                   = "slash"
+	EventTypeJail                    = "jail"
 	EventTypeLiveness                = "liveness"
 	AttributeKeyAddress              = "address"
 	AttributeKeyHeight               = "height"

@@ -196,110 +196,74 @@ func (k Keeper) validateDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionH
 }
 
 // handleValidatorSignature - Handle a validator signature, must be called once per validator per block
-func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, address crypto.Address, power int64, signed bool) {
-	logger := k.Logger(ctx)
-	height := ctx.BlockHeight()
-	addr := sdk.Address(address)
+func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, addr sdk.Address, power int64, signed bool) {
 	val, found := k.GetValidator(ctx, addr)
 	if !found {
-		logger.Error(fmt.Sprintf("error in handleValidatorSignature: validator with address %s not found", addr))
+		ctx.Logger().Error(fmt.Sprintf("error in handleValidatorSignature: validator with addr %s not found", addr))
 		return
 	}
-	pubkey := val.PublicKey
 	// fetch signing info
 	signInfo, isFound := k.GetValidatorSigningInfo(ctx, addr)
 	if !isFound {
-		logger.Error(fmt.Sprintf("error in handleValidatorSignature: signing info for validator with address %s not found", addr))
+		ctx.Logger().Error(fmt.Sprintf("error in handleValidatorSignature: signing info for validator with addr %s not found", addr))
 		return
 	}
-	//check if validator is not already jailed
+	// check if validator is not already jailed
 	if !val.IsJailed() {
-		// this is a relative index, so it counts blocks the validator *should* have signed
-		// will use the 0-value default signing info if not present, except for start height
-		index := signInfo.IndexOffset % k.SignedBlocksWindow(ctx)
-		signInfo.IndexOffset++
-		// Update signed block bit array & counter
-		// This counter just tracks the sum of the bit array
-		// That way we avoid needing to read/write the whole array each time
-		previous := k.valMissedAt(ctx, addr, index)
-		missed := !signed
+		// reset the validator signing info every blocks window
+		if ctx.BlockHeight()%k.SignedBlocksWindow(ctx) == 0 {
+			signInfo.Reset()
+			// clear the validator missed at
+			k.clearValidatorMissed(ctx, addr)
+		}
+		// Update signed block bit array
+		previous := k.valMissedAt(ctx, addr, signInfo.Index)
 		switch {
-		case !previous && missed:
+		case !previous && !signed:
 			// Array value has changed from not missed to missed, increment counter
-			k.SetValidatorMissedAt(ctx, addr, index, true)
+			k.SetValidatorMissedAt(ctx, addr, signInfo.Index, true)
 			signInfo.MissedBlocksCounter++
-		case previous && !missed:
+			ctx.Logger().Info(fmt.Sprintf("Absent validator %s (%s) at height %d, %d missed, threshold %d", addr, val.PublicKey, ctx.BlockHeight(), signInfo.MissedBlocksCounter, k.MinSignedPerWindow(ctx)))
+		case previous && signed:
 			// Array value has changed from missed to not missed, decrement counter
-			k.SetValidatorMissedAt(ctx, addr, index, false)
+			k.SetValidatorMissedAt(ctx, addr, signInfo.Index, false)
 			signInfo.MissedBlocksCounter--
 		default:
 			// Array value at this index has not changed, no need to update counter
 		}
-
-		if missed {
-			ctx.EventManager().EmitEvent(
-				sdk.NewEvent(
-					types.EventTypeLiveness,
-					sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
-					sdk.NewAttribute(types.AttributeKeyMissedBlocks, fmt.Sprintf("%d", signInfo.MissedBlocksCounter)),
-					sdk.NewAttribute(types.AttributeKeyHeight, fmt.Sprintf("%d", height)),
-				),
-			)
-			//show log on first missing block sign after successful sign,
-			//if missed again this should not pop up and clutter the logs
-			if !previous && missed {
-				logger.Info(
-					fmt.Sprintf("Absent validator %s (%s) at height %d, %d missed, threshold %d",
-						addr, pubkey, height, signInfo.MissedBlocksCounter, k.MinSignedPerWindow(ctx)))
-			}
-		}
-		minHeight := signInfo.StartHeight + k.SignedBlocksWindow(ctx)
+		// update the sign info index
+		signInfo.Index++
+		// calculate the max missed blocks
 		maxMissed := k.SignedBlocksWindow(ctx) - k.MinSignedPerWindow(ctx)
 		// if we are past the minimum height and the validator has missed too many blocks, punish them
-		if height > minHeight && signInfo.MissedBlocksCounter > maxMissed {
-
+		if signInfo.MissedBlocksCounter > maxMissed {
 			// Downtime confirmed: slash and jail the validator
-			logger.Info(fmt.Sprintf("Validator %s past min height of %d and below signed blocks threshold of %d",
-				addr, minHeight, k.MinSignedPerWindow(ctx)))
-			// We need to retrieve the stake distribution which signed the block, so we subtract ValidatorUpdateDelay from the evidence height,
-			// and subtract an additional 1 since this is the PrevStateCommit.
-			// Note that this *can* result in a negative "distributionHeight" up to -ValidatorUpdateDelay-1,
-			// i.e. at the end of the pre-genesis block (none) = at the beginning of the genesis block.
-			distributionHeight := height - sdk.ValidatorUpdateDelay - 1
-			ctx.EventManager().EmitEvent(
-				sdk.NewEvent(
-					types.EventTypeSlash,
-					sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
-					sdk.NewAttribute(types.AttributeKeyPower, fmt.Sprintf("%d", power)),
-					sdk.NewAttribute(types.AttributeKeyReason, types.AttributeValueMissingSignature),
-					sdk.NewAttribute(types.AttributeKeyJailed, addr.String()),
-				),
-			)
-			k.slash(ctx, addr, distributionHeight, power, k.SlashFractionDowntime(ctx))
-			k.JailValidator(ctx, addr)
-			signInfo.JailedUntil = ctx.BlockHeader().Time.Add(k.DowntimeJailDuration(ctx))
-			// We need to reset the counter & array so that the validator won't be immediately slashed for downtime upon restaking.
-			signInfo.MissedBlocksCounter = 0
-			signInfo.IndexOffset = 0
+			ctx.Logger().Info(fmt.Sprintf("Validator %s missed more than the max signed blocks: %d", addr, k.MinSignedPerWindow(ctx)))
+			// height where the infraction occured
+			slashHeight := ctx.BlockHeight() - sdk.ValidatorUpdateDelay - 1
+			// slash them based on their power
+			k.slash(ctx, addr, slashHeight, power, k.SlashFractionDowntime(ctx))
+			// reset the signing info
+			signInfo.Reset()
+			// clear the validator missed at
 			k.clearValidatorMissed(ctx, addr)
-
+			// jail the validator to prevent consensus problems
+			k.JailValidator(ctx, addr)
+			// set the jail time duration
+			signInfo.JailedUntil = ctx.BlockHeader().Time.Add(k.DowntimeJailDuration(ctx))
 		}
-		// Set the updated signing info
-		k.SetValidatorSigningInfo(ctx, addr, signInfo)
 	} else {
-		//increase JailedBlockCounter
+		// increase JailedBlockCounter
 		signInfo.JailedBlocksCounter++
-		//Compare against MaxJailedBlocks
+		// compare against MaxJailedBlocks
 		if signInfo.JailedBlocksCounter >= k.MaxJailedBlocks(ctx) {
-			//force unstake orphaned validator
+			// force unstake orphaned validator
 			err := k.ForceValidatorUnstake(ctx, val)
 			if err != nil {
 				k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addr.String())
-			} else {
-				signInfo.JailedBlocksCounter = 0
 			}
 		}
-		// Set the updated signing info
-		k.SetValidatorSigningInfo(ctx, addr, signInfo)
 	}
+	// Set the updated signing info
+	k.SetValidatorSigningInfo(ctx, addr, signInfo)
 }

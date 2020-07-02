@@ -6,15 +6,6 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// Cache the amino decoding of applications, as it can be the case that repeated slashing calls
-// cause many calls to GetApplication, which were shown to throttle the state machine in our
-// simulation. Note this is quite biased though, as the simulator does more slashes than a
-// live chain should, however we require the slashing to be fast as noone pays gas for it.
-type cachedApplication struct {
-	app     types.Application
-	address sdk.Address
-}
-
 // Application - wrapper for GetApplication call
 func (k Keeper) Application(ctx sdk.Ctx, address sdk.Address) exported.ApplicationI {
 	app, found := k.GetApplication(ctx, address)

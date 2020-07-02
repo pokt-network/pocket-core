@@ -349,6 +349,14 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	k.SetValidator(ctx, validator)
 	logger := k.Logger(ctx)
 	logger.Info(fmt.Sprintf("validator %s jailed", addr))
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeJail,
+			sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
+			sdk.NewAttribute(types.AttributeKeyReason, types.AttributeValueMissingSignature),
+			sdk.NewAttribute(types.AttributeKeyJailed, addr.String()),
+		),
+	)
 }
 
 // ValidateUnjailMessage - Check unjail message
@@ -377,10 +385,6 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 	if info.JailedUntil.After(time.Now()) {
 		return nil, types.ErrValidatorJailed(k.Codespace())
 	}
-	// cannot be unjailed if tombstoned
-	if info.Tombstoned {
-		return nil, types.ErrValidatorJailed(k.Codespace())
-	}
 	// cannot be unjailed until out of jail
 	if ctx.BlockHeader().Time.Before(info.JailedUntil) {
 		return nil, types.ErrValidatorJailed(k.Codespace())
@@ -401,5 +405,6 @@ func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	}
 	validator.Jailed = false
 	k.SetValidator(ctx, validator)
+	k.ResetValidatorSigningInfo(ctx, addr)
 	k.Logger(ctx).Info(fmt.Sprintf("validator %s unjailed", addr))
 }
