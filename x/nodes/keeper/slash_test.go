@@ -23,7 +23,6 @@ func TestHandleValidatorSignature(t *testing.T) {
 	}
 	type expected struct {
 		validator           types.Validator
-		tombstoned          bool
 		missedBlocksCounter int64
 		message             string
 		jail                bool
@@ -38,19 +37,19 @@ func TestHandleValidatorSignature(t *testing.T) {
 			name:     "handles a signature",
 			hasError: false,
 			args:     args{validator: stakedValidator, power: int64(10), signed: false},
-			expected: expected{validator: stakedValidator, tombstoned: false, missedBlocksCounter: int64(1)},
+			expected: expected{validator: stakedValidator, missedBlocksCounter: int64(1)},
 		},
 		{
 			name:     "previously signed signature",
 			hasError: false,
 			args:     args{validator: stakedValidator, power: int64(10), signed: true},
-			expected: expected{validator: stakedValidator, tombstoned: false, missedBlocksCounter: int64(0)},
+			expected: expected{validator: stakedValidator, missedBlocksCounter: int64(0)},
 		},
 		{
 			name:     "jails if signature with overflown minHeight and maxHeight",
 			hasError: false,
 			args:     args{validator: stakedValidator, power: int64(10), signed: true, increasedContext: 51, maxMissed: 51},
-			expected: expected{validator: stakedValidator, tombstoned: false, missedBlocksCounter: int64(0)},
+			expected: expected{validator: stakedValidator, missedBlocksCounter: int64(0)},
 		},
 		{
 			name:     "errors if no signed info",
@@ -79,12 +78,11 @@ func TestHandleValidatorSignature(t *testing.T) {
 					signingInfo.MissedBlocksCounter = test.args.maxMissed
 				}
 				keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
-				keeper.handleValidatorSignature(context, cryptoAddr, test.args.power, test.args.signed)
+				keeper.handleValidatorSignature(context, sdk.Address(cryptoAddr), test.args.power, test.args.signed)
 				signedInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 				if !found {
 					t.FailNow()
 				}
-				assert.Equal(t, test.expected.tombstoned, signedInfo.Tombstoned)
 				assert.Equal(t, test.expected.missedBlocksCounter, signedInfo.MissedBlocksCounter)
 				if test.expected.jail {
 					validator, found := keeper.GetValidator(context, sdk.Address(cryptoAddr))
@@ -107,7 +105,6 @@ func TestValidateDoubleSign(t *testing.T) {
 	}
 	type expected struct {
 		validator      types.Validator
-		tombstoned     bool
 		message        string
 		pubKeyRelation bool
 	}
@@ -124,7 +121,6 @@ func TestValidateDoubleSign(t *testing.T) {
 			expected: expected{
 				validator:      stakedValidator,
 				pubKeyRelation: true,
-				tombstoned:     false,
 			},
 		},
 		{
@@ -134,7 +130,6 @@ func TestValidateDoubleSign(t *testing.T) {
 			expected: expected{
 				validator:      stakedValidator,
 				pubKeyRelation: true,
-				tombstoned:     true,
 				message:        "ERROR:\nCodespace: pos\nCode: 113\nMessage: \"Warning: validator is already tombstoned\"\n",
 			},
 		},
@@ -145,7 +140,6 @@ func TestValidateDoubleSign(t *testing.T) {
 			expected: expected{
 				validator:      stakedValidator,
 				pubKeyRelation: false,
-				tombstoned:     false,
 				message:        "ERROR:\nCodespace: pos\nCode: 114\nMessage: \"Warning: the DS evidence is unable to be handled\"\n",
 			},
 		},
@@ -159,9 +153,6 @@ func TestValidateDoubleSign(t *testing.T) {
 				Address:     test.args.validator.GetAddress(),
 				StartHeight: context.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
-			}
-			if test.expected.tombstoned {
-				signingInfo.Tombstoned = test.expected.tombstoned
 			}
 			infractionHeight := context.BlockHeight()
 			keeper.SetValidatorSigningInfo(context, cryptoAddr, signingInfo)
@@ -191,7 +182,6 @@ func TestHandleDoubleSign(t *testing.T) {
 	}
 	type expected struct {
 		validator      types.Validator
-		tombstoned     bool
 		message        string
 		found          bool
 		pubKeyRelation bool
@@ -208,18 +198,6 @@ func TestHandleDoubleSign(t *testing.T) {
 				validator:      stakedValidator,
 				pubKeyRelation: true,
 				found:          true,
-				tombstoned:     false,
-			},
-		},
-		{
-			name: "ignores double signature on tombstoned validator",
-			args: args{validator: stakedValidator},
-			expected: expected{
-				validator:      stakedValidator,
-				pubKeyRelation: true,
-				tombstoned:     true,
-				found:          true,
-				message:        "ERROR:\nCodespace: pos\nCode: 113\nMessage: \"Warning: validator is already tombstoned\"\n",
 			},
 		},
 	}
@@ -235,10 +213,6 @@ func TestHandleDoubleSign(t *testing.T) {
 				StartHeight: context.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
 			}
-
-			if test.expected.tombstoned {
-				signingInfo.Tombstoned = test.expected.tombstoned
-			}
 			infractionHeight := context.BlockHeight()
 			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 			keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
@@ -247,8 +221,6 @@ func TestHandleDoubleSign(t *testing.T) {
 			if found != test.expected.found {
 				t.FailNow()
 			}
-
-			assert.Equal(t, test.expected.tombstoned, signingInfo.Tombstoned)
 		})
 	}
 }
@@ -265,7 +237,6 @@ func TestValidateSlash(t *testing.T) {
 	}
 	type expected struct {
 		validator      types.Validator
-		tombstoned     bool
 		message        string
 		pubKeyRelation bool
 		fraction       bool
@@ -286,7 +257,6 @@ func TestValidateSlash(t *testing.T) {
 				validator:      stakedValidator,
 				found:          true,
 				pubKeyRelation: true,
-				tombstoned:     false,
 			},
 		},
 		{
@@ -297,7 +267,6 @@ func TestValidateSlash(t *testing.T) {
 				validator:      stakedValidator,
 				found:          true,
 				pubKeyRelation: true,
-				tombstoned:     false,
 			},
 		},
 		{
@@ -308,7 +277,6 @@ func TestValidateSlash(t *testing.T) {
 				validator:      unstakedValidator,
 				found:          true,
 				pubKeyRelation: true,
-				tombstoned:     false,
 				fraction:       false,
 				message:        fmt.Sprintf("should not be slashing unstaked validator: %s", unstakedValidator.Address),
 			},
@@ -321,7 +289,6 @@ func TestValidateSlash(t *testing.T) {
 				validator:      stakedValidator,
 				found:          true,
 				pubKeyRelation: true,
-				tombstoned:     false,
 				fraction:       true,
 				message:        fmt.Sprintf("attempted to slash with a negative slash factor: %v", sdk.NewDec(-10)),
 			},
@@ -334,7 +301,6 @@ func TestValidateSlash(t *testing.T) {
 				validator:      stakedValidator,
 				found:          true,
 				pubKeyRelation: true,
-				tombstoned:     false,
 				fraction:       false,
 				customHeight:   true,
 				message:        fmt.Sprintf("impossible attempt to slash future infraction at height %d but we are at height %d", 100, 0),
@@ -354,9 +320,6 @@ func TestValidateSlash(t *testing.T) {
 				Address:     test.args.validator.GetAddress(),
 				StartHeight: context.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
-			}
-			if test.expected.tombstoned {
-				signingInfo.Tombstoned = test.expected.tombstoned
 			}
 			infractionHeight := context.BlockHeight()
 
@@ -402,7 +365,6 @@ func TestSlash(t *testing.T) {
 	}
 	type expected struct {
 		validator      types.Validator
-		tombstoned     bool
 		pubKeyRelation bool
 		fraction       bool
 		found          bool
@@ -422,7 +384,6 @@ func TestSlash(t *testing.T) {
 				validator:      stakedValidator,
 				found:          true,
 				pubKeyRelation: true,
-				tombstoned:     false,
 				stakedTokens:   stakedValidator.StakedTokens.Sub(sdk.NewInt(50000)),
 			},
 		},
@@ -446,9 +407,6 @@ func TestSlash(t *testing.T) {
 				Address:     test.args.validator.GetAddress(),
 				StartHeight: context.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
-			}
-			if test.expected.tombstoned {
-				signingInfo.Tombstoned = test.expected.tombstoned
 			}
 			infractionHeight := context.BlockHeight()
 

@@ -15,7 +15,6 @@ func TestValidatorSigningInfo_String(t *testing.T) {
 		StartHeight         int64
 		IndexOffset         int64
 		JailedUntil         time.Time
-		Tombstoned          bool
 		MissedBlocksCounter int64
 		JailedBlocksCounter int64
 	}
@@ -35,7 +34,6 @@ func TestValidatorSigningInfo_String(t *testing.T) {
 			StartHeight:         0,
 			IndexOffset:         0,
 			JailedUntil:         until,
-			Tombstoned:          false,
 			MissedBlocksCounter: 1,
 			JailedBlocksCounter: 1,
 		}, fmt.Sprintf(`Validator Signing Info:
@@ -43,20 +41,17 @@ func TestValidatorSigningInfo_String(t *testing.T) {
   Start Height:          %d
   Entropy Offset:        %d
   Jailed Until:          %v
-  Tombstoned:            %t
   Missed Blocks Counter: %d
   Jailed Blocks Counter: %d`,
-			ca, 0, 0, until,
-			false, 1, 1)},
+			ca, 0, 0, until, 1, 1)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			i := ValidatorSigningInfo{
 				Address:             tt.fields.Address,
 				StartHeight:         tt.fields.StartHeight,
-				IndexOffset:         tt.fields.IndexOffset,
+				Index:               tt.fields.IndexOffset,
 				JailedUntil:         tt.fields.JailedUntil,
-				Tombstoned:          tt.fields.Tombstoned,
 				MissedBlocksCounter: tt.fields.MissedBlocksCounter,
 				JailedBlocksCounter: tt.fields.JailedBlocksCounter,
 			}

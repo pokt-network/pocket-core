@@ -10,15 +10,6 @@ import (
 	sdk "github.com/pokt-network/posmint/types"
 )
 
-// Cache the amino decoding of validators, as it can be the case that repeated slashing calls
-// cause many calls to GetValidator, which were shown to throttle the state machine in our
-// simulation. Note this is quite biased though, as the simulator does more slashes than a
-// live chain should, however we require the slashing to be fast as noone pays gas for it.
-type cachedValidator struct {
-	val     types.Validator
-	address sdk.Address
-}
-
 // Validator - wrapper for GetValidator call
 func (k Keeper) Validator(ctx sdk.Ctx, address sdk.Address) exported.ValidatorI {
 	val, found := k.GetValidator(ctx, address)

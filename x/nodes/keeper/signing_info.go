@@ -9,7 +9,7 @@ import (
 // GetValidatorSigningInfo - Retrieve signing information for the validator by address
 func (k Keeper) GetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) (info types.ValidatorSigningInfo, found bool) {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.GetValidatorSigningInfoKey(addr))
+	bz := store.Get(types.KeyForValidatorSigningInfo(addr))
 	if bz == nil {
 		found = false
 		return
@@ -23,7 +23,26 @@ func (k Keeper) GetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) (info typ
 func (k Keeper) SetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address, info types.ValidatorSigningInfo) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(info)
-	store.Set(types.GetValidatorSigningInfoKey(addr), bz)
+	store.Set(types.KeyForValidatorSigningInfo(addr), bz)
+}
+
+func (k Keeper) DeleteValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyForValidatorSigningInfo(addr))
+}
+
+func (k Keeper) ResetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
+	signInfo, found := k.GetValidatorSigningInfo(ctx, addr)
+	if !found {
+		ctx.Logger().Error("error in ResetValidatorSigningInfo: signing info not found")
+		signInfo = types.ValidatorSigningInfo{
+			Address:     addr,
+			StartHeight: ctx.BlockHeight(),
+		}
+	}
+	signInfo.Reset()
+	k.SetValidatorSigningInfo(ctx, addr, signInfo)
+	k.clearValidatorMissed(ctx, addr)
 }
 
 // IterateAndExecuteOverValSigningInfo - Goes over signing info validators and executes handler
