@@ -500,7 +500,7 @@ var newMultiPublicKey = &cobra.Command{
 }
 
 var buildMultisig = &cobra.Command{
-	Use:   "build-MS-Tx <your-signer-address> <ordered-comma-separated-hex-pubkeys> <json-message> <chainID> <fees>",
+	Use:   "build-MS-Tx <your-signer-address> <json-message> <ordered-comma-separated-hex-pubkeys> <chainID> <fees>",
 	Short: "build and sign a multisic tx",
 	Args:  cobra.ExactArgs(5),
 	Long:  `build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
