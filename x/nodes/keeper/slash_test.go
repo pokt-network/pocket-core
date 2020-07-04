@@ -182,7 +182,6 @@ func TestHandleDoubleSign(t *testing.T) {
 	}
 	type expected struct {
 		validator      types.Validator
-		message        string
 		found          bool
 		pubKeyRelation bool
 	}
@@ -217,7 +216,7 @@ func TestHandleDoubleSign(t *testing.T) {
 			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
 			keeper.handleDoubleSign(context, cryptoAddr, infractionHeight, time.Unix(0, 0), test.args.power)
 
-			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
+			_, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 			if found != test.expected.found {
 				t.FailNow()
 			}
@@ -324,7 +323,7 @@ func TestValidateSlash(t *testing.T) {
 			infractionHeight := context.BlockHeight()
 
 			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
-			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
+			_, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.FailNow()
 			}
@@ -411,7 +410,7 @@ func TestSlash(t *testing.T) {
 			infractionHeight := context.BlockHeight()
 
 			keeper.SetValidatorSigningInfo(context, sdk.Address(cryptoAddr), signingInfo)
-			signingInfo, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
+			_, found := keeper.GetValidatorSigningInfo(context, sdk.Address(cryptoAddr))
 			if !found {
 				t.FailNow()
 			}
