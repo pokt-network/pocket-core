@@ -214,7 +214,7 @@ func validateGenesisStateValidators(validators []types.Validator, minimumStake s
 			return fmt.Errorf("staked/unstaked genesis validator cannot have zero stake, validator: %v", val)
 		}
 		addrMap[strKey] = true
-		if !val.IsUnstaked() && val.StakedTokens.LTE(minimumStake) {
+		if !val.IsUnstaked() && val.StakedTokens.LT(minimumStake) {
 			return fmt.Errorf("validator has less than minimum stake: %v", val)
 		}
 		if err := types.ValidateServiceURL(val.ServiceURL); err != nil {
