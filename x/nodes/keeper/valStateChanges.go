@@ -354,7 +354,6 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 			types.EventTypeJail,
 			sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
 			sdk.NewAttribute(types.AttributeKeyReason, types.AttributeValueMissingSignature),
-			sdk.NewAttribute(types.AttributeKeyJailed, addr.String()),
 		),
 	)
 }
