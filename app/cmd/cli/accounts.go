@@ -524,7 +524,7 @@ var buildMultisig = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		bz, err := app.PCA.BuildMultisig(args[0], msg, app.Credentials(), args[3], multiSigPubKey, int64(fees))
+		bz, err := app.BuildMultisig(args[0], msg, app.Credentials(), args[3], multiSigPubKey, int64(fees))
 		if err != nil {
 			fmt.Println(fmt.Errorf("error building the multisig: %v", err))
 		}
@@ -551,7 +551,7 @@ var signMS = &cobra.Command{
 			pks = append(pks, p)
 		}
 		fmt.Println("Enter passphrase: ")
-		bz, err := app.PCA.SignMultisigOutOfOrder(args[0], msg, app.Credentials(), args[3], pks)
+		bz, err := app.SignMultisigOutOfOrder(args[0], msg, app.Credentials(), args[3], pks)
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing multisig: %v", err))
 		}
@@ -569,7 +569,7 @@ NOTE: you MUST be the next signer (in order of public keys in the ms public key 
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		msg := args[1]
 		fmt.Println("Enter password: ")
-		bz, err := app.PCA.SignMultisigNext(args[0], msg, args[2], app.Credentials())
+		bz, err := app.SignMultisigNext(args[0], msg, args[2], app.Credentials())
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing the multisig: %v", err))
 		}
