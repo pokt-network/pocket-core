@@ -13,7 +13,7 @@ import (
 	"github.com/tendermint/tendermint/types"
 )
 
-func (app PocketCoreApp) GenerateAAT(appPubKey, clientPubKey string, key crypto.PrivateKey) (aatjson []byte, err error) {
+func GenerateAAT(appPubKey, clientPubKey string, key crypto.PrivateKey) (aatjson []byte, err error) {
 	aat, er := pocketKeeper.AATGeneration(appPubKey, clientPubKey, key)
 	if er != nil {
 		return nil, er
@@ -21,7 +21,7 @@ func (app PocketCoreApp) GenerateAAT(appPubKey, clientPubKey string, key crypto.
 	return json.MarshalIndent(aat, "", "  ")
 }
 
-func (app PocketCoreApp) BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.PublicKeyMultiSig, fees int64) ([]byte, error) {
+func BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.PublicKeyMultiSig, fees int64) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (app PocketCoreApp) BuildMultisig(fromAddr, jsonMessage, passphrase, chainI
 	return txBuilder.BuildAndSignMultisigTransaction(fa, pk, m, passphrase, fees)
 }
 
-func (app PocketCoreApp) SignMultisigNext(fromAddr, txHex, passphrase, chainID string) ([]byte, error) {
+func SignMultisigNext(fromAddr, txHex, passphrase, chainID string) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (app PocketCoreApp) SignMultisigNext(fromAddr, txHex, passphrase, chainID s
 	return txBuilder.SignMultisigTransaction(fa, nil, passphrase, bz)
 }
 
-func (app PocketCoreApp) SignMultisigOutOfOrder(fromAddr, txHex, passphrase, chainID string, keys []crypto.PublicKey) ([]byte, error) {
+func SignMultisigOutOfOrder(fromAddr, txHex, passphrase, chainID string, keys []crypto.PublicKey) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err

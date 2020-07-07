@@ -138,11 +138,11 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 		if err != nil {
 			return
 		}
-		aatBytes, err := app.PCA.GenerateAAT(hex.EncodeToString(kp.PublicKey.RawBytes()), args[1], privkey)
+		aat, err := app.GenerateAAT(hex.EncodeToString(kp.PublicKey.RawBytes()), args[1], privkey)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		fmt.Println(string(aatBytes))
+		fmt.Println(json.MarshalIndent(aat, "", "  "))
 	},
 }
