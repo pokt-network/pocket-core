@@ -388,8 +388,9 @@ func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
 					k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addr.String())
 				}
 				k.DeleteValidator(ctx, addr)
+			} else {
+				k.SetValidatorSigningInfo(ctx, addr, signInfo)
 			}
-			k.SetValidatorSigningInfo(ctx, addr, signInfo)
 		}
 	}
 }
