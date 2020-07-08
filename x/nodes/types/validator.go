@@ -67,7 +67,7 @@ func (v Validator) ABCIValidatorUpdate() abci.ValidatorUpdate {
 // get the consensus-engine power
 // a reduction of 10^6 from validator tokens is applied
 func (v Validator) ConsensusPower() int64 {
-	if v.IsStaked() {
+	if v.IsStaked() && !v.IsJailed() {
 		return sdk.TokensToConsensusPower(v.StakedTokens)
 	}
 	return 0

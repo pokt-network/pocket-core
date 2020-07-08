@@ -289,11 +289,13 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sd
 	switch validator.Status {
 	case sdk.Staked:
 		k.deleteValidatorFromStakingSet(ctx, validator)
-		// delete the validator from each individual chains set
 		k.deleteValidatorForChains(ctx, validator)
+		// don't delete validator to allow for previous power to be properly updated
 	case sdk.Unstaking:
 		k.deleteUnstakingValidator(ctx, validator)
+		k.DeleteValidator(ctx, validator.Address)
 	default:
+		k.DeleteValidator(ctx, validator.Address)
 		return sdk.ErrInternal("should not happen: trying to force unstake an already unstaked validator: " + validator.Address.String())
 	}
 	// amount unstaked = stakedTokens
@@ -301,15 +303,17 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sd
 	if err != nil {
 		return err
 	}
-	// remove their tokens from the field
-	validator, er := validator.RemoveStakedTokens(validator.StakedTokens)
-	if er != nil {
-		return sdk.ErrInternal(er.Error())
+	if validator.IsStaked() {
+		// remove their tokens from the field
+		validator, er := validator.RemoveStakedTokens(validator.StakedTokens)
+		if er != nil {
+			return sdk.ErrInternal(er.Error())
+		}
+		// update their status to unstaked
+		validator = validator.UpdateStatus(sdk.Unstaked)
+		// set the validator in store
+		k.SetValidator(ctx, validator)
 	}
-	// update their status to unstaked
-	validator = validator.UpdateStatus(sdk.Unstaked)
-	// set the validator in store
-	k.SetValidator(ctx, validator)
 	ctx.Logger().Info("Force Unstaked validator " + validator.Address.String())
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
