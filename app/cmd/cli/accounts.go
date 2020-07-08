@@ -569,7 +569,7 @@ NOTE: you MUST be the next signer (in order of public keys in the ms public key 
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		msg := args[1]
 		fmt.Println("Enter password: ")
-		bz, err := app.SignMultisigNext(args[0], msg, args[2], app.Credentials())
+		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials(), args[2])
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing the multisig: %v", err))
 		}
