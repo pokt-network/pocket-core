@@ -14,6 +14,7 @@ import (
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
+	vals := k.GetAllValidatorsMap(ctx)
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx)
@@ -25,7 +26,6 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	// Iterate over all the validators which *should* have signed this block
 	// store whether or not they have actually signed it and slash/unstake any
 	// which have missed too many blocks in a row (downtime slashing)
-	vals := k.GetAllValidatorsMap(ctx)
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
 		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock)
 		// remove those who are part of the tendermint validator set (jailed validators will never be a part of the set)
@@ -36,8 +36,8 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 		if val.IsStaked() {
 			if !val.IsJailed() {
 				ctx.Logger().Error(fmt.Sprintf("INVARIANT: staked validator %s is not a part of the tendermint set and is not jailed!", val.Address.String()))
-				// defensive
-				k.JailValidator(ctx, val.Address)
+				//// defensive
+				//k.JailValidator(ctx, val.Address)
 			}
 			k.IncrementJailValidator(ctx, val.Address)
 		}
