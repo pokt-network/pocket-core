@@ -33,12 +33,14 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	}
 	// increment validator jail counter
 	for _, val := range vals {
-		if !val.IsJailed() {
-			ctx.Logger().Error(fmt.Sprintf("INVARIANT: staked validator %s is not a part of the tendermint set and is not jailed!", val.Address.String()))
-			// defensive
-			k.JailValidator(ctx, addr)
+		if val.IsStaked() {
+			if !val.IsJailed() {
+				ctx.Logger().Error(fmt.Sprintf("INVARIANT: staked validator %s is not a part of the tendermint set and is not jailed!", val.Address.String()))
+				// defensive
+				k.JailValidator(ctx, addr)
+			}
+			k.IncrementJailValidator(ctx, addr)
 		}
-		k.IncrementJailValidator(ctx, addr)
 	}
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
