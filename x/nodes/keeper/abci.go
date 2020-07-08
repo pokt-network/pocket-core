@@ -25,8 +25,20 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	// Iterate over all the validators which *should* have signed this block
 	// store whether or not they have actually signed it and slash/unstake any
 	// which have missed too many blocks in a row (downtime slashing)
+	vals := k.GetAllValidatorsMap(ctx)
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
 		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock)
+		// remove those who are part of the tendermint validator set (jailed validators will never be a part of the set)
+		delete(vals, sdk.Address(voteInfo.Validator.Address).String())
+	}
+	// increment validator jail counter
+	for _, val := range vals {
+		if !val.IsJailed() {
+			ctx.Logger().Error(fmt.Sprintf("INVARIANT: staked validator %s is not a part of the tendermint set and is not jailed!", val.Address.String()))
+			// defensive
+			k.JailValidator(ctx, addr)
+		}
+		k.IncrementJailValidator(ctx, addr)
 	}
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
