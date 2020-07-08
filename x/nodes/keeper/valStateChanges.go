@@ -362,6 +362,33 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	)
 }
 
+func (k Keeper) IncrementJailValidator(ctx sdk.Ctx, addr sdk.Address) {
+	val, found := k.GetValidator(ctx, addr)
+	if !found {
+		k.Logger(ctx).Error("could not find validator in increment jail validator")
+		return
+	}
+	signInfo, found := k.GetValidatorSigningInfo(ctx, addr)
+	if !found {
+		k.Logger(ctx).Error("could not find validator signing info in increment jail validator")
+		signInfo = types.ValidatorSigningInfo{
+			Address:     addr,
+			StartHeight: ctx.BlockHeight(),
+		}
+	}
+	// increase JailedBlockCounter
+	signInfo.JailedBlocksCounter++
+	// compare against MaxJailedBlocks
+	if signInfo.JailedBlocksCounter > k.MaxJailedBlocks(ctx) {
+		// force unstake orphaned validator
+		err := k.ForceValidatorUnstake(ctx, val)
+		if err != nil {
+			k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addr.String())
+		}
+	}
+	k.SetValidatorSigningInfo(ctx, addr, signInfo)
+}
+
 // ValidateUnjailMessage - Check unjail message
 func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sdk.Address, err sdk.Error) {
 	validator, found := k.GetValidator(ctx, msg.ValidatorAddr)
