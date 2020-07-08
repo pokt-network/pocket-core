@@ -37,9 +37,9 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 			if !val.IsJailed() {
 				ctx.Logger().Error(fmt.Sprintf("INVARIANT: staked validator %s is not a part of the tendermint set and is not jailed!", val.Address.String()))
 				// defensive
-				k.JailValidator(ctx, addr)
+				k.JailValidator(ctx, val.Address)
 			}
-			k.IncrementJailValidator(ctx, addr)
+			k.IncrementJailValidator(ctx, val.Address)
 		}
 	}
 	// Iterate through any newly discovered evidence of infraction
