@@ -14,7 +14,6 @@ import (
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
-	vals := k.GetAllValidatorsMap(ctx)
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx)
@@ -29,18 +28,6 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
 		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock)
 		// remove those who are part of the tendermint validator set (jailed validators will never be a part of the set)
-		delete(vals, sdk.Address(voteInfo.Validator.Address).String())
-	}
-	// increment validator jail counter
-	for _, val := range vals {
-		if val.IsStaked() {
-			if !val.IsJailed() {
-				ctx.Logger().Error(fmt.Sprintf("INVARIANT: staked validator %s is not a part of the tendermint set and is not jailed!", val.Address.String()))
-				//// defensive
-				//k.JailValidator(ctx, val.Address)
-			}
-			k.IncrementJailValidator(ctx, val.Address)
-		}
 	}
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
@@ -57,6 +44,8 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 
 // EndBlocker - Called at the end of every block, update validator set
 func EndBlocker(ctx sdk.Ctx, k Keeper) []abci.ValidatorUpdate {
+	// increment jailed blocks counter
+	k.IncrementJailedValidators(ctx)
 	// NOTE: UpdateTendermintValidators has to come before unstakeAllMatureValidators.
 	validatorUpdates := k.UpdateTendermintValidators(ctx)
 	// Unstake all mature validators from the unstakeing queue.

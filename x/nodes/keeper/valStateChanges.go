@@ -362,31 +362,35 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	)
 }
 
-func (k Keeper) IncrementJailValidator(ctx sdk.Ctx, addr sdk.Address) {
-	val, found := k.GetValidator(ctx, addr)
-	if !found {
-		k.Logger(ctx).Error("could not find validator in increment jail validator")
-		return
-	}
-	signInfo, found := k.GetValidatorSigningInfo(ctx, addr)
-	if !found {
-		k.Logger(ctx).Error("could not find validator signing info in increment jail validator")
-		signInfo = types.ValidatorSigningInfo{
-			Address:     addr,
-			StartHeight: ctx.BlockHeight(),
+func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		val := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		if val.IsJailed() {
+			addr := val.Address
+			signInfo, found := k.GetValidatorSigningInfo(ctx, addr)
+			if !found {
+				k.Logger(ctx).Error("could not find validator signing info in increment jail validator")
+				signInfo = types.ValidatorSigningInfo{
+					Address:     addr,
+					StartHeight: ctx.BlockHeight(),
+				}
+			}
+			// increase JailedBlockCounter
+			signInfo.JailedBlocksCounter++
+			// compare against MaxJailedBlocks
+			if signInfo.JailedBlocksCounter > k.MaxJailedBlocks(ctx) {
+				// force unstake orphaned validator
+				err := k.ForceValidatorUnstake(ctx, val)
+				if err != nil {
+					k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addr.String())
+				}
+			}
+			k.SetValidatorSigningInfo(ctx, addr, signInfo)
 		}
 	}
-	// increase JailedBlockCounter
-	signInfo.JailedBlocksCounter++
-	// compare against MaxJailedBlocks
-	if signInfo.JailedBlocksCounter > k.MaxJailedBlocks(ctx) {
-		// force unstake orphaned validator
-		err := k.ForceValidatorUnstake(ctx, val)
-		if err != nil {
-			k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addr.String())
-		}
-	}
-	k.SetValidatorSigningInfo(ctx, addr, signInfo)
 }
 
 // ValidateUnjailMessage - Check unjail message
