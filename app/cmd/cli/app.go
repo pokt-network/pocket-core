@@ -82,7 +82,7 @@ Prompts the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		fees, err := strconv.Atoi(args[3])
+		fees, err := strconv.Atoi(args[2])
 		if err != nil {
 			fmt.Println(err)
 			return
