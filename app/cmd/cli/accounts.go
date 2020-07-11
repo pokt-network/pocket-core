@@ -379,11 +379,11 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 
 // sendTxCmd represents the sendTx command
 var sendTxCmd = &cobra.Command{
-	Use:   "send-tx <fromAddr> <toAddr> <amount> <chainID> <fee>",
+	Use:   "send-tx <fromAddr> <toAddr> <amount> <chainID> <fee> <memo>",
 	Short: "Send uPOKT",
-	Long: `Sends <amount> uPOKT <fromAddr> to <toAddr>.
+	Long: `Sends <amount> uPOKT <fromAddr> to <toAddr> with the specified <memo>.
 Prompts the user for <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(5),
+	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		amount, err := strconv.Atoi(args[2])
@@ -396,8 +396,10 @@ Prompts the user for <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		memo := args[5]
+		fmt.Println(fmt.Sprintf("Adding Memo: %v", memo))
 		fmt.Println("Enter passphrase: ")
-		res, err := SendTransaction(args[0], args[1], app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees))
+		res, err := SendTransaction(args[0], args[1], app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees), memo)
 		if err != nil {
 			fmt.Println(err)
 			return
