@@ -10,6 +10,7 @@ func init() {
 	rootCmd.AddCommand(utilCmd)
 	utilCmd.AddCommand(chainsGenCmd)
 	utilCmd.AddCommand(chainsDelCmd)
+	utilCmd.AddCommand()
 }
 
 var utilCmd = &cobra.Command{
@@ -30,6 +31,17 @@ var chainsGenCmd = &cobra.Command{
 			fmt.Println(chain.ID + " @ " + chain.URL)
 		}
 		fmt.Println("If incorrect: please remove the chains.json with the " + chainsDelCmd.NameAndAliases() + " command")
+	},
+}
+
+var chainsDelCmd = &cobra.Command{
+	Use:   "delete-chains",
+	Short: "Delete chains file",
+	Long:  `Delete the chains file for network identifiers`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		app.DeleteHostedChains()
+		fmt.Println("successfully deleted " + app.GlobalConfig.PocketConfig.ChainsName)
 	},
 }
 
