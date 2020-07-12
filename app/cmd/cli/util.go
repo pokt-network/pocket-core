@@ -10,6 +10,7 @@ func init() {
 	rootCmd.AddCommand(utilCmd)
 	utilCmd.AddCommand(chainsGenCmd)
 	utilCmd.AddCommand(chainsDelCmd)
+	utilCmd.AddCommand(decodeTxCmd)
 	utilCmd.AddCommand()
 }
 
@@ -45,13 +46,15 @@ var chainsDelCmd = &cobra.Command{
 	},
 }
 
-var chainsDelCmd = &cobra.Command{
-	Use:   "delete-chains",
-	Short: "Delete chains file",
-	Long:  `Delete the chains file for network identifiers`,
+var decodeTxCmd = &cobra.Command{
+	Use:   "decode-tx <tx>",
+	Short: "Decodes a given transaction encoded in Amino base64 bytes",
+	Long:  `Decodes a given transaction encoded in Amino base64 bytes`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		app.DeleteHostedChains()
-		fmt.Println("successfully deleted " + app.GlobalConfig.PocketConfig.ChainsName)
+		txStr := args[0]
+		stdTx := app.UnmarshalTxStr(txStr)
+		fmt.Printf("%v", stdTx)
 	},
 }
