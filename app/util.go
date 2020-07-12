@@ -124,3 +124,13 @@ func SortJSON(toSortJSON []byte) string {
 	}
 	return string(js)
 }
+
+func UnmarshalTxStr(txStr string) auth.StdTx {
+	defaultTxDecoder := auth.DefaultTxDecoder(cdc)
+	txBytes := []byte(txStr)
+	tx, err := defaultTxDecoder(txBytes)
+	if err != nil {
+		log.Fatalf("Could not decode transaction: " + err.Error())
+	}
+	return tx.(auth.StdTx)
+}
