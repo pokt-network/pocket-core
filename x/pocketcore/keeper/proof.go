@@ -60,7 +60,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 		// get the merkle proof object for the pseudorandom index
 		mProof, leaf := evidence.GenerateMerkleProof(int(index))
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProofName, n, kp, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProof{}, n, kp, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the Proof Transaction:\n%v", err))
 			return
@@ -187,7 +187,7 @@ func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfCha
 	k.posKeeper.BurnForChallenge(ctx, numberOfChallenges.Mul(sdk.NewInt(k.ReplayAttackBurnMultiplier(ctx))), address)
 }
 
-func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, key crypto.PrivateKey, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
+func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.Msg, n client.Client, key crypto.PrivateKey, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	// get the from address from the pkf
 	fromAddr := sdk.Address(key.PublicKey().Address())
 	// get the genesis doc from the node for the chainID
@@ -211,9 +211,9 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msgType string, n client.Client, key cry
 		return txBuilder, cliCtx, err
 	}
 	// check the fee amount
-	fee := sdk.NewInt(pc.PocketFeeMap[msgType])
+	fee := k.authKeeper.GetFee(ctx, msg)
 	if account.GetCoins().AmountOf(k.posKeeper.StakeDenom(ctx)).LTE(fee) {
-		ctx.Logger().Error(fmt.Sprintf("insufficient funds for the auto %s transaction: the fee needed is %v ", msgType, fee))
+		ctx.Logger().Error(fmt.Sprintf("insufficient funds for the auto %s transaction: the fee needed is %v ", msg.Type(), fee))
 	}
 	// ensure that the tx builder has the correct tx encoder, chainID, fee
 	txBuilder = auth.NewTxBuilder(
