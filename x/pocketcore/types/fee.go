@@ -1,8 +1,8 @@
 package types
 
 const (
-	ClaimFee = 100000 // fee for claim message (in uPOKT)
-	ProofFee = 100000 // fee for proof message (in uPOKT)
+	ClaimFee = 10000 // fee for claim message (in uPOKT)
+	ProofFee = 10000 // fee for proof message (in uPOKT)
 )
 
 var (
