@@ -6,7 +6,7 @@ require (
 	github.com/go-kit/kit v0.10.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/pokt-network/posmint v0.0.0-20200616171213-7e2b40657880
+	github.com/pokt-network/posmint v0.0.0-20200713213332-2984094c852f
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.4.0
 	github.com/tendermint/go-amino v0.15.0
