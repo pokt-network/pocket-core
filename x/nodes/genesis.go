@@ -134,15 +134,8 @@ func ExportGenesis(ctx sdk.Ctx, keeper keeper.Keeper) types.GenesisState {
 	missedBlocks := make(map[string][]types.MissedBlock)
 	keeper.IterateAndExecuteOverValSigningInfo(ctx, func(address sdk.Address, info types.ValidatorSigningInfo) (stop bool) {
 		addrstring := address.String()
+		info.Index = 0 // reset the index offset
 		signingInfos[addrstring] = info
-		localMissedBlocks := []types.MissedBlock{}
-
-		keeper.IterateAndExecuteOverMissedArray(ctx, address, func(index int64, missed bool) (stop bool) {
-			localMissedBlocks = append(localMissedBlocks, types.MissedBlock{Index: index, Missed: missed})
-			return false
-		})
-		missedBlocks[addrstring] = localMissedBlocks
-
 		return false
 	})
 	prevProposer := keeper.GetPreviousProposer(ctx)
