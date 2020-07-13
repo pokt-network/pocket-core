@@ -27,3 +27,7 @@ type AppsKeeper interface {
 	TotalTokens(ctx sdk.Ctx) sdk.Int
 	JailApplication(ctx sdk.Ctx, addr sdk.Address)
 }
+
+type AuthKeeper interface {
+	GetFee(ctx sdk.Ctx, msg sdk.Msg) sdk.Int
+}

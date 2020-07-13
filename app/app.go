@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	AppVersion = "RC-0.4.1"
+	AppVersion = "RC-0.5.0"
 )
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
@@ -65,6 +65,7 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 	app.pocketKeeper = pocketKeeper.NewKeeper(
 		app.keys[pocketTypes.StoreKey],
 		app.cdc,
+		app.accountKeeper,
 		app.nodesKeeper,
 		app.appsKeeper,
 		hostedChains,

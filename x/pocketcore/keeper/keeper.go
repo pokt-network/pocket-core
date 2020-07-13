@@ -10,6 +10,7 @@ import (
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
+	authKeeper        types.AuthKeeper
 	posKeeper         types.PosKeeper
 	appKeeper         types.AppsKeeper
 	TmNode            client.Client
@@ -20,14 +21,15 @@ type Keeper struct {
 }
 
 // NewKeeper creates new instances of the pocketcore module Keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKeeper, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
 	return Keeper{
-		storeKey:          storeKey,
-		cdc:               cdc,
+		authKeeper:        authKeeper,
 		posKeeper:         posKeeper,
 		appKeeper:         appKeeper,
 		hostedBlockchains: hostedChains,
 		Paramstore:        paramstore.WithKeyTable(ParamKeyTable()),
+		storeKey:          storeKey,
+		cdc:               cdc,
 	}
 }
 
