@@ -274,6 +274,8 @@ github.com/pokt-network/posmint v0.0.0-20200616154239-05816c69c91c h1:t9LxrgMI3O
 github.com/pokt-network/posmint v0.0.0-20200616154239-05816c69c91c/go.mod h1:TPlWEjnYPq2BoAPinwfvm3JcYrIYxaWJoCCsc1g8hJE=
 github.com/pokt-network/posmint v0.0.0-20200616171213-7e2b40657880 h1:jW5CkAsKLBZAcJQsSYaF50QZFwbiCI4fryhg1oG14Kg=
 github.com/pokt-network/posmint v0.0.0-20200616171213-7e2b40657880/go.mod h1:TPlWEjnYPq2BoAPinwfvm3JcYrIYxaWJoCCsc1g8hJE=
+github.com/pokt-network/posmint v0.0.0-20200713213332-2984094c852f h1:sYDc2VZv+eRlFcGrOu5QRbSvJjIrLDFOUa5U0E5dKx4=
+github.com/pokt-network/posmint v0.0.0-20200713213332-2984094c852f/go.mod h1:TPlWEjnYPq2BoAPinwfvm3JcYrIYxaWJoCCsc1g8hJE=
 github.com/pokt-network/tendermint v0.32.11-0.20200616153411-15dcdd9fbf5f h1:vU6Gv7ZQXw/CEcl9DgDgjUk2lRu2WXYflnKq0+hXhcA=
 github.com/pokt-network/tendermint v0.32.11-0.20200616153411-15dcdd9fbf5f/go.mod h1:klZB7nl3GZZ9jPNaNHPYjNyoWW7mMx+5AXAN8Ov7bmY=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
