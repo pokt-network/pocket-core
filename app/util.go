@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"log"
@@ -127,7 +128,10 @@ func SortJSON(toSortJSON []byte) string {
 
 func UnmarshalTxStr(txStr string) auth.StdTx {
 	defaultTxDecoder := auth.DefaultTxDecoder(cdc)
-	txBytes := []byte(txStr)
+	txBytes, err := base64.StdEncoding.DecodeString(txStr)
+	if err != nil {
+		log.Fatal("error:", err)
+	}
 	tx, err := defaultTxDecoder(txBytes)
 	if err != nil {
 		log.Fatalf("Could not decode transaction: " + err.Error())
