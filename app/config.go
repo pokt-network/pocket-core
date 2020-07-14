@@ -164,7 +164,7 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.Consensus.TimeoutPrevoteDelta = 10000000000
 	c.TendermintConfig.Consensus.TimeoutPrecommit = 60000000000
 	c.TendermintConfig.Consensus.TimeoutPrecommitDelta = 10000000000
-	c.TendermintConfig.Consensus.TimeoutCommit = 780000000000
+	c.TendermintConfig.Consensus.TimeoutCommit = 900000000000
 	c.TendermintConfig.Consensus.SkipTimeoutCommit = false
 	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
 	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = 900000000000
