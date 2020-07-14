@@ -4,17 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
-	log2 "log"
-	"os"
-	fp "path/filepath"
-	"strings"
-	"syscall"
-	"time"
-
-	tmType "github.com/tendermint/tendermint/types"
-
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -33,7 +22,6 @@ import (
 	"github.com/pokt-network/posmint/types/module"
 	"github.com/pokt-network/posmint/x/auth"
 	"github.com/pokt-network/posmint/x/gov"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/spf13/cobra"
 	con "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli/flags"
@@ -45,6 +33,13 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
+	"io"
+	"io/ioutil"
+	log2 "log"
+	"os"
+	fp "path/filepath"
+	"strings"
+	"syscall"
 )
 
 const (
@@ -91,6 +86,8 @@ var (
 	GlobalConfig Config
 	// HTTP CLIENT FOR TENDERMINT
 	tmClient *client.HTTP
+	// global genesis type
+	GlobalGenesisType GenesisType
 )
 
 type Config struct {
@@ -118,6 +115,14 @@ type PocketConfig struct {
 	ValidatorCacheSize       int64             `json:"validator_cache_size"`
 	ApplicationCacheSize     int64             `json:"application_cache_size"`
 }
+
+type GenesisType int
+
+const (
+	MainnetGenesisType GenesisType = iota + 1
+	TestnetGenesisType
+	DefaultGenesisType
+)
 
 func DefaultConfig(dataDir string) Config {
 	c := Config{
@@ -173,7 +178,7 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	// init the keyfiles
@@ -181,7 +186,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// init cache
 	InitPocketCoreConfig()
 	// init genesis
-	InitGenesis()
+	InitGenesis(genesisType)
 	// init the tendermint node
 	return InitTendermint(keybase)
 }
@@ -254,7 +259,10 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 	GlobalConfig = c
 }
 
-func InitGenesis() {
+func InitGenesis(genesisType GenesisType) {
+	// set global variable for init
+	GlobalGenesisType = genesisType
+	// setup file if not exists
 	genFP := GlobalConfig.PocketConfig.DataDir + FS + ConfigDirName + FS + GlobalConfig.PocketConfig.GenesisName
 	if _, err := os.Stat(genFP); os.IsNotExist(err) {
 		// if file exists open, else create and open
@@ -266,10 +274,21 @@ func InitGenesis() {
 			if err != nil {
 				log2.Fatal(err)
 			}
-			// write to the file
-			_, err = jsonFile.Write(newDefaultGenesisState())
-			if err != nil {
-				log2.Fatal(err)
+			if genesisType == MainnetGenesisType {
+				_, err = jsonFile.Write([]byte(mainnetGenesis))
+				if err != nil {
+					log2.Fatal(err)
+				}
+			} else if genesisType == TestnetGenesisType {
+				_, err = jsonFile.Write([]byte(testnetGenesis))
+				if err != nil {
+					log2.Fatal(err)
+				}
+			} else {
+				_, err = jsonFile.Write(newDefaultGenesisState())
+				if err != nil {
+					log2.Fatal(err)
+				}
 			}
 			// close the file
 			err = jsonFile.Close()
@@ -659,141 +678,6 @@ func SetValidator(address sdk.Address, passphrase string) {
 func GetPrivValFile() (file privval.FilePVKey) {
 	file, _ = loadPKFromFile(GlobalConfig.PocketConfig.DataDir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
 	return
-}
-
-func newDefaultGenesisState() []byte {
-	keyb, err := GetKeybase()
-	if err != nil {
-		log2.Fatal(err)
-	}
-	cb, err := keyb.GetCoinbase()
-	if err != nil {
-		log2.Fatal(err)
-	}
-	pubKey := cb.PublicKey
-	defaultGenesis := module.NewBasicManager(
-		apps.AppModuleBasic{},
-		auth.AppModuleBasic{},
-		gov.AppModuleBasic{},
-		nodes.AppModuleBasic{},
-		pocket.AppModuleBasic{},
-	).DefaultGenesis()
-	// setup account genesis
-	rawAuth := defaultGenesis[auth.ModuleName]
-	var accountGenesis auth.GenesisState
-	types.ModuleCdc.MustUnmarshalJSON(rawAuth, &accountGenesis)
-	accountGenesis.Accounts = append(accountGenesis.Accounts, &auth.BaseAccount{
-		Address: cb.GetAddress(),
-		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000))),
-		PubKey:  pubKey,
-	})
-	res := Codec().MustMarshalJSON(accountGenesis)
-	defaultGenesis[auth.ModuleName] = res
-	// set address as application too
-	rawApps := defaultGenesis[appsTypes.ModuleName]
-	var appsGenesis appsTypes.GenesisState
-	types.ModuleCdc.MustUnmarshalJSON(rawApps, &appsGenesis)
-	appsGenesis.Applications = append(appsGenesis.Applications, appsTypes.Application{
-		Address:                 cb.GetAddress(),
-		PublicKey:               cb.PublicKey,
-		Jailed:                  false,
-		Status:                  2,
-		Chains:                  []string{PlaceholderHash},
-		StakedTokens:            sdk.NewInt(10000000),
-		MaxRelays:               sdk.NewInt(10000000),
-		UnstakingCompletionTime: time.Time{},
-	})
-	res = Codec().MustMarshalJSON(appsGenesis)
-	defaultGenesis[appsTypes.ModuleName] = res
-	// set default governance in genesis
-	// setup pos genesis
-	rawPOS := defaultGenesis[nodesTypes.ModuleName]
-	var posGenesisState nodesTypes.GenesisState
-	types.ModuleCdc.MustUnmarshalJSON(rawPOS, &posGenesisState)
-	posGenesisState.Validators = append(posGenesisState.Validators,
-		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
-			PublicKey:    pubKey,
-			Status:       sdk.Staked,
-			Chains:       []string{PlaceholderHash},
-			ServiceURL:   PlaceholderServiceURL,
-			StakedTokens: sdk.NewInt(10000000)})
-	res = types.ModuleCdc.MustMarshalJSON(posGenesisState)
-	defaultGenesis[nodesTypes.ModuleName] = res
-	// set default governance in genesis
-	var govGenesisState govTypes.GenesisState
-	rawGov := defaultGenesis[govTypes.ModuleName]
-	Codec().MustUnmarshalJSON(rawGov, &govGenesisState)
-	mACL := createDummyACL(pubKey)
-	govGenesisState.Params.ACL = mACL
-	govGenesisState.Params.DAOOwner = sdk.Address(pubKey.Address())
-	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(0, "0")
-	res4 := Codec().MustMarshalJSON(govGenesisState)
-	defaultGenesis[govTypes.ModuleName] = res4
-	// end genesis setup
-	j, _ := types.ModuleCdc.MarshalJSONIndent(defaultGenesis, "", "    ")
-	j, _ = types.ModuleCdc.MarshalJSONIndent(tmType.GenesisDoc{
-		GenesisTime: time.Now(),
-		ChainID:     "pocket-test",
-		ConsensusParams: &tmType.ConsensusParams{
-			Block: tmType.BlockParams{
-				MaxBytes:   15000,
-				MaxGas:     -1,
-				TimeIotaMs: 1,
-			},
-			Evidence: tmType.EvidenceParams{
-				MaxAge: 1000000,
-			},
-			Validator: tmType.ValidatorParams{
-				PubKeyTypes: []string{"ed25519"},
-			},
-		},
-		Validators: nil,
-		AppHash:    nil,
-		AppState:   j,
-	}, "", "    ")
-	return j
-}
-
-func createDummyACL(kp crypto.PublicKey) govTypes.ACL {
-	addr := sdk.Address(kp.Address())
-	acl := govTypes.ACL{}
-	acl = make([]govTypes.ACLPair, 0)
-	acl.SetOwner("application/ApplicationStakeMinimum", addr)
-	acl.SetOwner("application/AppUnstakingTime", addr)
-	acl.SetOwner("application/BaseRelaysPerPOKT", addr)
-	acl.SetOwner("application/MaxApplications", addr)
-	acl.SetOwner("application/MaximumChains", addr)
-	acl.SetOwner("application/ParticipationRateOn", addr)
-	acl.SetOwner("application/StabilityAdjustment", addr)
-	acl.SetOwner("auth/MaxMemoCharacters", addr)
-	acl.SetOwner("auth/TxSigLimit", addr)
-	acl.SetOwner("gov/acl", addr)
-	acl.SetOwner("gov/daoOwner", addr)
-	acl.SetOwner("gov/upgrade", addr)
-	acl.SetOwner("pocketcore/ClaimExpiration", addr)
-	acl.SetOwner("auth/FeeMultipliers", addr)
-	acl.SetOwner("pocketcore/ReplayAttackBurnMultiplier", addr)
-	acl.SetOwner("pos/ProposerPercentage", addr)
-	acl.SetOwner("pocketcore/ClaimSubmissionWindow", addr)
-	acl.SetOwner("pocketcore/MinimumNumberOfProofs", addr)
-	acl.SetOwner("pocketcore/SessionNodeCount", addr)
-	acl.SetOwner("pocketcore/SupportedBlockchains", addr)
-	acl.SetOwner("pos/BlocksPerSession", addr)
-	acl.SetOwner("pos/DAOAllocation", addr)
-	acl.SetOwner("pos/DowntimeJailDuration", addr)
-	acl.SetOwner("pos/MaxEvidenceAge", addr)
-	acl.SetOwner("pos/MaximumChains", addr)
-	acl.SetOwner("pos/MaxJailedBlocks", addr)
-	acl.SetOwner("pos/MaxValidators", addr)
-	acl.SetOwner("pos/MinSignedPerWindow", addr)
-	acl.SetOwner("pos/RelaysToTokensMultiplier", addr)
-	acl.SetOwner("pos/SignedBlocksWindow", addr)
-	acl.SetOwner("pos/SlashFractionDoubleSign", addr)
-	acl.SetOwner("pos/SlashFractionDowntime", addr)
-	acl.SetOwner("pos/StakeDenom", addr)
-	acl.SetOwner("pos/StakeMinimum", addr)
-	acl.SetOwner("pos/UnstakingTime", addr)
-	return acl
 }
 
 // XXX: this is totally unsafe.
