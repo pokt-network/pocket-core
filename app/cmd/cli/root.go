@@ -20,6 +20,8 @@ var (
 	seeds           string
 	simulateRelay   bool
 	keybase         bool
+	mainnet         bool
+	testnet         bool
 )
 
 var CLIVersion = app.AppVersion
@@ -52,6 +54,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	startCmd.Flags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
 	startCmd.Flags().BoolVar(&keybase, "keybase", true, "run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
+	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
+	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
@@ -63,7 +67,18 @@ var startCmd = &cobra.Command{
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase)
+		var genesisType app.GenesisType
+		if mainnet && testnet {
+			fmt.Println("cannot run with mainnet and testnet genesis simultaneously, please choose one")
+			return
+		}
+		if mainnet {
+			genesisType = app.MainnetGenesisType
+		}
+		if testnet {
+			genesisType = app.TestnetGenesisType
+		}
+		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType)
 		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, simulateRelay)
 		// trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
