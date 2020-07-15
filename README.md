@@ -40,23 +40,25 @@ Usage:
 Available Commands:
   accounts    account management
   apps        application management
-  help        help about any command
+  gov         governance management
+  help        Help about any command
   nodes       node management
   query       query the blockchain
-  reset       reset pocket-core
+  reset       Reset pocket-core
   start       starts pocket-core daemon
-  util        utilities
+  util        utility functions
+  version     Get current version
 
 Flags:
       --datadir string            data directory (default is $HOME/.pocket/
   -h, --help                      help for pocket
       --node string               takes a remote endpoint in the form <protocol>://<host>:<port>
-      --persistent_peers string   a comma separated list of PeerURLs: <ID>@<IP>:<PORT>
-      --pocketRPCPort string      the port for pocket rpc (default "8081")
-      --seeds string              a comma separated list of PeerURLs: <ID>@<IP>:<PORT>
-      --tmPeersPort string        the port for tendermint p2p (default "26656")
-      --tmRPCPort string          the port for tendermint rpc (default "26657")
+      --persistent_peers string   a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'
+      --remoteCLIURL string       takes a remote endpoint in the form of <protocol>://<host> (uses RPC Port)
+      --seeds string              a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'
   -t, --toggle                    help message for toggle
+
+Use "pocket [command] --help" for more information about a command.
 ````
 
 ### Installation

@@ -1,3 +1,14 @@
+## RC-0.4.2
+- Update timeout configs for 15 minutes
+- Posmint version checking allows greater version strings and not just the exact version
+- Export State doesn't export missed blocks
+- Default Fees switched to be .01 POKT or 10,000 uPOKT
+- Fee multiplier accounted for in autoTX
+- Added memo argument to the send-tx CLI command
+- Fixed simulate relay flag
+- Fixed jailing lifecycle
+- Fixed multisig cli params
+
 ## RC-0.4.1
 - Update default config
 - Fixed Slash() allows zero factor slash
