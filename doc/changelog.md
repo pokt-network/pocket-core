@@ -1,3 +1,6 @@
+## RC-0.4.3
+- Update txIndexer synchronously during commit
+
 ## RC-0.4.2
 - Update timeout configs for 15 minutes
 - Posmint version checking allows greater version strings and not just the exact version
