@@ -110,9 +110,9 @@ func (app *PocketCoreApp) ModuleAccountAddrs() map[string]bool {
 }
 
 // exports the app state to json
-func (app *PocketCoreApp) ExportAppState(forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
+func (app *PocketCoreApp) ExportAppState(height int64, forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
 	// as if they could withdraw from the start of the next block
-	ctx, err := app.NewContext(app.LastBlockHeight())
+	ctx, err := app.NewContext(height)
 	if err != nil {
 		return nil, err
 	}

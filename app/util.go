@@ -85,8 +85,8 @@ func SignMultisigOutOfOrder(fromAddr, txHex, passphrase, chainID string, keys []
 	return txBuilder.SignMultisigTransaction(fa, keys, passphrase, bz)
 }
 
-func ExportState() (string, error) {
-	j, err := PCA.ExportAppState(false, nil)
+func ExportState(height int64) (string, error) {
+	j, err := PCA.ExportAppState(height, false, nil)
 	if err != nil {
 		return "", err
 	}

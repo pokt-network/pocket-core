@@ -601,8 +601,13 @@ func Param(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
-func State(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	res, err := app.ExportState()
+func State(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = HeightParams{Height: 0}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.ExportState(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
