@@ -7,6 +7,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/pokt-network/posmint v0.0.0-20200713213332-2984094c852f
+	github.com/pokt-network/tendermint v0.32.11-0.20200717190033-b520221b1537 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.4.0
 	github.com/tendermint/go-amino v0.15.0
