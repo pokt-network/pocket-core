@@ -143,7 +143,7 @@ var (
 	InvalidHostedChainError          = errors.New("invalid hosted chain error")
 	ChainNotHostedError              = errors.New("the blockchain requested is not hosted")
 	NodeNotFoundErr                  = errors.New("the node is not found in world state")
-	InvalidProofsError               = errors.New("the proofs provided are invalid")
+	InvalidProofsError               = errors.New("the proofs provided are invalid or less than the minimum requirement")
 	InconsistentPubKeyError          = errors.New("the public keys in the proofs are inconsistent")
 	InvalidChainParamsError          = errors.New("the required params for a nonNative blockchain are invalid")
 	HexDecodeError                   = errors.New("the hex string could not be decoded: ")
