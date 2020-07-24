@@ -30,8 +30,6 @@ func init() {
 	queryCmd.AddCommand(queryApp)
 	queryCmd.AddCommand(queryNodeParams)
 	queryCmd.AddCommand(queryAppParams)
-	queryCmd.AddCommand(queryNodeReceipts)
-	queryCmd.AddCommand(queryNodeReceipt)
 	queryCmd.AddCommand(queryNodeClaims)
 	queryCmd.AddCommand(queryNodeClaim)
 	queryCmd.AddCommand(queryPocketParams)
@@ -644,87 +642,6 @@ var queryNodeClaim = &cobra.Command{
 			return
 		}
 		res, err := QueryRPC(GetNodeClaimPath, j)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println(res)
-	},
-}
-
-var queryNodeReceipts = &cobra.Command{
-	Use:   "node-receipts <nodeAddr> <height>",
-	Short: "Gets node receipts for work completed",
-	Long:  `Retrieves the list of all verified proof of work submitted by <nodeAddr> at <height>.`,
-	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		var height int
-		if len(args) == 1 {
-			height = 0 // latest
-		} else {
-			var err error
-			height, err = strconv.Atoi(args[1])
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-		}
-		params := rpc.PaginatedHeightAndAddrParams{
-			Height: int64(height),
-			Addr:   args[0],
-		}
-		j, err := json.Marshal(params)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		res, err := QueryRPC(GetNodeReceiptsPath, j)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println(res)
-	},
-}
-
-var queryNodeReceipt = &cobra.Command{
-	Use:   "node-receipt <nodeAddr> <appPubKey> <receiptType> <networkId> <sessionHeight> <height>`",
-	Short: "Gets node receipt for work completed",
-	Long:  `Gets node receipt for verified proof of work submitted for a specific session`,
-	Args:  cobra.MinimumNArgs(5),
-	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		var height int
-		if len(args) == 5 {
-			height = 0 // latest
-		} else {
-			var err error
-			height, err = strconv.Atoi(args[4])
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-		}
-		sessionheight, err := strconv.Atoi(args[4])
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		params := rpc.QueryNodeReceiptParam{
-			Address:      args[0],
-			Blockchain:   args[3],
-			AppPubKey:    args[1],
-			SBlockHeight: int64(sessionheight),
-			Height:       int64(height),
-			ReceiptType:  args[2],
-		}
-		j, err := json.Marshal(params)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		res, err := QueryRPC(GetNodeReceiptPath, j)
 		if err != nil {
 			fmt.Println(err)
 			return

@@ -340,48 +340,6 @@ func (app PocketCoreApp) QueryAppParams(height int64) (res appsTypes.Params, err
 	return app.appsKeeper.GetParams(ctx), nil
 }
 
-func (app PocketCoreApp) QueryReceipts(addr string, height int64, page, perPage int) (res Page, err error) {
-	a, err := sdk.AddressFromHex(addr)
-	if err != nil {
-		return
-	}
-	page, perPage = checkPagination(page, perPage)
-	ctx, err := app.NewContext(height)
-	if err != nil {
-		return
-	}
-	r, err := app.pocketKeeper.GetReceipts(ctx, a)
-	if err != nil {
-		return
-	}
-	return paginate(page, perPage, r, 1000)
-}
-
-func (app PocketCoreApp) QueryReceipt(blockchain, appPubKey, addr, receiptType string, sessionblockHeight, height int64) (res *pocketTypes.Receipt, err error) {
-	a, err := sdk.AddressFromHex(addr)
-	if err != nil {
-		return nil, err
-	}
-	ctx, err := app.NewContext(height)
-	if err != nil {
-		return
-	}
-	h := pocketTypes.SessionHeader{
-		ApplicationPubKey:  appPubKey,
-		Chain:              blockchain,
-		SessionBlockHeight: sessionblockHeight,
-	}
-	et, err := pocketTypes.EvidenceTypeFromString(receiptType)
-	if err != nil {
-		return nil, err
-	}
-	r, found := app.pocketKeeper.GetReceipt(ctx, a, h, et)
-	if !found {
-		return nil, fmt.Errorf("receipt for node: %s for app: %s with height %d with type %s for chain %s not found", addr, appPubKey, sessionblockHeight, receiptType, blockchain)
-	}
-	return &r, nil
-}
-
 func (app PocketCoreApp) QueryPocketSupportedBlockchains(height int64) (res []string, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {

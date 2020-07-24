@@ -323,40 +323,6 @@ func TestQueryAccount(t *testing.T) {
 	stopCli()
 }
 
-func TestQueryProofs(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	cb, err := kb.GetCoinbase()
-	assert.Nil(t, err)
-	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	<-evtChan // Wait for block
-	got, err := PCA.QueryReceipts(cb.GetAddress().String(), 0, 1, 1)
-	assert.Nil(t, err)
-	assert.Nil(t, got.Result)
-	cleanup()
-	stopCli()
-}
-
-func TestQueryProof(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	kp, err := kb.GetCoinbase()
-	assert.Nil(t, err)
-	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	var tx *sdk.TxResponse
-	var chains = []string{"00"}
-
-	<-evtChan // Wait for block
-	tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
-	assert.Nil(t, err)
-	assert.NotNil(t, tx)
-
-	<-evtChan // Wait for tx
-	_, err = PCA.QueryReceipt(PlaceholderHash, kp.PublicKey.RawString(), kp.GetAddress().String(), "relay", 1, 0)
-	assert.NotNil(t, err)
-
-	cleanup()
-	stopCli()
-}
-
 func TestQueryStakedpp(t *testing.T) {
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()

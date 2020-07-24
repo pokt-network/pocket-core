@@ -21,15 +21,19 @@ func (k Keeper) GetNode(ctx sdk.Ctx, address sdk.Address) (n exported.ValidatorI
 	return n, true
 }
 
-// "GetSelfNode" - Gets self node (private val key) from the world state
-func (k Keeper) GetSelfNode(ctx sdk.Ctx) (node exported.ValidatorI, er sdk.Error) {
+func (k Keeper) GetSelfAddress(ctx sdk.Ctx) sdk.Address {
 	kp, err := k.GetPKFromFile(ctx)
 	if err != nil {
-		er = pc.NewKeybaseError(pc.ModuleName, err)
-		return nil, er
+		ctx.Logger().Error("Unable to retrieve selfAddress: " + err.Error())
+		return nil
 	}
+	return sdk.Address(kp.PublicKey().Address())
+}
+
+// "GetSelfNode" - Gets self node (private val key) from the world state
+func (k Keeper) GetSelfNode(ctx sdk.Ctx) (node exported.ValidatorI, er sdk.Error) {
 	// get the node from the world state
-	self, found := k.GetNode(ctx, sdk.Address(kp.PublicKey().Address()))
+	self, found := k.GetNode(ctx, k.GetSelfAddress(ctx))
 	if !found {
 		er = pc.NewSelfNotFoundError(pc.ModuleName)
 		return nil, er

@@ -27,7 +27,6 @@ func TestAppModule_InitExportGenesis(t *testing.T) {
 	}
 	genesisState := types.GenesisState{
 		Params:   p,
-		Receipts: []types.Receipt(nil),
 		Claims:   []types.MsgClaim(nil),
 	}
 	ctx, _, _, k, _ := createTestInput(t, false)
@@ -89,7 +88,6 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 	}
 	genesisState := types.GenesisState{
 		Params:   p,
-		Receipts: []types.Receipt(nil),
 		Claims:   []types.MsgClaim(nil),
 	}
 	p2 := types.Params{
@@ -100,7 +98,6 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 	}
 	genesisState2 := types.GenesisState{
 		Params:   p2,
-		Receipts: []types.Receipt(nil),
 		Claims:   []types.MsgClaim(nil),
 	}
 	validBz, err := types.ModuleCdc.MarshalJSON(genesisState)

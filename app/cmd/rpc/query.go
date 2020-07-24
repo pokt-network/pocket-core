@@ -270,25 +270,6 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
-func NodeReceipts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = PaginatedHeightAndAddrParams{}
-	if err := PopModel(w, r, ps, &params); err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
-	}
-	res, err := app.PCA.QueryReceipts(params.Addr, params.Height, params.Page, params.PerPage)
-	if err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
-	}
-	j, err := res.JSON()
-	if err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
-	}
-	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
-}
-
 type QueryNodeReceiptParam struct {
 	Address      string `json:"address"`
 	Blockchain   string `json:"blockchain"`
@@ -296,25 +277,6 @@ type QueryNodeReceiptParam struct {
 	SBlockHeight int64  `json:"session_block_height"`
 	Height       int64  `json:"height"`
 	ReceiptType  string `json:"receipt_type"`
-}
-
-func NodeReceipt(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = QueryNodeReceiptParam{}
-	if err := PopModel(w, r, ps, &params); err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
-	}
-	res, err := app.PCA.QueryReceipt(params.Blockchain, params.AppPubKey, params.Address, params.ReceiptType, params.SBlockHeight, params.Height)
-	if err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
-	}
-	j, err := app.Codec().MarshalJSON(res)
-	if err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
-	}
-	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func NodeClaim(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

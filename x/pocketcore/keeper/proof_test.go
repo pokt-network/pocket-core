@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -17,7 +16,7 @@ import (
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
 	types.ClearEvidence()
-	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
 	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
 	if err != nil {
 		t.Fatalf("Set evidence not found")
@@ -84,116 +83,6 @@ func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
 		assert.Nil(t, err)
 		assert.LessOrEqual(t, neededLeafIndex, int64(relays))
 	}
-}
-
-func TestKeeper_GetSetReceipt(t *testing.T) {
-	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
-	appPrivateKey := getRandomPrivateKey()
-	appPubKey := appPrivateKey.PublicKey().RawString()
-	npk := getRandomPubKey()
-	ethereum := hex.EncodeToString([]byte{01})
-	// create a session header
-	validHeader := types.SessionHeader{
-		ApplicationPubKey:  appPubKey,
-		Chain:              ethereum,
-		SessionBlockHeight: 976,
-	}
-	receipt := types.Receipt{
-		SessionHeader:   validHeader,
-		ServicerAddress: sdk.Address(npk.Address()).String(),
-		Total:           2000,
-		EvidenceType:    types.RelayEvidence,
-	}
-	addr := sdk.Address(sdk.Address(npk.Address()))
-	mockCtx := new(Ctx)
-	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
-	mockCtx.On("Logger").Return(ctx.Logger())
-	_ = keeper.SetReceipt(mockCtx, addr, receipt)
-
-	inv, found := keeper.GetReceipt(mockCtx, sdk.Address(npk.Address()), validHeader, receipt.EvidenceType)
-	assert.True(t, found)
-	assert.Equal(t, inv, receipt)
-}
-
-func TestKeeper_GetSetReceipts(t *testing.T) {
-	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
-	appPrivateKey := getRandomPrivateKey()
-	appPubKey := appPrivateKey.PublicKey().RawString()
-	appPrivateKey2 := getRandomPrivateKey()
-	appPubKey2 := appPrivateKey2.PublicKey().RawString()
-	npk := getRandomPubKey()
-	ethereum := hex.EncodeToString([]byte{01})
-	// create a session header
-	validHeader := types.SessionHeader{
-		ApplicationPubKey:  appPubKey,
-		Chain:              ethereum,
-		SessionBlockHeight: 1,
-	}
-	// create a session header
-	validHeader2 := types.SessionHeader{
-		ApplicationPubKey:  appPubKey2,
-		Chain:              ethereum,
-		SessionBlockHeight: 1,
-	}
-	receipt := types.Receipt{
-		SessionHeader:   validHeader,
-		ServicerAddress: sdk.Address(npk.Address()).String(),
-		Total:           2000,
-		EvidenceType:    types.RelayEvidence,
-	}
-	receipt2 := types.Receipt{
-		SessionHeader:   validHeader2,
-		ServicerAddress: sdk.Address(npk.Address()).String(),
-		Total:           2000,
-		EvidenceType:    types.RelayEvidence,
-	}
-	receipts := []types.Receipt{receipt, receipt2}
-	mockCtx := new(Ctx)
-	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
-	mockCtx.On("Logger").Return(ctx.Logger())
-	keeper.SetReceipts(mockCtx, receipts)
-	inv, er := keeper.GetReceipts(mockCtx, sdk.Address(sdk.Address(npk.Address())))
-	assert.Nil(t, er)
-	assert.Contains(t, inv, receipt)
-	assert.Contains(t, inv, receipt2)
-}
-
-func TestKeeper_GetAllReceipts(t *testing.T) {
-	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
-	appPrivateKey := getRandomPrivateKey()
-	appPubKey := appPrivateKey.PublicKey().RawString()
-	npk := getRandomPubKey()
-	npk2 := getRandomPubKey()
-	ethereum := hex.EncodeToString([]byte{01})
-	// create a session header
-	validHeader := types.SessionHeader{
-		ApplicationPubKey:  appPubKey,
-		Chain:              ethereum,
-		SessionBlockHeight: 1,
-	}
-	receipt := types.Receipt{
-		SessionHeader:   validHeader,
-		ServicerAddress: sdk.Address(npk.Address()).String(),
-		Total:           2000,
-		EvidenceType:    types.RelayEvidence,
-	}
-	receipt2 := types.Receipt{
-		SessionHeader:   validHeader,
-		ServicerAddress: sdk.Address(npk2.Address()).String(),
-		Total:           2000,
-		EvidenceType:    types.RelayEvidence,
-	}
-	receipts := []types.Receipt{receipt, receipt2}
-	mockCtx := new(Ctx)
-	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(ctx, nil)
-	mockCtx.On("Logger").Return(ctx.Logger())
-	keeper.SetReceipts(mockCtx, receipts)
-	inv := keeper.GetAllReceipts(mockCtx)
-	assert.Contains(t, inv, receipt)
-	assert.Contains(t, inv, receipt2)
 }
 
 func TestPseudoRandomSelection(t *testing.T) {

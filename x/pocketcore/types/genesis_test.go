@@ -10,7 +10,6 @@ import (
 )
 
 func TestValidateGenesis(t *testing.T) {
-	appPubKeyProof := getRandomPubKey().RawString()
 	appPubKeyClaim := getRandomPubKey().RawString()
 	pk := getRandomPubKey()
 	servicerAddr := pk.Address()
@@ -27,45 +26,6 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains:  nil,
 			ClaimExpiration:       0,
 		},
-		Receipts: []Receipt{{
-			SessionHeader: SessionHeader{
-				ApplicationPubKey:  appPubKeyProof,
-				Chain:              nn,
-				SessionBlockHeight: 1,
-			},
-			ServicerAddress: servicerAddr.String(),
-			Total:           100,
-			EvidenceType:    RelayEvidence,
-		}},
-		Claims: []MsgClaim{{
-			SessionHeader: SessionHeader{
-				ApplicationPubKey:  appPubKeyClaim,
-				Chain:              nn,
-				SessionBlockHeight: 1,
-			},
-			MerkleRoot:   root,
-			TotalProofs:  1000,
-			FromAddress:  types.Address(servicerAddr),
-			EvidenceType: RelayEvidence,
-		}},
-	}
-	invalidProofs := GenesisState{
-		Params: Params{
-			SessionNodeCount:      1,
-			ClaimSubmissionWindow: 5,
-			SupportedBlockchains:  []string{nn},
-			ClaimExpiration:       50,
-		},
-		Receipts: []Receipt{{
-			SessionHeader: SessionHeader{
-				ApplicationPubKey:  appPubKeyProof,
-				Chain:              nn,
-				SessionBlockHeight: 1,
-			},
-			ServicerAddress: servicerAddr.String(),
-			Total:           -1,
-			EvidenceType:    RelayEvidence,
-		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyClaim,
@@ -85,16 +45,6 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains:  []string{nn},
 			ClaimExpiration:       50,
 		},
-		Receipts: []Receipt{{
-			SessionHeader: SessionHeader{
-				ApplicationPubKey:  appPubKeyProof,
-				Chain:              nn,
-				SessionBlockHeight: 1,
-			},
-			ServicerAddress: servicerAddr.String(),
-			Total:           100,
-			EvidenceType:    RelayEvidence,
-		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyClaim,
@@ -114,16 +64,6 @@ func TestValidateGenesis(t *testing.T) {
 			SupportedBlockchains:  []string{nn},
 			ClaimExpiration:       50,
 		},
-		Receipts: []Receipt{{
-			SessionHeader: SessionHeader{
-				ApplicationPubKey:  appPubKeyProof,
-				Chain:              nn,
-				SessionBlockHeight: 1,
-			},
-			ServicerAddress: servicerAddr.String(),
-			Total:           100,
-			EvidenceType:    RelayEvidence,
-		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyClaim,
@@ -147,11 +87,6 @@ func TestValidateGenesis(t *testing.T) {
 			hasError:     true,
 		},
 		{
-			name:         "Bad proofs",
-			genesisState: invalidProofs,
-			hasError:     true,
-		},
-		{
 			name:         "Bad claims",
 			genesisState: invalidClaims,
 			hasError:     true,
@@ -170,7 +105,6 @@ func TestValidateGenesis(t *testing.T) {
 }
 
 func TestDefaultGenesisState(t *testing.T) {
-	appPubKeyProof := getRandomPubKey().RawString()
 	appPubKeyClaim := getRandomPubKey().RawString()
 	pk := getRandomPubKey()
 	servicerAddr := pk.Address()
@@ -187,15 +121,6 @@ func TestDefaultGenesisState(t *testing.T) {
 			SupportedBlockchains:  []string{nn},
 			ClaimExpiration:       50,
 		},
-		Receipts: []Receipt{{
-			SessionHeader: SessionHeader{
-				ApplicationPubKey:  appPubKeyProof,
-				Chain:              nn,
-				SessionBlockHeight: 1,
-			},
-			ServicerAddress: servicerAddr.String(),
-			Total:           100,
-		}},
 		Claims: []MsgClaim{{
 			SessionHeader: SessionHeader{
 				ApplicationPubKey:  appPubKeyClaim,

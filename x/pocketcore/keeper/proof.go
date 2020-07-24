@@ -31,14 +31,6 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 	}
 	// for every claim of the mature set
 	for _, claim := range claims {
-		// if the claim is found to be verified in the world state, you can delete it from the cache and not send again
-		if _, found := k.GetReceipt(ctx, addr, claim.SessionHeader, claim.EvidenceType); found {
-			// remove from the local cache
-			if err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType); err != nil {
-				ctx.Logger().Debug(err.Error())
-			}
-			continue
-		}
 		// check to see if evidence is stored in cache
 		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
 		if err != nil || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
