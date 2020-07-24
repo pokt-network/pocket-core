@@ -97,6 +97,9 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	if ctx.BlockHeight() <= sessionEndHeight {
 		return pc.NewInvalidBlockHeightError(pc.ModuleName)
 	}
+	if claim.TotalProofs <= k.MinimumNumberOfProofs(sessionContext) {
+		return pc.NewInvalidProofsError(pc.ModuleName)
+	}
 	// if is not a pocket supported blockchain then return not supported error
 	if !k.IsPocketSupportedBlockchain(sessionContext, claim.Chain) {
 		return pc.NewChainNotSupportedErr(pc.ModuleName)

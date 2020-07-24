@@ -95,7 +95,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate number of proofs
-	if params := k.GetParams(ctx); claim.TotalProofs < params.MinimumNumberOfProofs {
+	if minProofs := k.MinimumNumberOfProofs(sessionCtx); claim.TotalProofs <= minProofs {
 		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// validate the merkle proofs
