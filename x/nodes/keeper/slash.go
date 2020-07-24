@@ -236,7 +236,7 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, addr sdk.Address, power in
 	// if we are past the minimum height and the validator has missed too many blocks, punish them
 	if signInfo.MissedBlocksCounter > maxMissed {
 		// Downtime confirmed: slash and jail the validator
-		ctx.Logger().Info(fmt.Sprintf("Validator %s missed more than the max signed blocks: %d", addr, k.MinSignedPerWindow(ctx)))
+		ctx.Logger().Info(fmt.Sprintf("Validator %s missed more than the max signed blocks: %d", addr, k.SignedBlocksWindow(ctx)-k.MinSignedPerWindow(ctx)))
 		// height where the infraction occured
 		slashHeight := ctx.BlockHeight() - sdk.ValidatorUpdateDelay - 1
 		// slash them based on their power
