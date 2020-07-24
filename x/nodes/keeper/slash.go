@@ -199,7 +199,8 @@ func (k Keeper) validateDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionH
 func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, addr sdk.Address, power int64, signed bool) {
 	val, found := k.GetValidator(ctx, addr)
 	if !found {
-		ctx.Logger().Error(fmt.Sprintf("error in handleValidatorSignature: validator with addr %s not found", addr))
+		ctx.Logger().Info(fmt.Sprintf("in handleValidatorSignature: validator with addr %s not found, "+
+			"this is usually due to the 2 block delay between Tendermint and the baseapp", addr))
 		return
 	}
 	// fetch signing info

@@ -206,7 +206,7 @@ func (k Keeper) ReleaseWaitingValidators(ctx sdk.Ctx) {
 				),
 			})
 		} else {
-			ctx.Logger().Error("Unable to begin unstaking validator " + val.Address.String() + ": " + err.Error())
+			ctx.Logger().Info("Unable to begin unstaking validator " + val.Address.String() + ": " + err.Error())
 		}
 		k.DeleteWaitingValidator(ctx, val.Address)
 	}
@@ -343,7 +343,7 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		return
 	}
 	if validator.IsUnstaked() {
-		ctx.Logger().Error(fmt.Errorf("cannot jail an unstaked validator, validator: %v\n", validator).Error())
+		ctx.Logger().Info(fmt.Errorf("cannot jail an unstaked validator, likely left in the set to update Tendermint Val Set: %v\n", validator).Error())
 		return
 	}
 	// clear caching for sesssions
