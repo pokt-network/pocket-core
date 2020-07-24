@@ -20,7 +20,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, claimTx func(pk crypto
 		return
 	}
 	// retrieve the iterator to go through each piece of evidence in storage
-	iter := pc.EvidenceIterator()
+	iter := pc.EvidenceIterator() // TODO need to delete evidence in the case that unable to send proof or claim
 	defer iter.Close()
 	// loop through each evidence
 	for ; iter.Valid(); iter.Next() {
@@ -43,7 +43,11 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, claimTx func(pk crypto
 		// get the session context
 		sessionCtx, er := ctx.PrevCtx(evidence.SessionHeader.SessionBlockHeight)
 		if er != nil {
-			ctx.Logger().Error("could not get sessionCtx")
+			ctx.Logger().Error("could not get sessionCtx in auto send claim tx: " + er.Error())
+			continue
+		}
+		if ctx.BlockHeight() <= evidence.SessionBlockHeight+k.BlocksPerSession(sessionCtx)-1 { // ensure session is over
+			ctx.Logger().Info("the session is ongoing, so will not send the claimtx yet")
 			continue
 		}
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid/challenged for unsupported blockchains
@@ -60,7 +64,6 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, claimTx func(pk crypto
 		}
 		// if the claim is mature, delete it because we cannot submit a mature claim
 		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
-			fmt.Println("claim is mature @ ", ctx.BlockHeight(), evidence)
 			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
@@ -93,11 +96,11 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		return sdk.ErrInternal(er.Error())
 	}
 	// ensure that session ended
-	sessionEndHeight := sessionContext.BlockHeight() + k.BlocksPerSession(sessionContext) - 1
+	sessionEndHeight := claim.SessionBlockHeight + k.BlocksPerSession(sessionContext) - 1
 	if ctx.BlockHeight() <= sessionEndHeight {
 		return pc.NewInvalidBlockHeightError(pc.ModuleName)
 	}
-	if claim.TotalProofs <= k.MinimumNumberOfProofs(sessionContext) {
+	if claim.TotalProofs < k.MinimumNumberOfProofs(sessionContext) {
 		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// if is not a pocket supported blockchain then return not supported error
