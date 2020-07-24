@@ -343,7 +343,7 @@ func getRandomPubKey() crypto.Ed25519PublicKey {
 func getRandomValidatorAddress() sdk.Address {
 	return sdk.Address(getRandomPubKey().Address())
 }
-func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk crypto.PublicKey, validHeader types.SessionHeader, keys simulateRelayKeys, receipt types.Receipt) {
+func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk crypto.PublicKey, validHeader types.SessionHeader, keys simulateRelayKeys) {
 	npk = getRandomPubKey()
 	ethereum := hex.EncodeToString([]byte{01})
 	clientKey := getRandomPrivateKey()
@@ -351,12 +351,6 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 		ApplicationPubKey:  getTestApplication().PublicKey.RawString(),
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
-	}
-	receipt = types.Receipt{
-		SessionHeader:   validHeader,
-		ServicerAddress: sdk.Address(npk.Address()).String(),
-		Total:           2000,
-		EvidenceType:    types.RelayEvidence,
 	}
 
 	// NOTE Add a minimum of 5 proofs to memInvoice to be able to create a merkle tree
@@ -368,7 +362,6 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	mockCtx.On("KVStore", k.storeKey).Return((*ctx).KVStore(k.storeKey))
 	mockCtx.On("PrevCtx", validHeader.SessionBlockHeight).Return(*ctx, nil)
 	mockCtx.On("Logger").Return((*ctx).Logger())
-	k.SetReceipts(mockCtx, []types.Receipt{receipt})
 	keys = simulateRelayKeys{getTestApplicationPrivateKey(), clientKey}
 	return
 }

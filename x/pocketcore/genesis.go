@@ -11,8 +11,6 @@ import (
 func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, data types.GenesisState) []abci.ValidatorUpdate {
 	// set the params in store
 	keeper.SetParams(ctx, data.Params)
-	// set the receipt objects in store
-	keeper.SetReceipts(ctx, data.Receipts)
 	// set the claim objects in store
 	keeper.SetClaims(ctx, data.Claims)
 	return []abci.ValidatorUpdate{}
@@ -22,7 +20,6 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, data types.GenesisState) []a
 func ExportGenesis(ctx sdk.Ctx, k keeper.Keeper) types.GenesisState {
 	return types.GenesisState{
 		Params:   k.GetParams(ctx),
-		Receipts: k.GetAllReceipts(ctx),
 		Claims:   k.GetAllClaims(ctx),
 	}
 }

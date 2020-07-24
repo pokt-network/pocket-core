@@ -11,7 +11,7 @@ import (
 
 func TestKeeper_GetSetClaim(t *testing.T) {
 	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
-	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
 	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(100000))
 	assert.Nil(t, err)
 	claim := types.MsgClaim{
@@ -38,7 +38,7 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 	var pubKeys []crypto.PublicKey
 
 	for i := 0; i < 2; i++ {
-		npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
+		npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
 		evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
 		assert.Nil(t, err)
 		claim := types.MsgClaim{
@@ -66,8 +66,8 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 
 func TestKeeper_GetMatureClaims(t *testing.T) {
 	ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
-	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	npk2, header2, _, _ := simulateRelays(t, keeper, &ctx, 20)
+	npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk2, header2, _ := simulateRelays(t, keeper, &ctx, 20)
 
 	i, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
 	assert.Nil(t, err)
@@ -113,8 +113,8 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 
 func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
-	npk, header, _, _ := simulateRelays(t, keeper, &ctx, 5)
-	npk2, header2, _, _ := simulateRelays(t, keeper, &ctx, 20)
+	npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk2, header2, _ := simulateRelays(t, keeper, &ctx, 20)
 
 	i, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
 	assert.Nil(t, err)

@@ -65,15 +65,12 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	if err != nil {
 		return err.Result()
 	}
-	// set the claim in the world state
-	er := k.SetReceipt(ctx, addr, types.Receipt{
-		SessionHeader:   claim.SessionHeader,
-		Total:           claim.TotalProofs,
-		ServicerAddress: addr.String(),
-		EvidenceType:    claim.EvidenceType,
-	})
-	if er != nil {
-		return sdk.ErrInternal(er.Error()).Result()
+	// delete local evidence
+	if proof.GetSigner().Equals(k.GetSelfAddress(ctx)) {
+		err := types.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+		if err != nil {
+			ctx.Logger().Error("Unable to delete evidence in proofTX handler: " + err.Error())
+		}
 	}
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{

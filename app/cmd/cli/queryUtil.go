@@ -31,8 +31,6 @@ var (
 	GetAppsPath,
 	GetAppParamsPath,
 	GetPocketParamsPath,
-	GetNodeReceiptPath,
-	GetNodeReceiptsPath,
 	GetNodeClaimsPath,
 	GetNodeClaimPath,
 	GetBlockTxsPath,
@@ -81,10 +79,6 @@ func init() {
 			GetAppParamsPath = route.Path
 		case "QueryPocketParams":
 			GetPocketParamsPath = route.Path
-		case "QueryNodeReceipt":
-			GetNodeReceiptPath = route.Path
-		case "QueryNodeReceipts":
-			GetNodeReceiptsPath = route.Path
 		case "QueryBlockTxs":
 			GetBlockTxsPath = route.Path
 		case "QuerySupply":
