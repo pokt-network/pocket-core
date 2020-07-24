@@ -112,7 +112,7 @@ func (mp MerkleProof) Validate(root HashRange, leaf Proof, totalRelays int64) (i
 func sumFromHash(hash []byte) uint64 {
 	hashCopy := make([]byte, len(hash))
 	copy(hashCopy, hash)
-	return binary.LittleEndian.Uint64(append(hashCopy[:3], make([]byte, 5)...))
+	return binary.LittleEndian.Uint64(hash[:8])
 }
 
 // "newLevelIsValid" - Ensure that the number of levels in the relayProof is valid

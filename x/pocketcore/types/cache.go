@@ -136,6 +136,7 @@ func (cs *CacheStorage) Clear() {
 
 // "Iterator" - Returns an iterator for all of the items in the stores
 func (cs *CacheStorage) Iterator() db.Iterator {
+	_ = cs.FlushToDB()
 	return cs.DB.Iterator(nil, nil)
 }
 
