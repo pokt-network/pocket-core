@@ -105,6 +105,7 @@ workflows:
               only:
                 - staging
                 - master
+                - issue-#1057
       - trigger-pocket-core-deployments-tags:
           requires:
             - test
