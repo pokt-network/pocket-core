@@ -25,7 +25,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		return nil, pc.NewAppNotFoundError(pc.ModuleName)
 	}
 	// ensure the validity of the relay
-	maxPossibleRelays, err := relay.Validate(ctx, k, selfNode, hostedBlockchains, sessionBlockHeight, app)
+	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, selfNode, hostedBlockchains, sessionBlockHeight, app)
 	if err != nil {
 		ctx.Logger().Error(fmt.Errorf("could not validate relay for %v, %v, %v %v, %v", selfNode, hostedBlockchains, sessionBlockHeight, app).Error())
 		return nil, err
