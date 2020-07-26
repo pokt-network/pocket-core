@@ -30,8 +30,12 @@ type Relay struct {
 }
 
 // "Validate" - Checks the validity of a relay request using store data
-func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.ValidatorI, hb *HostedBlockchains, sessionBlockHeight int64,
-	sessionNodeCount int, app appexported.ApplicationI) (maxPossibleRelays sdk.Int, err sdk.Error) {
+func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.ValidatorI, hb *HostedBlockchains, sessionBlockHeight int64, app appexported.ApplicationI) (maxPossibleRelays sdk.Int, err sdk.Error) {
+	// get the sessionContext
+	sessionContext, er := ctx.PrevCtx(sessionBlockHeight)
+	if er != nil {
+		return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
+	}
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return sdk.ZeroInt(), NewEmptyPayloadDataError(ModuleName)
@@ -53,7 +57,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
-	maxPossibleRelays = MaxPossibleRelays(app, int64(sessionNodeCount))
+	maxPossibleRelays = MaxPossibleRelays(app, 5)
 	// validate unique relay
 	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence, maxPossibleRelays)
 	// get evidence key by proof
@@ -65,13 +69,8 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		return sdk.ZeroInt(), NewOverServiceError(ModuleName)
 	}
 	// validate the Proof
-	if err := r.Proof.ValidateLocal(app.GetChains(), sessionNodeCount, sessionBlockHeight, node.GetPublicKey().RawString()); err != nil {
+	if err := r.Proof.ValidateLocal(app.GetChains(), 5, sessionBlockHeight, node.GetPublicKey().RawString()); err != nil {
 		return sdk.ZeroInt(), err
-	}
-	// get the sessionContext
-	sessionContext, er := ctx.PrevCtx(sessionBlockHeight)
-	if er != nil {
-		return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
 	}
 	// generate the header
 	header := SessionHeader{
@@ -84,7 +83,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
-		session, err = NewSession(sessionContext, ctx, keeper, header, BlockHash(sessionContext), sessionNodeCount)
+		session, err = NewSession(sessionContext, ctx, keeper, header, BlockHash(sessionContext), 5)
 		if err != nil {
 			return sdk.ZeroInt(), err
 		}
@@ -92,7 +91,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		SetSession(session)
 	}
 	// validate the session
-	err = session.Validate(node, app, sessionNodeCount)
+	err = session.Validate(node, app, 5)
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}

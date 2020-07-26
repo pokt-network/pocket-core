@@ -24,16 +24,10 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	if !found {
 		return nil, pc.NewAppNotFoundError(pc.ModuleName)
 	}
-	// get the session context
-	sessionCtx, er := ctx.PrevCtx(sessionBlockHeight)
-	if er != nil {
-		return nil, sdk.ErrInternal(er.Error())
-	}
-	sessionNodeCount := k.SessionNodeCount(sessionCtx)
 	// ensure the validity of the relay
-	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, selfNode, hostedBlockchains, sessionBlockHeight, int(sessionNodeCount), app)
+	maxPossibleRelays, err := relay.Validate(ctx, k, selfNode, hostedBlockchains, sessionBlockHeight, app)
 	if err != nil {
-		ctx.Logger().Error(fmt.Errorf("could not validate relay for %v, %v, %v %v, %v", selfNode, hostedBlockchains, sessionBlockHeight, int(k.SessionNodeCount(sessionCtx)), app).Error())
+		ctx.Logger().Error(fmt.Errorf("could not validate relay for %v, %v, %v %v, %v", selfNode, hostedBlockchains, sessionBlockHeight, app).Error())
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
