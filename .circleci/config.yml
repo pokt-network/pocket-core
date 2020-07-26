@@ -67,7 +67,7 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build using branch.
-          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_BRANCH} 1.13 staging"
+          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_BRANCH} 1.13 issue-#issue-1057"
   # Job to trigger the Pocket Core deployments CI with a specific tag
   trigger-pocket-core-deployments-tags:
     docker:
