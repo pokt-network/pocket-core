@@ -43,7 +43,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, claimTx func(pk crypto
 		// get the session context
 		sessionCtx, er := ctx.PrevCtx(evidence.SessionHeader.SessionBlockHeight)
 		if er != nil {
-			ctx.Logger().Error("could not get sessionCtx in auto send claim tx: " + er.Error())
+			ctx.Logger().Info("could not get sessionCtx in auto send claim tx, could be due to relay timing before commit is in store: " + er.Error())
 			continue
 		}
 		if ctx.BlockHeight() <= evidence.SessionBlockHeight+k.BlocksPerSession(sessionCtx)-1 { // ensure session is over
