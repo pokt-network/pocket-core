@@ -1,3 +1,12 @@
+## RC-0.5.0
+- Fixed Incorrect Logging and misleading logging for max_signed_blocks
+- Remove all receipts to alleviate large state size
+- State now doesn't accept claims for under the given param threshold
+- AAT now printing as json string and not bytes
+- Logging fix for unstaked Validator in Handle Validator Signature
+- enhanced proof entropy and flush to disk
+- Converted `Could not get sessionCtx` in auto send claim tx to an info log
+
 ## RC-0.4.3
 - Update txIndexer synchronously during commit
 
