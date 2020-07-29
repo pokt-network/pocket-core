@@ -1,9 +1,9 @@
 package nodes
 
 import (
-	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/crypto/keys"
-	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto/keys"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/rpc/client"
 	"reflect"
 	"testing"

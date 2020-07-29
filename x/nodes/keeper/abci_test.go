@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"testing"

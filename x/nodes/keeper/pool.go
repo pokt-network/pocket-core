@@ -3,9 +3,9 @@ package keeper
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/auth/exported"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/auth/exported"
 )
 
 // GetStakedTokens - Retrieve total staking tokens supply which is staked

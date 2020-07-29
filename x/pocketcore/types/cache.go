@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 	db "github.com/tendermint/tm-db"
 	"github.com/willf/bloom"
 	"log"

@@ -2,7 +2,7 @@ package types
 
 import (
 	"encoding/hex"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // RouterKey is the module name router key

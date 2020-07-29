@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/crypto/keys"
-	"github.com/pokt-network/posmint/crypto/keys/mintkey"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/auth/util"
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto/keys"
+	"github.com/pokt-network/pocket-core/crypto/keys/mintkey"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/auth/util"
 	"github.com/tendermint/tendermint/rpc/client"
 )
 

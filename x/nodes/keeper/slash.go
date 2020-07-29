@@ -8,7 +8,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/tendermint/tendermint/crypto"
 
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // BurnForChallenge - Tries to remove coins from account & supply for a challenged validator

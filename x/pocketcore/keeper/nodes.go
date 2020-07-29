@@ -3,7 +3,7 @@ package keeper
 import (
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // "GetAllNodes" - Gets all of the nodes in the state storage

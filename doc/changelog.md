@@ -12,7 +12,7 @@
 
 ## RC-0.4.2
 - Update timeout configs for 15 minutes
-- Posmint version checking allows greater version strings and not just the exact version
+- pocket-core version checking allows greater version strings and not just the exact version
 - Export State doesn't export missed blocks
 - Default Fees switched to be .01 POKT or 10,000 uPOKT
 - Fee multiplier accounted for in autoTX
@@ -52,7 +52,7 @@
 - Removed slash.go in apps module
 - Ensured validator !isJailed in removeValidatorTokens
 - Added max chains params to nodes and apps module
-- Updated POSMint to have 1 msg and 1 signature per tx
+- Updated pocket-core to have 1 msg and 1 signature per tx
 - Added RemoteCLIURL flag and config
 - Removed round trip from tendermint
 - Routed CLI through pocket RPC
@@ -87,7 +87,7 @@
 - Update RPC Docs with new unified params endpoint
 
 ## RC-0.3.0
-- Added governance module from posmint
+- Added governance module from pocket-core
   - Multisignature public keys / tx building to cli
   - Governance level protocol upgrade signalling
   - Access control list for params
@@ -100,7 +100,7 @@
 - Added Start without passphrase on pocket core
   - sign msgs with private key or keybase
   - removed password from keeper
-  - Updated POSMint version
+  - Updated pocket-core version
 - Removed default genesis and seeds
 - Prevent unstaking time reset if not equals 0 (for vesting)
 - Relay Response now has the entire proof when sent back to the client
@@ -109,10 +109,10 @@
 - Added export app command to cli
 - Changed Struct used to generate RequestHash to remove empty proof object
 - Changed public key field json marshalling
-  - update POSMint version
+  - update pocket-core version
   - transitive change in Account JSON response for RPC
   - Updated rpc-spec to reflect change
-- Updated POSMint to address duplicated minting logs
+- Updated pocket-core to address duplicated minting logs
 - Add pagination to Application Queries for RPC & CLI
 - Add pagination to Nodes Queries for RPC & CLI
 - Converted NonNative Chains to 128 bit encryption (MD5)
@@ -159,7 +159,7 @@ Seed patch to allow more incoming connections
 - Renamed StoredInvoice (blockchain persisted) to Receipt
 - Renamed ProofWaitingPeriod to ClaimSubmissionWindow
 - Changed RPC and from `node-proof` to `node-receipt`
-- Update posmint module to use sdk.Ctx interface
+- Update pocket-core module to use sdk.Ctx interface
 - Fix `pseudorandomGenerator` unexported properties would return empty json
 - Evidence now holds proof interface to allow for challenge proofs
 - Added Relay Request Hash (Hash of payload + meta) to RelayProof object

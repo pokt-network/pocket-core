@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // "StakeDenom" - Returns the stake coin denomination from the node module

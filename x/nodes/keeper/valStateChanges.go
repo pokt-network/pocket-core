@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pokt-network/posmint/crypto"
+	"github.com/pokt-network/pocket-core/crypto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/common"
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // UpdateTendermintValidators - Apply and return accumulated updates to the staked validator set

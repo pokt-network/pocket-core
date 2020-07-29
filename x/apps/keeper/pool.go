@@ -2,9 +2,9 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/auth/exported"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/auth/exported"
 )
 
 // StakedRatio - Retrieve the fraction of the staking tokens which are currently staked

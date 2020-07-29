@@ -1,7 +1,7 @@
 package types
 
 import (
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // GenesisState - all staking state that must be provided at genesis

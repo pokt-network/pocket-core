@@ -3,7 +3,7 @@ package nodes
 import (
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"reflect"
 	"testing"
 )

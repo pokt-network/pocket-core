@@ -270,8 +270,6 @@ github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/pokt-network/posmint v0.0.0-20200713213332-2984094c852f h1:sYDc2VZv+eRlFcGrOu5QRbSvJjIrLDFOUa5U0E5dKx4=
-github.com/pokt-network/posmint v0.0.0-20200713213332-2984094c852f/go.mod h1:TPlWEjnYPq2BoAPinwfvm3JcYrIYxaWJoCCsc1g8hJE=
 github.com/pokt-network/tendermint v0.32.11-0.20200717190033-b520221b1537 h1:GYdxsl+LSKTAi9jNMjf+ScEV0/swcDEDApuJ3CZDRI8=
 github.com/pokt-network/tendermint v0.32.11-0.20200717190033-b520221b1537/go.mod h1:klZB7nl3GZZ9jPNaNHPYjNyoWW7mMx+5AXAN8Ov7bmY=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=

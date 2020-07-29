@@ -8,9 +8,9 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodeskeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
 	nodestypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/pokt-network/posmint/crypto"
-	"github.com/pokt-network/posmint/types/module"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/types/module"
+	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -18,11 +18,11 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/store"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/gov"
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/store"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/gov"
 )
 
 // : deadcode unused

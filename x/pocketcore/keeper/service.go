@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // "HandleRelay" - Handles an api (read/write) request to a non-native (external) blockchain

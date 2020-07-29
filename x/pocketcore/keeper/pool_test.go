@@ -3,7 +3,7 @@ package keeper
 import (
 	"testing"
 
-	"github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/go-amino"
 )
 

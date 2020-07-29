@@ -3,7 +3,7 @@ package pos
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"reflect"
 	"testing"
 )

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pokt-network/posmint/crypto"
+	"github.com/pokt-network/pocket-core/crypto"
 
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // Application represents a pocket network decentralized application. Applications stake in the network for relay throughput.

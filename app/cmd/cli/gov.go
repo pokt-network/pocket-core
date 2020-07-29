@@ -7,8 +7,8 @@ import (
 	"strconv"
 
 	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/posmint/types"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
+	"github.com/pokt-network/pocket-core/types"
+	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/spf13/cobra"
 )
 

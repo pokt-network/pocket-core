@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/pokt-network/posmint/codec"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/types/module"
+	"github.com/pokt-network/pocket-core/codec"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/types/module"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

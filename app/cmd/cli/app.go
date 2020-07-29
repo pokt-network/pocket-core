@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/posmint/crypto/keys/mintkey"
-	"github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/crypto/keys/mintkey"
+	"github.com/pokt-network/pocket-core/types"
 	"github.com/spf13/cobra"
 )
 

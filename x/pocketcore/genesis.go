@@ -3,7 +3,7 @@ package pocketcore
 import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

@@ -2,7 +2,7 @@ package types
 
 import (
 	"fmt"
-	"github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"math/rand"
 	"testing"

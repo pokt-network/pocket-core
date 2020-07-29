@@ -3,7 +3,7 @@ package types
 import (
 	"bytes"
 	"fmt"
-	"github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/types"
 	"math"
 	"time"
 )

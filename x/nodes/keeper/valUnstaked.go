@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // SetWaitingValidator - Store validator on WaitingToBeginUnstaking store
