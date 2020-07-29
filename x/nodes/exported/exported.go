@@ -1,21 +1,19 @@
 package exported
 
 import (
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // ValidatorI expected validator functions
 type ValidatorI interface {
-	IsJailed() bool                 // whether the validator is jailed
-	GetStatus() sdk.StakeStatus     // status of the validator
 	IsStaked() bool                 // check if has a staked status
 	IsUnstaked() bool               // check if has status unstaked
 	IsUnstaking() bool              // check if has status unstaking
-	GetChains() []string            // retrieve the staked chains
-	GetServiceURL() string          // retrieve the url for pocket core service api
-	GetAddress() sdk.Address        // address to receive/return validators coins
-	GetPublicKey() crypto.PublicKey // validator public key
-	GetTokens() sdk.Int             // validator tokens
-	GetConsensusPower() int64       // validator power in tendermint
+	IsJailed() bool                 // whether the validator is jailed
+	GetStatus() sdk.StakeStatus     // status of the validator
+	GetAddress() sdk.Address        // operator address to receive/return validators coins
+	GetPublicKey() crypto.PublicKey // validation consensus pubkey
+	GetTokens() sdk.Int             // validation tokens
+	GetConsensusPower() int64       // validation power in tendermint
 }

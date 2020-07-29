@@ -8,9 +8,9 @@ import (
 	"time"
 
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/types"
 )
 

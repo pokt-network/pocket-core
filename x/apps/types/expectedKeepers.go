@@ -2,8 +2,8 @@ package types
 
 import (
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
-	sdk "github.com/pokt-network/posmint/types"
-	authexported "github.com/pokt-network/posmint/x/auth/exported"
+	sdk "github.com/pokt-network/pocket-core/types"
+	authexported "github.com/pokt-network/pocket-core/x/auth/exported"
 )
 
 type PosKeeper interface {

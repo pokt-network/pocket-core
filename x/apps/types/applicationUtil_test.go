@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 
 	"fmt"
 	"math/rand"

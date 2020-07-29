@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"time"
 
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 const (

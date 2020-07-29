@@ -6,9 +6,9 @@ import (
 
 	"github.com/pokt-network/pocket-core/x/nodes"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/gov"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/gov"
 	"github.com/stretchr/testify/assert"
 	tmTypes "github.com/tendermint/tendermint/types"
 )

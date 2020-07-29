@@ -2,8 +2,8 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/x/apps/exported"
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // "GetApp" - Retrieves an application from the app store, using the appKeeper (a link to the apps module)

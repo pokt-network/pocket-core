@@ -2,8 +2,8 @@ package types
 
 import (
 	"fmt"
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"math/rand"
 	"reflect"
 	"testing"

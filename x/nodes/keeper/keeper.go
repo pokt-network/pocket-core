@@ -5,8 +5,8 @@ import (
 	log2 "log"
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/pokt-network/posmint/codec"
-	sdk "github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/codec"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
 

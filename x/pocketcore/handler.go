@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // "NewHandler" - Returns a handler for "pocketCore" type messages.

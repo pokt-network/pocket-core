@@ -9,24 +9,24 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/crypto/keys"
+	"github.com/pokt-network/pocket-core/store"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
+	pocketTypes "github.com/pokt-network/pocket-core/types"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/types/module"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/gov"
+	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodesKeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/crypto"
-	"github.com/pokt-network/posmint/crypto/keys"
-	"github.com/pokt-network/posmint/store"
-	storeTypes "github.com/pokt-network/posmint/store/types"
-	posminttypes "github.com/pokt-network/posmint/types"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/types/module"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/gov"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -474,14 +474,14 @@ func (_m *Ctx) BlockTime() time.Time {
 }
 
 // CacheContext provides a mock function with given fields:
-func (_m *Ctx) CacheContext() (posminttypes.Context, func()) {
+func (_m *Ctx) CacheContext() (pocketTypes.Context, func()) {
 	ret := _m.Called()
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func() posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func() pocketTypes.Context); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	var r1 func()
@@ -543,15 +543,15 @@ func (_m *Ctx) Context() context.Context {
 }
 
 // EventManager provides a mock function with given fields:
-func (_m *Ctx) EventManager() *posminttypes.EventManager {
+func (_m *Ctx) EventManager() *pocketTypes.EventManager {
 	ret := _m.Called()
 
-	var r0 *posminttypes.EventManager
-	if rf, ok := ret.Get(0).(func() *posminttypes.EventManager); ok {
+	var r0 *pocketTypes.EventManager
+	if rf, ok := ret.Get(0).(func() *pocketTypes.EventManager); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*posminttypes.EventManager)
+			r0 = ret.Get(0).(*pocketTypes.EventManager)
 		}
 	}
 
@@ -635,15 +635,15 @@ func (_m *Ctx) Logger() log.Logger {
 }
 
 // MinGasPrices provides a mock function with given fields:
-func (_m *Ctx) MinGasPrices() posminttypes.DecCoins {
+func (_m *Ctx) MinGasPrices() pocketTypes.DecCoins {
 	ret := _m.Called()
 
-	var r0 posminttypes.DecCoins
-	if rf, ok := ret.Get(0).(func() posminttypes.DecCoins); ok {
+	var r0 pocketTypes.DecCoins
+	if rf, ok := ret.Get(0).(func() pocketTypes.DecCoins); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(posminttypes.DecCoins)
+			r0 = ret.Get(0).(pocketTypes.DecCoins)
 		}
 	}
 
@@ -667,28 +667,28 @@ func (_m *Ctx) MultiStore() storeTypes.MultiStore {
 }
 
 // MustGetPrevCtx provides a mock function with given fields: height
-func (_m *Ctx) MustGetPrevCtx(height int64) posminttypes.Context {
+func (_m *Ctx) MustGetPrevCtx(height int64) pocketTypes.Context {
 	ret := _m.Called(height)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(int64) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(int64) pocketTypes.Context); ok {
 		r0 = rf(height)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // PrevCtx provides a mock function with given fields: height
-func (_m *Ctx) PrevCtx(height int64) (posminttypes.Context, error) {
+func (_m *Ctx) PrevCtx(height int64) (pocketTypes.Context, error) {
 	ret := _m.Called(height)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(int64) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(int64) pocketTypes.Context); ok {
 		r0 = rf(height)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	var r1 error
@@ -766,238 +766,238 @@ func (_m *Ctx) VoteInfos() []abcitypes.VoteInfo {
 }
 
 // WithBlockGasMeter provides a mock function with given fields: meter
-func (_m *Ctx) WithBlockGasMeter(meter storeTypes.GasMeter) posminttypes.Context {
+func (_m *Ctx) WithBlockGasMeter(meter storeTypes.GasMeter) pocketTypes.Context {
 	ret := _m.Called(meter)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) pocketTypes.Context); ok {
 		r0 = rf(meter)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithBlockHeader provides a mock function with given fields: header
-func (_m *Ctx) WithBlockHeader(header abcitypes.Header) posminttypes.Context {
+func (_m *Ctx) WithBlockHeader(header abcitypes.Header) pocketTypes.Context {
 	ret := _m.Called(header)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(abcitypes.Header) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(abcitypes.Header) pocketTypes.Context); ok {
 		r0 = rf(header)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithBlockHeight provides a mock function with given fields: height
-func (_m *Ctx) WithBlockHeight(height int64) posminttypes.Context {
+func (_m *Ctx) WithBlockHeight(height int64) pocketTypes.Context {
 	ret := _m.Called(height)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(int64) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(int64) pocketTypes.Context); ok {
 		r0 = rf(height)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithBlockStore provides a mock function with given fields: bs
-func (_m *Ctx) WithBlockStore(bs *tmStore.BlockStore) posminttypes.Context {
+func (_m *Ctx) WithBlockStore(bs *tmStore.BlockStore) pocketTypes.Context {
 	ret := _m.Called(bs)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(*tmStore.BlockStore) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(*tmStore.BlockStore) pocketTypes.Context); ok {
 		r0 = rf(bs)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithBlockTime provides a mock function with given fields: newTime
-func (_m *Ctx) WithBlockTime(newTime time.Time) posminttypes.Context {
+func (_m *Ctx) WithBlockTime(newTime time.Time) pocketTypes.Context {
 	ret := _m.Called(newTime)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(time.Time) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(time.Time) pocketTypes.Context); ok {
 		r0 = rf(newTime)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithChainID provides a mock function with given fields: chainID
-func (_m *Ctx) WithChainID(chainID string) posminttypes.Context {
+func (_m *Ctx) WithChainID(chainID string) pocketTypes.Context {
 	ret := _m.Called(chainID)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(string) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(string) pocketTypes.Context); ok {
 		r0 = rf(chainID)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithConsensusParams provides a mock function with given fields: params
-func (_m *Ctx) WithConsensusParams(params *abcitypes.ConsensusParams) posminttypes.Context {
+func (_m *Ctx) WithConsensusParams(params *abcitypes.ConsensusParams) pocketTypes.Context {
 	ret := _m.Called(params)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(*abcitypes.ConsensusParams) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(*abcitypes.ConsensusParams) pocketTypes.Context); ok {
 		r0 = rf(params)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithContext provides a mock function with given fields: ctx
-func (_m *Ctx) WithContext(ctx context.Context) posminttypes.Context {
+func (_m *Ctx) WithContext(ctx context.Context) pocketTypes.Context {
 	ret := _m.Called(ctx)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(context.Context) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(context.Context) pocketTypes.Context); ok {
 		r0 = rf(ctx)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithEventManager provides a mock function with given fields: em
-func (_m *Ctx) WithEventManager(em *posminttypes.EventManager) posminttypes.Context {
+func (_m *Ctx) WithEventManager(em *pocketTypes.EventManager) pocketTypes.Context {
 	ret := _m.Called(em)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(*posminttypes.EventManager) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(*pocketTypes.EventManager) pocketTypes.Context); ok {
 		r0 = rf(em)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithGasMeter provides a mock function with given fields: meter
-func (_m *Ctx) WithGasMeter(meter storeTypes.GasMeter) posminttypes.Context {
+func (_m *Ctx) WithGasMeter(meter storeTypes.GasMeter) pocketTypes.Context {
 	ret := _m.Called(meter)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) pocketTypes.Context); ok {
 		r0 = rf(meter)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithIsCheckTx provides a mock function with given fields: isCheckTx
-func (_m *Ctx) WithIsCheckTx(isCheckTx bool) posminttypes.Context {
+func (_m *Ctx) WithIsCheckTx(isCheckTx bool) pocketTypes.Context {
 	ret := _m.Called(isCheckTx)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(bool) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(bool) pocketTypes.Context); ok {
 		r0 = rf(isCheckTx)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithLogger provides a mock function with given fields: logger
-func (_m *Ctx) WithLogger(logger log.Logger) posminttypes.Context {
+func (_m *Ctx) WithLogger(logger log.Logger) pocketTypes.Context {
 	ret := _m.Called(logger)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(log.Logger) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(log.Logger) pocketTypes.Context); ok {
 		r0 = rf(logger)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithMinGasPrices provides a mock function with given fields: gasPrices
-func (_m *Ctx) WithMinGasPrices(gasPrices posminttypes.DecCoins) posminttypes.Context {
+func (_m *Ctx) WithMinGasPrices(gasPrices pocketTypes.DecCoins) pocketTypes.Context {
 	ret := _m.Called(gasPrices)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(posminttypes.DecCoins) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(pocketTypes.DecCoins) pocketTypes.Context); ok {
 		r0 = rf(gasPrices)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithMultiStore provides a mock function with given fields: ms
-func (_m *Ctx) WithMultiStore(ms storeTypes.MultiStore) posminttypes.Context {
+func (_m *Ctx) WithMultiStore(ms storeTypes.MultiStore) pocketTypes.Context {
 	ret := _m.Called(ms)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.MultiStore) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(storeTypes.MultiStore) pocketTypes.Context); ok {
 		r0 = rf(ms)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithProposer provides a mock function with given fields: addr
-func (_m *Ctx) WithProposer(addr posminttypes.Address) posminttypes.Context {
+func (_m *Ctx) WithProposer(addr pocketTypes.Address) pocketTypes.Context {
 	ret := _m.Called(addr)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(posminttypes.Address) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(pocketTypes.Address) pocketTypes.Context); ok {
 		r0 = rf(addr)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithTxBytes provides a mock function with given fields: txBytes
-func (_m *Ctx) WithTxBytes(txBytes []byte) posminttypes.Context {
+func (_m *Ctx) WithTxBytes(txBytes []byte) pocketTypes.Context {
 	ret := _m.Called(txBytes)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func([]byte) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func([]byte) pocketTypes.Context); ok {
 		r0 = rf(txBytes)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
 }
 
 // WithValue provides a mock function with given fields: key, value
-func (_m *Ctx) WithValue(key interface{}, value interface{}) posminttypes.Context {
+func (_m *Ctx) WithValue(key interface{}, value interface{}) pocketTypes.Context {
 	ret := _m.Called(key, value)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func(interface{}, interface{}) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func(interface{}, interface{}) pocketTypes.Context); ok {
 		r0 = rf(key, value)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
@@ -1009,14 +1009,14 @@ func (_m *Ctx) AppVersion() string {
 }
 
 // WithVoteInfos provides a mock function with given fields: voteInfo
-func (_m *Ctx) WithVoteInfos(voteInfo []abcitypes.VoteInfo) posminttypes.Context {
+func (_m *Ctx) WithVoteInfos(voteInfo []abcitypes.VoteInfo) pocketTypes.Context {
 	ret := _m.Called(voteInfo)
 
-	var r0 posminttypes.Context
-	if rf, ok := ret.Get(0).(func([]abcitypes.VoteInfo) posminttypes.Context); ok {
+	var r0 pocketTypes.Context
+	if rf, ok := ret.Get(0).(func([]abcitypes.VoteInfo) pocketTypes.Context); ok {
 		r0 = rf(voteInfo)
 	} else {
-		r0 = ret.Get(0).(posminttypes.Context)
+		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0

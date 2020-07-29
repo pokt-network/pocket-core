@@ -5,16 +5,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
+	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
+	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"time"
-
-	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
-	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
 )
 
 const DEFAULTHTTPMETHOD = "POST"

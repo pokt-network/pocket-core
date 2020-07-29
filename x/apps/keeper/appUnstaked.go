@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // SetUnstakingApplication - Store an application address to the appropriate position in the unstaking queue

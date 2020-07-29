@@ -6,7 +6,7 @@ import (
 	"fmt"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"log"
 )
 

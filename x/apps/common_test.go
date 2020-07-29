@@ -9,20 +9,20 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodeskeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
 	nodestypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/pokt-network/posmint/codec"
-	"github.com/pokt-network/posmint/crypto"
-	"github.com/pokt-network/posmint/store"
-	"github.com/pokt-network/posmint/types/module"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/gov"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/store"
+	"github.com/pokt-network/pocket-core/types/module"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/gov"
+	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 var (

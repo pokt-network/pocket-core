@@ -3,7 +3,7 @@ package keeper
 import (
 	"testing"
 
-	"github.com/pokt-network/posmint/crypto/keys/mintkey"
+	"github.com/pokt-network/pocket-core/crypto/keys/mintkey"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // names used as root for pool module accounts:

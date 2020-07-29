@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	sdk "github.com/pokt-network/posmint/types"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
+	sdk "github.com/pokt-network/pocket-core/types"
+	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 )
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)

@@ -2,7 +2,7 @@ package app
 
 import (
 	"fmt"
-	posConfig "github.com/pokt-network/posmint/config"
+	posConfig "github.com/pokt-network/pocket-core/config"
 	"log"
 	"os"
 	"time"
@@ -15,12 +15,12 @@ import (
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/posmint/crypto"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/types/module"
-	"github.com/pokt-network/posmint/x/auth"
-	"github.com/pokt-network/posmint/x/gov"
-	govTypes "github.com/pokt-network/posmint/x/gov/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/types/module"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/gov"
+	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 )
 
 var mainnetGenesis = `{

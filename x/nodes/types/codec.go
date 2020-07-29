@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/pokt-network/posmint/codec"
+	"github.com/pokt-network/pocket-core/codec"
 )
 
 // Register concrete types on codec

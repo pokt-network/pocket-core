@@ -5,9 +5,9 @@ import (
 	"math"
 
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/posmint/codec"
-	sdk "github.com/pokt-network/posmint/types"
-	"github.com/pokt-network/posmint/x/auth/util"
+	"github.com/pokt-network/pocket-core/codec"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/auth/util"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

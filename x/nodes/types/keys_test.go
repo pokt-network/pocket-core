@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pokt-network/posmint/crypto"
-	"github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/types"
 )
 
 func TestAddressFromPrevStateValidatorPowerKey(t *testing.T) {

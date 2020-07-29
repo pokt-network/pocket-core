@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pokt-network/posmint/types"
+	"github.com/pokt-network/pocket-core/types"
 )
 
 // POS params default values

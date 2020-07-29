@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/posmint/types"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // "ParamKeyTable" - Registers the paramset types in a keytable and returns the table
