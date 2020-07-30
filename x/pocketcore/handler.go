@@ -2,9 +2,9 @@ package pocketcore
 
 import (
 	"fmt"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // "NewHandler" - Returns a handler for "pocketCore" type messages.
@@ -51,6 +51,8 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	addr, claim, err := k.ValidateProof(ctx, proof)
 	if err != nil {
 		if err.Code() == types.CodeReplayAttackError && !claim.IsEmpty() {
+			// delete local evidence
+			deleteEvidence(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType)
 			// if is a replay attack, handle accordingly
 			k.HandleReplayAttack(ctx, addr, sdk.NewInt(claim.TotalProofs))
 			err := k.DeleteClaim(ctx, addr, claim.SessionHeader, claim.EvidenceType)
@@ -66,12 +68,7 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 		return err.Result()
 	}
 	// delete local evidence
-	if proof.GetSigner().Equals(k.GetSelfAddress(ctx)) {
-		err := types.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
-		if err != nil {
-			ctx.Logger().Error("Unable to delete evidence in proofTX handler: " + err.Error())
-		}
-	}
+	deleteEvidence(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -80,4 +77,14 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
+func deleteEvidence(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.SessionHeader, evidenceType types.EvidenceType) {
+	// delete local evidence
+	if signer.Equals(k.GetSelfAddress(ctx)) {
+		err := types.DeleteEvidence(header, evidenceType)
+		if err != nil {
+			ctx.Logger().Error("Unable to delete evidence: " + err.Error())
+		}
+	}
 }

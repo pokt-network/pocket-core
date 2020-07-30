@@ -5,11 +5,11 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
+	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -50,8 +50,8 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 
 // "AppModule" - The higher level building block for a module
 type AppModule struct {
-	AppModuleBasic               // a fundamental structure for all mods
-	keeper         keeper.Keeper // responsible for store operations
+	AppModuleBasic       // a fundamental structure for all mods
+	keeper keeper.Keeper // responsible for store operations
 }
 
 // "NewAppModule" - Creates a new AppModule Object
@@ -92,7 +92,7 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 			// use this sleep timer to bypass the beginBlock lock over transactions
 			time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
 			// auto send the proofs
-			am.keeper.SendClaimTx(ctx, am.keeper.TmNode, ClaimTx)
+			am.keeper.SendClaimTx(ctx, int(am.keeper.MinimumNumberOfProofs(ctx)), am.keeper.TmNode, ClaimTx)
 			// auto claim the proofs
 			am.keeper.SendProofTx(ctx, am.keeper.TmNode, ProofTx)
 			// clear session cache and db
