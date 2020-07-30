@@ -5,12 +5,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
-	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
 // Dispatch supports CORS functionality
@@ -162,7 +164,7 @@ func executeHTTPRequest(payload string, url string, method string, headers map[s
 		}
 	}
 	// execute the request
-	resp, err := (&http.Client{}).Do(req)
+	resp, err := (&http.Client{Timeout: 120 * time.Millisecond}).Do(req)
 	if err != nil {
 		return payload, err
 	}

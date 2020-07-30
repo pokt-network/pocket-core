@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
@@ -106,7 +107,9 @@ func QueryRPC(path string, jsonArgs []byte) (string, error) {
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 120 * time.Millisecond,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
