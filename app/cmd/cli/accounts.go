@@ -492,7 +492,7 @@ var newMultiPublicKey = &cobra.Command{
 			p, err := crypto.NewPublicKey(pk)
 			if err != nil {
 				fmt.Println(fmt.Errorf("error in public key creation: %v", err))
-				continue
+				return
 			}
 			pks = append(pks, p)
 		}
