@@ -2,6 +2,10 @@ package rpc
 
 import (
 	"encoding/json"
+	types2 "github.com/pokt-network/pocket-core/x/auth/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/types"
 	"math/big"
 	"net/http"
 
@@ -98,6 +102,43 @@ func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
 }
 
+// Result of searching for txs
+type RPCResultTxSearch struct {
+	Txs        []*RPCResultTx `json:"txs"`
+	TotalCount int            `json:"total_count"`
+}
+
+// Result of querying for a tx
+type RPCResultTx struct {
+	Hash     common.HexBytes        `json:"hash"`
+	Height   int64                  `json:"height"`
+	Index    uint32                 `json:"index"`
+	TxResult abci.ResponseDeliverTx `json:"tx_result"`
+	Tx       types.Tx               `json:"tx"`
+	Proof    types.TxProof          `json:"proof,omitempty"`
+	StdTx    types2.StdTx           `json:"stdTx"`
+}
+
+func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
+	rpcTxSearch := RPCResultTxSearch{
+		Txs:        make([]*RPCResultTx, res.TotalCount),
+		TotalCount: res.TotalCount,
+	}
+	for _, result := range res.Txs {
+		tx := app.UnmarshalTx(result.Tx)
+		rpcTxSearch.Txs = append(rpcTxSearch.Txs, &RPCResultTx{
+			Hash:     result.Hash,
+			Height:   result.Height,
+			Index:    result.Index,
+			TxResult: result.TxResult,
+			Tx:       result.Tx,
+			Proof:    result.Proof,
+			StdTx:    tx,
+		})
+	}
+	return rpcTxSearch
+}
+
 func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = PaginateAddrParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
@@ -111,12 +152,12 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	} else {
 		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove)
 	}
-
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	s, er := json.MarshalIndent(res, "", "  ")
+	rpcResponse := ResultTxSearchToRPC(res)
+	s, er := json.MarshalIndent(rpcResponse, "", "  ")
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
@@ -134,7 +175,8 @@ func BlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
-	s, er := json.MarshalIndent(res, "", "  ")
+	rpcResponse := ResultTxSearchToRPC(res)
+	s, er := json.MarshalIndent(rpcResponse, "", "  ")
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
