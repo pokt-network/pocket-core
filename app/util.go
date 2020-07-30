@@ -4,14 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"log"
-	"time"
-
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/tendermint/tendermint/types"
+	"log"
 )
 
 func GenerateAAT(appPubKey, clientPubKey string, key crypto.PrivateKey) (aatjson []byte, err error) {
@@ -91,11 +89,10 @@ func ExportState(height int64) (string, error) {
 		return "", err
 	}
 	j, _ = Codec().MarshalJSONIndent(types.GenesisDoc{
-		GenesisTime: time.Now(),
-		ChainID:     "pocket-test",
+		ChainID: chainID + "<Input New ChainID>",
 		ConsensusParams: &types.ConsensusParams{
 			Block: types.BlockParams{
-				MaxBytes:   15000,
+				MaxBytes:   4000000,
 				MaxGas:     -1,
 				TimeIotaMs: 1,
 			},

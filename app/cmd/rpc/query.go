@@ -622,5 +622,5 @@ func State(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteRaw(w, string(res), r.URL.Path, r.Host)
+	WriteRaw(w, res, r.URL.Path, r.Host)
 }
