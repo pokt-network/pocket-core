@@ -2,17 +2,16 @@ package keeper
 
 import (
 	"fmt"
-
-	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
+	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
 // "SendClaimTx" - Automatically sends a claim of work/challenge based on relays or challenges stored.
-func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	// get the private val key (main) account from the keybase
 	kp, err := k.GetPKFromFile(ctx)
 	if err != nil {
@@ -33,17 +32,17 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, claimTx func(pk crypto
 		}
 		// get the type of the first piece of evidence to know if we are dealing with challenge or relays
 		evidenceType := evidence.EvidenceType
-		// if the evidence length is less than 5, it would not satisfy our merkle tree needs
-		if evidenceLength < 5 {
-			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
-				ctx.Logger().Debug(err.Error())
-			}
-			continue
-		}
 		// get the session context
 		sessionCtx, er := ctx.PrevCtx(evidence.SessionHeader.SessionBlockHeight)
 		if er != nil {
 			ctx.Logger().Info("could not get sessionCtx in auto send claim tx, could be due to relay timing before commit is in store: " + er.Error())
+			continue
+		}
+		// if the evidence length is less than 5, it would not satisfy our merkle tree needs
+		if int64(evidenceLength) < keeper.MinimumNumberOfProofs(sessionCtx) {
+			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
 			continue
 		}
 		if ctx.BlockHeight() <= evidence.SessionBlockHeight+k.BlocksPerSession(sessionCtx)-1 { // ensure session is over
@@ -51,7 +50,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, n client.Client, claimTx func(pk crypto
 			continue
 		}
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid/challenged for unsupported blockchains
-		if !k.IsPocketSupportedBlockchain(sessionCtx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) && evidence.NumOfProofs > 0 {
+		if !k.IsPocketSupportedBlockchain(sessionCtx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) {
 			ctx.Logger().Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
 			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
 				ctx.Logger().Debug(err.Error())
