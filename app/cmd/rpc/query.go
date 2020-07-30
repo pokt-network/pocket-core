@@ -94,7 +94,8 @@ func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
-	s, er := json.MarshalIndent(res, "", "  ")
+	rpcResponse := ResultTxToRPC(res)
+	s, er := json.MarshalIndent(rpcResponse, "", "  ")
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
@@ -125,18 +126,23 @@ func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
 		TotalCount: res.TotalCount,
 	}
 	for _, result := range res.Txs {
-		tx := app.UnmarshalTx(result.Tx)
-		rpcTxSearch.Txs = append(rpcTxSearch.Txs, &RPCResultTx{
-			Hash:     result.Hash,
-			Height:   result.Height,
-			Index:    result.Index,
-			TxResult: result.TxResult,
-			Tx:       result.Tx,
-			Proof:    result.Proof,
-			StdTx:    tx,
-		})
+		rpcTxSearch.Txs = append(rpcTxSearch.Txs, ResultTxToRPC(result))
 	}
 	return rpcTxSearch
+}
+
+func ResultTxToRPC(res *core_types.ResultTx) *RPCResultTx {
+	tx := app.UnmarshalTx(res.Tx)
+	r := &RPCResultTx{
+		Hash:     res.Hash,
+		Height:   res.Height,
+		Index:    res.Index,
+		TxResult: res.TxResult,
+		Tx:       res.Tx,
+		Proof:    res.Proof,
+		StdTx:    tx,
+	}
+	return r
 }
 
 func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

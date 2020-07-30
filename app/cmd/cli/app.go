@@ -143,11 +143,6 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 			fmt.Println(err)
 			return
 		}
-		bz, err := json.MarshalIndent(aat, "", "  ")
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println(string(bz))
+		fmt.Println(string(aat))
 	},
 }
