@@ -7,10 +7,10 @@ import (
 	"log"
 	"time"
 
-	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
+	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/tendermint/tendermint/types"
 )
 
@@ -127,11 +127,15 @@ func SortJSON(toSortJSON []byte) string {
 }
 
 func UnmarshalTxStr(txStr string) auth.StdTx {
-	defaultTxDecoder := auth.DefaultTxDecoder(cdc)
 	txBytes, err := base64.StdEncoding.DecodeString(txStr)
 	if err != nil {
 		log.Fatal("error:", err)
 	}
+	return UnmarshalTx(txBytes)
+}
+
+func UnmarshalTx(txBytes []byte) auth.StdTx {
+	defaultTxDecoder := auth.DefaultTxDecoder(cdc)
 	tx, err := defaultTxDecoder(txBytes)
 	if err != nil {
 		log.Fatalf("Could not decode transaction: " + err.Error())
