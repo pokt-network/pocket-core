@@ -2,24 +2,25 @@ package app
 
 import (
 	"encoding/json"
-	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
-	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
-	nodesKeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
-	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
-	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	cfg "github.com/pokt-network/pocket-core/config"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
+	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
+	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/gov"
 	govKeeper "github.com/pokt-network/pocket-core/x/gov/keeper"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
+	nodesKeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
+	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/rpc/client"
+	"github.com/tendermint/tendermint/types"
 	db "github.com/tendermint/tm-db"
 )
 
@@ -40,6 +41,8 @@ type PocketCoreApp struct {
 	pocketKeeper  pocketKeeper.Keeper
 	// Module Manager
 	mm *module.Manager
+
+	genesis *types.GenesisDoc
 }
 
 // new pocket core base
