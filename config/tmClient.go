@@ -36,6 +36,14 @@ func NewClient(ctx Config, appCreator AppCreator) (*node.Node, error) {
 
 	UpgradeOldPrivValFile(config)
 
+	txIndexer, err := node.CreateTxIndexer(config, node.DefaultDBProvider)
+	if err != nil {
+		return nil, err
+	}
+	blockStore, stateDB, err := node.InitDBs(config, node.DefaultDBProvider)
+	if err != nil {
+		return nil, err
+	}
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
 		config,
@@ -46,6 +54,9 @@ func NewClient(ctx Config, appCreator AppCreator) (*node.Node, error) {
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(config.Instrumentation),
 		ctx.Logger.With("module", "node"),
+		txIndexer,
+		blockStore,
+		stateDB,
 	)
 	if err != nil {
 		return nil, err

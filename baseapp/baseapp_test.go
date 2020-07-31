@@ -119,11 +119,11 @@ package baseapp
 //	require.Nil(t, err)
 //	testLoadVersionHelper(t, app, int64(2), commitID2)
 //
-//	// reload with LoadVersion, see if you can commit the same block and get
+//	// reload with RollbackVersion, see if you can commit the same block and get
 //	// the same result
 //	app = NewBaseApp(name, logger, db, nil, pruningOpt)
 //	app.MountStores(capKey)
-//	err = app.LoadVersion(1, capKey)
+//	err = app.RollbackVersion(1, capKey)
 //	require.Nil(t, err)
 //	testLoadVersionHelper(t, app, int64(1), commitID1)
 //	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -164,7 +164,7 @@ package baseapp
 //	require.Nil(t, err)
 //
 //	// require error when loading an invalid version
-//	err = app.LoadVersion(-1, capKey)
+//	err = app.RollbackVersion(-1, capKey)
 //	require.Error(t, err)
 //
 //	header := abci.Header{Height: 1}
@@ -177,12 +177,12 @@ package baseapp
 //	app.MountStores(capKey)
 //
 //	// require we can load the latest version
-//	err = app.LoadVersion(1, capKey)
+//	err = app.RollbackVersion(1, capKey)
 //	require.Nil(t, err)
 //	testLoadVersionHelper(t, app, int64(1), commitID1)
 //
 //	// require error when loading an invalid version
-//	err = app.LoadVersion(2, capKey)
+//	err = app.RollbackVersion(2, capKey)
 //	require.Error(t, err)
 //}
 //

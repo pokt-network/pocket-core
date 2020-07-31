@@ -30,9 +30,9 @@ type PocketCoreApp struct {
 	*bam.BaseApp
 	// the codec (uses amino)
 	cdc *codec.Codec
-	// keys to access the substores
-	keys  map[string]*sdk.KVStoreKey
-	tkeys map[string]*sdk.TransientStoreKey
+	// Keys to access the substores
+	Keys  map[string]*sdk.KVStoreKey
+	Tkeys map[string]*sdk.TransientStoreKey
 	// Keepers for each module
 	accountKeeper auth.Keeper
 	appsKeeper    appsKeeper.Keeper
@@ -46,23 +46,23 @@ type PocketCoreApp struct {
 }
 
 // new pocket core base
-func newPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)) *PocketCoreApp {
+func NewPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)) *PocketCoreApp {
 	Codec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), options...)
 	// set version of the baseapp
 	bApp.SetAppVersion(AppVersion)
-	// setup the key value store keys
+	// setup the key value store Keys
 	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
-	// setup the transient store keys
+	// setup the transient store Keys
 	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
-	// add params keys too
+	// add params Keys too
 	// Create the application
 	return &PocketCoreApp{
 		BaseApp: bApp,
 		cdc:     cdc,
-		keys:    k,
-		tkeys:   tkeys,
+		Keys:    k,
+		Tkeys:   tkeys,
 	}
 }
 
@@ -95,11 +95,6 @@ func (app *PocketCoreApp) BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock) 
 // setups all of the end blockers for each module
 func (app *PocketCoreApp) EndBlocker(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
 	return app.mm.EndBlock(ctx, req)
-}
-
-// loads the hight from the store
-func (app *PocketCoreApp) LoadHeight(height int64) error {
-	return app.LoadVersion(height, app.keys[bam.MainStoreKey])
 }
 
 // ModuleAccountAddrs returns all the pcInstance's module account addresses.

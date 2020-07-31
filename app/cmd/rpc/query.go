@@ -125,6 +125,9 @@ func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
 		Txs:        make([]*RPCResultTx, res.TotalCount),
 		TotalCount: res.TotalCount,
 	}
+	if res == nil {
+		return rpcTxSearch
+	}
 	for _, result := range res.Txs {
 		rpcTxSearch.Txs = append(rpcTxSearch.Txs, ResultTxToRPC(result))
 	}
@@ -132,6 +135,9 @@ func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
 }
 
 func ResultTxToRPC(res *core_types.ResultTx) *RPCResultTx {
+	if res == nil {
+		return nil
+	}
 	tx := app.UnmarshalTx(res.Tx)
 	r := &RPCResultTx{
 		Hash:     res.Hash,

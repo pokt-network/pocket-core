@@ -18,7 +18,7 @@ type AppCreator func(log.Logger, dbm.DB, io.Writer) *PocketCoreApp
 
 func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error) {
 	// setup the database
-	db, err := openDB(c.TmConfig.RootDir)
+	db, err := OpenDB(c.TmConfig.RootDir)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -35,6 +35,17 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	// upgrade the privVal file
 	upgradePrivVal(c.TmConfig)
 	app := creator(c.Logger, db, traceWriter)
+	// TODO modified here
+	txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
+	if err != nil {
+		return nil, nil, err
+	}
+	blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
+	if err != nil {
+		return nil, nil, err
+	}
+	app.SetTxIndexer(txIndexer)
+	app.SetBlockstore(blockStore)
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
 		c.TmConfig,
@@ -45,6 +56,9 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
 		c.Logger.With("module", "node"),
+		txIndexer,
+		blockStore,
+		stateDB,
 	)
 	if err != nil {
 		return nil, nil, err
@@ -52,7 +66,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	return tmNode, app, nil
 }
 
-func openDB(rootDir string) (dbm.DB, error) {
+func OpenDB(rootDir string) (dbm.DB, error) {
 	dataDir := filepath.Join(rootDir, GlobalConfig.TendermintConfig.DBPath)
 	db, err := sdk.NewLevelDB(ApplicationDBName, dataDir)
 	return db, err

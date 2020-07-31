@@ -31,7 +31,7 @@ const (
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
 func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
-	app := newPocketBaseApp(logger, db, baseAppOptions...)
+	app := NewPocketBaseApp(logger, db, baseAppOptions...)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
@@ -40,14 +40,14 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 	// The AuthKeeper handles address -> account lookups
 	app.accountKeeper = auth.NewKeeper(
 		app.cdc,
-		app.keys[auth.StoreKey],
+		app.Keys[auth.StoreKey],
 		authSubspace,
 		moduleAccountPermissions,
 	)
 	// The nodesKeeper keeper handles pocket core nodes
 	app.nodesKeeper = nodesKeeper.NewKeeper(
 		app.cdc,
-		app.keys[nodesTypes.StoreKey],
+		app.Keys[nodesTypes.StoreKey],
 		app.accountKeeper,
 		nodesSubspace,
 		nodesTypes.DefaultCodespace,
@@ -55,7 +55,7 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 	// The apps keeper handles pocket core applications
 	app.appsKeeper = appsKeeper.NewKeeper(
 		app.cdc,
-		app.keys[appsTypes.StoreKey],
+		app.Keys[appsTypes.StoreKey],
 		app.nodesKeeper,
 		app.accountKeeper,
 		appsSubspace,
@@ -63,7 +63,7 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 	)
 	// The main pocket core
 	app.pocketKeeper = pocketKeeper.NewKeeper(
-		app.keys[pocketTypes.StoreKey],
+		app.Keys[pocketTypes.StoreKey],
 		app.cdc,
 		app.accountKeeper,
 		app.nodesKeeper,
@@ -74,8 +74,8 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 	// The governance keeper
 	app.govKeeper = govKeeper.NewKeeper(
 		app.cdc,
-		app.keys[pocketTypes.StoreKey],
-		app.tkeys[pocketTypes.StoreKey],
+		app.Keys[pocketTypes.StoreKey],
+		app.Tkeys[pocketTypes.StoreKey],
 		govTypes.DefaultCodespace,
 		app.accountKeeper,
 		authSubspace, nodesSubspace, appsSubspace, pocketSubspace,
@@ -115,11 +115,11 @@ func NewPocketCoreApp(genState cfg.GenesisState, keybase keys.Keybase, tmClient 
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 	// initialize stores
-	app.MountKVStores(app.keys)
-	app.MountTransientStores(app.tkeys)
+	app.MountKVStores(app.Keys)
+	app.MountTransientStores(app.Tkeys)
 	app.SetAppVersion(AppVersion)
 	// load the latest persistent version of the store
-	err := app.LoadLatestVersion(app.keys[bam.MainStoreKey])
+	err := app.LoadLatestVersion(app.Keys[bam.MainStoreKey])
 	if err != nil {
 		cmn.Exit(err.Error())
 	}

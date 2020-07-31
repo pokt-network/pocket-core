@@ -7,15 +7,14 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/keeper"
 	"github.com/pokt-network/pocket-core/x/auth/types"
-	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/rpc/client"
+	"github.com/tendermint/tendermint/state/txindex"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"os"
 )
 
 // NewAnteHandler returns an AnteHandler that checks signatures and deducts fees from the first signer.
 func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
-	return func(ctx sdk.Ctx, tx sdk.Tx, txBz []byte, tmNode *node.Node, simulate bool) (newCtx sdk.Ctx, res sdk.Result, abort bool) {
+	return func(ctx sdk.Ctx, tx sdk.Tx, txBz []byte, txIndexer *txindex.TxIndexer, simulate bool) (newCtx sdk.Ctx, res sdk.Result, abort bool) {
 		if addr := ak.GetModuleAddress(types.FeeCollectorName); addr == nil {
 			ctx.Logger().Error(fmt.Sprintf("%s module account has not been set", types.FeeCollectorName))
 			os.Exit(1)
@@ -29,7 +28,7 @@ func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
 		if err := tx.ValidateBasic(); err != nil {
 			return newCtx, err.Result(), true
 		}
-		err := ValidateTransaction(ctx, ak, stdTx, ak.GetParams(ctx), tmNode, txBz, simulate)
+		err := ValidateTransaction(ctx, ak, stdTx, ak.GetParams(ctx), txIndexer, txBz, simulate)
 		if err != nil {
 			return newCtx, err.Result(), true
 		}
@@ -41,7 +40,7 @@ func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
 	}
 }
 
-func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, tmNode *node.Node, txBz []byte, simulate bool) sdk.Error {
+func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, txIndexer *txindex.TxIndexer, txBz []byte, simulate bool) sdk.Error {
 	// validate the memo
 	if err := ValidateMemo(stdTx, params); err != nil {
 		return types.ErrInvalidMemo(ModuleName, err)
@@ -62,9 +61,9 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, tmNo
 	}
 	// check for duplicate transaction to prevent replay attacks
 	txHash := tmTypes.Tx(txBz).Hash()
-	// make http call to tendermint to check txIndex // TODO remove this http call round trip and access directly
-	_, err := client.NewHTTP(tmNode.Config().RPC.ListenAddress, "/websocket").Tx(txHash, false)
-	if err == nil {
+	// make http call to tendermint to check txIndexer
+	res, _ := (*txIndexer).Get(txHash)
+	if res != nil {
 		return types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
 	}
 	// get the sign bytes from the tx

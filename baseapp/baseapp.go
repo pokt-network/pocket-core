@@ -10,6 +10,7 @@ package baseapp
 import (
 	"fmt"
 	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/state/txindex"
 	tmStore "github.com/tendermint/tendermint/store"
 	"io"
 	"os"
@@ -59,12 +60,14 @@ type BaseApp struct {
 	name        string               // application name from abci.Info
 	db          dbm.DB               // common DB backend
 	tmNode      *node.Node           // <---- todo updated here
+	txIndexer   *txindex.TxIndexer   // <---- todo updated here
+	blockstore  *tmStore.BlockStore  // <---- todo updated here
 	cms         sdk.CommitMultiStore // Main (uncached) state
 	router      sdk.Router           // handle any kind of message
 	queryRouter sdk.QueryRouter      // router for redirecting query calls
 	txDecoder   sdk.TxDecoder        // unmarshal []byte into sdk.Tx
 
-	// set upon LoadVersion or LoadLatestVersion.
+	// set upon RollbackVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
 	anteHandler    sdk.AnteHandler  // ante handler for fee and auth
@@ -128,6 +131,22 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecod
 
 func (app *BaseApp) SetTendermintNode(node *node.Node) {
 	app.tmNode = node
+}
+
+func (app *BaseApp) SetTxIndexer(txindexer *txindex.TxIndexer) {
+	app.txIndexer = txindexer
+}
+
+func (app *BaseApp) Txindexer() (txindexer *txindex.TxIndexer) {
+	return app.txIndexer
+}
+
+func (app *BaseApp) SetBlockstore(blockstore *tmStore.BlockStore) {
+	app.blockstore = blockstore
+}
+
+func (app *BaseApp) Blockstore() (blockstore *tmStore.BlockStore) {
+	return app.blockstore
 }
 
 // Name returns the name of the BaseApp.
@@ -231,16 +250,6 @@ func (app *BaseApp) LoadLatestVersion(baseKey *sdk.KVStoreKey) error {
 	return app.initFromMainStore(baseKey)
 }
 
-// LoadVersion loads the BaseApp application version. It will panic if called
-// more than once on a running baseapp.
-func (app *BaseApp) LoadVersion(version int64, baseKey *sdk.KVStoreKey) error {
-	err := app.cms.LoadVersion(version)
-	if err != nil {
-		return err
-	}
-	return app.initFromMainStore(baseKey)
-}
-
 // LastCommitID returns the last CommitID of the multistore.
 func (app *BaseApp) LastCommitID() sdk.CommitID {
 	return app.cms.LastCommitID()
@@ -315,10 +324,7 @@ func (app *BaseApp) IsSealed() bool { return app.sealed }
 // It is called by InitChain() and Commit()
 func (app *BaseApp) setCheckState(header abci.Header) { // todo <- modified here
 	ms := app.cms
-	context := sdk.NewContext(ms, header, true, app.logger).WithAppVersion(app.appVersion)
-	if app.tmNode != nil {
-		context = context.WithBlockStore(app.tmNode.BlockStore())
-	}
+	context := sdk.NewContext(ms, header, true, app.logger).WithAppVersion(app.appVersion).WithBlockStore(app.blockstore)
 	app.checkState = &state{
 		ms:  ms.CacheMultiStore(),
 		ctx: context,
@@ -331,10 +337,7 @@ func (app *BaseApp) setCheckState(header abci.Header) { // todo <- modified here
 // and deliverState is set nil on Commit().
 func (app *BaseApp) setDeliverState(header abci.Header) { // todo <- modified here
 	ms := app.cms
-	context := sdk.NewContext(ms, header, true, app.logger).WithAppVersion(app.appVersion)
-	if app.tmNode != nil {
-		context = context.WithBlockStore(app.tmNode.BlockStore())
-	}
+	context := sdk.NewContext(ms, header, true, app.logger).WithAppVersion(app.appVersion).WithBlockStore(app.blockstore)
 	app.deliverState = &state{
 		ms:  ms.CacheMultiStore(),
 		ctx: context,
@@ -956,8 +959,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 		// writes do not happen if aborted/failed.  This may have some
 		// performance benefits, but it'll be more difficult to get right.
 		anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
-
-		newCtx, result, abort := app.anteHandler(anteCtx, tx, txBytes, app.tmNode, mode == runTxModeSimulate)
+		newCtx, result, abort := app.anteHandler(anteCtx, tx, txBytes, app.txIndexer, mode == runTxModeSimulate)
 		if newCtx != nil && !newCtx.IsZero() {
 			// At this point, newCtx.MultiStore() is cache-wrapped, or something else
 			// replaced by the ante handler. We want the original multistore, not one

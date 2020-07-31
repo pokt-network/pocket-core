@@ -99,6 +99,7 @@ type CommitMultiStore interface {
 	// must be idempotent (return the same commit id). Otherwise the behavior is
 	// undefined.
 	LoadVersion(ver int64) error
+	RollbackVersion(ver int64) error
 	CopyStore() *Store
 }
 

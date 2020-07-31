@@ -10,7 +10,6 @@ import (
 	"github.com/pokt-network/pocket-core/store/tracekv"
 	"github.com/pokt-network/pocket-core/store/types"
 
-	"github.com/pkg/errors"
 	"github.com/tendermint/iavl"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
@@ -99,6 +98,18 @@ func (st *Store) GetImmutable(version int64) (*Store, error) {
 	}, nil
 }
 
+func (st *Store) Rollback(version int64) error {
+	r, ok := st.tree.(*iavl.MutableTree)
+	if !ok {
+		return fmt.Errorf("cant turn st.Tree into mutable tree for rollback")
+	}
+	_, err := r.LoadVersionForOverwriting(version)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Implements Committer.
 func (st *Store) Commit() types.CommitID {
 	// Save a new version.
@@ -109,16 +120,16 @@ func (st *Store) Commit() types.CommitID {
 	}
 
 	// Release an old version of history, if not a sync waypoint.
-	previous := version - 1
-	if st.numRecent < previous {
-		toRelease := previous - st.numRecent
-		if st.storeEvery == 0 || toRelease%st.storeEvery != 0 {
-			err := st.tree.DeleteVersion(toRelease)
-			if errCause := errors.Cause(err); errCause != nil && errCause != iavl.ErrVersionDoesNotExist {
-				panic(err)
-			}
-		}
-	}
+	//previous := version - 1 TODO removed for testing
+	//if st.numRecent < previous {
+	//	toRelease := previous - st.numRecent
+	//	if st.storeEvery == 0 || toRelease%st.storeEvery != 0 {
+	//		err := st.tree.DeleteVersion(toRelease)
+	//		if errCause := errors.Cause(err); errCause != nil && errCause != iavl.ErrVersionDoesNotExist {
+	//			panic(err)
+	//		}
+	//	}
+	//}
 
 	return types.CommitID{
 		Version: version,
@@ -244,7 +255,7 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	res.Height = getHeight(tree, req)
 
 	switch req.Path {
-	case "/key": // get by key
+	case "/key":        // get by key
 		key := req.Data // data holds the key bytes
 
 		res.Key = key
