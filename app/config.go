@@ -178,6 +178,7 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = 900000000000
 	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000
 	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 2000000000
+	c.TendermintConfig.P2P.AllowDuplicateIP = true
 	return c
 }
 
