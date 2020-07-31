@@ -138,6 +138,64 @@ func (rs *Store) LoadLatestVersion() error {
 }
 
 // Implements CommitMultiStore.
+func (rs *Store) RollbackVersion(height int64) error {
+	// ensure latest version is greater than rollback height
+	ver := getLatestVersion(rs.DB)
+	if height >= ver {
+		return fmt.Errorf("the rollback height: %d must be less than the actual app height: %d", height, ver)
+	}
+	// create a new db
+	b := rs.DB.NewBatch()
+	// set the latest version so that we always start from this height
+	setLatestVersion(b, height)
+	// get commit info
+	cInfo, err := getCommitInfo(rs.DB, ver)
+	if err != nil {
+		return err
+	}
+	// convert StoreInfos slice to map
+	infos := make(map[types.StoreKey]storeInfo)
+	for _, storeInfo := range cInfo.StoreInfos {
+		infos[rs.nameToKey(storeInfo.Name)] = storeInfo
+	}
+	// for each store
+	for key, storeParams := range rs.storesParams {
+		var id types.CommitID
+		info, ok := infos[key]
+		if ok {
+			id = info.Core.CommitID
+		}
+		// load the kvStore using the commit id
+		store, err := rs.loadCommitStoreFromParams(key, id, storeParams)
+		if err != nil {
+			return fmt.Errorf("failed to load Store: %v", err)
+		}
+		if store.GetStoreType() == types.StoreTypeTransient {
+			continue
+		}
+		// convert to iavl
+		s, ok := store.(*iavl.Store)
+		if !ok {
+			panic("store type not supported for rollback, (iavl or transient) type: " + fmt.Sprintf("%v", s.GetStoreType()))
+		}
+		// rollback to a certain height
+		err = s.Rollback(height)
+		if err != nil {
+			return err
+		}
+		rs.stores[key] = s
+	}
+	// delete commit info from height + 1
+	for i := height + 1; i <= ver; i++ {
+		cInfoKey := fmt.Sprintf(commitInfoKeyFmt, i)
+		b.Delete([]byte(cInfoKey))
+	}
+	// write to db
+	b.Write()
+	return nil
+}
+
+// Implements CommitMultiStore.
 func (rs *Store) LoadVersion(ver int64) error {
 	if ver == 0 {
 		// Special logic for version 0 where there is no need to get commit

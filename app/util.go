@@ -89,7 +89,7 @@ func ExportState(height int64) (string, error) {
 		return "", err
 	}
 	j, _ = Codec().MarshalJSONIndent(types.GenesisDoc{
-		ChainID: chainID + "<Input New ChainID>",
+		ChainID: "<Input New ChainID>",
 		ConsensusParams: &types.ConsensusParams{
 			Block: types.BlockParams{
 				MaxBytes:   4000000,
