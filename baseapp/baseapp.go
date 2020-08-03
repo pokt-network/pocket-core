@@ -9,6 +9,7 @@ package baseapp
 
 import (
 	"fmt"
+	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/state/txindex"
 	tmStore "github.com/tendermint/tendermint/store"
@@ -56,16 +57,17 @@ const (
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct {
 	// initialized on creation
-	logger      log.Logger
-	name        string               // application name from abci.Info
-	db          dbm.DB               // common DB backend
-	tmNode      *node.Node           // <---- todo updated here
-	txIndexer   *txindex.TxIndexer   // <---- todo updated here
-	blockstore  *tmStore.BlockStore  // <---- todo updated here
-	cms         sdk.CommitMultiStore // Main (uncached) state
-	router      sdk.Router           // handle any kind of message
-	queryRouter sdk.QueryRouter      // router for redirecting query calls
-	txDecoder   sdk.TxDecoder        // unmarshal []byte into sdk.Tx
+	logger       log.Logger
+	name         string                 // application name from abci.Info
+	db           dbm.DB                 // common DB backend
+	tmNode       *node.Node             // <---- todo updated here
+	txIndexer    *txindex.TxIndexer     // <---- todo updated here
+	blockstore   *tmStore.BlockStore    // <---- todo updated here
+	evidencePool *evidence.EvidencePool // <---- todo updated here
+	cms          sdk.CommitMultiStore   // Main (uncached) state
+	router       sdk.Router             // handle any kind of message
+	queryRouter  sdk.QueryRouter        // router for redirecting query calls
+	txDecoder    sdk.TxDecoder          // unmarshal []byte into sdk.Tx
 
 	// set upon RollbackVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
@@ -147,6 +149,14 @@ func (app *BaseApp) SetBlockstore(blockstore *tmStore.BlockStore) {
 
 func (app *BaseApp) Blockstore() (blockstore *tmStore.BlockStore) {
 	return app.blockstore
+}
+
+func (app *BaseApp) SetEvidencePool(evidencePool *evidence.EvidencePool) {
+	app.evidencePool = evidencePool
+}
+
+func (app *BaseApp) EvidencePool() (evidencePool *evidence.EvidencePool) {
+	return app.evidencePool
 }
 
 // Name returns the name of the BaseApp.

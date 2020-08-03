@@ -44,6 +44,11 @@ func NewClient(ctx Config, appCreator AppCreator) (*node.Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Make Evidence Reactor
+	evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(config, node.DefaultDBProvider, stateDB, ctx.Logger)
+	if err != nil {
+		return nil, err
+	}
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
 		config,
@@ -57,6 +62,8 @@ func NewClient(ctx Config, appCreator AppCreator) (*node.Node, error) {
 		txIndexer,
 		blockStore,
 		stateDB,
+		evidencePool,
+		evidenceReactor,
 	)
 	if err != nil {
 		return nil, err

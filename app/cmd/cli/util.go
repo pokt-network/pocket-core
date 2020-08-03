@@ -110,7 +110,7 @@ var unsafeRollbackCmd = &cobra.Command{
 		}
 		if blocks {
 			// rollback block store and state
-			err = state.UnsafeRollbackData(&app.GlobalConfig.TendermintConfig, true, int64(height))
+			err = app.UnsafeRollbackData(&app.GlobalConfig.TendermintConfig, true, int64(height))
 			if err != nil {
 				fmt.Println("error rolling back block and state: ", err)
 				return
