@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	sdk "github.com/pokt-network/pocket-core/types"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
@@ -8,6 +9,8 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
+	tmState "github.com/tendermint/tendermint/state"
+	"github.com/tendermint/tendermint/store"
 	dbm "github.com/tendermint/tm-db"
 	"io"
 	"os"
@@ -44,8 +47,15 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	if err != nil {
 		return nil, nil, err
 	}
+	// Make Evidence Reactor
+	evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	app.SetTxIndexer(txIndexer)
 	app.SetBlockstore(blockStore)
+	app.SetEvidencePool(evidencePool)
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
 		c.TmConfig,
@@ -59,6 +69,8 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		txIndexer,
 		blockStore,
 		stateDB,
+		evidencePool,
+		evidenceReactor,
 	)
 	if err != nil {
 		return nil, nil, err
@@ -98,4 +110,48 @@ type config struct {
 	TmConfig    *cfg.Config
 	Logger      log.Logger
 	TraceWriter string
+}
+
+func UnsafeRollbackData(config *cfg.Config, modifyStateFile bool, height int64) error {
+	blockStore, state, blockStoreDB, stateDb, err := tmState.BlocksAndStateFromDB(config, tmState.DefaultDBProvider)
+	if err != nil {
+		return err
+	}
+	// Make Evidence Reactor
+	_, evidencePool, err := node.CreateEvidenceReactor(config, node.DefaultDBProvider, stateDb, log.NewNopLogger())
+	if err != nil {
+		return err
+	}
+	lastHeight := state.LastBlockHeight
+	// if rollback height is less than state.height
+	if lastHeight > height {
+		// get the state at that height
+		stateRestore := tmState.RestoreStateFromBlock(stateDb, blockStore, height)
+		// save the state to the db to overwrite the current state
+		tmState.SaveState(stateDb, stateRestore)
+		// roll back the blockstore to the previous height
+		store.BlockStoreStateJSON{Height: height}.Save(blockStoreDB)
+		if modifyStateFile {
+			err := modifyPrivValidatorsFile(config, height)
+			if err != nil {
+				return err
+			}
+		}
+		evidencePool.RollbackEvidence(height, lastHeight)
+	} else {
+		return fmt.Errorf("the rollback height: %d must be greater than that of the previous state: %d", state.LastBlockHeight, height)
+	}
+	return nil
+}
+
+func modifyPrivValidatorsFile(config *cfg.Config, rollbackHeight int64) error {
+	var sig []byte
+	filePv := pvm.LoadOrGenFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+	filePv.LastSignState.Height = rollbackHeight
+	filePv.LastSignState.Round = 0
+	filePv.LastSignState.Step = 0
+	filePv.LastSignState.Signature = sig
+	filePv.LastSignState.SignBytes = nil
+	filePv.Save()
+	return nil
 }
