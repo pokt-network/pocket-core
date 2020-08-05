@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"math"
-	"math/rand"
 	"reflect"
 	"sort"
 	"strconv"
@@ -234,41 +233,7 @@ func levelUp(data []HashRange) (nextLevelData []HashRange, atRoot bool) {
 	return data[:dataLen], false
 }
 
-// "sortAndStructure" - takes Proof data, sorts, and structures them as a `balanced` merkle tree
 func sortAndStructure(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
-	// get the # of proofs
-	numberOfProofs := len(proofs)
-	// initialize the hashRange
-	hashRanges := make([]HashRange, numberOfProofs)
-	// sort the slice based on the numerical value of the upper value (just the decimal representation of the merkleHash)
-	hashRanges, proofs = quickSortProofs(hashRanges, proofs)
-	// keep track of previous upper (next values lower)
-	lower := uint64(0)
-	// set the lower values of each
-	for i := range proofs {
-		// the range is the previous
-		hashRanges[i].Range.Lower = lower
-		// update the lower
-		lower = hashRanges[i].Range.Upper
-	}
-	// calculate the proper length of the merkle tree
-	properLength := nextPowerOfTwo(uint(numberOfProofs))
-	// generate padding to make it a proper merkle tree
-	padding := make([]HashRange, int(properLength)-numberOfProofs)
-	// add it to the merkleHash rangeds
-	hashRanges = append(hashRanges, padding...)
-	// add padding to the end of the hashRange
-	for i := numberOfProofs; i < int(properLength); i++ {
-		hashRanges[i] = HashRange{
-			Hash:  merkleHash([]byte(strconv.Itoa(i))),
-			Range: Range{Lower: lower, Upper: lower + 1},
-		}
-		lower = hashRanges[i].Range.Upper
-	}
-	return hashRanges, proofs
-}
-
-func sortAndStructureC(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
 	// get the # of proofs
 	numberOfProofs := len(proofs)
 	// initialize the hashRange
@@ -281,7 +246,6 @@ func sortAndStructureC(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
 			hashRanges[i].Hash = merkleHash(proofs[i].Bytes())
 			// get the inital sum (just the dec val of the merkleHash)
 			hashRanges[i].Range.Upper = sumFromHash(hashRanges[i].Hash)
-
 		}
 	}
 	sortedRangesAndProofs := proofAndRanges{hashRanges, proofs}
@@ -311,50 +275,4 @@ func sortAndStructureC(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
 		lower = hashRanges[i].Range.Upper
 	}
 	return hashRanges, proofs
-}
-
-// "quickSort" - Sort the merkleHash sum and the proofs by merkleHash sum
-// CONTRACT merkleHash sum and proofs must be the same Length
-func quickSortProofs(hr []HashRange, p []Proof) (sortedHR []HashRange, sortedP []Proof) {
-	// get the Length of the merkleHash sums
-	hsLen := len(hr)
-	if hsLen <= 1 {
-		return hr, p
-	}
-	// if not initialized, set all the upper values (used for comparison in quicksort)
-	if hr[0].Range.Upper == 0 {
-		for i := range hr {
-			// save the merkleHash and sum of the Proof in the new tree slice
-			hr[i].Hash = merkleHash(p[i].Bytes())
-			// get the inital sum (just the dec val of the merkleHash)
-			hr[i].Range.Upper = sumFromHash(hr[i].Hash)
-		}
-	}
-	// set left to zero and right to end index
-	l, r := 0, hsLen-1
-	// generate random pivot
-	pivot := rand.Int() % hsLen
-	// switch the two
-	hr[pivot], hr[r] = hr[r], hr[pivot]
-	// duplicate behavior for the proof
-	p[pivot], p[r] = p[r], p[pivot]
-	// loop through each item and compare
-	for i := range hr {
-		if hr[i].Range.Upper < hr[r].Range.Upper {
-			// switch the two
-			hr[i], hr[l] = hr[l], hr[i]
-			// duplicate behavior for the proof
-			p[i], p[l] = p[l], p[i]
-			// increment left
-			l++
-		}
-	}
-	// switch the two
-	hr[l], hr[r] = hr[r], hr[l]
-	// duplicate behavior for the proof
-	p[l], p[r] = p[r], p[l]
-	// recursive quicksort
-	quickSortProofs(hr[:l], p[:l])
-	quickSortProofs(hr[l+1:], p[l+1:])
-	return hr, p
 }

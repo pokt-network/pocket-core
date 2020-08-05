@@ -422,7 +422,8 @@ func Test_sortAndStructure(t *testing.T) {
 			result := true
 			for i := 0; i < 1; i++ {
 				gotSortedHR, gotProof := sortAndStructure(tt.args.p)
-				gotSortedHR2, gotProof2 := sortAndStructureC(tt.args.p)
+				gotSortedHR2, gotProof2 := sortAndStructure(tt.args.p)
+				assert.Equal(t, len(gotSortedHR), len(gotSortedHR2))
 				assert.Equal(t, cap(gotSortedHR), cap(gotSortedHR2))
 				if !reflect.DeepEqual(gotSortedHR, gotSortedHR2) {
 					fmt.Println("HashRanges Not Equal")
@@ -436,6 +437,7 @@ func Test_sortAndStructure(t *testing.T) {
 				if !reflect.DeepEqual(gotProof, gotProof2) {
 					t.FailNow()
 				}
+
 			}
 			assert.True(t, result)
 		})
@@ -479,14 +481,6 @@ func Benchmark_sortAndStructure(b *testing.B) {
 				p:  lol,
 			},
 			f: sortAndStructure,
-		},
-		{
-			name: "stdlib",
-			args: benchmarkArgs{
-				hr: hashRanges,
-				p:  lol,
-			},
-			f: sortAndStructureC,
 		},
 	}
 	b.StopTimer()
