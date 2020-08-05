@@ -1,9 +1,9 @@
 package types
 
 import (
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	"github.com/pokt-network/pocket-core/codec"
 )
 
 // ModuleCdc is the codec for the module

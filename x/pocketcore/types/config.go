@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/tendermint/tendermint/libs/log"
 	db "github.com/tendermint/tm-db"
 	"time"
 )
@@ -18,12 +19,13 @@ var (
 )
 
 // "InitConfig" - Initializes the cache for sessions and evidence
-func InitConfig(userAgent, evidenceDir, sessionDir string, sessionDBType, evidenceDBType db.DBBackendType, maxEvidenceEntries, maxSessionEntries int, evidenceDBName, sessionDBName string, timeout int64) {
+func InitConfig(userAgent, evidenceDir, sessionDir string, sessionDBType, evidenceDBType db.DBBackendType, maxEvidenceEntries, maxSessionEntries int, evidenceDBName, sessionDBName string, chains HostedBlockchains, logger log.Logger, prometheusAddr string, maxOpenConn int, timeout int64) {
 	cacheOnce.Do(func() {
 		globalEvidenceCache = new(CacheStorage)
 		globalSessionCache = new(CacheStorage)
 		globalEvidenceCache.Init(evidenceDir, evidenceDBName, evidenceDBType, maxEvidenceEntries)
 		globalSessionCache.Init(sessionDir, sessionDBName, sessionDBType, maxSessionEntries)
+		InitGlobalServiceMetric(chains, logger, prometheusAddr, maxOpenConn)
 	})
 	globalUserAgent = userAgent
 	SetRPCTimeout(timeout)

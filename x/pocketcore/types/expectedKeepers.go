@@ -7,7 +7,7 @@ import (
 )
 
 type PosKeeper interface {
-	RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address)
+	RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) sdk.Int
 	GetStakedTokens(ctx sdk.Ctx) sdk.Int
 	Validator(ctx sdk.Ctx, addr sdk.Address) nodesexported.ValidatorI
 	TotalTokens(ctx sdk.Ctx) sdk.Int

@@ -109,6 +109,8 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error)
 	// retrieve the hosted blockchain url requested
 	chain, err := hostedBlockchains.GetChain(r.Proof.Blockchain)
 	if err != nil {
+		// metric track
+		GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain)
 		return "", err
 	}
 	url := strings.Trim(chain.URL, `/`)
@@ -118,6 +120,8 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error)
 	// do basic http request on the relay
 	res, er := executeHTTPRequest(r.Payload.Data, url, globalUserAgent, chain.BasicAuth, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
+		// metric track
+		GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain)
 		return res, NewHTTPExecutionError(ModuleName, er)
 	}
 	return res, nil

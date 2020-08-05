@@ -15456,13 +15456,19 @@ func newDefaultGenesisState() []byte {
 		Jailed:                  false,
 		Status:                  2,
 		Chains:                  []string{PlaceholderHash},
-		StakedTokens:            sdk.NewInt(10000000),
-		MaxRelays:               sdk.NewInt(10000000),
+		StakedTokens:            sdk.NewInt(10000000000000),
+		MaxRelays:               sdk.NewInt(10000000000000),
 		UnstakingCompletionTime: time.Time{},
 	})
 	res = Codec().MustMarshalJSON(appsGenesis)
 	defaultGenesis[appsTypes.ModuleName] = res
 	// set default governance in genesis
+	rawPocket := defaultGenesis[types.ModuleName]
+	var pocketGenesis types.GenesisState
+	types.ModuleCdc.MustUnmarshalJSON(rawPocket, &pocketGenesis)
+	pocketGenesis.Params.SessionNodeCount = 1
+	res = Codec().MustMarshalJSON(pocketGenesis)
+	defaultGenesis[types.ModuleName] = res
 	// setup pos genesis
 	rawPOS := defaultGenesis[nodesTypes.ModuleName]
 	var posGenesisState nodesTypes.GenesisState

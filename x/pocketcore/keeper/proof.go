@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"math"
 
-	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
+	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
@@ -118,35 +118,35 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	return addr, claim, nil
 }
 
-func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) sdk.Error {
+func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) (tokens sdk.Int, err sdk.Error) {
 	switch proof.Leaf.(type) {
 	case pc.RelayProof:
 		ctx.Logger().Info(fmt.Sprintf("reward coins to %s, for %d relays", claim.FromAddress.String(), claim.TotalProofs))
-		k.AwardCoinsForRelays(ctx, claim.TotalProofs, claim.FromAddress)
+		tokens = k.AwardCoinsForRelays(ctx, claim.TotalProofs, claim.FromAddress)
 		err := k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.RelayEvidence)
 		if err != nil {
-			return sdk.ErrInternal(err.Error())
+			return tokens, sdk.ErrInternal(err.Error())
 		}
 	case pc.ChallengeProofInvalidData:
 		ctx.Logger().Info(fmt.Sprintf("burning coins from %s, for %d valid challenges", claim.FromAddress.String(), claim.TotalProofs))
 		proof, ok := proof.Leaf.(pc.ChallengeProofInvalidData)
 		if !ok {
-			return pc.NewInvalidProofsError(pc.ModuleName)
+			return sdk.ZeroInt(), pc.NewInvalidProofsError(pc.ModuleName)
 		}
 		pk := proof.MinorityResponse.Proof.ServicerPubKey
 		pubKey, err := crypto.NewPublicKey(pk)
 		if err != nil {
-			return sdk.ErrInvalidPubKey(err.Error())
+			return sdk.ZeroInt(), sdk.ErrInvalidPubKey(err.Error())
 		}
 		k.BurnCoinsForChallenges(ctx, claim.TotalProofs, sdk.Address(pubKey.Address()))
 		err = k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.ChallengeEvidence)
 		if err != nil {
-			return sdk.ErrInternal(err.Error())
+			return sdk.ZeroInt(), sdk.ErrInternal(err.Error())
 		}
 		// small reward for the challenge proof invalid data
 		k.AwardCoinsForRelays(ctx, claim.TotalProofs/100, claim.FromAddress)
 	}
-	return nil
+	return tokens, nil
 }
 
 // struct used for creating the psuedorandom index

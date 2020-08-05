@@ -4,6 +4,7 @@ package app
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/tendermint/tendermint/libs/log"
 	"math/rand"
 	"os"
 	"strings"
@@ -29,8 +30,11 @@ import (
 func TestMain(m *testing.M) {
 	pocketTypes.ClearSessionCache()
 	pocketTypes.ClearEvidence()
+	logger := log.NewNopLogger()
 	// init cache in memory
-	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session", 3000)
+	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session", pocketTypes.HostedBlockchains{
+		M: make(map[string]pocketTypes.HostedBlockchain),
+	},logger, "26660", 3, 3000)
 	m.Run()
 	os.Exit(0)
 }

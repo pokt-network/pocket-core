@@ -2,17 +2,12 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"testing"
 	"time"
 
-	apps "github.com/pokt-network/pocket-core/x/apps"
-	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/pocket-core/x/nodes"
-	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
-	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	cfg "github.com/pokt-network/pocket-core/config"
@@ -21,9 +16,15 @@ import (
 	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
+	apps "github.com/pokt-network/pocket-core/x/apps"
+	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/gov"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
+	"github.com/pokt-network/pocket-core/x/nodes"
+	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	tmCfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
@@ -53,7 +54,9 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
 	// init cache in memory
-	pocketTypes.InitConfig("", "data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session", 3000)
+	pocketTypes.InitConfig("", "data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session",pocketTypes.HostedBlockchains{
+		M: make(map[string]pocketTypes.HostedBlockchain),
+	}, tendermintNode.Logger, "26660", 3, 3000)
 	// start the in memory node
 	err := tendermintNode.Start()
 	if err != nil {
@@ -167,6 +170,26 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		return db, nil
 	}
 	app := creator(c.Logger, db, traceWriter)
+	txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, nil
+	}
+	// setup blockstore
+	blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, nil
+	}
+	// Make Evidence Reactor
+	evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, nil
+	}
+	app.SetTxIndexer(txIndexer)
+	app.SetBlockstore(blockStore)
+	app.SetEvidencePool(evidencePool)
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		privVal,
@@ -176,6 +199,11 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		dbProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
 		c.Logger.With("module", "node"),
+		txIndexer,
+		blockStore,
+		stateDB,
+		evidencePool,
+		evidenceReactor,
 	)
 	if err != nil {
 		panic(err)

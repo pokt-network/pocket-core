@@ -52,7 +52,7 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	if err != nil {
 		if err.Code() == types.CodeReplayAttackError && !claim.IsEmpty() {
 			// delete local evidence
-			deleteEvidence(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType)
+			processSelf(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
 			// if is a replay attack, handle accordingly
 			k.HandleReplayAttack(ctx, addr, sdk.NewInt(claim.TotalProofs))
 			err := k.DeleteClaim(ctx, addr, claim.SessionHeader, claim.EvidenceType)
@@ -63,12 +63,12 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 		return err.Result()
 	}
 	// valid claim message so execute according to type
-	err = k.ExecuteProof(ctx, proof, claim)
+	tokens, err := k.ExecuteProof(ctx, proof, claim)
 	if err != nil {
 		return err.Result()
 	}
 	// delete local evidence
-	deleteEvidence(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType)
+	processSelf(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType, tokens)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -79,12 +79,13 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func deleteEvidence(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.SessionHeader, evidenceType types.EvidenceType) {
+func processSelf(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.SessionHeader, evidenceType types.EvidenceType, tokens sdk.Int) {
 	// delete local evidence
 	if signer.Equals(k.GetSelfAddress(ctx)) {
 		err := types.DeleteEvidence(header, evidenceType)
 		if err != nil {
 			ctx.Logger().Error("Unable to delete evidence: " + err.Error())
 		}
+		types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()))
 	}
 }

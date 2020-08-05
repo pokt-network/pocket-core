@@ -215,6 +215,8 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 	}
 	if !found {
 		bloomFilter := bloom.NewWithEstimates(uint(sdk.NewUintFromBigInt(max.BigInt()).Uint64()), .01)
+		// add to metric
+		GlobalServiceMetric().AddSessionFor(header.Chain)
 		return Evidence{
 			Bloom:         *bloomFilter,
 			SessionHeader: header,

@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
-func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
+func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) sdk.Int {
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
 	toNode, toFeeCollector := k.NodeReward(ctx, coins)
 	if toNode.IsPositive() {
@@ -19,6 +19,7 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address
 	if toFeeCollector.IsPositive() {
 		k.mint(ctx, toFeeCollector, k.getFeePool(ctx).GetAddress())
 	}
+	return toNode
 }
 
 // blockReward - Handles distribution of the collected fees
