@@ -437,7 +437,19 @@ func Test_sortAndStructure(t *testing.T) {
 				if !reflect.DeepEqual(gotProof, gotProof2) {
 					t.FailNow()
 				}
-
+				gotSortedHR3, gotProof3 := structureProofs(gotProof2)
+				if !reflect.DeepEqual(gotSortedHR3, gotSortedHR2) {
+					fmt.Println("HashRanges Not Equal")
+					assert.Equal(t, gotSortedHR3, gotSortedHR2)
+					jgotSortedHR3, _ := json.Marshal(gotSortedHR3)
+					jgotSortedHR2, _ := json.Marshal(gotSortedHR2)
+					fmt.Println(string(jgotSortedHR3))
+					fmt.Println(string(jgotSortedHR2))
+					t.FailNow()
+				}
+				if !reflect.DeepEqual(gotProof3, gotProof2) {
+					t.FailNow()
+				}
 			}
 			assert.True(t, result)
 		})
