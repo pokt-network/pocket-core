@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -101,6 +102,7 @@ func init() {
 func QueryRPC(path string, jsonArgs []byte) (string, error) {
 	//cliURL := app.GlobalConfig.PocketConfig.RemoteCLIURL + ":" + app.GlobalConfig.PocketConfig.RPCPort + path
 	cliURL := app.GlobalConfig.PocketConfig.RemoteCLIURL + path
+	types.SetRPCTimeout(app.GlobalConfig.PocketConfig.RPCTimeout)
 	fmt.Println(cliURL)
 	req, err := http.NewRequest("POST", cliURL, bytes.NewBuffer(jsonArgs))
 	if err != nil {
@@ -108,7 +110,7 @@ func QueryRPC(path string, jsonArgs []byte) (string, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{
-		Timeout: 120 * time.Millisecond,
+		Timeout: types.GetRPCTimeout() * time.Millisecond,
 	}
 	resp, err := client.Do(req)
 	if err != nil {

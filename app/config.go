@@ -74,6 +74,7 @@ const (
 	DefaultUserAgent                = ""
 	DefaultValidatorCacheSize       = 500
 	DefaultApplicationCacheSize     = DefaultValidatorCacheSize
+	DefaultRPCTimeout               = 3000
 )
 
 var (
@@ -114,6 +115,7 @@ type PocketConfig struct {
 	UserAgent                string            `json:"user_agent"`
 	ValidatorCacheSize       int64             `json:"validator_cache_size"`
 	ApplicationCacheSize     int64             `json:"application_cache_size"`
+	RPCTimeout               int64             `json:"rpc_timeout"`
 }
 
 type GenesisType int
@@ -146,6 +148,7 @@ func DefaultConfig(dataDir string) Config {
 			UserAgent:                DefaultUserAgent,
 			ValidatorCacheSize:       DefaultValidatorCacheSize,
 			ApplicationCacheSize:     DefaultApplicationCacheSize,
+			RPCTimeout:               DefaultRPCTimeout,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
@@ -371,7 +374,7 @@ func InitKeyfiles() {
 }
 
 func InitPocketCoreConfig() {
-	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName)
+	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName, GlobalConfig.PocketConfig.RPCTimeout)
 	types.InitClientBlockAllowance(GlobalConfig.PocketConfig.ClientBlockSyncAllowance)
 	types.InitJSONSorting(GlobalConfig.PocketConfig.JSONSortRelayResponses)
 	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
