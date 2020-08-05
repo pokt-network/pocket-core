@@ -148,7 +148,7 @@ func nextPowerOfTwo(v uint) uint {
 
 // "GenerateProofs" - Generates the merkle Proof object from the leaf node data and the index
 func GenerateProofs(p []Proof, index int) (mProof MerkleProof, leaf Proof) {
-	data, proofs := sortAndStructure(p)
+	data, proofs := structureProofs(p) // proofs are already sorted
 	// make a copy of the data because the merkle proof function will manipulate the slice
 	dataCopy := make([]HashRange, len(data))
 	// Copy from the original map to the target map
@@ -261,6 +261,45 @@ func sortAndStructure(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
 		lower = hashRanges[i].Range.Upper
 	}
 	// calculate the proper length of the merkle tree
+	properLength := nextPowerOfTwo(uint(numberOfProofs))
+	// generate padding to make it a proper merkle tree
+	padding := make([]HashRange, int(properLength)-numberOfProofs)
+	// add it to the merkleHash rangeds
+	hashRanges = append(hashRanges, padding...)
+	// add padding to the end of the hashRange
+	for i := numberOfProofs; i < int(properLength); i++ {
+		hashRanges[i] = HashRange{
+			Hash:  merkleHash([]byte(strconv.Itoa(i))),
+			Range: Range{Lower: lower, Upper: lower + 1},
+		}
+		lower = hashRanges[i].Range.Upper
+	}
+	return hashRanges, proofs
+}
+
+// "structureProofs" - structure hash ranges when proofs are already sorted
+func structureProofs(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
+	// get the # of proofs
+	numberOfProofs := len(proofs)
+	// initialize the hashRange
+	hashRanges := make([]HashRange, numberOfProofs)
+	// keep track of previous upper (next values lower)
+	lower := uint64(0)
+
+	// sort the slice based on the numerical value of the upper value (just the decimal representation of the merkleHash)
+	if hashRanges[0].Range.Upper == 0 {
+		for i := range hashRanges {
+			// save the merkleHash and sum of the Proof in the new tree slice
+			hashRanges[i].Hash = merkleHash(proofs[i].Bytes())
+			// get the inital sum (just the dec val of the merkleHash)
+			hashRanges[i].Range.Upper = sumFromHash(hashRanges[i].Hash)
+			// the range is the previous
+			hashRanges[i].Range.Lower = lower
+			// update the lower
+			lower = hashRanges[i].Range.Upper
+		}
+	}
+
 	properLength := nextPowerOfTwo(uint(numberOfProofs))
 	// generate padding to make it a proper merkle tree
 	padding := make([]HashRange, int(properLength)-numberOfProofs)
