@@ -3,13 +3,15 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"time"
 
-	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/pocket-core/types"
+	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
 // "HandleRelay" - Handles an api (read/write) request to a non-native (external) blockchain
 func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
+	relayTimeStart := time.Now()
 	// get the latest session block height because this relay will correspond with the latest session
 	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
 	// get self node (your validator) from the current state
@@ -62,6 +64,11 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	}
 	// attach the signature in hex to the response
 	resp.Signature = hex.EncodeToString(sig)
+	// track the relay time
+	relayTime := time.Since(relayTimeStart)
+	// add to metrics
+	pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()))
+	pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain)
 	return resp, nil
 }
 
@@ -108,5 +115,7 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	}
 	// store the challenge in memory
 	challenge.Store(app.GetMaxRelays())
+	// update metric
+	pc.GlobalServiceMetric().AddChallengeFor(header.Chain)
 	return &pc.ChallengeResponse{Response: fmt.Sprintf("successfully stored challenge proof for %s", challenge.MinorityResponse.Proof.ServicerPubKey)}, nil
 }

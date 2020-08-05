@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	DefaultSupportedBlockchains   = []string{"00"}
+	DefaultSupportedBlockchains   = []string{"0001"}
 	KeySessionNodeCount           = []byte("SessionNodeCount")
 	KeyClaimSubmissionWindow      = []byte("ClaimSubmissionWindow")
 	KeySupportedBlockchains       = []byte("SupportedBlockchains")

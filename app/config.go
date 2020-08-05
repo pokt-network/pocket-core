@@ -6,12 +6,6 @@ import (
 	"fmt"
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
-	apps "github.com/pokt-network/pocket-core/x/apps"
-	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/pocket-core/x/nodes"
-	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	cfg "github.com/pokt-network/pocket-core/config"
@@ -20,8 +14,14 @@ import (
 	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
+	apps "github.com/pokt-network/pocket-core/x/apps"
+	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/gov"
+	"github.com/pokt-network/pocket-core/x/nodes"
+	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/spf13/cobra"
 	con "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli/flags"
@@ -43,38 +43,40 @@ import (
 )
 
 const (
-	DefaultDDName                   = ".pocket"
-	DefaultKeybaseName              = "pocket-keybase"
-	DefaultPVKName                  = "priv_val_key.json"
-	DefaultPVSName                  = "priv_val_state.json"
-	DefaultNKName                   = "node_key.json"
-	DefaultChainsName               = "chains.json"
-	DefaultGenesisName              = "genesis.json"
-	DefaultRPCPort                  = "8081"
-	DefaultSessionDBType            = dbm.CLevelDBBackend
-	DefaultEvidenceDBType           = dbm.CLevelDBBackend
-	DefaultSessionDBName            = "session"
-	DefaultEvidenceDBName           = "pocket_evidence"
-	DefaultTMURI                    = "tcp://localhost:26657"
-	DefaultMaxSessionCacheEntries   = 500
-	DefaultMaxEvidenceCacheEntries  = 500
-	DefaultListenAddr               = "tcp://0.0.0.0:"
-	DefaultClientBlockSyncAllowance = 10
-	DefaultJSONSortRelayResponses   = true
-	DefaultDBBackend                = string(dbm.CLevelDBBackend)
-	DefaultTxIndexer                = "kv"
-	DefaultTxIndexTags              = "tx.hash,tx.height,message.sender,transfer.recipient"
-	ConfigDirName                   = "config"
-	ConfigFileName                  = "config.json"
-	ApplicationDBName               = "application"
-	PlaceholderHash                 = "00"
-	PlaceholderURL                  = "https://foo.bar:8080"
-	PlaceholderServiceURL           = PlaceholderURL
-	DefaultRemoteCLIURL             = "http://localhost:8081"
-	DefaultUserAgent                = ""
-	DefaultValidatorCacheSize       = 500
-	DefaultApplicationCacheSize     = DefaultValidatorCacheSize
-	DefaultRPCTimeout               = 3000
+	DefaultDDName                     = ".pocket"
+	DefaultKeybaseName                = "pocket-keybase"
+	DefaultPVKName                    = "priv_val_key.json"
+	DefaultPVSName                    = "priv_val_state.json"
+	DefaultNKName                     = "node_key.json"
+	DefaultChainsName                 = "chains.json"
+	DefaultGenesisName                = "genesis.json"
+	DefaultRPCPort                    = "8081"
+	DefaultSessionDBType              = dbm.CLevelDBBackend
+	DefaultEvidenceDBType             = dbm.CLevelDBBackend
+	DefaultSessionDBName              = "session"
+	DefaultEvidenceDBName             = "pocket_evidence"
+	DefaultTMURI                      = "tcp://localhost:26657"
+	DefaultMaxSessionCacheEntries     = 500
+	DefaultMaxEvidenceCacheEntries    = 500
+	DefaultListenAddr                 = "tcp://0.0.0.0:"
+	DefaultClientBlockSyncAllowance   = 10
+	DefaultJSONSortRelayResponses     = true
+	DefaultDBBackend                  = string(dbm.CLevelDBBackend)
+	DefaultTxIndexer                  = "kv"
+	DefaultTxIndexTags                = "tx.hash,tx.height,message.sender,transfer.recipient"
+	ConfigDirName                     = "config"
+	ConfigFileName                    = "config.json"
+	ApplicationDBName                 = "application"
+	PlaceholderHash                   = "0001"
+	PlaceholderURL                    = "http://127.0.0.1:8081"
+	PlaceholderServiceURL             = PlaceholderURL
+	DefaultRemoteCLIURL               = "http://localhost:8081"
+	DefaultUserAgent                  = ""
+	DefaultValidatorCacheSize         = 500
+	DefaultApplicationCacheSize       = DefaultValidatorCacheSize
+	DefaultPocketPrometheusListenAddr = "8083"
+	DefaultPrometheusMaxOpenFile      = 3
+	DefaultRPCTimeout                 = 3000
 )
 
 var (
@@ -116,6 +118,8 @@ type PocketConfig struct {
 	ValidatorCacheSize       int64             `json:"validator_cache_size"`
 	ApplicationCacheSize     int64             `json:"application_cache_size"`
 	RPCTimeout               int64             `json:"rpc_timeout"`
+	PrometheusAddr           string            `json:"pocket_prometheus_port"`
+	PrometheusMaxOpenfiles   int               `json:"prometheus_max_open_files"`
 }
 
 type GenesisType int
@@ -131,7 +135,6 @@ func DefaultConfig(dataDir string) Config {
 		TendermintConfig: *con.DefaultConfig(),
 		PocketConfig: PocketConfig{
 			DataDir:                  dataDir,
-			RPCPort:                  DefaultRPCPort,
 			GenesisName:              DefaultGenesisName,
 			ChainsName:               DefaultChainsName,
 			SessionDBType:            DefaultSessionDBType,
@@ -140,6 +143,7 @@ func DefaultConfig(dataDir string) Config {
 			EvidenceDBName:           DefaultEvidenceDBName,
 			TendermintURI:            DefaultTMURI,
 			KeybaseName:              DefaultKeybaseName,
+			RPCPort:                  DefaultRPCPort,
 			ClientBlockSyncAllowance: DefaultClientBlockSyncAllowance,
 			MaxEvidenceCacheEntires:  DefaultMaxEvidenceCacheEntries,
 			MaxSessionCacheEntries:   DefaultMaxSessionCacheEntries,
@@ -149,6 +153,8 @@ func DefaultConfig(dataDir string) Config {
 			ValidatorCacheSize:       DefaultValidatorCacheSize,
 			ApplicationCacheSize:     DefaultApplicationCacheSize,
 			RPCTimeout:               DefaultRPCTimeout,
+			PrometheusAddr:           DefaultPocketPrometheusListenAddr,
+			PrometheusMaxOpenfiles:   DefaultPrometheusMaxOpenFile,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
@@ -187,12 +193,16 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	// init the keyfiles
 	InitKeyfiles()
+	// get hosted blockchains
+	chains := NewHostedChains(false)
+	// create logger
+	logger := InitLogger()
 	// init cache
-	InitPocketCoreConfig()
+	InitPocketCoreConfig(chains, logger)
 	// init genesis
 	InitGenesis(genesisType)
 	// init the tendermint node
-	return InitTendermint(keybase)
+	return InitTendermint(keybase, chains, logger)
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
@@ -303,27 +313,7 @@ func InitGenesis(genesisType GenesisType) {
 	}
 }
 
-func InitTendermint(keybase bool) *node.Node {
-	logger := log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
-		if keyvals[0] != kitlevel.Key() {
-			fmt.Printf("expected level key to be first, got %v", keyvals[0])
-			log2.Fatal(1)
-		}
-		switch keyvals[1].(kitlevel.Value).String() {
-		case "info":
-			return term.FgBgColor{Fg: term.Green}
-		case "debug":
-			return term.FgBgColor{Fg: term.DarkBlue}
-		case "error":
-			return term.FgBgColor{Fg: term.Red}
-		default:
-			return term.FgBgColor{}
-		}
-	})
-	logger, err := flags.ParseLogLevel(GlobalConfig.TendermintConfig.LogLevel, logger, "info")
-	if err != nil {
-		log2.Fatal(err)
-	}
+func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger) *node.Node {
 	c := cfg.Config{
 		TmConfig:    &GlobalConfig.TendermintConfig,
 		Logger:      logger,
@@ -337,7 +327,7 @@ func InitTendermint(keybase bool) *node.Node {
 		keys = MustGetKeybase()
 	}
 	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), NewHostedChains(false), logger, db, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, baseapp.SetPruning(store.PruneNothing))
 	})
 	if err != nil {
 		log2.Fatal(err)
@@ -374,8 +364,32 @@ func InitKeyfiles() {
 	}
 }
 
-func InitPocketCoreConfig() {
-	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName, GlobalConfig.PocketConfig.RPCTimeout)
+func InitLogger() (logger log.Logger) {
+	logger = log.NewTMLoggerWithColorFn(log.NewSyncWriter(os.Stdout), func(keyvals ...interface{}) term.FgBgColor {
+		if keyvals[0] != kitlevel.Key() {
+			fmt.Printf("expected level key to be first, got %v", keyvals[0])
+			log2.Fatal(1)
+		}
+		switch keyvals[1].(kitlevel.Value).String() {
+		case "info":
+			return term.FgBgColor{Fg: term.Green}
+		case "debug":
+			return term.FgBgColor{Fg: term.DarkBlue}
+		case "error":
+			return term.FgBgColor{Fg: term.Red}
+		default:
+			return term.FgBgColor{}
+		}
+	})
+	logger, err := flags.ParseLogLevel(GlobalConfig.TendermintConfig.LogLevel, logger, "info")
+	if err != nil {
+		log2.Fatal(err)
+	}
+	return
+}
+
+func InitPocketCoreConfig(chains *types.HostedBlockchains, logger log.Logger) {
+	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName, *chains, logger, GlobalConfig.PocketConfig.PrometheusAddr, GlobalConfig.PocketConfig.PrometheusMaxOpenfiles, GlobalConfig.PocketConfig.RPCTimeout)
 	types.InitClientBlockAllowance(GlobalConfig.PocketConfig.ClientBlockSyncAllowance)
 	types.InitJSONSorting(GlobalConfig.PocketConfig.JSONSortRelayResponses)
 	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
@@ -384,6 +398,7 @@ func InitPocketCoreConfig() {
 
 func ShutdownPocketCore() {
 	types.FlushCache()
+	types.StopServiceMetrics()
 }
 
 // get the global keybase
