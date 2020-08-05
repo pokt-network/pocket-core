@@ -3,24 +3,24 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/app"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	"github.com/julienschmidt/httprouter"
-	"github.com/pokt-network/pocket-core/app"
+	"time"
 )
 
 var APIVersion = app.AppVersion
 
-func StartRPC(port string, simulation bool) {
+func StartRPC(port string, timeout int64, simulation bool) {
 	routes := GetRoutes()
 	if simulation {
 		simRoute := Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: SimRequest}
 		routes = append(routes, simRoute)
 	}
-	log.Fatal(http.ListenAndServe(":"+port, Router(routes)))
+	log.Fatal(http.ListenAndServe(":"+port, http.TimeoutHandler(Router(routes), time.Duration(timeout)*time.Millisecond, "Server Timeout Handling Request")))
 }
 
 func Router(routes Routes) *httprouter.Router {

@@ -2,9 +2,14 @@ package types
 
 import (
 	"encoding/hex"
+	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/willf/bloom"
+	"math/rand"
+	"reflect"
 	"testing"
+	"time"
 )
 
 func TestEvidence_GenerateMerkleRoot(t *testing.T) {
@@ -356,4 +361,80 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	// wrong tree cap
 	res = proofs.Validate(root, leaf, int64(len(i2.Proofs)))
 	assert.False(t, res)
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func RandStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
+}
+
+func Test_sortAndStructure(t *testing.T) {
+	type args struct {
+		hr []HashRange
+		p  []Proof
+	}
+	np := make([]Proof, 0)
+	rand.Seed(time.Now().UnixNano())
+	sum := 0
+	for i := 1; i < 150; i++ {
+		sum += i
+
+		np = append(np, RelayProof{
+			RequestHash:        RandStringBytes(9),
+			Entropy:            rand.Int63n(1000000000000),
+			SessionBlockHeight: 1,
+			ServicerPubKey:     RandStringBytes(32),
+			Blockchain:         "0001",
+			Token:              AAT{},
+			Signature:          RandStringBytes(64),
+		})
+
+	}
+
+	// get the # of proofs
+	numberOfProofs := len(np)
+	// initialize the hashRange
+	hashRanges := make([]HashRange, numberOfProofs)
+
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"sortAndStructure Consistency Test", args{
+			hr: hashRanges,
+			p:  np,
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			sum := 0
+			result := true
+			for i := 1; i < 3000; i++ {
+				sum += i
+
+				gotSortedHR, _ := sortAndStructure(tt.args.p)
+				gotSortedHR2, _ := sortAndStructure(tt.args.p)
+
+				assert.Equal(t, len(gotSortedHR), len(gotSortedHR2))
+
+				if !reflect.DeepEqual(gotSortedHR, gotSortedHR2) {
+					fmt.Println("HashRanges Not Equal")
+					assert.Equal(t, gotSortedHR, gotSortedHR2)
+					jgotSortedHR, _ := json.Marshal(gotSortedHR)
+					jgotSortedHR2, _ := json.Marshal(gotSortedHR2)
+					fmt.Println(string(jgotSortedHR))
+					fmt.Println(string(jgotSortedHR2))
+					result = false
+				}
+
+				assert.True(t, result)
+			}
+		})
+	}
 }

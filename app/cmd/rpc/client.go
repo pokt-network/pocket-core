@@ -164,7 +164,7 @@ func executeHTTPRequest(payload string, url string, method string, headers map[s
 		}
 	}
 	// execute the request
-	resp, err := (&http.Client{Timeout: 120 * time.Millisecond}).Do(req)
+	resp, err := (&http.Client{Timeout: types.GetRPCTimeout() * time.Millisecond}).Do(req)
 	if err != nil {
 		return payload, err
 	}
