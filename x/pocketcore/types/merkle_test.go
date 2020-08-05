@@ -4,15 +4,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/willf/bloom"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/willf/bloom"
 )
 
 func TestEvidence_GenerateMerkleRoot(t *testing.T) {
+	ClearEvidence()
 	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	clientPrivateKey := GetRandomPrivateKey()
@@ -93,6 +95,16 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 	assert.True(t, root.isValidRange())
 	assert.Zero(t, root.Range.Lower)
 	assert.NotZero(t, root.Range.Upper)
+
+	iter := EvidenceIterator()
+	// Make sure its stored in order!
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		e := iter.Value()
+		assert.Equal(t, i, e)
+		newRoot := e.GenerateMerkleRoot()
+		assert.Equal(t, root, newRoot)
+	}
 }
 
 func TestEvidence_GenerateMerkleProof(t *testing.T) {
@@ -372,19 +384,17 @@ func RandStringBytes(n int) string {
 	}
 	return string(b)
 }
-
 func Test_sortAndStructure(t *testing.T) {
 	type args struct {
 		hr []HashRange
 		p  []Proof
 	}
-	np := make([]Proof, 0)
+	lol := make([]Proof, 0)
 	rand.Seed(time.Now().UnixNano())
 	sum := 0
-	for i := 1; i < 150; i++ {
+	for i := 1; i < 100000; i++ {
 		sum += i
-
-		np = append(np, RelayProof{
+		lol = append(lol, RelayProof{
 			RequestHash:        RandStringBytes(9),
 			Entropy:            rand.Int63n(1000000000000),
 			SessionBlockHeight: 1,
@@ -393,36 +403,27 @@ func Test_sortAndStructure(t *testing.T) {
 			Token:              AAT{},
 			Signature:          RandStringBytes(64),
 		})
-
 	}
-
 	// get the # of proofs
-	numberOfProofs := len(np)
+	numberOfProofs := len(lol)
 	// initialize the hashRange
 	hashRanges := make([]HashRange, numberOfProofs)
-
 	tests := []struct {
 		name string
 		args args
 	}{
 		{"sortAndStructure Consistency Test", args{
 			hr: hashRanges,
-			p:  np,
+			p:  lol,
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			sum := 0
 			result := true
-			for i := 1; i < 3000; i++ {
-				sum += i
-
-				gotSortedHR, _ := sortAndStructure(tt.args.p)
-				gotSortedHR2, _ := sortAndStructure(tt.args.p)
-
-				assert.Equal(t, len(gotSortedHR), len(gotSortedHR2))
-
+			for i := 0; i < 1; i++ {
+				gotSortedHR, gotProof := sortAndStructure(tt.args.p)
+				gotSortedHR2, gotProof2 := sortAndStructureC(tt.args.p)
+				assert.Equal(t, cap(gotSortedHR), cap(gotSortedHR2))
 				if !reflect.DeepEqual(gotSortedHR, gotSortedHR2) {
 					fmt.Println("HashRanges Not Equal")
 					assert.Equal(t, gotSortedHR, gotSortedHR2)
@@ -430,10 +431,72 @@ func Test_sortAndStructure(t *testing.T) {
 					jgotSortedHR2, _ := json.Marshal(gotSortedHR2)
 					fmt.Println(string(jgotSortedHR))
 					fmt.Println(string(jgotSortedHR2))
-					result = false
+					t.FailNow()
 				}
+				if !reflect.DeepEqual(gotProof, gotProof2) {
+					t.FailNow()
+				}
+			}
+			assert.True(t, result)
+		})
+	}
+}
 
-				assert.True(t, result)
+type benchmarkArgs struct {
+	hr []HashRange
+	p  []Proof
+}
+
+func Benchmark_sortAndStructure(b *testing.B) {
+	lol := make([]Proof, 0)
+	rand.Seed(time.Now().UnixNano())
+	sum := 0
+	for i := 1; i < 1000000; i++ {
+		sum += i
+		lol = append(lol, RelayProof{
+			RequestHash:        RandStringBytes(9),
+			Entropy:            rand.Int63n(1000000000000),
+			SessionBlockHeight: 1,
+			ServicerPubKey:     RandStringBytes(32),
+			Blockchain:         "0001",
+			Token:              AAT{},
+			Signature:          RandStringBytes(64),
+		})
+	}
+	// get the # of proofs
+	numberOfProofs := len(lol)
+	// initialize the hashRange
+	hashRanges := make([]HashRange, numberOfProofs)
+	tests := []struct {
+		name string
+		args benchmarkArgs
+		f    func(proofs []Proof) ([]HashRange, []Proof)
+	}{
+		{
+			name: "custom_qsort_A",
+			args: benchmarkArgs{
+				hr: hashRanges,
+				p:  lol,
+			},
+			f: sortAndStructure,
+		},
+		{
+			name: "stdlib",
+			args: benchmarkArgs{
+				hr: hashRanges,
+				p:  lol,
+			},
+			f: sortAndStructureC,
+		},
+	}
+	b.StopTimer()
+	b.ResetTimer()
+	for _, tt := range tests {
+		b.Run(tt.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				b.StartTimer()
+				tt.f(tt.args.p)
+				b.StopTimer()
 			}
 		})
 	}
