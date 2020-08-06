@@ -122,6 +122,36 @@ func (app *PocketCoreApp) ExportAppState(height int64, forZeroHeight bool, jailW
 	return appState, nil
 }
 
+func (app *PocketCoreApp) ExportState(height int64, chainID string) (string, error) {
+	j, err := app.ExportAppState(height, false, nil)
+	if err != nil {
+		return "", err
+	}
+	if chainID == "" {
+		chainID = "<Input New ChainID>"
+	}
+	j, _ = Codec().MarshalJSONIndent(types.GenesisDoc{
+		ChainID: chainID,
+		ConsensusParams: &types.ConsensusParams{
+			Block: types.BlockParams{
+				MaxBytes:   4000000,
+				MaxGas:     -1,
+				TimeIotaMs: 1,
+			},
+			Evidence: types.EvidenceParams{
+				MaxAge: 1000000,
+			},
+			Validator: types.ValidatorParams{
+				PubKeyTypes: []string{"ed25519"},
+			},
+		},
+		Validators: nil,
+		AppHash:    nil,
+		AppState:   j,
+	}, "", "    ")
+	return SortJSON(j), err
+}
+
 func (app *PocketCoreApp) NewContext(height int64) (sdk.Ctx, error) {
 	store := app.Store()
 	blockStore := app.BlockStore()

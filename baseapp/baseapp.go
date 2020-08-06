@@ -179,7 +179,7 @@ func (app *BaseApp) Store() sdk.CommitMultiStore {
 }
 
 func (app *BaseApp) BlockStore() *tmStore.BlockStore {
-	return app.tmNode.BlockStore()
+	return app.blockstore
 }
 
 func (app *BaseApp) TMNode() *node.Node {

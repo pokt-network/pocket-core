@@ -623,7 +623,7 @@ func State(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.ExportState(params.Height)
+	res, err := app.PCA.ExportState(params.Height, "")
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
