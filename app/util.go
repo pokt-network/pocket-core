@@ -8,7 +8,6 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
-	"github.com/tendermint/tendermint/types"
 	"log"
 )
 
@@ -81,33 +80,6 @@ func SignMultisigOutOfOrder(fromAddr, txHex, passphrase, chainID string, keys []
 		chainID,
 		"", nil).WithKeybase(kb)
 	return txBuilder.SignMultisigTransaction(fa, keys, passphrase, bz)
-}
-
-func ExportState(height int64) (string, error) {
-	j, err := PCA.ExportAppState(height, false, nil)
-	if err != nil {
-		return "", err
-	}
-	j, _ = Codec().MarshalJSONIndent(types.GenesisDoc{
-		ChainID: "<Input New ChainID>",
-		ConsensusParams: &types.ConsensusParams{
-			Block: types.BlockParams{
-				MaxBytes:   4000000,
-				MaxGas:     -1,
-				TimeIotaMs: 1,
-			},
-			Evidence: types.EvidenceParams{
-				MaxAge: 1000000,
-			},
-			Validator: types.ValidatorParams{
-				PubKeyTypes: []string{"ed25519"},
-			},
-		},
-		Validators: nil,
-		AppHash:    nil,
-		AppState:   j,
-	}, "", "    ")
-	return SortJSON(j), err
 }
 
 func SortJSON(toSortJSON []byte) string {
