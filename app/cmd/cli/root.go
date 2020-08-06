@@ -59,6 +59,7 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
+	rootCmd.AddCommand(completionCmd)
 }
 
 // startCmd represents the start command
