@@ -1,8 +1,22 @@
+## RC-0.5.1
+- Add terminal completions
+- AllowDuplicateIP config default value is now true
+- Added Relay Metrics Endpoint
+- Ensured pocket-evidence is deleted in all lifecycles
+- Claims are now not sent if below minimum proofs
+- Improved BlockTxs and AccountTxs Endpoint Output with std.msg
+- AAT now printing as json string and not bytes
+- Enabled exporting of new genesis file command via CLI for Decentralized Reset
+- Roll back blocks / Override App Hash in case of non-deterministic state
+- Stop CLI when invalid character creating multi signature accounts
+- Fixed "superfluous response.WriteHeader" log message showing on the logs
+- Merged POSMint into core
+
 ## RC-0.5.0
 - Fixed Incorrect Logging and misleading logging for max_signed_blocks
 - Remove all receipts to alleviate large state size
 - State now doesn't accept claims for under the given param threshold
-- AAT now printing as json string and not bytes
+- AAT now printing as json string and not bytes // not fixed
 - Logging fix for unstaked Validator in Handle Validator Signature
 - enhanced proof entropy and flush to disk
 - Converted `Could not get sessionCtx` in auto send claim tx to an info log
