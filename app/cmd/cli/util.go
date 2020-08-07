@@ -164,6 +164,7 @@ Bash:
 # bash 4.1+
 # bash_completion from Kubectl
 
+# add this to bash profile
 $ source <(pocket util completion bash)
 
 # To load completions for each session, execute once:

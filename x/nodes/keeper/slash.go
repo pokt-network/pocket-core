@@ -145,7 +145,7 @@ func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight in
 func (k Keeper) handleDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHeight int64, timestamp time.Time, power int64) {
 	address, _, _, err := k.validateDoubleSign(ctx, addr, infractionHeight, timestamp)
 	if err != nil {
-		ctx.Logger().Error(err.Error())
+		ctx.Logger().Error(err.Error() + fmt.Sprintf(" at height: %d", ctx.BlockHeight()))
 		return
 	}
 	distributionHeight := infractionHeight - sdk.ValidatorUpdateDelay
@@ -206,7 +206,7 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, addr sdk.Address, power in
 	// fetch signing info
 	signInfo, isFound := k.GetValidatorSigningInfo(ctx, addr)
 	if !isFound {
-		ctx.Logger().Error(fmt.Sprintf("error in handleValidatorSignature: signing info for validator with addr %s not found", addr))
+		ctx.Logger().Error(fmt.Sprintf("error in handleValidatorSignature: signing info for validator with addr %s not found, at height %d", addr, ctx.BlockHeight()))
 		return
 	}
 	// reset the validator signing info every blocks window

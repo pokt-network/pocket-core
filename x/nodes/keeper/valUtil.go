@@ -41,7 +41,7 @@ func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.Validato
 	for ; iterator.Valid(); iterator.Next() {
 		validator, found := k.GetValidator(ctx, iterator.Value())
 		if !found {
-			ctx.Logger().Error(fmt.Errorf("cannot find validator from staking set: %v\n", iterator.Value()).Error())
+			ctx.Logger().Error(fmt.Errorf("cannot find validator from staking set: %v, at height %d\n", iterator.Value(), ctx.BlockHeight()).Error())
 			continue
 		}
 		validators = append(validators, validator)

@@ -44,11 +44,11 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	feeAddr := feesCollector.GetAddress()
 	err := k.AccountKeeper.SendCoinsFromAccountToModule(ctx, feeAddr, govTypes.DAOAccountName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, daoCut)))
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the dao: %s", daoCut.String(), err.Error()))
+		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the dao: %s, at height %d", daoCut.String(), err.Error()), ctx.BlockHeight())
 	}
 	err = k.AccountKeeper.SendCoins(ctx, feeAddr, previousProposer, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s", proposerCut.String(), err.Error()))
+		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, at height %d", proposerCut.String(), err.Error()), ctx.BlockHeight())
 	}
 }
 
@@ -57,12 +57,12 @@ func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Resul
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	mintErr := k.AccountKeeper.MintCoins(ctx, types.StakedPoolName, coins)
 	if mintErr != nil {
-		ctx.Logger().Error(mintErr.Error())
+		ctx.Logger().Error(fmt.Sprintf("unable to mint tokens, at height %d: ", ctx.BlockHeight()) + mintErr.Error())
 		return mintErr.Result()
 	}
 	sendErr := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, address, coins)
 	if sendErr != nil {
-		ctx.Logger().Error(mintErr.Error())
+		ctx.Logger().Error(fmt.Sprintf("unable to send tokens, at height %d: ", ctx.BlockHeight()) + sendErr.Error())
 		return sendErr.Result()
 	}
 	logString := fmt.Sprintf("a reward of %s was minted to %s", amount.String(), address.String())

@@ -2,6 +2,8 @@ package rpc
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -9,6 +11,7 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"

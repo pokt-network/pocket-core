@@ -117,7 +117,7 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 			}
 			err := k.ValidateApplicationFinishUnstaking(ctx, val)
 			if err != nil {
-				ctx.Logger().Error("Could not finish unstaking mature application: " + err.Error())
+				ctx.Logger().Error(fmt.Sprintf("Could not finish unstaking mature application at height %d: ", ctx.BlockHeight()) + err.Error())
 				continue
 			}
 			k.FinishUnstakingApplication(ctx, val)

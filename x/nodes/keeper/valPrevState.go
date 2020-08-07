@@ -59,7 +59,7 @@ func (k Keeper) IterateAndExecuteOverPrevStateVals(
 		address := types.AddressFromKey(iterator.Key())
 		validator, found := k.GetValidator(ctx, address)
 		if !found {
-			ctx.Logger().Error(fmt.Errorf("validator record not found for address: %v\n", address).Error())
+			ctx.Logger().Error(fmt.Errorf("validator record not found for address: %v, at height %d\n", address, ctx.BlockHeight()).Error())
 			continue
 		}
 		stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
