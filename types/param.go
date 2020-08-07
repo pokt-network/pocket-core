@@ -404,8 +404,8 @@ func (t KeyTable) maxKeyLength() (res int) {
 
 // Used for associating paramsubspace key and field of param structs
 type ParamSetPair struct {
-	Key   []byte
-	Value interface{}
+	Key   []byte      `json:"key"`
+	Value interface{} `json:"value"`
 }
 
 // Slice of KeyFieldPair
