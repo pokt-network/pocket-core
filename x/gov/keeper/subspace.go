@@ -101,7 +101,7 @@ func (k Keeper) HandleUpgrade(ctx sdk.Ctx, aclKey string, paramValue interface{}
 	if aclKey == types.NewACLKey(types.ModuleName, string(types.UpgradeKey)) {
 		u, ok := paramValue.(types.Upgrade)
 		if !ok {
-			ctx.Logger().Error(fmt.Sprintf("unable to convert %v to upgrade, can't emit event about upgrade", paramValue))
+			ctx.Logger().Error(fmt.Sprintf("unable to convert %v to upgrade, can't emit event about upgrade, at height: %d", paramValue, ctx.BlockHeight()))
 			return sdk.Result{Events: ctx.EventManager().Events()}
 		}
 		ctx.EventManager().EmitEvent(sdk.NewEvent(

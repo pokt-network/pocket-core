@@ -34,7 +34,7 @@ func (k Keeper) DeleteValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
 func (k Keeper) ResetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
 	signInfo, found := k.GetValidatorSigningInfo(ctx, addr)
 	if !found {
-		ctx.Logger().Error("error in ResetValidatorSigningInfo: signing info not found")
+		ctx.Logger().Error(fmt.Sprintf("error in ResetValidatorSigningInfo: signing info not found, at height: %d", ctx.BlockHeight()))
 		signInfo = types.ValidatorSigningInfo{
 			Address:     addr,
 			StartHeight: ctx.BlockHeight(),
@@ -53,7 +53,7 @@ func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Ctx, handler func(ad
 	for ; iter.Valid(); iter.Next() {
 		address, err := types.GetValidatorSigningInfoAddress(iter.Key())
 		if err != nil {
-			ctx.Logger().Error(fmt.Errorf("unable to execute over validator %s error: %v", iter.Key(), err).Error())
+			ctx.Logger().Error(fmt.Errorf("unable to execute over validator %s error: %v, at height: %d", iter.Key(), err, ctx.BlockHeight()).Error())
 		}
 		var info types.ValidatorSigningInfo
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &info)

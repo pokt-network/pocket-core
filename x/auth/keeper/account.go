@@ -128,7 +128,7 @@ func (k Keeper) SetAccount(ctx sdk.Ctx, acc exported.Account) {
 	store := ctx.KVStore(k.storeKey)
 	bz, err := k.cdc.MarshalBinaryBare(acc)
 	if err != nil {
-		ctx.Logger().Error(fmt.Errorf("error marshalling account %v err: %s", acc, err.Error()).Error())
+		ctx.Logger().Error(fmt.Errorf("error marshalling account %v at height: %d, err: %s", acc, ctx.BlockHeight(), err.Error()).Error())
 		os.Exit(1)
 	}
 	store.Set(types.AddressStoreKey(addr), bz)
@@ -154,7 +154,7 @@ func (k Keeper) IterateAccounts(ctx sdk.Ctx, process func(exported.Account) (sto
 		val := iter.Value()
 		acc, err := k.decodeAccount(val)
 		if err != nil {
-			ctx.Logger().Error(fmt.Errorf("error while iterating accounts: unmarshalling account %v err: %s", val, err.Error()).Error())
+			ctx.Logger().Error(fmt.Errorf("error while iterating accounts: unmarshalling account %v at height: %d, err: %s", val, ctx.BlockHeight(), err.Error()).Error())
 			continue
 		}
 		if process(acc) {

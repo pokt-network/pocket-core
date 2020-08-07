@@ -10,8 +10,8 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/common"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 // UpdateTendermintValidators - Apply and return accumulated updates to the staked validator set
@@ -77,13 +77,13 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 	for _, valAddrBytes := range noLongerStaked {
 		validator, found := k.GetValidator(ctx, valAddrBytes)
 		if !found {
-			ctx.Logger().Error("unable to retrieve `nolongerstaked` validator from the world state: " + hex.EncodeToString(valAddrBytes))
+			ctx.Logger().Error(fmt.Sprintf("unable to retrieve `nolongerstaked` validator: %s from the world state at height: %d ", hex.EncodeToString(valAddrBytes), ctx.BlockHeight()))
 			continue
 		}
 		// delete from the stake validator index
 		k.DeletePrevStateValPower(ctx, validator.GetAddress())
 		// add to one of the updates for tendermint
-		ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked", validator.Address))
+		ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked, at height %d", validator.Address, ctx.BlockHeight()))
 		updates = append(updates, validator.ABCIValidatorUpdate())
 		// if validator was force unstaked, delete the validator from the all validators store
 		if validator.IsUnstaked() {
@@ -335,11 +335,11 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sd
 func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
-		ctx.Logger().Error(fmt.Errorf("cannot find jailed validator: %v\n", addr).Error())
+		ctx.Logger().Error(fmt.Errorf("cannot find jailed validator: %v at height: %d\n", addr, ctx.BlockHeight()).Error())
 		return
 	}
 	if validator.Jailed {
-		ctx.Logger().Error(fmt.Errorf("cannot jail already jailed validator, validator: %v\n", validator).Error())
+		ctx.Logger().Error(fmt.Errorf("cannot jail already jailed validator, validator: %v a height: %d\n", validator, ctx.BlockHeight()).Error())
 		return
 	}
 	if validator.IsUnstaked() {
@@ -432,11 +432,11 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	validator, found := k.GetValidator(ctx, addr)
 	if !found {
-		ctx.Logger().Error(fmt.Errorf("cannot unjail validator, validator not found: %v\n", addr).Error())
+		ctx.Logger().Error(fmt.Errorf("cannot unjail validator, validator not found: %v at height %d\n", addr, ctx.BlockHeight()).Error())
 		return
 	}
 	if !validator.Jailed {
-		k.Logger(ctx).Error(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v\n", validator))
+		k.Logger(ctx).Error(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v at height %d\n", validator, ctx.BlockHeight()))
 		return
 	}
 	validator.Jailed = false

@@ -32,7 +32,7 @@ func (k Keeper) SetStakedValidatorByChains(ctx sdk.Ctx, validator types.Validato
 func (k Keeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []exported.ValidatorI) {
 	cBz, err := hex.DecodeString(networkID)
 	if err != nil {
-		ctx.Logger().Error(fmt.Errorf("could not hex decode chains when GetValidatorByChain: with network ID: %s", networkID).Error())
+		ctx.Logger().Error(fmt.Errorf("could not hex decode chains when GetValidatorByChain: with network ID: %s, at height: %d", networkID, ctx.BlockHeight()).Error())
 		return
 	}
 	iterator := k.validatorByChainsIterator(ctx, cBz)
@@ -41,7 +41,7 @@ func (k Keeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators 
 		address := types.AddressForValidatorByNetworkIDKey(iterator.Key(), cBz)
 		validator, found := k.GetValidator(ctx, address)
 		if !found {
-			ctx.Logger().Error(fmt.Errorf("valdiator: %s, not found in the world state for GetValidatorsByChain call", address).Error())
+			ctx.Logger().Error(fmt.Errorf("valdiator: %s, not found in the world state for GetValidatorsByChain call, at height: %d", address, ctx.BlockHeight()).Error())
 			continue
 		}
 		validators = append(validators, validator)
@@ -54,7 +54,7 @@ func (k Keeper) deleteValidatorForChains(ctx sdk.Ctx, validator types.Validator)
 	for _, c := range validator.Chains {
 		cBz, err := hex.DecodeString(c)
 		if err != nil {
-			ctx.Logger().Error(fmt.Errorf("could not hex decode chains for validator: %s with network ID: %s", validator.Address, c).Error())
+			ctx.Logger().Error(fmt.Errorf("could not hex decode chains for validator: %s with network ID: %s, at height %d", validator.Address, c, ctx.BlockHeight()).Error())
 			continue
 		}
 		store.Delete(types.KeyForValidatorByNetworkID(validator.Address, cBz))
@@ -94,7 +94,7 @@ func (k Keeper) getStakedValidators(ctx sdk.Ctx) types.Validators {
 		address := iterator.Value()
 		validator, found := k.GetValidator(ctx, address)
 		if !found {
-			ctx.Logger().Error("validator not found in the world state")
+			ctx.Logger().Error("validator not found in the world state at height: ", ctx.BlockHeight())
 			continue
 		}
 		if validator.IsStaked() {

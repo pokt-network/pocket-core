@@ -33,7 +33,7 @@ func (k Keeper) GetWaitingValidators(ctx sdk.Ctx) (validators []types.Validator)
 		addr := iterator.Value()
 		validator, found := k.GetValidator(ctx, addr)
 		if !found {
-			ctx.Logger().Error(fmt.Sprintf("Could not find waiting validator: %s", addr))
+			ctx.Logger().Error(fmt.Sprintf("Could not find waiting validator: %s, at height %d", addr, ctx.BlockHeight()))
 			k.DeleteWaitingValidator(ctx, addr)
 			return
 		}
@@ -83,7 +83,7 @@ func (k Keeper) getAllUnstakingValidators(ctx sdk.Ctx) (validators []types.Valid
 		for _, addr := range addrs {
 			validator, found := k.GetValidator(ctx, addr)
 			if !found {
-				ctx.Logger().Error(fmt.Errorf("cannot find validator from unstaking set: %v\n", addr).Error())
+				ctx.Logger().Error(fmt.Errorf("cannot find validator from unstaking set: %v, at height %d\n", addr, ctx.BlockHeight()).Error())
 				continue
 			}
 			validators = append(validators, validator)
@@ -147,12 +147,12 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 		for _, valAddr := range unstakingVals {
 			val, found := k.GetValidator(ctx, valAddr)
 			if !found {
-				ctx.Logger().Error("validator in the unstaking queue was not found, possible forced unstake?")
+				ctx.Logger().Error("validator in the unstaking queue was not found, possible forced unstake? At height: ", ctx.BlockHeight())
 				continue
 			}
 			err := k.ValidateValidatorFinishUnstaking(ctx, val)
 			if err != nil {
-				ctx.Logger().Error("Could not finish unstaking mature validator: " + err.Error())
+				ctx.Logger().Error("Could not finish unstaking mature validator: " + err.Error(), "at height: ", ctx.BlockHeight())
 				continue
 			}
 			k.FinishUnstakingValidator(ctx, val)

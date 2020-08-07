@@ -2,9 +2,9 @@ package pos
 
 import (
 	"fmt"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/keeper"
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
@@ -31,7 +31,7 @@ func handleStake(ctx sdk.Ctx, msg types.MsgAppStake, k keeper.Keeper) sdk.Result
 	ctx.Logger().Info("Validate App Can Stake " + sdk.Address(msg.PubKey.Address()).String())
 	// check if they can stake
 	if err := k.ValidateApplicationStaking(ctx, application, msg.Value); err != nil {
-		ctx.Logger().Error("Validate App Can Stake Error " + sdk.Address(msg.PubKey.Address()).String())
+		ctx.Logger().Error(fmt.Sprintf("Validate App Can Stake Error, at height: %d with address: %s", ctx.BlockHeight(), sdk.Address(msg.PubKey.Address()).String()))
 		return err.Result()
 	}
 	ctx.Logger().Info("Change App state to Staked " + sdk.Address(msg.PubKey.Address()).String())
@@ -64,11 +64,11 @@ func handleStake(ctx sdk.Ctx, msg types.MsgAppStake, k keeper.Keeper) sdk.Result
 func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginAppUnstake, k keeper.Keeper) sdk.Result {
 	application, found := k.GetApplication(ctx, msg.Address)
 	if !found {
-		ctx.Logger().Error("App Not Found " + msg.Address.String())
+		ctx.Logger().Error(fmt.Sprintf("App Not Found at height: %d", ctx.BlockHeight()) + msg.Address.String())
 		return types.ErrNoApplicationFound(k.Codespace()).Result()
 	}
 	if err := k.ValidateApplicationBeginUnstaking(ctx, application); err != nil {
-		ctx.Logger().Error("App Unstake Validation Not Successful " + msg.Address.String())
+		ctx.Logger().Error(fmt.Sprintf("App Unstake Validation Not Successful, at height: %d", ctx.BlockHeight()) + msg.Address.String())
 		return err.Result()
 	}
 	ctx.Logger().Info("Starting to Unstake App " + msg.Address.String())

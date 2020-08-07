@@ -112,7 +112,7 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 		ctx.Logger().Error("MUST UPGRADE TO NEXT VERSION: ", u.Version)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventMustUpgrade,
 			sdk.NewAttribute("VERSION:", u.UpgradeVersion())))
-		ctx.Logger().Error("GRACEFULLY EXITING FOR UPGRADE")
+		ctx.Logger().Error(fmt.Sprintf("GRACEFULLY EXITING FOR UPGRADE, AT HEIGHT: %d", ctx.BlockHeight()))
 		p, err := os.FindProcess(os.Getpid())
 		if err != nil {
 			ctx.Logger().Error(err.Error())
