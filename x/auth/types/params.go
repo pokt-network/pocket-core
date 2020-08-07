@@ -43,9 +43,9 @@ func ParamKeyTable() sdk.KeyTable {
 // nolint
 func (p *Params) ParamSetPairs() sdk.ParamSetPairs {
 	return sdk.ParamSetPairs{
-		{KeyMaxMemoCharacters, &p.MaxMemoCharacters},
-		{KeyTxSigLimit, &p.TxSigLimit},
-		{KeyFeeMultiplier, &p.FeeMultiplier},
+		{Key: KeyMaxMemoCharacters, Value: &p.MaxMemoCharacters},
+		{Key: KeyTxSigLimit, Value: &p.TxSigLimit},
+		{Key: KeyFeeMultiplier, Value: &p.FeeMultiplier},
 	}
 }
 
