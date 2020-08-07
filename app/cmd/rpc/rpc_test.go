@@ -2,8 +2,6 @@ package rpc
 
 import (
 	"bytes"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -11,7 +9,6 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -22,12 +19,12 @@ import (
 	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/pokt-network/pocket-core/x/nodes"
-	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
-	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	authTypes "github.com/pokt-network/pocket-core/x/auth/types"
+	"github.com/pokt-network/pocket-core/x/nodes"
+	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/common"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
@@ -36,7 +33,7 @@ import (
 )
 
 const (
-	PlaceholderHash       = "00"
+	PlaceholderHash       = "0001"
 	PlaceholderURL        = "https://foo.bar:8080"
 	PlaceholderServiceURL = PlaceholderURL
 )
@@ -783,7 +780,7 @@ func TestRPC_QueryNodeClaim(t *testing.T) {
 	assert.Nil(t, err)
 	var params = QueryNodeReceiptParam{
 		Address:      cb.GetAddress().String(),
-		Blockchain:   "00",
+		Blockchain:   "0001",
 		AppPubKey:    cb.PublicKey.RawString(),
 		SBlockHeight: 1,
 		Height:       0,

@@ -1,9 +1,9 @@
 package types
 
 import (
-	posexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 	sdk "github.com/pokt-network/pocket-core/types"
 	authexported "github.com/pokt-network/pocket-core/x/auth/exported"
+	posexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 )
 
 // AuthKeeper defines the expected supply Keeper (noalias)

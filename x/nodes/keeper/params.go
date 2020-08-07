@@ -3,8 +3,8 @@ package keeper
 import (
 	"time"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 // Default parameter namespace

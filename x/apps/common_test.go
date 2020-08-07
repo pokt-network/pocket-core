@@ -4,18 +4,18 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/x/apps/keeper"
-	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/pocket-core/x/nodes"
-	nodeskeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
-	nodestypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/store"
 	"github.com/pokt-network/pocket-core/types/module"
+	"github.com/pokt-network/pocket-core/x/apps/keeper"
+	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/gov"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
+	"github.com/pokt-network/pocket-core/x/nodes"
+	nodeskeeper "github.com/pokt-network/pocket-core/x/nodes/keeper"
+	nodestypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -120,7 +120,10 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.K
 
 func getRandomPubKey() crypto.Ed25519PublicKey {
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	return pub
 }
 
@@ -133,6 +136,6 @@ func getApplication() types.Application {
 		Jailed:       false,
 		Status:       sdk.Staked,
 		MaxRelays:    sdk.NewInt(100000000000),
-		Chains:       []string{"00"},
+		Chains:       []string{"0001"},
 	}
 }

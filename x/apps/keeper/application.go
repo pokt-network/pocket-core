@@ -1,9 +1,9 @@
 package keeper
 
 import (
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"math"
 	"math/big"
 	"os"

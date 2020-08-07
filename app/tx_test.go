@@ -12,15 +12,15 @@ import (
 
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 
-	apps "github.com/pokt-network/pocket-core/x/apps"
-	"github.com/pokt-network/pocket-core/x/nodes"
-	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	apps "github.com/pokt-network/pocket-core/x/apps"
 	"github.com/pokt-network/pocket-core/x/auth/types"
 	"github.com/pokt-network/pocket-core/x/gov"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
+	"github.com/pokt-network/pocket-core/x/nodes"
+	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/common"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 	// init cache in memory
 	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session", pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
-	},logger, "26660", 3, 3000)
+	}, logger, "26660", 3, 3000)
 	m.Run()
 	os.Exit(0)
 }
@@ -45,7 +45,7 @@ func TestUnstakeApp(t *testing.T) {
 	assert.Nil(t, err)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"00"}
+	var chains = []string{"0001"}
 	<-evtChan // Wait for block
 	memCli, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 	tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
@@ -85,7 +85,7 @@ func TestUnstakeApp(t *testing.T) {
 }
 
 func TestUnstakeNode(t *testing.T) {
-	var chains = []string{"00"}
+	var chains = []string{"0001"}
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -147,7 +147,7 @@ func TestStakeNode(t *testing.T) {
 	assert.Nil(t, err)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"00"}
+	var chains = []string{"0001"}
 	<-evtChan // Wait for block
 	memCli, stopCli, _ := subscribeTo(t, tmTypes.EventTx)
 	tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
@@ -165,7 +165,7 @@ func TestStakeApp(t *testing.T) {
 	assert.Nil(t, err)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"00"}
+	var chains = []string{"0001"}
 
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)

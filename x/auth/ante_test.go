@@ -23,8 +23,7 @@ func TestSignatureDepth(t *testing.T) {
 	ms0 := crypto.MultiSignature{Sigs: [][]byte{sig1, sig2}}
 	mspk0 := crypto.PublicKeyMultiSignature{PublicKeys: []crypto.PublicKey{pub1, pub2}}
 	// multisig and multisigpub
-	ms := crypto.MultiSignature{Sigs: [][]byte{ms0.Marshal(), sig3}}
-	ms = ms
+	_ = crypto.MultiSignature{Sigs: [][]byte{ms0.Marshal(), sig3}}
 	mspk := crypto.PublicKeyMultiSignature{PublicKeys: []crypto.PublicKey{mspk0, pub3}}
 	assert.True(t, ValidateSignatureDepth(5, mspk))
 	assert.False(t, ValidateSignatureDepth(4, mspk))

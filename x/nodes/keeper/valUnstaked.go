@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 // SetWaitingValidator - Store validator on WaitingToBeginUnstaking store
@@ -152,7 +152,7 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 			}
 			err := k.ValidateValidatorFinishUnstaking(ctx, val)
 			if err != nil {
-				ctx.Logger().Error("Could not finish unstaking mature validator: " + err.Error(), "at height: ", ctx.BlockHeight())
+				ctx.Logger().Error("Could not finish unstaking mature validator: "+err.Error(), "at height: ", ctx.BlockHeight())
 				continue
 			}
 			k.FinishUnstakingValidator(ctx, val)

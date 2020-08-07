@@ -22,11 +22,11 @@ func ErrInvalidMemo(codespace sdk.CodespaceType, err error) sdk.Error {
 }
 
 func ErrEmptyPublicKey(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeEmptyPublicKey, fmt.Sprintf("the public key in the transaction is empty and the public key cannot be found in the world state"))
+	return sdk.NewError(codespace, CodeEmptyPublicKey, "the public key in the transaction is empty and the public key cannot be found in the world state")
 }
 
 func ErrAccountNotFound(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeAccNotFound, fmt.Sprintf("the account cannot be found in the world state"))
+	return sdk.NewError(codespace, CodeAccNotFound, "the account cannot be found in the world state")
 }
 
 func ErrInsufficientFee(codespace sdk.CodespaceType, expectedFee sdk.Coins, actualFee sdk.Coins) sdk.Error {

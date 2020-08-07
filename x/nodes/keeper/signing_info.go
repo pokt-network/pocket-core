@@ -2,8 +2,8 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 // GetValidatorSigningInfo - Retrieve signing information for the validator by address

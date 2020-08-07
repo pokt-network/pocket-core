@@ -20,7 +20,11 @@ var moduleCdc *codec.Codec
 
 func init() {
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 
 	moduleCdc = codec.New()
 	RegisterCodec(moduleCdc)
@@ -147,10 +151,10 @@ func TestApplicationUtil_UnmarshalJSON(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			marshaled, err := tt.args.application.MarshalJSON()
 			if err != nil {
-				t.Error("Cannot marshal application")
+				t.Fatalf("Cannot marshal application")
 			}
 			if err = tt.args.application.UnmarshalJSON(marshaled); err != nil {
-				t.Errorf("Unmarshal(): returns %v but want %v", err, tt.want)
+				t.Fatalf("Unmarshal(): returns %v but want %v", err, tt.want)
 			}
 			// NOTE CANNOT PERFORM DEEP EQUAL
 			// Unmarshalling causes StakedTokens & MaxRelays to be
@@ -199,11 +203,11 @@ func TestApplicationUtil_UnMarshalApplication(t *testing.T) {
 			bz, _ := MarshalApplication(tt.args.codec, tt.args.application)
 			unmarshaledApp, err := UnmarshalApplication(tt.args.codec, bz)
 			if err != nil {
-				t.Error("could not unmarshal app")
+				t.Fatalf("could not unmarshal app")
 			}
 
 			if !reflect.DeepEqual(unmarshaledApp, tt.want) {
-				t.Errorf("got %v but want %v", unmarshaledApp, unmarshaledApp)
+				t.Fatalf("got %v but want %v", unmarshaledApp, unmarshaledApp)
 			}
 		})
 	}

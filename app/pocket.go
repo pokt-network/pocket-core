@@ -41,8 +41,6 @@ type PocketCoreApp struct {
 	pocketKeeper  pocketKeeper.Keeper
 	// Module Manager
 	mm *module.Manager
-
-	genesis *types.GenesisDoc
 }
 
 // new pocket core base

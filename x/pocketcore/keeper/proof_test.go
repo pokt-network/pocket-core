@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"testing"
 
+	sdk "github.com/pokt-network/pocket-core/types"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
 	"time"
 )

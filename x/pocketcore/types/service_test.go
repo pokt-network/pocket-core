@@ -2,14 +2,15 @@ package types
 
 import (
 	"encoding/hex"
+	"github.com/pokt-network/pocket-core/crypto"
 	"reflect"
 	"testing"
 	"time"
 
+	sdk "github.com/pokt-network/pocket-core/types"
 	appsType "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/h2non/gock.v1"
 )
@@ -274,23 +275,37 @@ func TestSortJSON(t *testing.T) {
 	assert.Equal(t, objs, objs2)
 }
 
+type MockValidatorI interface {
+	IsStaked() bool                 // check if has a staked status
+	IsUnstaked() bool               // check if has status unstaked
+	IsUnstaking() bool              // check if has status unstaking
+	IsJailed() bool                 // whether the validator is jailed
+	GetStatus() sdk.StakeStatus     // status of the validator
+	GetAddress() sdk.Address        // operator address to receive/return validators coins
+	GetPublicKey() crypto.PublicKey // validation consensus pubkey
+	GetTokens() sdk.Int             // validation tokens
+	GetConsensusPower() int64       // validation power in tendermint
+	GetChains() []string
+}
+
 type MockPosKeeper struct {
 	Validators []exported.ValidatorI
 }
 
 func (m MockPosKeeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []exported.ValidatorI) {
 	for _, v := range m.Validators {
-		for _, c := range v.GetChains() {
+		s := v.(MockValidatorI)
+		chains := s.GetChains()
+		for _, c := range chains {
 			if c == networkID {
 				validators = append(validators, v)
-				break
 			}
 		}
 	}
 	return
 }
 
-func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) {
+func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) sdk.Int {
 	panic("implement me")
 }
 

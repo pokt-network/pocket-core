@@ -51,7 +51,10 @@ func TestRandHexAddrConsistency(t *testing.T) {
 	var pub ed25519.PubKeyEd25519
 
 	for i := 0; i < 1000; i++ {
-		rand.Read(pub[:])
+		_, err := rand.Read(pub[:])
+		if err != nil {
+			_ = err
+		}
 
 		acc := types.Address(pub.Address())
 		res := types.Address{}
@@ -60,7 +63,7 @@ func TestRandHexAddrConsistency(t *testing.T) {
 		testMarshal(t, &acc, &res, acc.Marshal, (&res).Unmarshal)
 
 		str := acc.String()
-		res, err := types.AddressFromHex(str)
+		res, err = types.AddressFromHex(str)
 		require.Nil(t, err)
 		require.Equal(t, acc, res)
 
@@ -82,19 +85,12 @@ func TestRandHexAddrConsistency(t *testing.T) {
 	}
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyz"
-
-func RandString(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
-	}
-	return string(b)
-}
-
 func TestAddressInterface(t *testing.T) {
 	var pub ed25519.PubKeyEd25519
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	addrs := []types.AddressI{
 		types.Address(pub.Address()),

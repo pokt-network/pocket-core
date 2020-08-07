@@ -3,9 +3,9 @@ package keeper
 import (
 	"encoding/hex"
 
-	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
 // "AATGeneration" - Generates an application authentication token with an application public key hex string

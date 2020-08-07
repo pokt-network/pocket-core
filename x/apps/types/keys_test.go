@@ -98,7 +98,10 @@ func TestKeyForApplicationInStakingSet(t *testing.T) {
 		application Application
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	operAddrInvr := types.CopyBytes(pub.Address())
 	for i, b := range operAddrInvr {
@@ -110,7 +113,7 @@ func TestKeyForApplicationInStakingSet(t *testing.T) {
 		args args
 		want []byte
 	}{
-		{"NewApplication", args{application: NewApplication(types.Address(pub.Address()), pub, []string{"00"}, types.ZeroInt())}, append([]byte{0x02, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
+		{"NewApplication", args{application: NewApplication(types.Address(pub.Address()), pub, []string{"0001"}, types.ZeroInt())}, append([]byte{0x02, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

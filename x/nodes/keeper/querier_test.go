@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/go-amino"
 	abci "github.com/tendermint/tendermint/abci/types"

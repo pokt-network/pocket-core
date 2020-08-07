@@ -16,7 +16,6 @@ import (
 )
 
 const (
-	blockTypePrivKey = "TENDERMINT PRIVATE KEY"
 	blockTypeKeyInfo = "TENDERMINT KEY INFO"
 	blockTypePubKey  = "TENDERMINT PUBLIC KEY"
 	defaultKDF       = "scrypt"

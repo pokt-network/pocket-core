@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/hex"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +16,6 @@ func TestHostedBlockchains_GetChainURL(t *testing.T) {
 	}
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain},
-		o: sync.Once{},
 	}
 	u, err := hb.GetChainURL(ethereum)
 	assert.Nil(t, err)
@@ -34,7 +32,6 @@ func TestHostedBlockchains_ContainsFromString(t *testing.T) {
 	}
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain},
-		o: sync.Once{},
 	}
 	assert.True(t, hb.Contains(ethereum))
 	assert.False(t, hb.Contains(bitcoin))

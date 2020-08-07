@@ -4,12 +4,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"sync"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,7 +21,6 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 	ethereum := hex.EncodeToString([]byte{01})
 	hbs := HostedBlockchains{
 		M: map[string]HostedBlockchain{ethereum: {ID: ethereum, URL: "https://www.google.com:443"}},
-		o: sync.Once{},
 	}
 	bitcoin := hex.EncodeToString([]byte{02})
 	payload := Payload{Data: "fake"}

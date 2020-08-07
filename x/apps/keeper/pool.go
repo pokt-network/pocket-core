@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/exported"
 )

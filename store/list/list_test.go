@@ -25,7 +25,7 @@ func defaultComponents(key sdk.StoreKey) (sdk.Context, *codec.Codec) {
 	db := dbm.NewMemDB()
 	cms := rootmulti.NewStore(db)
 	cms.MountStoreWithDB(key, sdk.StoreTypeIAVL, db)
-	cms.LoadLatestVersion()
+	_ = cms.LoadLatestVersion()
 	ctx := sdk.NewContext(cms, abci.Header{}, false, log.NewNopLogger())
 	cdc := codec.New()
 	return ctx, cdc
@@ -41,18 +41,18 @@ func TestList(t *testing.T) {
 
 	lm.Push(val)
 	require.Equal(t, uint64(1), lm.Len())
-	lm.Get(uint64(0), &res)
+	_ = lm.Get(uint64(0), &res)
 	require.Equal(t, val, res)
 
 	val = TestStruct{2, false}
 	lm.Set(uint64(0), val)
-	lm.Get(uint64(0), &res)
+	_ = lm.Get(uint64(0), &res)
 	require.Equal(t, val, res)
 
 	val = TestStruct{100, false}
 	lm.Push(val)
 	require.Equal(t, uint64(2), lm.Len())
-	lm.Get(uint64(1), &res)
+	_ = lm.Get(uint64(1), &res)
 	require.Equal(t, val, res)
 
 	lm.Delete(uint64(1))
@@ -60,7 +60,7 @@ func TestList(t *testing.T) {
 
 	lm.Iterate(&res, func(index uint64) (brk bool) {
 		var temp TestStruct
-		lm.Get(index, &temp)
+		_ = lm.Get(index, &temp)
 		require.Equal(t, temp, res)
 
 		require.True(t, index != 1)
@@ -72,7 +72,7 @@ func TestList(t *testing.T) {
 		return
 	})
 
-	lm.Get(uint64(0), &res)
+	_ = lm.Get(uint64(0), &res)
 	require.Equal(t, TestStruct{3, true}, res)
 }
 
@@ -91,7 +91,7 @@ func TestListRandom(t *testing.T) {
 
 	for k, v := range mocklist {
 		var i uint32
-		require.NotPanics(t, func() { list.Get(uint64(k), &i) })
+		require.NotPanics(t, func() { _ = list.Get(uint64(k), &i) })
 		require.Equal(t, v, i)
 	}
 }

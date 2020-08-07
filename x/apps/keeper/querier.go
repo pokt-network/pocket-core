@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth/util"
 	abci "github.com/tendermint/tendermint/abci/types"
 )

@@ -1,9 +1,9 @@
 package keeper
 
 import (
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"reflect"
 	"testing"
 )

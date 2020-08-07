@@ -397,7 +397,7 @@ Prompts the user for <fromAddr> account passphrase.`,
 			return
 		}
 		memo := args[5]
-		fmt.Println(fmt.Sprintf("Adding Memo: %v", memo))
+		fmt.Printf("Adding Memo: %v\n", memo)
 		fmt.Println("Enter passphrase: ")
 		res, err := SendTransaction(args[0], args[1], app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees), memo)
 		if err != nil {

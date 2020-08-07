@@ -44,11 +44,11 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	feeAddr := feesCollector.GetAddress()
 	err := k.AccountKeeper.SendCoinsFromAccountToModule(ctx, feeAddr, govTypes.DAOAccountName, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, daoCut)))
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the dao: %s, at height %d", daoCut.String(), err.Error()), ctx.BlockHeight())
+		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the dao: %s, at height %d", daoCut.String(), err.Error(), ctx.BlockHeight()))
 	}
 	err = k.AccountKeeper.SendCoins(ctx, feeAddr, previousProposer, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, at height %d", proposerCut.String(), err.Error()), ctx.BlockHeight())
+		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, at height %d", proposerCut.String(), err.Error(), ctx.BlockHeight()))
 	}
 }
 

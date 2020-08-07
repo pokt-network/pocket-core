@@ -255,7 +255,7 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	res.Height = getHeight(tree, req)
 
 	switch req.Path {
-	case "/key":        // get by key
+	case "/key": // get by key
 		key := req.Data // data holds the key bytes
 
 		res.Key = key

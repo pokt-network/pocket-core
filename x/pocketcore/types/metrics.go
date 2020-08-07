@@ -35,14 +35,14 @@ const (
 type ServiceMetrics struct {
 	l               sync.Mutex
 	tmLogger        log.Logger
-	ServiceMetric   `json:"accumulated_service_metrics"`                         // total metrics
-	NonNativeChains map[string]ServiceMetric `json:"individual_service_metrics"` // metrics per chain
+	ServiceMetric   `json:"accumulated_service_metrics"` // total metrics
+	NonNativeChains map[string]ServiceMetric             `json:"individual_service_metrics"` // metrics per chain
 	prometheusSrv   *http.Server
 }
 
 type ServiceMetricsEncodable struct {
-	ServiceMetric   `json:"accumulated_service_metrics"`                // total metrics
-	NonNativeChains []ServiceMetric `json:"individual_service_metrics"` // metrics per chain
+	ServiceMetric   `json:"accumulated_service_metrics"` // total metrics
+	NonNativeChains []ServiceMetric                      `json:"individual_service_metrics"` // metrics per chain
 }
 
 func GlobalServiceMetric() *ServiceMetrics {
@@ -53,7 +53,7 @@ func InitGlobalServiceMetric(hostedBlockchains HostedBlockchains, logger log.Log
 	// create a new service metric
 	serviceMetric := NewServiceMetrics(hostedBlockchains, logger)
 	// set the service metrics
-	globalServiceMetrics = &serviceMetric
+	globalServiceMetrics = serviceMetric
 	// start metrics server
 	globalServiceMetrics.prometheusSrv = globalServiceMetrics.StartPrometheusServer(addr, maxOpenConn)
 }
@@ -191,9 +191,8 @@ func KeyForServiceMetrics() []byte {
 	return []byte(ServiceMetricsKey)
 }
 
-func NewServiceMetrics(hostedBlockchains HostedBlockchains, logger log.Logger) ServiceMetrics {
-	var serviceMetrics ServiceMetrics
-	serviceMetrics = ServiceMetrics{
+func NewServiceMetrics(hostedBlockchains HostedBlockchains, logger log.Logger) *ServiceMetrics {
+	serviceMetrics := ServiceMetrics{
 		ServiceMetric:   NewServiceMetricsFor("all"),
 		NonNativeChains: make(map[string]ServiceMetric),
 	}
@@ -203,7 +202,7 @@ func NewServiceMetrics(hostedBlockchains HostedBlockchains, logger log.Logger) S
 	// add the logger
 	serviceMetrics.tmLogger = logger
 	// return the metrics
-	return serviceMetrics
+	return &serviceMetrics
 }
 
 type ServiceMetric struct {

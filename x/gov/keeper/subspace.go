@@ -124,7 +124,7 @@ func (k Keeper) ModifyParam(ctx sdk.Ctx, aclKey string, paramValue []byte, owner
 		k.Logger(ctx).Error(types.ErrSubspaceNotFound(types.ModuleName, subspaceName).Error())
 		os.Exit(1)
 	}
-	space.Update(ctx, []byte(paramKey), paramValue)
+	_ = space.Update(ctx, []byte(paramKey), paramValue)
 	k.spaces[subspaceName] = space
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{

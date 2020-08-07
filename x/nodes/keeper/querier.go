@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/util"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

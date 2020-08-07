@@ -3,13 +3,13 @@ package nodes
 import (
 	"fmt"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto/keys"
 	"github.com/pokt-network/pocket-core/crypto/keys/mintkey"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
@@ -108,7 +108,7 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 	}
 	fee := msg.GetFee()
 	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LTE(fee) { // todo get stake denom
-		err = fmt.Errorf("insufficient funds: the fee needed is %v", fee)
+		_ = fmt.Errorf("insufficient funds: the fee needed is %v", fee)
 		return
 	}
 	txBuilder = auth.NewTxBuilder(

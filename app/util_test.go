@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/x/nodes"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/gov"
+	"github.com/pokt-network/pocket-core/x/nodes"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 	tmTypes "github.com/tendermint/tendermint/types"
 )

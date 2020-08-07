@@ -21,21 +21,24 @@ func TestNewValidator(t *testing.T) {
 		serviceURL    string
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name string
 		args args
 		want Validator
 	}{
-		{"defaultValidator", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"00"}, "https://www.google.com:443"},
+		{"defaultValidator", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"0001"}, "https://www.google.com:443"},
 			Validator{
 				Address:                 sdk.Address(pub.Address()),
 				PublicKey:               pub,
 				Jailed:                  false,
 				Status:                  sdk.Staked,
 				StakedTokens:            sdk.ZeroInt(),
-				Chains:                  []string{"00"},
+				Chains:                  []string{"0001"},
 				ServiceURL:              "https://www.google.com:443",
 				UnstakingCompletionTime: time.Time{}, // zero out because status: staked
 			}},
@@ -59,7 +62,10 @@ func TestValidator_ABCIValidatorUpdate(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -116,7 +122,10 @@ func TestValidator_AddStakedTokens(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	type args struct {
 		tokens sdk.Int
@@ -171,7 +180,10 @@ func TestValidator_ConsAddress(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -214,7 +226,10 @@ func TestValidator_ConsensusPower(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -265,7 +280,10 @@ func TestValidator_Equals(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	type args struct {
 		v2 Validator
@@ -335,7 +353,10 @@ func TestValidator_GetAddress(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -378,7 +399,10 @@ func TestValidator_GetConsAddr(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -421,7 +445,10 @@ func TestValidator_GetConsPubKey(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -465,7 +492,10 @@ func TestValidator_GetStatus(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -509,7 +539,10 @@ func TestValidator_GetTokens(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -553,7 +586,10 @@ func TestValidator_IsJailed(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -597,7 +633,10 @@ func TestValidator_IsStaked(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -657,7 +696,10 @@ func TestValidator_IsUnstaked(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -717,7 +759,10 @@ func TestValidator_IsUnstaking(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -777,7 +822,10 @@ func TestValidator_PotentialConsensusPower(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -821,7 +869,10 @@ func TestValidator_RemoveStakedTokens(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	type args struct {
 		tokens sdk.Int
@@ -891,7 +942,10 @@ func TestValidator_UpdateStatus(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	type args struct {
 		newStatus sdk.StakeStatus
@@ -978,7 +1032,10 @@ func TestValidator_GetServiceURL(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -990,7 +1047,7 @@ func TestValidator_GetServiceURL(t *testing.T) {
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Staked,
-			Chains:                  []string{"00"},
+			Chains:                  []string{"0001"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
@@ -1028,7 +1085,10 @@ func TestValidator_GetChains(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -1040,11 +1100,11 @@ func TestValidator_GetChains(t *testing.T) {
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Staked,
-			Chains:                  []string{"00"},
+			Chains:                  []string{"0001"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
-		}, []string{"00"}},
+		}, []string{"0001"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

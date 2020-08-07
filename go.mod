@@ -9,6 +9,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/magiconair/properties v1.8.1
 	github.com/pkg/errors v0.8.1
+	github.com/prometheus/client_golang v1.3.0
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.4.0
 	github.com/tendermint/go-amino v0.15.0

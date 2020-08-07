@@ -2,9 +2,9 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/tendermint/tendermint/libs/log"
 	log2 "log"
 )
@@ -14,11 +14,11 @@ var _ types.ApplicationSet = Keeper{}
 
 // Keeper of the staking store
 type Keeper struct {
-	storeKey             sdk.StoreKey
-	cdc                  *codec.Codec
-	AccountsKeeper       types.AuthKeeper
-	POSKeeper            types.PosKeeper
-	Paramstore           sdk.Subspace
+	storeKey       sdk.StoreKey
+	cdc            *codec.Codec
+	AccountsKeeper types.AuthKeeper
+	POSKeeper      types.PosKeeper
+	Paramstore     sdk.Subspace
 	// codespace
 	codespace sdk.CodespaceType
 }
@@ -33,12 +33,12 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, su
 	}
 
 	return Keeper{
-		storeKey:             key,
-		cdc:                  cdc,
-		AccountsKeeper:       supplyKeeper,
-		POSKeeper:            posKeeper,
-		Paramstore:           paramstore.WithKeyTable(ParamKeyTable()),
-		codespace:            codespace,
+		storeKey:       key,
+		cdc:            cdc,
+		AccountsKeeper: supplyKeeper,
+		POSKeeper:      posKeeper,
+		Paramstore:     paramstore.WithKeyTable(ParamKeyTable()),
+		codespace:      codespace,
 	}
 }
 

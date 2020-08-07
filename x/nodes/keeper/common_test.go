@@ -4,10 +4,10 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/gov"
+	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -15,11 +15,11 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 var (
@@ -127,7 +127,10 @@ func sendFromModuleToAccount(t *testing.T, ctx sdk.Ctx, k *Keeper, module string
 
 func getRandomPubKey() crypto.Ed25519PublicKey {
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	return pub
 }
 
@@ -144,7 +147,7 @@ func getValidator() types.Validator {
 		Jailed:       false,
 		Status:       sdk.Staked,
 		ServiceURL:   "https://www.google.com:443",
-		Chains:       []string{"00", "0002", "FFFF"},
+		Chains:       []string{"0001", "0002", "FFFF"},
 	}
 }
 

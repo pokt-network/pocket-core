@@ -36,7 +36,7 @@ func setupTestInput() testInput {
 	ms.MountStoreWithDB(authCapKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
-	ms.LoadLatestVersion()
+	_ = ms.LoadLatestVersion()
 	akSubspace := sdk.NewSubspace(authTypes.DefaultCodespace)
 	ak := NewKeeper(
 		cdc, authCapKey, akSubspace, nil,

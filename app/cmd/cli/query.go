@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
-	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/types"
+	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 
 	"github.com/pokt-network/pocket-core/app"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"

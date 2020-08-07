@@ -19,7 +19,10 @@ func TestValidatorSigningInfo_String(t *testing.T) {
 		JailedBlocksCounter int64
 	}
 	var pub ed25519.PubKeyEd25519
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	ca := types.Address(pub.Address())
 
 	until := time.Now()

@@ -1,9 +1,9 @@
 package keeper
 
 import (
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // "GetAllNodes" - Gets all of the nodes in the state storage

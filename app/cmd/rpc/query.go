@@ -121,12 +121,12 @@ type RPCResultTx struct {
 }
 
 func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
+	if res == nil {
+		return RPCResultTxSearch{}
+	}
 	rpcTxSearch := RPCResultTxSearch{
 		Txs:        make([]*RPCResultTx, res.TotalCount),
 		TotalCount: res.TotalCount,
-	}
-	if res == nil {
-		return rpcTxSearch
 	}
 	for _, result := range res.Txs {
 		rpcTxSearch.Txs = append(rpcTxSearch.Txs, ResultTxToRPC(result))

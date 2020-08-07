@@ -74,7 +74,7 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 	}
 	fees := sdk.NewInt(fee)
 	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LTE(fees) { // todo get stake denom
-		err = fmt.Errorf("insufficient funds: the fee needed is %v", fee)
+		_ = fmt.Errorf("insufficient funds: the fee needed is %v", fee)
 		return
 	}
 	txBuilder = auth.NewTxBuilder(

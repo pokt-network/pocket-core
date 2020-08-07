@@ -61,7 +61,7 @@ func TestVerifyMultiStoreQueryProof(t *testing.T) {
 	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
 
 	store.MountStoreWithDB(iavlStoreKey, types.StoreTypeIAVL, nil)
-	store.LoadVersion(0)
+	_ = store.LoadVersion(0)
 
 	iavlStore := store.GetCommitStore(iavlStoreKey).(*iavl.Store)
 	iavlStore.Set([]byte("MYKEY"), []byte("MYVALUE"))
@@ -116,7 +116,7 @@ func TestVerifyMultiStoreQueryProofEmptyStore(t *testing.T) {
 	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
 
 	store.MountStoreWithDB(iavlStoreKey, types.StoreTypeIAVL, nil)
-	store.LoadVersion(0)
+	_ = store.LoadVersion(0)
 	cid := store.Commit() // Commit with empty iavl store.
 
 	// Get Proof
@@ -145,7 +145,7 @@ func TestVerifyMultiStoreQueryProofAbsence(t *testing.T) {
 	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
 
 	store.MountStoreWithDB(iavlStoreKey, types.StoreTypeIAVL, nil)
-	store.LoadVersion(0)
+	_ = store.LoadVersion(0)
 
 	iavlStore := store.GetCommitStore(iavlStoreKey).(*iavl.Store)
 	iavlStore.Set([]byte("MYKEY"), []byte("MYVALUE"))

@@ -26,8 +26,8 @@ func TestAppModule_InitExportGenesis(t *testing.T) {
 		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{
-		Params:   p,
-		Claims:   []types.MsgClaim(nil),
+		Params: p,
+		Claims: []types.MsgClaim(nil),
 	}
 	ctx, _, _, k, _ := createTestInput(t, false)
 	am := NewAppModule(k)
@@ -87,8 +87,8 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 		ClaimExpiration:       55,
 	}
 	genesisState := types.GenesisState{
-		Params:   p,
-		Claims:   []types.MsgClaim(nil),
+		Params: p,
+		Claims: []types.MsgClaim(nil),
 	}
 	p2 := types.Params{
 		SessionNodeCount:      -1,
@@ -97,8 +97,8 @@ func TestAppModuleBasic_ValidateGenesis(t *testing.T) {
 		ClaimExpiration:       55,
 	}
 	genesisState2 := types.GenesisState{
-		Params:   p2,
-		Claims:   []types.MsgClaim(nil),
+		Params: p2,
+		Claims: []types.MsgClaim(nil),
 	}
 	validBz, err := types.ModuleCdc.MarshalJSON(genesisState)
 	assert.Nil(t, err)

@@ -50,8 +50,8 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 
 // "AppModule" - The higher level building block for a module
 type AppModule struct {
-	AppModuleBasic       // a fundamental structure for all mods
-	keeper keeper.Keeper // responsible for store operations
+	AppModuleBasic               // a fundamental structure for all mods
+	keeper         keeper.Keeper // responsible for store operations
 }
 
 // "NewAppModule" - Creates a new AppModule Object

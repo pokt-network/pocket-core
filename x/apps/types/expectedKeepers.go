@@ -1,8 +1,8 @@
 package types
 
 import (
-	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	sdk "github.com/pokt-network/pocket-core/types"
+	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	authexported "github.com/pokt-network/pocket-core/x/auth/exported"
 )
 
