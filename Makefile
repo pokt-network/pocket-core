@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 GOVERSION=go1.13.15
-CURRENTVERSION=$(go version | awk '${print $3}')
+CURRENTVERSION=$(shell (go version | awk '{print $$3}'))
 INSTALL_PATH?=${GOPATH}/bin/pocket
 BUILD_TAGS?='cleveldb'
 export GO111MODULE = on
@@ -18,7 +18,7 @@ build_race: go.sum
 	@echo "--> Building pocket core 🏗"
 	@CGO_ENABLED=1 go build -mod=readonly -race -tags $(BUILD_TAGS) ./...
 
-install: go.sum
+install: check go.sum 
 	@echo "--> Building pocket core 🏗"
 	@CGO_ENABLED=1 go build -tags $(BUILD_TAGS) -o $(INSTALL_PATH) ./app/cmd/pocket_core/main.go
 	@echo "--> Done 🚀🌕"
@@ -29,15 +29,18 @@ install_unsafe:
 	CGO_ENABLED=1 go build -tags $(BUILD_TAGS) -o $(INSTALL_PATH) ./app/cmd/pocket_core/main.go
 	@echo "--> Done 🚀🌕"
 
-go.sum: check
+go.sum: 
 	@echo "--> Ensure dependencies have not been modified 🔍"
 	@go mod verify
 	@go mod tidy
 .PHONY: go.sum 
 
 check: 
+	@echo "--> Verifying current Go version 🔍"
 ifneq ($(GOVERSION), $(CURRENTVERSION))
 	@echo "Go version does not match, please install ${GOVERSION} 💥"
+	@echo $(CURRENTVERSION) 
+	@echo $(GOVERSION)
 	exit 1
 endif
 

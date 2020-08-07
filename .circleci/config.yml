@@ -47,7 +47,7 @@ jobs:
       # Run tests
       - run:
          name: 'test'
-         command: make test_shot
+         command: make test_short
          no_output_timeout: 20m
   # Job to trigger the Pocket Core deployments CI with a specific branch
   trigger-pocket-core-deployments-branches:
