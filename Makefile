@@ -12,11 +12,11 @@ all: test_short install
 ## Build
 build: go.sum
 	@echo "--> Building pocket core 🏗"
-	@CGO_ENABLED=1 go build -mod=readonly -tags $(BUILD_TAGS) ./...
+	@CGO_ENABLED=1 go build -mod=readonly -tags $(BUILD_TAGS) ./app/cmd/pocket_core/main.go
 
 build_race: go.sum
 	@echo "--> Building pocket core 🏗"
-	@CGO_ENABLED=1 go build -mod=readonly -race -tags $(BUILD_TAGS) ./...
+	@CGO_ENABLED=1 go build -mod=readonly -race -tags $(BUILD_TAGS) ./app/cmd/pocket_core/main.go
 
 install: check go.sum 
 	@echo "--> Building pocket core 🏗"

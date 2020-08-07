@@ -24,7 +24,7 @@ jobs:
       # static analyzer
       - run: go vet ./...
       # Build the binary
-      - run: make build
+      - run: go build app/cmd/pocket_core/main.go
       # Cache build
       - save_cache:
           key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
