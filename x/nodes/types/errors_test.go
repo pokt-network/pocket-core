@@ -219,7 +219,10 @@ func TestErrNoSigningInfoFound(t *testing.T) {
 		consAddr  types.Address
 	}
 	var pub ed25519.PubKeyEd25519
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	ca := types.Address(pub.Address())
 
 	tests := []struct {

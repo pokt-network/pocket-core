@@ -2,11 +2,11 @@ package nodes
 
 import (
 	"encoding/json"
-	"github.com/pokt-network/pocket-core/x/nodes/keeper"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
+	"github.com/pokt-network/pocket-core/x/nodes/keeper"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

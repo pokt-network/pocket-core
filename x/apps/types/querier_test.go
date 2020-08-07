@@ -13,7 +13,10 @@ func TestNewQueryApplicationParams(t *testing.T) {
 		applicationAddr types.Address
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := types.Address(pub.Address())
 
 	tests := []struct {

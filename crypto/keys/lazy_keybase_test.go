@@ -118,10 +118,6 @@ func Test_lazyKeybase_Delete(t *testing.T) {
 		dir      string
 		coinbase KeyPair
 	}
-	type args struct {
-		address    types.Address
-		passphrase string
-	}
 
 	dir, cleanup := NewTestCaseDir(t)
 	defer cleanup()
@@ -146,11 +142,10 @@ func Test_lazyKeybase_Delete(t *testing.T) {
 			}
 			wkp, err := lkb.Create("ENCRYPTIONPASSPHRASE")
 			if err != nil {
-				t.Errorf("Creation Failed")
+				t.Fatalf("Creation Failed")
 			}
-
 			if err := lkb.Delete(wkp.GetAddress(), "ENCRYPTIONPASSPHRASE"); (err != nil) != tt.wantErr {
-				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Fatalf("Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -195,7 +190,9 @@ func Test_lazyKeybase_ExportPrivKeyEncryptedArmor(t *testing.T) {
 				coinbase: tt.fields.coinbase,
 			}
 			wkp, err := lkb.Create("ENCRYPTIONPASSPHRASE")
-
+			if err != nil {
+				t.Fatalf("Creation Failed")
+			}
 			gotArmor, err := lkb.ExportPrivKeyEncryptedArmor(wkp.GetAddress(), tt.args.decryptPassphrase, tt.args.encryptPassphrase, "")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ExportPrivKeyEncryptedArmor() error = %v, wantErr %v", err, tt.wantErr)
@@ -247,7 +244,9 @@ func Test_lazyKeybase_ExportPrivateKeyObject(t *testing.T) {
 				coinbase: tt.fields.coinbase,
 			}
 			wkp, err := lkb.Create("ENCRYPTIONPASSPHRASE")
-
+			if err != nil {
+				t.Fatalf("Creation Failed")
+			}
 			got, err := lkb.ExportPrivateKeyObject(wkp.GetAddress(), tt.args.passphrase)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ExportPrivateKeyObject() error = %v, wantErr %v", err, tt.wantErr)
@@ -297,7 +296,9 @@ func Test_lazyKeybase_Get(t *testing.T) {
 			}
 
 			wkp, err := lkb.Create("ENCRYPTIONPASSPHRASE")
-
+			if err != nil {
+				t.Fatalf("Creation Failed")
+			}
 			got, err := lkb.Get(wkp.GetAddress())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
@@ -341,7 +342,9 @@ func Test_lazyKeybase_GetCoinbase(t *testing.T) {
 			}
 
 			_, err := kb.Create("ENCRYPTIONPASSPHRASE")
-
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
 			got, err := kb.GetCoinbase()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCoinbase() error = %v, wantErr %v", err, tt.wantErr)
@@ -399,10 +402,14 @@ func Test_lazyKeybase_ImportPrivKey(t *testing.T) {
 			}
 
 			wkp, err := lkb.Create("ENCRYPTIONPASSPHRASE")
-
+			if err != nil {
+				t.Fatalf("Creation Failed")
+			}
 			armor, err := lkb.ExportPrivKeyEncryptedArmor(wkp.GetAddress(), tt.args.decryptPassphrase, tt.args.encryptPassphrase, "")
-
-			lkb.Delete(wkp.GetAddress(), "ENCRYPTIONPASSPHRASE")
+			if err != nil {
+				t.Fatalf("Creation Failed")
+			}
+			_ = lkb.Delete(wkp.GetAddress(), "ENCRYPTIONPASSPHRASE")
 
 			got, err := lkb.ImportPrivKey(armor, tt.args.decryptPassphrase, tt.args.encryptPassphrase)
 			if (err != nil) != tt.wantErr {
@@ -457,10 +464,14 @@ func Test_lazyKeybase_ImportPrivateKeyObject(t *testing.T) {
 			}
 
 			wkp, err := lkb.Create("ENCRYPTIONPASSPHRASE")
-
+			if err != nil {
+				t.Fatalf("Creation Failed")
+			}
 			exported, err := lkb.ExportPrivateKeyObject(wkp.GetAddress(), "ENCRYPTIONPASSPHRASE")
-
-			lkb.Delete(wkp.GetAddress(), "ENCRYPTIONPASSPHRASE")
+			if err != nil {
+				t.Fatalf("Creation Failed")
+			}
+			_ = lkb.Delete(wkp.GetAddress(), "ENCRYPTIONPASSPHRASE")
 
 			got, err := lkb.ImportPrivateKeyObject(exported.(pocketCrypto.Ed25519PrivateKey), tt.args.encryptPassphrase)
 			if (err != nil) != tt.wantErr {
@@ -505,7 +516,9 @@ func Test_lazyKeybase_List(t *testing.T) {
 			}
 
 			_, err := lkb.Create("ENCRYPTIONPASSPHRASE")
-
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
 			got, err := lkb.List()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("List() error = %v, wantErr %v", err, tt.wantErr)

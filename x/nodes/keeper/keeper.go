@@ -4,9 +4,9 @@ import (
 	"fmt"
 	log2 "log"
 
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
@@ -15,11 +15,11 @@ var _ types.ValidatorSet = Keeper{}
 
 // Keeper of the staking store
 type Keeper struct {
-	storeKey           sdk.StoreKey
-	cdc                *codec.Codec
-	AccountKeeper      types.AuthKeeper
-	PocketKeeper       types.PocketKeeper // todo combine all modules
-	Paramstore         sdk.Subspace
+	storeKey      sdk.StoreKey
+	cdc           *codec.Codec
+	AccountKeeper types.AuthKeeper
+	PocketKeeper  types.PocketKeeper // todo combine all modules
+	Paramstore    sdk.Subspace
 	// codespace
 	codespace sdk.CodespaceType
 }
@@ -32,11 +32,11 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		log2.Fatal(fmt.Errorf("%s module account has not been set", types.StakedPoolName))
 	}
 	return Keeper{
-		storeKey:           key,
-		cdc:                cdc,
-		AccountKeeper:      accountKeeper,
-		Paramstore:         paramstore.WithKeyTable(ParamKeyTable()),
-		codespace:          codespace,
+		storeKey:      key,
+		cdc:           cdc,
+		AccountKeeper: accountKeeper,
+		Paramstore:    paramstore.WithKeyTable(ParamKeyTable()),
+		codespace:     codespace,
 	}
 }
 

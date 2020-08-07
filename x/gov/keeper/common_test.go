@@ -37,7 +37,10 @@ func makeTestCodec() *codec.Codec {
 
 func getRandomPubKey() crypto.Ed25519PublicKey {
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	return pub
 }
 

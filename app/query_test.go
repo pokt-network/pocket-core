@@ -9,14 +9,14 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	types3 "github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/pokt-network/pocket-core/x/gov"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/pocket-core/crypto"
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/gov"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/iavl/common"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -100,7 +100,7 @@ func TestQueryApps(t *testing.T) {
 	assert.Nil(t, err)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"00"}
+	var chains = []string{"0001"}
 
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
@@ -329,7 +329,7 @@ func TestQueryStakedpp(t *testing.T) {
 	assert.Nil(t, err)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
-	var chains = []string{"00"}
+	var chains = []string{"0001"}
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
@@ -352,7 +352,7 @@ func TestRelayGenerator(t *testing.T) {
 	const nodePublicKey = "a25e182d490e9722e72ba90eb21fe0124d03bcb75d2bf6f45b2a1d2b1dc92fac"
 	const sessionBlockheight = 1
 	const query = `{"jsonrpc":"2.0","method":"net_version","params":[],"id":67}`
-	const supportedBlockchain = "00"
+	const supportedBlockchain = "0001"
 	apkBz, err := hex.DecodeString(appPrivKey)
 	if err != nil {
 		panic(err)

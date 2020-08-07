@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 func TestIsUniqueProof(t *testing.T) {
 	h := SessionHeader{
 		ApplicationPubKey:  "0",
-		Chain:              "00",
+		Chain:              "0001",
 		SessionBlockHeight: 0,
 	}
 	e, _ := GetEvidence(h, RelayEvidence, sdk.NewInt(100000))

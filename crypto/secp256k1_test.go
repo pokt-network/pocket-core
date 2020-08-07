@@ -12,7 +12,7 @@ func TestSecp256k1PrivateKey_PrivateKeyFromBytes(t *testing.T) {
 
 	privkey := getRandomPrivateKeySecp(t)
 	privkey2 := Secp256k1PrivateKey{}
-	cdc.UnmarshalBinaryBare(privkey.Bytes(), &privkey2)
+	_ = cdc.UnmarshalBinaryBare(privkey.Bytes(), &privkey2)
 
 	tests := []struct {
 		name    string

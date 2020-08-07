@@ -2,11 +2,11 @@ package pos
 
 import (
 	"encoding/json"
-	"github.com/pokt-network/pocket-core/x/apps/keeper"
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
+	"github.com/pokt-network/pocket-core/x/apps/keeper"
+	"github.com/pokt-network/pocket-core/x/apps/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 

@@ -9,18 +9,18 @@ import (
 
 	tmType "github.com/tendermint/tendermint/types"
 
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/types/module"
 	apps "github.com/pokt-network/pocket-core/x/apps"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/gov"
+	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/pokt-network/pocket-core/x/nodes"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/pokt-network/pocket-core/crypto"
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/types/module"
-	"github.com/pokt-network/pocket-core/x/auth"
-	"github.com/pokt-network/pocket-core/x/gov"
-	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 )
 
 var mainnetGenesis = `{
@@ -15409,7 +15409,7 @@ var testnetGenesis = `{
     }
 }`
 
-func GenesisStateFromJson(json string) posConfig.GenesisState{
+func GenesisStateFromJson(json string) posConfig.GenesisState {
 	genDoc, err := tmType.GenesisDocFromJSON([]byte(json))
 	if err != nil {
 		fmt.Println("unable to read genesis from json (internal)")

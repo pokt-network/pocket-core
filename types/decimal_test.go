@@ -300,7 +300,7 @@ func TestDecMarshalJSON(t *testing.T) {
 			if !tt.wantErr {
 				assert.Equal(t, tt.want, string(got), "incorrect marshalled value")
 				unmarshalledDec := NewDec(0)
-				unmarshalledDec.UnmarshalJSON(got)
+				_ = unmarshalledDec.UnmarshalJSON(got)
 				assert.Equal(t, tt.d, unmarshalledDec, "incorrect unmarshalled value")
 			}
 		})

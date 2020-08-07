@@ -89,7 +89,8 @@ func NewPublicKeyBz(b []byte) (PublicKey, error) {
 }
 
 func PubKeyToPublicKey(key crypto.PubKey) (PublicKey, error) {
-	switch key.(type) {
+	k := key
+	switch k.(type) {
 	case secp256k1.PubKeySecp256k1:
 		return Secp256k1PublicKey{}.PubKeyToPublicKey(key), nil
 	case ed25519.PubKeyEd25519:
@@ -115,7 +116,8 @@ func NewPrivateKeyBz(b []byte) (PrivateKey, error) {
 }
 
 func PrivKeyToPrivateKey(key crypto.PrivKey) (PrivateKey, error) {
-	switch key.(type) {
+	k := key
+	switch k.(type) {
 	case secp256k1.PrivKeySecp256k1:
 		return Secp256k1PrivateKey{}.PrivKeyToPrivateKey(key), nil
 	case ed25519.PrivKeyEd25519:
@@ -161,6 +163,6 @@ func CheckConsensusPubKey(pubKey crypto.PubKey) (abci.PubKey, error) {
 			Data: pk[:],
 		}, nil
 	default:
-		return abci.PubKey{}, errors.New(fmt.Sprintf("unknown pubkey type: %v %v", pubKey, reflect.TypeOf(pubKey)))
+		return abci.PubKey{}, fmt.Errorf("unknown pubkey type: %v %v", pubKey, reflect.TypeOf(pubKey))
 	}
 }

@@ -14,7 +14,10 @@ func TestMsgBeginUnstake_GetSignBytes(t *testing.T) {
 		Address sdk.Address
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	mesg := MsgBeginUnstake{
@@ -46,7 +49,10 @@ func TestMsgBeginUnstake_GetSigners(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	mesg := MsgBeginUnstake{
@@ -78,7 +84,10 @@ func TestMsgBeginUnstake_Route(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -106,7 +115,10 @@ func TestMsgBeginUnstake_Type(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -134,7 +146,10 @@ func TestMsgBeginUnstake_ValidateBasic(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -165,9 +180,15 @@ func TestMsgSend_GetSignBytes(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
-	rand.Read(pub[:])
+	_, err = rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va2 := sdk.Address(pub.Address())
 
 	mesg := MsgSend{
@@ -209,9 +230,15 @@ func TestMsgSend_GetSigners(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
-	rand.Read(pub[:])
+	_, err = rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va2 := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -247,9 +274,15 @@ func TestMsgSend_Route(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
-	rand.Read(pub[:])
+	_, err = rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va2 := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -285,9 +318,15 @@ func TestMsgSend_Type(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
-	rand.Read(pub[:])
+	_, err = rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va2 := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -323,9 +362,15 @@ func TestMsgSend_ValidateBasic(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
-	rand.Read(pub[:])
+	_, err = rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va2 := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -378,8 +423,11 @@ func TestMsgStake_GetSignBytes(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-	chains := []string{"00"}
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+	chains := []string{"0001"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
@@ -427,8 +475,11 @@ func TestMsgStake_GetSigners(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-	chains := []string{"00"}
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+	chains := []string{"0001"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
@@ -469,8 +520,11 @@ func TestMsgStake_Route(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-	chains := []string{"00"}
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+	chains := []string{"0001"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
@@ -511,8 +565,11 @@ func TestMsgStake_Type(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-	chains := []string{"00"}
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+	chains := []string{"0001"}
 	value := sdk.OneInt()
 	surl := "www.pokt.network"
 
@@ -553,8 +610,11 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-	chains := []string{"00"}
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+	chains := []string{"0001"}
 	value := sdk.OneInt()
 	surl := "https://www.pokt.network:8080"
 
@@ -615,7 +675,10 @@ func TestMsgUnjail_GetSignBytes(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	mesg := MsgUnjail{
@@ -647,7 +710,10 @@ func TestMsgUnjail_GetSigners(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -675,7 +741,10 @@ func TestMsgUnjail_Route(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -703,7 +772,10 @@ func TestMsgUnjail_Type(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	tests := []struct {
@@ -731,7 +803,10 @@ func TestMsgUnjail_ValidateBasic(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := sdk.Address(pub.Address())
 
 	tests := []struct {

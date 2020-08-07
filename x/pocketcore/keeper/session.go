@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
 // "HandleDispatch" - Handles a client request for their session information

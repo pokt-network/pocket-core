@@ -487,7 +487,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading)
 
 	case types.StoreTypeDB:
-		return commitDBStoreAdapter{dbadapter.Store{db}}, nil
+		return commitDBStoreAdapter{dbadapter.Store{DB: db}}, nil
 
 	case types.StoreTypeTransient:
 		_, ok := key.(*types.TransientStoreKey)

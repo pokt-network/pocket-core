@@ -89,6 +89,10 @@ var exportGenesisForReset = &cobra.Command{
 		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db)
 		// initialize stores
 		blockStore, _, _, _, err := state.BlocksAndStateFromDB(&app.GlobalConfig.TendermintConfig, state.DefaultDBProvider)
+		if err != nil {
+			fmt.Println("err loading blockstore: ", err.Error())
+			return
+		}
 		a.SetBlockstore(blockStore)
 		chainID := args[1]
 		j, err := a.ExportState(int64(height), chainID)
@@ -198,13 +202,13 @@ $ pocket util completion fish > ~/.config/fish/completions/pocket.fish
 	Run: func(cmd *cobra.Command, args []string) {
 		switch args[0] {
 		case "bash":
-			cmd.Root().GenBashCompletion(os.Stdout)
+			_ = cmd.Root().GenBashCompletion(os.Stdout)
 		case "zsh":
-			cmd.Root().GenZshCompletion(os.Stdout)
+			_ = cmd.Root().GenZshCompletion(os.Stdout)
 		case "fish":
-			cmd.Root().GenFishCompletion(os.Stdout, true)
+			_ = cmd.Root().GenFishCompletion(os.Stdout, true)
 		case "powershell":
-			cmd.Root().GenPowerShellCompletion(os.Stdout)
+			_ = cmd.Root().GenPowerShellCompletion(os.Stdout)
 		}
 	},
 }

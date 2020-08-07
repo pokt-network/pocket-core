@@ -8,23 +8,19 @@ import (
 // Param module codespace constants
 const (
 	CodeUnknownSubspace         sdk.CodeType = 1
-	CodeSettingParameter                     = 2
-	CodeEmptyData                            = 3
-	CodeInvalidACL                           = 4
-	CodeUnauthorizedParamChange              = 5
-	CodeSubspaceNotFound                     = 6
-	CodeUnrecognizedDAOAction                = 7
-	CodeZeroValueDAOAction                   = 8
-	CodeZeroHeightUpgrade                    = 9
-	CodeEmptyVersionUpgrade                  = 10
+	CodeSettingParameter        sdk.CodeType = 2
+	CodeEmptyData               sdk.CodeType = 3
+	CodeInvalidACL              sdk.CodeType = 4
+	CodeUnauthorizedParamChange sdk.CodeType = 5
+	CodeSubspaceNotFound        sdk.CodeType = 6
+	CodeUnrecognizedDAOAction   sdk.CodeType = 7
+	CodeZeroValueDAOAction      sdk.CodeType = 8
+	CodeZeroHeightUpgrade       sdk.CodeType = 9
+	CodeEmptyVersionUpgrade     sdk.CodeType = 10
 )
 
 func ErrZeroHeightUpgrade(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeZeroHeightUpgrade, "the upgrade Height must not be zero")
-}
-
-func ErrEmptyVersionUpgrade(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeEmptyVersionUpgrade, "the upgrade Version string must not be empty")
 }
 
 func ErrZeroValueDAOAction(codespace sdk.CodespaceType) sdk.Error {

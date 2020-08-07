@@ -84,7 +84,10 @@ func TestGetValidatorSigningInfoAddress(t *testing.T) {
 		key []byte
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	ca := types.Address(pub.Address())
 
 	tests := []struct {
@@ -218,8 +221,10 @@ func TestKeyForValidatorInStakingSet(t *testing.T) {
 		validator Validator
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	operAddrInvr := types.CopyBytes(pub.Address())
 	for i, b := range operAddrInvr {
 		operAddrInvr[i] = ^b
@@ -230,7 +235,7 @@ func TestKeyForValidatorInStakingSet(t *testing.T) {
 		args args
 		want []byte
 	}{
-		{"NewValidator", args{validator: NewValidator(types.Address(pub.Address()), pub, []string{"00"}, "https://www.google.com:443", types.ZeroInt())}, append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
+		{"NewValidator", args{validator: NewValidator(types.Address(pub.Address()), pub, []string{"0001"}, "https://www.google.com:443", types.ZeroInt())}, append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -268,8 +273,10 @@ func Test_getStakedValPowerRankKey(t *testing.T) {
 		validator Validator
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
-
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
 	operAddrInvr := types.CopyBytes(pub.Address())
 	for i, b := range operAddrInvr {
 		operAddrInvr[i] = ^b
@@ -280,7 +287,7 @@ func Test_getStakedValPowerRankKey(t *testing.T) {
 		args args
 		want []byte
 	}{
-		{"NewValidator", args{validator: NewValidator(types.Address(pub.Address()), pub, []string{"00"}, "https://www.google.com:443", types.ZeroInt())}, append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
+		{"NewValidator", args{validator: NewValidator(types.Address(pub.Address()), pub, []string{"0001"}, "https://www.google.com:443", types.ZeroInt())}, append([]byte{0x23, 0, 0, 0, 0, 0, 0, 0, 0}, operAddrInvr...)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

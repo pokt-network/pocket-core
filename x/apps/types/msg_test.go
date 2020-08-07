@@ -16,7 +16,10 @@ var msgAppUnjail MsgAppUnjail
 
 func init() {
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	moduleCdc = codec.New()
 	RegisterCodec(moduleCdc)
@@ -25,7 +28,7 @@ func init() {
 
 	msgAppStake = MsgAppStake{
 		PubKey: pub,
-		Chains: []string{"00"},
+		Chains: []string{"0001"},
 		Value:  sdk.NewInt(10),
 	}
 	msgAppUnjail = MsgAppUnjail{sdk.Address(pub.Address())}

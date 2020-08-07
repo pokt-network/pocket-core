@@ -13,7 +13,10 @@ func TestNewQuerySigningInfoParams(t *testing.T) {
 		consAddr types.Address
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	ca := types.Address(pub.Address())
 
 	tests := []struct {
@@ -121,7 +124,10 @@ func TestNewQueryValidatorParams(t *testing.T) {
 		validatorAddr types.Address
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	va := types.Address(pub.Address())
 
 	tests := []struct {

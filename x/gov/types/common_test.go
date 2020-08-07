@@ -4,15 +4,8 @@ import (
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"math/rand"
-)
-
-var (
-	ModuleBasics = module.NewBasicManager(
-		auth.AppModuleBasic{},
-	)
 )
 
 // nolint: deadcode unused
@@ -28,7 +21,10 @@ func makeTestCodec() *codec.Codec {
 
 func getRandomPubKey() crypto.Ed25519PublicKey {
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	return pub
 }
 

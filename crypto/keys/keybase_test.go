@@ -31,7 +31,10 @@ func TestKeyManagement(t *testing.T) {
 
 	// Fetching a non existent address should throw an error
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err = rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 	blankAddress := types.Address(pub.Address())
 	_, err = cstore.Get(blankAddress)
 	require.Error(t, err)
@@ -45,6 +48,7 @@ func TestKeyManagement(t *testing.T) {
 
 	// we can get these keys
 	keyPairList, err := cstore.List()
+	require.NoError(t, err)
 	require.NotEmpty(t, keyPairList)
 	retrievedKp1, err := cstore.Get(kp1.GetAddress())
 	require.NoError(t, err)

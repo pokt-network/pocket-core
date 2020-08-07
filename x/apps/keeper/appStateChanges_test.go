@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/apps/types"
 )
 
 func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {

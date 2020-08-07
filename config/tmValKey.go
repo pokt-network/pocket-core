@@ -5,10 +5,6 @@ import (
 	"github.com/tendermint/tendermint/privval"
 )
 
-const (
-	stepNone int8 = 0 // Used to distinguish the initial state
-)
-
 // LoadOrGenFilePV loads a FilePV from the given filePaths
 // or else generates a new one and saves it to the filePaths.
 func LoadOrGenFilePV(keyFilePath, stateFilePath string) *privval.FilePV {

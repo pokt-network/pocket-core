@@ -601,7 +601,7 @@ paths:
                     param_value: '1000'
                 pocket_params:
                   - param_key: pocketcore/SupportedBlockchains
-                    param_value: '["00"]'
+                    param_value: '["0001"]'
                   - param_key: pocketcore/ClaimExpiration
                     param_value: '100'
                   - param_key: pocketcore/MinimumNumberOfProofs

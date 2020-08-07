@@ -12,13 +12,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-// copied from iavl/store_test.go
-var (
-	cacheSize        = 100
-	numRecent  int64 = 5
-	storeEvery int64 = 3
-)
-
 func bz(s string) []byte { return []byte(s) }
 
 type kvpair struct {
@@ -31,9 +24,9 @@ func genRandomKVPairs(t *testing.T) []kvpair {
 
 	for i := 0; i < 20; i++ {
 		kvps[i].key = make([]byte, 32)
-		rand.Read(kvps[i].key)
+		_, _ = rand.Read(kvps[i].key)
 		kvps[i].value = make([]byte, 32)
-		rand.Read(kvps[i].value)
+		_, _ = rand.Read(kvps[i].value)
 	}
 
 	return kvps
@@ -47,51 +40,16 @@ func setRandomKVPairs(t *testing.T, store types.KVStore) []kvpair {
 	return kvps
 }
 
-func testPrefixStore(t *testing.T, baseStore types.KVStore, prefix []byte) {
-	prefixStore := NewStore(baseStore, prefix)
-	prefixPrefixStore := NewStore(prefixStore, []byte("prefix"))
-
-	require.Panics(t, func() { prefixStore.Get(nil) })
-	require.Panics(t, func() { prefixStore.Set(nil, []byte{}) })
-
-	kvps := setRandomKVPairs(t, prefixPrefixStore)
-
-	for i := 0; i < 20; i++ {
-		key := kvps[i].key
-		value := kvps[i].value
-		require.True(t, prefixPrefixStore.Has(key))
-		require.Equal(t, value, prefixPrefixStore.Get(key))
-
-		key = append([]byte("prefix"), key...)
-		require.True(t, prefixStore.Has(key))
-		require.Equal(t, value, prefixStore.Get(key))
-		key = append(prefix, key...)
-		require.True(t, baseStore.Has(key))
-		require.Equal(t, value, baseStore.Get(key))
-
-		key = kvps[i].key
-		prefixPrefixStore.Delete(key)
-		require.False(t, prefixPrefixStore.Has(key))
-		require.Nil(t, prefixPrefixStore.Get(key))
-		key = append([]byte("prefix"), key...)
-		require.False(t, prefixStore.Has(key))
-		require.Nil(t, prefixStore.Get(key))
-		key = append(prefix, key...)
-		require.False(t, baseStore.Has(key))
-		require.Nil(t, baseStore.Get(key))
-	}
-}
-
 func TestPrefixKVStoreNoNilSet(t *testing.T) {
 	meter := types.NewGasMeter(100000000)
-	mem := dbadapter.Store{dbm.NewMemDB()}
+	mem := dbadapter.Store{DB: dbm.NewMemDB()}
 	gasStore := gaskv.NewStore(mem, meter, types.KVGasConfig())
 	require.Panics(t, func() { gasStore.Set([]byte("key"), nil) }, "setting a nil value should panic")
 }
 
 func TestPrefixStoreIterate(t *testing.T) {
 	db := dbm.NewMemDB()
-	baseStore := dbadapter.Store{db}
+	baseStore := dbadapter.Store{DB: db}
 	prefix := []byte("test")
 	prefixStore := NewStore(baseStore, prefix)
 
@@ -137,7 +95,7 @@ func TestCloneAppend(t *testing.T) {
 
 func TestPrefixStoreIteratorEdgeCase(t *testing.T) {
 	db := dbm.NewMemDB()
-	baseStore := dbadapter.Store{db}
+	baseStore := dbadapter.Store{DB: db}
 
 	// overflow in cpIncr
 	prefix := []byte{0xAA, 0xFF, 0xFF}
@@ -167,7 +125,7 @@ func TestPrefixStoreIteratorEdgeCase(t *testing.T) {
 
 func TestPrefixStoreReverseIteratorEdgeCase(t *testing.T) {
 	db := dbm.NewMemDB()
-	baseStore := dbadapter.Store{db}
+	baseStore := dbadapter.Store{DB: db}
 
 	// overflow in cpIncr
 	prefix := []byte{0xAA, 0xFF, 0xFF}
@@ -195,7 +153,7 @@ func TestPrefixStoreReverseIteratorEdgeCase(t *testing.T) {
 	iter.Close()
 
 	db = dbm.NewMemDB()
-	baseStore = dbadapter.Store{db}
+	baseStore = dbadapter.Store{DB: db}
 
 	// underflow in cpDecr
 	prefix = []byte{0xAA, 0x00, 0x00}
@@ -226,7 +184,7 @@ func TestPrefixStoreReverseIteratorEdgeCase(t *testing.T) {
 
 func mockStoreWithStuff() types.KVStore {
 	db := dbm.NewMemDB()
-	store := dbadapter.Store{db}
+	store := dbadapter.Store{DB: db}
 	// Under "key" prefix
 	store.Set(bz("key"), bz("value"))
 	store.Set(bz("key1"), bz("value1"))

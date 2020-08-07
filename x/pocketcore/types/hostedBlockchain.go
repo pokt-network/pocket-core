@@ -2,7 +2,6 @@ package types
 
 import (
 	sdk "github.com/pokt-network/pocket-core/types"
-	"sync"
 )
 
 // HostedBlockchain" - An object that represents a local hosted non-native blockchain
@@ -20,7 +19,6 @@ type BasicAuth struct {
 // HostedBlockchains" - An object that represents the local hosted non-native blockchains
 type HostedBlockchains struct {
 	M map[string]HostedBlockchain // M[addr] -> addr, url
-	o sync.Once
 }
 
 // "Contains" - Checks to see if the hosted chain is within the HostedBlockchains object

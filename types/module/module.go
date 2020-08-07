@@ -227,7 +227,7 @@ func (m *Manager) InitGenesis(ctx sdk.Ctx, genesisData map[string]json.RawMessag
 	for _, moduleName := range m.OrderInitGenesis {
 		var moduleValUpdates []abci.ValidatorUpdate
 		if genesisData[moduleName] == nil {
-			moduleValUpdates = m.Modules[moduleName].InitGenesis(ctx, nil)
+			m.Modules[moduleName].InitGenesis(ctx, nil)
 			continue
 		}
 		err := m.Modules[moduleName].ValidateGenesis(genesisData[moduleName])

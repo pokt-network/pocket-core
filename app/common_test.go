@@ -38,7 +38,7 @@ import (
 )
 
 const (
-	dummyChainsHash = "00"
+	dummyChainsHash = "0001"
 )
 
 func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
@@ -54,7 +54,7 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
 	// init cache in memory
-	pocketTypes.InitConfig("", "data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session",pocketTypes.HostedBlockchains{
+	pocketTypes.InitConfig("", "data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session", pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
 	}, tendermintNode.Logger, "26660", 3, 3000)
 	// start the in memory node
@@ -158,7 +158,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	pocketTypes.InitPVKeyFile(privVal.Key)
 
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		m := map[string]pocketTypes.HostedBlockchain{"00": {
+		m := map[string]pocketTypes.HostedBlockchain{"0001": {
 			ID:  PlaceholderHash,
 			URL: PlaceholderURL,
 		}}
@@ -378,7 +378,7 @@ func oneValTwoNodeGenesisState() []byte {
 	rawPocket := defaultGenesis[pocketTypes.ModuleName]
 	var pocketGenesisState pocketTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
-	pocketGenesisState.Params.SupportedBlockchains = []string{"00"}
+	pocketGenesisState.Params.SupportedBlockchains = []string{"0001"}
 	res4 := memCodec().MustMarshalJSON(pocketGenesisState)
 	defaultGenesis[pocketTypes.ModuleName] = res4
 	// set default governance in genesis

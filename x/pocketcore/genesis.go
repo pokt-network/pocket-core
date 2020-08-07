@@ -1,9 +1,9 @@
 package pocketcore
 
 import (
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -19,7 +19,7 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, data types.GenesisState) []a
 // "ExportGenesis" - Exports the state in a genesis state object
 func ExportGenesis(ctx sdk.Ctx, k keeper.Keeper) types.GenesisState {
 	return types.GenesisState{
-		Params:   k.GetParams(ctx),
-		Claims:   k.GetAllClaims(ctx),
+		Params: k.GetParams(ctx),
+		Claims: k.GetAllClaims(ctx),
 	}
 }

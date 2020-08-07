@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"math/rand"
@@ -18,21 +19,25 @@ func TestNewApplication(t *testing.T) {
 		serviceURL    string
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 
 	tests := []struct {
 		name string
 		args args
 		want Application
 	}{
-		{"defaultApplication", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"00"}, "google.com"},
+		{"defaultApplication", args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"0001"}, "google.com"},
 			Application{
 				Address:                 sdk.Address(pub.Address()),
 				PublicKey:               pub,
 				Jailed:                  false,
 				Status:                  sdk.Staked,
 				StakedTokens:            sdk.ZeroInt(),
-				Chains:                  []string{"00"},
+				Chains:                  []string{"0001"},
 				UnstakingCompletionTime: time.Time{}, // zero out because status: staked
 			}},
 	}
@@ -55,7 +60,11 @@ func TestApplication_AddStakedTokens(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
 
 	type args struct {
 		tokens sdk.Int
@@ -139,7 +148,10 @@ func TestApplication_ConsAddress(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -182,7 +194,10 @@ func TestApplication_ConsensusPower(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -233,7 +248,10 @@ func TestApplication_Equals(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	type args struct {
 		v2 Application
@@ -303,7 +321,10 @@ func TestApplication_GetAddress(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -346,7 +367,10 @@ func TestApplication_GetConsAddr(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -389,7 +413,10 @@ func TestApplication_Getpubkey(t *testing.T) {
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -433,7 +460,10 @@ func TestApplication_GetConsensusPower(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -477,7 +507,10 @@ func TestApplication_GetStatus(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -521,7 +554,10 @@ func TestApplication_GetTokens(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -565,7 +601,10 @@ func TestApplication_IsJailed(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -609,7 +648,10 @@ func TestApplication_IsStaked(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -669,7 +711,10 @@ func TestApplication_IsUnstaked(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -729,7 +774,10 @@ func TestApplication_IsUnstaking(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -789,7 +837,10 @@ func TestApplication_PotentialConsensusPower(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name   string
@@ -833,7 +884,10 @@ func TestApplication_RemoveStakedTokens(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	type args struct {
 		tokens sdk.Int
@@ -903,7 +957,10 @@ func TestApplication_UpdateStatus(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	type args struct {
 		newStatus sdk.StakeStatus
@@ -986,7 +1043,10 @@ func TestApplication_GetChains(t *testing.T) {
 		serviceURL    string
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name string
@@ -995,8 +1055,8 @@ func TestApplication_GetChains(t *testing.T) {
 	}{
 		{
 			"defaultApplication",
-			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"00"}, "google.com"},
-			[]string{"00"},
+			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"0001"}, "google.com"},
+			[]string{"0001"},
 		},
 	}
 	for _, tt := range tests {
@@ -1019,7 +1079,10 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 		maxRelays     sdk.Int
 	}
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	tests := []struct {
 		name string
@@ -1028,7 +1091,7 @@ func TestApplication_GetMaxRelays(t *testing.T) {
 	}{
 		{
 			"defaultApplication",
-			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"00"}, "google.com", sdk.NewInt(1)},
+			args{sdk.Address(pub.Address()), pub, sdk.ZeroInt(), []string{"0001"}, "google.com", sdk.NewInt(1)},
 			sdk.NewInt(1),
 		},
 	}

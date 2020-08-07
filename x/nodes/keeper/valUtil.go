@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sort"
 
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // Validator - wrapper for GetValidator call

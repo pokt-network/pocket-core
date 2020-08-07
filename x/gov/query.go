@@ -17,6 +17,9 @@ func QueryACL(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (acl type
 		return nil, err
 	}
 	balanceBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryACL), bz)
+	if err != nil {
+		return nil, err
+	}
 	err = cdc.UnmarshalJSON(balanceBz, &acl)
 	if err != nil {
 		return nil, err

@@ -47,7 +47,7 @@ func defaultContext(key types.StoreKey) types.Context {
 	db := dbm.NewMemDB()
 	cms := store.NewCommitMultiStore(db)
 	cms.MountStoreWithDB(key, types.StoreTypeIAVL, db)
-	cms.LoadLatestVersion()
+	_ = cms.LoadLatestVersion()
 	ctx := types.NewContext(cms, abci.Header{}, false, log.NewNopLogger())
 	return ctx
 }
@@ -95,12 +95,6 @@ func TestLogContext(t *testing.T) {
 	ctx.Logger().Info("info")
 	ctx.Logger().Error("error")
 	require.Equal(t, *logger.logs, []string{"debug", "info", "error"})
-}
-
-type dummy int64
-
-func (d dummy) Clone() interface{} {
-	return d
 }
 
 // Testing saving/loading sdk type values to/from the context

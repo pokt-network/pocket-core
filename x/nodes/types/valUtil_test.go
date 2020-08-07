@@ -15,7 +15,10 @@ import (
 
 func TestValidators_JSON(t *testing.T) {
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	testvalidator := Validator{
 		Address:                 sdk.Address(pub.Address()),
@@ -23,7 +26,7 @@ func TestValidators_JSON(t *testing.T) {
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		StakedTokens:            sdk.ZeroInt(),
-		Chains:                  []string{"00"},
+		Chains:                  []string{"0001"},
 		ServiceURL:              "https://www.google.com:443",
 		UnstakingCompletionTime: time.Unix(0, 0).UTC(),
 	}
@@ -57,7 +60,10 @@ func TestValidators_JSON(t *testing.T) {
 func TestValidators_String(t *testing.T) {
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	v := Validators{
 		Validator{
@@ -66,7 +72,7 @@ func TestValidators_String(t *testing.T) {
 			Jailed:                  false,
 			Status:                  sdk.Staked,
 			StakedTokens:            sdk.ZeroInt(),
-			Chains:                  []string{"00"},
+			Chains:                  []string{"0001"},
 			ServiceURL:              "https://www.google.com:443",
 			UnstakingCompletionTime: time.Unix(0, 0).UTC(),
 		},
@@ -79,7 +85,7 @@ func TestValidators_String(t *testing.T) {
 		{"String Test", v, fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
 			"ServiceURL:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v"+
 			"\n----",
-			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "https://www.google.com:443", []string{"00"}, time.Unix(0, 0).UTC(),
+			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "https://www.google.com:443", []string{"0001"}, time.Unix(0, 0).UTC(),
 		)},
 	}
 	for _, tt := range tests {
@@ -105,14 +111,17 @@ func TestValidator_MarshalJSON(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	want, _ := amino.MarshalJSON(Validator{
 		Address:                 sdk.Address(pub.Address()),
 		PublicKey:               pub,
 		Jailed:                  false,
 		Status:                  sdk.Staked,
-		Chains:                  []string{"00"},
+		Chains:                  []string{"0001"},
 		ServiceURL:              "www.pokt.network",
 		StakedTokens:            sdk.ZeroInt(),
 		UnstakingCompletionTime: time.Time{},
@@ -129,7 +138,7 @@ func TestValidator_MarshalJSON(t *testing.T) {
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Staked,
-			Chains:                  []string{"00"},
+			Chains:                  []string{"0001"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},
@@ -172,14 +181,17 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 	}
 
 	var pub crypto.Ed25519PublicKey
-	rand.Read(pub[:])
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
 
 	marshal, _ := amino.MarshalJSON(Validator{
 		Address:                 sdk.Address(pub.Address()),
 		PublicKey:               pub,
 		Jailed:                  false,
 		Status:                  sdk.Staked,
-		Chains:                  []string{"00"},
+		Chains:                  []string{"0001"},
 		ServiceURL:              "www.pokt.network",
 		StakedTokens:            sdk.ZeroInt(),
 		UnstakingCompletionTime: time.Time{},
@@ -201,7 +213,7 @@ func TestValidator_UnmarshalJSON(t *testing.T) {
 			ConsPubKey:              pub,
 			Jailed:                  false,
 			Status:                  sdk.Staked,
-			Chains:                  []string{"00"},
+			Chains:                  []string{"0001"},
 			ServiceURL:              "www.pokt.network",
 			StakedTokens:            sdk.ZeroInt(),
 			UnstakingCompletionTime: time.Time{},

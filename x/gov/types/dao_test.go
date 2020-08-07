@@ -17,6 +17,6 @@ func TestDAOActionFromString(t *testing.T) {
 	res, err = DAOActionFromString(DAOTransferString)
 	assert.Nil(t, err)
 	assert.Equal(t, DAOTransfer, res)
-	res, err = DAOActionFromString("fake")
+	_, err = DAOActionFromString("fake")
 	assert.NotNil(t, err)
 }

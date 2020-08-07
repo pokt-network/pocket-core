@@ -42,7 +42,7 @@ func newAlohaTree(t *testing.T, db dbm.DB) (*iavl.MutableTree, types.CommitID) {
 	}
 	hash, ver, err := tree.SaveVersion()
 	require.Nil(t, err)
-	return tree, types.CommitID{ver, hash}
+	return tree, types.CommitID{Version: ver, Hash: hash}
 }
 
 func TestGetImmutable(t *testing.T) {
@@ -52,7 +52,7 @@ func TestGetImmutable(t *testing.T) {
 
 	require.True(t, tree.Set([]byte("hello"), []byte("adios")))
 	hash, ver, err := tree.SaveVersion()
-	cID = types.CommitID{ver, hash}
+	cID = types.CommitID{Version: ver, Hash: hash}
 	require.Nil(t, err)
 
 	_, err = store.GetImmutable(cID.Version + 1)
@@ -362,77 +362,53 @@ func nextVersion(iavl *Store) {
 	iavl.Commit()
 }
 
-func TestIAVLDefaultPruning(t *testing.T) {
-	//Expected stored / deleted version numbers for:
-	//numRecent = 5, storeEvery = 3
-	var states = []pruneState{
-		{[]int64{}, []int64{}},
-		{[]int64{1}, []int64{}},
-		{[]int64{1, 2}, []int64{}},
-		{[]int64{1, 2, 3}, []int64{}},
-		{[]int64{1, 2, 3, 4}, []int64{}},
-		{[]int64{1, 2, 3, 4, 5}, []int64{}},
-		{[]int64{1, 2, 3, 4, 5, 6}, []int64{}},
-		{[]int64{2, 3, 4, 5, 6, 7}, []int64{1}},
-		{[]int64{3, 4, 5, 6, 7, 8}, []int64{1, 2}},
-		{[]int64{3, 4, 5, 6, 7, 8, 9}, []int64{1, 2}},
-		{[]int64{3, 5, 6, 7, 8, 9, 10}, []int64{1, 2, 4}},
-		{[]int64{3, 6, 7, 8, 9, 10, 11}, []int64{1, 2, 4, 5}},
-		{[]int64{3, 6, 7, 8, 9, 10, 11, 12}, []int64{1, 2, 4, 5}},
-		{[]int64{3, 6, 8, 9, 10, 11, 12, 13}, []int64{1, 2, 4, 5, 7}},
-		{[]int64{3, 6, 9, 10, 11, 12, 13, 14}, []int64{1, 2, 4, 5, 7, 8}},
-		{[]int64{3, 6, 9, 10, 11, 12, 13, 14, 15}, []int64{1, 2, 4, 5, 7, 8}},
-	}
-	testPruning(t, int64(5), int64(3), states)
-}
-
-func TestIAVLAlternativePruning(t *testing.T) {
-	//Expected stored / deleted version numbers for:
-	//numRecent = 3, storeEvery = 5
-	var states = []pruneState{
-		{[]int64{}, []int64{}},
-		{[]int64{1}, []int64{}},
-		{[]int64{1, 2}, []int64{}},
-		{[]int64{1, 2, 3}, []int64{}},
-		{[]int64{1, 2, 3, 4}, []int64{}},
-		{[]int64{2, 3, 4, 5}, []int64{1}},
-		{[]int64{3, 4, 5, 6}, []int64{1, 2}},
-		{[]int64{4, 5, 6, 7}, []int64{1, 2, 3}},
-		{[]int64{5, 6, 7, 8}, []int64{1, 2, 3, 4}},
-		{[]int64{5, 6, 7, 8, 9}, []int64{1, 2, 3, 4}},
-		{[]int64{5, 7, 8, 9, 10}, []int64{1, 2, 3, 4, 6}},
-		{[]int64{5, 8, 9, 10, 11}, []int64{1, 2, 3, 4, 6, 7}},
-		{[]int64{5, 9, 10, 11, 12}, []int64{1, 2, 3, 4, 6, 7, 8}},
-		{[]int64{5, 10, 11, 12, 13}, []int64{1, 2, 3, 4, 6, 7, 8, 9}},
-		{[]int64{5, 10, 11, 12, 13, 14}, []int64{1, 2, 3, 4, 6, 7, 8, 9}},
-		{[]int64{5, 10, 12, 13, 14, 15}, []int64{1, 2, 3, 4, 6, 7, 8, 9, 11}},
-	}
-	testPruning(t, int64(3), int64(5), states)
-}
-
-type pruneState struct {
-	stored  []int64
-	deleted []int64
-}
-
-func testPruning(t *testing.T, numRecent int64, storeEvery int64, states []pruneState) {
-	db := dbm.NewMemDB()
-	tree := iavl.NewMutableTree(db, cacheSize)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
-	for step, state := range states {
-		for _, ver := range state.stored {
-			require.True(t, iavlStore.VersionExists(ver),
-				"Missing version %d with latest version %d. Should save last %d and every %d",
-				ver, step, numRecent, storeEvery)
-		}
-		for _, ver := range state.deleted {
-			require.False(t, iavlStore.VersionExists(ver),
-				"Unpruned version %d with latest version %d. Should prune all but last %d and every %d",
-				ver, step, numRecent, storeEvery)
-		}
-		nextVersion(iavlStore)
-	}
-}
+//func TestIAVLDefaultPruning(t *testing.T) {
+//	//Expected stored / deleted version numbers for:
+//	//numRecent = 5, storeEvery = 3
+//	var states = []pruneState{
+//		{[]int64{}, []int64{}},
+//		{[]int64{1}, []int64{}},
+//		{[]int64{1, 2}, []int64{}},
+//		{[]int64{1, 2, 3}, []int64{}},
+//		{[]int64{1, 2, 3, 4}, []int64{}},
+//		{[]int64{1, 2, 3, 4, 5}, []int64{}},
+//		{[]int64{1, 2, 3, 4, 5, 6}, []int64{}},
+//		{[]int64{2, 3, 4, 5, 6, 7}, []int64{1}},
+//		{[]int64{3, 4, 5, 6, 7, 8}, []int64{1, 2}},
+//		{[]int64{3, 4, 5, 6, 7, 8, 9}, []int64{1, 2}},
+//		{[]int64{3, 5, 6, 7, 8, 9, 10}, []int64{1, 2, 4}},
+//		{[]int64{3, 6, 7, 8, 9, 10, 11}, []int64{1, 2, 4, 5}},
+//		{[]int64{3, 6, 7, 8, 9, 10, 11, 12}, []int64{1, 2, 4, 5}},
+//		{[]int64{3, 6, 8, 9, 10, 11, 12, 13}, []int64{1, 2, 4, 5, 7}},
+//		{[]int64{3, 6, 9, 10, 11, 12, 13, 14}, []int64{1, 2, 4, 5, 7, 8}},
+//		{[]int64{3, 6, 9, 10, 11, 12, 13, 14, 15}, []int64{1, 2, 4, 5, 7, 8}},
+//	}
+//	testPruning(t, int64(5), int64(3), states)
+//}
+//
+//func TestIAVLAlternativePruning(t *testing.T) {
+//	//Expected stored / deleted version numbers for:
+//	//numRecent = 3, storeEvery = 5
+//	var states = []pruneState{
+//		{[]int64{}, []int64{}},
+//		{[]int64{1}, []int64{}},
+//		{[]int64{1, 2}, []int64{}},
+//		{[]int64{1, 2, 3}, []int64{}},
+//		{[]int64{1, 2, 3, 4}, []int64{}},
+//		{[]int64{2, 3, 4, 5}, []int64{1}},
+//		{[]int64{3, 4, 5, 6}, []int64{1, 2}},
+//		{[]int64{4, 5, 6, 7}, []int64{1, 2, 3}},
+//		{[]int64{5, 6, 7, 8}, []int64{1, 2, 3, 4}},
+//		{[]int64{5, 6, 7, 8, 9}, []int64{1, 2, 3, 4}},
+//		{[]int64{5, 7, 8, 9, 10}, []int64{1, 2, 3, 4, 6}},
+//		{[]int64{5, 8, 9, 10, 11}, []int64{1, 2, 3, 4, 6, 7}},
+//		{[]int64{5, 9, 10, 11, 12}, []int64{1, 2, 3, 4, 6, 7, 8}},
+//		{[]int64{5, 10, 11, 12, 13}, []int64{1, 2, 3, 4, 6, 7, 8, 9}},
+//		{[]int64{5, 10, 11, 12, 13, 14}, []int64{1, 2, 3, 4, 6, 7, 8, 9}},
+//		{[]int64{5, 10, 12, 13, 14, 15}, []int64{1, 2, 3, 4, 6, 7, 8, 9, 11}},
+//	}
+//	testPruning(t, int64(3), int64(5), states)
+//}
 
 func TestIAVLNoPrune(t *testing.T) {
 	db := dbm.NewMemDB()
@@ -449,23 +425,23 @@ func TestIAVLNoPrune(t *testing.T) {
 	}
 }
 
-func TestIAVLPruneEverything(t *testing.T) {
-	db := dbm.NewMemDB()
-	tree := iavl.NewMutableTree(db, cacheSize)
-	iavlStore := UnsafeNewStore(tree, int64(0), int64(0))
-	nextVersion(iavlStore)
-	for i := 1; i < 100; i++ {
-		for j := 1; j < i; j++ {
-			require.False(t, iavlStore.VersionExists(int64(j)),
-				"Unpruned version %d with latest version %d. Should prune all old versions",
-				j, i)
-		}
-		require.True(t, iavlStore.VersionExists(int64(i)),
-			"Missing current version on step %d, should not prune current state tree",
-			i)
-		nextVersion(iavlStore)
-	}
-}
+//func TestIAVLPruneEverything(t *testing.T) {
+//	db := dbm.NewMemDB()
+//	tree := iavl.NewMutableTree(db, cacheSize)
+//	iavlStore := UnsafeNewStore(tree, int64(0), int64(0))
+//	nextVersion(iavlStore)
+//	for i := 1; i < 100; i++ {
+//		for j := 1; j < i; j++ {
+//			require.False(t, iavlStore.VersionExists(int64(j)),
+//				"Unpruned version %d with latest version %d. Should prune all old versions",
+//				j, i)
+//		}
+//		require.True(t, iavlStore.VersionExists(int64(i)),
+//			"Missing current version on step %d, should not prune current state tree",
+//			i)
+//		nextVersion(iavlStore)
+//	}
+//} TODO pruning removed due to rollback feature and protocol level need for full history
 
 func TestIAVLStoreQuery(t *testing.T) {
 	db := dbm.NewMemDB()
