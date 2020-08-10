@@ -1,6 +1,6 @@
 module github.com/pokt-network/pocket-core
 
-go 1.13.15
+go 1.13
 
 require (
 	github.com/go-kit/kit v0.10.0
