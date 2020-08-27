@@ -69,22 +69,28 @@ func TestCacheContext(t *testing.T) {
 
 	ctx := defaultContext(key)
 	store := ctx.KVStore(key)
-	store.Set(k1, v1)
-	require.Equal(t, v1, store.Get(k1))
-	require.Nil(t, store.Get(k2))
+	_ = store.Set(k1, v1)
+	sg, _ := store.Get(k1)
+	sg2, _ := store.Get(k2)
+	require.Equal(t, v1, sg)
+	require.Nil(t, sg2)
 
 	cctx, write := ctx.CacheContext()
 	cstore := cctx.KVStore(key)
-	require.Equal(t, v1, cstore.Get(k1))
-	require.Nil(t, cstore.Get(k2))
+	cg, _ := cstore.Get(k1)
+	cg2, _ := cstore.Get(k2)
+	require.Equal(t, v1, cg)
+	require.Nil(t, cg2)
 
-	cstore.Set(k2, v2)
-	require.Equal(t, v2, cstore.Get(k2))
-	require.Nil(t, store.Get(k2))
+	_ = cstore.Set(k2, v2)
+	cg, _ = cstore.Get(k2)
+	sg, _ = store.Get(k2)
+	require.Equal(t, v2, cg)
+	require.Nil(t, sg)
 
 	write()
-
-	require.Equal(t, v2, store.Get(k2))
+	sg, _ = store.Get(k2)
+	require.Equal(t, v2, sg)
 }
 
 func TestLogContext(t *testing.T) {

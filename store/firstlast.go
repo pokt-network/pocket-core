@@ -2,31 +2,30 @@ package store
 
 import (
 	"bytes"
-
-	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
 
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
 // Gets the first item.
-func First(st KVStore, start, end []byte) (kv cmn.KVPair, ok bool) {
-	iter := st.Iterator(start, end)
+func First(st KVStore, start, end []byte) (kp kv.Pair, ok bool) {
+	iter, _ := st.Iterator(start, end)
 	if !iter.Valid() {
-		return kv, false
+		return kp, false
 	}
 	defer iter.Close()
 
-	return cmn.KVPair{Key: iter.Key(), Value: iter.Value()}, true
+	return kv.Pair{Key: iter.Key(), Value: iter.Value()}, true
 }
 
 // Gets the last item.  `end` is exclusive.
-func Last(st KVStore, start, end []byte) (kv cmn.KVPair, ok bool) {
-	iter := st.ReverseIterator(end, start)
+func Last(st KVStore, start, end []byte) (kp kv.Pair, ok bool) {
+	iter, _ := st.ReverseIterator(end, start)
 	if !iter.Valid() {
-		if v := st.Get(start); v != nil {
-			return cmn.KVPair{Key: types.Cp(start), Value: types.Cp(v)}, true
+		if v, _ := st.Get(start); v != nil {
+			return kv.Pair{Key: types.Cp(start), Value: types.Cp(v)}, true
 		}
-		return kv, false
+		return kp, false
 	}
 	defer iter.Close()
 
@@ -34,9 +33,9 @@ func Last(st KVStore, start, end []byte) (kv cmn.KVPair, ok bool) {
 		// Skip this one, end is exclusive.
 		iter.Next()
 		if !iter.Valid() {
-			return kv, false
+			return kp, false
 		}
 	}
 
-	return cmn.KVPair{Key: iter.Key(), Value: iter.Value()}, true
+	return kv.Pair{Key: iter.Key(), Value: iter.Value()}, true
 }

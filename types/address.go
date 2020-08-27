@@ -162,11 +162,11 @@ func (aa Address) String() string {
 func (aa Address) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 's':
-		s.Write([]byte(aa.String()))
+		_, _ = s.Write([]byte(aa.String()))
 	case 'p':
-		s.Write([]byte(fmt.Sprintf("%p", aa)))
+		_, _ = s.Write([]byte(fmt.Sprintf("%p", aa)))
 	default:
-		s.Write([]byte(fmt.Sprintf("%X", []byte(aa))))
+		_, _ = s.Write([]byte(fmt.Sprintf("%X", []byte(aa))))
 	}
 }
 

@@ -2,11 +2,11 @@ package types
 
 import (
 	"fmt"
+	"github.com/tendermint/tendermint/libs/kv"
 	"sort"
 	"strings"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
 )
 
 // ----------------------------------------------------------------------------
@@ -86,8 +86,8 @@ func (a Attribute) String() string {
 }
 
 // ToKVPair converts an Attribute object into a Tendermint key/value pair.
-func (a Attribute) ToKVPair() cmn.KVPair {
-	return cmn.KVPair{Key: toBytes(a.Key), Value: toBytes(a.Value)}
+func (a Attribute) ToKVPair() kv.Pair {
+	return kv.Pair{Key: toBytes(a.Key), Value: toBytes(a.Value)}
 }
 
 // AppendAttributes adds one or more attributes to an Event.

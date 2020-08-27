@@ -1,8 +1,8 @@
 package config
 
 import (
-	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	cmn "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/privval"
 	"os"
 )

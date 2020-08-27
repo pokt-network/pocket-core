@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/tendermint/tendermint/rpc/client/http"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
@@ -170,26 +171,23 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		return db, nil
 	}
 	app := creator(c.Logger, db, traceWriter)
-	txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, nil
-	}
-	// setup blockstore
-	blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, nil
-	}
-	// Make Evidence Reactor
-	evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, nil
-	}
-	app.SetTxIndexer(txIndexer)
-	app.SetBlockstore(blockStore)
-	app.SetEvidencePool(evidencePool)
+	//txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
+	//// setup blockstore
+	//blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
+	//// Make Evidence Reactor
+	//evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		privVal,
@@ -199,16 +197,14 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		dbProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
 		c.Logger.With("module", "node"),
-		txIndexer,
-		blockStore,
-		stateDB,
-		evidencePool,
-		evidenceReactor,
 	)
 	if err != nil {
 		panic(err)
 	}
 	PCA = app
+	app.SetTxIndexer(tmNode.TxIndexer())
+	app.SetBlockstore(tmNode.BlockStore())
+	app.SetEvidencePool(tmNode.EvidencePool())
 	app.pocketKeeper.TmNode = client.NewLocal(tmNode)
 	app.SetTendermintNode(tmNode)
 	return tmNode, kb
@@ -233,7 +229,7 @@ func memCodec() *codec.Codec {
 
 func getInMemoryTMClient() client.Client {
 	if memCLI == nil || !memCLI.IsRunning() {
-		memCLI = client.NewHTTP(tmCfg.TestConfig().RPC.ListenAddress, "/websocket")
+		memCLI, _ = http.New(tmCfg.TestConfig().RPC.ListenAddress, "/websocket")
 	}
 	return memCLI
 }

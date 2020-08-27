@@ -1,7 +1,7 @@
 package config
 
 import (
-	cmn "github.com/tendermint/tendermint/libs/common"
+	cmn "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/privval"
 )
 

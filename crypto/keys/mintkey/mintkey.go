@@ -10,7 +10,7 @@ import (
 	posCrypto "github.com/pokt-network/pocket-core/crypto"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/armor"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	cmn "github.com/tendermint/tendermint/libs/os"
 	"golang.org/x/crypto/scrypt"
 	"strconv"
 )

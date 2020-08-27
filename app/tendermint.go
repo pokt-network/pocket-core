@@ -2,6 +2,12 @@ package app
 
 import (
 	"fmt"
+	state2 "github.com/tendermint/tendermint/state"
+	"github.com/tendermint/tendermint/store"
+	"io"
+	"os"
+	"path/filepath"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
@@ -9,12 +15,7 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
-	tmState "github.com/tendermint/tendermint/state"
-	"github.com/tendermint/tendermint/store"
 	dbm "github.com/tendermint/tm-db"
-	"io"
-	"os"
-	"path/filepath"
 )
 
 type AppCreator func(log.Logger, dbm.DB, io.Writer) *PocketCoreApp
@@ -36,26 +37,23 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		return nil, nil, err
 	}
 	// upgrade the privVal file
-	upgradePrivVal(c.TmConfig)
+	//upgradePrivVal(c.TmConfig)
 	app := creator(c.Logger, db, traceWriter)
 	// TODO modified here
-	txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
-	if err != nil {
-		return nil, nil, err
-	}
-	blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
-	if err != nil {
-		return nil, nil, err
-	}
-	// Make Evidence Reactor
-	evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
-	if err != nil {
-		return nil, nil, err
-	}
+	//txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
+	//if err != nil {
+	//	return nil, nil, err
+	//}
+	//blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
+	//if err != nil {
+	//	return nil, nil, err
+	//}
+	//// Make Evidence Reactor
+	//evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
+	//if err != nil {
+	//	return nil, nil, err
+	//}
 
-	app.SetTxIndexer(txIndexer)
-	app.SetBlockstore(blockStore)
-	app.SetEvidencePool(evidencePool)
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
 		c.TmConfig,
@@ -66,15 +64,13 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
 		c.Logger.With("module", "node"),
-		txIndexer,
-		blockStore,
-		stateDB,
-		evidencePool,
-		evidenceReactor,
 	)
 	if err != nil {
 		return nil, nil, err
 	}
+	app.SetTxIndexer(tmNode.TxIndexer())
+	app.SetBlockstore(tmNode.BlockStore())
+	app.SetEvidencePool(tmNode.EvidencePool())
 	return tmNode, app, nil
 }
 
@@ -96,15 +92,15 @@ func openTraceWriter(traceWriterFile string) (w io.Writer, err error) {
 	return
 }
 
-// upgradePrivVal converts old priv_validator.json file (prior to Tendermint 0.28)
-// to the new priv_validator_key.json and priv_validator_state.json files.
-func upgradePrivVal(config *cfg.Config) {
-	if _, err := os.Stat(config.OldPrivValidatorFile()); !os.IsNotExist(err) {
-		if oldFilePV, err := pvm.LoadOldFilePV(config.OldPrivValidatorFile()); err == nil {
-			oldFilePV.Upgrade(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
-		}
-	}
-}
+//// upgradePrivVal converts old priv_validator.json file (prior to Tendermint 0.28)
+//// to the new priv_validator_key.json and priv_validator_state.json files.
+//func upgradePrivVal(config *cfg.Config) {
+//	if _, err := os.Stat(config.OldPrivValidatorFile()); !os.IsNotExist(err) {
+//		if oldFilePV, err := pvm.LoadOldFilePV(config.OldPrivValidatorFile()); err == nil {
+//			oldFilePV.Upgrade(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+//		}
+//	}
+//}
 
 type config struct {
 	TmConfig    *cfg.Config
@@ -113,11 +109,12 @@ type config struct {
 }
 
 func UnsafeRollbackData(config *cfg.Config, modifyStateFile bool, height int64) error {
-	blockStore, state, blockStoreDB, stateDb, err := tmState.BlocksAndStateFromDB(config, tmState.DefaultDBProvider)
+	blockStore, state, blockStoreDB, stateDb, err := state2.BlocksAndStateFromDB(config, state2.DefaultDBProvider)
 	if err != nil {
 		return err
 	}
 	// Make Evidence Reactor
+
 	_, evidencePool, err := node.CreateEvidenceReactor(config, node.DefaultDBProvider, stateDb, log.NewNopLogger())
 	if err != nil {
 		return err
@@ -126,9 +123,9 @@ func UnsafeRollbackData(config *cfg.Config, modifyStateFile bool, height int64) 
 	// if rollback height is less than state.height
 	if lastHeight > height {
 		// get the state at that height
-		stateRestore := tmState.RestoreStateFromBlock(stateDb, blockStore, height)
+		stateRestore := state2.RestoreStateFromBlock(stateDb, blockStore, height)
 		// save the state to the db to overwrite the current state
-		tmState.SaveState(stateDb, stateRestore)
+		state2.SaveState(stateDb, stateRestore)
 		// roll back the blockstore to the previous height
 		store.BlockStoreStateJSON{Height: height}.Save(blockStoreDB)
 		if modifyStateFile {

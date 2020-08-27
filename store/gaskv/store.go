@@ -33,42 +33,42 @@ func (gs *Store) GetStoreType() types.StoreType {
 }
 
 // Implements KVStore.
-func (gs *Store) Get(key []byte) (value []byte) {
+func (gs *Store) Get(key []byte) (value []byte, err error) {
 	gs.gasMeter.ConsumeGas(gs.gasConfig.ReadCostFlat, types.GasReadCostFlatDesc)
-	value = gs.parent.Get(key)
+	value, _ = gs.parent.Get(key)
 
 	// TODO overflow-safe math?
 	gs.gasMeter.ConsumeGas(gs.gasConfig.ReadCostPerByte*types.Gas(len(value)), types.GasReadPerByteDesc)
 
-	return value
+	return value, nil
 }
 
 // Implements KVStore.
-func (gs *Store) Set(key []byte, value []byte) {
+func (gs *Store) Set(key []byte, value []byte) error {
 	types.AssertValidValue(value)
 	gs.gasMeter.ConsumeGas(gs.gasConfig.WriteCostFlat, types.GasWriteCostFlatDesc)
 	// TODO overflow-safe math?
 	gs.gasMeter.ConsumeGas(gs.gasConfig.WriteCostPerByte*types.Gas(len(value)), types.GasWritePerByteDesc)
-	gs.parent.Set(key, value)
+	return gs.parent.Set(key, value)
 }
 
 // Implements KVStore.
-func (gs *Store) Has(key []byte) bool {
+func (gs *Store) Has(key []byte) (bool, error) {
 	gs.gasMeter.ConsumeGas(gs.gasConfig.HasCost, types.GasHasDesc)
 	return gs.parent.Has(key)
 }
 
 // Implements KVStore.
-func (gs *Store) Delete(key []byte) {
+func (gs *Store) Delete(key []byte) error {
 	// charge gas to prevent certain attack vectors even though space is being freed
 	gs.gasMeter.ConsumeGas(gs.gasConfig.DeleteCost, types.GasDeleteDesc)
-	gs.parent.Delete(key)
+	return gs.parent.Delete(key)
 }
 
 // Iterator implements the KVStore interface. It returns an iterator which
 // incurs a flat gas cost for seeking to the first key/value pair and a variable
 // gas cost based on the current value's length if the iterator is valid.
-func (gs *Store) Iterator(start, end []byte) types.Iterator {
+func (gs *Store) Iterator(start, end []byte) (types.Iterator, error) {
 	return gs.iterator(start, end, true)
 }
 
@@ -76,7 +76,7 @@ func (gs *Store) Iterator(start, end []byte) types.Iterator {
 // iterator which incurs a flat gas cost for seeking to the first key/value pair
 // and a variable gas cost based on the current value's length if the iterator
 // is valid.
-func (gs *Store) ReverseIterator(start, end []byte) types.Iterator {
+func (gs *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
 	return gs.iterator(start, end, false)
 }
 
@@ -90,26 +90,31 @@ func (gs *Store) CacheWrapWithTrace(_ io.Writer, _ types.TraceContext) types.Cac
 	panic("cannot CacheWrapWithTrace a GasKVStore")
 }
 
-func (gs *Store) iterator(start, end []byte, ascending bool) types.Iterator {
-	var parent types.Iterator
+func (gs *Store) iterator(start, end []byte, ascending bool) (it types.Iterator, err error) {
+
 	if ascending {
-		parent = gs.parent.Iterator(start, end)
+		it, err = gs.parent.Iterator(start, end)
 	} else {
-		parent = gs.parent.ReverseIterator(start, end)
+		it, err = gs.parent.ReverseIterator(start, end)
 	}
 
-	gi := newGasIterator(gs.gasMeter, gs.gasConfig, parent)
+	gi := newGasIterator(gs.gasMeter, gs.gasConfig, it)
 	if gi.Valid() {
 		gi.(*gasIterator).consumeSeekGas()
 	}
 
-	return gi
+	return gi, err
 }
 
 type gasIterator struct {
 	gasMeter  types.GasMeter
 	gasConfig types.GasConfig
 	parent    types.Iterator
+}
+
+func (gi *gasIterator) Error() error {
+	//TODO
+	return nil
 }
 
 func newGasIterator(gasMeter types.GasMeter, gasConfig types.GasConfig, parent types.Iterator) types.Iterator {

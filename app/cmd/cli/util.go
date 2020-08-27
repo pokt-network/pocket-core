@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -136,7 +137,8 @@ var unsafeRollbackCmd = &cobra.Command{
 		a.MountKVStores(a.Keys)
 		a.MountTransientStores(a.Tkeys)
 		// rollback the txIndexer
-		err = state.RollbackTxIndexer(&app.GlobalConfig.TendermintConfig, int64(height))
+
+		err = state.RollbackTxIndexer(&app.GlobalConfig.TendermintConfig, int64(height), context.Background())
 		if err != nil {
 			fmt.Println("error rolling back txIndexer: ", err)
 			return

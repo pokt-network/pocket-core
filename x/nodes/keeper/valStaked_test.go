@@ -117,7 +117,8 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 				assert.True(t, validator.StakedTokens.Equal(test.expected.tokens), "validator staked tokens is not as expected")
 
 				store := context.KVStore(keeper.storeKey)
-				assert.NotNil(t, store.Get(types.KeyForValidatorInStakingSet(validator)))
+				sg, _ := store.Get(types.KeyForValidatorInStakingSet(validator))
+				assert.NotNil(t, sg)
 			}
 		})
 	}
@@ -180,7 +181,7 @@ func TestGetValsIterator(t *testing.T) {
 				keeper.SetValidator(context, validator)
 			}
 
-			it := keeper.stakedValsIterator(context)
+			it, _ := keeper.stakedValsIterator(context)
 			assert.Implements(t, (*sdk.Iterator)(nil), it, "does not implement interface")
 		})
 	}

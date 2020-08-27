@@ -234,9 +234,9 @@ func TestQuerySupply(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
 	gotStaked, total, err := PCA.QueryTotalNodeCoins(0)
-	fmt.Println(err)
+	//fmt.Println(err)
 	assert.Nil(t, err)
-	fmt.Println(gotStaked, total)
+	//fmt.Println(gotStaked, total)
 	assert.True(t, gotStaked.Equal(sdk.NewInt(1000000000000000)))
 	assert.True(t, total.Equal(sdk.NewInt(1000002010001000)))
 

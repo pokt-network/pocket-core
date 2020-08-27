@@ -67,7 +67,7 @@ func TestErrFn(t *testing.T) {
 func TestAppendMsgToErr(t *testing.T) {
 	for i, errFn := range errFns {
 		err := errFn("")
-		errMsg := err.Stacktrace().Error()
+		errMsg := err.Error()
 		abciLog := err.ABCILog()
 
 		// plain msg error

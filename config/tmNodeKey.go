@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/p2p"
 	"io/ioutil"
 )
 
 func LoadOrGenerateNodeKeyFile(cdc *codec.Codec, filePath string) error {
-	if cmn.FileExists(filePath) {
+	if os.FileExists(filePath) {
 		_, err := LoadNodeKeyFile(cdc, filePath)
 		if err != nil {
 			return err

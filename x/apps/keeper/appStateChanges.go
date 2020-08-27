@@ -2,12 +2,12 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/tendermint/tendermint/libs/strings"
 	"time"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/tendermint/tendermint/libs/common"
 )
 
 // ValidateApplicationStaking - Check application before staking
@@ -34,7 +34,7 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 					err.Error(),
 					ctx.ConsensusParams().Validator.PubKeyTypes)
 			}
-			if !common.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
+			if !strings.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
 				return types.ErrApplicationPubKeyTypeNotSupported(k.Codespace(),
 					tmPubKey.Type,
 					ctx.ConsensusParams().Validator.PubKeyTypes)

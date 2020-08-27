@@ -266,7 +266,7 @@ func TestAppUnstaked_UnstakingApplicationsIterator(t *testing.T) {
 				keeper.SetStakedApplication(context, application)
 			}
 
-			it := keeper.unstakingApplicationsIterator(context, context.BlockHeader().Time)
+			it, _ := keeper.unstakingApplicationsIterator(context, context.BlockHeader().Time)
 			if v, ok := it.(sdk.Iterator); !ok {
 				t.Errorf("appUnstaked.UnstakingApplicationsIterator()= %v does not implement sdk.Iterator", v)
 			}
