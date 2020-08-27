@@ -75,7 +75,7 @@ func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Resul
 // GetPreviousProposer - Retrieve the proposer public key for this block
 func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
-	b := store.Get(types.ProposerKey)
+	b, _ := store.Get(types.ProposerKey)
 	if b == nil {
 		k.Logger(ctx).Error("Previous proposer not set")
 		os.Exit(1)
@@ -88,5 +88,5 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
 func (k Keeper) SetPreviousProposer(ctx sdk.Ctx, consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(consAddr)
-	store.Set(types.ProposerKey, b)
+	_ = store.Set(types.ProposerKey, b)
 }

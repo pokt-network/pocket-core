@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/common"
 	"strings"
 
 	"github.com/pkg/errors"
-	cmn "github.com/tendermint/tendermint/libs/common"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -180,15 +179,15 @@ func ErrForbidden(msg string) Error {
 //----------------------------------------
 // Error & sdkError
 
-type cmnError = cmn.Error
+type cmnError = common.Error
 
 // sdk Error type
 type Error interface {
-	// Implements cmn.Error
-	// Error() string
-	// Stacktrace() cmn.Error
-	// Trace(offset int, format string, args ...interface{}) cmn.Error
-	// Data() interface{}
+	//Implements cmn.Error
+	//Error() string
+	//Stacktrace() error
+	//Trace(offset int, format string, args ...interface{}) error
+	//Data() interface{}
 	cmnError
 
 	// convenience
@@ -220,7 +219,7 @@ func newError(codespace CodespaceType, code CodeType, format string, args ...int
 	return &sdkError{
 		codespace: codespace,
 		code:      code,
-		cmnError:  cmn.NewError(format, args...),
+		cmnError:  common.NewError(format, args...),
 	}
 }
 
@@ -246,7 +245,7 @@ func (err *sdkError) WithDefaultCodespace(cs CodespaceType) Error {
 // Implements ABCIError.
 // nolint: errcheck
 func (err *sdkError) TraceSDK(format string, args ...interface{}) Error {
-	err.Trace(1, format, args...)
+	_ = err.Trace(1, format, args...)
 	return err
 }
 

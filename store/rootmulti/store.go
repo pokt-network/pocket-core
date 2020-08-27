@@ -191,7 +191,7 @@ func (rs *Store) RollbackVersion(height int64) error {
 		b.Delete([]byte(cInfoKey))
 	}
 	// write to db
-	b.Write()
+	_ = b.Write()
 	return nil
 }
 
@@ -296,7 +296,7 @@ func (rs *Store) Commit() types.CommitID {
 	defer batch.Close()
 	setCommitInfo(batch, version, commitInfo)
 	setLatestVersion(batch, version)
-	batch.Write()
+	_ = batch.Write()
 
 	// Prepare for next version.
 	commitID := types.CommitID{
@@ -588,7 +588,7 @@ func (si storeInfo) Hash() []byte {
 
 func getLatestVersion(db dbm.DB) int64 {
 	var latest int64
-	latestBytes := db.Get([]byte(latestVersionKey))
+	latestBytes, _ := db.Get([]byte(latestVersionKey))
 	if latestBytes == nil {
 		return 0
 	}
@@ -639,7 +639,7 @@ func getCommitInfo(db dbm.DB, ver int64) (commitInfo, error) {
 
 	// Get from DB.
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, ver)
-	cInfoBytes := db.Get([]byte(cInfoKey))
+	cInfoBytes, _ := db.Get([]byte(cInfoKey))
 	if cInfoBytes == nil {
 		return commitInfo{}, fmt.Errorf("failed to get Store: no data")
 	}

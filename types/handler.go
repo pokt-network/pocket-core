@@ -7,4 +7,4 @@ type Handler func(ctx Ctx, msg Msg) Result
 
 // AnteHandler authenticates transactions, before their internal messages are handled.
 // If newCtx.IsZero(), ctx is used instead.
-type AnteHandler func(ctx Ctx, tx Tx, txBz []byte, txIndexer *txindex.TxIndexer, simulate bool) (newCtx Ctx, result Result, abort bool)
+type AnteHandler func(ctx Ctx, tx Tx, txBz []byte, txIndexer txindex.TxIndexer, simulate bool) (newCtx Ctx, result Result, abort bool)

@@ -2,38 +2,37 @@ package types
 
 import (
 	"bytes"
-
-	cmn "github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/kv"
 )
 
 // Iterator over all the keys with a certain prefix in ascending order
-func KVStorePrefixIterator(kvs KVStore, prefix []byte) Iterator {
+func KVStorePrefixIterator(kvs KVStore, prefix []byte) (Iterator, error) {
 	return kvs.Iterator(prefix, PrefixEndBytes(prefix))
 }
 
 // Iterator over all the keys with a certain prefix in descending order.
-func KVStoreReversePrefixIterator(kvs KVStore, prefix []byte) Iterator {
+func KVStoreReversePrefixIterator(kvs KVStore, prefix []byte) (Iterator, error) {
 	return kvs.ReverseIterator(prefix, PrefixEndBytes(prefix))
 }
 
 // Compare two KVstores, return either the first key/value pair
 // at which they differ and whether or not they are equal, skipping
 // value comparison for a set of provided prefixes
-func DiffKVStores(a KVStore, b KVStore, prefixesToSkip [][]byte) (kvA cmn.KVPair, kvB cmn.KVPair, count int64, equal bool) {
-	iterA := a.Iterator(nil, nil)
-	iterB := b.Iterator(nil, nil)
+func DiffKVStores(a KVStore, b KVStore, prefixesToSkip [][]byte) (kvA kv.Pair, kvB kv.Pair, count int64, equal bool) {
+	iterA, _ := a.Iterator(nil, nil)
+	iterB, _ := b.Iterator(nil, nil)
 	count = int64(0)
 	for {
 		if !iterA.Valid() && !iterB.Valid() {
 			break
 		}
-		var kvA, kvB cmn.KVPair
+		var kvA, kvB kv.Pair
 		if iterA.Valid() {
-			kvA = cmn.KVPair{Key: iterA.Key(), Value: iterA.Value()}
+			kvA = kv.Pair{Key: iterA.Key(), Value: iterA.Value()}
 			iterA.Next()
 		}
 		if iterB.Valid() {
-			kvB = cmn.KVPair{Key: iterB.Key(), Value: iterB.Value()}
+			kvB = kv.Pair{Key: iterB.Key(), Value: iterB.Value()}
 			iterB.Next()
 		}
 		if !bytes.Equal(kvA.Key, kvB.Key) {
@@ -51,7 +50,7 @@ func DiffKVStores(a KVStore, b KVStore, prefixesToSkip [][]byte) (kvA cmn.KVPair
 		}
 		count++
 	}
-	return cmn.KVPair{}, cmn.KVPair{}, count, true
+	return kv.Pair{}, kv.Pair{}, count, true
 }
 
 // PrefixEndBytes returns the []byte that would end a

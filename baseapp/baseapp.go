@@ -58,16 +58,16 @@ const (
 type BaseApp struct {
 	// initialized on creation
 	logger       log.Logger
-	name         string                 // application name from abci.Info
-	db           dbm.DB                 // common DB backend
-	tmNode       *node.Node             // <---- todo updated here
-	txIndexer    *txindex.TxIndexer     // <---- todo updated here
-	blockstore   *tmStore.BlockStore    // <---- todo updated here
-	evidencePool *evidence.EvidencePool // <---- todo updated here
-	cms          sdk.CommitMultiStore   // Main (uncached) state
-	router       sdk.Router             // handle any kind of message
-	queryRouter  sdk.QueryRouter        // router for redirecting query calls
-	txDecoder    sdk.TxDecoder          // unmarshal []byte into sdk.Tx
+	name         string               // application name from abci.Info
+	db           dbm.DB               // common DB backend
+	tmNode       *node.Node           // <---- todo updated here
+	txIndexer    txindex.TxIndexer    // <---- todo updated here
+	blockstore   *tmStore.BlockStore  // <---- todo updated here
+	evidencePool *evidence.Pool       // <---- todo updated here
+	cms          sdk.CommitMultiStore // Main (uncached) state
+	router       sdk.Router           // handle any kind of message
+	queryRouter  sdk.QueryRouter      // router for redirecting query calls
+	txDecoder    sdk.TxDecoder        // unmarshal []byte into sdk.Tx
 
 	// set upon RollbackVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
@@ -135,11 +135,11 @@ func (app *BaseApp) SetTendermintNode(node *node.Node) {
 	app.tmNode = node
 }
 
-func (app *BaseApp) SetTxIndexer(txindexer *txindex.TxIndexer) {
+func (app *BaseApp) SetTxIndexer(txindexer txindex.TxIndexer) {
 	app.txIndexer = txindexer
 }
 
-func (app *BaseApp) Txindexer() (txindexer *txindex.TxIndexer) {
+func (app *BaseApp) Txindexer() (txindexer txindex.TxIndexer) {
 	return app.txIndexer
 }
 
@@ -151,11 +151,11 @@ func (app *BaseApp) Blockstore() (blockstore *tmStore.BlockStore) {
 	return app.blockstore
 }
 
-func (app *BaseApp) SetEvidencePool(evidencePool *evidence.EvidencePool) {
+func (app *BaseApp) SetEvidencePool(evidencePool *evidence.Pool) {
 	app.evidencePool = evidencePool
 }
 
-func (app *BaseApp) EvidencePool() (evidencePool *evidence.EvidencePool) {
+func (app *BaseApp) EvidencePool() (evidencePool *evidence.Pool) {
 	return app.evidencePool
 }
 
@@ -288,7 +288,7 @@ func (app *BaseApp) initFromMainStore(baseKey *sdk.KVStoreKey) error {
 	// nil, it will be saved later during InitChain.
 	//
 	// TODO: assert that InitChain hasn't yet been called.
-	consensusParamsBz := mainStore.Get(mainConsensusParamsKey)
+	consensusParamsBz, _ := mainStore.Get(mainConsensusParamsKey)
 	if consensusParamsBz != nil {
 		var consensusParams = &abci.ConsensusParams{}
 
@@ -367,7 +367,7 @@ func (app *BaseApp) storeConsensusParams(consensusParams *abci.ConsensusParams) 
 		return
 	}
 	mainStore := app.cms.GetKVStore(app.baseKey)
-	mainStore.Set(mainConsensusParamsKey, consensusParamsBz)
+	_ = mainStore.Set(mainConsensusParamsKey, consensusParamsBz)
 }
 
 // getMaximumBlockGas gets the maximum gas from the consensus params. It panics
@@ -395,7 +395,7 @@ func (app *BaseApp) getMaximumBlockGas() uint64 {
 // ABCI
 
 // Info implements the ABCI interface.
-func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
+func (app *BaseApp) Info(_ abci.RequestInfo) abci.ResponseInfo {
 	lastCommitID := app.cms.LastCommitID()
 
 	return abci.ResponseInfo{
@@ -406,7 +406,7 @@ func (app *BaseApp) Info(req abci.RequestInfo) abci.ResponseInfo {
 }
 
 // SetOption implements the ABCI interface.
-func (app *BaseApp) SetOption(req abci.RequestSetOption) (res abci.ResponseSetOption) {
+func (app *BaseApp) SetOption(_ abci.RequestSetOption) (res abci.ResponseSetOption) {
 	// TODO: Implement!
 	return
 }

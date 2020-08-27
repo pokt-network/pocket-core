@@ -11,7 +11,7 @@ import (
 // PrevStateValidatorsPower - Load the prevState total validator power.
 func (k Keeper) PrevStateValidatorsPower(ctx sdk.Ctx) (power sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
-	b := store.Get(types.PrevStateTotalPowerKey)
+	b, _ := store.Get(types.PrevStateTotalPowerKey)
 	if b == nil {
 		return sdk.ZeroInt()
 	}
@@ -23,13 +23,13 @@ func (k Keeper) PrevStateValidatorsPower(ctx sdk.Ctx) (power sdk.Int) {
 func (k Keeper) SetPrevStateValidatorsPower(ctx sdk.Ctx, power sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshalBinaryLengthPrefixed(power)
-	store.Set(types.PrevStateTotalPowerKey, b)
+	_ = store.Set(types.PrevStateTotalPowerKey, b)
 }
 
 // prevStateValidatorIterator - Retrieve an iterator for the consensus validators in the prevState block
 func (k Keeper) prevStateValidatorsIterator(ctx sdk.Ctx) (iterator sdk.Iterator) {
 	store := ctx.KVStore(k.storeKey)
-	iterator = sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
+	iterator, _ = sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
 	return iterator
 }
 
@@ -37,7 +37,7 @@ func (k Keeper) prevStateValidatorsIterator(ctx sdk.Ctx) (iterator sdk.Iterator)
 func (k Keeper) IterateAndExecuteOverPrevStateValsByPower(
 	ctx sdk.Ctx, handler func(address sdk.Address, power int64) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iter := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
+	iter, _ := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.Address(iter.Key()[len(types.PrevStateValidatorsPowerKey):])
@@ -74,11 +74,11 @@ func (k Keeper) IterateAndExecuteOverPrevStateVals(
 func (k Keeper) SetPrevStateValPower(ctx sdk.Ctx, addr sdk.Address, power int64) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(power)
-	store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
+	_ = store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
 }
 
 // DeletePrevStateValPower - Remove the power of a SINGLE staked validator from the previous state
 func (k Keeper) DeletePrevStateValPower(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyForValidatorPrevStateStateByPower(addr))
+	_ = store.Delete(types.KeyForValidatorPrevStateStateByPower(addr))
 }

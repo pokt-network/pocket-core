@@ -195,7 +195,7 @@ func TestKeeper_prevStateValidatorsIterator(t *testing.T) {
 		ctx sdk.Context
 	}
 	context, _, keeper := createTestInput(t, true)
-
+	it, _ := sdk.KVStorePrefixIterator(context.KVStore(keeper.storeKey), types.PrevStateValidatorsPowerKey)
 	tests := []struct {
 		name         string
 		fields       fields
@@ -203,7 +203,7 @@ func TestKeeper_prevStateValidatorsIterator(t *testing.T) {
 		wantIterator sdk.Iterator
 	}{
 		{"Test prevStateValidatorsIterator", fields{keeper: keeper}, args{ctx: context},
-			sdk.KVStorePrefixIterator(context.KVStore(keeper.storeKey), types.PrevStateValidatorsPowerKey),
+			it,
 		},
 	}
 	for _, tt := range tests {

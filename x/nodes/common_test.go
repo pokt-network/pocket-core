@@ -1,6 +1,7 @@
 package nodes
 
 import (
+	"github.com/tendermint/tendermint/rpc/client/http"
 	"math/rand"
 	"testing"
 
@@ -47,9 +48,11 @@ func GetTestTendermintClient() client.Client {
 	var defaultTMURI = "tcp://localhost:26657"
 
 	if tmNodeURI == "" {
-		return client.NewHTTP(defaultTMURI, "/websocket")
+		c, _ := http.New(defaultTMURI, "/websocket")
+		return c
 	}
-	return client.NewHTTP(tmNodeURI, "/websocket")
+	c, _ := http.New(tmNodeURI, "/websocket")
+	return c
 }
 
 // : deadcode unused

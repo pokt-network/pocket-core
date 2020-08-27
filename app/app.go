@@ -19,8 +19,8 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
+	cmn "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 )

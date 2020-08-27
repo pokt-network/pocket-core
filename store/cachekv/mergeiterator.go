@@ -19,6 +19,11 @@ type cacheMergeIterator struct {
 	ascending bool
 }
 
+func (iter *cacheMergeIterator) Error() error {
+	//TODO IMplement
+	return nil
+}
+
 var _ types.Iterator = (*cacheMergeIterator)(nil)
 
 func newCacheMergeIterator(parent, cache types.Iterator, ascending bool) *cacheMergeIterator {

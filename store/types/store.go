@@ -2,10 +2,10 @@ package types
 
 import (
 	"fmt"
+	"github.com/tendermint/tendermint/libs/kv"
 	"io"
 
 	abci "github.com/tendermint/tendermint/abci/types"
-	cmn "github.com/tendermint/tendermint/libs/common"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -111,16 +111,16 @@ type KVStore interface {
 	Store
 
 	// Get returns nil iff key doesn't exist. Panics on nil key.
-	Get(key []byte) []byte
+	Get(key []byte) ([]byte, error)
 
 	// Has checks if a key exists. Panics on nil key.
-	Has(key []byte) bool
+	Has(key []byte) (bool, error)
 
 	// Set sets the key. Panics on nil key or value.
-	Set(key, value []byte)
+	Set(key, value []byte) error
 
 	// Delete deletes the key. Panics on nil key.
-	Delete(key []byte)
+	Delete(key []byte) error
 
 	// Iterator over a domain of keys in ascending order. End is exclusive.
 	// Start must be less than end, or the Iterator is invalid.
@@ -128,14 +128,14 @@ type KVStore interface {
 	// To iterate over entire domain, use store.Iterator(nil, nil)
 	// CONTRACT: No writes may happen within a domain while an iterator exists over it.
 	// Exceptionally allowed for cachekv.Store, safe to write in the modules.
-	Iterator(start, end []byte) Iterator
+	Iterator(start, end []byte) (Iterator, error)
 
 	// Iterator over a domain of keys in descending order. End is exclusive.
 	// Start must be less than end, or the Iterator is invalid.
 	// Iterator must be closed by caller.
 	// CONTRACT: No writes may happen within a domain while an iterator exists over it.
 	// Exceptionally allowed for cachekv.Store, safe to write in the modules.
-	ReverseIterator(start, end []byte) Iterator
+	ReverseIterator(start, end []byte) (Iterator, error)
 }
 
 // Alias iterator to db's Iterator for convenience.
@@ -271,7 +271,7 @@ func (key *TransientStoreKey) String() string {
 //----------------------------------------
 
 // key-value result for iterator queries
-type KVPair cmn.KVPair
+type KVPair kv.Pair
 
 //----------------------------------------
 

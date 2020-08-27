@@ -3,10 +3,10 @@ package types
 import (
 	"errors"
 	"fmt"
+	"github.com/tendermint/tendermint/libs/rand"
 	"strings"
 
 	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/tendermint/tendermint/libs/common"
 
 	crkeys "github.com/pokt-network/pocket-core/crypto/keys"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -94,7 +94,7 @@ func (bldr TxBuilder) BuildAndSign(address sdk.Address, privateKey crypto.Privat
 	if bldr.chainID == "" {
 		return nil, errors.New("cant build and sign transaciton: the chainID is empty")
 	}
-	entropy := common.RandInt64()
+	entropy := rand.Int64()
 	bytesToSign, err := StdSignBytes(bldr.chainID, entropy, bldr.fees, msg, bldr.memo)
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ func (bldr TxBuilder) BuildAndSignWithKeyBase(address sdk.Address, passphrase st
 	if bldr.chainID == "" {
 		return nil, errors.New("cant build and sign transaciton: the chainID is empty")
 	}
-	entropy := common.RandInt64()
+	entropy := rand.Int64()
 	bytesToSign, err := StdSignBytes(bldr.chainID, entropy, bldr.fees, msg, bldr.memo)
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (bldr TxBuilder) BuildAndSignMultisigTransaction(address sdk.Address, publi
 		return nil, errors.New("cant build and sign transaciton: the chainID is empty")
 	}
 	// bulid the transaction from scratch
-	entropy := common.RandInt64()
+	entropy := rand.Int64()
 	fee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(fees)))
 	signBz, err := StdSignBytes(bldr.chainID, entropy, fee, m, bldr.memo)
 	if err != nil {

@@ -18,7 +18,7 @@ func (k Keeper) Application(ctx sdk.Ctx, address sdk.Address) exported.Applicati
 // AllApplications - Retrieve a list of all applications
 func (k Keeper) AllApplications(ctx sdk.Ctx) (apps []exported.ApplicationI) {
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		app, err := types.UnmarshalApplication(k.cdc, iterator.Value())

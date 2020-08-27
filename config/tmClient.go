@@ -3,7 +3,6 @@ package config
 import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
@@ -34,21 +33,23 @@ func NewClient(ctx Config, appCreator AppCreator) (*node.Node, error) {
 		return nil, err
 	}
 
-	UpgradeOldPrivValFile(config)
+	//UpgradeOldPrivValFile(config)
 
-	txIndexer, err := node.CreateTxIndexer(config, node.DefaultDBProvider)
-	if err != nil {
-		return nil, err
-	}
-	blockStore, stateDB, err := node.InitDBs(config, node.DefaultDBProvider)
-	if err != nil {
-		return nil, err
-	}
+	//TODO All this on new node now
+
+	//txIndexer, err := node.CreateTxIndexer(config, node.DefaultDBProvider)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//blockStore, stateDB, err := node.InitDBs(config, node.DefaultDBProvider)
+	//if err != nil {
+	//	return nil, err
+	//}
 	// Make Evidence Reactor
-	evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(config, node.DefaultDBProvider, stateDB, ctx.Logger)
-	if err != nil {
-		return nil, err
-	}
+	//evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(config, node.DefaultDBProvider, stateDB, ctx.Logger)
+	//if err != nil {
+	//	return nil, err
+	//}
 	// create & start tendermint node
 	tmNode, err := node.NewNode(
 		config,
@@ -59,11 +60,6 @@ func NewClient(ctx Config, appCreator AppCreator) (*node.Node, error) {
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(config.Instrumentation),
 		ctx.Logger.With("module", "node"),
-		txIndexer,
-		blockStore,
-		stateDB,
-		evidencePool,
-		evidenceReactor,
 	)
 	if err != nil {
 		return nil, err
@@ -99,12 +95,12 @@ func openTraceWriter(traceWriterFile string) (w io.Writer, err error) {
 	return
 }
 
-// UpgradeOldPrivValFile converts old priv_validator.json file (prior to Tendermint 0.28)
-// to the new priv_validator_key.json and priv_validator_state.json files.
-func UpgradeOldPrivValFile(config *cfg.Config) {
-	if _, err := os.Stat(config.OldPrivValidatorFile()); !os.IsNotExist(err) {
-		if oldFilePV, err := pvm.LoadOldFilePV(config.OldPrivValidatorFile()); err == nil {
-			oldFilePV.Upgrade(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
-		}
-	}
-}
+//// UpgradeOldPrivValFile converts old priv_validator.json file (prior to Tendermint 0.28)
+//// to the new priv_validator_key.json and priv_validator_state.json files.
+//func UpgradeOldPrivValFile(config *cfg.Config) {
+//	if _, err := os.Stat(config.OldPrivValidatorFile()); !os.IsNotExist(err) {
+//		if oldFilePV, err := pvm.LoadOldFilePV(config.OldPrivValidatorFile()); err == nil {
+//			oldFilePV.Upgrade(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+//		}
+//	}
+//}

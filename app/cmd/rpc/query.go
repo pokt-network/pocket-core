@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/types"
 	"math/big"
 	"net/http"
@@ -111,7 +111,7 @@ type RPCResultTxSearch struct {
 
 // Result of querying for a tx
 type RPCResultTx struct {
-	Hash     common.HexBytes        `json:"hash"`
+	Hash     bytes.HexBytes         `json:"hash"`
 	Height   int64                  `json:"height"`
 	Index    uint32                 `json:"index"`
 	TxResult abci.ResponseDeliverTx `json:"tx_result"`

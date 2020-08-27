@@ -11,12 +11,13 @@ import (
 	appsType "github.com/pokt-network/pocket-core/x/apps/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/tendermint/tendermint/libs/rand"
+
 	//"github.com/pokt-network/pocket-core/crypto/keys/mintkey"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	authTypes "github.com/pokt-network/pocket-core/x/auth/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
-	"github.com/tendermint/tendermint/libs/common"
 )
 
 // SendTransaction - Deliver Transaction to node
@@ -322,7 +323,7 @@ func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string
 	// fees
 	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(fee)))
 	// entroyp
-	entropy := common.RandInt64()
+	entropy := rand.Int64()
 	signBytes, err := auth.StdSignBytes(chainID, entropy, fees, msg, memo)
 	if err != nil {
 		return nil, err

@@ -2,11 +2,12 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/tendermint/tendermint/rpc/client/http"
 
 	"github.com/pokt-network/pocket-core/app"
 	bam "github.com/pokt-network/pocket-core/baseapp"
@@ -167,26 +168,23 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		return db, nil
 	}
 	baseapp := creator(c.Logger, db, io.Writer(nil))
-	txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, nil
-	}
-	// setup blockstore
-	blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, nil
-	}
-	// Make Evidence Reactor
-	evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, nil
-	}
-	baseapp.SetTxIndexer(txIndexer)
-	baseapp.SetBlockstore(blockStore)
-	baseapp.SetEvidencePool(evidencePool)
+	//txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
+	//// setup blockstore
+	//blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
+	//// Make Evidence Reactor
+	//evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		privVal,
@@ -196,15 +194,13 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		dbProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
 		c.Logger.With("module", "node"),
-		txIndexer,
-		blockStore,
-		stateDB,
-		evidencePool,
-		evidenceReactor,
 	)
 	if err != nil {
 		panic(err)
 	}
+	baseapp.SetTxIndexer(tmNode.TxIndexer())
+	baseapp.SetBlockstore(tmNode.BlockStore())
+	baseapp.SetEvidencePool(tmNode.EvidencePool())
 	//baseapp.pocketKeeper.TmNode = client.NewLocal(tmNode)
 	baseapp.SetTendermintNode(tmNode)
 	app.PCA = baseapp
@@ -229,7 +225,7 @@ func memCodec() *codec.Codec {
 
 func getInMemoryTMClient() client.Client {
 	if memCLI == nil || !memCLI.IsRunning() {
-		memCLI = client.NewHTTP(defaultTMURI, "/websocket")
+		memCLI, _ = http.New(defaultTMURI, "/websocket")
 	}
 	return memCLI
 }
@@ -271,7 +267,7 @@ func getTestConfig() (tmConfg *tmCfg.Config) {
 	tmConfg.Consensus.CreateEmptyBlocksInterval = time.Duration(50) * time.Millisecond
 	tmConfg.Consensus.TimeoutCommit = time.Duration(50) * time.Millisecond
 	tmConfg.TxIndex.Indexer = "kv"
-	tmConfg.TxIndex.IndexTags = "tx.hash,tx.height,message.sender"
+	tmConfg.TxIndex.IndexKeys = "tx.hash,tx.height,message.sender"
 	return
 }
 

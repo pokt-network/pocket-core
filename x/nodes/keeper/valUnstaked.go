@@ -12,13 +12,13 @@ import (
 // SetWaitingValidator - Store validator on WaitingToBeginUnstaking store
 func (k Keeper) SetWaitingValidator(ctx sdk.Ctx, val types.Validator) {
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.KeyForValWaitingToBeginUnstaking(val.Address), val.Address)
+	_ = store.Set(types.KeyForValWaitingToBeginUnstaking(val.Address), val.Address)
 }
 
 // IsWaitingValidator - Check if validator is waiting
 func (k Keeper) IsWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) bool {
 	store := ctx.KVStore(k.storeKey)
-	value := store.Get(types.KeyForValWaitingToBeginUnstaking(valAddr))
+	value, _ := store.Get(types.KeyForValWaitingToBeginUnstaking(valAddr))
 	return !(value == nil)
 }
 
@@ -26,7 +26,7 @@ func (k Keeper) IsWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) bool {
 func (k Keeper) GetWaitingValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.WaitingToBeginUnstakingKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.WaitingToBeginUnstakingKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -45,7 +45,7 @@ func (k Keeper) GetWaitingValidators(ctx sdk.Ctx) (validators []types.Validator)
 // DeleteWaitingValidator - Remove waiting validators
 func (k Keeper) DeleteWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyForValWaitingToBeginUnstaking(valAddr))
+	_ = store.Delete(types.KeyForValWaitingToBeginUnstaking(valAddr))
 }
 
 // SetUnstakingValidator - Store a validator address to the appropriate position in the unstaking queue
@@ -75,7 +75,7 @@ func (k Keeper) deleteUnstakingValidator(ctx sdk.Ctx, val types.Validator) {
 func (k Keeper) getAllUnstakingValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator := sdk.KVStorePrefixIterator(store, types.UnstakingValidatorsKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.UnstakingValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var addrs []sdk.Address
@@ -96,7 +96,7 @@ func (k Keeper) getAllUnstakingValidators(ctx sdk.Ctx) (validators []types.Valid
 func (k Keeper) getUnstakingValidators(ctx sdk.Ctx, unstakingTime time.Time) (valAddrs []sdk.Address) {
 	valAddrs = make([]sdk.Address, 0)
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.KeyForUnstakingValidators(unstakingTime))
+	bz, _ := store.Get(types.KeyForUnstakingValidators(unstakingTime))
 	if bz == nil {
 		return
 	}
@@ -108,17 +108,17 @@ func (k Keeper) getUnstakingValidators(ctx sdk.Ctx, unstakingTime time.Time) (va
 func (k Keeper) setUnstakingValidators(ctx sdk.Ctx, unstakingTime time.Time, keys []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshalBinaryLengthPrefixed(keys)
-	store.Set(types.KeyForUnstakingValidators(unstakingTime), bz)
+	_ = store.Set(types.KeyForUnstakingValidators(unstakingTime), bz)
 }
 
 // deleteUnstakingValidators - Remove all the validators for a specific unstaking time
 func (k Keeper) deleteUnstakingValidators(ctx sdk.Ctx, unstakingTime time.Time) {
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.KeyForUnstakingValidators(unstakingTime))
+	_ = store.Delete(types.KeyForUnstakingValidators(unstakingTime))
 }
 
 // unstakingValidatorsIterator - Retrieve an iterator for all unstaking validators up to a certain time
-func (k Keeper) unstakingValidatorsIterator(ctx sdk.Ctx, endTime time.Time) sdk.Iterator {
+func (k Keeper) unstakingValidatorsIterator(ctx sdk.Ctx, endTime time.Time) (sdk.Iterator, error) {
 	store := ctx.KVStore(k.storeKey)
 	return store.Iterator(types.UnstakingValidatorsKey, sdk.InclusiveEndBytes(types.KeyForUnstakingValidators(endTime)))
 }
@@ -126,7 +126,7 @@ func (k Keeper) unstakingValidatorsIterator(ctx sdk.Ctx, endTime time.Time) sdk.
 // getMatureValidators - Retrieve a list of all the mature validators
 func (k Keeper) getMatureValidators(ctx sdk.Ctx) (matureValsAddrs []sdk.Address) {
 	matureValsAddrs = make([]sdk.Address, 0)
-	unstakingValsIterator := k.unstakingValidatorsIterator(ctx, ctx.BlockHeader().Time)
+	unstakingValsIterator, _ := k.unstakingValidatorsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValsIterator.Close()
 	for ; unstakingValsIterator.Valid(); unstakingValsIterator.Next() {
 		var validators []sdk.Address
@@ -139,7 +139,7 @@ func (k Keeper) getMatureValidators(ctx sdk.Ctx) (matureValsAddrs []sdk.Address)
 // unstakeAllMatureValidators -  Unstake all the unstaking validators that have finished their unstaking period
 func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
-	unstakingValidatorsIterator := k.unstakingValidatorsIterator(ctx, ctx.BlockHeader().Time)
+	unstakingValidatorsIterator, _ := k.unstakingValidatorsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValidatorsIterator.Close()
 	for ; unstakingValidatorsIterator.Valid(); unstakingValidatorsIterator.Next() {
 		var unstakingVals []sdk.Address
@@ -158,6 +158,6 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 			k.FinishUnstakingValidator(ctx, val)
 			k.DeleteValidator(ctx, valAddr)
 		}
-		store.Delete(unstakingValidatorsIterator.Key())
+		_ = store.Delete(unstakingValidatorsIterator.Key())
 	}
 }

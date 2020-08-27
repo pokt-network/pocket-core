@@ -50,63 +50,68 @@ func NewStore(parent types.KVStore, writer io.Writer, tc types.TraceContext) *St
 
 // Get implements the KVStore interface. It traces a read operation and
 // delegates a Get call to the parent KVStore.
-func (tkv *Store) Get(key []byte) []byte {
-	value := tkv.parent.Get(key)
+func (tkv *Store) Get(key []byte) ([]byte, error) {
+	value, _ := tkv.parent.Get(key)
 
 	writeOperation(tkv.writer, readOp, tkv.context, key, value)
-	return value
+	return value, nil
 }
 
 // Set implements the KVStore interface. It traces a write operation and
 // delegates the Set call to the parent KVStore.
-func (tkv *Store) Set(key []byte, value []byte) {
+func (tkv *Store) Set(key []byte, value []byte) error {
 	writeOperation(tkv.writer, writeOp, tkv.context, key, value)
-	tkv.parent.Set(key, value)
+	return tkv.parent.Set(key, value)
 }
 
 // Delete implements the KVStore interface. It traces a write operation and
 // delegates the Delete call to the parent KVStore.
-func (tkv *Store) Delete(key []byte) {
+func (tkv *Store) Delete(key []byte) error {
 	writeOperation(tkv.writer, deleteOp, tkv.context, key, nil)
-	tkv.parent.Delete(key)
+	return tkv.parent.Delete(key)
 }
 
 // Has implements the KVStore interface. It delegates the Has call to the
 // parent KVStore.
-func (tkv *Store) Has(key []byte) bool {
+func (tkv *Store) Has(key []byte) (bool, error) {
 	return tkv.parent.Has(key)
 }
 
 // Iterator implements the KVStore interface. It delegates the Iterator call
 // the to the parent KVStore.
-func (tkv *Store) Iterator(start, end []byte) types.Iterator {
+func (tkv *Store) Iterator(start, end []byte) (types.Iterator, error) {
 	return tkv.iterator(start, end, true)
 }
 
 // ReverseIterator implements the KVStore interface. It delegates the
 // ReverseIterator call the to the parent KVStore.
-func (tkv *Store) ReverseIterator(start, end []byte) types.Iterator {
+func (tkv *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
 	return tkv.iterator(start, end, false)
 }
 
 // iterator facilitates iteration over a KVStore. It delegates the necessary
 // calls to it's parent KVStore.
-func (tkv *Store) iterator(start, end []byte, ascending bool) types.Iterator {
+func (tkv *Store) iterator(start, end []byte, ascending bool) (it types.Iterator, err error) {
 	var parent types.Iterator
 
 	if ascending {
-		parent = tkv.parent.Iterator(start, end)
+		parent, err = tkv.parent.Iterator(start, end)
 	} else {
-		parent = tkv.parent.ReverseIterator(start, end)
+		parent, err = tkv.parent.ReverseIterator(start, end)
 	}
 
-	return newTraceIterator(tkv.writer, parent, tkv.context)
+	return newTraceIterator(tkv.writer, parent, tkv.context), err
 }
 
 type traceIterator struct {
 	parent  types.Iterator
 	writer  io.Writer
 	context types.TraceContext
+}
+
+func (ti *traceIterator) Error() error {
+	//TODO change me
+	return nil
 }
 
 func newTraceIterator(w io.Writer, parent types.Iterator, tc types.TraceContext) types.Iterator {
@@ -190,5 +195,5 @@ func writeOperation(w io.Writer, op operation, tc types.TraceContext, key, value
 		panic(fmt.Sprintf("failed to write trace operation: %v", err))
 	}
 
-	io.WriteString(w, "\n")
+	_, _ = io.WriteString(w, "\n")
 }

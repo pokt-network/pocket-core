@@ -22,11 +22,14 @@ func TestGasKVStoreBasic(t *testing.T) {
 	mem := dbadapter.Store{DB: dbm.NewMemDB()}
 	meter := types.NewGasMeter(10000)
 	st := gaskv.NewStore(mem, meter, types.KVGasConfig())
-	require.Empty(t, st.Get(keyFmt(1)), "Expected `key1` to be empty")
-	st.Set(keyFmt(1), valFmt(1))
-	require.Equal(t, valFmt(1), st.Get(keyFmt(1)))
-	st.Delete(keyFmt(1))
-	require.Empty(t, st.Get(keyFmt(1)), "Expected `key1` to be empty")
+	sg, _ := st.Get(keyFmt(1))
+	require.Empty(t, sg, "Expected `key1` to be empty")
+	_ = st.Set(keyFmt(1), valFmt(1))
+	sg, _ = st.Get(keyFmt(1))
+	require.Equal(t, valFmt(1), sg)
+	_ = st.Delete(keyFmt(1))
+	sg, _ = st.Get(keyFmt(1))
+	require.Empty(t, sg, "Expected `key1` to be empty")
 	require.Equal(t, meter.GasConsumed(), types.Gas(6429))
 }
 
@@ -34,11 +37,13 @@ func TestGasKVStoreIterator(t *testing.T) {
 	mem := dbadapter.Store{DB: dbm.NewMemDB()}
 	meter := types.NewGasMeter(10000)
 	st := gaskv.NewStore(mem, meter, types.KVGasConfig())
-	require.Empty(t, st.Get(keyFmt(1)), "Expected `key1` to be empty")
-	require.Empty(t, st.Get(keyFmt(2)), "Expected `key2` to be empty")
-	st.Set(keyFmt(1), valFmt(1))
-	st.Set(keyFmt(2), valFmt(2))
-	iterator := st.Iterator(nil, nil)
+	sg, _ := st.Get(keyFmt(1))
+	sg2, _ := st.Get(keyFmt(2))
+	require.Empty(t, sg, "Expected `key1` to be empty")
+	require.Empty(t, sg2, "Expected `key2` to be empty")
+	_ = st.Set(keyFmt(1), valFmt(1))
+	_ = st.Set(keyFmt(2), valFmt(2))
+	iterator, _ := st.Iterator(nil, nil)
 	ka := iterator.Key()
 	require.Equal(t, ka, keyFmt(1))
 	va := iterator.Value()
@@ -58,15 +63,15 @@ func TestGasKVStoreOutOfGasSet(t *testing.T) {
 	mem := dbadapter.Store{DB: dbm.NewMemDB()}
 	meter := types.NewGasMeter(0)
 	st := gaskv.NewStore(mem, meter, types.KVGasConfig())
-	require.Panics(t, func() { st.Set(keyFmt(1), valFmt(1)) }, "Expected out-of-gas")
+	require.Panics(t, func() { _ = st.Set(keyFmt(1), valFmt(1)) }, "Expected out-of-gas")
 }
 
 func TestGasKVStoreOutOfGasIterator(t *testing.T) {
 	mem := dbadapter.Store{DB: dbm.NewMemDB()}
 	meter := types.NewGasMeter(20000)
 	st := gaskv.NewStore(mem, meter, types.KVGasConfig())
-	st.Set(keyFmt(1), valFmt(1))
-	iterator := st.Iterator(nil, nil)
+	_ = st.Set(keyFmt(1), valFmt(1))
+	iterator, _ := st.Iterator(nil, nil)
 	iterator.Next()
 	require.Panics(t, func() { iterator.Value() }, "Expected out-of-gas")
 }

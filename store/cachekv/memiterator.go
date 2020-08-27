@@ -2,8 +2,8 @@ package cachekv
 
 import (
 	"container/list"
+	"github.com/tendermint/tendermint/libs/kv"
 
-	cmn "github.com/tendermint/tendermint/libs/common"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -12,15 +12,19 @@ import (
 // Implements Iterator.
 type memIterator struct {
 	start, end []byte
-	items      []*cmn.KVPair
+	items      []*kv.Pair
 	ascending  bool
 }
 
+func (mi *memIterator) Error() error {
+	panic("implement me")
+}
+
 func newMemIterator(start, end []byte, items *list.List, ascending bool) *memIterator {
-	itemsInDomain := make([]*cmn.KVPair, 0)
+	itemsInDomain := make([]*kv.Pair, 0)
 	var entered bool
 	for e := items.Front(); e != nil; e = e.Next() {
-		item := e.Value.(*cmn.KVPair)
+		item := e.Value.(*kv.Pair)
 		if !dbm.IsKeyInDomain(item.Key, start, end) {
 			if entered {
 				break

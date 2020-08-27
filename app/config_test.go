@@ -13,5 +13,5 @@ func TestDefaultConfig(t *testing.T) {
 
 	// Check default Tx indexing params
 	assert.EqualValues(t, types.DefaultTxIndexer, c.TendermintConfig.TxIndex.Indexer)
-	assert.EqualValues(t, types.DefaultTxIndexTags, c.TendermintConfig.TxIndex.IndexTags)
+	assert.EqualValues(t, types.DefaultTxIndexTags, c.TendermintConfig.TxIndex.IndexKeys)
 }

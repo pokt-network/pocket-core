@@ -11,13 +11,16 @@ var k, v = []byte("hello"), []byte("world")
 func TestTransientStore(t *testing.T) {
 	tstore := NewStore()
 
-	require.Nil(t, tstore.Get(k))
+	tg, _ := tstore.Get(k)
+	require.Nil(t, tg)
 
-	tstore.Set(k, v)
+	_ = tstore.Set(k, v)
 
-	require.Equal(t, v, tstore.Get(k))
+	tg, _ = tstore.Get(k)
+	require.Equal(t, v, tg)
 
 	tstore.Commit()
 
-	require.Nil(t, tstore.Get(k))
+	tg, _ = tstore.Get(k)
+	require.Nil(t, tg)
 }

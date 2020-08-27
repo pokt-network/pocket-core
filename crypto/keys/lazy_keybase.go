@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pokt-network/pocket-core/crypto"
-	cmn "github.com/tendermint/tendermint/libs/common"
+	cmn "github.com/tendermint/tendermint/libs/os"
 
 	"github.com/pokt-network/pocket-core/types"
 	sdk "github.com/pokt-network/pocket-core/types"

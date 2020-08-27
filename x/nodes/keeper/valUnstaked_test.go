@@ -255,7 +255,7 @@ func TestUnstakingValidatorsIterator(t *testing.T) {
 				keeper.SetValidator(context, validator)
 			}
 
-			it := keeper.unstakingValidatorsIterator(context, context.BlockHeader().Time)
+			it, _ := keeper.unstakingValidatorsIterator(context, context.BlockHeader().Time)
 			assert.Implements(t, (*sdk.Iterator)(nil), it, "does not implement interface")
 		})
 	}

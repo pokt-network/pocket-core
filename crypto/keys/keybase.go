@@ -58,7 +58,7 @@ func (kb *dbKeybase) SetCoinbase(address types.Address) error {
 // List returns the keys from storage in alphabetical order.
 func (kb dbKeybase) List() ([]KeyPair, error) {
 	var res []KeyPair
-	iter := kb.db.Iterator(nil, nil)
+	iter, _ := kb.db.Iterator(nil, nil)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		kp, err := readKeyPair(iter.Value())
@@ -72,7 +72,7 @@ func (kb dbKeybase) List() ([]KeyPair, error) {
 
 // Get returns the public information about one key.
 func (kb dbKeybase) Get(address types.Address) (KeyPair, error) {
-	ik := kb.db.Get(addrKey(address))
+	ik, _ := kb.db.Get(addrKey(address))
 	if len(ik) == 0 {
 		return KeyPair{}, fmt.Errorf("key with address %s not found", address)
 	}
@@ -95,7 +95,7 @@ func (kb dbKeybase) Delete(address types.Address, passphrase string) error {
 		return err
 	}
 
-	kb.db.DeleteSync(addrKey(kp.GetAddress()))
+	_ = kb.db.DeleteSync(addrKey(kp.GetAddress()))
 	return nil
 }
 
@@ -222,7 +222,7 @@ func (kb dbKeybase) ExportPrivateKeyObject(address types.Address, passphrase str
 
 // CloseDB releases the lock and closes the storage backend.
 func (kb dbKeybase) CloseDB() {
-	kb.db.Close()
+	_ = kb.db.Close()
 }
 
 // Private interface
@@ -245,7 +245,7 @@ func (kb dbKeybase) writeKeyPair(kp KeyPair) {
 	// write the info by key
 	key := addrKey(kp.GetAddress())
 	serializedInfo := writeKeyPair(kp)
-	kb.db.SetSync(key, serializedInfo)
+	_ = kb.db.SetSync(key, serializedInfo)
 }
 
 func addrKey(address types.Address) []byte {
