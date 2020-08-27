@@ -284,7 +284,7 @@ func TestChangeParamsComplexTypeTx(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 	select {
-	case <-evtChan:
+	case _ = <-evtChan:
 		acl, err := PCA.QueryACL(0)
 		assert.Nil(t, err)
 		o := acl.GetOwner("gov/acl")
