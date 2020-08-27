@@ -4,15 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	config2 "github.com/tendermint/tendermint/config"
-	"io"
-	"io/ioutil"
-	log2 "log"
-	"os"
-	fp "path/filepath"
-	"strings"
-	"syscall"
-
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/pokt-network/pocket-core/baseapp"
@@ -32,6 +23,7 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/spf13/cobra"
+	config2 "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
 	cmn "github.com/tendermint/tendermint/libs/os"
@@ -43,6 +35,13 @@ import (
 	"github.com/tendermint/tendermint/rpc/client/local"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
+	"io"
+	"io/ioutil"
+	log2 "log"
+	"os"
+	fp "path/filepath"
+	"strings"
+	"syscall"
 )
 
 var (

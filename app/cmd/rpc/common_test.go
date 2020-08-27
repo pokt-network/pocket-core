@@ -184,7 +184,6 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	baseapp.SetTxIndexer(tmNode.TxIndexer())
 	baseapp.SetBlockstore(tmNode.BlockStore())
 	baseapp.SetEvidencePool(tmNode.EvidencePool())
-	//baseapp.pocketKeeper.TmNode = client.NewLocal(tmNode)
 	baseapp.SetTendermintNode(tmNode)
 	app.PCA = baseapp
 	return tmNode, kb
