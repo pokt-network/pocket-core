@@ -54,3 +54,10 @@ func (k Keeper) Logger(ctx sdk.Ctx) log.Logger {
 func (k Keeper) Codespace() sdk.CodespaceType {
 	return k.codespace
 }
+
+func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
+	if ctx.IsAfterUpgradeHeight() {
+		k.cdc.SetAfterUpgradeMod(true)
+		types.ModuleCdc.SetAfterUpgradeMod(true)
+	}
+}

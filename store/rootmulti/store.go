@@ -105,13 +105,13 @@ func (rs *Store) GetStoreType() types.StoreType {
 // Implements CommitMultiStore.
 func (rs *Store) MountStoreWithDB(key types.StoreKey, typ types.StoreType, db dbm.DB) {
 	if key == nil {
-		panic("MountIAVLStore() key cannot be nil")
+		panic("MountIAVLStore() Key cannot be nil")
 	}
 	if _, ok := rs.storesParams[key]; ok {
-		panic(fmt.Sprintf("Store duplicate store key %v", key))
+		panic(fmt.Sprintf("Store duplicate store Key %v", key))
 	}
 	if _, ok := rs.keysByName[key.Name()]; ok {
-		panic(fmt.Sprintf("Store duplicate store key name %v", key))
+		panic(fmt.Sprintf("Store duplicate store Key name %v", key))
 	}
 	rs.storesParams[key] = storeParams{
 		key: key,
@@ -154,7 +154,7 @@ func (rs *Store) RollbackVersion(height int64) error {
 		return err
 	}
 	// convert StoreInfos slice to map
-	infos := make(map[types.StoreKey]storeInfo)
+	infos := make(map[types.StoreKey]StoreInfo)
 	for _, storeInfo := range cInfo.StoreInfos {
 		infos[rs.nameToKey(storeInfo.Name)] = storeInfo
 	}
@@ -219,7 +219,7 @@ func (rs *Store) LoadVersion(ver int64) error {
 	}
 
 	// convert StoreInfos slice to map
-	infos := make(map[types.StoreKey]storeInfo)
+	infos := make(map[types.StoreKey]StoreInfo)
 	for _, storeInfo := range cInfo.StoreInfos {
 		infos[rs.nameToKey(storeInfo.Name)] = storeInfo
 	}
@@ -298,7 +298,7 @@ func (rs *Store) SetTracer(w io.Writer) types.MultiStore {
 }
 
 // SetTracingContext updates the tracing context for the MultiStore by merging
-// the given context with the existing context by key. Any existing keys will
+// the given context with the existing context by Key. Any existing keys will
 // be overwritten. It is implied that the caller should update the context when
 // necessary between tracing operations. It returns a modified MultiStore.
 func (rs *Store) SetTracingContext(tc types.TraceContext) types.MultiStore {
@@ -425,7 +425,7 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 // Implements MultiStore
 
 // getStoreByName will first convert the original name to
-// a special key, before looking up the CommitStore.
+// a special Key, before looking up the CommitStore.
 // This is not exposed to the extensions (which will need the
 // StoreKey), but is useful in main, and particularly app.Query,
 // in order to convert human strings into CommitStores.
@@ -480,11 +480,12 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 		return errors.ErrInternal(errMsg.Error()).QueryResult()
 	}
 
-	// Restore origin path and append proof op.
-	res.Proof.Ops = append(res.Proof.Ops, NewMultiStoreProofOp(
+	proofOp := NewMultiStoreProofOp(
 		[]byte(storeName),
 		NewMultiStoreProof(commitInfo.StoreInfos),
-	).ProofOp())
+	).ProofOp()
+	// Restore origin path and append proof op.
+	res.Proof.Ops = append(res.Proof.Ops, proofOp)
 
 	// TODO: handle in another TM v0.26 update PR
 	// res.Proof = buildMultiStoreProof(res.Proof, storeName, commitInfo.StoreInfos)
@@ -566,16 +567,16 @@ type storeParams struct {
 // commitInfo
 
 // NOTE: Keep commitInfo a simple immutable struct.
-type commitInfo struct {
-	// Version
-	Version int64
+// type commitInfo struct {
+// 	// Version
+// 	Version int64
 
-	// Store info for
-	StoreInfos []storeInfo
-}
+// 	// Store info for
+// 	StoreInfos []StoreInfo
+// }
 
 // Hash returns the simple merkle root hash of the stores sorted by name.
-func (ci commitInfo) Hash() []byte {
+func (ci *CommitInfo) Hash() []byte {
 	// TODO: cache to ci.hash []byte
 	m := make(map[string][]byte, len(ci.StoreInfos))
 	for _, storeInfo := range ci.StoreInfos {
@@ -585,7 +586,7 @@ func (ci commitInfo) Hash() []byte {
 	return merkle.SimpleHashFromMap(m)
 }
 
-func (ci commitInfo) CommitID() types.CommitID {
+func (ci *CommitInfo) CommitID() types.CommitID {
 	return types.CommitID{
 		Version: ci.Version,
 		Hash:    ci.Hash(),
@@ -593,24 +594,24 @@ func (ci commitInfo) CommitID() types.CommitID {
 }
 
 //----------------------------------------
-// storeInfo
+// StoreInfo
 
-// storeInfo contains the name and core reference for an
+// StoreInfo contains the name and core reference for an
 // underlying store.  It is the leaf of the Stores top
 // level simple merkle tree.
-type storeInfo struct {
-	Name string
-	Core storeCore
-}
-
-type storeCore struct {
-	// StoreType StoreType
-	CommitID types.CommitID
-	// ... maybe add more state
-}
+//type StoreInfo struct {
+//	Name string
+//	Core StoreCore
+//}
+//
+//type StoreCore struct {
+//	// StoreType StoreType
+//	CommitID types.CommitID
+//	// ... maybe add more state
+//}
 
 // Implements merkle.Hasher.
-func (si storeInfo) Hash() []byte {
+func (si StoreInfo) Hash() []byte {
 	// Doesn't write Name, since merkle.SimpleHashFromMap() will
 	// include them via the keys.
 	bz := si.Core.CommitID.Hash
@@ -629,29 +630,29 @@ func (si storeInfo) Hash() []byte {
 // Misc.
 
 func getLatestVersion(db dbm.DB) int64 {
-	var latest int64
 	latestBytes, _ := db.Get([]byte(latestVersionKey))
 	if latestBytes == nil {
 		return 0
 	}
-
-	err := cdc.UnmarshalBinaryLengthPrefixed(latestBytes, &latest)
+	v := Version{}
+	err := cdc.UnmarshalBinaryLengthPrefixed(latestBytes, &v)
 	if err != nil {
 		panic(err)
 	}
 
-	return latest
+	return v.Version
 }
 
 // Set the latest version.
 func setLatestVersion(batch dbm.Batch, version int64) {
-	latestBytes, _ := cdc.MarshalBinaryLengthPrefixed(version)
+	v := Version{version}
+	latestBytes, _ := cdc.MarshalBinaryLengthPrefixed(&v)
 	batch.Set([]byte(latestVersionKey), latestBytes)
 }
 
 // Commits each store and returns a new commitInfo.
-func commitStores(version int64, storeMap map[types.StoreKey]types.CommitStore) commitInfo {
-	storeInfos := make([]storeInfo, 0, len(storeMap))
+func commitStores(version int64, storeMap map[types.StoreKey]types.CommitStore) CommitInfo {
+	storeInfos := make([]StoreInfo, 0, len(storeMap))
 
 	for key, store := range storeMap {
 		// Commit
@@ -662,14 +663,14 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitStore) 
 		}
 
 		// Record CommitID
-		si := storeInfo{}
+		si := StoreInfo{}
 		si.Name = key.Name()
 		si.Core.CommitID = commitID
 		// si.Core.StoreType = store.GetStoreType()
 		storeInfos = append(storeInfos, si)
 	}
 
-	ci := commitInfo{
+	ci := CommitInfo{
 		Version:    version,
 		StoreInfos: storeInfos,
 	}
@@ -677,28 +678,31 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitStore) 
 }
 
 // Gets commitInfo from disk.
-func getCommitInfo(db dbm.DB, ver int64) (commitInfo, error) {
+func getCommitInfo(db dbm.DB, ver int64) (CommitInfo, error) {
 
 	// Get from DB.
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, ver)
 	cInfoBytes, _ := db.Get([]byte(cInfoKey))
 	if cInfoBytes == nil {
-		return commitInfo{}, fmt.Errorf("failed to get Store: no data")
+		return CommitInfo{}, fmt.Errorf("failed to get Store: no data")
 	}
 
-	var cInfo commitInfo
+	var cInfo CommitInfo
 
-	err := cdc.UnmarshalBinaryLengthPrefixed(cInfoBytes, &cInfo)
+	err := cdc.LegacyUnmarshalBinaryLengthPrefixed(cInfoBytes, &cInfo)
 	if err != nil {
-		return commitInfo{}, fmt.Errorf("failed to get Store: %v", err)
+		return CommitInfo{}, fmt.Errorf("failed to get Store: %v", err)
 	}
 
 	return cInfo, nil
 }
 
 // Set a commitInfo for given version.
-func setCommitInfo(batch dbm.Batch, version int64, cInfo commitInfo) {
-	cInfoBytes := cdc.MustMarshalBinaryLengthPrefixed(cInfo)
+func setCommitInfo(batch dbm.Batch, version int64, cInfo CommitInfo) {
+	cInfoBytes, err := cdc.LegacyMarshalBinaryLengthPrefixed(&cInfo)
+	if err != nil {
+		panic(err)
+	}
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, version)
 	batch.Set([]byte(cInfoKey), cInfoBytes)
 }

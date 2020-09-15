@@ -2,16 +2,25 @@ package nodes
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.LegacyMsg) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
-		case types.MsgStake:
+		case *types.MsgNodeStake:
+			return handleStake(ctx, *msg, k)
+		case *types.MsgBeginUnstake:
+			return handleMsgBeginUnstake(ctx, *msg, k)
+		case *types.MsgUnjail:
+			return handleMsgUnjail(ctx, *msg, k)
+		case *types.MsgSend:
+			return handleMsgSend(ctx, *msg, k)
+		case types.MsgNodeStake:
 			return handleStake(ctx, msg, k)
 		case types.MsgBeginUnstake:
 			return handleMsgBeginUnstake(ctx, msg, k)
@@ -19,6 +28,8 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			return handleMsgUnjail(ctx, msg, k)
 		case types.MsgSend:
 			return handleMsgSend(ctx, msg, k)
+		case types.MsgStake:
+			return handleLegacyMsgStake(ctx, msg, k)
 		default:
 			errMsg := fmt.Sprintf("unrecognized staking message type: %T", msg)
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -26,9 +37,14 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 	}
 }
 
-func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper) sdk.Result {
+func handleStake(ctx sdk.Ctx, msg types.MsgNodeStake, k keeper.Keeper) sdk.Result {
+	pk, er := crypto.NewPublicKey(msg.Publickey)
+	if er != nil {
+		return sdk.ErrInvalidPubKey(er.Error()).Result()
+	}
+	addr := pk.Address()
 	// create validator object using the message fields
-	validator := types.NewValidator(sdk.Address(msg.PublicKey.Address()), msg.PublicKey, msg.Chains, msg.ServiceURL, sdk.ZeroInt())
+	validator := types.NewValidator(sdk.Address(addr), pk, msg.Chains, msg.ServiceUrl, sdk.ZeroInt())
 	// check if they can stake
 	if err := k.ValidateValidatorStaking(ctx, validator, msg.Value); err != nil {
 		return err.Result()
@@ -43,13 +59,13 @@ func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper) sdk.Result {
 		sdk.NewEvent(
 			types.EventTypeStake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PublicKey.Address()).String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(addr).String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.String()),
 		),
 		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(msg.PublicKey.Address()).String()),
+			sdk.NewAttribute(sdk.AttributeKeySender, sdk.Address(addr).String()),
 		),
 	})
 	return sdk.Result{Events: ctx.EventManager().Events()}
@@ -95,11 +111,11 @@ func handleMsgUnjail(ctx sdk.Ctx, msg types.MsgUnjail, k keeper.Keeper) sdk.Resu
 	}
 	k.UnjailValidator(ctx, addr)
 	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
+		sdk.Event(sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.ValidatorAddr.String()),
-		),
+		)),
 	)
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
@@ -111,10 +127,16 @@ func handleMsgSend(ctx sdk.Ctx, msg types.MsgSend, k keeper.Keeper) sdk.Result {
 		return err.Result()
 	}
 	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
+		sdk.Event(sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		),
+		)),
 	)
 	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+func handleLegacyMsgStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper) sdk.Result {
+	if !ctx.IsAfterUpgradeHeight() {
+		return handleStake(ctx, msg.ToProto(), k)
+	}
+	return sdk.ErrInternal("cannot execute a legacy msg: MsgNodeStake after upgrade height").Result()
 }

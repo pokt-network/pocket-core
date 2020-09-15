@@ -7,6 +7,7 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/auth/types"
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"log"
 )
@@ -95,7 +96,7 @@ func SortJSON(toSortJSON []byte) string {
 	return string(js)
 }
 
-func UnmarshalTxStr(txStr string) auth.StdTx {
+func UnmarshalTxStr(txStr string) types.StdTxI {
 	txBytes, err := base64.StdEncoding.DecodeString(txStr)
 	if err != nil {
 		log.Fatal("error:", err)
@@ -103,11 +104,16 @@ func UnmarshalTxStr(txStr string) auth.StdTx {
 	return UnmarshalTx(txBytes)
 }
 
-func UnmarshalTx(txBytes []byte) auth.StdTx {
+func UnmarshalTx(txBytes []byte) types.StdTxI {
 	defaultTxDecoder := auth.DefaultTxDecoder(cdc)
 	tx, err := defaultTxDecoder(txBytes)
 	if err != nil {
 		log.Fatalf("Could not decode transaction: " + err.Error())
 	}
-	return tx.(auth.StdTx)
+	if cdc.IsAfterUpgrade() {
+		return tx.(auth.StdTx)
+	} else {
+		return tx.(auth.LegacyStdTx)
+
+	}
 }

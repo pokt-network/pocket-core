@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pokt-network/pocket-core/codec"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 
@@ -16,7 +17,7 @@ import (
 )
 
 var application Application
-var moduleCdc *codec.Codec
+var cdc *codec.Codec
 
 func init() {
 	var pub crypto.Ed25519PublicKey
@@ -25,11 +26,9 @@ func init() {
 		fmt.Println(err.Error())
 		return
 	}
-
-	moduleCdc = codec.New()
-	RegisterCodec(moduleCdc)
-	codec.RegisterCrypto(moduleCdc)
-	moduleCdc.Seal()
+	cdc = codec.NewCodec(types2.NewInterfaceRegistry())
+	RegisterCodec(cdc)
+	crypto.RegisterAmino(cdc.AminoCodec().Amino)
 
 	application = Application{
 		Address:                 sdk.Address(pub.Address()),
@@ -56,7 +55,7 @@ func TestApplicationUtil_MarshalJSON(t *testing.T) {
 		UnstakingCompletionTime: application.UnstakingCompletionTime,
 		MaxRelays:               application.MaxRelays,
 	}
-	bz, _ := codec.Cdc.MarshalJSON(hexApp)
+	bz, _ := cdc.MarshalJSON(hexApp)
 
 	tests := []struct {
 		name string
@@ -65,7 +64,7 @@ func TestApplicationUtil_MarshalJSON(t *testing.T) {
 	}{
 		{
 			name: "marshals application",
-			args: args{application: application, codec: moduleCdc},
+			args: args{application: application, codec: cdc},
 			want: bz,
 		},
 	}
@@ -154,7 +153,7 @@ func TestApplicationUtil_UnmarshalJSON(t *testing.T) {
 				t.Fatalf("Cannot marshal application")
 			}
 			if err = tt.args.application.UnmarshalJSON(marshaled); err != nil {
-				t.Fatalf("Unmarshal(): returns %v but want %v", err, tt.want)
+				t.Fatalf("UnmarshalObject(): returns %v but want %v", err, tt.want)
 			}
 			// NOTE CANNOT PERFORM DEEP EQUAL
 			// Unmarshalling causes StakedTokens & MaxRelays to be
@@ -194,7 +193,7 @@ func TestApplicationUtil_UnMarshalApplication(t *testing.T) {
 	}{
 		{
 			name: "can unmarshal application",
-			args: args{application: application, codec: moduleCdc},
+			args: args{application: application, codec: cdc},
 			want: application,
 		},
 	}

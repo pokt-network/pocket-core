@@ -403,16 +403,26 @@ func TestChallengeProofInvalidData_ValidateBasic(t *testing.T) {
 
 func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 	validChallengeProofIVD, servicer1PK, servicer2PK, servicer3PK, appPK, _, reporterPK := NewValidChallengeProof(t)
+	safeCopyChallenge := func(c ChallengeProofInvalidData) ChallengeProofInvalidData {
+		p := ChallengeProofInvalidData{
+			MajorityResponses: make([]RelayResponse, 2),
+			MinorityResponse:  validChallengeProofIVD.MinorityResponse,
+			ReporterAddress:   validChallengeProofIVD.ReporterAddress,
+		}
+		_ = copy(p.MajorityResponses, c.MajorityResponses)
+		return p
+	}
 	ser1PubKey := servicer1PK.PublicKey()
 	ser2PubKey := servicer2PK.PublicKey()
 	ser3PubKey := servicer3PK.PublicKey()
 	appPubKey := appPK.PublicKey()
 	reporterPubKey := reporterPK.PublicKey()
 	// invalid challenge Proof duplicate
-	invalidProofDup := validChallengeProofIVD
+	invalidProofDup := safeCopyChallenge(validChallengeProofIVD)
 	invalidProofDup.MajorityResponses[1] = invalidProofDup.MajorityResponses[0]
 	// invalid proof no majority
-	invalidProofNoMajority := validChallengeProofIVD
+	invalidProofNoMajority := safeCopyChallenge(validChallengeProofIVD)
+
 	majResp := invalidProofNoMajority.MajorityResponses[0]
 	majResp.Response = "foo.bar"
 	sig, err := servicer1PK.Sign(majResp.Hash())
@@ -421,8 +431,10 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 	}
 	majResp.Signature = hex.EncodeToString(sig)
 	invalidProofNoMajority.MajorityResponses[0] = majResp
+
 	// invalid proof all majority
-	invalidProofAllMajority := validChallengeProofIVD
+	invalidProofAllMajority := safeCopyChallenge(validChallengeProofIVD)
+
 	minResp := invalidProofAllMajority.MinorityResponse
 	minResp.Response = invalidProofAllMajority.MajorityResponses[0].Response
 	sig, err = servicer3PK.Sign(minResp.Hash())
@@ -640,7 +652,7 @@ func NewValidChallengeProof(t *testing.T) (challenge ChallengeProofInvalidData, 
 	minResp.Signature = hex.EncodeToString(sig)
 	// create valid challenge proof
 	return ChallengeProofInvalidData{
-		MajorityResponses: [2]RelayResponse{
+		MajorityResponses: []RelayResponse{
 			majResp1,
 			majResp2,
 		},

@@ -1,0 +1,48 @@
+
+syntax = "proto3";
+package x.apps;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/pokt-network/pocket-core/x/apps/types";
+
+message MsgApplicationStake {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+  option (gogoproto.goproto_getters)  = false;
+
+  string pub_key = 1 [
+    (gogoproto.jsontag) = "pubkey",
+    (gogoproto.moretags) = "yaml:\"pubkey\""];
+  repeated string chains = 2 [
+    (gogoproto.jsontag) = "chains",
+    (gogoproto.moretags) = "yaml:\"chains\""];
+  string value           = 3 [
+    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int",
+    (gogoproto.nullable)   = false,
+    (gogoproto.jsontag) = "value",
+    (gogoproto.moretags) = "yaml:\"value\""];
+}
+
+message MsgBeginAppUnstake {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+  option (gogoproto.goproto_getters)  = false;
+
+  bytes Address = 1 [
+    (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
+    (gogoproto.jsontag) = "application_address",
+    (gogoproto.moretags) = "yaml:\"application_address\""];
+}
+
+message MsgAppUnjail {
+  option (gogoproto.equal)            = true;
+  option (gogoproto.goproto_stringer) = true;
+  option (gogoproto.goproto_getters)  = false;
+
+  bytes AppAddr = 1 [
+    (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
+    (gogoproto.jsontag) = "address",
+    (gogoproto.moretags) = "yaml:\"address\""
+  ];
+}

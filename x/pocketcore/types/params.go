@@ -1,9 +1,9 @@
 package types
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/pokt-network/pocket-core/types"
 )
@@ -99,9 +99,7 @@ func (p Params) Validate() error {
 
 // "Equal" - Checks the equality of two param objects
 func (p Params) Equal(p2 Params) bool {
-	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
-	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
-	return bytes.Equal(bz1, bz2)
+	return reflect.DeepEqual(p, p2)
 }
 
 // "String" -  returns a human readable string representation of the parameters

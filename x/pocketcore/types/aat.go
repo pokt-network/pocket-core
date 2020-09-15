@@ -13,14 +13,6 @@ var (
 	SupportedTokenVersions = []string{"0.0.1"}
 )
 
-// "AAT" - Application authentication token, used to authenticate clients for applications
-type AAT struct {
-	Version              string `json:"version"`        // what version of the token is used?
-	ApplicationPublicKey string `json:"app_pub_key"`    // the app pub key in hex
-	ClientPublicKey      string `json:"client_pub_key"` // the client pub key in hex
-	ApplicationSignature string `json:"signature"`      // the app signature in hex
-}
-
 // "VersionIsIncluded" - Returns if the version is included
 func (a AAT) VersionIsIncluded() bool {
 	// if version is empty return nil

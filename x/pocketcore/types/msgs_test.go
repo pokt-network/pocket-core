@@ -2,9 +2,10 @@ package types
 
 import (
 	"encoding/hex"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestMsgClaim_Route(t *testing.T) {
@@ -150,17 +151,17 @@ func TestMsgClaim_GetSignBytes(t *testing.T) {
 }
 
 func TestMsgProof_Route(t *testing.T) {
-	assert.Equal(t, MsgProof{}.Route(), RouterKey)
+	assert.Equal(t, MsgProtoProof{}.Route(), RouterKey)
 }
 
 func TestMsgProof_Type(t *testing.T) {
-	assert.Equal(t, MsgProof{}.Type(), MsgProofName)
+	assert.Equal(t, MsgProtoProof{}.Type(), MsgProofName)
 }
 
 func TestMsgProof_GetSigners(t *testing.T) {
 	pk := getRandomPubKey()
 	addr := types.Address(pk.Address())
-	signers := MsgProof{
+	signers := MsgProtoProof{
 		MerkleProof: MerkleProof{},
 		Leaf: RelayProof{
 			Entropy:            0,
@@ -170,7 +171,7 @@ func TestMsgProof_GetSigners(t *testing.T) {
 			Blockchain:         "",
 			Token:              AAT{},
 			Signature:          "",
-		},
+		}.ToProto(),
 	}.GetSigner()
 	assert.Equal(t, signers, addr)
 }
@@ -186,7 +187,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 	hash2 := merkleHash([]byte("fake2"))
 	hash3 := merkleHash([]byte("fake3"))
 	hash4 := merkleHash([]byte("fake4"))
-	validProofMessage := MsgProof{
+	validProofMessage := MsgProtoProof{
 		MerkleProof: MerkleProof{
 			TargetIndex: 0,
 			HashRanges: []HashRange{
@@ -218,52 +219,52 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 				ApplicationSignature: "",
 			},
 			Signature: "",
-		},
+		}.ToProto(),
 		EvidenceType: RelayEvidence,
 	}
-	vprLeaf := validProofMessage.Leaf.(RelayProof)
+	vprLeaf := validProofMessage.Leaf.FromProto().(*RelayProof)
 	signature, er := appPrivKey.Sign(vprLeaf.Token.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
 	vprLeaf.Token.ApplicationSignature = hex.EncodeToString(signature)
-	clientSig, er := clientPrivKey.Sign(validProofMessage.Leaf.Hash())
+	clientSig, er := clientPrivKey.Sign(validProofMessage.Leaf.FromProto().(*RelayProof).Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
 	vprLeaf.Signature = hex.EncodeToString(clientSig)
-	validProofMessage.Leaf = vprLeaf
+	validProofMessage.Leaf = vprLeaf.ToProto()
 	// invalid entropy
 	invalidProofMsgIndex := validProofMessage
-	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.Entropy = 0
-	invalidProofMsgIndex.Leaf = vprLeaf
+	invalidProofMsgIndex.Leaf = vprLeaf.ToProto()
 	// invalid merkleHash sum
 	invalidProofMsgHashes := validProofMessage
 	invalidProofMsgHashes.MerkleProof.HashRanges = []HashRange{}
 	// invalid session block height
 	invalidProofMsgSessionBlkHeight := validProofMessage
-	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.SessionBlockHeight = -1
-	invalidProofMsgSessionBlkHeight.Leaf = vprLeaf
+	invalidProofMsgSessionBlkHeight.Leaf = vprLeaf.ToProto()
 	// invalid token
 	invalidProofMsgToken := validProofMessage
-	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.Token.ApplicationSignature = ""
-	invalidProofMsgToken.Leaf = vprLeaf
+	invalidProofMsgToken.Leaf = vprLeaf.ToProto()
 	// invalid blockchain
 	invalidProofMsgBlkchn := validProofMessage
-	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.Blockchain = ""
-	invalidProofMsgBlkchn.Leaf = vprLeaf
+	invalidProofMsgBlkchn.Leaf = vprLeaf.ToProto()
 	// invalid signature
 	invalidProofMsgSignature := validProofMessage
-	vprLeaf = validProofMessage.Leaf.(RelayProof)
+	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.Signature = hex.EncodeToString([]byte("foobar"))
-	invalidProofMsgSignature.Leaf = vprLeaf
+	invalidProofMsgSignature.Leaf = vprLeaf.ToProto()
 	tests := []struct {
 		name     string
-		msg      MsgProof
+		msg      MsgProtoProof
 		hasError bool
 	}{
 		{
@@ -305,11 +306,13 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.msg.ValidateBasic()
-			assert.Equal(t, err != nil, tt.hasError, err)
+			assert.Equal(t, tt.hasError, err != nil, err)
 		})
 	}
 }
 
 func TestMsgProof_GetSignBytes(t *testing.T) {
-	assert.NotPanics(t, func() { MsgProof{}.GetSignBytes() })
+	assert.NotPanics(t, func() {
+		MsgProtoProof{}.GetSignBytes()
+	})
 }

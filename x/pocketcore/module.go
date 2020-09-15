@@ -90,6 +90,7 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
+	am.keeper.UpgradeCodec(ctx)
 }
 
 // "EndBlock" - Functionality that is called at the end of (every) block

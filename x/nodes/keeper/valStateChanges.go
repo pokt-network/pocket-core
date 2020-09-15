@@ -56,7 +56,22 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		// check the previous state: if found calculate current power...
 		prevStatePowerBytes, found := prevStatePowerMap[valAddrBytes]
 		curStatePower := validator.ConsensusPower()
-		curStatePowerBytes := k.cdc.MustMarshalBinaryLengthPrefixed(curStatePower)
+		var curStatePowerBytes []byte
+		var err error
+		if k.cdc.IsAfterUpgrade() {
+			i := sdk.IntProto{
+				Int: sdk.NewInt(curStatePower),
+			}
+			curStatePowerBytes, err = k.cdc.MarshalBinaryLengthPrefixed(i)
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			curStatePowerBytes, err = k.cdc.MarshalBinaryLengthPrefixed(curStatePower)
+			if err != nil {
+				panic(err)
+			}
+		}
 		// if not found or the power has changed -> add this validator to the updated list
 		if !found || !bytes.Equal(prevStatePowerBytes, curStatePowerBytes) {
 			ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
@@ -354,11 +369,11 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	logger := k.Logger(ctx)
 	logger.Info(fmt.Sprintf("validator %s jailed", addr))
 	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
+		sdk.Event(sdk.NewEvent(
 			types.EventTypeJail,
 			sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
 			sdk.NewAttribute(types.AttributeKeyReason, types.AttributeValueMissingSignature),
-		),
+		)),
 	)
 }
 
@@ -367,7 +382,11 @@ func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		val := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		val, err := types.UnmarshalValidator(k.cdc, iterator.Value())
+		if err != nil {
+			ctx.Logger().Error("could not unmarshal validator in IncrementJailedValidators: ", err.Error())
+			continue
+		}
 		if val.IsJailed() {
 			addr := val.Address
 			signInfo, found := k.GetValidatorSigningInfo(ctx, addr)

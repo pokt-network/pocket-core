@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/gov/types"
@@ -39,4 +40,11 @@ func NewKeeper(cdc *codec.Codec, key *sdk.KVStoreKey, tkey *sdk.TransientStoreKe
 // Logger returns a module-specific logger.
 func (k Keeper) Logger(ctx sdk.Ctx) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
+	if ctx.IsAfterUpgradeHeight() {
+		k.cdc.SetAfterUpgradeMod(true)
+		types.ModuleCdc.SetAfterUpgradeMod(true)
+	}
 }

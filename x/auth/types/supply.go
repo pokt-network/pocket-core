@@ -10,11 +10,6 @@ import (
 // Implements Delegation interface
 var _ exported.SupplyI = Supply{}
 
-// Supply represents a struct that passively keeps track of the total supply amounts in the network
-type Supply struct {
-	Total sdk.Coins `json:"total" yaml:"total"` // total supply of tokens registered on the chain
-}
-
 // SetTotal sets the total supply.
 func (supply Supply) SetTotal(total sdk.Coins) exported.SupplyI {
 	supply.Total = total

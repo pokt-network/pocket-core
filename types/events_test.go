@@ -17,7 +17,6 @@ func TestAppendEvents(t *testing.T) {
 	require.Equal(t, c, Events{e1}.AppendEvent(NewEvent("transfer", NewAttribute("sender", "bar"))))
 	require.Equal(t, c, Events{e1}.AppendEvents(Events{e2}))
 }
-
 func TestEmptyEvents(t *testing.T) {
 	require.Equal(t, EmptyEvents(), Events{})
 }

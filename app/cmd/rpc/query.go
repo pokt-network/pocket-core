@@ -120,7 +120,7 @@ type RPCResultTx struct {
 	TxResult abci.ResponseDeliverTx `json:"tx_result"`
 	Tx       types.Tx               `json:"tx"`
 	Proof    types.TxProof          `json:"proof,omitempty"`
-	StdTx    types2.StdTx           `json:"stdTx"`
+	StdTx    types2.StdTxI          `json:"stdTx"`
 }
 
 func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
@@ -128,8 +128,7 @@ func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
 		return RPCResultTxSearch{}
 	}
 	rpcTxSearch := RPCResultTxSearch{
-		Txs:        make([]*RPCResultTx, 0, res.TotalCount),
-		TotalCount: res.TotalCount,
+		Txs: make([]*RPCResultTx, 0, res.TotalCount),
 	}
 	for _, result := range res.Txs {
 		rpcTxSearch.Txs = append(rpcTxSearch.Txs, ResultTxToRPC(result))

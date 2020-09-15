@@ -2,7 +2,7 @@ package rootmulti
 
 import (
 	"bytes"
-	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/pokt-network/pocket-core/store/iavl"
 
@@ -10,17 +10,16 @@ import (
 )
 
 // MultiStoreProof defines a collection of store proofs in a multi-store
-type MultiStoreProof struct {
-	StoreInfos []storeInfo
-}
-
-func NewMultiStoreProof(storeInfos []storeInfo) *MultiStoreProof {
+//type MultiStoreProof struct {
+//	StoreInfos []StoreInfo
+//}
+func NewMultiStoreProof(storeInfos []StoreInfo) *MultiStoreProof {
 	return &MultiStoreProof{StoreInfos: storeInfos}
 }
 
 // ComputeRootHash returns the root hash for a given multi-store proof.
 func (proof *MultiStoreProof) ComputeRootHash() []byte {
-	ci := commitInfo{
+	ci := CommitInfo{
 		Version:    -1, // TODO: Not needed; improve code.
 		StoreInfos: proof.StoreInfos,
 	}
@@ -38,23 +37,23 @@ func RequireProof(subpath string) bool {
 
 //-----------------------------------------------------------------------------
 
-var _ merkle.ProofOperator = MultiStoreProofOp{}
+var _ merkle.ProofOperator = &MultiStoreProofOp{}
 
 // the multi-store proof operation constant value
 const ProofOpMultiStore = "multistore"
 
 // TODO: document
-type MultiStoreProofOp struct {
-	// Encoded in ProofOp.Key
-	key []byte
+//type MultiStoreProofOp struct {
+//	// Encoded in ProofOp.Key
+//	Key []byte
+//
+//	// To encode in ProofOp.Data.
+//	Proof *MultiStoreProof `json:"proof"`
+//}
 
-	// To encode in ProofOp.Data.
-	Proof *MultiStoreProof `json:"proof"`
-}
-
-func NewMultiStoreProofOp(key []byte, proof *MultiStoreProof) MultiStoreProofOp {
-	return MultiStoreProofOp{
-		key:   key,
+func NewMultiStoreProofOp(key []byte, proof *MultiStoreProof) *MultiStoreProofOp {
+	return &MultiStoreProofOp{
+		Key:   key,
 		Proof: proof,
 	}
 }
@@ -79,24 +78,27 @@ func MultiStoreProofOpDecoder(pop merkle.ProofOp) (merkle.ProofOperator, error) 
 
 // ProofOp return a merkle proof operation from a given multi-store proof
 // operation.
-func (op MultiStoreProofOp) ProofOp() merkle.ProofOp {
-	bz := cdc.MustMarshalBinaryLengthPrefixed(op)
+func (op *MultiStoreProofOp) ProofOp() merkle.ProofOp {
+	bz, err := cdc.MarshalBinaryLengthPrefixed(op)
+	if err != nil {
+		panic(err)
+	}
 	return merkle.ProofOp{
 		Type: ProofOpMultiStore,
-		Key:  op.key,
+		Key:  op.Key,
 		Data: bz,
 	}
 }
 
 // String implements the Stringer interface for a mult-store proof operation.
-func (op MultiStoreProofOp) String() string {
-	return fmt.Sprintf("MultiStoreProofOp{%v}", op.GetKey())
-}
+//func (op MultiStoreProofOp) String() string {
+//	return fmt.Sprintf("MultiStoreProofOp{%v}", op.GetKey())
+//}
 
-// GetKey returns the key for a multi-store proof operation.
-func (op MultiStoreProofOp) GetKey() []byte {
-	return op.key
-}
+// GetKey returns the Key for a multi-store proof operation.
+// func (op MultiStoreProofOp) GetKey() []byte {
+// 	return op.Key
+// }
 
 // Run executes a multi-store proof operation for a given value. It returns
 // the root hash if the value matches all the store's commitID's hash or an
@@ -110,7 +112,7 @@ func (op MultiStoreProofOp) Run(args [][]byte) ([][]byte, error) {
 	root := op.Proof.ComputeRootHash()
 
 	for _, si := range op.Proof.StoreInfos {
-		if si.Name == string(op.key) {
+		if si.Name == string(op.Key) {
 			if bytes.Equal(value, si.Core.CommitID.Hash) {
 				return [][]byte{root}, nil
 			}
@@ -119,7 +121,7 @@ func (op MultiStoreProofOp) Run(args [][]byte) ([][]byte, error) {
 		}
 	}
 
-	return nil, errors.Errorf("key %v not found in multistore proof", op.key)
+	return nil, errors.Errorf("Key %v not found in multistore proof", op.Key)
 }
 
 //-----------------------------------------------------------------------------

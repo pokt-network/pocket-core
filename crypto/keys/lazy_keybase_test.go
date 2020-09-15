@@ -1,14 +1,14 @@
 package keys
 
 import (
-	"fmt"
-	pocketCrypto "github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/types"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
+
+	pocketCrypto "github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/types"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
 )
@@ -200,8 +200,6 @@ func Test_lazyKeybase_ExportPrivKeyEncryptedArmor(t *testing.T) {
 			}
 			if gotArmor == "" {
 				t.Errorf("ExportPrivKeyEncryptedArmor() gotArmor = %v", gotArmor)
-			} else {
-				fmt.Println(gotArmor)
 			}
 		})
 	}
@@ -254,8 +252,6 @@ func Test_lazyKeybase_ExportPrivateKeyObject(t *testing.T) {
 			}
 			if !assert.NotNil(t, got) {
 				t.Errorf("ExportPrivateKeyObject() got = %v", got)
-			} else {
-				fmt.Println(got)
 			}
 		})
 	}
@@ -352,8 +348,6 @@ func Test_lazyKeybase_GetCoinbase(t *testing.T) {
 			}
 			if !assert.NotNil(t, got) {
 				t.Errorf("GetCoinbase() got = %v", got)
-			} else {
-				fmt.Println(got)
 			}
 		})
 	}
@@ -418,8 +412,6 @@ func Test_lazyKeybase_ImportPrivKey(t *testing.T) {
 			}
 			if !assert.NotNil(t, got) {
 				t.Errorf("ImportPrivKey() got = %v", got)
-			} else {
-				fmt.Println(got)
 			}
 		})
 	}

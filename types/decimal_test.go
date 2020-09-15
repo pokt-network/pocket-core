@@ -267,12 +267,12 @@ func TestTruncate(t *testing.T) {
 	}
 }
 
-var cdc = codec.New()
+var aminoTestCdc = codec.NewLegacyAminoCodec()
 
 func TestDecMarshalJSON(t *testing.T) {
 	decimal := func(i int64) Dec {
 		d := NewDec(0)
-		d.Int = new(big.Int).SetInt64(i)
+		d.i = new(big.Int).SetInt64(i)
 		return d
 	}
 	tests := []struct {
@@ -309,7 +309,7 @@ func TestDecMarshalJSON(t *testing.T) {
 
 func TestZeroDeserializationJSON(t *testing.T) {
 	d := Dec{new(big.Int)}
-	err := cdc.UnmarshalJSON([]byte(`"0"`), &d)
+	err := aminoTestCdc.UnmarshalJSON([]byte(`"0"`), &d)
 	require.Nil(t, err)
 	err = cdc.UnmarshalJSON([]byte(`"{}"`), &d)
 	require.NotNil(t, err)
@@ -318,11 +318,11 @@ func TestZeroDeserializationJSON(t *testing.T) {
 func TestSerializationText(t *testing.T) {
 	d := mustNewDecFromStr(t, "0.333")
 
-	bz, err := d.MarshalText()
+	bz, err := d.Marshal()
 	require.NoError(t, err)
 
 	d2 := Dec{new(big.Int)}
-	err = d2.UnmarshalText(bz)
+	err = d2.Unmarshal(bz)
 	require.NoError(t, err)
 	require.True(t, d.Equal(d2), "original: %v, unmarshalled: %v", d, d2)
 }
@@ -337,18 +337,37 @@ func TestSerializationGocodecJSON(t *testing.T) {
 	err = cdc.UnmarshalJSON(bz, &d2)
 	require.NoError(t, err)
 	require.True(t, d.Equal(d2), "original: %v, unmarshalled: %v", d, d2)
+
+	dProto := d.ToProto()
+	bz, err = cdc.MarshalJSON(&dProto)
+	require.NoError(t, err)
+
+	var dProto2 DecProto
+
+	err = cdc.UnmarshalJSON(bz, &dProto2)
+	require.NoError(t, err)
+	require.True(t, dProto.Dec.Equal(dProto2.Dec), "original: %v, unmarshalled: %v", d, d2)
 }
 
 func TestSerializationGocodecBinary(t *testing.T) {
 	d := mustNewDecFromStr(t, "0.333")
 
-	bz, err := cdc.MarshalBinaryLengthPrefixed(d)
+	bz, err := cdc.LegacyMarshalBinaryLengthPrefixed(d)
 	require.NoError(t, err)
 
 	var d2 Dec
-	err = cdc.UnmarshalBinaryLengthPrefixed(bz, &d2)
+	err = cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, &d2)
 	require.NoError(t, err)
 	require.True(t, d.Equal(d2), "original: %v, unmarshalled: %v", d, d2)
+
+	dProto := d.ToProto()
+	bz, err = cdc.MarshalBinaryLengthPrefixed(&dProto)
+	require.NoError(t, err)
+
+	var dProto2 DecProto
+	err = cdc.UnmarshalBinaryLengthPrefixed(bz, &dProto2)
+	require.NoError(t, err)
+	require.True(t, dProto.Dec.Equal(dProto2.Dec), "original: %v, unmarshalled: %v", d, d2)
 }
 
 type testDEmbedStruct struct {
@@ -360,11 +379,11 @@ type testDEmbedStruct struct {
 // TODO make work for UnmarshalJSON
 func TestEmbeddedStructSerializationGocodec(t *testing.T) {
 	obj := testDEmbedStruct{"foo", 10, NewDecWithPrec(1, 3)}
-	bz, err := cdc.MarshalBinaryLengthPrefixed(obj)
+	bz, err := cdc.LegacyMarshalBinaryLengthPrefixed(obj)
 	require.Nil(t, err)
 
 	var obj2 testDEmbedStruct
-	err = cdc.UnmarshalBinaryLengthPrefixed(bz, &obj2)
+	err = cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, &obj2)
 	require.Nil(t, err)
 
 	require.Equal(t, obj.Field1, obj2.Field1)

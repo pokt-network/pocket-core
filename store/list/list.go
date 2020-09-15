@@ -44,21 +44,27 @@ func (m List) Len() (res uint64) {
 		return 0
 	}
 
-	m.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &res)
+	err := m.cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, &res)
+	if err != nil {
+		panic(err)
+	}
 	return
 }
 
 // Get() returns the element by its index
 func (m List) Get(index uint64, ptr interface{}) error {
 	bz, _ := m.store.Get(ElemKey(index))
-	return m.cdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
+	return m.cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, ptr)
 }
 
 // Set() stores the element to the given position
 // Setting element out of range will break length counting
 // Use Push() instead of Set() to append a new element
 func (m List) Set(index uint64, value interface{}) {
-	bz := m.cdc.MustMarshalBinaryLengthPrefixed(value)
+	bz, err := m.cdc.LegacyMarshalBinaryLengthPrefixed(value)
+	if err != nil {
+		panic(err)
+	}
 	_ = m.store.Set(ElemKey(index), bz)
 }
 
@@ -74,7 +80,11 @@ func (m List) Delete(index uint64) {
 func (m List) Push(value interface{}) {
 	length := m.Len()
 	m.Set(length, value)
-	_ = m.store.Set(LengthKey(), m.cdc.MustMarshalBinaryLengthPrefixed(length+1))
+	bz, err := m.cdc.LegacyMarshalBinaryLengthPrefixed(length + 1)
+	if err != nil {
+		panic(err)
+	}
+	_ = m.store.Set(LengthKey(), bz)
 }
 
 // Iterate() is used to iterate over all existing elements in the list
@@ -88,7 +98,10 @@ func (m List) Iterate(ptr interface{}, fn func(uint64) bool) {
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		v := iter.Value()
-		m.cdc.MustUnmarshalBinaryLengthPrefixed(v, ptr)
+		err := m.cdc.LegacyUnmarshalBinaryLengthPrefixed(v, ptr)
+		if err != nil {
+			panic(err)
+		}
 
 		k := iter.Key()
 		s := string(k[len(k)-20:])

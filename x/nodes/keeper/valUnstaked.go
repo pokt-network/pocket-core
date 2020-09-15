@@ -73,42 +73,81 @@ func (k Keeper) deleteUnstakingValidator(ctx sdk.Ctx, val types.Validator) {
 
 // getAllUnstakingValidators - Retrieve the set of all unstaking validators with no limits
 func (k Keeper) getAllUnstakingValidators(ctx sdk.Ctx) (validators []types.Validator) {
-	validators = make([]types.Validator, 0)
-	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.UnstakingValidatorsKey)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var addrs []sdk.Address
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
-		for _, addr := range addrs {
-			validator, found := k.GetValidator(ctx, addr)
-			if !found {
-				ctx.Logger().Error(fmt.Errorf("cannot find validator from unstaking set: %v, at height %d\n", addr, ctx.BlockHeight()).Error())
-				continue
+	if ctx.IsAfterUpgradeHeight() {
+		validators = make([]types.Validator, 0)
+		store := ctx.KVStore(k.storeKey)
+		iterator, _ := sdk.KVStorePrefixIterator(store, types.UnstakingValidatorsKey)
+		defer iterator.Close()
+		for ; iterator.Valid(); iterator.Next() {
+			var addrs sdk.Addresses
+			_ = k.cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
+			for _, addr := range addrs.Arr {
+				validator, found := k.GetValidator(ctx, addr)
+				if !found {
+					ctx.Logger().Error(fmt.Errorf("cannot find validator from unstaking set: %v, at height %d\n", addr, ctx.BlockHeight()).Error())
+					continue
+				}
+				validators = append(validators, validator)
 			}
-			validators = append(validators, validator)
 		}
+		return validators
+	} else {
+		validators = make([]types.Validator, 0)
+		store := ctx.KVStore(k.storeKey)
+		iterator, _ := sdk.KVStorePrefixIterator(store, types.UnstakingValidatorsKey)
+		defer iterator.Close()
+		for ; iterator.Valid(); iterator.Next() {
+			var addrs []sdk.Address
+			_ = k.cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
+			for _, addr := range addrs {
+				validator, found := k.GetValidator(ctx, addr)
+				if !found {
+					ctx.Logger().Error(fmt.Errorf("cannot find validator from unstaking set: %v, at height %d\n", addr, ctx.BlockHeight()).Error())
+					continue
+				}
+				validators = append(validators, validator)
+			}
+		}
+		return validators
 	}
-	return validators
+
 }
 
 // getUnstakingValidators - Retrieve all of the validators who will be unstaked at exactly this time
 func (k Keeper) getUnstakingValidators(ctx sdk.Ctx, unstakingTime time.Time) (valAddrs []sdk.Address) {
-	valAddrs = make([]sdk.Address, 0)
-	store := ctx.KVStore(k.storeKey)
-	bz, _ := store.Get(types.KeyForUnstakingValidators(unstakingTime))
-	if bz == nil {
+	if ctx.IsAfterUpgradeHeight() {
+		Addrs := sdk.Addresses{Arr: make([]sdk.Address, 0)}
+		store := ctx.KVStore(k.storeKey)
+		bz, _ := store.Get(types.KeyForUnstakingValidators(unstakingTime))
+		if bz == nil {
+			return
+		}
+		_ = k.cdc.UnmarshalBinaryLengthPrefixed(bz, &Addrs)
+		return Addrs.Arr
+	} else {
+		valAddrs = make([]sdk.Address, 0)
+		store := ctx.KVStore(k.storeKey)
+		bz, _ := store.Get(types.KeyForUnstakingValidators(unstakingTime))
+		if bz == nil {
+			return
+		}
+		_ = k.cdc.UnmarshalBinaryLengthPrefixed(bz, &valAddrs)
 		return
 	}
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &valAddrs)
-	return
+
 }
 
 // setUnstakingValidators - Store validators in unstaking queue at a certain unstaking time
 func (k Keeper) setUnstakingValidators(ctx sdk.Ctx, unstakingTime time.Time, keys []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshalBinaryLengthPrefixed(keys)
-	_ = store.Set(types.KeyForUnstakingValidators(unstakingTime), bz)
+	if ctx.IsAfterUpgradeHeight() {
+		bz, _ := k.cdc.MarshalBinaryLengthPrefixed(&sdk.Addresses{Arr: keys})
+		_ = store.Set(types.KeyForUnstakingValidators(unstakingTime), bz)
+	} else {
+		bz, _ := k.cdc.MarshalBinaryLengthPrefixed(keys)
+		_ = store.Set(types.KeyForUnstakingValidators(unstakingTime), bz)
+	}
+
 }
 
 // deleteUnstakingValidators - Remove all the validators for a specific unstaking time
@@ -129,9 +168,16 @@ func (k Keeper) getMatureValidators(ctx sdk.Ctx) (matureValsAddrs []sdk.Address)
 	unstakingValsIterator, _ := k.unstakingValidatorsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValsIterator.Close()
 	for ; unstakingValsIterator.Valid(); unstakingValsIterator.Next() {
-		var validators []sdk.Address
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &validators)
-		matureValsAddrs = append(matureValsAddrs, validators...)
+		if ctx.IsAfterUpgradeHeight() {
+			var validators sdk.Addresses
+			_ = k.cdc.UnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &validators)
+			matureValsAddrs = append(matureValsAddrs, validators.Arr...)
+		} else {
+			var validators []sdk.Address
+			_ = k.cdc.UnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &validators)
+			matureValsAddrs = append(matureValsAddrs, validators...)
+		}
+
 	}
 	return matureValsAddrs
 }
@@ -142,22 +188,43 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 	unstakingValidatorsIterator, _ := k.unstakingValidatorsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValidatorsIterator.Close()
 	for ; unstakingValidatorsIterator.Valid(); unstakingValidatorsIterator.Next() {
-		var unstakingVals []sdk.Address
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(unstakingValidatorsIterator.Value(), &unstakingVals)
-		for _, valAddr := range unstakingVals {
-			val, found := k.GetValidator(ctx, valAddr)
-			if !found {
-				ctx.Logger().Error("validator in the unstaking queue was not found, possible forced unstake? At height: ", ctx.BlockHeight())
-				continue
+		if ctx.IsAfterUpgradeHeight() {
+			var unstakingVals sdk.Addresses
+			_ = k.cdc.UnmarshalBinaryLengthPrefixed(unstakingValidatorsIterator.Value(), &unstakingVals)
+			for _, valAddr := range unstakingVals.Arr {
+				val, found := k.GetValidator(ctx, valAddr)
+				if !found {
+					ctx.Logger().Error("validator in the unstaking queue was not found, possible forced unstake? At height: ", ctx.BlockHeight())
+					continue
+				}
+				err := k.ValidateValidatorFinishUnstaking(ctx, val)
+				if err != nil {
+					ctx.Logger().Error("Could not finish unstaking mature validator: "+err.Error(), "at height: ", ctx.BlockHeight())
+					continue
+				}
+				k.FinishUnstakingValidator(ctx, val)
+				k.DeleteValidator(ctx, valAddr)
 			}
-			err := k.ValidateValidatorFinishUnstaking(ctx, val)
-			if err != nil {
-				ctx.Logger().Error("Could not finish unstaking mature validator: "+err.Error(), "at height: ", ctx.BlockHeight())
-				continue
+			_ = store.Delete(unstakingValidatorsIterator.Key())
+		} else {
+			var unstakingVals []sdk.Address
+			_ = k.cdc.UnmarshalBinaryLengthPrefixed(unstakingValidatorsIterator.Value(), &unstakingVals)
+			for _, valAddr := range unstakingVals {
+				val, found := k.GetValidator(ctx, valAddr)
+				if !found {
+					ctx.Logger().Error("validator in the unstaking queue was not found, possible forced unstake? At height: ", ctx.BlockHeight())
+					continue
+				}
+				err := k.ValidateValidatorFinishUnstaking(ctx, val)
+				if err != nil {
+					ctx.Logger().Error("Could not finish unstaking mature validator: "+err.Error(), "at height: ", ctx.BlockHeight())
+					continue
+				}
+				k.FinishUnstakingValidator(ctx, val)
+				k.DeleteValidator(ctx, valAddr)
 			}
-			k.FinishUnstakingValidator(ctx, val)
-			k.DeleteValidator(ctx, valAddr)
+			_ = store.Delete(unstakingValidatorsIterator.Key())
 		}
-		_ = store.Delete(unstakingValidatorsIterator.Key())
+
 	}
 }

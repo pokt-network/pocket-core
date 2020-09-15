@@ -12,10 +12,10 @@ import (
 // Decimal Coin
 
 // DecCoin defines a coin which can have additional decimal points
-type DecCoin struct {
-	Denom  string `json:"denom"`
-	Amount Dec    `json:"amount"`
-}
+//type DecCoin struct {
+//	Denom  string `json:"denom"`
+//	Amount Dec    `json:"amount"`
+//}
 
 // NewDecCoin creates a new DecCoin instance from an Int.
 func NewDecCoin(denom string, amount Int) DecCoin {

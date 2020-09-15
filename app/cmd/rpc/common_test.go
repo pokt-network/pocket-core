@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"io"
 	"os"
 	"testing"
@@ -191,7 +192,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 
 func memCodec() *codec.Codec {
 	if memCDC == nil {
-		memCDC = codec.New()
+		memCDC = codec.NewCodec(types2.NewInterfaceRegistry())
 		module.NewBasicManager(
 			apps.AppModuleBasic{},
 			auth.AppModuleBasic{},
@@ -200,7 +201,7 @@ func memCodec() *codec.Codec {
 			pocket.AppModuleBasic{},
 		).RegisterCodec(memCDC)
 		sdk.RegisterCodec(memCDC)
-		codec.RegisterCrypto(memCDC)
+		crypto.RegisterAmino(memCDC.AminoCodec().Amino)
 	}
 	return memCDC
 }

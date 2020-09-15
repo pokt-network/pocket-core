@@ -315,7 +315,6 @@ func TestEncodingRandom(t *testing.T) {
 }
 
 func TestEncodingTableInt(t *testing.T) {
-	var i Int
 
 	cases := []struct {
 		i   Int
@@ -333,13 +332,14 @@ func TestEncodingTableInt(t *testing.T) {
 		bz, err := tc.i.MarshalJSON()
 		require.Nil(t, err, "Error marshaling Int. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.bz, bz, "Marshaled value is different from exported. tc #%d", tcnum)
+		var i Int
 		err = (&i).UnmarshalJSON(bz)
 		require.Nil(t, err, "Error unmarshaling Int. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.i, i, "Unmarshaled value is different from exported. tc #%d", tcnum)
 
 		str, err := tc.i.MarshalAmino()
 		require.Nil(t, err, "Error marshaling Int. tc #%d, err %s", tcnum, err)
-		require.Equal(t, tc.str, str, "Marshaled value is different from exported. tc #%d", tcnum)
+		require.Equal(t, tc.str, string(str), "Marshaled value is different from exported. tc #%d", tcnum)
 		err = (&i).UnmarshalAmino(str)
 		require.Nil(t, err, "Error unmarshaling Int. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.i, i, "Unmarshaled value is different from exported. tc #%d", tcnum)
@@ -371,7 +371,7 @@ func TestEncodingTableUint(t *testing.T) {
 
 		str, err := tc.i.MarshalAmino()
 		require.Nil(t, err, "Error marshaling Int. tc #%d, err %s", tcnum, err)
-		require.Equal(t, tc.str, str, "Marshaled value is different from exported. tc #%d", tcnum)
+		require.Equal(t, tc.str, string(str), "Marshaled value is different from exported. tc #%d", tcnum)
 		err = (&i).UnmarshalAmino(str)
 		require.Nil(t, err, "Error unmarshaling Int. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.i, i, "Unmarshaled value is different from exported. tc #%d", tcnum)

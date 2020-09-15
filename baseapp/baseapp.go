@@ -9,6 +9,7 @@ package baseapp
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/state/txindex"
@@ -37,6 +38,7 @@ import (
 )
 
 var ABCILogging bool
+var cdc = codec.NewCodec(types.NewInterfaceRegistry())
 
 // Key to store the consensus params in the main store.
 var mainConsensusParamsKey = []byte("consensus_params")
@@ -542,7 +544,7 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 			result = sdk.ErrUnknownRequest(fmt.Sprintf("Unknown query: %s", path)).Result()
 		}
 
-		value := codec.Cdc.MustMarshalBinaryLengthPrefixed(result)
+		value, _ := cdc.MarshalBinaryLengthPrefixed(&result)
 		return abci.ResponseQuery{
 			Code:      uint32(sdk.CodeOK),
 			Codespace: string(sdk.CodespaceRoot),
@@ -777,7 +779,7 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 }
 
 // validateBasicTxMsgs executes basic validator calls for messages.
-func validateBasicTxMsgs(msg sdk.Msg) sdk.Error {
+func validateBasicTxMsgs(msg sdk.LegacyMsg) sdk.Error {
 	if msg == nil {
 		return sdk.ErrUnknownRequest("Tx.GetMsg() must return at least one message")
 	}
@@ -834,7 +836,7 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode) (result sdk
 	// each result.
 	data = append(data, msgResult.Data...)
 	// append events from the message's execution and a message action event
-	events = events.AppendEvent(sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, msg.Type())))
+	events = events.AppendEvent(sdk.Event(sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, msg.Type()))))
 	events = events.AppendEvents(msgResult.Events)
 	// stop execution and return on first failed message
 	if !msgResult.IsOK() {
@@ -966,7 +968,9 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 			}
 		}
 	}()
-
+	if ctx.BlockHeight() == 155 {
+		fmt.Println(tx)
+	}
 	var msgs = tx.GetMsg()
 	if err := validateBasicTxMsgs(msgs); err != nil {
 		return err.Result()

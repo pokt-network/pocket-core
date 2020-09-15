@@ -7,16 +7,25 @@ import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
+var _ sdk.Msg = types.MsgProof{}
+
 // "NewHandler" - Returns a handler for "pocketCore" type messages.
 func NewHandler(keeper keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.LegacyMsg) sdk.Result {
 		switch msg := msg.(type) {
 		// handle claim message
-		case types.MsgClaim:
+		case *types.MsgClaim: // TODO XX not doing a legacy msgClaim could break leagacy XX
+			return handleClaimMsg(ctx, keeper, *msg)
+		case types.MsgClaim: // TODO XX not doing a legacy msgClaim could break leagacy XX
 			return handleClaimMsg(ctx, keeper, msg)
 		// handle proof message
-		case types.MsgProof:
+		case *types.MsgProtoProof:
+			return handleProofMsg(ctx, keeper, *msg)
+		case types.MsgProtoProof:
 			return handleProofMsg(ctx, keeper, msg)
+		// handle legacy proof message
+		case types.MsgProof:
+			return handleLegacyProofMsg(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized pocketcore Msg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -46,7 +55,7 @@ func handleClaimMsg(ctx sdk.Ctx, k keeper.Keeper, msg types.MsgClaim) sdk.Result
 }
 
 // "handleProofMsg" - General handler for the proof message
-func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Result {
+func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProtoProof) sdk.Result {
 	// validate the claim claim
 	addr, claim, err := k.ValidateProof(ctx, proof)
 	if err != nil {
@@ -93,4 +102,14 @@ func processSelf(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.
 		}
 		types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()))
 	}
+}
+
+// legacy proof handling
+
+// "handleProofMsg" - General handler for the proof message
+func handleLegacyProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Result {
+	if !ctx.IsAfterUpgradeHeight() {
+		return handleProofMsg(ctx, k, proof.ToProto())
+	}
+	return sdk.ErrInternal("invalid amino msg (legacyProofMsg) passed the upgrade height").Result()
 }

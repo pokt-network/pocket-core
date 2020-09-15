@@ -2,8 +2,9 @@ package iavl
 
 import (
 	"fmt"
-	rand2 "github.com/tendermint/tendermint/libs/rand"
 	"testing"
+
+	rand2 "github.com/tendermint/tendermint/libs/rand"
 
 	"github.com/stretchr/testify/require"
 
@@ -461,9 +462,12 @@ func TestIAVLStoreQuery(t *testing.T) {
 		{Key: k1, Value: v3},
 		{Key: k2, Value: v2},
 	}
-	valExpSubEmpty := cdc.MustMarshalBinaryLengthPrefixed(KVs0)
-	valExpSub1 := cdc.MustMarshalBinaryLengthPrefixed(KVs1)
-	valExpSub2 := cdc.MustMarshalBinaryLengthPrefixed(KVs2)
+	valExpSubEmpty, err := cdc.LegacyMarshalBinaryLengthPrefixed(KVs0)
+	require.NoError(t, err)
+	valExpSub1, err := cdc.LegacyMarshalBinaryLengthPrefixed(KVs1)
+	require.NoError(t, err)
+	valExpSub2, err := cdc.LegacyMarshalBinaryLengthPrefixed(KVs2)
+	require.NoError(t, err)
 
 	cid := iavlStore.Commit()
 	ver := cid.Version

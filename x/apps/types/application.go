@@ -108,3 +108,33 @@ func (a Application) GetPublicKey() crypto.PublicKey { return a.PublicKey }
 func (a Application) GetTokens() sdk.Int             { return a.StakedTokens }
 func (a Application) GetConsensusPower() int64       { return a.ConsensusPower() }
 func (a Application) GetMaxRelays() sdk.Int          { return a.MaxRelays }
+
+func (a Application) ToProto() ApplicationEncodable {
+	return ApplicationEncodable{
+		Address:                 a.Address,
+		PublicKey:               a.PublicKey.RawString(),
+		Jailed:                  a.Jailed,
+		Status:                  a.Status,
+		Chains:                  a.Chains,
+		StakedTokens:            a.StakedTokens,
+		MaxRelays:               a.MaxRelays,
+		UnstakingCompletionTime: a.UnstakingCompletionTime,
+	}
+}
+
+func (ae ApplicationEncodable) FromProto() (Application, error) {
+	pk, err := crypto.NewPublicKey(ae.PublicKey)
+	if err != nil {
+		return Application{}, err
+	}
+	return Application{
+		Address:                 ae.Address,
+		PublicKey:               pk,
+		Jailed:                  ae.Jailed,
+		Status:                  ae.Status,
+		Chains:                  ae.Chains,
+		StakedTokens:            ae.StakedTokens,
+		MaxRelays:               ae.MaxRelays,
+		UnstakingCompletionTime: ae.UnstakingCompletionTime,
+	}, nil
+}

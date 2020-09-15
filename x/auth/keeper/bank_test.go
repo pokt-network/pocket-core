@@ -1,20 +1,21 @@
 package keeper
 
 import (
+	"testing"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 const initialPower = int64(100)
 
 var (
-	holderAcc     = types.NewEmptyModuleAccount(holder)
-	burnerAcc     = types.NewEmptyModuleAccount(types.Burner, types.Burner)
-	minterAcc     = types.NewEmptyModuleAccount(types.Minter, types.Minter)
-	multiPermAcc  = types.NewEmptyModuleAccount(multiPerm, types.Burner, types.Minter, types.Staking)
-	randomPermAcc = types.NewEmptyModuleAccount(randomPerm, "random")
+	// holderAcc     = types.NewEmptyModuleAccount(holder)
+	// burnerAcc     = types.NewEmptyModuleAccount(types.Burner, types.Burner)
+	// minterAcc     = types.NewEmptyModuleAccount(types.Minter, types.Minter)
+	// multiPermAcc  = types.NewEmptyModuleAccount(multiPerm, types.Burner, types.Minter, types.Staking)
+	// randomPermAcc = types.NewEmptyModuleAccount(randomPerm, "random")
 
 	initTokens = sdk.TokensFromConsensusPower(initialPower)
 	initCoins  = sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, initTokens))
@@ -80,7 +81,9 @@ func TestMintCoins(t *testing.T) {
 	err := keeper.MintCoins(ctx, types.Minter, initCoins)
 	require.NoError(t, err)
 	require.Equal(t, initCoins, getCoinsByName(ctx, keeper, types.Minter))
-	require.Equal(t, initialSupply.GetTotal().Add(initCoins), keeper.GetSupply(ctx).GetTotal())
+	got := keeper.GetSupply(ctx).GetTotal()
+	want := initialSupply.GetTotal().Add(initCoins)
+	require.Equal(t, want, got)
 
 	// test same functionality on module account with multiple permissions
 	initialSupply = keeper.GetSupply(ctx)

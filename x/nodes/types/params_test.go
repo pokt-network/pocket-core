@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"reflect"
 	"testing"
 	"time"
@@ -509,7 +510,7 @@ func TestUnmarshalParams(t *testing.T) {
 		wantErr    bool
 	}{
 		{"Unmarshall Test", args{
-			cdc:   codec.New(),
+			cdc:   codec.NewCodec(types2.NewInterfaceRegistry()),
 			value: value,
 		}, defaultParams, false},
 	}

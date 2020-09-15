@@ -2,23 +2,24 @@ package types
 
 import (
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/codec/types"
 )
 
 // module codec
 var ModuleCdc *codec.Codec
 
 func init() {
-	ModuleCdc = codec.New()
+	ModuleCdc = codec.NewCodec(types.NewInterfaceRegistry())
 	RegisterCodec(ModuleCdc)
-	ModuleCdc.Seal()
+	ModuleCdc.AminoCodec().Seal()
 }
 
 // RegisterCodec registers all necessary param module types with a given codec.
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgChangeParam{}, "gov/msg_change_param", nil)
-	cdc.RegisterConcrete(MsgDAOTransfer{}, "gov/msg_dao_transfer", nil)
-	cdc.RegisterInterface((*interface{})(nil), nil)
-	cdc.RegisterConcrete(ACL{}, "gov/non_map_acl", nil)
-	cdc.RegisterConcrete(Upgrade{}, "gov/upgrade", nil)
-	cdc.RegisterConcrete(MsgUpgrade{}, "gov/msg_upgrade", nil)
+	cdc.RegisterStructure(MsgChangeParam{}, "gov/msg_change_param")
+	cdc.RegisterStructure(MsgDAOTransfer{}, "gov/msg_dao_transfer")
+	cdc.RegisterInterface("x.interface.nil", (*interface{})(nil))
+	cdc.RegisterStructure(ACL{}, "gov/non_map_acl")
+	cdc.RegisterStructure(Upgrade{}, "gov/upgrade")
+	cdc.RegisterStructure(MsgUpgrade{}, "gov/msg_upgrade")
 }

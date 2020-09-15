@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/store/rootmulti"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
@@ -27,7 +28,7 @@ func defaultComponents(key sdk.StoreKey) (sdk.Context, *codec.Codec) {
 	cms.MountStoreWithDB(key, sdk.StoreTypeIAVL, db)
 	_ = cms.LoadLatestVersion()
 	ctx := sdk.NewContext(cms, abci.Header{}, false, log.NewNopLogger())
-	cdc := codec.New()
+	cdc := codec.NewCodec(types.NewInterfaceRegistry())
 	return ctx, cdc
 }
 func TestList(t *testing.T) {

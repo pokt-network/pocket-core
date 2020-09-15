@@ -2,15 +2,22 @@ package gov
 
 import (
 	"fmt"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/gov/keeper"
 	"github.com/pokt-network/pocket-core/x/gov/types"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.LegacyMsg) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		switch msg := msg.(type) {
+		case *types.MsgChangeParam:
+			return handleMsgChangeParam(ctx, *msg, k)
+		case *types.MsgDAOTransfer:
+			return handleMsgDaoTransfer(ctx, *msg, k)
+		case *types.MsgUpgrade:
+			return handleMsgUpgrade(ctx, *msg, k)
 		case types.MsgChangeParam:
 			return handleMsgChangeParam(ctx, msg, k)
 		case types.MsgDAOTransfer:

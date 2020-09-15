@@ -31,8 +31,8 @@ type CacheStorage struct {
 }
 
 type CacheObject interface {
-	Marshal() ([]byte, error)
-	Unmarshal(b []byte) (CacheObject, error)
+	MarshalObject() ([]byte, error)
+	UnmarshalObject(b []byte) (CacheObject, error)
 	Key() ([]byte, error)
 	Seal() CacheObject
 	IsSealed() bool
@@ -67,7 +67,7 @@ func (cs *CacheStorage) GetWithoutLock(key []byte, object CacheObject) (interfac
 	if len(bz) == 0 {
 		return nil, false
 	}
-	res, err := object.Unmarshal(bz)
+	res, err := object.UnmarshalObject(bz)
 	if err != nil {
 		fmt.Printf("Error in CacheStorage.Get(): %s\n", err.Error())
 		return nil, true
@@ -163,7 +163,7 @@ func (cs *CacheStorage) FlushToDBWithoutLock() error {
 			return fmt.Errorf("object in cache does not impement the cache object interface")
 		}
 		// marshal object to bytes
-		bz, err := co.Marshal()
+		bz, err := co.MarshalObject()
 		if err != nil {
 			return fmt.Errorf("error flushing database, marshalling value for DB: %s", err.Error())
 		}
@@ -243,7 +243,7 @@ type SessionIt struct {
 
 // "Value" - returns the value of the iterator (session)
 func (si *SessionIt) Value() (session Session) {
-	s, err := session.Unmarshal(si.Iterator.Value())
+	s, err := session.UnmarshalObject(si.Iterator.Value())
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't unmarshal session iterator value into session: %s", err.Error()))
 	}
@@ -355,7 +355,7 @@ type EvidenceIt struct {
 // "Value" - Returns the evidence object value of the iterator
 func (ei *EvidenceIt) Value() (evidence Evidence) {
 	// unmarshal the value (bz) into an evidence object
-	e, err := evidence.Unmarshal(ei.Iterator.Value())
+	e, err := evidence.UnmarshalObject(ei.Iterator.Value())
 	if err != nil {
 		log.Fatal(fmt.Errorf("can't unmarshal evidence iterator value into evidence: %s", err.Error()))
 	}

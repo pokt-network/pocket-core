@@ -723,7 +723,7 @@ func TestRPC_RawTX(t *testing.T) {
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
 	txBz, err := auth.DefaultTxEncoder(memCodec())(authTypes.NewTestTx(types.Context{}.WithChainID("pocket-test"),
-		types2.MsgSend{
+		&types2.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
 			Amount:      types.NewInt(1),
@@ -1031,7 +1031,7 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey) (chal
 	minResp.Signature = hex.EncodeToString(sig)
 	// create valid challenge proof
 	proof = pocketTypes.ChallengeProofInvalidData{
-		MajorityResponses: [2]pocketTypes.RelayResponse{
+		MajorityResponses: []pocketTypes.RelayResponse{
 			majResp1,
 			majResp2,
 		},

@@ -4,9 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
-	"log"
 )
 
 // "Proof" - An interface representation of an economic proof of work/burn (relay or challenge)
@@ -19,20 +20,40 @@ type Proof interface {
 	SessionHeader() SessionHeader                                                                        // returns the session header
 	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error // validate the object
 	Store(max sdk.Int)                                                                                   // handle the proof after validation
+	ToProto() ProofI                                                                                     // convert to protobuf
+}
+
+type Proofs []Proof
+
+type ProofIs []ProofI
+
+func (ps Proofs) ToProofI() (res []ProofI) {
+	for _, proof := range ps {
+		res = append(res, proof.ToProto())
+	}
+	return
+}
+
+func (pi ProofI) FromProto() Proof {
+	switch x := pi.Proof.(type) {
+	case *ProofI_RelayProof:
+		return x.RelayProof
+	case *ProofI_ChallengeProof:
+		return x.ChallengeProof
+	default:
+		fmt.Println(fmt.Sprintf("invalid type assertion of proofI: %T", x))
+		return RelayProof{}
+	}
+}
+
+func (ps ProofIs) FromProofI() (res Proofs) {
+	for _, proof := range ps {
+		res = append(res, proof.FromProto())
+	}
+	return
 }
 
 var _ Proof = RelayProof{} // ensure implements interface at compile time
-
-// "RelayProof" - A proof object that represetns one relay finished
-type RelayProof struct {
-	RequestHash        string `json:"request_hash"`         // the merkleHash of the request used for response comparison
-	Entropy            int64  `json:"entropy"`              // a random int64 used for replay prevention on the node verification (merkle) side
-	SessionBlockHeight int64  `json:"session_block_height"` // The height of the session block
-	ServicerPubKey     string `json:"servicer_pub_key"`     // the public key of the servicer in hex
-	Blockchain         string `json:"blockchain"`           // the non-native chain net id in hex
-	Token              AAT    `json:"aat"`                  // the app auth token object
-	Signature          string `json:"signature"`            // the signature in hex
-}
 
 // "ValidateLocal" - Validates the proof object, where the owner of the proof is the local node
 func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64, verifyAddr sdk.Address) sdk.Error {
@@ -118,6 +139,10 @@ func (rp RelayProof) SessionHeader() SessionHeader {
 	}
 }
 
+func (rp RelayProof) ToProto() ProofI {
+	return ProofI{Proof: &ProofI_RelayProof{RelayProof: &rp}}
+}
+
 // "relayProof" - A structure used to json marshal the RelayProof
 type relayProof struct {
 	Entropy            int64  `json:"entropy"`
@@ -200,13 +225,13 @@ func (rp RelayProof) GetSigner() sdk.Address {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-
-// "ChallengeProofInvalidData" - Is a challenge of response data using a majority consensus
-type ChallengeProofInvalidData struct {
-	MajorityResponses [2]RelayResponse `json:"majority_responses"` // the majority who agreed
-	MinorityResponse  RelayResponse    `json:"minority_response"`  // the minority who disagreed
-	ReporterAddress   sdk.Address      `json:"address"`            // the address of the reporter
-}
+//
+//// "ChallengeProofInvalidData" - Is a challenge of response data using a majority consensus
+//type ChallengeProofInvalidData struct {
+//	MajorityResponses [2]RelayResponse `json:"majority_responses"` // the majority who agreed
+//	MinorityResponse  RelayResponse    `json:"minority_response"`  // the minority who disagreed
+//	ReporterAddress   sdk.Address      `json:"address"`            // the address of the reporter
+//} TODO might need to do legacy here... [2]RelayResponse attempting not to
 
 var _ Proof = ChallengeProofInvalidData{} // compile time interface implementation
 
@@ -426,4 +451,8 @@ func (c ChallengeProofInvalidData) GetSigner() sdk.Address {
 func (c ChallengeProofInvalidData) Store(maxChallenges sdk.Int) {
 	// add the Proof to the global (in memory) collection of proofs
 	SetProof(c.SessionHeader(), ChallengeEvidence, c, maxChallenges)
+}
+
+func (c ChallengeProofInvalidData) ToProto() ProofI {
+	return ProofI{Proof: &ProofI_ChallengeProof{ChallengeProof: &c}}
 }

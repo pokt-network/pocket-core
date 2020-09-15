@@ -11,11 +11,6 @@ import (
 )
 
 // "Session" - The relationship between an application and the pocket network
-type Session struct {
-	SessionHeader `json:"header"`
-	SessionKey    `json:"key"`
-	SessionNodes  `json:"nodes"`
-}
 
 func (s Session) IsSealed() bool {
 	return false
@@ -48,26 +43,26 @@ func NewSession(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, sessionHeader Session
 // "Validate" - Validates a session object
 func (s Session) Validate(node sdk.Address, app appexported.ApplicationI, sessionNodeCount int) sdk.Error {
 	// validate chain
-	if len(s.Chain) == 0 {
+	if len(s.SessionHeader.Chain) == 0 {
 		return NewEmptyNonNativeChainError(ModuleName)
 	}
 	// validate sessionBlockHeight
-	if s.SessionBlockHeight < 1 {
+	if s.SessionHeader.SessionBlockHeight < 1 {
 		return NewInvalidBlockHeightError(ModuleName)
 	}
 	// validate the app public key
-	if err := PubKeyVerification(s.ApplicationPubKey); err != nil {
+	if err := PubKeyVerification(s.SessionHeader.ApplicationPubKey); err != nil {
 		return err
 	}
 	// validate app corresponds to appPubKey
-	if app.GetPublicKey().RawString() != s.ApplicationPubKey {
+	if app.GetPublicKey().RawString() != s.SessionHeader.ApplicationPubKey {
 		return NewInvalidAppPubKeyError(ModuleName)
 	}
 	// validate app chains
 	chains := app.GetChains()
 	found := false
 	for _, c := range chains {
-		if c == s.Chain {
+		if c == s.SessionHeader.Chain {
 			found = true
 			break
 		}
@@ -89,16 +84,13 @@ func (s Session) Validate(node sdk.Address, app appexported.ApplicationI, sessio
 
 var _ CacheObject = Session{} // satisfies the cache object interface
 
-func (s Session) Marshal() ([]byte, error) {
-	return ModuleCdc.MarshalBinaryBare(s)
+func (s Session) MarshalObject() ([]byte, error) {
+	return ModuleCdc.MarshalBinaryBare(&s)
 }
 
-func (s Session) Unmarshal(b []byte) (CacheObject, error) {
+func (s Session) UnmarshalObject(b []byte) (CacheObject, error) {
 	err := ModuleCdc.UnmarshalBinaryBare(b, &s)
-	if err != nil {
-		return s, fmt.Errorf("error unmarshalling session object: %s", err.Error())
-	}
-	return s, nil
+	return s, err
 }
 
 func (s Session) Key() ([]byte, error) {
@@ -216,13 +208,6 @@ func NewSessionKey(appPubKey string, chain string, blockHash string) (SessionKey
 // "Validate" - Validates the session key
 func (sk SessionKey) Validate() sdk.Error {
 	return HashVerification(hex.EncodeToString(sk))
-}
-
-// "Sessionheader" - The header of the session
-type SessionHeader struct {
-	ApplicationPubKey  string `json:"app_public_key"` // the application public key
-	Chain              string `json:"chain"`          // the nonnative chain in the session
-	SessionBlockHeight int64  `json:"session_height"` // the session block height
 }
 
 // "ValidateHeader" - Validates the header of the session

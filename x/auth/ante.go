@@ -19,14 +19,13 @@ func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
 			ctx.Logger().Error(fmt.Sprintf("%s module account has not been set", types.FeeCollectorName))
 			os.Exit(1)
 		}
-		// all transactions must be of type auth.StdTx
-		stdTx, ok := tx.(StdTx)
-		if !ok {
-			return newCtx, sdk.ErrInternal("tx must be StdTx").Result(), true
-		}
 		// validate the transaction
 		if err := tx.ValidateBasic(); err != nil {
 			return newCtx, err.Result(), true
+		}
+		stdTx, ok := tx.(types.StdTxI)
+		if !ok {
+			return newCtx, sdk.ErrInternal("all transactions must be convertible to inteface: StdTxI").Result(), true
 		}
 		err := ValidateTransaction(ctx, ak, stdTx, ak.GetParams(ctx), txIndexer, txBz, simulate)
 		if err != nil {
@@ -40,15 +39,19 @@ func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
 	}
 }
 
-func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, txIndexer txindex.TxIndexer, txBz []byte, simulate bool) sdk.Error {
+func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTxI, params Params, txIndexer txindex.TxIndexer, txBz []byte, simulate bool) sdk.Error {
 	// validate the memo
 	if err := ValidateMemo(stdTx, params); err != nil {
 		return types.ErrInvalidMemo(ModuleName, err)
 	}
 	var pk posCrypto.PublicKey
 	// attempt to get the public key from the signature
-	if stdTx.Signature.PublicKey != nil && len(stdTx.Signature.PublicKey.RawBytes()) != 0 {
-		pk = stdTx.Signature.PublicKey
+	if stdTx.GetSignature().GetPublicKey() != "" {
+		var err error
+		pk, err = posCrypto.NewPublicKey(stdTx.GetSignature().GetPublicKey())
+		if err != nil {
+			return sdk.ErrInvalidPubKey(err.Error())
+		}
 	} else {
 		// public key in the signature not found so check world state
 		acc := k.GetAccount(ctx, stdTx.GetSigner())
@@ -80,17 +83,17 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, txIn
 		return sdk.ErrInternal(err.Error())
 	}
 	// get the fees from the tx
-	expectedFee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, k.GetParams(ctx).FeeMultiplier.GetFee(stdTx.Msg)))
+	expectedFee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, k.GetParams(ctx).FeeMultiplier.GetFee(stdTx.GetMsg())))
 	// test for public key type
 	p, ok := pk.(posCrypto.PublicKeyMultiSig)
 	// if standard public key
 	if !ok {
 		// validate the fees for a standard public key
-		if !stdTx.Fee.IsAllGTE(expectedFee) {
-			return types.ErrInsufficientFee(ModuleName, expectedFee, stdTx.Fee)
+		if !stdTx.GetFee().IsAllGTE(expectedFee) {
+			return types.ErrInsufficientFee(ModuleName, expectedFee, stdTx.GetFee())
 		}
 		// validate signature for regular public key
-		if !simulate && !pk.VerifyBytes(signBytes, stdTx.Signature.Signature) {
+		if !simulate && !pk.VerifyBytes(signBytes, stdTx.GetSignature().GetSignature()) {
 			return sdk.ErrUnauthorized("signature verification failed for the transaction")
 		}
 		return nil
@@ -101,7 +104,7 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, txIn
 		return types.ErrTooManySignatures(ModuleName, params.TxSigLimit)
 	}
 	// validate the multi sig
-	if !simulate && !pk.VerifyBytes(signBytes, stdTx.Signature.Signature) {
+	if !simulate && !pk.VerifyBytes(signBytes, stdTx.GetSignature().GetSignature()) {
 		return sdk.ErrUnauthorized("multisignature verification failed for the transaction")
 	}
 	return nil
@@ -139,7 +142,7 @@ func GetSignerAcc(ctx sdk.Ctx, ak keeper.Keeper, addr sdk.Address) (Account, sdk
 }
 
 // ValidateMemo validates the memo size.
-func ValidateMemo(stdTx StdTx, params Params) sdk.Error {
+func ValidateMemo(stdTx types.StdTxI, params Params) sdk.Error {
 	memoLength := len(stdTx.GetMemo())
 	if uint64(memoLength) > params.MaxMemoCharacters {
 		return sdk.ErrMemoTooLarge(
@@ -153,8 +156,8 @@ func ValidateMemo(stdTx StdTx, params Params) sdk.Error {
 }
 
 // DeductFees deducts fees from the given account.
-func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTx) sdk.Error {
-	fees := tx.Fee
+func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTxI) sdk.Error {
+	fees := tx.GetFee()
 	if !fees.IsValid() {
 		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee amount: %s", fees))
 	}
@@ -177,8 +180,8 @@ func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTx) sdk.Error {
 
 // GetSignBytes returns a slice of bytes to sign over for a given transaction
 // and an account.
-func GetSignBytes(chainID string, stdTx StdTx) ([]byte, error) {
+func GetSignBytes(chainID string, stdTx types.StdTxI) ([]byte, error) {
 	return StdSignBytes(
-		chainID, stdTx.Entropy, stdTx.Fee, stdTx.Msg, stdTx.Memo,
+		chainID, stdTx.GetEntropy(), stdTx.GetFee(), stdTx.GetMsg(), stdTx.GetMemo(),
 	)
 }

@@ -78,8 +78,9 @@ func (pms PublicKeyMultiSignature) Equals(other crypto.PubKey) bool {
 	return true
 }
 
-func (pms PublicKeyMultiSignature) NewPublicKey([]byte) (PublicKey, error) {
-	return pms, nil
+func (pms PublicKeyMultiSignature) NewPublicKey(res []byte) (PublicKey, error) {
+	err := cdc.UnmarshalBinaryBare(res, &pms)
+	return pms, err
 }
 
 func (pms PublicKeyMultiSignature) PubKey() crypto.PubKey {

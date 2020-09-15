@@ -17,12 +17,13 @@ func TestVerifyIAVLStoreQueryProof(t *testing.T) {
 	iStore, err := iavl.LoadStore(db, types.CommitID{}, types.PruneNothing, false)
 	store := iStore.(*iavl.Store)
 	require.Nil(t, err)
-	_ = store.Set([]byte("MYKEY"), []byte("MYVALUE"))
+	err = store.Set([]byte("MYKEY"), []byte("MYVALUE"))
+	require.NoError(t, err)
 	cid := store.Commit()
 
 	// Get Proof
 	res := store.Query(abci.RequestQuery{
-		Path:  "/key", // required path to get key/value+proof
+		Path:  "/key", // required path to get Key/value+proof
 		Data:  []byte("MYKEY"),
 		Prove: true,
 	})
@@ -64,12 +65,13 @@ func TestVerifyMultiStoreQueryProof(t *testing.T) {
 	_ = store.LoadVersion(0)
 
 	iavlStore := store.GetCommitStore(iavlStoreKey).(*iavl.Store)
-	_ = iavlStore.Set([]byte("MYKEY"), []byte("MYVALUE"))
+	err := iavlStore.Set([]byte("MYKEY"), []byte("MYVALUE"))
+	require.NoError(t, err)
 	cid := store.Commit()
 
 	// Get Proof
 	res := store.Query(abci.RequestQuery{
-		Path:  "/iavlStoreKey/key", // required path to get key/value+proof
+		Path:  "/iavlStoreKey/key", // required path to get Key/value+proof
 		Data:  []byte("MYKEY"),
 		Prove: true,
 	})
@@ -77,7 +79,7 @@ func TestVerifyMultiStoreQueryProof(t *testing.T) {
 
 	// Verify proof.
 	prt := DefaultProofRuntime()
-	err := prt.VerifyValue(res.Proof, cid.Hash, "/iavlStoreKey/MYKEY", []byte("MYVALUE"))
+	err = prt.VerifyValue(res.Proof, cid.Hash, "/iavlStoreKey/MYKEY", []byte("MYVALUE"))
 	require.Nil(t, err)
 
 	// Verify proof.
@@ -121,7 +123,7 @@ func TestVerifyMultiStoreQueryProofEmptyStore(t *testing.T) {
 
 	// Get Proof
 	res := store.Query(abci.RequestQuery{
-		Path:  "/iavlStoreKey/key", // required path to get key/value+proof
+		Path:  "/iavlStoreKey/key", // required path to get Key/value+proof
 		Data:  []byte("MYKEY"),
 		Prove: true,
 	})
@@ -153,7 +155,7 @@ func TestVerifyMultiStoreQueryProofAbsence(t *testing.T) {
 
 	// Get Proof
 	res := store.Query(abci.RequestQuery{
-		Path:  "/iavlStoreKey/key", // required path to get key/value+proof
+		Path:  "/iavlStoreKey/key", // required path to get Key/value+proof
 		Data:  []byte("MYABSENTKEY"),
 		Prove: true,
 	})

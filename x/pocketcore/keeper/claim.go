@@ -71,7 +71,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 		// generate the merkle root for this evidence
 		root := evidence.GenerateMerkleRoot()
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgClaim{}, n, kp, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgClaim{}, n, kp, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured creating the tx builder for the claim tx:\n%s", err.Error()))
 			return
@@ -90,12 +90,12 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		return pc.NewNoEvidenceTypeErr(pc.ModuleName)
 	}
 	// get the session context (state info at the beginning of the session)
-	sessionContext, er := ctx.PrevCtx(claim.SessionBlockHeight)
+	sessionContext, er := ctx.PrevCtx(claim.SessionHeader.SessionBlockHeight)
 	if er != nil {
 		return sdk.ErrInternal(er.Error())
 	}
 	// ensure that session ended
-	sessionEndHeight := claim.SessionBlockHeight + k.BlocksPerSession(sessionContext) - 1
+	sessionEndHeight := claim.SessionHeader.SessionBlockHeight + k.BlocksPerSession(sessionContext) - 1
 	if ctx.BlockHeight() <= sessionEndHeight {
 		return pc.NewInvalidBlockHeightError(pc.ModuleName)
 	}
@@ -103,7 +103,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		return pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// if is not a pocket supported blockchain then return not supported error
-	if !k.IsPocketSupportedBlockchain(sessionContext, claim.Chain) {
+	if !k.IsPocketSupportedBlockchain(sessionContext, claim.SessionHeader.Chain) {
 		return pc.NewChainNotSupportedErr(pc.ModuleName)
 	}
 	// get the node from the keeper (at the state of the start of the session)
@@ -113,7 +113,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		return pc.NewNodeNotFoundErr(pc.ModuleName)
 	}
 	// get the application (at the state of the start of the session)
-	app, found := k.GetAppFromPublicKey(sessionContext, claim.ApplicationPubKey)
+	app, found := k.GetAppFromPublicKey(sessionContext, claim.SessionHeader.ApplicationPubKey)
 	// if not found return not found error
 	if !found {
 		return pc.NewAppNotFoundError(pc.ModuleName)
@@ -132,7 +132,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		// create a new session to validate
 		session, err = pc.NewSession(sessionContext, sessionEndCtx, k.posKeeper, claim.SessionHeader, pc.BlockHash(sessionContext), sessionNodeCount)
 		if err != nil {
-			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.Chain).Error())
+			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error())
 			return err
 		}
 	}
@@ -142,7 +142,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		return err
 	}
 	// check if the proof is ready to be claimed, if it's already ready to be claimed, then it's too late to submit cause the secret is revealed
-	if k.ClaimIsMature(ctx, claim.SessionBlockHeight) {
+	if k.ClaimIsMature(ctx, claim.SessionHeader.SessionBlockHeight) {
 		return pc.NewExpiredProofsSubmissionError(pc.ModuleName)
 	}
 	return nil
@@ -159,14 +159,17 @@ func (k Keeper) SetClaim(ctx sdk.Ctx, msg pc.MsgClaim) error {
 	}
 	// generate the expiration height upon setting
 	if msg.ExpirationHeight == 0 {
-		sessionCtx, err := ctx.PrevCtx(msg.SessionBlockHeight)
+		sessionCtx, err := ctx.PrevCtx(msg.SessionHeader.SessionBlockHeight)
 		if err != nil {
 			return err
 		}
 		msg.ExpirationHeight = ctx.BlockHeight() + k.ClaimExpiration(sessionCtx)*k.BlocksPerSession(sessionCtx)
 	}
 	// marshal the message into amino
-	bz := k.cdc.MustMarshalBinaryBare(msg)
+	bz, err := k.cdc.MarshalBinaryBare(&msg)
+	if err != nil {
+		panic(err)
+	}
 	// set in the store
 	_ = store.Set(key, bz)
 	return nil
@@ -188,7 +191,10 @@ func (k Keeper) GetClaim(ctx sdk.Ctx, address sdk.Address, header pc.SessionHead
 		return pc.MsgClaim{}, false
 	}
 	// unmarshal into message object
-	k.cdc.MustUnmarshalBinaryBare(res, &msg)
+	err = k.cdc.UnmarshalBinaryBare(res, &msg)
+	if err != nil {
+		panic(err)
+	}
 	// return the object
 	return msg, true
 }
@@ -219,7 +225,10 @@ func (k Keeper) GetClaims(ctx sdk.Ctx, address sdk.Address) (claims []pc.MsgClai
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var claim pc.MsgClaim
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &claim)
+		err = k.cdc.UnmarshalBinaryBare(iterator.Value(), &claim)
+		if err != nil {
+			panic(err)
+		}
 		claims = append(claims, claim)
 	}
 	return
@@ -234,7 +243,10 @@ func (k Keeper) GetAllClaims(ctx sdk.Ctx) (claims []pc.MsgClaim) {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var claim pc.MsgClaim
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &claim)
+		err := k.cdc.UnmarshalBinaryBare(iterator.Value(), &claim)
+		if err != nil {
+			panic(err)
+		}
 		claims = append(claims, claim)
 	}
 	return
@@ -268,9 +280,12 @@ func (k Keeper) GetMatureClaims(ctx sdk.Ctx, address sdk.Address) (matureProofs 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var msg pc.MsgClaim
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &msg)
+		err = k.cdc.UnmarshalBinaryBare(iterator.Value(), &msg)
+		if err != nil {
+			panic(err)
+		}
 		// if the claim is mature, add it to the list
-		if k.ClaimIsMature(ctx, msg.SessionBlockHeight) {
+		if k.ClaimIsMature(ctx, msg.SessionHeader.SessionBlockHeight) {
 			matureProofs = append(matureProofs, msg)
 		}
 	}
@@ -290,7 +305,10 @@ func (k Keeper) DeleteExpiredClaims(ctx sdk.Ctx) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &msg)
+		err := k.cdc.UnmarshalBinaryBare(iterator.Value(), &msg)
+		if err != nil {
+			panic(err)
+		}
 		// if more sessions has passed than the expiration of the claim's genesis, delete it from the set
 		if msg.ExpirationHeight <= ctx.BlockHeight() {
 			_ = store.Delete(iterator.Key())

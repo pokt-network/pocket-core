@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"math"
 	"math/big"
 	"testing"
@@ -57,11 +58,11 @@ func NewTestKeybase() keys.Keybase {
 
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
-	var cdc = codec.New()
+	var cdc = codec.NewCodec(types2.NewInterfaceRegistry())
 	auth.RegisterCodec(cdc)
 	gov.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
+	crypto.RegisterAmino(cdc.AminoCodec().Amino)
 
 	return cdc
 }
@@ -618,6 +619,20 @@ func (_m *Ctx) IsCheckTx() bool {
 
 // IsZero provides a mock function with given fields:
 func (_m *Ctx) IsZero() bool {
+	ret := _m.Called()
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// IsZero provides a mock function with given fields:
+func (_m *Ctx) IsAfterUpgradeHeight() bool {
 	ret := _m.Called()
 
 	var r0 bool

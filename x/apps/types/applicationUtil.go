@@ -48,7 +48,7 @@ func (a Applications) JSON() (out []byte, err error) {
 
 // MarshalJSON marshals the application to JSON using raw Hex for the public key
 func (a Application) MarshalJSON() ([]byte, error) {
-	return codec.Cdc.MarshalJSON(hexApplication{
+	return ModuleCdc.MarshalJSON(hexApplication{
 		Address:                 a.Address,
 		PublicKey:               a.PublicKey.RawString(),
 		Jailed:                  a.Jailed,
@@ -63,7 +63,7 @@ func (a Application) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshals the application from JSON using raw hex for the public key
 func (a *Application) UnmarshalJSON(data []byte) error {
 	bv := &hexApplication{}
-	if err := codec.Cdc.UnmarshalJSON(data, bv); err != nil {
+	if err := ModuleCdc.UnmarshalJSON(data, bv); err != nil {
 		return err
 	}
 	consPubKey, err := crypto.NewPublicKey(bv.PublicKey)
@@ -85,13 +85,25 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 
 // unmarshal the application
 func MarshalApplication(cdc *codec.Codec, application Application) (result []byte, err error) {
-	return cdc.MarshalBinaryLengthPrefixed(application)
+	if cdc.IsAfterUpgrade() {
+		ae := application.ToProto()
+		return cdc.ProtoMarshalBinaryLengthPrefixed(&ae)
+	}
+	return cdc.LegacyMarshalBinaryLengthPrefixed(application)
 }
 
 // unmarshal the application
 func UnmarshalApplication(cdc *codec.Codec, appBytes []byte) (application Application, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(appBytes, &application)
-	return application, err
+	if cdc.IsAfterUpgrade() {
+		var appEncodable ApplicationEncodable
+		err = cdc.ProtoUnmarshalBinaryLengthPrefixed(appBytes, &appEncodable)
+		if err != nil {
+			return
+		}
+		return appEncodable.FromProto()
+	}
+	err = cdc.LegacyUnmarshalBinaryLengthPrefixed(appBytes, &application)
+	return
 }
 
 // TODO shared code among modules below
@@ -115,4 +127,26 @@ func ValidateNetworkIdentifier(chain string) sdk.Error {
 		return ErrInvalidNetworkIdentifier(ModuleName, fmt.Errorf("net id length is > %d", NetworkIdentifierLength))
 	}
 	return nil
+}
+
+func (a ApplicationEncodable) GetChains() []string        { return a.Chains }
+func (a ApplicationEncodable) IsStaked() bool             { return a.GetStatus().Equal(sdk.Staked) }
+func (a ApplicationEncodable) IsUnstaked() bool           { return a.GetStatus().Equal(sdk.Unstaked) }
+func (a ApplicationEncodable) IsUnstaking() bool          { return a.GetStatus().Equal(sdk.Unstaking) }
+func (a ApplicationEncodable) IsJailed() bool             { return a.Jailed }
+func (a ApplicationEncodable) GetStatus() sdk.StakeStatus { return a.Status }
+func (a ApplicationEncodable) GetAddress() sdk.Address    { return a.Address }
+func (a ApplicationEncodable) GetPublicKey() crypto.PublicKey {
+	pubkey, _ := crypto.NewPublicKey(a.PublicKey)
+	return pubkey
+}
+func (a ApplicationEncodable) GetTokens() sdk.Int       { return a.StakedTokens }
+func (a ApplicationEncodable) GetConsensusPower() int64 { return a.ConsensusPower() }
+func (a ApplicationEncodable) GetMaxRelays() sdk.Int    { return a.MaxRelays }
+
+func (a ApplicationEncodable) ConsensusPower() int64 {
+	if a.IsStaked() {
+		return sdk.TokensToConsensusPower(a.StakedTokens)
+	}
+	return 0
 }

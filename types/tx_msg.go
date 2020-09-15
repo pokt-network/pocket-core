@@ -1,11 +1,37 @@
 package types
 
 import (
-	"encoding/json"
+	"github.com/gogo/protobuf/proto"
 )
 
 // Transactions messages must fulfill the Msg
 type Msg interface {
+	proto.Message
+	// Return the message type.
+	// Must be alphanumeric or empty.
+	Route() string
+
+	// Returns a human-readable string for the message, intended for utilization
+	// within tags
+	Type() string
+
+	// ValidateBasic does a simple validation check that
+	// doesn't require access to any other information.
+	ValidateBasic() Error
+
+	// Get the canonical byte representation of the Msg.
+	GetSignBytes() []byte
+
+	// Signers returns the addrs of signers that must sign.
+	// CONTRACT: All signatures must be present to be valid.
+	// CONTRACT: Returns addrs in some deterministic order.
+	GetSigner() Address
+
+	// Returns an Int for the Msg
+	GetFee() Int
+}
+
+type LegacyMsg interface {
 	// Return the message type.
 	// Must be alphanumeric or empty.
 	Route() string
@@ -35,7 +61,7 @@ type Msg interface {
 // Transactions objects must fulfill the Tx
 type Tx interface {
 	// Gets the all the transaction's messages.
-	GetMsg() Msg
+	GetMsg() LegacyMsg
 
 	// ValidateBasic does a simple and lightweight validation check that doesn't
 	// require access to any other information.
@@ -49,42 +75,3 @@ type TxDecoder func(txBytes []byte) (Tx, Error)
 
 // TxEncoder marshals transaction to bytes
 type TxEncoder func(tx Tx) ([]byte, error)
-
-//__________________________________________________________
-
-var _ Msg = (*TestMsg)(nil)
-
-// msg type for testing
-type TestMsg struct {
-	signers Address
-}
-
-func NewTestMsg(addr Address) *TestMsg {
-	return &TestMsg{
-		signers: addr,
-	}
-}
-
-var (
-	testFeeMap = map[string]int64{
-		"TestMsg": 1,
-	}
-)
-
-//nolint
-func (msg *TestMsg) Route() string { return "TestMsg" }
-func (msg *TestMsg) Type() string  { return "Test message" }
-func (msg *TestMsg) GetFee() Int {
-	return NewInt(testFeeMap[msg.Type()])
-}
-func (msg *TestMsg) GetSignBytes() []byte {
-	bz, err := json.Marshal(msg.signers)
-	if err != nil {
-		panic(err)
-	}
-	return MustSortJSON(bz)
-}
-func (msg *TestMsg) ValidateBasic() Error { return nil }
-func (msg *TestMsg) GetSigner() Address {
-	return msg.signers
-}

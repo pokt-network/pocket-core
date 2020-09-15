@@ -77,8 +77,8 @@ var decodeTxCmd = &cobra.Command{
 		stdTx := app.UnmarshalTxStr(txStr)
 		fmt.Printf(
 			"Type:\t\t%s\nMsg:\t\t%v\nFee:\t\t%s\nEntropy:\t%d\nMemo:\t\t%s\nSigner\t\t%s\nSig:\t\t%s\n",
-			stdTx.Msg.Type(), stdTx.Msg, stdTx.Fee.String(), stdTx.Entropy, stdTx.Memo, stdTx.Msg.GetSigner().String(),
-			stdTx.Signature.RawString())
+			stdTx.GetMsg().Type(), stdTx.GetMsg(), stdTx.GetFee().String(), stdTx.GetEntropy(), stdTx.GetMemo(), stdTx.GetMsg().GetSigner().String(),
+			stdTx.GetSignature().GetPublicKey())
 	},
 }
 

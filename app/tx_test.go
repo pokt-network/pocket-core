@@ -228,7 +228,7 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
 	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
-		nodeTypes.MsgSend{
+		&nodeTypes.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
 			Amount:      sdk.NewInt(1),
@@ -239,7 +239,7 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	assert.Nil(t, err)
 	// create the transaction
 	_, err = types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
-		nodeTypes.MsgSend{
+		&nodeTypes.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
 			Amount:      sdk.NewInt(1),
@@ -578,7 +578,7 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOf
 		minResp.Signature = hex.EncodeToString(sig)
 		// create valid challenge proof
 		proofs = append(proofs, pocketTypes.ChallengeProofInvalidData{
-			MajorityResponses: [2]pocketTypes.RelayResponse{
+			MajorityResponses: []pocketTypes.RelayResponse{
 				majResp1,
 				majResp2,
 			},
