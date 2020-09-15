@@ -2,29 +2,34 @@ package types
 
 import (
 	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/x/nodes/exported"
+	"github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 )
 
-// ModuleCdc is the codec for the module
-var ModuleCdc = codec.New()
+// module wide codec
+var ModuleCdc *codec.Codec
 
 func init() {
+	ModuleCdc = codec.NewCodec(types.NewInterfaceRegistry())
 	RegisterCodec(ModuleCdc)
-	codec.RegisterCrypto(ModuleCdc)
+	crypto.RegisterAmino(ModuleCdc.AminoCodec().Amino)
 }
 
-// RegisterCodec registers concrete types on the Amino codec
+// RegisterCodec registers concrete types on the codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgClaim{}, "pocketcore/claim", nil)
-	cdc.RegisterConcrete(MsgProof{}, "pocketcore/proof", nil)
-	cdc.RegisterConcrete(Relay{}, "pocketcore/relay", nil)
-	cdc.RegisterConcrete(Session{}, "pocketcore/session", nil)
-	cdc.RegisterConcrete(RelayResponse{}, "pocketcore/relay_response", nil)
-	cdc.RegisterInterface((*Proof)(nil), nil)
-	cdc.RegisterConcrete(RelayProof{}, "pocketcore/relay_proof", nil)
-	cdc.RegisterConcrete(ChallengeProofInvalidData{}, "pocketcore/challenge_proof_invalid_data", nil)
-	cdc.RegisterConcrete(evidence{}, "pocketcore/evidence_persisted", nil)
-	cdc.RegisterInterface((*exported.ValidatorI)(nil), nil)
-	cdc.RegisterConcrete(nodesTypes.Validator{}, "pos/Validator", nil) // todo does this really need to depend on nodes/types
+	cdc.RegisterStructure(MsgClaim{}, "pocketcore/claim")
+	cdc.RegisterStructure(MsgProtoProof{}, "pocketcore/protoProof")
+	cdc.RegisterStructure(MsgProof{}, "pocketcore/proof")
+	cdc.RegisterStructure(Relay{}, "pocketcore/relay")
+	cdc.RegisterStructure(Session{}, "pocketcore/session")
+	cdc.RegisterStructure(RelayResponse{}, "pocketcore/relay_response")
+	cdc.RegisterStructure(RelayProof{}, "pocketcore/relay_proof")
+	cdc.RegisterStructure(ChallengeProofInvalidData{}, "pocketcore/challenge_proof_invalid_data")
+	cdc.RegisterStructure(EvidenceEncodable{}, "pocketcore/evidence_persisted")
+	cdc.RegisterStructure(nodesTypes.Validator{}, "pos/Validator") // todo does this really need to depend on nodes/types
+	cdc.RegisterInterface("x.pocketcore.Proof", (*Proof)(nil), &RelayProof{}, &ChallengeProofInvalidData{})
+	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgClaim{}, &MsgProtoProof{}, MsgProof{})
+	cdc.RegisterImplementation((*sdk.LegacyMsg)(nil), &MsgClaim{}, &MsgProtoProof{}, MsgProof{})
 }

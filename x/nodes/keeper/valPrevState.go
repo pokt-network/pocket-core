@@ -10,20 +10,32 @@ import (
 
 // PrevStateValidatorsPower - Load the prevState total validator power.
 func (k Keeper) PrevStateValidatorsPower(ctx sdk.Ctx) (power sdk.Int) {
+	var p = sdk.IntProto{}
 	store := ctx.KVStore(k.storeKey)
 	b, _ := store.Get(types.PrevStateTotalPowerKey)
 	if b == nil {
 		return sdk.ZeroInt()
 	}
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(b, &power)
-	return
+	if ctx.IsAfterUpgradeHeight() {
+		_ = k.cdc.UnmarshalBinaryLengthPrefixed(b, &p)
+		return p.Int
+	} else {
+		_ = k.cdc.UnmarshalBinaryLengthPrefixed(b, &power)
+		return power
+	}
 }
 
 // SetPrevStateValidatorsPower - Store the prevState total validator power (used in moving the curr to prev)
 func (k Keeper) SetPrevStateValidatorsPower(ctx sdk.Ctx, power sdk.Int) {
+	var p = sdk.IntProto{Int: power}
 	store := ctx.KVStore(k.storeKey)
-	b := k.cdc.MustMarshalBinaryLengthPrefixed(power)
-	_ = store.Set(types.PrevStateTotalPowerKey, b)
+	if ctx.IsAfterUpgradeHeight() {
+		b, _ := k.cdc.MarshalBinaryLengthPrefixed(&p)
+		_ = store.Set(types.PrevStateTotalPowerKey, b)
+	} else {
+		b, _ := k.cdc.MarshalBinaryLengthPrefixed(&power)
+		_ = store.Set(types.PrevStateTotalPowerKey, b)
+	}
 }
 
 // prevStateValidatorIterator - Retrieve an iterator for the consensus validators in the prevState block
@@ -41,11 +53,20 @@ func (k Keeper) IterateAndExecuteOverPrevStateValsByPower(
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.Address(iter.Key()[len(types.PrevStateValidatorsPowerKey):])
-		var power int64
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &power)
-		if handler(addr, power) {
-			break
+		if ctx.IsAfterUpgradeHeight() {
+			var power types.Power
+			_ = k.cdc.UnmarshalBinaryLengthPrefixed(iter.Value(), &power)
+			if handler(addr, power.Value) {
+				break
+			}
+		} else {
+			var power int64
+			_ = k.cdc.UnmarshalBinaryLengthPrefixed(iter.Value(), &power)
+			if handler(addr, power) {
+				break
+			}
 		}
+
 	}
 }
 
@@ -72,9 +93,15 @@ func (k Keeper) IterateAndExecuteOverPrevStateVals(
 
 // SetPrevStateValPower - Store the power of a SINGLE staked validator from the previous state
 func (k Keeper) SetPrevStateValPower(ctx sdk.Ctx, addr sdk.Address, power int64) {
+	p := types.Power{Value: power}
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshalBinaryLengthPrefixed(power)
-	_ = store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
+	if ctx.IsAfterUpgradeHeight() {
+		bz, _ := k.cdc.MarshalBinaryLengthPrefixed(&p)
+		_ = store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
+	} else {
+		bz, _ := k.cdc.MarshalBinaryLengthPrefixed(power)
+		_ = store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
+	}
 }
 
 // DeletePrevStateValPower - Remove the power of a SINGLE staked validator from the previous state

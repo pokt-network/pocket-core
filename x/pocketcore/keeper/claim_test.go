@@ -53,7 +53,7 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
-	mockCtx.On("PrevCtx", claims[0].SessionBlockHeight).Return(ctx, nil)
+	mockCtx.On("PrevCtx", claims[0].SessionHeader.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("BlockHeight").Return(int64(1))
 	mockCtx.On("Logger").Return(ctx.Logger())
 	keeper.SetClaims(mockCtx, claims)

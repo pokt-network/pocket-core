@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/exported"
 	"github.com/pokt-network/pocket-core/x/auth/types"
@@ -87,7 +86,7 @@ func (k Keeper) GetAccount(ctx sdk.Ctx, addr sdk.Address) exported.Account {
 	if bz == nil {
 		return nil
 	}
-	acc, err := k.decodeAccount(bz)
+	acc, err := k.DecodeAccount(bz)
 	if err != nil {
 		return nil // Could not decode account
 	}
@@ -126,7 +125,7 @@ func (k Keeper) GetAllAccountsExport(ctx sdk.Ctx) []exported.Account {
 func (k Keeper) SetAccount(ctx sdk.Ctx, acc exported.Account) {
 	addr := acc.GetAddress()
 	store := ctx.KVStore(k.storeKey)
-	bz, err := k.cdc.MarshalBinaryBare(acc)
+	bz, err := k.EncodeAccount(acc)
 	if err != nil {
 		ctx.Logger().Error(fmt.Errorf("error marshalling account %v at height: %d, err: %s", acc, ctx.BlockHeight(), err.Error()).Error())
 		os.Exit(1)
@@ -152,7 +151,7 @@ func (k Keeper) IterateAccounts(ctx sdk.Ctx, process func(exported.Account) (sto
 			return
 		}
 		val := iter.Value()
-		acc, err := k.decodeAccount(val)
+		acc, err := k.DecodeAccount(val)
 		if err != nil {
 			ctx.Logger().Error(fmt.Errorf("error while iterating accounts: unmarshalling account %v at height: %d, err: %s", val, ctx.BlockHeight(), err.Error()).Error())
 			continue
@@ -164,13 +163,8 @@ func (k Keeper) IterateAccounts(ctx sdk.Ctx, process func(exported.Account) (sto
 	}
 }
 
-func (k Keeper) decodeAccount(bz []byte) (acc exported.Account, err error) {
-	err = k.cdc.UnmarshalBinaryBare(bz, &acc)
-	return
-}
-
 // NewAccountWithAddress implements sdk.AuthKeeper.
-func (k Keeper) NewAccountWithAddress(ctx sdk.Ctx, addr sdk.Address) (exported.Account, error) {
+func (k Keeper) NewAccountWithAddress(ctx sdk.Ctx, addr sdk.Address) (*types.BaseAccount, error) {
 	acc := types.BaseAccount{}
 	err := acc.SetAddress(addr)
 	if err != nil {
@@ -179,11 +173,64 @@ func (k Keeper) NewAccountWithAddress(ctx sdk.Ctx, addr sdk.Address) (exported.A
 	return &acc, nil
 }
 
-// GetPubKey Returns the PublicKey of the account at address
-func (k Keeper) GetPubKey(ctx sdk.Ctx, addr sdk.Address) (crypto.PublicKey, sdk.Error) {
-	acc := k.GetAccount(ctx, addr)
-	if acc == nil {
-		return nil, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", addr))
+// "EncodeAccount" - encodes the account interface to bz
+func (k Keeper) EncodeAccount(acc exported.Account) ([]byte, error) {
+	switch a := acc.(type) {
+	case *types.BaseAccount:
+		return k.EncodeBaseAccount(a)
+	case *types.ModuleAccount:
+		return k.EncodeModuleAccount(a)
 	}
-	return acc.GetPubKey(), nil
+	return nil, fmt.Errorf("could not encode account: unrecognized account type")
+}
+
+func (k Keeper) EncodeBaseAccount(acc *types.BaseAccount) ([]byte, error) {
+	if k.cdc.IsAfterUpgrade() {
+		ba := acc.ToProto()
+		return k.cdc.ProtoMarshalBinaryBare(&ba)
+	} else {
+		return k.cdc.LegacyMarshalBinaryBare(&acc)
+	}
+}
+
+// "DecodeModuleAccount" - encodes account interface into protobuf
+func (k Keeper) EncodeModuleAccount(macc *types.ModuleAccount) ([]byte, error) {
+	if k.cdc.IsAfterUpgrade() {
+		ma := macc.ToProto()
+		return k.cdc.ProtoMarshalBinaryBare(&ma)
+	} else {
+		return k.cdc.LegacyMarshalBinaryBare(&macc)
+	}
+}
+
+// "DecodeAccount" - decodes into account interface
+func (k Keeper) DecodeAccount(bz []byte) (exported.Account, error) {
+	acc, err := k.DecodeBaseAccount(bz)
+	if err == nil {
+		return acc, err
+	}
+	return k.DecodeModuleAccount(bz)
+}
+
+func (k Keeper) DecodeBaseAccount(bz []byte) (exported.Account, error) {
+	baseAccount, legacyBaseAcc := types.BaseAccountEncodable{}, types.BaseAccount{}
+	if k.cdc.IsAfterUpgrade() {
+		err := k.cdc.ProtoUnmarshalBinaryBare(bz, &baseAccount)
+		return &baseAccount, err
+	} else {
+		err := k.cdc.LegacyUnmarshalBinaryBare(bz, &legacyBaseAcc)
+		return &legacyBaseAcc, err
+	}
+}
+
+// "DecodeModuleAccount" - encodes account interface into protobuf
+func (k Keeper) DecodeModuleAccount(bz []byte) (exported.ModuleAccountI, error) {
+	moduleAcc, legacyModuleAcc := types.ModuleAccountEncodable{}, types.ModuleAccount{}
+	if k.cdc.IsAfterUpgrade() {
+		err := k.cdc.ProtoUnmarshalBinaryBare(bz, &moduleAcc)
+		return &moduleAcc, err
+	} else {
+		err := k.cdc.LegacyUnmarshalBinaryBare(bz, &legacyModuleAcc)
+		return &legacyModuleAcc, err
+	}
 }

@@ -1,6 +1,10 @@
 package keeper
 
 import (
+	"github.com/pokt-network/pocket-core/codec/types"
+	"math/rand"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/store"
@@ -14,8 +18,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"math/rand"
-	"testing"
 )
 
 var (
@@ -27,11 +29,12 @@ var (
 // nolint: deadcode unused
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
-	var cdc = codec.New()
+	var cdc = codec.NewCodec(types.NewInterfaceRegistry())
 	auth.RegisterCodec(cdc)
 	govTypes.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
+	crypto.RegisterAmino(cdc.AminoCodec().Amino)
+
 	return cdc
 }
 

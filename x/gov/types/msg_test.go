@@ -1,10 +1,10 @@
 package types
 
 import (
-	"fmt"
+	"testing"
+
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestMsgChangeParam_ValidateBasic(t *testing.T) {
@@ -39,9 +39,7 @@ func TestAminoPrimitive(t *testing.T) {
 	bytesbool, _ := cdc.MarshalJSON(false)
 	bytesint, _ := cdc.MarshalJSON(int64(23))
 	assert.NotNil(t, bytesbool)
-	fmt.Println(string(bytesbool))
 	assert.NotNil(t, bytesint)
-	fmt.Println(string(bytesint))
 	var b bool
 	var i int64
 	err := cdc.UnmarshalJSON(bytesbool, &b)

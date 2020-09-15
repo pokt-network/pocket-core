@@ -2,9 +2,10 @@ package iavl
 
 import (
 	"fmt"
-	"github.com/tendermint/tendermint/libs/kv"
 	"io"
 	"sync"
+
+	"github.com/tendermint/tendermint/libs/kv"
 
 	"github.com/pokt-network/pocket-core/store/cachekv"
 	serrors "github.com/pokt-network/pocket-core/store/errors"
@@ -303,7 +304,7 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 		}
 
 		iterator.Close()
-		res.Value = cdc.MustMarshalBinaryLengthPrefixed(KVs)
+		res.Value, _ = cdc.LegacyMarshalBinaryLengthPrefixed(KVs)
 
 	default:
 		msg := fmt.Sprintf("Unexpected Query path: %v", req.Path)

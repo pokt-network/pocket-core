@@ -7,37 +7,41 @@ import (
 	"math"
 	"strings"
 
+	"github.com/pokt-network/pocket-core/codec/types"
+
 	"github.com/pokt-network/pocket-core/codec"
 
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
+var cdc *codec.Codec = codec.NewCodec(types.NewInterfaceRegistry())
+
 // Result is the union of ResponseFormat and ResponseCheckTx.
-type Result struct {
-	// Code is the response code, is stored back on the chain.
-	Code CodeType
-
-	// Codespace is the string referring to the domain of an error
-	Codespace CodespaceType
-
-	// Data is any data returned from the app.
-	// Data has to be length prefixed in order to separate
-	// results from multiple msgs executions
-	Data []byte
-
-	// Log contains the txs log information. NOTE: nondeterministic.
-	Log string
-
-	// GasWanted is the maximum units of work we allow this tx to perform.
-	GasWanted uint64
-
-	// GasUsed is the amount of gas actually consumed. NOTE: unimplemented
-	GasUsed uint64
-
-	// Events contains a slice of Event objects that were emitted during some
-	// execution.
-	Events Events
-}
+//type Result struct {
+//	// Code is the response code, is stored back on the chain.
+//	Code CodeType
+//
+//	// Codespace is the string referring to the domain of an error
+//	Codespace CodespaceType
+//
+//	// Data is any data returned from the app.
+//	// Data has to be length prefixed in order to separate
+//	// results from multiple msgs executions
+//	Data []byte
+//
+//	// Log contains the txs log information. NOTE: nondeterministic.
+//	Log string
+//
+//	// GasWanted is the maximum units of work we allow this tx to perform.
+//	GasWanted uint64
+//
+//	// GasUsed is the amount of gas actually consumed. NOTE: unimplemented
+//	GasUsed uint64
+//
+//	// Events contains a slice of Event objects that were emitted during some
+//	// execution.
+//	Events Events
+//}
 
 // TODO: In the future, more codes may be OK.
 func (res Result) IsOK() bool {
@@ -48,17 +52,17 @@ func (res Result) IsOK() bool {
 type ABCIMessageLogs []ABCIMessageLog
 
 // ABCIMessageLog defines a structure containing an indexed tx ABCI message log.
-type ABCIMessageLog struct {
-	MsgIndex uint16 `json:"msg_index"`
-	Success  bool   `json:"success"`
-	Log      string `json:"log"`
+//type ABCIMessageLog struct {
+//	MsgIndex uint16 `json:"msg_index"`
+//	Success  bool   `json:"success"`
+//	Log      string `json:"log"`
+//
+//	// Events contains a slice of Event objects that were emitted during some
+//	// execution.
+//	Events StringEvents `json:"events"`
+//}
 
-	// Events contains a slice of Event objects that were emitted during some
-	// execution.
-	Events StringEvents `json:"events"`
-}
-
-func NewABCIMessageLog(i uint16, success bool, log string, events Events) ABCIMessageLog {
+func NewABCIMessageLog(i uint32, success bool, log string, events Events) ABCIMessageLog {
 	return ABCIMessageLog{
 		MsgIndex: i,
 		Success:  success,
@@ -70,7 +74,7 @@ func NewABCIMessageLog(i uint16, success bool, log string, events Events) ABCIMe
 // String implements the fmt.Stringer interface for the ABCIMessageLogs type.
 func (logs ABCIMessageLogs) String() (str string) {
 	if logs != nil {
-		raw, err := codec.Cdc.MarshalJSON(logs)
+		raw, err := json.Marshal(logs)
 		if err == nil {
 			str = string(raw)
 		}
@@ -81,24 +85,24 @@ func (logs ABCIMessageLogs) String() (str string) {
 
 // TxResponse defines a structure containing relevant tx data and metadata. The
 // tags are stringified and the log is JSON decoded.
-type TxResponse struct {
-	Height    int64           `json:"height"`
-	TxHash    string          `json:"txhash"`
-	Code      uint32          `json:"code,omitempty"`
-	Data      string          `json:"data,omitempty"`
-	RawLog    string          `json:"raw_log,omitempty"`
-	Logs      ABCIMessageLogs `json:"logs,omitempty"`
-	Info      string          `json:"info,omitempty"`
-	GasWanted int64           `json:"gas_wanted,omitempty"`
-	GasUsed   int64           `json:"gas_used,omitempty"`
-	Codespace string          `json:"codespace,omitempty"`
-	Tx        Tx              `json:"tx,omitempty"`
-	Timestamp string          `json:"timestamp,omitempty"`
-
-	// DEPRECATED: Remove in the next next major release in favor of using the
-	// ABCIMessageLog.Events field.
-	Events StringEvents `json:"events,omitempty"`
-}
+//type TxResponse struct {
+//	Height    int64           `json:"height"`
+//	TxHash    string          `json:"txhash"`
+//	Code      uint32          `json:"code,omitempty"`
+//	Data      string          `json:"data,omitempty"`
+//	RawLog    string          `json:"raw_log,omitempty"`
+//	Logs      ABCIMessageLogs `json:"logs,omitempty"`
+//	Info      string          `json:"info,omitempty"`
+//	GasWanted int64           `json:"gas_wanted,omitempty"`
+//	GasUsed   int64           `json:"gas_used,omitempty"`
+//	Codespace string          `json:"codespace,omitempty"`
+//	Tx        Tx              `json:"tx,omitempty"`
+//	Timestamp string          `json:"timestamp,omitempty"`
+//
+//	// DEPRECATED: Remove in the next next major release in favor of using the
+//	// ABCIMessageLog.Events field.
+//	Events StringEvents `json:"events,omitempty"`
+//}
 
 // NewResponseResultTx returns a TxResponse given a ResultTx from tendermint
 func NewResponseResultTx(res *ctypes.ResultTx, tx Tx, timestamp string) TxResponse {
@@ -118,8 +122,7 @@ func NewResponseResultTx(res *ctypes.ResultTx, tx Tx, timestamp string) TxRespon
 		Info:      res.TxResult.Info,
 		GasWanted: res.TxResult.GasWanted,
 		GasUsed:   res.TxResult.GasUsed,
-		Events:    StringifyEvents(res.TxResult.Events),
-		Tx:        tx,
+		Tx:        types.UnsafePackAny(tx),
 		Timestamp: timestamp,
 	}
 }
@@ -160,7 +163,6 @@ func newTxResponseCheckTx(res *ctypes.ResultBroadcastTxCommit) TxResponse {
 		Info:      res.CheckTx.Info,
 		GasWanted: res.CheckTx.GasWanted,
 		GasUsed:   res.CheckTx.GasUsed,
-		Events:    StringifyEvents(res.CheckTx.Events),
 		Codespace: res.CheckTx.Codespace,
 	}
 }
@@ -187,7 +189,6 @@ func newTxResponseDeliverTx(res *ctypes.ResultBroadcastTxCommit) TxResponse {
 		Info:      res.DeliverTx.Info,
 		GasWanted: res.DeliverTx.GasWanted,
 		GasUsed:   res.DeliverTx.GasUsed,
-		Events:    StringifyEvents(res.DeliverTx.Events),
 		Codespace: res.DeliverTx.Codespace,
 	}
 }
@@ -255,10 +256,6 @@ func (r TxResponse) String() string {
 
 	if r.Timestamp != "" {
 		sb.WriteString(fmt.Sprintf("  Timestamp: %s\n", r.Timestamp))
-	}
-
-	if len(r.Events) > 0 {
-		sb.WriteString(fmt.Sprintf("  Events: \n%s\n", r.Events.String()))
 	}
 
 	return strings.TrimSpace(sb.String())

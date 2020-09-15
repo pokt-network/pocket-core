@@ -11,15 +11,9 @@ import (
 
 const MerkleHashLength = blake2b.Size256
 
-type Range struct {
-	Lower uint64 `json:"lower"`
-	Upper uint64 `json:"upper"`
-}
-
 func (r Range) Equal(r2 Range) bool {
 	return r.Lower == r2.Lower && r.Upper == r2.Upper
 }
-
 func (r Range) Bytes() []byte {
 	return uint64ToBytes(r.Lower, r.Upper)
 }
@@ -44,12 +38,6 @@ func uint64ToBytes(a uint64, x uint64) []byte {
 	return b
 }
 
-// "HashRange" - A structure to represent the merkleHash and the range at an index in the merkle sum tree
-type HashRange struct {
-	Hash  []byte `json:"merkleHash"`
-	Range Range  `json:"range"`
-}
-
 func (hr HashRange) isValidRange() bool {
 	if hr.Range.Upper == 0 {
 		return false
@@ -62,13 +50,6 @@ func (hr HashRange) isValidRange() bool {
 
 func (hr HashRange) Equal(hr2 HashRange) bool {
 	return bytes.Equal(hr.Hash, hr2.Hash) && hr.Range.Lower == hr2.Range.Lower && hr.Range.Upper == hr2.Range.Upper
-}
-
-// "MerkleProof" - A structure used to verify a leaf of the tree.
-type MerkleProof struct {
-	TargetIndex int         `json:"index"`
-	HashRanges  []HashRange `json:"hash_ranges"`
-	Target      HashRange   `json:"target_range"`
 }
 
 // "Validate" - Verifies the Proof from the leaf/cousin node data, the merkle root, and the Proof object
@@ -152,7 +133,7 @@ func GenerateProofs(p []Proof, index int) (mProof MerkleProof, leaf Proof) {
 	// generate Proof for leaf
 	mProof = merkleProof(data, index, &MerkleProof{})
 	// reset leaf index
-	mProof.TargetIndex = index
+	mProof.TargetIndex = int64(index)
 	// get the leaf
 	leaf = proofs[index]
 	// get the targetHashRange

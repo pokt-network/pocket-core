@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	cdcTypes "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	"os"
 	"testing"
@@ -30,10 +31,10 @@ var (
 // nolint: deadcode unused
 // create a codec used only for testing
 func makeTestCodec() *codec.Codec {
-	var cdc = codec.New()
+	var cdc = codec.NewCodec(cdcTypes.NewInterfaceRegistry())
 	types.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
+	crypto.RegisterAmino(cdc.AminoCodec().Amino)
 
 	return cdc
 }

@@ -17,7 +17,11 @@ func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Val
 	if value == nil {
 		return validator, false
 	}
-	validator = types.MustUnmarshalValidator(k.cdc, value)
+	validator, err := types.UnmarshalValidator(k.cdc, value)
+	if err != nil {
+		ctx.Logger().Error("can't get validator: " + err.Error())
+		return validator, false
+	}
 	_ = k.validatorCache.AddWithCtx(ctx, addr.String(), validator)
 	return validator, true
 }
@@ -25,9 +29,14 @@ func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Val
 // SetValidator - Store validator in the main store and state stores (stakingset/ unstakingset)
 func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalValidator(k.cdc, validator)
-	_ = store.Set(types.KeyForValByAllVals(validator.Address), bz)
-
+	bz, err := types.MarshalValidator(k.cdc, validator)
+	if err != nil {
+		ctx.Logger().Error("could not marshal validator: " + err.Error())
+	}
+	err = store.Set(types.KeyForValByAllVals(validator.Address), bz)
+	if err != nil {
+		ctx.Logger().Error("could not set validator: " + err.Error())
+	}
 	if validator.IsUnstaking() {
 		// Adds to unstaking validator queue
 		k.SetUnstakingValidator(ctx, validator)
@@ -56,8 +65,25 @@ func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		validator, err := types.UnmarshalValidator(k.cdc, iterator.Value())
+		if err != nil {
+			ctx.Logger().Error("can't get validator in GetAllValidators: " + err.Error())
+			continue
+		}
 		validators = append(validators, validator)
+	}
+	return validators
+}
+
+// GetAllValidators - Retrieve set of all validators with no limits from the main store
+func (k Keeper) GetAllValidatorsProto(ctx sdk.Ctx) (validators []*types.ValidatorProto) {
+	validators = make([]*types.ValidatorProto, 0)
+	store := ctx.KVStore(k.storeKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		validator, _ := types.UnmarshalProtoValidator(k.cdc, iterator.Value())
+		validators = append(validators, &validator)
 	}
 	return validators
 }
@@ -69,7 +95,11 @@ func (k Keeper) GetAllValidatorsWithOpts(ctx sdk.Ctx, opts types.QueryValidators
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		validator, err := types.UnmarshalValidator(k.cdc, iterator.Value())
+		if err != nil {
+			ctx.Logger().Error("could not unmarshal validator in GetAllValidatorsWithOpts: ", err.Error())
+			continue
+		}
 		if opts.IsValid(validator) {
 			validators = append(validators, validator)
 		}
@@ -85,7 +115,11 @@ func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []typ
 	defer iterator.Close()
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		validator, err := types.UnmarshalValidator(k.cdc, iterator.Value())
+		if err != nil {
+			ctx.Logger().Error("could not unmarshal validator in GetValidators: ", err.Error())
+			continue
+		}
 		validators[i] = validator
 		i++
 	}
@@ -106,7 +140,11 @@ func (k Keeper) IterateAndExecuteOverVals(
 	defer iterator.Close()
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
-		validator := types.MustUnmarshalValidator(k.cdc, iterator.Value())
+		validator, err := types.UnmarshalValidator(k.cdc, iterator.Value())
+		if err != nil {
+			ctx.Logger().Error("could not unmarshal validator in IterateAndExecuteOverVals: ", err.Error())
+			continue
+		}
 		stop := fn(i, validator) // XXX is this safe will the validator unexposed fields be able to get written to?
 		if stop {
 			break

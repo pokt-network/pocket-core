@@ -1,15 +1,16 @@
 package crypto
 
 import (
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/tendermint/go-amino"
 	cryptoAmino "github.com/tendermint/tendermint/crypto/encoding/amino"
 )
 
-var cdc = amino.NewCodec()
+var cdc = codec.NewLegacyAminoCodec()
 
 func init() {
-	RegisterAmino(cdc)
-	cryptoAmino.RegisterAmino(cdc)
+	RegisterAmino(cdc.Amino)
+	cryptoAmino.RegisterAmino(cdc.Amino)
 }
 
 // RegisterAmino registers all go-crypto related types in the given (amino) codec.

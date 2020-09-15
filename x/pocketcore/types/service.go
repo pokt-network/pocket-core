@@ -226,13 +226,6 @@ func InitClientBlockAllowance(allowance int) {
 	GlobalPocketConfig.ClientBlockSyncAllowance = allowance
 }
 
-// response structure for the relay
-type RelayResponse struct {
-	Signature string     `json:"signature"` // signature from the node in hex
-	Response  string     `json:"payload"`   // response to relay
-	Proof     RelayProof `json:"proof"`     // to be signed by the client
-}
-
 // "Validate" - The node validates the response after signing
 func (rr RelayResponse) Validate() sdk.Error {
 	// cannot contain empty response

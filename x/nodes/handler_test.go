@@ -97,7 +97,7 @@ func Test_handleMsgUnjail(t *testing.T) {
 func Test_handleStake(t *testing.T) {
 	type args struct {
 		ctx sdk.Context
-		msg types.MsgStake
+		msg types.MsgNodeStake
 		k   keeper.Keeper
 	}
 	tests := []struct {

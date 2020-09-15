@@ -12,10 +12,6 @@ const (
 	StakedPoolName = "application_staked_tokens_pool"
 )
 
-type Pool struct {
-	Tokens sdk.Int
-}
-
 // Tokens - tracking staked token supply
 type StakingPool Pool
 

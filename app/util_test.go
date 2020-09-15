@@ -28,7 +28,7 @@ func TestBuildSignMultisig(t *testing.T) {
 		ToAddress:   kp2.GetAddress(),
 		Amount:      sdk.NewInt(1),
 	}
-	bz, err := gov.BuildAndSignMulti(memCodec(), cb.GetAddress(), pms, msg, getInMemoryTMClient(), kb, "test", 10000000)
+	bz, err := gov.BuildAndSignMulti(memCodec(), cb.GetAddress(), pms, &msg, getInMemoryTMClient(), kb, "test", 10000000)
 	assert.Nil(t, err)
 	bz, err = gov.SignMulti(memCodec(), kp2.GetAddress(), bz, kps, getInMemoryTMClient(), kb, "test")
 	assert.Nil(t, err)

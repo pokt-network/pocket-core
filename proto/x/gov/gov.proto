@@ -1,0 +1,34 @@
+syntax = "proto3";
+package x.gov;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/pokt-network/pocket-core/x/gov/types";
+
+message MsgChangeParam {
+	bytes fromAddress = 1 [(gogoproto.jsontag) = "address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
+	string paramKey = 2 [(gogoproto.jsontag) = "param_key"];
+	bytes paramVal = 3 [(gogoproto.jsontag) = "param_value"];
+}
+
+message MsgDAOTransfer {
+	bytes fromAddress = 1 [(gogoproto.jsontag) = "from_address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
+	bytes toAddress = 2 [(gogoproto.jsontag) = "to_address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
+	string amount = 3 [(gogoproto.jsontag) = "amount",(gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int"];
+	string action = 4 [(gogoproto.jsontag) = "action"];
+}
+
+message MsgUpgrade {
+	bytes address = 1 [(gogoproto.jsontag) = "address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
+	Upgrade upgrade = 2 [(gogoproto.jsontag) = "upgrade",(gogoproto.nullable) = false];
+}
+
+message Upgrade {
+	int64 height = 1 [(gogoproto.jsontag) = "Height"];
+	string version = 2 [(gogoproto.jsontag) = "Version"];
+}
+
+message ACLPair {
+	string key = 1 [(gogoproto.jsontag) = "acl_key"];
+	bytes addr = 2 [(gogoproto.jsontag) = "address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
+}

@@ -2,21 +2,31 @@ package types
 
 import (
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/crypto"
+
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/exported"
 )
 
 // Register concrete types on codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterConcrete(MsgStake{}, "pos/MsgStake", nil)
-	cdc.RegisterConcrete(MsgBeginUnstake{}, "pos/MsgBeginUnstake", nil)
-	cdc.RegisterConcrete(MsgUnjail{}, "pos/MsgUnjail", nil)
-	cdc.RegisterConcrete(MsgSend{}, "pos/Send", nil)
+	cdc.RegisterStructure(MsgNodeStake{}, "pos/MsgNodeStake")
+	cdc.RegisterStructure(MsgBeginUnstake{}, "pos/MsgBeginUnstake")
+	cdc.RegisterStructure(MsgUnjail{}, "pos/MsgUnjail")
+	cdc.RegisterStructure(MsgSend{}, "pos/Send")
+	cdc.RegisterStructure(MsgStake{}, "pos/MsgStake")
+	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgNodeStake{}, &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, MsgStake{})
+	cdc.RegisterImplementation((*sdk.LegacyMsg)(nil), &MsgNodeStake{}, &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, MsgStake{})
+	cdc.RegisterInterface("nodes/validatorI", (*exported.ValidatorI)(nil), &ValidatorProto{})
+
 }
 
 var ModuleCdc *codec.Codec // generic sealed codec to be used throughout this module
 
 func init() {
-	ModuleCdc = codec.New()
+	ModuleCdc = codec.NewCodec(types.NewInterfaceRegistry())
 	RegisterCodec(ModuleCdc)
-	codec.RegisterCrypto(ModuleCdc)
-	ModuleCdc.Seal()
+	crypto.RegisterAmino(ModuleCdc.AminoCodec().Amino)
+	ModuleCdc.AminoCodec().Seal()
 }

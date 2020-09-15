@@ -2,17 +2,21 @@ package types
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/crypto"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"math/rand"
 	"reflect"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/codec/types"
+
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
-var msgAppStake MsgAppStake
+var msgAppStake MsgApplicationStake
 var msgBeginAppUnstake MsgBeginAppUnstake
 var msgAppUnjail MsgAppUnjail
+var pk crypto.Ed25519PublicKey
 
 func init() {
 	var pub crypto.Ed25519PublicKey
@@ -21,13 +25,14 @@ func init() {
 		_ = err
 	}
 
-	moduleCdc = codec.New()
-	RegisterCodec(moduleCdc)
-	codec.RegisterCrypto(moduleCdc)
-	moduleCdc.Seal()
+	pk = pub
 
-	msgAppStake = MsgAppStake{
-		PubKey: pub,
+	cdc := codec.NewCodec(types.NewInterfaceRegistry())
+	RegisterCodec(cdc)
+	crypto.RegisterAmino(cdc.AminoCodec().Amino)
+
+	msgAppStake = MsgApplicationStake{
+		PubKey: pub.RawString(),
 		Chains: []string{"0001"},
 		Value:  sdk.NewInt(10),
 	}
@@ -37,7 +42,7 @@ func init() {
 
 func TestMsgApp_GetSigners(t *testing.T) {
 	type args struct {
-		msgAppStake MsgAppStake
+		msgAppStake MsgApplicationStake
 	}
 	tests := []struct {
 		name string
@@ -47,7 +52,7 @@ func TestMsgApp_GetSigners(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgAppStake},
-			want: sdk.Address(msgAppStake.PubKey.Address()),
+			want: sdk.Address(pk.Address()),
 		},
 	}
 	for _, tt := range tests {
@@ -60,7 +65,12 @@ func TestMsgApp_GetSigners(t *testing.T) {
 }
 func TestMsgApp_GetSignBytes(t *testing.T) {
 	type args struct {
-		msgAppStake MsgAppStake
+		msgAppStake MsgApplicationStake
+	}
+	res, err := ModuleCdc.MarshalJSON(&msgAppStake)
+	res = sdk.MustSortJSON(res)
+	if err != nil {
+		panic(err)
 	}
 	tests := []struct {
 		name string
@@ -70,7 +80,7 @@ func TestMsgApp_GetSignBytes(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgAppStake},
-			want: sdk.MustSortJSON(moduleCdc.MustMarshalJSON(msgAppStake)),
+			want: res,
 		},
 	}
 	for _, tt := range tests {
@@ -83,7 +93,7 @@ func TestMsgApp_GetSignBytes(t *testing.T) {
 }
 func TestMsgApp_Route(t *testing.T) {
 	type args struct {
-		msgAppStake MsgAppStake
+		msgAppStake MsgApplicationStake
 	}
 	tests := []struct {
 		name string
@@ -106,7 +116,7 @@ func TestMsgApp_Route(t *testing.T) {
 }
 func TestMsgApp_Type(t *testing.T) {
 	type args struct {
-		msgAppStake MsgAppStake
+		msgAppStake MsgApplicationStake
 	}
 	tests := []struct {
 		name string
@@ -129,7 +139,7 @@ func TestMsgApp_Type(t *testing.T) {
 }
 func TestMsgApp_ValidateBasic(t *testing.T) {
 	type args struct {
-		msgAppStake MsgAppStake
+		msgAppStake MsgApplicationStake
 	}
 	tests := []struct {
 		name string
@@ -139,22 +149,22 @@ func TestMsgApp_ValidateBasic(t *testing.T) {
 	}{
 		{
 			name: "errs if no Address",
-			args: args{MsgAppStake{}},
+			args: args{MsgApplicationStake{}},
 			want: ErrNilApplicationAddr(DefaultCodespace),
 		},
 		{
 			name: "errs if no stake lower than zero",
-			args: args{MsgAppStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(-1)}},
+			args: args{MsgApplicationStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(-1)}},
 			want: ErrBadStakeAmount(DefaultCodespace),
 		},
 		{
 			name: "errs if no native chains supported",
-			args: args{MsgAppStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(1), Chains: []string{}}},
+			args: args{MsgApplicationStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(1), Chains: []string{}}},
 			want: ErrNoChains(DefaultCodespace),
 		},
 		{
 			name: "returns err",
-			args: args{MsgAppStake{PubKey: msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"aaaaaa"}}},
+			args: args{MsgApplicationStake{PubKey: msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"aaaaaa"}}},
 			want: ErrInvalidNetworkIdentifier("application", fmt.Errorf("net id length is > 2")),
 		},
 		{
@@ -185,7 +195,7 @@ func TestMsgBeginAppUnstake_GetSigners(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgBeginAppUnstake},
-			want: sdk.Address(msgAppStake.PubKey.Address()),
+			want: sdk.Address(pk.Address()),
 		},
 	}
 	for _, tt := range tests {
@@ -200,6 +210,10 @@ func TestMsgBeginAppUnstake_GetSignBytes(t *testing.T) {
 	type args struct {
 		msgBeginAppUnstake MsgBeginAppUnstake
 	}
+	res, err := ModuleCdc.MarshalJSON(&msgBeginAppUnstake)
+	if err != nil {
+		panic(err)
+	}
 	tests := []struct {
 		name string
 		args
@@ -208,7 +222,7 @@ func TestMsgBeginAppUnstake_GetSignBytes(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgBeginAppUnstake},
-			want: sdk.MustSortJSON(moduleCdc.MustMarshalJSON(msgBeginAppUnstake)),
+			want: res,
 		},
 	}
 	for _, tt := range tests {
@@ -369,6 +383,10 @@ func TestMsgAppUnjail_GetSignBytes(t *testing.T) {
 	type args struct {
 		msgAppUnjail MsgAppUnjail
 	}
+	res, err := ModuleCdc.MarshalJSON(&msgAppUnjail)
+	if err != nil {
+		panic(err)
+	}
 	tests := []struct {
 		name string
 		args
@@ -377,7 +395,7 @@ func TestMsgAppUnjail_GetSignBytes(t *testing.T) {
 		{
 			name: "return signers",
 			args: args{msgAppUnjail},
-			want: sdk.MustSortJSON(moduleCdc.MustMarshalJSON(msgAppUnjail)),
+			want: res,
 		},
 	}
 	for _, tt := range tests {

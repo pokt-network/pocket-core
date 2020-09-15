@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth/exported"
@@ -33,7 +32,7 @@ func (app PocketCoreApp) QueryBlock(height *int64) (blockJSON []byte, err error)
 	if err != nil {
 		return nil, err
 	}
-	return codec.Cdc.MarshalJSONIndent(b, "", "  ")
+	return Codec().MarshalJSONIndent(b, "", "  ")
 }
 
 func (app PocketCoreApp) QueryTx(hash string, prove bool) (res *core_types.ResultTx, err error) {

@@ -24,12 +24,12 @@ func ChangeParamsTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase
 		ParamKey:    aclKey,
 		ParamVal:    valueBytes,
 	}
-	txBuilder, cliCtx := newTx(cdc, msg, fromAddress, tmNode, keybase, passphrase, fee)
+	txBuilder, cliCtx := newTx(cdc, &msg, fromAddress, tmNode, keybase, passphrase, fee)
 	err = msg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
 }
 
 func DAOTransferTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress, toAddress sdk.Address, amount sdk.Int, action, passphrase string, fee int64) (*sdk.TxResponse, error) {
@@ -39,12 +39,12 @@ func DAOTransferTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase,
 		Amount:      amount,
 		Action:      action,
 	}
-	txBuilder, cliCtx := newTx(cdc, msg, fromAddress, tmNode, keybase, passphrase, fee)
+	txBuilder, cliCtx := newTx(cdc, &msg, fromAddress, tmNode, keybase, passphrase, fee)
 	err := msg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
 }
 
 func UpgradeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress sdk.Address, upgrade types.Upgrade, passphrase string, fee int64) (*sdk.TxResponse, error) {
@@ -52,12 +52,12 @@ func UpgradeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fro
 		Address: fromAddress,
 		Upgrade: upgrade,
 	}
-	txBuilder, cliCtx := newTx(cdc, msg, fromAddress, tmNode, keybase, passphrase, fee)
+	txBuilder, cliCtx := newTx(cdc, &msg, fromAddress, tmNode, keybase, passphrase, fee)
 	err := msg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
 }
 
 func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string, fee int64) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {

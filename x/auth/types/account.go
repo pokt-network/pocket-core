@@ -121,6 +121,18 @@ func (acc BaseAccount) MarshalYAML() (interface{}, error) {
 	return string(bs), err
 }
 
+func (acc BaseAccount) ToProto() BaseAccountEncodable {
+	var pk string
+	if acc.PubKey != nil {
+		pk = acc.PubKey.RawString()
+	}
+	return BaseAccountEncodable{
+		Address: acc.Address,
+		Coins:   acc.Coins,
+		PubKey:  pk,
+	}
+}
+
 type marshalBaseAccount struct {
 	Address sdk.Address
 	Coins   sdk.Coins
@@ -307,4 +319,89 @@ func (ma ModuleAccount) MarshalYAML() (interface{}, error) {
 	}
 
 	return string(bs), nil
+}
+
+func (ma ModuleAccount) ToProto() ModuleAccountEncodable {
+	ba := ma.BaseAccount.ToProto()
+	return ModuleAccountEncodable{
+		BaseAccountEncodable: ba,
+		Name:                 ma.Name,
+		Permissions:          ma.Permissions,
+	}
+}
+
+// proto base account encodable
+var _ exported.Account = &BaseAccountEncodable{}
+
+func (m *BaseAccountEncodable) GetAddress() sdk.Address {
+	return m.Address
+}
+
+func (m *BaseAccountEncodable) SetAddress(addr sdk.Address) error {
+	m.Address = addr
+	return nil
+}
+
+func (m *BaseAccountEncodable) GetPubKey() crypto.PublicKey {
+	res, _ := crypto.NewPublicKey(m.PubKey)
+	return res
+}
+
+func (m *BaseAccountEncodable) SetPubKey(pk crypto.PublicKey) error {
+	m.PubKey = pk.RawString()
+	return nil
+}
+
+func (m *BaseAccountEncodable) GetCoins() sdk.Coins {
+	return m.Coins
+}
+
+func (m *BaseAccountEncodable) SetCoins(c sdk.Coins) error {
+	m.Coins = c
+	return nil
+}
+
+func (m *BaseAccountEncodable) SpendableCoins(blockTime time.Time) sdk.Coins {
+	return m.Coins
+}
+
+func (m *BaseAccountEncodable) FromProto() BaseAccount {
+	var pk crypto.PublicKey
+	if m.PubKey != "" {
+		pk, _ = crypto.NewPublicKey(m.PubKey)
+	}
+	return BaseAccount{
+		Address: m.Address,
+		Coins:   m.Coins,
+		PubKey:  pk,
+	}
+}
+
+var _ exported.Account = (*ModuleAccountEncodable)(nil)
+var _ exported.ModuleAccountI = (*ModuleAccountEncodable)(nil)
+
+func (m *ModuleAccountEncodable) GetName() string {
+	return m.Name
+}
+
+func (m *ModuleAccountEncodable) GetPermissions() []string {
+	return m.Permissions
+}
+
+func (m *ModuleAccountEncodable) HasPermission(s string) bool {
+	for _, perm := range m.Permissions {
+		if perm == s {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *ModuleAccountEncodable) FromProto() ModuleAccount {
+	ba := m.BaseAccountEncodable.FromProto()
+	return ModuleAccount{
+		BaseAccount: &ba,
+		Name:        m.Name,
+		Permissions: m.Permissions,
+	}
 }

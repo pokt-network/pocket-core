@@ -49,9 +49,9 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	// get leaf and cousin node
 	leafNode := types.GetProof(header, types.RelayEvidence, neededLeafIndex)
 	// create proof message
-	proofMsg := types.MsgProof{
+	proofMsg := types.MsgProtoProof{
 		MerkleProof:  merkleProofs,
-		Leaf:         leafNode.(types.RelayProof),
+		Leaf:         leafNode.ToProto(),
 		EvidenceType: types.RelayEvidence,
 	}
 	err = keeper.SetClaim(mockCtx, claimMsg)

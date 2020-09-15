@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/hex"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -89,5 +88,5 @@ func TestParams_ParamSetPairs(t *testing.T) {
 
 func TestParams_String(t *testing.T) {
 	df := DefaultParams()
-	assert.NotPanics(t, func() { fmt.Printf("%s", df.String()) })
+	assert.NotPanics(t, func() { _ = df.String() })
 }

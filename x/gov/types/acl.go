@@ -85,7 +85,7 @@ func (a ACL) String() string {
 %v`, a.GetAll())
 }
 
-type ACLPair struct {
-	Key  string      `json:"acl_key"`
-	Addr sdk.Address `json:"address"`
-}
+//type ACLPair struct {
+//	Key  string      `json:"acl_key"`
+//	Addr sdk.Address `json:"address"`
+//}

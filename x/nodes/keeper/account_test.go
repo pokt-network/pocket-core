@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"fmt"
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestKeeper_SendCoins(t *testing.T) {

@@ -201,7 +201,7 @@ func validateGenesisStateValidators(validators []types.Validator, minimumStake s
 		val := validators[i]
 		strKey := val.PublicKey.RawString()
 		if _, ok := addrMap[strKey]; ok {
-			return fmt.Errorf("duplicate validator in genesis state: address %v", val.GetAddress())
+			return fmt.Errorf("duplicate validator in genesis state: address %v", val.Address)
 		}
 		if val.StakedTokens.IsZero() && !val.IsUnstaked() {
 			return fmt.Errorf("staked/unstaked genesis validator cannot have zero stake, validator: %v", val)

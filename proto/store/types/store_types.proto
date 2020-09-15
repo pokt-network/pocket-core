@@ -1,0 +1,15 @@
+syntax = "proto3";
+package store.types;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/pokt-network/pocket-core/store/types";
+
+// CommitID defines the committment information when a specific store is
+// committed.
+message CommitID {
+	option (gogoproto.goproto_stringer) = false;
+
+	int64 version = 1;
+	bytes hash = 2;
+}

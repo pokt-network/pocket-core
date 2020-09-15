@@ -102,7 +102,9 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 }
 
 // BeginBlock module begin-block
-func (AppModule) BeginBlock(_ sdk.Ctx, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Ctx, _ abci.RequestBeginBlock) {
+	am.accountKeeper.UpgradeCodec(ctx)
+}
 
 // EndBlock module end-block
 func (AppModule) EndBlock(_ sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {

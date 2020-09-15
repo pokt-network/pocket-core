@@ -117,6 +117,8 @@ func InclusiveEndBytes(inclusiveBytes []byte) (exclusiveBytes []byte) {
 // key-value result for iterator queries
 type KVPair = types.KVPair
 
+type KvPairs []types.KVPair
+
 //----------------------------------------
 
 // TraceContext contains TraceKVStore context data. It will be written with

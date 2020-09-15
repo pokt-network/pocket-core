@@ -65,14 +65,20 @@ func (k Keeper) getUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) (
 	if bz == nil {
 		return []sdk.Address{}
 	}
-	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &valAddrs)
+	err := k.cdc.UnmarshalBinaryLengthPrefixed(bz, &valAddrs)
+	if err != nil {
+		panic(err)
+	}
 	return valAddrs
 }
 
 // setUnstakingApplications - Store applications in unstaking queue at a certain unstaking time
 func (k Keeper) setUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time, keys []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshalBinaryLengthPrefixed(keys)
+	bz, err := k.cdc.MarshalBinaryLengthPrefixed(keys)
+	if err != nil {
+		panic(err)
+	}
 	_ = store.Set(types.KeyForUnstakingApps(unstakingTime), bz)
 }
 
@@ -95,7 +101,10 @@ func (k Keeper) getMatureApplications(ctx sdk.Ctx) (matureValsAddrs []sdk.Addres
 	defer unstakingValsIterator.Close()
 	for ; unstakingValsIterator.Valid(); unstakingValsIterator.Next() {
 		var applications []sdk.Address
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &applications)
+		err := k.cdc.UnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &applications)
+		if err != nil {
+			panic(err)
+		}
 		matureValsAddrs = append(matureValsAddrs, applications...)
 	}
 	return matureValsAddrs
@@ -108,7 +117,10 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 	defer unstakingApplicationsIterator.Close()
 	for ; unstakingApplicationsIterator.Valid(); unstakingApplicationsIterator.Next() {
 		var unstakingVals []sdk.Address
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(unstakingApplicationsIterator.Value(), &unstakingVals)
+		err := k.cdc.UnmarshalBinaryLengthPrefixed(unstakingApplicationsIterator.Value(), &unstakingVals)
+		if err != nil {
+			panic(err)
+		}
 		for _, valAddr := range unstakingVals {
 			val, found := k.GetApplication(ctx, valAddr)
 			if !found {
@@ -122,10 +134,10 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 			}
 			k.FinishUnstakingApplication(ctx, val)
 			ctx.EventManager().EmitEvent(
-				sdk.NewEvent(
+				sdk.Event(sdk.NewEvent(
 					types.EventTypeCompleteUnstaking,
 					sdk.NewAttribute(types.AttributeKeyApplication, valAddr.String()),
-				),
+				)),
 			)
 		}
 		_ = store.Delete(unstakingApplicationsIterator.Key())

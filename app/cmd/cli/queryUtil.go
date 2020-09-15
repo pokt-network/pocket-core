@@ -53,7 +53,7 @@ func init() {
 			GetACLPath = route.Path
 		case "QueryUpgrade":
 			GetUpgradePath = route.Path
-		case "QueryDAO":
+		case "QueryDAOOwner":
 			GetDAOOwnerPath = route.Path
 		case "QueryHeight":
 			GetHeightPath = route.Path

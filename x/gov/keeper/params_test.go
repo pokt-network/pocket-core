@@ -1,9 +1,10 @@
 package keeper
 
 import (
-	"github.com/magiconair/properties/assert"
-	"github.com/pokt-network/pocket-core/x/gov/types"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/x/gov/types"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestKeeper_GetParams(t *testing.T) {

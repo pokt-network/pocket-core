@@ -32,7 +32,7 @@ func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types
 // SetApplication - Add a single application the main store
 func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := k.cdc.MarshalBinaryLengthPrefixed(application)
+	bz, err := types.MarshalApplication(k.cdc, application)
 	if err != nil {
 		k.Logger(ctx).Error("could not marshal application object")
 		os.Exit(1)

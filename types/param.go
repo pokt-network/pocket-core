@@ -33,7 +33,7 @@ type Subspace struct {
 // NewSubspace constructs a store with namestore
 func NewSubspace(name string) (res Subspace) {
 	res = Subspace{
-		cdc:  codec.Cdc,
+		cdc:  cdc,
 		key:  ParamsKey,
 		tkey: ParamsTKey,
 		name: []byte(name),

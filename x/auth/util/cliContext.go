@@ -185,19 +185,6 @@ func (ctx CLIContext) QueryStore(key bytes.HexBytes, storeName string) ([]byte, 
 	return ctx.queryStore(key, storeName, "key")
 }
 
-// QuerySubspace performs a query to a Tendermint node with the provided
-// store name and subspace. It returns key value pair and height of the query
-// upon success or an error if the query fails.
-func (ctx CLIContext) QuerySubspace(subspace []byte, storeName string) (res []sdk.KVPair, height int64, err error) {
-	resRaw, height, err := ctx.queryStore(subspace, storeName, "subspace")
-	if err != nil {
-		return res, height, err
-	}
-
-	ctx.Codec.MustUnmarshalBinaryLengthPrefixed(resRaw, &res)
-	return
-}
-
 // query performs a query to a Tendermint node with the provided store name
 // and path. It returns the result and height of the query upon success
 // or an error if the query fails. If query height is invalid, an error will be returned.

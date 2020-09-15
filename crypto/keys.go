@@ -78,13 +78,15 @@ func NewPublicKey(hexString string) (PublicKey, error) {
 }
 
 func NewPublicKeyBz(b []byte) (PublicKey, error) {
-	switch len(b) {
-	case Ed25519PubKeySize:
+	x := len(b)
+	if x == Ed25519PubKeySize {
 		return Ed25519PublicKey{}.NewPublicKey(b)
-	case Secp256k1PublicKeySize:
+	} else if x == Secp256k1PublicKeySize {
 		return Secp256k1PublicKey{}.NewPublicKey(b)
-	default:
-		return nil, errors.New("unsupported public key type")
+	} else if pk, err := PublicKeyMultiSignature.NewPublicKey(PublicKeyMultiSignature{}, b); err == nil {
+		return pk, err
+	} else {
+		return nil, fmt.Errorf("unsupported public key type, length of: %d", x)
 	}
 }
 

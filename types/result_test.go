@@ -3,7 +3,6 @@ package types
 import (
 	"testing"
 
-	"github.com/pokt-network/pocket-core/codec"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +24,7 @@ func TestParseABCILog(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, res, 1)
 	require.Equal(t, res[0].Log, "")
-	require.Equal(t, res[0].MsgIndex, uint16(1))
+	require.Equal(t, res[0].MsgIndex, uint32(1))
 	require.True(t, res[0].Success)
 }
 
@@ -34,7 +33,7 @@ func TestABCIMessageLog(t *testing.T) {
 	msgLog := NewABCIMessageLog(0, true, "", events)
 
 	msgLogs := ABCIMessageLogs{msgLog}
-	bz, err := codec.Cdc.MarshalJSON(msgLogs)
+	bz, err := cdc.MarshalJSON(msgLogs)
 	require.NoError(t, err)
 	require.Equal(t, string(bz), msgLogs.String())
 }

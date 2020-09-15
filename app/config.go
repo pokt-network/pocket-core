@@ -8,6 +8,7 @@ import (
 	"github.com/go-kit/kit/log/term"
 	"github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 	cfg "github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	kb "github.com/pokt-network/pocket-core/crypto/keys"
@@ -23,7 +24,11 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/spf13/cobra"
+<<<<<<< HEAD
 	config2 "github.com/tendermint/tendermint/config"
+=======
+	cryptoamino "github.com/tendermint/tendermint/crypto/encoding/amino"
+>>>>>>> Clean Commit With All changes for #1077
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
 	cmn "github.com/tendermint/tendermint/libs/os"
@@ -625,7 +630,7 @@ func Codec() *codec.Codec {
 
 func MakeCodec() {
 	// create a new codec
-	cdc = codec.New()
+	cdc = codec.NewCodec(types2.NewInterfaceRegistry())
 	// register all of the app module types
 	module.NewBasicManager(
 		apps.AppModuleBasic{},
@@ -637,7 +642,8 @@ func MakeCodec() {
 	// register the sdk types
 	sdk.RegisterCodec(cdc)
 	// register the crypto types
-	codec.RegisterCrypto(cdc)
+	crypto.RegisterAmino(cdc.AminoCodec().Amino)
+	cryptoamino.RegisterAmino(cdc.AminoCodec().Amino)
 }
 
 func Credentials() string {

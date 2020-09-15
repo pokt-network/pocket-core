@@ -1,0 +1,118 @@
+syntax = "proto3";
+package x.pocketcore;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/pokt-network/pocket-core/x/pocketcore/types";
+
+// SessionHeader defines the header for session information
+message SessionHeader {
+	option (gogoproto.goproto_getters) = false;
+
+	string applicationPubKey = 1 [(gogoproto.jsontag) = "app_public_key"];
+	string chain = 2 [(gogoproto.jsontag) = "chain"];
+	int64 sessionBlockHeight = 3 [(gogoproto.jsontag) = "session_height"];
+}
+
+message Session {
+	option (gogoproto.goproto_getters) = false;
+
+	SessionHeader sessionHeader = 1 [(gogoproto.jsontag)="header", (gogoproto.nullable)=false];
+	bytes sessionKey = 2 [(gogoproto.jsontag)="key", (gogoproto.casttype)="SessionKey"];
+	repeated bytes sessionNodes = 3 [(gogoproto.jsontag)="nodes", (gogoproto.castrepeated)="SessionNodes"];
+}
+
+message MsgClaim {
+	option (gogoproto.goproto_getters) = false;
+
+	SessionHeader sessionHeader = 1 [(gogoproto.jsontag) = "header", (gogoproto.nullable)= false];
+	HashRange merkleRoot = 2 [(gogoproto.jsontag) = "merkle_root", (gogoproto.nullable)= false];
+	int64 totalProofs = 3 [(gogoproto.jsontag) = "total_proofs"];
+	bytes fromAddress = 4 [(gogoproto.jsontag) = "from_address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
+	int32 evidenceType = 5 [(gogoproto.jsontag) = "evidence_type", (gogoproto.casttype) = "EvidenceType"];
+	int64 expirationHeight = 6 [(gogoproto.jsontag) = "expiration_height"];
+}
+
+message MsgProtoProof {
+	option (gogoproto.goproto_getters) = false;
+
+	MerkleProof merkleProof = 1 [(gogoproto.jsontag) = "merkle_proofs", (gogoproto.nullable) = false];
+	ProofI leaf = 2 [(gogoproto.jsontag) = "leaf", (gogoproto.nullable) = false];
+	int32 evidenceType = 3 [(gogoproto.jsontag) = "evidence_type", (gogoproto.casttype) = "EvidenceType"];
+}
+
+message ProofI {
+	option (gogoproto.goproto_getters) = false;
+
+	oneof proof {
+		RelayProof relayProof = 1;
+		ChallengeProofInvalidData challengeProof = 2;
+	}
+}
+
+message EvidenceEncodable {
+	option (gogoproto.goproto_getters) = false;
+
+	bytes bloomBytes = 1 [(gogoproto.jsontag) = "bloom_bytes"];
+	SessionHeader sessionHeader = 2 [(gogoproto.jsontag) = "evidence_header"];
+	int64 numOfProofs = 3  [(gogoproto.jsontag) = "num_of_proofs"];
+	repeated ProofI proofs= 4 [(gogoproto.jsontag) = "proofs", (gogoproto.castrepeated)="ProofIs",(gogoproto.nullable) = false];
+	int32 evidenceType = 5 [(gogoproto.jsontag) = "evidence_type", (gogoproto.casttype) = "EvidenceType"];
+}
+
+message RelayProof {
+	option (gogoproto.goproto_getters) = false;
+
+	string requestHash = 1 [(gogoproto.jsontag) = "request_hash"];
+	int64 entropy = 2 [(gogoproto.jsontag) = "entropy"];
+	int64 sessionBlockHeight = 3 [(gogoproto.jsontag) = "session_block_height"];
+	string servicerPubKey = 4 [(gogoproto.jsontag) = "servicer_pub_key"];
+	string blockchain = 5 [(gogoproto.jsontag) = "blockchain"];
+	AAT token = 6 [(gogoproto.jsontag) = "aat", (gogoproto.nullable) = false];
+	string signature = 7 [(gogoproto.jsontag) = "signature"];
+}
+
+message ChallengeProofInvalidData {
+	option (gogoproto.goproto_getters) = false;
+
+	repeated RelayResponse majorityResponses = 1 [(gogoproto.jsontag) = "majority_responses", (gogoproto.nullable) = false];
+	RelayResponse minorityResponse = 2 [(gogoproto.jsontag) = "minority_response",(gogoproto.nullable) = false];
+	bytes reporterAddress = 3 [(gogoproto.jsontag) = "reporters_address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
+}
+
+message RelayResponse {
+	option (gogoproto.goproto_getters) = false;
+
+	string signature = 1 [(gogoproto.jsontag) = "signature"];
+	string response = 2 [(gogoproto.jsontag) = "payload"];
+	RelayProof proof = 3 [(gogoproto.jsontag) = "proof", (gogoproto.nullable) = false];
+}
+
+message AAT {
+	option (gogoproto.goproto_getters) = false;
+	string version = 1 [(gogoproto.jsontag) = "version"];
+	string applicationPublicKey = 2 [(gogoproto.jsontag) = "app_pub_key"];
+	string clientPublicKey = 3 [(gogoproto.jsontag) = "client_pub_key"];
+	string applicationSignature = 4 [(gogoproto.jsontag) = "signature"];
+}
+
+message MerkleProof {
+	option (gogoproto.goproto_getters) = false;
+
+	int64 TargetIndex = 1 [(gogoproto.jsontag) = "index"];
+	repeated HashRange hashRanges = 2 [(gogoproto.jsontag) = "hash_ranges", (gogoproto.nullable) = false];
+	HashRange target = 3 [(gogoproto.jsontag) = "target_range", (gogoproto.nullable) = false];
+}
+
+// Range for merkle sum index tree
+message Range {
+	option (gogoproto.goproto_getters) = false;
+
+	uint64 lower = 1 [(gogoproto.jsontag) = "lower"];
+	uint64 upper = 2 [(gogoproto.jsontag) = "upper"];
+}
+
+message HashRange {
+	bytes hash = 1 [(gogoproto.jsontag) = "merkleHash"];
+	Range range = 2 [(gogoproto.jsontag) = "range", (gogoproto.nullable) = false];
+}

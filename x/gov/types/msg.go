@@ -18,11 +18,11 @@ const (
 
 //----------------------------------------------------------------------------------------------------------------------
 // MsgChangeParam structure for changing governance parameters
-type MsgChangeParam struct {
-	FromAddress sdk.Address `json:"address"`
-	ParamKey    string      `json:"param_key"`
-	ParamVal    []byte      `json:"param_value"`
-}
+// type MsgChangeParam struct {
+// 	FromAddress sdk.Address `json:"address"`
+// 	ParamKey    string      `json:"param_key"`
+// 	ParamVal    []byte      `json:"param_value"`
+// }
 
 // Route provides router key for msg
 func (msg MsgChangeParam) Route() string { return RouterKey }
@@ -63,12 +63,12 @@ func (msg MsgChangeParam) ValidateBasic() sdk.Error {
 //----------------------------------------------------------------------------------------------------------------------
 
 // MsgDAOTransfer structure for changing governance parameters
-type MsgDAOTransfer struct {
-	FromAddress sdk.Address `json:"from_address"`
-	ToAddress   sdk.Address `json:"to_address"`
-	Amount      sdk.Int     `json:"amount"`
-	Action      string      `json:"action"`
-}
+// type MsgDAOTransfer struct {
+// 	FromAddress sdk.Address `json:"from_address"`
+// 	ToAddress   sdk.Address `json:"to_address"`
+// 	Amount      sdk.Int     `json:"amount"`
+// 	Action      string      `json:"action"`
+// }
 
 // Route provides router key for msg
 func (msg MsgDAOTransfer) Route() string { return RouterKey }
@@ -113,10 +113,10 @@ func (msg MsgDAOTransfer) ValidateBasic() sdk.Error {
 //----------------------------------------------------------------------------------------------------------------------
 
 // MsgUpgrade structure for changing governance parameters
-type MsgUpgrade struct {
-	Address sdk.Address `json:"address"`
-	Upgrade Upgrade     `json:"upgrade"`
-}
+// type MsgUpgrade struct {
+// 	Address sdk.Address `json:"address"`
+// 	Upgrade Upgrade     `json:"upgrade"`
+// }
 
 // Route provides router key for msg
 func (msg MsgUpgrade) Route() string { return RouterKey }

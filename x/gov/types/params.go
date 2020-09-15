@@ -3,8 +3,9 @@ package types
 import (
 	"bytes"
 	"fmt"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"strings"
+
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // DefaultCodespace defines the default auth module parameter subspace
@@ -20,7 +21,7 @@ var (
 	UpgradeKey  = []byte("upgrade")
 )
 
-var _ sdk.ParamSet = &Params{}
+var _ sdk.ParamSet = (*Params)(nil)
 
 // Params defines the parameters for the auth module.
 type Params struct {
@@ -55,18 +56,19 @@ func (p *Params) ParamSetPairs() sdk.ParamSetPairs {
 
 // Equal returns a boolean determining if two Params types are identical.
 func (p Params) Equal(p2 Params) bool {
-	bz1 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p)
-	bz2 := ModuleCdc.MustMarshalBinaryLengthPrefixed(&p2)
+	bz1, _ := ModuleCdc.MarshalBinaryLengthPrefixed(&p)
+	bz2, _ := ModuleCdc.MarshalBinaryLengthPrefixed(&p2)
 	return bytes.Equal(bz1, bz2)
 }
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	acl := ACL(make([]ACLPair, 0))
+	u := NewUpgrade(0, "")
 	return Params{
 		ACL:      acl,
 		DAOOwner: sdk.Address{},
-		Upgrade:  NewUpgrade(0, ""),
+		Upgrade:  u,
 	}
 }
 

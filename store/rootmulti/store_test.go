@@ -60,7 +60,7 @@ func TestCacheMultiStoreWithVersion(t *testing.T) {
 	cms, err := ms.CacheMultiStoreWithVersion(cID.Version)
 	require.NoError(t, err)
 
-	// require a valid key lookup yields the correct value
+	// require a valid Key lookup yields the correct value
 	kvStore := cms.GetKVStore(ms.keysByName["store1"])
 	require.NotNil(t, kvStore)
 	kg, _ := kvStore.Get(k)
@@ -206,7 +206,7 @@ func TestMultiStoreQuery(t *testing.T) {
 	require.Nil(t, err)
 
 	// Test bad path.
-	query := abci.RequestQuery{Path: "/key", Data: k, Height: ver}
+	query := abci.RequestQuery{Path: "/Key", Data: k, Height: ver}
 	qres := multi.Query(query)
 	require.EqualValues(t, errors.CodeUnknownRequest, qres.Code)
 	require.EqualValues(t, errors.CodespaceRoot, qres.Codespace)
@@ -217,7 +217,7 @@ func TestMultiStoreQuery(t *testing.T) {
 	require.EqualValues(t, errors.CodespaceRoot, qres.Codespace)
 
 	// Test invalid store name.
-	query.Path = "/garbage/key"
+	query.Path = "/garbage/Key"
 	qres = multi.Query(query)
 	require.EqualValues(t, errors.CodeUnknownRequest, qres.Code)
 	require.EqualValues(t, errors.CodespaceRoot, qres.Codespace)
@@ -225,7 +225,7 @@ func TestMultiStoreQuery(t *testing.T) {
 	// Test valid query with data.
 	query.Path = "/store1/key"
 	qres = multi.Query(query)
-	require.EqualValues(t, errors.CodeOK, qres.Code)
+	require.EqualValues(t, uint32(errors.CodeOK), qres.Code)
 	require.Equal(t, v, qres.Value)
 
 	// Test valid but empty query.
@@ -274,9 +274,9 @@ func hashStores(stores map[types.StoreKey]types.CommitStore) []byte {
 	m := make(map[string][]byte, len(stores))
 	for key, store := range stores {
 		name := key.Name()
-		m[name] = storeInfo{
+		m[name] = StoreInfo{
 			Name: name,
-			Core: storeCore{
+			Core: StoreCore{
 				CommitID: store.LastCommitID(),
 				// StoreType: store.GetStoreType(),
 			},

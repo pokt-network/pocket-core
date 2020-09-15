@@ -3,16 +3,17 @@ package keeper
 // DONTCOVER
 
 import (
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
-
 	"github.com/pokt-network/pocket-core/codec"
+	cdcTypes "github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	authTypes "github.com/pokt-network/pocket-core/x/auth/types"
 	govKeeper "github.com/pokt-network/pocket-core/x/gov/keeper"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
 )
 
 type testInput struct {
@@ -24,9 +25,9 @@ type testInput struct {
 func setupTestInput() testInput {
 	db := dbm.NewMemDB()
 
-	cdc := codec.New()
+	cdc := codec.NewCodec(cdcTypes.NewInterfaceRegistry())
 	authTypes.RegisterCodec(cdc)
-	codec.RegisterCrypto(cdc)
+	crypto.RegisterAmino(cdc.AminoCodec().Amino)
 
 	authCapKey := sdk.NewKVStoreKey("auth")
 	keyParams := sdk.ParamsKey

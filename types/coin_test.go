@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/pokt-network/pocket-core/codec"
+	cdcTypes "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -644,7 +645,7 @@ func TestFindDup(t *testing.T) {
 }
 
 func TestMarshalJSONCoins(t *testing.T) {
-	cdc := codec.New()
+	cdc := codec.NewCodec(cdcTypes.NewInterfaceRegistry())
 	RegisterCodec(cdc)
 
 	testCases := []struct {
