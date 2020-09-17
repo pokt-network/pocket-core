@@ -2,13 +2,13 @@ package types
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // ensure Msg interface compliance at compile time
 var (
-	_ sdk.Msg = &MsgNodeStake{}
 	_ sdk.Msg = &MsgBeginUnstake{}
 	_ sdk.Msg = &MsgUnjail{}
 	_ sdk.Msg = &MsgSend{}
@@ -21,57 +21,6 @@ const (
 	MsgUnjailName  = "unjail_validator"
 	MsgSendName    = "send"
 )
-
-//----------------------------------------------------------------------------------------------------------------------
-
-// GetSigners retrun address(es) that must sign over msg.GetSignBytes()
-func (msg MsgNodeStake) GetSigner() sdk.Address {
-	pubkey, err := crypto.NewPublicKey(msg.Publickey)
-	if err != nil {
-		return sdk.Address{}
-	}
-	return sdk.Address(pubkey.Address())
-}
-
-// GetSignBytes returns the message bytes to sign over.
-func (msg MsgNodeStake) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
-}
-
-// ValidateBasic quick validity check, stateless
-func (msg MsgNodeStake) ValidateBasic() sdk.Error {
-	if msg.Publickey == "" {
-		return ErrNilValidatorAddr(DefaultCodespace)
-	}
-	if msg.Value.LTE(sdk.ZeroInt()) {
-		return ErrBadDelegationAmount(DefaultCodespace)
-	}
-	if len(msg.Chains) == 0 {
-		return ErrNoChains(DefaultCodespace)
-	}
-	for _, chain := range msg.Chains {
-		err := ValidateNetworkIdentifier(chain)
-		if err != nil {
-			return err
-		}
-	}
-	if err := ValidateServiceURL(msg.ServiceUrl); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Route provides router key for msg
-func (msg MsgNodeStake) Route() string { return RouterKey }
-
-// Type provides msg name
-func (msg MsgNodeStake) Type() string { return MsgStakeName }
-
-// GetFee get fee for msg
-func (msg MsgNodeStake) GetFee() sdk.Int {
-	return sdk.NewInt(NodeFeeMap[msg.Type()])
-}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -176,14 +125,57 @@ func (msg MsgSend) GetFee() sdk.Int {
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+var _ codec.ProtoMarshaler = &MsgStake{}
 
 // MsgStake - struct for staking transactions
 type MsgStake struct {
 	PublicKey  crypto.PublicKey `json:"public_key" yaml:"public_key"`
 	Chains     []string         `json:"chains" yaml:"chains"`
 	Value      sdk.Int          `json:"value" yaml:"value"`
-	ServiceURL string           `json:"service_url" yaml:"service_url"`
-} // GetSigners retrun address(es) that must sign over msg.GetSignBytes()
+	ServiceUrl string           `json:"service_url" yaml:"service_url"`
+}
+
+func (msg *MsgStake) Marshal() ([]byte, error) {
+	p := msg.ToProto()
+	return p.Marshal()
+}
+
+func (msg *MsgStake) MarshalTo(data []byte) (n int, err error) {
+	p := msg.ToProto()
+	return p.MarshalTo(data)
+}
+
+func (msg *MsgStake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	p := msg.ToProto()
+	return p.MarshalToSizedBuffer(dAtA)
+}
+
+func (msg *MsgStake) Size() int {
+	p := msg.ToProto()
+	return p.Size()
+}
+
+func (msg *MsgStake) Unmarshal(data []byte) error {
+	var m MsgProtoStake
+	err := m.Unmarshal(data)
+	if err != nil {
+		return err
+	}
+	pk, err := crypto.NewPublicKeyBz(m.Publickey)
+	if err != nil {
+		return err
+	}
+	newMsg := MsgStake{
+		PublicKey:  pk,
+		Chains:     m.Chains,
+		Value:      m.Value,
+		ServiceUrl: m.ServiceUrl,
+	}
+	*msg = newMsg
+	return nil
+}
+
+// GetSigners retrun address(es) that must sign over msg.GetSignBytes()
 
 func (msg MsgStake) GetSigner() sdk.Address {
 	return sdk.Address(msg.PublicKey.Address())
@@ -212,7 +204,7 @@ func (msg MsgStake) ValidateBasic() sdk.Error {
 			return err
 		}
 	}
-	if err := ValidateServiceURL(msg.ServiceURL); err != nil {
+	if err := ValidateServiceURL(msg.ServiceUrl); err != nil {
 		return err
 	}
 	return nil
@@ -228,25 +220,26 @@ func (msg MsgStake) Type() string { return MsgStakeName }
 func (msg MsgStake) GetFee() sdk.Int {
 	return sdk.NewInt(NodeFeeMap[msg.Type()])
 }
-func (msg MsgStake) Reset() {
-	panic("amino only msg")
+func (msg *MsgStake) Reset() {
+	*msg = MsgStake{}
 }
 
 func (msg MsgStake) String() string {
 	return fmt.Sprintf("Public Key: %s\nChains: %s\nValue: %s\n", msg.PublicKey.RawString(), msg.Chains, msg.Value.String())
 }
 
-func (msg MsgStake) ProtoMessage() {
-	panic("amino only msg")
+func (msg *MsgStake) ProtoMessage() {
+	m := msg.ToProto()
+	m.ProtoMessage()
 }
 
 // GetFee get fee for msg
-func (msg MsgStake) ToProto() MsgNodeStake {
-	return MsgNodeStake{
-		Publickey:  msg.PublicKey.RawString(),
+func (msg MsgStake) ToProto() MsgProtoStake {
+	return MsgProtoStake{
+		Publickey:  msg.PublicKey.RawBytes(),
 		Chains:     msg.Chains,
 		Value:      msg.Value,
-		ServiceUrl: msg.ServiceURL,
+		ServiceUrl: msg.ServiceUrl,
 	}
 }
 

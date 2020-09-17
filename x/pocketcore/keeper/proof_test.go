@@ -49,7 +49,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	// get leaf and cousin node
 	leafNode := types.GetProof(header, types.RelayEvidence, neededLeafIndex)
 	// create proof message
-	proofMsg := types.MsgProtoProof{
+	proofMsg := types.MsgProof{
 		MerkleProof:  merkleProofs,
 		Leaf:         leafNode.ToProto(),
 		EvidenceType: types.RelayEvidence,

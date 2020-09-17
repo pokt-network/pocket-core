@@ -9,12 +9,12 @@ import (
 
 // RegisterCodec registers concrete types on the codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterStructure(MsgApplicationStake{}, "apps/MsgApplicationStake")
-	cdc.RegisterStructure(MsgAppStake{}, "apps/MsgAppStake")
-	cdc.RegisterStructure(MsgBeginAppUnstake{}, "apps/MsgAppBeginUnstake")
-	cdc.RegisterStructure(MsgAppUnjail{}, "apps/MsgAppUnjail")
-	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgApplicationStake{}, &MsgBeginAppUnstake{}, &MsgAppUnjail{}, MsgAppStake{})
-	cdc.RegisterImplementation((*sdk.LegacyMsg)(nil), &MsgApplicationStake{}, &MsgBeginAppUnstake{}, &MsgAppUnjail{}, MsgAppStake{})
+	cdc.RegisterStructure(MsgProtoStake{}, "apps/MsgProtoStake")
+	cdc.RegisterStructure(MsgStake{}, "apps/MsgAppStake")
+	cdc.RegisterStructure(MsgBeginUnstake{}, "apps/MsgAppBeginUnstake")
+	cdc.RegisterStructure(MsgUnjail{}, "apps/MsgAppUnjail")
+	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgStake{}, &MsgBeginUnstake{}, &MsgUnjail{}, &MsgStake{})
+	cdc.RegisterImplementation((*sdk.LegacyMsg)(nil), &MsgStake{}, &MsgBeginUnstake{}, &MsgUnjail{}, &MsgStake{})
 	ModuleCdc = cdc
 }
 

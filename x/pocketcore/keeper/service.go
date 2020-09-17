@@ -104,7 +104,11 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
-		session, err = pc.NewSession(sessionCtx, ctx, k.posKeeper, header, pc.BlockHash(sessionCtx), int(k.SessionNodeCount(sessionCtx)))
+		blockHashBz, er := sessionCtx.BlockHash(k.cdc)
+		if er != nil {
+			return nil, sdk.ErrInternal(er.Error())
+		}
+		session, err = pc.NewSession(sessionCtx, ctx, k.posKeeper, header, hex.EncodeToString(blockHashBz), int(k.SessionNodeCount(sessionCtx)))
 		if err != nil {
 			return nil, err
 		}

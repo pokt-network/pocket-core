@@ -13,9 +13,9 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
-var msgAppStake MsgApplicationStake
-var msgBeginAppUnstake MsgBeginAppUnstake
-var msgAppUnjail MsgAppUnjail
+var msgAppStake MsgStake
+var msgBeginAppUnstake MsgBeginUnstake
+var msgAppUnjail MsgUnjail
 var pk crypto.Ed25519PublicKey
 
 func init() {
@@ -31,18 +31,18 @@ func init() {
 	RegisterCodec(cdc)
 	crypto.RegisterAmino(cdc.AminoCodec().Amino)
 
-	msgAppStake = MsgApplicationStake{
-		PubKey: pub.RawString(),
+	msgAppStake = MsgStake{
+		PubKey: pub,
 		Chains: []string{"0001"},
 		Value:  sdk.NewInt(10),
 	}
-	msgAppUnjail = MsgAppUnjail{sdk.Address(pub.Address())}
-	msgBeginAppUnstake = MsgBeginAppUnstake{sdk.Address(pub.Address())}
+	msgAppUnjail = MsgUnjail{sdk.Address(pub.Address())}
+	msgBeginAppUnstake = MsgBeginUnstake{sdk.Address(pub.Address())}
 }
 
 func TestMsgApp_GetSigners(t *testing.T) {
 	type args struct {
-		msgAppStake MsgApplicationStake
+		msgAppStake MsgStake
 	}
 	tests := []struct {
 		name string
@@ -65,7 +65,7 @@ func TestMsgApp_GetSigners(t *testing.T) {
 }
 func TestMsgApp_GetSignBytes(t *testing.T) {
 	type args struct {
-		msgAppStake MsgApplicationStake
+		msgAppStake MsgStake
 	}
 	res, err := ModuleCdc.MarshalJSON(&msgAppStake)
 	res = sdk.MustSortJSON(res)
@@ -93,7 +93,7 @@ func TestMsgApp_GetSignBytes(t *testing.T) {
 }
 func TestMsgApp_Route(t *testing.T) {
 	type args struct {
-		msgAppStake MsgApplicationStake
+		msgAppStake MsgStake
 	}
 	tests := []struct {
 		name string
@@ -116,7 +116,7 @@ func TestMsgApp_Route(t *testing.T) {
 }
 func TestMsgApp_Type(t *testing.T) {
 	type args struct {
-		msgAppStake MsgApplicationStake
+		msgAppStake MsgStake
 	}
 	tests := []struct {
 		name string
@@ -139,7 +139,7 @@ func TestMsgApp_Type(t *testing.T) {
 }
 func TestMsgApp_ValidateBasic(t *testing.T) {
 	type args struct {
-		msgAppStake MsgApplicationStake
+		msgAppStake MsgStake
 	}
 	tests := []struct {
 		name string
@@ -149,22 +149,22 @@ func TestMsgApp_ValidateBasic(t *testing.T) {
 	}{
 		{
 			name: "errs if no Address",
-			args: args{MsgApplicationStake{}},
+			args: args{MsgStake{}},
 			want: ErrNilApplicationAddr(DefaultCodespace),
 		},
 		{
 			name: "errs if no stake lower than zero",
-			args: args{MsgApplicationStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(-1)}},
+			args: args{MsgStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(-1)}},
 			want: ErrBadStakeAmount(DefaultCodespace),
 		},
 		{
 			name: "errs if no native chains supported",
-			args: args{MsgApplicationStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(1), Chains: []string{}}},
+			args: args{MsgStake{PubKey: msgAppStake.PubKey, Value: sdk.NewInt(1), Chains: []string{}}},
 			want: ErrNoChains(DefaultCodespace),
 		},
 		{
 			name: "returns err",
-			args: args{MsgApplicationStake{PubKey: msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"aaaaaa"}}},
+			args: args{MsgStake{PubKey: msgAppStake.PubKey, Value: msgAppStake.Value, Chains: []string{"aaaaaa"}}},
 			want: ErrInvalidNetworkIdentifier("application", fmt.Errorf("net id length is > 2")),
 		},
 		{
@@ -185,7 +185,7 @@ func TestMsgApp_ValidateBasic(t *testing.T) {
 
 func TestMsgBeginAppUnstake_GetSigners(t *testing.T) {
 	type args struct {
-		msgBeginAppUnstake MsgBeginAppUnstake
+		msgBeginAppUnstake MsgBeginUnstake
 	}
 	tests := []struct {
 		name string
@@ -208,7 +208,7 @@ func TestMsgBeginAppUnstake_GetSigners(t *testing.T) {
 }
 func TestMsgBeginAppUnstake_GetSignBytes(t *testing.T) {
 	type args struct {
-		msgBeginAppUnstake MsgBeginAppUnstake
+		msgBeginAppUnstake MsgBeginUnstake
 	}
 	res, err := ModuleCdc.MarshalJSON(&msgBeginAppUnstake)
 	if err != nil {
@@ -235,7 +235,7 @@ func TestMsgBeginAppUnstake_GetSignBytes(t *testing.T) {
 }
 func TestMsgBeginAppUnstake_Route(t *testing.T) {
 	type args struct {
-		msgBeginAppUnstake MsgBeginAppUnstake
+		msgBeginAppUnstake MsgBeginUnstake
 	}
 	tests := []struct {
 		name string
@@ -258,7 +258,7 @@ func TestMsgBeginAppUnstake_Route(t *testing.T) {
 }
 func TestMsgBeginAppUnstake_Type(t *testing.T) {
 	type args struct {
-		msgBeginAppUnstake MsgBeginAppUnstake
+		msgBeginAppUnstake MsgBeginUnstake
 	}
 	tests := []struct {
 		name string
@@ -281,7 +281,7 @@ func TestMsgBeginAppUnstake_Type(t *testing.T) {
 }
 func TestMsgBeginAppUnstake_ValidateBasic(t *testing.T) {
 	type args struct {
-		msgBeginAppUnstake MsgBeginAppUnstake
+		msgBeginAppUnstake MsgBeginUnstake
 	}
 	tests := []struct {
 		name string
@@ -291,7 +291,7 @@ func TestMsgBeginAppUnstake_ValidateBasic(t *testing.T) {
 	}{
 		{
 			name: "errs if no Address",
-			args: args{MsgBeginAppUnstake{}},
+			args: args{MsgBeginUnstake{}},
 			want: ErrNilApplicationAddr(DefaultCodespace),
 		},
 		{
@@ -312,7 +312,7 @@ func TestMsgBeginAppUnstake_ValidateBasic(t *testing.T) {
 
 func TestMsgAppUnjail_Route(t *testing.T) {
 	type args struct {
-		msgAppUnjail MsgAppUnjail
+		msgAppUnjail MsgUnjail
 	}
 	tests := []struct {
 		name string
@@ -335,7 +335,7 @@ func TestMsgAppUnjail_Route(t *testing.T) {
 }
 func TestMsgAppUnjail_Type(t *testing.T) {
 	type args struct {
-		msgAppUnjail MsgAppUnjail
+		msgAppUnjail MsgUnjail
 	}
 	tests := []struct {
 		name string
@@ -358,7 +358,7 @@ func TestMsgAppUnjail_Type(t *testing.T) {
 }
 func TestMsgAppUnjail_GetSigners(t *testing.T) {
 	type args struct {
-		msgAppUnjail MsgAppUnjail
+		msgAppUnjail MsgUnjail
 	}
 	tests := []struct {
 		name string
@@ -381,7 +381,7 @@ func TestMsgAppUnjail_GetSigners(t *testing.T) {
 }
 func TestMsgAppUnjail_GetSignBytes(t *testing.T) {
 	type args struct {
-		msgAppUnjail MsgAppUnjail
+		msgAppUnjail MsgUnjail
 	}
 	res, err := ModuleCdc.MarshalJSON(&msgAppUnjail)
 	if err != nil {
@@ -408,7 +408,7 @@ func TestMsgAppUnjail_GetSignBytes(t *testing.T) {
 }
 func TestMsgAppUnjail_ValidateBasic(t *testing.T) {
 	type args struct {
-		msgAppUnjail MsgAppUnjail
+		msgAppUnjail MsgUnjail
 	}
 	tests := []struct {
 		name string
@@ -417,7 +417,7 @@ func TestMsgAppUnjail_ValidateBasic(t *testing.T) {
 	}{
 		{
 			name: "errs if no Address",
-			args: args{MsgAppUnjail{}},
+			args: args{MsgUnjail{}},
 			want: ErrBadApplicationAddr(DefaultCodespace),
 		},
 		{

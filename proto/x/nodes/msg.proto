@@ -5,12 +5,12 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/pokt-network/pocket-core/x/nodes/types";
 
-message MsgNodeStake {
+message MsgProtoStake {
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
 
-	string Publickey = 1 [(gogoproto.moretags) = "yaml:\"public_key\"", (gogoproto.jsontag) = "public_key"];
+	bytes Publickey = 1 [(gogoproto.moretags) = "yaml:\"public_key\"", (gogoproto.jsontag) = "public_key"];
 	repeated string Chains = 2 [(gogoproto.moretags) = "yaml:\"chains\"",(gogoproto.jsontag) = "chains"];
 	string value           = 3 [
 		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int",

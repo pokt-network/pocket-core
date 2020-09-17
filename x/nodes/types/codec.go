@@ -11,13 +11,13 @@ import (
 
 // Register concrete types on codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterStructure(MsgNodeStake{}, "pos/MsgNodeStake")
+	cdc.RegisterStructure(MsgProtoStake{}, "pos/MsgProtoStake")
 	cdc.RegisterStructure(MsgBeginUnstake{}, "pos/MsgBeginUnstake")
 	cdc.RegisterStructure(MsgUnjail{}, "pos/MsgUnjail")
 	cdc.RegisterStructure(MsgSend{}, "pos/Send")
 	cdc.RegisterStructure(MsgStake{}, "pos/MsgStake")
-	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgNodeStake{}, &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, MsgStake{})
-	cdc.RegisterImplementation((*sdk.LegacyMsg)(nil), &MsgNodeStake{}, &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, MsgStake{})
+	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{})
+	cdc.RegisterImplementation((*sdk.LegacyMsg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{})
 	cdc.RegisterInterface("nodes/validatorI", (*exported.ValidatorI)(nil), &ValidatorProto{})
 
 }

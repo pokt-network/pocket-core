@@ -2,6 +2,7 @@ package gov
 
 import (
 	"fmt"
+	"reflect"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/gov/keeper"
@@ -11,13 +12,11 @@ import (
 func NewHandler(k keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Ctx, msg sdk.LegacyMsg) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
+		// convert to value for switch consistency
+		if reflect.ValueOf(msg).Kind() == reflect.Ptr {
+			msg = reflect.Indirect(reflect.ValueOf(msg)).Interface().(sdk.LegacyMsg)
+		}
 		switch msg := msg.(type) {
-		case *types.MsgChangeParam:
-			return handleMsgChangeParam(ctx, *msg, k)
-		case *types.MsgDAOTransfer:
-			return handleMsgDaoTransfer(ctx, *msg, k)
-		case *types.MsgUpgrade:
-			return handleMsgUpgrade(ctx, *msg, k)
 		case types.MsgChangeParam:
 			return handleMsgChangeParam(ctx, msg, k)
 		case types.MsgDAOTransfer:

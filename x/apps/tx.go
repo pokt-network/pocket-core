@@ -14,28 +14,25 @@ import (
 )
 
 func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, amount sdk.Int, kp keys.KeyPair, passphrase string) (*sdk.TxResponse, error) {
-	if cdc.IsAfterUpgrade() {
-		fromAddr := kp.GetAddress()
-		msg := types.MsgApplicationStake{
-			PubKey: kp.PublicKey.RawString(),
-			Value:  amount,
-			Chains: chains, // non native blockchains
-		}
-		txBuilder, cliCtx, err := newTx(cdc, &msg, fromAddr, tmNode, keybase, passphrase)
-		if err != nil {
-			return nil, err
-		}
-		err = msg.ValidateBasic()
-		if err != nil {
-			return nil, err
-		}
-		return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
+	fromAddr := kp.GetAddress()
+	msg := types.MsgStake{
+		PubKey: kp.PublicKey,
+		Value:  amount,
+		Chains: chains, // non native blockchains
 	}
-	return LegacyStakeTx(cdc, tmNode, keybase, chains, amount, kp, passphrase)
+	txBuilder, cliCtx, err := newTx(cdc, &msg, fromAddr, tmNode, keybase, passphrase)
+	if err != nil {
+		return nil, err
+	}
+	err = msg.ValidateBasic()
+	if err != nil {
+		return nil, err
+	}
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
 }
 
 func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
-	msg := types.MsgBeginAppUnstake{Address: address}
+	msg := types.MsgBeginUnstake{Address: address}
 	txBuilder, cliCtx, err := newTx(cdc, &msg, address, tmNode, keybase, passphrase)
 	if err != nil {
 		return nil, err
@@ -80,22 +77,4 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 		"",
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, fee))).WithKeybase(keybase)
 	return
-}
-
-func LegacyStakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, amount sdk.Int, kp keys.KeyPair, passphrase string) (*sdk.TxResponse, error) {
-	fromAddr := kp.GetAddress()
-	msg := types.MsgAppStake{
-		PubKey: kp.PublicKey,
-		Value:  amount,
-		Chains: chains, // non native blockchains
-	}
-	txBuilder, cliCtx, err := newTx(cdc, msg, fromAddr, tmNode, keybase, passphrase)
-	if err != nil {
-		return nil, err
-	}
-	err = msg.ValidateBasic()
-	if err != nil {
-		return nil, err
-	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg)
 }

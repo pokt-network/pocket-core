@@ -96,7 +96,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -106,7 +106,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -116,7 +116,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -126,7 +126,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -136,7 +136,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -146,7 +146,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -156,7 +156,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -166,7 +166,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -176,7 +176,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -186,7 +186,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -196,7 +196,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}
@@ -206,7 +206,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //		Jailed:                  false,
 //		Status:                  sdk.Staked,
 //		Chains:                  []string{ethereum},
-//		ServiceURL:              "https://www.google.com:443",
+//		ServiceUrl:              "https://www.google.com:443",
 //		StakedTokens:            sdk.NewInt(100000),
 //		UnstakingCompletionTime: time.Time{},
 //	}

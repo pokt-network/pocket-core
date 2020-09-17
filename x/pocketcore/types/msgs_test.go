@@ -151,17 +151,17 @@ func TestMsgClaim_GetSignBytes(t *testing.T) {
 }
 
 func TestMsgProof_Route(t *testing.T) {
-	assert.Equal(t, MsgProtoProof{}.Route(), RouterKey)
+	assert.Equal(t, MsgProof{}.Route(), RouterKey)
 }
 
 func TestMsgProof_Type(t *testing.T) {
-	assert.Equal(t, MsgProtoProof{}.Type(), MsgProofName)
+	assert.Equal(t, MsgProof{}.Type(), MsgProofName)
 }
 
 func TestMsgProof_GetSigners(t *testing.T) {
 	pk := getRandomPubKey()
 	addr := types.Address(pk.Address())
-	signers := MsgProtoProof{
+	signers := MsgProof{
 		MerkleProof: MerkleProof{},
 		Leaf: RelayProof{
 			Entropy:            0,
@@ -171,7 +171,7 @@ func TestMsgProof_GetSigners(t *testing.T) {
 			Blockchain:         "",
 			Token:              AAT{},
 			Signature:          "",
-		}.ToProto(),
+		},
 	}.GetSigner()
 	assert.Equal(t, signers, addr)
 }
@@ -187,7 +187,7 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 	hash2 := merkleHash([]byte("fake2"))
 	hash3 := merkleHash([]byte("fake3"))
 	hash4 := merkleHash([]byte("fake4"))
-	validProofMessage := MsgProtoProof{
+	validProofMessage := MsgProof{
 		MerkleProof: MerkleProof{
 			TargetIndex: 0,
 			HashRanges: []HashRange{
@@ -219,26 +219,26 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 				ApplicationSignature: "",
 			},
 			Signature: "",
-		}.ToProto(),
+		},
 		EvidenceType: RelayEvidence,
 	}
-	vprLeaf := validProofMessage.Leaf.FromProto().(*RelayProof)
+	vprLeaf := validProofMessage.Leaf.(*RelayProof)
 	signature, er := appPrivKey.Sign(vprLeaf.Token.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
 	vprLeaf.Token.ApplicationSignature = hex.EncodeToString(signature)
-	clientSig, er := clientPrivKey.Sign(validProofMessage.Leaf.FromProto().(*RelayProof).Hash())
+	clientSig, er := clientPrivKey.Sign(validProofMessage.Leaf.(*RelayProof).Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
 	vprLeaf.Signature = hex.EncodeToString(clientSig)
-	validProofMessage.Leaf = vprLeaf.ToProto()
+	validProofMessage.Leaf = vprLeaf
 	// invalid entropy
 	invalidProofMsgIndex := validProofMessage
 	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.Entropy = 0
-	invalidProofMsgIndex.Leaf = vprLeaf.ToProto()
+	invalidProofMsgIndex.Leaf = vprLeaf
 	// invalid merkleHash sum
 	invalidProofMsgHashes := validProofMessage
 	invalidProofMsgHashes.MerkleProof.HashRanges = []HashRange{}
@@ -246,25 +246,25 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 	invalidProofMsgSessionBlkHeight := validProofMessage
 	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.SessionBlockHeight = -1
-	invalidProofMsgSessionBlkHeight.Leaf = vprLeaf.ToProto()
+	invalidProofMsgSessionBlkHeight.Leaf = vprLeaf
 	// invalid token
 	invalidProofMsgToken := validProofMessage
 	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.Token.ApplicationSignature = ""
-	invalidProofMsgToken.Leaf = vprLeaf.ToProto()
+	invalidProofMsgToken.Leaf = vprLeaf
 	// invalid blockchain
 	invalidProofMsgBlkchn := validProofMessage
 	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.Blockchain = ""
-	invalidProofMsgBlkchn.Leaf = vprLeaf.ToProto()
+	invalidProofMsgBlkchn.Leaf = vprLeaf
 	// invalid signature
 	invalidProofMsgSignature := validProofMessage
 	//vprLeaf = validProofMessage.Leaf.FromProto().(*RelayProof)
 	vprLeaf.Signature = hex.EncodeToString([]byte("foobar"))
-	invalidProofMsgSignature.Leaf = vprLeaf.ToProto()
+	invalidProofMsgSignature.Leaf = vprLeaf
 	tests := []struct {
 		name     string
-		msg      MsgProtoProof
+		msg      MsgProof
 		hasError bool
 	}{
 		{
@@ -313,6 +313,6 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 
 func TestMsgProof_GetSignBytes(t *testing.T) {
 	assert.NotPanics(t, func() {
-		MsgProtoProof{}.GetSignBytes()
+		MsgProof{}.GetSignBytes()
 	})
 }
