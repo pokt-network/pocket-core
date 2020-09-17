@@ -419,60 +419,6 @@ func TestMsgSend_ValidateBasic(t *testing.T) {
 	}
 }
 
-func TestMsgStake_GetSignBytes(t *testing.T) {
-	type fields struct {
-		Address    sdk.Address
-		PubKey     crypto.PublicKey
-		Chains     []string
-		Value      sdk.Int
-		ServiceURL string
-	}
-
-	var pub crypto.Ed25519PublicKey
-	_, err := rand.Read(pub[:])
-	if err != nil {
-		_ = err
-	}
-	chains := []string{"0001"}
-	value := sdk.OneInt()
-	surl := "www.pokt.network"
-
-	mesg := MsgNodeStake{
-		Publickey:  pub.RawString(),
-		Chains:     chains,
-		Value:      value,
-		ServiceUrl: surl,
-	}
-	encmesg, _ := ModuleCdc.MarshalJSON(&mesg)
-	encmesg = sdk.MustSortJSON(encmesg)
-
-	tests := []struct {
-		name   string
-		fields fields
-		want   []byte
-	}{
-		{"Test SignBytes", fields{
-			PubKey:     pub,
-			Chains:     chains,
-			Value:      value,
-			ServiceURL: surl,
-		}, encmesg},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			msg := MsgNodeStake{
-				Publickey:  tt.fields.PubKey.RawString(),
-				Chains:     tt.fields.Chains,
-				Value:      tt.fields.Value,
-				ServiceUrl: tt.fields.ServiceURL,
-			}
-			if got := msg.GetSignBytes(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetSignBytes() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestMsgStake_GetSigners(t *testing.T) {
 	type fields struct {
 		Address    sdk.Address
@@ -505,8 +451,8 @@ func TestMsgStake_GetSigners(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg := MsgNodeStake{
-				Publickey:  tt.fields.PubKey.RawString(),
+			msg := MsgStake{
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceUrl: tt.fields.ServiceURL,
@@ -550,8 +496,8 @@ func TestMsgStake_Route(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg := MsgNodeStake{
-				Publickey:  tt.fields.PubKey.RawString(),
+			msg := MsgStake{
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceUrl: tt.fields.ServiceURL,
@@ -595,8 +541,8 @@ func TestMsgStake_Type(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg := MsgNodeStake{
-				Publickey:  tt.fields.PubKey.RawString(),
+			msg := MsgStake{
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceUrl: tt.fields.ServiceURL,
@@ -660,12 +606,12 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 			Chains:     chains,
 			Value:      value,
 			ServiceURL: "",
-		}, ErrInvalidServiceURL(DefaultCodespace, fmt.Errorf("parse \"\": empty url"))},
+		}, ErrInvalidServiceURL(DefaultCodespace, fmt.Errorf("parse : empty url"))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			msg := MsgNodeStake{
-				Publickey:  tt.fields.PubKey.RawString(),
+			msg := MsgStake{
+				PublicKey:  tt.fields.PubKey,
 				Chains:     tt.fields.Chains,
 				Value:      tt.fields.Value,
 				ServiceUrl: tt.fields.ServiceURL,

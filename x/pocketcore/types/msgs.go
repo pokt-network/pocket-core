@@ -3,7 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
@@ -88,56 +88,6 @@ func (msg MsgClaim) IsEmpty() bool {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-
-// "GetFee" - Returns the fee (sdk.Int) of the messgae type
-func (msg MsgProtoProof) GetFee() sdk.Int {
-	return sdk.NewInt(PocketFeeMap[msg.Type()])
-}
-
-// "Route" - Returns module router key
-func (msg MsgProtoProof) Route() string { return RouterKey }
-
-// "Type" - Returns message name
-func (msg MsgProtoProof) Type() string { return MsgProofName }
-
-// "ValidateBasic" - Storeless validity check for proof message
-func (msg MsgProtoProof) ValidateBasic() sdk.Error {
-	// verify valid number of levels for merkle proofs
-	if len(msg.MerkleProof.HashRanges) < 3 {
-		return NewInvalidLeafCousinProofsComboError(ModuleName)
-	}
-	// validate the target range
-	if !msg.MerkleProof.Target.isValidRange() {
-		return NewInvalidMerkleRangeError(ModuleName)
-	}
-	// validate the leaf
-	if err := msg.GetLeaf().ValidateBasic(); err != nil {
-		return err
-	}
-	if _, err := msg.EvidenceType.Byte(); err != nil {
-		return NewInvalidEvidenceErr(ModuleName)
-	}
-	return nil
-}
-
-// "GetSignBytes" - Encodes the message for signing
-func (msg MsgProtoProof) GetSignBytes() []byte {
-	bz := ModuleCdc.MustMarshalJSON(msg)
-	return sdk.MustSortJSON(bz)
-}
-
-// GetSigners defines whose signature is required
-func (msg MsgProtoProof) GetSigner() sdk.Address {
-	return msg.GetLeaf().GetSigner()
-}
-
-func (msg MsgProtoProof) GetLeaf() Proof {
-	return msg.Leaf.FromProto()
-}
-
-// Legacy Amino Msg Below
-//----------------------------------------------------------------------------------------------------------------------
-
 // "MsgProof" - Proves the previous claim by providing the merkle Proof and the leaf node
 type MsgProof struct {
 	MerkleProof  MerkleProof  `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
@@ -145,16 +95,53 @@ type MsgProof struct {
 	EvidenceType EvidenceType `json:"evidence_type"` // the type of evidence
 }
 
-func (msg MsgProof) Reset() {
-	panic("amino only msg")
+var _ codec.ProtoMarshaler = &MsgProof{}
+
+func (msg *MsgProof) Marshal() ([]byte, error) {
+	m := msg.ToProto()
+	return m.Marshal()
+}
+
+func (msg *MsgProof) MarshalTo(data []byte) (n int, err error) {
+	m := msg.ToProto()
+	return m.MarshalTo(data)
+}
+
+func (msg *MsgProof) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	m := msg.ToProto()
+	return m.MarshalToSizedBuffer(dAtA)
+}
+
+func (msg *MsgProof) Size() int {
+	m := msg.ToProto()
+	return m.Size()
+}
+
+func (msg *MsgProof) Unmarshal(data []byte) error {
+	var m MsgProtoProof
+	err := m.Unmarshal(data)
+	if err != nil {
+		return err
+	}
+	*msg = MsgProof{
+		MerkleProof:  m.MerkleProof,
+		Leaf:         m.Leaf.FromProto(),
+		EvidenceType: m.EvidenceType,
+	}
+	return nil
+}
+
+func (msg *MsgProof) Reset() {
+	*msg = MsgProof{}
+}
+
+func (msg *MsgProof) ProtoMessage() {
+	m := msg.ToProto()
+	m.ProtoMessage()
 }
 
 func (msg MsgProof) String() string {
 	return fmt.Sprintf("MerkleProof: %s\nLeaf: %v\nEvidenceType: %d\n", msg.MerkleProof.String(), msg.Leaf, msg.EvidenceType)
-}
-
-func (msg MsgProof) ProtoMessage() {
-	panic("amino only msg")
 }
 
 func (msg MsgProof) ToProto() MsgProtoProof {
@@ -204,4 +191,8 @@ func (msg MsgProof) GetSignBytes() []byte {
 // GetSigners defines whose signature is required
 func (msg MsgProof) GetSigner() sdk.Address {
 	return msg.Leaf.GetSigner()
+}
+
+func (msg MsgProof) GetLeaf() Proof {
+	return msg.Leaf
 }

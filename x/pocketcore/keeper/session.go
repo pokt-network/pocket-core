@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/hex"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -27,7 +28,11 @@ func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
-		session, err = types.NewSession(sessionCtx, ctx, k.posKeeper, header, types.BlockHash(sessionCtx), int(k.SessionNodeCount(sessionCtx)))
+		blockHashBz, er := sessionCtx.BlockHash(k.cdc)
+		if er != nil {
+			return nil, sdk.ErrInternal(er.Error())
+		}
+		session, err = types.NewSession(sessionCtx, ctx, k.posKeeper, header, hex.EncodeToString(blockHashBz), int(k.SessionNodeCount(sessionCtx)))
 		if err != nil {
 			return nil, err
 		}

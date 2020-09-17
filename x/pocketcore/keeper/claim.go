@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/hex"
 	"fmt"
 
 	"github.com/pokt-network/pocket-core/crypto"
@@ -122,15 +123,18 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
 	// check cache
 	session, found := pc.GetSession(claim.SessionHeader)
-	// if not found generate the session
 	if !found {
 		// use the session end context to ensure that people who were jailed mid session do not get to submit claims
 		sessionEndCtx, er := ctx.PrevCtx(sessionEndHeight)
 		if er != nil {
 			return sdk.ErrInternal("could not get prev context: " + er.Error())
 		}
+		hash, er := sessionContext.BlockHash(k.cdc)
+		if er != nil {
+			return sdk.ErrInternal(er.Error())
+		}
 		// create a new session to validate
-		session, err = pc.NewSession(sessionContext, sessionEndCtx, k.posKeeper, claim.SessionHeader, pc.BlockHash(sessionContext), sessionNodeCount)
+		session, err = pc.NewSession(sessionContext, sessionEndCtx, k.posKeeper, claim.SessionHeader, hex.EncodeToString(hash), sessionNodeCount)
 		if err != nil {
 			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error())
 			return err

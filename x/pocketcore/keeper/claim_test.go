@@ -25,6 +25,7 @@ func TestKeeper_GetSetClaim(t *testing.T) {
 	mockCtx.On("KVStore", keeper.storeKey).Return(ctx.KVStore(keeper.storeKey))
 	mockCtx.On("BlockHeight").Return(int64(1))
 	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
+	mockCtx.On("BlockHash", header.SessionBlockHeight).Return(types.Hash([]byte("fake")), nil)
 	err = keeper.SetClaim(mockCtx, claim)
 	assert.Nil(t, err)
 	c, found := keeper.GetClaim(mockCtx, sdk.Address(npk.Address()), header, types.RelayEvidence)

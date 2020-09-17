@@ -214,7 +214,7 @@ func (k Keeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
 }
 
 // ValidateUnjailMessage - Check unjail message
-func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgAppUnjail) (addr sdk.Address, err sdk.Error) {
+func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sdk.Address, err sdk.Error) {
 	application, found := k.GetApplication(ctx, msg.AppAddr)
 	if !found {
 		return nil, types.ErrNoApplicationForAddress(k.Codespace())

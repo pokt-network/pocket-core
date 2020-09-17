@@ -2,26 +2,20 @@ package nodes
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	"reflect"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
 	return func(ctx sdk.Ctx, msg sdk.LegacyMsg) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
+		// convert to value for switch consistency
+		if reflect.ValueOf(msg).Kind() == reflect.Ptr {
+			msg = reflect.Indirect(reflect.ValueOf(msg)).Interface().(sdk.LegacyMsg)
+		}
 		switch msg := msg.(type) {
-		case *types.MsgNodeStake:
-			return handleStake(ctx, *msg, k)
-		case *types.MsgBeginUnstake:
-			return handleMsgBeginUnstake(ctx, *msg, k)
-		case *types.MsgUnjail:
-			return handleMsgUnjail(ctx, *msg, k)
-		case *types.MsgSend:
-			return handleMsgSend(ctx, *msg, k)
-		case types.MsgNodeStake:
-			return handleStake(ctx, msg, k)
 		case types.MsgBeginUnstake:
 			return handleMsgBeginUnstake(ctx, msg, k)
 		case types.MsgUnjail:
@@ -29,7 +23,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case types.MsgSend:
 			return handleMsgSend(ctx, msg, k)
 		case types.MsgStake:
-			return handleLegacyMsgStake(ctx, msg, k)
+			return handleStake(ctx, msg, k)
 		default:
 			errMsg := fmt.Sprintf("unrecognized staking message type: %T", msg)
 			return sdk.ErrUnknownRequest(errMsg).Result()
@@ -37,11 +31,8 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 	}
 }
 
-func handleStake(ctx sdk.Ctx, msg types.MsgNodeStake, k keeper.Keeper) sdk.Result {
-	pk, er := crypto.NewPublicKey(msg.Publickey)
-	if er != nil {
-		return sdk.ErrInvalidPubKey(er.Error()).Result()
-	}
+func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper) sdk.Result {
+	pk := msg.PublicKey
 	addr := pk.Address()
 	// create validator object using the message fields
 	validator := types.NewValidator(sdk.Address(addr), pk, msg.Chains, msg.ServiceUrl, sdk.ZeroInt())
@@ -133,10 +124,4 @@ func handleMsgSend(ctx sdk.Ctx, msg types.MsgSend, k keeper.Keeper) sdk.Result {
 		)),
 	)
 	return sdk.Result{Events: ctx.EventManager().Events()}
-}
-func handleLegacyMsgStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper) sdk.Result {
-	if !ctx.IsAfterUpgradeHeight() {
-		return handleStake(ctx, msg.ToProto(), k)
-	}
-	return sdk.ErrInternal("cannot execute a legacy msg: MsgNodeStake after upgrade height").Result()
 }

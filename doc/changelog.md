@@ -1,3 +1,10 @@
+
+## RC-0.6.0
+- Security patch in merkle sum index
+- Security patch for BlockHash
+- Protobuf Encoding implemented
+- Pocketcore module event handler fixed
+
 ## RC-0.5.2
 - Delete local Relay/Challenge Evidence on Code 66 failures
 - Log relay errors to nodes (don't just return to clients)

@@ -25,24 +25,24 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type MsgApplicationStake struct {
-	PubKey string                                        `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3" json:"pubkey" yaml:"pubkey"`
+type MsgProtoStake struct {
+	PubKey []byte                                        `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3" json:"pubkey" yaml:"pubkey"`
 	Chains []string                                      `protobuf:"bytes,2,rep,name=chains,proto3" json:"chains" yaml:"chains"`
 	Value  github_com_pokt_network_pocket_core_types.Int `protobuf:"bytes,3,opt,name=value,proto3,customtype=github.com/pokt-network/pocket-core/types.Int" json:"value" yaml:"value"`
 }
 
-func (m *MsgApplicationStake) Reset()         { *m = MsgApplicationStake{} }
-func (m *MsgApplicationStake) String() string { return proto.CompactTextString(m) }
-func (*MsgApplicationStake) ProtoMessage()    {}
-func (*MsgApplicationStake) Descriptor() ([]byte, []int) {
+func (m *MsgProtoStake) Reset()         { *m = MsgProtoStake{} }
+func (m *MsgProtoStake) String() string { return proto.CompactTextString(m) }
+func (*MsgProtoStake) ProtoMessage()    {}
+func (*MsgProtoStake) Descriptor() ([]byte, []int) {
 	return fileDescriptor_fd58e5eb64f87460, []int{0}
 }
-func (m *MsgApplicationStake) XXX_Unmarshal(b []byte) error {
+func (m *MsgProtoStake) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgApplicationStake) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgProtoStake) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgApplicationStake.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgProtoStake.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -52,34 +52,34 @@ func (m *MsgApplicationStake) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *MsgApplicationStake) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgApplicationStake.Merge(m, src)
+func (m *MsgProtoStake) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgProtoStake.Merge(m, src)
 }
-func (m *MsgApplicationStake) XXX_Size() int {
+func (m *MsgProtoStake) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgApplicationStake) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgApplicationStake.DiscardUnknown(m)
+func (m *MsgProtoStake) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgProtoStake.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgApplicationStake proto.InternalMessageInfo
+var xxx_messageInfo_MsgProtoStake proto.InternalMessageInfo
 
-type MsgBeginAppUnstake struct {
+type MsgBeginUnstake struct {
 	Address github_com_pokt_network_pocket_core_types.Address `protobuf:"bytes,1,opt,name=Address,proto3,casttype=github.com/pokt-network/pocket-core/types.Address" json:"application_address" yaml:"application_address"`
 }
 
-func (m *MsgBeginAppUnstake) Reset()         { *m = MsgBeginAppUnstake{} }
-func (m *MsgBeginAppUnstake) String() string { return proto.CompactTextString(m) }
-func (*MsgBeginAppUnstake) ProtoMessage()    {}
-func (*MsgBeginAppUnstake) Descriptor() ([]byte, []int) {
+func (m *MsgBeginUnstake) Reset()         { *m = MsgBeginUnstake{} }
+func (m *MsgBeginUnstake) String() string { return proto.CompactTextString(m) }
+func (*MsgBeginUnstake) ProtoMessage()    {}
+func (*MsgBeginUnstake) Descriptor() ([]byte, []int) {
 	return fileDescriptor_fd58e5eb64f87460, []int{1}
 }
-func (m *MsgBeginAppUnstake) XXX_Unmarshal(b []byte) error {
+func (m *MsgBeginUnstake) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgBeginAppUnstake) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgBeginUnstake) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgBeginAppUnstake.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgBeginUnstake.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -89,34 +89,34 @@ func (m *MsgBeginAppUnstake) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *MsgBeginAppUnstake) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgBeginAppUnstake.Merge(m, src)
+func (m *MsgBeginUnstake) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBeginUnstake.Merge(m, src)
 }
-func (m *MsgBeginAppUnstake) XXX_Size() int {
+func (m *MsgBeginUnstake) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgBeginAppUnstake) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgBeginAppUnstake.DiscardUnknown(m)
+func (m *MsgBeginUnstake) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBeginUnstake.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgBeginAppUnstake proto.InternalMessageInfo
+var xxx_messageInfo_MsgBeginUnstake proto.InternalMessageInfo
 
-type MsgAppUnjail struct {
+type MsgUnjail struct {
 	AppAddr github_com_pokt_network_pocket_core_types.Address `protobuf:"bytes,1,opt,name=AppAddr,proto3,casttype=github.com/pokt-network/pocket-core/types.Address" json:"address" yaml:"address"`
 }
 
-func (m *MsgAppUnjail) Reset()         { *m = MsgAppUnjail{} }
-func (m *MsgAppUnjail) String() string { return proto.CompactTextString(m) }
-func (*MsgAppUnjail) ProtoMessage()    {}
-func (*MsgAppUnjail) Descriptor() ([]byte, []int) {
+func (m *MsgUnjail) Reset()         { *m = MsgUnjail{} }
+func (m *MsgUnjail) String() string { return proto.CompactTextString(m) }
+func (*MsgUnjail) ProtoMessage()    {}
+func (*MsgUnjail) Descriptor() ([]byte, []int) {
 	return fileDescriptor_fd58e5eb64f87460, []int{2}
 }
-func (m *MsgAppUnjail) XXX_Unmarshal(b []byte) error {
+func (m *MsgUnjail) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgAppUnjail) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgUnjail) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgAppUnjail.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgUnjail.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -126,22 +126,22 @@ func (m *MsgAppUnjail) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-func (m *MsgAppUnjail) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgAppUnjail.Merge(m, src)
+func (m *MsgUnjail) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUnjail.Merge(m, src)
 }
-func (m *MsgAppUnjail) XXX_Size() int {
+func (m *MsgUnjail) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgAppUnjail) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgAppUnjail.DiscardUnknown(m)
+func (m *MsgUnjail) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUnjail.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgAppUnjail proto.InternalMessageInfo
+var xxx_messageInfo_MsgUnjail proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgApplicationStake)(nil), "x.apps.MsgApplicationStake")
-	proto.RegisterType((*MsgBeginAppUnstake)(nil), "x.apps.MsgBeginAppUnstake")
-	proto.RegisterType((*MsgAppUnjail)(nil), "x.apps.MsgAppUnjail")
+	proto.RegisterType((*MsgProtoStake)(nil), "x.apps.MsgProtoStake")
+	proto.RegisterType((*MsgBeginUnstake)(nil), "x.apps.MsgBeginUnstake")
+	proto.RegisterType((*MsgUnjail)(nil), "x.apps.MsgUnjail")
 }
 
 func init() { proto.RegisterFile("x/apps/msg.proto", fileDescriptor_fd58e5eb64f87460) }
@@ -149,41 +149,41 @@ func init() { proto.RegisterFile("x/apps/msg.proto", fileDescriptor_fd58e5eb64f8
 var fileDescriptor_fd58e5eb64f87460 = []byte{
 	// 407 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x92, 0xb1, 0x8f, 0xd3, 0x30,
-	0x14, 0xc6, 0x63, 0x4e, 0x24, 0xc2, 0x0a, 0x08, 0xe5, 0x18, 0xaa, 0x43, 0x8a, 0x4f, 0x99, 0x58,
-	0x9a, 0x80, 0x8e, 0xa9, 0x5b, 0xb2, 0x01, 0x2a, 0x43, 0x50, 0x17, 0x96, 0xca, 0x49, 0xad, 0x34,
-	0x4d, 0x1a, 0x5b, 0xb1, 0x03, 0xcd, 0xce, 0x80, 0x98, 0x18, 0x19, 0xbb, 0xf2, 0x9f, 0x74, 0xec,
-	0x88, 0x18, 0x2c, 0xd4, 0x2e, 0x28, 0x63, 0xc5, 0xc4, 0x84, 0x12, 0xa7, 0xaa, 0x40, 0x0c, 0x95,
-	0x6e, 0xcb, 0xfb, 0xbe, 0x3c, 0xff, 0xbe, 0x67, 0x3f, 0xf8, 0x70, 0xe5, 0x61, 0xc6, 0xb8, 0xb7,
-	0xe4, 0x89, 0xcb, 0x4a, 0x2a, 0xa8, 0xa5, 0xaf, 0xdc, 0x56, 0xb9, 0x7a, 0x94, 0xd0, 0x84, 0x76,
-	0x92, 0xd7, 0x7e, 0x29, 0xd7, 0xf9, 0x05, 0xe0, 0xe5, 0x98, 0x27, 0x3e, 0x63, 0x79, 0x1a, 0x63,
-	0x91, 0xd2, 0xe2, 0x8d, 0xc0, 0x19, 0xb1, 0x9e, 0x43, 0x83, 0x55, 0xd1, 0x34, 0x23, 0xf5, 0x00,
-	0x5c, 0x83, 0x27, 0xf7, 0x82, 0xc7, 0x8d, 0x44, 0x3a, 0xab, 0xa2, 0x8c, 0xd4, 0x07, 0x89, 0xee,
-	0xd7, 0x78, 0x99, 0x8f, 0x1c, 0x55, 0x3b, 0x61, 0x6b, 0xbc, 0x22, 0xb5, 0x75, 0x03, 0xf5, 0x78,
-	0x8e, 0xd3, 0x82, 0x0f, 0xee, 0x5c, 0x5f, 0x1c, 0x9b, 0x94, 0x72, 0x6a, 0x52, 0xb5, 0x13, 0xf6,
-	0x86, 0x35, 0x83, 0x77, 0xdf, 0xe1, 0xbc, 0x22, 0x83, 0x8b, 0x0e, 0xf4, 0x7a, 0x23, 0x91, 0xf6,
-	0x5d, 0xa2, 0x61, 0x92, 0x8a, 0x79, 0x15, 0xb9, 0x31, 0x5d, 0x7a, 0x8c, 0x66, 0x62, 0x58, 0x10,
-	0xf1, 0x9e, 0x96, 0x99, 0xc7, 0x68, 0x9c, 0x11, 0x31, 0x8c, 0x69, 0x49, 0x3c, 0x51, 0x33, 0xc2,
-	0xdd, 0x17, 0x85, 0x68, 0x24, 0x52, 0xa7, 0x1c, 0x24, 0x32, 0x15, 0xa7, 0x2b, 0x9d, 0x50, 0xc9,
-	0x23, 0xf3, 0xe3, 0x1a, 0x69, 0x5f, 0xd6, 0x08, 0xfc, 0x5c, 0x23, 0xe0, 0x7c, 0x05, 0xd0, 0x1a,
-	0xf3, 0x24, 0x20, 0x49, 0x5a, 0xf8, 0x8c, 0x4d, 0x0a, 0xde, 0x4d, 0xfd, 0x01, 0x40, 0xc3, 0x9f,
-	0xcd, 0x4a, 0xc2, 0x79, 0x37, 0xb6, 0x19, 0x2c, 0x1a, 0x89, 0x2e, 0xf1, 0xe9, 0x76, 0xa6, 0x58,
-	0xd9, 0x07, 0x89, 0xae, 0x14, 0xe6, 0x3f, 0xa6, 0xf3, 0x5b, 0xa2, 0x67, 0xe7, 0xc7, 0xef, 0x89,
-	0xe1, 0x11, 0xfd, 0x4f, 0xd6, 0x4f, 0x00, 0x9a, 0xea, 0x89, 0x26, 0xc5, 0x02, 0xa7, 0xb9, 0x95,
-	0x43, 0xc3, 0x67, 0xac, 0xfd, 0xb9, 0x0f, 0x19, 0x36, 0x12, 0x19, 0xa7, 0x60, 0x0f, 0xfa, 0x60,
-	0xb7, 0x0c, 0xa3, 0x10, 0x7f, 0x87, 0x09, 0x5e, 0x6e, 0x76, 0x36, 0xd8, 0xee, 0x6c, 0xf0, 0x63,
-	0x67, 0x83, 0xcf, 0x7b, 0x5b, 0xdb, 0xee, 0x6d, 0xed, 0xdb, 0xde, 0xd6, 0xde, 0x3e, 0x3d, 0x87,
-	0xd1, 0x6f, 0x67, 0x87, 0x8a, 0xf4, 0x6e, 0x05, 0x6f, 0xfe, 0x04, 0x00, 0x00, 0xff, 0xff, 0xb9,
-	0x4f, 0xbc, 0xa2, 0xb4, 0x02, 0x00, 0x00,
+	0x18, 0xc5, 0x63, 0x4e, 0x24, 0xaa, 0xd5, 0x03, 0x14, 0x18, 0xaa, 0x43, 0x8a, 0xab, 0x4c, 0x5d,
+	0x9a, 0x80, 0x8e, 0xe9, 0xb6, 0xcb, 0x06, 0xa8, 0x08, 0x05, 0xdd, 0xc2, 0x52, 0x39, 0xa9, 0xe5,
+	0xa6, 0x49, 0x63, 0x2b, 0x76, 0xa0, 0xd9, 0x91, 0x60, 0x64, 0x64, 0xec, 0xc4, 0xdf, 0xd2, 0xb1,
+	0x23, 0x62, 0xb0, 0x50, 0xbb, 0xa0, 0x0c, 0x0c, 0x1d, 0x99, 0x50, 0xe2, 0xa0, 0x0a, 0xc4, 0x50,
+	0x89, 0x2d, 0xef, 0xbd, 0x7c, 0x7e, 0xbf, 0x4f, 0xfa, 0xe0, 0xbd, 0x95, 0x8f, 0x39, 0x17, 0xfe,
+	0x52, 0x50, 0x8f, 0x17, 0x4c, 0x32, 0xdb, 0x5c, 0x79, 0x8d, 0x73, 0xf1, 0x80, 0x32, 0xca, 0x5a,
+	0xcb, 0x6f, 0xbe, 0x74, 0xea, 0xfe, 0x00, 0xf0, 0x7c, 0x22, 0xe8, 0xcb, 0x46, 0xbc, 0x92, 0x38,
+	0x25, 0xf6, 0x13, 0x68, 0xf1, 0x32, 0x9a, 0xa6, 0xa4, 0x1a, 0x80, 0x21, 0x18, 0xf5, 0x83, 0x87,
+	0xb5, 0x42, 0x26, 0x2f, 0xa3, 0x94, 0x54, 0x07, 0x85, 0xce, 0x2b, 0xbc, 0xcc, 0xae, 0x5c, 0xad,
+	0xdd, 0xb0, 0x09, 0x9e, 0x93, 0xca, 0xbe, 0x84, 0x66, 0x3c, 0xc7, 0x49, 0x2e, 0x06, 0xb7, 0x86,
+	0x67, 0xa3, 0x9e, 0x1e, 0xd2, 0xce, 0x71, 0x48, 0x6b, 0x37, 0xec, 0x02, 0x7b, 0x06, 0x6f, 0xbf,
+	0xc1, 0x59, 0x49, 0x06, 0x67, 0x43, 0x30, 0xea, 0x05, 0x2f, 0x36, 0x0a, 0x19, 0x5f, 0x15, 0x1a,
+	0xd3, 0x44, 0xce, 0xcb, 0xc8, 0x8b, 0xd9, 0xd2, 0xe7, 0x2c, 0x95, 0xe3, 0x9c, 0xc8, 0xb7, 0xac,
+	0x48, 0x7d, 0xce, 0xe2, 0x94, 0xc8, 0x71, 0xcc, 0x0a, 0xe2, 0xcb, 0x8a, 0x13, 0xe1, 0x3d, 0xcd,
+	0x65, 0xad, 0x90, 0x7e, 0xe5, 0xa0, 0x50, 0x5f, 0xf7, 0xb4, 0xd2, 0x0d, 0xb5, 0x7d, 0xd5, 0xff,
+	0xb0, 0x46, 0xc6, 0xa7, 0x35, 0x02, 0xdf, 0xd7, 0x08, 0xb8, 0x9f, 0x01, 0xbc, 0x3b, 0x11, 0x34,
+	0x20, 0x34, 0xc9, 0x6f, 0x72, 0xd1, 0xae, 0xfc, 0x0e, 0x40, 0xeb, 0x7a, 0x36, 0x2b, 0x88, 0x10,
+	0xdd, 0xce, 0x8b, 0x5a, 0xa1, 0xfb, 0x98, 0xf3, 0x2c, 0x89, 0xb1, 0x4c, 0x58, 0x3e, 0xc5, 0x3a,
+	0x3e, 0x28, 0x74, 0xa1, 0x3b, 0xfe, 0x11, 0xba, 0x3f, 0x15, 0x7a, 0x7c, 0x3a, 0x7b, 0xd7, 0x18,
+	0xfe, 0xae, 0xfe, 0x0b, 0xf4, 0x3d, 0x80, 0xbd, 0x89, 0xa0, 0x37, 0xf9, 0x02, 0x27, 0x99, 0x9d,
+	0x41, 0xeb, 0x9a, 0xf3, 0xe6, 0xcf, 0x8e, 0x30, 0xac, 0x15, 0xb2, 0x8e, 0x54, 0x77, 0x3a, 0xaa,
+	0xff, 0x24, 0xd1, 0x15, 0x7f, 0x92, 0x04, 0xcf, 0x36, 0x3b, 0x07, 0x6c, 0x77, 0x0e, 0xf8, 0xb6,
+	0x73, 0xc0, 0xc7, 0xbd, 0x63, 0x6c, 0xf7, 0x8e, 0xf1, 0x65, 0xef, 0x18, 0xaf, 0x1f, 0x9d, 0xd2,
+	0xd1, 0x5d, 0x64, 0x5b, 0x15, 0x99, 0xed, 0xd9, 0x5d, 0xfe, 0x0a, 0x00, 0x00, 0xff, 0xff, 0x5e,
+	0x33, 0x4e, 0xaf, 0xa8, 0x02, 0x00, 0x00,
 }
 
-func (this *MsgApplicationStake) Equal(that interface{}) bool {
+func (this *MsgProtoStake) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*MsgApplicationStake)
+	that1, ok := that.(*MsgProtoStake)
 	if !ok {
-		that2, ok := that.(MsgApplicationStake)
+		that2, ok := that.(MsgProtoStake)
 		if ok {
 			that1 = &that2
 		} else {
@@ -195,7 +195,7 @@ func (this *MsgApplicationStake) Equal(that interface{}) bool {
 	} else if this == nil {
 		return false
 	}
-	if this.PubKey != that1.PubKey {
+	if !bytes.Equal(this.PubKey, that1.PubKey) {
 		return false
 	}
 	if len(this.Chains) != len(that1.Chains) {
@@ -211,14 +211,14 @@ func (this *MsgApplicationStake) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *MsgBeginAppUnstake) Equal(that interface{}) bool {
+func (this *MsgBeginUnstake) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*MsgBeginAppUnstake)
+	that1, ok := that.(*MsgBeginUnstake)
 	if !ok {
-		that2, ok := that.(MsgBeginAppUnstake)
+		that2, ok := that.(MsgBeginUnstake)
 		if ok {
 			that1 = &that2
 		} else {
@@ -235,14 +235,14 @@ func (this *MsgBeginAppUnstake) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (this *MsgAppUnjail) Equal(that interface{}) bool {
+func (this *MsgUnjail) Equal(that interface{}) bool {
 	if that == nil {
 		return this == nil
 	}
 
-	that1, ok := that.(*MsgAppUnjail)
+	that1, ok := that.(*MsgUnjail)
 	if !ok {
-		that2, ok := that.(MsgAppUnjail)
+		that2, ok := that.(MsgUnjail)
 		if ok {
 			that1 = &that2
 		} else {
@@ -259,7 +259,7 @@ func (this *MsgAppUnjail) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (m *MsgApplicationStake) Marshal() (dAtA []byte, err error) {
+func (m *MsgProtoStake) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -269,12 +269,12 @@ func (m *MsgApplicationStake) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgApplicationStake) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgProtoStake) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgApplicationStake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgProtoStake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -308,7 +308,7 @@ func (m *MsgApplicationStake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgBeginAppUnstake) Marshal() (dAtA []byte, err error) {
+func (m *MsgBeginUnstake) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -318,12 +318,12 @@ func (m *MsgBeginAppUnstake) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgBeginAppUnstake) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgBeginUnstake) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgBeginAppUnstake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgBeginUnstake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -338,7 +338,7 @@ func (m *MsgBeginAppUnstake) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgAppUnjail) Marshal() (dAtA []byte, err error) {
+func (m *MsgUnjail) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -348,12 +348,12 @@ func (m *MsgAppUnjail) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgAppUnjail) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgUnjail) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgAppUnjail) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgUnjail) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -379,7 +379,7 @@ func encodeVarintMsg(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgApplicationStake) Size() (n int) {
+func (m *MsgProtoStake) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -400,7 +400,7 @@ func (m *MsgApplicationStake) Size() (n int) {
 	return n
 }
 
-func (m *MsgBeginAppUnstake) Size() (n int) {
+func (m *MsgBeginUnstake) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -413,7 +413,7 @@ func (m *MsgBeginAppUnstake) Size() (n int) {
 	return n
 }
 
-func (m *MsgAppUnjail) Size() (n int) {
+func (m *MsgUnjail) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -432,7 +432,7 @@ func sovMsg(x uint64) (n int) {
 func sozMsg(x uint64) (n int) {
 	return sovMsg(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgApplicationStake) Unmarshal(dAtA []byte) error {
+func (m *MsgProtoStake) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -455,17 +455,17 @@ func (m *MsgApplicationStake) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgApplicationStake: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgProtoStake: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgApplicationStake: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgProtoStake: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PubKey", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowMsg
@@ -475,23 +475,25 @@ func (m *MsgApplicationStake) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthMsg
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthMsg
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.PubKey = string(dAtA[iNdEx:postIndex])
+			m.PubKey = append(m.PubKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.PubKey == nil {
+				m.PubKey = []byte{}
+			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -583,7 +585,7 @@ func (m *MsgApplicationStake) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgBeginAppUnstake) Unmarshal(dAtA []byte) error {
+func (m *MsgBeginUnstake) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -606,10 +608,10 @@ func (m *MsgBeginAppUnstake) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgBeginAppUnstake: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgBeginUnstake: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgBeginAppUnstake: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgBeginUnstake: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -670,7 +672,7 @@ func (m *MsgBeginAppUnstake) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgAppUnjail) Unmarshal(dAtA []byte) error {
+func (m *MsgUnjail) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -693,10 +695,10 @@ func (m *MsgAppUnjail) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgAppUnjail: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgUnjail: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgAppUnjail: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgUnjail: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
