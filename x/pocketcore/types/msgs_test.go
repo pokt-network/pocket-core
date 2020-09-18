@@ -222,13 +222,13 @@ func TestMsgProof_ValidateBasic(t *testing.T) {
 		},
 		EvidenceType: RelayEvidence,
 	}
-	vprLeaf := validProofMessage.Leaf.(*RelayProof)
+	vprLeaf := validProofMessage.Leaf.(RelayProof)
 	signature, er := appPrivKey.Sign(vprLeaf.Token.Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
 	vprLeaf.Token.ApplicationSignature = hex.EncodeToString(signature)
-	clientSig, er := clientPrivKey.Sign(validProofMessage.Leaf.(*RelayProof).Hash())
+	clientSig, er := clientPrivKey.Sign(validProofMessage.Leaf.(RelayProof).Hash())
 	if er != nil {
 		t.Fatalf(er.Error())
 	}
