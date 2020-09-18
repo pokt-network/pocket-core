@@ -11,6 +11,7 @@ import (
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/rpc/client"
 	"math"
+	"reflect"
 )
 
 // auto sends a proof transaction for the claim
@@ -159,15 +160,20 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 }
 
 func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) (tokens sdk.Int, err sdk.Error) {
+	// convert to value for switch consistency
+	l := proof.GetLeaf()
+	if reflect.ValueOf(l).Kind() == reflect.Ptr {
+		l = reflect.Indirect(reflect.ValueOf(l)).Interface().(pc.Proof)
+	}
 	switch proof.GetLeaf().(type) {
-	case *pc.RelayProof:
+	case pc.RelayProof:
 		ctx.Logger().Info(fmt.Sprintf("reward coins to %s, for %d relays", claim.FromAddress.String(), claim.TotalProofs))
 		tokens = k.AwardCoinsForRelays(ctx, claim.TotalProofs, claim.FromAddress)
 		err := k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.RelayEvidence)
 		if err != nil {
 			return tokens, sdk.ErrInternal(err.Error())
 		}
-	case *pc.ChallengeProofInvalidData:
+	case pc.ChallengeProofInvalidData:
 		ctx.Logger().Info(fmt.Sprintf("burning coins from %s, for %d valid challenges", claim.FromAddress.String(), claim.TotalProofs))
 		proof, ok := proof.GetLeaf().(pc.ChallengeProofInvalidData)
 		if !ok {
