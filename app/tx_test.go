@@ -47,7 +47,7 @@ func TestUnstakeApp(t *testing.T) {
 	var chains = []string{"0001"}
 	<-evtChan // Wait for block
 	memCli, _, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
+	tx, err = apps.StakeTx(memCodec(false), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
@@ -59,7 +59,7 @@ func TestUnstakeApp(t *testing.T) {
 	res := got.Result.(appsTypes.Applications)
 	assert.Equal(t, 1, len(res))
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	_, _ = apps.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
+	_, _ = apps.UnstakeTx(memCodec(false), memCli, kb, kp.GetAddress(), "test")
 
 	<-evtChan // Wait for tx
 	got, err = PCA.QueryApps(0, appsTypes.QueryApplicationsWithOpts{
@@ -95,7 +95,7 @@ func TestUnstakeNode(t *testing.T) {
 	memCli, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 	_, err = PCA.QueryBalance(kp.GetAddress().String(), 0)
 	assert.Nil(t, err)
-	tx, err = nodes.UnstakeTx(memCodec(), memCli, kb, kp.GetAddress(), "test")
+	tx, err = nodes.UnstakeTx(memCodec(false), memCli, kb, kp.GetAddress(), "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 	<-evtChan // Wait for tx
@@ -124,7 +124,7 @@ func TestUnstakeNode(t *testing.T) {
 					balance, err := PCA.QueryBalance(addr.String(), 0)
 					assert.Nil(t, err)
 					assert.NotEqual(t, balance, sdk.ZeroInt())
-					tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
+					tx, err = nodes.StakeTx(memCodec(false), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
 					assert.Nil(t, err)
 					assert.NotNil(t, tx)
 					assert.Equal(t, uint32(0), tx.Code)
@@ -151,7 +151,7 @@ func TestStakeNode(t *testing.T) {
 	var chains = []string{"0001"}
 	<-evtChan // Wait for block
 	memCli, stopCli, _ := subscribeTo(t, tmTypes.EventTx)
-	tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
+	tx, err = nodes.StakeTx(memCodec(false), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 	assert.Equal(t, uint32(0), tx.Code)
@@ -171,7 +171,7 @@ func TestStakeApp(t *testing.T) {
 
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err = apps.StakeTx(memCodec(), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
+	tx, err = apps.StakeTx(memCodec(false), memCli, kb, chains, sdk.NewInt(1000000), kp, "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
@@ -201,7 +201,7 @@ func TestSendTransaction(t *testing.T) {
 
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", transferAmount)
+	tx, err = nodes.Send(memCodec(false), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", transferAmount)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
@@ -227,7 +227,7 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 	assert.Nil(t, err)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	// create the transaction
-	txBz, err := types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
+	txBz, err := types.DefaultTxEncoder(memCodec(false))(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
 		&nodeTypes.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
@@ -238,7 +238,7 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 		sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(100000)))))
 	assert.Nil(t, err)
 	// create the transaction
-	_, err = types.DefaultTxEncoder(memCodec())(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
+	_, err = types.DefaultTxEncoder(memCodec(false))(types.NewTestTx(sdk.Context{}.WithChainID("pocket-test"),
 		&nodeTypes.MsgSend{
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
@@ -251,14 +251,14 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 
 	<-evtChan // Wait for block
 	memCli, _, evtChan := subscribeTo(t, tmTypes.EventTx)
-	_, err = nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
+	_, err = nodes.RawTx(memCodec(false), memCli, cb.GetAddress(), txBz)
 	assert.Nil(t, err)
 	// next tx
 	<-evtChan // Wait for tx
 	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for  block
 	memCli, stopCli, _ := subscribeTo(t, tmTypes.EventTx)
-	txResp, err := nodes.RawTx(memCodec(), memCli, cb.GetAddress(), txBz)
+	txResp, err := nodes.RawTx(memCodec(false), memCli, cb.GetAddress(), txBz)
 	if err == nil && txResp.Code == 0 {
 		t.Fatal("should fail on replay attack")
 	}
@@ -280,7 +280,7 @@ func TestChangeParamsComplexTypeTx(t *testing.T) {
 	a := testACL
 	a.SetOwner("gov/acl", kp2.GetAddress())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "gov/acl", a, "test", 1000000)
+	tx, err := gov.ChangeParamsTx(memCodec(false), memCli, kb, cb.GetAddress(), "gov/acl", a, "test", 1000000)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 	select {
@@ -305,7 +305,7 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "application/StabilityAdjustment", 100, "test", 1000000)
+	tx, err := gov.ChangeParamsTx(memCodec(false), memCli, kb, cb.GetAddress(), "application/StabilityAdjustment", 100, "test", 1000000)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 	select {
@@ -327,7 +327,7 @@ func TestUpgrade(t *testing.T) {
 	var tx *sdk.TxResponse
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err = gov.UpgradeTx(memCodec(), memCli, kb, cb.GetAddress(), govTypes.Upgrade{
+	tx, err = gov.UpgradeTx(memCodec(false), memCli, kb, cb.GetAddress(), govTypes.Upgrade{
 		Height:  1000,
 		Version: "2.0.0",
 	}, "test", 1000000)
@@ -352,7 +352,7 @@ func TestDAOTransfer(t *testing.T) {
 	var tx *sdk.TxResponse
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err = gov.DAOTransferTx(memCodec(), memCli, kb, cb.GetAddress(), nil, sdk.OneInt(), govTypes.DAOBurn.String(), "test", 1000000)
+	tx, err = gov.DAOTransferTx(memCodec(false), memCli, kb, cb.GetAddress(), nil, sdk.OneInt(), govTypes.DAOBurn.String(), "test", 1000000)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
