@@ -14,7 +14,7 @@ func (k Keeper) GetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) (info typ
 		found = false
 		return
 	}
-	_ = k.cdc.UnmarshalBinaryLengthPrefixed(bz, &info)
+	_ = k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &info)
 	found = true
 	return
 }
@@ -22,7 +22,7 @@ func (k Keeper) GetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) (info typ
 // SetValidatorSigningInfo - Store signing information for the validator by address
 func (k Keeper) SetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address, info types.ValidatorSigningInfo) {
 	store := ctx.KVStore(k.storeKey)
-	bz, _ := k.cdc.MarshalBinaryLengthPrefixed(info)
+	bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(&info)
 	_ = store.Set(types.KeyForValidatorSigningInfo(addr), bz)
 }
 
@@ -56,7 +56,7 @@ func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Ctx, handler func(ad
 			ctx.Logger().Error(fmt.Errorf("unable to execute over validator %s error: %v, at height: %d", iter.Key(), err, ctx.BlockHeight()).Error())
 		}
 		var info types.ValidatorSigningInfo
-		_ = k.cdc.UnmarshalBinaryLengthPrefixed(iter.Value(), &info)
+		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(iter.Value(), &info)
 		if handler(address, info) {
 			break
 		}
@@ -73,10 +73,10 @@ func (k Keeper) valMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64) (missed 
 		return
 	}
 	if ctx.IsAfterUpgradeHeight() {
-		_ = k.cdc.UnmarshalBinaryLengthPrefixed(bz, &m)
+		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &m)
 		return m.Value
 	} else {
-		_ = k.cdc.UnmarshalBinaryLengthPrefixed(bz, &missed)
+		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &missed)
 		return missed
 	}
 }
@@ -86,10 +86,10 @@ func (k Keeper) SetValidatorMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64,
 	m := types.ValidatorMissed{Value: missed}
 	store := ctx.KVStore(k.storeKey)
 	if ctx.IsAfterUpgradeHeight() {
-		bz, _ := k.cdc.MarshalBinaryLengthPrefixed(&m)
+		bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(&m)
 		_ = store.Set(types.GetValMissedBlockKey(addr, index), bz)
 	} else {
-		bz, _ := k.cdc.MarshalBinaryLengthPrefixed(missed)
+		bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(missed)
 		_ = store.Set(types.GetValMissedBlockKey(addr, index), bz)
 	}
 }
@@ -117,7 +117,7 @@ func (k Keeper) IterateAndExecuteOverMissedArray(ctx sdk.Ctx,
 			if bz == nil {
 				continue
 			}
-			_ = k.cdc.UnmarshalBinaryLengthPrefixed(bz, &missed)
+			_ = k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &missed)
 			if handler(index, missed.Value) {
 				break
 			}
@@ -127,7 +127,7 @@ func (k Keeper) IterateAndExecuteOverMissedArray(ctx sdk.Ctx,
 			if bz == nil {
 				continue
 			}
-			_ = k.cdc.UnmarshalBinaryLengthPrefixed(bz, &missed)
+			_ = k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &missed)
 			if handler(index, missed) {
 				break
 			}

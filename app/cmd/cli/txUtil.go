@@ -319,7 +319,7 @@ func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID stri
 	}, nil
 }
 
-func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string, keybase keys.Keybase, passphrase string, fee int64, memo string) (transactionBz []byte, err error) {
+func newTxBz(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, chainID string, keybase keys.Keybase, passphrase string, fee int64, memo string) (transactionBz []byte, err error) {
 	// fees
 	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(fee)))
 	// entroyp
@@ -332,7 +332,7 @@ func newTxBz(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, chainID string
 	if err != nil {
 		return nil, err
 	}
-	s := authTypes.StdSignature{PublicKey: pubKey.RawString(), Signature: sig}
+	s := authTypes.StdSignature{PublicKey: pubKey, Signature: sig}
 	tx := authTypes.NewTx(msg, fees, s, memo, entropy, cdc.IsAfterUpgrade())
 	return auth.DefaultTxEncoder(cdc)(tx)
 }

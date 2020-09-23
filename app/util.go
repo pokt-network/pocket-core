@@ -25,7 +25,7 @@ func BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.
 	if err != nil {
 		return nil, err
 	}
-	var m sdk.Msg
+	var m sdk.ProtoMsg
 	if err := Codec().UnmarshalJSON([]byte(jsonMessage), &m); err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func SortJSON(toSortJSON []byte) string {
 	return string(js)
 }
 
-func UnmarshalTxStr(txStr string) types.StdTxI {
+func UnmarshalTxStr(txStr string) types.StdTx {
 	txBytes, err := base64.StdEncoding.DecodeString(txStr)
 	if err != nil {
 		log.Fatal("error:", err)
@@ -104,16 +104,11 @@ func UnmarshalTxStr(txStr string) types.StdTxI {
 	return UnmarshalTx(txBytes)
 }
 
-func UnmarshalTx(txBytes []byte) types.StdTxI {
+func UnmarshalTx(txBytes []byte) types.StdTx {
 	defaultTxDecoder := auth.DefaultTxDecoder(cdc)
 	tx, err := defaultTxDecoder(txBytes)
 	if err != nil {
 		log.Fatalf("Could not decode transaction: " + err.Error())
 	}
-	if cdc.IsAfterUpgrade() {
-		return tx.(auth.StdTx)
-	} else {
-		return tx.(auth.LegacyStdTx)
-
-	}
+	return tx.(auth.StdTx)
 }

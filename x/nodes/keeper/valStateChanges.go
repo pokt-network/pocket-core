@@ -58,16 +58,16 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		curStatePower := validator.ConsensusPower()
 		var curStatePowerBytes []byte
 		var err error
-		if k.cdc.IsAfterUpgrade() {
+		if k.Cdc.IsAfterUpgrade() {
 			i := sdk.IntProto{
 				Int: sdk.NewInt(curStatePower),
 			}
-			curStatePowerBytes, err = k.cdc.MarshalBinaryLengthPrefixed(i)
+			curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(&i)
 			if err != nil {
 				panic(err)
 			}
 		} else {
-			curStatePowerBytes, err = k.cdc.MarshalBinaryLengthPrefixed(curStatePower)
+			curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(curStatePower)
 			if err != nil {
 				panic(err)
 			}
@@ -382,7 +382,7 @@ func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		val, err := types.UnmarshalValidator(k.cdc, iterator.Value())
+		val, err := types.UnmarshalValidator(k.Cdc, iterator.Value())
 		if err != nil {
 			ctx.Logger().Error("could not unmarshal validator in IncrementJailedValidators: ", err.Error())
 			continue

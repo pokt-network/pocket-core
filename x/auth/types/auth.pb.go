@@ -30,24 +30,24 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // BaseAccount defines a base account type. It contains all the necessary fields
 // for basic account functionality. Any custom account type should extend this
 // type for additional functionality (e.g. vesting).
-type BaseAccountEncodable struct {
+type ProtoBaseAccount struct {
 	Address github_com_pokt_network_pocket_core_types.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=github.com/pokt-network/pocket-core/types.Address" json:"address"`
-	PubKey  string                                            `protobuf:"bytes,2,opt,name=pub_key,json=pubKey,proto3" json:"public_key" yaml:"public_key"`
+	PubKey  []byte                                            `protobuf:"bytes,2,opt,name=pub_key,json=pubKey,proto3" json:"public_key" yaml:"public_key"`
 	Coins   github_com_pokt_network_pocket_core_types.Coins   `protobuf:"bytes,3,rep,name=coins,proto3,castrepeated=github.com/pokt-network/pocket-core/types.Coins" json:"coins"`
 }
 
-func (m *BaseAccountEncodable) Reset()         { *m = BaseAccountEncodable{} }
-func (m *BaseAccountEncodable) String() string { return proto.CompactTextString(m) }
-func (*BaseAccountEncodable) ProtoMessage()    {}
-func (*BaseAccountEncodable) Descriptor() ([]byte, []int) {
+func (m *ProtoBaseAccount) Reset()         { *m = ProtoBaseAccount{} }
+func (m *ProtoBaseAccount) String() string { return proto.CompactTextString(m) }
+func (*ProtoBaseAccount) ProtoMessage()    {}
+func (*ProtoBaseAccount) Descriptor() ([]byte, []int) {
 	return fileDescriptor_840f82faebe7fabc, []int{0}
 }
-func (m *BaseAccountEncodable) XXX_Unmarshal(b []byte) error {
+func (m *ProtoBaseAccount) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *BaseAccountEncodable) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ProtoBaseAccount) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_BaseAccountEncodable.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ProtoBaseAccount.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -57,37 +57,37 @@ func (m *BaseAccountEncodable) XXX_Marshal(b []byte, deterministic bool) ([]byte
 		return b[:n], nil
 	}
 }
-func (m *BaseAccountEncodable) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BaseAccountEncodable.Merge(m, src)
+func (m *ProtoBaseAccount) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProtoBaseAccount.Merge(m, src)
 }
-func (m *BaseAccountEncodable) XXX_Size() int {
+func (m *ProtoBaseAccount) XXX_Size() int {
 	return m.Size()
 }
-func (m *BaseAccountEncodable) XXX_DiscardUnknown() {
-	xxx_messageInfo_BaseAccountEncodable.DiscardUnknown(m)
+func (m *ProtoBaseAccount) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProtoBaseAccount.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_BaseAccountEncodable proto.InternalMessageInfo
+var xxx_messageInfo_ProtoBaseAccount proto.InternalMessageInfo
 
 // ModuleAccount defines an account for modules that holds coins on a pool
-type ModuleAccountEncodable struct {
-	BaseAccountEncodable `protobuf:"bytes,1,opt,name=base_account_encodable,json=baseAccountEncodable,proto3,embedded=base_account_encodable" json:"base_account_encodable" yaml:"base_account"`
-	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name" yaml:"name"`
-	Permissions          []string `protobuf:"bytes,3,rep,name=permissions,proto3" json:"permissions" yaml:"permissions"`
+type ProtoModuleAccount struct {
+	ProtoBaseAccount `protobuf:"bytes,1,opt,name=base_account_encodable,json=baseAccountEncodable,proto3,embedded=base_account_encodable" json:"base_account_encodable" yaml:"base_account"`
+	Name             string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name" yaml:"name"`
+	Permissions      []string `protobuf:"bytes,3,rep,name=permissions,proto3" json:"permissions" yaml:"permissions"`
 }
 
-func (m *ModuleAccountEncodable) Reset()         { *m = ModuleAccountEncodable{} }
-func (m *ModuleAccountEncodable) String() string { return proto.CompactTextString(m) }
-func (*ModuleAccountEncodable) ProtoMessage()    {}
-func (*ModuleAccountEncodable) Descriptor() ([]byte, []int) {
+func (m *ProtoModuleAccount) Reset()         { *m = ProtoModuleAccount{} }
+func (m *ProtoModuleAccount) String() string { return proto.CompactTextString(m) }
+func (*ProtoModuleAccount) ProtoMessage()    {}
+func (*ProtoModuleAccount) Descriptor() ([]byte, []int) {
 	return fileDescriptor_840f82faebe7fabc, []int{1}
 }
-func (m *ModuleAccountEncodable) XXX_Unmarshal(b []byte) error {
+func (m *ProtoModuleAccount) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *ModuleAccountEncodable) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ProtoModuleAccount) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_ModuleAccountEncodable.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ProtoModuleAccount.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -97,17 +97,56 @@ func (m *ModuleAccountEncodable) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-func (m *ModuleAccountEncodable) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ModuleAccountEncodable.Merge(m, src)
+func (m *ProtoModuleAccount) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProtoModuleAccount.Merge(m, src)
 }
-func (m *ModuleAccountEncodable) XXX_Size() int {
+func (m *ProtoModuleAccount) XXX_Size() int {
 	return m.Size()
 }
-func (m *ModuleAccountEncodable) XXX_DiscardUnknown() {
-	xxx_messageInfo_ModuleAccountEncodable.DiscardUnknown(m)
+func (m *ProtoModuleAccount) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProtoModuleAccount.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ModuleAccountEncodable proto.InternalMessageInfo
+var xxx_messageInfo_ProtoModuleAccount proto.InternalMessageInfo
+
+type ProtoMultiSigAccount struct {
+	Address github_com_pokt_network_pocket_core_types.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=github.com/pokt-network/pocket-core/types.Address" json:"address"`
+	PubKey  []byte                                            `protobuf:"bytes,2,opt,name=pub_key,json=pubKey,proto3" json:"public_key_multi_sig" yaml:"public_key_multi_sig"`
+	Coins   github_com_pokt_network_pocket_core_types.Coins   `protobuf:"bytes,3,rep,name=coins,proto3,castrepeated=github.com/pokt-network/pocket-core/types.Coins" json:"coins"`
+}
+
+func (m *ProtoMultiSigAccount) Reset()         { *m = ProtoMultiSigAccount{} }
+func (m *ProtoMultiSigAccount) String() string { return proto.CompactTextString(m) }
+func (*ProtoMultiSigAccount) ProtoMessage()    {}
+func (*ProtoMultiSigAccount) Descriptor() ([]byte, []int) {
+	return fileDescriptor_840f82faebe7fabc, []int{2}
+}
+func (m *ProtoMultiSigAccount) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *ProtoMultiSigAccount) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_ProtoMultiSigAccount.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *ProtoMultiSigAccount) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProtoMultiSigAccount.Merge(m, src)
+}
+func (m *ProtoMultiSigAccount) XXX_Size() int {
+	return m.Size()
+}
+func (m *ProtoMultiSigAccount) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProtoMultiSigAccount.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProtoMultiSigAccount proto.InternalMessageInfo
 
 // Fee Multiplier derfines a key value multiplier for the fee of the
 type FeeMultiplier struct {
@@ -119,7 +158,7 @@ func (m *FeeMultiplier) Reset()         { *m = FeeMultiplier{} }
 func (m *FeeMultiplier) String() string { return proto.CompactTextString(m) }
 func (*FeeMultiplier) ProtoMessage()    {}
 func (*FeeMultiplier) Descriptor() ([]byte, []int) {
-	return fileDescriptor_840f82faebe7fabc, []int{2}
+	return fileDescriptor_840f82faebe7fabc, []int{3}
 }
 func (m *FeeMultiplier) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -171,7 +210,7 @@ func (m *FeeMultipliers) Reset()         { *m = FeeMultipliers{} }
 func (m *FeeMultipliers) String() string { return proto.CompactTextString(m) }
 func (*FeeMultipliers) ProtoMessage()    {}
 func (*FeeMultipliers) Descriptor() ([]byte, []int) {
-	return fileDescriptor_840f82faebe7fabc, []int{3}
+	return fileDescriptor_840f82faebe7fabc, []int{4}
 }
 func (m *FeeMultipliers) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -221,7 +260,7 @@ type Supply struct {
 func (m *Supply) Reset()      { *m = Supply{} }
 func (*Supply) ProtoMessage() {}
 func (*Supply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_840f82faebe7fabc, []int{4}
+	return fileDescriptor_840f82faebe7fabc, []int{5}
 }
 func (m *Supply) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -250,26 +289,26 @@ func (m *Supply) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Supply proto.InternalMessageInfo
 
-type StdTx struct {
+type ProtoStdTx struct {
 	Msg       types1.Any                                      `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg" yaml:"msg"`
 	Fee       github_com_pokt_network_pocket_core_types.Coins `protobuf:"bytes,2,rep,name=fee,proto3,castrepeated=github.com/pokt-network/pocket-core/types.Coins" json:"fee" yaml:"fee"`
-	Signature StdSignature                                    `protobuf:"bytes,3,opt,name=signature,proto3,casttype=StdSignature" json:"signature" yaml:"signature"`
+	Signature ProtoStdSignature                               `protobuf:"bytes,3,opt,name=signature,proto3,casttype=ProtoStdSignature" json:"signature" yaml:"signature"`
 	Memo      string                                          `protobuf:"bytes,4,opt,name=memo,proto3" json:"memo" yaml:"memo"`
 	Entropy   int64                                           `protobuf:"varint,5,opt,name=entropy,proto3" json:"entropy" yaml:"entropy"`
 }
 
-func (m *StdTx) Reset()         { *m = StdTx{} }
-func (m *StdTx) String() string { return proto.CompactTextString(m) }
-func (*StdTx) ProtoMessage()    {}
-func (*StdTx) Descriptor() ([]byte, []int) {
-	return fileDescriptor_840f82faebe7fabc, []int{5}
+func (m *ProtoStdTx) Reset()         { *m = ProtoStdTx{} }
+func (m *ProtoStdTx) String() string { return proto.CompactTextString(m) }
+func (*ProtoStdTx) ProtoMessage()    {}
+func (*ProtoStdTx) Descriptor() ([]byte, []int) {
+	return fileDescriptor_840f82faebe7fabc, []int{6}
 }
-func (m *StdTx) XXX_Unmarshal(b []byte) error {
+func (m *ProtoStdTx) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *StdTx) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ProtoStdTx) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_StdTx.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ProtoStdTx.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -279,35 +318,35 @@ func (m *StdTx) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *StdTx) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StdTx.Merge(m, src)
+func (m *ProtoStdTx) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProtoStdTx.Merge(m, src)
 }
-func (m *StdTx) XXX_Size() int {
+func (m *ProtoStdTx) XXX_Size() int {
 	return m.Size()
 }
-func (m *StdTx) XXX_DiscardUnknown() {
-	xxx_messageInfo_StdTx.DiscardUnknown(m)
+func (m *ProtoStdTx) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProtoStdTx.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_StdTx proto.InternalMessageInfo
+var xxx_messageInfo_ProtoStdTx proto.InternalMessageInfo
 
-type StdSignature struct {
-	PublicKey string `protobuf:"bytes,1,opt,name=publicKey,proto3" json:"pub_key" yaml:"pub_key"`
+type ProtoStdSignature struct {
+	PublicKey []byte `protobuf:"bytes,1,opt,name=publicKey,proto3" json:"pub_key" yaml:"pub_key"`
 	Signature []byte `protobuf:"bytes,2,opt,name=Signature,proto3" json:"signature" yaml:"signature"`
 }
 
-func (m *StdSignature) Reset()         { *m = StdSignature{} }
-func (m *StdSignature) String() string { return proto.CompactTextString(m) }
-func (*StdSignature) ProtoMessage()    {}
-func (*StdSignature) Descriptor() ([]byte, []int) {
-	return fileDescriptor_840f82faebe7fabc, []int{6}
+func (m *ProtoStdSignature) Reset()         { *m = ProtoStdSignature{} }
+func (m *ProtoStdSignature) String() string { return proto.CompactTextString(m) }
+func (*ProtoStdSignature) ProtoMessage()    {}
+func (*ProtoStdSignature) Descriptor() ([]byte, []int) {
+	return fileDescriptor_840f82faebe7fabc, []int{7}
 }
-func (m *StdSignature) XXX_Unmarshal(b []byte) error {
+func (m *ProtoStdSignature) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *StdSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ProtoStdSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_StdSignature.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ProtoStdSignature.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -317,26 +356,26 @@ func (m *StdSignature) XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
 		return b[:n], nil
 	}
 }
-func (m *StdSignature) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StdSignature.Merge(m, src)
+func (m *ProtoStdSignature) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProtoStdSignature.Merge(m, src)
 }
-func (m *StdSignature) XXX_Size() int {
+func (m *ProtoStdSignature) XXX_Size() int {
 	return m.Size()
 }
-func (m *StdSignature) XXX_DiscardUnknown() {
-	xxx_messageInfo_StdSignature.DiscardUnknown(m)
+func (m *ProtoStdSignature) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProtoStdSignature.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_StdSignature proto.InternalMessageInfo
+var xxx_messageInfo_ProtoStdSignature proto.InternalMessageInfo
 
-func (m *StdSignature) GetPublicKey() string {
+func (m *ProtoStdSignature) GetPublicKey() []byte {
 	if m != nil {
 		return m.PublicKey
 	}
-	return ""
+	return nil
 }
 
-func (m *StdSignature) GetSignature() []byte {
+func (m *ProtoStdSignature) GetSignature() []byte {
 	if m != nil {
 		return m.Signature
 	}
@@ -355,7 +394,7 @@ func (m *StdSignDoc) Reset()         { *m = StdSignDoc{} }
 func (m *StdSignDoc) String() string { return proto.CompactTextString(m) }
 func (*StdSignDoc) ProtoMessage()    {}
 func (*StdSignDoc) Descriptor() ([]byte, []int) {
-	return fileDescriptor_840f82faebe7fabc, []int{7}
+	return fileDescriptor_840f82faebe7fabc, []int{8}
 }
 func (m *StdSignDoc) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -385,77 +424,81 @@ func (m *StdSignDoc) XXX_DiscardUnknown() {
 var xxx_messageInfo_StdSignDoc proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*BaseAccountEncodable)(nil), "x.auth.BaseAccountEncodable")
-	proto.RegisterType((*ModuleAccountEncodable)(nil), "x.auth.ModuleAccountEncodable")
+	proto.RegisterType((*ProtoBaseAccount)(nil), "x.auth.ProtoBaseAccount")
+	proto.RegisterType((*ProtoModuleAccount)(nil), "x.auth.ProtoModuleAccount")
+	proto.RegisterType((*ProtoMultiSigAccount)(nil), "x.auth.ProtoMultiSigAccount")
 	proto.RegisterType((*FeeMultiplier)(nil), "x.auth.FeeMultiplier")
 	proto.RegisterType((*FeeMultipliers)(nil), "x.auth.FeeMultipliers")
 	proto.RegisterType((*Supply)(nil), "x.auth.Supply")
-	proto.RegisterType((*StdTx)(nil), "x.auth.StdTx")
-	proto.RegisterType((*StdSignature)(nil), "x.auth.StdSignature")
+	proto.RegisterType((*ProtoStdTx)(nil), "x.auth.ProtoStdTx")
+	proto.RegisterType((*ProtoStdSignature)(nil), "x.auth.ProtoStdSignature")
 	proto.RegisterType((*StdSignDoc)(nil), "x.auth.StdSignDoc")
 }
 
 func init() { proto.RegisterFile("x/auth/auth.proto", fileDescriptor_840f82faebe7fabc) }
 
 var fileDescriptor_840f82faebe7fabc = []byte{
-	// 909 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x55, 0xcd, 0x6f, 0x1b, 0x45,
-	0x14, 0xf7, 0x66, 0x93, 0x38, 0x1e, 0xa7, 0xa1, 0x9d, 0x86, 0x60, 0x57, 0xe0, 0x09, 0x83, 0x2a,
-	0x45, 0x42, 0xd9, 0x85, 0x22, 0x54, 0x61, 0x90, 0x68, 0xb6, 0xa5, 0x08, 0x42, 0x2f, 0x13, 0x0e,
-	0x55, 0x2e, 0xd6, 0x7e, 0x8c, 0x9d, 0x95, 0x77, 0x77, 0x56, 0xde, 0x5d, 0x25, 0xfe, 0x0f, 0x38,
-	0xa0, 0x8a, 0x23, 0x27, 0x14, 0xae, 0x9c, 0xf9, 0x23, 0x7a, 0x8c, 0x38, 0x71, 0x1a, 0x50, 0x72,
-	0x00, 0xf9, 0xe8, 0x63, 0x4e, 0x68, 0x3e, 0x36, 0x6b, 0x2b, 0x91, 0xb0, 0xd2, 0x8b, 0x35, 0xef,
-	0x37, 0xef, 0xe3, 0x37, 0xef, 0xfd, 0xde, 0x1a, 0xdc, 0x3b, 0xb1, 0xdd, 0x22, 0x3f, 0x92, 0x3f,
-	0x56, 0x3a, 0x62, 0x39, 0x83, 0xab, 0x27, 0x96, 0xb0, 0x1e, 0xb4, 0x7d, 0x96, 0xc5, 0x2c, 0xeb,
-	0x49, 0xd4, 0x56, 0x86, 0x72, 0x79, 0xb0, 0x39, 0x60, 0x03, 0xa6, 0x70, 0x71, 0xd2, 0xe8, 0xdd,
-	0x7c, 0x9c, 0xd2, 0xcc, 0xf6, 0x59, 0x98, 0x68, 0xa4, 0x3d, 0x60, 0x6c, 0x10, 0x51, 0x5b, 0x5a,
-	0x5e, 0xd1, 0xb7, 0xdd, 0x64, 0xac, 0xae, 0xf0, 0xaf, 0x4b, 0x60, 0xd3, 0x71, 0x33, 0xba, 0xe7,
-	0xfb, 0xac, 0x48, 0xf2, 0xaf, 0x12, 0x9f, 0x05, 0xae, 0x17, 0x51, 0x78, 0x08, 0xea, 0x6e, 0x10,
-	0x8c, 0x68, 0x96, 0xb5, 0x8c, 0x6d, 0x63, 0x67, 0xdd, 0x79, 0x32, 0xe1, 0xa8, 0x84, 0x2e, 0x39,
-	0xfa, 0x78, 0x10, 0xe6, 0x47, 0x85, 0x67, 0xf9, 0x2c, 0xb6, 0x53, 0x36, 0xcc, 0x77, 0x13, 0x9a,
-	0x1f, 0xb3, 0xd1, 0xd0, 0x4e, 0x99, 0x3f, 0xa4, 0xf9, 0xae, 0xcf, 0x46, 0xd4, 0x96, 0x4c, 0xac,
-	0x3d, 0x15, 0x44, 0xca, 0x68, 0xf8, 0x05, 0xa8, 0xa7, 0x85, 0xd7, 0x1b, 0xd2, 0x71, 0x6b, 0x69,
-	0xdb, 0xd8, 0x69, 0x38, 0x1f, 0x4c, 0x38, 0x02, 0x69, 0xe1, 0x45, 0xa1, 0x2f, 0xd0, 0x29, 0x47,
-	0xf7, 0xc6, 0x6e, 0x1c, 0x75, 0x71, 0x85, 0x61, 0xb2, 0x9a, 0x16, 0xde, 0x3e, 0x1d, 0xc3, 0x43,
-	0xb0, 0x22, 0xde, 0x96, 0xb5, 0xcc, 0x6d, 0x73, 0xa7, 0xf9, 0xa8, 0x69, 0xa9, 0x2a, 0x4f, 0x59,
-	0x98, 0x38, 0x8f, 0x5f, 0x73, 0x54, 0xfb, 0xed, 0x2f, 0x64, 0x2f, 0xce, 0x4e, 0xc4, 0x65, 0x44,
-	0xa5, 0xec, 0xde, 0xff, 0xe1, 0x14, 0xd5, 0x7e, 0x3e, 0x45, 0xc6, 0x1f, 0xbf, 0xef, 0xd6, 0x75,
-	0x4f, 0xf0, 0x2f, 0x4b, 0x60, 0xeb, 0x05, 0x0b, 0x8a, 0xe8, 0x7a, 0x97, 0x32, 0xb0, 0xe5, 0xb9,
-	0x19, 0xed, 0xb9, 0xea, 0xa2, 0x47, 0xcb, 0x1b, 0xd9, 0xb4, 0xe6, 0xa3, 0x77, 0x2d, 0x35, 0x45,
-	0xeb, 0xa6, 0x1e, 0x3b, 0x48, 0xb0, 0x3d, 0xe3, 0xc8, 0x98, 0x72, 0x74, 0x5f, 0x3d, 0x78, 0x36,
-	0x1b, 0x26, 0x9b, 0xde, 0x4d, 0xa3, 0xf9, 0x10, 0x2c, 0x27, 0x6e, 0x4c, 0x75, 0xef, 0xde, 0x99,
-	0x70, 0x24, 0xed, 0x29, 0x47, 0x4d, 0x95, 0x44, 0x58, 0x98, 0x48, 0x10, 0x7e, 0x0d, 0x9a, 0x29,
-	0x1d, 0xc5, 0x61, 0x96, 0x85, 0x4c, 0xf7, 0xac, 0xe1, 0x3c, 0x9c, 0x70, 0x34, 0x0b, 0x4f, 0x39,
-	0x82, 0xba, 0xe1, 0x15, 0x88, 0xc9, 0xac, 0x4b, 0xb7, 0x3d, 0xd3, 0x9a, 0x3b, 0x73, 0xed, 0xc0,
-	0x01, 0xb8, 0xf3, 0x9c, 0xd2, 0x17, 0x45, 0x94, 0x87, 0x69, 0x14, 0xd2, 0x11, 0x6c, 0x03, 0x53,
-	0x0c, 0xd7, 0x90, 0x04, 0xeb, 0x13, 0x8e, 0x84, 0x49, 0xc4, 0x0f, 0xb4, 0x00, 0x88, 0xaf, 0x1c,
-	0xe5, 0x13, 0x4c, 0x67, 0x43, 0x8c, 0xbf, 0x42, 0xc9, 0xcc, 0xb9, 0xbb, 0x26, 0x4a, 0xfe, 0x7b,
-	0x8a, 0x0c, 0xfc, 0xca, 0x00, 0x1b, 0x73, 0x65, 0x32, 0xb8, 0x0f, 0x1a, 0x7d, 0x8d, 0x08, 0x99,
-	0x0a, 0x39, 0xbc, 0x5d, 0x76, 0x7c, 0xce, 0xd5, 0xd9, 0x12, 0xad, 0x9e, 0x70, 0xb4, 0xd1, 0xa7,
-	0xb4, 0x37, 0x53, 0xaa, 0x8a, 0x87, 0x0f, 0x41, 0x3d, 0xa0, 0x7d, 0xb7, 0x88, 0x72, 0x4d, 0xab,
-	0x29, 0x14, 0xaf, 0x21, 0x52, 0x1e, 0x66, 0x08, 0x1d, 0x83, 0xd5, 0x83, 0x22, 0x4d, 0xa3, 0x31,
-	0xf4, 0xc1, 0x4a, 0xce, 0x72, 0x37, 0xd2, 0x1c, 0xe6, 0x24, 0xf9, 0x44, 0x57, 0x56, 0x1e, 0xb7,
-	0xd2, 0xa6, 0x8c, 0xec, 0xae, 0xe9, 0x01, 0xd4, 0xf0, 0x2b, 0x13, 0xac, 0x1c, 0xe4, 0xc1, 0xf7,
-	0x27, 0x70, 0x0f, 0x98, 0x71, 0x36, 0xd0, 0x62, 0xdb, 0xb4, 0xd4, 0x9e, 0x5b, 0xe5, 0x9e, 0x5b,
-	0x7b, 0xc9, 0xd8, 0x69, 0xeb, 0xfa, 0xc2, 0x71, 0xca, 0x11, 0x50, 0x73, 0x8e, 0xb3, 0x01, 0x26,
-	0x02, 0x82, 0x43, 0x60, 0xf6, 0xa9, 0x10, 0xd3, 0x35, 0xe6, 0xdf, 0x95, 0x91, 0x7d, 0x4a, 0xab,
-	0xc8, 0x3e, 0xa5, 0xf8, 0x36, 0xaf, 0x10, 0x59, 0x60, 0x08, 0x1a, 0x59, 0x38, 0x48, 0xdc, 0xbc,
-	0x18, 0xd1, 0x96, 0xa9, 0x59, 0xeb, 0x81, 0x1d, 0xe4, 0xc1, 0x41, 0x79, 0xe7, 0x7c, 0xaa, 0x6b,
-	0x57, 0xee, 0x53, 0x8e, 0xee, 0x2a, 0x06, 0x57, 0x10, 0xbe, 0xe4, 0x68, 0x7d, 0x36, 0x8c, 0x54,
-	0xee, 0x62, 0x4b, 0x62, 0x1a, 0xb3, 0xd6, 0x72, 0xb5, 0x25, 0xc2, 0xae, 0xb6, 0x44, 0x58, 0x98,
-	0x48, 0x10, 0x3e, 0x06, 0x75, 0x9a, 0xe4, 0x23, 0x96, 0x8e, 0x5b, 0x2b, 0x72, 0xf6, 0xef, 0x89,
-	0xd9, 0x6b, 0x68, 0xca, 0xd1, 0x86, 0x0a, 0xd1, 0x00, 0x26, 0xe5, 0x55, 0x77, 0x59, 0x0c, 0x05,
-	0xff, 0x68, 0x80, 0x39, 0x1e, 0xf0, 0x73, 0xd0, 0x50, 0x9f, 0xae, 0xfd, 0xab, 0x35, 0x90, 0x19,
-	0xf5, 0x67, 0xaf, 0xca, 0xa8, 0x01, 0x4c, 0x2a, 0x7f, 0xf8, 0x25, 0x68, 0x5c, 0x65, 0x92, 0x52,
-	0x5c, 0x77, 0xde, 0xff, 0xdf, 0x56, 0x90, 0x2a, 0x06, 0xff, 0xb3, 0x04, 0x80, 0xa6, 0xf3, 0x8c,
-	0xf9, 0xf0, 0x33, 0x50, 0x7f, 0x7a, 0xe4, 0x86, 0xc9, 0x37, 0xcf, 0x34, 0x15, 0x34, 0xe1, 0x68,
-	0xcd, 0x17, 0x50, 0x2f, 0x0c, 0xa6, 0x1c, 0xbd, 0xa5, 0x92, 0x95, 0x08, 0x26, 0xa5, 0x3f, 0x7c,
-	0x59, 0x8a, 0x43, 0x90, 0x78, 0x7e, 0xa3, 0x16, 0x2e, 0x39, 0xda, 0x5d, 0x5c, 0x0b, 0xc4, 0x3d,
-	0x56, 0x4a, 0x28, 0xc7, 0x63, 0x2e, 0x32, 0x9e, 0x97, 0x4a, 0xe6, 0xcb, 0x15, 0x8d, 0x6b, 0x62,
-	0xbe, 0x05, 0x0d, 0xa1, 0xfe, 0x37, 0x1b, 0xbc, 0xf3, 0xed, 0xeb, 0xf3, 0x8e, 0x71, 0x76, 0xde,
-	0x31, 0xfe, 0x3e, 0xef, 0x18, 0x3f, 0x5d, 0x74, 0x6a, 0x67, 0x17, 0x9d, 0xda, 0x9f, 0x17, 0x9d,
-	0xda, 0xe1, 0x47, 0x8b, 0x90, 0xd1, 0xff, 0xfa, 0x92, 0x93, 0xb7, 0x2a, 0xd7, 0xf6, 0x93, 0xff,
-	0x02, 0x00, 0x00, 0xff, 0xff, 0xe4, 0xa2, 0x22, 0xa5, 0x0c, 0x08, 0x00, 0x00,
+	// 960 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x56, 0x4f, 0x6f, 0xe3, 0xc4,
+	0x1b, 0x8e, 0x93, 0xb6, 0x69, 0x26, 0xbb, 0xfd, 0xb5, 0xb3, 0xf9, 0x2d, 0xc9, 0x22, 0x32, 0xcb,
+	0xa0, 0x95, 0x56, 0x42, 0xb5, 0x61, 0x39, 0x54, 0x04, 0x24, 0xb6, 0xde, 0x65, 0x11, 0x14, 0xa4,
+	0x95, 0xc3, 0x61, 0xd5, 0x4b, 0xe4, 0x3f, 0x13, 0xd7, 0x8a, 0xed, 0xb1, 0x62, 0x5b, 0x6d, 0xbe,
+	0x01, 0x27, 0x04, 0x17, 0xc4, 0x65, 0xa5, 0x9e, 0x39, 0xc3, 0x77, 0xd8, 0x63, 0xc5, 0x89, 0xd3,
+	0x80, 0xda, 0x03, 0x28, 0x47, 0x1f, 0x7b, 0x42, 0xf3, 0xc7, 0x75, 0xd2, 0x22, 0x51, 0x15, 0x09,
+	0x2e, 0xd1, 0xbc, 0x8f, 0xdf, 0xf7, 0x9d, 0x67, 0x9e, 0x79, 0xde, 0x51, 0xc0, 0xd6, 0x91, 0x61,
+	0xe7, 0xd9, 0x81, 0xf8, 0xd1, 0x93, 0x29, 0xcd, 0x28, 0x5c, 0x3b, 0xd2, 0x79, 0x74, 0xaf, 0xe7,
+	0xd2, 0x34, 0xa2, 0xe9, 0x48, 0xa0, 0x86, 0x0c, 0x64, 0xca, 0xbd, 0x8e, 0x4f, 0x7d, 0x2a, 0x71,
+	0xbe, 0x52, 0xe8, 0x66, 0x36, 0x4b, 0x48, 0x6a, 0xb8, 0x34, 0x88, 0x15, 0xd2, 0xf3, 0x29, 0xf5,
+	0x43, 0x62, 0x88, 0xc8, 0xc9, 0xc7, 0x86, 0x1d, 0xcf, 0xe4, 0x27, 0xfc, 0xb2, 0x0e, 0x36, 0x9f,
+	0xf3, 0x95, 0x69, 0xa7, 0x64, 0xd7, 0x75, 0x69, 0x1e, 0x67, 0x70, 0x1f, 0x34, 0x6d, 0xcf, 0x9b,
+	0x92, 0x34, 0xed, 0x6a, 0xf7, 0xb5, 0x87, 0xb7, 0xcc, 0xc7, 0x73, 0x86, 0x4a, 0xe8, 0x9c, 0xa1,
+	0x77, 0xfd, 0x20, 0x3b, 0xc8, 0x1d, 0xdd, 0xa5, 0x91, 0x91, 0xd0, 0x49, 0xb6, 0x1d, 0x93, 0xec,
+	0x90, 0x4e, 0x27, 0x46, 0x42, 0xdd, 0x09, 0xc9, 0xb6, 0x5d, 0x3a, 0x25, 0x86, 0x60, 0xa1, 0xef,
+	0xca, 0x22, 0xab, 0xac, 0x86, 0x1f, 0x82, 0x66, 0x92, 0x3b, 0xa3, 0x09, 0x99, 0x75, 0xeb, 0xa2,
+	0xf7, 0x5b, 0x73, 0x86, 0x40, 0x92, 0x3b, 0x61, 0xe0, 0x72, 0xb4, 0x60, 0x68, 0x6b, 0x66, 0x47,
+	0xe1, 0x00, 0x57, 0x18, 0xb6, 0xd6, 0x92, 0xdc, 0xd9, 0x23, 0x33, 0xb8, 0x0f, 0x56, 0xf9, 0xb9,
+	0xd2, 0x6e, 0xe3, 0x7e, 0xe3, 0x61, 0xfb, 0x51, 0x5b, 0x97, 0xbb, 0x3c, 0xa1, 0x41, 0x6c, 0xee,
+	0xbc, 0x62, 0xa8, 0xf6, 0xc3, 0xaf, 0xc8, 0xb8, 0x3e, 0x3b, 0x5e, 0x97, 0x5a, 0xb2, 0xe5, 0xe0,
+	0xce, 0x57, 0xc7, 0xa8, 0xf6, 0xfd, 0x31, 0xd2, 0x7e, 0xfe, 0x71, 0xbb, 0xa9, 0xa4, 0xc0, 0xdf,
+	0xd5, 0x01, 0x14, 0xfa, 0x7c, 0x41, 0xbd, 0x3c, 0xbc, 0x50, 0x88, 0x82, 0xbb, 0x8e, 0x9d, 0x92,
+	0x91, 0x2d, 0xe3, 0x11, 0x89, 0x5d, 0xea, 0xd9, 0x4e, 0x48, 0x84, 0x60, 0xed, 0x47, 0x5d, 0x5d,
+	0xde, 0x9e, 0x7e, 0x59, 0x5b, 0x13, 0x71, 0x96, 0x27, 0x0c, 0x69, 0x05, 0x43, 0x77, 0xe4, 0x41,
+	0x17, 0x3b, 0x61, 0xab, 0xe3, 0x54, 0xd9, 0x1f, 0x97, 0x6d, 0xe1, 0xdb, 0x60, 0x25, 0xb6, 0x23,
+	0x22, 0x34, 0x6b, 0x99, 0xaf, 0xcd, 0x19, 0x12, 0x71, 0xc1, 0x50, 0x5b, 0x36, 0xe1, 0x11, 0xb6,
+	0x04, 0x08, 0x3f, 0x01, 0xed, 0x84, 0x4c, 0xa3, 0x20, 0x4d, 0x03, 0xaa, 0xb4, 0x6a, 0x99, 0x0f,
+	0xe6, 0x0c, 0x2d, 0xc2, 0x05, 0x43, 0x50, 0x09, 0x5d, 0x81, 0xd8, 0x5a, 0x4c, 0x19, 0xf4, 0x16,
+	0x24, 0xb9, 0xbd, 0xa4, 0x00, 0xfe, 0xa9, 0x0e, 0x3a, 0x52, 0x98, 0x3c, 0xcc, 0x82, 0x61, 0xe0,
+	0xff, 0x1b, 0xe6, 0x79, 0x7e, 0xd9, 0x3c, 0x3b, 0x73, 0x86, 0x3a, 0x95, 0x51, 0x46, 0x11, 0x27,
+	0x33, 0x4a, 0x03, 0xbf, 0x60, 0xe8, 0xf5, 0xcb, 0x36, 0xaa, 0xbe, 0xfe, 0x87, 0x86, 0xf2, 0xc0,
+	0xed, 0x67, 0x84, 0x08, 0xd1, 0x92, 0x30, 0x20, 0x53, 0xd8, 0x03, 0x0d, 0x7e, 0x1e, 0x4d, 0x5c,
+	0x6c, 0x73, 0xce, 0x10, 0x0f, 0x2d, 0xfe, 0x03, 0x75, 0x00, 0xa2, 0x8b, 0x44, 0x71, 0xe2, 0x86,
+	0xb9, 0xc1, 0xc7, 0xa5, 0x42, 0xad, 0x85, 0xf5, 0x60, 0x9d, 0x6f, 0xf6, 0xc7, 0x31, 0xd2, 0xf0,
+	0xd7, 0x1a, 0xd8, 0x58, 0xda, 0x26, 0x85, 0x7b, 0xa0, 0x35, 0x56, 0x08, 0xbf, 0x19, 0x7e, 0xda,
+	0xff, 0x97, 0x2e, 0x5d, 0x4a, 0x35, 0xef, 0xf2, 0x73, 0xcf, 0x19, 0xda, 0x18, 0x13, 0x32, 0x5a,
+	0xd8, 0xaa, 0xaa, 0x87, 0x0f, 0x40, 0xd3, 0x23, 0x63, 0x3b, 0x0f, 0x33, 0x45, 0xab, 0xcd, 0x2f,
+	0x59, 0x41, 0x56, 0xb9, 0x58, 0x20, 0x74, 0x08, 0xd6, 0x86, 0x79, 0x92, 0x84, 0x33, 0xe8, 0x82,
+	0xd5, 0x8c, 0x66, 0x76, 0xa8, 0x38, 0x2c, 0x29, 0xfe, 0x58, 0xed, 0x2c, 0x33, 0x6e, 0x24, 0xbd,
+	0xa8, 0x1c, 0xac, 0x2b, 0xe9, 0x6b, 0xf8, 0x65, 0x03, 0x00, 0xe1, 0xd3, 0x61, 0xe6, 0x7d, 0x79,
+	0x04, 0x77, 0x41, 0x23, 0x4a, 0x7d, 0x35, 0xa5, 0x1d, 0x5d, 0x3e, 0x8c, 0x7a, 0xf9, 0x30, 0xea,
+	0xbb, 0xf1, 0xcc, 0xec, 0x29, 0x12, 0x3c, 0xb1, 0x60, 0x08, 0x48, 0x1b, 0x45, 0xa9, 0x8f, 0x2d,
+	0x0e, 0xc1, 0x09, 0x68, 0x8c, 0x09, 0x9f, 0xc4, 0x2b, 0xf4, 0x3f, 0x2f, 0x2b, 0xc7, 0x84, 0x54,
+	0x95, 0x63, 0x42, 0xf0, 0x4d, 0x8e, 0xc2, 0xbb, 0xc0, 0x14, 0xb4, 0xd2, 0xc0, 0x8f, 0xed, 0x2c,
+	0x9f, 0x92, 0x6e, 0x43, 0xb0, 0xee, 0x2d, 0xbd, 0x2d, 0xc3, 0xcc, 0x1b, 0x96, 0x09, 0xe6, 0x40,
+	0x11, 0xa8, 0x6a, 0x0a, 0x86, 0x36, 0x25, 0x8d, 0x0b, 0x08, 0x9f, 0x33, 0xb4, 0x75, 0xa5, 0xd6,
+	0xaa, 0x6a, 0xf8, 0x63, 0x13, 0x91, 0x88, 0x76, 0x57, 0xaa, 0xc7, 0x86, 0xc7, 0xd5, 0x63, 0xc3,
+	0x23, 0x6c, 0x09, 0x10, 0xee, 0x80, 0x26, 0x89, 0xb3, 0x29, 0x4d, 0x66, 0xdd, 0x55, 0x61, 0x85,
+	0x37, 0xb8, 0x15, 0x14, 0x54, 0x30, 0xb4, 0x21, 0x4b, 0x14, 0x80, 0xad, 0xf2, 0xd3, 0x60, 0x85,
+	0xdf, 0x11, 0xfe, 0x56, 0x03, 0x57, 0xc9, 0xc0, 0x0f, 0x40, 0x4b, 0xce, 0xed, 0x9e, 0x1a, 0x8d,
+	0x5b, 0xb2, 0xad, 0x9a, 0xfe, 0xaa, 0xad, 0x02, 0xb0, 0x55, 0xe5, 0xc3, 0x8f, 0x40, 0xeb, 0xa2,
+	0x93, 0x7a, 0x27, 0xde, 0xfc, 0x5b, 0x51, 0xac, 0xaa, 0x06, 0xff, 0x5e, 0x07, 0x40, 0xd1, 0x79,
+	0x4a, 0x5d, 0xf8, 0x3e, 0x68, 0x3e, 0x39, 0xb0, 0x83, 0xf8, 0xd3, 0xa7, 0x6a, 0x4a, 0xd1, 0x9c,
+	0xa1, 0x75, 0x97, 0x43, 0xa3, 0xc0, 0x2b, 0x18, 0xfa, 0x9f, 0x6c, 0x56, 0x22, 0xd8, 0x2a, 0xf3,
+	0xe1, 0x8b, 0xd2, 0x2b, 0x9c, 0xc4, 0xb3, 0xbf, 0xb4, 0xc6, 0x39, 0x43, 0xdb, 0xd7, 0xb7, 0x86,
+	0x65, 0x1f, 0x4a, 0x63, 0x94, 0x77, 0xd4, 0xb8, 0xce, 0x1d, 0xbd, 0x90, 0xae, 0x5f, 0xa9, 0x68,
+	0x5c, 0xf1, 0xf6, 0x0d, 0x68, 0xf0, 0x61, 0xf8, 0x67, 0xb7, 0x6f, 0x7e, 0xf6, 0xea, 0xb4, 0xaf,
+	0x9d, 0x9c, 0xf6, 0xb5, 0xdf, 0x4e, 0xfb, 0xda, 0x37, 0x67, 0xfd, 0xda, 0xc9, 0x59, 0xbf, 0xf6,
+	0xcb, 0x59, 0xbf, 0xb6, 0xff, 0xce, 0x75, 0xc8, 0xa8, 0x7f, 0x4d, 0x82, 0x93, 0xb3, 0x26, 0xa6,
+	0xf8, 0xbd, 0x3f, 0x03, 0x00, 0x00, 0xff, 0xff, 0xf6, 0xbd, 0x95, 0xbb, 0x4c, 0x09, 0x00, 0x00,
 }
 
 func (this *FeeMultiplier) Equal(that interface{}) bool {
@@ -517,7 +560,7 @@ func (this *FeeMultipliers) Equal(that interface{}) bool {
 	}
 	return true
 }
-func (m *BaseAccountEncodable) Marshal() (dAtA []byte, err error) {
+func (m *ProtoBaseAccount) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -527,12 +570,12 @@ func (m *BaseAccountEncodable) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *BaseAccountEncodable) MarshalTo(dAtA []byte) (int, error) {
+func (m *ProtoBaseAccount) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *BaseAccountEncodable) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ProtoBaseAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -568,7 +611,7 @@ func (m *BaseAccountEncodable) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *ModuleAccountEncodable) Marshal() (dAtA []byte, err error) {
+func (m *ProtoModuleAccount) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -578,12 +621,12 @@ func (m *ModuleAccountEncodable) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *ModuleAccountEncodable) MarshalTo(dAtA []byte) (int, error) {
+func (m *ProtoModuleAccount) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *ModuleAccountEncodable) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ProtoModuleAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -605,7 +648,7 @@ func (m *ModuleAccountEncodable) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 		dAtA[i] = 0x12
 	}
 	{
-		size, err := m.BaseAccountEncodable.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.ProtoBaseAccount.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -614,6 +657,57 @@ func (m *ModuleAccountEncodable) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	}
 	i--
 	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *ProtoMultiSigAccount) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ProtoMultiSigAccount) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ProtoMultiSigAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Coins) > 0 {
+		for iNdEx := len(m.Coins) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Coins[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintAuth(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.PubKey) > 0 {
+		i -= len(m.PubKey)
+		copy(dAtA[i:], m.PubKey)
+		i = encodeVarintAuth(dAtA, i, uint64(len(m.PubKey)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintAuth(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0xa
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -731,7 +825,7 @@ func (m *Supply) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *StdTx) Marshal() (dAtA []byte, err error) {
+func (m *ProtoStdTx) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -741,12 +835,12 @@ func (m *StdTx) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *StdTx) MarshalTo(dAtA []byte) (int, error) {
+func (m *ProtoStdTx) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *StdTx) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ProtoStdTx) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -800,7 +894,7 @@ func (m *StdTx) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *StdSignature) Marshal() (dAtA []byte, err error) {
+func (m *ProtoStdSignature) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -810,12 +904,12 @@ func (m *StdSignature) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *StdSignature) MarshalTo(dAtA []byte) (int, error) {
+func (m *ProtoStdSignature) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *StdSignature) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ProtoStdSignature) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -904,7 +998,7 @@ func encodeVarintAuth(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *BaseAccountEncodable) Size() (n int) {
+func (m *ProtoBaseAccount) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -927,13 +1021,13 @@ func (m *BaseAccountEncodable) Size() (n int) {
 	return n
 }
 
-func (m *ModuleAccountEncodable) Size() (n int) {
+func (m *ProtoModuleAccount) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.BaseAccountEncodable.Size()
+	l = m.ProtoBaseAccount.Size()
 	n += 1 + l + sovAuth(uint64(l))
 	l = len(m.Name)
 	if l > 0 {
@@ -942,6 +1036,29 @@ func (m *ModuleAccountEncodable) Size() (n int) {
 	if len(m.Permissions) > 0 {
 		for _, s := range m.Permissions {
 			l = len(s)
+			n += 1 + l + sovAuth(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *ProtoMultiSigAccount) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Address)
+	if l > 0 {
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	l = len(m.PubKey)
+	if l > 0 {
+		n += 1 + l + sovAuth(uint64(l))
+	}
+	if len(m.Coins) > 0 {
+		for _, e := range m.Coins {
+			l = e.Size()
 			n += 1 + l + sovAuth(uint64(l))
 		}
 	}
@@ -997,7 +1114,7 @@ func (m *Supply) Size() (n int) {
 	return n
 }
 
-func (m *StdTx) Size() (n int) {
+func (m *ProtoStdTx) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1023,7 +1140,7 @@ func (m *StdTx) Size() (n int) {
 	return n
 }
 
-func (m *StdSignature) Size() (n int) {
+func (m *ProtoStdSignature) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1074,7 +1191,7 @@ func sovAuth(x uint64) (n int) {
 func sozAuth(x uint64) (n int) {
 	return sovAuth(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *BaseAccountEncodable) Unmarshal(dAtA []byte) error {
+func (m *ProtoBaseAccount) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1097,10 +1214,10 @@ func (m *BaseAccountEncodable) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: BaseAccountEncodable: wiretype end group for non-group")
+			return fmt.Errorf("proto: ProtoBaseAccount: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BaseAccountEncodable: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ProtoBaseAccount: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1141,7 +1258,7 @@ func (m *BaseAccountEncodable) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PubKey", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowAuth
@@ -1151,23 +1268,25 @@ func (m *BaseAccountEncodable) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthAuth
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthAuth
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.PubKey = string(dAtA[iNdEx:postIndex])
+			m.PubKey = append(m.PubKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.PubKey == nil {
+				m.PubKey = []byte{}
+			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -1227,7 +1346,7 @@ func (m *BaseAccountEncodable) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ModuleAccountEncodable) Unmarshal(dAtA []byte) error {
+func (m *ProtoModuleAccount) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1250,15 +1369,15 @@ func (m *ModuleAccountEncodable) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: ModuleAccountEncodable: wiretype end group for non-group")
+			return fmt.Errorf("proto: ProtoModuleAccount: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ModuleAccountEncodable: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ProtoModuleAccount: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BaseAccountEncodable", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ProtoBaseAccount", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1285,7 +1404,7 @@ func (m *ModuleAccountEncodable) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.BaseAccountEncodable.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.ProtoBaseAccount.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1352,6 +1471,161 @@ func (m *ModuleAccountEncodable) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Permissions = append(m.Permissions, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipAuth(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ProtoMultiSigAccount) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowAuth
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ProtoMultiSigAccount: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ProtoMultiSigAccount: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Address = append(m.Address[:0], dAtA[iNdEx:postIndex]...)
+			if m.Address == nil {
+				m.Address = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PubKey", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PubKey = append(m.PubKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.PubKey == nil {
+				m.PubKey = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Coins", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowAuth
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthAuth
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthAuth
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Coins = append(m.Coins, types.Coin{})
+			if err := m.Coins[len(m.Coins)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1674,7 +1948,7 @@ func (m *Supply) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *StdTx) Unmarshal(dAtA []byte) error {
+func (m *ProtoStdTx) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1697,10 +1971,10 @@ func (m *StdTx) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: StdTx: wiretype end group for non-group")
+			return fmt.Errorf("proto: ProtoStdTx: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: StdTx: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ProtoStdTx: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1878,7 +2152,7 @@ func (m *StdTx) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *StdSignature) Unmarshal(dAtA []byte) error {
+func (m *ProtoStdSignature) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1901,17 +2175,17 @@ func (m *StdSignature) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: StdSignature: wiretype end group for non-group")
+			return fmt.Errorf("proto: ProtoStdSignature: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: StdSignature: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ProtoStdSignature: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field PublicKey", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowAuth
@@ -1921,23 +2195,25 @@ func (m *StdSignature) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthAuth
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthAuth
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.PublicKey = string(dAtA[iNdEx:postIndex])
+			m.PublicKey = append(m.PublicKey[:0], dAtA[iNdEx:postIndex]...)
+			if m.PublicKey == nil {
+				m.PublicKey = []byte{}
+			}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {

@@ -84,7 +84,7 @@ func RawTx(cdc *codec.Codec, tmNode client.Client, fromAddr sdk.Address, txBytes
 	cliCtx.BroadcastMode = util.BroadcastSync
 	return cliCtx.BroadcastTx(txBytes)
 }
-func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
+func newTx(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		return

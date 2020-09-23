@@ -129,7 +129,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		if er != nil {
 			return sdk.ErrInternal("could not get prev context: " + er.Error())
 		}
-		hash, er := sessionContext.BlockHash(k.cdc)
+		hash, er := sessionContext.BlockHash(k.Cdc)
 		if er != nil {
 			return sdk.ErrInternal(er.Error())
 		}
@@ -170,7 +170,7 @@ func (k Keeper) SetClaim(ctx sdk.Ctx, msg pc.MsgClaim) error {
 		msg.ExpirationHeight = ctx.BlockHeight() + k.ClaimExpiration(sessionCtx)*k.BlocksPerSession(sessionCtx)
 	}
 	// marshal the message into amino
-	bz, err := k.cdc.MarshalBinaryBare(&msg)
+	bz, err := k.Cdc.MarshalBinaryBare(&msg)
 	if err != nil {
 		panic(err)
 	}
@@ -195,7 +195,7 @@ func (k Keeper) GetClaim(ctx sdk.Ctx, address sdk.Address, header pc.SessionHead
 		return pc.MsgClaim{}, false
 	}
 	// unmarshal into message object
-	err = k.cdc.UnmarshalBinaryBare(res, &msg)
+	err = k.Cdc.UnmarshalBinaryBare(res, &msg)
 	if err != nil {
 		panic(err)
 	}
@@ -229,7 +229,7 @@ func (k Keeper) GetClaims(ctx sdk.Ctx, address sdk.Address) (claims []pc.MsgClai
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var claim pc.MsgClaim
-		err = k.cdc.UnmarshalBinaryBare(iterator.Value(), &claim)
+		err = k.Cdc.UnmarshalBinaryBare(iterator.Value(), &claim)
 		if err != nil {
 			panic(err)
 		}
@@ -247,7 +247,7 @@ func (k Keeper) GetAllClaims(ctx sdk.Ctx) (claims []pc.MsgClaim) {
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var claim pc.MsgClaim
-		err := k.cdc.UnmarshalBinaryBare(iterator.Value(), &claim)
+		err := k.Cdc.UnmarshalBinaryBare(iterator.Value(), &claim)
 		if err != nil {
 			panic(err)
 		}
@@ -284,7 +284,7 @@ func (k Keeper) GetMatureClaims(ctx sdk.Ctx, address sdk.Address) (matureProofs 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var msg pc.MsgClaim
-		err = k.cdc.UnmarshalBinaryBare(iterator.Value(), &msg)
+		err = k.Cdc.UnmarshalBinaryBare(iterator.Value(), &msg)
 		if err != nil {
 			panic(err)
 		}
@@ -309,7 +309,7 @@ func (k Keeper) DeleteExpiredClaims(ctx sdk.Ctx) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		err := k.cdc.UnmarshalBinaryBare(iterator.Value(), &msg)
+		err := k.Cdc.UnmarshalBinaryBare(iterator.Value(), &msg)
 		if err != nil {
 			panic(err)
 		}

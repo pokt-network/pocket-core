@@ -41,7 +41,7 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Ctx) (applications []types.A
 	for ; iterator.Valid(); iterator.Next() {
 
 		var addrs sdk.Addresses
-		err := k.cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
+		err := k.Cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
 		if err != nil {
 			k.Logger(ctx).Error(fmt.Errorf("could not unmarshal unstakingApplications in getAllUnstakingApplications call: %s", string(iterator.Value())).Error())
 			return
@@ -68,7 +68,7 @@ func (k Keeper) getUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) (
 	if bz == nil {
 		return []sdk.Address{}
 	}
-	err := k.cdc.UnmarshalBinaryLengthPrefixed(bz, &vals)
+	err := k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &vals)
 	if err != nil {
 		panic(err)
 	}
@@ -80,7 +80,7 @@ func (k Keeper) getUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) (
 func (k Keeper) setUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time, keys []sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	ka := sdk.Addresses{Arr: keys}
-	bz, err := k.cdc.MarshalBinaryLengthPrefixed(&ka)
+	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&ka)
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +108,7 @@ func (k Keeper) getMatureApplications(ctx sdk.Ctx) (matureValsAddrs []sdk.Addres
 	for ; unstakingValsIterator.Valid(); unstakingValsIterator.Next() {
 
 		var applications sdk.Addresses
-		err := k.cdc.UnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &applications)
+		err := k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &applications)
 		if err != nil {
 			panic(err)
 		}
@@ -125,7 +125,7 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 	defer unstakingApplicationsIterator.Close()
 	for ; unstakingApplicationsIterator.Valid(); unstakingApplicationsIterator.Next() {
 		var unstakingVals []sdk.Address
-		err := k.cdc.UnmarshalBinaryLengthPrefixed(unstakingApplicationsIterator.Value(), &unstakingVals)
+		err := k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingApplicationsIterator.Value(), &unstakingVals)
 		if err != nil {
 			panic(err)
 		}

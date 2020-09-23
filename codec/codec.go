@@ -2,7 +2,6 @@ package codec
 
 import (
 	"errors"
-
 	"github.com/gogo/protobuf/proto"
 	"github.com/pokt-network/pocket-core/codec/types"
 	tmTypes "github.com/tendermint/tendermint/types"

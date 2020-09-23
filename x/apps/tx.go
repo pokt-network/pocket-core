@@ -44,7 +44,7 @@ func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, add
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
 }
 
-func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
+func newTx(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		return

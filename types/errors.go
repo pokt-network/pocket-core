@@ -348,7 +348,7 @@ func (err *sdkError) Format(s fmt.State, verb rune) {
 			// Write data.
 			_, _ = s.Write([]byte(fmt.Sprintf("Data: %#v\n", err.data)))
 			// Write msg trace items.
-			_, _ = s.Write([]byte(fmt.Sprintf("Msg Traces:\n")))
+			_, _ = s.Write([]byte(fmt.Sprintf("ProtoMsg Traces:\n")))
 			for i, msgtrace := range err.msgtraces {
 				_, _ = s.Write([]byte(fmt.Sprintf(" %4d  %s\n", i, msgtrace.String())))
 			}

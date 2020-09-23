@@ -20,7 +20,7 @@ func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types
 	if value == nil {
 		return application, false
 	}
-	application, err := types.UnmarshalApplication(k.cdc, value)
+	application, err := types.UnmarshalApplication(k.Cdc, value)
 	if err != nil {
 		k.Logger(ctx).Error("could not unmarshal application from store")
 		return application, false
@@ -32,7 +32,7 @@ func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types
 // SetApplication - Add a single application the main store
 func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := types.MarshalApplication(k.cdc, application)
+	bz, err := types.MarshalApplication(k.Cdc, application)
 	if err != nil {
 		k.Logger(ctx).Error("could not marshal application object")
 		os.Exit(1)
@@ -50,7 +50,7 @@ func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		application, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		application, err := types.UnmarshalApplication(k.Cdc, iterator.Value())
 		if err != nil {
 			k.Logger(ctx).Error("couldn't unmarshal application in GetAllApplications call: " + string(iterator.Value()) + "\n" + err.Error())
 			continue
@@ -68,7 +68,7 @@ func (k Keeper) GetAllApplicationsWithOpts(ctx sdk.Ctx, opts types.QueryApplicat
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		application, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		application, err := types.UnmarshalApplication(k.Cdc, iterator.Value())
 		if err != nil {
 			k.Logger(ctx).Error("couldn't unmarshal application in GetAllApplicationsWithOpts call: " + string(iterator.Value()) + "\n" + err.Error())
 			continue
@@ -90,7 +90,7 @@ func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications t
 
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
-		application, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		application, err := types.UnmarshalApplication(k.Cdc, iterator.Value())
 		if err != nil {
 			k.Logger(ctx).Error("couldn't unmarshal application in GetApplications call: " + string(iterator.Value()) + "\n" + err.Error())
 			continue
@@ -109,7 +109,7 @@ func (k Keeper) IterateAndExecuteOverApps(
 	defer iterator.Close()
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
-		application, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		application, err := types.UnmarshalApplication(k.Cdc, iterator.Value())
 		if err != nil {
 			k.Logger(ctx).Error("couldn't unmarshal application in IterateAndExecuteOverApps call: " + string(iterator.Value()) + "\n" + err.Error())
 			continue

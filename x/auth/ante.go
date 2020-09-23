@@ -23,9 +23,9 @@ func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
 		if err := tx.ValidateBasic(); err != nil {
 			return newCtx, err.Result(), true
 		}
-		stdTx, ok := tx.(types.StdTxI)
+		stdTx, ok := tx.(types.StdTx)
 		if !ok {
-			return newCtx, sdk.ErrInternal("all transactions must be convertible to inteface: StdTxI").Result(), true
+			return newCtx, sdk.ErrInternal("all transactions must be convertible to inteface: ProtoStdTx").Result(), true
 		}
 		err := ValidateTransaction(ctx, ak, stdTx, ak.GetParams(ctx), txIndexer, txBz, simulate)
 		if err != nil {
@@ -39,7 +39,7 @@ func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
 	}
 }
 
-func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTxI, params Params, txIndexer txindex.TxIndexer, txBz []byte, simulate bool) sdk.Error {
+func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params, txIndexer txindex.TxIndexer, txBz []byte, simulate bool) sdk.Error {
 	// validate the memo
 	if err := ValidateMemo(stdTx, params); err != nil {
 		return types.ErrInvalidMemo(ModuleName, err)
@@ -142,7 +142,7 @@ func GetSignerAcc(ctx sdk.Ctx, ak keeper.Keeper, addr sdk.Address) (Account, sdk
 }
 
 // ValidateMemo validates the memo size.
-func ValidateMemo(stdTx types.StdTxI, params Params) sdk.Error {
+func ValidateMemo(stdTx types.StdTx, params Params) sdk.Error {
 	memoLength := len(stdTx.GetMemo())
 	if uint64(memoLength) > params.MaxMemoCharacters {
 		return sdk.ErrMemoTooLarge(
@@ -156,7 +156,7 @@ func ValidateMemo(stdTx types.StdTxI, params Params) sdk.Error {
 }
 
 // DeductFees deducts fees from the given account.
-func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTxI) sdk.Error {
+func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTx) sdk.Error {
 	fees := tx.GetFee()
 	if !fees.IsValid() {
 		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee amount: %s", fees))
@@ -180,7 +180,7 @@ func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTxI) sdk.Error {
 
 // GetSignBytes returns a slice of bytes to sign over for a given transaction
 // and an account.
-func GetSignBytes(chainID string, stdTx types.StdTxI) ([]byte, error) {
+func GetSignBytes(chainID string, stdTx types.StdTx) ([]byte, error) {
 	return StdSignBytes(
 		chainID, stdTx.GetEntropy(), stdTx.GetFee(), stdTx.GetMsg(), stdTx.GetMemo(),
 	)

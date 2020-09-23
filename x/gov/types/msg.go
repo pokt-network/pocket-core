@@ -4,10 +4,10 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
-// ensure Msg interface compliance at compile time
+// ensure ProtoMsg interface compliance at compile time
 var (
-	_ sdk.Msg = &MsgChangeParam{}
-	_ sdk.Msg = &MsgDAOTransfer{}
+	_ sdk.ProtoMsg = &MsgChangeParam{}
+	_ sdk.ProtoMsg = &MsgDAOTransfer{}
 )
 
 const (

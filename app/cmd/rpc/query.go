@@ -120,7 +120,7 @@ type RPCResultTx struct {
 	TxResult abci.ResponseDeliverTx `json:"tx_result"`
 	Tx       types.Tx               `json:"tx"`
 	Proof    types.TxProof          `json:"proof,omitempty"`
-	StdTx    types2.StdTxI          `json:"stdTx"`
+	StdTx    types2.StdTx           `json:"stdTx"`
 }
 
 func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {

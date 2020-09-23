@@ -60,7 +60,7 @@ func UpgradeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fro
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
 }
 
-func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string, fee int64) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
+func newTx(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string, fee int64) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		return
@@ -86,7 +86,7 @@ func newTx(cdc *codec.Codec, msg sdk.Msg, fromAddr sdk.Address, tmNode client.Cl
 	return
 }
 
-func BuildAndSignMulti(cdc *codec.Codec, address sdk.Address, publicKey crypto.PublicKeyMultiSig, msg sdk.Msg, tmNode client.Client, keybase keys.Keybase, passphrase string, fee int64) (txBytes []byte, err error) {
+func BuildAndSignMulti(cdc *codec.Codec, address sdk.Address, publicKey crypto.PublicKeyMultiSig, msg sdk.ProtoMsg, tmNode client.Client, keybase keys.Keybase, passphrase string, fee int64) (txBytes []byte, err error) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		return nil, err

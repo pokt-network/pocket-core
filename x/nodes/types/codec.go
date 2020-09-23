@@ -16,10 +16,10 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterStructure(MsgUnjail{}, "pos/MsgUnjail")
 	cdc.RegisterStructure(MsgSend{}, "pos/Send")
 	cdc.RegisterStructure(MsgStake{}, "pos/MsgStake")
+	cdc.RegisterImplementation((*sdk.ProtoMsg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{})
 	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{})
-	cdc.RegisterImplementation((*sdk.LegacyMsg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{})
 	cdc.RegisterInterface("nodes/validatorI", (*exported.ValidatorI)(nil), &ValidatorProto{})
-
+	ModuleCdc = cdc
 }
 
 var ModuleCdc *codec.Codec // generic sealed codec to be used throughout this module

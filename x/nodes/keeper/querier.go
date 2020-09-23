@@ -92,7 +92,7 @@ func queryAccount(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Err
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 	acc := k.GetAccount(ctx, params.Address)
-	res, err := k.cdc.MarshalJSON(acc)
+	res, err := k.Cdc.MarshalJSON(acc)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))
 	}

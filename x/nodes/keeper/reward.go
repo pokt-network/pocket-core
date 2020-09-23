@@ -82,10 +82,10 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
 		os.Exit(1)
 	}
 	if ctx.IsAfterUpgradeHeight() {
-		_ = k.cdc.UnmarshalBinaryLengthPrefixed(b, &a)
+		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &a)
 		return a.Address
 	} else {
-		_ = k.cdc.UnmarshalBinaryLengthPrefixed(b, &addr)
+		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &addr)
 		return addr
 	}
 
@@ -96,10 +96,10 @@ func (k Keeper) SetPreviousProposer(ctx sdk.Ctx, consAddr sdk.Address) {
 	a := sdk.AddressProto{Address: consAddr}
 	store := ctx.KVStore(k.storeKey)
 	if ctx.IsAfterUpgradeHeight() {
-		b, _ := k.cdc.MarshalBinaryLengthPrefixed(&a)
+		b, _ := k.Cdc.MarshalBinaryLengthPrefixed(&a)
 		_ = store.Set(types.ProposerKey, b)
 	} else {
-		b, _ := k.cdc.MarshalBinaryLengthPrefixed(consAddr)
+		b, _ := k.Cdc.MarshalBinaryLengthPrefixed(consAddr)
 		_ = store.Set(types.ProposerKey, b)
 	}
 

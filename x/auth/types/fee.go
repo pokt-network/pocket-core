@@ -2,7 +2,7 @@ package types
 
 import "github.com/pokt-network/pocket-core/types"
 
-func (fm FeeMultipliers) GetFee(msg types.LegacyMsg) types.Int {
+func (fm FeeMultipliers) GetFee(msg types.Msg) types.Int {
 	for _, feeMultiplier := range fm.FeeMultis {
 		if feeMultiplier.Key == msg.Type() {
 			return msg.GetFee().Mul(types.NewInt(feeMultiplier.Multiplier))

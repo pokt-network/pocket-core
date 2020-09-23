@@ -421,7 +421,7 @@ func Test_queryValidators(t *testing.T) {
 
 func TestQueryAccount(t *testing.T) {
 	context, accs, keeper := createTestInput(t, true)
-	jsondata, _ := keeper.cdc.MarshalJSON(types.QueryAccountParams{
+	jsondata, _ := keeper.Cdc.MarshalJSON(types.QueryAccountParams{
 		Address: accs[0].GetAddress(),
 	})
 	req := abci.RequestQuery{
@@ -432,7 +432,7 @@ func TestQueryAccount(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 	var acc auth.BaseAccount
-	er := keeper.cdc.UnmarshalJSON(res, &acc)
+	er := keeper.Cdc.UnmarshalJSON(res, &acc)
 	assert.Nil(t, er)
 	assert.Equal(t, accs[0], &acc)
 }

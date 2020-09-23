@@ -21,7 +21,7 @@ func (k Keeper) AllApplications(ctx sdk.Ctx) (apps []exported.ApplicationI) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		app, err := types.UnmarshalApplication(k.cdc, iterator.Value())
+		app, err := types.UnmarshalApplication(k.Cdc, iterator.Value())
 		if err != nil {
 			k.Logger(ctx).Error("couldn't unmarshal application in AllApplications call: " + string(iterator.Value()) + "\n" + err.Error())
 			continue

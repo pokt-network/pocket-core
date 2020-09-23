@@ -28,7 +28,7 @@ func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
-		blockHashBz, er := sessionCtx.BlockHash(k.cdc)
+		blockHashBz, er := sessionCtx.BlockHash(k.Cdc)
 		if er != nil {
 			return nil, sdk.ErrInternal(er.Error())
 		}
