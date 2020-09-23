@@ -224,7 +224,7 @@ func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfCha
 	k.posKeeper.BurnForChallenge(ctx, numberOfChallenges.Mul(sdk.NewInt(k.ReplayAttackBurnMultiplier(ctx))), address)
 }
 
-func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.Msg, n client.Client, key crypto.PrivateKey, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
+func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.ProtoMsg, n client.Client, key crypto.PrivateKey, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	// get the from address from the pkf
 	fromAddr := sdk.Address(key.PublicKey().Address())
 	// get the genesis doc from the node for the chainID
@@ -233,7 +233,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.Msg, n client.Client, key crypto
 		return txBuilder, cliCtx, err
 	}
 	// create a client context for sending
-	cliCtx = util.NewCLIContext(n, fromAddr, "").WithCodec(k.cdc)
+	cliCtx = util.NewCLIContext(n, fromAddr, "").WithCodec(k.Cdc)
 	pk, err := k.GetPKFromFile(ctx)
 	if err != nil {
 		return txBuilder, cliCtx, err
@@ -254,8 +254,8 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.Msg, n client.Client, key crypto
 	}
 	// ensure that the tx builder has the correct tx encoder, chainID, fee
 	txBuilder = auth.NewTxBuilder(
-		auth.DefaultTxEncoder(k.cdc),
-		auth.DefaultTxDecoder(k.cdc),
+		auth.DefaultTxEncoder(k.Cdc),
+		auth.DefaultTxDecoder(k.Cdc),
 		genDoc.Genesis.ChainID,
 		"",
 		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), fee)),

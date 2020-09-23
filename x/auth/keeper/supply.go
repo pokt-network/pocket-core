@@ -40,18 +40,16 @@ func (k Keeper) SetSupply(ctx sdk.Ctx, supply exported.SupplyI) {
 }
 
 func (k Keeper) EncodeSupply(supply exported.SupplyI) ([]byte, error) {
-	var bz []byte
-	var err error
-	if k.cdc.IsAfterUpgrade() {
-		bz, err = k.cdc.ProtoMarshalBinaryLengthPrefixed(supply.(*types.Supply))
-	} else {
-		bz, err = k.cdc.LegacyMarshalBinaryLengthPrefixed(supply) // TODO only kept this way for backwards compatibility.. test if breaks when using supply.(*Supply)
+	s, ok := supply.(types.Supply)
+	if !ok {
+		return nil, fmt.Errorf("%s", "supplyI must be of type Supply")
 	}
+	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&s)
 	return bz, err
 }
 
 func (k Keeper) DecodeSupply(bz []byte) (exported.SupplyI, error) {
 	var supply types.Supply
-	err := k.cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, &supply)
+	err := k.Cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, &supply)
 	return supply, err
 }

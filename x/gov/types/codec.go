@@ -22,4 +22,5 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterStructure(ACL{}, "gov/non_map_acl")
 	cdc.RegisterStructure(Upgrade{}, "gov/upgrade")
 	cdc.RegisterStructure(MsgUpgrade{}, "gov/msg_upgrade")
+	ModuleCdc = cdc
 }

@@ -185,22 +185,12 @@ func (k Keeper) EncodeAccount(acc exported.Account) ([]byte, error) {
 }
 
 func (k Keeper) EncodeBaseAccount(acc *types.BaseAccount) ([]byte, error) {
-	if k.cdc.IsAfterUpgrade() {
-		ba := acc.ToProto()
-		return k.cdc.ProtoMarshalBinaryBare(&ba)
-	} else {
-		return k.cdc.LegacyMarshalBinaryBare(&acc)
-	}
+	return k.Cdc.MarshalBinaryBare(acc)
 }
 
 // "DecodeModuleAccount" - encodes account interface into protobuf
 func (k Keeper) EncodeModuleAccount(macc *types.ModuleAccount) ([]byte, error) {
-	if k.cdc.IsAfterUpgrade() {
-		ma := macc.ToProto()
-		return k.cdc.ProtoMarshalBinaryBare(&ma)
-	} else {
-		return k.cdc.LegacyMarshalBinaryBare(&macc)
-	}
+	return k.Cdc.MarshalBinaryBare(macc)
 }
 
 // "DecodeAccount" - decodes into account interface
@@ -213,24 +203,14 @@ func (k Keeper) DecodeAccount(bz []byte) (exported.Account, error) {
 }
 
 func (k Keeper) DecodeBaseAccount(bz []byte) (exported.Account, error) {
-	baseAccount, legacyBaseAcc := types.BaseAccountEncodable{}, types.BaseAccount{}
-	if k.cdc.IsAfterUpgrade() {
-		err := k.cdc.ProtoUnmarshalBinaryBare(bz, &baseAccount)
-		return &baseAccount, err
-	} else {
-		err := k.cdc.LegacyUnmarshalBinaryBare(bz, &legacyBaseAcc)
-		return &legacyBaseAcc, err
-	}
+	var ba types.BaseAccount
+	err := k.Cdc.UnmarshalBinaryBare(bz, &ba)
+	return &ba, err
 }
 
 // "DecodeModuleAccount" - encodes account interface into protobuf
 func (k Keeper) DecodeModuleAccount(bz []byte) (exported.ModuleAccountI, error) {
-	moduleAcc, legacyModuleAcc := types.ModuleAccountEncodable{}, types.ModuleAccount{}
-	if k.cdc.IsAfterUpgrade() {
-		err := k.cdc.ProtoUnmarshalBinaryBare(bz, &moduleAcc)
-		return &moduleAcc, err
-	} else {
-		err := k.cdc.LegacyUnmarshalBinaryBare(bz, &legacyModuleAcc)
-		return &legacyModuleAcc, err
-	}
+	var ma types.ModuleAccount
+	err := k.Cdc.UnmarshalBinaryBare(bz, &ma)
+	return &ma, err
 }

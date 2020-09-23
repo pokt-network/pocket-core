@@ -98,7 +98,6 @@ func (e Evidence) MarshalObject() ([]byte, error) {
 
 func (e Evidence) UnmarshalObject(b []byte) (CacheObject, error) {
 	if ModuleCdc.IsAfterUpgrade() {
-
 		ep := EvidenceEncodable{}
 		err := ModuleCdc.UnmarshalBinaryBare(b, &ep)
 		if err != nil {

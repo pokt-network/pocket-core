@@ -10,7 +10,7 @@ import (
 
 // Keeper of the supply store
 type Keeper struct {
-	cdc       *codec.Codec
+	Cdc       *codec.Codec
 	storeKey  sdk.StoreKey
 	subspace  sdk.Subspace
 	permAddrs map[string]types.PermissionsForAddress
@@ -25,7 +25,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, subspace sdk.Subspace, maccPe
 	}
 
 	return Keeper{
-		cdc:       cdc,
+		Cdc:       cdc,
 		storeKey:  key,
 		subspace:  subspace.WithKeyTable(types.ParamKeyTable()),
 		permAddrs: permAddrs,
@@ -44,7 +44,7 @@ func (k Keeper) Codespace() sdk.CodespaceType {
 
 func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 	if ctx.IsAfterUpgradeHeight() {
-		k.cdc.SetAfterUpgradeMod(true)
+		k.Cdc.SetAfterUpgradeMod(true)
 		types.ModuleCdc.SetAfterUpgradeMod(true)
 	}
 }

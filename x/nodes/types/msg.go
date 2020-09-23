@@ -7,12 +7,12 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
-// ensure Msg interface compliance at compile time
+// ensure ProtoMsg interface compliance at compile time
 var (
-	_ sdk.Msg = &MsgBeginUnstake{}
-	_ sdk.Msg = &MsgUnjail{}
-	_ sdk.Msg = &MsgSend{}
-	_ sdk.Msg = &MsgStake{}
+	_ sdk.ProtoMsg = &MsgBeginUnstake{}
+	_ sdk.ProtoMsg = &MsgUnjail{}
+	_ sdk.ProtoMsg = &MsgSend{}
+	_ sdk.ProtoMsg = &MsgStake{}
 )
 
 const (

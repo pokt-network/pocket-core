@@ -17,7 +17,7 @@ type Keeper struct {
 	hostedBlockchains *types.HostedBlockchains
 	Paramstore        sdk.Subspace
 	storeKey          sdk.StoreKey // Unexposed key to access store from sdk.Context
-	cdc               *codec.Codec // The wire codec for binary encoding/decoding.
+	Cdc               *codec.Codec // The wire codec for binary encoding/decoding.
 }
 
 // NewKeeper creates new instances of the pocketcore module Keeper
@@ -29,7 +29,7 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKee
 		hostedBlockchains: hostedChains,
 		Paramstore:        paramstore.WithKeyTable(ParamKeyTable()),
 		storeKey:          storeKey,
-		cdc:               cdc,
+		Cdc:               cdc,
 	}
 }
 
@@ -41,7 +41,7 @@ func (k Keeper) GetBlock(height int) (*coretypes.ResultBlock, error) {
 
 func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 	if ctx.IsAfterUpgradeHeight() {
-		k.cdc.SetAfterUpgradeMod(true)
+		k.Cdc.SetAfterUpgradeMod(true)
 		types.ModuleCdc.SetAfterUpgradeMod(true)
 	}
 }

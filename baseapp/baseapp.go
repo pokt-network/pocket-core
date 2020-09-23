@@ -735,7 +735,7 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 // whether or not a transaction can possibly be executed, first decoding and then
 // the ante handler (which checks signatures/fees/ValidateBasic).
 //
-// NOTE:CheckTx does not run the actual Msg handler function(s).
+// NOTE:CheckTx does not run the actual ProtoMsg handler function(s).
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
 	var result sdk.Result
 
@@ -779,11 +779,11 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 }
 
 // validateBasicTxMsgs executes basic validator calls for messages.
-func validateBasicTxMsgs(msg sdk.LegacyMsg) sdk.Error {
+func validateBasicTxMsgs(msg sdk.Msg) sdk.Error {
 	if msg == nil {
 		return sdk.ErrUnknownRequest("Tx.GetMsg() must return at least one message")
 	}
-	// Validate the Msg.
+	// Validate the ProtoMsg.
 	err := msg.ValidateBasic()
 	if err != nil {
 		return err
@@ -825,7 +825,7 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode) (result sdk
 	msgRoute := msg.Route()
 	handler := app.router.Route(msgRoute)
 	if handler == nil {
-		return sdk.ErrUnknownRequest("unrecognized Msg type: " + msgRoute).Result()
+		return sdk.ErrUnknownRequest("unrecognized ProtoMsg type: " + msgRoute).Result()
 	}
 	var msgResult sdk.Result
 	// skip actual execution for CheckTx mode

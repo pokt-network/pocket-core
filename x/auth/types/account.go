@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	tmCrypto "github.com/tendermint/tendermint/crypto"
 	"time"
@@ -16,6 +17,7 @@ import (
 //-----------------------------------------------------------------------------
 // BaseAccount
 var _ exported.Account = (*BaseAccount)(nil)
+var _ codec.ProtoMarshaler = &BaseAccount{}
 
 // BaseAccount - a base account structure.
 type BaseAccount struct {
@@ -24,20 +26,60 @@ type BaseAccount struct {
 	PubKey  crypto.PublicKey `json:"public_key" yaml:"public_key"`
 }
 
+func (acc *BaseAccount) Reset() {
+	*acc = BaseAccount{}
+}
+
+func (acc *BaseAccount) ProtoMessage() {
+	p := acc.ToProto()
+	p.ProtoMessage()
+}
+
+func (acc *BaseAccount) Marshal() ([]byte, error) {
+	p := acc.ToProto()
+	return p.Marshal()
+}
+
+func (acc *BaseAccount) MarshalTo(data []byte) (n int, err error) {
+	p := acc.ToProto()
+	return p.MarshalTo(data)
+}
+
+func (acc *BaseAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	p := acc.ToProto()
+	return p.MarshalToSizedBuffer(dAtA)
+}
+
+func (acc *BaseAccount) Size() int {
+	p := acc.ToProto()
+	return p.Size()
+}
+
+func (acc *BaseAccount) Unmarshal(data []byte) error {
+	var bae ProtoBaseAccount
+	err := bae.Unmarshal(data)
+	if err != nil {
+		return err
+	}
+	ba, err := bae.FromProto()
+	if err != nil {
+		return err
+	}
+	*acc = ba
+	return nil
+}
+
 type Accounts []exported.Account
 
-// NewBaseAccount creates a new BaseAccount object
-func NewBaseAccount(address sdk.Address, coins sdk.Coins,
-	pubKey crypto.PublicKey) *BaseAccount {
-	return &BaseAccount{
-		Address: address,
-		Coins:   coins,
-		PubKey:  pubKey,
+// NewBaseAccountWithAddress - returns a new base account with a given address
+func NewBaseAccountWithAddress(addr sdk.Address) BaseAccount {
+	return BaseAccount{
+		Address: addr,
 	}
 }
 
 // String implements fmt.Stringer
-func (acc BaseAccount) String() string {
+func (acc *BaseAccount) String() string {
 	var pubkey string
 	if acc.PubKey != nil {
 		pubkey = acc.PubKey.RawString()
@@ -48,13 +90,6 @@ func (acc BaseAccount) String() string {
   Coins:         %s`,
 		acc.Address, pubkey, acc.Coins,
 	)
-}
-
-// NewBaseAccountWithAddress - returns a new base account with a given address
-func NewBaseAccountWithAddress(addr sdk.Address) BaseAccount {
-	return BaseAccount{
-		Address: addr,
-	}
 }
 
 // GetAddress - Implements sdk.Account.
@@ -121,12 +156,12 @@ func (acc BaseAccount) MarshalYAML() (interface{}, error) {
 	return string(bs), err
 }
 
-func (acc BaseAccount) ToProto() BaseAccountEncodable {
-	var pk string
+func (acc BaseAccount) ToProto() ProtoBaseAccount {
+	var pk []byte
 	if acc.PubKey != nil {
-		pk = acc.PubKey.RawString()
+		pk = acc.PubKey.RawBytes()
 	}
-	return BaseAccountEncodable{
+	return ProtoBaseAccount{
 		Address: acc.Address,
 		Coins:   acc.Coins,
 		PubKey:  pk,
@@ -142,19 +177,12 @@ type marshalBaseAccount struct {
 // multisig account
 
 var _ exported.Account = (*MultiSigAccount)(nil)
+var _ codec.ProtoMarshaler = &MultiSigAccount{}
 
 type MultiSigAccount struct {
 	Address   sdk.Address              `json:"address"`
 	PublicKey crypto.PublicKeyMultiSig `json:"public_key_multi_sig"`
 	Coins     sdk.Coins                `json:"coins"`
-}
-
-func NewMultiSigAccount(publicKey crypto.PublicKeyMultiSig, coins sdk.Coins) *MultiSigAccount {
-	return &MultiSigAccount{
-		Address:   sdk.Address(publicKey.Address()),
-		PublicKey: publicKey,
-		Coins:     coins,
-	}
 }
 
 func (m MultiSigAccount) GetAddress() sdk.Address {
@@ -211,7 +239,75 @@ func (m MultiSigAccount) String() string {
 	)
 }
 
+func (m *MultiSigAccount) Reset() {
+	*m = MultiSigAccount{}
+}
+
+func (m MultiSigAccount) ProtoMessage() {
+	p := m.ToProto()
+	p.ProtoMessage()
+}
+
+func (m MultiSigAccount) Marshal() ([]byte, error) {
+	p := m.ToProto()
+	return p.Marshal()
+}
+
+func (m MultiSigAccount) MarshalTo(data []byte) (n int, err error) {
+	p := m.ToProto()
+	return p.MarshalTo(data)
+}
+
+func (m MultiSigAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	p := m.ToProto()
+	return p.MarshalToSizedBuffer(dAtA)
+}
+
+func (m MultiSigAccount) Size() int {
+	p := m.ToProto()
+	return p.Size()
+}
+
+func (m *MultiSigAccount) Unmarshal(data []byte) error {
+	var pms ProtoMultiSigAccount
+	err := pms.Unmarshal(data)
+	if err != nil {
+		return err
+	}
+	msa, err := pms.FromProto()
+	if err != nil {
+		return err
+	}
+	*m = msa
+	return nil
+}
+
+func (m MultiSigAccount) ToProto() ProtoMultiSigAccount {
+	return ProtoMultiSigAccount{
+		Address: m.Address,
+		PubKey:  m.PublicKey.RawBytes(),
+		Coins:   m.Coins,
+	}
+}
+
+func (pms ProtoMultiSigAccount) FromProto() (MultiSigAccount, error) {
+	pk, err := crypto.PublicKeyMultiSignature{}.NewPublicKey(pms.PubKey)
+	if err != nil {
+		return MultiSigAccount{}, err
+	}
+	pkms, ok := pk.(crypto.PublicKeyMultiSignature)
+	if !ok {
+		return MultiSigAccount{}, fmt.Errorf("%s", "multisig account must have multipublickey type")
+	}
+	return MultiSigAccount{
+		Address:   pms.Address,
+		PublicKey: pkms,
+		Coins:     pms.Coins,
+	}, nil
+}
+
 var _ exported.ModuleAccountI = (*ModuleAccount)(nil)
+var _ codec.ProtoMarshaler = &ModuleAccount{}
 
 // ModuleAccount defines an account for modules that holds coins on a pool
 type ModuleAccount struct {
@@ -245,22 +341,47 @@ func NewEmptyModuleAccount(name string, permissions ...string) *ModuleAccount {
 	}
 }
 
-// NewModuleAccount creates a new ModuleAccount instance
-func NewModuleAccount(ba *BaseAccount, name string, permissions ...string) *ModuleAccount {
-	if err := validatePermissions(permissions...); err != nil {
-		fmt.Println(fmt.Errorf("invalid permissions for module account %s with permissions %v\n leaving permissionless", name, permissions))
-		return &ModuleAccount{
-			BaseAccount: ba,
-			Name:        name,
-			Permissions: []string{},
-		}
-	}
+func (ma *ModuleAccount) Reset() {
+	*ma = ModuleAccount{}
+}
 
-	return &ModuleAccount{
-		BaseAccount: ba,
-		Name:        name,
-		Permissions: permissions,
+func (ma *ModuleAccount) ProtoMessage() {
+	p := ma.ToProto()
+	p.ProtoMessage()
+}
+
+func (ma *ModuleAccount) Marshal() ([]byte, error) {
+	p := ma.ToProto()
+	return p.Marshal()
+}
+
+func (ma *ModuleAccount) MarshalTo(data []byte) (n int, err error) {
+	p := ma.ToProto()
+	return p.MarshalTo(data)
+}
+
+func (ma *ModuleAccount) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	p := ma.ToProto()
+	return p.MarshalToSizedBuffer(dAtA)
+}
+
+func (ma *ModuleAccount) Size() int {
+	p := ma.ToProto()
+	return p.Size()
+}
+
+func (ma *ModuleAccount) Unmarshal(data []byte) error {
+	var mae ProtoModuleAccount
+	err := mae.Unmarshal(data)
+	if err != nil {
+		return err
 	}
+	m, err := mae.FromProto()
+	if err != nil {
+		return err
+	}
+	*ma = m
+	return nil
 }
 
 // HasPermission returns whether or not the module account has permission.
@@ -321,87 +442,38 @@ func (ma ModuleAccount) MarshalYAML() (interface{}, error) {
 	return string(bs), nil
 }
 
-func (ma ModuleAccount) ToProto() ModuleAccountEncodable {
+func (ma ModuleAccount) ToProto() ProtoModuleAccount {
 	ba := ma.BaseAccount.ToProto()
-	return ModuleAccountEncodable{
-		BaseAccountEncodable: ba,
-		Name:                 ma.Name,
-		Permissions:          ma.Permissions,
+	return ProtoModuleAccount{
+		ProtoBaseAccount: ba,
+		Name:             ma.Name,
+		Permissions:      ma.Permissions,
 	}
 }
 
-// proto base account encodable
-var _ exported.Account = &BaseAccountEncodable{}
-
-func (m *BaseAccountEncodable) GetAddress() sdk.Address {
-	return m.Address
-}
-
-func (m *BaseAccountEncodable) SetAddress(addr sdk.Address) error {
-	m.Address = addr
-	return nil
-}
-
-func (m *BaseAccountEncodable) GetPubKey() crypto.PublicKey {
-	res, _ := crypto.NewPublicKey(m.PubKey)
-	return res
-}
-
-func (m *BaseAccountEncodable) SetPubKey(pk crypto.PublicKey) error {
-	m.PubKey = pk.RawString()
-	return nil
-}
-
-func (m *BaseAccountEncodable) GetCoins() sdk.Coins {
-	return m.Coins
-}
-
-func (m *BaseAccountEncodable) SetCoins(c sdk.Coins) error {
-	m.Coins = c
-	return nil
-}
-
-func (m *BaseAccountEncodable) SpendableCoins(blockTime time.Time) sdk.Coins {
-	return m.Coins
-}
-
-func (m *BaseAccountEncodable) FromProto() BaseAccount {
+func (m *ProtoBaseAccount) FromProto() (ba BaseAccount, err error) {
 	var pk crypto.PublicKey
-	if m.PubKey != "" {
-		pk, _ = crypto.NewPublicKey(m.PubKey)
+	if m.PubKey != nil {
+		pk, err = crypto.NewPublicKeyBz(m.PubKey)
+		if err != nil {
+			return BaseAccount{}, err
+		}
 	}
 	return BaseAccount{
 		Address: m.Address,
 		Coins:   m.Coins,
 		PubKey:  pk,
+	}, nil
+}
+
+func (m *ProtoModuleAccount) FromProto() (ModuleAccount, error) {
+	ba, err := m.ProtoBaseAccount.FromProto()
+	if err != nil {
+		return ModuleAccount{}, nil
 	}
-}
-
-var _ exported.Account = (*ModuleAccountEncodable)(nil)
-var _ exported.ModuleAccountI = (*ModuleAccountEncodable)(nil)
-
-func (m *ModuleAccountEncodable) GetName() string {
-	return m.Name
-}
-
-func (m *ModuleAccountEncodable) GetPermissions() []string {
-	return m.Permissions
-}
-
-func (m *ModuleAccountEncodable) HasPermission(s string) bool {
-	for _, perm := range m.Permissions {
-		if perm == s {
-			return true
-		}
-	}
-	return false
-}
-
-func (m *ModuleAccountEncodable) FromProto() ModuleAccount {
-	ba := m.BaseAccountEncodable.FromProto()
 	return ModuleAccount{
 		BaseAccount: &ba,
 		Name:        m.Name,
 		Permissions: m.Permissions,
-	}
+	}, nil
 }

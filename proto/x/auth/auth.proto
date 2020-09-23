@@ -11,25 +11,35 @@ option go_package = "github.com/pokt-network/pocket-core/x/auth/types";
 // BaseAccount defines a base account type. It contains all the necessary fields
 // for basic account functionality. Any custom account type should extend this
 // type for additional functionality (e.g. vesting).
-message BaseAccountEncodable {
+message ProtoBaseAccount {
 	option (gogoproto.goproto_getters) = false;
 	option (gogoproto.goproto_stringer) = true;
 	option (cosmos_proto.implements_interface) = "Account";
 
 	bytes address = 1 [(gogoproto.jsontag) = "address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
-	string pub_key = 2 [(gogoproto.jsontag) = "public_key", (gogoproto.moretags) = "yaml:\"public_key\""];
+	bytes pub_key = 2 [(gogoproto.jsontag) = "public_key", (gogoproto.moretags) = "yaml:\"public_key\""];
 	repeated types.Coin coins = 3 [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/pokt-network/pocket-core/types.Coins"];
 }
 
 // ModuleAccount defines an account for modules that holds coins on a pool
-message ModuleAccountEncodable {
+message ProtoModuleAccount {
 	option (gogoproto.goproto_getters) = false;
 	option (gogoproto.goproto_stringer) = true;
 	option (cosmos_proto.implements_interface) = "ModuleAccount";
 
-	BaseAccountEncodable base_account_encodable = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.moretags) = "yaml:\"base_account\""];
+	ProtoBaseAccount base_account_encodable = 1 [(gogoproto.nullable) = false, (gogoproto.embed) = true, (gogoproto.moretags) = "yaml:\"base_account\""];
 	string name = 2 [(gogoproto.jsontag) = "name", (gogoproto.moretags) = "yaml:\"name\""];
 	repeated string permissions = 3 [(gogoproto.jsontag) = "permissions", (gogoproto.moretags) = "yaml:\"permissions\""];
+}
+
+message ProtoMultiSigAccount {
+	option (gogoproto.goproto_getters) = false;
+	option (gogoproto.goproto_stringer) = true;
+	option (cosmos_proto.implements_interface) = "Account";
+
+	bytes address = 1 [(gogoproto.jsontag) = "address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
+	bytes pub_key = 2 [(gogoproto.jsontag) = "public_key_multi_sig", (gogoproto.moretags) = "yaml:\"public_key_multi_sig\""];
+	repeated types.Coin coins = 3 [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/pokt-network/pocket-core/types.Coins"];
 }
 
 // Fee Multiplier derfines a key value multiplier for the fee of the
@@ -52,25 +62,25 @@ message Supply {
 	repeated types.Coin total = 1 [(gogoproto.jsontag) = "total", (gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/pokt-network/pocket-core/types.Coins"];
 }
 
-message StdTx {
+message ProtoStdTx {
 	option (gogoproto.goproto_getters) = false;
 	google.protobuf.Any msg = 1 [(gogoproto.jsontag) = "msg", (gogoproto.nullable) = false, (gogoproto.moretags) = "yaml:\"msg\""];
-	repeated types.Coin fee = 2 [(gogoproto.jsontag) = "fee",(gogoproto.moretags) = "yaml:\"fee\"", (gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/pokt-network/pocket-core/types.Coins"];
-	StdSignature signature = 3 [(gogoproto.jsontag) = "signature",(gogoproto.moretags) = "yaml:\"signature\"", (gogoproto.nullable) = false, (gogoproto.casttype) = "StdSignature"];
+	repeated types.Coin fee = 2 [(gogoproto.jsontag) = "fee", (gogoproto.moretags) = "yaml:\"fee\"", (gogoproto.nullable) = false, (gogoproto.castrepeated) = "github.com/pokt-network/pocket-core/types.Coins"];
+	ProtoStdSignature signature = 3 [(gogoproto.jsontag) = "signature", (gogoproto.moretags) = "yaml:\"signature\"", (gogoproto.nullable) = false, (gogoproto.casttype) = "ProtoStdSignature"];
 	string memo = 4 [(gogoproto.jsontag) = "memo", (gogoproto.moretags) = "yaml:\"memo\""];
 	int64 entropy = 5 [(gogoproto.jsontag) = "entropy", (gogoproto.moretags) = "yaml:\"entropy\""];
 }
 
-message StdSignature {
-	string publicKey = 1 [(gogoproto.jsontag) = "pub_key", (gogoproto.moretags) = "yaml:\"pub_key\""];
+message ProtoStdSignature {
+	bytes publicKey = 1 [(gogoproto.jsontag) = "pub_key", (gogoproto.moretags) = "yaml:\"pub_key\""];
 	bytes Signature = 2 [(gogoproto.jsontag) = "signature", (gogoproto.moretags) = "yaml:\"signature\""];
 }
 
 message StdSignDoc {
 	option (gogoproto.goproto_getters) = false;
-	string ChainID = 1 [(gogoproto.jsontag) = "chain_id",  (gogoproto.moretags) = "yaml:\"chain_id\""];
-	bytes fee = 2 [(gogoproto.jsontag) = "fee", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Raw",  (gogoproto.moretags) = "yaml:\"fee\""];
-	string memo = 3 [(gogoproto.jsontag) = "memo",  (gogoproto.moretags) = "yaml:\"memo\""];
-	bytes msg = 4 [(gogoproto.jsontag) = "msg", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Raw",  (gogoproto.moretags) = "yaml:\"msg\""];
-	int64 entropy = 5 [(gogoproto.jsontag) = "entropy",  (gogoproto.moretags) = "yaml:\"entropy\""];
+	string ChainID = 1 [(gogoproto.jsontag) = "chain_id", (gogoproto.moretags) = "yaml:\"chain_id\""];
+	bytes fee = 2 [(gogoproto.jsontag) = "fee", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Raw", (gogoproto.moretags) = "yaml:\"fee\""];
+	string memo = 3 [(gogoproto.jsontag) = "memo", (gogoproto.moretags) = "yaml:\"memo\""];
+	bytes msg = 4 [(gogoproto.jsontag) = "msg", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Raw", (gogoproto.moretags) = "yaml:\"msg\""];
+	int64 entropy = 5 [(gogoproto.jsontag) = "entropy", (gogoproto.moretags) = "yaml:\"entropy\""];
 }

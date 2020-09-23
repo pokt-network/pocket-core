@@ -44,9 +44,9 @@ type (
 	BaseAccount        = types.BaseAccount
 	Params             = types.Params
 	QueryAccountParams = types.QueryAccountParams
+	ProtoStdTx         = types.ProtoStdTx
 	StdTx              = types.StdTx
-	LegacyStdTx        = types.LegacyStdTx
 	StdSignDoc         = types.StdSignDoc
-	StdSignature       = types.StdSignature
+	StdSignature       = types.ProtoStdSignature
 	TxBuilder          = types.TxBuilder
 )

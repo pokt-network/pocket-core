@@ -10,13 +10,13 @@ import (
 
 // "NewHandler" - Returns a handler for "pocketCore" type messages.
 func NewHandler(keeper keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Ctx, msg sdk.LegacyMsg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
 		if ctx.IsAfterUpgradeHeight() {
 			ctx = ctx.WithEventManager(sdk.NewEventManager())
 		}
 		// convert to value for switch consistency
 		if reflect.ValueOf(msg).Kind() == reflect.Ptr {
-			msg = reflect.Indirect(reflect.ValueOf(msg)).Interface().(sdk.LegacyMsg)
+			msg = reflect.Indirect(reflect.ValueOf(msg)).Interface().(sdk.Msg)
 		}
 		switch msg := msg.(type) {
 		// handle claim message
@@ -26,7 +26,7 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 		case types.MsgProof:
 			return handleProofMsg(ctx, keeper, msg)
 		default:
-			errMsg := fmt.Sprintf("Unrecognized pocketcore Msg type: %v", msg.Type())
+			errMsg := fmt.Sprintf("Unrecognized pocketcore ProtoMsg type: %v", msg.Type())
 			return sdk.ErrUnknownRequest(errMsg).Result()
 		}
 	}

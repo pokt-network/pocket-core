@@ -10,11 +10,11 @@ import (
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Ctx, msg sdk.LegacyMsg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		// convert to value for switch consistency
 		if reflect.ValueOf(msg).Kind() == reflect.Ptr {
-			msg = reflect.Indirect(reflect.ValueOf(msg)).Interface().(sdk.LegacyMsg)
+			msg = reflect.Indirect(reflect.ValueOf(msg)).Interface().(sdk.Msg)
 		}
 		switch msg := msg.(type) {
 		case types.MsgChangeParam:
