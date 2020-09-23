@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+	"time"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	"github.com/tendermint/tendermint/store"
-	"reflect"
-	"time"
 
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -50,7 +51,7 @@ type Context struct {
 	isPrev        bool
 }
 
-const UpgradeHeight = 7000
+var UpgradeHeight int64 = 7000
 
 type Ctx interface {
 	Context() context.Context
