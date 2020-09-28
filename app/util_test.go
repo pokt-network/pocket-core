@@ -28,22 +28,22 @@ func TestBuildSignMultisig(t *testing.T) {
 		ToAddress:   kp2.GetAddress(),
 		Amount:      sdk.NewInt(1),
 	}
-	bz, err := gov.BuildAndSignMulti(memCodec(false), cb.GetAddress(), pms, &msg, getInMemoryTMClient(), kb, "test", 10000000)
+	bz, err := gov.BuildAndSignMulti(memCodec(), cb.GetAddress(), pms, &msg, getInMemoryTMClient(), kb, "test", 10000000)
 	assert.Nil(t, err)
-	bz, err = gov.SignMulti(memCodec(false), kp2.GetAddress(), bz, kps, getInMemoryTMClient(), kb, "test")
+	bz, err = gov.SignMulti(memCodec(), kp2.GetAddress(), bz, kps, getInMemoryTMClient(), kb, "test")
 	assert.Nil(t, err)
-	bz, err = gov.SignMulti(memCodec(false), kp3.GetAddress(), bz, nil, getInMemoryTMClient(), kb, "test")
+	bz, err = gov.SignMulti(memCodec(), kp3.GetAddress(), bz, nil, getInMemoryTMClient(), kb, "test")
 	assert.Nil(t, err)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	var tx *sdk.TxResponse
 	<-evtChan // Wait for block
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-	tx, err = nodes.Send(memCodec(false), memCli, kb, cb.GetAddress(), sdk.Address(pms.Address()), "test", sdk.NewInt(100000000))
+	tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), sdk.Address(pms.Address()), "test", sdk.NewInt(100000000))
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
 	<-evtChan // Wait for tx
-	txRaw, err := nodes.RawTx(memCodec(false), memCli, sdk.Address(pms.Address()), bz)
+	txRaw, err := nodes.RawTx(memCodec(), memCli, sdk.Address(pms.Address()), bz)
 	assert.Nil(t, err)
 	fmt.Println(txRaw)
 	assert.Zero(t, txRaw.Code)
