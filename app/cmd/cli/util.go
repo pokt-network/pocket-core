@@ -113,7 +113,7 @@ var (
 )
 
 var unsafeRollbackCmd = &cobra.Command{
-	Use:   "unsafe-rollback <height",
+	Use:   "unsafe-rollback <height>",
 	Short: "Rollbacks the blockchain, the state, and app to a previous height",
 	Long:  "Rollbacks the blockchain, the state, and app to a previous height",
 	Args:  cobra.ExactArgs(1),
