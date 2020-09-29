@@ -23,8 +23,8 @@ type Msg interface {
 	// CONTRACT: Returns addrs in some deterministic order.
 	GetSigner() Address
 
-	// Returns an Int for the ProtoMsg
-	GetFee() Int
+	// Returns an BigInt for the ProtoMsg
+	GetFee() BigInt
 }
 
 var _ Msg = ProtoMsg(nil)
@@ -52,8 +52,8 @@ type ProtoMsg interface {
 	// CONTRACT: Returns addrs in some deterministic order.
 	GetSigner() Address
 
-	// Returns an Int for the ProtoMsg
-	GetFee() Int
+	// Returns an BigInt for the ProtoMsg
+	GetFee() BigInt
 }
 
 //__________________________________________________________

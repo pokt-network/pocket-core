@@ -16,7 +16,7 @@ import (
 
 // ProtoStdTx is a standard way to wrap a ProtoMsg with Fee and Sigs.
 // NOTE: the first signature is the fee payer (Sigs must not be nil).
-func NewTx(msgs sdk.ProtoMsg, fee sdk.Coins, sig StdSignature, memo string, entropy int64, afterUpgradeHeight bool) sdk.Tx {
+func NewTx(msgs sdk.ProtoMsg, fee sdk.Coins, sig StdSignature, memo string, entropy int64) sdk.Tx {
 	return StdTx{
 		Msg:       msgs,
 		Fee:       fee,
@@ -306,7 +306,7 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 		// are registered by MakeTxCodec
 		err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
 		if err != nil {
-			return nil, sdk.ErrTxDecode("error decoding transaction").TraceSDK(err.Error())
+			return nil, sdk.ErrTxDecode("error decoding transaction" + err.Error()).TraceSDK(err.Error())
 		}
 		return tx, nil
 	}
@@ -358,6 +358,6 @@ func NewTestTx(ctx sdk.Ctx, msgs sdk.ProtoMsg, priv posCrypto.PrivateKey, entrop
 		os.Exit(1)
 	}
 	s := StdSignature{PublicKey: priv.PublicKey(), Signature: sig}
-	tx := NewTx(msgs, fee, s, "", entropy, ctx.IsAfterUpgradeHeight())
+	tx := NewTx(msgs, fee, s, "", entropy)
 	return tx
 }

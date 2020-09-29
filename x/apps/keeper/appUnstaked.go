@@ -39,14 +39,13 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Ctx) (applications []types.A
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.UnstakingAppsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-
 		var addrs sdk.Addresses
 		err := k.Cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
 		if err != nil {
 			k.Logger(ctx).Error(fmt.Errorf("could not unmarshal unstakingApplications in getAllUnstakingApplications call: %s", string(iterator.Value())).Error())
 			return
 		}
-		for _, addr := range addrs.Arr {
+		for _, addr := range addrs {
 			app, found := k.GetApplication(ctx, addr)
 			if !found {
 				k.Logger(ctx).Error(fmt.Errorf("application %s in unstakingSet but not found in all applications store", app.Address).Error())
@@ -60,32 +59,28 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Ctx) (applications []types.A
 }
 
 // getUnstakingApplications - Retrieve all of the applications who will be unstaked at exactly this time
-func (k Keeper) getUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) (valAddrs []sdk.Address) {
-
-	vals := sdk.Addresses{Arr: make([]sdk.Address, 0)}
+func (k Keeper) getUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) (valAddrs sdk.Addresses) {
 	store := ctx.KVStore(k.storeKey)
 	bz, _ := store.Get(types.KeyForUnstakingApps(unstakingTime))
 	if bz == nil {
 		return []sdk.Address{}
 	}
-	err := k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &vals)
+	err := k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &valAddrs)
 	if err != nil {
 		panic(err)
 	}
-	return vals.Arr
+	return valAddrs
 
 }
 
 // setUnstakingApplications - Store applications in unstaking queue at a certain unstaking time
-func (k Keeper) setUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time, keys []sdk.Address) {
+func (k Keeper) setUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time, keys sdk.Addresses) {
 	store := ctx.KVStore(k.storeKey)
-	ka := sdk.Addresses{Arr: keys}
-	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&ka)
+	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&keys)
 	if err != nil {
 		panic(err)
 	}
 	_ = store.Set(types.KeyForUnstakingApps(unstakingTime), bz)
-
 }
 
 // delteUnstakingApplications - Remove all the applications for a specific unstaking time
@@ -101,18 +96,17 @@ func (k Keeper) unstakingApplicationsIterator(ctx sdk.Ctx, endTime time.Time) (s
 }
 
 // getMatureApplications - Retrieve a list of all the mature validators
-func (k Keeper) getMatureApplications(ctx sdk.Ctx) (matureValsAddrs []sdk.Address) {
+func (k Keeper) getMatureApplications(ctx sdk.Ctx) (matureValsAddrs sdk.Addresses) {
 	matureValsAddrs = make([]sdk.Address, 0)
 	unstakingValsIterator, _ := k.unstakingApplicationsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValsIterator.Close()
 	for ; unstakingValsIterator.Valid(); unstakingValsIterator.Next() {
-
 		var applications sdk.Addresses
 		err := k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &applications)
 		if err != nil {
 			panic(err)
 		}
-		matureValsAddrs = append(matureValsAddrs, applications.Arr...)
+		matureValsAddrs = append(matureValsAddrs, applications...)
 
 	}
 	return matureValsAddrs
@@ -124,7 +118,7 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 	unstakingApplicationsIterator, _ := k.unstakingApplicationsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingApplicationsIterator.Close()
 	for ; unstakingApplicationsIterator.Valid(); unstakingApplicationsIterator.Next() {
-		var unstakingVals []sdk.Address
+		var unstakingVals sdk.Addresses
 		err := k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingApplicationsIterator.Value(), &unstakingVals)
 		if err != nil {
 			panic(err)

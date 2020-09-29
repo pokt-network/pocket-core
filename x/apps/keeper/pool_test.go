@@ -18,7 +18,7 @@ func TestPool_CoinsFromUnstakedToStaked(t *testing.T) {
 		name        string
 		want        string
 		application types.Application
-		amount      sdk.Int
+		amount      sdk.BigInt
 		errors      bool
 	}{
 		{
@@ -72,7 +72,7 @@ func TestPool_CoinsFromStakedToUnstaked(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		amount      sdk.Int
+		amount      sdk.BigInt
 		want        string
 		application types.Application
 		panics      bool
@@ -122,8 +122,8 @@ func TestPool_BurnStakedTokens(t *testing.T) {
 		name        string
 		expected    string
 		application types.Application
-		burnAmount  sdk.Int
-		amount      sdk.Int
+		burnAmount  sdk.BigInt
+		amount      sdk.BigInt
 		errs        bool
 	}{
 		{
@@ -195,7 +195,7 @@ func TestPool_StakedRatio(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		amount  sdk.Dec
+		amount  sdk.BigDec
 		address sdk.Address
 	}{
 		{"return 0 if stake supply is lower than 0", sdk.ZeroDec(), applicationAddress},

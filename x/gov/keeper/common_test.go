@@ -34,7 +34,6 @@ func makeTestCodec() *codec.Codec {
 	govTypes.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	crypto.RegisterAmino(cdc.AminoCodec().Amino)
-
 	return cdc
 }
 

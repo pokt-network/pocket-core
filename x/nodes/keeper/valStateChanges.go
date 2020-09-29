@@ -58,19 +58,10 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		curStatePower := validator.ConsensusPower()
 		var curStatePowerBytes []byte
 		var err error
-		if k.Cdc.IsAfterUpgrade() {
-			i := sdk.IntProto{
-				Int: sdk.NewInt(curStatePower),
-			}
-			curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(&i)
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(curStatePower)
-			if err != nil {
-				panic(err)
-			}
+		csp := sdk.Int64(curStatePower)
+		curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(&csp)
+		if err != nil {
+			panic(err)
 		}
 		// if not found or the power has changed -> add this validator to the updated list
 		if !found || !bytes.Equal(prevStatePowerBytes, curStatePowerBytes) {
@@ -113,7 +104,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 }
 
 // ValidateValidatorStaking - Check Valdiator before staking
-func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator, amount sdk.Int) sdk.Error {
+func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt) sdk.Error {
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	if int64(len(validator.Chains)) > k.MaxChains(ctx) {
 		return types.ErrTooManyChains(types.ModuleName)
@@ -150,7 +141,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 }
 
 // StakeValidator - Store ops when a validator stakes
-func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sdk.Int) sdk.Error {
+func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt) sdk.Error {
 	// send the coins from address to staked module account
 	err := k.coinsFromUnstakedToStaked(ctx, validator, amount)
 	if err != nil {

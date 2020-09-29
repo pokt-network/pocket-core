@@ -11,7 +11,7 @@ import (
 )
 
 // ValidateApplicationStaking - Check application before staking
-func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Application, amount sdk.Int) sdk.Error {
+func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Application, amount sdk.BigInt) sdk.Error {
 	// convert the amount to sdk.Coin
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	if int64(len(application.Chains)) > k.MaxChains(ctx) {
@@ -52,7 +52,7 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 }
 
 // StakeApplication - Store ops when a application stakes
-func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amount sdk.Int) sdk.Error {
+func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amount sdk.BigInt) sdk.Error {
 	// send the coins from address to staked module account
 	err := k.coinsFromUnstakedToStaked(ctx, application, amount)
 	if err != nil {

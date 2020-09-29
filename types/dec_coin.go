@@ -14,11 +14,11 @@ import (
 // DecCoin defines a coin which can have additional decimal points
 //type DecCoin struct {
 //	Denom  string `json:"denom"`
-//	Amount Dec    `json:"amount"`
+//	Amount BigDec    `json:"amount"`
 //}
 
-// NewDecCoin creates a new DecCoin instance from an Int.
-func NewDecCoin(denom string, amount Int) DecCoin {
+// NewDecCoin creates a new DecCoin instance from an BigInt.
+func NewDecCoin(denom string, amount BigInt) DecCoin {
 	if err := validate(denom, amount); err != nil {
 		panic(err)
 	}
@@ -29,8 +29,8 @@ func NewDecCoin(denom string, amount Int) DecCoin {
 	}
 }
 
-// NewDecCoinFromDec creates a new DecCoin instance from a Dec.
-func NewDecCoinFromDec(denom string, amount Dec) DecCoin {
+// NewDecCoinFromDec creates a new DecCoin instance from a BigDec.
+func NewDecCoinFromDec(denom string, amount BigDec) DecCoin {
 	mustValidateDenom(denom)
 
 	if amount.LT(ZeroDec()) {
@@ -330,7 +330,7 @@ func (coins DecCoins) IsAnyNegative() bool {
 // MulDec multiplies all the coins by a decimal.
 //
 // CONTRACT: No zero coins will be returned.
-func (coins DecCoins) MulDec(d Dec) DecCoins {
+func (coins DecCoins) MulDec(d BigDec) DecCoins {
 	var res DecCoins
 	for _, coin := range coins {
 		product := DecCoin{
@@ -350,7 +350,7 @@ func (coins DecCoins) MulDec(d Dec) DecCoins {
 // panics if d is zero.
 //
 // CONTRACT: No zero coins will be returned.
-func (coins DecCoins) MulDecTruncate(d Dec) DecCoins {
+func (coins DecCoins) MulDecTruncate(d BigDec) DecCoins {
 	var res DecCoins
 
 	for _, coin := range coins {
@@ -370,7 +370,7 @@ func (coins DecCoins) MulDecTruncate(d Dec) DecCoins {
 // QuoDec divides all the decimal coins by a decimal. It panics if d is zero.
 //
 // CONTRACT: No zero coins will be returned.
-func (coins DecCoins) QuoDec(d Dec) DecCoins {
+func (coins DecCoins) QuoDec(d BigDec) DecCoins {
 	if d.IsZero() {
 		panic("invalid zero decimal")
 	}
@@ -394,7 +394,7 @@ func (coins DecCoins) QuoDec(d Dec) DecCoins {
 // panics if d is zero.
 //
 // CONTRACT: No zero coins will be returned.
-func (coins DecCoins) QuoDecTruncate(d Dec) DecCoins {
+func (coins DecCoins) QuoDecTruncate(d BigDec) DecCoins {
 	if d.IsZero() {
 		panic("invalid zero decimal")
 	}
@@ -420,7 +420,7 @@ func (coins DecCoins) Empty() bool {
 }
 
 // AmountOf returns the amount of a denom from deccoins
-func (coins DecCoins) AmountOf(denom string) Dec {
+func (coins DecCoins) AmountOf(denom string) BigDec {
 	mustValidateDenom(denom)
 
 	switch len(coins) {

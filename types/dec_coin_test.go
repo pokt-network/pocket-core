@@ -402,7 +402,7 @@ func TestDecCoinsQuoDecTruncate(t *testing.T) {
 
 	testCases := []struct {
 		coins  DecCoins
-		input  Dec
+		input  BigDec
 		result DecCoins
 		panics bool
 	}{

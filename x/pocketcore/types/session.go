@@ -253,7 +253,7 @@ func BlockHash(ctx sdk.Context) string {
 }
 
 // "MaxPossibleRelays" - Returns the maximum possible amount of relays for an App on a sessions
-func MaxPossibleRelays(app appexported.ApplicationI, sessionNodeCount int64) sdk.Int {
+func MaxPossibleRelays(app appexported.ApplicationI, sessionNodeCount int64) sdk.BigInt {
 	//GetMaxRelays Max value is bound to math.MaxUint64,
 	//current worse case is 1 chain and 5 nodes per session with a result of 3689348814741910323 which can be used safely as int64
 	return app.GetMaxRelays().ToDec().Quo(sdk.NewDec(int64(len(app.GetChains())))).Quo(sdk.NewDec(sessionNodeCount)).RoundInt()

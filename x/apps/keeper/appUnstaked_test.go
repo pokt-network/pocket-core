@@ -249,7 +249,7 @@ func TestAppUnstaked_UnstakingApplicationsIterator(t *testing.T) {
 		name         string
 		applications []types.Application
 		panics       bool
-		amount       sdk.Int
+		amount       sdk.BigInt
 	}{
 		{
 			name:         "recieves a valid iterator",

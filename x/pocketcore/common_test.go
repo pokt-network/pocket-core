@@ -51,7 +51,6 @@ func makeTestCodec() *codec.Codec {
 	gov.RegisterCodec(cdc)
 	sdk.RegisterCodec(cdc)
 	crypto.RegisterAmino(cdc.AminoCodec().Amino)
-
 	return cdc
 }
 
@@ -162,7 +161,7 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.K
 	return
 }
 
-func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins sdk.Int, nk *nodesKeeper.Keeper, ak auth.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
+func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.BigInt, daoCoins sdk.BigInt, nk *nodesKeeper.Keeper, ak auth.Keeper, kb keys.Keybase) (accs nodesTypes.Validators) {
 	ethereum := hex.EncodeToString([]byte{01})
 	for i := 0; i < numAccs-1; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()
@@ -227,7 +226,7 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, daoCoins s
 	return
 }
 
-func createTestApps(ctx sdk.Ctx, numAccs int, valCoins sdk.Int, ak appsKeeper.Keeper, sk auth.Keeper) (accs appsTypes.Applications) {
+func createTestApps(ctx sdk.Ctx, numAccs int, valCoins sdk.BigInt, ak appsKeeper.Keeper, sk auth.Keeper) (accs appsTypes.Applications) {
 	ethereum := hex.EncodeToString([]byte{01})
 	for i := 0; i < numAccs; i++ {
 		privKey := crypto.GenerateEd25519PrivKey()

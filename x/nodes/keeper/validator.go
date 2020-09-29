@@ -1,9 +1,11 @@
 package keeper
 
 import (
+	"bytes"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	"sort"
 )
 
 // GetValidator - Retrieve validator with address from the main store
@@ -29,7 +31,7 @@ func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Val
 // SetValidator - Store validator in the main store and state stores (stakingset/ unstakingset)
 func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := types.MarshalValidator(k.Cdc, validator)
+	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&validator)
 	if err != nil {
 		ctx.Logger().Error("could not marshal validator: " + err.Error())
 	}
@@ -71,19 +73,6 @@ func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 			continue
 		}
 		validators = append(validators, validator)
-	}
-	return validators
-}
-
-// GetAllValidators - Retrieve set of all validators with no limits from the main store
-func (k Keeper) GetAllValidatorsProto(ctx sdk.Ctx) (validators []*types.ValidatorProto) {
-	validators = make([]*types.ValidatorProto, 0)
-	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		validator, _ := types.UnmarshalProtoValidator(k.Cdc, iterator.Value())
-		validators = append(validators, &validator)
 	}
 	return validators
 }
@@ -151,4 +140,72 @@ func (k Keeper) IterateAndExecuteOverVals(
 		}
 		i++
 	}
+}
+
+// Validator - wrapper for GetValidator call
+func (k Keeper) Validator(ctx sdk.Ctx, address sdk.Address) exported.ValidatorI {
+	val, found := k.GetValidator(ctx, address)
+	if !found {
+		return nil
+	}
+	return val
+}
+
+// AllValidators - Retrieve a list of all validators
+func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
+	store := ctx.KVStore(k.storeKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		validator, err := types.UnmarshalValidator(k.Cdc, iterator.Value())
+		if err != nil {
+			ctx.Logger().Error("could not unmarshal validator in AllValidators: ", err.Error())
+			continue
+		}
+		validators = append(validators, validator)
+	}
+	return validators
+}
+
+// map of validator addresses to serialized power
+type valPowerMap map[[sdk.AddrLen]byte][]byte
+
+// getPrevStatePowerMap - Retrieve the prevState validator set
+func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
+	prevState := make(valPowerMap)
+	store := ctx.KVStore(k.storeKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
+	defer iterator.Close()
+	// iterate over the prevState validator set index
+	for ; iterator.Valid(); iterator.Next() {
+		var valAddr [sdk.AddrLen]byte
+		// extract the validator address from the key (prefix is 1-byte)
+		copy(valAddr[:], iterator.Key()[1:])
+		// power bytes is just the value
+		powerBytes := iterator.Value()
+		prevState[valAddr] = make([]byte, len(powerBytes))
+		copy(prevState[valAddr], powerBytes)
+	}
+	return prevState
+}
+
+// sortNoLongerStakedValidators - Given a map of remaining validators to previous staked power
+// returns the list of validators to be unbstaked, sorted by operator address
+func sortNoLongerStakedValidators(prevState valPowerMap) [][]byte {
+	// sort the map keys for determinism
+	noLongerStaked := make([][]byte, len(prevState))
+	index := 0
+	for valAddrBytes := range prevState {
+		valAddr := make([]byte, sdk.AddrLen)
+		copy(valAddr, valAddrBytes[:])
+		noLongerStaked[index] = valAddr
+		index++
+	}
+	// sorted by address - order doesn't matter
+	sort.SliceStable(noLongerStaked, func(i, j int) bool {
+		// -1 means strictly less than
+		return bytes.Compare(noLongerStaked[i], noLongerStaked[j]) == -1
+	})
+	return noLongerStaked
 }

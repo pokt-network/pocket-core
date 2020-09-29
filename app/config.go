@@ -84,6 +84,8 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitPocketCoreConfig(chains, logger)
 	// init genesis
 	InitGenesis(genesisType)
+	// log the config and chains
+	logger.Debug(fmt.Sprintf("Pocket Config: \n%v", GlobalConfig))
 	// init the tendermint node
 	return InitTendermint(keybase, chains, logger)
 }

@@ -205,7 +205,7 @@ func (config *SDKConfig) SetTxEncoder(encoder TxEncoder) {
 	config.txEncoder = encoder
 }
 
-// SetAddressVerifier builds the TmConfig with the provided function for verifying that addresses
+// SetAddressVerifier builds the TmConfig with the provided function for verifying that Addresses
 // have the correct format
 func (config *SDKConfig) SetAddressVerifier(addressVerifier func([]byte) error) {
 	config.assertNotSealed()
@@ -231,7 +231,7 @@ func (config *SDKConfig) GetTxEncoder() TxEncoder {
 	return config.txEncoder
 }
 
-// GetAddressVerifier returns the function to verify that addresses have the correct format
+// GetAddressVerifier returns the function to verify that Addresses have the correct format
 func (config *SDKConfig) GetAddressVerifier() func([]byte) error {
 	return config.addressVerifier
 }

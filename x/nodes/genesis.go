@@ -195,7 +195,7 @@ func ValidateGenesis(data types.GenesisState) error {
 	return nil
 }
 
-func validateGenesisStateValidators(validators []types.Validator, minimumStake sdk.Int) (err error) {
+func validateGenesisStateValidators(validators []types.Validator, minimumStake sdk.BigInt) (err error) {
 	addrMap := make(map[string]bool, len(validators))
 	for i := 0; i < len(validators); i++ {
 		val := validators[i]

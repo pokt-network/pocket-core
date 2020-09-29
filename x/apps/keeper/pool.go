@@ -8,7 +8,7 @@ import (
 )
 
 // StakedRatio - Retrieve the fraction of the staking tokens which are currently staked
-func (k Keeper) StakedRatio(ctx sdk.Ctx) sdk.Dec {
+func (k Keeper) StakedRatio(ctx sdk.Ctx) sdk.BigDec {
 	stakedPool := k.GetStakedPool(ctx)
 
 	stakeSupply := k.TotalTokens(ctx)
@@ -19,13 +19,13 @@ func (k Keeper) StakedRatio(ctx sdk.Ctx) sdk.Dec {
 }
 
 // GetStakedTokens - Retrieve total staking tokens supply which is staked
-func (k Keeper) GetStakedTokens(ctx sdk.Ctx) sdk.Int {
+func (k Keeper) GetStakedTokens(ctx sdk.Ctx) sdk.BigInt {
 	stakedPool := k.GetStakedPool(ctx)
 	return stakedPool.GetCoins().AmountOf(k.StakeDenom(ctx))
 }
 
 // TotalTokens - Retrieve total staking tokens from the total supply
-func (k Keeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
+func (k Keeper) TotalTokens(ctx sdk.Ctx) sdk.BigInt {
 	return k.AccountsKeeper.GetSupply(ctx).GetTotal().AmountOf(k.StakeDenom(ctx))
 }
 
@@ -45,7 +45,7 @@ func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, application types.Applica
 }
 
 // coinsFromUnstakedToStaked - Transfer coins from the module account to application -> used in staking
-func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, application types.Application, amount sdk.Int) sdk.Error {
+func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, application types.Application, amount sdk.BigInt) sdk.Error {
 	if amount.LT(sdk.ZeroInt()) {
 		return sdk.ErrInternal("cannot stake a negative amount of coins")
 	}
@@ -58,7 +58,7 @@ func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, application types.Applica
 }
 
 // burnStakedTokens - Remove coins from the staked pool module account
-func (k Keeper) burnStakedTokens(ctx sdk.Ctx, amt sdk.Int) sdk.Error {
+func (k Keeper) burnStakedTokens(ctx sdk.Ctx, amt sdk.BigInt) sdk.Error {
 	if !amt.IsPositive() {
 		return nil
 	}

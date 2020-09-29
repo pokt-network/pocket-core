@@ -74,8 +74,8 @@ func (e Evidence) MarshalObject() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if ModuleCdc.IsAfterUpgrade() {
-		ep := EvidenceEncodable{
+	if ModuleCdc.IsAfterUpgrade() { // TODO phase out if else
+		ep := ProtoEvidence{
 			BloomBytes:    encodedBloom,
 			SessionHeader: &e.SessionHeader,
 			NumOfProofs:   e.NumOfProofs,
@@ -97,16 +97,16 @@ func (e Evidence) MarshalObject() ([]byte, error) {
 }
 
 func (e Evidence) UnmarshalObject(b []byte) (CacheObject, error) {
-	if ModuleCdc.IsAfterUpgrade() {
-		ep := EvidenceEncodable{}
+	if ModuleCdc.IsAfterUpgrade() {  // TODO phase out if else
+		ep := ProtoEvidence{}
 		err := ModuleCdc.UnmarshalBinaryBare(b, &ep)
 		if err != nil {
-			return Evidence{}, fmt.Errorf("could not unmarshal into EvidenceEncodable from cache, moduleCdc unmarshal binary bare: %s", err.Error())
+			return Evidence{}, fmt.Errorf("could not unmarshal into ProtoEvidence from cache, moduleCdc unmarshal binary bare: %s", err.Error())
 		}
 		bloomFilter := bloom.BloomFilter{}
 		err = bloomFilter.GobDecode(ep.BloomBytes)
 		if err != nil {
-			return Evidence{}, fmt.Errorf("could not unmarshal into EvidenceEncodable from cache, bloom bytes gob decode: %s", err.Error())
+			return Evidence{}, fmt.Errorf("could not unmarshal into ProtoEvidence from cache, bloom bytes gob decode: %s", err.Error())
 		}
 		evidence := Evidence{
 			Bloom:         bloomFilter,

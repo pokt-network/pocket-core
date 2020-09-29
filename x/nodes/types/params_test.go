@@ -55,10 +55,10 @@ func TestParams_Equal(t *testing.T) {
 		ProposerRewardPercentage int8
 		MaxEvidenceAge           time.Duration
 		SignedBlocksWindow       int64
-		MinSignedPerWindow       types.Dec
+		MinSignedPerWindow       types.BigDec
 		DowntimeJailDuration     time.Duration
-		SlashFractionDoubleSign  types.Dec
-		SlashFractionDowntime    types.Dec
+		SlashFractionDoubleSign  types.BigDec
+		SlashFractionDowntime    types.BigDec
 	}
 	type args struct {
 		p2 Params
@@ -76,10 +76,10 @@ func TestParams_Equal(t *testing.T) {
 			StakeMinimum:            0,
 			MaxEvidenceAge:          0,
 			SignedBlocksWindow:      0,
-			MinSignedPerWindow:      types.Dec{},
+			MinSignedPerWindow:      types.BigDec{},
 			DowntimeJailDuration:    0,
-			SlashFractionDoubleSign: types.Dec{},
-			SlashFractionDowntime:   types.Dec{},
+			SlashFractionDoubleSign: types.BigDec{},
+			SlashFractionDowntime:   types.BigDec{},
 		}, args{Params{
 			UnstakingTime:           0,
 			MaxValidators:           0,
@@ -87,10 +87,10 @@ func TestParams_Equal(t *testing.T) {
 			StakeMinimum:            0,
 			MaxEvidenceAge:          0,
 			SignedBlocksWindow:      0,
-			MinSignedPerWindow:      types.Dec{},
+			MinSignedPerWindow:      types.BigDec{},
 			DowntimeJailDuration:    0,
-			SlashFractionDoubleSign: types.Dec{},
-			SlashFractionDowntime:   types.Dec{}}}, true},
+			SlashFractionDoubleSign: types.BigDec{},
+			SlashFractionDowntime:   types.BigDec{}}}, true},
 		{"Default Test False", fields{
 			UnstakingTime:            0,
 			MaxValidators:            0,
@@ -99,10 +99,10 @@ func TestParams_Equal(t *testing.T) {
 			ProposerRewardPercentage: 0,
 			MaxEvidenceAge:           0,
 			SignedBlocksWindow:       0,
-			MinSignedPerWindow:       types.Dec{},
+			MinSignedPerWindow:       types.BigDec{},
 			DowntimeJailDuration:     0,
-			SlashFractionDoubleSign:  types.Dec{},
-			SlashFractionDowntime:    types.Dec{},
+			SlashFractionDoubleSign:  types.BigDec{},
+			SlashFractionDowntime:    types.BigDec{},
 		}, args{Params{
 			UnstakingTime:           0,
 			MaxValidators:           0,
@@ -110,10 +110,10 @@ func TestParams_Equal(t *testing.T) {
 			StakeMinimum:            0,
 			MaxEvidenceAge:          1,
 			SignedBlocksWindow:      0,
-			MinSignedPerWindow:      types.Dec{},
+			MinSignedPerWindow:      types.BigDec{},
 			DowntimeJailDuration:    0,
-			SlashFractionDoubleSign: types.Dec{},
-			SlashFractionDowntime:   types.Dec{}}}, false},
+			SlashFractionDoubleSign: types.BigDec{},
+			SlashFractionDowntime:   types.BigDec{}}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -148,10 +148,10 @@ func TestParams_Validate(t *testing.T) {
 		// slashing params
 		MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`
 		SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`
-		MinSignedPerWindow      types.Dec     `json:"min_signed_per_window" yaml:"min_signed_per_window"`
+		MinSignedPerWindow      types.BigDec  `json:"min_signed_per_window" yaml:"min_signed_per_window"`
 		DowntimeJailDuration    time.Duration `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`
-		SlashFractionDoubleSign types.Dec     `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"`
-		SlashFractionDowntime   types.Dec     `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`
+		SlashFractionDoubleSign types.BigDec  `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"`
+		SlashFractionDowntime   types.BigDec  `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`
 	}
 	tests := []struct {
 		name    string
@@ -167,10 +167,10 @@ func TestParams_Validate(t *testing.T) {
 			ProposerAllocation:      0,
 			MaxEvidenceAge:          0,
 			SignedBlocksWindow:      0,
-			MinSignedPerWindow:      types.Dec{},
+			MinSignedPerWindow:      types.BigDec{},
 			DowntimeJailDuration:    0,
-			SlashFractionDoubleSign: types.Dec{},
-			SlashFractionDowntime:   types.Dec{},
+			SlashFractionDoubleSign: types.BigDec{},
+			SlashFractionDowntime:   types.BigDec{},
 		}, true},
 		{"Default Validation Test / Wrong StakeDenom", fields{
 			UnstakingTime:           0,
@@ -280,10 +280,10 @@ func TestParams_Validate(t *testing.T) {
 			ProposerAllocation:      0,
 			MaxEvidenceAge:          0,
 			SignedBlocksWindow:      0,
-			MinSignedPerWindow:      types.Dec{},
+			MinSignedPerWindow:      types.BigDec{},
 			DowntimeJailDuration:    0,
-			SlashFractionDoubleSign: types.Dec{},
-			SlashFractionDowntime:   types.Dec{},
+			SlashFractionDoubleSign: types.BigDec{},
+			SlashFractionDowntime:   types.BigDec{},
 		}, false},
 	}
 	for _, tt := range tests {
@@ -321,10 +321,10 @@ func TestParams_ParamSetPairs(t *testing.T) {
 		SessionBlockFrequency   int64
 		MaxEvidenceAge          time.Duration
 		SignedBlocksWindow      int64
-		MinSignedPerWindow      types.Dec
+		MinSignedPerWindow      types.BigDec
 		DowntimeJailDuration    time.Duration
-		SlashFractionDoubleSign types.Dec
-		SlashFractionDowntime   types.Dec
+		SlashFractionDoubleSign types.BigDec
+		SlashFractionDowntime   types.BigDec
 		MaximumChains           int64
 		MaxJailedBlocks         int64
 	}
@@ -408,10 +408,10 @@ func TestParams_String(t *testing.T) {
 		DaoAllocation           int64
 		MaxEvidenceAge          time.Duration
 		SignedBlocksWindow      int64
-		MinSignedPerWindow      types.Dec
+		MinSignedPerWindow      types.BigDec
 		DowntimeJailDuration    time.Duration
-		SlashFractionDoubleSign types.Dec
-		SlashFractionDowntime   types.Dec
+		SlashFractionDoubleSign types.BigDec
+		SlashFractionDowntime   types.BigDec
 		MaximumChains           int64
 		MaxJailedBlocks         int64
 	}

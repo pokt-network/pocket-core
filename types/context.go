@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"reflect"
 	"time"
-
 	"github.com/pokt-network/pocket-core/codec"
-	"github.com/tendermint/tendermint/crypto/merkle"
 	"github.com/tendermint/tendermint/store"
+	"golang.org/x/crypto/sha3"
+	"reflect"
+	"time"
 
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -134,106 +135,24 @@ func (c Context) BlockHeader() abci.Header {
 
 const blockHashError = "cannot get the block hash header"
 
+var _ codec.ProtoMarshaler = &abci.Header{}
+
 // clone the header before returning
 func (c Context) BlockHash(cdc *codec.Codec) ([]byte, error) {
 	if cdc.IsAfterUpgrade() {
 		if c.header.Equal(abci.Header{}) {
 			return nil, errors.New(blockHashError + ": the header is empty")
 		}
-		versionBz, err := cdcEncode(c.header.Version, cdc)
+		sha := sha3.New256()
+		bz, err := cdc.MarshalBinaryBare(&c.header)
 		if err != nil {
-			return nil, fmt.Errorf("%s: header.version: %s", blockHashError, err.Error())
+			return nil, err
 		}
-		chainIDBz, err := cdcEncode(c.header.ChainID, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.chainID: %s", blockHashError, err.Error())
-		}
-		heightBz, err := cdcEncode(c.header.Height, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.height: %s", blockHashError, err.Error())
-		}
-		timeBz, err := cdcEncode(c.header.Time, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.time: %s", blockHashError, err.Error())
-		}
-		//numTxBz, err := cdcEncode(c.header.NumTxs, cdc)
-		//if err != nil {
-		//	return nil, fmt.Errorf("%s: header.NumTxs: %s", blockHashError, err.Error())
-		//}
-		//totalTxsBz, err := cdcEncode(c.header.TotalTxs, cdc)
-		//if err != nil {
-		//	return nil, fmt.Errorf("%s: header.TotalTxs: %s", blockHashError, err.Error())
-		//}
-		lastBlockIDsBz, err := cdcEncode(c.header.LastBlockId, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.LastBlockID: %s", blockHashError, err.Error())
-		}
-		lastCommitHashBz, err := cdcEncode(c.header.LastCommitHash, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.LastCommitHash: %s", blockHashError, err.Error())
-		}
-		dataHashBz, err := cdcEncode(c.header.DataHash, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.DataHash: %s", blockHashError, err.Error())
-		}
-		validatorsHashBz, err := cdcEncode(c.header.ValidatorsHash, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.ValidatorsHash: %s", blockHashError, err.Error())
-		}
-		nexValidatorsHashBz, err := cdcEncode(c.header.NextValidatorsHash, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.NextValidatorsHash: %s", blockHashError, err.Error())
-		}
-		consensusHashBz, err := cdcEncode(c.header.ConsensusHash, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.ConsensusHash: %s", blockHashError, err.Error())
-		}
-		appHashBz, err := cdcEncode(c.header.AppHash, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.AppHash: %s", blockHashError, err.Error())
-		}
-		lastResultHashBz, err := cdcEncode(c.header.LastResultsHash, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.LastResultHash: %s", blockHashError, err.Error())
-		}
-		evidenceHashBz, err := cdcEncode(c.header.EvidenceHash, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.EvidenceHash: %s", blockHashError, err.Error())
-		}
-		proposerAddressBz, err := cdcEncode(c.header.ProposerAddress, cdc)
-		if err != nil {
-			return nil, fmt.Errorf("%s: header.ProposerAddress: %s", blockHashError, err.Error())
-		}
-		return merkle.SimpleHashFromByteSlices([][]byte{
-			versionBz,
-			chainIDBz,
-			heightBz,
-			timeBz,
-			//numTxBz,
-			//totalTxsBz,
-			lastBlockIDsBz,
-			lastCommitHashBz,
-			dataHashBz,
-			validatorsHashBz,
-			nexValidatorsHashBz,
-			consensusHashBz,
-			appHashBz,
-			lastResultHashBz,
-			evidenceHashBz,
-			proposerAddressBz,
-		}), nil
+		sha.Write(bz)
+		return sha.Sum(nil), nil
 	} else {
 		return c.BlockHeader().LastBlockId.Hash, nil
 	}
-}
-
-// cdcEncode returns nil if the input is nil, otherwise returns
-// cdc.MustMarshalBinaryBare(item)
-func cdcEncode(item interface{}, cdc *codec.Codec) ([]byte, error) {
-	if item != nil && !IsTypedNil(item) && !IsEmpty(item) {
-		return cdc.MarshalBinaryBare(item)
-	}
-	return nil, nil
 }
 
 func (c Context) ConsensusParams() *abci.ConsensusParams {

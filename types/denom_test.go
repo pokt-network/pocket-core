@@ -28,7 +28,7 @@ func TestRegisterDenom(t *testing.T) {
 	require.Equal(t, ZeroDec(), res)
 
 	// reset registration
-	denomUnits = map[string]Dec{}
+	denomUnits = map[string]BigDec{}
 }
 
 func TestConvertCoins(t *testing.T) {
@@ -79,5 +79,5 @@ func TestConvertCoins(t *testing.T) {
 	}
 
 	// reset registration
-	denomUnits = map[string]Dec{}
+	denomUnits = map[string]BigDec{}
 }

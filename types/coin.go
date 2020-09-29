@@ -22,12 +22,12 @@ import (
 // 	// To allow the use of unsigned integers (see: #1273) a larger refactor will
 // 	// need to be made. So we use signed integers for now with safety measures in
 // 	// place preventing negative values being used.
-// 	Amount Int `json:"amount"`
+// 	Amount BigInt `json:"amount"`
 // }
 
 // NewCoin returns a new coin with a denomination and amount. It will panic if
 // the amount is negative.
-func NewCoin(denom string, amount Int) Coin {
+func NewCoin(denom string, amount BigInt) Coin {
 	if err := validate(denom, amount); err != nil {
 		panic(err)
 	}
@@ -51,7 +51,7 @@ func (coin Coin) String() string {
 
 // validate returns an error if the Coin has a negative amount or if
 // the denom is invalid.
-func validate(denom string, amount Int) error {
+func validate(denom string, amount BigInt) error {
 	if err := validateDenom(denom); err != nil {
 		return err
 	}
@@ -478,7 +478,7 @@ func (coins Coins) Empty() bool {
 }
 
 // Returns the amount of a denom from coins
-func (coins Coins) AmountOf(denom string) Int {
+func (coins Coins) AmountOf(denom string) BigInt {
 	mustValidateDenom(denom)
 
 	switch len(coins) {

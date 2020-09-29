@@ -1,0 +1,12 @@
+syntax = "proto3";
+package types;
+
+option go_package = "github.com/pokt-network/pocket-core/types";
+
+message ProtoInt64 {
+	int64 i = 1;
+}
+
+message ProtoBool {
+	bool b = 1;
+}

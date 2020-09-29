@@ -17,7 +17,7 @@ func TestKeeper_SendCoins(t *testing.T) {
 		ctx         sdk.Context
 		fromAddress sdk.Address
 		toAddress   sdk.Address
-		amount      sdk.Int
+		amount      sdk.BigInt
 	}
 
 	context, _, keeper := createTestInput(t, true)

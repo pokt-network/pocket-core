@@ -17,16 +17,17 @@ message SessionHeader {
 message Session {
 	option (gogoproto.goproto_getters) = false;
 
-	SessionHeader sessionHeader = 1 [(gogoproto.jsontag)="header", (gogoproto.nullable)=false];
-	bytes sessionKey = 2 [(gogoproto.jsontag)="key", (gogoproto.casttype)="SessionKey"];
-	repeated bytes sessionNodes = 3 [(gogoproto.jsontag)="nodes", (gogoproto.castrepeated)="SessionNodes"];
+	SessionHeader sessionHeader = 1 [(gogoproto.jsontag) = "header", (gogoproto.nullable) = false];
+	bytes sessionKey = 2 [(gogoproto.jsontag) = "key", (gogoproto.casttype) = "SessionKey"];
+	repeated bytes sessionNodes = 3 [(gogoproto.jsontag) = "nodes", (gogoproto.castrepeated) = "SessionNodes"];
 }
 
 message MsgClaim {
+	option (gogoproto.messagename) = true;
 	option (gogoproto.goproto_getters) = false;
 
-	SessionHeader sessionHeader = 1 [(gogoproto.jsontag) = "header", (gogoproto.nullable)= false];
-	HashRange merkleRoot = 2 [(gogoproto.jsontag) = "merkle_root", (gogoproto.nullable)= false];
+	SessionHeader sessionHeader = 1 [(gogoproto.jsontag) = "header", (gogoproto.nullable) = false];
+	HashRange merkleRoot = 2 [(gogoproto.jsontag) = "merkle_root", (gogoproto.nullable) = false];
 	int64 totalProofs = 3 [(gogoproto.jsontag) = "total_proofs"];
 	bytes fromAddress = 4 [(gogoproto.jsontag) = "from_address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
 	int32 evidenceType = 5 [(gogoproto.jsontag) = "evidence_type", (gogoproto.casttype) = "EvidenceType"];
@@ -34,6 +35,7 @@ message MsgClaim {
 }
 
 message MsgProtoProof {
+	option (gogoproto.messagename) = true;
 	option (gogoproto.goproto_getters) = false;
 
 	MerkleProof merkleProof = 1 [(gogoproto.jsontag) = "merkle_proofs", (gogoproto.nullable) = false];
@@ -50,13 +52,13 @@ message ProofI {
 	}
 }
 
-message EvidenceEncodable {
+message ProtoEvidence {
 	option (gogoproto.goproto_getters) = false;
 
 	bytes bloomBytes = 1 [(gogoproto.jsontag) = "bloom_bytes"];
 	SessionHeader sessionHeader = 2 [(gogoproto.jsontag) = "evidence_header"];
-	int64 numOfProofs = 3  [(gogoproto.jsontag) = "num_of_proofs"];
-	repeated ProofI proofs= 4 [(gogoproto.jsontag) = "proofs", (gogoproto.castrepeated)="ProofIs",(gogoproto.nullable) = false];
+	int64 numOfProofs = 3 [(gogoproto.jsontag) = "num_of_proofs"];
+	repeated ProofI proofs = 4 [(gogoproto.jsontag) = "proofs", (gogoproto.castrepeated) = "ProofIs", (gogoproto.nullable) = false];
 	int32 evidenceType = 5 [(gogoproto.jsontag) = "evidence_type", (gogoproto.casttype) = "EvidenceType"];
 }
 
@@ -76,7 +78,7 @@ message ChallengeProofInvalidData {
 	option (gogoproto.goproto_getters) = false;
 
 	repeated RelayResponse majorityResponses = 1 [(gogoproto.jsontag) = "majority_responses", (gogoproto.nullable) = false];
-	RelayResponse minorityResponse = 2 [(gogoproto.jsontag) = "minority_response",(gogoproto.nullable) = false];
+	RelayResponse minorityResponse = 2 [(gogoproto.jsontag) = "minority_response", (gogoproto.nullable) = false];
 	bytes reporterAddress = 3 [(gogoproto.jsontag) = "reporters_address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
 }
 

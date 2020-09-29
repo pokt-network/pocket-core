@@ -179,7 +179,7 @@ func TestMsgSend_GetSignBytes(t *testing.T) {
 	type fields struct {
 		FromAddress sdk.Address
 		ToAddress   sdk.Address
-		Amount      sdk.Int
+		Amount      sdk.BigInt
 	}
 
 	var pub crypto.Ed25519PublicKey
@@ -232,7 +232,7 @@ func TestMsgSend_GetSigners(t *testing.T) {
 	type fields struct {
 		FromAddress sdk.Address
 		ToAddress   sdk.Address
-		Amount      sdk.Int
+		Amount      sdk.BigInt
 	}
 
 	var pub crypto.Ed25519PublicKey
@@ -276,7 +276,7 @@ func TestMsgSend_Route(t *testing.T) {
 	type fields struct {
 		FromAddress sdk.Address
 		ToAddress   sdk.Address
-		Amount      sdk.Int
+		Amount      sdk.BigInt
 	}
 
 	var pub crypto.Ed25519PublicKey
@@ -320,7 +320,7 @@ func TestMsgSend_Type(t *testing.T) {
 	type fields struct {
 		FromAddress sdk.Address
 		ToAddress   sdk.Address
-		Amount      sdk.Int
+		Amount      sdk.BigInt
 	}
 
 	var pub crypto.Ed25519PublicKey
@@ -364,7 +364,7 @@ func TestMsgSend_ValidateBasic(t *testing.T) {
 	type fields struct {
 		FromAddress sdk.Address
 		ToAddress   sdk.Address
-		Amount      sdk.Int
+		Amount      sdk.BigInt
 	}
 
 	var pub crypto.Ed25519PublicKey
@@ -424,7 +424,7 @@ func TestMsgStake_GetSigners(t *testing.T) {
 		Address    sdk.Address
 		PubKey     crypto.PublicKey
 		Chains     []string
-		Value      sdk.Int
+		Value      sdk.BigInt
 		ServiceURL string
 	}
 
@@ -469,7 +469,7 @@ func TestMsgStake_Route(t *testing.T) {
 		Address    sdk.Address
 		PubKey     crypto.PublicKey
 		Chains     []string
-		Value      sdk.Int
+		Value      sdk.BigInt
 		ServiceURL string
 	}
 
@@ -514,7 +514,7 @@ func TestMsgStake_Type(t *testing.T) {
 		Address    sdk.Address
 		PubKey     crypto.PublicKey
 		Chains     []string
-		Value      sdk.Int
+		Value      sdk.BigInt
 		ServiceURL string
 	}
 
@@ -559,7 +559,7 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 		Address    sdk.Address
 		PubKey     crypto.PublicKey
 		Chains     []string
-		Value      sdk.Int
+		Value      sdk.BigInt
 		ServiceURL string
 	}
 

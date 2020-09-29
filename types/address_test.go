@@ -118,7 +118,7 @@ func TestCustomAddressVerifier(t *testing.T) {
 	_, err = types.AddressFromHex(address)
 	require.NotNil(t, err)
 
-	// Set a custom address verifier that accepts 10 or 20 byte addresses
+	// Set a custom address verifier that accepts 10 or 20 byte Addresses
 	types.GetConfig().SetAddressVerifier(func(bz []byte) error {
 		n := len(bz)
 		if n == 10 || n == types.AddrLen {

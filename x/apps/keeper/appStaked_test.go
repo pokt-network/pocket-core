@@ -67,7 +67,7 @@ func TestRemoveStakedApplicationTokens(t *testing.T) {
 	stakedApplication := getStakedApplication()
 
 	type want struct {
-		tokens       sdk.Int
+		tokens       sdk.BigInt
 		applications []types.Application
 		hasError     bool
 	}
@@ -75,7 +75,7 @@ func TestRemoveStakedApplicationTokens(t *testing.T) {
 		name        string
 		application types.Application
 		panics      bool
-		amount      sdk.Int
+		amount      sdk.BigInt
 		want
 	}{
 		{
@@ -120,7 +120,7 @@ func TestRemoveDeleteFromStakingSet(t *testing.T) {
 		name         string
 		applications []types.Application
 		panics       bool
-		amount       sdk.Int
+		amount       sdk.BigInt
 	}{
 		{
 			name:         "removes applications from set",
@@ -154,7 +154,7 @@ func TestGetValsIterator(t *testing.T) {
 		name         string
 		applications []types.Application
 		panics       bool
-		amount       sdk.Int
+		amount       sdk.BigInt
 	}{
 		{
 			name:         "recieves a valid iterator",

@@ -19,7 +19,7 @@ type Proof interface {
 	GetSigner() sdk.Address                                                                              // returns the main signer(s) for the proof (used in messages)
 	SessionHeader() SessionHeader                                                                        // returns the session header
 	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error // validate the object
-	Store(max sdk.Int)                                                                                   // handle the proof after validation
+	Store(max sdk.BigInt)                                                                                // handle the proof after validation
 	ToProto() ProofI                                                                                     // convert to protobuf
 }
 
@@ -211,7 +211,7 @@ func (rp RelayProof) HashStringWithSignature() string {
 }
 
 // "Store" - Handles the relay proof object by adding it to the cache
-func (rp RelayProof) Store(maxRelays sdk.Int) {
+func (rp RelayProof) Store(maxRelays sdk.BigInt) {
 	// add the Proof to the global (in memory) collection of proofs
 	SetProof(rp.SessionHeader(), RelayEvidence, rp, maxRelays)
 }
@@ -236,7 +236,7 @@ func (rp RelayProof) GetSigner() sdk.Address {
 var _ Proof = ChallengeProofInvalidData{} // compile time interface implementation
 
 // "ValidateLocal" - Validate local is used to validate a challenge request directly from a client
-func (c ChallengeProofInvalidData) ValidateLocal(h SessionHeader, maxRelays sdk.Int, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
+func (c ChallengeProofInvalidData) ValidateLocal(h SessionHeader, maxRelays sdk.BigInt, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
 	// check if verifyPubKey in session (must be in session to do challenges)
 	if !sessionNodes.Contains(selfAddr) {
 		return NewNodeNotInSessionError(ModuleName)
@@ -448,7 +448,7 @@ func (c ChallengeProofInvalidData) GetSigner() sdk.Address {
 }
 
 // "Store" - Stores the challenge proof (stores in cache)
-func (c ChallengeProofInvalidData) Store(maxChallenges sdk.Int) {
+func (c ChallengeProofInvalidData) Store(maxChallenges sdk.BigInt) {
 	// add the Proof to the global (in memory) collection of proofs
 	SetProof(c.SessionHeader(), ChallengeEvidence, c, maxChallenges)
 }

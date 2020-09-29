@@ -31,7 +31,7 @@ func (msg MsgChangeParam) Route() string { return RouterKey }
 func (msg MsgChangeParam) Type() string { return MsgChangeParamName }
 
 // GetFee get fee for msg
-func (msg MsgChangeParam) GetFee() sdk.Int {
+func (msg MsgChangeParam) GetFee() sdk.BigInt {
 	return sdk.NewInt(GovFeeMap[msg.Type()])
 }
 
@@ -66,7 +66,7 @@ func (msg MsgChangeParam) ValidateBasic() sdk.Error {
 // type MsgDAOTransfer struct {
 // 	FromAddress sdk.Address `json:"from_address"`
 // 	ToAddress   sdk.Address `json:"to_address"`
-// 	Amount      sdk.Int     `json:"amount"`
+// 	Amount      sdk.BigInt     `json:"amount"`
 // 	Action      string      `json:"action"`
 // }
 
@@ -77,7 +77,7 @@ func (msg MsgDAOTransfer) Route() string { return RouterKey }
 func (msg MsgDAOTransfer) Type() string { return MsgDAOTransferName }
 
 // GetFee get fee for msg
-func (msg MsgDAOTransfer) GetFee() sdk.Int {
+func (msg MsgDAOTransfer) GetFee() sdk.BigInt {
 	return sdk.NewInt(GovFeeMap[msg.Type()])
 }
 
@@ -125,7 +125,7 @@ func (msg MsgUpgrade) Route() string { return RouterKey }
 func (msg MsgUpgrade) Type() string { return MsgUpgradeName }
 
 // GetFee get fee for msg
-func (msg MsgUpgrade) GetFee() sdk.Int {
+func (msg MsgUpgrade) GetFee() sdk.BigInt {
 	return sdk.NewInt(GovFeeMap[msg.Type()])
 }
 

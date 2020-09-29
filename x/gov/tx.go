@@ -32,7 +32,7 @@ func ChangeParamsTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
 }
 
-func DAOTransferTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress, toAddress sdk.Address, amount sdk.Int, action, passphrase string, fee int64) (*sdk.TxResponse, error) {
+func DAOTransferTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress, toAddress sdk.Address, amount sdk.BigInt, action, passphrase string, fee int64) (*sdk.TxResponse, error) {
 	msg := types.MsgDAOTransfer{
 		FromAddress: fromAddress,
 		ToAddress:   toAddress,
