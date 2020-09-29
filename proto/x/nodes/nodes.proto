@@ -6,59 +6,35 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/pokt-network/pocket-core/x/nodes/types";
 
-message ValidatorProto {
-	option (gogoproto.equal)            = true;
+message ProtoValidator {
+	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
-	option (gogoproto.goproto_getters)  = false;
+	option (gogoproto.goproto_getters) = false;
 
-	bytes Address = 1 [
-		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
-		(gogoproto.moretags) = "yaml:\"address\"",
-		(gogoproto.jsontag) = "address"
-	];
-	string PublicKey = 2 [(gogoproto.moretags) = "yaml:\"public_key\"", (gogoproto.jsontag) = "public_key"];
-	bool   jailed    = 3 [ (gogoproto.jsontag) = "jailed"];
-	int32  status = 4 [ (gogoproto.jsontag) = "status"];
-	repeated string Chains = 5 [ (gogoproto.jsontag) = "chains"];
-	string ServiceURL = 6 [(gogoproto.jsontag)="service_url"];
-	string StakedTokens = 7 [
-		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int",
-		(gogoproto.jsontag) = "tokens",
-		(gogoproto.nullable)   = false
-	];
-	google.protobuf.Timestamp UnstakingCompletionTime = 8 [
-		(gogoproto.nullable) = false,
-		(gogoproto.stdtime)  = true,
-		(gogoproto.jsontag) = "unstaking_time",
-		(gogoproto.moretags) = "yaml:\"unstaking_time\""
-	];
+	bytes Address = 1 [(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address", (gogoproto.moretags) = "yaml:\"address\"", (gogoproto.jsontag) = "address"];
+	bytes PublicKey = 2 [(gogoproto.moretags) = "yaml:\"public_key\"", (gogoproto.jsontag) = "public_key"];
+	bool jailed = 3 [(gogoproto.jsontag) = "jailed"];
+	int32 status = 4 [(gogoproto.jsontag) = "status"];
+	repeated string Chains = 5 [(gogoproto.jsontag) = "chains"];
+	string ServiceURL = 6 [(gogoproto.jsontag) = "service_url"];
+	string StakedTokens = 7 [(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt", (gogoproto.jsontag) = "tokens", (gogoproto.nullable) = false];
+	google.protobuf.Timestamp UnstakingCompletionTime = 8 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true, (gogoproto.jsontag) = "unstaking_time", (gogoproto.moretags) = "yaml:\"unstaking_time\""];
 }
-
 
 // ValidatorSigningInfo defines the signing info for a validator
 message ValidatorSigningInfo {
-	option (gogoproto.equal)            = true;
+	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = false;
 
-	bytes address = 1 [
-		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",  // validator consensus address
-		(gogoproto.jsontag) = "address"];
+	bytes address = 1 [(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address", // validator consensus address
+					  (gogoproto.jsontag) = "address"];
 	// height at which validator was first a candidate OR was unjailed
-	int64 start_height = 2 [(gogoproto.jsontag) = "start_height",(gogoproto.moretags) = "yaml:\"start_height\""];
+	int64 start_height = 2 [(gogoproto.jsontag) = "start_height", (gogoproto.moretags) = "yaml:\"start_height\""];
 	// index offset into signed block bit array
 	int64 Index = 3 [(gogoproto.jsontag) = "index_offset", (gogoproto.moretags) = "yaml:\"index_offset\""];
 	// timestamp validator cannot be unjailed until
-	google.protobuf.Timestamp jailed_until = 4
-	[(gogoproto.jsontag) = "jailed_until",(gogoproto.moretags) = "yaml:\"jailed_until\"", (gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+	google.protobuf.Timestamp jailed_until = 4 [(gogoproto.jsontag) = "jailed_until", (gogoproto.moretags) = "yaml:\"jailed_until\"", (gogoproto.stdtime) = true, (gogoproto.nullable) = false];
 	// missed blocks counter (to avoid scanning the array every time)
-	int64 missed_blocks_counter = 5 [(gogoproto.jsontag) = "missed_blocks_counter",(gogoproto.moretags) = "yaml:\"missed_blocks_counter\""];
-	int64 jailed_blocks_counter = 6 [(gogoproto.jsontag) = "jailed_blocks_counter",(gogoproto.moretags) = "yaml:\"jailed_blocks_counter\""];
-}
-
-message Power{
-	int64 value = 1;
-}
-
-message ValidatorMissed{
-	bool value = 1;
+	int64 missed_blocks_counter = 5 [(gogoproto.jsontag) = "missed_blocks_counter", (gogoproto.moretags) = "yaml:\"missed_blocks_counter\""];
+	int64 jailed_blocks_counter = 6 [(gogoproto.jsontag) = "jailed_blocks_counter", (gogoproto.moretags) = "yaml:\"jailed_blocks_counter\""];
 }

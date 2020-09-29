@@ -58,7 +58,7 @@ type ValidatorSet interface {
 	// get a particular validator by address
 	Validator(sdk.Ctx, sdk.Address) posexported.ValidatorI
 	// total staked tokens within the validator set
-	TotalTokens(sdk.Ctx) sdk.Int
+	TotalTokens(sdk.Ctx) sdk.BigInt
 	// jail a validator
 	JailValidator(sdk.Ctx, sdk.Address)
 	// unjail a validator

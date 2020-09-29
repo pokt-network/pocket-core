@@ -232,7 +232,7 @@ func TestValidateSlash(t *testing.T) {
 	type args struct {
 		validator     types.Validator
 		power         int64
-		slashFraction sdk.Dec
+		slashFraction sdk.BigDec
 	}
 	type expected struct {
 		validator      types.Validator
@@ -327,7 +327,7 @@ func TestValidateSlash(t *testing.T) {
 			if !found {
 				t.FailNow()
 			}
-			var fraction sdk.Dec
+			var fraction sdk.BigDec
 			if test.expected.fraction {
 				fraction = test.args.slashFraction
 			} else {
@@ -360,14 +360,14 @@ func TestSlash(t *testing.T) {
 	type args struct {
 		validator     types.Validator
 		power         int64
-		slashFraction sdk.Dec
+		slashFraction sdk.BigDec
 	}
 	type expected struct {
 		validator      types.Validator
 		pubKeyRelation bool
 		fraction       bool
 		found          bool
-		stakedTokens   sdk.Int
+		stakedTokens   sdk.BigInt
 	}
 	tests := []struct {
 		name   string
@@ -414,7 +414,7 @@ func TestSlash(t *testing.T) {
 			if !found {
 				t.FailNow()
 			}
-			var fraction sdk.Dec
+			var fraction sdk.BigDec
 			if test.expected.fraction {
 				fraction = test.args.slashFraction
 			} else {

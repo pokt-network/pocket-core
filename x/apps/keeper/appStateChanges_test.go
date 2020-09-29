@@ -55,7 +55,7 @@ func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
 		name        string
 		application types.Application
 		panics      bool
-		amount      sdk.Int
+		amount      sdk.BigInt
 		want        interface{}
 	}{
 		{
@@ -178,7 +178,7 @@ func TestAppStateChange_StakeApplication(t *testing.T) {
 	tests := []struct {
 		name        string
 		application types.Application
-		amount      sdk.Int
+		amount      sdk.BigInt
 	}{
 		{
 			name:        "name registers apps",

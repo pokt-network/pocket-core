@@ -51,7 +51,7 @@ func TestSend(t *testing.T) {
 		fromAddr   sdk.Address
 		toAddr     sdk.Address
 		passphrase string
-		amount     sdk.Int
+		amount     sdk.BigInt
 	}
 	tests := []struct {
 		name    string
@@ -66,7 +66,7 @@ func TestSend(t *testing.T) {
 			fromAddr:   nil,
 			toAddr:     nil,
 			passphrase: "",
-			amount:     sdk.Int{},
+			amount:     sdk.BigInt{},
 		}, nil,
 			true},
 	}

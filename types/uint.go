@@ -13,7 +13,7 @@ type Uint struct {
 	i *big.Int
 }
 
-// BigInt converts Uint to big.Int
+// BigInt converts Uint to big.BigInt
 func (u Uint) BigInt() *big.Int {
 	return new(big.Int).Set(u.i)
 }
@@ -225,7 +225,7 @@ func UintOverflow(i *big.Int) error {
 func ParseUint(s string) (Uint, error) {
 	i, ok := new(big.Int).SetString(s, 0)
 	if !ok {
-		return Uint{}, fmt.Errorf("cannot convert %q to big.Int", s)
+		return Uint{}, fmt.Errorf("cannot convert %q to big.BigInt", s)
 	}
 	return checkNewUint(i)
 }

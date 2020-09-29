@@ -140,7 +140,7 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.K
 //	}
 //}
 //
-//func sendFromModuleToAccount(t *testing.T, ctx sdk.Ctx, k *keeper.Keeper, module string, address sdk.Address, amount sdk.Int) {
+//func sendFromModuleToAccount(t *testing.T, ctx sdk.Ctx, k *keeper.Keeper, module string, address sdk.Address, amount sdk.BigInt) {
 //	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 //	err := k.supplyKeeper.SendCoinsFromModuleToAccount(ctx, module, sdk.Address(address), coins)
 //	if err != nil {

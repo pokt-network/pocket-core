@@ -91,7 +91,7 @@ var (
 
 const (
 	dummyChainsHash = "0001"
-	dummyChainsURL  = "https://foo.bar:8080"
+	dummyChainsURL  = "http:127.0.0.1:8081"
 	dummyServiceURL = "https://foo.bar:8081"
 	defaultTMURI    = "tcp://localhost:26657"
 )

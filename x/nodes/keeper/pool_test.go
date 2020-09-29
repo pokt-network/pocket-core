@@ -18,7 +18,7 @@ func TestCoinsFromUnstakedToStaked(t *testing.T) {
 		name      string
 		expected  string
 		validator types.Validator
-		amount    sdk.Int
+		amount    sdk.BigInt
 		errors    bool
 	}{
 		{
@@ -71,7 +71,7 @@ func TestCoinsFromStakedToUnstaked(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		amount    sdk.Int
+		amount    sdk.BigInt
 		expected  string
 		validator types.Validator
 		panics    bool
@@ -120,8 +120,8 @@ func TestBurnStakedTokens(t *testing.T) {
 		name       string
 		expected   string
 		validator  types.Validator
-		burnAmount sdk.Int
-		amount     sdk.Int
+		burnAmount sdk.BigInt
+		amount     sdk.BigInt
 		errs       bool
 	}{
 		{

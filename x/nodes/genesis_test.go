@@ -113,7 +113,7 @@ func TestValidateGenesis(t *testing.T) {
 func Test_validateGenesisStateValidators(t *testing.T) {
 	type args struct {
 		validators   []types.Validator
-		minimumStake sdk.Int
+		minimumStake sdk.BigInt
 	}
 
 	ctx, _, k := createTestInput(t, true)

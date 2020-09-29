@@ -448,7 +448,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 	tests := []struct {
 		name                 string
 		proof                ChallengeProofInvalidData
-		maxRelays            sdk.Int
+		maxRelays            sdk.BigInt
 		supportedBlockchains []string
 		sessionNodes         SessionNodes
 		reporterAddress      sdk.Address

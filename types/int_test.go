@@ -17,8 +17,8 @@ func TestFromInt64(t *testing.T) {
 }
 
 func TestIntPanic(t *testing.T) {
-	// Max Int = 2^255-1 = 5.789e+76
-	// Min Int = -(2^255-1) = -5.789e+76
+	// Max BigInt = 2^255-1 = 5.789e+76
+	// Min BigInt = -(2^255-1) = -5.789e+76
 	require.NotPanics(t, func() { NewIntWithDecimal(1, 76) })
 	i1 := NewIntWithDecimal(1, 76)
 	require.NotPanics(t, func() { NewIntWithDecimal(2, 76) })
@@ -73,8 +73,8 @@ func TestIntPanic(t *testing.T) {
 }
 
 // Tests below uses randomness
-// Since we are using *big.Int as underlying value
-// and (U/)Int is immutable value(see TestImmutability(U/)Int)
+// Since we are using *big.BigInt as underlying value
+// and (U/)BigInt is immutable value(see TestImmutability(U/)BigInt)
 // it is safe to use randomness in the tests
 func TestIdentInt(t *testing.T) {
 	for d := 0; d < 1000; d++ {
@@ -93,7 +93,7 @@ func TestIdentInt(t *testing.T) {
 		}
 
 		for tcnum, tc := range cases {
-			require.Equal(t, n, tc, "Int is modified during conversion. tc #%d", tcnum)
+			require.Equal(t, n, tc, "BigInt is modified during conversion. tc #%d", tcnum)
 		}
 	}
 }
@@ -120,7 +120,7 @@ func TestArithInt(t *testing.T) {
 		i2 := NewInt(n2)
 
 		cases := []struct {
-			ires Int
+			ires BigInt
 			nres int64
 		}{
 			{i1.Add(i2), n1 + n2},
@@ -137,7 +137,7 @@ func TestArithInt(t *testing.T) {
 		}
 
 		for tcnum, tc := range cases {
-			require.Equal(t, tc.nres, tc.ires.Int64(), "Int arithmetic operation does not match with int64 operation. tc #%d", tcnum)
+			require.Equal(t, tc.nres, tc.ires.Int64(), "BigInt arithmetic operation does not match with int64 operation. tc #%d", tcnum)
 		}
 	}
 
@@ -160,7 +160,7 @@ func TestCompInt(t *testing.T) {
 		}
 
 		for tcnum, tc := range cases {
-			require.Equal(t, tc.nres, tc.ires, "Int comparison operation does not match with int64 operation. tc #%d", tcnum)
+			require.Equal(t, tc.nres, tc.ires, "BigInt comparison operation does not match with int64 operation. tc #%d", tcnum)
 		}
 	}
 }
@@ -179,27 +179,27 @@ func maxuint(i1, i2 uint64) uint64 {
 	return i2
 }
 
-func randint() Int {
+func randint() BigInt {
 	return NewInt(rand.Int63())
 }
 
 func TestImmutabilityAllInt(t *testing.T) {
-	ops := []func(*Int){
-		func(i *Int) { _ = i.Add(randint()) },
-		func(i *Int) { _ = i.Sub(randint()) },
-		func(i *Int) { _ = i.Mul(randint()) },
-		func(i *Int) { _ = i.Quo(randint()) },
-		func(i *Int) { _ = i.AddRaw(rand.Int63()) },
-		func(i *Int) { _ = i.SubRaw(rand.Int63()) },
-		func(i *Int) { _ = i.MulRaw(rand.Int63()) },
-		func(i *Int) { _ = i.QuoRaw(rand.Int63()) },
-		func(i *Int) { _ = i.Neg() },
-		func(i *Int) { _ = i.IsZero() },
-		func(i *Int) { _ = i.Sign() },
-		func(i *Int) { _ = i.Equal(randint()) },
-		func(i *Int) { _ = i.GT(randint()) },
-		func(i *Int) { _ = i.LT(randint()) },
-		func(i *Int) { _ = i.String() },
+	ops := []func(*BigInt){
+		func(i *BigInt) { _ = i.Add(randint()) },
+		func(i *BigInt) { _ = i.Sub(randint()) },
+		func(i *BigInt) { _ = i.Mul(randint()) },
+		func(i *BigInt) { _ = i.Quo(randint()) },
+		func(i *BigInt) { _ = i.AddRaw(rand.Int63()) },
+		func(i *BigInt) { _ = i.SubRaw(rand.Int63()) },
+		func(i *BigInt) { _ = i.MulRaw(rand.Int63()) },
+		func(i *BigInt) { _ = i.QuoRaw(rand.Int63()) },
+		func(i *BigInt) { _ = i.Neg() },
+		func(i *BigInt) { _ = i.IsZero() },
+		func(i *BigInt) { _ = i.Sign() },
+		func(i *BigInt) { _ = i.Equal(randint()) },
+		func(i *BigInt) { _ = i.GT(randint()) },
+		func(i *BigInt) { _ = i.LT(randint()) },
+		func(i *BigInt) { _ = i.String() },
 	}
 
 	for i := 0; i < 1000; i++ {
@@ -209,24 +209,24 @@ func TestImmutabilityAllInt(t *testing.T) {
 		for opnum, op := range ops {
 			op(&ni)
 
-			require.Equal(t, n, ni.Int64(), "Int is modified by operation. tc #%d", opnum)
-			require.Equal(t, NewInt(n), ni, "Int is modified by operation. tc #%d", opnum)
+			require.Equal(t, n, ni.Int64(), "BigInt is modified by operation. tc #%d", opnum)
+			require.Equal(t, NewInt(n), ni, "BigInt is modified by operation. tc #%d", opnum)
 		}
 	}
 }
 
-type intop func(Int, *big.Int) (Int, *big.Int)
+type intop func(BigInt, *big.Int) (BigInt, *big.Int)
 
-func intarith(uifn func(Int, Int) Int, bifn func(*big.Int, *big.Int, *big.Int) *big.Int) intop {
-	return func(ui Int, bi *big.Int) (Int, *big.Int) {
+func intarith(uifn func(BigInt, BigInt) BigInt, bifn func(*big.Int, *big.Int, *big.Int) *big.Int) intop {
+	return func(ui BigInt, bi *big.Int) (BigInt, *big.Int) {
 		r := rand.Int63()
 		br := new(big.Int).SetInt64(r)
 		return uifn(ui, NewInt(r)), bifn(new(big.Int), bi, br)
 	}
 }
 
-func intarithraw(uifn func(Int, int64) Int, bifn func(*big.Int, *big.Int, *big.Int) *big.Int) intop {
-	return func(ui Int, bi *big.Int) (Int, *big.Int) {
+func intarithraw(uifn func(BigInt, int64) BigInt, bifn func(*big.Int, *big.Int, *big.Int) *big.Int) intop {
+	return func(ui BigInt, bi *big.Int) (BigInt, *big.Int) {
 		r := rand.Int63()
 		br := new(big.Int).SetInt64(r)
 		return uifn(ui, r), bifn(new(big.Int), bi, br)
@@ -237,18 +237,18 @@ func TestImmutabilityArithInt(t *testing.T) {
 	size := 500
 
 	ops := []intop{
-		intarith(Int.Add, (*big.Int).Add),
-		intarith(Int.Sub, (*big.Int).Sub),
-		intarith(Int.Mul, (*big.Int).Mul),
-		intarith(Int.Quo, (*big.Int).Quo),
-		intarithraw(Int.AddRaw, (*big.Int).Add),
-		intarithraw(Int.SubRaw, (*big.Int).Sub),
-		intarithraw(Int.MulRaw, (*big.Int).Mul),
-		intarithraw(Int.QuoRaw, (*big.Int).Quo),
+		intarith(BigInt.Add, (*big.Int).Add),
+		intarith(BigInt.Sub, (*big.Int).Sub),
+		intarith(BigInt.Mul, (*big.Int).Mul),
+		intarith(BigInt.Quo, (*big.Int).Quo),
+		intarithraw(BigInt.AddRaw, (*big.Int).Add),
+		intarithraw(BigInt.SubRaw, (*big.Int).Sub),
+		intarithraw(BigInt.MulRaw, (*big.Int).Mul),
+		intarithraw(BigInt.QuoRaw, (*big.Int).Quo),
 	}
 
 	for i := 0; i < 100; i++ {
-		uis := make([]Int, size)
+		uis := make([]BigInt, size)
 		bis := make([]*big.Int, size)
 
 		n := rand.Int63()
@@ -261,9 +261,9 @@ func TestImmutabilityArithInt(t *testing.T) {
 		}
 
 		for j := 0; j < size; j++ {
-			require.Equal(t, 0, bis[j].Cmp(uis[j].BigInt()), "Int is different from *big.Int. tc #%d, Int %s, *big.Int %s", j, uis[j].String(), bis[j].String())
-			require.Equal(t, NewIntFromBigInt(bis[j]), uis[j], "Int is different from *big.Int. tc #%d, Int %s, *big.Int %s", j, uis[j].String(), bis[j].String())
-			require.True(t, uis[j].i != bis[j], "Pointer addresses are equal. tc #%d, Int %s, *big.Int %s", j, uis[j].String(), bis[j].String())
+			require.Equal(t, 0, bis[j].Cmp(uis[j].BigInt()), "BigInt is different from *big.BigInt. tc #%d, BigInt %s, *big.BigInt %s", j, uis[j].String(), bis[j].String())
+			require.Equal(t, NewIntFromBigInt(bis[j]), uis[j], "BigInt is different from *big.BigInt. tc #%d, BigInt %s, *big.BigInt %s", j, uis[j].String(), bis[j].String())
+			require.True(t, uis[j].i != bis[j], "Pointer Addresses are equal. tc #%d, BigInt %s, *big.BigInt %s", j, uis[j].String(), bis[j].String())
 		}
 	}
 }
@@ -272,7 +272,7 @@ func TestEncodingRandom(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		n := rand.Int63()
 		ni := NewInt(n)
-		var ri Int
+		var ri BigInt
 
 		str, err := ni.MarshalAmino()
 		require.Nil(t, err)
@@ -280,7 +280,7 @@ func TestEncodingRandom(t *testing.T) {
 		require.Nil(t, err)
 
 		require.Equal(t, ni, ri, "MarshalAmino * UnmarshalAmino is not identity. tc #%d, Expected %s, Actual %s", i, ni.String(), ri.String())
-		require.True(t, ni.i != ri.i, "Pointer addresses are equal. tc #%d", i)
+		require.True(t, ni.i != ri.i, "Pointer Addresses are equal. tc #%d", i)
 
 		bz, err := ni.MarshalJSON()
 		require.Nil(t, err)
@@ -288,7 +288,7 @@ func TestEncodingRandom(t *testing.T) {
 		require.Nil(t, err)
 
 		require.Equal(t, ni, ri, "MarshalJSON * UnmarshalJSON is not identity. tc #%d, Expected %s, Actual %s", i, ni.String(), ri.String())
-		require.True(t, ni.i != ri.i, "Pointer addresses are equal. tc #%d", i)
+		require.True(t, ni.i != ri.i, "Pointer Addresses are equal. tc #%d", i)
 	}
 
 	for i := 0; i < 1000; i++ {
@@ -302,7 +302,7 @@ func TestEncodingRandom(t *testing.T) {
 		require.Nil(t, err)
 
 		require.Equal(t, ni, ri, "MarshalAmino * UnmarshalAmino is not identity. tc #%d, Expected %s, Actual %s", i, ni.String(), ri.String())
-		require.True(t, ni.i != ri.i, "Pointer addresses are equal. tc #%d", i)
+		require.True(t, ni.i != ri.i, "Pointer Addresses are equal. tc #%d", i)
 
 		bz, err := ni.MarshalJSON()
 		require.Nil(t, err)
@@ -310,14 +310,14 @@ func TestEncodingRandom(t *testing.T) {
 		require.Nil(t, err)
 
 		require.Equal(t, ni, ri, "MarshalJSON * UnmarshalJSON is not identity. tc #%d, Expected %s, Actual %s", i, ni.String(), ri.String())
-		require.True(t, ni.i != ri.i, "Pointer addresses are equal. tc #%d", i)
+		require.True(t, ni.i != ri.i, "Pointer Addresses are equal. tc #%d", i)
 	}
 }
 
 func TestEncodingTableInt(t *testing.T) {
 
 	cases := []struct {
-		i   Int
+		i   BigInt
 		bz  []byte
 		str string
 	}{
@@ -330,18 +330,18 @@ func TestEncodingTableInt(t *testing.T) {
 
 	for tcnum, tc := range cases {
 		bz, err := tc.i.MarshalJSON()
-		require.Nil(t, err, "Error marshaling Int. tc #%d, err %s", tcnum, err)
+		require.Nil(t, err, "Error marshaling BigInt. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.bz, bz, "Marshaled value is different from exported. tc #%d", tcnum)
-		var i Int
+		var i BigInt
 		err = (&i).UnmarshalJSON(bz)
-		require.Nil(t, err, "Error unmarshaling Int. tc #%d, err %s", tcnum, err)
+		require.Nil(t, err, "Error unmarshaling BigInt. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.i, i, "Unmarshaled value is different from exported. tc #%d", tcnum)
 
 		str, err := tc.i.MarshalAmino()
-		require.Nil(t, err, "Error marshaling Int. tc #%d, err %s", tcnum, err)
+		require.Nil(t, err, "Error marshaling BigInt. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.str, string(str), "Marshaled value is different from exported. tc #%d", tcnum)
 		err = (&i).UnmarshalAmino(str)
-		require.Nil(t, err, "Error unmarshaling Int. tc #%d, err %s", tcnum, err)
+		require.Nil(t, err, "Error unmarshaling BigInt. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.i, i, "Unmarshaled value is different from exported. tc #%d", tcnum)
 	}
 }
@@ -363,25 +363,25 @@ func TestEncodingTableUint(t *testing.T) {
 
 	for tcnum, tc := range cases {
 		bz, err := tc.i.MarshalJSON()
-		require.Nil(t, err, "Error marshaling Int. tc #%d, err %s", tcnum, err)
+		require.Nil(t, err, "Error marshaling BigInt. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.bz, bz, "Marshaled value is different from exported. tc #%d", tcnum)
 		err = (&i).UnmarshalJSON(bz)
-		require.Nil(t, err, "Error unmarshaling Int. tc #%d, err %s", tcnum, err)
+		require.Nil(t, err, "Error unmarshaling BigInt. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.i, i, "Unmarshaled value is different from exported. tc #%d", tcnum)
 
 		str, err := tc.i.MarshalAmino()
-		require.Nil(t, err, "Error marshaling Int. tc #%d, err %s", tcnum, err)
+		require.Nil(t, err, "Error marshaling BigInt. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.str, string(str), "Marshaled value is different from exported. tc #%d", tcnum)
 		err = (&i).UnmarshalAmino(str)
-		require.Nil(t, err, "Error unmarshaling Int. tc #%d, err %s", tcnum, err)
+		require.Nil(t, err, "Error unmarshaling BigInt. tc #%d, err %s", tcnum, err)
 		require.Equal(t, tc.i, i, "Unmarshaled value is different from exported. tc #%d", tcnum)
 	}
 }
 
 func TestSerializationOverflow(t *testing.T) {
 	bx, _ := new(big.Int).SetString("91888242871839275229946405745257275988696311157297823662689937894645226298583", 10)
-	x := Int{bx}
-	y := new(Int)
+	x := BigInt{bx}
+	y := new(BigInt)
 
 	// require amino deserialization to fail due to overflow
 	xStr, err := x.MarshalAmino()

@@ -98,7 +98,7 @@ func (app PocketCoreApp) QueryNodeStatus() (res *core_types.ResultStatus, err er
 	return tmClient.Status()
 }
 
-func (app PocketCoreApp) QueryBalance(addr string, height int64) (res sdk.Int, err error) {
+func (app PocketCoreApp) QueryBalance(addr string, height int64) (res sdk.BigInt, err error) {
 	acc, err := app.QueryAccount(addr, height)
 	if err != nil {
 		return
@@ -172,7 +172,7 @@ func (app PocketCoreApp) QuerySigningInfo(height int64, addr string) (res nodesT
 	return
 }
 
-func (app PocketCoreApp) QueryTotalNodeCoins(height int64) (stakedTokens sdk.Int, totalTokens sdk.Int, err error) {
+func (app PocketCoreApp) QueryTotalNodeCoins(height int64) (stakedTokens sdk.BigInt, totalTokens sdk.BigInt, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {
 		return
@@ -182,7 +182,7 @@ func (app PocketCoreApp) QueryTotalNodeCoins(height int64) (stakedTokens sdk.Int
 	return
 }
 
-func (app PocketCoreApp) QueryDaoBalance(height int64) (res sdk.Int, err error) {
+func (app PocketCoreApp) QueryDaoBalance(height int64) (res sdk.BigInt, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {
 		return
@@ -324,7 +324,7 @@ func (app PocketCoreApp) QueryApp(addr string, height int64) (res appsTypes.Appl
 	return
 }
 
-func (app PocketCoreApp) QueryTotalAppCoins(height int64) (staked sdk.Int, err error) {
+func (app PocketCoreApp) QueryTotalAppCoins(height int64) (staked sdk.BigInt, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {
 		return

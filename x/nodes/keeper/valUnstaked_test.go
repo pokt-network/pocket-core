@@ -239,7 +239,7 @@ func TestUnstakingValidatorsIterator(t *testing.T) {
 		name       string
 		validators []types.Validator
 		panics     bool
-		amount     sdk.Int
+		amount     sdk.BigInt
 	}{
 		{
 			name:       "recieves a valid iterator",

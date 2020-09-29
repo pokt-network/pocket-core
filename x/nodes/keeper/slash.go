@@ -12,14 +12,14 @@ import (
 )
 
 // BurnForChallenge - Tries to remove coins from account & supply for a challenged validator
-func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address) {
+func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.BigInt, address sdk.Address) {
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(challenges)
 	k.simpleSlash(ctx, address, coins)
 }
 
 // simpleSlash - Slash validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) {
+func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.BigInt) {
 	// error check slash
 	validator := k.validateSimpleSlash(ctx, addr, amount)
 	if validator.Address.Empty() {
@@ -52,7 +52,7 @@ func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) {
 }
 
 // validateSimpleSlash - Check if simpleSlash is possible
-func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.Int) types.Validator {
+func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.BigInt) types.Validator {
 	logger := k.Logger(ctx)
 	if amount.LTE(sdk.ZeroInt()) {
 		k.Logger(ctx).Error(fmt.Errorf("attempted to simple slash with a negative slash factor: %v", amount).Error())
@@ -75,7 +75,7 @@ func (k Keeper) validateSimpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.In
 
 // slash - Slash a validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
-func (k Keeper) slash(ctx sdk.Ctx, addr sdk.Address, infractionHeight, power int64, slashFactor sdk.Dec) {
+func (k Keeper) slash(ctx sdk.Ctx, addr sdk.Address, infractionHeight, power int64, slashFactor sdk.BigDec) {
 	// error check slash
 	validator := k.validateSlash(ctx, addr, infractionHeight, power, slashFactor)
 	if validator.Address == nil {
@@ -114,7 +114,7 @@ func (k Keeper) slash(ctx sdk.Ctx, addr sdk.Address, infractionHeight, power int
 }
 
 // validateSlash - Check if slash  is possible
-func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.Dec) types.Validator {
+func (k Keeper) validateSlash(ctx sdk.Ctx, addr sdk.Address, infractionHeight int64, power int64, slashFactor sdk.BigDec) types.Validator {
 	logger := k.Logger(ctx)
 	if slashFactor.LTE(sdk.ZeroDec()) {
 		k.Logger(ctx).Error(fmt.Errorf("attempted to simple slash with a negative slash factor: %v", slashFactor).Error())

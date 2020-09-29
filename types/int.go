@@ -4,8 +4,7 @@ import (
 	"encoding"
 	"encoding/json"
 	"fmt"
-	"testing"
-
+	"github.com/pokt-network/pocket-core/codec"
 	"math/big"
 )
 
@@ -65,42 +64,38 @@ func unmarshalText(i *big.Int, text string) error {
 	return nil
 }
 
-var _ CustomProtobufType = (*Int)(nil)
+var _ CustomProtobufType = (*BigInt)(nil)
+var _ codec.ProtoMarshaler = &BigInt{}
 
-// Int wraps integer with 256 bit range bound
+// BigInt wraps integer with 256 bit range bound
 // Checks overflow, underflow and division by zero
 // Exists in range from -(2^maxBitLen-1) to 2^maxBitLen-1
-type Int struct {
+type BigInt struct {
 	i *big.Int
 }
 
-// BigInt converts Int to big.Int
-func (i Int) BigInt() *big.Int {
-	return new(big.Int).Set(i.i)
+// NewInt constructs BigInt from int64
+func NewInt(n int64) BigInt {
+	return BigInt{big.NewInt(n)}
 }
 
-// NewInt constructs Int from int64
-func NewInt(n int64) Int {
-	return Int{big.NewInt(n)}
-}
-
-// NewIntFromUint64 constructs an Int from a uint64.
-func NewIntFromUint64(n uint64) Int {
+// NewIntFromUint64 constructs an BigInt from a uint64.
+func NewIntFromUint64(n uint64) BigInt {
 	b := big.NewInt(0)
 	b.SetUint64(n)
-	return Int{b}
+	return BigInt{b}
 }
 
-// NewIntFromBigInt constructs Int from big.Int
-func NewIntFromBigInt(i *big.Int) Int {
+// NewIntFromBigInt constructs BigInt from big.BigInt
+func NewIntFromBigInt(i *big.Int) BigInt {
 	if i.BitLen() > maxBitLen {
 		panic("NewIntFromBigInt() out of bound")
 	}
-	return Int{i}
+	return BigInt{i}
 }
 
-// NewIntFromString constructs Int from string
-func NewIntFromString(s string) (res Int, ok bool) {
+// NewIntFromString constructs BigInt from string
+func NewIntFromString(s string) (res BigInt, ok bool) {
 	i, ok := newIntegerFromString(s)
 	if !ok {
 		return
@@ -110,12 +105,12 @@ func NewIntFromString(s string) (res Int, ok bool) {
 		ok = false
 		return
 	}
-	return Int{i}, true
+	return BigInt{i}, true
 }
 
-// NewIntWithDecimal constructs Int with decimal
+// NewIntWithDecimal constructs BigInt with decimal
 // Result value is n*10^dec
-func NewIntWithDecimal(n int64, dec int) Int {
+func NewIntWithDecimal(n int64, dec int) BigInt {
 	if dec < 0 {
 		panic("NewIntWithDecimal() decimal is negative")
 	}
@@ -127,23 +122,23 @@ func NewIntWithDecimal(n int64, dec int) Int {
 	if i.BitLen() > maxBitLen {
 		panic("NewIntWithDecimal() out of bound")
 	}
-	return Int{i}
+	return BigInt{i}
 }
 
-// ZeroInt returns Int value with zero
-func ZeroInt() Int { return Int{big.NewInt(0)} }
+// ZeroInt returns BigInt value with zero
+func ZeroInt() BigInt { return BigInt{big.NewInt(0)} }
 
-// OneInt returns Int value with one
-func OneInt() Int { return Int{big.NewInt(1)} }
+// OneInt returns BigInt value with one
+func OneInt() BigInt { return BigInt{big.NewInt(1)} }
 
-// ToDec converts Int to Dec
-func (i Int) ToDec() Dec {
+// ToDec converts BigInt to BigDec
+func (i BigInt) ToDec() BigDec {
 	return NewDecFromInt(i)
 }
 
-// Int64 converts Int to int64
+// Int64 converts BigInt to int64
 // Panics if the value is out of range
-func (i Int) Int64() int64 {
+func (i BigInt) Int64() int64 {
 	if !i.i.IsInt64() {
 		panic("Int64() out of bound")
 	}
@@ -151,13 +146,13 @@ func (i Int) Int64() int64 {
 }
 
 // IsInt64 returns true if Int64() not panics
-func (i Int) IsInt64() bool {
+func (i BigInt) IsInt64() bool {
 	return i.i.IsInt64()
 }
 
-// Uint64 converts Int to uint64
+// Uint64 converts BigInt to uint64
 // Panics if the value is out of range
-func (i Int) Uint64() uint64 {
+func (i BigInt) Uint64() uint64 {
 	if !i.i.IsUint64() {
 		panic("Uint64() out of bounds")
 	}
@@ -165,154 +160,243 @@ func (i Int) Uint64() uint64 {
 }
 
 // IsUint64 returns true if Uint64() not panics
-func (i Int) IsUint64() bool {
+func (i BigInt) IsUint64() bool {
 	return i.i.IsUint64()
 }
 
-// IsZero returns true if Int is zero
-func (i Int) IsZero() bool {
+// IsZero returns true if BigInt is zero
+func (i BigInt) IsZero() bool {
+	if i.i == nil {
+		return true
+	}
 	return i.i.Sign() == 0
 }
 
-// IsNegative returns true if Int is negative
-func (i Int) IsNegative() bool {
+// IsNegative returns true if BigInt is negative
+func (i BigInt) IsNegative() bool {
 	return i.i.Sign() == -1
 }
 
-// IsPositive returns true if Int is positive
-func (i Int) IsPositive() bool {
+// IsPositive returns true if BigInt is positive
+func (i BigInt) IsPositive() bool {
 	return i.i.Sign() == 1
 }
 
-// Sign returns sign of Int
-func (i Int) Sign() int {
+// Sign returns sign of BigInt
+func (i BigInt) Sign() int {
 	return i.i.Sign()
 }
 
 // Equal compares two Ints
-func (i Int) Equal(i2 Int) bool {
+func (i BigInt) Equal(i2 BigInt) bool {
 	return equal(i.i, i2.i)
 }
 
-// GT returns true if first Int is greater than second
-func (i Int) GT(i2 Int) bool {
+// GT returns true if first BigInt is greater than second
+func (i BigInt) GT(i2 BigInt) bool {
 	return gt(i.i, i2.i)
 }
 
-// GTE returns true if receiver Int is greater than or equal to the parameter
-// Int.
-func (i Int) GTE(i2 Int) bool {
+// GTE returns true if receiver BigInt is greater than or equal to the parameter
+// BigInt.
+func (i BigInt) GTE(i2 BigInt) bool {
 	return gte(i.i, i2.i)
 }
 
-// LT returns true if first Int is lesser than second
-func (i Int) LT(i2 Int) bool {
+// LT returns true if first BigInt is lesser than second
+func (i BigInt) LT(i2 BigInt) bool {
 	return lt(i.i, i2.i)
 }
 
-// LTE returns true if first Int is less than or equal to second
-func (i Int) LTE(i2 Int) bool {
+// LTE returns true if first BigInt is less than or equal to second
+func (i BigInt) LTE(i2 BigInt) bool {
 	return lte(i.i, i2.i)
 }
 
-// Add adds Int from another
-func (i Int) Add(i2 Int) (res Int) {
-	res = Int{add(i.i, i2.i)}
+// Add adds BigInt from another
+func (i BigInt) Add(i2 BigInt) (res BigInt) {
+	res = BigInt{add(i.i, i2.i)}
 	// Check overflow
 	if res.i.BitLen() > maxBitLen {
-		panic("Int overflow")
+		panic("BigInt overflow")
 	}
 	return
 }
 
-// AddRaw adds int64 to Int
-func (i Int) AddRaw(i2 int64) Int {
+// AddRaw adds int64 to BigInt
+func (i BigInt) AddRaw(i2 int64) BigInt {
 	return i.Add(NewInt(i2))
 }
 
-// Sub subtracts Int from another
-func (i Int) Sub(i2 Int) (res Int) {
-	res = Int{sub(i.i, i2.i)}
+// Sub subtracts BigInt from another
+func (i BigInt) Sub(i2 BigInt) (res BigInt) {
+	res = BigInt{sub(i.i, i2.i)}
 	// Check overflow
 	if res.i.BitLen() > maxBitLen {
-		panic("Int overflow")
+		panic("BigInt overflow")
 	}
 	return
 }
 
-// SubRaw subtracts int64 from Int
-func (i Int) SubRaw(i2 int64) Int {
+// SubRaw subtracts int64 from BigInt
+func (i BigInt) SubRaw(i2 int64) BigInt {
 	return i.Sub(NewInt(i2))
 }
 
 // Mul multiples two Ints
-func (i Int) Mul(i2 Int) (res Int) {
+func (i BigInt) Mul(i2 BigInt) (res BigInt) {
 	// Check overflow
 	if i.i.BitLen()+i2.i.BitLen()-1 > maxBitLen {
-		panic("Int overflow")
+		panic("BigInt overflow")
 	}
-	res = Int{mul(i.i, i2.i)}
+	res = BigInt{mul(i.i, i2.i)}
 	// Check overflow if sign of both are same
 	if res.i.BitLen() > maxBitLen {
-		panic("Int overflow")
+		panic("BigInt overflow")
 	}
 	return
 }
 
-// MulRaw multipies Int and int64
-func (i Int) MulRaw(i2 int64) Int {
+// MulRaw multipies BigInt and int64
+func (i BigInt) MulRaw(i2 int64) BigInt {
 	return i.Mul(NewInt(i2))
 }
 
-// Quo divides Int with Int
-func (i Int) Quo(i2 Int) (res Int) {
+// Quo divides BigInt with BigInt
+func (i BigInt) Quo(i2 BigInt) (res BigInt) {
 	// Check division-by-zero
 	if i2.i.Sign() == 0 {
 		panic("Division by zero")
 	}
-	return Int{div(i.i, i2.i)}
+	return BigInt{div(i.i, i2.i)}
 }
 
-// QuoRaw divides Int with int64
-func (i Int) QuoRaw(i2 int64) Int {
+// QuoRaw divides BigInt with int64
+func (i BigInt) QuoRaw(i2 int64) BigInt {
 	return i.Quo(NewInt(i2))
 }
 
-// Mod returns remainder after dividing with Int
-func (i Int) Mod(i2 Int) Int {
+// Mod returns remainder after dividing with BigInt
+func (i BigInt) Mod(i2 BigInt) BigInt {
 	if i2.Sign() == 0 {
 		panic("division-by-zero")
 	}
-	return Int{mod(i.i, i2.i)}
+	return BigInt{mod(i.i, i2.i)}
 }
 
 // ModRaw returns remainder after dividing with int64
-func (i Int) ModRaw(i2 int64) Int {
+func (i BigInt) ModRaw(i2 int64) BigInt {
 	return i.Mod(NewInt(i2))
 }
 
-// Neg negates Int
-func (i Int) Neg() (res Int) {
-	return Int{neg(i.i)}
+// Neg negates BigInt
+func (i BigInt) Neg() (res BigInt) {
+	return BigInt{neg(i.i)}
 }
 
 // return the minimum of the ints
-func MinInt(i1, i2 Int) Int {
-	return Int{min(i1.BigInt(), i2.BigInt())}
+func MinInt(i1, i2 BigInt) BigInt {
+	return BigInt{min(i1.BigInt(), i2.BigInt())}
 }
 
 // MaxInt returns the maximum between two integers.
-func MaxInt(i, i2 Int) Int {
-	return Int{max(i.BigInt(), i2.BigInt())}
+func MaxInt(i, i2 BigInt) BigInt {
+	return BigInt{max(i.BigInt(), i2.BigInt())}
 }
 
 // Human readable string
-func (i Int) String() string {
+func (i BigInt) String() string {
 	return i.i.String()
 }
 
+func (i *BigInt) Reset() {
+	*i = BigInt{}
+}
+
+func (i BigInt) ProtoMessage() {}
+
+// autogenerated
+func (i BigInt) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	a := len(dAtA)
+	_ = a
+	var l int
+	_ = l
+	{
+		size := i.Size()
+		a -= size
+		if _, err := i.MarshalTo(dAtA[a:]); err != nil {
+			return 0, err
+		}
+		a = encodeVarintCoin(dAtA, a, uint64(size))
+	}
+	a--
+	dAtA[a] = 0xa
+	return len(dAtA) - a, nil
+}
+
+// BigInt converts BigInt to big.BigInt
+func (i BigInt) BigInt() *big.Int {
+	return new(big.Int).Set(i.i)
+}
+
+// Size implements the gogo proto custom type interface.
+func (i *BigInt) Size() int {
+	bz, _ := i.Marshal()
+	return len(bz)
+}
+
+// MarshalObject implements the gogo proto custom type interface.
+func (i BigInt) Marshal() ([]byte, error) {
+	if i.i == nil {
+		i.i = new(big.Int)
+	}
+	t, err := i.i.MarshalText()
+	return t, err
+}
+
+// MarshalTo implements the gogo proto custom type interface.
+func (i *BigInt) MarshalTo(data []byte) (n int, err error) {
+	if i.i == nil {
+		i.i = new(big.Int)
+	}
+	if len(i.i.Bytes()) == 0 {
+		copy(data, []byte{0x30})
+		return 1, nil
+	}
+
+	bz, err := i.Marshal()
+	if err != nil {
+		return 0, err
+	}
+
+	copy(data, bz)
+	return len(bz), nil
+}
+
+// UnmarshalObject implements the gogo proto custom type interface.
+func (i *BigInt) Unmarshal(data []byte) error {
+	if len(data) == 0 {
+		i = nil
+		return nil
+	}
+
+	if i.i == nil {
+		i.i = new(big.Int)
+	}
+
+	if err := i.i.UnmarshalText(data); err != nil {
+		return err
+	}
+
+	if i.i.BitLen() > maxBitLen {
+		return fmt.Errorf("integer out of range; got: %d, max: %d", i.i.BitLen(), maxBitLen)
+	}
+
+	return nil
+}
+
 // MarshalJSON defines custom encoding scheme
-func (i Int) MarshalJSON() ([]byte, error) {
+func (i BigInt) MarshalJSON() ([]byte, error) {
 	if i.i == nil { // Necessary since default Uint initialization has i.i as nil
 		i.i = new(big.Int)
 	}
@@ -320,8 +404,8 @@ func (i Int) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON defines custom decoding scheme
-func (i *Int) UnmarshalJSON(bz []byte) error {
-	if i.i == nil { // Necessary since default Int initialization has i.i as nil
+func (i *BigInt) UnmarshalJSON(bz []byte) error {
+	if i.i == nil { // Necessary since default BigInt initialization has i.i as nil
 		i.i = new(big.Int)
 	}
 	return unmarshalJSON(i.i, bz)
@@ -350,75 +434,10 @@ func unmarshalJSON(i *big.Int, bz []byte) error {
 }
 
 // MarshalYAML returns the YAML representation.
-func (i Int) MarshalYAML() (interface{}, error) {
+func (i BigInt) MarshalYAML() (interface{}, error) {
 	return i.String(), nil
 }
 
-// MarshalObject implements the gogo proto custom type interface.
-func (i Int) Marshal() ([]byte, error) {
-	if i.i == nil {
-		i.i = new(big.Int)
-	}
-	t, err := i.i.MarshalText()
-	return t, err
-}
-
-// MarshalTo implements the gogo proto custom type interface.
-func (i *Int) MarshalTo(data []byte) (n int, err error) {
-	if i.i == nil {
-		i.i = new(big.Int)
-	}
-	if len(i.i.Bytes()) == 0 {
-		copy(data, []byte{0x30})
-		return 1, nil
-	}
-
-	bz, err := i.Marshal()
-	if err != nil {
-		return 0, err
-	}
-
-	copy(data, bz)
-	return len(bz), nil
-}
-
-// UnmarshalObject implements the gogo proto custom type interface.
-func (i *Int) Unmarshal(data []byte) error {
-	if len(data) == 0 {
-		i = nil
-		return nil
-	}
-
-	if i.i == nil {
-		i.i = new(big.Int)
-	}
-
-	if err := i.i.UnmarshalText(data); err != nil {
-		return err
-	}
-
-	if i.i.BitLen() > maxBitLen {
-		return fmt.Errorf("integer out of range; got: %d, max: %d", i.i.BitLen(), maxBitLen)
-	}
-
-	return nil
-}
-
-// Size implements the gogo proto custom type interface.
-func (i *Int) Size() int {
-	bz, _ := i.Marshal()
-	return len(bz)
-}
-
 // Override Amino binary serialization by proxying to protobuf.
-func (i Int) MarshalAmino() ([]byte, error)   { return i.Marshal() }
-func (i *Int) UnmarshalAmino(bz []byte) error { return i.Unmarshal(bz) }
-
-// intended to be used with require/assert:  require.True(IntEq(...))
-func IntEq(t *testing.T, exp, got Int) (*testing.T, bool, string, string, string) {
-	return t, exp.Equal(got), "expected:\t%v\ngot:\t\t%v", exp.String(), got.String()
-}
-
-func (ip IntProto) String() string {
-	return ip.Int.String()
-}
+func (i BigInt) MarshalAmino() ([]byte, error)   { return i.Marshal() }
+func (i *BigInt) UnmarshalAmino(bz []byte) error { return i.Unmarshal(bz) }

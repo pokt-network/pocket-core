@@ -15,6 +15,6 @@ type ApplicationI interface {
 	GetChains() []string            // retrieve the staked chains
 	GetAddress() sdk.Address        // operator address to receive/return applications coins
 	GetPublicKey() crypto.PublicKey // validation consensus pubkey
-	GetTokens() sdk.Int             // validation tokens
-	GetMaxRelays() sdk.Int          // maximum relays
+	GetTokens() sdk.BigInt          // validation tokens
+	GetMaxRelays() sdk.BigInt       // maximum relays
 }

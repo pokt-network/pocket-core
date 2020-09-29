@@ -44,7 +44,7 @@ func TestMint(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		amount   sdk.Int
+		amount   sdk.BigInt
 		expected string
 		address  sdk.Address
 		panics   bool

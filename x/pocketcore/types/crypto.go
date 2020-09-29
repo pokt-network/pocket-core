@@ -140,7 +140,7 @@ func Hash(b []byte) []byte {
 	return hasher.Sum(nil)
 }
 
-func PseudorandomSelection(max sdk.Int, hash []byte) (index sdk.Int) {
+func PseudorandomSelection(max sdk.BigInt, hash []byte) (index sdk.BigInt) {
 	// merkleHash for show and convert back to decimal
 	intHash := sdk.NewIntFromBigInt(new(big.Int).SetBytes(hash[:8]))
 	// mod the selection

@@ -61,7 +61,7 @@ func (k Keeper) SignedBlocksWindow(ctx sdk.Ctx) (res int64) {
 
 // MinSignedPerWindow - Downtime slashing threshold
 func (k Keeper) MinSignedPerWindow(ctx sdk.Ctx) (res int64) {
-	var minSignedPerWindow sdk.Dec
+	var minSignedPerWindow sdk.BigDec
 	k.Paramstore.Get(ctx, types.KeyMinSignedPerWindow, &minSignedPerWindow)
 	signedBlocksWindow := k.SignedBlocksWindow(ctx)
 
@@ -77,25 +77,25 @@ func (k Keeper) DowntimeJailDuration(ctx sdk.Ctx) (res time.Duration) {
 }
 
 // SlashFractionDoubleSign - Retrieve slash fraction for double signature
-func (k Keeper) SlashFractionDoubleSign(ctx sdk.Ctx) (res sdk.Dec) {
+func (k Keeper) SlashFractionDoubleSign(ctx sdk.Ctx) (res sdk.BigDec) {
 	k.Paramstore.Get(ctx, types.KeySlashFractionDoubleSign, &res)
 	return
 }
 
 // SlashFractionDowntime - Retrieve slash fraction time
-func (k Keeper) SlashFractionDowntime(ctx sdk.Ctx) (res sdk.Dec) {
+func (k Keeper) SlashFractionDowntime(ctx sdk.Ctx) (res sdk.BigDec) {
 	k.Paramstore.Get(ctx, types.KeySlashFractionDowntime, &res)
 	return
 }
 
 // RelaysToTokensMultiplier - Retrieve relay token multipler
-func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Ctx) sdk.Int {
+func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Ctx) sdk.BigInt {
 	var multiplier int64
 	k.Paramstore.Get(ctx, types.KeyRelaysToTokensMultiplier, &multiplier)
 	return sdk.NewInt(multiplier)
 }
 
-func (k Keeper) NodeReward(ctx sdk.Ctx, reward sdk.Int) (nodeReward sdk.Int, feesCollected sdk.Int) {
+func (k Keeper) NodeReward(ctx sdk.Ctx, reward sdk.BigInt) (nodeReward sdk.BigInt, feesCollected sdk.BigInt) {
 	// convert reward to dec
 	r := reward.ToDec()
 	// get the dao and proposer % ex DAO .1 or 10% Proposer .01 or 1%

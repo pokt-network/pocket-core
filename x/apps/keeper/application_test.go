@@ -47,7 +47,7 @@ func TestApplication_CalculateAppRelays(t *testing.T) {
 	tests := []struct {
 		name        string
 		application types.Application
-		want        sdk.Int
+		want        sdk.BigInt
 	}{
 		{
 			name:        "calculates App relays",

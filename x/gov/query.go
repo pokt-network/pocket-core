@@ -11,12 +11,7 @@ import (
 
 func QueryACL(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (acl types.ACL, err error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryACLParams{}
-	bz, err := cdc.MarshalBinaryBare(params)
-	if err != nil {
-		return nil, err
-	}
-	balanceBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryACL), bz)
+	balanceBz, _, err := cliCtx.Query(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryACL))
 	if err != nil {
 		return nil, err
 	}
@@ -39,32 +34,22 @@ func QueryDAOOwner(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (dao
 	return daoOwner, err
 }
 
-func QueryDAO(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (daoCoins sdk.Int, err error) {
+func QueryDAO(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (daoCoins sdk.BigInt, err error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryDAOParams{}
-	bz, err := cdc.MarshalBinaryBare(params)
+	daoPoolBytes, _, err := cliCtx.Query(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryDAO))
 	if err != nil {
-		return sdk.ZeroInt(), err
+		return sdk.BigInt{}, err
 	}
-	daoPoolBytes, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryDAO), bz)
-	if err != nil {
-		return sdk.Int{}, err
-	}
-	var daoPool sdk.Int
+	var daoPool sdk.BigInt
 	if err := cdc.UnmarshalJSON(daoPoolBytes, &daoPool); err != nil {
-		return sdk.Int{}, err
+		return sdk.BigInt{}, err
 	}
 	return daoPool, err
 }
 
 func QueryUpgrade(cdc *codec.Codec, tmNode rpcclient.Client, height int64) (upgrade types.Upgrade, err error) {
 	cliCtx := util.NewCLIContext(tmNode, nil, "").WithCodec(cdc).WithHeight(height)
-	params := types.QueryUpgradeParams{}
-	bz, err := cdc.MarshalBinaryBare(params)
-	if err != nil {
-		return upgrade, err
-	}
-	upgradeBz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUpgrade), bz)
+	upgradeBz, _, err := cliCtx.Query(fmt.Sprintf("custom/%s/%s", types.StoreKey, types.QueryUpgrade))
 	if err != nil {
 		return upgrade, err
 	}

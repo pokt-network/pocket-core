@@ -92,13 +92,15 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func processSelf(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.SessionHeader, evidenceType types.EvidenceType, tokens sdk.Int) {
+func processSelf(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.SessionHeader, evidenceType types.EvidenceType, tokens sdk.BigInt) {
 	// delete local evidence
 	if signer.Equals(k.GetSelfAddress(ctx)) {
 		err := types.DeleteEvidence(header, evidenceType)
 		if err != nil {
 			ctx.Logger().Error("Unable to delete evidence: " + err.Error())
 		}
-		types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()))
+		if !tokens.IsZero() {
+			types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()))
+		}
 	}
 }

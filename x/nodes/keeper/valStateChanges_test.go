@@ -108,7 +108,7 @@ func TestKeeper_StakeValidator(t *testing.T) {
 	type args struct {
 		ctx       sdk.Context
 		validator types.Validator
-		amount    sdk.Int
+		amount    sdk.BigInt
 	}
 
 	validator := getStakedValidator()
@@ -270,7 +270,7 @@ func TestKeeper_ValidateValidatorStaking(t *testing.T) {
 	type args struct {
 		ctx       sdk.Context
 		validator types.Validator
-		amount    sdk.Int
+		amount    sdk.BigInt
 	}
 
 	validator := getUnstakedValidator()

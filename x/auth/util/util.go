@@ -19,7 +19,7 @@ func CompleteAndBroadcastTxCLI(txBldr auth.TxBuilder, cliCtx CLIContext, msgs sd
 	// build and sign the transaction
 
 	if cliCtx.PrivateKey != nil {
-		txBytes, err := txBldr.BuildAndSign(cliCtx.FromAddress, cliCtx.PrivateKey, msgs, cliCtx.Codec.IsAfterUpgrade())
+		txBytes, err := txBldr.BuildAndSign(cliCtx.FromAddress, cliCtx.PrivateKey, msgs)
 		if err != nil {
 			return nil, err
 		}
@@ -31,7 +31,7 @@ func CompleteAndBroadcastTxCLI(txBldr auth.TxBuilder, cliCtx CLIContext, msgs sd
 
 		return &tx, nil
 	} else {
-		txBytes, err := txBldr.BuildAndSignWithKeyBase(cliCtx.FromAddress, cliCtx.Passphrase, msgs, cliCtx.Codec.IsAfterUpgrade())
+		txBytes, err := txBldr.BuildAndSignWithKeyBase(cliCtx.FromAddress, cliCtx.Passphrase, msgs)
 		if err != nil {
 			return nil, err
 		}

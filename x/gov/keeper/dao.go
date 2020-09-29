@@ -7,7 +7,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/gov/types"
 )
 
-func (k Keeper) DAOTransferFrom(ctx sdk.Ctx, owner, to sdk.Address, amount sdk.Int) sdk.Result {
+func (k Keeper) DAOTransferFrom(ctx sdk.Ctx, owner, to sdk.Address, amount sdk.BigInt) sdk.Result {
 	if !k.GetDAOOwner(ctx).Equals(owner) {
 		return sdk.ErrUnauthorized(fmt.Sprintf("non dao owner is trying to transfer from the dao %s", owner.String())).Result()
 	}
@@ -28,7 +28,7 @@ func (k Keeper) DAOTransferFrom(ctx sdk.Ctx, owner, to sdk.Address, amount sdk.I
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func (k Keeper) DAOBurn(ctx sdk.Ctx, owner sdk.Address, amount sdk.Int) sdk.Result {
+func (k Keeper) DAOBurn(ctx sdk.Ctx, owner sdk.Address, amount sdk.BigInt) sdk.Result {
 	if !k.GetDAOOwner(ctx).Equals(owner) {
 		return sdk.ErrUnauthorized(fmt.Sprintf("non dao owner is trying to burn from the dao %s", owner.String())).Result()
 	}
@@ -54,7 +54,7 @@ func (k Keeper) DAOBurn(ctx sdk.Ctx, owner sdk.Address, amount sdk.Int) sdk.Resu
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func (k Keeper) GetDAOTokens(ctx sdk.Ctx) sdk.Int {
+func (k Keeper) GetDAOTokens(ctx sdk.Ctx) sdk.BigInt {
 	return k.GetDAOAccount(ctx).GetCoins().AmountOf(sdk.DefaultStakeDenom)
 }
 

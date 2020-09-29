@@ -78,7 +78,7 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 	stakedValidator := getStakedValidator()
 
 	type expected struct {
-		tokens       sdk.Int
+		tokens       sdk.BigInt
 		validators   []types.Validator
 		errorMessage string
 	}
@@ -86,7 +86,7 @@ func TestRemoveStakedValidatorTokens(t *testing.T) {
 		name      string
 		validator types.Validator
 		hasError  bool
-		amount    sdk.Int
+		amount    sdk.BigInt
 		expected
 	}{
 		{
@@ -132,7 +132,7 @@ func TestRemoveDeleteFromStakingSet(t *testing.T) {
 		name       string
 		validators []types.Validator
 		panics     bool
-		amount     sdk.Int
+		amount     sdk.BigInt
 	}{
 		{
 			name:       "removes validators from set",
@@ -165,7 +165,7 @@ func TestGetValsIterator(t *testing.T) {
 		name       string
 		validators []types.Validator
 		panics     bool
-		amount     sdk.Int
+		amount     sdk.BigInt
 	}{
 		{
 			name:       "recieves a valid iterator",

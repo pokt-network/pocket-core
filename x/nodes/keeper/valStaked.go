@@ -70,7 +70,7 @@ func (k Keeper) deleteValidatorFromStakingSet(ctx sdk.Ctx, validator types.Valid
 }
 
 // removeValidatorTokens - Update the staked tokens of an existing validator, update the validators power index key
-func (k Keeper) removeValidatorTokens(ctx sdk.Ctx, v types.Validator, tokensToRemove sdk.Int) (types.Validator, error) {
+func (k Keeper) removeValidatorTokens(ctx sdk.Ctx, v types.Validator, tokensToRemove sdk.BigInt) (types.Validator, error) {
 	k.deleteValidatorFromStakingSet(ctx, v)
 	v, err := v.RemoveStakedTokens(tokensToRemove)
 	if err != nil {
@@ -97,6 +97,23 @@ func (k Keeper) getStakedValidators(ctx sdk.Ctx) types.Validators {
 			validators = append(validators, validator)
 			i++
 		}
+	}
+	return validators
+}
+
+// GetStakedValidators - Retreive StakedValidators
+func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
+	store := ctx.KVStore(k.storeKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.StakedValidatorsKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		validator, found := k.GetValidator(ctx, iterator.Value())
+		if !found {
+			ctx.Logger().Error(fmt.Errorf("cannot find validator from staking set: %v, at height %d\n", iterator.Value(), ctx.BlockHeight()).Error())
+			continue
+		}
+		validators = append(validators, validator)
 	}
 	return validators
 }

@@ -114,7 +114,7 @@ func TestKeeper_PrevStateValidatorsPower(t *testing.T) {
 		name      string
 		fields    fields
 		args      args
-		wantPower sdk.Int
+		wantPower sdk.BigInt
 	}{
 		{"Test PrevStateValidatorsPower", fields{keeper: keeper}, args{context}, sdk.ZeroInt()},
 	}
@@ -165,7 +165,7 @@ func TestKeeper_SetPrevStateValidatorsPower(t *testing.T) {
 	}
 	type args struct {
 		ctx   sdk.Context
-		power sdk.Int
+		power sdk.BigInt
 	}
 	context, _, keeper := createTestInput(t, true)
 

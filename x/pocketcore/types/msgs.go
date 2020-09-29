@@ -14,8 +14,8 @@ const (
 	MsgProofName = "proof"    // name for the proof message
 )
 
-// "GetFee" - Returns the fee (sdk.Int) of the messgae type
-func (msg MsgClaim) GetFee() sdk.Int {
+// "GetFee" - Returns the fee (sdk.BigInt) of the messgae type
+func (msg MsgClaim) GetFee() sdk.BigInt {
 	return sdk.NewInt(PocketFeeMap[msg.Type()])
 }
 
@@ -152,8 +152,8 @@ func (msg MsgProof) ToProto() MsgProtoProof {
 	}
 }
 
-// "GetFee" - Returns the fee (sdk.Int) of the messgae type
-func (msg MsgProof) GetFee() sdk.Int {
+// "GetFee" - Returns the fee (sdk.BigInt) of the messgae type
+func (msg MsgProof) GetFee() sdk.BigInt {
 	return sdk.NewInt(PocketFeeMap[msg.Type()])
 }
 

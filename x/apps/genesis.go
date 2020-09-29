@@ -78,7 +78,7 @@ func ValidateGenesis(data types.GenesisState) error {
 	return nil
 }
 
-func validateGenesisStateApplications(applications []types.Application, minimumStake sdk.Int) (err error) {
+func validateGenesisStateApplications(applications []types.Application, minimumStake sdk.BigInt) (err error) {
 	addrMap := make(map[string]bool, len(applications))
 	for i := 0; i < len(applications); i++ {
 		app := applications[i]

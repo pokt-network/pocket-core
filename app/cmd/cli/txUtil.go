@@ -21,7 +21,7 @@ import (
 )
 
 // SendTransaction - Deliver Transaction to node
-func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Int, fees int64, memo string) (*rpc.SendRawTxParams, error) {
+func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, memo string) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.In
 }
 
 // StakeNode - Deliver Stake message to node
-func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.Int, fees int64) (*rpc.SendRawTxParams, error) {
+func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func UnjailNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawT
 	}, nil
 }
 
-func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.Int, fees int64) (*rpc.SendRawTxParams, error) {
+func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -225,7 +225,7 @@ func UnstakeApp(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawT
 	}, nil
 }
 
-func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.Int, action, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
+func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.BigInt, action, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -333,6 +333,6 @@ func newTxBz(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, chainID s
 		return nil, err
 	}
 	s := authTypes.StdSignature{PublicKey: pubKey, Signature: sig}
-	tx := authTypes.NewTx(msg, fees, s, memo, entropy, cdc.IsAfterUpgrade())
+	tx := authTypes.NewTx(msg, fees, s, memo, entropy)
 	return auth.DefaultTxEncoder(cdc)(tx)
 }

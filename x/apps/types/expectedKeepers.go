@@ -9,7 +9,7 @@ import (
 type PosKeeper interface {
 	StakeDenom(ctx sdk.Ctx) (res string)
 	// GetStakedTokens total staking tokens supply which is staked
-	GetStakedTokens(ctx sdk.Ctx) sdk.Int
+	GetStakedTokens(ctx sdk.Ctx) sdk.BigInt
 }
 
 // AuthKeeper defines the expected supply Keeper (noalias)
@@ -55,7 +55,7 @@ type ApplicationSet interface {
 	// get a particular application by address
 	Application(sdk.Ctx, sdk.Address) appexported.ApplicationI
 	// total staked tokens within the application set
-	TotalTokens(sdk.Ctx) sdk.Int
+	TotalTokens(sdk.Ctx) sdk.BigInt
 	// jail a application
 	JailApplication(sdk.Ctx, sdk.Address)
 	// unjail a application

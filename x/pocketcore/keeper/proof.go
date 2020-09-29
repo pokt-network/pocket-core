@@ -159,13 +159,13 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	return servicerAddr, claim, nil
 }
 
-func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) (tokens sdk.Int, err sdk.Error) {
+func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) (tokens sdk.BigInt, err sdk.Error) {
 	// convert to value for switch consistency
 	l := proof.GetLeaf()
 	if reflect.ValueOf(l).Kind() == reflect.Ptr {
 		l = reflect.Indirect(reflect.ValueOf(l)).Interface().(pc.Proof)
 	}
-	switch proof.GetLeaf().(type) {
+	switch l.(type) {
 	case pc.RelayProof:
 		ctx.Logger().Info(fmt.Sprintf("reward coins to %s, for %d relays", claim.FromAddress.String(), claim.TotalProofs))
 		tokens = k.AwardCoinsForRelays(ctx, claim.TotalProofs, claim.FromAddress)
@@ -219,7 +219,7 @@ func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.S
 	return pc.PseudorandomSelection(sdk.NewInt(totalRelays), pc.Hash(r)).Int64(), nil
 }
 
-func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfChallenges sdk.Int) {
+func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfChallenges sdk.BigInt) {
 	ctx.Logger().Error(fmt.Sprintf("Replay Attack Detected: By %s, for %v proofs", address.String(), numberOfChallenges))
 	k.posKeeper.BurnForChallenge(ctx, numberOfChallenges.Mul(sdk.NewInt(k.ReplayAttackBurnMultiplier(ctx))), address)
 }

@@ -7,7 +7,7 @@ import (
 // GenesisState - all staking state that must be provided at genesis
 type GenesisState struct {
 	Params                   Params                          `json:"params" yaml:"params"`
-	PrevStateTotalPower      sdk.Int                         `json:"prevState_total_power" yaml:"prevState_total_power"`
+	PrevStateTotalPower      sdk.BigInt                      `json:"prevState_total_power" yaml:"prevState_total_power"`
 	PrevStateValidatorPowers []PrevStatePowerMapping         `json:"prevState_validator_powers" yaml:"prevState_validator_powers"`
 	Validators               []Validator                     `json:"validators" yaml:"validators"`
 	Exported                 bool                            `json:"exported" yaml:"exported"`

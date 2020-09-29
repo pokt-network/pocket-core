@@ -50,7 +50,7 @@ func (msg MsgBeginUnstake) Route() string { return RouterKey }
 func (msg MsgBeginUnstake) Type() string { return MsgUnstakeName }
 
 // GetFee get fee for msg
-func (msg MsgBeginUnstake) GetFee() sdk.Int {
+func (msg MsgBeginUnstake) GetFee() sdk.BigInt {
 	return sdk.NewInt(NodeFeeMap[msg.Type()])
 }
 
@@ -82,7 +82,7 @@ func (msg MsgUnjail) Route() string { return RouterKey }
 func (msg MsgUnjail) Type() string { return MsgUnjailName }
 
 // GetFee get fee for msg
-func (msg MsgUnjail) GetFee() sdk.Int {
+func (msg MsgUnjail) GetFee() sdk.BigInt {
 	return sdk.NewInt(NodeFeeMap[msg.Type()])
 }
 
@@ -120,7 +120,7 @@ func (msg MsgSend) Route() string { return RouterKey }
 func (msg MsgSend) Type() string { return MsgSendName }
 
 // GetFee get fee for msg
-func (msg MsgSend) GetFee() sdk.Int {
+func (msg MsgSend) GetFee() sdk.BigInt {
 	return sdk.NewInt(NodeFeeMap[msg.Type()])
 }
 
@@ -131,7 +131,7 @@ var _ codec.ProtoMarshaler = &MsgStake{}
 type MsgStake struct {
 	PublicKey  crypto.PublicKey `json:"public_key" yaml:"public_key"`
 	Chains     []string         `json:"chains" yaml:"chains"`
-	Value      sdk.Int          `json:"value" yaml:"value"`
+	Value      sdk.BigInt       `json:"value" yaml:"value"`
 	ServiceUrl string           `json:"service_url" yaml:"service_url"`
 }
 
@@ -217,11 +217,16 @@ func (msg MsgStake) Route() string { return RouterKey }
 func (msg MsgStake) Type() string { return MsgStakeName }
 
 // GetFee get fee for msg
-func (msg MsgStake) GetFee() sdk.Int {
+func (msg MsgStake) GetFee() sdk.BigInt {
 	return sdk.NewInt(NodeFeeMap[msg.Type()])
 }
 func (msg *MsgStake) Reset() {
 	*msg = MsgStake{}
+}
+
+func (msg *MsgStake) XXX_MessageName() string {
+	m := msg.ToProto()
+	return m.XXX_MessageName()
 }
 
 func (msg MsgStake) String() string {
@@ -235,8 +240,12 @@ func (msg *MsgStake) ProtoMessage() {
 
 // GetFee get fee for msg
 func (msg MsgStake) ToProto() MsgProtoStake {
+	var pkbz []byte
+	if msg.PublicKey != nil {
+		pkbz = msg.PublicKey.RawBytes()
+	}
 	return MsgProtoStake{
-		Publickey:  msg.PublicKey.RawBytes(),
+		Publickey:  pkbz,
 		Chains:     msg.Chains,
 		Value:      msg.Value,
 		ServiceUrl: msg.ServiceUrl,

@@ -25,7 +25,7 @@ const (
 type MsgStake struct {
 	PubKey crypto.PublicKey `json:"pubkey" yaml:"pubkey"`
 	Chains []string         `json:"chains" yaml:"chains"`
-	Value  sdk.Int          `json:"value" yaml:"value"`
+	Value  sdk.BigInt       `json:"value" yaml:"value"`
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
@@ -65,7 +65,7 @@ func (msg MsgStake) Route() string { return RouterKey }
 func (msg MsgStake) Type() string { return MsgAppStakeName }
 
 // GetFee get fee for msg
-func (msg MsgStake) GetFee() sdk.Int {
+func (msg MsgStake) GetFee() sdk.BigInt {
 	return sdk.NewInt(AppFeeMap[msg.Type()])
 }
 
@@ -89,6 +89,11 @@ func (msg *MsgStake) Size() int {
 	return m.Size()
 }
 
+func (msg *MsgStake) XXX_MessageName() string {
+	p := msg.ToProto()
+	return p.XXX_MessageName()
+}
+
 func (msg *MsgStake) Unmarshal(data []byte) error {
 	var m MsgProtoStake
 	err := m.Unmarshal(data)
@@ -101,8 +106,8 @@ func (msg *MsgStake) Unmarshal(data []byte) error {
 	}
 	*msg = MsgStake{
 		PubKey: pk,
-		Chains: msg.Chains,
-		Value:  msg.Value,
+		Chains: m.Chains,
+		Value:  m.Value,
 	}
 	return nil
 }
@@ -121,8 +126,12 @@ func (msg MsgStake) ProtoMessage() {
 }
 
 func (msg MsgStake) ToProto() MsgProtoStake {
+	var pkbz []byte
+	if msg.PubKey != nil {
+		pkbz = msg.PubKey.RawBytes()
+	}
 	return MsgProtoStake{
-		PubKey: msg.PubKey.RawBytes(),
+		PubKey: pkbz,
 		Chains: msg.Chains,
 		Value:  msg.Value,
 	}
@@ -156,7 +165,7 @@ func (msg MsgBeginUnstake) Route() string { return RouterKey }
 func (msg MsgBeginUnstake) Type() string { return MsgAppUnstakeName }
 
 // GetFee get fee for msg
-func (msg MsgBeginUnstake) GetFee() sdk.Int {
+func (msg MsgBeginUnstake) GetFee() sdk.BigInt {
 	return sdk.NewInt(AppFeeMap[msg.Type()])
 }
 
@@ -168,7 +177,7 @@ func (msg MsgUnjail) Route() string { return RouterKey }
 func (msg MsgUnjail) Type() string { return MsgAppUnjailName }
 
 // GetFee get fee for msg
-func (msg MsgUnjail) GetFee() sdk.Int {
+func (msg MsgUnjail) GetFee() sdk.BigInt {
 	return sdk.NewInt(AppFeeMap[msg.Type()])
 }
 

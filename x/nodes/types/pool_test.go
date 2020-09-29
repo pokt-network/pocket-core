@@ -8,7 +8,7 @@ import (
 
 func TestNewPool(t *testing.T) {
 	type args struct {
-		tokens sdk.Int
+		tokens sdk.BigInt
 	}
 	tests := []struct {
 		name string

@@ -12,7 +12,7 @@ import (
 )
 
 // create a decimal from a decimal string (ex. "1234.5678")
-func mustNewDecFromStr(t *testing.T, str string) (d Dec) {
+func mustNewDecFromStr(t *testing.T, str string) (d BigDec) {
 	d, err := NewDecFromStr(str)
 	require.NoError(t, err)
 	return d
@@ -32,10 +32,10 @@ func TestNewDecFromStr(t *testing.T) {
 	tests := []struct {
 		decimalStr string
 		expErr     bool
-		exp        Dec
+		exp        BigDec
 	}{
-		{"", true, Dec{}},
-		{"0.-75", true, Dec{}},
+		{"", true, BigDec{}},
+		{"0.-75", true, BigDec{}},
 		{"0", false, NewDec(0)},
 		{"1", false, NewDec(1)},
 		{"1.1", false, NewDecWithPrec(11, 1)},
@@ -47,12 +47,12 @@ func TestNewDecFromStr(t *testing.T) {
 			true, NewDecFromBigIntWithPrec(largeBigInt, 4)},
 		{"314460551102969314427823434337.1835",
 			false, NewDecFromBigIntWithPrec(largeBigInt, 4)},
-		{".", true, Dec{}},
+		{".", true, BigDec{}},
 		{".0", true, NewDec(0)},
 		{"1.", true, NewDec(1)},
-		{"foobar", true, Dec{}},
-		{"0.foobar", true, Dec{}},
-		{"0.foobar.", true, Dec{}},
+		{"foobar", true, BigDec{}},
+		{"0.foobar", true, BigDec{}},
+		{"0.foobar.", true, BigDec{}},
 	}
 
 	for tcIndex, tc := range tests {
@@ -78,7 +78,7 @@ func TestNewDecFromStr(t *testing.T) {
 
 func TestDecString(t *testing.T) {
 	tests := []struct {
-		d    Dec
+		d    BigDec
 		want string
 	}{
 		{NewDec(0), "0.000000000000000000"},
@@ -97,7 +97,7 @@ func TestDecString(t *testing.T) {
 
 func TestEqualities(t *testing.T) {
 	tests := []struct {
-		d1, d2     Dec
+		d1, d2     BigDec
 		gt, lt, eq bool
 	}{
 		{NewDec(0), NewDec(0), false, false, true},
@@ -134,18 +134,18 @@ func TestEqualities(t *testing.T) {
 
 func TestDecsEqual(t *testing.T) {
 	tests := []struct {
-		d1s, d2s []Dec
+		d1s, d2s []BigDec
 		eq       bool
 	}{
-		{[]Dec{NewDec(0)}, []Dec{NewDec(0)}, true},
-		{[]Dec{NewDec(0)}, []Dec{NewDec(1)}, false},
-		{[]Dec{NewDec(0)}, []Dec{}, false},
-		{[]Dec{NewDec(0), NewDec(1)}, []Dec{NewDec(0), NewDec(1)}, true},
-		{[]Dec{NewDec(1), NewDec(0)}, []Dec{NewDec(1), NewDec(0)}, true},
-		{[]Dec{NewDec(1), NewDec(0)}, []Dec{NewDec(0), NewDec(1)}, false},
-		{[]Dec{NewDec(1), NewDec(0)}, []Dec{NewDec(1)}, false},
-		{[]Dec{NewDec(1), NewDec(2)}, []Dec{NewDec(2), NewDec(4)}, false},
-		{[]Dec{NewDec(3), NewDec(18)}, []Dec{NewDec(1), NewDec(6)}, false},
+		{[]BigDec{NewDec(0)}, []BigDec{NewDec(0)}, true},
+		{[]BigDec{NewDec(0)}, []BigDec{NewDec(1)}, false},
+		{[]BigDec{NewDec(0)}, []BigDec{}, false},
+		{[]BigDec{NewDec(0), NewDec(1)}, []BigDec{NewDec(0), NewDec(1)}, true},
+		{[]BigDec{NewDec(1), NewDec(0)}, []BigDec{NewDec(1), NewDec(0)}, true},
+		{[]BigDec{NewDec(1), NewDec(0)}, []BigDec{NewDec(0), NewDec(1)}, false},
+		{[]BigDec{NewDec(1), NewDec(0)}, []BigDec{NewDec(1)}, false},
+		{[]BigDec{NewDec(1), NewDec(2)}, []BigDec{NewDec(2), NewDec(4)}, false},
+		{[]BigDec{NewDec(3), NewDec(18)}, []BigDec{NewDec(1), NewDec(6)}, false},
 	}
 
 	for tcIndex, tc := range tests {
@@ -156,10 +156,10 @@ func TestDecsEqual(t *testing.T) {
 
 func TestArithmetic(t *testing.T) {
 	tests := []struct {
-		d1, d2                                Dec
-		expMul, expMulTruncate                Dec
-		expQuo, expQuoRoundUp, expQuoTruncate Dec
-		expAdd, expSub                        Dec
+		d1, d2                                BigDec
+		expMul, expMulTruncate                BigDec
+		expQuo, expQuoRoundUp, expQuoTruncate BigDec
+		expAdd, expSub                        BigDec
 	}{
 		//  d1         d2         MUL    MulTruncate    QUO    QUORoundUp QUOTrunctate  ADD         SUB
 		{NewDec(0), NewDec(0), NewDec(0), NewDec(0), NewDec(0), NewDec(0), NewDec(0), NewDec(0), NewDec(0)},
@@ -217,7 +217,7 @@ func TestArithmetic(t *testing.T) {
 
 func TestBankerRoundChop(t *testing.T) {
 	tests := []struct {
-		d1  Dec
+		d1  BigDec
 		exp int64
 	}{
 		{mustNewDecFromStr(t, "0.25"), 0},
@@ -243,7 +243,7 @@ func TestBankerRoundChop(t *testing.T) {
 
 func TestTruncate(t *testing.T) {
 	tests := []struct {
-		d1  Dec
+		d1  BigDec
 		exp int64
 	}{
 		{mustNewDecFromStr(t, "0"), 0},
@@ -270,14 +270,14 @@ func TestTruncate(t *testing.T) {
 var aminoTestCdc = codec.NewLegacyAminoCodec()
 
 func TestDecMarshalJSON(t *testing.T) {
-	decimal := func(i int64) Dec {
+	decimal := func(i int64) BigDec {
 		d := NewDec(0)
 		d.i = new(big.Int).SetInt64(i)
 		return d
 	}
 	tests := []struct {
 		name    string
-		d       Dec
+		d       BigDec
 		want    string
 		wantErr bool // if wantErr = false, will also attempt unmarshaling
 	}{
@@ -294,7 +294,7 @@ func TestDecMarshalJSON(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.d.MarshalJSON()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Dec.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("BigDec.MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !tt.wantErr {
@@ -308,7 +308,7 @@ func TestDecMarshalJSON(t *testing.T) {
 }
 
 func TestZeroDeserializationJSON(t *testing.T) {
-	d := Dec{new(big.Int)}
+	d := BigDec{new(big.Int)}
 	err := aminoTestCdc.UnmarshalJSON([]byte(`"0"`), &d)
 	require.Nil(t, err)
 	err = cdc.UnmarshalJSON([]byte(`"{}"`), &d)
@@ -321,7 +321,7 @@ func TestSerializationText(t *testing.T) {
 	bz, err := d.Marshal()
 	require.NoError(t, err)
 
-	d2 := Dec{new(big.Int)}
+	d2 := BigDec{new(big.Int)}
 	err = d2.Unmarshal(bz)
 	require.NoError(t, err)
 	require.True(t, d.Equal(d2), "original: %v, unmarshalled: %v", d, d2)
@@ -333,20 +333,10 @@ func TestSerializationGocodecJSON(t *testing.T) {
 	bz, err := cdc.MarshalJSON(d)
 	require.NoError(t, err)
 
-	d2 := Dec{new(big.Int)}
+	d2 := BigDec{new(big.Int)}
 	err = cdc.UnmarshalJSON(bz, &d2)
 	require.NoError(t, err)
 	require.True(t, d.Equal(d2), "original: %v, unmarshalled: %v", d, d2)
-
-	dProto := d.ToProto()
-	bz, err = cdc.MarshalJSON(&dProto)
-	require.NoError(t, err)
-
-	var dProto2 DecProto
-
-	err = cdc.UnmarshalJSON(bz, &dProto2)
-	require.NoError(t, err)
-	require.True(t, dProto.Dec.Equal(dProto2.Dec), "original: %v, unmarshalled: %v", d, d2)
 }
 
 func TestSerializationGocodecBinary(t *testing.T) {
@@ -355,25 +345,16 @@ func TestSerializationGocodecBinary(t *testing.T) {
 	bz, err := cdc.LegacyMarshalBinaryLengthPrefixed(d)
 	require.NoError(t, err)
 
-	var d2 Dec
+	var d2 BigDec
 	err = cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, &d2)
 	require.NoError(t, err)
 	require.True(t, d.Equal(d2), "original: %v, unmarshalled: %v", d, d2)
-
-	dProto := d.ToProto()
-	bz, err = cdc.MarshalBinaryLengthPrefixed(&dProto)
-	require.NoError(t, err)
-
-	var dProto2 DecProto
-	err = cdc.UnmarshalBinaryLengthPrefixed(bz, &dProto2)
-	require.NoError(t, err)
-	require.True(t, dProto.Dec.Equal(dProto2.Dec), "original: %v, unmarshalled: %v", d, d2)
 }
 
 type testDEmbedStruct struct {
 	Field1 string `json:"f1"`
 	Field2 int    `json:"f2"`
-	Field3 Dec    `json:"f3"`
+	Field3 BigDec `json:"f3"`
 }
 
 // TODO make work for UnmarshalJSON
@@ -406,9 +387,9 @@ func TestStringOverflow(t *testing.T) {
 
 func TestDecMulInt(t *testing.T) {
 	tests := []struct {
-		sdkDec Dec
-		sdkInt Int
-		want   Dec
+		sdkDec BigDec
+		sdkInt BigInt
+		want   BigDec
 	}{
 		{NewDec(10), NewInt(2), NewDec(20)},
 		{NewDec(1000000), NewInt(100), NewDec(100000000)},
@@ -423,8 +404,8 @@ func TestDecMulInt(t *testing.T) {
 
 func TestDecCeil(t *testing.T) {
 	testCases := []struct {
-		input    Dec
-		expected Dec
+		input    BigDec
+		expected BigDec
 	}{
 		{NewDecWithPrec(1000000000000000, Precision), NewDec(1)},  // 0.001 => 1.0
 		{NewDecWithPrec(-1000000000000000, Precision), ZeroDec()}, // -0.001 => 0.0

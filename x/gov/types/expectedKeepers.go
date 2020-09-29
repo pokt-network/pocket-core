@@ -29,11 +29,11 @@ type AuthKeeper interface {
 }
 
 type PosKeeper interface {
-	RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address)
-	GetStakedTokens(ctx sdk.Ctx) sdk.Int
+	RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address)
+	GetStakedTokens(ctx sdk.Ctx) sdk.BigInt
 	Validator(ctx sdk.Ctx, addr sdk.Address) nodesExported.ValidatorI
-	TotalTokens(ctx sdk.Ctx) sdk.Int
-	BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address)
+	TotalTokens(ctx sdk.Ctx) sdk.BigInt
+	BurnForChallenge(ctx sdk.Ctx, challenges sdk.BigInt, address sdk.Address)
 	JailValidator(ctx sdk.Ctx, addr sdk.Address)
 	AllValidators(ctx sdk.Ctx) (validators []nodesExported.ValidatorI)
 	GetStakedValidators(ctx sdk.Ctx) (validators []nodesExported.ValidatorI)

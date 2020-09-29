@@ -50,6 +50,6 @@ func (k Keeper) EncodeSupply(supply exported.SupplyI) ([]byte, error) {
 
 func (k Keeper) DecodeSupply(bz []byte) (exported.SupplyI, error) {
 	var supply types.Supply
-	err := k.Cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, &supply)
+	err := k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &supply)
 	return supply, err
 }

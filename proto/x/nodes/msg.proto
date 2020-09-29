@@ -6,6 +6,7 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/pokt-network/pocket-core/x/nodes/types";
 
 message MsgProtoStake {
+	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
@@ -13,7 +14,7 @@ message MsgProtoStake {
 	bytes Publickey = 1 [(gogoproto.moretags) = "yaml:\"public_key\"", (gogoproto.jsontag) = "public_key"];
 	repeated string Chains = 2 [(gogoproto.moretags) = "yaml:\"chains\"",(gogoproto.jsontag) = "chains"];
 	string value           = 3 [
-		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int",
+		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
 		(gogoproto.nullable)   = false,
 		(gogoproto.jsontag) = "value",
 		(gogoproto.moretags) = "yaml:\"value\""];
@@ -21,6 +22,7 @@ message MsgProtoStake {
 }
 
 message MsgBeginUnstake {
+	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
@@ -33,6 +35,7 @@ message MsgBeginUnstake {
 }
 
 message MsgUnjail {
+	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
@@ -45,6 +48,7 @@ message MsgUnjail {
 }
 
 message MsgSend {
+	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 
@@ -60,7 +64,7 @@ message MsgSend {
 		(gogoproto.moretags) = "yaml:\"to_address\""
 	];
 	string amount           = 3 [
-		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int",
+		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
 		(gogoproto.nullable)   = false,
 		(gogoproto.jsontag) = "amount",
 		(gogoproto.moretags) = "yaml:\"amount\""];

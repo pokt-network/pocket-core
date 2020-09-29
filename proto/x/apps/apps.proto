@@ -13,7 +13,7 @@ option go_package = "github.com/pokt-network/pocket-core/x/apps/types";
 // delegation whose number of bond shares is based on the amount of coins
 // delegated divided by the current exchange rate. Voting power can be
 // calculated as total bonded shares multiplied by exchange rate.
-message ApplicationEncodable {
+message ProtoApplication {
   option (gogoproto.equal)            = true;
   option (gogoproto.goproto_getters)  = false;
 
@@ -22,7 +22,7 @@ message ApplicationEncodable {
     (gogoproto.jsontag) = "address",
     (gogoproto.moretags) = "yaml:\"address\""
   ];
-  string public_key = 2 [
+  bytes public_key = 2 [
     (gogoproto.jsontag) = "public_key",
     (gogoproto.moretags) = "yaml:\"public_key\""];
   bool   jailed           = 3[
@@ -36,12 +36,12 @@ message ApplicationEncodable {
     (gogoproto.jsontag) = "chains",
     (gogoproto.moretags) = "yaml:\"chains\""];
   string staked_tokens           = 6 [
-    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int",
+    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
     (gogoproto.nullable)   = false,
     (gogoproto.jsontag) = "tokens",
     (gogoproto.moretags) = "yaml:\"tokens\""];
   string max_relays           = 7 [
-    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int",
+    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
     (gogoproto.nullable)   = false,
     (gogoproto.jsontag) = "max_relays",
     (gogoproto.moretags) = "yaml:\"max_relays\""];
@@ -57,6 +57,6 @@ message Pool {
   option (gogoproto.description) = true;
   option (gogoproto.equal)       = true;
   string tokens       = 1 [
-    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.Int",
+    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
     (gogoproto.nullable)   = false];
 }

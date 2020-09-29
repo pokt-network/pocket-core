@@ -10,7 +10,7 @@ import (
 )
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
-func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) sdk.Int {
+func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
 	toNode, toFeeCollector := k.NodeReward(ctx, coins)
 	if toNode.IsPositive() {
@@ -53,7 +53,7 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 }
 
 // "mint" - takes an amount and mints it to the node staking pool, then sends the coins to the address
-func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Result {
+func (k Keeper) mint(ctx sdk.Ctx, amount sdk.BigInt, address sdk.Address) sdk.Result {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	mintErr := k.AccountKeeper.MintCoins(ctx, types.StakedPoolName, coins)
 	if mintErr != nil {
@@ -74,33 +74,23 @@ func (k Keeper) mint(ctx sdk.Ctx, amount sdk.Int, address sdk.Address) sdk.Resul
 
 // GetPreviousProposer - Retrieve the proposer public key for this block
 func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
-	a := sdk.AddressProto{}
 	store := ctx.KVStore(k.storeKey)
 	b, _ := store.Get(types.ProposerKey)
 	if b == nil {
 		k.Logger(ctx).Error("Previous proposer not set")
 		os.Exit(1)
 	}
-	if ctx.IsAfterUpgradeHeight() {
-		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &a)
-		return a.Address
-	} else {
-		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &addr)
-		return addr
-	}
+	_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &addr)
+	return addr
 
 }
 
 // SetPreviousProposer -  Store proposer public key for this block
 func (k Keeper) SetPreviousProposer(ctx sdk.Ctx, consAddr sdk.Address) {
-	a := sdk.AddressProto{Address: consAddr}
 	store := ctx.KVStore(k.storeKey)
-	if ctx.IsAfterUpgradeHeight() {
-		b, _ := k.Cdc.MarshalBinaryLengthPrefixed(&a)
-		_ = store.Set(types.ProposerKey, b)
-	} else {
-		b, _ := k.Cdc.MarshalBinaryLengthPrefixed(consAddr)
-		_ = store.Set(types.ProposerKey, b)
+	b, err := k.Cdc.MarshalBinaryLengthPrefixed(&consAddr)
+	if err != nil {
+		panic(err)
 	}
-
+	_ = store.Set(types.ProposerKey, b)
 }

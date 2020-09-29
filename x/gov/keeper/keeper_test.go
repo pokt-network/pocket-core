@@ -109,9 +109,9 @@ func TestSubspace(t *testing.T) {
 		{"uint16", uint16(1), uint16(0), new(uint16)},
 		{"uint32", uint32(1), uint32(0), new(uint32)},
 		{"uint64", uint64(1), uint64(0), new(uint64)},
-		{"int", sdk.NewInt(1), *new(sdk.Int), new(sdk.Int)},
+		{"int", sdk.NewInt(1), *new(sdk.BigInt), new(sdk.BigInt)},
 		{"uint", sdk.NewUint(1), *new(sdk.Uint), new(sdk.Uint)},
-		{"dec", sdk.NewDec(1), *new(sdk.Dec), new(sdk.Dec)},
+		{"dec", sdk.NewDec(1), *new(sdk.BigDec), new(sdk.BigDec)},
 		{"struct", s{1}, s{0}, new(s)},
 	}
 	table := sdk.NewKeyTable(
@@ -123,9 +123,9 @@ func TestSubspace(t *testing.T) {
 		[]byte("uint16"), uint16(0),
 		[]byte("uint32"), uint32(0),
 		[]byte("uint64"), uint64(0),
-		[]byte("int"), sdk.Int{},
+		[]byte("int"), sdk.BigInt{},
 		[]byte("uint"), sdk.Uint{},
-		[]byte("dec"), sdk.Dec{},
+		[]byte("dec"), sdk.BigDec{},
 		[]byte("struct"), s{},
 	)
 	store := prefix.NewStore(ctx.KVStore(key), []byte("test/"))

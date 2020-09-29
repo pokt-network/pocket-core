@@ -30,7 +30,7 @@ func (k Keeper) deleteApplicationFromStakingSet(ctx sdk.Ctx, application types.A
 }
 
 // removeApplicationTokens - Update the staked tokens of an existing application, update the applications power index key
-func (k Keeper) removeApplicationTokens(ctx sdk.Ctx, application types.Application, tokensToRemove sdk.Int) (types.Application, error) {
+func (k Keeper) removeApplicationTokens(ctx sdk.Ctx, application types.Application, tokensToRemove sdk.BigInt) (types.Application, error) {
 	ctx.Logger().Info("Removing Application Tokens, tokensToRemove: " + tokensToRemove.String() + " App Address: " + application.Address.String())
 	k.deleteApplicationFromStakingSet(ctx, application)
 	application, err := application.RemoveStakedTokens(tokensToRemove)

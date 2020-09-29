@@ -7,11 +7,11 @@ import (
 )
 
 type PosKeeper interface {
-	RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) sdk.Int
-	GetStakedTokens(ctx sdk.Ctx) sdk.Int
+	RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt
+	GetStakedTokens(ctx sdk.Ctx) sdk.BigInt
 	Validator(ctx sdk.Ctx, addr sdk.Address) nodesexported.ValidatorI
-	TotalTokens(ctx sdk.Ctx) sdk.Int
-	BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address)
+	TotalTokens(ctx sdk.Ctx) sdk.BigInt
+	BurnForChallenge(ctx sdk.Ctx, challenges sdk.BigInt, address sdk.Address)
 	JailValidator(ctx sdk.Ctx, addr sdk.Address)
 	AllValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
 	GetStakedValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
@@ -21,10 +21,10 @@ type PosKeeper interface {
 }
 
 type AppsKeeper interface {
-	GetStakedTokens(ctx sdk.Ctx) sdk.Int
+	GetStakedTokens(ctx sdk.Ctx) sdk.BigInt
 	Application(ctx sdk.Ctx, addr sdk.Address) appexported.ApplicationI
 	AllApplications(ctx sdk.Ctx) (applications []appexported.ApplicationI)
-	TotalTokens(ctx sdk.Ctx) sdk.Int
+	TotalTokens(ctx sdk.Ctx) sdk.BigInt
 	JailApplication(ctx sdk.Ctx, addr sdk.Address)
 }
 
@@ -33,5 +33,5 @@ type PocketKeeper interface {
 }
 
 type AuthKeeper interface {
-	GetFee(ctx sdk.Ctx, msg sdk.Msg) sdk.Int
+	GetFee(ctx sdk.Ctx, msg sdk.Msg) sdk.BigInt
 }

@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+	"github.com/tendermint/go-amino"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -16,7 +18,7 @@ func TestNewValidator(t *testing.T) {
 	type args struct {
 		addr          sdk.Address
 		consPubKey    crypto.PublicKey
-		tokensToStake sdk.Int
+		tokensToStake sdk.BigInt
 		chains        []string
 		serviceURL    string
 	}
@@ -58,7 +60,7 @@ func TestValidator_ABCIValidatorUpdate(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
@@ -118,7 +120,7 @@ func TestValidator_AddStakedTokens(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
@@ -128,7 +130,7 @@ func TestValidator_AddStakedTokens(t *testing.T) {
 	}
 
 	type args struct {
-		tokens sdk.Int
+		tokens sdk.BigInt
 	}
 	tests := []struct {
 		name   string
@@ -176,7 +178,7 @@ func TestValidator_ConsAddress(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
@@ -222,7 +224,7 @@ func TestValidator_ConsensusPower(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
@@ -276,7 +278,7 @@ func TestValidator_Equals(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
@@ -348,7 +350,7 @@ func TestValidator_GetAddress(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -395,7 +397,7 @@ func TestValidator_GetConsAddr(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
@@ -441,7 +443,7 @@ func TestValidator_GetConsPubKey(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 	var pub crypto.Ed25519PublicKey
@@ -487,7 +489,7 @@ func TestValidator_GetStatus(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -534,7 +536,7 @@ func TestValidator_GetTokens(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -547,7 +549,7 @@ func TestValidator_GetTokens(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   sdk.Int
+		want   sdk.BigInt
 	}{
 		{"Default Test", fields{
 			Address:                 sdk.Address(pub.Address()),
@@ -581,7 +583,7 @@ func TestValidator_IsJailed(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -628,7 +630,7 @@ func TestValidator_IsStaked(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -691,7 +693,7 @@ func TestValidator_IsUnstaked(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -754,7 +756,7 @@ func TestValidator_IsUnstaking(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -817,7 +819,7 @@ func TestValidator_PotentialConsensusPower(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -864,7 +866,7 @@ func TestValidator_RemoveStakedTokens(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -875,7 +877,7 @@ func TestValidator_RemoveStakedTokens(t *testing.T) {
 	}
 
 	type args struct {
-		tokens sdk.Int
+		tokens sdk.BigInt
 	}
 	tests := []struct {
 		name   string
@@ -937,7 +939,7 @@ func TestValidator_UpdateStatus(t *testing.T) {
 		ConsPubKey              crypto.PublicKey
 		Jailed                  bool
 		Status                  sdk.StakeStatus
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -1027,7 +1029,7 @@ func TestValidator_GetServiceURL(t *testing.T) {
 		Status                  sdk.StakeStatus
 		Chains                  []string
 		ServiceURL              string
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -1080,7 +1082,7 @@ func TestValidator_GetChains(t *testing.T) {
 		Status                  sdk.StakeStatus
 		Chains                  []string
 		ServiceURL              string
-		StakedTokens            sdk.Int
+		StakedTokens            sdk.BigInt
 		UnstakingCompletionTime time.Time
 	}
 
@@ -1120,6 +1122,187 @@ func TestValidator_GetChains(t *testing.T) {
 			}
 			if got := v.GetChains(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetChains() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidators_String(t *testing.T) {
+
+	var pub crypto.Ed25519PublicKey
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+
+	v := Validators{
+		Validator{
+			Address:                 sdk.Address(pub.Address()),
+			PublicKey:               pub,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			StakedTokens:            sdk.ZeroInt(),
+			Chains:                  []string{"0001"},
+			ServiceURL:              "https://www.google.com:443",
+			UnstakingCompletionTime: time.Unix(0, 0).UTC(),
+		},
+	}
+	tests := []struct {
+		name    string
+		v       Validators
+		wantOut string
+	}{
+		{"String Test", v, fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
+			"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v"+
+			"\n----",
+			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "https://www.google.com:443", []string{"0001"}, time.Unix(0, 0).UTC(),
+		)},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			if gotOut := tt.v.String(); gotOut != tt.wantOut {
+				t.Errorf("String() = \n%v \nwant \b%v", gotOut, tt.wantOut)
+			}
+		})
+	}
+}
+
+func TestValidator_MarshalJSON(t *testing.T) {
+	type fields struct {
+		Address                 sdk.Address
+		ConsPubKey              crypto.PublicKey
+		Jailed                  bool
+		Status                  sdk.StakeStatus
+		Chains                  []string
+		ServiceURL              string
+		StakedTokens            sdk.BigInt
+		UnstakingCompletionTime time.Time
+	}
+
+	var pub crypto.Ed25519PublicKey
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+
+	want, _ := amino.MarshalJSON(Validator{
+		Address:                 sdk.Address(pub.Address()),
+		PublicKey:               pub,
+		Jailed:                  false,
+		Status:                  sdk.Staked,
+		Chains:                  []string{"0001"},
+		ServiceURL:              "www.pokt.network",
+		StakedTokens:            sdk.ZeroInt(),
+		UnstakingCompletionTime: time.Time{},
+	})
+
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []byte
+		wantErr bool
+	}{
+		{"Marshall JSON Test", fields{
+			Address:                 sdk.Address(pub.Address()),
+			ConsPubKey:              pub,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{"0001"},
+			ServiceURL:              "www.pokt.network",
+			StakedTokens:            sdk.ZeroInt(),
+			UnstakingCompletionTime: time.Time{},
+		}, want, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := Validator{
+				Address:                 tt.fields.Address,
+				PublicKey:               tt.fields.ConsPubKey,
+				Jailed:                  tt.fields.Jailed,
+				Status:                  tt.fields.Status,
+				Chains:                  tt.fields.Chains,
+				ServiceURL:              tt.fields.ServiceURL,
+				StakedTokens:            tt.fields.StakedTokens,
+				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
+			}
+			got, err := v.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MarshalJSON() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidator_UnmarshalJSON(t *testing.T) {
+	type fields struct {
+		Address                 sdk.Address
+		ConsPubKey              crypto.PublicKey
+		Jailed                  bool
+		Status                  sdk.StakeStatus
+		Chains                  []string
+		ServiceURL              string
+		StakedTokens            sdk.BigInt
+		UnstakingCompletionTime time.Time
+	}
+
+	var pub crypto.Ed25519PublicKey
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+
+	marshal, _ := amino.MarshalJSON(Validator{
+		Address:                 sdk.Address(pub.Address()),
+		PublicKey:               pub,
+		Jailed:                  false,
+		Status:                  sdk.Staked,
+		Chains:                  []string{"0001"},
+		ServiceURL:              "www.pokt.network",
+		StakedTokens:            sdk.ZeroInt(),
+		UnstakingCompletionTime: time.Time{},
+	})
+
+	//amino.UnmarshalJSON(marshal,Validator{})
+
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{"Unmarshal JSON Test", fields{
+			Address:                 sdk.Address(pub.Address()),
+			ConsPubKey:              pub,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{"0001"},
+			ServiceURL:              "www.pokt.network",
+			StakedTokens:            sdk.ZeroInt(),
+			UnstakingCompletionTime: time.Time{},
+		}, args{data: marshal}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &Validator{
+				Address:                 tt.fields.Address,
+				PublicKey:               tt.fields.ConsPubKey,
+				Jailed:                  tt.fields.Jailed,
+				Status:                  tt.fields.Status,
+				Chains:                  tt.fields.Chains,
+				ServiceURL:              tt.fields.ServiceURL,
+				StakedTokens:            tt.fields.StakedTokens,
+				UnstakingCompletionTime: tt.fields.UnstakingCompletionTime,
+			}
+			if err := v.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
+				t.Errorf("UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

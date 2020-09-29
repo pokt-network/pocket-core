@@ -13,14 +13,14 @@ const (
 )
 
 type Pool struct {
-	Tokens sdk.Int
+	Tokens sdk.BigInt
 }
 
 // Tokens - tracking staked token supply
 type StakingPool Pool
 
 // NewPool creates a new Tokens instance used for queries
-func NewPool(tokens sdk.Int) Pool {
+func NewPool(tokens sdk.BigInt) Pool {
 	return Pool{
 		Tokens: tokens,
 	}

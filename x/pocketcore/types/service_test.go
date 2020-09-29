@@ -285,7 +285,7 @@ type MockValidatorI interface {
 	GetStatus() sdk.StakeStatus     // status of the validator
 	GetAddress() sdk.Address        // operator address to receive/return validators coins
 	GetPublicKey() crypto.PublicKey // validation consensus pubkey
-	GetTokens() sdk.Int             // validation tokens
+	GetTokens() sdk.BigInt          // validation tokens
 	GetConsensusPower() int64       // validation power in tendermint
 	GetChains() []string
 }
@@ -343,11 +343,11 @@ func (m MockPosKeeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (vali
 	return
 }
 
-func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.Int, address sdk.Address) sdk.Int {
+func (m MockPosKeeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
 	panic("implement me")
 }
 
-func (m MockPosKeeper) GetStakedTokens(ctx sdk.Ctx) sdk.Int {
+func (m MockPosKeeper) GetStakedTokens(ctx sdk.Ctx) sdk.BigInt {
 	panic("implement me")
 }
 
@@ -360,11 +360,11 @@ func (m MockPosKeeper) Validator(ctx sdk.Ctx, addr sdk.Address) exported.Validat
 	return nil
 }
 
-func (m MockPosKeeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
+func (m MockPosKeeper) TotalTokens(ctx sdk.Ctx) sdk.BigInt {
 	panic("implement me")
 }
 
-func (m MockPosKeeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.Int, address sdk.Address) {
+func (m MockPosKeeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.BigInt, address sdk.Address) {
 	panic("implement me")
 }
 

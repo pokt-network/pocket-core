@@ -34,7 +34,7 @@ func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	store := ctx.KVStore(k.storeKey)
 	bz, err := types.MarshalApplication(k.Cdc, application)
 	if err != nil {
-		k.Logger(ctx).Error("could not marshal application object")
+		k.Logger(ctx).Error("could not marshal application object", err.Error())
 		os.Exit(1)
 	}
 	_ = store.Set(types.KeyForAppByAllApps(application.Address), bz)
@@ -122,7 +122,7 @@ func (k Keeper) IterateAndExecuteOverApps(
 	}
 }
 
-func (k Keeper) CalculateAppRelays(ctx sdk.Ctx, application types.Application) sdk.Int {
+func (k Keeper) CalculateAppRelays(ctx sdk.Ctx, application types.Application) sdk.BigInt {
 	stakingAdjustment := sdk.NewDec(k.StakingAdjustment(ctx))
 	participationRate := sdk.NewDec(1)
 	baseRate := sdk.NewInt(k.BaselineThroughputStakeRate(ctx))

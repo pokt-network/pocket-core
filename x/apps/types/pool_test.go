@@ -10,8 +10,8 @@ import (
 func TestPool_NewPool(t *testing.T) {
 	tests := []struct {
 		name string
-		args sdk.Int
-		want sdk.Int
+		args sdk.BigInt
+		want sdk.BigInt
 	}{
 		{
 			"returns pool with tokens",
