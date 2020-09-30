@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/crypto"
@@ -50,4 +51,81 @@ func TestBuildSignMultisig(t *testing.T) {
 
 	cleanup()
 	stopCli()
+}
+
+func TestAminoToProtoTryCatch(t *testing.T) {
+	cdc := memCodec()
+	priv := crypto.GenerateEd25519PrivKey()
+	pk := priv.PublicKey()
+	account := types2.BaseAccount{
+		Address: sdk.Address(pk.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin("pokt", sdk.NewInt(20))),
+		PubKey:  pk,
+	}
+	// let's try amino bytes in the world state
+	aminoBz, err := cdc.LegacyMarshalBinaryBare(&account)
+	if err != nil {
+		t.Fatalf("unable to marshal legacy: %s", err)
+	}
+	// ensure the marshaller works well
+	aminoBz2, err := cdc.MarshalBinaryBare(&account)
+	if err != nil {
+		t.Fatalf("unable to marshal: %s", err)
+	}
+	assert.Equal(t, aminoBz, aminoBz2)
+	// set upgrade after true
+	cdc.SetAfterUpgradeMod(true)
+	var res types2.BaseAccount
+	// unmarshal amino bz after the upgrade
+	err = cdc.UnmarshalBinaryBare(aminoBz, &res)
+	if err != nil {
+		t.Fatalf("unable to unmarshalBinaryBare: %s", err)
+	}
+	assert.Equal(t, account, res)
+	// reset upgrade after
+	cdc.SetAfterUpgradeMod(false)
+	// again with binary length prefix
+	aminoBz, err = cdc.LegacyMarshalBinaryLengthPrefixed(&account)
+	if err != nil {
+		t.Fatalf("unable to marshal legacy: %s", err)
+	}
+	// ensure the marshaller works well
+	aminoBz2, err = cdc.MarshalBinaryLengthPrefixed(&account)
+	if err != nil {
+		t.Fatalf("unable to marshal: %s", err)
+	}
+	assert.Equal(t, aminoBz, aminoBz2)
+	res = types2.BaseAccount{}
+	// set upgrade after true
+	cdc.SetAfterUpgradeMod(true)
+	// unmarshal amino bz after the upgrade
+	err = cdc.UnmarshalBinaryLengthPrefixed(aminoBz, &res)
+	if err != nil {
+		t.Fatalf("unable to unmarshalbinarylengthprefix: %s", err)
+	}
+	assert.Equal(t, account, res)
+	// lets mix up some pointers shall we?
+	// resset upgrade after
+	cdc.SetAfterUpgradeMod(false)
+	// let's try amino bytes in the world state
+	aminoBz, err = cdc.LegacyMarshalBinaryBare(account)
+	if err != nil {
+		t.Fatalf("unable to marshal legacy: %s", err)
+	}
+	// ensure the marshaller works well
+	aminoBz2, err = cdc.MarshalBinaryBare(&account)
+	if err != nil {
+		t.Fatalf("unable to marshal: %s", err)
+	}
+	assert.Equal(t, aminoBz, aminoBz2)
+	// set upgrade after true
+	res = types2.BaseAccount{}
+	// set upgrade after true
+	cdc.SetAfterUpgradeMod(true)
+	// unmarshal amino bz after the upgrade
+	err = cdc.UnmarshalBinaryBare(aminoBz, &res)
+	if err != nil {
+		t.Fatalf("unable to unmarshal mixed pointers: %s", err)
+	}
+	assert.Equal(t, res, account)
 }

@@ -78,15 +78,14 @@ func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}) error {
 	if !ok {
 		if cdc.afterUpgradeMod {
 			return NotProtoCompatibleInterfaceError
-		} else {
-			return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
-		}
-	} else {
-		if cdc.afterUpgradeMod {
-			return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
 		}
 		return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
 	}
+	err := cdc.protoCdc.UnmarshalBinaryBare(bz, p)
+	if err == nil {
+		return nil
+	}
+	return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
 }
 
 func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}) error {
@@ -94,15 +93,14 @@ func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}) erro
 	if !ok {
 		if cdc.afterUpgradeMod {
 			return NotProtoCompatibleInterfaceError
-		} else {
-			return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
-		}
-	} else {
-		if cdc.afterUpgradeMod {
-			return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
 		}
 		return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
 	}
+	err := cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
+	if err == nil {
+		return nil
+	}
+	return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
 }
 
 func (cdc *Codec) ProtoMarshalBinaryBare(o ProtoMarshaler) ([]byte, error) {
