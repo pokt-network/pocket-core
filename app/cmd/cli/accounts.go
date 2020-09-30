@@ -478,7 +478,6 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	},
 }
 
-// importCmd represents the import command
 var newMultiPublicKey = &cobra.Command{
 	Use:   "create-multi-public <ordered-comma-separated-hex-pubkeys>",
 	Short: "create a multisig public key",
@@ -503,7 +502,7 @@ var newMultiPublicKey = &cobra.Command{
 
 var buildMultisig = &cobra.Command{
 	Use:   "build-MS-Tx <your-signer-address> <json-message> <ordered-comma-separated-hex-pubkeys> <chainID> <fees>",
-	Short: "build and sign a multisic tx",
+	Short: "build and sign a multisig tx",
 	Args:  cobra.ExactArgs(5),
 	Long:  `build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -536,7 +535,7 @@ var buildMultisig = &cobra.Command{
 
 var signMS = &cobra.Command{
 	Use:   "sign-ms-tx <your-signer-address> <hex-amino-stdtx> <ordered-comma-separated-hex-pubkeys> <chainID>",
-	Short: "sign a multisic tx",
+	Short: "sign a multisig tx",
 	Long:  `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object`,
 	Args:  cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -563,7 +562,7 @@ var signMS = &cobra.Command{
 
 var signNexMS = &cobra.Command{
 	Use:   "sign-ms-next <your-signer-address> <hex-amino-stdtx> <chainID>",
-	Short: "sign a multisic tx",
+	Short: "sign a multisig tx",
 	Long: `sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
 NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.`,
 	Args: cobra.ExactArgs(3),
