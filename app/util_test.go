@@ -2,8 +2,9 @@ package app
 
 import (
 	"fmt"
-	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 	"testing"
+
+	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -15,7 +16,7 @@ import (
 )
 
 func TestBuildSignMultisig(t *testing.T) {
-	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, kb, cleanup := NewInMemoryTendermintNodeAmino(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	kp2, err := kb.Create("test")

@@ -24,11 +24,8 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/spf13/cobra"
-<<<<<<< HEAD
 	config2 "github.com/tendermint/tendermint/config"
-=======
 	cryptoamino "github.com/tendermint/tendermint/crypto/encoding/amino"
->>>>>>> Clean Commit With All changes for #1077
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
 	cmn "github.com/tendermint/tendermint/libs/os"
