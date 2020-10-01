@@ -3,7 +3,6 @@ package app
 
 import (
 	"encoding/hex"
-	"fmt"
 	"math/rand"
 	"strings"
 	"testing"
@@ -555,7 +554,11 @@ func TestClaimTx(t *testing.T) {
 		*upgrades
 	}{
 		{name: "claim tx from amino with amino codec ", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		{name: "claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}}, // TODO: FULL PROT SCENARIO
+		<<<<<<< HEAD
+		====== =
+	{name: "claim tx from an amino with proto codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
+		>>>>>>> add scenarios to claim and challenge tests
+	{name: "claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}}, // TODO: FULL PROT SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -600,13 +603,11 @@ func TestClaimTx(t *testing.T) {
 			_, _, cleanup := tc.memoryNodeFn(t, genBz)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 			res := <-evtChan
-			// fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 				t.Fatal("claim message was not received first")
 			}
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 			res = <-evtChan
-			// fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 				t.Fatal("proof message was not received afterward")
 			}
@@ -627,7 +628,11 @@ func TestClaimTxChallenge(t *testing.T) {
 		*upgrades
 	}{
 		{name: "challenge a claim tx from amino with amino codec ", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		{name: "challenge a claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}}, // TODO: FULL PROT SCENARIO
+		<<<<<<< HEAD
+		====== =
+	{name: "challenge a claim tx from an amino with proto codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
+		>>>>>>> add scenarios to claim and challenge tests
+	{name: "challenge a claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}}, // TODO: FULL PROT SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -639,21 +644,17 @@ func TestClaimTxChallenge(t *testing.T) {
 			_, _, cleanup := tc.memoryNodeFn(t, genBz)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 			res := <-evtChan // Wait for tx
-			fmt.Println("first tx")
 			if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 				t.Fatal("claim message was not received first")
 			}
 
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 			res = <-evtChan // Wait for tx
-			fmt.Println("second tx")
-			// fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 				t.Fatal("proof message was not received afterward")
 			}
 			cleanup()
 			stopCli()
-			fmt.Println("cleaned")
 		})
 	}
 }
