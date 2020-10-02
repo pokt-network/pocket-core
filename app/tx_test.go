@@ -554,12 +554,9 @@ func TestClaimTx(t *testing.T) {
 		*upgrades
 	}{
 		{name: "claim tx from amino with amino codec ", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		<<<<<<< HEAD
-		====== =
-	{name: "claim tx from an amino with proto codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
-		>>>>>>> add scenarios to claim and challenge tests
-	{name: "claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}}, // TODO: FULL PROT SCENARIO
-	}
+		{name: "claim tx from an amino with proto codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
+		{name: "claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}}} // TODO: FULL PROT SCENARIO
+
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			genBz, _, validators, app := fiveValidatorsOneAppGenesis()
@@ -628,11 +625,8 @@ func TestClaimTxChallenge(t *testing.T) {
 		*upgrades
 	}{
 		{name: "challenge a claim tx from amino with amino codec ", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		<<<<<<< HEAD
-		====== =
-	{name: "challenge a claim tx from an amino with proto codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
-		>>>>>>> add scenarios to claim and challenge tests
-	{name: "challenge a claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}}, // TODO: FULL PROT SCENARIO
+		{name: "challenge a claim tx from an amino with proto codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
+		{name: "challenge a claim tx from a proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}}, // TODO: FULL PROT SCENARIO
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {

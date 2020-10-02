@@ -11,10 +11,9 @@ const (
 )
 
 var (
+	ClaimLen = len(ClaimKey)
 	ClaimKey = []byte{0x02} // key for pending claims
 )
-
-var ClaimLen = len(ClaimKey)
 
 // "KeyForClaim" - Generates the key for the claim object for the state store
 func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
@@ -26,7 +25,7 @@ func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceTy
 	if err := AddressVerification(addr.String()); err != nil {
 		return nil, err
 	}
-	// validate the evidence type
+	// validate the GOBEvidence type
 	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
 		return nil, NewInvalidEvidenceErr(ModuleName)
 	}
@@ -48,9 +47,9 @@ func KeyForClaims(addr sdk.Address) ([]byte, error) {
 	return append(ClaimKey, addr.Bytes()...), nil
 }
 
-// "KeyForEvidence" - Generates the key for evidence
+// "KeyForEvidence" - Generates the key for GOBEvidence
 func KeyForEvidence(header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
-	// validate the evidence type
+	// validate the GOBEvidence type
 	if evidenceType != RelayEvidence && evidenceType != ChallengeEvidence {
 		return nil, NewInvalidEvidenceErr(ModuleName)
 	}

@@ -59,7 +59,7 @@ func (msg MsgClaim) ValidateBasic() sdk.Error {
 	if msg.MerkleRoot.Range.Lower != 0 {
 		return NewInvalidRootError(ModuleName)
 	}
-	// ensure non zero evidence
+	// ensure non zero GOBEvidence
 	if msg.EvidenceType == 0 {
 		return NewNoEvidenceTypeErr(ModuleName)
 	}
@@ -92,7 +92,7 @@ func (msg MsgClaim) IsEmpty() bool {
 type MsgProof struct {
 	MerkleProof  MerkleProof  `json:"merkle_proofs"` // the merkleProof needed to verify the proofs
 	Leaf         Proof        `json:"leaf"`          // the needed to verify the Proof
-	EvidenceType EvidenceType `json:"evidence_type"` // the type of evidence
+	EvidenceType EvidenceType `json:"evidence_type"` // the type of GOBEvidence
 }
 
 var _ codec.ProtoMarshaler = &MsgProof{}
