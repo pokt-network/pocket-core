@@ -303,7 +303,7 @@ func executeHTTPRequest(payload, url, userAgent string, basicAuth BasicAuth, met
 		}
 	}
 	// execute the request
-	resp, err := (&http.Client{Timeout: GetRPCTimeout() * time.Millisecond}).Do(req)
+	resp, err := (&http.Client{Timeout: globalRPCTimeout * time.Millisecond}).Do(req)
 	if err != nil {
 		return "", err
 	}

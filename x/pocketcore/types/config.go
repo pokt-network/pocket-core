@@ -38,6 +38,10 @@ func FlushSessionCache() {
 	if err != nil {
 		fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
 	}
+	err = globalEvidenceCache.FlushToDB()
+	if err != nil {
+		fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
+	}
 }
 
 func GetRPCTimeout() time.Duration {

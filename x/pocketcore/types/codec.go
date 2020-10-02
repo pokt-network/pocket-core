@@ -27,6 +27,8 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterStructure(RelayResponse{}, "pocketcore/relay_response")
 	cdc.RegisterStructure(RelayProof{}, "pocketcore/relay_proof")
 	cdc.RegisterStructure(ChallengeProofInvalidData{}, "pocketcore/challenge_proof_invalid_data")
+	cdc.RegisterStructure(ProofI_RelayProof{}, "pocketcore/proto_relay_proofI")
+	cdc.RegisterStructure(ProofI_ChallengeProof{}, "pocketcore/proto_challenge_proofI")
 	cdc.RegisterStructure(ProtoEvidence{}, "pocketcore/evidence_persisted")
 	cdc.RegisterStructure(nodesTypes.Validator{}, "pos/Validator") // todo does this really need to depend on nodes/types
 	cdc.RegisterInterface("x.pocketcore.Proof", (*Proof)(nil), &RelayProof{}, &ChallengeProofInvalidData{})
