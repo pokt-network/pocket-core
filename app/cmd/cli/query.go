@@ -617,7 +617,7 @@ var queryNodeClaim = &cobra.Command{
 			height = 0 // latest
 		} else {
 			var err error
-			height, err = strconv.Atoi(args[4])
+			height, err = strconv.Atoi(args[5])
 			if err != nil {
 				fmt.Println(err)
 				return
