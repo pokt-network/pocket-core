@@ -202,6 +202,7 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 		datadir = home + FS + DefaultDDName
 	}
 	c := DefaultConfig(datadir)
+	c.TendermintConfig.P2P.AllowDuplicateIP = true
 	// read from ccnfig file
 	configFilepath := datadir + FS + ConfigDirName + FS + ConfigFileName
 	if _, err := os.Stat(configFilepath); os.IsNotExist(err) {
