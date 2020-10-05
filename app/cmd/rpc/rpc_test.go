@@ -5,9 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/pocket-core/crypto"
-	rand2 "github.com/tendermint/tendermint/libs/rand"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -16,6 +13,12 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	sdk "github.com/pokt-network/pocket-core/types"
+
+	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/pocket-core/crypto"
+	rand2 "github.com/tendermint/tendermint/libs/rand"
 
 	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 
@@ -41,6 +44,8 @@ const (
 func TestRPC_QueryHeight(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	sdk.UpgradeHeight = 2
+
 	<-evtChan // Wait for block
 	q := newQueryRequest("height", nil)
 	rec := httptest.NewRecorder()
@@ -53,17 +58,31 @@ func TestRPC_QueryHeight(t *testing.T) {
 	assert.NotEmpty(t, height.Height)
 	assert.Equal(t, int64(1), height.Height)
 
+	<-evtChan // Wait for block
+	q = newQueryRequest("height", nil)
+	rec = httptest.NewRecorder()
+	Height(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	var height2 queryHeightResponse
+	err = json.Unmarshal([]byte(resp), &height2)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, height2.Height)
+	assert.Equal(t, int64(2), height2.Height)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryBlock(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	<-evtChan // Wait for block
+
 	var params = HeightParams{
 		Height: 1,
 	}
+
+	<-evtChan // Wait for block
 	q := newQueryRequest("block", newBody(params))
 	rec := httptest.NewRecorder()
 	Block(rec, q, httprouter.Params{})
@@ -75,11 +94,24 @@ func TestRPC_QueryBlock(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, blk.Block.Height)
 
+	<-evtChan // Wait for block
+	q = newQueryRequest("block", newBody(params))
+	rec = httptest.NewRecorder()
+	Block(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	var blk2 core_types.ResultBlock
+	err = memCodec().UnmarshalJSON([]byte(resp), &blk2)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, blk2.Block.Height)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryTX(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -106,14 +138,29 @@ func TestRPC_QueryTX(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, resTX.Height)
 
+	memCLI, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	q = newQueryRequest("tx", newBody(params))
+	rec = httptest.NewRecorder()
+	Tx(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	var resTX2 core_types.ResultTx
+	err = json.Unmarshal([]byte(resp), &resTX2)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, resTX2.Height)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryAccountTXs(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+
 	<-evtChan // Wait for block
 	var err error
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
@@ -143,11 +190,26 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	assert.NotEmpty(t, resTXs.Txs)
 	assert.NotZero(t, resTXs.TotalCount)
 
+	memCLI, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	q = newQueryRequest("accounttxs", newBody(params))
+	rec = httptest.NewRecorder()
+	AccountTxs(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	var resTXs2 core_types.ResultTxSearch
+	unmarshalErr = json.Unmarshal([]byte(resp), &resTXs2)
+	assert.Nil(t, unmarshalErr)
+	assert.NotEmpty(t, resTXs2.Txs)
+	assert.NotZero(t, resTXs2.TotalCount)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryBlockTXs(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -192,11 +254,26 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	assert.NotEmpty(t, resTXs.Txs)
 	assert.NotZero(t, resTXs.TotalCount)
 
+	memCLI, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	heightQ = newQueryRequest("blocktxs", newBody(heightParams))
+	heightRec = httptest.NewRecorder()
+	BlockTxs(heightRec, heightQ, httprouter.Params{})
+	heightResp = getJSONResponse(heightRec)
+	assert.NotNil(t, heightResp)
+	assert.NotEmpty(t, heightResp)
+	var resTXs2 core_types.ResultTxSearch
+	unmarshalErr = json.Unmarshal([]byte(heightResp), &resTXs2)
+	assert.Nil(t, unmarshalErr)
+	assert.NotEmpty(t, resTXs2.Txs)
+	assert.NotZero(t, resTXs2.TotalCount)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryBalance(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
@@ -219,12 +296,29 @@ func TestRPC_QueryBalance(t *testing.T) {
 	err = json.Unmarshal([]byte(resp), &b)
 	assert.Nil(t, err)
 	assert.NotZero(t, b.Balance)
+	<-evtChan // Wait for blockk
+	params = HeightAndAddrParams{
+		Height:  2,
+		Address: cb.GetAddress().String(),
+	}
+	q = newQueryRequest("balance", newBody(params))
+	rec = httptest.NewRecorder()
+	Balance(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
+	var b2 queryBalanceResponse
+	err = json.Unmarshal([]byte(resp), &b2)
+	assert.Nil(t, err)
+	assert.NotZero(t, b2.Balance)
 
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryAccount(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan
@@ -241,11 +335,19 @@ func TestRPC_QueryAccount(t *testing.T) {
 	resp := getJSONResponse(rec)
 	assert.Regexp(t, "upokt", string(resp))
 
+	<-evtChan
+	q = newQueryRequest("account", newBody(params))
+	rec = httptest.NewRecorder()
+	Account(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.Regexp(t, "upokt", string(resp))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryNodes(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
@@ -268,11 +370,20 @@ func TestRPC_QueryNodes(t *testing.T) {
 	address := cb.GetAddress().String()
 	assert.True(t, strings.Contains(body, address))
 
+	<-evtChan // Wait for block
+	q = newQueryRequest("nodes", newBody(params))
+	rec = httptest.NewRecorder()
+	Nodes(rec, q, httprouter.Params{})
+	body = rec.Body.String()
+	address = cb.GetAddress().String()
+	assert.True(t, strings.Contains(body, address))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryNode(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
@@ -292,11 +403,25 @@ func TestRPC_QueryNode(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.True(t, strings.Contains(rec.Body.String(), cb.GetAddress().String()))
 
+	<-evtChan // Wait for block
+	params = HeightAndAddrParams{
+		Height:  2,
+		Address: cb.GetAddress().String(),
+	}
+	q = newQueryRequest("node", newBody(params))
+	rec = httptest.NewRecorder()
+	Node(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), cb.GetAddress().String()))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryApp(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	gBZ, _, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -313,11 +438,25 @@ func TestRPC_QueryApp(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String()))
 
+	<-evtChan // Wait for block
+	params = HeightAndAddrParams{
+		Height:  2,
+		Address: app.GetAddress().String(),
+	}
+	q = newQueryRequest("app", newBody(params))
+	rec = httptest.NewRecorder()
+	App(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), app.GetAddress().String()))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryApps(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	gBZ, _, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -337,11 +476,28 @@ func TestRPC_QueryApps(t *testing.T) {
 	address := app.GetAddress().String()
 	assert.True(t, strings.Contains(body, address))
 
+	<-evtChan // Wait for block
+	params = HeightAndApplicaitonOptsParams{
+		Height: 2,
+		Opts: types3.QueryApplicationsWithOpts{
+			StakingStatus: types.Staked,
+			Page:          1,
+			Limit:         10000,
+		},
+	}
+	q = newQueryRequest("apps", newBody(params))
+	rec = httptest.NewRecorder()
+	Apps(rec, q, httprouter.Params{})
+	body = rec.Body.String()
+	address = app.GetAddress().String()
+	assert.True(t, strings.Contains(body, address))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryNodeParams(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -357,11 +513,24 @@ func TestRPC_QueryNodeParams(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.True(t, strings.Contains(rec.Body.String(), "max_validators"))
 
+	<-evtChan // Wait for block
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("nodeparams", newBody(params))
+	rec = httptest.NewRecorder()
+	NodeParams(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), "max_validators"))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryAppParams(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -377,11 +546,24 @@ func TestRPC_QueryAppParams(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.True(t, strings.Contains(rec.Body.String(), "max_applications"))
 
+	<-evtChan // Wait for block
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("appparams", newBody(params))
+	rec = httptest.NewRecorder()
+	AppParams(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), "max_applications"))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryPocketParams(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -397,11 +579,24 @@ func TestRPC_QueryPocketParams(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.True(t, strings.Contains(rec.Body.String(), "chains"))
 
+	<-evtChan
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("pocketparams", newBody(params))
+	rec = httptest.NewRecorder()
+	PocketParams(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(rec.Body.String(), "chains"))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QuerySupportedChains(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -416,10 +611,23 @@ func TestRPC_QuerySupportedChains(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.True(t, strings.Contains(resp, dummyChainsHash))
 
+	<-evtChan // Wait for block
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("supportedchains", newBody(params))
+	rec = httptest.NewRecorder()
+	SupportedChains(rec, q, httprouter.Params{})
+	resp = getResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(resp, dummyChainsHash))
+
 	cleanup()
 	stopCli()
 }
 func TestRPC_QuerySupply(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -439,11 +647,29 @@ func TestRPC_QuerySupply(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotZero(t, supply.Total)
 
+	<-evtChan // Wait for block
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("supply", newBody(params))
+	rec = httptest.NewRecorder()
+	Supply(rec, q, httprouter.Params{})
+
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
+	var supply2 querySupplyResponse
+	err = json.Unmarshal([]byte(resp), &supply2)
+	assert.Nil(t, err)
+	assert.NotZero(t, supply2.Total)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryDAOOwner(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -460,11 +686,24 @@ func TestRPC_QueryDAOOwner(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.True(t, strings.Contains(string(resp), cb.GetAddress().String()))
 
+	<-evtChan // Wait for block
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("DAOOwner", newBody(params))
+	rec = httptest.NewRecorder()
+	DAOOwner(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(string(resp), cb.GetAddress().String()))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryUpgrade(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -479,11 +718,24 @@ func TestRPC_QueryUpgrade(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.True(t, strings.Contains(string(resp), "2.0.0"))
 
+	<-evtChan // Wait for block
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("Upgrade", newBody(params))
+	rec = httptest.NewRecorder()
+	Upgrade(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.True(t, strings.Contains(string(resp), "2.0.0"))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPCQueryACL(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -497,11 +749,23 @@ func TestRPCQueryACL(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp)
 
+	<-evtChan // Wait for block
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("ACL", newBody(params))
+	rec = httptest.NewRecorder()
+	ACL(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPCQueryAllParams(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -512,6 +776,17 @@ func TestRPCQueryAllParams(t *testing.T) {
 	rec := httptest.NewRecorder()
 	AllParams(rec, q, httprouter.Params{})
 	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
+	<-evtChan // Wait for block
+	params = HeightParams{
+		Height: 2,
+	}
+	q = newQueryRequest("allparams", newBody(params))
+	rec = httptest.NewRecorder()
+	AllParams(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp)
 
@@ -581,6 +856,7 @@ func TestRPC_RelayCORS(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	sdk.UpgradeHeight = 2
 	//kb := getInMemoryKeybase()
 	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
@@ -591,6 +867,13 @@ func TestRPC_RelayCORS(t *testing.T) {
 	rec := httptest.NewRecorder()
 	Relay(rec, q, httprouter.Params{})
 	validateResponseCORSHeaders(t, rec.Result().Header)
+
+	<-evtChan // Wait for block
+	q = newCORSRequest("relay", newBody(""))
+	rec = httptest.NewRecorder()
+	Relay(rec, q, httprouter.Params{})
+	validateResponseCORSHeaders(t, rec.Result().Header)
+
 	cleanup()
 	stopCli()
 }
@@ -599,6 +882,7 @@ func TestRPC_DispatchCORS(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	sdk.UpgradeHeight = 2
 	//kb := getInMemoryKeybase()
 	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
@@ -609,6 +893,12 @@ func TestRPC_DispatchCORS(t *testing.T) {
 	rec := httptest.NewRecorder()
 	Dispatch(rec, q, httprouter.Params{})
 	validateResponseCORSHeaders(t, rec.Result().Header)
+
+	<-evtChan // Wait for block
+	q = newCORSRequest("dispatch", newBody(""))
+	rec = httptest.NewRecorder()
+	Dispatch(rec, q, httprouter.Params{})
+	validateResponseCORSHeaders(t, rec.Result().Header)
 	cleanup()
 	stopCli()
 }
@@ -617,11 +907,12 @@ func TestRPC_Relay(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	sdk.UpgradeHeight = 2
+
 	kb := getInMemoryKeybase()
 	genBZ, _, validators, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
 	// setup relay endpoint
-	defer gock.Off()
 	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
 	expectedResponse := "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"
 	gock.New(dummyChainsURL).
@@ -666,6 +957,24 @@ func TestRPC_Relay(t *testing.T) {
 		panic(err)
 	}
 	relay.Proof.Signature = hex.EncodeToString(sig)
+	relay2 := pocketTypes.Relay{
+		Payload: payload,
+		Meta:    pocketTypes.RelayMeta{BlockHeight: 5}, // todo race condition here
+		Proof: pocketTypes.RelayProof{
+			Entropy:            32598345349034519,
+			SessionBlockHeight: 1,
+			ServicerPubKey:     validators[0].PublicKey.RawString(),
+			Blockchain:         dummyChainsHash,
+			Token:              aat,
+			Signature:          "",
+		},
+	}
+	relay2.Proof.RequestHash = relay2.RequestHashString()
+	sig2, err := appPrivateKey.Sign(relay2.Proof.Hash())
+	if err != nil {
+		panic(err)
+	}
+	relay2.Proof.Signature = hex.EncodeToString(sig2)
 	// setup the query
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -677,11 +986,31 @@ func TestRPC_Relay(t *testing.T) {
 	err = json.Unmarshal(resp, &response)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResponse, response.Response)
+	gock.Off()
+
+	<-evtChan // Wait for block
+	gock.New(dummyChainsURL).
+		Post("").
+		BodyString(expectedRequest).
+		Reply(200).
+		BodyString(expectedResponse)
+
+	q2 := newClientRequest("relay", newBody(relay2))
+	rec2 := httptest.NewRecorder()
+	Relay(rec2, q2, httprouter.Params{})
+	resp = getJSONResponse(rec2)
+	var response2 RPCRelayResponse
+	err = json.Unmarshal(resp, &response2)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResponse, response2.Response)
+	gock.Off()
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_Dispatch(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	kb := getInMemoryKeybase()
 	genBZ, _, validators, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
@@ -707,12 +1036,26 @@ func TestRPC_Dispatch(t *testing.T) {
 	for _, validator := range validators {
 		assert.Regexp(t, validator.Address.String(), rawResp)
 	}
+
+	<-evtChan // Wait for block
+	q = newClientRequest("dispatch", newBody(key))
+	rec = httptest.NewRecorder()
+	Dispatch(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	rawResp = string(resp)
+	assert.Regexp(t, key.ApplicationPubKey, rawResp)
+	assert.Regexp(t, key.Chain, rawResp)
+
+	for _, validator := range validators {
+		assert.Regexp(t, validator.Address.String(), rawResp)
+	}
 	cleanup()
 	stopCli()
 
 }
 
 func TestRPC_RawTX(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -727,6 +1070,18 @@ func TestRPC_RawTX(t *testing.T) {
 			FromAddress: cb.GetAddress(),
 			ToAddress:   kp.GetAddress(),
 			Amount:      types.NewInt(1),
+		},
+		pk,
+		rand2.Int64(),
+		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))))
+	assert.Nil(t, err)
+
+	_ = memCodecMod(true)
+	txBz2, err := auth.DefaultTxEncoder(memCodec())(authTypes.NewTestTx(types.Context{}.WithChainID("pocket-test"),
+		&types2.MsgSend{
+			FromAddress: cb.GetAddress(),
+			ToAddress:   kp.GetAddress(),
+			Amount:      types.NewInt(2),
 		},
 		pk,
 		rand2.Int64(),
@@ -748,11 +1103,28 @@ func TestRPC_RawTX(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, uint32(0), response.Code)
 
+	<-evtChan // Wait for block
+	params = SendRawTxParams{
+		Addr:        cb.GetAddress().String(),
+		RawHexBytes: hex.EncodeToString(txBz2),
+	}
+	q2 := newClientRequest("rawtx", newBody(params))
+	rec2 := httptest.NewRecorder()
+	SendRawTx(rec2, q2, httprouter.Params{})
+	resp2 := getResponse(rec2)
+	assert.Nil(t, err)
+	assert.NotNil(t, resp2)
+	var response2 types.TxResponse
+	err = memCodec().UnmarshalJSON([]byte(resp2), &response2)
+	assert.Nil(t, err)
+	assert.True(t, strings.Contains(response2.Logs.String(), `"success":true`))
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryNodeClaims(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan
@@ -767,11 +1139,23 @@ func TestRPC_QueryNodeClaims(t *testing.T) {
 	rec := httptest.NewRecorder()
 	NodeClaims(rec, q, httprouter.Params{})
 	getJSONResponse(rec)
+
+	<-evtChan
+	params = PaginatedHeightAndAddrParams{
+		Height: 2,
+		Addr:   cb.GetAddress().String(),
+	}
+	q = newQueryRequest("nodeclaims", newBody(params))
+	rec = httptest.NewRecorder()
+	NodeClaims(rec, q, httprouter.Params{})
+	getJSONResponse(rec)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_QueryNodeClaim(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan
@@ -790,11 +1174,27 @@ func TestRPC_QueryNodeClaim(t *testing.T) {
 	rec := httptest.NewRecorder()
 	NodeClaim(rec, q, httprouter.Params{})
 	getJSONResponse(rec)
+
+	<-evtChan
+	params = QueryNodeReceiptParam{
+		Address:      cb.GetAddress().String(),
+		Blockchain:   "0001",
+		AppPubKey:    cb.PublicKey.RawString(),
+		SBlockHeight: 1,
+		Height:       0,
+		ReceiptType:  "relay",
+	}
+	q = newQueryRequest("nodeclaim", newBody(params))
+	rec = httptest.NewRecorder()
+	NodeClaim(rec, q, httprouter.Params{})
+	getJSONResponse(rec)
+
 	cleanup()
 	stopCli()
 }
 
 func TestRPC_Challenge(t *testing.T) {
+	sdk.UpgradeHeight = 2
 	kb := getInMemoryKeybase()
 	genBZ, keys, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
@@ -812,6 +1212,16 @@ func TestRPC_Challenge(t *testing.T) {
 	rawResp := string(resp)
 	assert.Equal(t, rec.Code, 200)
 	assert.Contains(t, rawResp, "success")
+
+	<-evtChan // Wait for block
+	q = newClientRequest("challenge", newBody(key))
+	rec = httptest.NewRecorder()
+	Challenge(rec, q, httprouter.Params{})
+	resp = getJSONResponse(rec)
+	rawResp = string(resp)
+	assert.Equal(t, rec.Code, 200)
+	assert.Contains(t, rawResp, "success")
+
 	cleanup()
 	stopCli()
 }
