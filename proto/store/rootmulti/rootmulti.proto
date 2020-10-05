@@ -40,10 +40,3 @@ message MultiStoreProofOp {
 	bytes key = 1;
 	MultiStoreProof proof = 2 [(gogoproto.jsontag) = "proof"];
 }
-
-message Version {
-	option (gogoproto.equal)            = true;
-	option (gogoproto.goproto_stringer) = true;
-
-	int64 version =1;
-}
