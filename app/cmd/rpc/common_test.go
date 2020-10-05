@@ -2,11 +2,12 @@ package rpc
 
 import (
 	"context"
-	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"io"
 	"os"
 	"testing"
 	"time"
+
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 
 	"github.com/tendermint/tendermint/rpc/client/http"
 
@@ -206,6 +207,22 @@ func memCodec() *codec.Codec {
 	return memCDC
 }
 
+func memCodecMod(upgrade bool) *codec.Codec {
+	if memCDC == nil {
+		memCDC = codec.NewCodec(types2.NewInterfaceRegistry())
+		module.NewBasicManager(
+			apps.AppModuleBasic{},
+			auth.AppModuleBasic{},
+			gov.AppModuleBasic{},
+			nodes.AppModuleBasic{},
+			pocket.AppModuleBasic{},
+		).RegisterCodec(memCDC)
+		sdk.RegisterCodec(memCDC)
+		crypto.RegisterAmino(memCDC.AminoCodec().Amino)
+	}
+	memCDC.SetAfterUpgradeMod(upgrade)
+	return memCDC
+}
 func getInMemoryTMClient() client.Client {
 	if memCLI == nil || !memCLI.IsRunning() {
 		memCLI, _ = http.New(defaultTMURI, "/websocket")
