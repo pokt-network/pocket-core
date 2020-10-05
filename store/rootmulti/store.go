@@ -2,6 +2,7 @@ package rootmulti
 
 import (
 	"fmt"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"io"
 	"strings"
 
@@ -630,22 +631,22 @@ func (si StoreInfo) Hash() []byte {
 // Misc.
 
 func getLatestVersion(db dbm.DB) int64 {
+	var latest sdk.Int64
 	latestBytes, _ := db.Get([]byte(latestVersionKey))
 	if latestBytes == nil {
 		return 0
 	}
-	v := Version{}
-	err := cdc.UnmarshalBinaryLengthPrefixed(latestBytes, &v)
+	err := cdc.UnmarshalBinaryLengthPrefixed(latestBytes, &latest)
 	if err != nil {
 		panic(err)
 	}
 
-	return v.Version
+	return int64(latest)
 }
 
 // Set the latest version.
 func setLatestVersion(batch dbm.Batch, version int64) {
-	v := Version{version}
+	v := sdk.Int64(version)
 	latestBytes, _ := cdc.MarshalBinaryLengthPrefixed(&v)
 	batch.Set([]byte(latestVersionKey), latestBytes)
 }
