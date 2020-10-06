@@ -1,6 +1,6 @@
 ---
 name: FAQ
-about: Request a feature for Pocket Core
+about: A frequently asked question of Pocket Core
 title: "FAQ: [TITLE OF FAQ ASKED AS A QUESTION]"
 labels: FAQ
 assignees: ''
