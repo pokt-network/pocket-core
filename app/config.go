@@ -178,13 +178,13 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, altruism bool) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	// init the keyfiles
 	InitKeyfiles()
 	// init cache
-	InitPocketCoreConfig()
+	InitPocketCoreConfig(altruism)
 	// init genesis
 	InitGenesis(genesisType)
 	// init the tendermint node
@@ -370,8 +370,8 @@ func InitKeyfiles() {
 	}
 }
 
-func InitPocketCoreConfig() {
-	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName)
+func InitPocketCoreConfig(altruism bool) {
+	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName, altruism)
 	types.InitClientBlockAllowance(GlobalConfig.PocketConfig.ClientBlockSyncAllowance)
 	types.InitJSONSorting(GlobalConfig.PocketConfig.JSONSortRelayResponses)
 	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
