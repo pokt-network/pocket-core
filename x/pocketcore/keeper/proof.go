@@ -51,6 +51,10 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 		}
 		// get the merkle proof object for the pseudorandom index
 		mProof, leaf := evidence.GenerateMerkleProof(int(index))
+		if !mProof.Validate(claim.MerkleRoot, leaf, claim.TotalProofs) {
+			ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
+			continue
+		}
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProof{}, n, kp, k)
 		if err != nil {
