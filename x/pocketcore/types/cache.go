@@ -77,7 +77,8 @@ func (cs *CacheStorage) Seal(key []byte, object CacheObject) (cacheObject CacheO
 	if len(bz) == 0 {
 		return nil, false
 	}
-	cs.Cache.Remove(hex.EncodeToString(key))
+	keyString := hex.EncodeToString(key)
+	cs.Cache.Remove(keyString)
 	res, err := object.Unmarshal(bz)
 	if err != nil {
 		return nil, false
@@ -89,6 +90,7 @@ func (cs *CacheStorage) Seal(key []byte, object CacheObject) (cacheObject CacheO
 	}
 	// not in cache, so search database
 	cs.DB.Set(key, sealedBz)
+	cs.Cache.Add(keyString, sealed)
 	return sealed, true
 }
 
