@@ -37,6 +37,19 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
 			continue
 		}
+		if ctx.BlockHeight()-claim.SessionBlockHeight > 32 { // arbitrary block height patch
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+			if err != nil {
+				ctx.Logger().Info(fmt.Sprintf("unable to delete evidence that is older than 32 blocks: %s", err.Error()))
+			}
+			continue
+		}
+		if !evidence.IsSealed() {
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+			if err != nil {
+				ctx.Logger().Info(fmt.Sprintf("evidence is not sealed, could cause a relay leak so ignoring: %s", err.Error()))
+			}
+		}
 		// get the session context
 		sessionCtx, err := ctx.PrevCtx(claim.SessionBlockHeight)
 		if err != nil {
@@ -71,55 +84,55 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 
 func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.Address, claim pc.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the claim
-	addr := proof.GetSigner()
+	servicerAddr = proof.GetSigner()
 	// get the claim for the address
-	claim, found := k.GetClaim(ctx, addr, proof.Leaf.SessionHeader(), proof.EvidenceType)
+	claim, found := k.GetClaim(ctx, servicerAddr, proof.Leaf.SessionHeader(), proof.EvidenceType)
 	// if the claim is not found for this claim
 	if !found {
-		return nil, pc.MsgClaim{}, pc.NewClaimNotFoundError(pc.ModuleName)
+		return servicerAddr, claim, pc.NewClaimNotFoundError(pc.ModuleName)
 	}
 	// get the session context
 	sessionCtx, err := ctx.PrevCtx(claim.SessionBlockHeight)
 	if err != nil {
-		return nil, pc.MsgClaim{}, sdk.ErrInternal(err.Error())
+		return servicerAddr, claim, sdk.ErrInternal(err.Error())
 	}
 	// validate the proof
 	ctx.Logger().Info(fmt.Sprintf("Generate psuedorandom proof with %d proofs, at session height of %d, for app: %s", claim.TotalProofs, claim.SessionBlockHeight, claim.ApplicationPubKey))
 	reqProof, err := k.getPseudorandomIndex(ctx, claim.TotalProofs, claim.SessionHeader, sessionCtx)
 	if err != nil {
-		return nil, pc.MsgClaim{}, sdk.ErrInternal(err.Error())
+		return servicerAddr, claim, sdk.ErrInternal(err.Error())
 	}
 	// if the required proof message index does not match the leaf node index
 	if reqProof != int64(proof.MerkleProof.TargetIndex) {
-		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
+		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate level count on claim by total relays
 	levelCount := len(proof.MerkleProof.HashRanges)
 	if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
-		return nil, pc.MsgClaim{}, pc.NewInvalidProofsError(pc.ModuleName)
+		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate number of proofs
 	if minProofs := k.MinimumNumberOfProofs(sessionCtx); claim.TotalProofs < minProofs {
-		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
+		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// validate the merkle proofs
 	isValid := proof.MerkleProof.Validate(claim.MerkleRoot, proof.Leaf, claim.TotalProofs)
 	// if is not valid for other reasons
 	if !isValid {
-		return nil, pc.MsgClaim{}, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
+		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// get the application
 	application, found := k.GetAppFromPublicKey(sessionCtx, claim.ApplicationPubKey)
 	if !found {
-		return nil, pc.MsgClaim{}, pc.NewAppNotFoundError(pc.ModuleName)
+		return servicerAddr, claim, pc.NewAppNotFoundError(pc.ModuleName)
 	}
 	// validate the proof depending on the type of proof it is
 	er := proof.Leaf.Validate(application.GetChains(), int(k.SessionNodeCount(sessionCtx)), claim.SessionBlockHeight)
 	if er != nil {
-		return nil, pc.MsgClaim{}, er
+		return nil, claim, er
 	}
 	// return the needed info to the handler
-	return addr, claim, nil
+	return servicerAddr, claim, nil
 }
 
 func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) (tokens sdk.Int, err sdk.Error) {

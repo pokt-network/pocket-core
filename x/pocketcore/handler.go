@@ -50,6 +50,11 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	// validate the claim claim
 	addr, claim, err := k.ValidateProof(ctx, proof)
 	if err != nil {
+		if err.Code() == types.CodeInvalidMerkleVerifyError && !claim.IsEmpty(){
+			// delete local evidence
+			processSelf(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
+			return err.Result()
+		}
 		if err.Code() == types.CodeReplayAttackError && !claim.IsEmpty() {
 			// delete local evidence
 			processSelf(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())

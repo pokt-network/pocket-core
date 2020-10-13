@@ -68,8 +68,20 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 			}
 			continue
 		}
+		key, err := evidence.Key()
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("unable to generate the key for the claim:\n%s", err.Error()))
+			return
+		}
+		e, ok := pc.SealEvidence(key)
+		if !ok {
+			ctx.Logger().Info(fmt.Sprintf("unable to seal claim for %s blockchain, so will not send", evidence.SessionHeader.Chain))
+			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
+		}
 		// generate the merkle root for this evidence
-		root := evidence.GenerateMerkleRoot()
+		root := e.GenerateMerkleRoot()
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgClaim{}, n, kp, k)
 		if err != nil {
