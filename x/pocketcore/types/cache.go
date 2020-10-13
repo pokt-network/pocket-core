@@ -72,18 +72,22 @@ func (cs *CacheStorage) Get(key []byte, object CacheObject) (interface{}, bool) 
 func (cs *CacheStorage) Seal(key []byte, object CacheObject) (cacheObject CacheObject, isOK bool) {
 	cs.l.Lock()
 	defer cs.l.Unlock()
-	// not in cache, so search database
-	bz := cs.DB.Get(key)
-	if len(bz) == 0 {
-		return nil, false
-	}
 	keyString := hex.EncodeToString(key)
-	cs.Cache.Remove(keyString)
-	res, err := object.Unmarshal(bz)
-	if err != nil {
-		return nil, false
+	co, found := cs.Cache.Get(keyString)
+	if !found {
+		var err error
+		// not in cache, so search database
+		bz := cs.DB.Get(key)
+		if len(bz) == 0 {
+			return nil, false
+		}
+		co, err = object.Unmarshal(bz)
+		if err != nil {
+			return nil, false
+		}
 	}
-	sealed := res.Seal()
+	cs.Cache.Remove(keyString)
+	sealed := co.Seal()
 	sealedBz, err := sealed.Marshal()
 	if err != nil {
 		return nil, false
