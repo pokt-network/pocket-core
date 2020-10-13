@@ -63,6 +63,7 @@ type evidence struct {
 	NumOfProofs   int64        `json:"num_of_proofs"` // the total number of proofs in the evidence
 	Proofs        []Proof      `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
 	EvidenceType  EvidenceType `json:"evidence_type"`
+	Sealed        bool         `json:"sealed"`
 }
 
 var _ CacheObject = Evidence{} // satisfies the cache object interface
@@ -78,6 +79,7 @@ func (e Evidence) Marshal() ([]byte, error) {
 		NumOfProofs:   e.NumOfProofs,
 		Proofs:        e.Proofs,
 		EvidenceType:  e.EvidenceType,
+		Sealed:        e.Sealed,
 	}
 	return ModuleCdc.MarshalBinaryBare(ep)
 }
@@ -98,7 +100,8 @@ func (e Evidence) Unmarshal(b []byte) (CacheObject, error) {
 		SessionHeader: ep.SessionHeader,
 		NumOfProofs:   ep.NumOfProofs,
 		Proofs:        ep.Proofs,
-		EvidenceType:  ep.EvidenceType}
+		EvidenceType:  ep.EvidenceType,
+		Sealed:        ep.Sealed}
 	return evidence, nil
 }
 
