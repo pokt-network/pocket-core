@@ -30,6 +30,8 @@ type CacheObject interface {
 	Marshal() ([]byte, error)
 	Unmarshal(b []byte) (CacheObject, error)
 	Key() ([]byte, error)
+	Seal() CacheObject
+	IsSealed() bool
 }
 
 // "Init" - Initializes a cache storage object
@@ -67,18 +69,43 @@ func (cs *CacheStorage) Get(key []byte, object CacheObject) (interface{}, bool) 
 	return res, true
 }
 
-// "Set" - Sets the KV pair in cache and db
-func (cs *CacheStorage) Set(key []byte, val CacheObject) {
-	if cs.Cache.Len() == cs.Cache.Cap() {
-		err := cs.FlushToDB()
-		if err != nil {
-			fmt.Printf("cache storage cannot be flushed to database (in set): %s", err.Error())
-		}
-	}
+func (cs *CacheStorage) Seal(key []byte, object CacheObject) (cacheObject CacheObject, isOK bool) {
 	cs.l.Lock()
 	defer cs.l.Unlock()
-	// add to cache
-	cs.Cache.Add(hex.EncodeToString(key), val)
+	// not in cache, so search database
+	bz := cs.DB.Get(key)
+	if len(bz) == 0 {
+		return nil, false
+	}
+	cs.Cache.Remove(hex.EncodeToString(key))
+	res, err := object.Unmarshal(bz)
+	if err != nil {
+		return nil, false
+	}
+	sealed := res.Seal()
+	sealedBz, err := sealed.Marshal()
+	if err != nil {
+		return nil, false
+	}
+	// not in cache, so search database
+	cs.DB.Set(key, sealedBz)
+	return sealed, true
+}
+
+// "Set" - Sets the KV pair in cache and db
+func (cs *CacheStorage) Set(key []byte, val CacheObject) {
+	if !val.IsSealed() {
+		if cs.Cache.Len() == cs.Cache.Cap() {
+			err := cs.FlushToDB()
+			if err != nil {
+				fmt.Printf("cache storage cannot be flushed to database (in set): %s", err.Error())
+			}
+		}
+		cs.l.Lock()
+		defer cs.l.Unlock()
+		// add to cache
+		cs.Cache.Add(hex.EncodeToString(key), val)
+	}
 }
 
 // "Delete" - Deletes the item from stores
@@ -104,6 +131,9 @@ func (cs *CacheStorage) FlushToDB() error {
 		co, ok := val.(CacheObject)
 		if !ok {
 			return fmt.Errorf("object in cache does not impement the cache object interface")
+		}
+		if co.IsSealed() {
+			continue
 		}
 		// marshal object to bytes
 		bz, err := co.Marshal()
@@ -253,6 +283,17 @@ func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
 	// delete from cache
 	globalEvidenceCache.Delete(key)
 	return nil
+}
+
+// "SealEvidence" - Locks the evidence from the stores
+func SealEvidence(key []byte) (Evidence, bool) {
+	// delete from cache
+	co, ok := globalEvidenceCache.Seal(key, Evidence{})
+	if !ok {
+		return Evidence{}, ok
+	}
+	e, ok := co.(Evidence)
+	return e, ok
 }
 
 // "ClearEvidence" - Clear stores of all evidence

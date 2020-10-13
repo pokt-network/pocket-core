@@ -17,6 +17,14 @@ type Session struct {
 	SessionNodes  `json:"nodes"`
 }
 
+func (s Session) IsSealed() bool {
+	return false
+}
+
+func (s Session) Seal() CacheObject {
+	return s
+}
+
 // "NewSession" - create a new session from seed data
 func NewSession(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, sessionHeader SessionHeader, blockHash string, sessionNodesCount int) (Session, sdk.Error) {
 	// first generate session key
