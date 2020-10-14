@@ -37,7 +37,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d, with error: %v", claim.ApplicationPubKey, claim.SessionBlockHeight, err))
 			continue
 		}
-		if ctx.BlockHeight()-claim.SessionBlockHeight > 10000 { // TODO add configuration
+		if ctx.BlockHeight()-claim.SessionBlockHeight > int64(pc.GlobalPocketConfig.MaxClaimAgeForProofRetry) {
 			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
 			if err != nil {
 				ctx.Logger().Info(fmt.Sprintf("unable to delete evidence that is older than 32 blocks: %s", err.Error()))
@@ -70,9 +70,12 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 		}
 		// get the merkle proof object for the pseudorandom index
 		mProof, leaf := evidence.GenerateMerkleProof(int(index))
-		if !mProof.Validate(claim.MerkleRoot, leaf, claim.TotalProofs) {
-			ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
-			continue
+		// if prevalidation on, then pre-validate
+		if pc.GlobalPocketConfig.ProofPrevalidation {
+			if !mProof.Validate(claim.MerkleRoot, leaf, claim.TotalProofs) {
+				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
+				continue
+			}
 		}
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgProof{}, n, kp, k)
@@ -119,7 +122,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	}
 	// validate number of proofs
 	if minProofs := k.MinimumNumberOfProofs(sessionCtx); claim.TotalProofs < minProofs {
-		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
+		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate the merkle proofs
 	isValid := proof.MerkleProof.Validate(claim.MerkleRoot, proof.Leaf, claim.TotalProofs)
