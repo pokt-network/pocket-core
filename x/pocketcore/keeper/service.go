@@ -43,6 +43,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains)
 	if err != nil {
+		ctx.Logger().Error(fmt.Errorf("could not send relay with error: %s", err.Error()).Error())
 		return nil, err
 	}
 	// generate response object
