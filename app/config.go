@@ -23,7 +23,6 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/spf13/cobra"
-	con "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -42,43 +41,6 @@ import (
 	"syscall"
 )
 
-const (
-	DefaultDDName                     = ".pocket"
-	DefaultKeybaseName                = "pocket-keybase"
-	DefaultPVKName                    = "priv_val_key.json"
-	DefaultPVSName                    = "priv_val_state.json"
-	DefaultNKName                     = "node_key.json"
-	DefaultChainsName                 = "chains.json"
-	DefaultGenesisName                = "genesis.json"
-	DefaultRPCPort                    = "8081"
-	DefaultSessionDBType              = dbm.CLevelDBBackend
-	DefaultEvidenceDBType             = dbm.CLevelDBBackend
-	DefaultSessionDBName              = "session"
-	DefaultEvidenceDBName             = "pocket_evidence"
-	DefaultTMURI                      = "tcp://localhost:26657"
-	DefaultMaxSessionCacheEntries     = 500
-	DefaultMaxEvidenceCacheEntries    = 500
-	DefaultListenAddr                 = "tcp://0.0.0.0:"
-	DefaultClientBlockSyncAllowance   = 10
-	DefaultJSONSortRelayResponses     = true
-	DefaultDBBackend                  = string(dbm.CLevelDBBackend)
-	DefaultTxIndexer                  = "kv"
-	DefaultTxIndexTags                = "tx.hash,tx.height,message.sender,transfer.recipient"
-	ConfigDirName                     = "config"
-	ConfigFileName                    = "config.json"
-	ApplicationDBName                 = "application"
-	PlaceholderHash                   = "0001"
-	PlaceholderURL                    = "http://127.0.0.1:8081"
-	PlaceholderServiceURL             = PlaceholderURL
-	DefaultRemoteCLIURL               = "http://localhost:8081"
-	DefaultUserAgent                  = ""
-	DefaultValidatorCacheSize         = 500
-	DefaultApplicationCacheSize       = DefaultValidatorCacheSize
-	DefaultPocketPrometheusListenAddr = "8083"
-	DefaultPrometheusMaxOpenFile      = 3
-	DefaultRPCTimeout                 = 3000
-)
-
 var (
 	cdc *codec.Codec
 	// the default fileseparator based on OS
@@ -86,41 +48,12 @@ var (
 	// app instance currently running
 	PCA *PocketCoreApp
 	// config
-	GlobalConfig Config
+	GlobalConfig sdk.Config
 	// HTTP CLIENT FOR TENDERMINT
 	tmClient *client.HTTP
 	// global genesis type
 	GlobalGenesisType GenesisType
 )
-
-type Config struct {
-	TendermintConfig con.Config   `json:"tendermint_config"`
-	PocketConfig     PocketConfig `json:"pocket_config"`
-}
-
-type PocketConfig struct {
-	DataDir                  string            `json:"data_dir"`
-	GenesisName              string            `json:"genesis_file"`
-	ChainsName               string            `json:"chains_name"`
-	SessionDBType            dbm.DBBackendType `json:"session_db_type"`
-	SessionDBName            string            `json:"session_db_name"`
-	EvidenceDBType           dbm.DBBackendType `json:"evidence_db_type"`
-	EvidenceDBName           string            `json:"evidence_db_name"`
-	TendermintURI            string            `json:"tendermint_uri"`
-	KeybaseName              string            `json:"keybase_name"`
-	RPCPort                  string            `json:"rpc_port"`
-	ClientBlockSyncAllowance int               `json:"client_block_sync_allowance"`
-	MaxEvidenceCacheEntires  int               `json:"max_evidence_cache_entries"`
-	MaxSessionCacheEntries   int               `json:"max_session_cache_entries"`
-	JSONSortRelayResponses   bool              `json:"json_sort_relay_responses"`
-	RemoteCLIURL             string            `json:"remote_cli_url"`
-	UserAgent                string            `json:"user_agent"`
-	ValidatorCacheSize       int64             `json:"validator_cache_size"`
-	ApplicationCacheSize     int64             `json:"application_cache_size"`
-	RPCTimeout               int64             `json:"rpc_timeout"`
-	PrometheusAddr           string            `json:"pocket_prometheus_port"`
-	PrometheusMaxOpenfiles   int               `json:"prometheus_max_open_files"`
-}
 
 type GenesisType int
 
@@ -129,64 +62,6 @@ const (
 	TestnetGenesisType
 	DefaultGenesisType
 )
-
-func DefaultConfig(dataDir string) Config {
-	c := Config{
-		TendermintConfig: *con.DefaultConfig(),
-		PocketConfig: PocketConfig{
-			DataDir:                  dataDir,
-			GenesisName:              DefaultGenesisName,
-			ChainsName:               DefaultChainsName,
-			SessionDBType:            DefaultSessionDBType,
-			SessionDBName:            DefaultSessionDBName,
-			EvidenceDBType:           DefaultEvidenceDBType,
-			EvidenceDBName:           DefaultEvidenceDBName,
-			TendermintURI:            DefaultTMURI,
-			KeybaseName:              DefaultKeybaseName,
-			RPCPort:                  DefaultRPCPort,
-			ClientBlockSyncAllowance: DefaultClientBlockSyncAllowance,
-			MaxEvidenceCacheEntires:  DefaultMaxEvidenceCacheEntries,
-			MaxSessionCacheEntries:   DefaultMaxSessionCacheEntries,
-			JSONSortRelayResponses:   DefaultJSONSortRelayResponses,
-			RemoteCLIURL:             DefaultRemoteCLIURL,
-			UserAgent:                DefaultUserAgent,
-			ValidatorCacheSize:       DefaultValidatorCacheSize,
-			ApplicationCacheSize:     DefaultApplicationCacheSize,
-			RPCTimeout:               DefaultRPCTimeout,
-			PrometheusAddr:           DefaultPocketPrometheusListenAddr,
-			PrometheusMaxOpenfiles:   DefaultPrometheusMaxOpenFile,
-		},
-	}
-	c.TendermintConfig.SetRoot(dataDir)
-	c.TendermintConfig.NodeKey = DefaultNKName
-	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
-	c.TendermintConfig.PrivValidatorState = DefaultPVSName
-	c.TendermintConfig.P2P.AddrBookStrict = false
-	c.TendermintConfig.P2P.MaxNumInboundPeers = 250
-	c.TendermintConfig.P2P.MaxNumOutboundPeers = 250
-	c.TendermintConfig.LogLevel = "*:info, *:error"
-	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
-	c.TendermintConfig.TxIndex.IndexTags = DefaultTxIndexTags
-	c.TendermintConfig.DBBackend = DefaultDBBackend
-	c.TendermintConfig.RPC.GRPCMaxOpenConnections = 2500
-	c.TendermintConfig.RPC.MaxOpenConnections = 2500
-	c.TendermintConfig.Mempool.Size = 9000
-	c.TendermintConfig.Mempool.CacheSize = 9000
-	c.TendermintConfig.Consensus.TimeoutPropose = 60000000000
-	c.TendermintConfig.Consensus.TimeoutProposeDelta = 10000000000
-	c.TendermintConfig.Consensus.TimeoutPrevote = 60000000000
-	c.TendermintConfig.Consensus.TimeoutPrevoteDelta = 10000000000
-	c.TendermintConfig.Consensus.TimeoutPrecommit = 60000000000
-	c.TendermintConfig.Consensus.TimeoutPrecommitDelta = 10000000000
-	c.TendermintConfig.Consensus.TimeoutCommit = 900000000000
-	c.TendermintConfig.Consensus.SkipTimeoutCommit = false
-	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
-	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = 900000000000
-	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000
-	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 2000000000
-	c.TendermintConfig.P2P.AllowDuplicateIP = true
-	return c
-}
 
 func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType) *node.Node {
 	// init config
@@ -213,14 +88,14 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 		if err != nil {
 			log2.Fatal("could not get home directory for data dir creation: " + err.Error())
 		}
-		datadir = home + FS + DefaultDDName
+		datadir = home + FS + sdk.DefaultDDName
 	}
-	c := DefaultConfig(datadir)
+	c := sdk.DefaultConfig(datadir)
 	// read from ccnfig file
-	configFilepath := datadir + FS + ConfigDirName + FS + ConfigFileName
+	configFilepath := datadir + FS + sdk.ConfigDirName + FS + sdk.ConfigFileName
 	if _, err := os.Stat(configFilepath); os.IsNotExist(err) {
 		// ensure directory path made
-		err = os.MkdirAll(c.PocketConfig.DataDir+FS+ConfigDirName, os.ModePerm)
+		err = os.MkdirAll(c.PocketConfig.DataDir+FS+sdk.ConfigDirName, os.ModePerm)
 		if err != nil {
 			log2.Fatal(err)
 		}
@@ -277,7 +152,7 @@ func InitGenesis(genesisType GenesisType) {
 	// set global variable for init
 	GlobalGenesisType = genesisType
 	// setup file if not exists
-	genFP := GlobalConfig.PocketConfig.DataDir + FS + ConfigDirName + FS + GlobalConfig.PocketConfig.GenesisName
+	genFP := GlobalConfig.PocketConfig.DataDir + FS + sdk.ConfigDirName + FS + GlobalConfig.PocketConfig.GenesisName
 	if _, err := os.Stat(genFP); os.IsNotExist(err) {
 		// if file exists open, else create and open
 		if _, err := os.Stat(genFP); err == nil {
@@ -391,9 +266,7 @@ func InitLogger() (logger log.Logger) {
 }
 
 func InitPocketCoreConfig(chains *types.HostedBlockchains, logger log.Logger) {
-	types.InitConfig(GlobalConfig.PocketConfig.UserAgent, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.DataDir, GlobalConfig.PocketConfig.SessionDBType, GlobalConfig.PocketConfig.EvidenceDBType, GlobalConfig.PocketConfig.MaxEvidenceCacheEntires, GlobalConfig.PocketConfig.MaxSessionCacheEntries, GlobalConfig.PocketConfig.EvidenceDBName, GlobalConfig.PocketConfig.SessionDBName, *chains, logger, GlobalConfig.PocketConfig.PrometheusAddr, GlobalConfig.PocketConfig.PrometheusMaxOpenfiles, GlobalConfig.PocketConfig.RPCTimeout)
-	types.InitClientBlockAllowance(GlobalConfig.PocketConfig.ClientBlockSyncAllowance)
-	types.InitJSONSorting(GlobalConfig.PocketConfig.JSONSortRelayResponses)
+	types.InitConfig(chains, logger, GlobalConfig.PocketConfig)
 	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
 	appsTypes.InitConfig(GlobalConfig.PocketConfig.ApplicationCacheSize)
 }
@@ -496,7 +369,7 @@ func privValState() {
 func getTMClient() client.Client {
 	if tmClient == nil {
 		if GlobalConfig.PocketConfig.TendermintURI == "" {
-			tmClient = client.NewHTTP(DefaultTMURI, "/websocket")
+			tmClient = client.NewHTTP(sdk.DefaultTMURI, "/websocket")
 		} else {
 			tmClient = client.NewHTTP(GlobalConfig.PocketConfig.TendermintURI, "/websocket")
 		}
@@ -507,7 +380,7 @@ func getTMClient() client.Client {
 // get the hosted chains variable
 func NewHostedChains(generate bool) *types.HostedBlockchains {
 	// create the chains path
-	var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
+	var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + sdk.ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
 	// if file exists open, else create and open
 	var jsonFile *os.File
 	var bz []byte
@@ -644,7 +517,7 @@ func GenerateHostedChains() (chains []types.HostedBlockchain) {
 
 func DeleteHostedChains() {
 	// create the chains path
-	var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
+	var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + sdk.ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
 	err := os.Remove(chainsPath)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("could not delete %s file: ", chainsPath) + err.Error())
@@ -710,11 +583,11 @@ func ResetWorldState(cmd *cobra.Command, args []string) {
 		if err != nil {
 			log2.Fatal("could not get home directory for data dir creation: " + err.Error())
 		}
-		datadir = home + FS + DefaultDDName
+		datadir = home + FS + sdk.DefaultDDName
 	} else {
 		datadir = cmd.Flag("datadir").Value.String()
 	}
-	c := DefaultConfig(datadir)
+	c := sdk.DefaultConfig(datadir)
 	GlobalConfig = c
 
 	ResetAll(GlobalConfig.TendermintConfig.DBDir(),

@@ -54,9 +54,9 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
 	// init cache in memory
-	pocketTypes.InitConfig("", "data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session", pocketTypes.HostedBlockchains{
+	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
-	}, tendermintNode.Logger, "26660", 3, 3000)
+	}, tendermintNode.Logger, sdk.DefaultTestingPocketConfig())
 	// start the in memory node
 	err := tendermintNode.Start()
 	if err != nil {
@@ -159,8 +159,8 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
 		m := map[string]pocketTypes.HostedBlockchain{"0001": {
-			ID:  PlaceholderHash,
-			URL: PlaceholderURL,
+			ID:  sdk.PlaceholderHash,
+			URL: sdk.PlaceholderURL,
 		}}
 		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))
 		return p
@@ -272,11 +272,11 @@ func getTestConfig() (newTMConfig *tmCfg.Config) {
 	// setup tendermint node config
 	newTMConfig.SetRoot("data")
 	newTMConfig.FastSyncMode = false
-	newTMConfig.NodeKey = "data" + FS + DefaultNKName
-	newTMConfig.PrivValidatorKey = "data" + FS + DefaultPVKName
-	newTMConfig.PrivValidatorState = "data" + FS + DefaultPVSName
-	newTMConfig.RPC.ListenAddress = DefaultListenAddr + "36657"
-	newTMConfig.P2P.ListenAddress = DefaultListenAddr + "36656" // Node listen address. (0.0.0.0:0 means any interface, any port)
+	newTMConfig.NodeKey = "data" + FS + sdk.DefaultNKName
+	newTMConfig.PrivValidatorKey = "data" + FS + sdk.DefaultPVKName
+	newTMConfig.PrivValidatorState = "data" + FS + sdk.DefaultPVSName
+	newTMConfig.RPC.ListenAddress = sdk.DefaultListenAddr + "36657"
+	newTMConfig.P2P.ListenAddress = sdk.DefaultListenAddr + "36656" // Node listen address. (0.0.0.0:0 means any interface, any port)
 	newTMConfig.Consensus = tmCfg.TestConsensusConfig()
 	newTMConfig.Consensus.CreateEmptyBlocks = true // Set this to false to only produce blocks when there are txs or when the AppHash changes
 	newTMConfig.Consensus.SkipTimeoutCommit = false
@@ -336,7 +336,7 @@ func oneValTwoNodeGenesisState() []byte {
 			PublicKey:    pubKey,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   PlaceholderServiceURL,
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(1000000000000000)})
 	res := memCodec().MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res
@@ -477,14 +477,14 @@ func twoValTwoNodeGenesisState() []byte {
 			PublicKey:    pubKey,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   PlaceholderServiceURL,
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(1000000000000000)})
 	posGenesisState.Validators = append(posGenesisState.Validators,
 		nodesTypes.Validator{Address: sdk.Address(pubKey2.Address()),
 			PublicKey:    pubKey2,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   PlaceholderServiceURL,
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(1000000000)})
 	posGenesisState.Params.UnstakingTime = time.Nanosecond
 	posGenesisState.Params.SessionBlockFrequency = 5
@@ -575,7 +575,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 			PublicKey:    pubKey,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   PlaceholderServiceURL,
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(1000000000000000000)})
 	// validator 2
 	posGenesisState.Validators = append(posGenesisState.Validators,
@@ -583,7 +583,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 			PublicKey:    pubKey2,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   PlaceholderServiceURL,
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	// validator 3
 	posGenesisState.Validators = append(posGenesisState.Validators,
@@ -591,7 +591,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 			PublicKey:    pubKey3,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   PlaceholderServiceURL,
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	// validator 4
 	posGenesisState.Validators = append(posGenesisState.Validators,
@@ -599,7 +599,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 			PublicKey:    pubKey4,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   PlaceholderServiceURL,
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	// validator 5
 	posGenesisState.Validators = append(posGenesisState.Validators,
@@ -607,7 +607,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 			PublicKey:    pubKey5,
 			Status:       sdk.Staked,
 			Chains:       []string{dummyChainsHash},
-			ServiceURL:   PlaceholderServiceURL,
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	// marshal into json
 	res := memCodec().MustMarshalJSON(posGenesisState)

@@ -73,7 +73,7 @@ func (app *PocketCoreApp) InitChainer(ctx sdk.Ctx, req abci.RequestInitChain) ab
 	case TestnetGenesisType:
 		genesisState = GenesisStateFromJson(testnetGenesis)
 	default:
-		genesisState = cfg.GenesisStateFromFile(cdc, GlobalConfig.PocketConfig.DataDir+FS+ConfigDirName+FS+GlobalConfig.PocketConfig.GenesisName)
+		genesisState = cfg.GenesisStateFromFile(cdc, GlobalConfig.PocketConfig.DataDir+FS+sdk.ConfigDirName+FS+GlobalConfig.PocketConfig.GenesisName)
 	}
 	return app.mm.InitGenesis(ctx, genesisState)
 }

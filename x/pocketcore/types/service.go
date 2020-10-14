@@ -18,11 +18,6 @@ import (
 
 const DEFAULTHTTPMETHOD = "POST"
 
-var (
-	globalClientBlockAllowance int
-	globalSortJSONResponses    bool
-)
-
 // "Relay" - A read / write API request from a hosted (non native) external blockchain
 type Relay struct {
 	Payload Payload    `json:"payload"` // the data payload of the request
@@ -316,10 +311,6 @@ func executeHTTPRequest(payload, url, userAgent string, basicAuth BasicAuth, met
 	}
 	// return
 	return string(body), nil
-}
-
-func InitJSONSorting(doSorting bool) {
-	globalSortJSONResponses = doSorting
 }
 
 // "sortJSONResponse" - sorts json from a relay response

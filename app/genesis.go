@@ -15455,7 +15455,7 @@ func newDefaultGenesisState() []byte {
 		PublicKey:               cb.PublicKey,
 		Jailed:                  false,
 		Status:                  2,
-		Chains:                  []string{PlaceholderHash},
+		Chains:                  []string{sdk.PlaceholderHash},
 		StakedTokens:            sdk.NewInt(10000000000000),
 		MaxRelays:               sdk.NewInt(10000000000000),
 		UnstakingCompletionTime: time.Time{},
@@ -15477,8 +15477,8 @@ func newDefaultGenesisState() []byte {
 		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
 			PublicKey:    pubKey,
 			Status:       sdk.Staked,
-			Chains:       []string{PlaceholderHash},
-			ServiceURL:   PlaceholderServiceURL,
+			Chains:       []string{sdk.PlaceholderHash},
+			ServiceURL:   sdk.PlaceholderServiceURL,
 			StakedTokens: sdk.NewInt(10000000)})
 	res = types.ModuleCdc.MustMarshalJSON(posGenesisState)
 	defaultGenesis[nodesTypes.ModuleName] = res

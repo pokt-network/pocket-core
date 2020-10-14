@@ -286,7 +286,7 @@ func TestQueryPocketSupportedBlockchains(t *testing.T) {
 	got, err := PCA.QueryPocketSupportedBlockchains(0)
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
-	assert.Contains(t, got, PlaceholderHash)
+	assert.Contains(t, got, sdk.PlaceholderHash)
 
 	cleanup()
 	stopCli()
@@ -302,7 +302,7 @@ func TestQueryPocketParams(t *testing.T) {
 	assert.Equal(t, int64(5), got.SessionNodeCount)
 	assert.Equal(t, int64(3), got.ClaimSubmissionWindow)
 	assert.Equal(t, int64(100), got.ClaimExpiration)
-	assert.Contains(t, got.SupportedBlockchains, PlaceholderHash)
+	assert.Contains(t, got.SupportedBlockchains, sdk.PlaceholderHash)
 
 	cleanup()
 	stopCli()
@@ -405,7 +405,7 @@ func TestQueryRelay(t *testing.T) {
 	// setup relay endpoint
 	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
 	expectedResponse := "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"
-	gock.New(PlaceholderURL).
+	gock.New(sdk.PlaceholderURL).
 		Post("").
 		BodyString(expectedRequest).
 		MatchHeader(headerKey, headerVal).
@@ -438,7 +438,7 @@ func TestQueryRelay(t *testing.T) {
 			Entropy:            32598345349034509,
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
-			Blockchain:         PlaceholderHash,
+			Blockchain:         sdk.PlaceholderHash,
 			Token:              aat,
 			Signature:          "",
 		},
@@ -454,7 +454,7 @@ func TestQueryRelay(t *testing.T) {
 	res, err := PCA.HandleRelay(relay)
 	assert.Nil(t, err, err)
 	assert.Equal(t, expectedResponse, res.Response)
-	gock.New(PlaceholderURL).
+	gock.New(sdk.PlaceholderURL).
 		Post("").
 		BodyString(expectedRequest).
 		Reply(200).
@@ -485,7 +485,7 @@ func TestQueryDispatch(t *testing.T) {
 	// Setup HandleDispatch Request
 	key := types.SessionHeader{
 		ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
-		Chain:              PlaceholderHash,
+		Chain:              sdk.PlaceholderHash,
 		SessionBlockHeight: 1,
 	}
 	// setup the query
