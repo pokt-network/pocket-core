@@ -148,7 +148,7 @@ func nextPowerOfTwo(v uint) uint {
 
 // "GenerateProofs" - Generates the merkle Proof object from the leaf node data and the index
 func GenerateProofs(p []Proof, index int) (mProof MerkleProof, leaf Proof) {
-	data, proofs := sortAndStructure(p) // proofs are already sorted
+	data, proofs := structureProofs(p) // proofs are already sorted
 	// make a copy of the data because the merkle proof function will manipulate the slice
 	dataCopy := make([]HashRange, len(data))
 	// Copy from the original map to the target map

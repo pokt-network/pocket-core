@@ -37,7 +37,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d, with error: %v", claim.ApplicationPubKey, claim.SessionBlockHeight, err))
 			continue
 		}
-		if ctx.BlockHeight()-claim.SessionBlockHeight > 32 { // arbitrary block height patch
+		if ctx.BlockHeight()-claim.SessionBlockHeight > 10000 { // TODO add configuration
 			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
 			if err != nil {
 				ctx.Logger().Info(fmt.Sprintf("unable to delete evidence that is older than 32 blocks: %s", err.Error()))
@@ -47,7 +47,13 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 		if !evidence.IsSealed() {
 			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
 			if err != nil {
-				ctx.Logger().Info(fmt.Sprintf("evidence is not sealed, could cause a relay leak so ignoring: %s", err.Error()))
+				ctx.Logger().Info(fmt.Sprintf("evidence is not sealed, could cause a relay leak: %s", err.Error()))
+			}
+		}
+		if evidence.NumOfProofs != claim.TotalProofs {
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+			if err != nil {
+				ctx.Logger().Info(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
 			}
 		}
 		// get the session context

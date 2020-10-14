@@ -2,15 +2,14 @@ package pocketcore
 
 import (
 	"encoding/json"
-	"math/rand"
-	"time"
-
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"math/rand"
+	"time"
 )
 
 // type check to ensure the interface is properly implemented
@@ -86,7 +85,10 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 }
 
 // "BeginBlock" - Functionality that is called at the beginning of (every) block
-func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {}
+
+// "EndBlock" - Functionality that is called at the end of (every) block
+func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	if am.keeper.IsSessionBlock(ctx) && ctx.BlockHeight() != 1 {
 		go func() {
 			// use this sleep timer to bypass the beginBlock lock over transactions
@@ -101,14 +103,10 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	}
 	go func() {
 		// flush the cache periodically
-		types.FlushCache()
+		types.FlushSessionCache()
 	}()
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
-}
-
-// "EndBlock" - Functionality that is called at the end of (every) block
-func (am AppModule) EndBlock(sdk.Ctx, abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
 
