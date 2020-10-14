@@ -113,7 +113,7 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error)
 		url = url + "/" + strings.Trim(r.Payload.Path, `/`)
 	}
 	// do basic http request on the relay
-	res, er := executeHTTPRequest(r.Payload.Data, url, globalUserAgent, chain.BasicAuth, r.Payload.Method, r.Payload.Headers)
+	res, er := executeHTTPRequest(r.Payload.Data, url, GlobalPocketConfig.UserAgent, chain.BasicAuth, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
 		// metric track
 		GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain)
@@ -208,14 +208,14 @@ type RelayMeta struct {
 // "Validate" - Validates the relay meta object
 func (m RelayMeta) Validate(ctx sdk.Ctx) sdk.Error {
 	// ensures the block height is within the acceptable range
-	if ctx.BlockHeight()+int64(globalClientBlockAllowance) < m.BlockHeight || ctx.BlockHeight()-int64(globalClientBlockAllowance) > m.BlockHeight {
+	if ctx.BlockHeight()+int64(GlobalPocketConfig.ClientBlockSyncAllowance) < m.BlockHeight || ctx.BlockHeight()-int64(GlobalPocketConfig.ClientBlockSyncAllowance) > m.BlockHeight {
 		return NewOutOfSyncRequestError(ModuleName)
 	}
 	return nil
 }
 
 func InitClientBlockAllowance(allowance int) {
-	globalClientBlockAllowance = allowance
+	GlobalPocketConfig.ClientBlockSyncAllowance = allowance
 }
 
 // response structure for the relay
@@ -306,7 +306,7 @@ func executeHTTPRequest(payload, url, userAgent string, basicAuth BasicAuth, met
 		return "", err
 	}
 	defer resp.Body.Close()
-	if globalSortJSONResponses {
+	if GlobalPocketConfig.JSONSortRelayResponses {
 		body = []byte(sortJSONResponse(string(body)))
 	}
 	// return

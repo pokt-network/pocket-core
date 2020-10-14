@@ -14,10 +14,8 @@ const (
 )
 
 var (
-	globalUserAgent  string
-	globalRPCTimeout time.Duration
-	globalClientBlockAllowance int
-	globalSortJSONResponses    bool
+	globalRPCTimeout   time.Duration
+	GlobalPocketConfig types.PocketConfig
 )
 
 // "InitConfig" - Initializes the cache for sessions and evidence
@@ -29,9 +27,7 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.PocketConf
 		globalSessionCache.Init(c.DataDir, c.SessionDBName, c.SessionDBType, c.MaxSessionCacheEntries)
 		InitGlobalServiceMetric(*chains, logger, c.PrometheusAddr, c.PrometheusMaxOpenfiles)
 	})
-	globalUserAgent = c.UserAgent
-	globalClientBlockAllowance = c.ClientBlockSyncAllowance
-	globalSortJSONResponses = c.JSONSortRelayResponses
+	GlobalPocketConfig = c
 	SetRPCTimeout(c.RPCTimeout)
 }
 

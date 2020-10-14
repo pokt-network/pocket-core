@@ -37,6 +37,8 @@ type PocketConfig struct {
 	RPCTimeout               int64            `json:"rpc_timeout"`
 	PrometheusAddr           string           `json:"pocket_prometheus_port"`
 	PrometheusMaxOpenfiles   int              `json:"prometheus_max_open_files"`
+	MaxClaimAgeForProofRetry int              `json:"max_claim_age_for_proof_retry"`
+	ProofPrevalidation       bool             `json:"proof_prevalidation"`
 }
 
 type Config struct {
@@ -79,6 +81,8 @@ const (
 	DefaultPocketPrometheusListenAddr = "8083"
 	DefaultPrometheusMaxOpenFile      = 3
 	DefaultRPCTimeout                 = 3000
+	DefaultMaxClaimProofRetryAge      = 32
+	DefaultProofPrevalidation         = false
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -106,6 +110,8 @@ func DefaultConfig(dataDir string) Config {
 			RPCTimeout:               DefaultRPCTimeout,
 			PrometheusAddr:           DefaultPocketPrometheusListenAddr,
 			PrometheusMaxOpenfiles:   DefaultPrometheusMaxOpenFile,
+			MaxClaimAgeForProofRetry: DefaultMaxClaimProofRetryAge,
+			ProofPrevalidation:       DefaultProofPrevalidation,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
