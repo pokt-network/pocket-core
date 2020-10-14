@@ -35,7 +35,24 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// ensure the validity of the relay
 	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, selfNode, hostedBlockchains, sessionBlockHeight, int(sessionNodeCount), app)
 	if err != nil {
-		ctx.Logger().Error(fmt.Errorf("could not validate relay for %v, %v, %v %v, %v", selfNode, hostedBlockchains, sessionBlockHeight, int(k.SessionNodeCount(sessionCtx)), app).Error())
+		ctx.Logger().Error(
+			fmt.Sprintf("could not validate relay for app: %s for chainID: %v with error: %s",
+				app.GetAddress().String(),
+				relay.Proof.Blockchain,
+				err.Error(),
+			),
+		)
+		ctx.Logger().Debug(
+			fmt.Sprintf(
+				"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, number of nodes on session: %v, with error: %s",
+				app.GetAddress().String(),
+				relay.Proof.Blockchain,
+				selfNode.GetAddress().String(),
+				sessionBlockHeight,
+				int(k.SessionNodeCount(sessionCtx)),
+				err.Error(),
+			),
+		)
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
@@ -43,7 +60,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains)
 	if err != nil {
-		ctx.Logger().Error(fmt.Errorf("could not send relay with error: %s", err.Error()).Error())
+		ctx.Logger().Error(fmt.Sprintf("could not send relay with error: %s", err.Error()))
 		return nil, err
 	}
 	// generate response object
@@ -54,13 +71,22 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// get the private key from the private validator file
 	pk, er := k.GetPKFromFile(ctx)
 	if er != nil {
-		ctx.Logger().Error(fmt.Errorf("could not get PK to Sign response for address: %v with hash: %v", selfNode.GetAddress().String(), resp.Hash()).Error())
+		ctx.Logger().Error(
+			fmt.Sprintf("could not get PK to sign response for address: %s with hash: %v with error: %s",
+				selfNode.GetAddress().String(),
+				resp.HashString(),
+				er.Error(),
+			),
+		)
 		return nil, pc.NewKeybaseError(pc.ModuleName, er)
 	}
 	// sign the response
 	sig, er := pk.Sign(resp.Hash())
 	if er != nil {
-		ctx.Logger().Error(fmt.Errorf("could not sign response for address: %v with hash: %v", selfNode.GetAddress().String(), resp.Hash()).Error())
+		ctx.Logger().Error(
+			fmt.Sprintf("could not sign response for address: %s with hash: %v, with error: %s",
+				selfNode.GetAddress().String(), resp.HashString(), er.Error()),
+		)
 		return nil, pc.NewKeybaseError(pc.ModuleName, er)
 	}
 	// attach the signature in hex to the response
