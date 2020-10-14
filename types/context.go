@@ -155,40 +155,40 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 	if err != nil {
 		return Context{}, err
 	}
-	blck := c.blockstore.LoadBlock(height)
-	if blck == nil {
+	meta := c.blockstore.LoadBlockMeta(height)
+	if meta == nil {
 		return Context{}, errors.New("block at height not found")
 	}
-	hash := blck.LastBlockID.Hash
+	hash := meta.Header.LastBlockID.Hash
 	if hash == nil {
-		hash = blck.ConsensusHash
+		hash = meta.Header.ConsensusHash
 	}
 	var header = abci.Header{
 		Version: abci.Version{
-			Block: blck.Version.Block.Uint64(),
-			App:   blck.Version.App.Uint64(),
+			Block: meta.Header.Version.Block.Uint64(),
+			App:   meta.Header.Version.App.Uint64(),
 		},
-		ChainID:  blck.ChainID,
-		Height:   blck.Height,
-		Time:     blck.Time,
-		NumTxs:   blck.NumTxs,
-		TotalTxs: blck.TotalTxs,
+		ChainID:  meta.Header.ChainID,
+		Height:   meta.Header.Height,
+		Time:     meta.Header.Time,
+		NumTxs:   meta.Header.NumTxs,
+		TotalTxs: meta.Header.TotalTxs,
 		LastBlockId: abci.BlockID{
 			Hash: hash,
 			PartsHeader: abci.PartSetHeader{
-				Total: int32(blck.LastBlockID.PartsHeader.Total),
-				Hash:  blck.Hash(),
+				Total: int32(meta.Header.LastBlockID.PartsHeader.Total),
+				Hash:  meta.Header.Hash(),
 			},
 		},
-		LastCommitHash:     blck.LastCommitHash,
-		DataHash:           blck.DataHash,
-		ValidatorsHash:     blck.ValidatorsHash,
-		NextValidatorsHash: blck.NextValidatorsHash,
-		ConsensusHash:      blck.ConsensusHash,
-		AppHash:            blck.AppHash,
-		LastResultsHash:    blck.LastResultsHash,
-		EvidenceHash:       blck.EvidenceHash,
-		ProposerAddress:    blck.ProposerAddress,
+		LastCommitHash:     meta.Header.LastCommitHash,
+		DataHash:           meta.Header.DataHash,
+		ValidatorsHash:     meta.Header.ValidatorsHash,
+		NextValidatorsHash: meta.Header.NextValidatorsHash,
+		ConsensusHash:      meta.Header.ConsensusHash,
+		AppHash:            meta.Header.AppHash,
+		LastResultsHash:    meta.Header.LastResultsHash,
+		EvidenceHash:       meta.Header.EvidenceHash,
+		ProposerAddress:    meta.Header.ProposerAddress,
 	}
 	return NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams), nil
 }
