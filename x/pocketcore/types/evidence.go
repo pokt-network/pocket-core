@@ -14,7 +14,7 @@ type Evidence struct {
 	NumOfProofs   int64        `json:"num_of_proofs"`     // the total number of proofs in the evidence
 	Proofs        []Proof      `json:"proofs"`            // a slice of Proof objects (Proof per relay or challenge)
 	EvidenceType  EvidenceType `json:"evidence_type"`
-	Sealed        bool         `json:"is_sealed"`
+	Sealed        bool         `json:"sealed"`
 }
 
 func (e Evidence) IsSealed() bool {
@@ -32,8 +32,8 @@ func (e *Evidence) GenerateMerkleRoot() (root HashRange) {
 	root, sortedProofs := GenerateRoot(e.Proofs)
 	// sort the proofs
 	e.Proofs = sortedProofs
-	// set the evidence in cache
-	SetEvidence(*e)
+	// seal the evidence in cache/db
+	SealEvidence(*e)
 	return
 }
 

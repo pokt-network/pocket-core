@@ -19,14 +19,13 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 		return
 	}
 	// retrieve the iterator to go through each piece of evidence in storage
-	iter := pc.EvidenceIterator() // TODO need to delete evidence in the case that unable to send proof or claim
+	iter := pc.EvidenceIterator()
 	defer iter.Close()
 	// loop through each evidence
 	for ; iter.Valid(); iter.Next() {
 		evidence := iter.Value()
-		evidenceLength := len(evidence.Proofs)
 		// if the number of proofs in the evidence object is zero
-		if evidenceLength == 0 {
+		if evidence.NumOfProofs == 0 {
 			ctx.Logger().Error("evidence of length zero was found in evidence storage")
 			continue
 		}
@@ -38,15 +37,15 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 			ctx.Logger().Info("could not get sessionCtx in auto send claim tx, could be due to relay timing before commit is in store: " + er.Error())
 			continue
 		}
-		// if the evidence length is less than 5, it would not satisfy our merkle tree needs
-		if int64(evidenceLength) < keeper.MinimumNumberOfProofs(sessionCtx) {
+		// if the evidence length is less than minimum, it would not satisfy our merkle tree needs
+		if evidence.NumOfProofs < keeper.MinimumNumberOfProofs(sessionCtx) {
 			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
 			continue
 		}
 		if ctx.BlockHeight() <= evidence.SessionBlockHeight+k.BlocksPerSession(sessionCtx)-1 { // ensure session is over
-			ctx.Logger().Info("the session is ongoing, so will not send the claimtx yet")
+			ctx.Logger().Info("the session is ongoing, so will not send the claim-tx yet")
 			continue
 		}
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid/challenged for unsupported blockchains
@@ -68,20 +67,8 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 			}
 			continue
 		}
-		key, err := evidence.Key()
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("unable to generate the key for the claim:\n%s", err.Error()))
-			return
-		}
-		e, ok := pc.SealEvidence(key)
-		if !ok {
-			ctx.Logger().Info(fmt.Sprintf("unable to seal claim for %s blockchain, so will not send", evidence.SessionHeader.Chain))
-			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
-				ctx.Logger().Debug(err.Error())
-			}
-		}
 		// generate the merkle root for this evidence
-		root := e.GenerateMerkleRoot()
+		root := evidence.GenerateMerkleRoot()
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, pc.MsgClaim{}, n, kp, k)
 		if err != nil {

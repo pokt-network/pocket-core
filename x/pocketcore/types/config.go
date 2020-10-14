@@ -31,14 +31,11 @@ func InitConfig(userAgent, evidenceDir, sessionDir string, sessionDBType, eviden
 	SetRPCTimeout(timeout)
 }
 
-func FlushCache() {
+// NOTE: evidence cache is flushed every time db iterator is created (every claim/proof submission)
+func FlushSessionCache() {
 	err := globalSessionCache.FlushToDB()
 	if err != nil {
 		fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
-	}
-	err = globalEvidenceCache.FlushToDB()
-	if err != nil {
-		fmt.Printf("unable to flush evidence to the database before shutdown!! %s\n", err.Error())
 	}
 }
 
