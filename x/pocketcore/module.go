@@ -95,10 +95,8 @@ func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Validat
 	// get self address
 	addr := am.keeper.GetSelfAddress(ctx)
 	if addr != nil {
-		// calculate integer offset using first byte of address
-		offset := int64(addr[0]) % blocksPerSession
 		// use the offset as a trigger to see if it's time to attempt to submit proofs
-		if ctx.BlockHeight()+offset%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
+		if (ctx.BlockHeight()+int64(addr[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
 			// run go routine because cannot access TmNode during end-block period
 			go func() {
 				// use this sleep timer to bypass the beginBlock lock over transactions
