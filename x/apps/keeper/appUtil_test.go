@@ -136,3 +136,34 @@ func TestAppUtil_AllApplications(t *testing.T) {
 //		})
 //	}
 //}
+
+func TestAppUtil_ApplicationCaching(t *testing.T) {
+	stakedApplication := getStakedApplication()
+
+	type args struct {
+		application types.Application
+	}
+	tests := []struct {
+		name   string
+		panics bool
+		args
+		want types.Application
+	}{
+		{
+			name: "gets application",
+			args: args{application: stakedApplication},
+			want: stakedApplication,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			keeper.SetApplication(context, tt.args.application)
+			keeper.SetStakedApplication(context, tt.args.application)
+			if got, _ := keeper.ApplicationCache.Get(tt.args.application.Address.String()); !got.Equals(tt.want) {
+				t.Errorf("keeperAppUtil.ApplicationCaching()= %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

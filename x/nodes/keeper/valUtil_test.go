@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"fmt"
-	"reflect"
+	types2 "github.com/pokt-network/pocket-core/types"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -55,22 +55,76 @@ func TestMustGetValidator(t *testing.T) {
 
 }
 
-func Test_sortNoLongerStakedValidators(t *testing.T) {
+func TestValidatorCaching(t *testing.T) {
+	stakedValidator := getStakedValidator()
+
 	type args struct {
-		prevState valPowerMap
+		validator types.Validator
+	}
+	type expected struct {
+		validator types.Validator
 	}
 	tests := []struct {
-		name string
-		args args
-		want [][]byte
+		name   string
+		panics bool
+		args
+		expected
 	}{
-		// TODO: Add test cases.
+		{
+			name:     "gets validator",
+			panics:   false,
+			args:     args{validator: stakedValidator},
+			expected: expected{validator: stakedValidator},
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := sortNoLongerStakedValidators(tt.args.prevState); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("sortNoLongerStakedValidators() = %v, want %v", got, tt.want)
-			}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			keeper.SetValidator(context, test.args.validator)
+			validator, _ := keeper.validatorCache.Get(test.args.validator.Address.String())
+			assert.True(t, validator.Equals(test.expected.validator), "validator does not match")
 		})
 	}
+
+}
+
+func TestValidatorCachingAfterUpdate(t *testing.T) {
+	stakedValidator := getStakedValidator()
+
+	type args struct {
+		validator types.Validator
+	}
+	type expected struct {
+		validator types.Validator
+	}
+	tests := []struct {
+		name   string
+		panics bool
+		args
+		expected
+	}{
+		{
+			name:     "gets validator",
+			panics:   false,
+			args:     args{validator: stakedValidator},
+			expected: expected{validator: stakedValidator},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			context, _, keeper := createTestInput(t, true)
+			keeper.SetValidator(context, test.args.validator)
+			validator, _ := keeper.validatorCache.Get(test.args.validator.Address.String())
+			assert.True(t, validator.Equals(test.expected.validator), "validator does not match")
+			modifiedVal := test.args.validator
+			modifiedVal.Chains = []string{"00", "01", "03"}
+			modifiedVal.UpdateStatus(types2.Unstaking)
+			keeper.SetValidator(context, test.args.validator)
+			validator2, _ := keeper.validatorCache.Get(test.args.validator.Address.String())
+			assert.True(t, validator2.Equals(modifiedVal), "validator does not match")
+		})
+	}
+
 }
