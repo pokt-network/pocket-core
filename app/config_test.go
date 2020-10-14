@@ -1,16 +1,17 @@
 package app
 
 import (
+	"github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestDefaultConfig(t *testing.T) {
-	c := DefaultConfig("~/.pocket")
+	c := types.DefaultConfig("~/.pocket")
 	// Check default dbbackend
-	assert.EqualValues(t, DefaultDBBackend, c.TendermintConfig.DBBackend)
+	assert.EqualValues(t, types.DefaultDBBackend, c.TendermintConfig.DBBackend)
 
 	// Check default Tx indexing params
-	assert.EqualValues(t, DefaultTxIndexer, c.TendermintConfig.TxIndex.Indexer)
-	assert.EqualValues(t, DefaultTxIndexTags, c.TendermintConfig.TxIndex.IndexTags)
+	assert.EqualValues(t, types.DefaultTxIndexer, c.TendermintConfig.TxIndex.Indexer)
+	assert.EqualValues(t, types.DefaultTxIndexTags, c.TendermintConfig.TxIndex.IndexTags)
 }

@@ -11,15 +11,14 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
-	db "github.com/tendermint/tm-db"
 )
 
 func InitCacheTest() {
 	logger := log.NewNopLogger()
 	// init cache in memory
-	InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session", HostedBlockchains{
+	InitConfig(&HostedBlockchains{
 		M: make(map[string]HostedBlockchain),
-	}, logger, "26660", 3, 3000)
+	}, logger, sdk.DefaultTestingPocketConfig())
 }
 
 func TestMain(m *testing.M) {

@@ -24,7 +24,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/common"
 	tmTypes "github.com/tendermint/tendermint/types"
-	db "github.com/tendermint/tm-db"
 )
 
 func TestMain(m *testing.M) {
@@ -32,9 +31,9 @@ func TestMain(m *testing.M) {
 	pocketTypes.ClearEvidence()
 	logger := log.NewNopLogger()
 	// init cache in memory
-	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session", pocketTypes.HostedBlockchains{
+	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
-	}, logger, "26660", 3, 3000)
+	}, logger, sdk.DefaultTestingPocketConfig())
 	m.Run()
 	os.Exit(0)
 }
@@ -386,7 +385,7 @@ func TestClaimTx(t *testing.T) {
 			RequestHash:        hex.EncodeToString(pocketTypes.Hash([]byte("fake"))),
 			SessionBlockHeight: 1,
 			ServicerPubKey:     validators[0].PublicKey.RawString(),
-			Blockchain:         PlaceholderHash,
+			Blockchain:         sdk.PlaceholderHash,
 			Token:              aat,
 			Signature:          "",
 		}
@@ -397,7 +396,7 @@ func TestClaimTx(t *testing.T) {
 		proof.Signature = hex.EncodeToString(sig)
 		pocketTypes.SetProof(pocketTypes.SessionHeader{
 			ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
-			Chain:              PlaceholderHash,
+			Chain:              sdk.PlaceholderHash,
 			SessionBlockHeight: 1,
 		}, pocketTypes.RelayEvidence, proof, sdk.NewInt(1000000))
 		assert.Nil(t, err)
@@ -466,7 +465,7 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOf
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey,
 			RequestHash:        clientPubKey, // fake
-			Blockchain:         PlaceholderHash,
+			Blockchain:         sdk.PlaceholderHash,
 			Token: pocketTypes.AAT{
 				Version:              "0.0.1",
 				ApplicationPublicKey: appPubKey,
@@ -491,7 +490,7 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOf
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey2,
 			RequestHash:        clientPubKey, // fake
-			Blockchain:         PlaceholderHash,
+			Blockchain:         sdk.PlaceholderHash,
 			Token: pocketTypes.AAT{
 				Version:              "0.0.1",
 				ApplicationPublicKey: appPubKey,
@@ -516,7 +515,7 @@ func NewValidChallengeProof(t *testing.T, privateKeys []crypto.PrivateKey, numOf
 			SessionBlockHeight: 1,
 			ServicerPubKey:     servicerPubKey3,
 			RequestHash:        clientPubKey, // fake
-			Blockchain:         PlaceholderHash,
+			Blockchain:         sdk.PlaceholderHash,
 			Token: pocketTypes.AAT{
 				Version:              "0.0.1",
 				ApplicationPublicKey: appPubKey,

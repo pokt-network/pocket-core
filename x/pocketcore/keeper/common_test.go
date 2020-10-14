@@ -172,9 +172,9 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	keeper.SetParams(ctx, defaultPocketParams)
 	logger := log.NewNopLogger()
 	// init cache in memory
-	types.InitConfig("", "data", "data", dbm.MemDBBackend, dbm.MemDBBackend, 100, 100, "pocket_evidence", "session", types.HostedBlockchains{
+	types.InitConfig(&types.HostedBlockchains{
 		M: make(map[string]types.HostedBlockchain),
-	}, logger, "26660", 3, 3000)
+	}, logger, sdk.DefaultTestingPocketConfig())
 	return ctx, vals, ap, accs, keeper, keys, kb
 }
 

@@ -80,7 +80,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 
 func OpenDB(rootDir string) (dbm.DB, error) {
 	dataDir := filepath.Join(rootDir, GlobalConfig.TendermintConfig.DBPath)
-	db, err := sdk.NewLevelDB(ApplicationDBName, dataDir)
+	db, err := sdk.NewLevelDB(sdk.ApplicationDBName, dataDir)
 	return db, err
 }
 
