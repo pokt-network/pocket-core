@@ -206,6 +206,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
+	//baseapp.pocketKeeper.TmNode = client.NewLocal(tmNode)
 	baseapp.SetTendermintNode(tmNode)
 	app.PCA = baseapp
 	return tmNode, kb

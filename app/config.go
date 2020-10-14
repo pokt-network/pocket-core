@@ -326,9 +326,10 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 	default:
 		keys = MustGetKeybase()
 	}
-	tmNode, app, err := NewClient(config(c), func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
+	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
 		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, baseapp.SetPruning(store.PruneNothing))
-	})
+	}
+	tmNode, app, err := NewClient(config(c), appCreatorFunc)
 	if err != nil {
 		log2.Fatal(err)
 	}
@@ -336,6 +337,7 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 		log2.Fatal(err)
 	}
 	app.SetTendermintNode(tmNode)
+	app.pocketKeeper.TmNode = client.NewLocal(tmNode)
 	PCA = app
 	return tmNode
 }

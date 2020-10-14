@@ -5,7 +5,6 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/rpc/client"
-	core_types "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
@@ -31,10 +30,4 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKee
 		storeKey:          storeKey,
 		cdc:               cdc,
 	}
-}
-
-// "GetBlock" returns the block from the tendermint node at a certain height
-func (k Keeper) GetBlock(height int) (*core_types.ResultBlock, error) {
-	h := int64(height)
-	return k.TmNode.Block(&h)
 }

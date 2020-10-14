@@ -2,6 +2,7 @@ package pocketcore
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
@@ -49,8 +50,8 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 
 // "AppModule" - The higher level building block for a module
 type AppModule struct {
-	AppModuleBasic               // a fundamental structure for all mods
-	keeper         keeper.Keeper // responsible for store operations
+	AppModuleBasic       // a fundamental structure for all mods
+	keeper keeper.Keeper // responsible for store operations
 }
 
 // "NewAppModule" - Creates a new AppModule Object
@@ -89,22 +90,37 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {}
 
 // "EndBlock" - Functionality that is called at the end of (every) block
 func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	if am.keeper.IsSessionBlock(ctx) && ctx.BlockHeight() != 1 {
-		go func() {
-			// use this sleep timer to bypass the beginBlock lock over transactions
-			time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
-			// auto send the proofs
-			am.keeper.SendClaimTx(ctx, am.keeper, am.keeper.TmNode, ClaimTx)
-			// auto claim the proofs
-			am.keeper.SendProofTx(ctx, am.keeper.TmNode, ProofTx)
-			// clear session cache and db
-			types.ClearSessionCache()
-		}()
+	// get blocks per session
+	blocksPerSession := am.keeper.BlocksPerSession(ctx)
+	// get self address
+	addr := am.keeper.GetSelfAddress(ctx)
+	if addr != nil {
+		// calculate integer offset using first byte of address
+		offset := int64(addr[0]) % blocksPerSession
+		// use the offset as a trigger to see if it's time to attempt to submit proofs
+		if ctx.BlockHeight()+offset%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
+			// run go routine because cannot access TmNode during end-block period
+			go func() {
+				// use this sleep timer to bypass the beginBlock lock over transactions
+				time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
+				s, err := am.keeper.TmNode.Status()
+				if err != nil {
+					ctx.Logger().Error(fmt.Sprintf("could not get status for tendermint node (cannot submit claims/proofs in this state): %s", err.Error()))
+				} else {
+					if !s.SyncInfo.CatchingUp {
+						// auto send the proofs
+						am.keeper.SendClaimTx(ctx, am.keeper, am.keeper.TmNode, ClaimTx)
+						// auto claim the proofs
+						am.keeper.SendProofTx(ctx, am.keeper.TmNode, ProofTx)
+						// clear session cache and db
+						types.ClearSessionCache()
+					}
+				}
+			}()
+		}
+	} else {
+		ctx.Logger().Error("could not get self address in end block")
 	}
-	go func() {
-		// flush the cache periodically
-		types.FlushSessionCache()
-	}()
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
 	return []abci.ValidatorUpdate{}
