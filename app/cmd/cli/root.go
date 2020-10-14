@@ -22,6 +22,7 @@ var (
 	keybase         bool
 	mainnet         bool
 	testnet         bool
+	signalChannel   chan os.Signal
 )
 
 var CLIVersion = app.AppVersion
@@ -117,7 +118,9 @@ var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop pocket-core",
 	Long:  `Stop the Pocket node daemon`,
-	Run:   app.ShutdownPocketCore,
+	Run: func(cmd *cobra.Command, args []string) {
+		signal.Notify(signalChannel, os.Interrupt)
+	},
 }
 
 var version = &cobra.Command{
