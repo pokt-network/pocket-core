@@ -8,7 +8,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 func TestAppModule_Name(t *testing.T) {
@@ -65,11 +64,11 @@ func TestAppModule_QuerierRoute(t *testing.T) {
 	assert.Equal(t, am.QuerierRoute(), types.ModuleName)
 }
 
-func TestAppModule_EndBlock(t *testing.T) {
-	ctx, _, _, k, _ := createTestInput(t, false)
-	am := NewAppModule(k)
-	assert.Equal(t, am.EndBlock(ctx, abci.RequestEndBlock{}), []abci.ValidatorUpdate{})
-}
+//func TestAppModule_EndBlock(t *testing.T) {
+//	ctx, _, _, k, _ := createTestInput(t, false)
+//	am := NewAppModule(k)
+//	assert.Equal(t, am.EndBlock(ctx, abci.RequestEndBlock{}), []abci.ValidatorUpdate{})
+//}
 
 func TestAppModuleBasic_DefaultGenesis(t *testing.T) {
 	_, _, _, k, _ := createTestInput(t, false)
