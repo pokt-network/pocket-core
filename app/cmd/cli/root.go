@@ -112,6 +112,14 @@ var resetCmd = &cobra.Command{
 	Run:   app.ResetWorldState,
 }
 
+// stopCmd represents the stop command
+var stopCmd = &cobra.Command{
+	Use:   "stop",
+	Short: "Stop pocket-core",
+	Long:  `Stop the Pocket node daemon`,
+	Run:   app.ShutdownPocketCore,
+}
+
 var version = &cobra.Command{
 	Use:   "version",
 	Short: "Get current version",
