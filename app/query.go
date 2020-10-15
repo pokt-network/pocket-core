@@ -4,6 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
+	"reflect"
+	"strconv"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -13,9 +17,6 @@ import (
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
-	"math"
-	"reflect"
-	"strconv"
 )
 
 const (
@@ -429,6 +430,8 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 	if err != nil {
 		return nil, err
 	}
+	ctx = ctx.WithCache(app.GlobalCacheStore)
+
 	status, err := app.pocketKeeper.TmNode.Status()
 	if err != nil {
 		return nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
