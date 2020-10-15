@@ -4,23 +4,23 @@ import (
 	"github.com/hashicorp/golang-lru/simplelru"
 )
 
+var CacheStore *Cache = NewCache(20)
+
 // Cache is a thread-safe fixed cap LRU cache.
 type Cache struct {
 	lru simplelru.LRUCache
-	cap int
 }
 
 // New creates an LRU of the given cap.
-func New(size int) (*Cache, error) {
+func NewCache(size int) *Cache {
 	lru, err := simplelru.NewLRU(size, nil)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	c := &Cache{
 		lru: lru,
 	}
-	c.cap = size
-	return c, nil
+	return c
 }
 
 // Purge is used to completely clear the cache.
@@ -29,43 +29,32 @@ func (c *Cache) Purge() {
 }
 
 // Add adds a value to the cache. Returns true if an eviction occurred.
-func (c *Cache) Add(key string, value Validator) (evicted bool) {
+func (c *Cache) Add(key string, value interface{}) (evicted bool) {
 	evicted = c.lru.Add(key, value)
 	return evicted
 }
 
 // Get looks up a key's value from the cache.
-func (c *Cache) Get(key string) (value Validator, ok bool) {
-	v, ok := c.lru.Get(key)
-	if !ok {
-		return
-	}
-	value, ok = v.(Validator)
-	return
+func (c *Cache) Get(key string) (value interface{}, ok bool) {
+	return c.lru.Get(key)
 }
 
 // Contains checks if a key is in the cache, without updating the
 // recent-ness or deleting it for being stale.
 func (c *Cache) Contains(key string) bool {
-	containKey := c.lru.Contains(key)
-	return containKey
+	return c.lru.Contains(key)
 }
 
 // Peek returns the key value (or undefined if not found) without updating
 // the "recently used"-ness of the key.
-func (c *Cache) Peek(key string) (value Validator, ok bool) {
-	v, ok := c.lru.Peek(key)
-	if !ok {
-		return
-	}
-	value, ok = v.(Validator)
-	return value, ok
+func (c *Cache) Peek(key string) (value interface{}, ok bool) {
+	return c.lru.Peek(key)
 }
 
 // ContainsOrAdd checks if a key is in the cache without updating the
 // recent-ness or deleting it for being stale, and if not, adds the value.
 // Returns whether found and whether an eviction occurred.
-func (c *Cache) ContainsOrAdd(key, value Validator) (ok, evicted bool) {
+func (c *Cache) ContainsOrAdd(key, value interface{}) (ok, evicted bool) {
 	if c.lru.Contains(key) {
 		return true, false
 	}
@@ -76,7 +65,7 @@ func (c *Cache) ContainsOrAdd(key, value Validator) (ok, evicted bool) {
 // PeekOrAdd checks if a key is in the cache without updating the
 // recent-ness or deleting it for being stale, and if not, adds the value.
 // Returns whether found and whether an eviction occurred.
-func (c *Cache) PeekOrAdd(key, value Validator) (previous interface{}, ok, evicted bool) {
+func (c *Cache) PeekOrAdd(key, value interface{}) (previous interface{}, ok, evicted bool) {
 	previous, ok = c.lru.Peek(key)
 	if ok {
 		return previous, true, false
@@ -95,36 +84,27 @@ func (c *Cache) Remove(key string) (present bool) {
 // Resize changes the cache capacity.
 func (c *Cache) Resize(size int) (evicted int) {
 	evicted = c.lru.Resize(size)
-	c.cap = size
 	return evicted
 }
 
 // RemoveOldest removes the oldest item from the cache.
-func (c *Cache) RemoveOldest() (key string, value Validator, ok bool) {
+func (c *Cache) RemoveOldest() (key string, value interface{}, ok bool) {
 	k, v, ok := c.lru.RemoveOldest()
 	if !ok {
 		return
 	}
-	value, ok = v.(Validator)
-	if !ok {
-		return
-	}
 	key, ok = k.(string)
-	return
+	return key, v, ok
 }
 
 // GetOldest returns the oldest entry
-func (c *Cache) GetOldest() (key string, value Validator, ok bool) {
+func (c *Cache) GetOldest() (key string, value interface{}, ok bool) {
 	k, v, ok := c.lru.GetOldest()
 	if !ok {
 		return
 	}
-	value, ok = v.(Validator)
-	if !ok {
-		return
-	}
 	key, ok = k.(string)
-	return
+	return key, v, ok
 }
 
 // Keys returns a slice of the keys in the cache, from oldest to newest.
@@ -137,8 +117,4 @@ func (c *Cache) Keys() []interface{} {
 func (c *Cache) Len() int {
 	length := c.lru.Len()
 	return length
-}
-
-func (c *Cache) Cap() int {
-	return c.cap
 }
