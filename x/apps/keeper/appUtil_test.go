@@ -161,7 +161,7 @@ func TestAppUtil_ApplicationCaching(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetApplication(context, tt.args.application)
 			keeper.SetStakedApplication(context, tt.args.application)
-			if got, _ := keeper.ApplicationCache.Get(tt.args.application.Address.String()); !got.Equals(tt.want) {
+			if got, _ := keeper.ApplicationCache.Get(tt.args.application.Address.String()); !got.(types.Application).Equals(tt.want) {
 				t.Errorf("keeperAppUtil.ApplicationCaching()= %v, want %v", got, tt.want)
 			}
 		})
