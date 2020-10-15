@@ -1,9 +1,10 @@
 package types_test
 
 import (
-	"github.com/pokt-network/pocket-core/crypto"
 	"testing"
 	"time"
+
+	"github.com/pokt-network/pocket-core/crypto"
 
 	"github.com/stretchr/testify/require"
 
@@ -95,6 +96,16 @@ func TestLogContext(t *testing.T) {
 	ctx.Logger().Info("info")
 	ctx.Logger().Error("error")
 	require.Equal(t, *logger.logs, []string{"debug", "info", "error"})
+}
+func TestPrevCtxCache(t *testing.T) {
+	key := types.NewKVStoreKey("firstKVStore")
+	secondKey := types.NewKVStoreKey("secondKVStore")
+
+	ctx := defaultContext(key)
+	secondctx := defaultContext(secondKey)
+
+	CacheStore.Add("PrevCtx", ctx)
+
 }
 
 // Testing saving/loading sdk type values to/from the context

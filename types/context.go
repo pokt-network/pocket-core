@@ -3,8 +3,9 @@ package types
 import (
 	"context"
 	"errors"
-	"github.com/tendermint/tendermint/store"
 	"time"
+
+	"github.com/tendermint/tendermint/store"
 
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -41,6 +42,7 @@ type Context struct {
 	consParams    *abci.ConsensusParams
 	eventManager  *EventManager
 	appVersion    string
+	CachedStore   *Cache
 }
 
 type Ctx interface {
@@ -86,6 +88,8 @@ type Ctx interface {
 	CacheContext() (cc Context, writeCache func())
 	IsZero() bool
 	AppVersion() string
+	WithCache(cache *Cache) Context
+	ClearGlobalCache()
 }
 
 // Proposed rename, not done to avoid API breakage
@@ -106,6 +110,11 @@ func (c Context) IsCheckTx() bool             { return c.checkTx }
 func (c Context) MinGasPrices() DecCoins      { return c.minGasPrice }
 func (c Context) EventManager() *EventManager { return c.eventManager }
 func (c Context) AppVersion() string          { return c.appVersion }
+func (c Context) WithCache(cache *Cache) Context {
+	c.CachedStore = cache
+	return c
+}
+func (c Context) ClearGlobalCache() { c.CachedStore.Purge() }
 
 // clone the header before returning
 func (c Context) BlockHeader() abci.Header {
@@ -142,7 +151,23 @@ func (c Context) MustGetPrevCtx(height int64) Context {
 	return con
 }
 
+func (c Context) getFromCache(key string) (interface{}, bool) {
+	if c.CachedStore == nil {
+		return nil, false
+	}
+	return c.CachedStore.Get(key)
+}
+func (c Context) addToCache(key string, i interface{}) (evicted bool) {
+	if c.CachedStore == nil {
+		return false
+	}
+	return c.CachedStore.Add(key, i)
+}
+
 func (c Context) PrevCtx(height int64) (Context, error) {
+	if cachedCtx, ok := c.getFromCache("PrevCtx"); ok {
+		return cachedCtx.(Context), nil
+	}
 	if height == c.BlockHeight() {
 		header := c.BlockHeader()
 		if header.LastBlockId.Hash == nil {
@@ -190,7 +215,10 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 		EvidenceHash:       meta.Header.EvidenceHash,
 		ProposerAddress:    meta.Header.ProposerAddress,
 	}
-	return NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams), nil
+	newCtx := NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams)
+	// TODO cache new ctx
+	_ = c.addToCache("PrevCtx", newCtx)
+	return newCtx, nil
 }
 
 func (c Context) WithBlockStore(bs *store.BlockStore) Context {
