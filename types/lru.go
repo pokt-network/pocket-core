@@ -4,8 +4,6 @@ import (
 	"github.com/hashicorp/golang-lru/simplelru"
 )
 
-var CacheStore *Cache = NewCache(20)
-
 // Cache is a thread-safe fixed cap LRU cache.
 type Cache struct {
 	lru simplelru.LRUCache
