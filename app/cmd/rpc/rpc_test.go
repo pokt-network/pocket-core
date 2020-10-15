@@ -5,8 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/pocket-core/crypto"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -15,6 +13,9 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/pocket-core/crypto"
 
 	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 

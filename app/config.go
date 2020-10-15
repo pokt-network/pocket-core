@@ -31,6 +31,7 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/spf13/cobra"
+	con "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -40,6 +41,44 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
+)
+
+const (
+	DefaultDDName                     = ".pocket"
+	DefaultKeybaseName                = "pocket-keybase"
+	DefaultPVKName                    = "priv_val_key.json"
+	DefaultPVSName                    = "priv_val_state.json"
+	DefaultNKName                     = "node_key.json"
+	DefaultChainsName                 = "chains.json"
+	DefaultGenesisName                = "genesis.json"
+	DefaultRPCPort                    = "8081"
+	DefaultSessionDBType              = dbm.CLevelDBBackend
+	DefaultEvidenceDBType             = dbm.CLevelDBBackend
+	DefaultSessionDBName              = "session"
+	DefaultEvidenceDBName             = "pocket_evidence"
+	DefaultTMURI                      = "tcp://localhost:26657"
+	DefaultMaxSessionCacheEntries     = 500
+	DefaultMaxEvidenceCacheEntries    = 500
+	DefaultListenAddr                 = "tcp://0.0.0.0:"
+	DefaultClientBlockSyncAllowance   = 10
+	DefaultJSONSortRelayResponses     = true
+	DefaultDBBackend                  = string(dbm.CLevelDBBackend)
+	DefaultTxIndexer                  = "kv"
+	DefaultTxIndexTags                = "tx.hash,tx.height,message.sender,transfer.recipient"
+	ConfigDirName                     = "config"
+	ConfigFileName                    = "config.json"
+	ApplicationDBName                 = "application"
+	PlaceholderHash                   = "0001"
+	PlaceholderURL                    = "http://127.0.0.1:8081"
+	PlaceholderServiceURL             = PlaceholderURL
+	DefaultRemoteCLIURL               = "http://localhost:8081"
+	DefaultUserAgent                  = ""
+	DefaultValidatorCacheSize         = 500
+	DefaultApplicationCacheSize       = DefaultValidatorCacheSize
+	DefaultPocketPrometheusListenAddr = "8083"
+	DefaultPrometheusMaxOpenFile      = 3
+	DefaultRPCTimeout                 = 3000
+	DefaultCtxCacheSize               = 20
 )
 
 var (
@@ -55,6 +94,36 @@ var (
 	// global genesis type
 	GlobalGenesisType GenesisType
 )
+
+type Config struct {
+	TendermintConfig con.Config   `json:"tendermint_config"`
+	PocketConfig     PocketConfig `json:"pocket_config"`
+}
+
+type PocketConfig struct {
+	DataDir                  string            `json:"data_dir"`
+	GenesisName              string            `json:"genesis_file"`
+	ChainsName               string            `json:"chains_name"`
+	SessionDBType            dbm.DBBackendType `json:"session_db_type"`
+	SessionDBName            string            `json:"session_db_name"`
+	EvidenceDBType           dbm.DBBackendType `json:"evidence_db_type"`
+	EvidenceDBName           string            `json:"evidence_db_name"`
+	TendermintURI            string            `json:"tendermint_uri"`
+	KeybaseName              string            `json:"keybase_name"`
+	RPCPort                  string            `json:"rpc_port"`
+	ClientBlockSyncAllowance int               `json:"client_block_sync_allowance"`
+	MaxEvidenceCacheEntires  int               `json:"max_evidence_cache_entries"`
+	MaxSessionCacheEntries   int               `json:"max_session_cache_entries"`
+	JSONSortRelayResponses   bool              `json:"json_sort_relay_responses"`
+	RemoteCLIURL             string            `json:"remote_cli_url"`
+	UserAgent                string            `json:"user_agent"`
+	ValidatorCacheSize       int64             `json:"validator_cache_size"`
+	ApplicationCacheSize     int64             `json:"application_cache_size"`
+	RPCTimeout               int64             `json:"rpc_timeout"`
+	PrometheusAddr           string            `json:"pocket_prometheus_port"`
+	PrometheusMaxOpenfiles   int               `json:"prometheus_max_open_files"`
+	CtxCacheSize             int               `json:"ctx_cache_size"`
+}
 
 type GenesisType int
 
@@ -89,6 +158,7 @@ func DefaultConfig(dataDir string) Config {
 			RPCTimeout:               DefaultRPCTimeout,
 			PrometheusAddr:           DefaultPocketPrometheusListenAddr,
 			PrometheusMaxOpenfiles:   DefaultPrometheusMaxOpenFile,
+			CtxCacheSize:             DefaultCtxCacheSize,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
@@ -119,10 +189,11 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000
 	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 2000000000
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
+	sdk.InitCtxCache(c.PocketConfig.CtxCacheSize)
 	return c
 }
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, cacheSize int) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	// init the keyfiles
@@ -133,7 +204,6 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	logger := InitLogger()
 	// init cache
 	InitPocketCoreConfig(chains, logger)
-	sdk.InitCtxCache(cacheSize)
 	// init genesis
 	InitGenesis(genesisType)
 	// init the tendermint node
