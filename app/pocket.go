@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
@@ -42,12 +41,11 @@ type PocketCoreApp struct {
 	govKeeper     govKeeper.Keeper
 	pocketKeeper  pocketKeeper.Keeper
 	// Module Manager
-	mm               *module.Manager
-	GlobalCacheStore *sdk.Cache
+	mm *module.Manager
 }
 
 // new pocket core base
-func NewPocketBaseApp(logger log.Logger, db db.DB, cacheSize int, options ...func(*bam.BaseApp)) *PocketCoreApp {
+func NewPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)) *PocketCoreApp {
 	Codec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), options...)
@@ -59,17 +57,11 @@ func NewPocketBaseApp(logger log.Logger, db db.DB, cacheSize int, options ...fun
 	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
 	// add params Keys too
 	// Create the application
-
-	// setup a global cache system
-	globalCache := sdk.NewCache(cacheSize)
-	fmt.Println(globalCache)
-
 	return &PocketCoreApp{
-		BaseApp:          bApp,
-		cdc:              cdc,
-		Keys:             k,
-		Tkeys:            tkeys,
-		GlobalCacheStore: globalCache,
+		BaseApp: bApp,
+		cdc:     cdc,
+		Keys:    k,
+		Tkeys:   tkeys,
 	}
 }
 
@@ -96,12 +88,12 @@ func (app *PocketCoreApp) InitChainerWithGenesis(ctx sdk.Ctx, req abci.RequestIn
 
 // setups all of the begin blockers for each module
 func (app *PocketCoreApp) BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
-	return app.mm.BeginBlock(ctx.WithCache(app.GlobalCacheStore), req)
+	return app.mm.BeginBlock(ctx, req)
 }
 
 // setups all of the end blockers for each module
 func (app *PocketCoreApp) EndBlocker(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
-	return app.mm.EndBlock(ctx.WithCache(app.GlobalCacheStore), req)
+	return app.mm.EndBlock(ctx, req)
 }
 
 // ModuleAccountAddrs returns all the pcInstance's module account addresses.

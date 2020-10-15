@@ -133,10 +133,11 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	logger := InitLogger()
 	// init cache
 	InitPocketCoreConfig(chains, logger)
+	sdk.InitCtxCache(cacheSize)
 	// init genesis
 	InitGenesis(genesisType)
 	// init the tendermint node
-	return InitTendermint(keybase, chains, logger, cacheSize)
+	return InitTendermint(keybase, chains, logger)
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
@@ -247,7 +248,7 @@ func InitGenesis(genesisType GenesisType) {
 	}
 }
 
-func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger, cacheSize int) *node.Node {
+func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger) *node.Node {
 	c := cfg.Config{
 		TmConfig:    &GlobalConfig.TendermintConfig,
 		Logger:      logger,
@@ -261,7 +262,7 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 		keys = MustGetKeybase()
 	}
 	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, cacheSize, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, baseapp.SetPruning(store.PruneNothing))
 	}
 	tmNode, app, err := NewClient(config(c), appCreatorFunc)
 	if err != nil {
