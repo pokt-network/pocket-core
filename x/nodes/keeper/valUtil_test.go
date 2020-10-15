@@ -83,7 +83,7 @@ func TestValidatorCaching(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetValidator(context, test.args.validator)
 			validator, _ := keeper.validatorCache.Get(test.args.validator.Address.String())
-			assert.True(t, validator.Equals(test.expected.validator), "validator does not match")
+			assert.True(t, validator.(types.Validator).Equals(test.expected.validator), "validator does not match")
 		})
 	}
 
@@ -117,13 +117,13 @@ func TestValidatorCachingAfterUpdate(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			keeper.SetValidator(context, test.args.validator)
 			validator, _ := keeper.validatorCache.Get(test.args.validator.Address.String())
-			assert.True(t, validator.Equals(test.expected.validator), "validator does not match")
+			assert.True(t, validator.(types.Validator).Equals(test.expected.validator), "validator does not match")
 			modifiedVal := test.args.validator
 			modifiedVal.Chains = []string{"00", "01", "03"}
 			modifiedVal.UpdateStatus(types2.Unstaking)
 			keeper.SetValidator(context, test.args.validator)
 			validator2, _ := keeper.validatorCache.Get(test.args.validator.Address.String())
-			assert.True(t, validator2.Equals(modifiedVal), "validator does not match")
+			assert.True(t, validator2.(types.Validator).Equals(modifiedVal), "validator does not match")
 		})
 	}
 
