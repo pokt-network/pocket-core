@@ -3,14 +3,15 @@ package pocketcore
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"time"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"math/rand"
-	"time"
 )
 
 // type check to ensure the interface is properly implemented
@@ -50,8 +51,8 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 
 // "AppModule" - The higher level building block for a module
 type AppModule struct {
-	AppModuleBasic       // a fundamental structure for all mods
-	keeper keeper.Keeper // responsible for store operations
+	AppModuleBasic               // a fundamental structure for all mods
+	keeper         keeper.Keeper // responsible for store operations
 }
 
 // "NewAppModule" - Creates a new AppModule Object

@@ -2,15 +2,15 @@ package keeper
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math/rand"
 	"testing"
+
+	"time"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
-	"time"
 )
 
 func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
@@ -104,7 +104,7 @@ func TestPseudoRandomSelection(t *testing.T) {
 		dataArr[selection] = dataArr[selection] + 1
 	}
 	// print the results
-	for i := 0; uint64(i) < max; i++ {
-		fmt.Printf("index %d, was selected %d times\n", i, dataArr[i])
-	}
+	// for i := 0; uint64(i) < max; i++ {
+	// 	fmt.Printf("index %d, was selected %d times\n", i, dataArr[i])
+	// }
 }

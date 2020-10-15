@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	cfg "github.com/pokt-network/pocket-core/config"
@@ -40,7 +41,8 @@ type PocketCoreApp struct {
 	govKeeper     govKeeper.Keeper
 	pocketKeeper  pocketKeeper.Keeper
 	// Module Manager
-	mm *module.Manager
+	mm               *module.Manager
+	GlobalCacheStore *sdk.Cache
 }
 
 // new pocket core base
@@ -56,11 +58,16 @@ func NewPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
 	// add params Keys too
 	// Create the application
+
+	// setup a global cache system
+	globalCache := sdk.NewCache(10)
+
 	return &PocketCoreApp{
-		BaseApp: bApp,
-		cdc:     cdc,
-		Keys:    k,
-		Tkeys:   tkeys,
+		BaseApp:          bApp,
+		cdc:              cdc,
+		Keys:             k,
+		Tkeys:            tkeys,
+		GlobalCacheStore: globalCache,
 	}
 }
 
@@ -87,12 +94,12 @@ func (app *PocketCoreApp) InitChainerWithGenesis(ctx sdk.Ctx, req abci.RequestIn
 
 // setups all of the begin blockers for each module
 func (app *PocketCoreApp) BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
-	return app.mm.BeginBlock(ctx, req)
+	return app.mm.BeginBlock(ctx.WithCache(app.GlobalCacheStore), req)
 }
 
 // setups all of the end blockers for each module
 func (app *PocketCoreApp) EndBlocker(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
-	return app.mm.EndBlock(ctx, req)
+	return app.mm.EndBlock(ctx.WithCache(app.GlobalCacheStore), req)
 }
 
 // ModuleAccountAddrs returns all the pcInstance's module account addresses.

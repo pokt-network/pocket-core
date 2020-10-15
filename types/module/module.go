@@ -29,6 +29,7 @@ package module
 
 import (
 	"encoding/json"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -263,12 +264,12 @@ func (m *Manager) ExportGenesis(ctx sdk.Ctx) map[string]json.RawMessage {
 // child context with an event manager to aggregate events emitted from all
 // modules.
 func (m *Manager) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+	ctx.ClearGlobalCache()
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 
 	for _, moduleName := range m.OrderBeginBlockers {
 		m.Modules[moduleName].BeginBlock(ctx, req)
 	}
-
 	return abci.ResponseBeginBlock{
 		Events: ctx.EventManager().ABCIEvents(),
 	}
@@ -278,6 +279,7 @@ func (m *Manager) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.Respo
 // child context with an event manager to aggregate events emitted from all
 // modules.
 func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
+	ctx.ClearGlobalCache()
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 	validatorUpdates := []abci.ValidatorUpdate{}
 
@@ -294,7 +296,6 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 			validatorUpdates = moduleValUpdates
 		}
 	}
-
 	return abci.ResponseEndBlock{
 		ValidatorUpdates: validatorUpdates,
 		Events:           ctx.EventManager().ABCIEvents(),
