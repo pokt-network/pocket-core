@@ -229,11 +229,11 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 			Block: meta.Header.Version.Block.Uint64(),
 			App:   meta.Header.Version.App.Uint64(),
 		},
-		ChainID:  meta.Header.ChainID,
-		Height:   meta.Header.Height,
-		Time:     meta.Header.Time,
-		NumTxs:   meta.Header.NumTxs,
-		TotalTxs: meta.Header.TotalTxs,
+		ChainID: meta.Header.ChainID,
+		Height:  meta.Header.Height,
+		Time:    meta.Header.Time,
+		//NumTxs:   meta.Header.NumTxs,
+		//TotalTxs: meta.Header.TotalTxs,
 		LastBlockId: abci.BlockID{
 			Hash: hash,
 			PartsHeader: abci.PartSetHeader{

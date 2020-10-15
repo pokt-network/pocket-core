@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"github.com/tendermint/tendermint/rpc/client/local"
 	"io"
 	"os"
 	"testing"
@@ -205,7 +206,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	app.SetTxIndexer(tmNode.TxIndexer())
 	app.SetBlockstore(tmNode.BlockStore())
 	app.SetEvidencePool(tmNode.EvidencePool())
-	app.pocketKeeper.TmNode = client.NewLocal(tmNode)
+	app.pocketKeeper.TmNode = local.New(tmNode)
 	app.SetTendermintNode(tmNode)
 	return tmNode, kb
 }
