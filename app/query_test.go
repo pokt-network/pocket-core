@@ -23,7 +23,6 @@ import (
 	"github.com/tendermint/iavl/common"
 	"github.com/tendermint/tendermint/libs/log"
 	tmTypes "github.com/tendermint/tendermint/types"
-	db "github.com/tendermint/tm-db"
 	"gopkg.in/h2non/gock.v1"
 )
 
@@ -34,9 +33,9 @@ func init() {
 	sdk.GlobalCtxCache.Purge()
 	logger := log.NewNopLogger()
 	// init cache in memory
-	pocketTypes.InitConfig("", "data", "data", db.MemDBBackend, db.MemDBBackend, 100, 100, "pocket_evidence", "session", pocketTypes.HostedBlockchains{
+	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
-	}, logger, "26660", 3, 3000)
+	}, logger, sdk.DefaultTestingPocketConfig())
 	os.Exit(0)
 }
 func TestQueryBlock(t *testing.T) {

@@ -7,6 +7,7 @@ import (
 // Cache is a thread-safe fixed cap LRU cache.
 type Cache struct {
 	lru simplelru.LRUCache
+	cap int
 }
 
 // New creates an LRU of the given cap.
@@ -17,6 +18,7 @@ func NewCache(size int) *Cache {
 	}
 	c := &Cache{
 		lru: lru,
+		cap: size,
 	}
 	return c
 }
@@ -115,4 +117,8 @@ func (c *Cache) Keys() []interface{} {
 func (c *Cache) Len() int {
 	length := c.lru.Len()
 	return length
+}
+
+func (c *Cache) Cap() int {
+	return c.cap
 }
