@@ -97,16 +97,6 @@ func TestLogContext(t *testing.T) {
 	ctx.Logger().Error("error")
 	require.Equal(t, *logger.logs, []string{"debug", "info", "error"})
 }
-func TestPrevCtxCache(t *testing.T) {
-	key := types.NewKVStoreKey("firstKVStore")
-	secondKey := types.NewKVStoreKey("secondKVStore")
-
-	ctx := defaultContext(key)
-	secondctx := defaultContext(secondKey)
-
-	CacheStore.Add("PrevCtx", ctx)
-
-}
 
 // Testing saving/loading sdk type values to/from the context
 func TestContextWithCustom(t *testing.T) {

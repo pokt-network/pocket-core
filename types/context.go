@@ -3,6 +3,7 @@ package types
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/tendermint/tendermint/store"
@@ -165,7 +166,7 @@ func (c Context) addToCache(key string, i interface{}) (evicted bool) {
 }
 
 func (c Context) PrevCtx(height int64) (Context, error) {
-	if cachedCtx, ok := c.getFromCache("PrevCtx"); ok {
+	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("PrevCtx%v", height)); ok {
 		return cachedCtx.(Context), nil
 	}
 	if height == c.BlockHeight() {
@@ -216,8 +217,7 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 		ProposerAddress:    meta.Header.ProposerAddress,
 	}
 	newCtx := NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams)
-	// TODO cache new ctx
-	_ = c.addToCache("PrevCtx", newCtx)
+	_ = c.addToCache(fmt.Sprintf("PrevCtx%v", height), newCtx)
 	return newCtx, nil
 }
 

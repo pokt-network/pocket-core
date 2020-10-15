@@ -17,7 +17,8 @@ func TestCache(t *testing.T) {
 		t.FailNow()
 	}
 
-	if v.(Foo) != f {
+	rec, _ := v.(Foo)
+	if rec != f {
 		t.FailNow()
 	}
 	testCache.Purge()
