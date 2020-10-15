@@ -86,7 +86,10 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 }
 
 // "BeginBlock" - Functionality that is called at the beginning of (every) block
-func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
+	// delete the expired claims
+	am.keeper.DeleteExpiredClaims(ctx)
+}
 
 // "EndBlock" - Functionality that is called at the end of (every) block
 func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
@@ -119,8 +122,6 @@ func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Validat
 	} else {
 		ctx.Logger().Error("could not get self address in end block")
 	}
-	// delete the expired claims
-	am.keeper.DeleteExpiredClaims(ctx)
 	return []abci.ValidatorUpdate{}
 }
 
