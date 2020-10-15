@@ -129,9 +129,6 @@ func InitCtxCache(size int) {
 // create a new context
 func NewContext(ms MultiStore, header abci.Header, isCheckTx bool, logger log.Logger) Context {
 	// https://github.com/gogo/protobuf/issues/519
-	// if GlobalCtxCache == nil {
-	// 	GlobalCtxCache = NewCache(20)
-	// }
 	header.Time = header.Time.UTC()
 	return Context{
 		ctx:          context.Background(),

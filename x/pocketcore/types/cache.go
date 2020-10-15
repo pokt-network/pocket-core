@@ -3,11 +3,12 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
+	"log"
+	"sync"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	db "github.com/tendermint/tm-db"
 	"github.com/willf/bloom"
-	"log"
-	"sync"
 )
 
 var (
@@ -21,7 +22,7 @@ var (
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
 type CacheStorage struct {
-	Cache *Cache     // lru cache
+	Cache *sdk.Cache // lru cache
 	DB    db.DB      // persisted
 	l     sync.Mutex // lock
 }
@@ -37,11 +38,7 @@ type CacheObject interface {
 // "Init" - Initializes a cache storage object
 func (cs *CacheStorage) Init(dir, name string, dbType db.DBBackendType, maxEntries int) {
 	// init the lru cache with a max entries
-	var err error
-	cs.Cache, err = New(maxEntries)
-	if err != nil {
-		log.Fatal(fmt.Errorf("could not initialize cache storage: " + err.Error()))
-	}
+	cs.Cache = sdk.NewCache(maxEntries)
 	// intialize the db
 	cs.DB = db.NewDB(name, dbType, dir)
 }
