@@ -87,7 +87,7 @@ var exportGenesisForReset = &cobra.Command{
 			return
 		}
 		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db, 10)
+		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db)
 		// initialize stores
 		blockStore, _, _, _, err := state.BlocksAndStateFromDB(&app.GlobalConfig.TendermintConfig, state.DefaultDBProvider)
 		if err != nil {
@@ -131,7 +131,7 @@ var unsafeRollbackCmd = &cobra.Command{
 			return
 		}
 		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketBaseApp(log.NewTMLogger(loggerFile), db, 10)
+		a := app.NewPocketBaseApp(log.NewTMLogger(loggerFile), db)
 		// initialize stores
 		a.MountKVStores(a.Keys)
 		a.MountTransientStores(a.Tkeys)
