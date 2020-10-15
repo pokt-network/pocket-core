@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
@@ -46,7 +47,7 @@ type PocketCoreApp struct {
 }
 
 // new pocket core base
-func NewPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)) *PocketCoreApp {
+func NewPocketBaseApp(logger log.Logger, db db.DB, cacheSize int, options ...func(*bam.BaseApp)) *PocketCoreApp {
 	Codec()
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
 	bApp := bam.NewBaseApp(appName, logger, db, auth.DefaultTxDecoder(cdc), options...)
@@ -60,7 +61,8 @@ func NewPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 	// Create the application
 
 	// setup a global cache system
-	globalCache := sdk.NewCache(10)
+	globalCache := sdk.NewCache(cacheSize)
+	fmt.Println(globalCache)
 
 	return &PocketCoreApp{
 		BaseApp:          bApp,

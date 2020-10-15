@@ -2,12 +2,13 @@ package cli
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/state"
-	"os"
-	"strconv"
 )
 
 func init() {
@@ -86,7 +87,7 @@ var exportGenesisForReset = &cobra.Command{
 			return
 		}
 		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db)
+		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db, 10)
 		// initialize stores
 		blockStore, _, _, _, err := state.BlocksAndStateFromDB(&app.GlobalConfig.TendermintConfig, state.DefaultDBProvider)
 		if err != nil {
@@ -130,7 +131,7 @@ var unsafeRollbackCmd = &cobra.Command{
 			return
 		}
 		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketBaseApp(log.NewTMLogger(loggerFile), db)
+		a := app.NewPocketBaseApp(log.NewTMLogger(loggerFile), db, 10)
 		// initialize stores
 		a.MountKVStores(a.Keys)
 		a.MountTransientStores(a.Tkeys)

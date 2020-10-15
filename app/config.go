@@ -4,6 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	log2 "log"
+	"os"
+	fp "path/filepath"
+	"strings"
+	"syscall"
+
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/pokt-network/pocket-core/baseapp"
@@ -32,13 +40,6 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
-	"io"
-	"io/ioutil"
-	log2 "log"
-	"os"
-	fp "path/filepath"
-	"strings"
-	"syscall"
 )
 
 var (
@@ -63,7 +64,65 @@ const (
 	DefaultGenesisType
 )
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType) *node.Node {
+func DefaultConfig(dataDir string) Config {
+	c := Config{
+		TendermintConfig: *con.DefaultConfig(),
+		PocketConfig: PocketConfig{
+			DataDir:                  dataDir,
+			GenesisName:              DefaultGenesisName,
+			ChainsName:               DefaultChainsName,
+			SessionDBType:            DefaultSessionDBType,
+			SessionDBName:            DefaultSessionDBName,
+			EvidenceDBType:           DefaultEvidenceDBType,
+			EvidenceDBName:           DefaultEvidenceDBName,
+			TendermintURI:            DefaultTMURI,
+			KeybaseName:              DefaultKeybaseName,
+			RPCPort:                  DefaultRPCPort,
+			ClientBlockSyncAllowance: DefaultClientBlockSyncAllowance,
+			MaxEvidenceCacheEntires:  DefaultMaxEvidenceCacheEntries,
+			MaxSessionCacheEntries:   DefaultMaxSessionCacheEntries,
+			JSONSortRelayResponses:   DefaultJSONSortRelayResponses,
+			RemoteCLIURL:             DefaultRemoteCLIURL,
+			UserAgent:                DefaultUserAgent,
+			ValidatorCacheSize:       DefaultValidatorCacheSize,
+			ApplicationCacheSize:     DefaultApplicationCacheSize,
+			RPCTimeout:               DefaultRPCTimeout,
+			PrometheusAddr:           DefaultPocketPrometheusListenAddr,
+			PrometheusMaxOpenfiles:   DefaultPrometheusMaxOpenFile,
+		},
+	}
+	c.TendermintConfig.SetRoot(dataDir)
+	c.TendermintConfig.NodeKey = DefaultNKName
+	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
+	c.TendermintConfig.PrivValidatorState = DefaultPVSName
+	c.TendermintConfig.P2P.AddrBookStrict = false
+	c.TendermintConfig.P2P.MaxNumInboundPeers = 250
+	c.TendermintConfig.P2P.MaxNumOutboundPeers = 250
+	c.TendermintConfig.LogLevel = "*:info, *:error"
+	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
+	c.TendermintConfig.TxIndex.IndexTags = DefaultTxIndexTags
+	c.TendermintConfig.DBBackend = DefaultDBBackend
+	c.TendermintConfig.RPC.GRPCMaxOpenConnections = 2500
+	c.TendermintConfig.RPC.MaxOpenConnections = 2500
+	c.TendermintConfig.Mempool.Size = 9000
+	c.TendermintConfig.Mempool.CacheSize = 9000
+	c.TendermintConfig.Consensus.TimeoutPropose = 60000000000
+	c.TendermintConfig.Consensus.TimeoutProposeDelta = 10000000000
+	c.TendermintConfig.Consensus.TimeoutPrevote = 60000000000
+	c.TendermintConfig.Consensus.TimeoutPrevoteDelta = 10000000000
+	c.TendermintConfig.Consensus.TimeoutPrecommit = 60000000000
+	c.TendermintConfig.Consensus.TimeoutPrecommitDelta = 10000000000
+	c.TendermintConfig.Consensus.TimeoutCommit = 900000000000
+	c.TendermintConfig.Consensus.SkipTimeoutCommit = false
+	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
+	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = 900000000000
+	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000
+	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 2000000000
+	c.TendermintConfig.P2P.AllowDuplicateIP = true
+	return c
+}
+
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, cacheSize int) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	// init the keyfiles
@@ -77,7 +136,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// init genesis
 	InitGenesis(genesisType)
 	// init the tendermint node
-	return InitTendermint(keybase, chains, logger)
+	return InitTendermint(keybase, chains, logger, cacheSize)
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
@@ -188,7 +247,7 @@ func InitGenesis(genesisType GenesisType) {
 	}
 }
 
-func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger) *node.Node {
+func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger, cacheSize int) *node.Node {
 	c := cfg.Config{
 		TmConfig:    &GlobalConfig.TendermintConfig,
 		Logger:      logger,
@@ -202,7 +261,7 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 		keys = MustGetKeybase()
 	}
 	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, cacheSize, baseapp.SetPruning(store.PruneNothing))
 	}
 	tmNode, app, err := NewClient(config(c), appCreatorFunc)
 	if err != nil {
