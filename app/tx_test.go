@@ -4,11 +4,12 @@ package app
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/log"
 	"math/rand"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/tendermint/tendermint/libs/log"
 
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 
@@ -29,6 +30,7 @@ import (
 func TestMain(m *testing.M) {
 	pocketTypes.ClearSessionCache()
 	pocketTypes.ClearEvidence()
+	sdk.InitCtxCache(10)
 	logger := log.NewNopLogger()
 	// init cache in memory
 	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{

@@ -44,7 +44,7 @@ type Context struct {
 	consParams    *abci.ConsensusParams
 	eventManager  *EventManager
 	appVersion    string
-	CachedStore   *Cache
+	cachedStore   *Cache
 }
 
 type Ctx interface {
@@ -90,7 +90,6 @@ type Ctx interface {
 	CacheContext() (cc Context, writeCache func())
 	IsZero() bool
 	AppVersion() string
-	WithCache(cache *Cache) Context
 	ClearGlobalCache()
 }
 
@@ -112,11 +111,7 @@ func (c Context) IsCheckTx() bool             { return c.checkTx }
 func (c Context) MinGasPrices() DecCoins      { return c.minGasPrice }
 func (c Context) EventManager() *EventManager { return c.eventManager }
 func (c Context) AppVersion() string          { return c.appVersion }
-func (c Context) WithCache(cache *Cache) Context {
-	c.CachedStore = cache
-	return c
-}
-func (c Context) ClearGlobalCache() { c.CachedStore.Purge() }
+func (c Context) ClearGlobalCache()           { c.cachedStore.Purge() }
 
 // clone the header before returning
 func (c Context) BlockHeader() abci.Header {
@@ -134,9 +129,9 @@ func InitCtxCache(size int) {
 // create a new context
 func NewContext(ms MultiStore, header abci.Header, isCheckTx bool, logger log.Logger) Context {
 	// https://github.com/gogo/protobuf/issues/519
-	if GlobalCtxCache == nil {
-		GlobalCtxCache = NewCache(20)
-	}
+	// if GlobalCtxCache == nil {
+	// 	GlobalCtxCache = NewCache(20)
+	// }
 	header.Time = header.Time.UTC()
 	return Context{
 		ctx:          context.Background(),
@@ -148,7 +143,7 @@ func NewContext(ms MultiStore, header abci.Header, isCheckTx bool, logger log.Lo
 		gasMeter:     stypes.NewInfiniteGasMeter(),
 		minGasPrice:  DecCoins{},
 		eventManager: NewEventManager(),
-		CachedStore:  GlobalCtxCache,
+		cachedStore:  GlobalCtxCache,
 	}
 }
 
@@ -161,20 +156,20 @@ func (c Context) MustGetPrevCtx(height int64) Context {
 }
 
 func (c Context) getFromCache(key string) (interface{}, bool) {
-	if c.CachedStore == nil {
+	if c.cachedStore == nil {
 		return nil, false
 	}
-	return c.CachedStore.Get(key)
+	return c.cachedStore.Get(key)
 }
 func (c Context) addToCache(key string, i interface{}) (evicted bool) {
-	if c.CachedStore == nil {
+	if c.cachedStore == nil {
 		return false
 	}
-	return c.CachedStore.Add(key, i)
+	return c.cachedStore.Add(key, i)
 }
 
 func (c Context) PrevCtx(height int64) (Context, error) {
-	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%v", height)); ok {
+	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
 		return cachedCtx.(Context), nil
 	}
 	if height == c.BlockHeight() {
@@ -224,8 +219,8 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 		EvidenceHash:       meta.Header.EvidenceHash,
 		ProposerAddress:    meta.Header.ProposerAddress,
 	}
-	newCtx := NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams).WithCache(c.CachedStore)
-	_ = c.addToCache(fmt.Sprintf("%v", height), newCtx)
+	newCtx := NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams)
+	_ = c.addToCache(fmt.Sprintf("%d", height), newCtx)
 	return newCtx, nil
 }
 
