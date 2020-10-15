@@ -20,6 +20,7 @@ var (
 	seeds           string
 	simulateRelay   bool
 	keybase         bool
+	cacheSize       int
 	mainnet         bool
 	testnet         bool
 )
@@ -54,6 +55,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	startCmd.Flags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
 	startCmd.Flags().BoolVar(&keybase, "keybase", true, "run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
+	startCmd.Flags().IntVar(&cacheSize, "cacheStoreSize", 10, "increase or decrease cache store size")
 	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
 	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
 	rootCmd.AddCommand(startCmd)
@@ -78,7 +80,7 @@ var startCmd = &cobra.Command{
 		if testnet {
 			genesisType = app.TestnetGenesisType
 		}
-		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType)
+		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, cacheSize)
 		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay)
 		// trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
