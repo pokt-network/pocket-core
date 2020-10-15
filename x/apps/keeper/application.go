@@ -11,9 +11,9 @@ import (
 
 // GetApplication - Retrieve a single application from the main store
 func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types.Application, found bool) {
-	application, found = k.ApplicationCache.Get(addr.String())
+	app, found := k.ApplicationCache.Get(addr.String())
 	if found {
-		return application, found
+		return app.(types.Application), found
 	}
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForAppByAllApps(addr))

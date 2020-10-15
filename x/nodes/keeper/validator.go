@@ -8,9 +8,9 @@ import (
 
 // GetValidator - Retrieve validator with address from the main store
 func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
-	validator, found = k.validatorCache.Get(addr.String())
+	val, found := k.validatorCache.Get(addr.String())
 	if found {
-		return validator, found
+		return val.(types.Validator), found
 	}
 	store := ctx.KVStore(k.storeKey)
 	value := store.Get(types.KeyForValByAllVals(addr))

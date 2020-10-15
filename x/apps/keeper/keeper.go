@@ -22,7 +22,7 @@ type Keeper struct {
 	// codespace
 	codespace sdk.CodespaceType
 	// Cache
-	ApplicationCache *types.Cache
+	ApplicationCache *sdk.Cache
 }
 
 // NewKeeper creates a new staking Keeper instance
@@ -33,10 +33,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, su
 	if addr := supplyKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
 		log2.Fatal(fmt.Errorf("%s module account has not been set", types.StakedPoolName))
 	}
-	cache, err := types.New(int(types.ApplicationCacheSize))
-	if err != nil {
-		log2.Fatal(fmt.Errorf("%d is an invalid size", types.ApplicationCacheSize))
-	}
+	cache := sdk.NewCache(int(types.ApplicationCacheSize))
 
 	return Keeper{
 		storeKey:         key,
