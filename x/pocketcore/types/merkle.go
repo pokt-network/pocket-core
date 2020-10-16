@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"math"
-	"reflect"
 	"sort"
 	"strconv"
 
@@ -14,6 +13,10 @@ import (
 type Range struct {
 	Lower uint64 `json:"lower"`
 	Upper uint64 `json:"upper"`
+}
+
+func (r Range) Equal(r2 Range) bool {
+	return r.Lower == r2.Lower && r.Upper == r2.Upper
 }
 
 func (r Range) Bytes() []byte {
@@ -44,6 +47,10 @@ func uint64ToBytes(a uint64) (bz []byte) {
 type HashRange struct {
 	Hash  []byte `json:"merkleHash"`
 	Range Range  `json:"range"`
+}
+
+func (hr HashRange) Equal(hr2 HashRange) bool {
+	return bytes.Equal(hr.Hash, hr2.Hash) && hr.Range.Equal(hr2.Range)
 }
 
 func (hr HashRange) isValidRange() bool {
@@ -119,7 +126,7 @@ func (mp MerkleProof) Validate(root HashRange, leaf Proof, totalRelays int64) (i
 		mp.TargetIndex /= 2
 	}
 	// ensure root == verification for leaf and cousin
-	return reflect.DeepEqual(root, mp.Target)
+	return root.Equal(mp.Target)
 }
 
 // "sumFromHash" - get leaf sum from merkleHash
