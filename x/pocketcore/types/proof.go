@@ -36,15 +36,16 @@ type RelayProof struct {
 
 // "ValidateLocal" - Validates the proof object, where the owner of the proof is the local node
 func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64, verifyPubKey string) sdk.Error {
+	//Basic Validations
+	err := rp.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	// validate the public key correctness
 	if rp.ServicerPubKey != verifyPubKey {
 		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
 	}
-	// validate the verify public key format
-	if err := PubKeyVerification(verifyPubKey); err != nil {
-		return NewInvalidNodePubKeyError(ModuleName)
-	}
-	err := rp.Validate(appSupportedBlockchains, sessionNodeCount, sessionBlockHeight)
+	err = rp.Validate(appSupportedBlockchains, sessionNodeCount, sessionBlockHeight)
 	if err != nil {
 		return err
 	}
@@ -53,11 +54,6 @@ func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNode
 
 // "Validate" - Validates the relay proof object
 func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error {
-	//Basic Validations
-	err := rp.ValidateBasic()
-	if err != nil {
-		return err
-	}
 	// validate the session block height
 	if rp.SessionBlockHeight != sessionBlockHeight {
 		return NewInvalidBlockHeightError(ModuleName)

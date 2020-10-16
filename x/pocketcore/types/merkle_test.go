@@ -6,12 +6,37 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
+	"runtime"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/willf/bloom"
 )
+
+func TestMultiAppend(t *testing.T) {
+	h1 := merkleHash([]byte("a"))
+	h2 := merkleHash([]byte("b"))
+	sum := uint64ToBytes(0, 1000000)
+	m := runtime.MemStats{}
+	m2 := runtime.MemStats{}
+	var start time.Time
+	runtime.ReadMemStats(&m)
+	start = time.Now()
+	x := merkleHash(append(append(h1, h2...), sum...))
+	fmt.Println(time.Since(start))
+	runtime.ReadMemStats(&m2)
+	fmt.Println(m2.Alloc - m.Alloc)
+	m = runtime.MemStats{}
+	m2 = runtime.MemStats{}
+	runtime.ReadMemStats(&m)
+	start = time.Now()
+	y := merkleHash(MultiAppend(MerkleHashLength*2+16, h1, h2, sum))
+	fmt.Println(time.Since(start))
+	runtime.ReadMemStats(&m2)
+	fmt.Println(m2.Alloc - m.Alloc)
+	assert.Equal(t, x, y)
+}
 
 func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 	ClearEvidence()
