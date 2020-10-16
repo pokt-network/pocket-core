@@ -1026,19 +1026,6 @@ func (_m *Ctx) WithVoteInfos(voteInfo []abcitypes.VoteInfo) pocketTypes.Context 
 	return r0
 }
 
-// WithCache provides a mock function with given fields: cache
-func (_m *Ctx) WithCache(cache *pocketTypes.Cache) pocketTypes.Context {
-	ret := _m.Called(cache)
-
-	var r0 pocketTypes.Context
-	if rf, ok := ret.Get(0).(func(*pocketTypes.Cache) pocketTypes.Context); ok {
-		r0 = rf(cache)
-	} else {
-		r0 = ret.Get(0).(pocketTypes.Context)
-	}
-
-	return r0
-}
 func (_m *Ctx) ClearGlobalCache() {
 	_m.Called()
 }
