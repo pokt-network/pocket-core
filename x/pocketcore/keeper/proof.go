@@ -120,10 +120,6 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
 		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
 	}
-	// validate number of proofs
-	if minProofs := k.MinimumNumberOfProofs(sessionCtx); claim.TotalProofs < minProofs {
-		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
-	}
 	// validate the merkle proofs
 	isValid := proof.MerkleProof.Validate(claim.MerkleRoot, proof.Leaf, claim.TotalProofs)
 	// if is not valid for other reasons
@@ -184,15 +180,14 @@ type pseudorandomGenerator struct {
 // generates the required pseudorandom index for the zero knowledge proof
 func (k Keeper) getPseudorandomIndex(ctx sdk.Ctx, totalRelays int64, header pc.SessionHeader, sessionCtx sdk.Ctx) (int64, error) {
 	// get the context for the proof (the proof context is X sessions after the session began)
-	proofContext, err := ctx.PrevCtx(header.SessionBlockHeight + k.ClaimSubmissionWindow(sessionCtx)*k.BlocksPerSession(sessionCtx)) // next session block hash
+	proofHeight := header.SessionBlockHeight + k.ClaimSubmissionWindow(sessionCtx)*k.BlocksPerSession(sessionCtx) // next session block hash
+	// get the pseudorandomGenerator json bytes
+	blockHashBz, err := ctx.GetPrevBlockHash(proofHeight)
 	if err != nil {
 		return 0, err
 	}
-	// get the pseudorandomGenerator json bytes
-	proofBlockHeader := proofContext.BlockHeader()
-	blockHash := hex.EncodeToString(proofBlockHeader.GetLastBlockId().Hash)
 	headerHash := header.HashString()
-	pseudoGenerator := pseudorandomGenerator{blockHash, headerHash}
+	pseudoGenerator := pseudorandomGenerator{hex.EncodeToString(blockHashBz), headerHash}
 	r, err := json.Marshal(pseudoGenerator)
 	if err != nil {
 		return 0, err

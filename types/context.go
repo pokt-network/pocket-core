@@ -68,6 +68,7 @@ type Ctx interface {
 	PrevCtx(height int64) (Context, error)
 	WithBlockStore(bs *store.BlockStore) Context
 	BlockStore() *store.BlockStore
+	GetPrevBlockHash(height int64) (hash []byte, err error)
 	WithContext(ctx context.Context) Context
 	WithMultiStore(ms MultiStore) Context
 	WithBlockHeader(header abci.Header) Context
@@ -171,11 +172,37 @@ func (c Context) addToCache(key string, i interface{}) (evicted bool) {
 	return c.cachedStore.Add(key, i)
 }
 
+func (c Context) GetPrevBlockHash(height int64) (hash []byte, err error) {
+	if height == c.BlockHeight() {
+		header := c.BlockHeader()
+		if header.LastBlockId.Hash == nil {
+			return header.ConsensusHash, nil
+		}
+		return header.LastBlockId.Hash, nil
+	}
+	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
+		c := cachedCtx.(Context)
+		if c.header.LastBlockId.Hash == nil {
+			return c.header.ConsensusHash, nil
+		}
+		return c.header.LastBlockId.Hash, nil
+	}
+	meta := c.blockstore.LoadBlockMeta(height)
+	if meta == nil {
+		return nil, errors.New("block at height not found")
+	}
+	hash = meta.Header.LastBlockID.Hash
+	if hash == nil {
+		hash = meta.Header.ConsensusHash
+	}
+	return
+}
+
 func (c Context) PrevCtx(height int64) (Context, error) {
 	if height == c.BlockHeight() {
 		header := c.BlockHeader()
 		if header.LastBlockId.Hash == nil {
-			header.LastBlockId.Hash = c.BlockHeader().ConsensusHash
+			header.LastBlockId.Hash = header.ConsensusHash
 		}
 		return c.WithBlockHeader(header), nil
 	}

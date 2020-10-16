@@ -10,6 +10,8 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
+const MerkleHashLength = blake2b.Size256
+
 type Range struct {
 	Lower uint64 `json:"lower"`
 	Upper uint64 `json:"upper"`
@@ -20,7 +22,7 @@ func (r Range) Equal(r2 Range) bool {
 }
 
 func (r Range) Bytes() []byte {
-	return append(uint64ToBytes(r.Lower), uint64ToBytes(r.Upper)...)
+	return uint64ToBytes(r.Lower, r.Upper)
 }
 
 type proofAndRanges struct {
@@ -36,21 +38,31 @@ func (a SortByProof) Swap(i, j int) {
 }
 func (a SortByProof) Less(i, j int) bool { return a.hr[i].Range.Upper < a.hr[j].Range.Upper }
 
-// "uint64ToBytes" - convert the uint64 to bytes
-func uint64ToBytes(a uint64) (bz []byte) {
-	bz = make([]byte, 8)
-	binary.LittleEndian.PutUint64(bz, a)
-	return
+func uint64ToBytes(a uint64, x uint64) []byte {
+	b := make([]byte, 16)
+	b[0] = byte(a)
+	b[1] = byte(a >> 8)
+	b[2] = byte(a >> 16)
+	b[3] = byte(a >> 24)
+	b[4] = byte(a >> 32)
+	b[5] = byte(a >> 40)
+	b[6] = byte(a >> 48)
+	b[7] = byte(a >> 56)
+	b[8] = byte(x)
+	b[9] = byte(x >> 8)
+	b[10] = byte(x >> 16)
+	b[11] = byte(x >> 24)
+	b[12] = byte(x >> 32)
+	b[13] = byte(x >> 40)
+	b[14] = byte(x >> 48)
+	b[15] = byte(x >> 56)
+	return b
 }
 
 // "HashRange" - A structure to represent the merkleHash and the range at an index in the merkle sum tree
 type HashRange struct {
 	Hash  []byte `json:"merkleHash"`
 	Range Range  `json:"range"`
-}
-
-func (hr HashRange) Equal(hr2 HashRange) bool {
-	return bytes.Equal(hr.Hash, hr2.Hash) && hr.Range.Equal(hr2.Range)
 }
 
 func (hr HashRange) isValidRange() bool {
@@ -61,6 +73,10 @@ func (hr HashRange) isValidRange() bool {
 		return false
 	}
 	return true
+}
+
+func (hr HashRange) Equal(hr2 HashRange) bool {
+	return bytes.Equal(hr.Hash, hr2.Hash) && hr.Range.Lower == hr2.Range.Lower && hr.Range.Upper == hr2.Range.Upper
 }
 
 // "MerkleProof" - A structure used to verify a leaf of the tree.
@@ -131,8 +147,6 @@ func (mp MerkleProof) Validate(root HashRange, leaf Proof, totalRelays int64) (i
 
 // "sumFromHash" - get leaf sum from merkleHash
 func sumFromHash(hash []byte) uint64 {
-	hashCopy := make([]byte, len(hash))
-	copy(hashCopy, hash)
 	return binary.LittleEndian.Uint64(hash[:8])
 }
 
@@ -189,7 +203,7 @@ func merkleProof(data []HashRange, index int, p *MerkleProof) MerkleProof {
 
 // "newParentHash" - Compute the merkleHash of the parent by hashing the hashes, sum and parent
 func parentHash(hash1, hash2 []byte, r Range) []byte {
-	return merkleHash(append(append(hash1, hash2...), r.Bytes()...))
+	return merkleHash(MultiAppend(MerkleHashLength*2+16, hash1, hash2, r.Bytes()))
 }
 
 // "merkleHash" - the merkleHash function used in the merkle tree
@@ -321,4 +335,12 @@ func structureProofs(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
 		lower = hashRanges[i].Range.Upper
 	}
 	return hashRanges, proofs
+}
+
+func MultiAppend(size int, s ...[]byte) []byte {
+	b, i := make([]byte, size), 0
+	for _, v := range s {
+		i += copy(b[i:], v)
+	}
+	return b
 }
