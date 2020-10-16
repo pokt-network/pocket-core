@@ -124,7 +124,7 @@ type PocketConfig struct {
 	RPCTimeout               int64           `json:"rpc_timeout"`
 	PrometheusAddr           string          `json:"pocket_prometheus_port"`
 	PrometheusMaxOpenfiles   int             `json:"prometheus_max_open_files"`
-	CtxCacheSize             int               `json:"ctx_cache_size"`
+	CtxCacheSize             int             `json:"ctx_cache_size"`
 }
 
 type GenesisType int
