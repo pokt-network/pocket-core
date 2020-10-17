@@ -403,6 +403,10 @@ type Ctx struct {
 	mock.Mock
 }
 
+func (_m *Ctx) IsPrevCtx() bool {
+	return true
+}
+
 // BlockGasMeter provides a mock function with given fields:
 func (_m *Ctx) BlockGasMeter() storeTypes.GasMeter {
 	ret := _m.Called()
