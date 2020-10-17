@@ -4,14 +4,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"math"
-
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/util"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/rpc/client"
+	"math"
 )
 
 // auto sends a proof transaction for the claim
