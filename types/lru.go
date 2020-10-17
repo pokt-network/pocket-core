@@ -34,9 +34,26 @@ func (c *Cache) Add(key string, value interface{}) (evicted bool) {
 	return evicted
 }
 
+// Add adds a value to the cache. Returns true if an eviction occurred.
+func (c *Cache) AddWithCtx(ctx Ctx, key string, value interface{}) (evicted bool) {
+	if ctx.IsPrevCtx() {
+		return
+	}
+	evicted = c.lru.Add(key, value)
+	return evicted
+}
+
 // Get looks up a key's value from the cache.
 func (c *Cache) Get(key string) (value interface{}, ok bool) {
 	return c.lru.Get(key)
+}
+
+// Add adds a value to the cache. Returns true if an eviction occurred.
+func (c *Cache) GetWithCtx(ctx Ctx, key string) (value interface{}, ok bool) {
+	if ctx.IsPrevCtx() {
+		return
+	}
+	return c.Get(key)
 }
 
 // Contains checks if a key is in the cache, without updating the
@@ -73,6 +90,14 @@ func (c *Cache) PeekOrAdd(key, value interface{}) (previous interface{}, ok, evi
 
 	evicted = c.lru.Add(key, value)
 	return nil, false, evicted
+}
+
+// Remove removes the provided key from the cache.
+func (c *Cache) RemoveWithCtx(ctx Ctx, key string) (present bool) {
+	if ctx.IsPrevCtx() {
+		return
+	}
+	return c.Remove(key)
 }
 
 // Remove removes the provided key from the cache.
