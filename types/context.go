@@ -45,6 +45,7 @@ type Context struct {
 	eventManager  *EventManager
 	appVersion    string
 	cachedStore   *Cache
+	isPrev        bool
 }
 
 type Ctx interface {
@@ -91,6 +92,7 @@ type Ctx interface {
 	IsZero() bool
 	AppVersion() string
 	ClearGlobalCache()
+	IsPrevCtx() bool
 }
 
 // Proposed rename, not done to avoid API breakage
@@ -150,6 +152,10 @@ func (c Context) MustGetPrevCtx(height int64) Context {
 		panic(err)
 	}
 	return con
+}
+
+func (c Context) IsPrevCtx() bool {
+	return c.isPrev
 }
 
 func (c Context) getFromCache(key string) (interface{}, bool) {
@@ -218,7 +224,7 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 		EvidenceHash:       meta.Header.EvidenceHash,
 		ProposerAddress:    meta.Header.ProposerAddress,
 	}
-	newCtx := NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams)
+	newCtx := NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams).SetPrevCtx(true)
 	_ = c.addToCache(fmt.Sprintf("%d", height), newCtx)
 	return newCtx, nil
 }
@@ -230,6 +236,11 @@ func (c Context) WithBlockStore(bs *store.BlockStore) Context {
 
 func (c Context) WithAppVersion(version string) Context {
 	c.appVersion = version
+	return c
+}
+
+func (c Context) SetPrevCtx(b bool) Context {
+	c.isPrev = b
 	return c
 }
 

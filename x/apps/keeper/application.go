@@ -11,7 +11,7 @@ import (
 
 // GetApplication - Retrieve a single application from the main store
 func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types.Application, found bool) {
-	app, found := k.ApplicationCache.Get(addr.String())
+	app, found := k.ApplicationCache.GetWithCtx(ctx, addr.String())
 	if found {
 		return app.(types.Application), found
 	}
@@ -25,7 +25,7 @@ func (k Keeper) GetApplication(ctx sdk.Ctx, addr sdk.Address) (application types
 		k.Logger(ctx).Error("could not unmarshal application from store")
 		return application, false
 	}
-	_ = k.ApplicationCache.Add(addr.String(), application)
+	_ = k.ApplicationCache.AddWithCtx(ctx, addr.String(), application)
 	return application, true
 }
 
@@ -39,7 +39,7 @@ func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	}
 	store.Set(types.KeyForAppByAllApps(application.Address), bz)
 	ctx.Logger().Info("Setting App on Main Store " + application.Address.String())
-	_ = k.ApplicationCache.Add(application.Address.String(), application)
+	_ = k.ApplicationCache.AddWithCtx(ctx, application.Address.String(), application)
 }
 
 // GetAllApplications - Retrieve the set of all applications with no limits from the main store
