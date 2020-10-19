@@ -40,6 +40,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
 	mockCtx.On("PrevCtx", header.SessionBlockHeight).Return(ctx, nil)
 	mockCtx.On("PrevCtx", header.SessionBlockHeight+keeper.ClaimSubmissionWindow(ctx)*keeper.BlocksPerSession(ctx)).Return(ctx, nil)
+	mockCtx.On("GetPrevBlockHash", header.SessionBlockHeight).Return(ctx.BlockHeader().LastBlockId.Hash, nil)
 
 	// generate the pseudorandom proof
 	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header, mockCtx)

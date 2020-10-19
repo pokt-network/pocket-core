@@ -108,6 +108,15 @@ func (v Validator) UpdateStatus(newStatus sdk.StakeStatus) Validator {
 	return v
 }
 
+func (v Validator) HasChain(netID string) bool {
+	for _, c := range v.Chains {
+		if c == netID {
+			return true
+		}
+	}
+	return false
+}
+
 // return the TM validator address
 func (v Validator) GetChains() []string            { return v.Chains }
 func (v Validator) GetServiceURL() string          { return v.ServiceURL }

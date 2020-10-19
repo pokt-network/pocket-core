@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
@@ -33,7 +34,15 @@ func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.
 		// add to cache
 		types.SetSession(session)
 	}
-	return &types.DispatchResponse{Session: session, BlockHeight: ctx.BlockHeight()}, nil
+	actualNodes := make([]exported.ValidatorI, len(session.SessionNodes))
+	for i, addr := range session.SessionNodes {
+		actualNodes[i], _ = k.GetNode(sessionCtx, addr)
+	}
+	return &types.DispatchResponse{Session: types.DispatchSession{
+		SessionHeader: session.SessionHeader,
+		SessionKey:    session.SessionKey,
+		SessionNodes:  actualNodes,
+	}, BlockHeight: ctx.BlockHeight()}, nil
 }
 
 // "IsSessionBlock" - Returns true if current block, is a session block (beginning of a session)

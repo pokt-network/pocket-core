@@ -71,7 +71,13 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 		mProof, leaf := evidence.GenerateMerkleProof(int(index))
 		// if prevalidation on, then pre-validate
 		if pc.GlobalPocketConfig.ProofPrevalidation {
-			if !mProof.Validate(claim.MerkleRoot, leaf, claim.TotalProofs) {
+			// validate level count on claim by total relays
+			levelCount := len(mProof.HashRanges)
+			if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
+				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d, level count", claim.ApplicationPubKey, claim.SessionBlockHeight))
+				continue
+			}
+			if !mProof.Validate(claim.MerkleRoot, leaf, levelCount) {
 				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d", claim.ApplicationPubKey, claim.SessionBlockHeight))
 				continue
 			}
@@ -99,6 +105,21 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	if !found {
 		return servicerAddr, claim, pc.NewClaimNotFoundError(pc.ModuleName)
 	}
+	// validate level count on claim by total relays
+	levelCount := len(proof.MerkleProof.HashRanges)
+	if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
+		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
+	}
+	var hasMatch bool
+	for _, m := range proof.MerkleProof.HashRanges {
+		if claim.MerkleRoot.Range.Upper == m.Range.Upper {
+			hasMatch = true
+			break
+		}
+	}
+	if !hasMatch && proof.MerkleProof.Target.Range.Upper != claim.MerkleRoot.Range.Upper {
+		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
+	}
 	// get the session context
 	sessionCtx, err := ctx.PrevCtx(claim.SessionBlockHeight)
 	if err != nil {
@@ -114,13 +135,8 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	if reqProof != int64(proof.MerkleProof.TargetIndex) {
 		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
 	}
-	// validate level count on claim by total relays
-	levelCount := len(proof.MerkleProof.HashRanges)
-	if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
-		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
-	}
 	// validate the merkle proofs
-	isValid := proof.MerkleProof.Validate(claim.MerkleRoot, proof.Leaf, claim.TotalProofs)
+	isValid := proof.MerkleProof.Validate(claim.MerkleRoot, proof.Leaf, levelCount)
 	// if is not valid for other reasons
 	if !isValid {
 		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)

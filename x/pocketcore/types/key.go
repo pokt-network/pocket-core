@@ -14,6 +14,8 @@ var (
 	ClaimKey = []byte{0x02} // key for pending claims
 )
 
+var ClaimLen = len(ClaimKey)
+
 // "KeyForClaim" - Generates the key for the claim object for the state store
 func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceType EvidenceType) ([]byte, error) {
 	// validat the header
@@ -33,7 +35,8 @@ func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceTy
 		return nil, err
 	}
 	// return the key bz
-	return append(append(append(ClaimKey, addr.Bytes()...), header.Hash()...), et), nil
+	b := make([]byte, HashLength+ClaimLen+sdk.AddrLen+1)
+	return MultiAppend(b, ClaimKey, addr.Bytes(), header.Hash(), []byte{et}), nil
 }
 
 // "KeyForClaims" - Generates the key for the claims object

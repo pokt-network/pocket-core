@@ -29,7 +29,7 @@ func (k Keeper) SetStakedValidatorByChains(ctx sdk.Ctx, validator types.Validato
 }
 
 // GetValidatorByChains - Returns the validator staked by network identifier
-func (k Keeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []exported.ValidatorI) {
+func (k Keeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, count int) {
 	cBz, err := hex.DecodeString(networkID)
 	if err != nil {
 		ctx.Logger().Error(fmt.Errorf("could not hex decode chains when GetValidatorByChain: with network ID: %s, at height: %d", networkID, ctx.BlockHeight()).Error())
@@ -39,14 +39,10 @@ func (k Keeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators 
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		address := types.AddressForValidatorByNetworkIDKey(iterator.Key(), cBz)
-		validator, found := k.GetValidator(ctx, address)
-		if !found {
-			ctx.Logger().Error(fmt.Errorf("valdiator: %s, not found in the world state for GetValidatorsByChain call, at height: %d", address, ctx.BlockHeight()).Error())
-			continue
-		}
-		validators = append(validators, validator)
+		count++
+		validators = append(validators, address)
 	}
-	return validators
+	return validators, count
 }
 
 func (k Keeper) deleteValidatorForChains(ctx sdk.Ctx, validator types.Validator) {

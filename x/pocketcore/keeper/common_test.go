@@ -407,19 +407,6 @@ func (_m *Ctx) IsPrevCtx() bool {
 	return true
 }
 
-func (_m *Ctx) GetPrevBlockHash(height int64) (hash []byte, err error) {
-	ret := _m.Called()
-
-	var r0 abcitypes.Header
-	if rf, ok := ret.Get(0).(func() abcitypes.Header); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(abcitypes.Header)
-	}
-
-	return r0.LastBlockId.Hash, nil
-}
-
 // BlockGasMeter provides a mock function with given fields:
 func (_m *Ctx) BlockGasMeter() storeTypes.GasMeter {
 	ret := _m.Called()

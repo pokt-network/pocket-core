@@ -35,14 +35,18 @@ type RelayProof struct {
 }
 
 // "ValidateLocal" - Validates the proof object, where the owner of the proof is the local node
-func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64, verifyPubKey string) sdk.Error {
+func (rp RelayProof) ValidateLocal(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64, verifyAddr sdk.Address) sdk.Error {
 	//Basic Validations
 	err := rp.ValidateBasic()
 	if err != nil {
 		return err
 	}
+	servicerPublicKey, er := crypto.NewPublicKey(rp.ServicerPubKey)
+	if er != nil {
+		return NewInvalidNodePubKeyError(ModuleName)
+	}
 	// validate the public key correctness
-	if rp.ServicerPubKey != verifyPubKey {
+	if !sdk.Address(servicerPublicKey.Address()).Equals(verifyAddr) {
 		return NewInvalidNodePubKeyError(ModuleName) // the public key is not this nodes, so they would not get paid
 	}
 	err = rp.Validate(appSupportedBlockchains, sessionNodeCount, sessionBlockHeight)
@@ -63,6 +67,7 @@ func (rp RelayProof) Validate(appSupportedBlockchains []string, sessionNodeCount
 	for _, chain := range appSupportedBlockchains {
 		if rp.Blockchain == chain {
 			c1 = true
+			break
 		}
 	}
 	if !c1 {
@@ -90,7 +95,7 @@ func (rp RelayProof) ValidateBasic() sdk.Error {
 		return err
 	}
 	// verify non negative index
-	if rp.Entropy < 0 {
+	if rp.Entropy < 0 { // todo this is inefficient
 		return NewInvalidEntropyError(ModuleName)
 	}
 	// verify a valid token
@@ -208,7 +213,7 @@ var _ Proof = ChallengeProofInvalidData{} // compile time interface implementati
 // "ValidateLocal" - Validate local is used to validate a challenge request directly from a client
 func (c ChallengeProofInvalidData) ValidateLocal(h SessionHeader, maxRelays sdk.Int, supportedBlockchains []string, sessionNodeCount int, sessionNodes SessionNodes, selfAddr sdk.Address) sdk.Error {
 	// check if verifyPubKey in session (must be in session to do challenges)
-	if !sessionNodes.ContainsAddress(selfAddr) {
+	if !sessionNodes.Contains(selfAddr) {
 		return NewNodeNotInSessionError(ModuleName)
 	}
 	sessionblockHeight := h.SessionBlockHeight

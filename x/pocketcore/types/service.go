@@ -7,8 +7,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
-	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
-	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
+	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -26,8 +25,7 @@ type Relay struct {
 }
 
 // "Validate" - Checks the validity of a relay request using store data
-func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.ValidatorI, hb *HostedBlockchains, sessionBlockHeight int64,
-	sessionNodeCount int, app appexported.ApplicationI) (maxPossibleRelays sdk.Int, err sdk.Error) {
+func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, node sdk.Address, hb *HostedBlockchains, sessionBlockHeight int64) (maxPossibleRelays sdk.Int, err sdk.Error) {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return sdk.ZeroInt(), NewEmptyPayloadDataError(ModuleName)
@@ -44,14 +42,32 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 	if !hb.Contains(r.Proof.Blockchain) {
 		return sdk.ZeroInt(), NewUnsupportedBlockchainNodeError(ModuleName)
 	}
-	evidenceHeader := SessionHeader{
+	// ensure session block height == one in the relay proof
+	if r.Proof.SessionBlockHeight != sessionBlockHeight {
+		return sdk.ZeroInt(), NewInvalidBlockHeightError(ModuleName)
+	}
+	// get the application that staked on behalf of the client
+	app, found := GetAppFromPublicKey(ctx, appsKeeper, r.Proof.Token.ApplicationPublicKey)
+	if !found {
+		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
+	}
+	// get the session context
+	sessionCtx, er := ctx.PrevCtx(sessionBlockHeight)
+	if er != nil {
+		return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
+	}
+	// get session node count from that session height
+	sessionNodeCount := pocketKeeper.SessionNodeCount(sessionCtx)
+	// get max possible relays
+	maxPossibleRelays = MaxPossibleRelays(app, sessionNodeCount)
+	// generate the session header
+	header := SessionHeader{
 		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
 		Chain:              r.Proof.Blockchain,
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
-	maxPossibleRelays = MaxPossibleRelays(app, int64(sessionNodeCount))
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofs(evidenceHeader, RelayEvidence, maxPossibleRelays)
+	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays)
 	// get evidence key by proof
 	if !IsUniqueProof(r.Proof, evidence) {
 		return sdk.ZeroInt(), NewDuplicateProofError(ModuleName)
@@ -61,26 +77,15 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		return sdk.ZeroInt(), NewOverServiceError(ModuleName)
 	}
 	// validate the Proof
-	if err := r.Proof.ValidateLocal(app.GetChains(), sessionNodeCount, sessionBlockHeight, node.GetPublicKey().RawString()); err != nil {
+	if err := r.Proof.ValidateLocal(app.GetChains(), int(sessionNodeCount), sessionBlockHeight, node); err != nil {
 		return sdk.ZeroInt(), err
-	}
-	// get the sessionContext
-	sessionContext, er := ctx.PrevCtx(sessionBlockHeight)
-	if er != nil {
-		return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
-	}
-	// generate the header
-	header := SessionHeader{
-		ApplicationPubKey:  app.GetPublicKey().RawString(),
-		Chain:              r.Proof.Blockchain,
-		SessionBlockHeight: sessionBlockHeight,
 	}
 	// check cache
 	session, found := GetSession(header)
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
-		session, err = NewSession(sessionContext, ctx, keeper, header, BlockHash(sessionContext), sessionNodeCount)
+		session, err = NewSession(sessionCtx, ctx, posKeeper, header, BlockHash(sessionCtx), int(sessionNodeCount))
 		if err != nil {
 			return sdk.ZeroInt(), err
 		}
@@ -88,7 +93,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, keeper PosKeeper, node nodeexported.Valida
 		SetSession(session)
 	}
 	// validate the session
-	err = session.Validate(node, app, sessionNodeCount)
+	err = session.Validate(node, app, int(sessionNodeCount))
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
@@ -270,8 +275,14 @@ type ChallengeResponse struct {
 
 // "DispatchResponse" - The response object used in dispatching
 type DispatchResponse struct {
-	Session     Session `json:"session"`
-	BlockHeight int64   `json:"block_height"`
+	Session     DispatchSession `json:"session"`
+	BlockHeight int64           `json:"block_height"`
+}
+
+type DispatchSession struct {
+	SessionHeader `json:"header"`
+	SessionKey    `json:"key"`
+	SessionNodes  []exported.ValidatorI `json:"nodes"`
 }
 
 // "executeHTTPRequest" takes in the raw json string and forwards it to the RPC endpoint
