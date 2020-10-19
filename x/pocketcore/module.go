@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -90,6 +91,10 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
+	if ctx.BlockHeight() == 7200 {
+		fmt.Println("block 7200 reached (benchmark)")
+		os.Exit(0)
+	}
 }
 
 // "EndBlock" - Functionality that is called at the end of (every) block
