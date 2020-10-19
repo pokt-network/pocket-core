@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -52,8 +51,8 @@ func (AppModuleBasic) ValidateGenesis(bytes json.RawMessage) error {
 
 // "AppModule" - The higher level building block for a module
 type AppModule struct {
-	AppModuleBasic               // a fundamental structure for all mods
-	keeper         keeper.Keeper // responsible for store operations
+	AppModuleBasic       // a fundamental structure for all mods
+	keeper keeper.Keeper // responsible for store operations
 }
 
 // "NewAppModule" - Creates a new AppModule Object
@@ -91,10 +90,6 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
-	if ctx.BlockHeight() == 7200 {
-		fmt.Println("block 7200 reached (benchmark)")
-		os.Exit(0)
-	}
 }
 
 // "EndBlock" - Functionality that is called at the end of (every) block
