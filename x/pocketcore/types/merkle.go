@@ -40,22 +40,8 @@ func (a SortByProof) Less(i, j int) bool { return a.hr[i].Range.Upper < a.hr[j].
 
 func uint64ToBytes(a uint64, x uint64) []byte {
 	b := make([]byte, 16)
-	b[0] = byte(a)
-	b[1] = byte(a >> 8)
-	b[2] = byte(a >> 16)
-	b[3] = byte(a >> 24)
-	b[4] = byte(a >> 32)
-	b[5] = byte(a >> 40)
-	b[6] = byte(a >> 48)
-	b[7] = byte(a >> 56)
-	b[8] = byte(x)
-	b[9] = byte(x >> 8)
-	b[10] = byte(x >> 16)
-	b[11] = byte(x >> 24)
-	b[12] = byte(x >> 32)
-	b[13] = byte(x >> 40)
-	b[14] = byte(x >> 48)
-	b[15] = byte(x >> 56)
+	binary.LittleEndian.PutUint64(b, a)
+	binary.LittleEndian.PutUint64(b[8:], x)
 	return b
 }
 
