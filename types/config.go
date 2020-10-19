@@ -149,6 +149,7 @@ func DefaultTestingPocketConfig() PocketConfig {
 	c := DefaultConfig("data")
 	c.PocketConfig.EvidenceDBType = db.MemDBBackend
 	c.PocketConfig.SessionDBType = db.MemDBBackend
+	c.PocketConfig.MaxClaimAgeForProofRetry = 1000
 	return c.PocketConfig
 }
 
