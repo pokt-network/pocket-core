@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
-	"os"
 	"strings"
 	"testing"
 
@@ -37,7 +36,6 @@ func TestMain(m *testing.M) {
 		M: make(map[string]pocketTypes.HostedBlockchain),
 	}, logger, sdk.DefaultTestingPocketConfig())
 	m.Run()
-	os.Exit(0)
 }
 
 func TestUnstakeApp(t *testing.T) {

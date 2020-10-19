@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"os"
 	"reflect"
 	"testing"
 
@@ -36,7 +35,6 @@ func init() {
 	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
 	}, logger, sdk.DefaultTestingPocketConfig())
-	os.Exit(0)
 }
 func TestQueryBlock(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
