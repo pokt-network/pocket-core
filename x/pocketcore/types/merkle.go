@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
-	"math"
 	"sort"
 	"strconv"
 
@@ -129,11 +128,6 @@ func (mp MerkleProof) Validate(root HashRange, leaf Proof, numOfLevels int) (isV
 // "sumFromHash" - get leaf sum from merkleHash
 func sumFromHash(hash []byte) uint64 {
 	return binary.LittleEndian.Uint64(hash[:8])
-}
-
-// "newLevelIsValid" - Ensure that the number of levels in the relayProof is valid
-func levelsIsValid(leafNumOfLevels int, totalRelays int64) (numOfLevels int, isValid bool) {
-	return leafNumOfLevels, nextPowerOfTwo(uint(totalRelays)) == uint(math.Pow(2, float64(leafNumOfLevels)))
 }
 
 // "nextPowrOfTwo" - Computes the next power of 2 given an u-integer
