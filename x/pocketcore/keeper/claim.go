@@ -107,7 +107,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		return pc.NewChainNotSupportedErr(pc.ModuleName)
 	}
 	// get the node from the keeper (at the state of the start of the session)
-	node, found := k.GetNode(sessionContext, claim.FromAddress)
+	_, found := k.GetNode(sessionContext, claim.FromAddress)
 	// if not found return not found error
 	if !found {
 		return pc.NewNodeNotFoundErr(pc.ModuleName)
@@ -137,7 +137,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		}
 	}
 	// validate the session
-	err = session.Validate(node, app, sessionNodeCount)
+	err = session.Validate(claim.FromAddress, app, sessionNodeCount)
 	if err != nil {
 		return err
 	}

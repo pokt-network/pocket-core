@@ -17,7 +17,7 @@ type PosKeeper interface {
 	GetStakedValidators(ctx sdk.Ctx) (validators []nodesexported.ValidatorI)
 	BlocksPerSession(ctx sdk.Ctx) (res int64)
 	StakeDenom(ctx sdk.Ctx) (res string)
-	GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []nodesexported.ValidatorI)
+	GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, total int)
 }
 
 type AppsKeeper interface {
@@ -26,6 +26,10 @@ type AppsKeeper interface {
 	AllApplications(ctx sdk.Ctx) (applications []appexported.ApplicationI)
 	TotalTokens(ctx sdk.Ctx) sdk.Int
 	JailApplication(ctx sdk.Ctx, addr sdk.Address)
+}
+
+type PocketKeeper interface {
+	SessionNodeCount(ctx sdk.Ctx) (res int64)
 }
 
 type AuthKeeper interface {

@@ -87,14 +87,9 @@ type MerkleProof struct {
 }
 
 // "Validate" - Verifies the Proof from the leaf/cousin node data, the merkle root, and the Proof object
-func (mp MerkleProof) Validate(root HashRange, leaf Proof, totalRelays int64) (isValid bool) {
+func (mp MerkleProof) Validate(root HashRange, leaf Proof, numOfLevels int) (isValid bool) {
 	// ensure root lower is zero
 	if root.Range.Lower != 0 {
-		return
-	}
-	// check if levels and total relays is valid
-	numOfLevels, valid := levelsIsValid(len(mp.HashRanges), totalRelays)
-	if !valid {
 		return
 	}
 	// check to see that target merkleHash is leaf merkleHash
@@ -203,7 +198,7 @@ func merkleProof(data []HashRange, index int, p *MerkleProof) MerkleProof {
 
 // "newParentHash" - Compute the merkleHash of the parent by hashing the hashes, sum and parent
 func parentHash(hash1, hash2 []byte, r Range) []byte {
-	return merkleHash(MultiAppend(MerkleHashLength*2+16, hash1, hash2, r.Bytes()))
+	return merkleHash(MultiAppend(make([]byte, MerkleHashLength*2+16), hash1, hash2, r.Bytes()))
 }
 
 // "merkleHash" - the merkleHash function used in the merkle tree
@@ -337,10 +332,10 @@ func structureProofs(proofs []Proof) (d []HashRange, sortedProofs []Proof) {
 	return hashRanges, proofs
 }
 
-func MultiAppend(size int, s ...[]byte) []byte {
-	b, i := make([]byte, size), 0
+func MultiAppend(dest []byte, s ...[]byte) []byte {
+	i := 0
 	for _, v := range s {
-		i += copy(b[i:], v)
+		i += copy(dest[i:], v)
 	}
-	return b
+	return dest
 }

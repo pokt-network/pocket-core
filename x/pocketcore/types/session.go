@@ -6,7 +6,7 @@ import (
 	"fmt"
 	sdk "github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
-	nodeexported "github.com/pokt-network/pocket-core/x/nodes/exported"
+	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"log"
 )
 
@@ -46,7 +46,7 @@ func NewSession(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, sessionHeader Session
 }
 
 // "Validate" - Validates a session object
-func (s Session) Validate(node nodeexported.ValidatorI, app appexported.ApplicationI, sessionNodeCount int) sdk.Error {
+func (s Session) Validate(node sdk.Address, app appexported.ApplicationI, sessionNodeCount int) sdk.Error {
 	// validate chain
 	if len(s.Chain) == 0 {
 		return NewEmptyNonNativeChainError(ModuleName)
@@ -106,54 +106,42 @@ func (s Session) Key() ([]byte, error) {
 }
 
 // "SessionNodes" - Service nodes in a session
-type SessionNodes []nodeexported.ValidatorI
+type SessionNodes []sdk.Address
 
 // "NewSessionNodes" - Generates nodes for the session
 func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
-	// validate chain
-	if len(chain) == 0 {
-		return nil, NewEmptyNonNativeChainError(ModuleName)
-	}
-	// validate sessionKey
-	if err = sessionKey.Validate(); err != nil {
-		return nil, NewInvalidSessionKeyError(ModuleName, err)
-	}
-	// all nodes at session genesis
-	nodes := keeper.GetValidatorsByChain(sessionCtx, chain)
-	// get the total number of nodes
-	totalNodes := int64(len(nodes))
-	// validate nodes
-	if len(nodes) < sessionNodesCount {
+	// all nodesAddrs at session genesis
+	nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
+	// validate nodesAddrs
+	if totalNodes < sessionNodesCount {
 		return nil, NewInsufficientNodesError(ModuleName)
 	}
 	sessionNodes = make(SessionNodes, sessionNodesCount)
-	// only select the nodes if not jailed
+	var node exported.ValidatorI
+	// only select the nodesAddrs if not jailed
 	for i, numOfNodes := 0, 0; ; i++ {
 		// generate the random index
-		index := PseudorandomSelection(sdk.NewInt(totalNodes), sessionKey)
+		index := PseudorandomSelection(sdk.NewInt(int64(totalNodes)), sessionKey)
 		// merkleHash the session key to provide new entropy
 		sessionKey = Hash(sessionKey)
 		// get the node from the array
-		n := nodes[index.Int64()]
+		n := nodesAddrs[index.Int64()]
 		// cross check the node from the `new` or `end` world state
-		res := keeper.Validator(ctx, n.GetAddress())
+		node = keeper.Validator(ctx, n)
 		// if not found or jailed, don't add to session and continue
-		if res == nil || res.IsJailed() {
-			continue
-		}
-		if sessionNodes.ContainsAddress(res.GetAddress()) {
+		if node == nil || node.IsJailed() || sessionNodes.Contains(node.GetAddress()) {
 			continue
 		}
 		// else add the node to the session
 		sessionNodes[numOfNodes] = n
-		// increment the number of nodes in the sessionNodes slice
+		// increment the number of nodesAddrs in the sessionNodes slice
 		numOfNodes++
 		// if maxing out the session count end loop
 		if numOfNodes == sessionNodesCount {
 			break
 		}
 	}
-	// return the nodes
+	// return the nodesAddrs
 	return sessionNodes, nil
 }
 
@@ -170,23 +158,8 @@ func (sn SessionNodes) Validate(sessionNodesCount int) sdk.Error {
 	return nil
 }
 
-// "Contains" - Verifies if the session nodes contain the node object
-func (sn SessionNodes) Contains(nodeVerify nodeexported.ValidatorI) bool {
-	// if nil return
-	if nodeVerify == nil {
-		return false
-	}
-	// loop over the nodes
-	for _, node := range sn {
-		if node.GetPublicKey().Equals(nodeVerify.GetPublicKey()) {
-			return true
-		}
-	}
-	return false
-}
-
 // "Contains" - Verifies if the session nodes contains the node using the address
-func (sn SessionNodes) ContainsAddress(addr sdk.Address) bool {
+func (sn SessionNodes) Contains(addr sdk.Address) bool {
 	// if nil return
 	if addr == nil {
 		return false
@@ -196,7 +169,7 @@ func (sn SessionNodes) ContainsAddress(addr sdk.Address) bool {
 		if node == nil {
 			continue
 		}
-		if node.GetAddress().String() == addr.String() {
+		if node.Equals(addr) {
 			return true
 		}
 	}

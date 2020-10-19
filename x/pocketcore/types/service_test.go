@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"github.com/pokt-network/pocket-core/crypto"
+	exported2 "github.com/pokt-network/pocket-core/x/apps/exported"
 	"reflect"
 	"testing"
 	"time"
@@ -126,8 +127,9 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 		t.Run(tt.name, func(t *testing.T) {
 
 			k := MockPosKeeper{Validators: tt.allNodes}
-			_, err := tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, tt.node,
-				tt.hb, 1, 5, tt.app)
+			k2 := MockAppsKeeper{Applications: []exported2.ApplicationI{tt.app}}
+			k3 := MockPocketKeeper{}
+			_, err := tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, k2, k3, tt.node.Address, tt.hb, 1)
 			assert.Equal(t, err != nil, tt.hasError)
 		})
 		ClearSessionCache()
@@ -288,17 +290,53 @@ type MockValidatorI interface {
 	GetChains() []string
 }
 
+type MockAppsKeeper struct {
+	Applications []exported2.ApplicationI
+}
+
+func (m MockAppsKeeper) GetStakedTokens(ctx sdk.Ctx) sdk.Int {
+	panic("implement me")
+}
+
+func (m MockAppsKeeper) Application(ctx sdk.Ctx, addr sdk.Address) exported2.ApplicationI {
+	for _, v := range m.Applications {
+		if v.GetAddress().Equals(addr) {
+			return v
+		}
+	}
+	return nil
+}
+
+func (m MockAppsKeeper) AllApplications(ctx sdk.Ctx) (applications []exported2.ApplicationI) {
+	panic("implement me")
+}
+
+func (m MockAppsKeeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
+	panic("implement me")
+}
+
+func (m MockAppsKeeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
+	panic("implement me")
+}
+
 type MockPosKeeper struct {
 	Validators []exported.ValidatorI
 }
 
-func (m MockPosKeeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []exported.ValidatorI) {
+type MockPocketKeeper struct{}
+
+func (m MockPocketKeeper) SessionNodeCount(ctx sdk.Ctx) (res int64) {
+	return 5
+}
+
+func (m MockPosKeeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, total int) {
 	for _, v := range m.Validators {
 		s := v.(MockValidatorI)
 		chains := s.GetChains()
 		for _, c := range chains {
 			if c == networkID {
-				validators = append(validators, v)
+				total++
+				validators = append(validators, v.GetAddress())
 			}
 		}
 	}

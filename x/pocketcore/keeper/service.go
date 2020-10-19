@@ -15,41 +15,30 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// get the latest session block height because this relay will correspond with the latest session
 	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
 	// get self node (your validator) from the current state
-	selfNode, err := k.GetSelfNode(ctx)
+	pk, err := k.GetSelfPrivKey(ctx)
 	if err != nil {
 		return nil, err
 	}
+	selfAddr := sdk.Address(pk.PublicKey().Address())
 	// retrieve the nonNative blockchains your node is hosting
 	hostedBlockchains := k.GetHostedBlockchains()
-	// get the application that staked on behalf of the client
-	app, found := k.GetAppFromPublicKey(ctx, relay.Proof.Token.ApplicationPublicKey)
-	if !found {
-		return nil, pc.NewAppNotFoundError(pc.ModuleName)
-	}
-	// get the session context
-	sessionCtx, er := ctx.PrevCtx(sessionBlockHeight)
-	if er != nil {
-		return nil, sdk.ErrInternal(er.Error())
-	}
-	sessionNodeCount := k.SessionNodeCount(sessionCtx)
 	// ensure the validity of the relay
-	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, selfNode, hostedBlockchains, sessionBlockHeight, int(sessionNodeCount), app)
+	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, k.appKeeper, k, selfAddr, hostedBlockchains, sessionBlockHeight)
 	if err != nil {
 		ctx.Logger().Error(
 			fmt.Sprintf("could not validate relay for app: %s for chainID: %v with error: %s",
-				app.GetAddress().String(),
+				relay.Proof.ServicerPubKey,
 				relay.Proof.Blockchain,
 				err.Error(),
 			),
 		)
 		ctx.Logger().Debug(
 			fmt.Sprintf(
-				"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, number of nodes on session: %v, with error: %s",
-				app.GetAddress().String(),
+				"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
+				relay.Proof.ServicerPubKey,
 				relay.Proof.Blockchain,
-				selfNode.GetAddress().String(),
+				selfAddr.String(),
 				sessionBlockHeight,
-				int(k.SessionNodeCount(sessionCtx)),
 				err.Error(),
 			),
 		)
@@ -68,24 +57,12 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		Response: respPayload,
 		Proof:    relay.Proof,
 	}
-	// get the private key from the private validator file
-	pk, er := k.GetPKFromFile(ctx)
-	if er != nil {
-		ctx.Logger().Error(
-			fmt.Sprintf("could not get PK to sign response for address: %s with hash: %v with error: %s",
-				selfNode.GetAddress().String(),
-				resp.HashString(),
-				er.Error(),
-			),
-		)
-		return nil, pc.NewKeybaseError(pc.ModuleName, er)
-	}
 	// sign the response
 	sig, er := pk.Sign(resp.Hash())
 	if er != nil {
 		ctx.Logger().Error(
 			fmt.Sprintf("could not sign response for address: %s with hash: %v, with error: %s",
-				selfNode.GetAddress().String(), resp.HashString(), er.Error()),
+				selfAddr.String(), resp.HashString(), er.Error()),
 		)
 		return nil, pc.NewKeybaseError(pc.ModuleName, er)
 	}
@@ -102,10 +79,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 // "HandleChallenge" - Handles a client relay response challenge request
 func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidData) (*pc.ChallengeResponse, sdk.Error) {
 	// get self node (your validator) from the current state
-	selfNode, err := k.GetSelfNode(ctx)
-	if err != nil {
-		return nil, err
-	}
+	selfNode := k.GetSelfAddress(ctx)
 	sessionBlkHeight := k.GetLatestSessionBlockHeight(ctx)
 	// get the session context
 	sessionCtx, er := ctx.PrevCtx(sessionBlkHeight)
@@ -136,7 +110,7 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 		pc.SetSession(session)
 	}
 	// validate the challenge
-	err = challenge.ValidateLocal(header, app.GetMaxRelays(), app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode.GetAddress())
+	err := challenge.ValidateLocal(header, app.GetMaxRelays(), app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode)
 	if err != nil {
 		return nil, err
 	}

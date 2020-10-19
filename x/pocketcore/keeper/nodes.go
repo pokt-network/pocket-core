@@ -1,16 +1,11 @@
 package keeper
 
 import (
+	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
-
-// "GetAllNodes" - Gets all of the nodes in the state storage
-func (k Keeper) GetAllNodes(ctx sdk.Ctx) []exported.ValidatorI {
-	validators := k.posKeeper.GetStakedValidators(ctx)
-	return validators
-}
 
 // "GetNode" - Gets a node from the state storage
 func (k Keeper) GetNode(ctx sdk.Ctx, address sdk.Address) (n exported.ValidatorI, found bool) {
@@ -28,6 +23,15 @@ func (k Keeper) GetSelfAddress(ctx sdk.Ctx) sdk.Address {
 		return nil
 	}
 	return sdk.Address(kp.PublicKey().Address())
+}
+
+func (k Keeper) GetSelfPrivKey(ctx sdk.Ctx) (crypto.PrivateKey, sdk.Error) {
+	// get the private key from the private validator file
+	pk, er := k.GetPKFromFile(ctx)
+	if er != nil {
+		return nil, pc.NewKeybaseError(pc.ModuleName, er)
+	}
+	return pk, nil
 }
 
 // "GetSelfNode" - Gets self node (private val key) from the world state

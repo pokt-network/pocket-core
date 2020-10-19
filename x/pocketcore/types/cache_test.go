@@ -8,8 +8,6 @@ import (
 	"testing"
 
 	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/nodes/exported"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -197,16 +195,10 @@ func TestClearCache(t *testing.T) {
 
 func NewTestSession(t *testing.T, chain string) Session {
 	appPubKey := getRandomPubKey()
-	var vals []exported.ValidatorI
+	var vals []sdk.Address
 	for i := 0; i < 5; i++ {
 		nodePubKey := getRandomPubKey()
-		vals = append(vals, types.Validator{
-			Address:      sdk.Address(nodePubKey.Address()),
-			PublicKey:    nodePubKey,
-			Status:       2,
-			Chains:       []string{chain},
-			StakedTokens: sdk.ZeroInt(),
-		})
+		vals = append(vals, sdk.Address(nodePubKey.Address()))
 	}
 	return Session{
 		SessionHeader: SessionHeader{

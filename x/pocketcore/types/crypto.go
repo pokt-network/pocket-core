@@ -26,12 +26,13 @@ func NetworkIdentifierVerification(hash string) sdk.Error {
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
 	}
+	hashLen := len(h)
 	// ensure Length isn't 0
-	if len(h) == 0 {
+	if hashLen == 0 {
 		return NewEmptyHashError(ModuleName)
 	}
 	// ensure Length
-	if len(h) > NetworkIdentifierLength {
+	if hashLen > NetworkIdentifierLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
 	return nil
@@ -100,12 +101,13 @@ func HashVerification(hash string) sdk.Error {
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
 	}
+	hLen := len(h)
 	// ensure Length isn't 0
-	if len(h) == 0 {
+	if hLen == 0 {
 		return NewEmptyHashError(ModuleName)
 	}
 	// ensure Length
-	if len(h) != HashLength {
+	if hLen != HashLength {
 		return NewInvalidHashLengthError(ModuleName)
 	}
 	return nil
@@ -118,20 +120,23 @@ func AddressVerification(addr string) sdk.Error {
 	if err != nil {
 		return NewHexDecodeError(ModuleName, err)
 	}
+	addrLen := len(address)
 	// ensure Length isn't 0
-	if len(address) == 0 {
+	if addrLen == 0 {
 		return NewEmptyAddressError(ModuleName)
 	}
 	// ensure Length
-	if len(address) != AddrLength {
+	if addrLen != AddrLength {
 		return NewAddressInvalidLengthError(ModuleName)
 	}
 	return nil
 }
 
+var hasher = Hasher.New()
+
 // "ID"- Converts []byte to hashed []byte
 func Hash(b []byte) []byte {
-	hasher := Hasher.New()
+	hasher.Reset()
 	hasher.Write(b) //nolint:golint,errcheck
 	return hasher.Sum(nil)
 }

@@ -8,7 +8,6 @@ import (
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +15,9 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 	appPrivateKey := GetRandomPrivateKey()
 	clientPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
-	servicerPubKey := getRandomPubKey().RawString()
+	sPK := getRandomPubKey()
+	servicerPubKey := sPK.RawString()
+	verifyAddr := sPK.Address()
 	clientPubKey := clientPrivateKey.PublicKey().RawString()
 	ethereum := hex.EncodeToString([]byte{01})
 	hbs := HostedBlockchains{
@@ -156,7 +157,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.proof.(RelayProof).ValidateLocal([]string{getTestSupportedBlockchain()}, tt.sessionNodeCount, 1, servicerPubKey) != nil, tt.hasError)
+			assert.Equal(t, tt.proof.(RelayProof).ValidateLocal([]string{getTestSupportedBlockchain()}, tt.sessionNodeCount, 1, sdk.Address(verifyAddr))!= nil, tt.hasError)
 		})
 	}
 }
@@ -431,28 +432,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 	minResp.Signature = hex.EncodeToString(sig)
 	invalidProofAllMajority.MinorityResponse = minResp
 	ethereum := hex.EncodeToString([]byte{01})
-	sessionNodes := SessionNodes{
-		types.Validator{
-			Address:   sdk.Address(ser1PubKey.Address()),
-			PublicKey: ser1PubKey,
-		},
-		types.Validator{
-			Address:   sdk.Address(ser2PubKey.Address()),
-			PublicKey: ser2PubKey,
-		},
-		types.Validator{
-			Address:   sdk.Address(ser3PubKey.Address()),
-			PublicKey: ser3PubKey,
-		},
-		types.Validator{
-			Address:   sdk.Address(reporterPubKey.Address()),
-			PublicKey: reporterPubKey,
-		},
-		types.Validator{
-			Address:   sdk.Address(appPubKey.Address()),
-			PublicKey: appPubKey,
-		},
-	}
+	sessionNodes := SessionNodes{sdk.Address(ser1PubKey.Address()), sdk.Address(ser2PubKey.Address()), sdk.Address(ser3PubKey.Address()), sdk.Address(reporterPubKey.Address()), sdk.Address(appPubKey.Address())}
 	tests := []struct {
 		name                 string
 		proof                ChallengeProofInvalidData

@@ -31,7 +31,8 @@ func TestMultiAppend(t *testing.T) {
 	m2 = runtime.MemStats{}
 	runtime.ReadMemStats(&m)
 	start = time.Now()
-	y := merkleHash(MultiAppend(MerkleHashLength*2+16, h1, h2, sum))
+	dest := make([]byte, MerkleHashLength*2+16)
+	y := merkleHash(MultiAppend(dest, h1, h2, sum))
 	fmt.Println(time.Since(start))
 	runtime.ReadMemStats(&m2)
 	fmt.Println(m2.Alloc - m.Alloc)
@@ -382,21 +383,19 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	index := 4
 	root := i.GenerateMerkleRoot()
 	proofs, leaf := i.GenerateMerkleProof(index)
-	res := proofs.Validate(root, leaf, int64(len(i.Proofs)))
+	// validate level count on claim by total relays
+	res := proofs.Validate(root, leaf, len(proofs.HashRanges))
 	assert.True(t, res)
 	index2 := 0
 	root2 := i2.GenerateMerkleRoot()
 	proofs2, leaf2 := i2.GenerateMerkleProof(index2)
-	res = proofs2.Validate(root2, leaf2, int64(len(i2.Proofs)))
+	res = proofs2.Validate(root2, leaf2, len(proofs2.HashRanges))
 	assert.True(t, res)
 	// wrong root
-	res = proofs.Validate(root2, leaf, int64(len(i.Proofs)))
+	res = proofs.Validate(root2, leaf, len(proofs.HashRanges))
 	assert.False(t, res)
 	// wrong leaf provided
-	res = proofs.Validate(root, leaf2, int64(len(i.Proofs)))
-	assert.False(t, res)
-	// wrong tree cap
-	res = proofs.Validate(root, leaf, int64(len(i2.Proofs)))
+	res = proofs.Validate(root, leaf2, len(proofs.HashRanges))
 	assert.False(t, res)
 }
 
