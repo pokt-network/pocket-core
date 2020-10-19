@@ -20,22 +20,22 @@ func TestMultiAppend(t *testing.T) {
 	sum := uint64ToBytes(0, 1000000)
 	m := runtime.MemStats{}
 	m2 := runtime.MemStats{}
-	var start time.Time
+	//var start time.Time
 	runtime.ReadMemStats(&m)
-	start = time.Now()
+	//start = time.Now()
 	x := merkleHash(append(append(h1, h2...), sum...))
-	fmt.Println(time.Since(start))
+	//fmt.Println(time.Since(start))
 	runtime.ReadMemStats(&m2)
-	fmt.Println(m2.Alloc - m.Alloc)
+	//fmt.Println(m2.Alloc - m.Alloc)
 	m = runtime.MemStats{}
 	m2 = runtime.MemStats{}
 	runtime.ReadMemStats(&m)
-	start = time.Now()
+	//start = time.Now()
 	dest := make([]byte, MerkleHashLength*2+16)
 	y := merkleHash(MultiAppend(dest, h1, h2, sum))
-	fmt.Println(time.Since(start))
+	//fmt.Println(time.Since(start))
 	runtime.ReadMemStats(&m2)
-	fmt.Println(m2.Alloc - m.Alloc)
+	//fmt.Println(m2.Alloc - m.Alloc)
 	assert.Equal(t, x, y)
 }
 
