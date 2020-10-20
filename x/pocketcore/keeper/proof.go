@@ -181,7 +181,7 @@ func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) 
 			return sdk.ZeroInt(), sdk.ErrInternal(err.Error())
 		}
 		// small reward for the challenge proof invalid data
-		k.AwardCoinsForRelays(ctx, claim.TotalProofs/100, claim.FromAddress)
+		tokens = k.AwardCoinsForRelays(ctx, claim.TotalProofs/100, claim.FromAddress)
 	}
 	return tokens, nil
 }
