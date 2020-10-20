@@ -3,11 +3,11 @@ package app
 
 import (
 	"encoding/hex"
-	"fmt"
-	"github.com/tendermint/tendermint/libs/log"
-	rand2 "github.com/tendermint/tendermint/libs/rand"
 	"math/rand"
 	"testing"
+
+	"github.com/tendermint/tendermint/libs/log"
+	rand2 "github.com/tendermint/tendermint/libs/rand"
 
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
 
@@ -27,7 +27,8 @@ import (
 func TestMain(m *testing.M) {
 	pocketTypes.ClearSessionCache()
 	pocketTypes.ClearEvidence()
-	sdk.InitCtxCache(10)
+	sdk.InitCtxCache(20)
+	sdk.GlobalCtxCache.Purge()
 	logger := log.NewNopLogger()
 	// init cache in memory
 	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
@@ -37,6 +38,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestUnstakeApp(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -82,6 +84,7 @@ func TestUnstakeApp(t *testing.T) {
 }
 
 func TestUnstakeNode(t *testing.T) {
+	BeforeEach(t)
 	var chains = []string{"0001"}
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
@@ -139,6 +142,7 @@ func TestUnstakeNode(t *testing.T) {
 }
 
 func TestStakeNode(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -157,6 +161,7 @@ func TestStakeNode(t *testing.T) {
 }
 
 func TestStakeApp(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -184,6 +189,7 @@ func TestStakeApp(t *testing.T) {
 }
 
 func TestSendTransaction(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -211,6 +217,7 @@ func TestSendTransaction(t *testing.T) {
 }
 
 func TestDuplicateTxWithRawTx(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -260,6 +267,7 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 
 }
 func TestChangeParamsComplexTypeTx(t *testing.T) {
+	BeforeEach(t)
 	resetTestACL()
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
@@ -276,8 +284,7 @@ func TestChangeParamsComplexTypeTx(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 	select {
-	case _ = <-evtChan:
-		//fmt.Println(res)
+	case <-evtChan:
 		acl, err := PCA.QueryACL(0)
 		assert.Nil(t, err)
 		o := acl.GetOwner("gov/acl")
@@ -288,6 +295,7 @@ func TestChangeParamsComplexTypeTx(t *testing.T) {
 }
 
 func TestChangeParamsSimpleTx(t *testing.T) {
+	BeforeEach(t)
 	resetTestACL()
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
@@ -301,8 +309,7 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 	select {
-	case _ = <-evtChan:
-		//fmt.Println(res)
+	case <-evtChan:
 		assert.Nil(t, err)
 		o, _ := PCA.QueryParam(0, "application/StabilityAdjustment")
 		assert.Equal(t, "100", o.Value)
@@ -312,6 +319,7 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 }
 
 func TestUpgrade(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -336,6 +344,7 @@ func TestUpgrade(t *testing.T) {
 }
 
 func TestDAOTransfer(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -357,6 +366,7 @@ func TestDAOTransfer(t *testing.T) {
 }
 
 func TestClaimTx(t *testing.T) {
+	BeforeEach(t)
 	//check this
 	if testing.Short() {
 		t.Skip("skipping in short mode")
@@ -402,13 +412,11 @@ func TestClaimTx(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBz)
 	_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 	res := <-evtChan
-	fmt.Println(res)
 	if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 		t.Fatal("claim message was not received first")
 	}
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	res = <-evtChan
-	fmt.Println(res)
 	if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 		t.Fatal("proof message was not received afterward")
 	}
@@ -417,6 +425,7 @@ func TestClaimTx(t *testing.T) {
 }
 
 func TestClaimTxChallenge(t *testing.T) {
+	BeforeEach(t)
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
@@ -434,7 +443,6 @@ func TestClaimTxChallenge(t *testing.T) {
 
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	res = <-evtChan // Wait for tx
-	fmt.Println(res)
 	if res.Events["message.action"][0] != pocketTypes.EventTypeProof {
 		t.Fatal("proof message was not received afterward")
 	}

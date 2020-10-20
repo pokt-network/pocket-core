@@ -43,6 +43,11 @@ const (
 	dummyChainsHash = "0001"
 )
 
+func BeforeEach(t *testing.T) {
+	pocketTypes.ClearSessionCache()
+	pocketTypes.ClearEvidence()
+	sdk.GlobalCtxCache.Purge()
+}
 func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
 	// create the in memory tendermint node and keybase
 	tendermintNode, keybase = inMemTendermintNode(genesisState)
