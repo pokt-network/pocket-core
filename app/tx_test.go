@@ -7,7 +7,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	rand2 "github.com/tendermint/tendermint/libs/rand"
 	"math/rand"
-	"strings"
 	"testing"
 
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -125,7 +124,7 @@ func TestUnstakeNode(t *testing.T) {
 					tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
 					assert.Nil(t, err)
 					assert.NotNil(t, tx)
-					assert.True(t, strings.Contains(tx.Logs.String(), `"success":true`))
+					assert.Equal(t, uint32(0), tx.Code)
 					cleanup()
 					stopCli()
 
@@ -151,7 +150,7 @@ func TestStakeNode(t *testing.T) {
 	tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
-	assert.True(t, strings.Contains(tx.Logs.String(), `"success":true`))
+	assert.Equal(t, uint32(0), tx.Code)
 	cleanup()
 	stopCli()
 

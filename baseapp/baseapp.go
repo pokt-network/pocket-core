@@ -36,6 +36,8 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
+var ABCILogging bool
+
 // Key to store the consensus params in the main store.
 var mainConsensusParamsKey = []byte("consensus_params")
 
@@ -797,7 +799,11 @@ func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) (ctx sdk.Ctx
 // runMsg iterates through all the messages and executes them.
 // nolint: gocyclo
 func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode) (result sdk.Result) {
-	msgLogs := make(sdk.ABCIMessageLogs, 0, 1)
+	var msgLogs sdk.ABCIMessageLogs
+
+	if GetABCILogging() {
+		msgLogs = make(sdk.ABCIMessageLogs, 0, 1)
+	}
 
 	var (
 		data      []byte
@@ -825,13 +831,15 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode) (result sdk
 	events = events.AppendEvents(msgResult.Events)
 	// stop execution and return on first failed message
 	if !msgResult.IsOK() {
-		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint16(0), false, msgResult.Log, events))
-
+		if GetABCILogging() {
+			msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint16(0), false, msgResult.Log, events))
+		}
 		code = msgResult.Code
 		codespace = msgResult.Codespace
 	}
-	msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint16(0), true, msgResult.Log, events))
-
+	if GetABCILogging() {
+		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint16(0), true, msgResult.Log, events))
+	}
 	result = sdk.Result{
 		Code:      code,
 		Codespace: codespace,
@@ -1109,4 +1117,14 @@ func (st *state) CacheMultiStore() sdk.CacheMultiStore {
 
 func (st *state) Context() sdk.Context {
 	return st.ctx
+}
+
+//ABCI logging
+
+func SetABCILogging(value bool) {
+	ABCILogging = value
+}
+
+func GetABCILogging() bool {
+	return ABCILogging
 }

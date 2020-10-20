@@ -39,6 +39,8 @@ type PocketConfig struct {
 	PrometheusMaxOpenfiles   int            `json:"prometheus_max_open_files"`
 	MaxClaimAgeForProofRetry int            `json:"max_claim_age_for_proof_retry"`
 	ProofPrevalidation       bool           `json:"proof_prevalidation"`
+	CtxCacheSize             int            `json:"ctx_cache_size"`
+	ABCILogging              bool           `json:"abci_logging"`
 }
 
 type Config struct {
@@ -83,6 +85,8 @@ const (
 	DefaultRPCTimeout                 = 3000
 	DefaultMaxClaimProofRetryAge      = 32
 	DefaultProofPrevalidation         = false
+	DefaultCtxCacheSize               = 20
+	DefaultABCILogging                = false
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -112,6 +116,8 @@ func DefaultConfig(dataDir string) Config {
 			PrometheusMaxOpenfiles:   DefaultPrometheusMaxOpenFile,
 			MaxClaimAgeForProofRetry: DefaultMaxClaimProofRetryAge,
 			ProofPrevalidation:       DefaultProofPrevalidation,
+			CtxCacheSize:             DefaultCtxCacheSize,
+			ABCILogging:              DefaultABCILogging,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
@@ -142,6 +148,7 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000
 	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 2000000000
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
+	InitCtxCache(c.PocketConfig.CtxCacheSize)
 	return c
 }
 
