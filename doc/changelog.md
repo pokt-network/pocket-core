@@ -1,3 +1,19 @@
+## RC-0.5.2
+- Delete local Relay/Challenge Evidence on Code 66 failures
+- Log relay errors to nodes (don't just return to clients)
+- Added configuration to pre-validate auto transactions
+- Sending proofs/claims moved to EndBlock
+- Load only Blockmeta for PrevCtx
+- Added configurable cache PrevCtx, Validators, and Applications
+- Don't broadcast claims/proofs if syncing
+- Spread out claims/proofs between non-session blocks
+- Added max claim age configuration for proof submission 
+- Reorganized non-consensus breaking code in Relay/Merkle Verify for efficiency before reads from state
+- Configuration to remove ABCILogs
+- Fixed (pseudo) memory leak in Tendermints RecvPacketMsg()
+- Sessions only store addresses and not entire structs
+- Only load bare minimum for relay processing
+
 ## RC-0.5.1
 - Add terminal completions
 - AllowDuplicateIP config default value is now true
