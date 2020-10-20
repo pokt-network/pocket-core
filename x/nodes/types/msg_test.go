@@ -2,11 +2,12 @@ package types
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/crypto"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"math/rand"
 	"reflect"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/crypto"
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 func TestMsgBeginUnstake_GetSignBytes(t *testing.T) {

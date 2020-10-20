@@ -4,7 +4,6 @@ package app
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"math/big"
 	"reflect"
 	"testing"
@@ -17,26 +16,14 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes"
 	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/iavl/common"
-	"github.com/tendermint/tendermint/libs/log"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
 )
 
-func init() {
-	pocketTypes.ClearSessionCache()
-	pocketTypes.ClearEvidence()
-	sdk.InitCtxCache(20)
-	sdk.GlobalCtxCache.Purge()
-	logger := log.NewNopLogger()
-	// init cache in memory
-	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
-		M: make(map[string]pocketTypes.HostedBlockchain),
-	}, logger, sdk.DefaultTestingPocketConfig())
-}
 func TestQueryBlock(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	height := int64(1)
@@ -50,6 +37,7 @@ func TestQueryBlock(t *testing.T) {
 }
 
 func TestQueryChainHeight(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -62,6 +50,7 @@ func TestQueryChainHeight(t *testing.T) {
 }
 
 func TestQueryTx(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -88,6 +77,7 @@ func TestQueryTx(t *testing.T) {
 }
 
 func TestQueryValidators(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, twoValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -108,6 +98,7 @@ func TestQueryValidators(t *testing.T) {
 	stopCli()
 }
 func TestQueryApps(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -158,6 +149,7 @@ func TestQueryApps(t *testing.T) {
 }
 
 func TestQueryValidator(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	if err != nil {
@@ -176,6 +168,7 @@ func TestQueryValidator(t *testing.T) {
 }
 
 func TestQueryDaoBalance(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -188,6 +181,7 @@ func TestQueryDaoBalance(t *testing.T) {
 }
 
 func TestQueryACL(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -200,6 +194,7 @@ func TestQueryACL(t *testing.T) {
 }
 
 func TestQueryDaoOwner(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
@@ -217,6 +212,7 @@ func TestQueryDaoOwner(t *testing.T) {
 }
 
 func TestQueryUpgrade(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -230,13 +226,12 @@ func TestQueryUpgrade(t *testing.T) {
 }
 
 func TestQuerySupply(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
 	gotStaked, total, err := PCA.QueryTotalNodeCoins(0)
-	//fmt.Println(err)
 	assert.Nil(t, err)
-	//fmt.Println(gotStaked, total)
 	assert.True(t, gotStaked.Equal(sdk.NewInt(1000000000000000)))
 	assert.True(t, total.Equal(sdk.NewInt(1000002010001000)))
 
@@ -245,6 +240,7 @@ func TestQuerySupply(t *testing.T) {
 }
 
 func TestQueryPOSParams(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -260,6 +256,7 @@ func TestQueryPOSParams(t *testing.T) {
 }
 
 func TestAccountBalance(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -275,6 +272,7 @@ func TestAccountBalance(t *testing.T) {
 }
 
 func TestQuerySigningInfo(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -292,6 +290,7 @@ func TestQuerySigningInfo(t *testing.T) {
 }
 
 func TestQueryPocketSupportedBlockchains(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -306,6 +305,7 @@ func TestQueryPocketSupportedBlockchains(t *testing.T) {
 }
 
 func TestQueryPocketParams(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -322,6 +322,7 @@ func TestQueryPocketParams(t *testing.T) {
 }
 
 func TestQueryAccount(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	acc := getUnstakedAccount(kb)
@@ -337,6 +338,7 @@ func TestQueryAccount(t *testing.T) {
 }
 
 func TestQueryStakedpp(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	kp, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -361,6 +363,7 @@ func TestQueryStakedpp(t *testing.T) {
 }
 
 func TestRelayGenerator(t *testing.T) {
+	BeforeEach(t)
 	const appPrivKey = "70906c8e250352e811a6ca994b674c4da1c6ba4be1e0b3edeadaf59979236c96a25e182d490e9722e72ba90eb21fe0124d03bcb75d2bf6f45b2a1d2b1dc92fac"
 	const nodePublicKey = "a25e182d490e9722e72ba90eb21fe0124d03bcb75d2bf6f45b2a1d2b1dc92fac"
 	const sessionBlockheight = 1
@@ -404,14 +407,14 @@ func TestRelayGenerator(t *testing.T) {
 		panic(err)
 	}
 	relay.Proof.Signature = hex.EncodeToString(sig)
-	res, err := json.MarshalIndent(relay, "", "  ")
+	_, err = json.MarshalIndent(relay, "", "  ")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(res))
 }
 
 func TestQueryRelay(t *testing.T) {
+	BeforeEach(t)
 	const headerKey = "foo"
 	const headerVal = "bar"
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
@@ -491,6 +494,7 @@ func TestQueryRelay(t *testing.T) {
 }
 
 func TestQueryDispatch(t *testing.T) {
+	BeforeEach(t)
 	genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 	_, kb, cleanup := NewInMemoryTendermintNode(t, genBz)
 	appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
@@ -514,6 +518,7 @@ func TestQueryDispatch(t *testing.T) {
 }
 
 func TestQueryAllParams(t *testing.T) {
+	BeforeEach(t)
 	resetTestACL()
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	res, err := PCA.QueryAllParams(0)
@@ -524,6 +529,7 @@ func TestQueryAllParams(t *testing.T) {
 	cleanup()
 }
 func TestQueryParam(t *testing.T) {
+	BeforeEach(t)
 	resetTestACL()
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	res, err := PCA.QueryParam(0, "pocketcore/SupportedBlockchains")
@@ -535,6 +541,7 @@ func TestQueryParam(t *testing.T) {
 }
 
 func TestQueryAccountBalance(t *testing.T) {
+	BeforeEach(t)
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	acc := getUnstakedAccount(kb)
@@ -549,6 +556,7 @@ func TestQueryAccountBalance(t *testing.T) {
 }
 
 func TestQueryNonExistingAccountBalance(t *testing.T) {
+	BeforeEach(t)
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
