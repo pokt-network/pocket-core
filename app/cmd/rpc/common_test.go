@@ -156,8 +156,8 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	pocketTypes.InitPVKeyFile(privVal.Key)
 
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *app.PocketCoreApp {
-		m := map[string]pocketTypes.HostedBlockchain{app.PlaceholderHash: {
-			ID:  app.PlaceholderHash,
+		m := map[string]pocketTypes.HostedBlockchain{sdk.PlaceholderHash: {
+			ID:  sdk.PlaceholderHash,
 			URL: dummyChainsURL,
 		}}
 		p := app.NewPocketCoreApp(app.GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))

@@ -746,7 +746,7 @@ func TestRPC_RawTX(t *testing.T) {
 	var response types.TxResponse
 	err = memCodec().UnmarshalJSON([]byte(resp), &response)
 	assert.Nil(t, err)
-	assert.True(t, strings.Contains(response.Logs.String(), `"success":true`))
+	assert.Equal(t, uint32(0), response.Code)
 
 	cleanup()
 	stopCli()
