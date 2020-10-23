@@ -278,6 +278,9 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 		err = fmt.Errorf("could not unmarshal into evidence from cache with header %v", header)
 		return
 	}
+	if evidence.Sealed {
+		return evidence, nil
+	}
 	// if hit relay limit... Seal the evidence
 	if found && !max.Equal(sdk.ZeroInt()) && evidence.NumOfProofs >= max.Int64() {
 		evidence, ok = SealEvidence(evidence)

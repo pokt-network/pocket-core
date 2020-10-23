@@ -91,6 +91,7 @@ const (
 	CodeInvalidNetworkIDError            = 87
 	CodeInvalidExpirationHeightErr       = 88
 	CodeInvalidMerkleRangeError          = 89
+	CodeEvidenceSealed                   = 90
 )
 
 var (
@@ -139,7 +140,7 @@ var (
 	KeybaseError                     = errors.New("the keybase is invalid: ")
 	SelfNotFoundError                = errors.New("the self node is not within the world state")
 	AppNotFoundError                 = errors.New("the app could not be found in the world state")
-	RequestHashError                 = errors.New("the request merkleHash does not match the payload merkleHash")
+	RequestHashError                 = errors.New("the request hash does not match the payload hash")
 	InvalidHostedChainError          = errors.New("invalid hosted chain error")
 	ChainNotHostedError              = errors.New("the blockchain requested is not hosted")
 	NodeNotFoundErr                  = errors.New("the node is not found in world state")
@@ -182,7 +183,12 @@ var (
 	ReplayAttackError                = errors.New("the merkle proof is flagged as a replay attack")
 	InvalidExpirationHeightErr       = errors.New("the expiration height included in the claim message is invalid (should not be set)")
 	InvalidMerkleRangeError          = errors.New("the merkle hash range is invalid")
+	SealedEvidenceError = errors.New("the evidence is sealed, either max relays reached or claim already submitted")
 )
+
+func NewSealedEvidenceError(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeEvidenceSealed, SealedEvidenceError.Error())
+}
 
 func NewUnsupportedBlockchainError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeUnsupportedBlockchainError, UnsupportedBlockchainError.Error())

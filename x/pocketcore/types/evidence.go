@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/willf/bloom"
@@ -28,12 +29,21 @@ func (e Evidence) Seal() CacheObject {
 
 // "GenerateMerkleRoot" - Generates the merkle root for an evidence object
 func (e *Evidence) GenerateMerkleRoot() (root HashRange) {
-	// generate the root object
-	root, sortedProofs := GenerateRoot(e.Proofs)
-	// sort the proofs
-	e.Proofs = sortedProofs
 	// seal the evidence in cache/db
-	SealEvidence(*e)
+	ev, ok := SealEvidence(*e)
+	if !ok {
+		return HashRange{}
+	}
+	// generate the root object
+	root, sortedProofs := GenerateRoot(ev.Proofs)
+	// sort the proofs
+	ev.Proofs = sortedProofs
+	k, err := ev.Key()
+	if err != nil {
+		fmt.Printf("could not generate key for evidence after Generating Merkle Root! Err: %s", err.Error())
+		return
+	}
+	globalEvidenceCache.SetWithoutLockAndSealCheck(hex.EncodeToString(k), ev)
 	return
 }
 
@@ -52,7 +62,6 @@ func (e *Evidence) GenerateMerkleProof(index int) (proof MerkleProof, leaf Proof
 	// generate the merkle proof
 	proof, leaf = GenerateProofs(e.Proofs, index)
 	// set the evidence in memory
-	SetEvidence(*e)
 	return
 }
 

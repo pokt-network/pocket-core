@@ -68,6 +68,9 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 	}
 	// validate unique relay
 	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays)
+	if evidence.IsSealed() {
+		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
+	}
 	// get evidence key by proof
 	if !IsUniqueProof(r.Proof, evidence) {
 		return sdk.ZeroInt(), NewDuplicateProofError(ModuleName)
@@ -136,7 +139,7 @@ func (r Relay) Bytes() []byte {
 	}{r.Payload, r.Meta}
 	res, err := json.Marshal(relay)
 	if err != nil {
-		log.Fatal(fmt.Errorf("cannot marshal relay request merkleHash: %s", err.Error()))
+		log.Fatal(fmt.Errorf("cannot marshal relay request hash: %s", err.Error()))
 	}
 	return res
 }

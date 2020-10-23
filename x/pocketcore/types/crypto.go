@@ -132,11 +132,10 @@ func AddressVerification(addr string) sdk.Error {
 	return nil
 }
 
-var hasher = Hasher.New()
 
 // "ID"- Converts []byte to hashed []byte
 func Hash(b []byte) []byte {
-	hasher.Reset()
+	hasher := Hasher.New()
 	hasher.Write(b) //nolint:golint,errcheck
 	return hasher.Sum(nil)
 }
