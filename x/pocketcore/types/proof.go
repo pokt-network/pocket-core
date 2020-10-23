@@ -220,7 +220,7 @@ func (c ChallengeProofInvalidData) ValidateLocal(h SessionHeader, maxRelays sdk.
 	// calculate the maximum possible challenges
 	maxPossibleChallenges := maxRelays.ToDec().Quo(sdk.NewDec(int64(len(supportedBlockchains)))).Quo(sdk.NewDec(int64(sessionNodeCount))).RoundInt()
 	// check for overflow on # of proofs
-	evidence, er := GetEvidence(h, ChallengeEvidence, sdk.ZeroInt())
+	evidence, er := GetEvidence(h, ChallengeEvidence, maxPossibleChallenges)
 	if er != nil {
 		return sdk.ErrInternal(er.Error())
 	}
