@@ -23,6 +23,7 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.PocketConf
 	cacheOnce.Do(func() {
 		globalEvidenceCache = new(CacheStorage)
 		globalSessionCache = new(CacheStorage)
+		globalEvidenceSealedMap = make(map[string]struct{})
 		globalEvidenceCache.Init(c.DataDir, c.EvidenceDBName, c.EvidenceDBType, c.MaxEvidenceCacheEntires)
 		globalSessionCache.Init(c.DataDir, c.SessionDBName, c.SessionDBType, c.MaxSessionCacheEntries)
 		InitGlobalServiceMetric(*chains, logger, c.PrometheusAddr, c.PrometheusMaxOpenfiles)
@@ -44,7 +45,6 @@ func GetRPCTimeout() time.Duration {
 }
 
 func SetRPCTimeout(timeout int64) {
-
 	if timeout < MinRPCTimeout || timeout > MaxRPCTimeout {
 		timeout = DefaultRPCTimeout
 	}

@@ -18,6 +18,8 @@ var (
 	globalEvidenceCache *CacheStorage
 	// sync.once to perform initialization
 	cacheOnce sync.Once
+
+	globalEvidenceSealedMap map[string]struct{}
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
@@ -72,6 +74,9 @@ func (cs *CacheStorage) GetWithoutLock(key []byte, object CacheObject) (interfac
 
 // "Seal" - Seals the cache object so it is no longer writable in the cache store
 func (cs *CacheStorage) Seal(object CacheObject) (cacheObject CacheObject, isOK bool) {
+	if object.IsSealed() {
+		return object, true
+	}
 	cs.l.Lock()
 	defer cs.l.Unlock()
 	// get the key from the object
@@ -99,8 +104,11 @@ func (cs *CacheStorage) Set(key []byte, val CacheObject) {
 			fmt.Printf("ERROR: cannot convert object into cache object (in set)")
 			return
 		}
-		if co.IsSealed() {
-			return
+		// if evidence, check sealed map
+		if ev, ok := co.(Evidence); ok {
+			if _, ok := globalEvidenceSealedMap[ev.HashString()]; ok {
+				return
+			}
 		}
 	}
 	cs.SetWithoutLockAndSealCheck(keyString, val)
@@ -278,7 +286,7 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 		err = fmt.Errorf("could not unmarshal into evidence from cache with header %v", header)
 		return
 	}
-	if evidence.Sealed {
+	if evidence.IsSealed() {
 		return evidence, nil
 	}
 	// if hit relay limit... Seal the evidence
@@ -288,7 +296,6 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.Int) (
 			err = fmt.Errorf("max relays is hit and could not seal evidence! GetEvidence() with header %v", header)
 			return
 		}
-		evidence.Sealed = true
 	}
 	return
 }
@@ -312,6 +319,7 @@ func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
 	}
 	// delete from cache
 	globalEvidenceCache.Delete(key)
+	delete(globalEvidenceSealedMap, header.HashString())
 	return nil
 }
 

@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/hex"
 	"fmt"
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/willf/bloom"
@@ -15,15 +14,17 @@ type Evidence struct {
 	NumOfProofs   int64        `json:"num_of_proofs"`     // the total number of proofs in the evidence
 	Proofs        []Proof      `json:"proofs"`            // a slice of Proof objects (Proof per relay or challenge)
 	EvidenceType  EvidenceType `json:"evidence_type"`
-	Sealed        bool         `json:"sealed"`
 }
 
 func (e Evidence) IsSealed() bool {
-	return e.Sealed
+	globalEvidenceCache.l.Lock()
+	defer globalEvidenceCache.l.Unlock()
+	_, ok := globalEvidenceSealedMap[e.HashString()]
+	return ok
 }
 
 func (e Evidence) Seal() CacheObject {
-	e.Sealed = true
+	globalEvidenceSealedMap[e.HashString()] = struct{}{}
 	return e
 }
 
@@ -35,15 +36,7 @@ func (e *Evidence) GenerateMerkleRoot() (root HashRange) {
 		return HashRange{}
 	}
 	// generate the root object
-	root, sortedProofs := GenerateRoot(ev.Proofs)
-	// sort the proofs
-	ev.Proofs = sortedProofs
-	k, err := ev.Key()
-	if err != nil {
-		fmt.Printf("could not generate key for evidence after Generating Merkle Root! Err: %s", err.Error())
-		return
-	}
-	globalEvidenceCache.SetWithoutLockAndSealCheck(hex.EncodeToString(k), ev)
+	root, _ = GenerateRoot(ev.Proofs)
 	return
 }
 
@@ -72,7 +65,6 @@ type evidence struct {
 	NumOfProofs   int64        `json:"num_of_proofs"` // the total number of proofs in the evidence
 	Proofs        []Proof      `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
 	EvidenceType  EvidenceType `json:"evidence_type"`
-	Sealed        bool         `json:"sealed"`
 }
 
 var _ CacheObject = Evidence{} // satisfies the cache object interface
@@ -88,7 +80,6 @@ func (e Evidence) Marshal() ([]byte, error) {
 		NumOfProofs:   e.NumOfProofs,
 		Proofs:        e.Proofs,
 		EvidenceType:  e.EvidenceType,
-		Sealed:        e.Sealed,
 	}
 	return ModuleCdc.MarshalBinaryBare(ep)
 }
@@ -110,7 +101,7 @@ func (e Evidence) Unmarshal(b []byte) (CacheObject, error) {
 		NumOfProofs:   ep.NumOfProofs,
 		Proofs:        ep.Proofs,
 		EvidenceType:  ep.EvidenceType,
-		Sealed:        ep.Sealed}
+	}
 	return evidence, nil
 }
 

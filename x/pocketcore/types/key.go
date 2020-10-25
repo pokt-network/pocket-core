@@ -35,8 +35,7 @@ func KeyForClaim(ctx sdk.Ctx, addr sdk.Address, header SessionHeader, evidenceTy
 		return nil, err
 	}
 	// return the key bz
-	b := make([]byte, HashLength+ClaimLen+sdk.AddrLen+1)
-	return MultiAppend(b, ClaimKey, addr.Bytes(), header.Hash(), []byte{et}), nil
+	return append(append(append(ClaimKey, addr.Bytes()...), header.Hash()...), et), nil
 }
 
 // "KeyForClaims" - Generates the key for the claims object
