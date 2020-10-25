@@ -338,6 +338,7 @@ func SealEvidence(evidence Evidence) (Evidence, bool) {
 func ClearEvidence() {
 	if globalEvidenceCache != nil {
 		globalEvidenceCache.Clear()
+		globalEvidenceSealedMap = make(map[string]struct{})
 	}
 }
 
