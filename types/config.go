@@ -41,6 +41,7 @@ type PocketConfig struct {
 	ProofPrevalidation       bool           `json:"proof_prevalidation"`
 	CtxCacheSize             int            `json:"ctx_cache_size"`
 	ABCILogging              bool           `json:"abci_logging"`
+	RelayErrors              bool           `json:"show_relay_errors"`
 }
 
 type Config struct {
@@ -87,6 +88,7 @@ const (
 	DefaultProofPrevalidation         = false
 	DefaultCtxCacheSize               = 20
 	DefaultABCILogging                = false
+	DefaultRelayErrors                = true
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -118,6 +120,7 @@ func DefaultConfig(dataDir string) Config {
 			ProofPrevalidation:       DefaultProofPrevalidation,
 			CtxCacheSize:             DefaultCtxCacheSize,
 			ABCILogging:              DefaultABCILogging,
+			RelayErrors:              DefaultRelayErrors,
 		},
 	}
 	c.TendermintConfig.SetRoot(dataDir)
@@ -148,7 +151,6 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000
 	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 2000000000
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
-	InitCtxCache(c.PocketConfig.CtxCacheSize)
 	return c
 }
 

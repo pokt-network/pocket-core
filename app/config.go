@@ -148,6 +148,9 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 	if remoteCLIURL != "" {
 		c.PocketConfig.RemoteCLIURL = strings.TrimRight(remoteCLIURL, "/")
 	}
+	//Always Allow Duplicate IP
+	c.TendermintConfig.P2P.AllowDuplicateIP = true
+
 	GlobalConfig = c
 }
 
@@ -270,6 +273,7 @@ func InitLogger() (logger log.Logger) {
 
 func InitPocketCoreConfig(chains *types.HostedBlockchains, logger log.Logger) {
 	types.InitConfig(chains, logger, GlobalConfig.PocketConfig)
+	sdk.InitCtxCache(GlobalConfig.PocketConfig.CtxCacheSize)
 	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
 	appsTypes.InitConfig(GlobalConfig.PocketConfig.ApplicationCacheSize)
 }
