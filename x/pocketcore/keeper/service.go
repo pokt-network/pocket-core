@@ -25,23 +25,25 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// ensure the validity of the relay
 	maxPossibleRelays, err := relay.Validate(ctx, k.posKeeper, k.appKeeper, k, selfAddr, hostedBlockchains, sessionBlockHeight)
 	if err != nil {
-		ctx.Logger().Error(
-			fmt.Sprintf("could not validate relay for app: %s for chainID: %v with error: %s",
-				relay.Proof.ServicerPubKey,
-				relay.Proof.Blockchain,
-				err.Error(),
-			),
-		)
-		ctx.Logger().Debug(
-			fmt.Sprintf(
-				"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
-				relay.Proof.ServicerPubKey,
-				relay.Proof.Blockchain,
-				selfAddr.String(),
-				sessionBlockHeight,
-				err.Error(),
-			),
-		)
+		if pc.GlobalPocketConfig.RelayErrors {
+			ctx.Logger().Error(
+				fmt.Sprintf("could not validate relay for app: %s for chainID: %v with error: %s",
+					relay.Proof.ServicerPubKey,
+					relay.Proof.Blockchain,
+					err.Error(),
+				),
+			)
+			ctx.Logger().Debug(
+				fmt.Sprintf(
+					"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
+					relay.Proof.ServicerPubKey,
+					relay.Proof.Blockchain,
+					selfAddr.String(),
+					sessionBlockHeight,
+					err.Error(),
+				),
+			)
+		}
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
