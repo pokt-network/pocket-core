@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/tendermint/go-amino v0.15.0
 	github.com/tendermint/iavl v0.14.0
-	github.com/tendermint/tendermint v0.33.8
+	github.com/tendermint/tendermint v0.33.7
 	github.com/tendermint/tm-db v0.5.1
 	github.com/willf/bitset v1.1.10 // indirect
 	github.com/willf/bloom v2.0.3+incompatible
@@ -24,4 +24,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.5
 )
 
-replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20201103202914-8e831d75aa6f // indirect
+replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20201028144559-4c75987bd00a // indirect
