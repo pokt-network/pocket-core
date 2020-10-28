@@ -2,12 +2,13 @@ package rpc
 
 import (
 	"encoding/json"
+	"math/big"
+	"net/http"
+
 	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/types"
-	"math/big"
-	"net/http"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -125,11 +126,11 @@ func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
 		return RPCResultTxSearch{}
 	}
 	rpcTxSearch := RPCResultTxSearch{
-		Txs:        make([]*RPCResultTx, res.TotalCount),
+		Txs:        make([]*RPCResultTx, len(res.Txs)),
 		TotalCount: res.TotalCount,
 	}
-	for _, result := range res.Txs {
-		rpcTxSearch.Txs = append(rpcTxSearch.Txs, ResultTxToRPC(result))
+	for idx, result := range res.Txs {
+		rpcTxSearch.Txs[idx] = ResultTxToRPC(result)
 	}
 	return rpcTxSearch
 }
