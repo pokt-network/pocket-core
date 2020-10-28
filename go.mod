@@ -12,6 +12,7 @@ require (
 	github.com/prometheus/client_golang v1.5.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
+	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
 	github.com/tendermint/go-amino v0.15.0
 	github.com/tendermint/iavl v0.14.0
 	github.com/tendermint/tendermint v0.33.7

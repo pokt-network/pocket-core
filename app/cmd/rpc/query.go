@@ -55,15 +55,13 @@ type PaginateAddrParams struct {
 	PerPage  int    `json:"per_page,omitempty"`
 	Received bool   `json:"received,omitempty"`
 	Prove    bool   `json:"prove,omitempty"`
-	Sort     string `json:"order,omitempty"`
 }
 
 type PaginatedHeightParams struct {
-	Height  int64  `json:"height"`
-	Page    int    `json:"page,omitempty"`
-	PerPage int    `json:"per_page,omitempty"`
-	Prove   bool   `json:"prove,omitempty"`
-	Sort    string `json:"order,omitempty"`
+	Height  int64 `json:"height"`
+	Page    int   `json:"page,omitempty"`
+	PerPage int   `json:"per_page,omitempty"`
+	Prove   bool  `json:"prove,omitempty"`
 }
 
 type PaginatedHeightAndAddrParams struct {
@@ -128,11 +126,11 @@ func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
 		return RPCResultTxSearch{}
 	}
 	rpcTxSearch := RPCResultTxSearch{
-		Txs:        make([]*RPCResultTx, 0, res.TotalCount),
+		Txs:        make([]*RPCResultTx, len(res.Txs)),
 		TotalCount: res.TotalCount,
 	}
-	for _, result := range res.Txs {
-		rpcTxSearch.Txs = append(rpcTxSearch.Txs, ResultTxToRPC(result))
+	for idx, result := range res.Txs {
+		rpcTxSearch.Txs[idx] = ResultTxToRPC(result)
 	}
 	return rpcTxSearch
 }
@@ -163,9 +161,9 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var res *core_types.ResultTxSearch
 	var err error
 	if !params.Received {
-		res, err = app.PCA.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort)
+		res, err = app.PCA.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove)
 	} else {
-		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort)
+		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove)
 	}
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
@@ -186,7 +184,7 @@ func BlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	res, err := app.PCA.QueryBlockTxs(params.Height, params.Page, params.PerPage, params.Prove, params.Sort)
+	res, err := app.PCA.QueryBlockTxs(params.Height, params.Page, params.PerPage, params.Prove)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
