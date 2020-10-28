@@ -112,6 +112,7 @@ workflows:
             tags:
               only:
                 - /^RC-.*/
+                - /^Beta-.*/
                 - /^stable-.*/
             branches:
               ignore: /.*/
@@ -122,6 +123,7 @@ workflows:
             tags:
               only:
                 - /^RC-.*/
+                - /^Beta-.*/
                 - /^stable-.*/
             branches:
               ignore: /.*/
@@ -132,6 +134,7 @@ workflows:
             tags:
               only:
                 - /^RC-.*/
+                - /^Beta-.*/
                 - /^stable-.*/
             branches:
               ignore: /.*/
