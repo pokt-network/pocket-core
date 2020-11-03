@@ -47,7 +47,7 @@ func (app PocketCoreApp) QueryTx(hash string, prove bool) (res *core_types.Resul
 	return
 }
 
-func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
@@ -56,10 +56,11 @@ func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove b
 	}
 	query := fmt.Sprintf(messageSenderQuery, addr)
 	page, perPage = checkPagination(page, perPage)
-	res, err = tmClient.TxSearch(query, prove, page, perPage, "asc")
+	sort = checkSort(sort)
+	res, err = tmClient.TxSearch(query, prove, page, perPage, sort)
 	return
 }
-func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
@@ -68,15 +69,18 @@ func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove
 	}
 	query := fmt.Sprintf(transferRecipientQuery, addr)
 	page, perPage = checkPagination(page, perPage)
-	res, err = tmClient.TxSearch(query, prove, page, perPage, "asc")
+	sort = checkSort(sort)
+	res, err = tmClient.TxSearch(query, prove, page, perPage, sort)
 	return
 }
 
-func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bool) (res *core_types.ResultTxSearch, err error) {
+func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
 	query := fmt.Sprintf(txHeightQuery, height)
 	page, perPage = checkPagination(page, perPage)
+	sort = checkSort(sort)
+
 	res, err = tmClient.TxSearch(query, prove, page, perPage, "asc")
 	return
 }
@@ -449,6 +453,16 @@ func checkPagination(page, limit int) (int, int) {
 		limit = 30
 	}
 	return page, limit
+}
+func checkSort(s string) string {
+	switch s {
+	case "asc":
+		return s
+	case "desc":
+		return s
+	default:
+		return "desc"
+	}
 }
 
 func paginate(page, limit int, items interface{}, max int) (res Page, error error) {
