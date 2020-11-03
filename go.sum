@@ -298,6 +298,7 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+
 github.com/pokt-network/tendermint v0.32.11-0.20201021025045-02fc247ba42c h1:4EubqQiZmKmao+LuMOEXQd2TCh2z3lxjUIoqvBQQSI4=
 github.com/pokt-network/tendermint v0.32.11-0.20201021025045-02fc247ba42c/go.mod h1:9r0eLwU2mrKiUaC45ainUwk7bZWDA5sQIaJ7YzUVk6Y=
 github.com/pokt-network/tendermint v0.32.11-0.20201026191219-81d7faa0f4cc h1:XZT537kuSIG/SKX2Bp5clQFbWKVAj/NfvXIAv3jZXqw=
