@@ -112,7 +112,7 @@ var queryTx = &cobra.Command{
 	},
 }
 
-func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int, prove bool, received bool, sort string) {
+func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int, prove bool, received bool, order string) {
 	page = 0
 	perPage = 0
 	prove = false
@@ -143,12 +143,16 @@ func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int,
 		}
 	}
 	if len(args) == 6 {
-		parsedReceived, err := strconv.ParseBool(args[4])
-		if err == nil {
-			order = order
+		parsedOrder := args[5]
+		switch parsedOrder {
+		case "asc":
+			order = "asc"
+		default:
+			order = "desc"
+
 		}
 	}
-	return page, perPage, prove, received
+	return page, perPage, prove, received, order
 }
 
 var queryAccountTxs = &cobra.Command{
