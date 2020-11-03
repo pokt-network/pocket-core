@@ -304,6 +304,16 @@ github.com/pokt-network/tendermint v0.32.11-0.20201026191219-81d7faa0f4cc h1:XZT
 github.com/pokt-network/tendermint v0.32.11-0.20201026191219-81d7faa0f4cc/go.mod h1:9r0eLwU2mrKiUaC45ainUwk7bZWDA5sQIaJ7YzUVk6Y=
 github.com/pokt-network/tendermint v0.32.11-0.20201026192503-c3dd9c12a0f8 h1:u9ioc3h/M7Va+7aTQu9uhprlSxjF+hx4ITwrPnbLYXs=
 github.com/pokt-network/tendermint v0.32.11-0.20201026192503-c3dd9c12a0f8/go.mod h1:9r0eLwU2mrKiUaC45ainUwk7bZWDA5sQIaJ7YzUVk6Y=
+github.com/pokt-network/tendermint v0.32.11-0.20201030185704-4cf615ac0166 h1:aCbdGA8s+wlgS3hsavUU1jcWPN7AbcvFfGgNcGwF2jA=
+github.com/pokt-network/tendermint v0.32.11-0.20201030185704-4cf615ac0166/go.mod h1:9r0eLwU2mrKiUaC45ainUwk7bZWDA5sQIaJ7YzUVk6Y=
+github.com/pokt-network/tendermint v0.32.11-0.20201030192012-04e703be9f7f h1:if5meeyTCovMvm+RvHlZ8awo8RiylIMvGfEoaAFmzh4=
+github.com/pokt-network/tendermint v0.32.11-0.20201030192012-04e703be9f7f/go.mod h1:9r0eLwU2mrKiUaC45ainUwk7bZWDA5sQIaJ7YzUVk6Y=
+github.com/pokt-network/tendermint v0.32.11-0.20201030192921-a2ecc7901c29 h1:gkrj4+aJxxpUkMy2ekLqa7TXq+39R4fryP/7TEgPmhM=
+github.com/pokt-network/tendermint v0.32.11-0.20201030192921-a2ecc7901c29/go.mod h1:9r0eLwU2mrKiUaC45ainUwk7bZWDA5sQIaJ7YzUVk6Y=
+github.com/pokt-network/tendermint v0.32.11-0.20201030193503-2dd2ad2fb938 h1:aJfB53bZGrqsQ7TtAzysUyCRC8sVmb1BpdnJNu0nssQ=
+github.com/pokt-network/tendermint v0.32.11-0.20201030193503-2dd2ad2fb938/go.mod h1:9r0eLwU2mrKiUaC45ainUwk7bZWDA5sQIaJ7YzUVk6Y=
+github.com/pokt-network/tendermint v0.32.11-0.20201103202914-8e831d75aa6f h1:fKqGYjk6ABPGUngqcfLD1x29FZ3Eh9osQZ5prlXgA1A=
+github.com/pokt-network/tendermint v0.32.11-0.20201103202914-8e831d75aa6f/go.mod h1:9r0eLwU2mrKiUaC45ainUwk7bZWDA5sQIaJ7YzUVk6Y=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829/go.mod h1:p2iRAGwDERtqlqzRXnrOVns+ignqQo//hLXqYxZYVNs=
