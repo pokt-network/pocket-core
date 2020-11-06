@@ -1,3 +1,18 @@
+## Beta-0.5.2.3
+Optional upgrade with minor fixes and improvements  
+- Updating TM version and Version Number to BETA-0.5.2.3
+
+## Beta-0.5.2.2
+Optional upgrade with minor fixes and improvements    
+- Fixes header.TotalTxs !=
+- Fixes header.NumTxs !=
+
+## Beta-0.5.2.1
+Optional upgrade with minor fixes and improvements   
+- Nondeterministic hash fix
+- Code 89 Fix
+- Evidence Seal Fix
+
 ## RC-0.5.2
 - Delete local Relay/Challenge Evidence on Code 66 failures
 - Log relay errors to nodes (don't just return to clients)
