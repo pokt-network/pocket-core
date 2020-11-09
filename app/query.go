@@ -56,7 +56,7 @@ func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove b
 	}
 	query := fmt.Sprintf(messageSenderQuery, addr)
 	page, perPage = checkPagination(page, perPage)
-	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
+	res, err = tmClient.ReducedTxSearch(query, prove, page, perPage, checkSort(sort))
 	return
 }
 func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
@@ -68,7 +68,7 @@ func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove
 	}
 	query := fmt.Sprintf(transferRecipientQuery, addr)
 	page, perPage = checkPagination(page, perPage)
-	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
+	res, err = tmClient.ReducedTxSearch(query, prove, page, perPage, checkSort(sort))
 	return
 }
 
@@ -77,7 +77,7 @@ func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bo
 	defer func() { _ = tmClient.Stop() }()
 	query := fmt.Sprintf(txHeightQuery, height)
 	page, perPage = checkPagination(page, perPage)
-	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
+	res, err = tmClient.ReducedTxSearch(query, prove, page, perPage, checkSort(sort))
 	return
 }
 
