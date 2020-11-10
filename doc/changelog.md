@@ -13,6 +13,8 @@
 - Fixed (pseudo) memory leak in Tendermints RecvPacketMsg()
 - Sessions only store addresses and not entire structs
 - Only load bare minimum for relay processing
+- Add order to AccountTxs query & blockTxsQuery RPC
+- Reduce AccountTxsQuery & blockTxsQuery memory footprint
 
 ## RC-0.5.1
 - Add terminal completions
