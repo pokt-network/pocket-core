@@ -1822,6 +1822,8 @@ components:
           type: boolean
         received:
           type: boolean
+        order:
+          type: string
       required:
         - address
     QueryAccountTXsResponse:
@@ -1844,6 +1846,8 @@ components:
           type: integer
         prove:
           type: boolean
+        order:
+          type: string 
       required:
         - height
     QueryBlockTXsResponse:

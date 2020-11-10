@@ -112,11 +112,12 @@ var queryTx = &cobra.Command{
 	},
 }
 
-func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int, prove bool, received bool) {
+func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int, prove bool, received bool, order string) {
 	page = 0
 	perPage = 0
 	prove = false
 	received = false
+	order = "desc"
 	if len(args) >= 2 {
 		parsedPage, err := strconv.Atoi(args[1])
 		if err == nil {
@@ -141,17 +142,27 @@ func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int,
 			received = parsedReceived
 		}
 	}
-	return page, perPage, prove, received
+	if len(args) == 6 {
+		parsedOrder := args[5]
+		switch parsedOrder {
+		case "asc":
+			order = "asc"
+		default:
+			order = "desc"
+
+		}
+	}
+	return page, perPage, prove, received, order
 }
 
 var queryAccountTxs = &cobra.Command{
-	Use:   "account-txs <address> <page> <per_page> <prove> <received>",
+	Use:   "account-txs <address> <page> <per_page> <prove> <received> <order>",
 	Short: "Get the transactions sent by the address, paginated by page and per_page",
 	Long:  `Retrieves the transactions sent by the address`,
 	Args:  cobra.RangeArgs(1, 5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		page, perPage, prove, received := validatePagePerPageProveReceivedArgs(args)
+		page, perPage, prove, received, order := validatePagePerPageProveReceivedArgs(args)
 		var err error
 		params := rpc.PaginateAddrParams{
 			Address:  args[0],
@@ -159,6 +170,7 @@ var queryAccountTxs = &cobra.Command{
 			PerPage:  perPage,
 			Received: received,
 			Prove:    prove,
+			Sort:     order,
 		}
 		j, err := json.Marshal(params)
 		if err != nil {
@@ -181,7 +193,7 @@ var queryBlockTxs = &cobra.Command{
 	Args:  cobra.RangeArgs(1, 4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		page, perPage, prove, _ := validatePagePerPageProveReceivedArgs(args)
+		page, perPage, prove, _, order := validatePagePerPageProveReceivedArgs(args)
 		height, parsingErr := strconv.ParseInt(args[0], 10, 64)
 		if parsingErr != nil {
 			fmt.Println(parsingErr)
@@ -192,6 +204,7 @@ var queryBlockTxs = &cobra.Command{
 			Page:    page,
 			PerPage: perPage,
 			Prove:   prove,
+			Sort:    order,
 		}
 		j, err := json.Marshal(params)
 		if err != nil {
