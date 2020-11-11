@@ -65,9 +65,10 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 			Chain:              ethereum,
 			SessionBlockHeight: 1,
 		},
-		NumOfProofs: 5,
+		EvidenceType: RelayEvidence,
+		NumOfProofs:  5,
 		Proofs: []Proof{
-			RelayProof{
+			&RelayProof{
 				Entropy:            3238283,
 				RequestHash:        validAAT.HashString(), // fake
 				SessionBlockHeight: 1,
@@ -76,7 +77,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            34939492,
 				RequestHash:        validAAT.HashString(), // fake
 				SessionBlockHeight: 1,
@@ -85,7 +86,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            12383,
 				RequestHash:        validAAT.HashString(), // fake
 				SessionBlockHeight: 1,
@@ -94,7 +95,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            96384,
 				RequestHash:        validAAT.HashString(), // fake
 				SessionBlockHeight: 1,
@@ -103,7 +104,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            96384812,
 				RequestHash:        validAAT.HashString(), // fake
 				SessionBlockHeight: 1,
@@ -206,6 +207,7 @@ func TestEvidence_GenerateMerkleProof(t *testing.T) {
 				Signature:          "",
 			},
 		},
+		EvidenceType: RelayEvidence,
 	}
 	index := 4
 	proof, leaf := i.GenerateMerkleProof(index)
@@ -241,7 +243,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 		},
 		NumOfProofs: 5,
 		Proofs: []Proof{
-			RelayProof{
+			&RelayProof{
 				Entropy:            83,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -250,7 +252,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            3492332332249492,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -259,7 +261,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            121212123232323383,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -268,7 +270,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            23121223232396384,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -277,7 +279,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            963223233238481322,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -287,6 +289,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Signature:          "",
 			},
 		},
+		EvidenceType: RelayEvidence,
 	}
 	i2 := Evidence{
 		Bloom: *bloom.New(10000, 4),
@@ -297,7 +300,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 		},
 		NumOfProofs: 9,
 		Proofs: []Proof{
-			RelayProof{
+			&RelayProof{
 				Entropy:            82398289423,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -306,7 +309,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            34932332249492,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -315,7 +318,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            1212121232383,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -324,7 +327,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            23192932384,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -333,7 +336,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            2993223481322,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -342,7 +345,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            993223423981322,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -351,7 +354,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            90333981322,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -360,7 +363,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            2398123322,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
@@ -369,7 +372,7 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 				Token:              validAAT,
 				Signature:          "",
 			},
-			RelayProof{
+			&RelayProof{
 				Entropy:            99322342381322,
 				SessionBlockHeight: 1,
 				ServicerPubKey:     nodePubKey.RawString(),
