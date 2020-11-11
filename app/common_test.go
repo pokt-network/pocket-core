@@ -2,15 +2,16 @@ package app
 
 import (
 	"context"
+	"io"
+	"os"
+	"testing"
+	"time"
+
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/rpc/client/http"
 	"github.com/tendermint/tendermint/rpc/client/local"
 	tmStore "github.com/tendermint/tendermint/store"
-	"io"
-	"os"
-	"testing"
-	"time"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
@@ -1406,4 +1407,46 @@ func (_m *Ctx) BlockHash(cdc *codec.Codec) ([]byte, error) {
 	}
 
 	return r0, r1
+}
+
+// ClearGlobalCache provides a mock function with given fields:
+func (_m *Ctx) ClearGlobalCache() {
+	_m.Called()
+}
+
+// GetPrevBlockHash provides a mock function with given fields: height
+func (_m *Ctx) GetPrevBlockHash(height int64) ([]byte, error) {
+	ret := _m.Called(height)
+
+	var r0 []byte
+	if rf, ok := ret.Get(0).(func(int64) []byte); ok {
+		r0 = rf(height)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]byte)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64) error); ok {
+		r1 = rf(height)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// IsPrevCtx provides a mock function with given fields:
+func (_m *Ctx) IsPrevCtx() bool {
+	ret := _m.Called()
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
 }
