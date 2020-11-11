@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"time"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/tendermint/tendermint/store"
 	"golang.org/x/crypto/sha3"

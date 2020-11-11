@@ -294,7 +294,7 @@ type MockAppsKeeper struct {
 	Applications []exported2.ApplicationI
 }
 
-func (m MockAppsKeeper) GetStakedTokens(ctx sdk.Ctx) sdk.Int {
+func (m MockAppsKeeper) GetStakedTokens(ctx sdk.Ctx) sdk.BigInt {
 	panic("implement me")
 }
 
@@ -311,7 +311,7 @@ func (m MockAppsKeeper) AllApplications(ctx sdk.Ctx) (applications []exported2.A
 	panic("implement me")
 }
 
-func (m MockAppsKeeper) TotalTokens(ctx sdk.Ctx) sdk.Int {
+func (m MockAppsKeeper) TotalTokens(ctx sdk.Ctx) sdk.BigInt {
 	panic("implement me")
 }
 

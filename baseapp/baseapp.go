@@ -841,13 +841,13 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode) (result sdk
 	// stop execution and return on first failed message
 	if !msgResult.IsOK() {
 		if GetABCILogging() {
-			msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint16(0), false, msgResult.Log, events))
+			msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint32(0), false, msgResult.Log, events))
 		}
 		code = msgResult.Code
 		codespace = msgResult.Codespace
 	}
 	if GetABCILogging() {
-		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint16(0), true, msgResult.Log, events))
+		msgLogs = append(msgLogs, sdk.NewABCIMessageLog(uint32(0), true, msgResult.Log, events))
 	}
 	result = sdk.Result{
 		Code:      code,
