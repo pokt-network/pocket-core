@@ -56,8 +56,39 @@ func (k Keeper) Codespace() sdk.CodespaceType {
 }
 
 func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
-	if ctx.IsAfterUpgradeHeight() {
+	if ctx.IsOnUpgradeHeight() {
+		k.ConvertState(ctx)
 		k.Cdc.SetAfterUpgradeMod(true)
 		types.ModuleCdc.SetAfterUpgradeMod(true)
 	}
+}
+
+func (k Keeper) ConvertState(ctx sdk.Ctx) {
+	k.Cdc.SetAfterUpgradeMod(false)
+	params := k.GetParams(ctx)
+	prevStateTotalPower := k.PrevStateValidatorsPower(ctx)
+	validators := k.GetAllValidators(ctx)
+	waitingValidators := k.GetWaitingValidators(ctx)
+	prevProposer := k.GetPreviousProposer(ctx)
+	var prevStateValidatorPowers []types.PrevStatePowerMapping
+	k.IterateAndExecuteOverPrevStateValsByPower(ctx, func(addr sdk.Address, power int64) (stop bool) {
+		prevStateValidatorPowers = append(prevStateValidatorPowers, types.PrevStatePowerMapping{Address: addr, Power: power})
+		return false
+	})
+	signingInfos := make([]types.ValidatorSigningInfo, 0)
+	k.IterateAndExecuteOverValSigningInfo(ctx, func(address sdk.Address, info types.ValidatorSigningInfo) (stop bool) {
+		signingInfos = append(signingInfos, info)
+		return false
+	})
+	err := k.UpgradeMissedBlocksArray(ctx, validators) // TODO might be able to remove missed array code
+	if err != nil {
+		panic(err)
+	}
+	k.Cdc.SetAfterUpgradeMod(true)
+	k.SetParams(ctx, params)
+	k.SetPrevStateValidatorsPower(ctx, prevStateTotalPower)
+	k.SetWaitingValidators(ctx, waitingValidators)
+	k.SetValidators(ctx, validators)
+	k.SetPreviousProposer(ctx, prevProposer)
+	k.SetValidatorSigningInfos(ctx, signingInfos)
 }

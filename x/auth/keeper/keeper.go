@@ -43,8 +43,20 @@ func (k Keeper) Codespace() sdk.CodespaceType {
 }
 
 func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
-	if ctx.IsAfterUpgradeHeight() {
+	if ctx.IsOnUpgradeHeight() {
+		k.ConvertState(ctx)
 		k.Cdc.SetAfterUpgradeMod(true)
 		types.ModuleCdc.SetAfterUpgradeMod(true)
 	}
+}
+
+func (k Keeper) ConvertState(ctx sdk.Ctx) {
+	k.Cdc.SetAfterUpgradeMod(false)
+	params := k.GetParams(ctx)
+	accounts := k.GetAllAccounts(ctx)
+	supply := k.GetSupply(ctx)
+	k.Cdc.SetAfterUpgradeMod(true)
+	k.SetParams(ctx, params)
+	k.SetAccounts(ctx, accounts)
+	k.SetSupply(ctx, supply)
 }

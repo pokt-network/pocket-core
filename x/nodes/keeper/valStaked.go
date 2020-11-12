@@ -13,6 +13,8 @@ import (
 func (k Keeper) SetStakedValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Set(types.KeyForValidatorInStakingSet(validator), validator.Address)
+	// save in the network id stores for quick session generations
+	k.SetStakedValidatorByChains(ctx, validator)
 }
 
 // SetStakedValidatorByChains - Store staked validator using networkId
@@ -80,28 +82,7 @@ func (k Keeper) removeValidatorTokens(ctx sdk.Ctx, v types.Validator, tokensToRe
 	return v, nil
 }
 
-// getStakedValidators - Retrieve the current staked validators sorted by power-rank
-func (k Keeper) getStakedValidators(ctx sdk.Ctx) types.Validators {
-	validators := make([]types.Validator, 0)
-	iterator, _ := k.stakedValsIterator(ctx)
-	defer iterator.Close()
-	i := 0
-	for ; iterator.Valid(); iterator.Next() {
-		address := iterator.Value()
-		validator, found := k.GetValidator(ctx, address)
-		if !found {
-			ctx.Logger().Error("validator not found in the world state at height: ", ctx.BlockHeight())
-			continue
-		}
-		if validator.IsStaked() {
-			validators = append(validators, validator)
-			i++
-		}
-	}
-	return validators
-}
-
-// GetStakedValidators - Retreive StakedValidators
+// GetStakedValidators - Retrieve StakedValidators
 func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	store := ctx.KVStore(k.storeKey)
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.StakedValidatorsKey)

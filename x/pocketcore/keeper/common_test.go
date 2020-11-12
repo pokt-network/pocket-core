@@ -644,6 +644,20 @@ func (_m *Ctx) IsAfterUpgradeHeight() bool {
 	return r0
 }
 
+// IsZero provides a mock function with given fields:
+func (_m *Ctx) IsOnUpgradeHeight() bool {
+	ret := _m.Called()
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
 // KVStore provides a mock function with given fields: key
 func (_m *Ctx) KVStore(key storeTypes.StoreKey) storeTypes.KVStore {
 	ret := _m.Called(key)

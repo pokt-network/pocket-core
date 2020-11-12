@@ -270,7 +270,7 @@ func GetApp(protoCdc bool, logger log.Logger, db dbm.DB, traceWriter io.Writer) 
 	app := creator(logger, db, traceWriter)
 	if protoCdc {
 		ctx := new(Ctx)
-		ctx.On("IsAfterUpgradeHeight").Return(true)
+		ctx.On("IsOnUpgradeHeight").Return(true)
 		app.appsKeeper.UpgradeCodec(ctx)
 		app.accountKeeper.UpgradeCodec(ctx)
 		app.govKeeper.UpgradeCodec(ctx)
@@ -957,6 +957,20 @@ func (_m *Ctx) IsZero() bool {
 
 // IsZero provides a mock function with given fields:
 func (_m *Ctx) IsAfterUpgradeHeight() bool {
+	ret := _m.Called()
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	return r0
+}
+
+// IsZero provides a mock function with given fields:
+func (_m *Ctx) IsOnUpgradeHeight() bool {
 	ret := _m.Called()
 
 	var r0 bool

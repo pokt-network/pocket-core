@@ -44,7 +44,7 @@ func TestGetAndSetStakedValidator(t *testing.T) {
 			for _, validator := range test.validators {
 				keeper.SetValidator(context, validator)
 			}
-			validators := keeper.getStakedValidators(context)
+			validators := keeper.GetStakedValidators(context)
 
 			if equal := assert.ObjectsAreEqualValues(validators, test.expected.validators); !equal { // note ObjectsAreEqualValues does not assert, manual verification is required
 				t.FailNow()
@@ -151,7 +151,7 @@ func TestRemoveDeleteFromStakingSet(t *testing.T) {
 				keeper.deleteValidatorFromStakingSet(context, validator)
 			}
 
-			validators := keeper.getStakedValidators(context)
+			validators := keeper.GetStakedValidators(context)
 			assert.Empty(t, validators, "there should not be any validators in the set")
 		})
 	}
