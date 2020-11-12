@@ -26,6 +26,12 @@ func (k Keeper) SetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address, info type
 	_ = store.Set(types.KeyForValidatorSigningInfo(addr), bz)
 }
 
+func (k Keeper) SetValidatorSigningInfos(ctx sdk.Ctx, infos []types.ValidatorSigningInfo) {
+	for _, info := range infos {
+		k.SetValidatorSigningInfo(ctx, info.Address, info)
+	}
+}
+
 func (k Keeper) DeleteValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Delete(types.KeyForValidatorSigningInfo(addr))
@@ -92,6 +98,35 @@ func (k Keeper) clearValidatorMissed(ctx sdk.Ctx, addr sdk.Address) {
 	for ; iter.Valid(); iter.Next() {
 		_ = store.Delete(iter.Key())
 	}
+}
+
+func (k Keeper) UpgradeMissedBlocksArray(ctx sdk.Ctx, validators types.Validators) sdk.Error {
+	store := ctx.KVStore(k.storeKey)
+	for _, val := range validators {
+		index := int64(0)
+		// Array may be sparse
+		for ; index < k.SignedBlocksWindow(ctx); index++ {
+			var missed bool
+			bz, _ := store.Get(types.GetValMissedBlockKey(val.Address, index))
+			if bz == nil {
+				continue
+			}
+			b := sdk.Bool(missed)
+			err := k.Cdc.LegacyUnmarshalBinaryLengthPrefixed(bz, &b)
+			if err != nil {
+				return types.ErrStateConversion(types.DefaultCodespace, err)
+			}
+			bz, err = k.Cdc.ProtoMarshalBinaryLengthPrefixed(&b)
+			if err != nil {
+				return types.ErrStateConversion(types.DefaultCodespace, err)
+			}
+			err = store.Set(types.GetValMissedBlockKey(val.Address, index), bz)
+			if err != nil {
+				return types.ErrStateConversion(types.DefaultCodespace, err)
+			}
+		}
+	}
+	return nil
 }
 
 // IterateAndExecuteOverMissedArray - Stored by *validator* address (not operator address)

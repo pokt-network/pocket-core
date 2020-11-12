@@ -221,7 +221,7 @@ const (
 //----------------------------------------
 // PublicKeys for accessing substores
 
-// StoreKey is a key used to index stores in a MultiStore.
+// storeKey is a key used to index stores in a MultiStore.
 type StoreKey interface {
 	Name() string
 	String() string
@@ -262,12 +262,12 @@ func NewTransientStoreKey(name string) *TransientStoreKey {
 	}
 }
 
-// Implements StoreKey
+// Implements storeKey
 func (key *TransientStoreKey) Name() string {
 	return key.name
 }
 
-// Implements StoreKey
+// Implements storeKey
 func (key *TransientStoreKey) String() string {
 	return fmt.Sprintf("TransientStoreKey{%p, %s}", key, key.name)
 }

@@ -39,7 +39,19 @@ func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	}
 	_ = store.Set(types.KeyForAppByAllApps(application.Address), bz)
 	ctx.Logger().Info("Setting App on Main Store " + application.Address.String())
+	if application.IsUnstaking() {
+		k.SetUnstakingApplication(ctx, application)
+	}
+	if application.IsStaked() && !application.IsJailed(){
+		k.SetStakedApplication(ctx, application)
+	}
 	_ = k.ApplicationCache.AddWithCtx(ctx, application.Address.String(), application)
+}
+
+func (k Keeper) SetApplications(ctx sdk.Ctx, applications types.Applications){
+	for _, app := range applications {
+		k.SetApplication(ctx, app)
+	}
 }
 
 // GetAllApplications - Retrieve the set of all applications with no limits from the main store

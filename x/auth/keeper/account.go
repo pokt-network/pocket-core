@@ -133,6 +133,12 @@ func (k Keeper) SetAccount(ctx sdk.Ctx, acc exported.Account) {
 	_ = store.Set(types.AddressStoreKey(addr), bz)
 }
 
+func (k Keeper) SetAccounts(ctx sdk.Ctx, acc []exported.Account) {
+	for _, acc := range acc {
+		k.SetAccount(ctx, acc)
+	}
+}
+
 // RemoveAccount removes an account for the account mapper store.
 // NOTE: this will cause supply invariant violation if called
 func (k Keeper) RemoveAccount(ctx sdk.Ctx, acc exported.Account) {

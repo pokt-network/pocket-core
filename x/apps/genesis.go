@@ -25,7 +25,6 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 		application.MaxRelays = keeper.CalculateAppRelays(ctx, application)
 		// set the applications from the data
 		keeper.SetApplication(ctx, application)
-		keeper.SetStakedApplication(ctx, application)
 		if application.IsStaked() {
 			stakedTokens = stakedTokens.Add(application.GetTokens())
 		}

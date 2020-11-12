@@ -82,10 +82,7 @@ func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}) error {
 		return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
 	}
 	if cdc.afterUpgradeMod {
-		err := cdc.protoCdc.UnmarshalBinaryBare(bz, p)
-		if err == nil {
-			return nil
-		}
+		return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
 	}
 	return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
 }
@@ -99,10 +96,7 @@ func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}) erro
 		return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
 	}
 	if cdc.afterUpgradeMod {
-		err := cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
-		if err == nil {
-			return nil
-		}
+		return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
 	}
 	return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
 }

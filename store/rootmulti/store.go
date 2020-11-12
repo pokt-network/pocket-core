@@ -428,7 +428,7 @@ func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
 // getStoreByName will first convert the original name to
 // a special Key, before looking up the CommitStore.
 // This is not exposed to the extensions (which will need the
-// StoreKey), but is useful in main, and particularly app.Query,
+// storeKey), but is useful in main, and particularly app.Query,
 // in order to convert human strings into CommitStores.
 func (rs *Store) getStoreByName(name string) types.Store {
 	key := rs.keysByName[name]
@@ -536,7 +536,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 	case types.StoreTypeTransient:
 		_, ok := key.(*types.TransientStoreKey)
 		if !ok {
-			return store, fmt.Errorf("invalid StoreKey for StoreTypeTransient: %s", key.String())
+			return store, fmt.Errorf("invalid storeKey for StoreTypeTransient: %s", key.String())
 		}
 
 		return transient.NewStore(), nil

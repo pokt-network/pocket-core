@@ -9,11 +9,11 @@ import (
 )
 
 // ExportGenesis returns a GenesisState for a given context and keeper
-func ExportGenesis(ctx sdk.Ctx, ak keeper.Keeper) types.GenesisState {
-	params := ak.GetParams(ctx)
-	accounts := ak.GetAllAccountsExport(ctx)
-
-	return types.NewGenesisState(params, accounts)
+func ExportGenesis(ctx sdk.Ctx, k keeper.Keeper) types.GenesisState {
+	params := k.GetParams(ctx)
+	accounts := k.GetAllAccountsExport(ctx)
+	supply := k.GetSupply(ctx)
+	return types.NewGenesisState(params, accounts, supply.GetTotal())
 }
 
 // InitGenesis sets supply information for genesis.

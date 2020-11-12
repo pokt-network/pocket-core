@@ -69,8 +69,6 @@ func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amo
 	application = application.UpdateStatus(sdk.Staked)
 	// save in the application store
 	k.SetApplication(ctx, application)
-	// save in the staked store
-	k.SetStakedApplication(ctx, application)
 	return nil
 }
 
@@ -100,8 +98,6 @@ func (k Keeper) BeginUnstakingApplication(ctx sdk.Ctx, application types.Applica
 	}
 	// save the now unstaked application record and power index
 	k.SetApplication(ctx, application)
-	// Adds to unstaking application queue
-	k.SetUnstakingApplication(ctx, application)
 	ctx.Logger().Info("Began unstaking App " + application.Address.String())
 }
 
@@ -247,7 +243,6 @@ func (k Keeper) UnjailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	}
 	application.Jailed = false
 	k.SetApplication(ctx, application)
-	k.SetStakedApplication(ctx, application)
 	logger := k.Logger(ctx)
 	logger.Info(fmt.Sprintf("application %s unjailed", addr))
 }

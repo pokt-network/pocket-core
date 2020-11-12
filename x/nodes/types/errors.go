@@ -31,6 +31,7 @@ const (
 	CodeInvalidServiceURL        CodeType          = 118
 	CodeInvalidNetworkIdentifier CodeType          = 119
 	CodeTooManyChains            CodeType          = 120
+	CodeStateConvertError        CodeType          = 121
 )
 
 func ErrTooManyChains(codespace sdk.CodespaceType) sdk.Error {
@@ -124,4 +125,8 @@ func ErrInvalidServiceURL(codespace sdk.CodespaceType, err error) sdk.Error {
 
 func ErrInvalidNetworkIdentifier(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidNetworkIdentifier, fmt.Sprintf("the network Identifier is not valid: "+err.Error()))
+}
+
+func ErrStateConversion(codespace sdk.CodespaceType, err error) sdk.Error {
+	return sdk.NewError(codespace, CodeStateConvertError, fmt.Sprintf("unable to convert state: "+err.Error()))
 }

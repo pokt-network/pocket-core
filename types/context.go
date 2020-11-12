@@ -99,6 +99,7 @@ type Ctx interface {
 	ClearGlobalCache()
 	IsPrevCtx() bool
 	IsAfterUpgradeHeight() bool
+	IsOnUpgradeHeight() bool
 	BlockHash(cdc *codec.Codec) ([]byte, error)
 }
 
@@ -123,6 +124,9 @@ func (c Context) AppVersion() string          { return c.appVersion }
 func (c Context) ClearGlobalCache()           { c.cachedStore.Purge() }
 func (c Context) IsAfterUpgradeHeight() bool {
 	return c.header.Height >= UpgradeHeight
+}
+func (c Context) IsOnUpgradeHeight() bool {
+	return c.header.Height == UpgradeHeight
 }
 
 // clone the header before returning

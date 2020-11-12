@@ -13,16 +13,17 @@ type GenesisState struct {
 }
 
 // NewGenesisState - Create a new genesis state
-func NewGenesisState(params Params, accounts Accounts) GenesisState {
+func NewGenesisState(params Params, accounts Accounts, supply sdk.Coins) GenesisState {
 	return GenesisState{
 		Params:   params,
 		Accounts: accounts,
+		Supply:   supply,
 	}
 }
 
 // DefaultGenesisState - Return a default genesis state
 func DefaultGenesisState() GenesisState {
-	return NewGenesisState(DefaultParams(), nil)
+	return NewGenesisState(DefaultParams(), nil, nil)
 }
 
 // ValidateGenesis performs basic validation of auth genesis data returning an

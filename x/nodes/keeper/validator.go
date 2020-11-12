@@ -52,6 +52,12 @@ func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	_ = k.validatorCache.AddWithCtx(ctx, validator.Address.String(), validator)
 }
 
+func (k Keeper) SetValidators(ctx sdk.Ctx, validators types.Validators){
+	for _, val := range validators {
+		k.SetValidator(ctx, val)
+	}
+}
+
 // SetValidator - Store validator in the main store
 func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
@@ -73,6 +79,18 @@ func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 			continue
 		}
 		validators = append(validators, validator)
+	}
+	return validators
+}
+
+// GetAllValidators - Retrieve set of all validators with no limits from the main store
+func (k Keeper) GetAllValidatorsAddrs(ctx sdk.Ctx) (validators []sdk.Address) {
+	validators = make([]sdk.Address, 0)
+	store := ctx.KVStore(k.storeKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		validators = append(validators, iterator.Key())
 	}
 	return validators
 }

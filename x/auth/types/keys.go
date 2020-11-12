@@ -7,7 +7,7 @@ import (
 const (
 	// module name
 	ModuleName = "auth"
-	// StoreKey is string representation of the store key for auth
+	// storeKey is string representation of the store key for auth
 	StoreKey = ModuleName
 	// FeeCollectorName the root string for the fee collector account address
 	FeeCollectorName = "fee_collector"

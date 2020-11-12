@@ -15,6 +15,12 @@ func (k Keeper) SetWaitingValidator(ctx sdk.Ctx, val types.Validator) {
 	_ = store.Set(types.KeyForValWaitingToBeginUnstaking(val.Address), val.Address)
 }
 
+func (k Keeper) SetWaitingValidators(ctx sdk.Ctx, vals types.Validators){
+	for _, val := range vals {
+		k.SetWaitingValidator(ctx, val)
+	}
+}
+
 // IsWaitingValidator - Check if validator is waiting
 func (k Keeper) IsWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) bool {
 	store := ctx.KVStore(k.storeKey)

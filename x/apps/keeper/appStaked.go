@@ -38,9 +38,6 @@ func (k Keeper) removeApplicationTokens(ctx sdk.Ctx, application types.Applicati
 		return types.Application{}, err
 	}
 	k.SetApplication(ctx, application)
-	if !application.IsJailed() {
-		k.SetStakedApplication(ctx, application)
-	}
 	return application, nil
 }
 
