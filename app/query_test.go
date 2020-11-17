@@ -83,7 +83,6 @@ func TestQueryTx(t *testing.T) {
 		*upgrades
 	}{
 		{name: "query tx amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		{name: "query tx from amino account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
 		{name: "query tx from proto account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
@@ -126,11 +125,16 @@ func TestQueryValidators(t *testing.T) {
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
 	}{
-		{name: "query validators amino", memoryNodeFn: NewInMemoryTendermintNodeAmino},
-		{name: "query validators proto", memoryNodeFn: NewInMemoryTendermintNodeProto},
+		{name: "query validators amino", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
+		{name: "query validators proto", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+				sdk.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+
 			_, _, cleanup := tc.memoryNodeFn(t, twoValTwoNodeGenesisState())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
@@ -161,7 +165,6 @@ func TestQueryApps(t *testing.T) {
 		*upgrades
 	}{
 		{name: "query apps from amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		{name: "query apps from amino account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
 		{name: "query apps from proto account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
@@ -260,7 +263,6 @@ func TestQueryDaoBalance(t *testing.T) {
 		*upgrades
 	}{
 		{name: "query dao balance from amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		{name: "query dao balance from amino account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
 		{name: "query dao balance from proto account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
@@ -290,7 +292,6 @@ func TestQueryACL(t *testing.T) {
 		*upgrades
 	}{
 		{name: "query dao balance from amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		{name: "query dao balance from amino account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
 		{name: "query dao balance from proto account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
@@ -320,7 +321,6 @@ func TestQueryDaoOwner(t *testing.T) {
 		*upgrades
 	}{
 		{name: "query dao owner from amino account with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		{name: "query dao owner from amino account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
 		{name: "query dao owner from proto account with proto cdec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
@@ -696,7 +696,7 @@ func TestQueryRelay(t *testing.T) {
 		*upgrades
 	}{
 		{name: "query relay amino", memoryNodeFn: NewInMemoryTendermintNodeAmino},
-		{name: "query staked app params from proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto},
+		{name: "query staked app params from proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -788,7 +788,7 @@ func TestQueryDispatch(t *testing.T) {
 		*upgrades
 	}{
 		{name: "query dispatch amino", memoryNodeFn: NewInMemoryTendermintNodeAmino},
-		{name: "query dispatch proto", memoryNodeFn: NewInMemoryTendermintNodeProto},
+		{name: "query dispatch proto", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -879,7 +879,7 @@ func TestQueryAccountBalance(t *testing.T) {
 		*upgrades
 	}{
 		{name: "query staked app amino with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{false, 7000}}},
-		{name: "query staked app from amino with proto codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
+		// {name: "query staked app from amino with proto codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade{true, 0}}},
 		{name: "query staked app params from proto with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 0}}},
 	}
 	for _, tc := range tt {
