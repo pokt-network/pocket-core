@@ -11,7 +11,6 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/tendermint/tendermint/rpc/client/http"
 	"github.com/tendermint/tendermint/rpc/client/local"
-	tmStore "github.com/tendermint/tendermint/store"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
@@ -19,7 +18,6 @@ import (
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
 	"github.com/pokt-network/pocket-core/store"
-	storeTypes "github.com/pokt-network/pocket-core/store/types"
 
 	// sdk "github.com/pokt-network/pocket-core/types"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -33,8 +31,7 @@ import (
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	abcitypes "github.com/tendermint/tendermint/abci/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
@@ -224,19 +221,28 @@ func inMemTendermintNode(genesisState []byte, protoCodec bool) (*node.Node, keys
 	privVal.Key.Address = pk.PubKey().Address()
 	pocketTypes.InitPVKeyFile(privVal.Key)
 
-	//creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-	//	m := map[string]pocketTypes.HostedBlockchain{"0001": {
-	//		ID:  sdk.PlaceholderHash,
-	//		URL: sdk.PlaceholderURL,
-	//	}}
-	//	p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))
-	//	return p
-	//}
 	dbProvider := func(*node.DBContext) (dbm.DB, error) {
 		return db, nil
 	}
-	app := creator(c.Logger, db, traceWriter)
-	tmNode, err := node.NewNode(app,
+	app := GetApp(c.Logger, db, traceWriter)
+	//txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
+	//// setup blockstore
+	//blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
+	//// Make Evidence Reactor
+	//evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//	return nil, nil
+	//}
+	tmNode, err := node.NewNode(app.BaseApp,
 		c.TmConfig,
 		privVal,
 		&nodeKey,
@@ -255,10 +261,19 @@ func inMemTendermintNode(genesisState []byte, protoCodec bool) (*node.Node, keys
 	app.SetEvidencePool(tmNode.EvidencePool())
 	app.pocketKeeper.TmNode = local.New(tmNode)
 	app.SetTendermintNode(tmNode)
+
+	if protoCodec {
+		ctx := sdk.NewContext(app.Store(), abci.Header{ChainID: "test-chain"}, false, app.Logger())
+		app.accountKeeper.UpgradeCodec(ctx)
+		app.appsKeeper.UpgradeCodec(ctx)
+		app.govKeeper.UpgradeCodec(ctx)
+		app.pocketKeeper.UpgradeCodec(ctx)
+		app.nodesKeeper.UpgradeCodec(ctx)
+	}
 	return tmNode, kb
 }
 
-func GetApp(protoCdc bool, logger log.Logger, db dbm.DB, traceWriter io.Writer) *PocketCoreApp {
+func GetApp(logger log.Logger, db dbm.DB, traceWriter io.Writer) *PocketCoreApp {
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
 		m := map[string]pocketTypes.HostedBlockchain{"0001": {
 			ID:  sdk.PlaceholderHash,
@@ -267,18 +282,7 @@ func GetApp(protoCdc bool, logger log.Logger, db dbm.DB, traceWriter io.Writer) 
 		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, bam.SetPruning(store.PruneNothing))
 		return p
 	}
-	app := creator(logger, db, traceWriter)
-	if protoCdc {
-		ctx := new(Ctx)
-		ctx.On("IsOnUpgradeHeight").Return(true)
-		app.appsKeeper.UpgradeCodec(ctx)
-		app.accountKeeper.UpgradeCodec(ctx)
-		app.govKeeper.UpgradeCodec(ctx)
-		app.pocketKeeper.UpgradeCodec(ctx)
-		app.nodesKeeper.UpgradeCodec(ctx)
-	}
-	return app
-
+	return creator(logger, db, traceWriter)
 }
 
 func memCodec() *codec.Codec {
@@ -746,721 +750,4 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 	GenState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j, kys, posGenesisState.Validators, appsGenesisState.Applications[0]
-}
-
-type Ctx struct {
-	mock.Mock
-}
-
-// BlockGasMeter provides a mock function with given fields:
-func (_m *Ctx) BlockGasMeter() storeTypes.GasMeter {
-	ret := _m.Called()
-
-	var r0 storeTypes.GasMeter
-	if rf, ok := ret.Get(0).(func() storeTypes.GasMeter); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.GasMeter)
-		}
-	}
-
-	return r0
-}
-
-// BlockHeader provides a mock function with given fields:
-func (_m *Ctx) BlockHeader() abcitypes.Header {
-	ret := _m.Called()
-
-	var r0 abcitypes.Header
-	if rf, ok := ret.Get(0).(func() abcitypes.Header); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(abcitypes.Header)
-	}
-
-	return r0
-}
-
-// BlockHeight provides a mock function with given fields:
-func (_m *Ctx) BlockHeight() int64 {
-	ret := _m.Called()
-
-	var r0 int64
-	if rf, ok := ret.Get(0).(func() int64); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	return r0
-}
-
-// BlockStore provides a mock function with given fields:
-func (_m *Ctx) BlockStore() *tmStore.BlockStore {
-	ret := _m.Called()
-
-	var r0 *tmStore.BlockStore
-	if rf, ok := ret.Get(0).(func() *tmStore.BlockStore); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*tmStore.BlockStore)
-		}
-	}
-
-	return r0
-}
-
-// BlockTime provides a mock function with given fields:
-func (_m *Ctx) BlockTime() time.Time {
-	ret := _m.Called()
-
-	var r0 time.Time
-	if rf, ok := ret.Get(0).(func() time.Time); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(time.Time)
-	}
-
-	return r0
-}
-
-// CacheContext provides a mock function with given fields:
-func (_m *Ctx) CacheContext() (sdk.Context, func()) {
-	ret := _m.Called()
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func() sdk.Context); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	var r1 func()
-	if rf, ok := ret.Get(1).(func() func()); ok {
-		r1 = rf()
-	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(func())
-		}
-	}
-
-	return r0, r1
-}
-
-// ChainID provides a mock function with given fields:
-func (_m *Ctx) ChainID() string {
-	ret := _m.Called()
-
-	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	return r0
-}
-
-// ConsensusParams provides a mock function with given fields:
-func (_m *Ctx) ConsensusParams() *abcitypes.ConsensusParams {
-	ret := _m.Called()
-
-	var r0 *abcitypes.ConsensusParams
-	if rf, ok := ret.Get(0).(func() *abcitypes.ConsensusParams); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*abcitypes.ConsensusParams)
-		}
-	}
-
-	return r0
-}
-
-// Context provides a mock function with given fields:
-func (_m *Ctx) Context() context.Context {
-	ret := _m.Called()
-
-	var r0 context.Context
-	if rf, ok := ret.Get(0).(func() context.Context); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(context.Context)
-		}
-	}
-
-	return r0
-}
-
-// EventManager provides a mock function with given fields:
-func (_m *Ctx) EventManager() *sdk.EventManager {
-	ret := _m.Called()
-
-	var r0 *sdk.EventManager
-	if rf, ok := ret.Get(0).(func() *sdk.EventManager); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*sdk.EventManager)
-		}
-	}
-
-	return r0
-}
-
-// GasMeter provides a mock function with given fields:
-func (_m *Ctx) GasMeter() storeTypes.GasMeter {
-	ret := _m.Called()
-
-	var r0 storeTypes.GasMeter
-	if rf, ok := ret.Get(0).(func() storeTypes.GasMeter); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.GasMeter)
-		}
-	}
-
-	return r0
-}
-
-// IsCheckTx provides a mock function with given fields:
-func (_m *Ctx) IsCheckTx() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// IsZero provides a mock function with given fields:
-func (_m *Ctx) IsZero() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// IsZero provides a mock function with given fields:
-func (_m *Ctx) IsAfterUpgradeHeight() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// IsZero provides a mock function with given fields:
-func (_m *Ctx) IsOnUpgradeHeight() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
-}
-
-// KVStore provides a mock function with given fields: key
-func (_m *Ctx) KVStore(key storeTypes.StoreKey) storeTypes.KVStore {
-	ret := _m.Called(key)
-
-	var r0 storeTypes.KVStore
-	if rf, ok := ret.Get(0).(func(storeTypes.StoreKey) storeTypes.KVStore); ok {
-		r0 = rf(key)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.KVStore)
-		}
-	}
-
-	return r0
-}
-
-// Logger provides a mock function with given fields:
-func (_m *Ctx) Logger() log.Logger {
-	ret := _m.Called()
-
-	var r0 log.Logger
-	if rf, ok := ret.Get(0).(func() log.Logger); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(log.Logger)
-		}
-	}
-
-	return r0
-}
-
-// MinGasPrices provides a mock function with given fields:
-func (_m *Ctx) MinGasPrices() sdk.DecCoins {
-	ret := _m.Called()
-
-	var r0 sdk.DecCoins
-	if rf, ok := ret.Get(0).(func() sdk.DecCoins); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(sdk.DecCoins)
-		}
-	}
-
-	return r0
-}
-
-// MultiStore provides a mock function with given fields:
-func (_m *Ctx) MultiStore() storeTypes.MultiStore {
-	ret := _m.Called()
-
-	var r0 storeTypes.MultiStore
-	if rf, ok := ret.Get(0).(func() storeTypes.MultiStore); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.MultiStore)
-		}
-	}
-
-	return r0
-}
-
-// MustGetPrevCtx provides a mock function with given fields: height
-func (_m *Ctx) MustGetPrevCtx(height int64) sdk.Context {
-	ret := _m.Called(height)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(int64) sdk.Context); ok {
-		r0 = rf(height)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// PrevCtx provides a mock function with given fields: height
-func (_m *Ctx) PrevCtx(height int64) (sdk.Context, error) {
-	ret := _m.Called(height)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(int64) sdk.Context); ok {
-		r0 = rf(height)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int64) error); ok {
-		r1 = rf(height)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// TransientStore provides a mock function with given fields: key
-func (_m *Ctx) TransientStore(key storeTypes.StoreKey) storeTypes.KVStore {
-	ret := _m.Called(key)
-
-	var r0 storeTypes.KVStore
-	if rf, ok := ret.Get(0).(func(storeTypes.StoreKey) storeTypes.KVStore); ok {
-		r0 = rf(key)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.KVStore)
-		}
-	}
-
-	return r0
-}
-
-// TxBytes provides a mock function with given fields:
-func (_m *Ctx) TxBytes() []byte {
-	ret := _m.Called()
-
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func() []byte); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
-	}
-
-	return r0
-}
-
-// Value provides a mock function with given fields: key
-func (_m *Ctx) Value(key interface{}) interface{} {
-	ret := _m.Called(key)
-
-	var r0 interface{}
-	if rf, ok := ret.Get(0).(func(interface{}) interface{}); ok {
-		r0 = rf(key)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(interface{})
-		}
-	}
-
-	return r0
-}
-
-// VoteInfos provides a mock function with given fields:
-func (_m *Ctx) VoteInfos() []abcitypes.VoteInfo {
-	ret := _m.Called()
-
-	var r0 []abcitypes.VoteInfo
-	if rf, ok := ret.Get(0).(func() []abcitypes.VoteInfo); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]abcitypes.VoteInfo)
-		}
-	}
-
-	return r0
-}
-
-// WithBlockGasMeter provides a mock function with given fields: meter
-func (_m *Ctx) WithBlockGasMeter(meter storeTypes.GasMeter) sdk.Context {
-	ret := _m.Called(meter)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) sdk.Context); ok {
-		r0 = rf(meter)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithBlockHeader provides a mock function with given fields: header
-func (_m *Ctx) WithBlockHeader(header abcitypes.Header) sdk.Context {
-	ret := _m.Called(header)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(abcitypes.Header) sdk.Context); ok {
-		r0 = rf(header)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithBlockHeight provides a mock function with given fields: height
-func (_m *Ctx) WithBlockHeight(height int64) sdk.Context {
-	ret := _m.Called(height)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(int64) sdk.Context); ok {
-		r0 = rf(height)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithBlockStore provides a mock function with given fields: bs
-func (_m *Ctx) WithBlockStore(bs *tmStore.BlockStore) sdk.Context {
-	ret := _m.Called(bs)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(*tmStore.BlockStore) sdk.Context); ok {
-		r0 = rf(bs)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithBlockTime provides a mock function with given fields: newTime
-func (_m *Ctx) WithBlockTime(newTime time.Time) sdk.Context {
-	ret := _m.Called(newTime)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(time.Time) sdk.Context); ok {
-		r0 = rf(newTime)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithChainID provides a mock function with given fields: chainID
-func (_m *Ctx) WithChainID(chainID string) sdk.Context {
-	ret := _m.Called(chainID)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(string) sdk.Context); ok {
-		r0 = rf(chainID)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithConsensusParams provides a mock function with given fields: params
-func (_m *Ctx) WithConsensusParams(params *abcitypes.ConsensusParams) sdk.Context {
-	ret := _m.Called(params)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(*abcitypes.ConsensusParams) sdk.Context); ok {
-		r0 = rf(params)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithContext provides a mock function with given fields: ctx
-func (_m *Ctx) WithContext(ctx context.Context) sdk.Context {
-	ret := _m.Called(ctx)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(context.Context) sdk.Context); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithEventManager provides a mock function with given fields: em
-func (_m *Ctx) WithEventManager(em *sdk.EventManager) sdk.Context {
-	ret := _m.Called(em)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(*sdk.EventManager) sdk.Context); ok {
-		r0 = rf(em)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithGasMeter provides a mock function with given fields: meter
-func (_m *Ctx) WithGasMeter(meter storeTypes.GasMeter) sdk.Context {
-	ret := _m.Called(meter)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) sdk.Context); ok {
-		r0 = rf(meter)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithIsCheckTx provides a mock function with given fields: isCheckTx
-func (_m *Ctx) WithIsCheckTx(isCheckTx bool) sdk.Context {
-	ret := _m.Called(isCheckTx)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(bool) sdk.Context); ok {
-		r0 = rf(isCheckTx)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithLogger provides a mock function with given fields: logger
-func (_m *Ctx) WithLogger(logger log.Logger) sdk.Context {
-	ret := _m.Called(logger)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(log.Logger) sdk.Context); ok {
-		r0 = rf(logger)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithMinGasPrices provides a mock function with given fields: gasPrices
-func (_m *Ctx) WithMinGasPrices(gasPrices sdk.DecCoins) sdk.Context {
-	ret := _m.Called(gasPrices)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(sdk.DecCoins) sdk.Context); ok {
-		r0 = rf(gasPrices)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithMultiStore provides a mock function with given fields: ms
-func (_m *Ctx) WithMultiStore(ms storeTypes.MultiStore) sdk.Context {
-	ret := _m.Called(ms)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.MultiStore) sdk.Context); ok {
-		r0 = rf(ms)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithProposer provides a mock function with given fields: addr
-func (_m *Ctx) WithProposer(addr sdk.Address) sdk.Context {
-	ret := _m.Called(addr)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(sdk.Address) sdk.Context); ok {
-		r0 = rf(addr)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithTxBytes provides a mock function with given fields: txBytes
-func (_m *Ctx) WithTxBytes(txBytes []byte) sdk.Context {
-	ret := _m.Called(txBytes)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func([]byte) sdk.Context); ok {
-		r0 = rf(txBytes)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithValue provides a mock function with given fields: key, value
-func (_m *Ctx) WithValue(key interface{}, value interface{}) sdk.Context {
-	ret := _m.Called(key, value)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func(interface{}, interface{}) sdk.Context); ok {
-		r0 = rf(key, value)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-// WithValue provides a mock function with given fields: key, value
-func (_m *Ctx) AppVersion() string {
-	return ""
-}
-
-// WithVoteInfos provides a mock function with given fields: voteInfo
-func (_m *Ctx) WithVoteInfos(voteInfo []abcitypes.VoteInfo) sdk.Context {
-	ret := _m.Called(voteInfo)
-
-	var r0 sdk.Context
-	if rf, ok := ret.Get(0).(func([]abcitypes.VoteInfo) sdk.Context); ok {
-		r0 = rf(voteInfo)
-	} else {
-		r0 = ret.Get(0).(sdk.Context)
-	}
-
-	return r0
-}
-
-func (_m *Ctx) BlockHash(cdc *codec.Codec) ([]byte, error) {
-	ret := _m.Called()
-
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func() []byte); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).([]byte)
-	}
-
-	var r1 error
-	if rf1, ok := ret.Get(1).(func() error); ok {
-		r1 = rf1()
-	} else {
-		r1 = ret.Get(1).(error)
-	}
-
-	return r0, r1
-}
-
-// ClearGlobalCache provides a mock function with given fields:
-func (_m *Ctx) ClearGlobalCache() {
-	_m.Called()
-}
-
-// GetPrevBlockHash provides a mock function with given fields: height
-func (_m *Ctx) GetPrevBlockHash(height int64) ([]byte, error) {
-	ret := _m.Called(height)
-
-	var r0 []byte
-	if rf, ok := ret.Get(0).(func(int64) []byte); ok {
-		r0 = rf(height)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]byte)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int64) error); ok {
-		r1 = rf(height)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// IsPrevCtx provides a mock function with given fields:
-func (_m *Ctx) IsPrevCtx() bool {
-	ret := _m.Called()
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	return r0
 }
