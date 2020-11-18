@@ -18,6 +18,7 @@ var (
 	remoteCLIURL    string
 	persistentPeers string
 	seeds           string
+	profileApp      bool
 	simulateRelay   bool
 	keybase         bool
 	mainnet         bool
@@ -56,6 +57,7 @@ func init() {
 	startCmd.Flags().BoolVar(&keybase, "keybase", true, "run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
 	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
 	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
+	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
@@ -79,7 +81,7 @@ var startCmd = &cobra.Command{
 			genesisType = app.TestnetGenesisType
 		}
 		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType)
-		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay)
+		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp)
 		// trap kill signals (2,3,15,9)
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel,
