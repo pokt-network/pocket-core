@@ -3,24 +3,37 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
-	"github.com/pokt-network/pocket-core/app"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/pprof"
+	_ "net/http/pprof"
 	"time"
+
+	"github.com/julienschmidt/httprouter"
+	"github.com/pokt-network/pocket-core/app"
 )
 
 var APIVersion = app.AppVersion
 
-func StartRPC(port string, timeout int64, simulation bool) {
+func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 	routes := GetRoutes()
 	if simulation {
 		simRoute := Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: SimRequest}
 		routes = append(routes, simRoute)
 	}
-
+	if debug {
+		routes = append(routes, Route{Name: "DebugIndex", Method: "GET", Path: "/debug/pprof", HandlerFunc: wrapperHandlerFunc(pprof.Index)})
+		routes = append(routes, Route{Name: "DebugCmd", Method: "GET", Path: "/debug/pprof/cmdline", HandlerFunc: wrapperHandlerFunc(pprof.Cmdline)})
+		routes = append(routes, Route{Name: "DebugProfile", Method: "GET", Path: "/debug/pprof/profile", HandlerFunc: wrapperHandlerFunc(pprof.Profile)})
+		routes = append(routes, Route{Name: "DebugSymbol", Method: "GET", Path: "/debug/pprof/symbol", HandlerFunc: wrapperHandlerFunc(pprof.Symbol)})
+		routes = append(routes, Route{Name: "DebugTrace", Method: "GET", Path: "/debug/pprof/trace", HandlerFunc: wrapperHandlerFunc(pprof.Trace)})
+		routes = append(routes, Route{Name: "DebugGoroutine", Method: "GET", Path: "/debug/pprof/goroutine", HandlerFunc: wrapperHandler(pprof.Handler(("goroutines")))})
+		routes = append(routes, Route{Name: "DebugHeap", Method: "GET", Path: "/debug/pprof/heap", HandlerFunc: wrapperHandler(pprof.Handler(("heap")))})
+		routes = append(routes, Route{Name: "DebugThreadCreate", Method: "GET", Path: "/debug/pprof/threadcreate", HandlerFunc: wrapperHandler(pprof.Handler(("threadcreate")))})
+		routes = append(routes, Route{Name: "DebugBlock", Method: "GET", Path: "/debug/pprof/block", HandlerFunc: wrapperHandler(pprof.Handler(("block")))})
+	}
 	srv := &http.Server{
 		ReadTimeout:       30 * time.Second,
 		ReadHeaderTimeout: 20 * time.Second,
@@ -163,4 +176,17 @@ func PopModel(_ http.ResponseWriter, r *http.Request, _ httprouter.Params, model
 		return err
 	}
 	return nil
+}
+
+func wrapperHandlerFunc(f func(http.ResponseWriter, *http.Request)) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		f(w, r)
+	}
+}
+
+func wrapperHandler(h http.Handler) httprouter.Handle {
+	f := func(w http.ResponseWriter, r *http.Request) {
+		h.ServeHTTP(w, r)
+	}
+	return wrapperHandlerFunc(f)
 }
