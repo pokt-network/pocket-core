@@ -23,6 +23,7 @@ var (
 	keybase         bool
 	mainnet         bool
 	testnet         bool
+	profileApp      bool
 )
 
 var CLIVersion = app.AppVersion

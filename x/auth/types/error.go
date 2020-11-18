@@ -14,6 +14,7 @@ const (
 	CodeSignatureLimit      sdk.CodeType = 5
 	CodeDupTx               sdk.CodeType = 6
 	CodeInsufficientBalance sdk.CodeType = 7
+	CodeTxIndexerNil        sdk.CodeType = 8
 )
 
 // ErrUnknownSubspace returns an unknown subspace error.
@@ -27,6 +28,10 @@ func ErrEmptyPublicKey(codespace sdk.CodespaceType) sdk.Error {
 
 func ErrAccountNotFound(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeAccNotFound, "the account cannot be found in the world state")
+}
+
+func ErrNilTxIndexer(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeTxIndexerNil, "the transaction indexer in the node is nil")
 }
 
 func ErrInsufficientFee(codespace sdk.CodespaceType, expectedFee sdk.Coins, actualFee sdk.Coins) sdk.Error {

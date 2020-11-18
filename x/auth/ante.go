@@ -62,7 +62,15 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, txIn
 	// check for duplicate transaction to prevent replay attacks
 	txHash := tmTypes.Tx(txBz).Hash()
 	// make http call to tendermint to check txIndexer
-	res, _ := (txIndexer).Get(txHash)
+	if txIndexer == nil {
+		ctx.Logger().Error(types.ErrNilTxIndexer(ModuleName).Error())
+		return types.ErrNilTxIndexer(ModuleName)
+	}
+	res, err := (txIndexer).Get(txHash)
+	if err != nil {
+		ctx.Logger().Error(err.Error())
+		return sdk.ErrInternal(err.Error())
+	}
 	if res != nil {
 		return types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
 	}

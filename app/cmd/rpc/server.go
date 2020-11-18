@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/http/pprof"
-	_ "net/http/pprof"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -23,6 +22,7 @@ func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 		simRoute := Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: SimRequest}
 		routes = append(routes, simRoute)
 	}
+
 	if debug {
 		routes = append(routes, Route{Name: "DebugIndex", Method: "GET", Path: "/debug/pprof", HandlerFunc: wrapperHandlerFunc(pprof.Index)})
 		routes = append(routes, Route{Name: "DebugCmd", Method: "GET", Path: "/debug/pprof/cmdline", HandlerFunc: wrapperHandlerFunc(pprof.Cmdline)})
@@ -34,6 +34,7 @@ func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 		routes = append(routes, Route{Name: "DebugThreadCreate", Method: "GET", Path: "/debug/pprof/threadcreate", HandlerFunc: wrapperHandler(pprof.Handler(("threadcreate")))})
 		routes = append(routes, Route{Name: "DebugBlock", Method: "GET", Path: "/debug/pprof/block", HandlerFunc: wrapperHandler(pprof.Handler(("block")))})
 	}
+
 	srv := &http.Server{
 		ReadTimeout:       30 * time.Second,
 		ReadHeaderTimeout: 20 * time.Second,
