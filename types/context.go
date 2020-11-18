@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
+	"time"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/tendermint/tendermint/store"
 	"golang.org/x/crypto/sha3"
-	"reflect"
-	"time"
 
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -150,7 +151,10 @@ func (c Context) BlockHash(cdc *codec.Codec) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		sha.Write(bz)
+		_, err = sha.Write(bz)
+		if err != nil {
+			return nil, err
+		}
 		return sha.Sum(nil), nil
 	} else {
 		return c.BlockHeader().LastBlockId.Hash, nil

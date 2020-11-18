@@ -114,7 +114,7 @@ func TestRPC_QueryTX(t *testing.T) {
 	sdk.UpgradeHeight = 2
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 	kb := getInMemoryKeybase()
@@ -190,7 +190,7 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	assert.NotEmpty(t, resTXs.Txs)
 	assert.NotZero(t, resTXs.TotalCount)
 
-	memCLI, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
 	q = newQueryRequest("accounttxs", newBody(params))
 	rec = httptest.NewRecorder()
@@ -254,7 +254,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	assert.NotEmpty(t, resTXs.Txs)
 	assert.NotZero(t, resTXs.TotalCount)
 
-	memCLI, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
+	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
 	heightQ = newQueryRequest("blocktxs", newBody(heightParams))
 	heightRec = httptest.NewRecorder()

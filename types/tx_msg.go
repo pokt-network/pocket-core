@@ -1,6 +1,6 @@
 package types
 
-import "github.com/golang/protobuf/proto"
+import "github.com/golang/protobuf/proto" // nolint
 
 type Msg interface {
 	// Return the message type.
