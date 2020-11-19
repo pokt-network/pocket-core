@@ -18,7 +18,6 @@ var (
 	remoteCLIURL    string
 	persistentPeers string
 	seeds           string
-	profileApp      bool
 	simulateRelay   bool
 	keybase         bool
 	mainnet         bool
