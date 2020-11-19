@@ -1,7 +1,6 @@
 package types
 
 import (
-	lru2 "github.com/hashicorp/golang-lru"
 	"github.com/hashicorp/golang-lru/simplelru"
 )
 
@@ -13,7 +12,7 @@ type Cache struct {
 
 // New creates an LRU of the given cap.
 func NewCache(size int) *Cache {
-	lru, err := lru2.New(size)
+	lru, err := simplelru.NewLRU(size, nil)
 	if err != nil {
 		panic(err)
 	}
