@@ -65,12 +65,6 @@ func TestCacheMultiStoreWithVersion(t *testing.T) {
 	require.NotNil(t, kvStore)
 	kg, _ := kvStore.Get(k)
 	require.Equal(t, kg, v)
-
-	// require we cannot commit (write) to a cache-versioned multi-store
-	require.Panics(t, func() {
-		_ = kvStore.Set(k, []byte("newValue"))
-		cms.Write()
-	})
 }
 
 func TestHashStableWithEmptyCommit(t *testing.T) {
