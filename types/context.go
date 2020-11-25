@@ -210,9 +210,7 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
 		return cachedCtx.(Context), nil
 	}
-
-	ms := c.ms.(CommitMultiStore).CopyStore()
-	err := (*ms).(CommitMultiStore).LoadVersion(height)
+	ms, err := (c.ms).(CommitMultiStore).LoadLazyVersion(height)
 	if err != nil {
 		return Context{}, err
 	}
@@ -229,9 +227,9 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 			Block: meta.Header.Version.Block.Uint64(),
 			App:   meta.Header.Version.App.Uint64(),
 		},
-		ChainID: meta.Header.ChainID,
-		Height:  meta.Header.Height,
-		Time:    meta.Header.Time,
+		ChainID:  meta.Header.ChainID,
+		Height:   meta.Header.Height,
+		Time:     meta.Header.Time,
 		NumTxs:   meta.Header.NumTxs,
 		TotalTxs: meta.Header.TotalTxs,
 		LastBlockId: abci.BlockID{

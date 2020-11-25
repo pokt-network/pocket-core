@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/pokt-network/pocket-core/store/iavl"
 
-	"github.com/tendermint/iavl"
 	"github.com/tendermint/tendermint/crypto/merkle"
 )
 
