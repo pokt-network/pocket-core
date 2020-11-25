@@ -248,6 +248,48 @@ func (rs *Store) LoadVersion(ver int64) error {
 	return nil
 }
 
+func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error)  {
+	newStores := make(map[types.StoreKey]types.CommitStore)
+	for k, v := range rs.stores {
+		a, ok := (v).(*iavl.Store)
+		if !ok {
+			if _, ok := (v).(*transient.Store); ok {
+				continue
+			}
+			return nil, fmt.Errorf("cannot convert store into iavl store in get immutable")
+		}
+		s, err := a.LazyLoadStore(ver)
+		if err != nil {
+			return nil, fmt.Errorf("error loading store: %s, in LoadLazyVersion: %s", k, err.Error())
+		}
+		newStores[k] = s
+	}
+	newParams := make(map[types.StoreKey]storeParams)
+	for k, v := range rs.storesParams {
+		newParams[k] = v
+	}
+	newKeysByName := make(map[string]types.StoreKey)
+	for k, v := range rs.keysByName {
+		newKeysByName[k] = v
+	}
+	newTraceCtx := map[string]interface{}{}
+	for k, v := range rs.traceContext {
+		newTraceCtx[k] = v
+	}
+	s := types.Store(&Store{
+		DB:           rs.DB,
+		lastCommitID: rs.lastCommitID,
+		pruningOpts:  rs.pruningOpts,
+		storesParams: newParams,
+		stores:       newStores,
+		keysByName:   newKeysByName,
+		lazyLoading:  rs.lazyLoading,
+		traceWriter:  rs.traceWriter,
+		traceContext: newTraceCtx,
+	})
+	return &s, nil
+}
+
 // SetTracer sets the tracer for the MultiStore that the underlying
 // stores will utilize to trace operations. A MultiStore is returned.
 func (rs *Store) SetTracer(w io.Writer) types.MultiStore {
@@ -341,7 +383,7 @@ func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStor
 		case types.StoreTypeIAVL:
 			// Attempt to lazy-load an already saved IAVL store version. If the
 			// version does not exist or is pruned, an error should be returned.
-			iavlStore, err := store.(*iavl.Store).GetImmutable(version)
+			iavlStore, err := store.(*iavl.Store).LazyLoadStore(version)
 			if err != nil {
 				return nil, err
 			}

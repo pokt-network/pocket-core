@@ -2,13 +2,11 @@ package iavl
 
 import (
 	"fmt"
-
-	"github.com/tendermint/iavl"
 )
 
 var (
 	_ Tree = (*immutableTree)(nil)
-	_ Tree = (*iavl.MutableTree)(nil)
+	_ Tree = (*MutableTree)(nil)
 )
 
 type (
@@ -27,15 +25,15 @@ type (
 		Hash() []byte
 		VersionExists(version int64) bool
 		GetVersioned(key []byte, version int64) (int64, []byte)
-		GetVersionedWithProof(key []byte, version int64) ([]byte, *iavl.RangeProof, error)
-		GetImmutable(version int64) (*iavl.ImmutableTree, error)
+		GetVersionedWithProof(key []byte, version int64) ([]byte, *RangeProof, error)
+		GetImmutable(version int64) (*ImmutableTree, error)
 	}
 
 	// immutableTree is a simple wrapper around a reference to an iavl.ImmutableTree
 	// that implements the Tree interface. It should only be used for querying
 	// and iteration, specifically at previous heights.
 	immutableTree struct {
-		*iavl.ImmutableTree
+		*ImmutableTree
 	}
 )
 
@@ -67,7 +65,7 @@ func (it *immutableTree) GetVersioned(key []byte, version int64) (int64, []byte)
 	return it.Get(key)
 }
 
-func (it *immutableTree) GetVersionedWithProof(key []byte, version int64) ([]byte, *iavl.RangeProof, error) {
+func (it *immutableTree) GetVersionedWithProof(key []byte, version int64) ([]byte, *RangeProof, error) {
 	if it.Version() != version {
 		return nil, nil, fmt.Errorf("version mismatch on immutable IAVL tree; got: %d, expected: %d", version, it.Version())
 	}
@@ -75,7 +73,7 @@ func (it *immutableTree) GetVersionedWithProof(key []byte, version int64) ([]byt
 	return it.GetWithProof(key)
 }
 
-func (it *immutableTree) GetImmutable(version int64) (*iavl.ImmutableTree, error) {
+func (it *immutableTree) GetImmutable(version int64) (*ImmutableTree, error) {
 	if it.Version() != version {
 		return nil, fmt.Errorf("version mismatch on immutable IAVL tree; got: %d, expected: %d", version, it.Version())
 	}

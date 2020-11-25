@@ -11,7 +11,6 @@ import (
 	"github.com/pokt-network/pocket-core/store/tracekv"
 	"github.com/pokt-network/pocket-core/store/types"
 
-	"github.com/tendermint/iavl"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	dbm "github.com/tendermint/tm-db"
@@ -25,7 +24,7 @@ const (
 func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool) (types.CommitStore, error) {
 	var err error
 
-	tree, err := iavl.NewMutableTree(db, defaultIAVLCacheSize)
+	tree, err := NewMutableTree(db, defaultIAVLCacheSize)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +70,7 @@ type Store struct {
 
 // CONTRACT: tree should be fully loaded.
 // nolint: unparam
-func UnsafeNewStore(tree *iavl.MutableTree, numRecent int64, storeEvery int64) *Store {
+func UnsafeNewStore(tree *MutableTree, numRecent int64, storeEvery int64) *Store {
 	st := &Store{
 		tree:       tree,
 		numRecent:  numRecent,
@@ -80,30 +79,27 @@ func UnsafeNewStore(tree *iavl.MutableTree, numRecent int64, storeEvery int64) *
 	return st
 }
 
-// GetImmutable returns a reference to a new store backed by an immutable IAVL
+// LoadLazyVersion returns a reference to a new store backed by an immutable IAVL
 // tree at a specific version (height) without any pruning options. This should
 // be used for querying and iteration only. If the version does not exist or has
 // been pruned, an error will be returned. Any mutable operations executed will
 // result in a panic.
-func (st *Store) GetImmutable(version int64) (*Store, error) {
-	if !st.VersionExists(version) {
-		return nil, iavl.ErrVersionDoesNotExist
+func (st *Store) LazyLoadStore(version int64) (*Store, error) {
+	a, ok := st.tree.(*MutableTree)
+	if !ok {
+		return nil, fmt.Errorf("not immutable tree in LazyLoadStore")
 	}
 
-	iTree, err := st.tree.GetImmutable(version)
+	tree, err := a.LazyLoadVersion(version)
 	if err != nil {
 		return nil, err
 	}
-
-	return &Store{
-		tree:       &immutableTree{iTree},
-		numRecent:  0,
-		storeEvery: 0,
-	}, nil
+	iavl := UnsafeNewStore(tree, int64(0), int64(0))
+	return iavl, nil
 }
 
 func (st *Store) Rollback(version int64) error {
-	r, ok := st.tree.(*iavl.MutableTree)
+	r, ok := st.tree.(*MutableTree)
 	if !ok {
 		return fmt.Errorf("cant turn st.Tree into mutable tree for rollback")
 	}
@@ -201,12 +197,12 @@ func (st *Store) Delete(key []byte) error {
 
 // Implements types.KVStore.
 func (st *Store) Iterator(start, end []byte) (types.Iterator, error) {
-	var iTree *iavl.ImmutableTree
+	var iTree *ImmutableTree
 
 	switch tree := st.tree.(type) {
 	case *immutableTree:
 		iTree = tree.ImmutableTree
-	case *iavl.MutableTree:
+	case *MutableTree:
 		iTree = tree.ImmutableTree
 	}
 
@@ -215,12 +211,12 @@ func (st *Store) Iterator(start, end []byte) (types.Iterator, error) {
 
 // Implements types.KVStore.
 func (st *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
-	var iTree *iavl.ImmutableTree
+	var iTree *ImmutableTree
 
 	switch tree := st.tree.(type) {
 	case *immutableTree:
 		iTree = tree.ImmutableTree
-	case *iavl.MutableTree:
+	case *MutableTree:
 		iTree = tree.ImmutableTree
 	}
 
@@ -261,12 +257,12 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	res.Height = getHeight(tree, req)
 
 	switch req.Path {
-	case "/key": // get by key
+	case "/key":        // get by key
 		key := req.Data // data holds the key bytes
 
 		res.Key = key
 		if !st.VersionExists(res.Height) {
-			res.Log = iavl.ErrVersionDoesNotExist.Error()
+			res.Log = ErrVersionDoesNotExist.Error()
 			break
 		}
 
@@ -285,11 +281,11 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 			if value != nil {
 				// value was found
 				res.Value = value
-				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{iavl.NewValueOp(key, proof).ProofOp()}}
+				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{NewValueOp(key, proof).ProofOp()}}
 			} else {
 				// value wasn't found
 				res.Value = nil
-				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{iavl.NewAbsenceOp(key, proof).ProofOp()}}
+				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{NewAbsenceOp(key, proof).ProofOp()}}
 			}
 		} else {
 			_, res.Value = tree.GetVersioned(key, res.Height)
@@ -322,7 +318,7 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 // Implements types.Iterator.
 type iavlIterator struct {
 	// Underlying store
-	tree *iavl.ImmutableTree
+	tree *ImmutableTree
 
 	// Domain
 	start, end []byte
@@ -357,7 +353,7 @@ var _ types.Iterator = (*iavlIterator)(nil)
 // newIAVLIterator will create a new iavlIterator.
 // CONTRACT: Caller must release the iavlIterator, as each one creates a new
 // goroutine.
-func newIAVLIterator(tree *iavl.ImmutableTree, start, end []byte, ascending bool) *iavlIterator {
+func newIAVLIterator(tree *ImmutableTree, start, end []byte, ascending bool) *iavlIterator {
 	iter := &iavlIterator{
 		tree:      tree,
 		start:     types.Cp(start),

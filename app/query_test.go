@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"math/big"
+	"math/rand"
 	"reflect"
 	"testing"
 
@@ -17,7 +18,6 @@ import (
 	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
-	"github.com/tendermint/iavl/common"
 	tmTypes "github.com/tendermint/tendermint/types"
 	"gopkg.in/h2non/gock.v1"
 )
@@ -393,7 +393,7 @@ func TestRelayGenerator(t *testing.T) {
 	relay := types.Relay{
 		Payload: payload,
 		Proof: types.RelayProof{
-			Entropy:            int64(common.RandInt()),
+			Entropy:            int64(rand.Int()),
 			SessionBlockHeight: sessionBlockheight,
 			ServicerPubKey:     nodePublicKey,
 			Blockchain:         supportedBlockchain,

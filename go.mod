@@ -13,7 +13,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
 	github.com/tendermint/go-amino v0.15.0
-	github.com/tendermint/iavl v0.14.0
+	github.com/tendermint/iavl v0.14.0 // indirect
 	github.com/tendermint/tendermint v0.33.7
 	github.com/tendermint/tm-db v0.5.1
 	github.com/willf/bitset v1.1.10 // indirect

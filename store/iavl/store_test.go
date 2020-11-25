@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/tendermint/iavl"
 	abci "github.com/tendermint/tendermint/abci/types"
 	dbm "github.com/tendermint/tm-db"
 
@@ -30,8 +29,8 @@ var (
 )
 
 // make a tree with data from above and save it
-func newAlohaTree(t *testing.T, db dbm.DB) (*iavl.MutableTree, types.CommitID) {
-	tree, _ := iavl.NewMutableTree(db, cacheSize)
+func newAlohaTree(t *testing.T, db dbm.DB) (*MutableTree, types.CommitID) {
+	tree, _ := NewMutableTree(db, cacheSize)
 	for k, v := range treeData {
 		tree.Set([]byte(k), []byte(v))
 	}
@@ -45,7 +44,7 @@ func newAlohaTree(t *testing.T, db dbm.DB) (*iavl.MutableTree, types.CommitID) {
 	return tree, types.CommitID{Version: ver, Hash: hash}
 }
 
-func TestGetImmutable(t *testing.T) {
+func TestStore_LazyLoadStore(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, cID := newAlohaTree(t, db)
 	store := UnsafeNewStore(tree, 10, 10)
@@ -55,15 +54,15 @@ func TestGetImmutable(t *testing.T) {
 	cID = types.CommitID{Version: ver, Hash: hash}
 	require.Nil(t, err)
 
-	_, err = store.GetImmutable(cID.Version + 1)
+	_, err = store.LazyLoadStore(cID.Version + 1)
 	require.Error(t, err)
 
-	newStore, err := store.GetImmutable(cID.Version - 1)
+	newStore, err := store.LazyLoadStore(cID.Version - 1)
 	require.NoError(t, err)
 	ng, _ := newStore.Get([]byte("hello"))
 	require.Equal(t, ng, []byte("goodbye"))
 
-	newStore, err = store.GetImmutable(cID.Version)
+	newStore, err = store.LazyLoadStore(cID.Version)
 	require.NoError(t, err)
 	ng, _ = newStore.Get([]byte("hello"))
 	require.Equal(t, ng, []byte("adios"))
@@ -73,8 +72,6 @@ func TestGetImmutable(t *testing.T) {
 	require.NotNil(t, res.Proof)
 
 	require.Panics(t, func() { _ = newStore.Set(nil, nil) })
-	require.Panics(t, func() { _ = newStore.Delete(nil) })
-	require.Panics(t, func() { newStore.Commit() })
 }
 
 func TestTestGetImmutableIterator(t *testing.T) {
@@ -82,7 +79,7 @@ func TestTestGetImmutableIterator(t *testing.T) {
 	tree, cID := newAlohaTree(t, db)
 	store := UnsafeNewStore(tree, 10, 10)
 
-	newStore, err := store.GetImmutable(cID.Version)
+	newStore, err := store.LazyLoadStore(cID.Version)
 	require.NoError(t, err)
 
 	iter, _ := newStore.Iterator([]byte("aloha"), []byte("hellz"))
@@ -207,7 +204,7 @@ func TestIAVLIterator(t *testing.T) {
 
 func TestIAVLReverseIterator(t *testing.T) {
 	db := dbm.NewMemDB()
-	tree, _ := iavl.NewMutableTree(db, cacheSize)
+	tree, _ := NewMutableTree(db, cacheSize)
 	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	_ = iavlStore.Set([]byte{0x00}, []byte("0"))
@@ -238,7 +235,7 @@ func TestIAVLReverseIterator(t *testing.T) {
 
 func TestIAVLPrefixIterator(t *testing.T) {
 	db := dbm.NewMemDB()
-	tree, _ := iavl.NewMutableTree(db, cacheSize)
+	tree, _ := NewMutableTree(db, cacheSize)
 	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	_ = iavlStore.Set([]byte("test1"), []byte("test1"))
@@ -300,7 +297,7 @@ func TestIAVLPrefixIterator(t *testing.T) {
 
 func TestIAVLReversePrefixIterator(t *testing.T) {
 	db := dbm.NewMemDB()
-	tree, _ := iavl.NewMutableTree(db, cacheSize)
+	tree, _ := NewMutableTree(db, cacheSize)
 	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	_ = iavlStore.Set([]byte("test1"), []byte("test1"))
@@ -414,7 +411,7 @@ func nextVersion(iavl *Store) {
 
 func TestIAVLNoPrune(t *testing.T) {
 	db := dbm.NewMemDB()
-	tree, _ := iavl.NewMutableTree(db, cacheSize)
+	tree, _ := NewMutableTree(db, cacheSize)
 	iavlStore := UnsafeNewStore(tree, numRecent, int64(1))
 	nextVersion(iavlStore)
 	for i := 1; i < 100; i++ {
@@ -447,7 +444,7 @@ func TestIAVLNoPrune(t *testing.T) {
 
 func TestIAVLStoreQuery(t *testing.T) {
 	db := dbm.NewMemDB()
-	tree, _ := iavl.NewMutableTree(db, cacheSize)
+	tree, _ := NewMutableTree(db, cacheSize)
 	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	k1, v1 := []byte("key1"), []byte("val1")
@@ -538,7 +535,7 @@ func TestIAVLStoreQuery(t *testing.T) {
 func BenchmarkIAVLIteratorNext(b *testing.B) {
 	db := dbm.NewMemDB()
 	treeSize := 1000
-	tree, _ := iavl.NewMutableTree(db, cacheSize)
+	tree, _ := NewMutableTree(db, cacheSize)
 	for i := 0; i < treeSize; i++ {
 		key := rand2.Bytes(4)
 		value := rand2.Bytes(50)
