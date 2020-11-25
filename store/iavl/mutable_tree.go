@@ -290,7 +290,7 @@ func (tree *MutableTree) LazyLoadVersion(targetVersion int64) (*MutableTree, err
 		return nil, ErrVersionDoesNotExist
 	}
 
-	tree.versions[targetVersion] = true
+	//tree.versions[targetVersion] = true TODO caused concurrent read/write map
 
 	iTree := &ImmutableTree{
 		ndb:     tree.ndb,
