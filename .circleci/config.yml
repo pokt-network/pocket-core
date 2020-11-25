@@ -19,8 +19,6 @@ jobs:
       - checkout
       # Install dependencies
       - run: ./deps.sh
-      # linter
-      - run: golangci-lint run
       # static analyzer
       - run: go vet ./...
       # Build the binary
