@@ -628,8 +628,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
 	}
 	// new multistore for copy
-	newMS := (*app.cms.(*rootMulti.Store).CopyStore()).(*rootMulti.Store)
-	err := newMS.LoadVersion(req.Height)
+	store, err := app.cms.(*rootMulti.Store).LoadLazyVersion(req.Height)
 	if err != nil {
 		return sdk.ErrInternal(
 			fmt.Sprintf(
@@ -638,7 +637,15 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 			),
 		).QueryResult()
 	}
-
+	newMS, ok := (*store).(*rootMulti.Store)
+	if !ok {
+		return sdk.ErrInternal(
+			fmt.Sprintf(
+				"failed to convert store to rootMulti at height %d; (latest height: %d)",
+				req.Height, app.LastBlockHeight(),
+			),
+		).QueryResult()
+	}
 	// cache wrap the commit-multistore for safety
 	ctx := sdk.NewContext(
 		newMS, app.checkState.ctx.BlockHeader(), true, app.logger,
