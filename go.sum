@@ -294,12 +294,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/pokt-network/tendermint v0.32.11-0.20201110133402-285903b54c54 h1:cKqyBu9KE1+2RfaNKtX5IGHkx/XojtpiUscQS5zLMQA=
-github.com/pokt-network/tendermint v0.32.11-0.20201110133402-285903b54c54/go.mod h1:WJ64ycR8cit/M0gN1fuy8puUty7Qd/Ji0ic8ztOO5KA=
-github.com/pokt-network/tendermint v0.32.11-0.20201116185110-31bbe2850d83 h1:ePQU26befqPAsmo8DplGEoxpnUwddpqMjN6QZailSwA=
-github.com/pokt-network/tendermint v0.32.11-0.20201116185110-31bbe2850d83/go.mod h1:WJ64ycR8cit/M0gN1fuy8puUty7Qd/Ji0ic8ztOO5KA=
-github.com/pokt-network/tendermint v0.32.11-0.20201127151327-a7f82b7145c4 h1:XephuBQEcmLv/ZkLv6oIO9Re8uq/suSn4T4A1+LEIxU=
-github.com/pokt-network/tendermint v0.32.11-0.20201127151327-a7f82b7145c4/go.mod h1:WJ64ycR8cit/M0gN1fuy8puUty7Qd/Ji0ic8ztOO5KA=
+github.com/pokt-network/tendermint v0.32.11-0.20201127225450-e716313a62eb h1:CGftwZvmCbnLmD95/b45TPMxU6ox0iCqeTUK/owKjOA=
+github.com/pokt-network/tendermint v0.32.11-0.20201127225450-e716313a62eb/go.mod h1:WJ64ycR8cit/M0gN1fuy8puUty7Qd/Ji0ic8ztOO5KA=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829/go.mod h1:p2iRAGwDERtqlqzRXnrOVns+ignqQo//hLXqYxZYVNs=
@@ -381,8 +377,6 @@ github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c/go.mod h1:ahpPrc7
 github.com/tendermint/go-amino v0.14.1/go.mod h1:i/UKE5Uocn+argJJBb12qTZsCDBcAYMbR92AaJVmKso=
 github.com/tendermint/go-amino v0.15.0 h1:TC4e66P59W7ML9+bxio17CPKnxW3nKIRAYskntMAoRk=
 github.com/tendermint/go-amino v0.15.0/go.mod h1:TQU0M1i/ImAo+tYpZi73AU3V/dKeCoMC9Sphe2ZwGME=
-github.com/tendermint/iavl v0.14.0 h1:Jkff+IFrXxRWtH9Jn/ga/2cxNnzMTv58xEKgCJsKUBg=
-github.com/tendermint/iavl v0.14.0/go.mod h1:QmfViflFiXzxKLQE4tAUuWQHq+RSuQFxablW5oJZ6sE=
 github.com/tendermint/tm-db v0.5.1 h1:H9HDq8UEA7Eeg13kdYckkgwwkQLBnJGgX4PgLJRhieY=
 github.com/tendermint/tm-db v0.5.1/go.mod h1:g92zWjHpCYlEvQXvy9M168Su8V1IBEeawpXVVBaK4f4=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
