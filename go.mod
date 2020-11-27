@@ -9,6 +9,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/magiconair/properties v1.8.1
 	github.com/pkg/errors v0.9.1
+	github.com/pokt-network/tendermint v0.32.11-0.20201127151327-a7f82b7145c4 // indirect
 	github.com/prometheus/client_golang v1.5.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
@@ -23,4 +24,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.5
 )
 
-replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20201116185110-31bbe2850d83
+replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20201127151327-a7f82b7145c4
