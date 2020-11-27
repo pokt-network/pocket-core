@@ -29,7 +29,7 @@ func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 		routes = append(routes, Route{Name: "DebugProfile", Method: "GET", Path: "/debug/pprof/profile", HandlerFunc: wrapperHandlerFunc(pprof.Profile)})
 		routes = append(routes, Route{Name: "DebugSymbol", Method: "GET", Path: "/debug/pprof/symbol", HandlerFunc: wrapperHandlerFunc(pprof.Symbol)})
 		routes = append(routes, Route{Name: "DebugTrace", Method: "GET", Path: "/debug/pprof/trace", HandlerFunc: wrapperHandlerFunc(pprof.Trace)})
-		routes = append(routes, Route{Name: "DebugGoroutine", Method: "GET", Path: "/debug/pprof/goroutine", HandlerFunc: wrapperHandler(pprof.Handler(("goroutines")))})
+		routes = append(routes, Route{Name: "DebugGoroutine", Method: "GET", Path: "/debug/pprof/goroutine", HandlerFunc: wrapperHandler(pprof.Handler(("goroutine")))})
 		routes = append(routes, Route{Name: "DebugHeap", Method: "GET", Path: "/debug/pprof/heap", HandlerFunc: wrapperHandler(pprof.Handler(("heap")))})
 		routes = append(routes, Route{Name: "DebugThreadCreate", Method: "GET", Path: "/debug/pprof/threadcreate", HandlerFunc: wrapperHandler(pprof.Handler(("threadcreate")))})
 		routes = append(routes, Route{Name: "DebugBlock", Method: "GET", Path: "/debug/pprof/block", HandlerFunc: wrapperHandler(pprof.Handler(("block")))})

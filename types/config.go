@@ -128,8 +128,8 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
 	c.TendermintConfig.PrivValidatorState = DefaultPVSName
 	c.TendermintConfig.P2P.AddrBookStrict = false
-	c.TendermintConfig.P2P.MaxNumInboundPeers = 250
-	c.TendermintConfig.P2P.MaxNumOutboundPeers = 250
+	c.TendermintConfig.P2P.MaxNumInboundPeers = 10
+	c.TendermintConfig.P2P.MaxNumOutboundPeers = 10
 	c.TendermintConfig.LogLevel = "*:info, *:error"
 	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
 	c.TendermintConfig.TxIndex.IndexKeys = DefaultTxIndexTags
@@ -138,6 +138,9 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.RPC.MaxOpenConnections = 2500
 	c.TendermintConfig.Mempool.Size = 9000
 	c.TendermintConfig.Mempool.CacheSize = 9000
+	c.TendermintConfig.FastSync = &config.FastSyncConfig{
+		Version: "v1",
+	}
 	c.TendermintConfig.Consensus.TimeoutPropose = 60000000000
 	c.TendermintConfig.Consensus.TimeoutProposeDelta = 10000000000
 	c.TendermintConfig.Consensus.TimeoutPrevote = 60000000000
