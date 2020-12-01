@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/pprof"
+	"runtime/debug"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -33,6 +34,7 @@ func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 		routes = append(routes, Route{Name: "DebugHeap", Method: "GET", Path: "/debug/pprof/heap", HandlerFunc: wrapperHandler(pprof.Handler(("heap")))})
 		routes = append(routes, Route{Name: "DebugThreadCreate", Method: "GET", Path: "/debug/pprof/threadcreate", HandlerFunc: wrapperHandler(pprof.Handler(("threadcreate")))})
 		routes = append(routes, Route{Name: "DebugBlock", Method: "GET", Path: "/debug/pprof/block", HandlerFunc: wrapperHandler(pprof.Handler(("block")))})
+		routes = append(routes, Route{Name: "FreeOsMemory", Method: "GET", Path: "/debug/freememory", HandlerFunc: FreeMemory})
 	}
 
 	srv := &http.Server{
@@ -105,6 +107,11 @@ func GetRoutes() Routes {
 		Route{Name: "QueryState", Method: "POST", Path: "/v1/query/state", HandlerFunc: State},
 	}
 	return routes
+}
+
+func FreeMemory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	debug.FreeOSMemory()
+	WriteResponse(w, "MemoryFreed", r.URL.Path, r.Host)
 }
 
 func WriteResponse(w http.ResponseWriter, jsn, path, ip string) {
