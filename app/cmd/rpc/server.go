@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/pprof"
+	"runtime"
 	"runtime/debug"
 	"time"
 
@@ -35,6 +36,7 @@ func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 		routes = append(routes, Route{Name: "DebugThreadCreate", Method: "GET", Path: "/debug/pprof/threadcreate", HandlerFunc: wrapperHandler(pprof.Handler(("threadcreate")))})
 		routes = append(routes, Route{Name: "DebugBlock", Method: "GET", Path: "/debug/pprof/block", HandlerFunc: wrapperHandler(pprof.Handler(("block")))})
 		routes = append(routes, Route{Name: "FreeOsMemory", Method: "GET", Path: "/debug/freememory", HandlerFunc: FreeMemory})
+		routes = append(routes, Route{Name: "MemStats", Method: "GET", Path: "/debug/memstats", HandlerFunc: MemStats})
 	}
 
 	srv := &http.Server{
@@ -112,6 +114,15 @@ func GetRoutes() Routes {
 func FreeMemory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	debug.FreeOSMemory()
 	WriteResponse(w, "MemoryFreed", r.URL.Path, r.Host)
+}
+func MemStats(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	b, err := json.Marshal(m)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+	}
+	WriteResponse(w, string(b), r.URL.Path, r.Host)
 }
 
 func WriteResponse(w http.ResponseWriter, jsn, path, ip string) {
