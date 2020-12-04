@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/tendermint/tendermint/config"
 	"log"
 	"sync"
 
@@ -38,11 +39,15 @@ type CacheObject interface {
 }
 
 // "Init" - Initializes a cache storage object
-func (cs *CacheStorage) Init(dir, name string, dbType db.BackendType, maxEntries int) {
+func (cs *CacheStorage) Init(dir, name string, options config.LevelDBOptions, maxEntries int) {
 	// init the lru cache with a max entries
 	cs.Cache = sdk.NewCache(maxEntries)
 	// intialize the db
-	cs.DB = db.NewDB(name, dbType, dir)
+	var err error
+	cs.DB, err = sdk.NewLevelDB(name, dir, options.ToGoLevelDBOpts())
+	if err != nil {
+		panic(err)
+	}
 }
 
 // "Get" - Returns the value from a key

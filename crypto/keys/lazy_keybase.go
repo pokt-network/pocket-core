@@ -2,6 +2,7 @@ package keys
 
 import (
 	"fmt"
+	"github.com/tendermint/tendermint/config"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	cmn "github.com/tendermint/tendermint/libs/os"
@@ -51,7 +52,7 @@ func (kb *lazyKeybase) SetCoinbase(address types.Address) error {
 }
 
 func (lkb lazyKeybase) List() ([]KeyPair, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +62,7 @@ func (lkb lazyKeybase) List() ([]KeyPair, error) {
 }
 
 func (lkb lazyKeybase) Get(address types.Address) (KeyPair, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return KeyPair{}, err
 	}
@@ -71,7 +72,7 @@ func (lkb lazyKeybase) Get(address types.Address) (KeyPair, error) {
 }
 
 func (lkb lazyKeybase) Delete(address types.Address, passphrase string) error {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func (lkb lazyKeybase) Delete(address types.Address, passphrase string) error {
 }
 
 func (lkb lazyKeybase) Update(address types.Address, oldpass string, newpass string) error {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return err
 	}
@@ -91,7 +92,7 @@ func (lkb lazyKeybase) Update(address types.Address, oldpass string, newpass str
 }
 
 func (lkb lazyKeybase) Sign(address types.Address, passphrase string, msg []byte) ([]byte, crypto.PublicKey, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -101,7 +102,7 @@ func (lkb lazyKeybase) Sign(address types.Address, passphrase string, msg []byte
 }
 
 func (lkb lazyKeybase) Create(encryptPassphrase string) (KeyPair, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return KeyPair{}, err
 	}
@@ -111,7 +112,7 @@ func (lkb lazyKeybase) Create(encryptPassphrase string) (KeyPair, error) {
 }
 
 func (lkb lazyKeybase) ImportPrivKey(armor, decryptPassphrase, encryptPassphrase string) (KeyPair, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return KeyPair{}, err
 	}
@@ -121,7 +122,7 @@ func (lkb lazyKeybase) ImportPrivKey(armor, decryptPassphrase, encryptPassphrase
 }
 
 func (lkb lazyKeybase) ExportPrivKeyEncryptedArmor(address types.Address, decryptPassphrase, encryptPassphrase, hint string) (armor string, err error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return "", err
 	}
@@ -131,7 +132,7 @@ func (lkb lazyKeybase) ExportPrivKeyEncryptedArmor(address types.Address, decryp
 }
 
 func (lkb lazyKeybase) ImportPrivateKeyObject(privateKey [64]byte, encryptPassphrase string) (KeyPair, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return KeyPair{}, err
 	}
@@ -141,7 +142,7 @@ func (lkb lazyKeybase) ImportPrivateKeyObject(privateKey [64]byte, encryptPassph
 }
 
 func (lkb lazyKeybase) ExportPrivateKeyObject(address types.Address, passphrase string) (crypto.PrivateKey, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir)
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir,config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return nil, err
 	}

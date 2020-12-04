@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	"time"
 
 	dbm "github.com/tendermint/tm-db"
@@ -68,15 +69,15 @@ func ParseTimeBytes(bz []byte) (time.Time, error) {
 }
 
 // NewLevelDB instantiate a new LevelDB instance according to DBBackend.
-func NewLevelDB(name, dir string) (db dbm.DB, err error) {
-	backend := dbm.GoLevelDBBackend
-	if DBBackend == string(dbm.CLevelDBBackend) {
-		backend = dbm.CLevelDBBackend
-	}
+func NewLevelDB(name, dir string, o *opt.Options) (db dbm.DB, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("couldn't create db: %v", r)
 		}
 	}()
-	return dbm.NewDB(name, backend, dir), err
+	db, err = dbm.NewGoLevelDBWithOpts(name, dir, o)
+	if err != nil {
+		return nil, err
+	}
+	return db, err
 }

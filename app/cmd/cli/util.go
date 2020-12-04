@@ -82,7 +82,7 @@ var exportGenesisForReset = &cobra.Command{
 			fmt.Println("error parsing height: ", err)
 			return
 		}
-		db, err := app.OpenDB(app.GlobalConfig.TendermintConfig.RootDir)
+		db, err := app.OpenDB(app.GlobalConfig)
 		if err != nil {
 			fmt.Println("error loading application database: ", err)
 			return
@@ -126,7 +126,7 @@ var unsafeRollbackCmd = &cobra.Command{
 			fmt.Println("error parsing height: ", err)
 			return
 		}
-		db, err := app.OpenDB(app.GlobalConfig.TendermintConfig.RootDir)
+		db, err := app.OpenDB(app.GlobalConfig)
 		if err != nil {
 			fmt.Println("error loading application database: ", err)
 			return

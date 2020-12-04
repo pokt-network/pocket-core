@@ -16,32 +16,31 @@ type SDKConfig struct {
 }
 
 type PocketConfig struct {
-	DataDir                  string         `json:"data_dir"`
-	GenesisName              string         `json:"genesis_file"`
-	ChainsName               string         `json:"chains_name"`
-	SessionDBType            db.BackendType `json:"session_db_type"`
-	SessionDBName            string         `json:"session_db_name"`
-	EvidenceDBType           db.BackendType `json:"evidence_db_type"`
-	EvidenceDBName           string         `json:"evidence_db_name"`
-	TendermintURI            string         `json:"tendermint_uri"`
-	KeybaseName              string         `json:"keybase_name"`
-	RPCPort                  string         `json:"rpc_port"`
-	ClientBlockSyncAllowance int            `json:"client_block_sync_allowance"`
-	MaxEvidenceCacheEntires  int            `json:"max_evidence_cache_entries"`
-	MaxSessionCacheEntries   int            `json:"max_session_cache_entries"`
-	JSONSortRelayResponses   bool           `json:"json_sort_relay_responses"`
-	RemoteCLIURL             string         `json:"remote_cli_url"`
-	UserAgent                string         `json:"user_agent"`
-	ValidatorCacheSize       int64          `json:"validator_cache_size"`
-	ApplicationCacheSize     int64          `json:"application_cache_size"`
-	RPCTimeout               int64          `json:"rpc_timeout"`
-	PrometheusAddr           string         `json:"pocket_prometheus_port"`
-	PrometheusMaxOpenfiles   int            `json:"prometheus_max_open_files"`
-	MaxClaimAgeForProofRetry int            `json:"max_claim_age_for_proof_retry"`
-	ProofPrevalidation       bool           `json:"proof_prevalidation"`
-	CtxCacheSize             int            `json:"ctx_cache_size"`
-	ABCILogging              bool           `json:"abci_logging"`
-	RelayErrors              bool           `json:"show_relay_errors"`
+	DataDir                  string                `json:"data_dir"`
+	GenesisName              string                `json:"genesis_file"`
+	ChainsName               string                `json:"chains_name"`
+	SessionDBName            string                `json:"session_db_name"`
+	EvidenceDBName           string                `json:"evidence_db_name"`
+	TendermintURI            string                `json:"tendermint_uri"`
+	KeybaseName              string                `json:"keybase_name"`
+	RPCPort                  string                `json:"rpc_port"`
+	ClientBlockSyncAllowance int                   `json:"client_block_sync_allowance"`
+	MaxEvidenceCacheEntires  int                   `json:"max_evidence_cache_entries"`
+	MaxSessionCacheEntries   int                   `json:"max_session_cache_entries"`
+	JSONSortRelayResponses   bool                  `json:"json_sort_relay_responses"`
+	RemoteCLIURL             string                `json:"remote_cli_url"`
+	UserAgent                string                `json:"user_agent"`
+	ValidatorCacheSize       int64                 `json:"validator_cache_size"`
+	ApplicationCacheSize     int64                 `json:"application_cache_size"`
+	RPCTimeout               int64                 `json:"rpc_timeout"`
+	PrometheusAddr           string                `json:"pocket_prometheus_port"`
+	PrometheusMaxOpenfiles   int                   `json:"prometheus_max_open_files"`
+	MaxClaimAgeForProofRetry int                   `json:"max_claim_age_for_proof_retry"`
+	ProofPrevalidation       bool                  `json:"proof_prevalidation"`
+	CtxCacheSize             int                   `json:"ctx_cache_size"`
+	ABCILogging              bool                  `json:"abci_logging"`
+	RelayErrors              bool                  `json:"show_relay_errors"`
+	LevelDBOptions           config.LevelDBOptions `json:"leveldb_options"`
 }
 
 type Config struct {
@@ -58,8 +57,6 @@ const (
 	DefaultChainsName                 = "chains.json"
 	DefaultGenesisName                = "genesis.json"
 	DefaultRPCPort                    = "8081"
-	DefaultSessionDBType              = db.CLevelDBBackend
-	DefaultEvidenceDBType             = db.CLevelDBBackend
 	DefaultSessionDBName              = "session"
 	DefaultEvidenceDBName             = "pocket_evidence"
 	DefaultTMURI                      = "tcp://localhost:26657"
@@ -68,7 +65,6 @@ const (
 	DefaultListenAddr                 = "tcp://0.0.0.0:"
 	DefaultClientBlockSyncAllowance   = 10
 	DefaultJSONSortRelayResponses     = true
-	DefaultDBBackend                  = string(db.CLevelDBBackend)
 	DefaultTxIndexer                  = "kv"
 	DefaultTxIndexTags                = "tx.hash,tx.height,message.sender,transfer.recipient"
 	ConfigDirName                     = "config"
@@ -98,9 +94,7 @@ func DefaultConfig(dataDir string) Config {
 			DataDir:                  dataDir,
 			GenesisName:              DefaultGenesisName,
 			ChainsName:               DefaultChainsName,
-			SessionDBType:            DefaultSessionDBType,
 			SessionDBName:            DefaultSessionDBName,
-			EvidenceDBType:           DefaultEvidenceDBType,
 			EvidenceDBName:           DefaultEvidenceDBName,
 			TendermintURI:            DefaultTMURI,
 			KeybaseName:              DefaultKeybaseName,
@@ -133,7 +127,7 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.LogLevel = "*:info, *:error"
 	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
 	c.TendermintConfig.TxIndex.IndexKeys = DefaultTxIndexTags
-	c.TendermintConfig.DBBackend = DefaultDBBackend
+	c.TendermintConfig.DBBackend = string(db.GoLevelDBBackend)
 	c.TendermintConfig.RPC.GRPCMaxOpenConnections = 2500
 	c.TendermintConfig.RPC.MaxOpenConnections = 2500
 	c.TendermintConfig.Mempool.Size = 9000
@@ -159,8 +153,6 @@ func DefaultConfig(dataDir string) Config {
 
 func DefaultTestingPocketConfig() PocketConfig {
 	c := DefaultConfig("data")
-	c.PocketConfig.EvidenceDBType = db.MemDBBackend
-	c.PocketConfig.SessionDBType = db.MemDBBackend
 	c.PocketConfig.MaxClaimAgeForProofRetry = 1000
 	return c.PocketConfig
 }

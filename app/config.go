@@ -152,8 +152,6 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
 
 	GlobalConfig = c
-	// set the DBBackendVariable
-	sdk.DBBackend = c.TendermintConfig.DBBackend
 }
 
 func InitGenesis(genesisType GenesisType) {
