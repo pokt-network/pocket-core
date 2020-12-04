@@ -8,8 +8,6 @@ import (
 
 func TestDefaultConfig(t *testing.T) {
 	c := types.DefaultConfig("~/.pocket")
-	// Check default dbbackend
-	assert.EqualValues(t, types.DefaultDBBackend, c.TendermintConfig.DBBackend)
 
 	// Check default Tx indexing params
 	assert.EqualValues(t, types.DefaultTxIndexer, c.TendermintConfig.TxIndex.Indexer)
