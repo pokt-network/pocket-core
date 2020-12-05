@@ -27,17 +27,26 @@ type TxIndex struct {
 	compositeKeysToIndex []string
 	indexAllEvents       bool
 	cdc                  *amino.Codec
-	index                int64
+	index                uint32
 	height               int64
+	cache                *Cache
 }
 
 // NewTxIndex creates new KV indexer.
-func NewTxIndex(store dbm.DB, cdc *amino.Codec, options ...func(*TxIndex)) *TxIndex {
-	txi := &TxIndex{store: store, compositeKeysToIndex: make([]string, 0), indexAllEvents: false, index: 0, cdc: cdc}
+func NewTxIndex(store dbm.DB, cdc *amino.Codec, cacheSize int, options ...func(*TxIndex)) *TxIndex {
+	txi := &TxIndex{store: store, compositeKeysToIndex: make([]string, 0), indexAllEvents: false, index: 0, cdc: cdc, cache: NewCache(cacheSize)}
 	for _, option := range options {
 		option(txi)
 	}
 	return txi
+}
+func (txi *TxIndex) UpdateHeight(height int64) {
+	if txi.height != height {
+		// Reset cache & indexes
+		txi.index = 0
+		txi.cache.Purge()
+	}
+	txi.height = height
 }
 
 // Get gets transaction from the TxIndex storage and returns it or nil if the
@@ -45,6 +54,14 @@ func NewTxIndex(store dbm.DB, cdc *amino.Codec, options ...func(*TxIndex)) *TxIn
 func (txi *TxIndex) Get(hash []byte) (*tmTypes.TxResult, error) {
 	if len(hash) == 0 {
 		return nil, txindex.ErrorEmptyHash
+	}
+	if txRes, ok := txi.cache.Get(string(hash)); ok {
+		txResult := new(tmTypes.TxResult)
+		err := txi.cdc.UnmarshalBinaryBare(txRes.([]byte), &txResult)
+		if err != nil {
+			return nil, fmt.Errorf("error reading TxResult: %v", err)
+		}
+		return txResult, nil
 	}
 
 	rawBytes, _ := txi.store.Get(hash)
@@ -57,6 +74,7 @@ func (txi *TxIndex) Get(hash []byte) (*tmTypes.TxResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading TxResult: %v", err)
 	}
+	txi.cache.Add(string(hash), rawBytes)
 
 	return txResult, nil
 }
@@ -78,6 +96,8 @@ func IndexAllEvents() func(*TxIndex) {
 func (txi *TxIndex) Index(result *tmTypes.TxResult, hash []byte, sender string) error {
 	b := txi.store.NewBatch()
 	defer b.Close()
+	var idx uint32 = txi.index
+	result.Index = idx
 
 	// index tx by events
 	txi.indexEvents(result, hash, b, sender)
@@ -95,6 +115,7 @@ func (txi *TxIndex) Index(result *tmTypes.TxResult, hash []byte, sender string) 
 	b.Set(hash, rawBytes)
 	b.WriteSync()
 
+	txi.index++
 	return nil
 }
 
@@ -115,7 +136,7 @@ func (txi *TxIndex) indexEvents(result *tmTypes.TxResult, hash []byte, store dbm
 				if compositeTag == "message.sender" && string(attr.Value) != sender {
 					continue // Index value does not match sender cannot index !!
 				}
-				store.Set(keyForEvent(compositeTag, attr.Value, result.Height, result.Index), hash)
+				store.Set(keyForEventBytes(compositeTag, attr.Value, result.Height, result.Index), hash)
 			}
 		}
 	}
@@ -149,7 +170,6 @@ func (txi *TxIndex) ReducedSearch(ctx context.Context, q *query.Query) ([]*types
 	height := lookForHeight(condition)
 
 	matchedKeys := txi.keys(ctx, condition, startKeyForCondition(condition, height), q.Pagination)
-	// results := make([]*types.TxResult, 0, q.Pagination.Size)
 
 	results := make([]*types.TxResult, 0, len(matchedKeys))
 	for _, key := range matchedKeys {
@@ -245,13 +265,21 @@ func (txi *TxIndex) keys(
 	return hashes
 }
 
-func keyForEvent(key string, value []byte, height int64, index uint32) []byte {
+func keyForEventBytes(key string, value []byte, height int64, index uint32) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%d/%d",
 		key,
 		value,
 		height,
 		index,
 	))
+}
+func keyForEvent(key string, value []byte, height int64, index uint32) string {
+	return fmt.Sprintf("%s/%s/%d/%d",
+		key,
+		value,
+		height,
+		index,
+	)
 }
 
 func keyForHeight(result *tmTypes.TxResult) []byte {

@@ -20,8 +20,9 @@ import (
 var memCdc *codec.Codec
 
 func TestTxIndex(t *testing.T) {
+	allowedKeys := []string{"account.number", "account.owner", "account.date", "message.sender"}
 	memCdc = amino.NewCodec()
-	indexer := NewTxIndex(db.NewMemDB(), memCdc)
+	indexer := NewTxIndex(db.NewMemDB(), memCdc, 10, IndexEvents(allowedKeys))
 
 	tx := tmTypes.Tx("HELLO WORLD")
 	txResult := &tmTypes.TxResult{
@@ -41,12 +42,16 @@ func TestTxIndex(t *testing.T) {
 	loadedTxResult, err := indexer.Get(hash)
 	require.NoError(t, err)
 	assert.Equal(t, txResult, loadedTxResult)
+
+	loadedTxResult, err = indexer.Get(hash) // Make sure cache works
+	require.NoError(t, err)
+	assert.Equal(t, txResult, loadedTxResult)
 }
 
 func TestTxSearch(t *testing.T) {
 	memCdc = amino.NewCodec()
 	allowedKeys := []string{"account.number", "account.owner", "account.date", "message.sender"}
-	indexer := NewTxIndex(db.NewMemDB(), memCdc, IndexEvents(allowedKeys))
+	indexer := NewTxIndex(db.NewMemDB(), memCdc, 10, IndexEvents(allowedKeys))
 
 	txResult := txResultWithEvents([]abci.Event{
 		{Type: "account", Attributes: []kv.Pair{{Key: []byte("number"), Value: []byte("1")}}},
