@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -16,7 +17,10 @@ import (
 	"github.com/pokt-network/pocket-core/x/gov/types"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	tmquery "github.com/tendermint/tendermint/libs/pubsub/query"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
+	tmTypes "github.com/tendermint/tendermint/types"
 )
 
 const (
@@ -37,48 +41,116 @@ func (app PocketCoreApp) QueryBlock(height *int64) (blockJSON []byte, err error)
 }
 
 func (app PocketCoreApp) QueryTx(hash string, prove bool) (res *core_types.ResultTx, err error) {
-	tmClient := app.GetClient()
-	defer func() { _ = tmClient.Stop() }()
 	h, err := hex.DecodeString(hash)
 	if err != nil {
 		return nil, err
 	}
-	res, err = tmClient.Tx(h, prove)
-	return
+	r, err := app.Txindexer().Get(h)
+
+	height := r.Height
+	index := r.Index
+
+	var proof tmTypes.TxProof
+	if prove {
+		block := app.Blockstore().LoadBlock(height)
+		proof = block.Data.Txs.Proof(int(index)) // XXX: overflow on 32-bit machines
+	}
+	return &ctypes.ResultTx{
+		Hash:     h,
+		Height:   height,
+		Index:    index,
+		TxResult: r.Result,
+		Tx:       r.Tx,
+		Proof:    proof,
+	}, nil
 }
 
 func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
-	tmClient := app.GetClient()
-	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
 	if err != nil {
 		return nil, err
 	}
 	query := fmt.Sprintf(messageSenderQuery, addr)
 	page, perPage = checkPagination(page, perPage)
-	res, err = tmClient.ReducedTxSearch(query, prove, page, perPage, checkSort(sort))
-	return
+	// res, err = tmClient.ReducedTxSearch(query, prove, page, perPage, checkSort(sort))
+	ctx := context.Background()
+	q, err := tmquery.New(query)
+	if err != nil {
+		return nil, err
+	}
+	q.AddPage(perPage, validateSkipCount(page, perPage), sort)
+
+	results, err := app.Txindexer().ReducedSearch(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	totalCount := len(results)
+	apiResults := make([]*ctypes.ResultTx, 0, totalCount)
+
+	for _, r := range results {
+		var proof tmTypes.TxProof
+		if prove {
+			block := app.Blockstore().LoadBlock(r.Height)
+			proof = block.Data.Txs.Proof(int(r.Index)) // XXX: overflow on 32-bit machines
+		}
+
+		apiResults = append(apiResults, &ctypes.ResultTx{
+			Hash:     r.Tx.Hash(),
+			Height:   r.Height,
+			Index:    r.Index,
+			TxResult: r.Result,
+			Tx:       r.Tx,
+			Proof:    proof,
+		})
+	}
+	return &ctypes.ResultTxSearch{Txs: apiResults, TotalCount: totalCount}, nil
 }
+
 func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
-	tmClient := app.GetClient()
-	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
 	if err != nil {
 		return nil, err
 	}
 	query := fmt.Sprintf(transferRecipientQuery, addr)
-	page, perPage = checkPagination(page, perPage)
-	res, err = tmClient.ReducedTxSearch(query, prove, page, perPage, checkSort(sort))
-	return
+	return app.SearchPaginated(query, page, perPage, prove, sort)
 }
 
 func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
-	tmClient := app.GetClient()
-	defer func() { _ = tmClient.Stop() }()
 	query := fmt.Sprintf(txHeightQuery, height)
-	page, perPage = checkPagination(page, perPage)
-	res, err = tmClient.ReducedTxSearch(query, prove, page, perPage, checkSort(sort))
-	return
+	return app.SearchPaginated(query, page, perPage, prove, sort)
+}
+func (app PocketCoreApp) SearchPaginated(query string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
+	ctx := context.Background()
+	q, err := tmquery.New(query)
+	if err != nil {
+		return nil, err
+	}
+	q.AddPage(perPage, validateSkipCount(page, perPage), sort)
+
+	results, err := app.Txindexer().ReducedSearch(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	totalCount := len(results)
+	apiResults := make([]*ctypes.ResultTx, 0, totalCount)
+
+	for _, r := range results {
+		var proof tmTypes.TxProof
+		if prove {
+			block := app.Blockstore().LoadBlock(r.Height)
+			proof = block.Data.Txs.Proof(int(r.Index)) // XXX: overflow on 32-bit machines
+		}
+
+		apiResults = append(apiResults, &ctypes.ResultTx{
+			Hash:     r.Tx.Hash(),
+			Height:   r.Height,
+			Index:    r.Index,
+			TxResult: r.Result,
+			Tx:       r.Tx,
+			Proof:    proof,
+		})
+	}
+	return &ctypes.ResultTxSearch{Txs: apiResults, TotalCount: totalCount}, nil
 }
 
 func (app PocketCoreApp) QueryHeight() (res int64, err error) {
@@ -506,4 +578,13 @@ func (p Page) JSON() (out []byte, err error) {
 // String returns a human readable string representation of a validator page
 func (p Page) String() string {
 	return fmt.Sprintf("Total:\t\t%d\nPage:\t\t%d\nResult:\t\t\n====\n%v\n====\n", p.Total, p.Page, p.Result)
+}
+
+func validateSkipCount(page, perPage int) int {
+	skipCount := (page - 1) * perPage
+	if skipCount < 0 {
+		return 0
+	}
+
+	return skipCount
 }

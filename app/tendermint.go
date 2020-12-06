@@ -2,11 +2,13 @@ package app
 
 import (
 	"fmt"
-	state2 "github.com/tendermint/tendermint/state"
-	"github.com/tendermint/tendermint/store"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
+
+	state2 "github.com/tendermint/tendermint/state"
+	"github.com/tendermint/tendermint/store"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	cfg "github.com/tendermint/tendermint/config"
@@ -40,6 +42,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	app := creator(c.Logger, db, traceWriter)
 
 	// create & start tendermint node
+	c.TmConfig.TxIndex.Indexer = ""
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		pvm.LoadOrGenFilePV(c.TmConfig.PrivValidatorKeyFile(), c.TmConfig.PrivValidatorStateFile()),
@@ -53,7 +56,14 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	if err != nil {
 		return nil, nil, err
 	}
-	app.SetTxIndexer(tmNode.TxIndexer())
+	c.TmConfig.TxIndex.Indexer = "kv"
+	// app.SetTxIndexer(tmNode.TxIndexer())
+	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
+	if err != nil {
+		return nil, nil, err
+	}
+	fmt.Println(c.TmConfig.TxIndex.IndexKeys)
+	app.SetTxIndexer(sdk.NewTxIndex(store, app.cdc, 1, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " ")))) // TODO config cache size
 	app.SetBlockstore(tmNode.BlockStore())
 	app.SetEvidencePool(tmNode.EvidencePool())
 	return tmNode, app, nil
@@ -74,6 +84,22 @@ func openTraceWriter(traceWriterFile string) (w io.Writer, err error) {
 		return
 	}
 	return
+}
+
+func splitAndTrimEmpty(s, sep, cutset string) []string {
+	if s == "" {
+		return []string{}
+	}
+
+	spl := strings.Split(s, sep)
+	nonEmptyStrings := make([]string, 0, len(spl))
+	for i := 0; i < len(spl); i++ {
+		element := strings.Trim(spl[i], cutset)
+		if element != "" {
+			nonEmptyStrings = append(nonEmptyStrings, element)
+		}
+	}
+	return nonEmptyStrings
 }
 
 //// upgradePrivVal converts old priv_validator.json file (prior to Tendermint 0.28)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -185,6 +186,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	//	fmt.Println(err.Error())
 	//	return nil, nil
 	//}
+	c.TmConfig.TxIndex.Indexer = ""
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		privVal,
@@ -198,7 +200,12 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
-	baseapp.SetTxIndexer(tmNode.TxIndexer())
+	c.TmConfig.TxIndex.Indexer = "kv"
+	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
+	if err != nil {
+		panic(err)
+	}
+	baseapp.SetTxIndexer(sdk.NewTxIndex(store, baseapp.Codec(), 1, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " ")))) // TODO config cache size
 	baseapp.SetBlockstore(tmNode.BlockStore())
 	baseapp.SetEvidencePool(tmNode.EvidencePool())
 	//baseapp.pocketKeeper.TmNode = client.NewLocal(tmNode)
@@ -207,6 +214,21 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	return tmNode, kb
 }
 
+func splitAndTrimEmpty(s, sep, cutset string) []string {
+	if s == "" {
+		return []string{}
+	}
+
+	spl := strings.Split(s, sep)
+	nonEmptyStrings := make([]string, 0, len(spl))
+	for i := 0; i < len(spl); i++ {
+		element := strings.Trim(spl[i], cutset)
+		if element != "" {
+			nonEmptyStrings = append(nonEmptyStrings, element)
+		}
+	}
+	return nonEmptyStrings
+}
 func memCodec() *codec.Codec {
 	if memCDC == nil {
 		memCDC = codec.New()

@@ -3,18 +3,18 @@ package auth
 import (
 	"encoding/hex"
 	"fmt"
+	"os"
+
 	posCrypto "github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/keeper"
 	"github.com/pokt-network/pocket-core/x/auth/types"
-	"github.com/tendermint/tendermint/state/txindex"
 	tmTypes "github.com/tendermint/tendermint/types"
-	"os"
 )
 
 // NewAnteHandler returns an AnteHandler that checks signatures and deducts fees from the first signer.
 func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
-	return func(ctx sdk.Ctx, tx sdk.Tx, txBz []byte, txIndexer txindex.TxIndexer, simulate bool) (newCtx sdk.Ctx, res sdk.Result, abort bool) {
+	return func(ctx sdk.Ctx, tx sdk.Tx, txBz []byte, txIndexer *sdk.TxIndex, simulate bool) (newCtx sdk.Ctx, res sdk.Result, abort bool) {
 		if addr := ak.GetModuleAddress(types.FeeCollectorName); addr == nil {
 			ctx.Logger().Error(fmt.Sprintf("%s module account has not been set", types.FeeCollectorName))
 			os.Exit(1)
@@ -40,7 +40,7 @@ func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
 	}
 }
 
-func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, txIndexer txindex.TxIndexer, txBz []byte, simulate bool) sdk.Error {
+func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx StdTx, params Params, txIndexer *sdk.TxIndex, txBz []byte, simulate bool) sdk.Error {
 	// validate the memo
 	if err := ValidateMemo(stdTx, params); err != nil {
 		return types.ErrInvalidMemo(ModuleName, err)

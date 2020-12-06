@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
-	"github.com/tendermint/tendermint/rpc/client/local"
 	"io"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/tendermint/tendermint/rpc/client/local"
 
 	"github.com/tendermint/tendermint/rpc/client/http"
 
@@ -194,6 +195,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	//	fmt.Println(err.Error())
 	//	return nil, nil
 	//}
+	c.TmConfig.TxIndex.Indexer = ""
 	tmNode, err := node.NewNode(
 		c.TmConfig,
 		privVal,
@@ -207,8 +209,13 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
+	c.TmConfig.TxIndex.Indexer = "kv"
 	PCA = app
-	app.SetTxIndexer(tmNode.TxIndexer())
+	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
+	if err != nil {
+		panic(err)
+	}
+	app.SetTxIndexer(sdk.NewTxIndex(store, app.cdc, 1, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " ")))) // TODO config cache size
 	app.SetBlockstore(tmNode.BlockStore())
 	app.SetEvidencePool(tmNode.EvidencePool())
 	app.pocketKeeper.TmNode = local.New(tmNode)

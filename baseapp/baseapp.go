@@ -9,10 +9,6 @@ package baseapp
 
 import (
 	"fmt"
-	"github.com/tendermint/tendermint/evidence"
-	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/state/txindex"
-	tmStore "github.com/tendermint/tendermint/store"
 	"io"
 	"os"
 	"reflect"
@@ -20,6 +16,11 @@ import (
 	"sort"
 	"strings"
 	"syscall"
+
+	"github.com/tendermint/tendermint/evidence"
+	"github.com/tendermint/tendermint/node"
+	tmStore "github.com/tendermint/tendermint/store"
+	tmTypes "github.com/tendermint/tendermint/types"
 
 	"errors"
 
@@ -63,7 +64,7 @@ type BaseApp struct {
 	name         string               // application name from abci.Info
 	db           dbm.DB               // common DB backend
 	tmNode       *node.Node           // <---- todo updated here
-	txIndexer    txindex.TxIndexer    // <---- todo updated here
+	txIndexer    *sdk.TxIndex         // <---- todo updated here
 	blockstore   *tmStore.BlockStore  // <---- todo updated here
 	evidencePool *evidence.Pool       // <---- todo updated here
 	cms          sdk.CommitMultiStore // Main (uncached) state
@@ -137,11 +138,11 @@ func (app *BaseApp) SetTendermintNode(node *node.Node) {
 	app.tmNode = node
 }
 
-func (app *BaseApp) SetTxIndexer(txindexer txindex.TxIndexer) {
+func (app *BaseApp) SetTxIndexer(txindexer *sdk.TxIndex) {
 	app.txIndexer = txindexer
 }
 
-func (app *BaseApp) Txindexer() (txindexer txindex.TxIndexer) {
+func (app *BaseApp) Txindexer() (txindexer *sdk.TxIndex) {
 	return app.txIndexer
 }
 
@@ -764,8 +765,7 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	} else {
 		result = app.runTx(runTxModeDeliver, req.Tx, tx)
 	}
-
-	return abci.ResponseDeliverTx{
+	deliverTx := abci.ResponseDeliverTx{
 		Code:      uint32(result.Code),
 		Codespace: string(result.Codespace),
 		Data:      result.Data,
@@ -774,6 +774,21 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
 		Events:    result.Events.ToABCIEvents(),
 	}
+	if result.IsOK() {
+		sender := tx.GetMsg().GetSigner().String()
+		tx := tmTypes.Tx(req.Tx)
+		txRes := &tmTypes.TxResult{
+			Height: app.LastBlockHeight(),
+			Tx:     tx,
+			Result: deliverTx,
+		}
+		err := app.txIndexer.Index(txRes, tx.Hash(), sender)
+		if err != nil {
+			app.logger.Error(err.Error())
+		}
+	}
+
+	return
 }
 
 // validateBasicTxMsgs executes basic validator calls for messages.

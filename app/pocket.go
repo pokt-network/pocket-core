@@ -66,6 +66,11 @@ func NewPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 	}
 }
 
+// Retrieve app codec
+func (app *PocketCoreApp) Codec() *codec.Codec {
+	return app.cdc
+}
+
 // inits from genesis
 func (app *PocketCoreApp) InitChainer(ctx sdk.Ctx, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState cfg.GenesisState
