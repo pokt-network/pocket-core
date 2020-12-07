@@ -8,13 +8,17 @@ import (
 )
 
 func main() {
+	//Get the GODEBUG env variable
 	godebug := os.Getenv("GODEBUG")
-	flagPresent := containsFlag(os.Args[1:], "--madvdontneed")
+	//Check if the --madvdontneed=true
+	flagPresent := containsFlag(os.Args[1:], "--madvdontneed=true")
 
-	//Check for the madvdontneed variable
+	//Check if madvdontneed env variable is present or flag is not used
 	if strings.Contains(godebug, "madvdontneed=1") || !flagPresent {
+		//start normally
 		cli.Execute()
 	} else {
+		//flag --madvdontneed=true so we add the env variable and start pocket as a subprocess
 		env := append(os.Environ(), "GODEBUG="+"madvdontneed=1,"+godebug)
 		cmd := exec.Command(os.Args[0], os.Args[1:]...)
 		cmd.Env = env

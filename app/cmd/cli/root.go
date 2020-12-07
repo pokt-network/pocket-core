@@ -5,10 +5,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
-	"github.com/mitchellh/go-ps"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"github.com/spf13/cobra"
@@ -25,6 +23,7 @@ var (
 	mainnet         bool
 	testnet         bool
 	profileApp      bool
+	madvdontneed    bool
 )
 
 var CLIVersion = app.AppVersion
@@ -55,13 +54,13 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&remoteCLIURL, "remoteCLIURL", "", "takes a remote endpoint in the form of <protocol>://<host> (uses RPC Port)")
 	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
+	rootCmd.PersistentFlags().BoolVar(&madvdontneed, "madvdontneed", false, "if enabled, run with GODEBUG=madvdontneed=1")
 	startCmd.Flags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
 	startCmd.Flags().BoolVar(&keybase, "keybase", true, "run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
 	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
 	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
 	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
 	rootCmd.AddCommand(startCmd)
-	rootCmd.AddCommand(stopCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
 }
@@ -109,35 +108,7 @@ var startCmd = &cobra.Command{
 	},
 }
 
-var stopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "stop pocket-core daemon",
-	Long:  `Stop the Pocket node/s running`,
-	Run: func(cmd *cobra.Command, args []string) {
-		processlist, _ := ps.Processes()
-		ename := os.Args[0]
-
-		for i := 0; i < len(processlist); i++ {
-			if strings.Contains(ename, processlist[i].Executable()) {
-				if processlist[i].Pid() != os.Getpid() && processlist[i].Pid() != os.Getppid() {
-					fmt.Printf("Sending SIGINT TO : %v - %v \n", processlist[i].Pid(), processlist[i].Executable())
-					p, err := os.FindProcess(processlist[i].Pid())
-					if err != nil {
-						fmt.Println(err)
-						continue
-					}
-					err = p.Signal(os.Interrupt)
-					if err != nil {
-						fmt.Println(err)
-						continue
-					}
-				}
-			}
-		}
-	},
-}
-
-// startCmd represents the start command
+// resetCmd represents the reset command
 var resetCmd = &cobra.Command{
 	Use:   "reset",
 	Short: "Reset pocket-core",
