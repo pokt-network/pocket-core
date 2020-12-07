@@ -11,10 +11,10 @@ func main() {
 	//Get the GODEBUG env variable
 	godebug := os.Getenv("GODEBUG")
 	//Check if the --madvdontneed=true
-	flagPresent := containsFlag(os.Args[1:], "--madvdontneed=true")
+	flagPresent := containsFlag(os.Args[1:], "--madvdontneed=false")
 
 	//Check if madvdontneed env variable is present or flag is not used
-	if strings.Contains(godebug, "madvdontneed=1") || !flagPresent {
+	if strings.Contains(godebug, "madvdontneed=1") || flagPresent {
 		//start normally
 		cli.Execute()
 	} else {

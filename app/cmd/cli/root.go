@@ -54,7 +54,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&remoteCLIURL, "remoteCLIURL", "", "takes a remote endpoint in the form of <protocol>://<host> (uses RPC Port)")
 	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
-	rootCmd.PersistentFlags().BoolVar(&madvdontneed, "madvdontneed", false, "if enabled, run with GODEBUG=madvdontneed=1, --madvdontneed=true")
+	rootCmd.PersistentFlags().BoolVar(&madvdontneed, "madvdontneed", true, "if enabled, run with GODEBUG=madvdontneed=1, --madvdontneed=true/false")
 	startCmd.Flags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
 	startCmd.Flags().BoolVar(&keybase, "keybase", true, "run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
 	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
