@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/pokt-network/pocket-core/app"
@@ -71,41 +73,63 @@ var startCmd = &cobra.Command{
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var genesisType app.GenesisType
-		if mainnet && testnet {
-			fmt.Println("cannot run with mainnet and testnet genesis simultaneously, please choose one")
+
+		//Get the GODEBUG env variable
+		godebug := os.Getenv("GODEBUG")
+		//Check if the --madvdontneed=true
+
+		//Check if madvdontneed env variable is present or flag is not used
+		if strings.Contains(godebug, "madvdontneed=1") || !madvdontneed {
+			//start normally
+			start(cmd, args)
+
+		} else {
+			//flag --madvdontneed=true so we add the env variable and start pocket as a subprocess
+			env := append(os.Environ(), "GODEBUG="+"madvdontneed=1,"+godebug)
+			comd := exec.Command(os.Args[0], os.Args[1:]...)
+			comd.Env = env
+			comd.Stdin = os.Stdin
+			comd.Stdout = os.Stdout
+			_ = comd.Run()
+		}
+	},
+}
+
+func start(cmd *cobra.Command, args []string) {
+	var genesisType app.GenesisType
+	if mainnet && testnet {
+		fmt.Println("cannot run with mainnet and testnet genesis simultaneously, please choose one")
+		return
+	}
+	if mainnet {
+		genesisType = app.MainnetGenesisType
+	}
+	if testnet {
+		genesisType = app.TestnetGenesisType
+	}
+	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType)
+	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp)
+	// trap kill signals (2,3,15,9)
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel,
+		syscall.SIGTERM,
+		syscall.SIGINT,
+		syscall.SIGQUIT,
+		os.Kill, //nolint
+		os.Interrupt)
+
+	defer func() {
+		sig := <-signalChannel
+		app.ShutdownPocketCore()
+		err := tmNode.Stop()
+		if err != nil {
+			fmt.Println(err)
 			return
 		}
-		if mainnet {
-			genesisType = app.MainnetGenesisType
-		}
-		if testnet {
-			genesisType = app.TestnetGenesisType
-		}
-		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType)
-		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp)
-		// trap kill signals (2,3,15,9)
-		signalChannel := make(chan os.Signal, 1)
-		signal.Notify(signalChannel,
-			syscall.SIGTERM,
-			syscall.SIGINT,
-			syscall.SIGQUIT,
-			os.Kill, //nolint
-			os.Interrupt)
-
-		defer func() {
-			sig := <-signalChannel
-			app.ShutdownPocketCore()
-			err := tmNode.Stop()
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			message := fmt.Sprintf("Exit signal %s received\n", sig)
-			fmt.Println(message)
-			os.Exit(3)
-		}()
-	},
+		message := fmt.Sprintf("Exit signal %s received\n", sig)
+		fmt.Println(message)
+		os.Exit(3)
+	}()
 }
 
 // resetCmd represents the reset command
