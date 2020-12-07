@@ -61,7 +61,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 
 func OpenDB(config sdk.Config) (dbm.DB, error) {
 	dataDir := filepath.Join(config.TendermintConfig.RootDir, GlobalConfig.TendermintConfig.DBPath)
-	return sdk.NewLevelDB(sdk.ApplicationDBName, dataDir, config.PocketConfig.LevelDBOptions.ToGoLevelDBOpts())
+	return sdk.NewLevelDB(sdk.ApplicationDBName, dataDir, config.TendermintConfig.LevelDBOptions.ToGoLevelDBOpts())
 }
 
 func openTraceWriter(traceWriterFile string) (w io.Writer, err error) {

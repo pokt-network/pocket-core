@@ -40,7 +40,6 @@ type PocketConfig struct {
 	CtxCacheSize             int                   `json:"ctx_cache_size"`
 	ABCILogging              bool                  `json:"abci_logging"`
 	RelayErrors              bool                  `json:"show_relay_errors"`
-	LevelDBOptions           config.LevelDBOptions `json:"leveldb_options"`
 }
 
 type Config struct {
@@ -117,6 +116,7 @@ func DefaultConfig(dataDir string) Config {
 			RelayErrors:              DefaultRelayErrors,
 		},
 	}
+	c.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()
 	c.TendermintConfig.SetRoot(dataDir)
 	c.TendermintConfig.NodeKey = DefaultNKName
 	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
@@ -151,10 +151,15 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
-func DefaultTestingPocketConfig() PocketConfig {
+func DefaultTestingPocketConfig() Config {
 	c := DefaultConfig("data")
 	c.PocketConfig.MaxClaimAgeForProofRetry = 1000
-	return c.PocketConfig
+	t := config.TestConfig()
+	t.LevelDBOptions = config.DefaultLevelDBOpts()
+	return Config{
+		TendermintConfig: *t,
+		PocketConfig:     c.PocketConfig,
+	}
 }
 
 var (

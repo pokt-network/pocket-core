@@ -272,7 +272,7 @@ func InitLogger() (logger log.Logger) {
 }
 
 func InitPocketCoreConfig(chains *types.HostedBlockchains, logger log.Logger) {
-	types.InitConfig(chains, logger, GlobalConfig.PocketConfig)
+	types.InitConfig(chains, logger, GlobalConfig)
 	sdk.InitCtxCache(GlobalConfig.PocketConfig.CtxCacheSize)
 	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
 	appsTypes.InitConfig(GlobalConfig.PocketConfig.ApplicationCacheSize)

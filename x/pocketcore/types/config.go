@@ -19,17 +19,17 @@ var (
 )
 
 // "InitConfig" - Initializes the cache for sessions and evidence
-func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.PocketConfig) {
+func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 	cacheOnce.Do(func() {
 		globalEvidenceCache = new(CacheStorage)
 		globalSessionCache = new(CacheStorage)
 		globalEvidenceSealedMap = make(map[string]struct{})
-		globalEvidenceCache.Init(c.DataDir, c.EvidenceDBName, c.LevelDBOptions, c.MaxEvidenceCacheEntires)
-		globalSessionCache.Init(c.DataDir, c.SessionDBName, c.LevelDBOptions, c.MaxSessionCacheEntries)
-		InitGlobalServiceMetric(*chains, logger, c.PrometheusAddr, c.PrometheusMaxOpenfiles)
+		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires)
+		globalSessionCache.Init(c.PocketConfig.DataDir, c.PocketConfig.SessionDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries)
+		InitGlobalServiceMetric(*chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
 	})
-	GlobalPocketConfig = c
-	SetRPCTimeout(c.RPCTimeout)
+	GlobalPocketConfig = c.PocketConfig
+	SetRPCTimeout(c.PocketConfig.RPCTimeout)
 }
 
 // NOTE: evidence cache is flushed every time db iterator is created (every claim/proof submission)
