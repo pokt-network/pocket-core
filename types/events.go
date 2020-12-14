@@ -26,7 +26,7 @@ func NewEventManager() *EventManager {
 func (em *EventManager) Events() Events { return em.events }
 
 // EmitEvent stores a single Event object.
-func (em *EventManager) EmitEvent(event Event) {
+func (em *EventManager) EmitEvent(event abci.Event) {
 	em.events = em.events.AppendEvent(event)
 }
 
@@ -45,9 +45,6 @@ func (em EventManager) ABCIEvents() []abci.Event {
 // ----------------------------------------------------------------------------
 
 type (
-	// Event is a type alias for an ABCI Event
-	Event abci.Event
-
 	// Attribute defines an attribute wrapper where the key and value are
 	// strings instead of raw bytes.
 	Attribute struct {
@@ -56,13 +53,13 @@ type (
 	}
 
 	// Events defines a slice of Event objects
-	Events []Event
+	Events []abci.Event
 )
 
 // NewEvent creates a new Event object with a given type and slice of one or more
 // attributes.
-func NewEvent(ty string, attrs ...Attribute) Event {
-	e := Event{Type: ty}
+func NewEvent(ty string, attrs ...Attribute) abci.Event {
+	e := abci.Event{Type: ty}
 
 	for _, attr := range attrs {
 		e.Attributes = append(e.Attributes, NewAttribute(attr.Key, attr.Value).ToKVPair())
@@ -90,16 +87,8 @@ func (a Attribute) ToKVPair() kv.Pair {
 	return kv.Pair{Key: toBytes(a.Key), Value: toBytes(a.Value)}
 }
 
-// AppendAttributes adds one or more attributes to an Event.
-func (e Event) AppendAttributes(attrs ...Attribute) Event {
-	for _, attr := range attrs {
-		e.Attributes = append(e.Attributes, attr.ToKVPair())
-	}
-	return e
-}
-
 // AppendEvent adds an Event to a slice of events.
-func (e Events) AppendEvent(event Event) Events {
+func (e Events) AppendEvent(event abci.Event) Events {
 	return append(e, event)
 }
 
@@ -111,12 +100,7 @@ func (e Events) AppendEvents(events Events) Events {
 // ToABCIEvents converts a slice of Event objects to a slice of abci.Event
 // objects.
 func (e Events) ToABCIEvents() []abci.Event {
-	res := make([]abci.Event, len(e))
-	for i, ev := range e {
-		res[i] = abci.Event{Type: ev.Type, Attributes: ev.Attributes}
-	}
-
-	return res
+	return e
 }
 
 func toBytes(i interface{}) []byte {
