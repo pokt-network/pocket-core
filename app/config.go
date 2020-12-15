@@ -214,12 +214,10 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 	if err != nil {
 		log2.Fatal(err)
 	}
+	app.pocketKeeper.TmNode = local.New(tmNode)
 	if err := tmNode.Start(); err != nil {
 		log2.Fatal(err)
 	}
-	app.SetTendermintNode(tmNode)
-	app.pocketKeeper.TmNode = local.New(tmNode)
-	PCA = app
 	return tmNode
 }
 

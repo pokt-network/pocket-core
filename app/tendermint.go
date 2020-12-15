@@ -38,9 +38,9 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	}
 	// upgrade the privVal file
 	app := creator(c.Logger, db, traceWriter)
-
+	PCA = app
 	// create & start tendermint node
-	tmNode, err := node.NewNode(
+	tmNode, err := node.NewNode(app,
 		c.TmConfig,
 		pvm.LoadOrGenFilePV(c.TmConfig.PrivValidatorKeyFile(), c.TmConfig.PrivValidatorStateFile()),
 		nodeKey,
@@ -53,9 +53,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	if err != nil {
 		return nil, nil, err
 	}
-	app.SetTxIndexer(tmNode.TxIndexer())
-	app.SetBlockstore(tmNode.BlockStore())
-	app.SetEvidencePool(tmNode.EvidencePool())
+
 	return tmNode, app, nil
 }
 
