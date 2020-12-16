@@ -755,7 +755,6 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 	}
 }
 
-// DeliverTx implements the ABCI interface.
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
 	var result sdk.Result
 
@@ -774,21 +773,19 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
 		Events:    result.Events.ToABCIEvents(),
 	}
-	if result.IsOK() {
-		sender := tx.GetMsg().GetSigner().String()
-		tx := tmTypes.Tx(req.Tx)
-		txRes := &tmTypes.TxResult{
-			Height: app.LastBlockHeight(),
-			Tx:     tx,
-			Result: deliverTx,
-		}
-		err := app.txIndexer.Index(txRes, tx.Hash(), sender)
-		if err != nil {
-			app.logger.Error(err.Error())
-		}
+
+	sender := tx.GetMsg().GetSigner().String()
+	tmTx := tmTypes.Tx(req.Tx)
+	txRes := &tmTypes.TxResult{
+		Height: app.LastBlockHeight() + 1, // Current height
+		Tx:     tmTx,
+		Result: deliverTx,
+	}
+	if err := app.txIndexer.Index(txRes, tmTx.Hash(), sender); err != nil {
+		app.logger.Error(err.Error())
 	}
 
-	return
+	return deliverTx
 }
 
 // validateBasicTxMsgs executes basic validator calls for messages.
