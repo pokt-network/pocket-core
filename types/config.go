@@ -1,9 +1,10 @@
 package types
 
 import (
+	"sync"
+
 	"github.com/tendermint/tendermint/config"
 	db "github.com/tendermint/tm-db"
-	"sync"
 )
 
 // TmConfig is the structure that holds the SDK configuration parameters.
@@ -16,30 +17,36 @@ type SDKConfig struct {
 }
 
 type PocketConfig struct {
-	DataDir                  string                `json:"data_dir"`
-	GenesisName              string                `json:"genesis_file"`
-	ChainsName               string                `json:"chains_name"`
-	SessionDBName            string                `json:"session_db_name"`
-	EvidenceDBName           string                `json:"evidence_db_name"`
-	TendermintURI            string                `json:"tendermint_uri"`
-	KeybaseName              string                `json:"keybase_name"`
-	RPCPort                  string                `json:"rpc_port"`
-	ClientBlockSyncAllowance int                   `json:"client_block_sync_allowance"`
-	MaxEvidenceCacheEntires  int                   `json:"max_evidence_cache_entries"`
-	MaxSessionCacheEntries   int                   `json:"max_session_cache_entries"`
-	JSONSortRelayResponses   bool                  `json:"json_sort_relay_responses"`
-	RemoteCLIURL             string                `json:"remote_cli_url"`
-	UserAgent                string                `json:"user_agent"`
-	ValidatorCacheSize       int64                 `json:"validator_cache_size"`
-	ApplicationCacheSize     int64                 `json:"application_cache_size"`
-	RPCTimeout               int64                 `json:"rpc_timeout"`
-	PrometheusAddr           string                `json:"pocket_prometheus_port"`
-	PrometheusMaxOpenfiles   int                   `json:"prometheus_max_open_files"`
-	MaxClaimAgeForProofRetry int                   `json:"max_claim_age_for_proof_retry"`
-	ProofPrevalidation       bool                  `json:"proof_prevalidation"`
-	CtxCacheSize             int                   `json:"ctx_cache_size"`
-	ABCILogging              bool                  `json:"abci_logging"`
-	RelayErrors              bool                  `json:"show_relay_errors"`
+	DataDir                  string         `json:"data_dir"`
+	GenesisName              string         `json:"genesis_file"`
+	ChainsName               string         `json:"chains_name"`
+	SessionDBType            db.BackendType `json:"session_db_type"`
+	SessionDBName            string         `json:"session_db_name"`
+	EvidenceDBType           db.BackendType `json:"evidence_db_type"`
+	EvidenceDBName           string         `json:"evidence_db_name"`
+	TendermintURI            string         `json:"tendermint_uri"`
+	KeybaseName              string         `json:"keybase_name"`
+	RPCPort                  string         `json:"rpc_port"`
+	ClientBlockSyncAllowance int            `json:"client_block_sync_allowance"`
+	MaxEvidenceCacheEntires  int            `json:"max_evidence_cache_entries"`
+	MaxSessionCacheEntries   int            `json:"max_session_cache_entries"`
+	JSONSortRelayResponses   bool           `json:"json_sort_relay_responses"`
+	RemoteCLIURL             string         `json:"remote_cli_url"`
+	UserAgent                string         `json:"user_agent"`
+	ValidatorCacheSize       int64          `json:"validator_cache_size"`
+	ApplicationCacheSize     int64          `json:"application_cache_size"`
+	RPCTimeout               int64          `json:"rpc_timeout"`
+	PrometheusAddr           string         `json:"pocket_prometheus_port"`
+	PrometheusMaxOpenfiles   int            `json:"prometheus_max_open_files"`
+	MaxClaimAgeForProofRetry int            `json:"max_claim_age_for_proof_retry"`
+	ProofPrevalidation       bool           `json:"proof_prevalidation"`
+	CtxCacheSize             int            `json:"ctx_cache_size"`
+	ABCILogging              bool           `json:"abci_logging"`
+	RelayErrors              bool           `json:"show_relay_errors"`
+	Indexer                  string         `json:"Indexer"`
+	IndexerCacheSize         int            `json:"IndexerCacheSize"`
+	IndexKeys                string         `json:"IndexKeys"`
+	IndexAllKeys             bool           `json:"IndexAllKeys"`
 }
 
 type Config struct {
@@ -56,6 +63,8 @@ const (
 	DefaultChainsName                 = "chains.json"
 	DefaultGenesisName                = "genesis.json"
 	DefaultRPCPort                    = "8081"
+	DefaultSessionDBType              = db.CLevelDBBackend
+	DefaultEvidenceDBType             = db.CLevelDBBackend
 	DefaultSessionDBName              = "session"
 	DefaultEvidenceDBName             = "pocket_evidence"
 	DefaultTMURI                      = "tcp://localhost:26657"
@@ -64,6 +73,7 @@ const (
 	DefaultListenAddr                 = "tcp://0.0.0.0:"
 	DefaultClientBlockSyncAllowance   = 10
 	DefaultJSONSortRelayResponses     = true
+	DefaultDBBackend                  = string(db.CLevelDBBackend)
 	DefaultTxIndexer                  = "kv"
 	DefaultTxIndexTags                = "tx.hash,tx.height,message.sender,transfer.recipient"
 	ConfigDirName                     = "config"
@@ -84,6 +94,10 @@ const (
 	DefaultCtxCacheSize               = 20
 	DefaultABCILogging                = false
 	DefaultRelayErrors                = true
+	DefaultIndexer                    = "kv"
+	DefaultIndexerCacheSize           = 100
+	DefaultIndexKeys                  = "tx.hash,tx.height,message.sender,transfer.recipient"
+	DefaultIndexAllKeys               = false
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -93,7 +107,9 @@ func DefaultConfig(dataDir string) Config {
 			DataDir:                  dataDir,
 			GenesisName:              DefaultGenesisName,
 			ChainsName:               DefaultChainsName,
+			SessionDBType:            DefaultSessionDBType,
 			SessionDBName:            DefaultSessionDBName,
+			EvidenceDBType:           DefaultEvidenceDBType,
 			EvidenceDBName:           DefaultEvidenceDBName,
 			TendermintURI:            DefaultTMURI,
 			KeybaseName:              DefaultKeybaseName,
@@ -114,27 +130,27 @@ func DefaultConfig(dataDir string) Config {
 			CtxCacheSize:             DefaultCtxCacheSize,
 			ABCILogging:              DefaultABCILogging,
 			RelayErrors:              DefaultRelayErrors,
+			Indexer:                  DefaultIndexer,
+			IndexerCacheSize:         DefaultIndexerCacheSize,
+			IndexKeys:                DefaultIndexKeys,
+			IndexAllKeys:             DefaultIndexAllKeys,
 		},
 	}
-	c.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()
 	c.TendermintConfig.SetRoot(dataDir)
 	c.TendermintConfig.NodeKey = DefaultNKName
 	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
 	c.TendermintConfig.PrivValidatorState = DefaultPVSName
 	c.TendermintConfig.P2P.AddrBookStrict = false
-	c.TendermintConfig.P2P.MaxNumInboundPeers = 10
-	c.TendermintConfig.P2P.MaxNumOutboundPeers = 10
+	c.TendermintConfig.P2P.MaxNumInboundPeers = 250
+	c.TendermintConfig.P2P.MaxNumOutboundPeers = 250
 	c.TendermintConfig.LogLevel = "*:info, *:error"
 	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
 	c.TendermintConfig.TxIndex.IndexKeys = DefaultTxIndexTags
-	c.TendermintConfig.DBBackend = string(db.GoLevelDBBackend)
+	c.TendermintConfig.DBBackend = DefaultDBBackend
 	c.TendermintConfig.RPC.GRPCMaxOpenConnections = 2500
 	c.TendermintConfig.RPC.MaxOpenConnections = 2500
 	c.TendermintConfig.Mempool.Size = 9000
 	c.TendermintConfig.Mempool.CacheSize = 9000
-	c.TendermintConfig.FastSync = &config.FastSyncConfig{
-		Version: "v1",
-	}
 	c.TendermintConfig.Consensus.TimeoutPropose = 60000000000
 	c.TendermintConfig.Consensus.TimeoutProposeDelta = 10000000000
 	c.TendermintConfig.Consensus.TimeoutPrevote = 60000000000
@@ -145,21 +161,18 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.Consensus.SkipTimeoutCommit = false
 	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
 	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = 900000000000
-	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000000
-	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 200000000000
+	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000
+	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 2000000000
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
 	return c
 }
 
-func DefaultTestingPocketConfig() Config {
+func DefaultTestingPocketConfig() PocketConfig {
 	c := DefaultConfig("data")
+	c.PocketConfig.EvidenceDBType = db.MemDBBackend
+	c.PocketConfig.SessionDBType = db.MemDBBackend
 	c.PocketConfig.MaxClaimAgeForProofRetry = 1000
-	t := config.TestConfig()
-	t.LevelDBOptions = config.DefaultLevelDBOpts()
-	return Config{
-		TendermintConfig: *t,
-		PocketConfig:     c.PocketConfig,
-	}
+	return c.PocketConfig
 }
 
 var (

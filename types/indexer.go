@@ -5,7 +5,10 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/pkg/errors"
 	amino "github.com/tendermint/go-amino"
@@ -30,11 +33,17 @@ type TxIndex struct {
 	index                uint32
 	height               int64
 	cache                *Cache
+	indexMap             *sync.Map
+}
+
+type keyAndHash struct {
+	key  string
+	hash []byte
 }
 
 // NewTxIndex creates new KV indexer.
 func NewTxIndex(store dbm.DB, cdc *amino.Codec, cacheSize int, options ...func(*TxIndex)) *TxIndex {
-	txi := &TxIndex{store: store, compositeKeysToIndex: make([]string, 0), indexAllEvents: false, index: 0, cdc: cdc, cache: NewCache(cacheSize)}
+	txi := &TxIndex{store: store, compositeKeysToIndex: make([]string, 0), indexAllEvents: false, index: 0, cdc: cdc, cache: NewCache(cacheSize), indexMap: &sync.Map{}}
 	for _, option := range options {
 		option(txi)
 	}
@@ -43,8 +52,9 @@ func NewTxIndex(store dbm.DB, cdc *amino.Codec, cacheSize int, options ...func(*
 func (txi *TxIndex) UpdateHeight(height int64) {
 	if txi.height != height {
 		// Reset cache & indexes
-		txi.index = 0
 		txi.cache.Purge()
+		txi.indexMap = nil // releases the map to OS NOTE: consider using an unsafe pointer and manually releasing
+		txi.indexMap = &sync.Map{}
 	}
 	txi.height = height
 }
@@ -96,8 +106,6 @@ func IndexAllEvents() func(*TxIndex) {
 func (txi *TxIndex) Index(result *tmTypes.TxResult, hash []byte, sender string) error {
 	b := txi.store.NewBatch()
 	defer b.Close()
-	var idx uint32 = txi.index
-	result.Index = idx
 
 	// index tx by events
 	txi.indexEvents(result, hash, b, sender)
@@ -136,7 +144,7 @@ func (txi *TxIndex) indexEvents(result *tmTypes.TxResult, hash []byte, store dbm
 				if compositeTag == "message.sender" && string(attr.Value) != sender {
 					continue // Index value does not match sender cannot index !!
 				}
-				store.Set(keyForEventBytes(compositeTag, attr.Value, result.Height, result.Index), hash)
+				store.Set(keyForEventBytes(compositeTag, attr.Value, result, txi.indexMap), hash)
 			}
 		}
 	}
@@ -144,7 +152,7 @@ func (txi *TxIndex) indexEvents(result *tmTypes.TxResult, hash []byte, store dbm
 
 // Search performs a search using a reduced query operations
 // CONTRACT: will only look for single condition (Eq, Contains) will not look for ranges.
-func (txi *TxIndex) ReducedSearch(ctx context.Context, q *query.Query) ([]*types.TxResult, error) {
+func (txi *TxIndex) Search(ctx context.Context, q *query.Query) ([]*types.TxResult, error) {
 	// get a list of conditions (like "tx.height > 5")
 	condition, err := q.Condition()
 	if err != nil {
@@ -171,13 +179,50 @@ func (txi *TxIndex) ReducedSearch(ctx context.Context, q *query.Query) ([]*types
 
 	matchedKeys := txi.keys(ctx, condition, startKeyForCondition(condition, height), q.Pagination)
 
-	results := make([]*types.TxResult, 0, len(matchedKeys))
+	switch q.Pagination.Sort {
+	case "asc":
+		sort.Slice(matchedKeys, func(i, j int) bool {
+			a := strings.Split(matchedKeys[i].key, "/")
+			b := strings.Split(matchedKeys[j].key, "/")
+			aHeight, _ := strconv.Atoi(a[2])
+			bHeight, _ := strconv.Atoi(b[2])
+			if aHeight == bHeight {
+				aIndex, _ := strconv.Atoi(a[3])
+				bIndex, _ := strconv.Atoi(b[3])
+				return aIndex < bIndex
+			}
+			return aHeight < bHeight
+		})
+	default:
+		sort.Slice(matchedKeys, func(i, j int) bool {
+			a := strings.Split(matchedKeys[i].key, "/")
+			b := strings.Split(matchedKeys[j].key, "/")
+			aHeight, _ := strconv.Atoi(a[2])
+			bHeight, _ := strconv.Atoi(b[2])
+			if aHeight == bHeight {
+				aIndex, _ := strconv.Atoi(a[3])
+				bIndex, _ := strconv.Atoi(b[3])
+				return aIndex > bIndex
+			}
+			return aHeight > bHeight
+		})
+	}
+	skipCount := 0
+	results := make([]*types.TxResult, 0, q.Pagination.Size)
 	for _, key := range matchedKeys {
-		res, err := txi.Get(key)
+		// skip keys
+		if skipCount < q.Pagination.Skip {
+			skipCount++
+			continue
+		}
+		res, err := txi.Get(key.hash)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get Tx{%X}", key)
 		}
 		results = append(results, res)
+		if len(results) == cap(results) {
+			return results, nil
+		}
 	}
 	return results, nil
 }
@@ -189,9 +234,8 @@ func (txi *TxIndex) keys(
 	c query.Condition,
 	startKeyBz []byte,
 	pagination *query.Page,
-) [][]byte {
-	// hashes := make(map[string][]byte)
-	hashes := make([][]byte, 0)
+) []*keyAndHash {
+	hashes := make([]*keyAndHash, 0)
 	switch {
 	case c.Op == query.OpEqual:
 		var it dbm.Iterator
@@ -201,25 +245,15 @@ func (txi *TxIndex) keys(
 		case "desc", "":
 			it, _ = reverseIteratePrefix(txi.store, startKeyBz)
 		}
-		// it, _ := dbm.IteratePrefix(txi.store, startKeyBz)
 		defer it.Close()
-		skipCount := 0
 		for ; it.Valid(); it.Next() {
 			// Potentially exit early.
 			select {
 			case <-ctx.Done():
 				break
 			default:
-				if len(hashes) == pagination.Size { // check if page is full
-					break // TODO just retun hashes
-				}
-				// Jump all
-				if skipCount > pagination.Skip { // skip elements
-					skipCount++
-					continue
-				}
 				// hashes[string(it.Key())] = it.Value()
-				hashes = append(hashes, it.Value())
+				hashes = append(hashes, &keyAndHash{key: string(it.Key()), hash: it.Value()})
 			}
 
 		}
@@ -235,7 +269,6 @@ func (txi *TxIndex) keys(
 		case "desc", "":
 			it, _ = reverseIteratePrefix(txi.store, startKey(c.CompositeKey))
 		}
-		// it, _ := dbm.IteratePrefix(txi.store, startKey(c.CompositeKey))
 		defer it.Close()
 
 		skipCount := 0
@@ -245,7 +278,7 @@ func (txi *TxIndex) keys(
 			case <-ctx.Done():
 				break
 			default:
-				if skipCount > pagination.Skip {
+				if skipCount < pagination.Skip {
 					skipCount++
 					continue
 				}
@@ -254,8 +287,7 @@ func (txi *TxIndex) keys(
 				}
 
 				if strings.Contains(extractValueFromKey(it.Key()), c.Operand.(string)) {
-					// hashes[string(it.Key())] = it.Value()
-					hashes = append(hashes, it.Value())
+					hashes = append(hashes, &keyAndHash{key: string(it.Key()), hash: it.Value()})
 				}
 			}
 		}
@@ -265,21 +297,23 @@ func (txi *TxIndex) keys(
 	return hashes
 }
 
-func keyForEventBytes(key string, value []byte, height int64, index uint32) []byte {
-	return []byte(fmt.Sprintf("%s/%s/%d/%d",
-		key,
-		value,
-		height,
-		index,
-	))
-}
-func keyForEvent(key string, value []byte, height int64, index uint32) string {
-	return fmt.Sprintf("%s/%s/%d/%d",
-		key,
-		value,
-		height,
-		index,
+func keyForEventBytes(key string, value []byte, result *tmTypes.TxResult, m *sync.Map) []byte {
+	base := fmt.Sprintf("%s/%s/%d", key, value, result.Height)
+	index, loaded := m.LoadOrStore(base, uint32(0))
+	idx := index.(uint32)
+	switch loaded {
+	case false:
+		result.Index = idx
+		m.Store(base, idx) // make sure to increase
+	default:
+		result.Index = idx + 1
+		m.Store(base, result.Index) // make sure to increase
+	}
+	keyForEvent := fmt.Sprintf("%s/%d",
+		base,
+		result.Index,
 	)
+	return []byte(keyForEvent)
 }
 
 func keyForHeight(result *tmTypes.TxResult) []byte {

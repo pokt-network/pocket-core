@@ -72,7 +72,7 @@ func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove b
 	}
 	query := fmt.Sprintf(messageSenderQuery, addr)
 	page, perPage = checkPagination(page, perPage)
-	// res, err = tmClient.ReducedTxSearch(query, prove, page, perPage, checkSort(sort))
+
 	ctx := context.Background()
 	q, err := tmquery.New(query)
 	if err != nil {
@@ -80,7 +80,7 @@ func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove b
 	}
 	q.AddPage(perPage, validateSkipCount(page, perPage), sort)
 
-	results, err := app.Txindexer().ReducedSearch(ctx, q)
+	results, err := app.Txindexer().Search(ctx, q)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (app PocketCoreApp) SearchPaginated(query string, page, perPage int, prove 
 	page, perPage = checkPagination(page, perPage)
 	q.AddPage(perPage, validateSkipCount(page, perPage), sort)
 
-	results, err := app.Txindexer().ReducedSearch(ctx, q)
+	results, err := app.Txindexer().Search(ctx, q)
 	if err != nil {
 		return nil, err
 	}

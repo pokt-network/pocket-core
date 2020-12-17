@@ -56,14 +56,16 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	if err != nil {
 		return nil, nil, err
 	}
-	c.TmConfig.TxIndex.Indexer = "kv"
-	// app.SetTxIndexer(tmNode.TxIndexer())
+
+	c.TmConfig.TxIndex.Indexer = GlobalConfig.PocketConfig.Indexer
+	c.TmConfig.TxIndex.IndexKeys = GlobalConfig.PocketConfig.IndexKeys
+	c.TmConfig.TxIndex.IndexAllKeys = GlobalConfig.PocketConfig.IndexAllKeys
+
 	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
 	if err != nil {
 		return nil, nil, err
 	}
-	fmt.Println(c.TmConfig.TxIndex.IndexKeys)
-	app.SetTxIndexer(sdk.NewTxIndex(store, app.cdc, 1, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " ")))) // TODO config cache size
+	app.SetTxIndexer(sdk.NewTxIndex(store, app.cdc, GlobalConfig.PocketConfig.IndexerCacheSize, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " ")))) // TODO config cache size
 	app.SetBlockstore(tmNode.BlockStore())
 	app.SetEvidencePool(tmNode.EvidencePool())
 	return tmNode, app, nil

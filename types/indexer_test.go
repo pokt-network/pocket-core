@@ -82,13 +82,34 @@ func TestTxSearch(t *testing.T) {
 		{Type: "account", Attributes: []kv.Pair{{Key: []byte("number"), Value: []byte("1")}}},
 		{Type: "account", Attributes: []kv.Pair{{Key: []byte("owner"), Value: []byte("Ivan")}}},
 		{Type: "", Attributes: []kv.Pair{{Key: []byte("not_allowed"), Value: []byte("Vlad")}}},
-	}, "Hello world 3", 3, 1)
+	}, "Hello world 5", 3, 1)
+
+	txResult6 := txResultWithEvents([]abci.Event{
+		{Type: "account", Attributes: []kv.Pair{{Key: []byte("number"), Value: []byte("1")}}},
+		{Type: "account", Attributes: []kv.Pair{{Key: []byte("owner"), Value: []byte("Ivan")}}},
+		{Type: "", Attributes: []kv.Pair{{Key: []byte("not_allowed"), Value: []byte("Vlad")}}},
+	}, "Hello world 6", 5, 0)
+
+	txResult7 := txResultWithEvents([]abci.Event{
+		{Type: "account", Attributes: []kv.Pair{{Key: []byte("number"), Value: []byte("1")}}},
+		{Type: "account", Attributes: []kv.Pair{{Key: []byte("owner"), Value: []byte("Ivan")}}},
+		{Type: "", Attributes: []kv.Pair{{Key: []byte("not_allowed"), Value: []byte("Vlad")}}},
+	}, "Hello world 7", 5, 1)
+
+	txResult8 := txResultWithEvents([]abci.Event{
+		{Type: "account", Attributes: []kv.Pair{{Key: []byte("number"), Value: []byte("1")}}},
+		{Type: "account", Attributes: []kv.Pair{{Key: []byte("owner"), Value: []byte("Ivan")}}},
+		{Type: "", Attributes: []kv.Pair{{Key: []byte("not_allowed"), Value: []byte("Vlad")}}},
+	}, "Hello world 8", 5, 2)
 
 	hash := txResult.Tx.Hash()
 	hash2 := txResult2.Tx.Hash()
 	hash3 := txResult3.Tx.Hash()
 	hash4 := txResult4.Tx.Hash()
 	hash5 := txResult5.Tx.Hash()
+	hash6 := txResult6.Tx.Hash()
+	hash7 := txResult7.Tx.Hash()
+	hash8 := txResult8.Tx.Hash()
 
 	err := indexer.Index(txResult, hash, "1")
 	require.NoError(t, err)
@@ -99,6 +120,12 @@ func TestTxSearch(t *testing.T) {
 	err = indexer.Index(txResult4, hash4, "still signer")
 	require.NoError(t, err)
 	err = indexer.Index(txResult5, hash5, "a signer")
+	require.NoError(t, err)
+	err = indexer.Index(txResult6, hash6, "1")
+	require.NoError(t, err)
+	err = indexer.Index(txResult7, hash7, "1")
+	require.NoError(t, err)
+	err = indexer.Index(txResult8, hash8, "1")
 	require.NoError(t, err)
 
 	tt := []struct {
@@ -115,12 +142,12 @@ func TestTxSearch(t *testing.T) {
 		{
 			name:          "search by exact match",
 			q:             "account.number = 1",
-			resultsLength: 4,
+			resultsLength: 7,
 			pagination:    true,
-			size:          5,
+			size:          7,
 			skip:          0,
 			sort:          "asc",
-			orderedResult: []*types.TxResult{txResult, txResult2, txResult4, txResult5},
+			orderedResult: []*types.TxResult{txResult, txResult2, txResult4, txResult5, txResult6, txResult7, txResult8},
 		},
 		{
 			name:          "search by exact match with page limit",
@@ -137,10 +164,10 @@ func TestTxSearch(t *testing.T) {
 			q:             "account.number = 1",
 			resultsLength: 4,
 			pagination:    true,
-			size:          5,
+			size:          4,
 			skip:          0,
 			sort:          "desc",
-			orderedResult: []*types.TxResult{txResult5, txResult4, txResult2, txResult},
+			orderedResult: []*types.TxResult{txResult8, txResult7, txResult6, txResult5},
 		},
 		{
 			name:          "cannot find txResult for miss indexed tx (signer != sender)",
@@ -160,12 +187,12 @@ func TestTxSearch(t *testing.T) {
 			if tc.pagination {
 				q.Pagination = &query.Page{tc.size, tc.skip, tc.sort}
 			}
-			results, err := indexer.ReducedSearch(ctx, q)
+			results, err := indexer.Search(ctx, q)
 			assert.NoError(t, err)
 
 			assert.Len(t, results, tc.resultsLength)
 			if len(results) > 1 {
-				assert.Equal(t, results, tc.orderedResult)
+				assert.Equal(t, tc.orderedResult, results)
 			}
 		})
 	}

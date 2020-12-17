@@ -148,6 +148,15 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 	if remoteCLIURL != "" {
 		c.PocketConfig.RemoteCLIURL = strings.TrimRight(remoteCLIURL, "/")
 	}
+	if c.PocketConfig.IndexerCacheSize == 0 {
+		c.PocketConfig.IndexerCacheSize = sdk.DefaultIndexerCacheSize
+	}
+	if c.PocketConfig.IndexKeys == "" {
+		c.PocketConfig.IndexKeys = sdk.DefaultIndexKeys
+	}
+	if c.PocketConfig.Indexer == "" {
+		c.PocketConfig.Indexer = sdk.DefaultIndexer
+	}
 	//Always Allow Duplicate IP
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
 
