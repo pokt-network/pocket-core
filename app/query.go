@@ -125,6 +125,7 @@ func (app PocketCoreApp) SearchPaginated(query string, page, perPage int, prove 
 	if err != nil {
 		return nil, err
 	}
+	page, perPage = checkPagination(page, perPage)
 	q.AddPage(perPage, validateSkipCount(page, perPage), sort)
 
 	results, err := app.Txindexer().ReducedSearch(ctx, q)
