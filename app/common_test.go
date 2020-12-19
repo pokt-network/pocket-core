@@ -178,25 +178,9 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		return db, nil
 	}
 	app := creator(c.Logger, db, traceWriter)
-	//txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//	return nil, nil
-	//}
-	//// setup blockstore
-	//blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//	return nil, nil
-	//}
-	//// Make Evidence Reactor
-	//evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//	return nil, nil
-	//}
+
 	c.TmConfig.TxIndex.Indexer = ""
-	tmNode, err := node.NewNode(
+	tmNode, err := node.NewNode(app,
 		c.TmConfig,
 		privVal,
 		&nodeKey,
