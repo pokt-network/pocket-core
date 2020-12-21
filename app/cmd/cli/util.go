@@ -20,6 +20,7 @@ func init() {
 	utilCmd.AddCommand(unsafeRollbackCmd)
 	utilCmd.AddCommand(exportGenesisForReset)
 	utilCmd.AddCommand(completionCmd)
+	utilCmd.AddCommand(updateConfigsCmd)
 }
 
 var utilCmd = &cobra.Command{
@@ -51,6 +52,17 @@ var chainsDelCmd = &cobra.Command{
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		app.DeleteHostedChains()
 		fmt.Println("successfully deleted " + app.GlobalConfig.PocketConfig.ChainsName)
+	},
+}
+
+var updateConfigsCmd = &cobra.Command{
+	Use:   "update-configs",
+	Short: "Updates config.json file",
+	Long:  `Update the config file with new params defaults for consensus/leveldbopts/p2p/cache/mempool/fastsync`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		app.UpdateConfig(datadir)
+		fmt.Println("successfully Updated Config file")
 	},
 }
 
