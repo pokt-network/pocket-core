@@ -170,7 +170,12 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	}
 	baseapp := creator(c.Logger, db, io.Writer(nil))
 
-	c.TmConfig.TxIndex.Indexer = ""
+	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
+	if err != nil {
+		panic(err)
+	}
+	baseapp.SetTxIndexer(sdk.NewTxIndex(store, baseapp.Codec(), 1, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " ")))) // TODO config cache size
+
 	tmNode, err := node.NewNode(baseapp,
 		c.TmConfig,
 		privVal,
@@ -184,12 +189,6 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	if err != nil {
 		panic(err)
 	}
-	c.TmConfig.TxIndex.Indexer = "kv"
-	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
-	if err != nil {
-		panic(err)
-	}
-	baseapp.SetTxIndexer(sdk.NewTxIndex(store, baseapp.Codec(), 1, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " ")))) // TODO config cache size
 	baseapp.SetBlockstore(tmNode.BlockStore())
 	baseapp.SetEvidencePool(tmNode.EvidencePool())
 	//baseapp.pocketKeeper.TmNode = client.NewLocal(tmNode)

@@ -36,7 +36,7 @@ func TestTxIndex(t *testing.T) {
 	}
 	hash := tx.Hash()
 
-	err := indexer.Index(txResult, hash, "a signer")
+	err := indexer.IndexWithSender(txResult, "a signer")
 	require.NoError(t, err)
 
 	loadedTxResult, err := indexer.Get(hash)
@@ -102,30 +102,21 @@ func TestTxSearch(t *testing.T) {
 		{Type: "", Attributes: []kv.Pair{{Key: []byte("not_allowed"), Value: []byte("Vlad")}}},
 	}, "Hello world 8", 5, 2)
 
-	hash := txResult.Tx.Hash()
-	hash2 := txResult2.Tx.Hash()
-	hash3 := txResult3.Tx.Hash()
-	hash4 := txResult4.Tx.Hash()
-	hash5 := txResult5.Tx.Hash()
-	hash6 := txResult6.Tx.Hash()
-	hash7 := txResult7.Tx.Hash()
-	hash8 := txResult8.Tx.Hash()
-
-	err := indexer.Index(txResult, hash, "1")
+	err := indexer.IndexWithSender(txResult, "1")
 	require.NoError(t, err)
-	err = indexer.Index(txResult2, hash2, "1")
+	err = indexer.IndexWithSender(txResult2, "1")
 	require.NoError(t, err)
-	err = indexer.Index(txResult3, hash3, "a third signer")
+	err = indexer.IndexWithSender(txResult3, "a third signer")
 	require.NoError(t, err)
-	err = indexer.Index(txResult4, hash4, "still signer")
+	err = indexer.IndexWithSender(txResult4, "still signer")
 	require.NoError(t, err)
-	err = indexer.Index(txResult5, hash5, "a signer")
+	err = indexer.IndexWithSender(txResult5, "a signer")
 	require.NoError(t, err)
-	err = indexer.Index(txResult6, hash6, "1")
+	err = indexer.IndexWithSender(txResult6, "1")
 	require.NoError(t, err)
-	err = indexer.Index(txResult7, hash7, "1")
+	err = indexer.IndexWithSender(txResult7, "1")
 	require.NoError(t, err)
-	err = indexer.Index(txResult8, hash8, "1")
+	err = indexer.IndexWithSender(txResult8, "1")
 	require.NoError(t, err)
 
 	tt := []struct {

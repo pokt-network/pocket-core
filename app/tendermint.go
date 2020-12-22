@@ -41,6 +41,16 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	// upgrade the privVal file
 	app := creator(c.Logger, db, traceWriter)
 	PCA = app
+
+	c.TmConfig.TxIndex.Indexer = GlobalConfig.PocketConfig.Indexer
+	c.TmConfig.TxIndex.IndexKeys = GlobalConfig.PocketConfig.IndexKeys
+	c.TmConfig.TxIndex.IndexAllKeys = GlobalConfig.PocketConfig.IndexAllKeys
+	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
+	if err != nil {
+		return nil, nil, err
+	}
+	app.SetTxIndexer(sdk.NewTxIndex(store, app.cdc, GlobalConfig.PocketConfig.IndexerCacheSize, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " "))))
+
 	// create & start tendermint node
 	c.TmConfig.TxIndex.Indexer = ""
 	tmNode, err := node.NewNode(app,
@@ -57,15 +67,6 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		return nil, nil, err
 	}
 
-	c.TmConfig.TxIndex.Indexer = GlobalConfig.PocketConfig.Indexer
-	c.TmConfig.TxIndex.IndexKeys = GlobalConfig.PocketConfig.IndexKeys
-	c.TmConfig.TxIndex.IndexAllKeys = GlobalConfig.PocketConfig.IndexAllKeys
-
-	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
-	if err != nil {
-		return nil, nil, err
-	}
-	app.SetTxIndexer(sdk.NewTxIndex(store, app.cdc, GlobalConfig.PocketConfig.IndexerCacheSize, sdk.IndexEvents(splitAndTrimEmpty(c.TmConfig.TxIndex.IndexKeys, ",", " "))))
 	return tmNode, app, nil
 }
 

@@ -167,12 +167,12 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
-func DefaultTestingPocketConfig() PocketConfig {
+func DefaultTestingPocketConfig() Config {
 	c := DefaultConfig("data")
 	c.PocketConfig.EvidenceDBType = db.MemDBBackend
 	c.PocketConfig.SessionDBType = db.MemDBBackend
 	c.PocketConfig.MaxClaimAgeForProofRetry = 1000
-	return c.PocketConfig
+	return c
 }
 
 var (

@@ -102,17 +102,16 @@ func IndexAllEvents() func(*TxIndex) {
 		txi.indexAllEvents = true
 	}
 }
-
-func (txi *TxIndex) Index(result *tmTypes.TxResult, hash []byte, sender string) error {
+func (txi *TxIndex) IndexWithSender(result *tmTypes.TxResult, sender string) error {
 	b := txi.store.NewBatch()
 	defer b.Close()
 
 	// index tx by events
-	txi.indexEvents(result, hash, b, sender)
+	txi.indexEvents(result, result.Tx.Hash(), b, sender)
 
 	// index tx by height
 	if txi.indexAllEvents || stringInSlice(tmTypes.TxHeightKey, txi.compositeKeysToIndex) {
-		b.Set(keyForHeight(result), hash)
+		b.Set(keyForHeight(result), result.Tx.Hash())
 	}
 	// index tx by hash
 	rawBytes, err := txi.cdc.MarshalBinaryBare(result)
@@ -120,10 +119,14 @@ func (txi *TxIndex) Index(result *tmTypes.TxResult, hash []byte, sender string) 
 		return err
 	}
 
-	b.Set(hash, rawBytes)
+	b.Set(result.Tx.Hash(), rawBytes)
 	b.WriteSync()
 
 	txi.index++
+	return nil
+}
+
+func (txi *TxIndex) Index(result *tmTypes.TxResult) error {
 	return nil
 }
 
@@ -148,6 +151,10 @@ func (txi *TxIndex) indexEvents(result *tmTypes.TxResult, hash []byte, store dbm
 			}
 		}
 	}
+}
+
+func (txi *TxIndex) ReducedSearch(ctx context.Context, q *query.Query) ([]*types.TxResult, error) {
+	return txi.Search(ctx, q)
 }
 
 // Search performs a search using a reduced query operations
@@ -295,6 +302,16 @@ func (txi *TxIndex) keys(
 		panic("other operators should be handled already")
 	}
 	return hashes
+}
+
+// NOTE: satisfy tx indexer interface not intended for cusotm usage
+func (txi *TxIndex) AddBatch(b *txindex.Batch) error {
+	return nil
+}
+
+// NOTE: satisfy tx indexer interface not intended for cusotm usage
+func (txi *TxIndex) DeleteFromHeight(ctx context.Context, height int64) error {
+	return nil
 }
 
 func keyForEventBytes(key string, value []byte, result *tmTypes.TxResult, m *sync.Map) []byte {

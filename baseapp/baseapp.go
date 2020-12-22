@@ -19,6 +19,7 @@ import (
 
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/state/txindex"
 	tmStore "github.com/tendermint/tendermint/store"
 	tmTypes "github.com/tendermint/tendermint/types"
 
@@ -60,11 +61,12 @@ const (
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct {
 	// initialized on creation
-	logger       log.Logger
-	name         string               // application name from abci.Info
-	db           dbm.DB               // common DB backend
-	tmNode       *node.Node           // <---- todo updated here
-	txIndexer    *sdk.TxIndex         // <---- todo updated here
+	logger    log.Logger
+	name      string     // application name from abci.Info
+	db        dbm.DB     // common DB backend
+	tmNode    *node.Node // <---- todo updated here
+	txIndexer txindex.TxIndexer
+	// txIndexer    *sdk.TxIndex         // <---- todo updated here
 	blockstore   *tmStore.BlockStore  // <---- todo updated here
 	evidencePool *evidence.Pool       // <---- todo updated here
 	cms          sdk.CommitMultiStore // Main (uncached) state
@@ -138,11 +140,13 @@ func (app *BaseApp) SetTendermintNode(node *node.Node) {
 	app.tmNode = node
 }
 
-func (app *BaseApp) SetTxIndexer(txindexer *sdk.TxIndex) {
-	app.txIndexer = txindexer
+func (app *BaseApp) SetTxIndexer(txindexer txindex.TxIndexer) {
+	if app.txIndexer == nil {
+		app.txIndexer = txindexer
+	}
 }
 
-func (app *BaseApp) Txindexer() (txindexer *sdk.TxIndex) {
+func (app *BaseApp) Txindexer() (txindexer txindex.TxIndexer) {
 	return app.txIndexer
 }
 
@@ -781,7 +785,8 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		Tx:     tmTx,
 		Result: deliverTx,
 	}
-	if err := app.txIndexer.Index(txRes, tmTx.Hash(), sender); err != nil {
+	indexer := app.txIndexer.(*sdk.TxIndex)
+	if err := indexer.IndexWithSender(txRes, sender); err != nil {
 		app.logger.Error(err.Error())
 	}
 
