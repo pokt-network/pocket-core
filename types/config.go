@@ -167,6 +167,21 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
+func DefaultPocketConsensusConfig(cconfig *config.ConsensusConfig) {
+	cconfig.TimeoutPropose = 60000000000
+	cconfig.TimeoutProposeDelta = 10000000000
+	cconfig.TimeoutPrevote = 60000000000
+	cconfig.TimeoutPrevoteDelta = 10000000000
+	cconfig.TimeoutPrecommit = 60000000000
+	cconfig.TimeoutPrecommitDelta = 10000000000
+	cconfig.TimeoutCommit = 900000000000
+	cconfig.SkipTimeoutCommit = false
+	cconfig.CreateEmptyBlocks = true
+	cconfig.CreateEmptyBlocksInterval = 900000000000
+	cconfig.PeerGossipSleepDuration = 100000000000
+	cconfig.PeerQueryMaj23SleepDuration = 200000000000
+}
+
 func DefaultTestingPocketConfig() Config {
 	c := DefaultConfig("data")
 	c.PocketConfig.EvidenceDBType = db.MemDBBackend

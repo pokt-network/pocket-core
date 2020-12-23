@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	config2 "github.com/tendermint/tendermint/config"
 	"io"
 	"io/ioutil"
 	log2 "log"
@@ -161,6 +162,92 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
 
 	GlobalConfig = c
+}
+
+func UpdateConfig(datadir string) {
+	//Check DataDir is present or use Default home dir.
+
+	if datadir == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			log2.Fatal("could not get home directory for data dir creation: " + err.Error())
+		}
+		datadir = home + FS + sdk.DefaultDDName
+	}
+
+	//Write Defaults on GlobalConfig.
+	GlobalConfig.TendermintConfig.LevelDBOptions = config2.DefaultLevelDBOpts()
+	sdk.DefaultPocketConsensusConfig(GlobalConfig.TendermintConfig.Consensus)
+	GlobalConfig.TendermintConfig.P2P.AllowDuplicateIP = true
+	GlobalConfig.TendermintConfig.P2P.AddrBookStrict = false
+	GlobalConfig.TendermintConfig.P2P.MaxNumInboundPeers = 10
+	GlobalConfig.TendermintConfig.P2P.MaxNumOutboundPeers = 10
+	GlobalConfig.TendermintConfig.RPC.GRPCMaxOpenConnections = 2500
+	GlobalConfig.TendermintConfig.RPC.MaxOpenConnections = 2500
+	GlobalConfig.TendermintConfig.Mempool.Size = 9000
+	GlobalConfig.TendermintConfig.Mempool.CacheSize = 9000
+	GlobalConfig.TendermintConfig.FastSync = &config2.FastSyncConfig{
+		Version: "v1",
+	}
+	GlobalConfig.PocketConfig.ValidatorCacheSize = sdk.DefaultValidatorCacheSize
+	GlobalConfig.PocketConfig.ApplicationCacheSize = sdk.DefaultApplicationCacheSize
+	GlobalConfig.PocketConfig.CtxCacheSize = sdk.DefaultCtxCacheSize
+
+	// Backup and Save the File
+	var jsonFile *os.File
+	defer jsonFile.Close()
+
+	configFilepath := datadir + FS + sdk.ConfigDirName + FS + sdk.ConfigFileName
+	configFileBackupPath := configFilepath + ".bk"
+
+	backupConfigFile(configFilepath, configFileBackupPath)
+
+	writeConfigFile(configFilepath, jsonFile)
+
+}
+
+func writeConfigFile(configFilepath string, jsonFile *os.File) {
+	if _, err := os.Stat(configFilepath); err == nil {
+		jsonFile, err = os.OpenFile(configFilepath, os.O_RDWR, os.ModePerm)
+		if err != nil {
+			log2.Fatalf("cannot open config json file: " + err.Error())
+		}
+		err = jsonFile.Truncate(0)
+		if err != nil {
+			log2.Fatalf("cannot truncate config json file: " + err.Error())
+		}
+		b, err := json.MarshalIndent(GlobalConfig, "", "    ")
+		if err != nil {
+			log2.Fatalf("cannot marshal default config into json: " + err.Error())
+		}
+		// write to the file
+		_, err = jsonFile.Write(b)
+		if err != nil {
+			log2.Fatalf("cannot write default config to json file: " + err.Error())
+		}
+	}
+}
+
+func backupConfigFile(filepath string, filepath2 string) {
+	var jsonFile *os.File
+	defer jsonFile.Close()
+
+	if _, err := os.Stat(filepath); err == nil {
+		jsonFile, err = os.OpenFile(filepath, os.O_RDONLY, os.ModePerm)
+		if err != nil {
+			log2.Fatalf("cannot open config json file: " + err.Error())
+		}
+		destination, err := os.Create(filepath2)
+		if err != nil {
+			log2.Fatalf("cannot create backup config json file: " + err.Error())
+		}
+
+		_, err = io.Copy(destination, jsonFile)
+		if err != nil {
+			log2.Fatalf("cannot create backup config json file: " + err.Error())
+		}
+		_ = destination.Close()
+	}
 }
 
 func InitGenesis(genesisType GenesisType) {
