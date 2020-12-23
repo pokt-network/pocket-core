@@ -129,7 +129,7 @@ func TestTxSearch(t *testing.T) {
 		sort          string
 		orderedResult []*types.TxResult
 	}{
-		{name: "search by hash", q: fmt.Sprintf("tx.hash = '%X'", hash), resultsLength: 1},
+		{name: "search by hash", q: fmt.Sprintf("tx.hash = '%X'", txResult.Tx.Hash()), resultsLength: 1},
 		{
 			name:          "search by exact match",
 			q:             "account.number = 1",
@@ -176,7 +176,7 @@ func TestTxSearch(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			q := query.MustParse(tc.q)
 			if tc.pagination {
-				q.Pagination = &query.Page{tc.size, tc.skip, tc.sort}
+				q.Pagination = &query.Page{Size: tc.size, Skip: tc.skip, Sort: tc.sort}
 			}
 			results, err := indexer.Search(ctx, q)
 			assert.NoError(t, err)

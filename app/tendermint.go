@@ -45,7 +45,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	c.TmConfig.TxIndex.Indexer = GlobalConfig.PocketConfig.Indexer
 	c.TmConfig.TxIndex.IndexKeys = GlobalConfig.PocketConfig.IndexKeys
 	c.TmConfig.TxIndex.IndexAllKeys = GlobalConfig.PocketConfig.IndexAllKeys
-	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
+	store, err := node.DefaultDBProvider(&node.DBContext{ID: "tx_index", Config: c.TmConfig})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -180,7 +180,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	app := creator(c.Logger, db, traceWriter)
 
 	PCA = app
-	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
+	store, err := node.DefaultDBProvider(&node.DBContext{ID: "tx_index", Config: c.TmConfig})
 	if err != nil {
 		panic(err)
 	}

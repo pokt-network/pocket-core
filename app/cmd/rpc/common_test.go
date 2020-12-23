@@ -170,7 +170,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	}
 	baseapp := creator(c.Logger, db, io.Writer(nil))
 
-	store, err := node.DefaultDBProvider(&node.DBContext{"tx_index", c.TmConfig})
+	store, err := node.DefaultDBProvider(&node.DBContext{ID: "tx_index", Config: c.TmConfig})
 	if err != nil {
 		panic(err)
 	}
