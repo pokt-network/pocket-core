@@ -723,3 +723,22 @@ func removeAddrBook(addrBookFile string, logger log.Logger) {
 		logger.Info("Error removing address book", "file", addrBookFile, "err", err)
 	}
 }
+
+func GetDefaultConfig(datadir string) string {
+
+	if datadir == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			log2.Fatal("could not get home directory for data dir creation: " + err.Error())
+		}
+		datadir = home + FS + sdk.DefaultDDName
+	}
+	c := sdk.DefaultConfig(datadir)
+
+	jsonbytes, err := json.MarshalIndent(c, "", "    ")
+	if err != nil {
+		return ""
+	}
+
+	return string(jsonbytes)
+}

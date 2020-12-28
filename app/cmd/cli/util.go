@@ -21,6 +21,7 @@ func init() {
 	utilCmd.AddCommand(exportGenesisForReset)
 	utilCmd.AddCommand(completionCmd)
 	utilCmd.AddCommand(updateConfigsCmd)
+	utilCmd.AddCommand(printDefaultConfigCmd)
 }
 
 var utilCmd = &cobra.Command{
@@ -63,6 +64,16 @@ var updateConfigsCmd = &cobra.Command{
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		app.UpdateConfig(datadir)
 		fmt.Println("successfully Updated Config file")
+	},
+}
+
+var printDefaultConfigCmd = &cobra.Command{
+	Use:   "print-configs",
+	Short: "Prints Default config.json to console",
+	Long:  `Prints Default config.json to console`,
+	Run: func(cmd *cobra.Command, args []string) {
+		c := app.GetDefaultConfig(datadir)
+		fmt.Println(c)
 	},
 }
 
