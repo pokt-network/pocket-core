@@ -15,6 +15,25 @@
 - Only load bare minimum for relay processing
 - Add order to AccountTxs query & blockTxsQuery RPC
 - Reduce AccountTxsQuery & blockTxsQuery memory footprint
+- Nondeterministic hash fix
+- Code 89 Fix
+- Evidence Seal Fix
+- Fixes header.TotalTxs !=
+- Fixes header.NumTxs !=
+- Updating TM version and Version Number to BETA-0.5.2.3
+- Upgraded AccountTxs and BlockTxs to use ReducedTxSearch
+- Implemented Reduced TxSearch in Tendermint
+- Moved IAVL from Tendermint to Pocket Core
+- Call LazyLoadVersion/Store for all queries and PrevCtx()
+- Reduced Tendermint P2P EnsurePeers actions to prevent leak
+- Lowered P2P config to far more conservative numbers
+- Updated FastSync to default to V1
+- Exposed default leveldb options
+- Switched to only go-leveldb for leak benchmarking/performance reasons
+- Child process to run madvdontneed if not set
+- Updated P2P configs
+- fixed nil txIndexer bug (Tendermint now sets txindexer and blockstore)
+- removed event type and used Tendermint's abci.Event
 
 ## RC-0.5.1
 - Add terminal completions
