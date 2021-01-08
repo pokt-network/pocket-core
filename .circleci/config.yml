@@ -20,7 +20,7 @@ jobs:
       # Install dependencies
       - run: ./deps.sh
       # static analyzer
-      - run: go vet ./...
+      # - run: go vet ./...
       # Build the binary
       - run: go build app/cmd/pocket_core/main.go
       # Cache build
