@@ -36,4 +36,5 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterImplementation((*sdk.ProtoMsg)(nil), &MsgClaim{}, &MsgProof{})
 	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgClaim{}, &MsgProof{})
 	ModuleCdc = cdc
+	ModuleCdc.SetUpgradeOverride(false)
 }

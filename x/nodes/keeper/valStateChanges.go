@@ -156,6 +156,7 @@ func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sd
 	validator = validator.UpdateStatus(sdk.Staked)
 	// save in the validator store
 	k.SetValidator(ctx, validator)
+	k.SetStakedValidatorByChains(ctx, validator)
 	// ensure there's a signing info entry for the validator (used in slashing)
 	_, found := k.GetValidatorSigningInfo(ctx, validator.GetAddress())
 	if !found {
