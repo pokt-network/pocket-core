@@ -601,12 +601,6 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 			Value:      value,
 			ServiceURL: surl,
 		}, ErrInvalidNetworkIdentifier(DefaultCodespace, fmt.Errorf("net id is empty"))},
-		{"Test Validate Basic bad serviceURL", fields{
-			PubKey:     pub,
-			Chains:     chains,
-			Value:      value,
-			ServiceURL: "",
-		}, ErrInvalidServiceURL(DefaultCodespace, fmt.Errorf("parse : empty url"))},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
