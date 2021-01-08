@@ -233,7 +233,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.ProtoMsg, n client.Client, key c
 		return txBuilder, cliCtx, err
 	}
 	// create a client context for sending
-	cliCtx = util.NewCLIContext(n, fromAddr, "").WithCodec(k.Cdc)
+	cliCtx = util.NewCLIContext(n, fromAddr, "").WithCodec(k.Cdc).WithHeight(ctx.BlockHeight())
 	pk, err := k.GetPKFromFile(ctx)
 	if err != nil {
 		return txBuilder, cliCtx, err

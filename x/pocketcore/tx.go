@@ -1,6 +1,7 @@
 package pocketcore
 
 import (
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
@@ -22,7 +23,11 @@ func ClaimTx(kp crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuil
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
+	var legacyCodec bool
+	if cliCtx.Height < codec.UpgradeHeight {
+		legacyCodec = true
+	}
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
 }
 
 // "ProofTx" - A transaction to prove the claim that was previously sent (Merkle Proofs and leaf/cousin)
@@ -36,5 +41,9 @@ func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof types
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
+	var legacyCodec bool
+	if cliCtx.Height < codec.UpgradeHeight {
+		legacyCodec = true
+	}
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
 }

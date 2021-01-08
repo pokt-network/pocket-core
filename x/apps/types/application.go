@@ -237,13 +237,13 @@ func (a *Application) UnmarshalJSON(data []byte) error {
 }
 
 // unmarshal the application
-func MarshalApplication(cdc *codec.Codec, application Application) (result []byte, err error) {
-	return cdc.MarshalBinaryLengthPrefixed(&application)
+func MarshalApplication(cdc *codec.Codec, ctx sdk.Ctx, application Application) (result []byte, err error) {
+	return cdc.MarshalBinaryLengthPrefixed(&application, ctx.BlockHeight())
 }
 
 // unmarshal the application
-func UnmarshalApplication(cdc *codec.Codec, appBytes []byte) (application Application, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(appBytes, &application)
+func UnmarshalApplication(cdc *codec.Codec, ctx sdk.Ctx, appBytes []byte) (application Application, err error) {
+	err = cdc.UnmarshalBinaryLengthPrefixed(appBytes, &application, ctx.BlockHeight())
 	return
 }
 

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/x/auth/types"
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -161,4 +162,17 @@ func TestViewKeeper(t *testing.T) {
 	require.True(t, viewKeeper.HasCoins(ctx, addr, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 5))))
 	require.False(t, viewKeeper.HasCoins(ctx, addr, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 15))))
 	require.False(t, viewKeeper.HasCoins(ctx, addr, sdk.NewCoins(sdk.NewInt64Coin("barcoin", 5))))
+}
+
+func TestModuleUpgrade(t *testing.T) {
+	nAccs := int64(4)
+	ctx, keeper := createTestInput(t, false, initialPower, nAccs)
+	accs := keeper.GetAllAccounts(ctx)
+	p := keeper.GetParams(ctx)
+	keeper.ConvertState(ctx)
+	keeper.Cdc.SetUpgradeOverride(true)
+	accs2 := keeper.GetAllAccounts(ctx)
+	p2 := keeper.GetParams(ctx)
+	assert.Equal(t, accs, accs2)
+	assert.Equal(t, p, p2)
 }

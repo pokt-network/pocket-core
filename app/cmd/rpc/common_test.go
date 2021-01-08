@@ -68,13 +68,18 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		if err != nil {
 			panic(err)
 		}
-		err = os.RemoveAll(tendermintNode.Config().DBPath)
-		if err != nil {
-			panic(err)
-		}
 		pocketTypes.ClearEvidence()
 		pocketTypes.ClearSessionCache()
 		inMemKB = nil
+		//err = os.RemoveAll(tendermintNode.Config().DBPath)
+		if err != nil {
+			panic(err)
+		}
+		err = os.RemoveAll("data")
+		if err != nil {
+			panic(err)
+		}
+		time.Sleep(1*time.Second)
 	}
 	return
 }
@@ -220,7 +225,7 @@ func memCodecMod(upgrade bool) *codec.Codec {
 		sdk.RegisterCodec(memCDC)
 		crypto.RegisterAmino(memCDC.AminoCodec().Amino)
 	}
-	memCDC.SetAfterUpgradeMod(upgrade)
+	memCDC.SetUpgradeOverride(upgrade)
 	return memCDC
 }
 func getInMemoryTMClient() client.Client {

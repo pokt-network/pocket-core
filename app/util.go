@@ -20,7 +20,7 @@ func GenerateAAT(appPubKey, clientPubKey string, key crypto.PrivateKey) (aatjson
 	return json.MarshalIndent(aat, "", "  ")
 }
 
-func BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.PublicKeyMultiSig, fees int64) ([]byte, error) {
+func BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.PublicKeyMultiSig, fees int64, legacyCodec bool) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -38,10 +38,10 @@ func BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.
 		auth.DefaultTxDecoder(cdc),
 		chainID,
 		"", nil).WithKeybase(kb)
-	return txBuilder.BuildAndSignMultisigTransaction(fa, pk, m, passphrase, fees)
+	return txBuilder.BuildAndSignMultisigTransaction(fa, pk, m, passphrase, fees, legacyCodec)
 }
 
-func SignMultisigNext(fromAddr, txHex, passphrase, chainID string) ([]byte, error) {
+func SignMultisigNext(fromAddr, txHex, passphrase, chainID string, legacyCodec bool) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -59,10 +59,10 @@ func SignMultisigNext(fromAddr, txHex, passphrase, chainID string) ([]byte, erro
 		auth.DefaultTxDecoder(cdc),
 		chainID,
 		"", nil).WithKeybase(kb)
-	return txBuilder.SignMultisigTransaction(fa, nil, passphrase, bz)
+	return txBuilder.SignMultisigTransaction(fa, nil, passphrase, bz, legacyCodec)
 }
 
-func SignMultisigOutOfOrder(fromAddr, txHex, passphrase, chainID string, keys []crypto.PublicKey) ([]byte, error) {
+func SignMultisigOutOfOrder(fromAddr, txHex, passphrase, chainID string, keys []crypto.PublicKey, legacyCodec bool) ([]byte, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func SignMultisigOutOfOrder(fromAddr, txHex, passphrase, chainID string, keys []
 		auth.DefaultTxDecoder(cdc),
 		chainID,
 		"", nil).WithKeybase(kb)
-	return txBuilder.SignMultisigTransaction(fa, keys, passphrase, bz)
+	return txBuilder.SignMultisigTransaction(fa, keys, passphrase, bz, legacyCodec)
 }
 
 func SortJSON(toSortJSON []byte) string {
@@ -96,17 +96,17 @@ func SortJSON(toSortJSON []byte) string {
 	return string(js)
 }
 
-func UnmarshalTxStr(txStr string) types.StdTx {
+func UnmarshalTxStr(txStr string, height int64) types.StdTx {
 	txBytes, err := base64.StdEncoding.DecodeString(txStr)
 	if err != nil {
 		log.Fatal("error:", err)
 	}
-	return UnmarshalTx(txBytes)
+	return UnmarshalTx(txBytes, height)
 }
 
-func UnmarshalTx(txBytes []byte) types.StdTx {
+func UnmarshalTx(txBytes []byte, height int64) types.StdTx {
 	defaultTxDecoder := auth.DefaultTxDecoder(cdc)
-	tx, err := defaultTxDecoder(txBytes)
+	tx, err := defaultTxDecoder(txBytes, height)
 	if err != nil {
 		log.Fatalf("Could not decode transaction: " + err.Error())
 	}

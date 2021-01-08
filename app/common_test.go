@@ -31,7 +31,6 @@ import (
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/stretchr/testify/assert"
-	abci "github.com/tendermint/tendermint/abci/types"
 	tmCfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
@@ -47,12 +46,6 @@ const (
 	dummyChainsHash = "0001"
 )
 
-func BeforeEach(t *testing.T) {
-	pocketTypes.ClearSessionCache()
-	pocketTypes.ClearEvidence()
-	sdk.GlobalCtxCache.Purge()
-}
-
 type upgrades struct {
 	codecUpgrade
 }
@@ -63,7 +56,7 @@ type codecUpgrade struct {
 
 func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
 	// create the in memory tendermint node and keybase
-	tendermintNode, keybase = inMemTendermintNode(genesisState, false)
+	tendermintNode, keybase = inMemTendermintNode(genesisState)
 	// test assertions
 	if tendermintNode == nil {
 		panic("tendermintNode should not be nil")
@@ -90,20 +83,29 @@ func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermi
 		if err != nil {
 			panic(err)
 		}
-		err = os.RemoveAll("data")
-		if err != nil {
-			panic(err)
-		}
 		pocketTypes.ClearEvidence()
 		pocketTypes.ClearSessionCache()
 		PCA = nil
 		inMemKB = nil
+		err := inMemDB.Close()
+		if err != nil {
+			panic(err)
+		}
+		cdc = nil
+		memCDC = nil
+		inMemDB = nil
+		sdk.GlobalCtxCache = nil
+		err = os.RemoveAll("data")
+		if err != nil {
+			panic(err)
+		}
+		time.Sleep(2*time.Second)
 	}
 	return
 }
 func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
 	// create the in memory tendermint node and keybase
-	tendermintNode, keybase = inMemTendermintNode(genesisState, true)
+	tendermintNode, keybase = inMemTendermintNode(genesisState)
 	// test assertions
 	if tendermintNode == nil {
 		panic("tendermintNode should not be nil")
@@ -130,14 +132,24 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 		if err != nil {
 			panic(err)
 		}
+		pocketTypes.ClearEvidence()
+		pocketTypes.ClearSessionCache()
+
+		PCA = nil
+		inMemKB = nil
+		err := inMemDB.Close()
+		if err != nil {
+			panic(err)
+		}
+		cdc = nil
+		memCDC = nil
+		inMemDB = nil
+		sdk.GlobalCtxCache = nil
 		err = os.RemoveAll("data")
 		if err != nil {
 			panic(err)
 		}
-		pocketTypes.ClearEvidence()
-		pocketTypes.ClearSessionCache()
-		PCA = nil
-		inMemKB = nil
+		time.Sleep(2*time.Second)
 	}
 	return
 }
@@ -155,6 +167,7 @@ var (
 	memCDC  *codec.Codec
 	inMemKB keys.Keybase
 	memCLI  client.Client
+	inMemDB dbm.DB
 )
 
 func getInMemoryKeybase() keys.Keybase {
@@ -172,7 +185,14 @@ func getInMemoryKeybase() keys.Keybase {
 	return inMemKB
 }
 
-func inMemTendermintNode(genesisState []byte, protoCodec bool) (*node.Node, keys.Keybase) {
+func getInMemoryDB() dbm.DB {
+	if inMemDB == nil {
+		inMemDB = dbm.NewMemDB()
+	}
+	return inMemDB
+}
+
+func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	if err != nil {
@@ -204,12 +224,12 @@ func inMemTendermintNode(genesisState []byte, protoCodec bool) (*node.Node, keys
 			AppState:   genesisState,
 		}, nil
 	}
-	loggerFile, _ := os.Open(os.DevNull)
+	//loggerFile, _ := os.Open(os.DevNull)
 	c := config{
 		TmConfig: getTestConfig(),
-		Logger:   log.NewTMLogger(loggerFile),
+		Logger:   log.NewTMLogger(os.Stdout),
 	}
-	db := dbm.NewMemDB()
+	db := getInMemoryDB()
 	traceWriter, err := openTraceWriter(c.TraceWriter)
 	if err != nil {
 		panic(err)
@@ -225,23 +245,6 @@ func inMemTendermintNode(genesisState []byte, protoCodec bool) (*node.Node, keys
 		return db, nil
 	}
 	app := GetApp(c.Logger, db, traceWriter)
-	//txIndexer, err := node.CreateTxIndexer(c.TmConfig, node.DefaultDBProvider)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//	return nil, nil
-	//}
-	//// setup blockstore
-	//blockStore, stateDB, err := node.InitDBs(c.TmConfig, node.DefaultDBProvider)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//	return nil, nil
-	//}
-	//// Make Evidence Reactor
-	//evidenceReactor, evidencePool, err := node.CreateEvidenceReactor(c.TmConfig, node.DefaultDBProvider, stateDB, c.Logger)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//	return nil, nil
-	//}
 	tmNode, err := node.NewNode(app.BaseApp,
 		c.TmConfig,
 		privVal,
@@ -261,15 +264,6 @@ func inMemTendermintNode(genesisState []byte, protoCodec bool) (*node.Node, keys
 	app.SetEvidencePool(tmNode.EvidencePool())
 	app.pocketKeeper.TmNode = local.New(tmNode)
 	app.SetTendermintNode(tmNode)
-
-	if protoCodec {
-		ctx := sdk.NewContext(app.Store(), abci.Header{ChainID: "test-chain"}, false, app.Logger())
-		app.accountKeeper.UpgradeCodec(ctx)
-		app.appsKeeper.UpgradeCodec(ctx)
-		app.govKeeper.UpgradeCodec(ctx)
-		app.pocketKeeper.UpgradeCodec(ctx)
-		app.nodesKeeper.UpgradeCodec(ctx)
-	}
 	return tmNode, kb
 }
 
@@ -314,7 +308,7 @@ func memCodecMod(upgrade bool) *codec.Codec {
 		sdk.RegisterCodec(memCDC)
 		crypto.RegisterAmino(memCDC.AminoCodec().Amino)
 	}
-	memCDC.SetAfterUpgradeMod(upgrade)
+	memCDC.SetUpgradeOverride(upgrade)
 	return memCDC
 }
 
@@ -367,8 +361,8 @@ func getTestConfig() (newTMConfig *tmCfg.Config) {
 	newTMConfig.Consensus = tmCfg.TestConsensusConfig()
 	newTMConfig.Consensus.CreateEmptyBlocks = true // Set this to false to only produce blocks when there are txs or when the AppHash changes
 	newTMConfig.Consensus.SkipTimeoutCommit = false
-	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(10) * time.Millisecond
-	newTMConfig.Consensus.TimeoutCommit = time.Duration(10) * time.Millisecond
+	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(100) * time.Millisecond
+	newTMConfig.Consensus.TimeoutCommit = time.Duration(100) * time.Millisecond
 	newTMConfig.P2P.MaxNumInboundPeers = 40
 	newTMConfig.P2P.MaxNumOutboundPeers = 10
 	pocketTypes.InitClientBlockAllowance(10000)
@@ -751,3 +745,63 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j, kys, posGenesisState.Validators, appsGenesisState.Applications[0]
 }
+//
+//func TestGatewayChecker(t *testing.T) {
+//	startheight := 14681
+//	iterations := 30
+//	blocks := 96 // ~ 24 hours
+//	oldTotalSupply := 0
+//	// Code below
+//	type Supply struct {
+//		Total string `json:"total"`
+//	}
+//	type Result struct {
+//		Inflation    int `json:"inflation"`
+//		Day          int `json:"days_ago"`
+//		Height       int `json:"height"`
+//		DeviationPer int `json:"dev_perc"`
+//	}
+//	var results []Result
+//	var supply Supply
+//	var sum int
+//	for i := 0; i <= iterations; i++ {
+//		jsonStr := `{"height":` + strconv.Itoa(startheight) + `}`
+//		req, _ := http2.NewRequest("POST", "http://localhost:8081/v1/query/supply", bytes.NewBuffer([]byte(jsonStr)))
+//		client := http2.Client{}
+//		resp, err := client.Do(req)
+//		if err != nil {
+//			panic(err)
+//		}
+//		bd, err := ioutil.ReadAll(resp.Body)
+//		if err != nil {
+//			panic(err)
+//		}
+//		err = json.Unmarshal(bd, &supply)
+//		if err != nil {
+//			panic(err)
+//		}
+//		total, err := strconv.Atoi(supply.Total)
+//		if err != nil {
+//			panic(err)
+//		}
+//		if oldTotalSupply != 0 {
+//			results = append(results, Result{
+//				Inflation: oldTotalSupply - total,
+//				Day:       i,
+//				Height:    startheight,
+//			})
+//			sum += oldTotalSupply - total
+//		}
+//		oldTotalSupply = total
+//		startheight = startheight - blocks
+//	}
+//	avg := sum / iterations
+//	for _, result := range results {
+//		result.DeviationPer = (100 * (result.Inflation - avg)) / avg
+//		bz, err := json.MarshalIndent(result, "", "  ")
+//		if err != nil {
+//			panic(err)
+//		}
+//		fmt.Println(string(bz))
+//	}
+//}

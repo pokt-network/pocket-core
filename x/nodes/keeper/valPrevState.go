@@ -15,14 +15,14 @@ func (k Keeper) PrevStateValidatorsPower(ctx sdk.Ctx) (power sdk.BigInt) {
 	if b == nil {
 		return sdk.ZeroInt()
 	}
-	_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &power)
+	_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &power, ctx.BlockHeight())
 	return power
 }
 
 // SetPrevStateValidatorsPower - Store the prevState total validator power (used in moving the curr to prev)
 func (k Keeper) SetPrevStateValidatorsPower(ctx sdk.Ctx, power sdk.BigInt) {
 	store := ctx.KVStore(k.storeKey)
-	b, _ := k.Cdc.MarshalBinaryLengthPrefixed(&power)
+	b, _ := k.Cdc.MarshalBinaryLengthPrefixed(&power, ctx.BlockHeight())
 	_ = store.Set(types.PrevStateTotalPowerKey, b)
 }
 
@@ -42,7 +42,7 @@ func (k Keeper) IterateAndExecuteOverPrevStateValsByPower(
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.Address(iter.Key()[len(types.PrevStateValidatorsPowerKey):])
 		var power sdk.Int64
-		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(iter.Value(), &power)
+		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(iter.Value(), &power, ctx.BlockHeight())
 		if handler(addr, int64(power)) {
 			break
 		}
@@ -74,7 +74,7 @@ func (k Keeper) IterateAndExecuteOverPrevStateVals(
 func (k Keeper) SetPrevStateValPower(ctx sdk.Ctx, addr sdk.Address, power int64) {
 	store := ctx.KVStore(k.storeKey)
 	a := sdk.Int64(power)
-	bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(&a)
+	bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(&a, ctx.BlockHeight())
 	_ = store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
 }
 

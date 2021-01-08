@@ -45,14 +45,13 @@ func (k Keeper) Logger(ctx sdk.Ctx) log.Logger {
 func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 	if ctx.IsOnUpgradeHeight() {
 		k.ConvertState(ctx)
-		k.cdc.SetAfterUpgradeMod(true)
-		types.ModuleCdc.SetAfterUpgradeMod(true)
 	}
 }
 
 func (k Keeper) ConvertState(ctx sdk.Ctx) {
-	k.cdc.SetAfterUpgradeMod(false)
+	k.cdc.SetUpgradeOverride(false)
 	params := k.GetParams(ctx)
-	k.cdc.SetAfterUpgradeMod(true)
+	k.cdc.SetUpgradeOverride(true)
 	k.SetParams(ctx, params)
+	k.cdc.DisableUpgradeOverride()
 }

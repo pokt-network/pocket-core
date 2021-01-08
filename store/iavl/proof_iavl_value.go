@@ -39,7 +39,7 @@ func ValueOpDecoder(pop merkle.ProofOp) (merkle.ProofOperator, error) {
 		return nil, errors.Errorf("unexpected ProofOp.Type; got %v, want %v", pop.Type, ProofOpIAVLValue)
 	}
 	var op ValueOp // a bit strange as we'll discard this, but it works.
-	err := cdc.UnmarshalBinaryLengthPrefixed(pop.Data, &op)
+	err := cdc.LegacyUnmarshalBinaryLengthPrefixed(pop.Data, &op)
 	if err != nil {
 		return nil, errors.Wrap(err, "decoding ProofOp.Data into IAVLValueOp")
 	}
@@ -47,7 +47,10 @@ func ValueOpDecoder(pop merkle.ProofOp) (merkle.ProofOperator, error) {
 }
 
 func (op ValueOp) ProofOp() merkle.ProofOp {
-	bz := cdc.MustMarshalBinaryLengthPrefixed(op)
+	bz, err := cdc.LegacyMarshalBinaryLengthPrefixed(op)
+	if err != nil {
+		panic(err)
+	}
 	return merkle.ProofOp{
 		Type: ProofOpIAVLValue,
 		Key:  op.key,

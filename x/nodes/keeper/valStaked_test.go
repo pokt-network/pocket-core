@@ -45,11 +45,10 @@ func TestGetAndSetStakedValidator(t *testing.T) {
 				keeper.SetValidator(context, validator)
 			}
 			validators := keeper.GetStakedValidators(context)
-
-			if equal := assert.ObjectsAreEqualValues(validators, test.expected.validators); !equal { // note ObjectsAreEqualValues does not assert, manual verification is required
-				t.FailNow()
-			}
 			assert.Equalf(t, len(validators), test.expected.length, "length of the validators does not match expected on %v", test.name)
+			for i, v := range validators {
+				assert.Equal(t, v, test.expected.validators[i])
+			}
 		})
 	}
 }

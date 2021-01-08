@@ -28,11 +28,11 @@ from DAOTransfer, change parameters; to performing protocol Upgrades. `,
 }
 
 var govDAOTransfer = &cobra.Command{
-	Use:   "transfer <amount> <fromAddr> <toAddr> <chainID> <fees>",
+	Use:   "transfer <amount> <fromAddr> <toAddr> <chainID> <fees> <legacyCodec>",
 	Short: "Transfer from DAO",
 	Long: `If authorized, move funds from the DAO.
 Actions: [burn, transfer]`,
-	Args: cobra.ExactArgs(5),
+	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		toAddr := args[2]
@@ -47,9 +47,14 @@ Actions: [burn, transfer]`,
 			fmt.Println(err)
 			return
 		}
+		legacy := args[5]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials()
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[3], int64(fees))
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[3], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -69,11 +74,11 @@ Actions: [burn, transfer]`,
 }
 
 var govDAOBurn = &cobra.Command{
-	Use:   "burn <amount> <fromAddr> <toAddr> <chainID> <fees>",
+	Use:   "burn <amount> <fromAddr> <toAddr> <chainID> <fees> <legacyCodec>",
 	Short: "Burn from DAO",
 	Long: `If authorized, burn funds from the DAO.
 Actions: [burn, transfer]`,
-	Args: cobra.ExactArgs(5),
+	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var toAddr string
@@ -91,9 +96,14 @@ Actions: [burn, transfer]`,
 			fmt.Println(err)
 			return
 		}
+		legacy := args[5]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials()
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[3], int64(fees))
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[3], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -112,11 +122,11 @@ Actions: [burn, transfer]`,
 	},
 }
 var govChangeParam = &cobra.Command{
-	Use:   "change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)> <fees>",
+	Use:   "change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)> <fees> <legacyCodec>",
 	Short: "Edit a param in the network",
 	Long: `If authorized, submit a tx to change any param from any module.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(5),
+	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fmt.Println("Enter Password: ")
@@ -125,7 +135,12 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
-		res, err := ChangeParam(args[0], args[2], []byte(args[3]), app.Credentials(), args[1], int64(fees))
+		legacy := args[5]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
+		res, err := ChangeParam(args[0], args[2], []byte(args[3]), app.Credentials(), args[1], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -149,7 +164,7 @@ var govUpgrade = &cobra.Command{
 	Short: "Upgrade the protocol",
 	Long: `If authorized, upgrade the protocol.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(5),
+	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		i, err := strconv.Atoi(args[1])
@@ -165,8 +180,13 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		legacy := args[5]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
 		fmt.Println("Enter Password: ")
-		res, err := Upgrade(args[0], u, app.Credentials(), args[3], int64(fees))
+		res, err := Upgrade(args[0], u, app.Credentials(), args[3], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return

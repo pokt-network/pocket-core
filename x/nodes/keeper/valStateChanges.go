@@ -59,7 +59,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		var curStatePowerBytes []byte
 		var err error
 		csp := sdk.Int64(curStatePower)
-		curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(&csp)
+		curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(&csp, ctx.BlockHeight())
 		if err != nil {
 			panic(err)
 		}
@@ -358,11 +358,11 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	logger := k.Logger(ctx)
 	logger.Info(fmt.Sprintf("validator %s jailed", addr))
 	ctx.EventManager().EmitEvent(
-		sdk.Event(sdk.NewEvent(
+		sdk.NewEvent(
 			types.EventTypeJail,
 			sdk.NewAttribute(types.AttributeKeyAddress, addr.String()),
 			sdk.NewAttribute(types.AttributeKeyReason, types.AttributeValueMissingSignature),
-		)),
+		),
 	)
 }
 
@@ -371,7 +371,7 @@ func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		val, err := types.UnmarshalValidator(k.Cdc, iterator.Value())
+		val, err := types.UnmarshalValidator(k.Cdc, ctx, iterator.Value())
 		if err != nil {
 			ctx.Logger().Error("could not unmarshal validator in IncrementJailedValidators: ", err.Error())
 			continue

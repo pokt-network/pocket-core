@@ -31,6 +31,8 @@ func queryAccount(ctx sdk.Ctx, req abci.RequestQuery, keeper keeper.Keeper) ([]b
 
 	account := keeper.GetAccount(ctx, params.Address)
 	if account == nil {
+		allAccs := keeper.GetAllAccounts(ctx)
+		_ = allAccs
 		return nil, sdk.ErrUnknownAddress(fmt.Sprintf("account %s does not exist", params.Address))
 	}
 

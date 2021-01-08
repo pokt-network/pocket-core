@@ -636,7 +636,7 @@ func getLatestVersion(db dbm.DB) int64 {
 	if latestBytes == nil {
 		return 0
 	}
-	err := cdc.UnmarshalBinaryLengthPrefixed(latestBytes, &latest)
+	err := cdc.LegacyUnmarshalBinaryLengthPrefixed(latestBytes, &latest)
 	if err != nil {
 		panic(err)
 	}
@@ -647,7 +647,7 @@ func getLatestVersion(db dbm.DB) int64 {
 // Set the latest version.
 func setLatestVersion(batch dbm.Batch, version int64) {
 	v := sdk.Int64(version)
-	latestBytes, _ := cdc.MarshalBinaryLengthPrefixed(&v)
+	latestBytes, _ := cdc.LegacyMarshalBinaryLengthPrefixed(&v)
 	batch.Set([]byte(latestVersionKey), latestBytes)
 }
 
