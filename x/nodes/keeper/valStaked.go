@@ -14,7 +14,7 @@ func (k Keeper) SetStakedValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Set(types.KeyForValidatorInStakingSet(validator), validator.Address)
 	// save in the network id stores for quick session generations
-	k.SetStakedValidatorByChains(ctx, validator)
+	//k.SetStakedValidatorByChains(ctx, validator)
 }
 
 // SetStakedValidatorByChains - Store staked validator using networkId
