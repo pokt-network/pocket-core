@@ -2,8 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"os"
-
 	sdk "github.com/pokt-network/pocket-core/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -78,9 +76,10 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
 	b, _ := store.Get(types.ProposerKey)
 	if b == nil {
 		k.Logger(ctx).Error("Previous proposer not set")
-		os.Exit(1)
+		return nil
+		//os.Exit(1)
 	}
-	_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &addr)
+	_ = k.Cdc.UnmarshalBinaryLengthPrefixed(b, &addr, ctx.BlockHeight())
 	return addr
 
 }
@@ -88,7 +87,7 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
 // SetPreviousProposer -  Store proposer public key for this block
 func (k Keeper) SetPreviousProposer(ctx sdk.Ctx, consAddr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
-	b, err := k.Cdc.MarshalBinaryLengthPrefixed(&consAddr)
+	b, err := k.Cdc.MarshalBinaryLengthPrefixed(&consAddr, ctx.BlockHeight())
 	if err != nil {
 		panic(err)
 	}

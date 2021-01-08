@@ -159,7 +159,7 @@ func merkleProof(data []HashRange, index int, p *MerkleProof) MerkleProof {
 
 // "newParentHash" - Compute the merkleHash of the parent by hashing the hashes, sum and parent
 func parentHash(hash1, hash2 []byte, r Range, index1, index2 uint64) []byte {
-	if ModuleCdc.IsAfterUpgrade() {
+	if ModuleCdc.IsAfterUpgrade(-1) {
 		return merkleHash(MultiAppend(make([]byte, MerkleHashLength*2+32), hash1, hash2, uint64ToBytes(index1, index2), r.Bytes()))
 	}
 	return merkleHash(MultiAppend(make([]byte, MerkleHashLength*2+16), hash1, hash2, r.Bytes()))

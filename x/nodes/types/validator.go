@@ -161,8 +161,8 @@ func (v Validator) String() string {
 }
 
 // MUST decode the validator from the bytes
-func UnmarshalValidator(cdc *codec.Codec, valBytes []byte) (v Validator, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(valBytes, &v)
+func UnmarshalValidator(cdc *codec.Codec, ctx sdk.Ctx, valBytes []byte) (v Validator, err error) {
+	err = cdc.UnmarshalBinaryLengthPrefixed(valBytes, &v, ctx.BlockHeight())
 	return
 }
 

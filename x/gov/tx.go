@@ -12,13 +12,12 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func ChangeParamsTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress sdk.Address, aclKey string, paramValue interface{}, passphrase string, fee int64) (*sdk.TxResponse, error) {
+func ChangeParamsTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress sdk.Address, aclKey string, paramValue interface{}, passphrase string, fee int64, legacyCodec bool) (*sdk.TxResponse, error) {
 	//valueBytes, err := json.Marshal(paramValue)
 	valueBytes, err := cdc.MarshalJSON(paramValue)
 	if err != nil {
 		return nil, err
 	}
-
 	msg := types.MsgChangeParam{
 		FromAddress: fromAddress,
 		ParamKey:    aclKey,
@@ -29,10 +28,10 @@ func ChangeParamsTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
 }
 
-func DAOTransferTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress, toAddress sdk.Address, amount sdk.BigInt, action, passphrase string, fee int64) (*sdk.TxResponse, error) {
+func DAOTransferTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress, toAddress sdk.Address, amount sdk.BigInt, action, passphrase string, fee int64, legacyCodec bool) (*sdk.TxResponse, error) {
 	msg := types.MsgDAOTransfer{
 		FromAddress: fromAddress,
 		ToAddress:   toAddress,
@@ -44,10 +43,10 @@ func DAOTransferTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase,
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
 }
 
-func UpgradeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress sdk.Address, upgrade types.Upgrade, passphrase string, fee int64) (*sdk.TxResponse, error) {
+func UpgradeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddress sdk.Address, upgrade types.Upgrade, passphrase string, fee int64, legacyCodec bool) (*sdk.TxResponse, error) {
 	msg := types.MsgUpgrade{
 		Address: fromAddress,
 		Upgrade: upgrade,
@@ -57,7 +56,7 @@ func UpgradeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fro
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
 }
 
 func newTx(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string, fee int64) (txBuilder auth.TxBuilder, cliCtx util.CLIContext) {
@@ -86,7 +85,7 @@ func newTx(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, tmNode clie
 	return
 }
 
-func BuildAndSignMulti(cdc *codec.Codec, address sdk.Address, publicKey crypto.PublicKeyMultiSig, msg sdk.ProtoMsg, tmNode client.Client, keybase keys.Keybase, passphrase string, fee int64) (txBytes []byte, err error) {
+func BuildAndSignMulti(cdc *codec.Codec, address sdk.Address, publicKey crypto.PublicKeyMultiSig, msg sdk.ProtoMsg, tmNode client.Client, keybase keys.Keybase, passphrase string, fee int64, legacyCodec bool) (txBytes []byte, err error) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		return nil, err
@@ -96,10 +95,10 @@ func BuildAndSignMulti(cdc *codec.Codec, address sdk.Address, publicKey crypto.P
 		auth.DefaultTxDecoder(cdc),
 		genDoc.Genesis.ChainID,
 		"", nil).WithKeybase(keybase)
-	return txBuilder.BuildAndSignMultisigTransaction(address, publicKey, msg, passphrase, fee)
+	return txBuilder.BuildAndSignMultisigTransaction(address, publicKey, msg, passphrase, fee, legacyCodec)
 }
 
-func SignMulti(cdc *codec.Codec, fromAddr sdk.Address, tx []byte, keys []crypto.PublicKey, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBytes []byte, err error) {
+func SignMulti(cdc *codec.Codec, fromAddr sdk.Address, tx []byte, keys []crypto.PublicKey, tmNode client.Client, keybase keys.Keybase, passphrase string, legacyCodec bool) (txBytes []byte, err error) {
 	genDoc, err := tmNode.Genesis()
 	if err != nil {
 		return nil, err
@@ -109,5 +108,5 @@ func SignMulti(cdc *codec.Codec, fromAddr sdk.Address, tx []byte, keys []crypto.
 		auth.DefaultTxDecoder(cdc),
 		genDoc.Genesis.ChainID,
 		"", nil).WithKeybase(keybase)
-	return txBuilder.SignMultisigTransaction(fromAddr, keys, passphrase, tx)
+	return txBuilder.SignMultisigTransaction(fromAddr, keys, passphrase, tx, legacyCodec)
 }

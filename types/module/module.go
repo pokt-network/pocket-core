@@ -106,6 +106,7 @@ type AppModule interface {
 
 	BeginBlock(sdk.Ctx, abci.RequestBeginBlock)
 	EndBlock(sdk.Ctx, abci.RequestEndBlock) []abci.ValidatorUpdate
+	UpgradeCodec(sdk.Ctx)
 }
 
 //___________________________
@@ -113,6 +114,8 @@ type AppModule interface {
 type GenesisOnlyAppModule struct {
 	AppModuleGenesis
 }
+
+func (gam GenesisOnlyAppModule) UpgradeCodec(sdk.Ctx) {}
 
 // NewGenesisOnlyAppModule creates a new GenesisOnlyAppModule object
 func NewGenesisOnlyAppModule(amg AppModuleGenesis) AppModule {
@@ -265,6 +268,14 @@ func (m *Manager) ExportGenesis(ctx sdk.Ctx) map[string]json.RawMessage {
 // modules.
 func (m *Manager) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
+	if ctx.IsOnUpgradeHeight() {
+		//for _, name := range m.OrderBeginBlockers {
+		//	m.Modules[name].UpgradeCodec(ctx)
+		//}
+		for _, mod := range m.Modules {
+			mod.UpgradeCodec(ctx)
+		}
+	}
 
 	for _, moduleName := range m.OrderBeginBlockers {
 		m.Modules[moduleName].BeginBlock(ctx, req)

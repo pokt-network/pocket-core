@@ -2,14 +2,11 @@ package types
 
 import (
 	"fmt"
-	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"reflect"
 	"testing"
 	"time"
 
-	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/types"
-	"github.com/tendermint/go-amino"
 )
 
 func TestDefaultParams(t *testing.T) {
@@ -489,40 +486,6 @@ func TestParams_String(t *testing.T) {
 			}
 			if got := p.String(); got != tt.want {
 				t.Errorf("String() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestUnmarshalParams(t *testing.T) {
-	type args struct {
-		cdc   *codec.Codec
-		value []byte
-	}
-
-	defaultParams := DefaultParams()
-	value, _ := amino.MarshalBinaryLengthPrefixed(DefaultParams())
-
-	tests := []struct {
-		name       string
-		args       args
-		wantParams Params
-		wantErr    bool
-	}{
-		{"Unmarshall Test", args{
-			cdc:   codec.NewCodec(types2.NewInterfaceRegistry()),
-			value: value,
-		}, defaultParams, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotParams, err := UnmarshalParams(tt.args.cdc, tt.args.value)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("UnmarshalParams() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotParams, tt.wantParams) {
-				t.Errorf("UnmarshalParams() gotParams = %v, want %v", gotParams, tt.wantParams)
 			}
 		})
 	}

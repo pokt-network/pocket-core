@@ -16,7 +16,7 @@ func (k Keeper) GetSupply(ctx sdk.Ctx) (supply exported.SupplyI) {
 		ctx.Logger().Error(fmt.Sprintf("stored supply should not have been nil, at height: %d", ctx.BlockHeight()))
 		return
 	}
-	supply, err := k.DecodeSupply(b)
+	supply, err := k.DecodeSupply(ctx, b)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprint(err.Error()))
 		return
@@ -27,7 +27,7 @@ func (k Keeper) GetSupply(ctx sdk.Ctx) (supply exported.SupplyI) {
 // SetSupply sets the Supply to store
 func (k Keeper) SetSupply(ctx sdk.Ctx, supply exported.SupplyI) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := k.EncodeSupply(supply)
+	bz, err := k.EncodeSupply(ctx, supply)
 	if err != nil {
 		ctx.Logger().Error(err.Error())
 		return
@@ -39,17 +39,17 @@ func (k Keeper) SetSupply(ctx sdk.Ctx, supply exported.SupplyI) {
 	}
 }
 
-func (k Keeper) EncodeSupply(supply exported.SupplyI) ([]byte, error) {
+func (k Keeper) EncodeSupply(ctx sdk.Ctx, supply exported.SupplyI) ([]byte, error) {
 	s, ok := supply.(types.Supply)
 	if !ok {
 		return nil, fmt.Errorf("%s", "supplyI must be of type Supply")
 	}
-	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&s)
+	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&s, ctx.BlockHeight())
 	return bz, err
 }
 
-func (k Keeper) DecodeSupply(bz []byte) (exported.SupplyI, error) {
+func (k Keeper) DecodeSupply(ctx sdk.Ctx, bz []byte) (exported.SupplyI, error) {
 	var supply types.Supply
-	err := k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &supply)
+	err := k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &supply, ctx.BlockHeight())
 	return supply, err
 }

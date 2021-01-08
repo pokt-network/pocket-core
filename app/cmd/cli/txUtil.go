@@ -21,7 +21,7 @@ import (
 )
 
 // SendTransaction - Deliver Transaction to node
-func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, memo string) (*rpc.SendRawTxParams, error) {
+func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, memo string, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Bi
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, memo)
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, memo, legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Bi
 }
 
 // StakeNode - Deliver Stake message to node
-func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64) (*rpc.SendRawTxParams, error) {
+func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "")
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string
 }
 
 // UnstakeNode - start unstaking message to node
-func UnstakeNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
+func UnstakeNode(fromAddr, passphrase, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func UnstakeNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRaw
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "")
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func UnstakeNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRaw
 }
 
 // UnjailNode - Remove node from jail
-func UnjailNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
+func UnjailNode(fromAddr, passphrase, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func UnjailNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawT
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "")
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func UnjailNode(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawT
 	}, nil
 }
 
-func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64) (*rpc.SendRawTxParams, error) {
+func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -189,7 +189,7 @@ func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "")
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +199,7 @@ func StakeApp(chains []string, fromAddr, passphrase, chainID string, amount sdk.
 	}, nil
 }
 
-func UnstakeApp(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
+func UnstakeApp(fromAddr, passphrase, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -215,7 +215,7 @@ func UnstakeApp(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawT
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "")
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func UnstakeApp(fromAddr, passphrase, chainID string, fees int64) (*rpc.SendRawT
 	}, nil
 }
 
-func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.BigInt, action, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
+func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.BigInt, action, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -248,7 +248,7 @@ func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.BigInt, action, chain
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "")
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +258,7 @@ func DAOTx(fromAddr, toAddr, passphrase string, amount sdk.BigInt, action, chain
 	}, nil
 }
 
-func ChangeParam(fromAddr, paramACLKey string, paramValue json.RawMessage, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
+func ChangeParam(fromAddr, paramACLKey string, paramValue json.RawMessage, passphrase, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -282,7 +282,7 @@ func ChangeParam(fromAddr, paramACLKey string, paramValue json.RawMessage, passp
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "")
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +292,7 @@ func ChangeParam(fromAddr, paramACLKey string, paramValue json.RawMessage, passp
 	}, nil
 }
 
-func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID string, fees int64) (*rpc.SendRawTxParams, error) {
+func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -309,7 +309,7 @@ func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID stri
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "")
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
 	if err != nil {
 		return nil, err
 	}
@@ -319,7 +319,7 @@ func Upgrade(fromAddr string, upgrade govTypes.Upgrade, passphrase, chainID stri
 	}, nil
 }
 
-func newTxBz(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, chainID string, keybase keys.Keybase, passphrase string, fee int64, memo string) (transactionBz []byte, err error) {
+func newTxBz(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, chainID string, keybase keys.Keybase, passphrase string, fee int64, memo string, legacyCodec bool) (transactionBz []byte, err error) {
 	// fees
 	fees := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(fee)))
 	// entroyp
@@ -334,5 +334,8 @@ func newTxBz(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, chainID s
 	}
 	s := authTypes.StdSignature{PublicKey: pubKey, Signature: sig}
 	tx := authTypes.NewTx(msg, fees, s, memo, entropy)
-	return auth.DefaultTxEncoder(cdc)(tx)
+	if legacyCodec {
+		return auth.DefaultTxEncoder(cdc)(tx, 0)
+	}
+	return auth.DefaultTxEncoder(cdc)(tx, -1)
 }

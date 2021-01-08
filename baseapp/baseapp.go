@@ -10,6 +10,7 @@ package baseapp
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/state/txindex"
@@ -69,9 +70,10 @@ type BaseApp struct {
 	blockstore   *tmStore.BlockStore  // <---- todo updated here
 	evidencePool *evidence.Pool       // <---- todo updated here
 	cms          sdk.CommitMultiStore // Main (uncached) state
-	router       sdk.Router           // handle any kind of message
-	queryRouter  sdk.QueryRouter      // router for redirecting query calls
-	txDecoder    sdk.TxDecoder        // unmarshal []byte into sdk.Tx
+	cdc          *codec.Codec
+	router       sdk.Router      // handle any kind of message
+	queryRouter  sdk.QueryRouter // router for redirecting query calls
+	txDecoder    sdk.TxDecoder   // unmarshal []byte into sdk.Tx
 
 	// set upon RollbackVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
@@ -117,11 +119,12 @@ var _ abci.Application = (*BaseApp)(nil)
 // configuration choices.
 //
 // NOTE: The db is used to store the version number for now.
-func NewBaseApp(name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecoder, options ...func(*BaseApp)) *BaseApp {
+func NewBaseApp(name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecoder, cdc *codec.Codec, options ...func(*BaseApp)) *BaseApp {
 	app := &BaseApp{
 		logger:         logger,
 		name:           name,
 		db:             db,
+		cdc:            cdc,
 		cms:            store.NewCommitMultiStore(db),
 		router:         NewRouter(),
 		queryRouter:    NewQueryRouter(),
@@ -503,7 +506,6 @@ func (app *BaseApp) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	// "/app" prefix for special application queries
 	case "app":
 		return handleQueryApp(app, path, req)
-
 	case "store":
 		return handleQueryStore(app, path, req)
 
@@ -525,7 +527,7 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 		switch path[1] {
 		case "simulate":
 			txBytes := req.Data
-			tx, err := app.txDecoder(txBytes)
+			tx, err := app.txDecoder(txBytes,req.Height)
 			if err != nil {
 				result = err.Result()
 			} else {
@@ -544,7 +546,7 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 			result = sdk.ErrUnknownRequest(fmt.Sprintf("Unknown query: %s", path)).Result()
 		}
 
-		value, _ := cdc.MarshalBinaryLengthPrefixed(&result)
+		value, _ := cdc.MarshalBinaryLengthPrefixed(&result, req.Height)
 		return abci.ResponseQuery{
 			Code:      uint32(sdk.CodeOK),
 			Codespace: string(sdk.CodespaceRoot),
@@ -689,6 +691,10 @@ func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
 
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
+	if req.Header.Height == codec.UpgradeHeight {
+		app.cdc.SetUpgradeOverride(true)
+		app.txDecoder = auth.DefaultTxDecoder(app.cdc)
+	}
 	if app.cms.TracingEnabled() {
 		app.cms.SetTracingContext(sdk.TraceContext(
 			map[string]interface{}{"blockHeight": req.Header.Height},
@@ -739,7 +745,7 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
 	var result sdk.Result
 
-	tx, err := app.txDecoder(req.Tx)
+	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
 	} else {
@@ -760,7 +766,7 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
 	var result sdk.Result
 
-	tx, err := app.txDecoder(req.Tx)
+	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
 	} else {
@@ -836,7 +842,7 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode) (result sdk
 	// each result.
 	data = append(data, msgResult.Data...)
 	// append events from the message's execution and a message action event
-	events = events.AppendEvent(sdk.Event(sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, msg.Type()))))
+	events = events.AppendEvent(sdk.NewEvent(sdk.EventTypeMessage, sdk.NewAttribute(sdk.AttributeKeyAction, msg.Type())))
 	events = events.AppendEvents(msgResult.Events)
 	// stop execution and return on first failed message
 	if !msgResult.IsOK() {
@@ -968,9 +974,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 			}
 		}
 	}()
-	if ctx.BlockHeight() == 155 {
-		fmt.Println(tx)
-	}
 	var msgs = tx.GetMsg()
 	if err := validateBasicTxMsgs(msgs); err != nil {
 		return err.Result()

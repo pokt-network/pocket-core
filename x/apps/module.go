@@ -112,8 +112,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 // module begin-block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	keeper.BeginBlocker(ctx, req, am.keeper)
-	am.keeper.UpgradeCodec(ctx)
+}
 
+func (am AppModule) UpgradeCodec(ctx sdk.Ctx) {
+	am.keeper.UpgradeCodec(ctx)
 }
 
 // EndBlock returns the end blocker for the staking module. It returns no application

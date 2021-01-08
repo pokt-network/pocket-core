@@ -297,16 +297,16 @@ func (ss StdSignature) GetPublicKey() string {
 
 // DefaultTxDecoder logic for standard transaction decoding
 func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
-	return func(txBytes []byte) (sdk.Tx, sdk.Error) {
+	return func(txBytes []byte, blockHeight int64) (sdk.Tx, sdk.Error) {
 		var tx = StdTx{}
 		if len(txBytes) == 0 {
 			return nil, sdk.ErrTxDecode("txBytes are empty")
 		}
 		// ProtoStdTx.ProtoMsg is an interface. The concrete types
 		// are registered by MakeTxCodec
-		err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx)
+		err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx, blockHeight)
 		if err != nil {
-			return nil, sdk.ErrTxDecode("error decoding transaction" + err.Error()).TraceSDK(err.Error())
+			return nil, sdk.ErrTxDecode("error decoding transaction: " + err.Error()).TraceSDK(err.Error())
 		}
 		return tx, nil
 	}
@@ -314,12 +314,12 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 
 // DefaultTxEncoder logic for standard transaction encoding
 func DefaultTxEncoder(cdc *codec.Codec) sdk.TxEncoder {
-	return func(tx sdk.Tx) ([]byte, error) {
+	return func(tx sdk.Tx, blockHeight int64) ([]byte, error) {
 		t, ok := tx.(StdTx)
 		if !ok {
 			log.Fatal("tx must be of type StdTx")
 		}
-		return cdc.MarshalBinaryLengthPrefixed(&t)
+		return cdc.MarshalBinaryLengthPrefixed(&t, blockHeight)
 	}
 }
 

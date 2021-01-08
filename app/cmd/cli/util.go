@@ -78,14 +78,19 @@ var printDefaultConfigCmd = &cobra.Command{
 }
 
 var decodeTxCmd = &cobra.Command{
-	Use:   "decode-tx <tx>",
-	Short: "Decodes a given transaction encoded in Amino base64 bytes",
-	Long:  `Decodes a given transaction encoded in Amino base64 bytes`,
-	Args:  cobra.ExactArgs(1),
+	Use:   "decode-tx <tx> <legacyCodec>",
+	Short: "Decodes a given transaction encoded in Amino/Proto base64 bytes",
+	Long:  `Decodes a given transaction encoded in Amino/Proto base64 bytes`,
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		txStr := args[0]
-		stdTx := app.UnmarshalTxStr(txStr)
+		legacy := args[1]
+		height := int64(-1)
+		if legacy == "true" || legacy == "t" {
+			height = 0
+		}
+		stdTx := app.UnmarshalTxStr(txStr, height)
 		fmt.Printf(
 			"Type:\t\t%s\nMsg:\t\t%v\nFee:\t\t%s\nEntropy:\t%d\nMemo:\t\t%s\nSigner\t\t%s\nSig:\t\t%s\n",
 			stdTx.GetMsg().Type(), stdTx.GetMsg(), stdTx.GetFee().String(), stdTx.GetEntropy(), stdTx.GetMemo(), stdTx.GetMsg().GetSigner().String(),

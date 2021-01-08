@@ -102,11 +102,11 @@ func handleMsgUnjail(ctx sdk.Ctx, msg types.MsgUnjail, k keeper.Keeper) sdk.Resu
 	}
 	k.UnjailValidator(ctx, addr)
 	ctx.EventManager().EmitEvent(
-		sdk.Event(sdk.NewEvent(
+		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, msg.ValidatorAddr.String()),
-		)),
+		),
 	)
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
@@ -118,10 +118,10 @@ func handleMsgSend(ctx sdk.Ctx, msg types.MsgSend, k keeper.Keeper) sdk.Result {
 		return err.Result()
 	}
 	ctx.EventManager().EmitEvent(
-		sdk.Event(sdk.NewEvent(
+		sdk.NewEvent(
 			sdk.EventTypeMessage,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-		)),
+		),
 	)
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -13,8 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
-	sdk "github.com/pokt-network/pocket-core/types"
 
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/crypto"
@@ -44,7 +43,7 @@ const (
 func TestRPC_QueryHeight(t *testing.T) {
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 
 	<-evtChan // Wait for block
 	q := newQueryRequest("height", nil)
@@ -74,7 +73,7 @@ func TestRPC_QueryHeight(t *testing.T) {
 }
 
 func TestRPC_QueryBlock(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
@@ -111,7 +110,7 @@ func TestRPC_QueryBlock(t *testing.T) {
 }
 
 func TestRPC_QueryTX(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -120,7 +119,7 @@ func TestRPC_QueryTX(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
+	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100), true)
 	assert.Nil(t, err)
 
 	<-evtChan // Wait for tx
@@ -156,7 +155,7 @@ func TestRPC_QueryTX(t *testing.T) {
 }
 
 func TestRPC_QueryAccountTXs(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -167,7 +166,7 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
+	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100), true)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
 
@@ -209,7 +208,7 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 }
 
 func TestRPC_QueryBlockTXs(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	var tx *types.TxResponse
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	memCLI, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -219,7 +218,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
-	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100))
+	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), cb.GetAddress(), "test", types.NewInt(100), true)
 	assert.Nil(t, err)
 
 	<-evtChan // Wait for tx
@@ -273,7 +272,7 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 }
 
 func TestRPC_QueryBalance(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
@@ -318,7 +317,7 @@ func TestRPC_QueryBalance(t *testing.T) {
 }
 
 func TestRPC_QueryAccount(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan
@@ -347,7 +346,7 @@ func TestRPC_QueryAccount(t *testing.T) {
 }
 
 func TestRPC_QueryNodes(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
@@ -383,7 +382,7 @@ func TestRPC_QueryNodes(t *testing.T) {
 }
 
 func TestRPC_QueryNode(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 
@@ -421,7 +420,7 @@ func TestRPC_QueryNode(t *testing.T) {
 }
 
 func TestRPC_QueryApp(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	gBZ, _, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -456,7 +455,7 @@ func TestRPC_QueryApp(t *testing.T) {
 }
 
 func TestRPC_QueryApps(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	gBZ, _, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -497,7 +496,7 @@ func TestRPC_QueryApps(t *testing.T) {
 }
 
 func TestRPC_QueryNodeParams(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -530,7 +529,7 @@ func TestRPC_QueryNodeParams(t *testing.T) {
 }
 
 func TestRPC_QueryAppParams(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -563,7 +562,7 @@ func TestRPC_QueryAppParams(t *testing.T) {
 }
 
 func TestRPC_QueryPocketParams(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	gBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, gBZ)
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -596,7 +595,7 @@ func TestRPC_QueryPocketParams(t *testing.T) {
 }
 
 func TestRPC_QuerySupportedChains(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -627,7 +626,7 @@ func TestRPC_QuerySupportedChains(t *testing.T) {
 	stopCli()
 }
 func TestRPC_QuerySupply(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -669,7 +668,7 @@ func TestRPC_QuerySupply(t *testing.T) {
 }
 
 func TestRPC_QueryDAOOwner(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -703,7 +702,7 @@ func TestRPC_QueryDAOOwner(t *testing.T) {
 }
 
 func TestRPC_QueryUpgrade(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -735,7 +734,7 @@ func TestRPC_QueryUpgrade(t *testing.T) {
 }
 
 func TestRPCQueryACL(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -765,7 +764,7 @@ func TestRPCQueryACL(t *testing.T) {
 }
 
 func TestRPCQueryAllParams(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -856,7 +855,7 @@ func TestRPC_RelayCORS(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	//kb := getInMemoryKeybase()
 	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
@@ -882,7 +881,7 @@ func TestRPC_DispatchCORS(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	//kb := getInMemoryKeybase()
 	genBZ, _, _, _ := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
@@ -907,7 +906,7 @@ func TestRPC_Relay(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 
 	kb := getInMemoryKeybase()
 	genBZ, _, validators, app := fiveValidatorsOneAppGenesis()
@@ -1010,7 +1009,7 @@ func TestRPC_Relay(t *testing.T) {
 }
 
 func TestRPC_Dispatch(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	kb := getInMemoryKeybase()
 	genBZ, _, validators, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)
@@ -1055,7 +1054,7 @@ func TestRPC_Dispatch(t *testing.T) {
 }
 
 func TestRPC_RawTX(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, kb, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
@@ -1073,7 +1072,7 @@ func TestRPC_RawTX(t *testing.T) {
 		},
 		pk,
 		rand2.Int64(),
-		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))))
+		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))), 0)
 	assert.Nil(t, err)
 
 	_ = memCodecMod(true)
@@ -1085,7 +1084,7 @@ func TestRPC_RawTX(t *testing.T) {
 		},
 		pk,
 		rand2.Int64(),
-		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))))
+		types.NewCoins(types.NewCoin(types.DefaultStakeDenom, types.NewInt(100000)))), 0)
 	assert.Nil(t, err)
 	<-evtChan // Wait for block
 	params := SendRawTxParams{
@@ -1124,7 +1123,7 @@ func TestRPC_RawTX(t *testing.T) {
 }
 
 func TestRPC_QueryNodeClaims(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan
@@ -1155,7 +1154,7 @@ func TestRPC_QueryNodeClaims(t *testing.T) {
 }
 
 func TestRPC_QueryNodeClaim(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
 	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan
@@ -1194,7 +1193,7 @@ func TestRPC_QueryNodeClaim(t *testing.T) {
 }
 
 func TestRPC_Challenge(t *testing.T) {
-	sdk.UpgradeHeight = 2
+	codec.UpgradeHeight = 7000
 	kb := getInMemoryKeybase()
 	genBZ, keys, _, app := fiveValidatorsOneAppGenesis()
 	_, _, cleanup := NewInMemoryTendermintNode(t, genBZ)

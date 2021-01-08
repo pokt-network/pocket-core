@@ -155,12 +155,12 @@ func (k Keeper) handleDoubleSign(ctx sdk.Ctx, addr crypto.Address, infractionHei
 	// `power` is the int64 power of the validator as provided to/by Tendermint. This value is validator.StakedTokens as
 	// sent to Tendermint via ABCI, and now received as evidence. The fraction is passed in to separately to slash
 	ctx.EventManager().EmitEvent(
-		sdk.Event(sdk.NewEvent(
+		sdk.NewEvent(
 			types.EventTypeSlash,
 			sdk.NewAttribute(types.AttributeKeyAddress, address.String()),
 			sdk.NewAttribute(types.AttributeKeyPower, fmt.Sprintf("%d", power)),
 			sdk.NewAttribute(types.AttributeKeyReason, types.AttributeValueDoubleSign),
-		)),
+		),
 	)
 	k.slash(ctx, address, distributionHeight, power, fraction)
 	// todo fix once tendermint is patched

@@ -104,7 +104,7 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
-		blockHashBz, er := sessionCtx.BlockHash(k.Cdc)
+		blockHashBz, er := sessionCtx.BlockHash(k.Cdc, sessionCtx.BlockHeight())
 		if er != nil {
 			return nil, sdk.ErrInternal(er.Error())
 		}

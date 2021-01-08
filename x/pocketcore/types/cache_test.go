@@ -22,6 +22,10 @@ func InitCacheTest() {
 func TestMain(m *testing.M) {
 	InitCacheTest()
 	m.Run()
+	err := os.RemoveAll("data")
+	if err != nil {
+		panic(err)
+	}
 	os.Exit(0)
 }
 

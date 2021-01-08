@@ -70,6 +70,10 @@ func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 // Route module message route name
 func (AppModule) Route() string { return "" }
 
+func (am AppModule) UpgradeCodec(ctx sdk.Ctx) {
+	am.accountKeeper.UpgradeCodec(ctx)
+}
+
 // NewHandler module handler
 func (AppModule) NewHandler() sdk.Handler { return nil }
 
@@ -103,7 +107,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 
 // BeginBlock module begin-block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, _ abci.RequestBeginBlock) {
-	am.accountKeeper.UpgradeCodec(ctx)
 }
 
 // EndBlock module end-block

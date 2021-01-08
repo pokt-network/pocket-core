@@ -36,13 +36,13 @@ func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 		{
 			name: "gets emtpy slice of applications",
 			want: want{length: 0, stakedApplications: true},
-			args: args{stakedApplication: unstaking},
+			args: args{stakedApplication: stakedApplication},
 		},
 		{
 			name:         "only gets unstaking applications",
 			applications: []types.Application{stakedApplication, unstaking},
 			want:         want{length: 1, stakedApplications: true},
-			args:         args{stakedApplication: unstaking, applications: []types.Application{unstaking}},
+			args:         args{stakedApplication: stakedApplication, applications: []types.Application{unstaking}},
 		},
 	}
 
@@ -51,15 +51,9 @@ func TestAppUnstaked_GetAndSetlUnstaking(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, application := range tt.args.applications {
 				keeper.SetApplication(context, application)
-				if application.IsUnstaking() {
-					keeper.SetUnstakingApplication(context, application)
-				}
 			}
 			if tt.want.stakedApplications {
 				keeper.SetApplication(context, tt.args.stakedApplication)
-				if stakedApplication.IsStaked() {
-					keeper.SetStakedApplication(context, tt.args.stakedApplication)
-				}
 			}
 			applications := keeper.getAllUnstakingApplications(context)
 			if len(applications) != tt.want.length {
@@ -190,7 +184,6 @@ func TestAppUnstaked_GetAllMatureApplications(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
 			for _, application := range tt.args.applications {
 				keeper.SetApplication(context, application)
-				keeper.SetUnstakingApplication(context, application)
 			}
 			if got := keeper.getMatureApplications(context); len(got) != tt.want.length {
 				t.Errorf("appUnstaked.unstakeAllMatureApplications()= %v, want %v", len(got), tt.want.length)

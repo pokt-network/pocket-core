@@ -51,8 +51,6 @@ type Context struct {
 	isPrev        bool
 }
 
-var UpgradeHeight int64 = 7000
-
 type Ctx interface {
 	Context() context.Context
 	MultiStore() MultiStore
@@ -101,7 +99,7 @@ type Ctx interface {
 	IsPrevCtx() bool
 	IsAfterUpgradeHeight() bool
 	IsOnUpgradeHeight() bool
-	BlockHash(cdc *codec.Codec) ([]byte, error)
+	BlockHash(cdc *codec.Codec, height int64) ([]byte, error)
 }
 
 // Proposed rename, not done to avoid API breakage
@@ -124,10 +122,10 @@ func (c Context) EventManager() *EventManager { return c.eventManager }
 func (c Context) AppVersion() string          { return c.appVersion }
 func (c Context) ClearGlobalCache()           { c.cachedStore.Purge() }
 func (c Context) IsAfterUpgradeHeight() bool {
-	return c.header.Height >= UpgradeHeight
+	return c.header.Height >= codec.UpgradeHeight
 }
 func (c Context) IsOnUpgradeHeight() bool {
-	return c.header.Height == UpgradeHeight
+	return c.header.Height == codec.UpgradeHeight
 }
 
 // clone the header before returning
@@ -141,13 +139,13 @@ const blockHashError = "cannot get the block hash header"
 var _ codec.ProtoMarshaler = &abci.Header{}
 
 // clone the header before returning
-func (c Context) BlockHash(cdc *codec.Codec) ([]byte, error) {
-	if cdc.IsAfterUpgrade() {
+func (c Context) BlockHash(cdc *codec.Codec, height int64) ([]byte, error) {
+	if cdc.IsAfterUpgrade(height) {
 		if c.header.Equal(abci.Header{}) {
 			return nil, errors.New(blockHashError + ": the header is empty")
 		}
 		sha := sha3.New256()
-		bz, err := cdc.MarshalBinaryBare(&c.header)
+		bz, err := cdc.MarshalBinaryBare(&c.header, height)
 		if err != nil {
 			return nil, err
 		}

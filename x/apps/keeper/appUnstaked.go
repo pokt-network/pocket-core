@@ -40,7 +40,7 @@ func (k Keeper) getAllUnstakingApplications(ctx sdk.Ctx) (applications []types.A
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var addrs sdk.Addresses
-		err := k.Cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs)
+		err := k.Cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &addrs, ctx.BlockHeight())
 		if err != nil {
 			k.Logger(ctx).Error(fmt.Errorf("could not unmarshal unstakingApplications in getAllUnstakingApplications call: %s", string(iterator.Value())).Error())
 			return
@@ -65,7 +65,7 @@ func (k Keeper) getUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) (
 	if bz == nil {
 		return []sdk.Address{}
 	}
-	err := k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &valAddrs)
+	err := k.Cdc.UnmarshalBinaryLengthPrefixed(bz, &valAddrs, ctx.BlockHeight())
 	if err != nil {
 		panic(err)
 	}
@@ -76,7 +76,7 @@ func (k Keeper) getUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time) (
 // setUnstakingApplications - Store applications in unstaking queue at a certain unstaking time
 func (k Keeper) setUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time, keys sdk.Addresses) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&keys)
+	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&keys, ctx.BlockHeight())
 	if err != nil {
 		panic(err)
 	}
@@ -102,7 +102,7 @@ func (k Keeper) getMatureApplications(ctx sdk.Ctx) (matureValsAddrs sdk.Addresse
 	defer unstakingValsIterator.Close()
 	for ; unstakingValsIterator.Valid(); unstakingValsIterator.Next() {
 		var applications sdk.Addresses
-		err := k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &applications)
+		err := k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingValsIterator.Value(), &applications, ctx.BlockHeight())
 		if err != nil {
 			panic(err)
 		}
@@ -119,7 +119,7 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 	defer unstakingApplicationsIterator.Close()
 	for ; unstakingApplicationsIterator.Valid(); unstakingApplicationsIterator.Next() {
 		var unstakingVals sdk.Addresses
-		err := k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingApplicationsIterator.Value(), &unstakingVals)
+		err := k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingApplicationsIterator.Value(), &unstakingVals, ctx.BlockHeight())
 		if err != nil {
 			panic(err)
 		}
@@ -136,10 +136,10 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 			}
 			k.FinishUnstakingApplication(ctx, val)
 			ctx.EventManager().EmitEvent(
-				sdk.Event(sdk.NewEvent(
+				sdk.NewEvent(
 					types.EventTypeCompleteUnstaking,
 					sdk.NewAttribute(types.AttributeKeyApplication, valAddr.String()),
-				)),
+				),
 			)
 		}
 		_ = store.Delete(unstakingApplicationsIterator.Key())

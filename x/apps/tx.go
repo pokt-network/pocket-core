@@ -13,7 +13,7 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, amount sdk.BigInt, kp keys.KeyPair, passphrase string) (*sdk.TxResponse, error) {
+func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, amount sdk.BigInt, kp keys.KeyPair, passphrase string, legacyCodec bool) (*sdk.TxResponse, error) {
 	fromAddr := kp.GetAddress()
 	msg := types.MsgStake{
 		PubKey: kp.PublicKey,
@@ -28,10 +28,10 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
 }
 
-func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string) (*sdk.TxResponse, error) {
+func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string, legacyCodec bool) (*sdk.TxResponse, error) {
 	msg := types.MsgBeginUnstake{Address: address}
 	txBuilder, cliCtx, err := newTx(cdc, &msg, address, tmNode, keybase, passphrase)
 	if err != nil {
@@ -41,7 +41,7 @@ func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, add
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
 }
 
 func newTx(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, tmNode client.Client, keybase keys.Keybase, passphrase string) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {

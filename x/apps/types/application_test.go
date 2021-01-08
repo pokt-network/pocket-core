@@ -7,6 +7,7 @@ import (
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	types2 "github.com/tendermint/tendermint/abci/types"
 	"math/rand"
 	"reflect"
 	"strings"
@@ -1297,8 +1298,10 @@ func TestApplicationUtil_UnMarshalApplication(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bz, _ := MarshalApplication(tt.args.codec, tt.args.application)
-			unmarshaledApp, err := UnmarshalApplication(tt.args.codec, bz)
+			c := sdk.NewContext(nil, types2.Header{Height:1}, false, nil)
+			c.BlockHeight()
+			bz, _ := MarshalApplication(tt.args.codec, c, tt.args.application)
+			unmarshaledApp, err := UnmarshalApplication(tt.args.codec, c, bz)
 			if err != nil {
 				t.Fatalf("could not unmarshal app")
 			}

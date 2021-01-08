@@ -73,6 +73,7 @@ func createTestInput(t *testing.T, isCheckTx bool, initPower int64, nAccs int64)
 	createTestAccs(ctx, int(nAccs), initialCoins, &keeper)
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens.MulRaw(nAccs)))
 	keeper.SetSupply(ctx, types.NewSupply(totalSupply))
+	keeper.SetParams(ctx, types.DefaultParams())
 	return ctx, keeper
 }
 

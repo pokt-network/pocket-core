@@ -72,7 +72,7 @@ func TestSend(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Send(tt.args.cdc, tt.args.tmNode, tt.args.keybase, tt.args.fromAddr, tt.args.toAddr, tt.args.passphrase, tt.args.amount)
+			got, err := Send(tt.args.cdc, tt.args.tmNode, tt.args.keybase, tt.args.fromAddr, tt.args.toAddr, tt.args.passphrase, tt.args.amount, false)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Send() error = %v, wantErr %v", err, tt.wantErr)
 				return

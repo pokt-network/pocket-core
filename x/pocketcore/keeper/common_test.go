@@ -7,6 +7,7 @@ import (
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"math"
 	"math/big"
+	"os"
 	"testing"
 	"time"
 
@@ -46,6 +47,15 @@ var (
 		gov.AppModuleBasic{},
 	)
 )
+
+func TestMain(m *testing.M) {
+	m.Run()
+	err := os.RemoveAll("data")
+	if err != nil {
+		panic(err)
+	}
+	os.Exit(0)
+}
 
 type simulateRelayKeys struct {
 	private crypto.PrivateKey
@@ -1082,7 +1092,7 @@ func (_m *Ctx) ClearGlobalCache() {
 	_m.Called()
 }
 
-func (_m *Ctx) BlockHash(cdc *codec.Codec) ([]byte, error) {
+func (_m *Ctx) BlockHash(cdc *codec.Codec, _ int64) ([]byte, error) {
 	ret := _m.Called()
 
 	var r0 []byte

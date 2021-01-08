@@ -86,7 +86,7 @@ func (k Keeper) GetAccount(ctx sdk.Ctx, addr sdk.Address) exported.Account {
 	if bz == nil {
 		return nil
 	}
-	acc, err := k.DecodeAccount(bz)
+	acc, err := k.DecodeAccount(bz, ctx)
 	if err != nil {
 		return nil // Could not decode account
 	}
@@ -125,7 +125,7 @@ func (k Keeper) GetAllAccountsExport(ctx sdk.Ctx) []exported.Account {
 func (k Keeper) SetAccount(ctx sdk.Ctx, acc exported.Account) {
 	addr := acc.GetAddress()
 	store := ctx.KVStore(k.storeKey)
-	bz, err := k.EncodeAccount(acc)
+	bz, err := k.EncodeAccount(acc, ctx)
 	if err != nil {
 		ctx.Logger().Error(fmt.Errorf("error marshalling account %v at height: %d, err: %s", acc, ctx.BlockHeight(), err.Error()).Error())
 		os.Exit(1)
@@ -157,7 +157,7 @@ func (k Keeper) IterateAccounts(ctx sdk.Ctx, process func(exported.Account) (sto
 			return
 		}
 		val := iter.Value()
-		acc, err := k.DecodeAccount(val)
+		acc, err := k.DecodeAccount(val, ctx)
 		if err != nil {
 			ctx.Logger().Error(fmt.Errorf("error while iterating accounts: unmarshalling account %v at height: %d, err: %s", val, ctx.BlockHeight(), err.Error()).Error())
 			continue
@@ -180,43 +180,43 @@ func (k Keeper) NewAccountWithAddress(ctx sdk.Ctx, addr sdk.Address) (*types.Bas
 }
 
 // "EncodeAccount" - encodes the account interface to bz
-func (k Keeper) EncodeAccount(acc exported.Account) ([]byte, error) {
+func (k Keeper) EncodeAccount(acc exported.Account, ctx sdk.Ctx) ([]byte, error) {
 	switch a := acc.(type) {
 	case *types.BaseAccount:
-		return k.EncodeBaseAccount(a)
+		return k.EncodeBaseAccount(a, ctx)
 	case *types.ModuleAccount:
-		return k.EncodeModuleAccount(a)
+		return k.EncodeModuleAccount(a, ctx)
 	}
 	return nil, fmt.Errorf("could not encode account: unrecognized account type")
 }
 
-func (k Keeper) EncodeBaseAccount(acc *types.BaseAccount) ([]byte, error) {
-	return k.Cdc.MarshalBinaryBare(acc)
+func (k Keeper) EncodeBaseAccount(acc *types.BaseAccount, ctx sdk.Ctx) ([]byte, error) {
+	return k.Cdc.MarshalBinaryBare(acc, ctx.BlockHeight())
 }
 
 // "DecodeModuleAccount" - encodes account interface into protobuf
-func (k Keeper) EncodeModuleAccount(macc *types.ModuleAccount) ([]byte, error) {
-	return k.Cdc.MarshalBinaryBare(macc)
+func (k Keeper) EncodeModuleAccount(macc *types.ModuleAccount, ctx sdk.Ctx) ([]byte, error) {
+	return k.Cdc.MarshalBinaryBare(macc, ctx.BlockHeight())
 }
 
 // "DecodeAccount" - decodes into account interface
-func (k Keeper) DecodeAccount(bz []byte) (exported.Account, error) {
-	acc, err := k.DecodeBaseAccount(bz)
+func (k Keeper) DecodeAccount(bz []byte, ctx sdk.Ctx) (exported.Account, error) {
+	acc, err := k.DecodeBaseAccount(bz, ctx)
 	if err == nil {
 		return acc, err
 	}
-	return k.DecodeModuleAccount(bz)
+	return k.DecodeModuleAccount(bz, ctx)
 }
 
-func (k Keeper) DecodeBaseAccount(bz []byte) (exported.Account, error) {
+func (k Keeper) DecodeBaseAccount(bz []byte, ctx sdk.Ctx) (exported.Account, error) {
 	var ba types.BaseAccount
-	err := k.Cdc.UnmarshalBinaryBare(bz, &ba)
+	err := k.Cdc.UnmarshalBinaryBare(bz, &ba, ctx.BlockHeight())
 	return &ba, err
 }
 
 // "DecodeModuleAccount" - encodes account interface into protobuf
-func (k Keeper) DecodeModuleAccount(bz []byte) (exported.ModuleAccountI, error) {
+func (k Keeper) DecodeModuleAccount(bz []byte, ctx sdk.Ctx) (exported.ModuleAccountI, error) {
 	var ma types.ModuleAccount
-	err := k.Cdc.UnmarshalBinaryBare(bz, &ma)
+	err := k.Cdc.UnmarshalBinaryBare(bz, &ma, ctx.BlockHeight())
 	return &ma, err
 }

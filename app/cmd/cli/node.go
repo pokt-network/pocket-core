@@ -28,11 +28,11 @@ from staking and unstaking; to unjailing.`,
 }
 
 var nodeStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <chains> <serviceURI> <chainID> <fees>",
+	Use:   "stake <fromAddr> <amount> <chains> <serviceURI> <chainID> <fees> <legacyCodec>",
 	Short: "Stake a node in the network",
 	Long: `Stake the node into the network, making it available for service.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(6),
+	Args: cobra.ExactArgs(7),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fromAddr := args[0]
@@ -53,8 +53,13 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		legacy := args[6]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
 		fmt.Println("Enter Passphrase: ")
-		res, err := StakeNode(chains, serviceURI, fromAddr, app.Credentials(), args[4], types.NewInt(int64(amount)), int64(fees))
+		res, err := StakeNode(chains, serviceURI, fromAddr, app.Credentials(), args[4], types.NewInt(int64(amount)), int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -74,11 +79,11 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var nodeUnstakeCmd = &cobra.Command{
-	Use:   "unstake <fromAddr> <chainID> <fees>",
+	Use:   "unstake <fromAddr> <chainID> <fees> <legacyCodec>",
 	Short: "Unstake a node in the network",
 	Long: `Unstake a node from the network, changing it's status to Unstaking.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(3),
+	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fees, err := strconv.Atoi(args[2])
@@ -86,8 +91,13 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		legacy := args[3]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
 		fmt.Println("Enter Password: ")
-		res, err := UnstakeNode(args[0], app.Credentials(), args[1], int64(fees))
+		res, err := UnstakeNode(args[0], app.Credentials(), args[1], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -107,11 +117,11 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var nodeUnjailCmd = &cobra.Command{
-	Use:   "unjail <fromAddr> <chainID> <fees>",
+	Use:   "unjail <fromAddr> <chainID> <fees> <legacyCodec>",
 	Short: "Unjails a node in the network",
 	Long: `Unjails a node from the network, allowing it to participate in service and consensus again.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(3),
+	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fees, err := strconv.Atoi(args[2])
@@ -119,8 +129,13 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		legacy := args[3]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
 		fmt.Println("Enter Password: ")
-		res, err := UnjailNode(args[0], app.Credentials(), args[1], int64(fees))
+		res, err := UnjailNode(args[0], app.Credentials(), args[1], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return

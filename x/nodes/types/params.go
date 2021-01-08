@@ -1,11 +1,10 @@
 package types
 
 import (
-	"bytes"
 	"fmt"
+	"reflect"
 	"time"
 
-	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
@@ -64,14 +63,13 @@ type Params struct {
 	DAOAllocation            int64         `json:"dao_allocation" yaml:"dao_allocation"`
 	ProposerAllocation       int64         `json:"proposer_allocation" yaml:"proposer_allocation"`
 	MaximumChains            int64         `json:"maximum_chains" yaml:"maximum_chains"`
-	// slashing params
-	MaxJailedBlocks         int64         `json:"max_jailed_blocks" yaml:"max_jailed_blocks"`
-	MaxEvidenceAge          time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`                     // maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)
-	SignedBlocksWindow      int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`             // window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks
-	MinSignedPerWindow      sdk.BigDec    `json:"min_signed_per_window" yaml:"min_signed_per_window"`           // minimum number of blocks the node must sign per window
-	DowntimeJailDuration    time.Duration `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`         // minimum amount of time node must spend in jail after missing blocks
-	SlashFractionDoubleSign sdk.BigDec    `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"` // the factor of which a node is slashed for a double sign
-	SlashFractionDowntime   sdk.BigDec    `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`       // the factor of which a node is slashed for missing blocks
+	MaxJailedBlocks          int64         `json:"max_jailed_blocks" yaml:"max_jailed_blocks"`
+	MaxEvidenceAge           time.Duration `json:"max_evidence_age" yaml:"max_evidence_age"`                     // maximum age of tendermint evidence that is still valid (currently not implemented in Cosmos or Pocket-Core)
+	SignedBlocksWindow       int64         `json:"signed_blocks_window" yaml:"signed_blocks_window"`             // window of time in blocks (unit) used for signature verification -> specifically in not signing (missing) blocks
+	MinSignedPerWindow       sdk.BigDec    `json:"min_signed_per_window" yaml:"min_signed_per_window"`           // minimum number of blocks the node must sign per window
+	DowntimeJailDuration     time.Duration `json:"downtime_jail_duration" yaml:"downtime_jail_duration"`         // minimum amount of time node must spend in jail after missing blocks
+	SlashFractionDoubleSign  sdk.BigDec    `json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"` // the factor of which a node is slashed for a double sign
+	SlashFractionDowntime    sdk.BigDec    `json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`       // the factor of which a node is slashed for missing blocks
 }
 
 // Implements sdk.ParamSet
@@ -146,9 +144,7 @@ func (p Params) Validate() error {
 
 // Checks the equality of two param objects
 func (p Params) Equal(p2 Params) bool {
-	bz1, _ := ModuleCdc.MarshalBinaryLengthPrefixed(&p)
-	bz2, _ := ModuleCdc.MarshalBinaryLengthPrefixed(&p2)
-	return bytes.Equal(bz1, bz2)
+	return reflect.DeepEqual(p, p2)
 }
 
 // String returns a human readable string representation of the parameters.
@@ -184,13 +180,4 @@ func (p Params) String() string {
 		p.DAOAllocation,
 		p.MaximumChains,
 		p.MaxJailedBlocks)
-}
-
-// unmarshal the current pos params value from store key
-func UnmarshalParams(cdc *codec.Codec, value []byte) (params Params, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(value, &params)
-	if err != nil {
-		return
-	}
-	return
 }

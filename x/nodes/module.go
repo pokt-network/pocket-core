@@ -30,6 +30,10 @@ func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 	types.RegisterCodec(cdc)
 }
 
+func (am AppModule) UpgradeCodec(ctx sdk.Ctx) {
+	am.keeper.UpgradeCodec(ctx)
+}
+
 // DefaultGenesis returns default genesis state as raw bytes for the staking
 // module.
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
@@ -111,8 +115,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 // module begin-block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	keeper.BeginBlocker(ctx, req, am.keeper)
-	am.keeper.UpgradeCodec(ctx)
-
 }
 
 // EndBlock returns the end blocker for the staking module. It returns no validator

@@ -30,11 +30,11 @@ from staking and unstaking; to generating AATs.`,
 }
 
 var appStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <chains> <chainID> <fees>",
+	Use:   "stake <fromAddr> <amount> <chains> <chainID> <fees> <legacyCodec>",
 	Short: "Stake an app into the network",
 	Long: `Stake the app into the network, making it have network throughput.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(5),
+	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fromAddr := args[0]
@@ -52,10 +52,15 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		legacy := args[5]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
 		rawChains := reg.ReplaceAllString(args[2], "")
 		chains := strings.Split(rawChains, ",")
 		fmt.Println("Enter passphrase: ")
-		res, err := StakeApp(chains, fromAddr, app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees))
+		res, err := StakeApp(chains, fromAddr, app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -75,11 +80,11 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var appUnstakeCmd = &cobra.Command{
-	Use:   "unstake <fromAddr> <chainID> <fees>",
+	Use:   "unstake <fromAddr> <chainID> <fees> <legacyCodec>",
 	Short: "Unstake an app from the network",
 	Long: `Unstake an app from the network, changing it's status to Unstaking.
 Prompts the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(3),
+	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fees, err := strconv.Atoi(args[2])
@@ -87,8 +92,13 @@ Prompts the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
+		legacy := args[3]
+		var legacyCodec bool
+		if legacy == "true" || legacy == "t" {
+			legacyCodec = true
+		}
 		fmt.Println("Enter Password: ")
-		res, err := UnstakeApp(args[0], app.Credentials(), args[1], int64(fees))
+		res, err := UnstakeApp(args[0], app.Credentials(), args[1], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
