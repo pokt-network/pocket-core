@@ -72,7 +72,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 			continue
 		}
 		// get the merkle proof object for the pseudorandom index
-		mProof, leaf := evidence.GenerateMerkleProof(int(index))
+		mProof, leaf := evidence.GenerateMerkleProof(claim.SessionHeader.SessionBlockHeight, int(index))
 		// if prevalidation on, then pre-validate
 		if pc.GlobalPocketConfig.ProofPrevalidation {
 			// validate level count on claim by total relays
@@ -81,7 +81,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d, level count", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 				continue
 			}
-			if !mProof.Validate(claim.MerkleRoot, leaf, levelCount) {
+			if !mProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, leaf, levelCount) {
 				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 				continue
 			}
@@ -140,7 +140,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate the merkle proofs
-	isValid := proof.MerkleProof.Validate(claim.MerkleRoot, proof.GetLeaf(), levelCount)
+	isValid := proof.MerkleProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, proof.GetLeaf(), levelCount)
 	// if is not valid for other reasons
 	if !isValid {
 		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)

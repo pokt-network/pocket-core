@@ -42,7 +42,6 @@ func (k Keeper) GetBlock(height int) (*coretypes.ResultBlock, error) {
 func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 	if ctx.IsOnUpgradeHeight() {
 		k.ConvertState(ctx)
-		types.ModuleCdc.SetUpgradeOverride(true)
 	}
 }
 

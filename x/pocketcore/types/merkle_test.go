@@ -115,7 +115,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 			},
 		},
 	}
-	root := i.GenerateMerkleRoot()
+	root := i.GenerateMerkleRoot(0)
 	assert.NotNil(t, root.Hash)
 	assert.NotEmpty(t, root.Hash)
 	assert.Nil(t, HashVerification(hex.EncodeToString(root.Hash)))
@@ -129,7 +129,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 	for ; iter.Valid(); iter.Next() {
 		e := iter.Value()
 		assert.Equal(t, i, e)
-		newRoot := e.GenerateMerkleRoot()
+		newRoot := e.GenerateMerkleRoot(0)
 		assert.Equal(t, root, newRoot)
 	}
 }
@@ -210,7 +210,7 @@ func TestEvidence_GenerateMerkleProof(t *testing.T) {
 		EvidenceType: RelayEvidence,
 	}
 	index := 4
-	proof, leaf := i.GenerateMerkleProof(index)
+	proof, leaf := i.GenerateMerkleProof(0, index)
 	assert.Len(t, proof.HashRanges, 3)
 	assert.Contains(t, i.Proofs, leaf)
 	assert.Equal(t, proof.Target.Hash, merkleHash(leaf.Bytes()))
@@ -384,21 +384,21 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 		},
 	}
 	index := 4
-	root := i.GenerateMerkleRoot()
-	proofs, leaf := i.GenerateMerkleProof(index)
+	root := i.GenerateMerkleRoot(0)
+	proofs, leaf := i.GenerateMerkleProof(0,index)
 	// validate level count on claim by total relays
-	res := proofs.Validate(root, leaf, len(proofs.HashRanges))
+	res := proofs.Validate(0,root, leaf, len(proofs.HashRanges))
 	assert.True(t, res)
 	index2 := 0
-	root2 := i2.GenerateMerkleRoot()
-	proofs2, leaf2 := i2.GenerateMerkleProof(index2)
-	res = proofs2.Validate(root2, leaf2, len(proofs2.HashRanges))
+	root2 := i2.GenerateMerkleRoot(0)
+	proofs2, leaf2 := i2.GenerateMerkleProof(0,index2)
+	res = proofs2.Validate(0,root2, leaf2, len(proofs2.HashRanges))
 	assert.True(t, res)
 	// wrong root
-	res = proofs.Validate(root2, leaf, len(proofs.HashRanges))
+	res = proofs.Validate(0,root2, leaf, len(proofs.HashRanges))
 	assert.False(t, res)
 	// wrong leaf provided
-	res = proofs.Validate(root, leaf2, len(proofs.HashRanges))
+	res = proofs.Validate(0,root, leaf2, len(proofs.HashRanges))
 	assert.False(t, res)
 }
 

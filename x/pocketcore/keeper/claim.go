@@ -70,7 +70,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 			continue
 		}
 		// generate the merkle root for this evidence
-		root := evidence.GenerateMerkleRoot()
+		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight)
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgClaim{}, n, kp, k)
 		if err != nil {

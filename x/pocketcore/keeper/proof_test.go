@@ -21,7 +21,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	if err != nil {
 		t.Fatalf("Set evidence not found")
 	}
-	root := evidence.GenerateMerkleRoot()
+	root := evidence.GenerateMerkleRoot(0)
 	_, totalRelays := types.GetTotalProofs(header, types.RelayEvidence, sdk.NewInt(1000))
 	assert.Equal(t, totalRelays, int64(5))
 	// generate a claim message
@@ -45,7 +45,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	// generate the pseudorandom proof
 	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header, mockCtx)
 	assert.Nil(t, er)
-	merkleProofs, _ := evidence.GenerateMerkleProof(int(neededLeafIndex))
+	merkleProofs, _ := evidence.GenerateMerkleProof(0,int(neededLeafIndex))
 	// get leaf and cousin node
 	leafNode := types.GetProof(header, types.RelayEvidence, neededLeafIndex)
 	// create proof message

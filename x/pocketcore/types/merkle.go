@@ -53,7 +53,7 @@ func (hr HashRange) Equal(hr2 HashRange) bool {
 }
 
 // "Validate" - Verifies the Proof from the leaf/cousin node data, the merkle root, and the Proof object
-func (mp MerkleProof) Validate(root HashRange, leaf Proof, numOfLevels int) (isValid bool) {
+func (mp MerkleProof) Validate(height int64, root HashRange, leaf Proof, numOfLevels int) (isValid bool) {
 	// ensure root lower is zero
 	if root.Range.Lower != 0 {
 		return
@@ -87,7 +87,7 @@ func (mp MerkleProof) Validate(root HashRange, leaf Proof, numOfLevels int) (isV
 			mp.Target.Range.Lower = sibling.Range.Lower
 			// **upper stays the same**
 			// generate the parent merkleHash and store it where the child used to be
-			mp.Target.Hash = parentHash(sibling.Hash, mp.Target.Hash, mp.Target.Range, uint64(mp.TargetIndex-1), uint64(mp.TargetIndex))
+			mp.Target.Hash = parentHash(height, sibling.Hash, mp.Target.Hash, mp.Target.Range, uint64(mp.TargetIndex-1), uint64(mp.TargetIndex))
 		} else { // even index
 			// target upper should be LTE sibling lower
 			if mp.Target.Range.Upper != sibling.Range.Lower {
@@ -97,7 +97,7 @@ func (mp MerkleProof) Validate(root HashRange, leaf Proof, numOfLevels int) (isV
 			mp.Target.Range.Upper = sibling.Range.Upper
 			// **lower stays the same**
 			// generate the parent merkleHash and store it where the child used to be
-			mp.Target.Hash = parentHash(mp.Target.Hash, sibling.Hash, mp.Target.Range, uint64(mp.TargetIndex), uint64(mp.TargetIndex+1))
+			mp.Target.Hash = parentHash(height, mp.Target.Hash, sibling.Hash, mp.Target.Range, uint64(mp.TargetIndex), uint64(mp.TargetIndex+1))
 		}
 		// half the indices as we are going up one level
 		mp.TargetIndex /= 2
@@ -124,14 +124,14 @@ func nextPowerOfTwo(v uint) uint {
 }
 
 // "GenerateProofs" - Generates the merkle Proof object from the leaf node data and the index
-func GenerateProofs(p []Proof, index int) (mProof MerkleProof, leaf Proof) {
+func GenerateProofs(height int64, p []Proof, index int) (mProof MerkleProof, leaf Proof) {
 	data, proofs := sortAndStructure(p) // TODO proofs are already sorted
 	// make a copy of the data because the merkle proof function will manipulate the slice
 	dataCopy := make([]HashRange, len(data))
 	// Copy from the original map to the target map
 	copy(dataCopy, data)
 	// generate Proof for leaf
-	mProof = merkleProof(data, index, &MerkleProof{})
+	mProof = merkleProof(height, data, index, &MerkleProof{})
 	// reset leaf index
 	mProof.TargetIndex = int64(index)
 	// get the leaf
@@ -143,23 +143,23 @@ func GenerateProofs(p []Proof, index int) (mProof MerkleProof, leaf Proof) {
 }
 
 // "merkleProof" - recursive Proof function that generates the Proof object one level at a time
-func merkleProof(data []HashRange, index int, p *MerkleProof) MerkleProof {
+func merkleProof(height int64, data []HashRange, index int, p *MerkleProof) MerkleProof {
 	if index%2 == 1 { // odd index so sibling to the left
 		p.HashRanges = append(p.HashRanges, data[index-1])
 	} else { // even index so sibling to the right
 		p.HashRanges = append(p.HashRanges, data[index+1])
 	}
-	data, atRoot := levelUp(data)
+	data, atRoot := levelUp(height, data)
 	if !atRoot {
 		// next level Entropy = previous index / 2 (
-		merkleProof(data, index/2, p)
+		merkleProof(height, data, index/2, p)
 	}
 	return *p
 }
 
 // "newParentHash" - Compute the merkleHash of the parent by hashing the hashes, sum and parent
-func parentHash(hash1, hash2 []byte, r Range, index1, index2 uint64) []byte {
-	if ModuleCdc.IsAfterUpgrade(-1) {
+func parentHash(height int64, hash1, hash2 []byte, r Range, index1, index2 uint64) []byte {
+	if ModuleCdc.IsAfterUpgrade(height) {
 		return merkleHash(MultiAppend(make([]byte, MerkleHashLength*2+32), hash1, hash2, uint64ToBytes(index1, index2), r.Bytes()))
 	}
 	return merkleHash(MultiAppend(make([]byte, MerkleHashLength*2+16), hash1, hash2, r.Bytes()))
@@ -172,27 +172,27 @@ func merkleHash(data []byte) []byte {
 }
 
 // "GenerateRoot" - generates the merkle root from leaf node data
-func GenerateRoot(data []Proof) (r HashRange, sortedData []Proof) {
+func GenerateRoot(height int64, data []Proof) (r HashRange, sortedData []Proof) {
 	// structure the leafs
 	adjacentHashRanges, sortedProofs := sortAndStructure(data)
 	// call the root function and return
-	return root(adjacentHashRanges), sortedProofs
+	return root(height, adjacentHashRanges), sortedProofs
 }
 
 // "root" - Generates the root (highest level) from the merkleHash range data recursively
 // CONTRACT: dataLength must be > 1 or this breaks
-func root(data []HashRange) HashRange {
-	data, atRoot := levelUp(data)
+func root(height int64, data []HashRange) HashRange {
+	data, atRoot := levelUp(height, data)
 	if !atRoot {
 		// if not at root continue to level up
-		root(data)
+		root(height, data)
 	}
 	// if at root return
 	return data[0]
 }
 
 // "levelUp" - takes the previous level data and converts it to the next level data
-func levelUp(data []HashRange) (nextLevelData []HashRange, atRoot bool) {
+func levelUp(height int64, data []HashRange) (nextLevelData []HashRange, atRoot bool) {
 	for i, d := range data {
 		// if odd element, skip
 		if i%2 == 1 {
@@ -203,7 +203,7 @@ func levelUp(data []HashRange) (nextLevelData []HashRange, atRoot bool) {
 		// the left child lower is new lower
 		data[i/2].Range.Lower = data[i].Range.Lower
 		// calculate the parent merkleHash
-		data[i/2].Hash = parentHash(d.Hash, data[i+1].Hash, data[i/2].Range, uint64(i), uint64(i+1))
+		data[i/2].Hash = parentHash(height, d.Hash, data[i+1].Hash, data[i/2].Range, uint64(i), uint64(i+1))
 	}
 	// check to see if at root
 	dataLen := len(data) / 2
