@@ -40,38 +40,6 @@ const (
 	PlaceholderServiceURL = PlaceholderURL
 )
 
-func TestRPC_QueryHeight(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
-	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-	codec.UpgradeHeight = 7000
-
-	<-evtChan // Wait for block
-	q := newQueryRequest("height", nil)
-	rec := httptest.NewRecorder()
-	Height(rec, q, httprouter.Params{})
-	resp := getJSONResponse(rec)
-
-	var height queryHeightResponse
-	err := json.Unmarshal([]byte(resp), &height)
-	assert.Nil(t, err)
-	assert.NotEmpty(t, height.Height)
-	assert.Equal(t, int64(1), height.Height)
-
-	<-evtChan // Wait for block
-	q = newQueryRequest("height", nil)
-	rec = httptest.NewRecorder()
-	Height(rec, q, httprouter.Params{})
-	resp = getJSONResponse(rec)
-	var height2 queryHeightResponse
-	err = json.Unmarshal([]byte(resp), &height2)
-	assert.Nil(t, err)
-	assert.NotEmpty(t, height2.Height)
-	assert.Equal(t, int64(2), height2.Height)
-
-	cleanup()
-	stopCli()
-}
-
 func TestRPC_QueryBlock(t *testing.T) {
 	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
