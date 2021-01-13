@@ -79,7 +79,7 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		if err != nil {
 			panic(err)
 		}
-		time.Sleep(1*time.Second)
+		time.Sleep(1 * time.Second)
 	}
 	return
 }
@@ -177,6 +177,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	baseapp := creator(c.Logger, db, io.Writer(nil))
 	tmNode, err := node.NewNode(baseapp,
 		c.TmConfig,
+		0,
 		privVal,
 		&nodeKey,
 		proxy.NewLocalClientCreator(baseapp),

@@ -247,6 +247,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	app := GetApp(c.Logger, db, traceWriter)
 	tmNode, err := node.NewNode(app.BaseApp,
 		c.TmConfig,
+		0,
 		privVal,
 		&nodeKey,
 		proxy.NewLocalClientCreator(app),

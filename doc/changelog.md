@@ -2,6 +2,7 @@
 ## RC-0.6.0
 - Security patch in merkle sum index
 - Security patch for BlockHash
+- Security patch for Proposer Selection
 - Protobuf Encoding implemented
 - Pocketcore module event handler fixed
 

@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	state2 "github.com/tendermint/tendermint/state"
 	"github.com/tendermint/tendermint/store"
 	"io"
@@ -42,6 +43,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	// create & start tendermint node
 	tmNode, err := node.NewNode(app,
 		c.TmConfig,
+		codec.UpgradeHeight,
 		pvm.LoadOrGenFilePV(c.TmConfig.PrivValidatorKeyFile(), c.TmConfig.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
