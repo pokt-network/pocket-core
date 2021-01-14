@@ -5,6 +5,7 @@
 - Security patch for Proposer Selection
 - Protobuf Encoding implemented
 - Pocketcore module event handler fixed
+- Max age of evidence enforced in blocks
 
 ## RC-0.5.2
 - Delete local Relay/Challenge Evidence on Code 66 failures

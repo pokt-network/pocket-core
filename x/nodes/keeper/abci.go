@@ -35,7 +35,20 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	for _, evidence := range req.ByzantineValidators {
 		switch evidence.Type {
 		case tmtypes.ABCIEvidenceTypeDuplicateVote:
-			k.handleDoubleSign(ctx, evidence.Validator.Address, evidence.Height, evidence.Time, evidence.Validator.Power)
+			if ctx.IsAfterUpgradeHeight() {
+				evidenceAgeInBlocks := int(k.GetParams(ctx).MaxEvidenceAge.Minutes()) / 15
+				if evidenceAgeInBlocks == 0 {
+					// minimum of 1 block ago
+					evidenceAgeInBlocks = 1
+				}
+				if ctx.BlockHeight()-evidence.Height <= int64(evidenceAgeInBlocks) {
+					k.handleDoubleSign(ctx, evidence.Validator.Address, evidence.Height, evidence.Time, evidence.Validator.Power)
+				} else {
+					k.Logger(ctx).Error(fmt.Sprintf("disregarded %s evidence, max evidence age exceeded, height of evidence=%d", evidence.Type, evidence.Height))
+				}
+			} else {
+				k.handleDoubleSign(ctx, evidence.Validator.Address, evidence.Height, evidence.Time, evidence.Validator.Power)
+			}
 		default:
 			k.Logger(ctx).Error(fmt.Sprintf("ignored unknown evidence type: %s", evidence.Type))
 		}
