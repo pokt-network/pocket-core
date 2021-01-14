@@ -141,6 +141,9 @@ func (k Keeper) unstakeAllMatureApplications(ctx sdk.Ctx) {
 					sdk.NewAttribute(types.AttributeKeyApplication, valAddr.String()),
 				),
 			)
+			if ctx.IsAfterUpgradeHeight() {
+				k.DeleteApplication(ctx, valAddr)
+			}
 		}
 		_ = store.Delete(unstakingApplicationsIterator.Key())
 	}

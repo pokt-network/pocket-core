@@ -54,6 +54,13 @@ func (k Keeper) SetApplications(ctx sdk.Ctx, applications types.Applications){
 	}
 }
 
+// SetValidator - Store validator in the main store
+func (k Keeper) DeleteApplication(ctx sdk.Ctx, addr sdk.Address) {
+	store := ctx.KVStore(k.storeKey)
+	_ = store.Delete(types.KeyForAppByAllApps(addr))
+	k.ApplicationCache.RemoveWithCtx(ctx, addr.String())
+}
+
 // GetAllApplications - Retrieve the set of all applications with no limits from the main store
 func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications) {
 	applications = make([]types.Application, 0)

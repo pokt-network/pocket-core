@@ -154,8 +154,8 @@ func (k Keeper) FinishUnstakingApplication(ctx sdk.Ctx, application types.Applic
 	})
 }
 
-// ForceApplicationUnstake - Coerce unstake (called when slashed below the minimum)
-func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Application) sdk.Error {
+// LegacyForceApplicationUnstake - Coerce unstake (called when slashed below the minimum)
+func (k Keeper) LegacyForceApplicationUnstake(ctx sdk.Ctx, application types.Application) sdk.Error {
 	// delete the application from staking set as they are unstaked
 	k.deleteApplicationFromStakingSet(ctx, application)
 	// amount unstaked = stakedTokens
@@ -191,6 +191,41 @@ func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Applicati
 	return nil
 }
 
+// ForceValidatorUnstake - Coerce unstake (called when slashed below the minimum)
+func (k Keeper) ForceApplicationUnstake(ctx sdk.Ctx, application types.Application) sdk.Error {
+	if !ctx.IsAfterUpgradeHeight() {
+		return k.LegacyForceApplicationUnstake(ctx, application)
+	}
+	switch application.Status {
+	case sdk.Staked:
+		k.deleteApplicationFromStakingSet(ctx, application)
+	case sdk.Unstaking:
+		k.deleteUnstakingApplication(ctx, application)
+		k.DeleteApplication(ctx, application.Address)
+	default:
+		k.DeleteApplication(ctx, application.Address)
+		return sdk.ErrInternal("should not happen: trying to force unstake an already unstaked application: " + application.Address.String())
+	}
+	// amount unstaked = stakedTokens
+	err := k.burnStakedTokens(ctx, application.StakedTokens)
+	if err != nil {
+		return err
+	}
+	if application.IsStaked() {
+		// remove their tokens from the field
+		validator, er := application.RemoveStakedTokens(application.StakedTokens)
+		if er != nil {
+			return sdk.ErrInternal(er.Error())
+		}
+		// update their status to unstaked
+		validator = validator.UpdateStatus(sdk.Unstaked)
+		// set the validator in store
+		k.SetApplication(ctx, validator)
+	}
+	ctx.Logger().Info("Force Unstaked validator " + application.Address.String())
+	return nil
+}
+
 // JailApplication - Send a application to jail
 func (k Keeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	application, found := k.GetApplication(ctx, addr)
@@ -207,6 +242,10 @@ func (k Keeper) JailApplication(ctx sdk.Ctx, addr sdk.Address) {
 	k.deleteApplicationFromStakingSet(ctx, application)
 	logger := k.Logger(ctx)
 	logger.Info(fmt.Sprintf("application %s jailed", addr))
+}
+
+func (k Keeper) IncrementJailedApplications(ctx sdk.Ctx) {
+	// TODO
 }
 
 // ValidateUnjailMessage - Check unjail message

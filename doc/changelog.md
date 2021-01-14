@@ -6,6 +6,7 @@
 - Protobuf Encoding implemented
 - Pocketcore module event handler fixed
 - Max age of evidence enforced in blocks
+- Deleted applications from state after unstake
 
 ## RC-0.5.2
 - Delete local Relay/Challenge Evidence on Code 66 failures
