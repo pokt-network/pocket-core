@@ -118,40 +118,40 @@ func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int,
 	prove = false
 	received = false
 	order = "desc"
-	if len(args) >= 2 {
-		parsedPage, err := strconv.Atoi(args[1])
+	if len(args) >= 1 {
+		parsedPage, err := strconv.Atoi(args[0])
 		if err == nil {
 			page = parsedPage
 		}
 	}
-	if len(args) >= 3 {
-		parsedPerPage, err := strconv.Atoi(args[2])
+	if len(args) >= 2 {
+		parsedPerPage, err := strconv.Atoi(args[1])
 		if err == nil {
 			perPage = parsedPerPage
 		}
 	}
-	if len(args) >= 4 {
-		parsedProve, err := strconv.ParseBool(args[3])
+	if len(args) >= 3 {
+		parsedProve, err := strconv.ParseBool(args[2])
 		if err == nil {
 			prove = parsedProve
 		}
 	}
-	if len(args) == 5 {
-		parsedReceived, err := strconv.ParseBool(args[4])
+	if len(args) == 4 {
+		parsedReceived, err := strconv.ParseBool(args[3])
 		if err == nil {
 			received = parsedReceived
 		}
 	}
-	if len(args) == 6 {
-		parsedOrder := args[5]
+	if len(args) == 5 {
+		parsedOrder := args[4]
 		switch parsedOrder {
 		case "asc":
 			order = "asc"
 		default:
 			order = "desc"
-
 		}
 	}
+
 	return page, perPage, prove, received, order
 }
 
@@ -159,10 +159,10 @@ var queryAccountTxs = &cobra.Command{
 	Use:   "account-txs <address> <page> <per_page> <prove> <received> <order>",
 	Short: "Get the transactions sent by the address, paginated by page and per_page",
 	Long:  `Retrieves the transactions sent by the address`,
-	Args:  cobra.RangeArgs(1, 5),
+	Args:  cobra.RangeArgs(1, 6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		page, perPage, prove, received, order := validatePagePerPageProveReceivedArgs(args)
+		page, perPage, prove, received, order := validatePagePerPageProveReceivedArgs(args[1:])
 		var err error
 		params := rpc.PaginateAddrParams{
 			Address:  args[0],
@@ -187,10 +187,10 @@ var queryAccountTxs = &cobra.Command{
 }
 
 var queryBlockTxs = &cobra.Command{
-	Use:   "block-txs <height> <page> <per_page> <prove>",
+	Use:   "block-txs <height> <page> <per_page> <prove> <order>",
 	Short: "Get the transactions at a certain block height, paginated by page and per_page",
 	Long:  `Retrieves the transactions in the block height`,
-	Args:  cobra.RangeArgs(1, 4),
+	Args:  cobra.RangeArgs(1, 5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		page, perPage, prove, _, order := validatePagePerPageProveReceivedArgs(args)
