@@ -643,6 +643,7 @@ func MakeCodec() {
 	// register the crypto types
 	crypto.RegisterAmino(cdc.AminoCodec().Amino)
 	cryptoamino.RegisterAmino(cdc.AminoCodec().Amino)
+	codec.RegisterEvidences(cdc.AminoCodec(), cdc.ProtoCodec())
 }
 
 func Credentials() string {
