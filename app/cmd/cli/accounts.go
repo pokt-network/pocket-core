@@ -103,7 +103,7 @@ var setValidator = &cobra.Command{
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:   "delete  <address>",
+	Use:   "delete <address>",
 	Short: "Delete an account",
 	Long: `Deletes a keypair from the keybase.
 Will prompt the user for the account passphrase`,
@@ -158,7 +158,7 @@ Example output:
 
 // showCmd represents the show command
 var showCmd = &cobra.Command{
-	Use:   "show  <address>",
+	Use:   "show <address>",
 	Short: "Shows a pubkey for address",
 	Long: `Lists an account address and public key.
 Example output:
@@ -255,7 +255,7 @@ Will prompt the user for the account passphrase.`,
 }
 
 var importArmoredCmd = &cobra.Command{
-	Use:   "import-armored <path/to/armoredJson>",
+	Use:   "import-armored <armoredJSONFile>",
 	Short: "Import keypair using armor",
 	Long: `Imports an account using the Encrypted ASCII armored file.
 Will prompt the user for a decryption passphrase of the armored ASCII file and for an encryption passphrase to store in the Keybase.`,
@@ -289,7 +289,7 @@ func init() {
 }
 
 var exportCmd = &cobra.Command{
-	Use:   "export <address> --path <path>",
+	Use:   "export [--path <path>] <address> ",
 	Short: "Export an account",
 	Long: `Exports the account with <address>, to a file encrypted and ASCII armored in a location specified with --path , if you dont provide a path it will store it on the folder where its running.
 Will prompt the user for the account passphrase and for an encryption passphrase for the exported account. Also prompt for an optional hint for the password`,
@@ -506,10 +506,10 @@ var newMultiPublicKey = &cobra.Command{
 }
 
 var buildMultisig = &cobra.Command{
-	Use:   "build-MS-Tx <your-signer-address> <json-message> <ordered-comma-separated-hex-pubkeys> <chainID> <fees> <legacyCodec>",
-	Short: "build and sign a multisig tx",
+	Use:   "build-MS-Tx <signer-address> <json-message> <ordered-comma-separated-hex-pubkeys> <chainID> <fees> <legacyCodec>",
+	Short: "Build and sign a multisig tx",
 	Args:  cobra.ExactArgs(6),
-	Long:  `build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
+	Long:  `Build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		msg := args[1]
@@ -544,7 +544,7 @@ var buildMultisig = &cobra.Command{
 }
 
 var signMS = &cobra.Command{
-	Use:   "sign-ms-tx <your-signer-address> <hex-amino-stdtx> <ordered-comma-separated-hex-pubkeys> <chainID> <legacyCodec>",
+	Use:   "sign-ms-tx <signer-address> <hex-amino-stdtx> <hex-pubkeys> <chainID> <legacyCodec>",
 	Short: "sign a multisig tx",
 	Long:  `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object`,
 	Args:  cobra.ExactArgs(5),
@@ -576,9 +576,9 @@ var signMS = &cobra.Command{
 }
 
 var signNexMS = &cobra.Command{
-	Use:   "sign-ms-next <your-signer-address> <hex-amino-stdtx> <chainID> <legacyCodec>",
-	Short: "sign a multisig tx",
-	Long: `sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
+	Use:   "sign-ms-next <signer-address> <hex-stdtx> <chainID> <legacyCodec>",
+	Short: "Sign a multisig tx",
+	Long: `Sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
 NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {

@@ -30,7 +30,7 @@ from staking and unstaking; to generating AATs.`,
 }
 
 var appStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <chains> <chainID> <fees> <legacyCodec>",
+	Use:   "stake <fromAddr> <amount> <chains> <chainID> <fee> <legacyCodec=(true | false)>",
 	Short: "Stake an app into the network",
 	Long: `Stake the app into the network, making it have network throughput.
 Will prompt the user for the <fromAddr> account passphrase.`,
@@ -47,7 +47,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		if err != nil {
 			log.Fatal(err)
 		}
-		fees, err := strconv.Atoi(args[4])
+		fee, err := strconv.Atoi(args[4])
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -60,7 +60,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		rawChains := reg.ReplaceAllString(args[2], "")
 		chains := strings.Split(rawChains, ",")
 		fmt.Println("Enter passphrase: ")
-		res, err := StakeApp(chains, fromAddr, app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees), legacyCodec)
+		res, err := StakeApp(chains, fromAddr, app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fee), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -80,14 +80,14 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var appUnstakeCmd = &cobra.Command{
-	Use:   "unstake <fromAddr> <chainID> <fees> <legacyCodec>",
+	Use:   "unstake <fromAddr> <chainID> <fee> <legacyCodec(true | false)>",
 	Short: "Unstake an app from the network",
 	Long: `Unstake an app from the network, changing it's status to Unstaking.
 Prompts the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		fees, err := strconv.Atoi(args[2])
+		fee, err := strconv.Atoi(args[2])
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -98,7 +98,7 @@ Prompts the user for the <fromAddr> account passphrase.`,
 			legacyCodec = true
 		}
 		fmt.Println("Enter Password: ")
-		res, err := UnstakeApp(args[0], app.Credentials(), args[1], int64(fees), legacyCodec)
+		res, err := UnstakeApp(args[0], app.Credentials(), args[1], int64(fee), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return

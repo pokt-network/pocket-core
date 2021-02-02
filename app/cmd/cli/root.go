@@ -70,7 +70,7 @@ func init() {
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
-	Use:   "start --keybase=<true or false>",
+	Use:   "start [--keybase=(true | false)]",
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
