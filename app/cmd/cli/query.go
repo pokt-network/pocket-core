@@ -50,7 +50,7 @@ From getting Blocks, transactions, height; to getting params`,
 }
 
 var queryBlock = &cobra.Command{
-	Use:   "block <height>",
+	Use:   "block [<height>]",
 	Short: "Get block at height",
 	Long:  `Retrieves the block structure at the specified height.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -86,7 +86,7 @@ var queryBlock = &cobra.Command{
 var prove bool
 
 func init() {
-	queryTx.LocalFlags().BoolVar(&simulateRelay, "proveTx", false, "would you like a proof of the transaction")
+	queryTx.LocalFlags().BoolVar(&prove, "proveTx", false, "would you like a proof of the transaction")
 }
 
 var queryTx = &cobra.Command{
@@ -156,7 +156,7 @@ func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int,
 }
 
 var queryAccountTxs = &cobra.Command{
-	Use:   "account-txs <address> <page> <per_page> <prove> <received> <order>",
+	Use:   "account-txs <address> <page> <per_page> <prove=(true | false)> <received=(true | false)> <order(asc | desc)>",
 	Short: "Get the transactions sent by the address, paginated by page and per_page",
 	Long:  `Retrieves the transactions sent by the address`,
 	Args:  cobra.RangeArgs(1, 6),
@@ -187,7 +187,7 @@ var queryAccountTxs = &cobra.Command{
 }
 
 var queryBlockTxs = &cobra.Command{
-	Use:   "block-txs <height> <page> <per_page> <prove> <order>",
+	Use:   "block-txs <height> <page> <per_page> <prove=(true | false)> <order=(asc | desc)>",
 	Short: "Get the transactions at a certain block height, paginated by page and per_page",
 	Long:  `Retrieves the transactions in the block height`,
 	Args:  cobra.RangeArgs(1, 5),
@@ -223,7 +223,7 @@ var queryBlockTxs = &cobra.Command{
 var queryHeight = &cobra.Command{
 	Use:   "height",
 	Short: "Get current height",
-	Long:  `Retrieves the current height`,
+	Long:  `Retrieves the current height.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		res, err := QueryRPC(GetHeightPath, []byte{})
@@ -236,7 +236,7 @@ var queryHeight = &cobra.Command{
 }
 
 var queryBalance = &cobra.Command{
-	Use:   "balance <accAddr> <height>",
+	Use:   "balance <address> [<height>]",
 	Short: "Gets account balance",
 	Long:  `Retrieves the balance of the specified <accAddr> at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
@@ -272,7 +272,7 @@ var queryBalance = &cobra.Command{
 }
 
 var queryAccount = &cobra.Command{
-	Use:   "account <accAddr> <height>",
+	Use:   "account <address> [<height>]",
 	Short: "Gets an account",
 	Long:  `Retrieves the account structure for a specific address.`,
 	Args:  cobra.MinimumNArgs(1),
@@ -324,7 +324,7 @@ func init() {
 // NOTE: flag "blockchain" is defined but not implemented at this time 2020/10/03
 
 var queryNodes = &cobra.Command{
-	Use:   "nodes --staking-status <staked or unstaking> --jailed-status <jailed or unjailed> --blockchain <network id> --nodePage=<nodePage> --nodeLimit=<nodeLimit> <height>",
+	Use:   "nodes [--staking-status (staked | unstaking)] [--jailed-status (jailed | unjailed)] [--blockchain <network id>] [--nodePage=<nodePage>] [--nodeLimit=<nodeLimit>] [<height>]",
 	Short: "Gets nodes",
 	Long:  `Retrieves the list of all nodes known at the specified <height>.`,
 	// Args:  cobra.ExactArgs(3),
@@ -386,7 +386,7 @@ var queryNodes = &cobra.Command{
 }
 
 var queryNode = &cobra.Command{
-	Use:   "node <address> <height>",
+	Use:   "node <address> [<height>]",
 	Short: "Gets node from address",
 	Long:  `Retrieves the node at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
@@ -460,12 +460,12 @@ var appPage, appLimit int
 
 func init() {
 	queryApps.Flags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
-	queryApps.Flags().IntVar(&nodePage, "appPage", 1, "mark the page you want")
-	queryApps.Flags().IntVar(&nodeLimit, "appLimit", 10000, "reduce the amount of results")
+	queryApps.Flags().IntVar(&appPage, "appPage", 1, "mark the page you want")
+	queryApps.Flags().IntVar(&appLimit, "appLimit", 10000, "reduce the amount of results")
 }
 
 var queryApps = &cobra.Command{
-	Use:   "apps --staking-status=<nodeStakingStatus> --nodePage=<nodePage> --nodeLimit=<nodeLimit> <height>",
+	Use:   "apps [--staking-status=<nodeStakingStatus>] [--appPage=<appPage>] [--nodeLimit=<nodeLimit>] [<height>]",
 	Short: "Gets apps",
 	Long:  `Retrieves the list of all applications known at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -515,7 +515,7 @@ var queryApps = &cobra.Command{
 }
 
 var queryApp = &cobra.Command{
-	Use:   "app <address> <height>",
+	Use:   "app <address> [<height>]",
 	Short: "Gets app from address",
 	Long:  `Retrieves the app at the specified <height>.`,
 	Args:  cobra.MinimumNArgs(1),
@@ -551,7 +551,7 @@ var queryApp = &cobra.Command{
 }
 
 var queryAppParams = &cobra.Command{
-	Use:   "app-params <height>",
+	Use:   "app-params [<height>]",
 	Short: "Gets app parameters",
 	Long:  `Retrieves the app parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -585,7 +585,7 @@ var queryAppParams = &cobra.Command{
 }
 
 var queryNodeClaims = &cobra.Command{
-	Use:   "node-claims <nodeAddr> <height>",
+	Use:   "node-claims <nodeAddr> [<height>]",
 	Short: "Gets node pending claims for work completed",
 	Long:  `Retrieves the list of all pending proof of work submitted by <nodeAddr> at <height>.`,
 	Args:  cobra.MinimumNArgs(1),
@@ -621,7 +621,7 @@ var queryNodeClaims = &cobra.Command{
 }
 
 var queryNodeClaim = &cobra.Command{
-	Use:   "node-claim <nodeAddr> <appPubKey> <claimType> <networkId> <sessionHeight> <height>`",
+	Use:   "node-claim <address> <appPubKey> <claimType> <networkId> <sessionHeight> [<height>]`",
 	Short: "Gets node pending claim for work completed",
 	Long:  `Gets node pending claim for verified proof of work submitted for a specific session`,
 	Args:  cobra.MinimumNArgs(5),
@@ -666,7 +666,7 @@ var queryNodeClaim = &cobra.Command{
 }
 
 var queryPocketParams = &cobra.Command{
-	Use:   "pocket-params <height>",
+	Use:   "pocket-params [<height>]",
 	Short: "Gets pocket parameters",
 	Long:  `Retrieves the pocket parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -700,7 +700,7 @@ var queryPocketParams = &cobra.Command{
 }
 
 var queryPocketSupportedChains = &cobra.Command{
-	Use:   "supported-networks <height>",
+	Use:   "supported-networks [<height>]",
 	Short: "Gets pocket supported networks",
 	Long:  `Retrieves the list Network Identifiers supported by the network at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -734,7 +734,7 @@ var queryPocketSupportedChains = &cobra.Command{
 }
 
 var querySupply = &cobra.Command{
-	Use:   "supply <height>",
+	Use:   "supply [<height>]",
 	Short: "Gets the supply at <height>",
 	Long:  `Retrieves the list of node params specified in the <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -768,7 +768,7 @@ var querySupply = &cobra.Command{
 }
 
 var queryDAOOwner = &cobra.Command{
-	Use:   "daoOwner <height>",
+	Use:   "daoOwner [<height>]",
 	Short: "Gets the owner of the dao",
 	Long:  `Retrieves the owner of the DAO (the account that can send/burn coins from the dao)`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -802,7 +802,7 @@ var queryDAOOwner = &cobra.Command{
 }
 
 var queryACL = &cobra.Command{
-	Use:   "acl <height>",
+	Use:   "acl [<height>]",
 	Short: "Gets the gov acl",
 	Long:  `Retrieves the access control list of governance params (which account can change the param)`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -836,7 +836,7 @@ var queryACL = &cobra.Command{
 }
 
 var queryAllParams = &cobra.Command{
-	Use:   "params <height>",
+	Use:   "params [<height>]",
 	Short: "Gets all parameters",
 	Long:  `Retrieves the parameters at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -870,7 +870,7 @@ var queryAllParams = &cobra.Command{
 }
 
 var queryParam = &cobra.Command{
-	Use:   "param <key> <height> ",
+	Use:   "param <key> [<height>]",
 	Short: "Get a parameter with the given key",
 	Long:  `Retrieves the parameter at the specified <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -905,7 +905,7 @@ var queryParam = &cobra.Command{
 }
 
 var queryUpgrade = &cobra.Command{
-	Use:   "upgrade <height>",
+	Use:   "upgrade [<height>]",
 	Short: "Gets the latest gov upgrade",
 	Long:  `Retrieves the latest protocol upgrade by governance`,
 	Run: func(cmd *cobra.Command, args []string) {
