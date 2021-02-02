@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	config2 "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/libs/rand"
 	"io"
 	"io/ioutil"
 	log2 "log"
@@ -12,6 +13,7 @@ import (
 	fp "path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
@@ -57,6 +59,8 @@ var (
 	tmClient *http.HTTP
 	// global genesis type
 	GlobalGenesisType GenesisType
+	// current authToken for secured rpc calls
+	AuthToken sdk.AuthToken
 )
 
 type GenesisType int
@@ -70,6 +74,8 @@ const (
 func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+	// init AuthToken
+	InitAuthToken()
 	// init the keyfiles
 	InitKeyfiles()
 	// get hosted blockchains
@@ -741,4 +747,60 @@ func GetDefaultConfig(datadir string) string {
 	}
 
 	return string(jsonbytes)
+}
+
+func InitAuthToken() {
+	var t = sdk.AuthToken{
+		Value:  rand.Str(25),
+		Issued: time.Now(),
+	}
+	datadir := GlobalConfig.PocketConfig.DataDir
+	configFilepath := datadir + FS + sdk.ConfigDirName + FS + sdk.AuthFileName
+
+	var jsonFile *os.File
+	defer jsonFile.Close()
+
+	jsonFile, err := os.OpenFile(configFilepath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		log2.Fatalf("canot open/create json file: " + err.Error())
+	}
+	err = jsonFile.Truncate(0)
+
+	b, err := json.MarshalIndent(t, "", "    ")
+	if err != nil {
+		log2.Fatalf("cannot marshal into json: " + err.Error())
+	}
+	// write to the file
+	_, err = jsonFile.Write(b)
+	if err != nil {
+		log2.Fatalf("cannot write  to json file: " + err.Error())
+	}
+
+	AuthToken = t
+}
+
+func GetAuthTokenFromFile() sdk.AuthToken {
+	t := sdk.AuthToken{}
+	datadir := GlobalConfig.PocketConfig.DataDir
+	configFilepath := datadir + FS + sdk.ConfigDirName + FS + sdk.AuthFileName
+
+	var jsonFile *os.File
+	defer jsonFile.Close()
+
+	if _, err := os.Stat(configFilepath); err == nil {
+		jsonFile, err = os.OpenFile(configFilepath, os.O_RDWR, os.ModePerm)
+		if err != nil {
+			log2.Fatalf("cannot open config json file: " + err.Error())
+		}
+		b, err := ioutil.ReadAll(jsonFile)
+		if err != nil {
+			log2.Fatalf("cannot read config file: " + err.Error())
+		}
+		err = json.Unmarshal(b, &t)
+		if err != nil {
+			log2.Fatalf("cannot read config file into json: " + err.Error())
+		}
+	}
+
+	return t
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/tendermint/tendermint/config"
 	db "github.com/tendermint/tm-db"
 	"sync"
+	"time"
 )
 
 // TmConfig is the structure that holds the SDK configuration parameters.
@@ -47,6 +48,11 @@ type Config struct {
 	PocketConfig     PocketConfig  `json:"pocket_config"`
 }
 
+type AuthToken struct {
+	Value  string
+	Issued time.Time
+}
+
 const (
 	DefaultDDName                     = ".pocket"
 	DefaultKeybaseName                = "pocket-keybase"
@@ -84,6 +90,7 @@ const (
 	DefaultCtxCacheSize               = 20
 	DefaultABCILogging                = false
 	DefaultRelayErrors                = true
+	AuthFileName                      = "auth.json"
 )
 
 func DefaultConfig(dataDir string) Config {
