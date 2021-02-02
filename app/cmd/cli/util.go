@@ -47,23 +47,23 @@ var chainsGenCmd = &cobra.Command{
 
 var chainsDelCmd = &cobra.Command{
 	Use:   "delete-chains",
-	Short: "Delete chains file",
-	Long:  `Delete the chains file for network identifiers`,
+	Short: "Delete chains file.",
+	Long:  `Delete the chains file for network identifiers.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		app.DeleteHostedChains()
-		fmt.Println("successfully deleted " + app.GlobalConfig.PocketConfig.ChainsName)
+		fmt.Println("Successfully deleted " + app.GlobalConfig.PocketConfig.ChainsName + ".")
 	},
 }
 
 var updateConfigsCmd = &cobra.Command{
 	Use:   "update-configs",
-	Short: "Updates config.json file",
-	Long:  `Update the config file with new params defaults for consensus/leveldbopts/p2p/cache/mempool/fastsync`,
+	Short: "Updates config.json file.",
+	Long:  `Update the config file with new params defaults for consensus/leveldbopts/p2p/cache/mempool/fastsync.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		app.UpdateConfig(datadir)
-		fmt.Println("successfully Updated Config file")
+		fmt.Println("Successfully updated config file.")
 	},
 }
 
@@ -189,7 +189,7 @@ var unsafeRollbackCmd = &cobra.Command{
 }
 
 var completionCmd = &cobra.Command{
-	Use:   "completion [bash|zsh|fish|powershell]",
+	Use:   "completion (bash | zsh | fish | powershell)",
 	Short: "Generate completion script",
 	Long: `To load completions:
 
