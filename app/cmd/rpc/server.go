@@ -26,15 +26,15 @@ func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 	}
 
 	if debug {
-		routes = append(routes, Route{Name: "DebugIndex", Method: "GET", Path: "/debug/pprof", HandlerFunc: wrapperHandlerFunc(pprof.Index)})
+		routes = append(routes, Route{Name: "DebugBlock", Method: "GET", Path: "/debug/pprof/block", HandlerFunc: wrapperHandler(pprof.Handler(("block")))})
 		routes = append(routes, Route{Name: "DebugCmd", Method: "GET", Path: "/debug/pprof/cmdline", HandlerFunc: wrapperHandlerFunc(pprof.Cmdline)})
-		routes = append(routes, Route{Name: "DebugProfile", Method: "GET", Path: "/debug/pprof/profile", HandlerFunc: wrapperHandlerFunc(pprof.Profile)})
-		routes = append(routes, Route{Name: "DebugSymbol", Method: "GET", Path: "/debug/pprof/symbol", HandlerFunc: wrapperHandlerFunc(pprof.Symbol)})
-		routes = append(routes, Route{Name: "DebugTrace", Method: "GET", Path: "/debug/pprof/trace", HandlerFunc: wrapperHandlerFunc(pprof.Trace)})
 		routes = append(routes, Route{Name: "DebugGoroutine", Method: "GET", Path: "/debug/pprof/goroutine", HandlerFunc: wrapperHandler(pprof.Handler(("goroutine")))})
 		routes = append(routes, Route{Name: "DebugHeap", Method: "GET", Path: "/debug/pprof/heap", HandlerFunc: wrapperHandler(pprof.Handler(("heap")))})
+		routes = append(routes, Route{Name: "DebugIndex", Method: "GET", Path: "/debug/pprof", HandlerFunc: wrapperHandlerFunc(pprof.Index)})
+		routes = append(routes, Route{Name: "DebugProfile", Method: "GET", Path: "/debug/pprof/profile", HandlerFunc: wrapperHandlerFunc(pprof.Profile)})
+		routes = append(routes, Route{Name: "DebugSymbol", Method: "GET", Path: "/debug/pprof/symbol", HandlerFunc: wrapperHandlerFunc(pprof.Symbol)})
 		routes = append(routes, Route{Name: "DebugThreadCreate", Method: "GET", Path: "/debug/pprof/threadcreate", HandlerFunc: wrapperHandler(pprof.Handler(("threadcreate")))})
-		routes = append(routes, Route{Name: "DebugBlock", Method: "GET", Path: "/debug/pprof/block", HandlerFunc: wrapperHandler(pprof.Handler(("block")))})
+		routes = append(routes, Route{Name: "DebugTrace", Method: "GET", Path: "/debug/pprof/trace", HandlerFunc: wrapperHandlerFunc(pprof.Trace)})
 		routes = append(routes, Route{Name: "FreeOsMemory", Method: "GET", Path: "/debug/freememory", HandlerFunc: FreeMemory})
 		routes = append(routes, Route{Name: "MemStats", Method: "GET", Path: "/debug/memstats", HandlerFunc: MemStats})
 	}
@@ -76,37 +76,38 @@ type Routes []Route
 func GetRoutes() Routes {
 	routes := Routes{
 		Route{Name: "AppVersion", Method: "GET", Path: "/v1", HandlerFunc: Version},
-		Route{Name: "HandleDispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
-		Route{Name: "HandleDispatchCORS", Method: "OPTIONS", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
-		Route{Name: "Service", Method: "POST", Path: "/v1/client/relay", HandlerFunc: Relay},
-		Route{Name: "ServiceCORS", Method: "OPTIONS", Path: "/v1/client/relay", HandlerFunc: Relay},
 		Route{Name: "Challenge", Method: "POST", Path: "/v1/client/challenge", HandlerFunc: Challenge},
 		Route{Name: "ChallengeCORS", Method: "OPTIONS", Path: "/v1/client/challenge", HandlerFunc: Challenge},
+		Route{Name: "HandleDispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
+		Route{Name: "HandleDispatchCORS", Method: "OPTIONS", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
 		Route{Name: "SendRawTx", Method: "POST", Path: "/v1/client/rawtx", HandlerFunc: SendRawTx},
-		Route{Name: "QueryBlock", Method: "POST", Path: "/v1/query/block", HandlerFunc: Block},
-		Route{Name: "QueryTX", Method: "POST", Path: "/v1/query/tx", HandlerFunc: Tx},
-		Route{Name: "QueryAccountTxs", Method: "POST", Path: "/v1/query/accounttxs", HandlerFunc: AccountTxs},
-		Route{Name: "QueryBlockTxs", Method: "POST", Path: "/v1/query/blocktxs", HandlerFunc: BlockTxs},
-		Route{Name: "QueryHeight", Method: "POST", Path: "/v1/query/height", HandlerFunc: Height},
-		Route{Name: "QueryBalance", Method: "POST", Path: "/v1/query/balance", HandlerFunc: Balance},
+		Route{Name: "Service", Method: "POST", Path: "/v1/client/relay", HandlerFunc: Relay},
+		Route{Name: "Stop", Method: "POST", Path: "/v1/private/stop", HandlerFunc: Stop},
+		Route{Name: "ServiceCORS", Method: "OPTIONS", Path: "/v1/client/relay", HandlerFunc: Relay},
 		Route{Name: "QueryAccount", Method: "POST", Path: "/v1/query/account", HandlerFunc: Account},
-		Route{Name: "QueryNodes", Method: "POST", Path: "/v1/query/nodes", HandlerFunc: Nodes},
-		Route{Name: "QueryNode", Method: "POST", Path: "/v1/query/node", HandlerFunc: Node},
-		Route{Name: "QueryNodeParams", Method: "POST", Path: "/v1/query/nodeparams", HandlerFunc: NodeParams},
-		Route{Name: "QueryNodeClaims", Method: "POST", Path: "/v1/query/nodeclaims", HandlerFunc: NodeClaims},
-		Route{Name: "QueryNodeClaim", Method: "POST", Path: "/v1/query/nodeclaim", HandlerFunc: NodeClaim},
-		Route{Name: "QueryApps", Method: "POST", Path: "/v1/query/apps", HandlerFunc: Apps},
-		Route{Name: "QueryApp", Method: "POST", Path: "/v1/query/app", HandlerFunc: App},
-		Route{Name: "QueryAppParams", Method: "POST", Path: "/v1/query/appparams", HandlerFunc: AppParams},
-		Route{Name: "QueryPocketParams", Method: "POST", Path: "/v1/query/pocketparams", HandlerFunc: PocketParams},
-		Route{Name: "QuerySupportedChains", Method: "POST", Path: "/v1/query/supportedchains", HandlerFunc: SupportedChains},
-		Route{Name: "QuerySupply", Method: "POST", Path: "/v1/query/supply", HandlerFunc: Supply},
-		Route{Name: "QueryDAOOwner", Method: "POST", Path: "/v1/query/daoowner", HandlerFunc: DAOOwner},
-		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
+		Route{Name: "QueryAccountTxs", Method: "POST", Path: "/v1/query/accounttxs", HandlerFunc: AccountTxs},
 		Route{Name: "QueryACL", Method: "POST", Path: "/v1/query/acl", HandlerFunc: ACL},
 		Route{Name: "QueryAllParams", Method: "POST", Path: "/v1/query/allparams", HandlerFunc: AllParams},
+		Route{Name: "QueryApp", Method: "POST", Path: "/v1/query/app", HandlerFunc: App},
+		Route{Name: "QueryAppParams", Method: "POST", Path: "/v1/query/appparams", HandlerFunc: AppParams},
+		Route{Name: "QueryApps", Method: "POST", Path: "/v1/query/apps", HandlerFunc: Apps},
+		Route{Name: "QueryBalance", Method: "POST", Path: "/v1/query/balance", HandlerFunc: Balance},
+		Route{Name: "QueryBlock", Method: "POST", Path: "/v1/query/block", HandlerFunc: Block},
+		Route{Name: "QueryBlockTxs", Method: "POST", Path: "/v1/query/blocktxs", HandlerFunc: BlockTxs},
+		Route{Name: "QueryDAOOwner", Method: "POST", Path: "/v1/query/daoowner", HandlerFunc: DAOOwner},
+		Route{Name: "QueryHeight", Method: "POST", Path: "/v1/query/height", HandlerFunc: Height},
+		Route{Name: "QueryNode", Method: "POST", Path: "/v1/query/node", HandlerFunc: Node},
+		Route{Name: "QueryNodeClaim", Method: "POST", Path: "/v1/query/nodeclaim", HandlerFunc: NodeClaim},
+		Route{Name: "QueryNodeClaims", Method: "POST", Path: "/v1/query/nodeclaims", HandlerFunc: NodeClaims},
+		Route{Name: "QueryNodeParams", Method: "POST", Path: "/v1/query/nodeparams", HandlerFunc: NodeParams},
+		Route{Name: "QueryNodes", Method: "POST", Path: "/v1/query/nodes", HandlerFunc: Nodes},
 		Route{Name: "QueryParam", Method: "POST", Path: "/v1/query/param", HandlerFunc: Param},
+		Route{Name: "QueryPocketParams", Method: "POST", Path: "/v1/query/pocketparams", HandlerFunc: PocketParams},
 		Route{Name: "QueryState", Method: "POST", Path: "/v1/query/state", HandlerFunc: State},
+		Route{Name: "QuerySupply", Method: "POST", Path: "/v1/query/supply", HandlerFunc: Supply},
+		Route{Name: "QuerySupportedChains", Method: "POST", Path: "/v1/query/supportedchains", HandlerFunc: SupportedChains},
+		Route{Name: "QueryTX", Method: "POST", Path: "/v1/query/tx", HandlerFunc: Tx},
+		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
 	}
 	return routes
 }

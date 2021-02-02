@@ -65,6 +65,7 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
+	rootCmd.AddCommand(stopCmd)
 }
 
 // startCmd represents the start command
@@ -146,5 +147,20 @@ var version = &cobra.Command{
 	Long:  `Retrieves the version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("AppVersion: %s\n", CLIVersion)
+	},
+}
+
+var stopCmd = &cobra.Command{
+	Use:   "stop",
+	Short: "Stop pocket-core",
+	Long:  `Stop pocket-core`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		res, err := QueryRPC(GetStopPath, []byte{})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(res)
 	},
 }
