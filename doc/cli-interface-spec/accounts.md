@@ -117,14 +117,14 @@ Exported account: 0x...
 ```
 
 - `pocket accounts send-tx <fromAddr> <toAddr> <amount> <chainID> <fee> <memo> <legacyCodec=(true | false)>`
-> Sends `<amount>` POKT `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
+> Sends `<amount>` uPOKT `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
 >
 > Arguments:
 > - `<fromAddr>`: Sender address.
 > - `<toAddr>`: Recipient address for the transaction.
-> - `<amount>`: The amount of POKT to be sent.
+> - `<amount>`: The amount of uPOKT to be sent.
 > - `<chainID>`: The pocket chain identifier.
-> - `<fee>`:  An amount of POKT for the network .
+> - `<fee>`:  An amount of uPOKT for the network .
 > - `<memo>`: Written message.
 > - `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
 
@@ -141,7 +141,7 @@ Transaction submitted with hash: <Transaction Hash>
 > - <txBytes>: Encoded and signed byte representation of the tx
 
 - `pocket accounts create-multi-public  <hex-pubkeys>`
-> Sends `<amount>` POKT `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
+> Sends `<amount>` uPOKT `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
 >
 > Arguments:
 > - `<hex-pubkeys>`: ordered comma separated keys. WARNING: changing the order creates a different addressr.
@@ -154,7 +154,7 @@ Transaction submitted with hash: <Transaction Hash>
 > = `<json-message>`: Message structure for the transaction.
 > - `<hex-pubkeys>`: ordered comma separated keys. WARNING: changing the order creates a different addressr.
 > - `<chainID>`: The pocket chain identifier.
-> - `<fee>`:  An amount of POKT for the network.
+> - `<fee>`:  An amount of uPOKT for the network.
 > - `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
 
 - `pocket accounts sign-ms-tx  <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>`
@@ -165,7 +165,7 @@ Transaction submitted with hash: <Transaction Hash>
 > = `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
 > - `<hex-pubkeys>`: ordered comma separated keys. WARNING: changing the order creates a different addressr.
 > - `<chainID>`: The pocket chain identifier.
-> - `<fee>`:  An amount of POKT for the network.
+> - `<fee>`:  An amount of uPOKT for the network.
 > - `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
 
 - `pocket accounts sign-ms-next <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>`
@@ -177,5 +177,5 @@ Transaction submitted with hash: <Transaction Hash>
 > = `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
 > - `<hex-pubkeys>`: ordered comma separated keys. WARNING: changing the order creates a different addressr.
 > - `<chainID>`: The pocket chain identifier.
-> - `<fee>`:  An amount of POKT for the network.
+> - `<fee>`:  An amount of uPOKT for the network.
 > - `<legacyCodec>`: Enlble/Disable amino encoding for transaction.

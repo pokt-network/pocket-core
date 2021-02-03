@@ -1,5 +1,4 @@
-# Pocket Util Namespace
-Generic utility functions for diverse use cases.
+# Pocket Util Namespace Generic utility functions for diverse use cases.
 
 - `pocket util generate-chains`
 > Generate the chains.json file for network identifiers.

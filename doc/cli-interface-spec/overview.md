@@ -1,5 +1,5 @@
 # Pocket Core CLI Interface Specification
-## Version RC-0.5.2.9
+## Version RC-0.6.0.0
 
 ### Overview
 This document serves as a specification for the Command Line Interface of the Pocket Core application. There's no protocol verification for these commands because they map closely to protocol functions.
