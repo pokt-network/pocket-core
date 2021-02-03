@@ -6,10 +6,10 @@ Functions for Application management.
 >
 > Arguments:
 > - `<fromAddr>`: Target Address to stake.
-> - `<amount>`: The amount of POKT to stake. Must be higher than the current minimum amount of Node Stake parameter.
+> - `<amount>`: The amount of uPOKT to stake. Must be higher than the current minimum amount of Node Stake parameter.
 > - `<chains>`: A comma separated list of chain Network Identifiers.
 > - `<chainID>`: The pocket chain identifier.
-> - `<fee>`:  An amount of POKT for the network.
+> - `<fee>`:  An amount of uPOKT for the network.
 > - `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
 > Example output:
 ```
