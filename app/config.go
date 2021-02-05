@@ -787,7 +787,7 @@ func InitAuthToken() {
 func GetAuthTokenFromFile() sdk.AuthToken {
 	t := sdk.AuthToken{}
 	datadir := GlobalConfig.PocketConfig.DataDir
-	configFilepath := datadir + string(fp.Separator) + sdk.ConfigDirName + string(fp.Separator) + sdk.AuthFileName
+	configFilepath := datadir + FS + sdk.ConfigDirName + FS + sdk.AuthFileName
 
 	var jsonFile *os.File
 	defer jsonFile.Close()
