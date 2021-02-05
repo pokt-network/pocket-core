@@ -156,7 +156,7 @@ var stopCmd = &cobra.Command{
 	Long:  `Stop pocket-core`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		res, err := QueryRPC(GetStopPath, []byte{})
+		res, err := QuerySecuredRPC(GetStopPath, []byte{}, app.GetAuthTokenFromFile())
 		if err != nil {
 			fmt.Println(err)
 			return
