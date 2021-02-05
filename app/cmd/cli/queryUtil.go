@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io/ioutil"
 	"net/http"
@@ -112,6 +113,46 @@ func QueryRPC(path string, jsonArgs []byte) (string, error) {
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{
+		Timeout: types.GetRPCTimeout() * time.Millisecond,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	bz, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	res, err := strconv.Unquote(string(bz))
+	if err == nil {
+		bz = []byte(res)
+	}
+	if resp.StatusCode == http.StatusOK {
+		var prettyJSON bytes.Buffer
+		err = json.Indent(&prettyJSON, bz, "", "    ")
+		if err == nil {
+			return prettyJSON.String(), nil
+		}
+		return string(bz), nil
+	}
+	return "", fmt.Errorf("the http status code was not okay: %d, and the status was: %s, with a response of %v", resp.StatusCode, resp.Status, string(bz))
+}
+
+func QuerySecuredRPC(path string, jsonArgs []byte, token sdk.AuthToken) (string, error) {
+	//cliURL := app.GlobalConfig.PocketConfig.RemoteCLIURL + ":" + app.GlobalConfig.PocketConfig.RPCPort + path
+	cliURL := app.GlobalConfig.PocketConfig.RemoteCLIURL + path
+	types.SetRPCTimeout(app.GlobalConfig.PocketConfig.RPCTimeout)
+	fmt.Println(cliURL)
+	req, err := http.NewRequest("POST", cliURL, bytes.NewBuffer(jsonArgs))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	q := req.URL.Query()
+	q.Add("authtoken", token.Value)
+	req.URL.RawQuery = q.Encode()
 	client := &http.Client{
 		Timeout: types.GetRPCTimeout() * time.Millisecond,
 	}

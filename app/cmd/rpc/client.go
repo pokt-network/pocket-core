@@ -74,16 +74,21 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 // Stop
 func Stop(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	app.ShutdownPocketCore()
-	err := app.PCA.TMNode().Stop()
-	if err != nil {
-		fmt.Println(err)
-		WriteErrorResponse(w, 400, err.Error())
-		fmt.Println("Force Stop , PID:" + fmt.Sprint(os.Getpid()))
-		os.Exit(1)
+	value := r.URL.Query().Get("authtoken")
+	if value == app.AuthToken.Value {
+		app.ShutdownPocketCore()
+		err := app.PCA.TMNode().Stop()
+		if err != nil {
+			fmt.Println(err)
+			WriteErrorResponse(w, 400, err.Error())
+			fmt.Println("Force Stop , PID:" + fmt.Sprint(os.Getpid()))
+			os.Exit(1)
+		}
+		fmt.Println("Stop Successful, PID:" + fmt.Sprint(os.Getpid()))
+		os.Exit(0)
+	} else {
+		WriteErrorResponse(w, 401, "wrong authtoken "+value)
 	}
-	fmt.Println("Stop Successful, PID:" + fmt.Sprint(os.Getpid()))
-	os.Exit(0)
 }
 
 // Challenge supports CORS functionality
