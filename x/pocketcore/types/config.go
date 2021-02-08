@@ -2,9 +2,10 @@ package types
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/libs/log"
-	"time"
 )
 
 const (
