@@ -1,4 +1,3 @@
-
 ## RC-0.6.0
 - Security patch in merkle sum index
 - Security patch for BlockHash
