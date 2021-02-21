@@ -68,6 +68,16 @@ func init() {
 	rootCmd.AddCommand(stopCmd)
 }
 
+// stopSignals defines the signals to gracefully shut down
+// the pocket core deamon (2,3,15,9)
+var stopSignals = []os.Signal{
+	syscall.SIGTERM,
+	syscall.SIGINT,
+	syscall.SIGQUIT,
+	os.Kill,
+	os.Interrupt,
+}
+
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start --keybase=<true or false>",
@@ -91,7 +101,18 @@ var startCmd = &cobra.Command{
 			comd.Env = env
 			comd.Stdin = os.Stdin
 			comd.Stdout = os.Stdout
-			_ = comd.Run()
+
+			if err := comd.Start(); err != nil {
+				log.Fatalf("couldn't start child process command: %v", err)
+			}
+
+			sig := make(chan os.Signal, 1)
+			signal.Notify(sig, stopSignals...)
+			<-sig
+
+			if err := comd.Wait(); err != nil {
+				log.Fatalf("couldn't wait for child process to terminate: %v", err)
+			}
 		}
 	},
 }
@@ -112,12 +133,7 @@ func start(cmd *cobra.Command, args []string) {
 	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp)
 	// trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
-	signal.Notify(signalChannel,
-		syscall.SIGTERM,
-		syscall.SIGINT,
-		syscall.SIGQUIT,
-		os.Kill, //nolint
-		os.Interrupt)
+	signal.Notify(signalChannel, stopSignals...)
 
 	defer func() {
 		sig := <-signalChannel
@@ -129,7 +145,7 @@ func start(cmd *cobra.Command, args []string) {
 		}
 		message := fmt.Sprintf("Exit signal %s received\n", sig)
 		fmt.Println(message)
-		os.Exit(3)
+		os.Exit(0)
 	}()
 }
 
