@@ -295,10 +295,6 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/pokt-network/tendermint v0.32.11-0.20210317165111-543a2ba333ee h1:+S6wirMv/pdDgKdwBcbZmvi7RlhJBQaBzkx++srBFmU=
-github.com/pokt-network/tendermint v0.32.11-0.20210317165111-543a2ba333ee/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
-github.com/pokt-network/tendermint v0.32.11-0.20210317170721-6b44390ec485 h1:OWWeuLwKfcV797iu0M+o/beKUn3oQMpJFkEJe87ADHM=
-github.com/pokt-network/tendermint v0.32.11-0.20210317170721-6b44390ec485/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
 github.com/pokt-network/tendermint v0.32.11-0.20210318025232-505fa50f49b5 h1:nWR5tdxUf00LfOnR1PXoBEG/nTtNEAZG8IWYJoWJJ74=
 github.com/pokt-network/tendermint v0.32.11-0.20210318025232-505fa50f49b5/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
@@ -351,7 +347,6 @@ github.com/smartystreets/goconvey v1.6.4/go.mod h1:syvi0/a8iFYH4r/RixwvyeAJjdLS9
 github.com/snikch/goodman v0.0.0-20171125024755-10e37e294daa/go.mod h1:oJyF+mSPHbB5mVY2iO9KV3pTt/QbIkGaO8gQ2WrDbP4=
 github.com/soheilhy/cmux v0.1.4/go.mod h1:IM3LyeVVIOuxMH7sFAkER9+bJ4dT7Ms6E4xg4kGIyLM=
 github.com/sony/gobreaker v0.4.1/go.mod h1:ZKptC7FHNvhBz7dN2LGjPVBz2sZJmc0/PkyDJOjmxWY=
-github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72 h1:qLC7fQah7D6K1B0ujays3HV9gkFtllcxhzImRR7ArPQ=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
 github.com/spaolacci/murmur3 v1.1.0 h1:7c1g84S4BPRrfL5Xrdp6fOJ206sU9y293DDHaoy0bLI=
 github.com/spaolacci/murmur3 v1.1.0/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
