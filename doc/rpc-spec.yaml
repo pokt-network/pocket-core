@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: Pocket Network
   description: This is the API definition Pocket Network core RPC calls. Pocket is a distributed network that relays data requests and responses to and from any blockchain system. Pocket verifies all relayed data and proportionally rewards the participating nodes with native cryptographic tokens.
@@ -8,7 +8,7 @@ info:
   license:
     name: MIT License
     url: 'https://github.com/pokt-network/pocket-core/LICENSE.md'
-  version: 0.4.1
+  version: 0.6.0
 externalDocs:
   description: Find out more about Pocket Network
   url: 'https://pokt.network'
@@ -278,29 +278,6 @@ paths:
                 $ref: '#/components/schemas/Application'
         '400':
           description: Failed to retrieve the applications
-  /query/appparams:
-    post:
-      deprecated: true
-      tags:
-        - query
-      requestBody:
-        description: 'Returns the app parameters at the specified height,  height = 0 is used as latest'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryHeight'
-            example:
-              height: 2
-        required: true
-      responses:
-        '200':
-          description: Application parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationParams'
-        '400':
-          description: Failed to retrieve the application information
   /query/apps:
     post:
       tags:
@@ -491,29 +468,6 @@ paths:
                 status: 2
                 tokens: '1000000000000000'
                 unstaking_time: '0001-01-01T00:00:00Z'
-        '400':
-          description: Failed to retrieve the node information
-  /query/nodeparams:
-    post:
-      deprecated: true
-      tags:
-        - query
-      requestBody:
-        description: 'Returns the node parameters at the specified height,  height = 0 is used as latest'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryHeight'
-            example:
-              height: 2
-        required: true
-      responses:
-        '200':
-          description: Node parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NodeParams'
         '400':
           description: Failed to retrieve the node information
   /query/allParams:
@@ -769,29 +723,6 @@ paths:
                 total_pages: 100
         '400':
           description: Failed to retrieve the nodes' information
-  /query/pocketparams:
-    post:
-      deprecated: true
-      tags:
-        - query
-      requestBody:
-        description: 'Returns the pocket parameters at the specified height,  height = 0 is used as latest'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryHeight'
-            example:
-              height: 2
-        required: true
-      responses:
-        '200':
-          description: Pocket Network parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PocketParams'
-        '400':
-          description: Failed to retrieve the application information
   /query/supply:
     post:
       tags:
@@ -836,6 +767,287 @@ paths:
                 $ref: '#/components/schemas/QuerySupportedChainsResponse'
         '400':
           description: Failed to retrieve the application information
+  /query/state:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the transaction by the hash
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: '2'
+        required: true
+      responses:
+        '200':
+          description: Transaction data
+          content:
+            application/json:
+              example:
+                app_hash: ''
+                app_state:
+                  application:
+                    applications: [ ]
+                    exported: true
+                    params:
+                      app_stake_minimum: '1000000'
+                      base_relays_per_pokt: '167'
+                      max_applications: '9223372036854775807'
+                      maximum_chains: '15'
+                      participation_rate_on: false
+                      stability_adjustment: '0'
+                      unstaking_time: '1814000000000000'
+                  auth:
+                    accounts:
+                      - type: posmint/Account
+                        value:
+                          address: '009c0b262c6150d7dca0304acc0abc59d8086b0d'
+                          coins:
+                            - amount: '0'
+                              denom: upokt
+                          public_key:
+                            type: crypto/ed25519_public_key
+                            value: 5760934260f6893935a568eae97de00b21dfe539f9aa3b7d1de9d8824352a8f5
+                    params:
+                      fee_multipliers:
+                        default: '1'
+                        fee_multiplier:
+                      max_memo_characters: '75'
+                      tx_sig_limit: '8'
+                    supply:
+                      - amount: '650000000150000'
+                        denom: upokt
+                  gov:
+                    DAO_Tokens: '50000000000000'
+                    params:
+                      acl:
+                        - acl_key: application/ApplicationStakeMinimum
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: application/AppUnstakingTime
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: application/BaseRelaysPerPOKT
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: application/MaxApplications
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: application/MaximumChains
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: application/ParticipationRateOn
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: application/StabilityAdjustment
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: auth/MaxMemoCharacters
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: auth/TxSigLimit
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: gov/acl
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: gov/daoOwner
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: gov/upgrade
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pocketcore/ClaimExpiration
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: auth/FeeMultipliers
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pocketcore/ReplayAttackBurnMultiplier
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/ProposerPercentage
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pocketcore/ClaimSubmissionWindow
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pocketcore/MinimumNumberOfProofs
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pocketcore/SessionNodeCount
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pocketcore/SupportedBlockchains
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/BlocksPerSession
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/DAOAllocation
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/DowntimeJailDuration
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/MaxEvidenceAge
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/MaximumChains
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/MaxJailedBlocks
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/MaxValidators
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/MinSignedPerWindow
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/RelaysToTokensMultiplier
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/SignedBlocksWindow
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/SlashFractionDoubleSign
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/SlashFractionDowntime
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/StakeDenom
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/StakeMinimum
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                        - acl_key: pos/UnstakingTime
+                          address: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                      dao_owner: a83172b67b5ffbfcb8acb95acc0fd0466a9d4bc4
+                      upgrade:
+                        Height: '0'
+                        Version: '0'
+                  pocketcore:
+                    claims:
+                    params:
+                      claim_expiration: '120'
+                      minimum_number_of_proofs: '10'
+                      proof_waiting_period: '3'
+                      replay_attack_burn_multiplier: '3'
+                      session_node_count: '5'
+                      supported_blockchains:
+                        - '0001'
+                        - '0021'
+                  pos:
+                    exported: true
+                    missed_blocks: { }
+                    params:
+                      dao_allocation: '10'
+                      downtime_jail_duration: '3600000000000'
+                      max_evidence_age: '120000000000'
+                      max_jailed_blocks: '37960'
+                      max_validators: '5000'
+                      maximum_chains: '15'
+                      min_signed_per_window: '6.000000000000000000'
+                      proposer_allocation: '1'
+                      relays_to_tokens_multiplier: '0'
+                      session_block_frequency: '4'
+                      signed_blocks_window: '10'
+                      slash_fraction_double_sign: '0.050000000000000000'
+                      slash_fraction_downtime: '0.000001000000000000'
+                      stake_denom: upokt
+                      stake_minimum: '15000000000'
+                      unstaking_time: '1814000000000000'
+                    prevState_total_power: '76084066'
+                    prevState_validator_powers:
+                      - Address: 40c8973967b8d6b1123029819cad20fd44580e9e
+                        Power: '7641951'
+                      - Address: 5bcae50364952a5fa3a8363f93f2adffc9eff42e
+                        Power: '7641951'
+                      - Address: 8afc6b4195e3fd59fa3aa8bab65b2b7c497cedf9
+                        Power: '7641951'
+                      - Address: 8dd722c42425783b50db707995f841b3c7ccc827
+                        Power: '7641951'
+                      - Address: 913fed2298bc8af74989bc56d94e2e4ca95a6519
+                        Power: '7641951'
+                      - Address: a8943929b30cbc3e7a30c2de06b385bcf874134b
+                        Power: '7641951'
+                      - Address: c6dfe12a4ff2bc2b44c83c791853b6edb6c5eb58
+                        Power: '7641951'
+                      - Address: d46556719200aee73fc7446731ae58496978548d
+                        Power: '7641951'
+                      - Address: e09ce22e0abfd8129776128c0c9b3836024d8c6e
+                        Power: '7641951'
+                      - Address: e74727d0ba34d9f7f6f583cb4a87dbe91d692c5f
+                        Power: '7306507'
+                    previous_proposer: 913fed2298bc8af74989bc56d94e2e4ca95a6519
+                    signing_infos:
+                      '009c0b262c6150d7dca0304acc0abc59d8086b0d':
+                        address: '009c0b262c6150d7dca0304acc0abc59d8086b0d'
+                        index_offset: '0'
+                        jailed_blocks_counter: '2'
+                        jailed_until: '1970-01-01T00:00:00Z'
+                        missed_blocks_counter: '0'
+                        start_height: '0'
+                      016b81f94f552ecdc1ab9da437ae06686fca3674:
+                        address: 016b81f94f552ecdc1ab9da437ae06686fca3674
+                        index_offset: '0'
+                        jailed_blocks_counter: '2'
+                        jailed_until: '1970-01-01T00:00:00Z'
+                        missed_blocks_counter: '0'
+                        start_height: '0'
+                      01f1f9010e52c71b567f4759700df164b6074b04:
+                        address: 01f1f9010e52c71b567f4759700df164b6074b04
+                        index_offset: '0'
+                        jailed_blocks_counter: '2'
+                        jailed_until: '1970-01-01T00:00:00Z'
+                        missed_blocks_counter: '0'
+                        start_height: '0'
+                    validators:
+                      - address: '009c0b262c6150d7dca0304acc0abc59d8086b0d'
+                        chains:
+                          - '0001'
+                          - '0021'
+                        jailed: true
+                        public_key: 5760934260f6893935a568eae97de00b21dfe539f9aa3b7d1de9d8824352a8f5
+                        service_url: https://1.pockettuzem.com:443
+                        status: 2
+                        tokens: '17500000000'
+                        unstaking_time: '2020-11-10T00:00:00Z'
+                      - address: 016b81f94f552ecdc1ab9da437ae06686fca3674
+                        chains:
+                          - '0001'
+                          - '0021'
+                        jailed: true
+                        public_key: 4c51be986b3b81b00935a10fabcfcf78bc7068885e89f0ede96cfa3d98262ce7
+                        service_url: https://pocketnode2.lamref.cf:443
+                        status: 2
+                        tokens: '17500000000'
+                        unstaking_time: '2020-11-10T00:00:00Z'
+                      - address: 01f1f9010e52c71b567f4759700df164b6074b04
+                        chains:
+                          - '0001'
+                          - '0021'
+                        jailed: true
+                        public_key: 9acb7cb34b06e9573471f65191e507909c7b0a49b5296463c1c5be8faf747c90
+                        service_url: https://node2.protofire.io:443
+                        status: 2
+                        tokens: '15005000000'
+                        unstaking_time: '2020-11-10T00:00:00Z'
+                      - address: 03655eabc3a7337daa303576aa9bbe726f2320c8
+                        chains:
+                          - '0001'
+                          - '0021'
+                        jailed: true
+                        public_key: 5ab705112162d3b19d57e967e2eac03491914abc6cb11a00275242e8874580c7
+                        service_url: https://node2.musicabaile.com:443
+                        status: 2
+                        tokens: '208219000000'
+                        unstaking_time: '2021-05-15T00:00:00Z'
+                      - address: '04493410acf1e28ce254c36de8187fa29a4917c0'
+                        chains:
+                          - '0001'
+                          - '0021'
+                        jailed: true
+                        public_key: 3a6ae53636b3ec5708fbc41ffe8ec2fd952d9b9d5ef9ee22a325486dd08a7306
+                        service_url: https://node1.noderunnerpkt.xyz:443
+                        status: 2
+                        tokens: '15723270000'
+                        unstaking_time: '2020-11-10T00:00:00Z'
+                      - address: fe2006c9b958937923b31868ed265f4fa061cf9a
+                        chains:
+                          - '0001'
+                          - '0021'
+                        jailed: true
+                        public_key: 301c25510103bddbd9b213a1d54e52c8ba826ca066882efd831034bee586c1e8
+                        service_url: https://nodo1.misnodos.company:443
+                        status: 2
+                        tokens: '510000000000'
+                        unstaking_time: '2021-05-15T00:00:00Z'
+                chain_id: "<Input New ChainID>"
+                consensus_params:
+                  block:
+                    max_bytes: '4000000'
+                    max_gas: "-1"
+                    time_iota_ms: '1'
+                  evidence:
+                    max_age: '1000000'
+                  validator:
+                    pub_key_types:
+                      - ed25519
+                genesis_time: '0001-01-01T00:00:00Z'
+        '400':
+          description: Failed to retrieve the transaction information
   /query/tx:
     post:
       tags:
@@ -903,6 +1115,106 @@ paths:
                 $ref: '#/components/schemas/QueryBlockTXsResponse'
         '400':
           description: Failed to retrieve the transaction information
+  /query/pocketparams:
+    post:
+      deprecated: true
+      tags:
+        - query
+      requestBody:
+        description: 'Returns the pocket parameters at the specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        '200':
+          description: Pocket Network parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PocketParams'
+        '400':
+          description: Failed to retrieve the application information
+  /query/nodeparams:
+    post:
+      deprecated: true
+      tags:
+        - query
+      requestBody:
+        description: 'Returns the node parameters at the specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        '200':
+          description: Node parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeParams'
+        '400':
+          description: Failed to retrieve the node information
+  /query/appparams:
+    post:
+      deprecated: true
+      tags:
+        - query
+      requestBody:
+        description: 'Returns the app parameters at the specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        '200':
+          description: Application parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationParams'
+        '400':
+          description: Failed to retrieve the application information
+  /private/stop:
+    post:
+      tags:
+        - private
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      responses:
+        '200':
+          description: Succesfull Stop
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: ""
+        '401':
+          description: Wrong Authtoken
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
 components:
   schemas:
     ABCIEvent:
@@ -1847,7 +2159,7 @@ components:
         prove:
           type: boolean
         order:
-          type: string 
+          type: string
       required:
         - height
     QueryBlockTXsResponse:
