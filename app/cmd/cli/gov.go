@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/types"
@@ -160,7 +161,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var govUpgrade = &cobra.Command{
-	Use:   "upgrade <fromAddr> <atHeight> <version>, <chainID> <fees>",
+	Use:   "upgrade <fromAddr> <atHeight> <version> <chainID> <fees>",
 	Short: "Upgrade the protocol",
 	Long: `If authorized, upgrade the protocol.
 Will prompt the user for the <fromAddr> account passphrase.`,
@@ -173,7 +174,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		}
 		u := govTypes.Upgrade{
 			Height:  int64(i),
-			Version: args[2],
+			Version: dropTag(args[2]),
 		}
 		fees, err := strconv.Atoi(args[4])
 		if err != nil {
@@ -203,4 +204,12 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		}
 		fmt.Println(resp)
 	},
+}
+
+func dropTag(version string) string {
+	if !strings.Contains(version, "-") {
+		return version
+	}
+	s := strings.Split(version, "-")
+	return s[1]
 }

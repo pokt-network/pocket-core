@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	strings "strings"
 	"time"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -119,7 +120,7 @@ func (c Context) BlockGasMeter() GasMeter     { return c.blockGasMeter }
 func (c Context) IsCheckTx() bool             { return c.checkTx }
 func (c Context) MinGasPrices() DecCoins      { return c.minGasPrice }
 func (c Context) EventManager() *EventManager { return c.eventManager }
-func (c Context) AppVersion() string          { return c.appVersion }
+func (c Context) AppVersion() string          { return dropTag(c.appVersion) }
 func (c Context) ClearGlobalCache()           { c.cachedStore.Purge() }
 func (c Context) IsAfterUpgradeHeight() bool {
 	return c.header.Height >= codec.UpgradeHeight
@@ -462,4 +463,12 @@ func IsEmpty(o interface{}) bool {
 	default:
 		return false
 	}
+}
+
+func dropTag(version string) string {
+	if !strings.Contains(version, "-") {
+		return version
+	}
+	s := strings.Split(version, "-")
+	return s[1]
 }
