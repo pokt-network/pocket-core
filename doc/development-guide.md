@@ -1,6 +1,64 @@
 # Development Guide
 This guide contains useful knowledge for development.
 
+
+## Setup a Development environment
+In order to contribute first we need to setup our development environment
+
+### Requirements
+We need the following dependencies:
+- [git](https://git-scm.com/)
+- [go 1.14](https://golang.org/)
+- [protobuffer compiler: protoc version 3.13.0](https://github.com/protocolbuffers/protobuf)
+- A text editor of your choosing.
+
+### Initial steps
+First we need to clone our repository
+```
+$ git clone https://github.com/pokt-network/pocket-core.git
+$ git checkout <Your brnach>
+```
+
+vendor dependencies
+```
+$ go mod vendor 
+```
+
+### Build
+```
+$ cd pocket-core/
+$ go build -mod vendor -tags goleveldb -o /tmp/custom-pocket-build ./app/cmd/pocket_core/main.go
+```
+
+### Test
+you may run all test witht he following command:
+```
+$ go test -p 1 ./...
+```
+This may take some time to complete, you can also run shorter tests with:
+```
+$ go test -p 1 -short ./...
+```
+
+or run module tests with:
+```
+$ go test -p ./x...
+```
+
+Mix and match on your needs.
+
+## Contributing to Pocket Core
+All contributions must come with an associated github issue.
+
+Once you've created an issue on github feel free to clone, branch and develop your issue.
+
+All PR's must be associated to an authored issue.
+
+### Reaching out for help
+You can reach out for by:
+- [Writing issues on github](https://github.com/pokt-network/pocket-core/issues/new/choose)
+- [Pocket ecosystem discord community](https://discord.com/invite/KRrqfd3tAK)
+
 ## Mocking Interfaces
 Sometimes in order to test certain behaviours it's neccesary to use interfaces.
 
