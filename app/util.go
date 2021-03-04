@@ -4,12 +4,14 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"log"
+	"reflect"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/types"
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
-	"log"
 )
 
 func GenerateAAT(appPubKey, clientPubKey string, key crypto.PrivateKey) (aatjson []byte, err error) {
@@ -25,10 +27,15 @@ func BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.
 	if err != nil {
 		return nil, err
 	}
-	var m sdk.ProtoMsg
+	var m sdk.Msg
 	if err := Codec().UnmarshalJSON([]byte(jsonMessage), &m); err != nil {
 		return nil, err
 	}
+	// use reflection to convert to proto msg
+	val := reflect.ValueOf(m)
+	vp := reflect.New(val.Type())
+	vp.Elem().Set(val)
+	protoMsg := vp.Interface().(sdk.ProtoMsg)
 	kb, err := GetKeybase()
 	if err != nil {
 		return nil, err
@@ -38,7 +45,7 @@ func BuildMultisig(fromAddr, jsonMessage, passphrase, chainID string, pk crypto.
 		auth.DefaultTxDecoder(cdc),
 		chainID,
 		"", nil).WithKeybase(kb)
-	return txBuilder.BuildAndSignMultisigTransaction(fa, pk, m, passphrase, fees, legacyCodec)
+	return txBuilder.BuildAndSignMultisigTransaction(fa, pk, protoMsg, passphrase, fees, legacyCodec)
 }
 
 func SignMultisigNext(fromAddr, txHex, passphrase, chainID string, legacyCodec bool) ([]byte, error) {
