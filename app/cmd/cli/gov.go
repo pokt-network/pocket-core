@@ -29,7 +29,7 @@ from DAOTransfer, change parameters; to performing protocol Upgrades. `,
 }
 
 var govDAOTransfer = &cobra.Command{
-	Use:   "transfer <amount> <fromAddr> <toAddr> <chainID> <fees> <legacyCodec>",
+	Use:   "transfer <amount> <fromAddr> <toAddr> <chainID> <fees> <legacyCodec=(true | false)>",
 	Short: "Transfer from DAO",
 	Long: `If authorized, move funds from the DAO.
 Actions: [burn, transfer]`,
@@ -75,7 +75,7 @@ Actions: [burn, transfer]`,
 }
 
 var govDAOBurn = &cobra.Command{
-	Use:   "burn <amount> <fromAddr> <toAddr> <chainID> <fees> <legacyCodec>",
+	Use:   "burn <amount> <fromAddr> <toAddr> <chainID> <fees> <legacyCodec=(true | false)>",
 	Short: "Burn from DAO",
 	Long: `If authorized, burn funds from the DAO.
 Actions: [burn, transfer]`,
@@ -123,7 +123,7 @@ Actions: [burn, transfer]`,
 	},
 }
 var govChangeParam = &cobra.Command{
-	Use:   "change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)> <fees> <legacyCodec>",
+	Use:   "change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)> <fees> <legacyCodec=(true | false)>",
 	Short: "Edit a param in the network",
 	Long: `If authorized, submit a tx to change any param from any module.
 Will prompt the user for the <fromAddr> account passphrase.`,

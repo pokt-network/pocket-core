@@ -621,7 +621,7 @@ var queryNodeClaims = &cobra.Command{
 }
 
 var queryNodeClaim = &cobra.Command{
-	Use:   "node-claim <address> <appPubKey> <claimType> <networkId> <sessionHeight> [<height>]`",
+	Use:   "node-claim <address> <appPubKey> <claimType=(relay | challenge)> <chainID> <sessionHeight> [<height>]`",
 	Short: "Gets node pending claim for work completed",
 	Long:  `Gets node pending claim for verified proof of work submitted for a specific session`,
 	Args:  cobra.MinimumNArgs(5),

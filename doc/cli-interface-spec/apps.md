@@ -1,13 +1,13 @@
 # Pocket App Namespace
 Functions for Application management.
 
-- `pocket app stake <fromAddr> <amount> <chains> <chainID> <fee> <legacyCodec=(true | false)>`
+- `pocket app stake <fromAddr> <amount> <relayChainIDs> <chainID> <fee> <legacyCodec=(true | false)>`
 > Stakes the Application into the network, making it available to receive service. Prompts the user for the `<fromAddr>` account passphrase.
 >
 > Arguments:
 > - `<fromAddr>`: Target Address to stake.
 > - `<amount>`: The amount of uPOKT to stake. Must be higher than the current minimum amount of Node Stake parameter.
-> - `<chains>`: A comma separated list of chain Network Identifiers.
+> - `<relayChainIDs>`: A comma separated list of chain Network Identifiers.
 > - `<chainID>`: The pocket chain identifier.
 > - `<fee>`:  An amount of uPOKT for the network.
 > - `<legacyCodec>`: Enlble/Disable amino encoding for transaction.

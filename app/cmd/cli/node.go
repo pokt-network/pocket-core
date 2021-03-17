@@ -28,7 +28,7 @@ from staking and unstaking; to unjailing.`,
 }
 
 var nodeStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <chains> <serviceURI> <chainID> <fee> <legacyCodec=(true | false)>",
+	Use:   "stake <fromAddr> <amount> <networkRelayIDs> <serviceURI> <chainID> <fee> <legacyCodec=(true | false)>",
 	Short: "Stake a node in the network",
 	Long: `Stake the node into the network, making it available for service.
 Will prompt the user for the <fromAddr> account passphrase.`,

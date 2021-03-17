@@ -1,13 +1,13 @@
 # Node Namespace
 Functions for Node management.
 
-- `pocket node stake <fromAddr> <amount> <chains> <serviceURI> <chainID> <fee> <legacyCodec=(true | false)>`
+- `pocket node stake <fromAddr> <amount> <relayChainIDs> <serviceURI> <chainID> <fee> <legacyCodec=(true | false)>`
 > Stakes the Node into the network, making it available for service. Prompts the user for the `<fromAddr>` account passphrase.
 >
 > Arguments:
 > - `<fromAddr>`: Target Address to stake.
 > - `<amount>`: The amount of uPOKT to stake. Must be higher than the current minimum amount of Node Stake parameter.
-> - `<chains>`: A comma separated list of chain Network Identifiers.
+> - `<relayChainIDs>`: A comma separated list of chain Network Identifiers.
 > - `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
 > - `<chainID>`: The pocket chain identifier.
 > - `<fee>`:  An amount of uPOKT for the network.
