@@ -3,16 +3,15 @@ module github.com/pokt-network/pocket-core
 go 1.13
 
 require (
-	github.com/dgraph-io/badger/v2 v2.2007.2 // indirect
 	github.com/go-kit/kit v0.10.0
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mitchellh/go-ps v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.5.1
 	github.com/regen-network/cosmos-proto v0.3.0
+	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d
@@ -27,4 +26,4 @@ require (
 	gopkg.in/yaml.v2 v2.2.5
 )
 
-replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20210113203729-f92374107ace // indirect
+replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20210318025232-505fa50f49b5
