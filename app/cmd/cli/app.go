@@ -30,7 +30,7 @@ from staking and unstaking; to generating AATs.`,
 }
 
 var appStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <chains> <chainID> <fee> <legacyCodec=(true | false)>",
+	Use:   "stake <fromAddr> <amount> <networkRelayIDs> <chainID> <fee> <legacyCodec=(true | false)>",
 	Short: "Stake an app into the network",
 	Long: `Stake the app into the network, making it have network throughput.
 Will prompt the user for the <fromAddr> account passphrase.`,

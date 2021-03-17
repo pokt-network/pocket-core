@@ -96,13 +96,13 @@ Account balance: <balance of the account>
 > Optional Arguments:
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
-- `pocket query node-claim <address> <appPubKey> <claimType=(relay | challenge)> <networkId> <sessionHeight> [<height>]`
+- `pocket query node-claim <address> <appPubKey> <claimType=(relay | challenge)> <chainID> <sessionHeight> [<height>]`
 > Returns the claim specific to the arguments.
 >
 > Arguments:
 > - `<address>`: The address of the node that submitted the proof.
 > - `<appPubKey>`: The public key of the application the Node serviced.
-> - `<networkId>`: The Network Identifier of the blockchain that was serviced.
+> - `<chainID>`: The Network Identifier of the blockchain that was serviced.
 > - `<sessionHeight>`: The session block for which the proof was submitted.
 > - `<receiptType>`: An enum string that can be "relay" or "challenge".
 > Optional Arguments:
