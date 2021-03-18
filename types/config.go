@@ -129,8 +129,8 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
 	c.TendermintConfig.PrivValidatorState = DefaultPVSName
 	c.TendermintConfig.P2P.AddrBookStrict = false
-	c.TendermintConfig.P2P.MaxNumInboundPeers = 10
-	c.TendermintConfig.P2P.MaxNumOutboundPeers = 10
+	c.TendermintConfig.P2P.MaxNumInboundPeers = 50
+	c.TendermintConfig.P2P.MaxNumOutboundPeers = 30
 	c.TendermintConfig.LogLevel = "*:info, *:error"
 	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
 	c.TendermintConfig.TxIndex.IndexKeys = DefaultTxIndexTags
@@ -142,35 +142,35 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.FastSync = &config.FastSyncConfig{
 		Version: "v1",
 	}
-	c.TendermintConfig.Consensus.TimeoutPropose = 60000000000
+	c.TendermintConfig.Consensus.TimeoutPropose = 120000000000
 	c.TendermintConfig.Consensus.TimeoutProposeDelta = 10000000000
 	c.TendermintConfig.Consensus.TimeoutPrevote = 60000000000
 	c.TendermintConfig.Consensus.TimeoutPrevoteDelta = 10000000000
 	c.TendermintConfig.Consensus.TimeoutPrecommit = 60000000000
 	c.TendermintConfig.Consensus.TimeoutPrecommitDelta = 10000000000
-	c.TendermintConfig.Consensus.TimeoutCommit = 900000000000
+	c.TendermintConfig.Consensus.TimeoutCommit = 780000000000
 	c.TendermintConfig.Consensus.SkipTimeoutCommit = false
 	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
 	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = 900000000000
-	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 100000000000
-	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 200000000000
+	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 30000000000
+	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 20000000000
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
 	return c
 }
 
 func DefaultPocketConsensusConfig(cconfig *config.ConsensusConfig) {
-	cconfig.TimeoutPropose = 60000000000
+	cconfig.TimeoutPropose = 120000000000
 	cconfig.TimeoutProposeDelta = 10000000000
 	cconfig.TimeoutPrevote = 60000000000
 	cconfig.TimeoutPrevoteDelta = 10000000000
 	cconfig.TimeoutPrecommit = 60000000000
 	cconfig.TimeoutPrecommitDelta = 10000000000
-	cconfig.TimeoutCommit = 900000000000
+	cconfig.TimeoutCommit = 780000000000
 	cconfig.SkipTimeoutCommit = false
 	cconfig.CreateEmptyBlocks = true
 	cconfig.CreateEmptyBlocksInterval = 900000000000
-	cconfig.PeerGossipSleepDuration = 100000000000
-	cconfig.PeerQueryMaj23SleepDuration = 200000000000
+	cconfig.PeerGossipSleepDuration = 30000000000
+	cconfig.PeerQueryMaj23SleepDuration = 20000000000
 }
 
 func DefaultTestingPocketConfig() Config {
