@@ -14,7 +14,6 @@ import (
 	"github.com/pokt-network/pocket-core/app"
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
-	cfg "github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
 	"github.com/pokt-network/pocket-core/store"
@@ -156,7 +155,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	}
 	db := dbm.NewMemDB()
 	nodeKey := p2p.NodeKey{PrivKey: pk}
-	privVal := cfg.GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
+	privVal := GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
 	privVal.Key.PrivKey = pk
 	privVal.Key.PubKey = pk.PubKey()
 	privVal.Key.Address = pk.PubKey().Address()

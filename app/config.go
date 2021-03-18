@@ -9,7 +9,6 @@ import (
 	"github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
-	cfg "github.com/pokt-network/pocket-core/config"
 	"github.com/pokt-network/pocket-core/crypto"
 	kb "github.com/pokt-network/pocket-core/crypto/keys"
 	"github.com/pokt-network/pocket-core/store"
@@ -290,8 +289,14 @@ func InitGenesis(genesisType GenesisType) {
 	}
 }
 
+type Config struct {
+	TmConfig    *config2.Config
+	Logger      log.Logger
+	TraceWriter string
+}
+
 func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger) *node.Node {
-	c := cfg.Config{
+	c := Config{
 		TmConfig:    &GlobalConfig.TendermintConfig,
 		Logger:      logger,
 		TraceWriter: "",
