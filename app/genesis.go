@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	posConfig "github.com/pokt-network/pocket-core/config"
 	"log"
 	"os"
 	"time"
@@ -15409,13 +15408,13 @@ var testnetGenesis = `{
     }
 }`
 
-func GenesisStateFromJson(json string) posConfig.GenesisState {
+func GenesisStateFromJson(json string) GenesisState {
 	genDoc, err := tmType.GenesisDocFromJSON([]byte(json))
 	if err != nil {
 		fmt.Println("unable to read genesis from json (internal)")
 		os.Exit(1)
 	}
-	return posConfig.GenesisStateFromGenDoc(cdc, *genDoc)
+	return GenesisStateFromGenDoc(cdc, *genDoc)
 }
 
 func newDefaultGenesisState() []byte {

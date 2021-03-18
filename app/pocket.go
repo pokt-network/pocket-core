@@ -2,10 +2,11 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/tendermint/tendermint/libs/os"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
-	cfg "github.com/pokt-network/pocket-core/config"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	appsKeeper "github.com/pokt-network/pocket-core/x/apps/keeper"
@@ -22,6 +23,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 	db "github.com/tendermint/tm-db"
 )
 
@@ -68,19 +70,19 @@ func NewPocketBaseApp(logger log.Logger, db db.DB, options ...func(*bam.BaseApp)
 
 // inits from genesis
 func (app *PocketCoreApp) InitChainer(ctx sdk.Ctx, req abci.RequestInitChain) abci.ResponseInitChain {
-	var genesisState cfg.GenesisState
+	var genesisState GenesisState
 	switch GlobalGenesisType {
 	case MainnetGenesisType:
 		genesisState = GenesisStateFromJson(mainnetGenesis)
 	case TestnetGenesisType:
 		genesisState = GenesisStateFromJson(testnetGenesis)
 	default:
-		genesisState = cfg.GenesisStateFromFile(cdc, GlobalConfig.PocketConfig.DataDir+FS+sdk.ConfigDirName+FS+GlobalConfig.PocketConfig.GenesisName)
+		genesisState = GenesisStateFromFile(cdc, GlobalConfig.PocketConfig.DataDir+FS+sdk.ConfigDirName+FS+GlobalConfig.PocketConfig.GenesisName)
 	}
 	return app.mm.InitGenesis(ctx, genesisState)
 }
 
-var GenState cfg.GenesisState
+var GenState GenesisState
 
 // inits from genesis
 func (app *PocketCoreApp) InitChainerWithGenesis(ctx sdk.Ctx, req abci.RequestInitChain) abci.ResponseInitChain {
@@ -106,6 +108,35 @@ func (app *PocketCoreApp) ModuleAccountAddrs() map[string]bool {
 
 	return modAccAddrs
 }
+
+type GenesisState map[string]json.RawMessage
+
+func GenesisStateFromFile(cdc *codec.Codec, genFile string) GenesisState {
+	if !os.FileExists(genFile) {
+		panic(fmt.Errorf("%s does not exist, run `init` first", genFile))
+	}
+	genDoc := GenesisFileToGenDoc(genFile)
+	return GenesisStateFromGenDoc(cdc, *genDoc)
+}
+
+func GenesisFileToGenDoc(genFile string) *tmtypes.GenesisDoc {
+	if !os.FileExists(genFile) {
+		panic(fmt.Errorf("%s does not exist, run `init` first", genFile))
+	}
+	genDoc, err := tmtypes.GenesisDocFromFile(genFile)
+	if err != nil {
+		panic(err)
+	}
+	return genDoc
+}
+
+func GenesisStateFromGenDoc(cdc *codec.Codec, genDoc tmtypes.GenesisDoc) (genesisState map[string]json.RawMessage) {
+	if err := cdc.UnmarshalJSON(genDoc.AppState, &genesisState); err != nil {
+		panic(err)
+	}
+	return genesisState
+}
+
 
 // exports the app state to json
 func (app *PocketCoreApp) ExportAppState(height int64, forZeroHeight bool, jailWhiteList []string) (appState json.RawMessage, err error) {
