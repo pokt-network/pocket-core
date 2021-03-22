@@ -1196,7 +1196,9 @@ func TestRPC_Challenge(t *testing.T) {
 }
 
 func TestRPC_SimRelay(t *testing.T) {
-
+	if testing.Short() {
+		t.Skip("skipping in short mode") // TODO: Cannot create a config dir on pipeline
+	}
 	home := os.TempDir()
 	datadir := home + types.DefaultDDName
 	configPath := datadir + FS + types.ConfigDirName
