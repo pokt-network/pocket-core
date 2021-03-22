@@ -5,15 +5,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/pokt-network/pocket-core/codec"
 
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/crypto"
@@ -1194,7 +1196,17 @@ func TestRPC_Challenge(t *testing.T) {
 }
 
 func TestRPC_SimRelay(t *testing.T) {
-	// setup relay endpoint
+	// TODO create datadir
+
+	home := os.TempDir()
+	datadir := home + types.DefaultDDName
+	configPath := datadir + FS + types.ConfigDirName
+	fmt.Println(configPath)
+	app.GlobalConfig.PocketConfig = types.PocketConfig{
+		ChainsName: types.DefaultChainsName,
+		DataDir:    datadir,
+	}
+	generateChainsJson(configPath, []pocketTypes.HostedBlockchain{{ID: dummyChainsHash, URL: dummyChainsURL}})
 	expectedRequest := `"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64`
 	expectedResponse := "0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"
 	defer gock.Off()
@@ -1208,14 +1220,15 @@ func TestRPC_SimRelay(t *testing.T) {
 		Method: "POST",
 	}
 	simParams := simRelayParams{
-		Url:     dummyChainsURL,
-		Payload: payload,
+		RelayNetworkID: dummyChainsHash,
+		Payload:        payload,
 	}
 	req := newClientRequest("sim", newBody(simParams))
 	rec := httptest.NewRecorder()
 	SimRequest(rec, req, httprouter.Params{})
 	resp := getResponse(rec)
 	assert.Equal(t, resp, expectedResponse)
+	// TODO: delete tmp JSON
 }
 
 func newBody(params interface{}) io.Reader {

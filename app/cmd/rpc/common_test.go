@@ -2,11 +2,16 @@ package rpc
 
 import (
 	"context"
-	"github.com/tendermint/tendermint/privval"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"os"
+	fp "path/filepath"
 	"testing"
 	"time"
+
+	"github.com/tendermint/tendermint/privval"
 
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 
@@ -41,6 +46,8 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
+var FS = string(fp.Separator)
+
 func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
 	app.MakeCodec() // needed for queries and tx
 	// create the in memory tendermint node and keybase
@@ -54,6 +61,8 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 	}
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
+	// chains := &pocketTypes.HostedBlockchains{M: make(map[string]pocketTypes.HostedBlockchain)}
+	// chains.M[dummyChainsHash] = pocketTypes.HostedBlockchain{ID: dummyChainsHash, URL: dummyChainsURL }
 	// init cache in memory
 	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
@@ -536,4 +545,46 @@ type config struct {
 	TmConfig    *tmCfg.Config
 	Logger      log.Logger
 	TraceWriter string
+}
+
+func generateChainsJson(configFilePath string, chains []pocketTypes.HostedBlockchain) *pocketTypes.HostedBlockchains {
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		// ensure directory path made
+		err = os.MkdirAll(configFilePath, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+	}
+	chainsPath := configFilePath + FS + sdk.DefaultChainsName
+	var jsonFile *os.File
+	// if does not exist create one
+	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
+	// generate hosted chains from user input
+	// create dummy input for the file
+	res, err := json.MarshalIndent(chains, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	// write to the file
+	_, err = jsonFile.Write(res)
+	if err != nil {
+		panic(err)
+	}
+	// close the file
+	err = jsonFile.Close()
+	if err != nil {
+		panic(err)
+	}
+	m := make(map[string]pocketTypes.HostedBlockchain)
+	for _, chain := range chains {
+		if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
+			panic(errors.New(fmt.Sprintf("invalid ID: %s in network identifier in %s file", chain.ID, app.GlobalConfig.PocketConfig.ChainsName)))
+		}
+		m[chain.ID] = chain
+	}
+	// return the map
+	return &pocketTypes.HostedBlockchains{M: m}
 }
