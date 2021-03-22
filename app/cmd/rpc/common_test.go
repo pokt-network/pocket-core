@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"github.com/tendermint/tendermint/privval"
 	"io"
 	"os"
 	"testing"
@@ -155,7 +156,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	}
 	db := dbm.NewMemDB()
 	nodeKey := p2p.NodeKey{PrivKey: pk}
-	privVal := GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
+	privVal := privval.GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
 	privVal.Key.PrivKey = pk
 	privVal.Key.PubKey = pk.PubKey()
 	privVal.Key.Address = pk.PubKey().Address()
