@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -144,8 +143,8 @@ func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 type simRelayParams struct {
-	Url     string        `json:"chain_url"`
-	Payload types.Payload `json:"payload"` // the data payload of the request
+	RelayNetworkID string        `json:"relay_network_id"` // RelayNetworkID
+	Payload        types.Payload `json:"payload"`          // the data payload of the request
 }
 
 func SimRequest(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -154,14 +153,15 @@ func SimRequest(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	// retrieve the hosted blockchain url requested
-	url := strings.Trim(params.Url, `/`)
-	if len(params.Payload.Path) > 0 {
-		url = url + "/" + strings.Trim(params.Payload.Path, `/`)
+	hostedChains := app.NewHostedChains(false)
+
+	chain, err := hostedChains.GetChain(params.RelayNetworkID)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
 	}
 	// do basic http request on the relay
-	res, er := executeHTTPRequest(params.Payload.Data, url, params.Payload.Method, params.Payload.Headers)
-
+	res, er := executeHTTPRequest(params.Payload.Data, chain.URL, params.Payload.Method, params.Payload.Headers)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
