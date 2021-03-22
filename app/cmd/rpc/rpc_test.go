@@ -1196,7 +1196,6 @@ func TestRPC_Challenge(t *testing.T) {
 }
 
 func TestRPC_SimRelay(t *testing.T) {
-	// TODO create datadir
 
 	home := os.TempDir()
 	datadir := home + types.DefaultDDName
@@ -1228,7 +1227,6 @@ func TestRPC_SimRelay(t *testing.T) {
 	SimRequest(rec, req, httprouter.Params{})
 	resp := getResponse(rec)
 	assert.Equal(t, resp, expectedResponse)
-	// TODO: delete tmp JSON
 }
 
 func newBody(params interface{}) io.Reader {
