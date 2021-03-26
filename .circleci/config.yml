@@ -10,7 +10,7 @@ jobs:
   # TODO: Make builds for all platforms where Pocket Core is expected to run
   build:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/pokt-network/pocket-core
@@ -34,7 +34,7 @@ jobs:
   # TODO: Expand the testing capabilities
   test:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/pokt-network/pocket-core
