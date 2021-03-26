@@ -23,7 +23,11 @@ func NewCodec(anyUnpacker types.AnyUnpacker) *Codec {
 }
 
 var (
+<<<<<<< HEAD
 	UpgradeHeight                    int64 = 50000
+=======
+	UpgradeHeight                    int64 = 7
+>>>>>>> Changed UpgradeHeight to block 7 for my tests
 	NotProtoCompatibleInterfaceError       = errors.New("the interface passed for encoding does not implement proto marshaller")
 )
 
