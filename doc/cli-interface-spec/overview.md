@@ -9,6 +9,7 @@ The CLI will contain multiple namespaces listed below:
 
 - [Default Namespace](./default.md): These functions will be called when the namespace is blank
 - [Accounts](./accounts.md): Contains all the calls pertinent to accounts and their local storage.
+- [Governance](./gov.md): Contains all governance related interactions.
 - [Nodes](./nodes.md): Contains all the functions for Node upkeep.
 - [Apps](./apps.md): Contains all the functions for app upkeep.
 - [Query](./query.md): All queries to the world state are contained in this call.
