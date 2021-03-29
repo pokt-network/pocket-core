@@ -142,18 +142,7 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.FastSync = &config.FastSyncConfig{
 		Version: "v1",
 	}
-	c.TendermintConfig.Consensus.TimeoutPropose = 120000000000
-	c.TendermintConfig.Consensus.TimeoutProposeDelta = 10000000000
-	c.TendermintConfig.Consensus.TimeoutPrevote = 60000000000
-	c.TendermintConfig.Consensus.TimeoutPrevoteDelta = 10000000000
-	c.TendermintConfig.Consensus.TimeoutPrecommit = 60000000000
-	c.TendermintConfig.Consensus.TimeoutPrecommitDelta = 10000000000
-	c.TendermintConfig.Consensus.TimeoutCommit = 780000000000
-	c.TendermintConfig.Consensus.SkipTimeoutCommit = false
-	c.TendermintConfig.Consensus.CreateEmptyBlocks = true
-	c.TendermintConfig.Consensus.CreateEmptyBlocksInterval = 900000000000
-	c.TendermintConfig.Consensus.PeerGossipSleepDuration = 30000000000
-	c.TendermintConfig.Consensus.PeerQueryMaj23SleepDuration = 20000000000
+	DefaultPocketConsensusConfig(c.TendermintConfig.Consensus)
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
 	return c
 }

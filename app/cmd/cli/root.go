@@ -107,7 +107,7 @@ func start(cmd *cobra.Command, args []string) {
 		}
 		message := fmt.Sprintf("Exit signal %s received\n", sig)
 		fmt.Println(message)
-		os.Exit(3)
+		os.Exit(0)
 	}()
 }
 

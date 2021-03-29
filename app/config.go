@@ -179,8 +179,8 @@ func UpdateConfig(datadir string) {
 	sdk.DefaultPocketConsensusConfig(GlobalConfig.TendermintConfig.Consensus)
 	GlobalConfig.TendermintConfig.P2P.AllowDuplicateIP = true
 	GlobalConfig.TendermintConfig.P2P.AddrBookStrict = false
-	GlobalConfig.TendermintConfig.P2P.MaxNumInboundPeers = 10
-	GlobalConfig.TendermintConfig.P2P.MaxNumOutboundPeers = 10
+	GlobalConfig.TendermintConfig.P2P.MaxNumInboundPeers = 50
+	GlobalConfig.TendermintConfig.P2P.MaxNumOutboundPeers = 30
 	GlobalConfig.TendermintConfig.RPC.GRPCMaxOpenConnections = 2500
 	GlobalConfig.TendermintConfig.RPC.MaxOpenConnections = 2500
 	GlobalConfig.TendermintConfig.Mempool.Size = 9000
