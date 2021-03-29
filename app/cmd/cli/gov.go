@@ -161,7 +161,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var govUpgrade = &cobra.Command{
-	Use:   "upgrade <fromAddr> <atHeight> <version> <chainID> <fees>",
+	Use:   "upgrade <fromAddr> <atHeight> <version> <chainID> <fees> <legacyCodec=(true | false)>",
 	Short: "Upgrade the protocol",
 	Long: `If authorized, upgrade the protocol.
 Will prompt the user for the <fromAddr> account passphrase.`,
