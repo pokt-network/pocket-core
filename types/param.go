@@ -95,10 +95,15 @@ func concatKeys(key, subkey []byte) (res []byte) {
 // Get parameter from store
 func (s Subspace) Get(ctx Ctx, key []byte, ptr interface{}) {
 	store := s.kvStore(ctx)
-	bz, _ := store.Get(key)
-	err := s.cdc.UnmarshalJSON(bz, ptr)
+	bz, err := store.Get(key)
 	if err != nil {
-		panic(err)
+		ctx.Logger().Error("error getting a value from a key in the subspace, could be an empty subspace:", err.Error())
+		return
+	}
+	err = s.cdc.UnmarshalJSON(bz, ptr)
+	if err != nil {
+		ctx.Logger().Error("error unmarshalling from the subspace, could be an empty subspace", err.Error())
+		return
 	}
 }
 

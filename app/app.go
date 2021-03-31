@@ -2,6 +2,7 @@ package app
 
 import (
 	bam "github.com/pokt-network/pocket-core/baseapp"
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto/keys"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
@@ -18,6 +19,7 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	pocketKeeper "github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	cmn "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/rpc/client"
@@ -121,6 +123,10 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 	err := app.LoadLatestVersion(app.Keys[bam.MainStoreKey])
 	if err != nil {
 		cmn.Exit(err.Error())
+	}
+	ctx := sdk.NewContext(app.Store(), abci.Header{}, false, app.Logger()).WithBlockStore(app.BlockStore())
+	if upgradeHeight := app.govKeeper.GetUpgrade(ctx).Height; upgradeHeight != 0 {
+		codec.UpgradeHeight = upgradeHeight
 	}
 	return app
 }

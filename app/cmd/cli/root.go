@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/pokt-network/pocket-core/app"
@@ -25,7 +23,6 @@ var (
 	mainnet         bool
 	testnet         bool
 	profileApp      bool
-	madvdontneed    bool
 )
 
 var CLIVersion = app.AppVersion
@@ -56,7 +53,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&remoteCLIURL, "remoteCLIURL", "", "takes a remote endpoint in the form of <protocol>://<host> (uses RPC Port)")
 	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
-	rootCmd.PersistentFlags().BoolVar(&madvdontneed, "madvdontneed", true, "if enabled, run with GODEBUG=madvdontneed=1, --madvdontneed=true/false")
 	startCmd.Flags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
 	startCmd.Flags().BoolVar(&keybase, "keybase", true, "run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
 	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
@@ -74,25 +70,7 @@ var startCmd = &cobra.Command{
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		//Get the GODEBUG env variable
-		godebug := os.Getenv("GODEBUG")
-		//Check if the --madvdontneed=true
-
-		//Check if madvdontneed env variable is present or flag is not used
-		if strings.Contains(godebug, "madvdontneed=1") || !madvdontneed {
-			//start normally
-			start(cmd, args)
-
-		} else {
-			//flag --madvdontneed=true so we add the env variable and start pocket as a subprocess
-			env := append(os.Environ(), "GODEBUG="+"madvdontneed=1,"+godebug)
-			comd := exec.Command(os.Args[0], os.Args[1:]...)
-			comd.Env = env
-			comd.Stdin = os.Stdin
-			comd.Stdout = os.Stdout
-			_ = comd.Run()
-		}
+		start(cmd, args)
 	},
 }
 
@@ -129,7 +107,7 @@ func start(cmd *cobra.Command, args []string) {
 		}
 		message := fmt.Sprintf("Exit signal %s received\n", sig)
 		fmt.Println(message)
-		os.Exit(3)
+		os.Exit(0)
 	}()
 }
 
