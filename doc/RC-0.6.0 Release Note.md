@@ -52,11 +52,11 @@ encoding algorithm (Amino to Google's Protobuf).
    
    For individuals using Docker, all you will need to do to get the new container image is run:
    
-   docker pull poktnetwork/pocket-core:RC-0.5.2.9
+   docker pull poktnetwork/pocket-core:RC-0.6.0
    
    or
    
-   docker pull poktnetwork/pocket:RC-0.5.2.9
+   docker pull poktnetwork/pocket:RC-0.6.0
    
    Depending on which of the 2 Docker images you want to use.
    
