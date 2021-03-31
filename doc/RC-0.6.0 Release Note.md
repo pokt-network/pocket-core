@@ -15,19 +15,71 @@ encoding algorithm (Amino to Google's Protobuf).
 ## Upgrade
 1) **Shutdown Pocket Core** (NOTE: If Validator, 6 blocks until jailed)
 2) **Ensure golang version 1.16 or > [golang upgrade](https://golang.org/doc/install)**
-3) **Use the default config for all options (except unique configurations like moniker, external addr, etc). You have two options:**
-- Remove`/config/config.json` file, execute a CLI command, and update the custom configurations
-- Run `pocket util update-configs` command (creates a new config file and backs up old config file) 
-### IF RUNNING VERSION < RC-0.5.2.9 OR DB CORRUPTED
-4) **GoLevelDB is the only supported database from RC-0.5.2 onward** 
-- If previously using CLevelDB, users might experience incompatibility issues due to known incompatibilities between the two
-- PNI temporarily will provide a backup datadir to download to avoid syncing from scratch:
-[25K .zip](TODO)
-[25K .tar.gz](TODO)
-- After uncompressing theses files, place the contents in the `<datadir>/data` folder
-5) **Delete Session.DB before upgrading**
+3) **Build from source, Homebrew or Docker**:
+
+   To build the latest binary from source, follow these steps:
    
-- `rm -rf <datadir>/session.db`
+   Navigate into your pocket-core directory:
+   Example: cd ~/go/src/github.com/pokt-network/pocket-core
+   
+   Enter: pocket version
+   You should see: 
+   > RC-0.5.2.10 (or older)
+   
+   To grab the latest packages and tags we are going to swap branches to the latest tag using:
+   
+    git pull
+    git checkout tags/RC-0.6.0
+   Once you checked out the latest tag and branch, we are going to rebuild the binary by entering in:
+   `go build -o $GOPATH/bin/pocket ./app/cmd/pocket_core/main.go`
+   
+   After it builds, make sure you are on the latest release version by entering in:
+   `pocket version`
+   
+   Output will be
+   > RC-0.6.0
+    
+   If you built your binary using Homebrew, follow these steps to upgrade your binary:
+   
+   In a terminal window, we are going to pull the latest tap by entering:
+   $ brew upgrade pokt-network/pocket-core/pocket
+   
+   After it builds, make sure you are on the latest version by entering in:
+   pocket version
+   
+   Output will be
+   Version: RC-0.6.0
+   
+   For individuals using Docker, all you will need to do to get the new container image is run:
+   
+   docker pull poktnetwork/pocket-core:RC-0.5.2.9
+   
+   or
+   
+   docker pull poktnetwork/pocket:RC-0.5.2.9
+   
+   Depending on which of the 2 Docker images you want to use.
+   
+4) **Upgrade your config.json**
+    Use the default config for all options (except unique configurations like moniker, external addr, etc). 
+
+    You have two options:
+    
+    - Remove`/config/config.json` file, execute a CLI command, and update the custom configurations
+    - Run `pocket util update-configs` command (creates a new config file and backs up old config file) 
+        >In order to use the most performant values, you will need to upgrade your config.json file in within your <datadir>.  
+        The following example assumes your <datadir> to be ~/.pocket, but feel free to swap out your actual <datadir> with the location in your system.
+        Run the pocket util update-configs command to backup your old config and generate a new default one.
+        Manually go over your <datadir>/config/config.json.bk file and update your new <datadir>/config/config.json with any pertinent values such as moniker, external addr, etc.
+
+5) NOTE: **Steps 5 AND 6 ARE ONLY NEEDED IF RUNNING VERSION < RC-0.5.2.9 OR DB CORRUPTED**
+    **GoLevelDB is the only supported database from RC-0.5.2 onward** 
+    - If previously using CLevelDB, users might experience incompatibility issues due to known incompatibilities between the two
+    - PNI temporarily will provide a backup datadir to download to avoid syncing from scratch:
+    [22K .zip](https://storage.googleapis.com/blockchains-data/backup_data_22150.zip)
+    - After uncompressing theses files, place the contents in the `<datadir>/data` folder
+6) **Delete Session.DB before upgrading** 
+    - `rm -rf <datadir>/session.db`
 ### Special Notes
 #### Consensus rule change
 Consensus rules are the fabric of the protocol that requires 66% > agreement of Validators in order to reach quorum on the blockchain data. 
@@ -65,7 +117,8 @@ As explained above, the upgrade force shuts down any node running older versions
 
 For Validators, the shutdown can result in standard offline slashing. 
 
-## Proposal
+## Proposal 
+[LINK](https://forum.pokt.network/t/pip-4-consensus-rule-change-0-6-0/834)
 #### Motivation
 There are two major security issues in the merkle tree proof/claim implementation as well as an exploitable prediction attack due to a misimplementation at the block hash generation. 
 The current encoding scheme is both 'custom' and unsupported across most all programming languages which hinders ecosystem growth and future development. Lastly, PUP-4 is somewhat addressed in this release.
