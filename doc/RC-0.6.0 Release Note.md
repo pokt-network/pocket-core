@@ -64,10 +64,10 @@ encoding algorithm (Amino to Google's Protobuf).
     
     - Remove`/config/config.json` file, execute a CLI command, and update the custom configurations
     - Run `pocket util update-configs` command (creates a new config file and backs up old config file) 
-        >In order to use the most performant values, you will need to upgrade your config.json file in within your <datadir>.  
-        The following example assumes your <datadir> to be ~/.pocket, but feel free to swap out your actual <datadir> with the location in your system.
+        >In order to use the most performant values, you will need to upgrade your config.json file in within your datadir.  
+        The following example assumes your datadir to be ~/.pocket, but feel free to swap out your actual datadir with the location in your system.
         Run the pocket util update-configs command to backup your old config and generate a new default one.
-        Manually go over your <datadir>/config/config.json.bk file and update your new <datadir>/config/config.json with any pertinent values such as moniker, external addr, etc.
+        Manually go over your datadir/config/config.json.bk file and update your new datadir/config/config.json with any pertinent values such as moniker, external addr, etc.
 
 5) **Delete Session.DB before upgrading** 
     - `rm -rf <datadir>/session.db`
