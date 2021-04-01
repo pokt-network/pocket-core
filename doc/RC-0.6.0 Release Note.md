@@ -23,8 +23,7 @@ encoding algorithm (Amino to Google's Protobuf).
    Example: cd ~/go/src/github.com/pokt-network/pocket-core
    
    Enter: pocket version
-   You should see: 
-   > RC-0.5.2.10 (or older)
+   You should see: `RC-0.5.2.10` (or older)
    
    To grab the latest packages and tags we are going to swap branches to the latest tag using:
    
@@ -36,8 +35,7 @@ encoding algorithm (Amino to Google's Protobuf).
    After it builds, make sure you are on the latest release version by entering in:
    `pocket version`
    
-   Output will be
-   > RC-0.6.0
+   Output will be `RC-0.6.0`
     
    If you built your binary using Homebrew, follow these steps to upgrade your binary:
    
@@ -47,8 +45,7 @@ encoding algorithm (Amino to Google's Protobuf).
    After it builds, make sure you are on the latest version by entering in:
    pocket version
    
-   Output will be
-   Version: RC-0.6.0
+   Output will be `RC-0.6.0`
    
    For individuals using Docker, all you will need to do to get the new container image is run:
    
@@ -72,14 +69,16 @@ encoding algorithm (Amino to Google's Protobuf).
         Run the pocket util update-configs command to backup your old config and generate a new default one.
         Manually go over your <datadir>/config/config.json.bk file and update your new <datadir>/config/config.json with any pertinent values such as moniker, external addr, etc.
 
-5) NOTE: **Steps 5 AND 6 ARE ONLY NEEDED IF RUNNING VERSION < RC-0.5.2.9 OR DB CORRUPTED**
+5) **Delete Session.DB before upgrading** 
+    - `rm -rf <datadir>/session.db`
+
+6) NOTE: **Step 6 IS ONLY NEEDED IF RUNNING VERSION < RC-0.5.2.9 OR DB CORRUPTED**
     **GoLevelDB is the only supported database from RC-0.5.2 onward** 
     - If previously using CLevelDB, users might experience incompatibility issues due to known incompatibilities between the two
     - PNI temporarily will provide a backup datadir to download to avoid syncing from scratch:
     [22K .zip](https://storage.googleapis.com/blockchains-data/backup_data_22150.zip)
     - After uncompressing theses files, place the contents in the `<datadir>/data` folder
-6) **Delete Session.DB before upgrading** 
-    - `rm -rf <datadir>/session.db`
+
 ### Special Notes
 #### Consensus rule change
 Consensus rules are the fabric of the protocol that requires 66% > agreement of Validators in order to reach quorum on the blockchain data. 
