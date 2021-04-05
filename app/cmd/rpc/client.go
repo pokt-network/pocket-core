@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -160,8 +161,12 @@ func SimRequest(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
+	url := strings.Trim(chain.URL, `/`)
+	if len(params.Payload.Path) > 0 {
+		url = url + "/" + strings.Trim(params.Payload.Path, `/`)
+	}
 	// do basic http request on the relay
-	res, er := executeHTTPRequest(params.Payload.Data, chain.URL, params.Payload.Method, params.Payload.Headers)
+	res, er := executeHTTPRequest(params.Payload.Data, url, types.GlobalPocketConfig.UserAgent, chain.BasicAuth, params.Payload.Method, params.Payload.Headers)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
 		return
@@ -169,11 +174,17 @@ func SimRequest(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteResponse(w, string(res), r.URL.Path, r.Host)
 }
 
-func executeHTTPRequest(payload string, url string, method string, headers map[string]string) (string, error) {
+func executeHTTPRequest(payload, url, userAgent string, basicAuth types.BasicAuth, method string, headers map[string]string) (string, error) {
 	// generate an http request
 	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return "", err
+	}
+	if basicAuth.Username != "" {
+		req.SetBasicAuth(basicAuth.Username, basicAuth.Password)
+	}
+	if userAgent == "" {
+		req.Header.Set("User-Agent", userAgent)
 	}
 	// add headers if needed
 	if len(headers) == 0 {
