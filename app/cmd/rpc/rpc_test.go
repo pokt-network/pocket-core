@@ -1217,6 +1217,7 @@ func TestRPC_SimRelay(t *testing.T) {
 		Reply(200).
 		BodyString(expectedResponse)
 	payload := pocketTypes.Payload{
+		Path:   "/",
 		Data:   expectedRequest,
 		Method: "POST",
 	}

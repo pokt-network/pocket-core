@@ -173,9 +173,9 @@ paths:
             example:
               payload:
                 data: '"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64'
-                method: ''
+                method: 'POST'
                 path: ''
-              chain_url: 'http://0.0.0.0:8545'
+              relay_network_id: '0021'
       responses:
         '200':
           description: Response from the relayed request
@@ -1982,7 +1982,7 @@ components:
       properties:
         payload:
           $ref: '#/components/schemas/RelayPayload'
-        chain_url:
+        relay_network_id:
           type: string
         meta:
           $ref: '#/components/schemas/RelayMetadata'
