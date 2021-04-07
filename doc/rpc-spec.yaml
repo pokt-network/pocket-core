@@ -318,6 +318,126 @@ paths:
                 $ref: '#/components/schemas/Account'
         '400':
           description: Failed to retrieve the account
+  /query/accounttxs:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns all transactions sent by the address
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAccountTXs'
+            example:
+              address: '197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22'
+        required: true
+      responses:
+        '200':
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryAccountTXsResponse'
+        '400':
+          description: Failed to retrieve the transaction information
+  /query/allParams:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: 'Returns the parameters at the specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        '200':
+          description: Parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllParams'
+              example:
+                app_params:
+                  - param_key: application/ParticipationRateOn
+                    param_value: 'false'
+                  - param_key: application/StabilityAdjustment
+                    param_value: '0'
+                  - param_key: application/ApplicationStakeMinimum
+                    param_value: '1000000'
+                  - param_key: application/AppUnstakingTime
+                    param_value: '1814400000000000'
+                  - param_key: application/BaseRelaysPerPOKT
+                    param_value: '100'
+                  - param_key: application/MaxApplications
+                    param_value: '9223372036854775807'
+                  - param_key: application/MaximumChains
+                    param_value: '15'
+                auth_params:
+                  - param_key: auth/TxSigLimit
+                    param_value: '7'
+                  - param_key: auth/MaxMemoCharacters
+                    param_value: '256'
+                  - param_key: auth/FeeMultipliers
+                    param_value: '{"fee_multiplier":null,"default":"1"}'
+                gov_params:
+                  - param_key: gov/daoOwner
+                    param_value: 640d766bd7b712b04582a557f072b377dd489540
+                  - param_key: gov/acl
+                    param_value: '{"type":"gov/non_map_acl","value":[{"acl_key":"auth/MaxMemoCharacters","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"auth/TxSigLimit","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"gov/daoOwner","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"gov/acl","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/StakeDenom","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/SupportedBlockchains","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/DowntimeJailDuration","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/SlashFractionDoubleSign","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/SlashFractionDowntime","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"auth/FeeMultipliers","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/ApplicationStakeMinimum","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/ClaimExpiration","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/SessionNodeCount","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/MinimumNumberOfProofs","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/ReplayAttackBurnMultiplier","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MaxValidators","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/ProposerPercentage","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/StabilityAdjustment","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/AppUnstakingTime","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/ParticipationRateOn","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MaxEvidenceAge","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MinSignedPerWindow","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/StakeMinimum","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/UnstakingTime","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/RelaysToTokensMultiplier","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/BaseRelaysPerPOKT","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/ClaimSubmissionWindow","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/DAOAllocation","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/SignedBlocksWindow","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/BlocksPerSession","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/MaxApplications","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"gov/upgrade","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/MaximumChains","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MaximumChains","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MaxJailedBlocks","address":"640d766bd7b712b04582a557f072b377dd489540"}]}'
+                  - param_key: gov/upgrade
+                    param_value: '{"type":"gov/upgrade","value":{"Height":"10000","Version":"2.0.0"}}'
+                node_params:
+                  - param_key: pos/DowntimeJailDuration
+                    param_value: '600000000000'
+                  - param_key: pos/MinSignedPerWindow
+                    param_value: '0.500000000000000000'
+                  - param_key: pos/StakeMinimum
+                    param_value: '1000000'
+                  - param_key: pos/MaximumChains
+                    param_value: '15'
+                  - param_key: pos/SignedBlocksWindow
+                    param_value: '100'
+                  - param_key: pos/DAOAllocation
+                    param_value: '10'
+                  - param_key: pos/MaxValidators
+                    param_value: '5000'
+                  - param_key: pos/BlocksPerSession
+                    param_value: '25'
+                  - param_key: pos/ProposerPercentage
+                    param_value: '1'
+                  - param_key: pos/RelaysToTokensMultiplier
+                    param_value: '1000'
+                  - param_key: pos/SlashFractionDoubleSign
+                    param_value: '0.050000000000000000'
+                  - param_key: pos/SlashFractionDowntime
+                    param_value: '0.010000000000000000'
+                  - param_key: pos/StakeDenom
+                    param_value: upokt
+                  - param_key: pos/UnstakingTime
+                    param_value: '1814400000000000'
+                  - param_key: pos/MaxEvidenceAge
+                    param_value: '120000000000'
+                  - param_key: pos/MaxJailedBlocks
+                    param_value: '1000'
+                pocket_params:
+                  - param_key: pocketcore/SupportedBlockchains
+                    param_value: '["0001"]'
+                  - param_key: pocketcore/ClaimExpiration
+                    param_value: '100'
+                  - param_key: pocketcore/MinimumNumberOfProofs
+                    param_value: '5'
+                  - param_key: pocketcore/SessionNodeCount
+                    param_value: '5'
+                  - param_key: pocketcore/ClaimSubmissionWindow
+                    param_value: '3'
+                  - param_key: pocketcore/ReplayAttackBurnMultiplier
+                    param_value: '3'
+        '400':
+          description: Failed to retrieve the node information
   /query/app:
     post:
       tags:
@@ -479,6 +599,28 @@ paths:
                       block: '10'
         '400':
           description: Failed to retrieve the block information
+  /query/blocktxs:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns all transactions at a certain block height
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryBlockTXs'
+            example:
+              height: 99
+        required: true
+      responses:
+        '200':
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryBlockTXsResponse'
+        '400':
+          description: Failed to retrieve the transaction information
   /query/height:
     post:
       tags:
@@ -500,137 +642,6 @@ paths:
                 height: 10
         '400':
           description: Failed to retrieve the block height information
-  /query/node:
-    post:
-      tags:
-        - query
-      requestBody:
-        description: 'Returns the node at the specified height,  height = 0 is used as latest'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryAddressHeight'
-            example:
-              address: '0xA5DE6D4184016708c1040c355F1c958192276DB5'
-              height: 2
-        required: true
-      responses:
-        '200':
-          description: Node details
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Node'
-              example:
-                address: 05d98fbedf63cd4b4e337ef488ec2ad7e5072cb2
-                chains:
-                  - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
-                jailed: false
-                public_key: bac2790f5786d4e016ed1f03a54205ba99b949e6a3c4b4641317977dfedfce79
-                service_url: '0.0.0.0:8081'
-                status: 2
-                tokens: '1000000000000000'
-                unstaking_time: '0001-01-01T00:00:00Z'
-        '400':
-          description: Failed to retrieve the node information
-  /query/allParams:
-    post:
-      tags:
-        - query
-      requestBody:
-        description: 'Returns the parameters at the specified height,  height = 0 is used as latest'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryHeight'
-            example:
-              height: 2
-        required: true
-      responses:
-        '200':
-          description: Parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AllParams'
-              example:
-                app_params:
-                  - param_key: application/ParticipationRateOn
-                    param_value: 'false'
-                  - param_key: application/StabilityAdjustment
-                    param_value: '0'
-                  - param_key: application/ApplicationStakeMinimum
-                    param_value: '1000000'
-                  - param_key: application/AppUnstakingTime
-                    param_value: '1814400000000000'
-                  - param_key: application/BaseRelaysPerPOKT
-                    param_value: '100'
-                  - param_key: application/MaxApplications
-                    param_value: '9223372036854775807'
-                  - param_key: application/MaximumChains
-                    param_value: '15'
-                auth_params:
-                  - param_key: auth/TxSigLimit
-                    param_value: '7'
-                  - param_key: auth/MaxMemoCharacters
-                    param_value: '256'
-                  - param_key: auth/FeeMultipliers
-                    param_value: '{"fee_multiplier":null,"default":"1"}'
-                gov_params:
-                  - param_key: gov/daoOwner
-                    param_value: 640d766bd7b712b04582a557f072b377dd489540
-                  - param_key: gov/acl
-                    param_value: '{"type":"gov/non_map_acl","value":[{"acl_key":"auth/MaxMemoCharacters","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"auth/TxSigLimit","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"gov/daoOwner","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"gov/acl","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/StakeDenom","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/SupportedBlockchains","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/DowntimeJailDuration","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/SlashFractionDoubleSign","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/SlashFractionDowntime","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"auth/FeeMultipliers","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/ApplicationStakeMinimum","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/ClaimExpiration","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/SessionNodeCount","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/MinimumNumberOfProofs","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/ReplayAttackBurnMultiplier","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MaxValidators","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/ProposerPercentage","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/StabilityAdjustment","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/AppUnstakingTime","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/ParticipationRateOn","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MaxEvidenceAge","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MinSignedPerWindow","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/StakeMinimum","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/UnstakingTime","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/RelaysToTokensMultiplier","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/BaseRelaysPerPOKT","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pocketcore/ClaimSubmissionWindow","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/DAOAllocation","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/SignedBlocksWindow","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/BlocksPerSession","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/MaxApplications","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"gov/upgrade","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"application/MaximumChains","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MaximumChains","address":"640d766bd7b712b04582a557f072b377dd489540"},{"acl_key":"pos/MaxJailedBlocks","address":"640d766bd7b712b04582a557f072b377dd489540"}]}'
-                  - param_key: gov/upgrade
-                    param_value: '{"type":"gov/upgrade","value":{"Height":"10000","Version":"2.0.0"}}'
-                node_params:
-                  - param_key: pos/DowntimeJailDuration
-                    param_value: '600000000000'
-                  - param_key: pos/MinSignedPerWindow
-                    param_value: '0.500000000000000000'
-                  - param_key: pos/StakeMinimum
-                    param_value: '1000000'
-                  - param_key: pos/MaximumChains
-                    param_value: '15'
-                  - param_key: pos/SignedBlocksWindow
-                    param_value: '100'
-                  - param_key: pos/DAOAllocation
-                    param_value: '10'
-                  - param_key: pos/MaxValidators
-                    param_value: '5000'
-                  - param_key: pos/BlocksPerSession
-                    param_value: '25'
-                  - param_key: pos/ProposerPercentage
-                    param_value: '1'
-                  - param_key: pos/RelaysToTokensMultiplier
-                    param_value: '1000'
-                  - param_key: pos/SlashFractionDoubleSign
-                    param_value: '0.050000000000000000'
-                  - param_key: pos/SlashFractionDowntime
-                    param_value: '0.010000000000000000'
-                  - param_key: pos/StakeDenom
-                    param_value: upokt
-                  - param_key: pos/UnstakingTime
-                    param_value: '1814400000000000'
-                  - param_key: pos/MaxEvidenceAge
-                    param_value: '120000000000'
-                  - param_key: pos/MaxJailedBlocks
-                    param_value: '1000'
-                pocket_params:
-                  - param_key: pocketcore/SupportedBlockchains
-                    param_value: '["0001"]'
-                  - param_key: pocketcore/ClaimExpiration
-                    param_value: '100'
-                  - param_key: pocketcore/MinimumNumberOfProofs
-                    param_value: '5'
-                  - param_key: pocketcore/SessionNodeCount
-                    param_value: '5'
-                  - param_key: pocketcore/ClaimSubmissionWindow
-                    param_value: '3'
-                  - param_key: pocketcore/ReplayAttackBurnMultiplier
-                    param_value: '3'
-        '400':
-          description: Failed to retrieve the node information
   /query/param:
     post:
       tags:
@@ -657,51 +668,6 @@ paths:
                 param_value: 'false'
         '400':
           description: Failed to retrieve the node information
-  /query/nodereceipt:
-    post:
-      tags:
-        - query
-      requestBody:
-        description: Returns the node receipt for specific session
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryNodeReceipt'
-        required: true
-      responses:
-        '200':
-          description: Node proofs
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StoredReceipt'
-        '400':
-          description: Failed to retrieve the node proof information
-  /query/nodereceipts:
-    post:
-      tags:
-        - query
-      requestBody:
-        description: 'Returns the list of all Relay Batch proofs submitted by node address at height,  height = 0 is used as latest'
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryPaginatedHeightAndAddrParams'
-            example:
-              address: '0xA5DE6D4184016708c1040c355F1c958192276DB5'
-              height: 2
-              page: 1
-              per_page: 1
-        required: true
-      responses:
-        '200':
-          description: Node proofs
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueryNodeReceiptsResponse'
-        '400':
-          description: Failed to retrieve the node proof information
   /query/nodeclaim:
     post:
       tags:
@@ -745,6 +711,39 @@ paths:
                 $ref: '#/components/schemas/QueryNodeClaimsResponse'
         '400':
           description: Failed to retrieve the node proof information
+  /query/node:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: 'Returns the node at the specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryAddressHeight'
+            example:
+              address: '0xA5DE6D4184016708c1040c355F1c958192276DB5'
+              height: 2
+        required: true
+      responses:
+        '200':
+          description: Node details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node'
+              example:
+                address: 05d98fbedf63cd4b4e337ef488ec2ad7e5072cb2
+                chains:
+                  - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                jailed: false
+                public_key: bac2790f5786d4e016ed1f03a54205ba99b949e6a3c4b4641317977dfedfce79
+                service_url: '0.0.0.0:8081'
+                status: 2
+                tokens: '1000000000000000'
+                unstaking_time: '0001-01-01T00:00:00Z'
+        '400':
+          description: Failed to retrieve the node information
   /query/nodes:
     post:
       tags:
@@ -1132,50 +1131,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryTXResponse'
-        '400':
-          description: Failed to retrieve the transaction information
-  /query/accounttxs:
-    post:
-      tags:
-        - query
-      requestBody:
-        description: Returns all transactions sent by the address
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryAccountTXs'
-            example:
-              address: '197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22'
-        required: true
-      responses:
-        '200':
-          description: Transaction list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueryAccountTXsResponse'
-        '400':
-          description: Failed to retrieve the transaction information
-  /query/blocktxs:
-    post:
-      tags:
-        - query
-      requestBody:
-        description: Returns all transactions at a certain block height
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryBlockTXs'
-            example:
-              height: 99
-        required: true
-      responses:
-        '200':
-          description: Transaction list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueryBlockTXsResponse'
         '400':
           description: Failed to retrieve the transaction information
   /query/pocketparams:
@@ -1801,6 +1756,26 @@ components:
           description: Raw data of the transaction
         proof:
           $ref: '#/components/schemas/TXProof'
+        stdTx:
+          $ref:  '#/components/schemas/StdTx'
+    StdTx:
+      type: object
+      properties:
+        entropy:
+          type: integer
+        fee:
+          $ref: '#/components/schemas/Coin'
+        memo:
+          type: string
+        msg:
+          type: object
+        signature:
+          type: object
+          properties:
+            pub_key:
+              type: string
+            signature:
+              type: string
     TxResult:
       type: object
       properties:
