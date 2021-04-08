@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"fmt"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"os"
 	"strconv"
 
@@ -19,6 +20,7 @@ func init() {
 	utilCmd.AddCommand(decodeTxCmd)
 	utilCmd.AddCommand(unsafeRollbackCmd)
 	utilCmd.AddCommand(exportGenesisForReset)
+	utilCmd.AddCommand(convertPocketEvidenceDB)
 	utilCmd.AddCommand(completionCmd)
 	utilCmd.AddCommand(updateConfigsCmd)
 	utilCmd.AddCommand(printDefaultConfigCmd)
@@ -131,6 +133,22 @@ var exportGenesisForReset = &cobra.Command{
 			return
 		}
 		fmt.Println(j)
+	},
+}
+
+var convertPocketEvidenceDB = &cobra.Command{
+	Use:   "convert-pocket-evidence-db",
+	Short: "convert pocket evidence db to proto from amino",
+	Long:  `Before upgrading with 6.0, convert the pocket evidence db from amino to proto for a cohesive`,
+	Args:  cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		err := types.ConvertEvidenceToProto(app.GlobalConfig)
+		if err != nil {
+			fmt.Println("ERROR: ", err.Error())
+			return
+		}
+		fmt.Println("Successfully converted evidence to proto")
 	},
 }
 

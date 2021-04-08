@@ -334,3 +334,13 @@ func sortJSONResponse(response string) string {
 	}
 	return string(bz)
 }
+
+func ErrorWarrantsDispatch(err error) bool {
+	if err == NewOverServiceError(ModuleName) ||
+		err == NewInvalidBlockHeightError(ModuleName) ||
+		err == NewInvalidSessionError(ModuleName) ||
+		err == NewOutOfSyncRequestError(ModuleName) {
+		return true
+	}
+	return false
+}

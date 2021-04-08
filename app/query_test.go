@@ -778,7 +778,7 @@ func TestQueryRelay(t *testing.T) {
 			relay.Proof.Signature = hex.EncodeToString(sig)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
-			res, err := PCA.HandleRelay(relay)
+			res, _, err := PCA.HandleRelay(relay)
 			assert.Nil(t, err, err)
 			assert.Equal(t, expectedResponse, res.Response)
 			gock.New(sdk.PlaceholderURL).

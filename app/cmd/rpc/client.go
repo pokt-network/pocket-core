@@ -45,6 +45,11 @@ type RPCRelayResponse struct {
 	// remove proof object because client already knows about it
 }
 
+type RPCRelayErrorResponse struct {
+	Error    error                   `json:"error"`
+	Dispatch *types.DispatchResponse `json:"dispatch"`
+}
+
 // Relay supports CORS functionality
 func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var relay = types.Relay{}
@@ -52,12 +57,21 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	if err := PopModel(w, r, ps, &relay); err != nil {
-		WriteErrorResponse(w, 400, err.Error())
+		response := RPCRelayErrorResponse{
+			Error: err,
+		}
+		j, _ := json.Marshal(response)
+		WriteJSONResponseWithCode(w, string(j), r.URL.Path, r.Host, 400)
 		return
 	}
-	res, err := app.PCA.HandleRelay(relay)
+	res, dispatch, err := app.PCA.HandleRelay(relay)
 	if err != nil {
-		WriteErrorResponse(w, 400, err.Error())
+		response := RPCRelayErrorResponse{
+			Error:    err,
+			Dispatch: dispatch,
+		}
+		j, _ := json.Marshal(response)
+		WriteJSONResponseWithCode(w, string(j), r.URL.Path, r.Host, 400)
 		return
 	}
 	response := RPCRelayResponse{
