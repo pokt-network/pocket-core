@@ -1133,6 +1133,28 @@ paths:
                 $ref: '#/components/schemas/QueryTXResponse'
         '400':
           description: Failed to retrieve the transaction information
+  /query/upgrade:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: 'Returns upgrade information specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryHeight'
+            example:
+              height: 2
+        required: true
+      responses:
+        '200':
+          description: Upgrade Response Information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpgradeResponse'
+        '400':
+          description: Failed to retrieve the supply information
   /query/pocketparams:
     post:
       deprecated: true
@@ -2216,4 +2238,11 @@ components:
           items:
             $ref: '#/components/schemas/Transaction'
         total_count:
+          type: string
+    UpgradeResponse:
+      type: object
+      properties:
+        Height:
+          type: string
+        Version:
           type: string
