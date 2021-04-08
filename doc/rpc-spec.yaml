@@ -159,6 +159,69 @@ paths:
                   signature: ''
                 payload: '0x47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad'
                 signature: e7c347971c0a53f9d63fb5681e35a4c89d97e7c6703c0e3980c2a70dbc56cb0db11e24eb078a9ffbaf7f78970ff0ce2478d7485301e39c5950c45028283ef709
+        '400':
+          description: Error response from the relay request (Dispatch Is Optional)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryErrorRelayResponse'
+              example:
+                error: '{code: 400, message: "encoding/hex: odd length hex string" }'
+                dispatch:
+                  block_height: 3
+                  session:
+                    header:
+                      app_public_key: e9477af9b42001280033bab76670eac4274cb7321e52280ceba964e1c61db87c
+                      chain: 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                      session_height: 1
+                    key: OmEeJO2o6xvbldJxFpqI0rRVwVtBTmRGGSlGqzxGzgk=
+                    nodes:
+                      - address: afaa802b1736396d31825f60487e4da030ea85bb
+                        chains:
+                          - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                        jailed: false
+                        public_key: a01bc947f512a971131474986cc0c8cb3caed6bcfca076e6b78ac2b838ebefed
+                        service_url: '0.0.0.0:8081'
+                        status: 2
+                        tokens: '1000000000000000000'
+                        unstaking_time: '0001-01-01T00:00:00Z'
+                      - address: 88967bf78114d5ea56e1a02fb3fd2cac3607d674
+                        chains:
+                          - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                        jailed: false
+                        public_key: c61954ba119bbbb2c1efa1d44f5f4001438566fd8aee2892387ef55ded82c159
+                        service_url: '0.0.0.0:8081'
+                        status: 2
+                        tokens: '10000000'
+                        unstaking_time: '0001-01-01T00:00:00Z'
+                      - address: a0c005c63f97a13e540e6bb484821d77f3fdaf75
+                        chains:
+                          - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                        jailed: false
+                        public_key: db07958aa0035fbb3e7e2575fbbb062a7d5ef5580cd0fe80142a4df5d31a316a
+                        service_url: '0.0.0.0:8081'
+                        status: 2
+                        tokens: '10000000'
+                        unstaking_time: '0001-01-01T00:00:00Z'
+                      - address: e3b15b922be9cabbe3b4a3a788dec8dc95c8f3dc
+                        chains:
+                          - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                        jailed: false
+                        public_key: a9c5d4463d5e233dd9437a2044a6595fe69ced34716a8e1c8ad86d3196f3fd78
+                        service_url: '0.0.0.0:8081'
+                        status: 2
+                        tokens: '10000000'
+                        unstaking_time: '0001-01-01T00:00:00Z'
+                      - address: fa11cff20c510fa1588915bd48391fee802822c8
+                        chains:
+                          - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                        jailed: false
+                        public_key: b62798f50be7055073f8b2f19ca4b2262a2c82f2ab16fc907e9db1cce551ffce
+                        service_url: '0.0.0.0:8081'
+                        status: 2
+                        tokens: '10000000'
+                        unstaking_time: '0001-01-01T00:00:00Z'
+
   /client/sim:
     post:
       tags:
@@ -1997,6 +2060,14 @@ components:
         payload:
           type: string
           description: string response to relay
+    QueryErrorRelayResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Amino JSON Error String
+        dispatch:
+          $ref: '#/components/schemas/QueryDispatchResponse'
     QueryChallengeRequest:
       type: object
       properties:

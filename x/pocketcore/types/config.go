@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -27,10 +28,36 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 		globalEvidenceSealedMap = make(map[string]struct{})
 		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires)
 		globalSessionCache.Init(c.PocketConfig.DataDir, c.PocketConfig.SessionDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries)
-		InitGlobalServiceMetric(*chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
+		InitGlobalServiceMetric(chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
 	})
 	GlobalPocketConfig = c.PocketConfig
 	SetRPCTimeout(c.PocketConfig.RPCTimeout)
+}
+
+func ConvertEvidenceToProto(config types.Config) error {
+	InitConfig(nil, log.NewNopLogger(), config)
+	gec := globalEvidenceCache
+	it, err := gec.Iterator()
+	if err != nil {
+		return fmt.Errorf("error creating evidence iterator: %s", err.Error())
+	}
+	defer it.Close()
+	for ; it.Valid(); it.Next() {
+		ev, err := Evidence{}.LegacyAminoUnmarshal(it.Value())
+		if err != nil {
+			return fmt.Errorf("error amino unmarshalling evidence: %s", err.Error())
+		}
+		k, err := ev.Key()
+		if err != nil {
+			return fmt.Errorf("error creating key from evidence object: %s", err.Error())
+		}
+		gec.SetWithoutLockAndSealCheck(hex.EncodeToString(k), ev)
+	}
+	err = gec.FlushToDBWithoutLock()
+	if err != nil {
+		return fmt.Errorf("error flushing evidence objects to the database: %s", err.Error())
+	}
+	return nil
 }
 
 // NOTE: evidence cache is flushed every time db iterator is created (every claim/proof submission)

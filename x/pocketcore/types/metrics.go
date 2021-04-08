@@ -49,7 +49,7 @@ func GlobalServiceMetric() *ServiceMetrics {
 	return globalServiceMetrics
 }
 
-func InitGlobalServiceMetric(hostedBlockchains HostedBlockchains, logger log.Logger, addr string, maxOpenConn int) {
+func InitGlobalServiceMetric(hostedBlockchains *HostedBlockchains, logger log.Logger, addr string, maxOpenConn int) {
 	// create a new service metric
 	serviceMetric := NewServiceMetrics(hostedBlockchains, logger)
 	// set the service metrics
@@ -191,13 +191,15 @@ func KeyForServiceMetrics() []byte {
 	return []byte(ServiceMetricsKey)
 }
 
-func NewServiceMetrics(hostedBlockchains HostedBlockchains, logger log.Logger) *ServiceMetrics {
+func NewServiceMetrics(hostedBlockchains *HostedBlockchains, logger log.Logger) *ServiceMetrics {
 	serviceMetrics := ServiceMetrics{
 		ServiceMetric:   NewServiceMetricsFor("all"),
 		NonNativeChains: make(map[string]ServiceMetric),
 	}
-	for _, hb := range hostedBlockchains.M {
-		serviceMetrics.NonNativeChains[hb.ID] = NewServiceMetricsFor(hb.ID)
+	if hostedBlockchains != nil {
+		for _, hb := range hostedBlockchains.M {
+			serviceMetrics.NonNativeChains[hb.ID] = NewServiceMetricsFor(hb.ID)
+		}
 	}
 	// add the logger
 	serviceMetrics.tmLogger = logger

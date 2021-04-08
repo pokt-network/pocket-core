@@ -424,20 +424,27 @@ func (app PocketCoreApp) HandleDispatch(header pocketTypes.SessionHeader) (res *
 	return app.pocketKeeper.HandleDispatch(ctx, header)
 }
 
-func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, err error) {
+func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *pocketTypes.DispatchResponse, err error) {
 	ctx, err := app.NewContext(app.LastBlockHeight())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	status, err := app.pocketKeeper.TmNode.Status()
 	if err != nil {
-		return nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
+		return nil, nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
 	}
 	if status.SyncInfo.CatchingUp {
-		return nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
+		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
 	}
-	return app.pocketKeeper.HandleRelay(ctx, r)
+	res, err = app.pocketKeeper.HandleRelay(ctx, r)
+	if err != nil && pocketTypes.ErrorWarrantsDispatch(err){
+		dispatch, err = app.HandleDispatch(r.Proof.SessionHeader())
+		if err != nil {
+			return
+		}
+	}
+	return
 }
 
 func checkPagination(page, limit int) (int, int) {

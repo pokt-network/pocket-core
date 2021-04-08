@@ -61,13 +61,49 @@ func (e *Evidence) GenerateMerkleProof(height int64, index int) (proof MerklePro
 }
 
 // "Evidence" - A proof of work/burn for nodes.
-// type evidence struct {
-// 	BloomBytes    []byte `json:"bloom_bytes"`
-// 	SessionHeader `json:"evidence_header"`            // the session h serves as an identifier for the evidence
-// 	NumOfProofs   int64        `json:"num_of_proofs"` // the total number of proofs in the evidence
-// 	Proofs        []Proof      `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
-// 	EvidenceType  EvidenceType `json:"evidence_type"`
-// }
+type evidence struct {
+	BloomBytes    []byte `json:"bloom_bytes"`
+	SessionHeader `json:"evidence_header"`            // the session h serves as an identifier for the evidence
+	NumOfProofs   int64        `json:"num_of_proofs"` // the total number of proofs in the evidence
+	Proofs        []Proof      `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
+	EvidenceType  EvidenceType `json:"evidence_type"`
+}
+
+func (e Evidence) LegacyAminoMarshal() ([]byte, error) {
+	encodedBloom, err := e.Bloom.GobEncode()
+	if err != nil {
+		return nil, err
+	}
+	ep := evidence{
+		BloomBytes:    encodedBloom,
+		SessionHeader: e.SessionHeader,
+		NumOfProofs:   e.NumOfProofs,
+		Proofs:        e.Proofs,
+		EvidenceType:  e.EvidenceType,
+	}
+	return ModuleCdc.MarshalBinaryBare(ep, 0)
+}
+
+func (e Evidence) LegacyAminoUnmarshal(b []byte) (CacheObject, error) {
+	ep := evidence{}
+	err := ModuleCdc.UnmarshalBinaryBare(b, &ep, 0)
+	if err != nil {
+		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache, moduleCdc unmarshal binary bare: %s", err.Error())
+	}
+	bloomFilter := bloom.BloomFilter{}
+	err = bloomFilter.GobDecode(ep.BloomBytes)
+	if err != nil {
+		return Evidence{}, fmt.Errorf("could not unmarshal into evidence from cache, bloom bytes gob decode: %s", err.Error())
+	}
+	evidence := Evidence{
+		Bloom:         bloomFilter,
+		SessionHeader: ep.SessionHeader,
+		NumOfProofs:   ep.NumOfProofs,
+		Proofs:        ep.Proofs,
+		EvidenceType:  ep.EvidenceType,
+	}
+	return evidence, nil
+}
 
 var (
 	_ CacheObject          = Evidence{} // satisfies the cache object interface
