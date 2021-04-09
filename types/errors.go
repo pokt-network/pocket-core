@@ -370,7 +370,13 @@ func (err *sdkError) Format(s fmt.State, verb rune) {
 }
 
 func (err sdkError) MarshalJSON() ([]byte, error) {
-	return json.Marshal(err.Error())
+	errMsg := err.Error()
+	jsonErr := humanReadableError{
+		Codespace: err.codespace,
+		Code:      err.code,
+		Message:   errMsg,
+	}
+	return json.Marshal(jsonErr)
 }
 
 //----------------------------------------
