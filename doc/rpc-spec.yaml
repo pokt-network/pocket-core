@@ -54,56 +54,56 @@ paths:
               schema:
                 $ref: '#/components/schemas/QueryDispatchResponse'
               example:
-                block_height: 5
+                block_height: 1
                 session:
                   header:
-                    app_public_key: e9477af9b42001280033bab76670eac4274cb7321e52280ceba964e1c61db87c
-                    chain: 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                    app_public_key: f6f1f166536c55d3ad7b1b2629f0bce8a0a3dbd455d576ccb235419bcbfed7fd
+                    chain: '0001'
                     session_height: 1
-                  key: OmEeJO2o6xvbldJxFpqI0rRVwVtBTmRGGSlGqzxGzgk=
+                  key: pY2rZUEkygFRUZ21iT0XiyQDkifIQC74IkoQN2YvisU=
                   nodes:
-                    - address: afaa802b1736396d31825f60487e4da030ea85bb
+                    - address: ebea4171cee8eff0f388e1ed97c83a73022228d0
                       chains:
-                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                        - '0001'
                       jailed: false
-                      public_key: a01bc947f512a971131474986cc0c8cb3caed6bcfca076e6b78ac2b838ebefed
-                      service_url: '0.0.0.0:8081'
+                      public_key: b31b52daa582838b72d71628814e8523d5b9ea08bb0b49a438693eb5269b4635
+                      service_url: https://foo.bar:8080
+                      status: 2
+                      tokens: '10000000'
+                      unstaking_time: '0001-01-01T00:00:00Z'
+                    - address: 8de67229b1232b2bb77dc2c3ab247a62f47968d3
+                      chains:
+                        - '0001'
+                      jailed: false
+                      public_key: 993366e5b648b1e9f544daab0652b8fc9b3657eb9a0ee54afc53852d66b1c2d5
+                      service_url: https://foo.bar:8080
+                      status: 2
+                      tokens: '10000000'
+                      unstaking_time: '0001-01-01T00:00:00Z'
+                    - address: fefe600f9b257e96633245731eff6c34efbb9a50
+                      chains:
+                        - '0001'
+                      jailed: false
+                      public_key: f6f1f166536c55d3ad7b1b2629f0bce8a0a3dbd455d576ccb235419bcbfed7fd
+                      service_url: https://foo.bar:8080
+                      status: 2
+                      tokens: '10000000'
+                      unstaking_time: '0001-01-01T00:00:00Z'
+                    - address: fe6bff490b6dc4b2435c5c9d4960f2e79c792b1d
+                      chains:
+                        - '0001'
+                      jailed: false
+                      public_key: 5527f0f7f3d16bcec4e268a5fa8a9745f60e1497ea6745e58e2d985f2ac03875
+                      service_url: https://foo.bar:8080
                       status: 2
                       tokens: '1000000000000000000'
                       unstaking_time: '0001-01-01T00:00:00Z'
-                    - address: 88967bf78114d5ea56e1a02fb3fd2cac3607d674
+                    - address: b97de5e4da9bb3978b4afb76abef9e04e6b86605
                       chains:
-                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                        - '0001'
                       jailed: false
-                      public_key: c61954ba119bbbb2c1efa1d44f5f4001438566fd8aee2892387ef55ded82c159
-                      service_url: '0.0.0.0:8081'
-                      status: 2
-                      tokens: '10000000'
-                      unstaking_time: '0001-01-01T00:00:00Z'
-                    - address: a0c005c63f97a13e540e6bb484821d77f3fdaf75
-                      chains:
-                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
-                      jailed: false
-                      public_key: db07958aa0035fbb3e7e2575fbbb062a7d5ef5580cd0fe80142a4df5d31a316a
-                      service_url: '0.0.0.0:8081'
-                      status: 2
-                      tokens: '10000000'
-                      unstaking_time: '0001-01-01T00:00:00Z'
-                    - address: e3b15b922be9cabbe3b4a3a788dec8dc95c8f3dc
-                      chains:
-                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
-                      jailed: false
-                      public_key: a9c5d4463d5e233dd9437a2044a6595fe69ced34716a8e1c8ad86d3196f3fd78
-                      service_url: '0.0.0.0:8081'
-                      status: 2
-                      tokens: '10000000'
-                      unstaking_time: '0001-01-01T00:00:00Z'
-                    - address: fa11cff20c510fa1588915bd48391fee802822c8
-                      chains:
-                        - 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
-                      jailed: false
-                      public_key: b62798f50be7055073f8b2f19ca4b2262a2c82f2ab16fc907e9db1cce551ffce
-                      service_url: '0.0.0.0:8081'
+                      public_key: f11ab260c80cc835d5258c51f6aad69008bba1fd484f8c55d21e8bc85f737a21
+                      service_url: https://foo.bar:8080
                       status: 2
                       tokens: '10000000'
                       unstaking_time: '0001-01-01T00:00:00Z'
@@ -1860,10 +1860,7 @@ components:
         block_meta:
           $ref: '#/components/schemas/BlockMeta'
     QueryDispatchRequest:
-      type: object
-      properties:
-        session_header:
-          $ref: '#/components/schemas/SessionHeader'
+      $ref: '#/components/schemas/SessionHeader'
     QueryDispatchResponse:
       type: object
       properties:
