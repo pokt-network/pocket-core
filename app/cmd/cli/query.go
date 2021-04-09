@@ -316,7 +316,7 @@ var nodeLimit int
 func init() {
 	queryNodes.Flags().StringVar(&nodeStakingStatus, "staking-status", "", "the staking status of the node")
 	queryNodes.Flags().StringVar(&nodeJailedStatus, "jailed-status", "", "the jailed status of the node")
-	queryNodes.Flags().StringVar(&blockchain, "blockchain", "", "the network identifier these nodes support")
+	queryNodes.Flags().StringVar(&blockchain, "blockchain", "", "the relay chain identifiers these nodes support")
 	queryNodes.Flags().IntVar(&nodePage, "nodePage", 1, "mark the nodePage you want")
 	queryNodes.Flags().IntVar(&nodeLimit, "nodeLimit", 10000, "reduce the amount of results")
 }
@@ -324,7 +324,7 @@ func init() {
 // NOTE: flag "blockchain" is defined but not implemented at this time 2020/10/03
 
 var queryNodes = &cobra.Command{
-	Use:   "nodes [--staking-status (staked | unstaking)] [--jailed-status (jailed | unjailed)] [--blockchain <network id>] [--nodePage=<nodePage>] [--nodeLimit=<nodeLimit>] [<height>]",
+	Use:   "nodes [--staking-status (staked | unstaking)] [--jailed-status (jailed | unjailed)] [--blockchain <relayChainID>] [--nodePage=<nodePage>] [--nodeLimit=<nodeLimit>] [<height>]",
 	Short: "Gets nodes",
 	Long:  `Retrieves the list of all nodes known at the specified <height>.`,
 	// Args:  cobra.ExactArgs(3),
@@ -621,7 +621,7 @@ var queryNodeClaims = &cobra.Command{
 }
 
 var queryNodeClaim = &cobra.Command{
-	Use:   "node-claim <address> <appPubKey> <claimType=(relay | challenge)> <chainID> <sessionHeight> [<height>]`",
+	Use:   "node-claim <address> <appPubKey> <claimType=(relay | challenge)> <relayChainID> <sessionHeight> [<height>]`",
 	Short: "Gets node pending claim for work completed",
 	Long:  `Gets node pending claim for verified proof of work submitted for a specific session`,
 	Args:  cobra.MinimumNArgs(5),
@@ -701,8 +701,8 @@ var queryPocketParams = &cobra.Command{
 
 var queryPocketSupportedChains = &cobra.Command{
 	Use:   "supported-networks [<height>]",
-	Short: "Gets pocket supported networks",
-	Long:  `Retrieves the list Network Identifiers supported by the network at the specified <height>`,
+	Short: "Gets pocket supported relay chains",
+	Long:  `Retrieves the list Relay Chain Identifiers supported by the network at the specified <height>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
