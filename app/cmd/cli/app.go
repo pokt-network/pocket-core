@@ -30,9 +30,9 @@ from staking and unstaking; to generating AATs.`,
 }
 
 var appStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <networkRelayIDs> <chainID> <fee> <legacyCodec=(true | false)>",
+	Use:   "stake <fromAddr> <amount> <relayChainIDs> <networkID> <fee> <legacyCodec=(true | false)>",
 	Short: "Stake an app into the network",
-	Long: `Stake the app into the network, making it have network throughput.
+	Long: `Stake the app into the network, giving it network throughput for the selected chains.
 Will prompt the user for the <fromAddr> account passphrase.`,
 	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -80,7 +80,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var appUnstakeCmd = &cobra.Command{
-	Use:   "unstake <fromAddr> <chainID> <fee> <legacyCodec(true | false)>",
+	Use:   "unstake <fromAddr> <networkID> <fee> <legacyCodec(true | false)>",
 	Short: "Unstake an app from the network",
 	Long: `Unstake an app from the network, changing it's status to Unstaking.
 Prompts the user for the <fromAddr> account passphrase.`,
