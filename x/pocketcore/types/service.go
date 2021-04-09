@@ -336,10 +336,11 @@ func sortJSONResponse(response string) string {
 }
 
 func ErrorWarrantsDispatch(err error) bool {
-	if err == NewOverServiceError(ModuleName) ||
-		err == NewInvalidBlockHeightError(ModuleName) ||
-		err == NewInvalidSessionError(ModuleName) ||
-		err == NewOutOfSyncRequestError(ModuleName) {
+	cErr := err.(sdk.Error)
+	if cErr.Code() == NewOverServiceError(ModuleName).Code() ||
+		cErr.Code() == NewInvalidBlockHeightError(ModuleName).Code() ||
+		cErr.Code() == NewInvalidSessionError(ModuleName).Code() ||
+		cErr.Code() == NewOutOfSyncRequestError(ModuleName).Code() {
 		return true
 	}
 	return false

@@ -369,6 +369,10 @@ func (err *sdkError) Format(s fmt.State, verb rune) {
 	}
 }
 
+func (err sdkError) MarshalJSON() ([]byte, error) {
+	return json.Marshal(err.Error())
+}
+
 //----------------------------------------
 // REST error utilities
 
