@@ -29,7 +29,7 @@ from DAOTransfer, change parameters; to performing protocol Upgrades. `,
 }
 
 var govDAOTransfer = &cobra.Command{
-	Use:   "transfer <amount> <fromAddr> <toAddr> <chainID> <fees> <legacyCodec=(true | false)>",
+	Use:   "transfer <amount> <fromAddr> <toAddr> <networkID> <fees> <legacyCodec=(true | false)>",
 	Short: "Transfer from DAO",
 	Long: `If authorized, move funds from the DAO.
 Actions: [burn, transfer]`,
@@ -75,7 +75,7 @@ Actions: [burn, transfer]`,
 }
 
 var govDAOBurn = &cobra.Command{
-	Use:   "burn <amount> <fromAddr> <toAddr> <chainID> <fees> <legacyCodec=(true | false)>",
+	Use:   "burn <amount> <fromAddr> <toAddr> <networkID> <fees> <legacyCodec=(true | false)>",
 	Short: "Burn from DAO",
 	Long: `If authorized, burn funds from the DAO.
 Actions: [burn, transfer]`,
@@ -123,7 +123,7 @@ Actions: [burn, transfer]`,
 	},
 }
 var govChangeParam = &cobra.Command{
-	Use:   "change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)> <fees> <legacyCodec=(true | false)>",
+	Use:   "change_param <fromAddr> <networkID> <paramKey module/param> <paramValue (jsonObj)> <fees> <legacyCodec=(true | false)>",
 	Short: "Edit a param in the network",
 	Long: `If authorized, submit a tx to change any param from any module.
 Will prompt the user for the <fromAddr> account passphrase.`,
@@ -161,7 +161,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var govUpgrade = &cobra.Command{
-	Use:   "upgrade <fromAddr> <atHeight> <version> <chainID> <fees> <legacyCodec=(true | false)>",
+	Use:   "upgrade <fromAddr> <atHeight> <version> <networkID> <fees> <legacyCodec=(true | false)>",
 	Short: "Upgrade the protocol",
 	Long: `If authorized, upgrade the protocol.
 Will prompt the user for the <fromAddr> account passphrase.`,
