@@ -28,7 +28,7 @@ from staking and unstaking; to unjailing.`,
 }
 
 var nodeStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <networkRelayIDs> <serviceURI> <chainID> <fee> <legacyCodec=(true | false)>",
+	Use:   "stake <fromAddr> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> <legacyCodec=(true | false)>",
 	Short: "Stake a node in the network",
 	Long: `Stake the node into the network, making it available for service.
 Will prompt the user for the <fromAddr> account passphrase.`,
@@ -79,7 +79,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var nodeUnstakeCmd = &cobra.Command{
-	Use:   "unstake <fromAddr> <chainID> <fee> <legacyCodec=(true | false)>",
+	Use:   "unstake <fromAddr> <networkID> <fee> <legacyCodec=(true | false)>",
 	Short: "Unstake a node in the network",
 	Long: `Unstake a node from the network, changing it's status to Unstaking.
 Will prompt the user for the <fromAddr> account passphrase.`,
@@ -117,7 +117,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var nodeUnjailCmd = &cobra.Command{
-	Use:   "unjail <fromAddr> <chainID> <fee> <legacyCodec=(true | false)>",
+	Use:   "unjail <fromAddr> <networkID> <fee> <legacyCodec=(true | false)>",
 	Short: "Unjails a node in the network",
 	Long: `Unjails a node from the network, allowing it to participate in service and consensus again.
 Will prompt the user for the <fromAddr> account passphrase.`,
