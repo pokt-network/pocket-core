@@ -379,7 +379,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 
 // sendTxCmd represents the sendTx command
 var sendTxCmd = &cobra.Command{
-	Use:   "send-tx <fromAddr> <toAddr> <amount> <chainID> <fee> <memo> <legacyCodec>",
+	Use:   "send-tx <fromAddr> <toAddr> <amount> <networkID> <fee> <memo> <legacyCodec>",
 	Short: "Send uPOKT",
 	Long: `Sends <amount> uPOKT <fromAddr> to <toAddr> with the specified <memo>.
 Prompts the user for <fromAddr> account passphrase. Using Protobuf or Amino (<legacyCodec>) true/false`,
@@ -506,7 +506,7 @@ var newMultiPublicKey = &cobra.Command{
 }
 
 var buildMultisig = &cobra.Command{
-	Use:   "build-MS-Tx <signer-address> <json-message> <ordered-comma-separated-hex-pubkeys> <chainID> <fees> <legacyCodec>",
+	Use:   "build-MS-Tx <signer-address> <json-message> <ordered-comma-separated-hex-pubkeys> <networkID> <fees> <legacyCodec>",
 	Short: "Build and sign a multisig tx",
 	Args:  cobra.ExactArgs(6),
 	Long:  `Build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
@@ -544,7 +544,7 @@ var buildMultisig = &cobra.Command{
 }
 
 var signMS = &cobra.Command{
-	Use:   "sign-ms-tx <signer-address> <hex-amino-stdtx> <hex-pubkeys> <chainID> <legacyCodec>",
+	Use:   "sign-ms-tx <signer-address> <hex-amino-stdtx> <hex-pubkeys> <networkID> <legacyCodec>",
 	Short: "sign a multisig tx",
 	Long:  `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object`,
 	Args:  cobra.ExactArgs(5),
@@ -576,7 +576,7 @@ var signMS = &cobra.Command{
 }
 
 var signNexMS = &cobra.Command{
-	Use:   "sign-ms-next <signer-address> <hex-stdtx> <chainID> <legacyCodec>",
+	Use:   "sign-ms-next <signer-address> <hex-stdtx> <networkID> <legacyCodec>",
 	Short: "Sign a multisig tx",
 	Long: `Sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
 NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.`,
