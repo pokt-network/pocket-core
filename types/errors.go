@@ -369,8 +369,12 @@ func (err *sdkError) Format(s fmt.State, verb rune) {
 	}
 }
 
+func (err *sdkError) ErrorMsg() string {
+	return fmt.Sprintf(fmt.Sprintf("%v", err))
+}
+
 func (err sdkError) MarshalJSON() ([]byte, error) {
-	errMsg := err.Error()
+	errMsg := err.ErrorMsg()
 	jsonErr := humanReadableError{
 		Codespace: err.codespace,
 		Code:      err.code,
