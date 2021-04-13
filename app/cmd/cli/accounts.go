@@ -81,7 +81,7 @@ var getValidator = &cobra.Command{
 			return
 		}
 		val := app.GetPrivValFile()
-		fmt.Printf("Validator Address:%s\n", val.Address)
+		fmt.Printf("Validator Address:%s\n", strings.ToLower(val.Address.String()))
 	},
 }
 
