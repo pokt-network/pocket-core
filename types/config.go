@@ -129,8 +129,8 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.PrivValidatorKey = DefaultPVKName
 	c.TendermintConfig.PrivValidatorState = DefaultPVSName
 	c.TendermintConfig.P2P.AddrBookStrict = false
-	c.TendermintConfig.P2P.MaxNumInboundPeers = 50
-	c.TendermintConfig.P2P.MaxNumOutboundPeers = 30
+	c.TendermintConfig.P2P.MaxNumInboundPeers = 21
+	c.TendermintConfig.P2P.MaxNumOutboundPeers = 7
 	c.TendermintConfig.LogLevel = "*:info, *:error"
 	c.TendermintConfig.TxIndex.Indexer = DefaultTxIndexer
 	c.TendermintConfig.TxIndex.IndexKeys = DefaultTxIndexTags
