@@ -1,3 +1,10 @@
+## RC-0.6.1
+- Added utility CLI command to convert evidence from amino to protobuf
+- Updated RPC spec to include stdTx
+- Return Dispatch for certain failed relay codes to save a hop on client side
+- Fix simulate relay to use basic auth
+- Updated User Guide to use RC-0.6.0
+
 ## RC-0.6.0
 - Security patch in merkle sum index
 - Security patch for BlockHash

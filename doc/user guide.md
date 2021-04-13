@@ -34,7 +34,7 @@ Pocket Core is software for Pocket Network 'node runners'. This software impleme
 #### Checkout the [latest release](https://github.com/pokt-network/pocket-core/releases)
 `git checkout tags/<release tag>`
 
-Example: *git checkout tags/RC-0.5.2.9*
+Example: *git checkout tags/RC-0.6.1*
 
 #### Build
 
@@ -45,7 +45,7 @@ Example: *go build -o $GOPATH/bin/pocket $GOPATH/src/github.com/pok-network/pock
 #### Test installation
 ```
 $ pocket version
-> RC-0.5.2.9
+> RC-0.6.1
 ```
 ### From Homebrew
 `brew tap pokt-network/pocket-core && brew install pokt-network/pocket-core/pocket`
@@ -53,7 +53,7 @@ $ pocket version
 #### Test installation
 ```
 $ pocket version
-> RC-0.5.2.9
+> RC-0.6.1
 ```
 ### From Deployment Artifact
 See [pokt-network/pocket-core-deployments](https://github.com/pokt-network/pocket-core-deployments)
@@ -96,7 +96,7 @@ To stake a Validator in Pocket Network, the account must have a balance above th
 
 Send POKT with the following command:
 ```
-pocket accounts send-tx <fromAddr> <toAddr> <uPOKT amount> mainnet 10000 ""
+pocket accounts send-tx <fromAddr> <toAddr> <uPOKT amount> mainnet 10000 "" true
 ```
 #### Set the account as Validator
 ```
@@ -126,9 +126,9 @@ NOTE: *Ensure the node is all the way synced before proceeding to the next step*
 #### Stake the Validator
 Stake the account to participate in the Network as a **Validator**
 ```
-pocket nodes stake <address> <amount> <relay_chains> <serviceURI> mainnet 10000
+pocket nodes stake <address> <amount> <relay_chains> <serviceURI> mainnet 10000 true
 ```
-Example: *pocket nodes stake 3ee61299d5bbbd2974cddcc194d9b547c7629546 20000000000 ["0001", "0002"] https://pokt.rocks mainnet 10000*
+Example: *pocket nodes stake 3ee61299d5bbbd2974cddcc194d9b547c7629546 20000000000 ["0001", "0002"] https://pokt.rocks mainnet 10000 true*
 
 **Important:** *Stake 'well over' the minimum stake to avoid force-unstake burning*
 ## Config

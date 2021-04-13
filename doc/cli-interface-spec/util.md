@@ -18,6 +18,14 @@ If incorrect: please remove the chains.json with the delete-chains command
 
 ```
 
+- `pocket util convert-pocket-evidence-db`
+> Convert pocket evidence db to proto from amino.
+>
+> Example output:
+```
+Successfully converted pocket evidence db
+```
+
 - `pocket util update-configs`
 > Update the config file with new params defaults for consensus/leveldbopts/p2p/cache/mempool/fastsync.
 >
