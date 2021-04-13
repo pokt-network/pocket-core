@@ -16,6 +16,7 @@ type Keybase interface {
 	List() ([]KeyPair, error)
 	Get(address types.Address) (KeyPair, error)
 	Delete(address types.Address, passphrase string) error
+	UnsafeDelete(address types.Address) error
 	Update(address types.Address, oldpass string, newpass string) error
 	GetCoinbase() (KeyPair, error)
 	SetCoinbase(address types.Address) error
