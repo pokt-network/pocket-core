@@ -665,6 +665,25 @@ func Credentials() string {
 	return strings.TrimSpace(string(bytePassword))
 }
 
+func Confirmation() bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Println("yes | no")
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading string: ", err.Error())
+			return false
+		}
+		response = strings.ToLower(strings.TrimSpace(response))
+		if response == "y" || response == "yes" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
+	}
+}
+
 func SetValidator(address sdk.Address, passphrase string) {
 	resetFilePV(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey, GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorState, log.NewNopLogger())
 	keys := MustGetKeybase()

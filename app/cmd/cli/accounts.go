@@ -39,6 +39,7 @@ func init() {
 	accountsCmd.AddCommand(signMS)
 	accountsCmd.AddCommand(signNexMS)
 	accountsCmd.AddCommand(buildMultisig)
+	accountsCmd.AddCommand(unsafeDeleteCmd)
 }
 
 // accountsCmd represents the accounts namespace command
@@ -125,6 +126,37 @@ Will prompt the user for the account passphrase`,
 		err = kb.Delete(addr, app.Credentials())
 		if err != nil {
 			fmt.Printf("Error Deleting Account, check your credentials")
+			return
+		}
+		fmt.Println("Account deleted successfully")
+	},
+}
+
+// unsafeDeleteCmd represents the unsafe delete command (no passphrase)
+var unsafeDeleteCmd = &cobra.Command{
+	Use:   "unsafe-delete <address>",
+	Short: "Delete an account without passphrase",
+	Long:  `Deletes a keypair from the keybase without passphrase verification`,
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		kb := app.MustGetKeybase()
+		if kb == nil {
+			fmt.Println(app.UninitializedKeybaseError.Error())
+			return
+		}
+		addr, err := types.AddressFromHex(args[0])
+		if err != nil {
+			fmt.Printf("Address error %s", err)
+			return
+		}
+		fmt.Printf("Are you sure you would like to delete account %s \n", addr.String())
+		if !app.Confirmation() {
+			return
+		}
+		err = kb.UnsafeDelete(addr)
+		if err != nil {
+			fmt.Printf("Error deleting account: %s", err.Error())
 			return
 		}
 		fmt.Println("Account deleted successfully")

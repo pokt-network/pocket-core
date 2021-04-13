@@ -81,6 +81,16 @@ func (lkb lazyKeybase) Delete(address types.Address, passphrase string) error {
 	return newDbKeybase(db).Delete(address, passphrase)
 }
 
+func (lkb *lazyKeybase) UnsafeDelete(address sdk.Address) error {
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	return newDbKeybase(db).UnsafeDelete(address)
+}
+
 func (lkb lazyKeybase) Update(address types.Address, oldpass string, newpass string) error {
 	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
