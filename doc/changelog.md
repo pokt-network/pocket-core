@@ -4,6 +4,7 @@
 - Return Dispatch for certain failed relay codes to save a hop on client side
 - Fix simulate relay to use basic auth
 - Updated User Guide to use RC-0.6.0
+- Added unsafe delete command to the keybaseg
 
 ## RC-0.6.0
 - Security patch in merkle sum index

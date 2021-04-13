@@ -31,6 +31,16 @@ Public Key: 0x....
 KeyPair 0x... deleted successfully.
 ```
 
+- `pocket accounts unsafe-delete <address>`
+> Deletes an account from the keybase without a passphrase
+>
+> Arguments:
+> - `<address>`: Target address.
+> Example output:
+```
+KeyPair 0x... deleted successfully.
+```
+
 - `pocket accounts update-passphrase <address>`
 > Updates the passphrase for the indicated account. Will prompt the user for the current account passphrase and the new account passphrase.
 >
