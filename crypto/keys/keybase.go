@@ -95,8 +95,7 @@ func (kb dbKeybase) Delete(address types.Address, passphrase string) error {
 		return err
 	}
 
-	err = kb.db.DeleteSync(addrKey(kp.GetAddress()))
-	return nil
+	return kb.db.DeleteSync(addrKey(kp.GetAddress()))
 }
 
 // Delete without passphrase verification
