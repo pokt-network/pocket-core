@@ -1,4 +1,5 @@
 ## RC-0.6.1
+- Fixed RelaysToTokensMultiplier bug
 - Added utility CLI command to convert evidence from amino to protobuf
 - Updated RPC spec to include stdTx
 - Return Dispatch for certain failed relay codes to save a hop on client side

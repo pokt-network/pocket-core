@@ -134,21 +134,22 @@ func (k Keeper) MaxJailedBlocks(ctx sdk.Ctx) (res int64) {
 // GetParams - Retrieve all parameters as types.Params
 func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 	return types.Params{
-		UnstakingTime:           k.UnStakingTime(ctx),
-		MaxValidators:           k.MaxValidators(ctx),
-		StakeDenom:              k.StakeDenom(ctx),
-		StakeMinimum:            k.MinimumStake(ctx),
-		ProposerAllocation:      k.ProposerAllocation(ctx),
-		SessionBlockFrequency:   k.BlocksPerSession(ctx),
-		DAOAllocation:           k.DAOAllocation(ctx),
-		MaxEvidenceAge:          k.MaxEvidenceAge(ctx),
-		SignedBlocksWindow:      k.SignedBlocksWindow(ctx),
-		MinSignedPerWindow:      sdk.NewDec(k.MinSignedPerWindow(ctx)),
-		DowntimeJailDuration:    k.DowntimeJailDuration(ctx),
-		SlashFractionDoubleSign: k.SlashFractionDoubleSign(ctx),
-		SlashFractionDowntime:   k.SlashFractionDowntime(ctx),
-		MaximumChains:           k.MaxChains(ctx),
-		MaxJailedBlocks:         k.MaxJailedBlocks(ctx),
+		RelaysToTokensMultiplier: k.RelaysToTokensMultiplier(ctx).Int64(),
+		UnstakingTime:            k.UnStakingTime(ctx),
+		MaxValidators:            k.MaxValidators(ctx),
+		StakeDenom:               k.StakeDenom(ctx),
+		StakeMinimum:             k.MinimumStake(ctx),
+		SessionBlockFrequency:    k.BlocksPerSession(ctx),
+		DAOAllocation:            k.DAOAllocation(ctx),
+		ProposerAllocation:       k.ProposerAllocation(ctx),
+		MaximumChains:            k.MaxChains(ctx),
+		MaxJailedBlocks:          k.MaxJailedBlocks(ctx),
+		MaxEvidenceAge:           k.MaxEvidenceAge(ctx),
+		SignedBlocksWindow:       k.SignedBlocksWindow(ctx),
+		MinSignedPerWindow:       sdk.NewDec(k.MinSignedPerWindow(ctx)),
+		DowntimeJailDuration:     k.DowntimeJailDuration(ctx),
+		SlashFractionDoubleSign:  k.SlashFractionDoubleSign(ctx),
+		SlashFractionDowntime:    k.SlashFractionDowntime(ctx),
 	}
 }
 
