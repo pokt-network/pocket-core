@@ -446,11 +446,11 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 
 // sendTxCmd represents the sendTx command
 var sendTxCmd = &cobra.Command{
-	Use:   "send-tx <fromAddr> <toAddr> <amount> <networkID> <fee> <memo> <legacyCodec>",
+	Use:   "send-tx <fromAddr> <toAddr> <amount> <networkID> <fee> <memo> [<legacyCodec>]",
 	Short: "Send uPOKT",
 	Long: `Sends <amount> uPOKT <fromAddr> to <toAddr> with the specified <memo>.
 Prompts the user for <fromAddr> account passphrase. Using Protobuf or Amino (<legacyCodec>) true/false`,
-	Args: cobra.ExactArgs(7),
+	Args: cobra.MinimumNArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		amount, err := strconv.Atoi(args[2])
@@ -464,10 +464,14 @@ Prompts the user for <fromAddr> account passphrase. Using Protobuf or Amino (<le
 			return
 		}
 		memo := args[5]
-		legacy := strings.ToLower(args[6])
 		var legacyCodec bool
-		if legacy == "true" || legacy == "t" {
+		if len(args) == 6 {
 			legacyCodec = true
+		} else {
+			legacy := strings.ToLower(args[6])
+			if legacy == "true" || legacy == "t" {
+				legacyCodec = true
+			}
 		}
 		fmt.Printf("Adding Memo: %v\n", memo)
 		fmt.Println("Enter passphrase: ")
@@ -573,9 +577,9 @@ var newMultiPublicKey = &cobra.Command{
 }
 
 var buildMultisig = &cobra.Command{
-	Use:   "build-MS-Tx <signer-address> <json-message> <ordered-comma-separated-hex-pubkeys> <networkID> <fees> <legacyCodec>",
+	Use:   "build-MS-Tx <signer-address> <json-message> <ordered-comma-separated-hex-pubkeys> <networkID> <fees> [<legacyCodec>]",
 	Short: "Build and sign a multisig tx",
-	Args:  cobra.ExactArgs(6),
+	Args:  cobra.MinimumNArgs(5),
 	Long:  `Build and sign a multisignature transaction from scratch: result is hex encoded std tx object.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
@@ -590,10 +594,15 @@ var buildMultisig = &cobra.Command{
 			}
 			pks = append(pks, p)
 		}
-		legacy := args[5]
+
 		var legacyCodec bool
-		if legacy == "true" || legacy == "t" {
+		if len(args) == 5 {
 			legacyCodec = true
+		} else {
+			legacy := args[5]
+			if legacy == "true" || legacy == "t" {
+				legacyCodec = true
+			}
 		}
 		multiSigPubKey := crypto.PublicKeyMultiSignature{PublicKeys: pks}
 		fmt.Println("Enter passphrase: ")
@@ -611,10 +620,10 @@ var buildMultisig = &cobra.Command{
 }
 
 var signMS = &cobra.Command{
-	Use:   "sign-ms-tx <signer-address> <hex-amino-stdtx> <hex-pubkeys> <networkID> <legacyCodec>",
+	Use:   "sign-ms-tx <signer-address> <hex-amino-stdtx> <hex-pubkeys> <networkID> [<legacyCodec>]",
 	Short: "sign a multisig tx",
 	Long:  `sign a multisignature transaction using public keys, and the transaciton object, result is hex encoded std tx object`,
-	Args:  cobra.ExactArgs(5),
+	Args:  cobra.MinimumNArgs(4),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		msg := args[1]
@@ -628,10 +637,14 @@ var signMS = &cobra.Command{
 			}
 			pks = append(pks, p)
 		}
-		legacy := args[4]
 		var legacyCodec bool
-		if legacy == "true" || legacy == "t" {
+		if len(args) == 4 {
 			legacyCodec = true
+		} else {
+			legacy := args[4]
+			if legacy == "true" || legacy == "t" {
+				legacyCodec = true
+			}
 		}
 		fmt.Println("Enter passphrase: ")
 		bz, err := app.SignMultisigOutOfOrder(args[0], msg, app.Credentials(pwd), args[3], pks, legacyCodec)
@@ -643,18 +656,22 @@ var signMS = &cobra.Command{
 }
 
 var signNexMS = &cobra.Command{
-	Use:   "sign-ms-next <signer-address> <hex-stdtx> <networkID> <legacyCodec>",
+	Use:   "sign-ms-next <signer-address> <hex-stdtx> <networkID> [<legacyCodec>]",
 	Short: "Sign a multisig tx",
 	Long: `Sign a multisignature transaction using the transaciton object, result is hex encoded std tx object
 NOTE: you MUST be the next signer (in order of public keys in the ms public key object) or the signature will be invalid.`,
-	Args: cobra.ExactArgs(4),
+	Args: cobra.MinimumNArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		msg := args[1]
-		legacy := args[3]
 		var legacyCodec bool
-		if legacy == "true" || legacy == "t" {
+		if len(args) == 3 {
 			legacyCodec = true
+		} else {
+			legacy := args[3]
+			if legacy == "true" || legacy == "t" {
+				legacyCodec = true
+			}
 		}
 		fmt.Println("Enter password: ")
 		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials(pwd), args[2], legacyCodec)
