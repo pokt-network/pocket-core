@@ -28,6 +28,13 @@ var govCmd = &cobra.Command{
 from DAOTransfer, change parameters; to performing protocol Upgrades. `,
 }
 
+func init() {
+	govDAOTransfer.Flags().StringVar(&pwd, "pwd", "", "defines the passphrase used by the cmd non empty usage bypass interactive prompt ")
+	govDAOBurn.Flags().StringVar(&pwd, "pwd", "", "defines the passphrase used by the cmd non empty usage bypass interactive prompt ")
+	govChangeParam.Flags().StringVar(&pwd, "pwd", "", "defines the passphrase used by the cmd non empty usage bypass interactive prompt ")
+	govUpgrade.Flags().StringVar(&pwd, "pwd", "", "defines the passphrase used by the cmd non empty usage bypass interactive prompt ")
+}
+
 var govDAOTransfer = &cobra.Command{
 	Use:   "transfer <amount> <fromAddr> <toAddr> <networkID> <fees> <legacyCodec=(true | false)>",
 	Short: "Transfer from DAO",
@@ -54,7 +61,7 @@ Actions: [burn, transfer]`,
 			legacyCodec = true
 		}
 		fmt.Println("Enter Password: ")
-		pass := app.Credentials()
+		pass := app.Credentials(pwd)
 		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[3], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
@@ -103,7 +110,7 @@ Actions: [burn, transfer]`,
 			legacyCodec = true
 		}
 		fmt.Println("Enter Password: ")
-		pass := app.Credentials()
+		pass := app.Credentials(pwd)
 		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[3], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
@@ -141,7 +148,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		if legacy == "true" || legacy == "t" {
 			legacyCodec = true
 		}
-		res, err := ChangeParam(args[0], args[2], []byte(args[3]), app.Credentials(), args[1], int64(fees), legacyCodec)
+		res, err := ChangeParam(args[0], args[2], []byte(args[3]), app.Credentials(pwd), args[1], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -187,7 +194,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			legacyCodec = true
 		}
 		fmt.Println("Enter Password: ")
-		res, err := Upgrade(args[0], u, app.Credentials(), args[3], int64(fees), legacyCodec)
+		res, err := Upgrade(args[0], u, app.Credentials(pwd), args[3], int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return

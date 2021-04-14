@@ -5,7 +5,8 @@
 - Return Dispatch for certain failed relay codes to save a hop on client side
 - Fix simulate relay to use basic auth
 - Updated User Guide to use RC-0.6.0
-- Added unsafe delete command to the keybaseg
+- Added unsafe delete command to the keybase
+- Added optional flag to bypass interactive prompt for commands that require passphrase input
 
 ## RC-0.6.0
 - Security patch in merkle sum index
@@ -25,7 +26,7 @@
 - Added configurable cache PrevCtx, Validators, and Applications
 - Don't broadcast claims/proofs if syncing
 - Spread out claims/proofs between non-session blocks
-- Added max claim age configuration for proof submission 
+- Added max claim age configuration for proof submission
 - Reorganized non-consensus breaking code in Relay/Merkle Verify for efficiency before reads from state
 - Configuration to remove ABCILogs
 - Fixed (pseudo) memory leak in Tendermints RecvPacketMsg()

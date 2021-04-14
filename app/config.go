@@ -657,12 +657,16 @@ func MakeCodec() {
 	codec.RegisterEvidences(cdc.AminoCodec(), cdc.ProtoCodec())
 }
 
-func Credentials() string {
-	bytePassword, err := terminal.ReadPassword(syscall.Stdin)
-	if err != nil {
-		fmt.Println(err)
+func Credentials(pwd string) string {
+	if pwd != "" && strings.TrimSpace(pwd) != "" {
+		return strings.TrimSpace(pwd)
+	} else {
+		bytePassword, err := terminal.ReadPassword(syscall.Stdin)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return strings.TrimSpace(string(bytePassword))
 	}
-	return strings.TrimSpace(string(bytePassword))
 }
 
 func Confirmation() bool {

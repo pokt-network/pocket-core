@@ -50,6 +50,32 @@ var accountsCmd = &cobra.Command{
 from creating and deleting accounts; to importing and exporting accounts.`,
 }
 
+var pwd, oldPwd, decryptPwd, encryptPwd string
+
+func init() {
+	buildMultisig.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	createCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	deleteCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	sendTxCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	setValidator.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	signCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	signMS.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	signNexMS.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+
+	exportCmd.Flags().StringVar(&decryptPwd, "pwd-decrypt", "", "decrypt passphrase used by the cmd, non empty usage bypass interactive prompt")
+	exportCmd.Flags().StringVar(&encryptPwd, "pwd-encrypt", "", "encrypt passphrase used by the cmd, non empty usage bypass interactive prompt")
+
+	exportRawCmd.Flags().StringVar(&decryptPwd, "pwd-decrypt", "", "decrypt passphrase used by the cmd, non empty usage bypass interactive prompt")
+
+	importArmoredCmd.Flags().StringVar(&decryptPwd, "pwd-decrypt", "", "decrypt passphrase used by the cmd, non empty usage bypass interactive prompt")
+	importArmoredCmd.Flags().StringVar(&encryptPwd, "pwd-encrypt", "", "encrypt passphrase used by the cmd, non empty usage bypass interactive prompt")
+
+	importCmd.Flags().StringVar(&encryptPwd, "pwd-encrypt", "", "encrypt passphrase used by the cmd, non empty usage bypass interactive prompt")
+
+	updatePassphraseCmd.Flags().StringVar(&pwd, "pwd-new", "", "new passphrase used by the cmd, non empty usage bypass interactive prompt")
+	updatePassphraseCmd.Flags().StringVar(&oldPwd, "pwd-old", "", "old passphrase used by the cmd, non empty usage bypass interactive prompt")
+}
+
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create",
@@ -60,12 +86,21 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir)
 		fmt.Print("Enter Passphrase: \n")
-		kp, err := kb.Create(app.Credentials())
-		if err != nil {
-			fmt.Printf("Account generation Failed, %s", err)
+		pass := app.Credentials(pwd)
+		fmt.Print("Enter passphrase again: \n")
+		confirmedpass := app.Credentials(pwd)
+		if pass == confirmedpass {
+			kp, err := kb.Create(confirmedpass)
+			if err != nil {
+				fmt.Printf("Account generation Failed, %s", err)
+				return
+			}
+			fmt.Printf("Account generated successfully:\nAddress: %s\n", kp.GetAddress())
+		} else {
+			fmt.Println("Account generation Failed, Passphrases do not match")
 			return
 		}
-		fmt.Printf("Account generated successfully:\nAddress: %s\n", kp.GetAddress())
+
 	},
 }
 
@@ -98,7 +133,7 @@ var setValidator = &cobra.Command{
 			return
 		}
 		fmt.Println("Enter the password:")
-		app.SetValidator(addr, app.Credentials())
+		app.SetValidator(addr, app.Credentials(pwd))
 	},
 }
 
@@ -123,7 +158,7 @@ Will prompt the user for the account passphrase`,
 			return
 		}
 		fmt.Print("Enter passphrase: \n")
-		err = kb.Delete(addr, app.Credentials())
+		err = kb.Delete(addr, app.Credentials(pwd))
 		if err != nil {
 			fmt.Printf("Error Deleting Account, check your credentials")
 			return
@@ -240,9 +275,9 @@ Will prompt the user for the current account passphrase and the new account pass
 			return
 		}
 		fmt.Println("Enter passphrase: ")
-		oldpass := app.Credentials()
+		oldpass := app.Credentials(oldPwd)
 		fmt.Println("Enter new passphrase: ")
-		newpass := app.Credentials()
+		newpass := app.Credentials(pwd)
 		err = kb.Update(addr, oldpass, newpass)
 		if err != nil {
 			fmt.Println(err)
@@ -277,7 +312,7 @@ Will prompt the user for the account passphrase.`,
 			return
 		}
 		fmt.Println("Enter passphrase: ")
-		sig, _, err := kb.Sign(addr, app.Credentials(), msg)
+		sig, _, err := kb.Sign(addr, app.Credentials(pwd), msg)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -297,9 +332,9 @@ Will prompt the user for a decryption passphrase of the armored ASCII file and f
 		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir)
 
 		fmt.Println("Enter decrypt pass")
-		dPass := app.Credentials()
+		dPass := app.Credentials(decryptPwd)
 		fmt.Println("Enter encrypt pass")
-		ePass := app.Credentials()
+		ePass := app.Credentials(encryptPwd)
 
 		b, err := ioutil.ReadFile(args[0])
 		if err != nil {
@@ -339,9 +374,9 @@ Will prompt the user for the account passphrase and for an encryption passphrase
 			return
 		}
 		fmt.Println("Enter Decrypt Passphrase")
-		dPass := app.Credentials()
+		dPass := app.Credentials(decryptPwd)
 		fmt.Println("Enter Encrypt Passphrase")
-		ePass := app.Credentials()
+		ePass := app.Credentials(encryptPwd)
 		fmt.Println("Enter an optional Hint for remembering the Passphrase")
 		reader := bufio.NewReader(os.Stdin)
 		hint, err := reader.ReadString('\n')
@@ -399,7 +434,7 @@ NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.
 			return
 		}
 		fmt.Println("Enter Decrypt Passphrase")
-		dPass := app.Credentials()
+		dPass := app.Credentials(decryptPwd)
 		pk, err := kb.ExportPrivateKeyObject(addr, dPass)
 		if err != nil {
 			fmt.Println(err)
@@ -436,7 +471,7 @@ Prompts the user for <fromAddr> account passphrase. Using Protobuf or Amino (<le
 		}
 		fmt.Printf("Adding Memo: %v\n", memo)
 		fmt.Println("Enter passphrase: ")
-		res, err := SendTransaction(args[0], args[1], app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fees), memo, legacyCodec)
+		res, err := SendTransaction(args[0], args[1], app.Credentials(pwd), args[3], types.NewInt(int64(amount)), int64(fees), memo, legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -502,7 +537,7 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 		}
 		kb := keys.New(app.GlobalConfig.PocketConfig.KeybaseName, app.GlobalConfig.PocketConfig.DataDir)
 		fmt.Println("Enter Encrypt Passphrase")
-		ePass := app.Credentials()
+		ePass := app.Credentials(encryptPwd)
 		var pk [crypto.Ed25519PrivKeySize]byte
 		copy(pk[:], pkBytes)
 		kp, err := kb.ImportPrivateKeyObject(pk, ePass)
@@ -567,7 +602,7 @@ var buildMultisig = &cobra.Command{
 			fmt.Println(err)
 			return
 		}
-		bz, err := app.BuildMultisig(args[0], msg, app.Credentials(), args[3], multiSigPubKey, int64(fees), legacyCodec)
+		bz, err := app.BuildMultisig(args[0], msg, app.Credentials(pwd), args[3], multiSigPubKey, int64(fees), legacyCodec)
 		if err != nil {
 			fmt.Println(fmt.Errorf("error building the multisig: %v", err))
 		}
@@ -599,7 +634,7 @@ var signMS = &cobra.Command{
 			legacyCodec = true
 		}
 		fmt.Println("Enter passphrase: ")
-		bz, err := app.SignMultisigOutOfOrder(args[0], msg, app.Credentials(), args[3], pks, legacyCodec)
+		bz, err := app.SignMultisigOutOfOrder(args[0], msg, app.Credentials(pwd), args[3], pks, legacyCodec)
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing multisig: %v", err))
 		}
@@ -622,7 +657,7 @@ NOTE: you MUST be the next signer (in order of public keys in the ms public key 
 			legacyCodec = true
 		}
 		fmt.Println("Enter password: ")
-		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials(), args[2], legacyCodec)
+		bz, err := app.SignMultisigNext(args[0], msg, app.Credentials(pwd), args[2], legacyCodec)
 		if err != nil {
 			fmt.Println(fmt.Errorf("error signing the multisig: %v", err))
 		}
