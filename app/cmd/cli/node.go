@@ -27,6 +27,12 @@ var nodesCmd = &cobra.Command{
 from staking and unstaking; to unjailing.`,
 }
 
+func init() {
+	nodeStakeCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	nodeUnstakeCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	nodeUnjailCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+}
+
 var nodeStakeCmd = &cobra.Command{
 	Use:   "stake <fromAddr> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> <legacyCodec=(true | false)>",
 	Short: "Stake a node in the network",
@@ -59,7 +65,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			legacyCodec = true
 		}
 		fmt.Println("Enter Passphrase: ")
-		res, err := StakeNode(chains, serviceURI, fromAddr, app.Credentials(), args[4], types.NewInt(int64(amount)), int64(fee), legacyCodec)
+		res, err := StakeNode(chains, serviceURI, fromAddr, app.Credentials(pwd), args[4], types.NewInt(int64(amount)), int64(fee), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -97,7 +103,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			legacyCodec = true
 		}
 		fmt.Println("Enter Password: ")
-		res, err := UnstakeNode(args[0], app.Credentials(), args[1], int64(fee), legacyCodec)
+		res, err := UnstakeNode(args[0], app.Credentials(pwd), args[1], int64(fee), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -135,7 +141,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			legacyCodec = true
 		}
 		fmt.Println("Enter Password: ")
-		res, err := UnjailNode(args[0], app.Credentials(), args[1], int64(fee), legacyCodec)
+		res, err := UnjailNode(args[0], app.Credentials(pwd), args[1], int64(fee), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return

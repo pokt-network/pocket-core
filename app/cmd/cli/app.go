@@ -29,6 +29,12 @@ var appCmd = &cobra.Command{
 from staking and unstaking; to generating AATs.`,
 }
 
+func init() {
+	appStakeCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	appUnstakeCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	createAATCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+}
+
 var appStakeCmd = &cobra.Command{
 	Use:   "stake <fromAddr> <amount> <relayChainIDs> <networkID> <fee> <legacyCodec=(true | false)>",
 	Short: "Stake an app into the network",
@@ -60,7 +66,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 		rawChains := reg.ReplaceAllString(args[2], "")
 		chains := strings.Split(rawChains, ",")
 		fmt.Println("Enter passphrase: ")
-		res, err := StakeApp(chains, fromAddr, app.Credentials(), args[3], types.NewInt(int64(amount)), int64(fee), legacyCodec)
+		res, err := StakeApp(chains, fromAddr, app.Credentials(pwd), args[3], types.NewInt(int64(amount)), int64(fee), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -98,7 +104,7 @@ Prompts the user for the <fromAddr> account passphrase.`,
 			legacyCodec = true
 		}
 		fmt.Println("Enter Password: ")
-		res, err := UnstakeApp(args[0], app.Credentials(), args[1], int64(fee), legacyCodec)
+		res, err := UnstakeApp(args[0], app.Credentials(pwd), args[1], int64(fee), legacyCodec)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -143,7 +149,7 @@ NOTE: USE THIS METHOD AT YOUR OWN RISK. READ THE APPLICATION SECURITY GUIDELINES
 			return
 		}
 		fmt.Println("Enter passphrase: ")
-		cred := app.Credentials()
+		cred := app.Credentials(pwd)
 		privkey, err := mintkey.UnarmorDecryptPrivKey(kp.PrivKeyArmor, cred)
 		if err != nil {
 			return
