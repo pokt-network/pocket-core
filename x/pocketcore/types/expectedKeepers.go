@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
+	authexported "github.com/pokt-network/pocket-core/x/auth/exported"
 	nodesexported "github.com/pokt-network/pocket-core/x/nodes/exported"
 )
 
@@ -34,4 +35,5 @@ type PocketKeeper interface {
 
 type AuthKeeper interface {
 	GetFee(ctx sdk.Ctx, msg sdk.Msg) sdk.BigInt
+	GetAccount(ctx sdk.Ctx, addr sdk.Address) authexported.Account
 }

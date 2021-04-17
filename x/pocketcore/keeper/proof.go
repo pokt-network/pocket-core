@@ -243,14 +243,14 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.ProtoMsg, n client.Client, key c
 	cliCtx.BroadcastMode = util.BroadcastSync
 	// get the account to ensure balance
 	// retrieve the account for a balance check (and ensure it exists)
-	account, err := cliCtx.GetAccount(fromAddr)
-	if err != nil {
-		return txBuilder, cliCtx, err
+	account := k.authKeeper.GetAccount(ctx, fromAddr)
+	if account == nil {
+		return txBuilder, cliCtx, fmt.Errorf("unable to locate an account at address: %s", fromAddr)
 	}
 	// check the fee amount
 	fee := k.authKeeper.GetFee(ctx, msg)
 	if account.GetCoins().AmountOf(k.posKeeper.StakeDenom(ctx)).LTE(fee) {
-		ctx.Logger().Error(fmt.Sprintf("insufficient funds for the auto %s transaction: the fee needed is %v ", msg.Type(), fee))
+		return txBuilder, cliCtx, fmt.Errorf("insufficient funds for the auto %s transaction: the fee needed is %v ", msg.Type(), fee)
 	}
 	// ensure that the tx builder has the correct tx encoder, chainID, fee
 	txBuilder = auth.NewTxBuilder(
