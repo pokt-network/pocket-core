@@ -379,18 +379,24 @@ func (app PocketCoreApp) QueryClaim(address, appPubkey, chain, evidenceType stri
 }
 
 func (app PocketCoreApp) QueryClaims(address string, height int64, page, perPage int) (res Page, err error) {
-	a, err := sdk.AddressFromHex(address)
-	if err != nil {
-		return Page{}, err
-	}
+	var a sdk.Address
+	var claims []pocketTypes.MsgClaim
 	ctx, err := app.NewContext(height)
+	page, perPage = checkPagination(page, perPage)
 	if err != nil {
 		return
 	}
-	page, perPage = checkPagination(page, perPage)
-	claims, err := app.pocketKeeper.GetClaims(ctx, a)
-	if err != nil {
-		return Page{}, err
+	if address != "" {
+		a, err = sdk.AddressFromHex(address)
+		if err != nil {
+			return Page{}, err
+		}
+		claims, err = app.pocketKeeper.GetClaims(ctx, a)
+		if err != nil {
+			return Page{}, err
+		}
+	} else {
+		claims = app.pocketKeeper.GetAllClaims(ctx)
 	}
 	p, err := paginate(page, perPage, claims, 10000)
 	if err != nil {
