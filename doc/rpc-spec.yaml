@@ -691,7 +691,7 @@ paths:
       tags:
         - query
       requestBody:
-        description: 'Returns the list of all pending claims submitted by node address at height,  height = 0 is used as latest'
+        description: 'Returns the list of all pending claims submitted by node address at height,  height = 0 is used as latest, address = "" will return all claims for a height'
         content:
           application/json:
             schema:

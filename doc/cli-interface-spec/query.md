@@ -89,11 +89,10 @@ Account balance: <balance of the account>
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
 - `pocket query node-claims <address> [<height>]`
- > Returns the list of all pending claims submitted by `<address>`.
+ > Returns the list of all pending claims submitted by `<address>` (No address is all the claims for a height).
  >
- > Arguments:
- > - `<address>`: Target address.
 > Optional Arguments:
+> - `<address>`: Target address.
 > - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
 - `pocket query node-claim <address> <appPubKey> <claimType=(relay | challenge)> <chainID> <sessionHeight> [<height>]`
