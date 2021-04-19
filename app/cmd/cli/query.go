@@ -588,7 +588,6 @@ var queryNodeClaims = &cobra.Command{
 	Use:   "node-claims <nodeAddr> [<height>]",
 	Short: "Gets node pending claims for work completed",
 	Long:  `Retrieves the list of all pending proof of work submitted by <nodeAddr> at <height>.`,
-	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var height int
