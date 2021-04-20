@@ -227,11 +227,6 @@ func (k Keeper) HandleReplayAttack(ctx sdk.Ctx, address sdk.Address, numberOfCha
 func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.ProtoMsg, n client.Client, key crypto.PrivateKey, k Keeper) (txBuilder auth.TxBuilder, cliCtx util.CLIContext, err error) {
 	// get the from address from the pkf
 	fromAddr := sdk.Address(key.PublicKey().Address())
-	// get the genesis doc from the node for the chainID
-	genDoc, err := n.Genesis()
-	if err != nil {
-		return txBuilder, cliCtx, err
-	}
 	// create a client context for sending
 	cliCtx = util.NewCLIContext(n, fromAddr, "").WithCodec(k.Cdc).WithHeight(ctx.BlockHeight())
 	pk, err := k.GetPKFromFile(ctx)
@@ -256,7 +251,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.ProtoMsg, n client.Client, key c
 	txBuilder = auth.NewTxBuilder(
 		auth.DefaultTxEncoder(k.Cdc),
 		auth.DefaultTxDecoder(k.Cdc),
-		genDoc.Genesis.ChainID,
+		ctx.ChainID(),
 		"",
 		sdk.NewCoins(sdk.NewCoin(k.posKeeper.StakeDenom(ctx), fee)),
 	)
