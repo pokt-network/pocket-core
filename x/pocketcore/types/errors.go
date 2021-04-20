@@ -2,8 +2,10 @@ package types
 
 import (
 	"errors"
-	sdk "github.com/pokt-network/pocket-core/types"
+	"fmt"
 	"strconv"
+
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 const (
@@ -128,7 +130,7 @@ var (
 	FilterNodesError                 = errors.New("unable to filter nodes: ")
 	XORError                         = errors.New("error XORing the keys: ")
 	PubKeyDecodeError                = errors.New("error decoding the string into hex bytes")
-	InvalidHashError                 = errors.New("the merkleHash is invalid: ")
+	InvalidHashError                 = errors.New("the hash ")
 	HTTPExecutionError               = errors.New("error executing the http request: ")
 	TicketsNotFoundError             = errors.New("the tickets requested could not be found")
 	DuplicateTicketError             = errors.New("the ticket is a duplicate")
@@ -183,7 +185,7 @@ var (
 	ReplayAttackError                = errors.New("the merkle proof is flagged as a replay attack")
 	InvalidExpirationHeightErr       = errors.New("the expiration height included in the claim message is invalid (should not be set)")
 	InvalidMerkleRangeError          = errors.New("the merkle hash range is invalid")
-	SealedEvidenceError = errors.New("the evidence is sealed, either max relays reached or claim already submitted")
+	SealedEvidenceError              = errors.New("the evidence is sealed, either max relays reached or claim already submitted")
 )
 
 func NewSealedEvidenceError(codespace sdk.CodespaceType) sdk.Error {
@@ -411,8 +413,9 @@ func NewEmptyPayloadDataError(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeEmptyPayloadDataError, EmptyPayloadDataError.Error())
 }
 
-func NewInvalidHashError(codespace sdk.CodespaceType, err error) sdk.Error {
-	return sdk.NewError(codespace, CodeInvalidHashError, InvalidHashError.Error()+err.Error())
+func NewInvalidHashError(codespace sdk.CodespaceType, err error, h string) sdk.Error {
+	InvalidHash := fmt.Sprintf("%s %s is invalid due to: %s", InvalidHashError.Error(), h, err.Error())
+	return sdk.NewError(codespace, CodeInvalidHashError, InvalidHash)
 }
 
 func NewEmptyHashError(codespace sdk.CodespaceType) sdk.Error {
