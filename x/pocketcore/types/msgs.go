@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
@@ -45,7 +46,7 @@ func (msg MsgClaim) ValidateBasic() sdk.Error {
 	}
 	// validate the address format
 	if err := AddressVerification(msg.FromAddress.String()); err != nil {
-		return NewInvalidHashError(ModuleName, err)
+		return NewInvalidHashError(ModuleName, err, msg.FromAddress.String())
 	}
 	// validate the root format
 	if err := HashVerification(hex.EncodeToString(msg.MerkleRoot.Hash)); err != nil {
