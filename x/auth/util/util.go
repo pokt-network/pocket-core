@@ -11,10 +11,10 @@ import (
 // sequence set. In addition, it builds and signs a transaction with the
 // supplied messages. Finally, it broadcasts the signed transaction to a node.
 func CompleteAndBroadcastTxCLI(txBldr auth.TxBuilder, cliCtx CLIContext, msgs sdk.ProtoMsg, legacyCodec bool) (*sdk.TxResponse, error) {
-	txBldr, err := PrepareTxBuilder(txBldr, cliCtx)
-	if err != nil {
-		return nil, err
-	}
+	//txBldr, err := PrepareTxBuilder(txBldr, cliCtx)
+	//if err != nil {
+	//	return nil, err
+	//} TODO removed safety check for auto transactions
 
 	// build and sign the transaction
 
