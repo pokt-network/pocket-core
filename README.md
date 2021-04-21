@@ -63,7 +63,7 @@ Use "pocket [command] --help" for more information about a command.
 
 ### Installation
 
-Clone the repository and run `go build pocket-core/app/cmd/pocket_core/main.go`
+Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go`
 
 ## Documentation
 
