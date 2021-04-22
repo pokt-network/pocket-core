@@ -130,7 +130,7 @@ var (
 	FilterNodesError                 = errors.New("unable to filter nodes: ")
 	XORError                         = errors.New("error XORing the keys: ")
 	PubKeyDecodeError                = errors.New("error decoding the string into hex bytes")
-	InvalidHashError                 = errors.New("the hash ")
+	InvalidHashError                 = errors.New("the hash is invalid: ")
 	HTTPExecutionError               = errors.New("error executing the http request: ")
 	TicketsNotFoundError             = errors.New("the tickets requested could not be found")
 	DuplicateTicketError             = errors.New("the ticket is a duplicate")
@@ -414,8 +414,7 @@ func NewEmptyPayloadDataError(codespace sdk.CodespaceType) sdk.Error {
 }
 
 func NewInvalidHashError(codespace sdk.CodespaceType, err error, h string) sdk.Error {
-	InvalidHash := fmt.Sprintf("%s %s is invalid due to: %s", InvalidHashError.Error(), h, err.Error())
-	return sdk.NewError(codespace, CodeInvalidHashError, InvalidHash)
+	return sdk.NewError(codespace, CodeInvalidHashError, fmt.Sprintf("%s %s%s", h, InvalidHashError.Error(), err.Error()))
 }
 
 func NewEmptyHashError(codespace sdk.CodespaceType) sdk.Error {
