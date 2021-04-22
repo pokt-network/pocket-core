@@ -21,12 +21,12 @@ type Evidence struct {
 func (e Evidence) IsSealed() bool {
 	globalEvidenceCache.l.Lock()
 	defer globalEvidenceCache.l.Unlock()
-	_, ok := globalEvidenceSealedMap[e.HashString()]
+	_, ok := globalEvidenceSealedMap.Load(e.HashString())
 	return ok
 }
 
 func (e Evidence) Seal() CacheObject {
-	globalEvidenceSealedMap[e.HashString()] = struct{}{}
+	globalEvidenceSealedMap.Store(e.HashString(), struct{}{})
 	return e
 }
 
@@ -62,11 +62,11 @@ func (e *Evidence) GenerateMerkleProof(height int64, index int) (proof MerklePro
 
 // "Evidence" - A proof of work/burn for nodes.
 type evidence struct {
-	BloomBytes    []byte `json:"bloom_bytes"`
-	SessionHeader `json:"evidence_header"`            // the session h serves as an identifier for the evidence
-	NumOfProofs   int64        `json:"num_of_proofs"` // the total number of proofs in the evidence
-	Proofs        []Proof      `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
-	EvidenceType  EvidenceType `json:"evidence_type"`
+	BloomBytes    []byte                   `json:"bloom_bytes"`
+	SessionHeader `json:"evidence_header"` // the session h serves as an identifier for the evidence
+	NumOfProofs   int64                    `json:"num_of_proofs"` // the total number of proofs in the evidence
+	Proofs        []Proof                  `json:"proofs"`        // a slice of Proof objects (Proof per relay or challenge)
+	EvidenceType  EvidenceType             `json:"evidence_type"`
 }
 
 func (e Evidence) LegacyAminoMarshal() ([]byte, error) {

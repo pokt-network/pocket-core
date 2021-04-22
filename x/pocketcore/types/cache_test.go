@@ -2,10 +2,12 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/tendermint/tendermint/libs/log"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
+
+	"github.com/tendermint/tendermint/libs/log"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
@@ -109,6 +111,26 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 	GetProof(header, RelayEvidence, 0)
 	_ = DeleteEvidence(header, RelayEvidence)
 	assert.Empty(t, GetProof(header, RelayEvidence, 0))
+
+	// concurrent Read & Write to GlobalEvidenceSealedMap
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000))
+	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		for i := 0; i < 100; i++ {
+			go GetProof(header, RelayEvidence, 0)
+		}
+		wg.Done()
+	}()
+	go func() {
+		for i := 0; i < 100; i++ {
+			go DeleteEvidence(header, RelayEvidence)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
 }
 
 func TestAllEvidence_GetTotalProofs(t *testing.T) {

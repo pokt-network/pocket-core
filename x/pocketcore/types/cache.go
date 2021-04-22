@@ -3,9 +3,10 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/tendermint/tendermint/config"
 	"log"
 	"sync"
+
+	"github.com/tendermint/tendermint/config"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	db "github.com/tendermint/tm-db"
@@ -20,7 +21,7 @@ var (
 	// sync.once to perform initialization
 	cacheOnce sync.Once
 
-	globalEvidenceSealedMap map[string]struct{}
+	globalEvidenceSealedMap sync.Map
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
@@ -111,7 +112,7 @@ func (cs *CacheStorage) Set(key []byte, val CacheObject) {
 		}
 		// if evidence, check sealed map
 		if ev, ok := co.(Evidence); ok {
-			if _, ok := globalEvidenceSealedMap[ev.HashString()]; ok {
+			if _, ok := globalEvidenceSealedMap.Load(ev.HashString()); ok {
 				return
 			}
 		}
@@ -324,7 +325,7 @@ func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
 	}
 	// delete from cache
 	globalEvidenceCache.Delete(key)
-	delete(globalEvidenceSealedMap, header.HashString())
+	globalEvidenceSealedMap.Delete(header.HashString())
 	return nil
 }
 
@@ -343,7 +344,7 @@ func SealEvidence(evidence Evidence) (Evidence, bool) {
 func ClearEvidence() {
 	if globalEvidenceCache != nil {
 		globalEvidenceCache.Clear()
-		globalEvidenceSealedMap = make(map[string]struct{})
+		globalEvidenceSealedMap = sync.Map{}
 	}
 }
 
