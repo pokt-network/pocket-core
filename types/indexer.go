@@ -15,8 +15,13 @@ import (
 )
 
 var (
-	_ txindex.TxIndexer = &TransactionIndexer{}
-	e                   = lexnum.NewEncoder('=', '-')
+	_           txindex.TxIndexer = &TransactionIndexer{}
+	// Since LevelDB comparators order lexicongraphically, the implementation uses ELEN to encode numbers to ensure alphanumerical
+	// ordering at insertion time. https://www.zanopha.com/docs/elen.pdf
+	// Since the keys are sorted alphanumerically from the start, we don't have to:
+	// (a) load all results to memory (b) paginate and sort transactions after
+	// This indexer inserts in sorted order so it can paginate and return based on the db iterator
+	elenEncoder                   = lexnum.NewEncoder('=', '-')
 )
 
 const (
@@ -118,9 +123,9 @@ func (t *TransactionIndexer) Get(hash []byte) (*types.TxResult, error) {
 	return txResult, nil
 }
 
-// NOTE: Only supports op.Equal for hash, height, signer, or recipient
+// NOTE: Only supports op.Equal for hash, height, signer, or recipient, we only support op.Equal for simplicity and
+// optimization of our use case
 func (t *TransactionIndexer) Search(ctx context.Context, q *query.Query) ([]*types.TxResult, error) {
-	// get a list of conditions (like "tx.height > 5")
 	condition, err := q.Condition()
 	if err != nil {
 		return nil, errors.Wrap(err, "error during parsing condition from query")
@@ -151,11 +156,11 @@ func (t *TransactionIndexer) Search(ctx context.Context, q *query.Query) ([]*typ
 func (t *TransactionIndexer) DeleteFromHeight(ctx context.Context, height int64) error {
 	startKey := []byte(fmt.Sprintf("%s/%s",
 		TxHeightKey,
-		e.EncodeInt(int(height)),
+		elenEncoder.EncodeInt(int(height)),
 	))
 	endKey := []byte(fmt.Sprintf("%s/%s",
 		TxHeightKey,
-		e.EncodeInt(math.MaxInt64),
+		elenEncoder.EncodeInt(math.MaxInt64),
 	))
 	it, err := t.store.ReverseIterator(startKey, endKey)
 	if err != nil {
@@ -227,15 +232,15 @@ func (t *TransactionIndexer) getByPrefix(prefix []byte, pagination *query.Page) 
 func keyForHeight(result *types.TxResult) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%s",
 		TxHeightKey,
-		e.EncodeInt(int(result.Height)),
-		e.EncodeInt(int(result.Index)),
+		elenEncoder.EncodeInt(int(result.Height)),
+		elenEncoder.EncodeInt(int(result.Index)),
 	))
 }
 
 func prefixKeyForHeight(height int64) []byte {
 	return []byte(fmt.Sprintf("%s/%s/",
 		TxHeightKey,
-		e.EncodeInt(int(height)),
+		elenEncoder.EncodeInt(int(height)),
 	))
 }
 
@@ -243,8 +248,8 @@ func keyForSigner(result *types.TxResult) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%s/%s",
 		TxSignerKey,
 		Address(result.Result.Signer),
-		e.EncodeInt(int(result.Height)),
-		e.EncodeInt(int(result.Index)),
+		elenEncoder.EncodeInt(int(result.Height)),
+		elenEncoder.EncodeInt(int(result.Index)),
 	))
 }
 
@@ -252,7 +257,7 @@ func prefixKeyForSigner(signer Address) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%s",
 		TxSignerKey,
 		signer,
-		e.EncodeInt(0),
+		elenEncoder.EncodeInt(0),
 	))
 }
 
@@ -260,8 +265,8 @@ func keyForRecipient(result *types.TxResult) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%s/%s",
 		TxRecipientKey,
 		Address(result.Result.Recipient),
-		e.EncodeInt(int(result.Height)),
-		e.EncodeInt(int(result.Index)),
+		elenEncoder.EncodeInt(int(result.Height)),
+		elenEncoder.EncodeInt(int(result.Index)),
 	))
 }
 
@@ -269,7 +274,7 @@ func prefixKeyForRecipient(recipient Address) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%s",
 		TxRecipientKey,
 		recipient,
-		e.EncodeInt(0),
+		elenEncoder.EncodeInt(0),
 	))
 }
 
@@ -287,6 +292,6 @@ func PrefixIterator(db dbm.DB, prefix []byte, order string) (dbm.Iterator, error
 
 func endKey(prefix []byte) []byte {
 	bz := bytes.Split(prefix, []byte(sep))
-	bz = append(bz[:len(bz)-1], []byte(e.EncodeInt(math.MaxInt64)))
+	bz = append(bz[:len(bz)-1], []byte(elenEncoder.EncodeInt(math.MaxInt64)))
 	return bytes.Join(bz[:], []byte(sep))
 }
