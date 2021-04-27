@@ -34,7 +34,7 @@ Pocket Core is software for Pocket Network 'node runners'. This software impleme
 #### Checkout the [latest release](https://github.com/pokt-network/pocket-core/releases)
 `git checkout tags/<release tag>`
 
-Example: *git checkout tags/RC-0.6.1*
+Example: *git checkout tags/RC-0.6.2*
 
 #### Build
 
@@ -45,7 +45,7 @@ Example: *go build -o $GOPATH/bin/pocket $GOPATH/src/github.com/pok-network/pock
 #### Test installation
 ```
 $ pocket version
-> RC-0.6.1
+> RC-0.6.2
 ```
 ### From Homebrew
 `brew tap pokt-network/pocket-core && brew install pokt-network/pocket-core/pocket`
@@ -53,7 +53,7 @@ $ pocket version
 #### Test installation
 ```
 $ pocket version
-> RC-0.6.1
+> RC-0.6.2
 ```
 ### From Deployment Artifact
 See [pokt-network/pocket-core-deployments](https://github.com/pokt-network/pocket-core-deployments)
