@@ -23,6 +23,9 @@ type Msg interface {
 	// CONTRACT: Returns addrs in some deterministic order.
 	GetSigner() Address
 
+	// Returns the recipient of the tx, if no recipient returns nil
+	GetRecipient() Address
+
 	// Returns an BigInt for the ProtoMsg
 	GetFee() BigInt
 }
@@ -51,6 +54,9 @@ type ProtoMsg interface {
 	// CONTRACT: All signatures must be present to be valid.
 	// CONTRACT: Returns addrs in some deterministic order.
 	GetSigner() Address
+
+	// Returns the recipient of the tx, if no recipient returns nil
+	GetRecipient() Address
 
 	// Returns an BigInt for the ProtoMsg
 	GetFee() BigInt

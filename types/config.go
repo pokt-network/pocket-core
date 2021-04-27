@@ -41,6 +41,7 @@ type PocketConfig struct {
 	CtxCacheSize             int    `json:"ctx_cache_size"`
 	ABCILogging              bool   `json:"abci_logging"`
 	RelayErrors              bool   `json:"show_relay_errors"`
+	DisableTxEvents          bool   `json:"disable_tx_events"`
 }
 
 type Config struct {
@@ -54,43 +55,45 @@ type AuthToken struct {
 }
 
 const (
-	DefaultDDName                     = ".pocket"
-	DefaultKeybaseName                = "pocket-keybase"
-	DefaultPVKName                    = "priv_val_key.json"
-	DefaultPVSName                    = "priv_val_state.json"
-	DefaultNKName                     = "node_key.json"
-	DefaultChainsName                 = "chains.json"
-	DefaultGenesisName                = "genesis.json"
-	DefaultRPCPort                    = "8081"
-	DefaultSessionDBName              = "session"
-	DefaultEvidenceDBName             = "pocket_evidence"
-	DefaultTMURI                      = "tcp://localhost:26657"
-	DefaultMaxSessionCacheEntries     = 500
-	DefaultMaxEvidenceCacheEntries    = 500
-	DefaultListenAddr                 = "tcp://0.0.0.0:"
-	DefaultClientBlockSyncAllowance   = 10
-	DefaultJSONSortRelayResponses     = true
-	DefaultTxIndexer                  = "kv"
-	DefaultTxIndexTags                = "tx.hash,tx.height,message.sender,transfer.recipient"
-	ConfigDirName                     = "config"
-	ConfigFileName                    = "config.json"
-	ApplicationDBName                 = "application"
-	PlaceholderHash                   = "0001"
-	PlaceholderURL                    = "http://127.0.0.1:8081"
-	PlaceholderServiceURL             = PlaceholderURL
-	DefaultRemoteCLIURL               = "http://localhost:8081"
-	DefaultUserAgent                  = ""
-	DefaultValidatorCacheSize         = 100
-	DefaultApplicationCacheSize       = DefaultValidatorCacheSize
-	DefaultPocketPrometheusListenAddr = "8083"
-	DefaultPrometheusMaxOpenFile      = 3
-	DefaultRPCTimeout                 = 3000
-	DefaultMaxClaimProofRetryAge      = 32
-	DefaultProofPrevalidation         = false
-	DefaultCtxCacheSize               = 20
-	DefaultABCILogging                = false
-	DefaultRelayErrors                = true
-	AuthFileName                      = "auth.json"
+	DefaultDDName                      = ".pocket"
+	DefaultKeybaseName                 = "pocket-keybase"
+	DefaultPVKName                     = "priv_val_key.json"
+	DefaultPVSName                     = "priv_val_state.json"
+	DefaultNKName                      = "node_key.json"
+	DefaultChainsName                  = "chains.json"
+	DefaultGenesisName                 = "genesis.json"
+	DefaultRPCPort                     = "8081"
+	DefaultSessionDBName               = "session"
+	DefaultEvidenceDBName              = "pocket_evidence"
+	DefaultTMURI                       = "tcp://localhost:26657"
+	DefaultMaxSessionCacheEntries      = 500
+	DefaultMaxEvidenceCacheEntries     = 500
+	DefaultListenAddr                  = "tcp://0.0.0.0:"
+	DefaultClientBlockSyncAllowance    = 10
+	DefaultJSONSortRelayResponses      = true
+	DefaultTxIndexer                   = "kv"
+	DefaultRPCDisableTransactionEvents = true
+	DefaultTxIndexTags                 = "tx.hash,tx.height,message.sender,transfer.recipient"
+	ConfigDirName                      = "config"
+	ConfigFileName                     = "config.json"
+	ApplicationDBName                  = "application"
+	TransactionIndexerDBName           = "txindexer"
+	PlaceholderHash                    = "0001"
+	PlaceholderURL                     = "http://127.0.0.1:8081"
+	PlaceholderServiceURL              = PlaceholderURL
+	DefaultRemoteCLIURL                = "http://localhost:8081"
+	DefaultUserAgent                   = ""
+	DefaultValidatorCacheSize          = 100
+	DefaultApplicationCacheSize        = DefaultValidatorCacheSize
+	DefaultPocketPrometheusListenAddr  = "8083"
+	DefaultPrometheusMaxOpenFile       = 3
+	DefaultRPCTimeout                  = 3000
+	DefaultMaxClaimProofRetryAge       = 32
+	DefaultProofPrevalidation          = false
+	DefaultCtxCacheSize                = 20
+	DefaultABCILogging                 = false
+	DefaultRelayErrors                 = true
+	AuthFileName                       = "auth.json"
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -121,6 +124,7 @@ func DefaultConfig(dataDir string) Config {
 			CtxCacheSize:             DefaultCtxCacheSize,
 			ABCILogging:              DefaultABCILogging,
 			RelayErrors:              DefaultRelayErrors,
+			DisableTxEvents:          DefaultRPCDisableTransactionEvents,
 		},
 	}
 	c.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()

@@ -323,13 +323,17 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns all transactions sent by the address
+        description: Returns all transactions sent by the address; Max per_page = 1000, sort can be "asc" or (Default) "desc"
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryAccountTXs'
             example:
               address: '197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22'
+              height: 99
+              page: 1
+              per_page: 1000
+              sort: "desc"
         required: true
       responses:
         '200':
@@ -604,13 +608,16 @@ paths:
       tags:
         - query
       requestBody:
-        description: Returns all transactions at a certain block height
+        description: Returns all transactions at a certain block height; Max per_page = 1000, sort can be "asc" or (Default) "desc"
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/QueryBlockTXs'
             example:
               height: 99
+              page: 1
+              per_page: 1000
+              sort: "desc"
         required: true
       responses:
         '200':
@@ -1810,18 +1817,20 @@ components:
           type: string
         info:
           type: string
-        gas_wanted:
-          type: integer
-          format: int64
-        gas_used:
-          type: integer
-          format: int64
         events:
           type: array
           items:
             type: string
         codespace:
           type: string
+        signer:
+          type: string
+        recipient:
+          type: string
+          description: The receiver of the transaction, will be null if no receiver
+        message_type:
+          type: string
+          description: The type of the transaction, can be "app_stake", "app_begin_unstake", "stake_validator", "begin_unstake_validator", "unjail_validator", "send", "upgrade", "change_param", "dao_tranfer", "claim", or "proof"
     TXProof:
       type: object
       description: Proof of the transaction

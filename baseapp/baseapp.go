@@ -527,7 +527,7 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 		switch path[1] {
 		case "simulate":
 			txBytes := req.Data
-			tx, err := app.txDecoder(txBytes,req.Height)
+			tx, err := app.txDecoder(txBytes, req.Height)
 			if err != nil {
 				result = err.Result()
 			} else {
@@ -765,22 +765,32 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 // DeliverTx implements the ABCI interface.
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
 	var result sdk.Result
-
+	var signer sdk.Address
+	var recipient sdk.Address
+	var messageType string
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
 	} else {
 		result = app.runTx(runTxModeDeliver, req.Tx, tx)
+		msg := tx.GetMsg()
+		messageType = msg.Type()
+		signer = msg.GetSigner()
+		recipient = msg.GetRecipient()
 	}
+
 
 	return abci.ResponseDeliverTx{
 		Code:      uint32(result.Code),
-		Codespace: string(result.Codespace),
 		Data:      result.Data,
 		Log:       result.Log,
 		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
 		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
 		Events:    result.Events.ToABCIEvents(),
+		Codespace: string(result.Codespace),
+		Signer:    signer,
+		Recipient:recipient,
+		MessageType:messageType,
 	}
 }
 

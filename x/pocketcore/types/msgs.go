@@ -82,6 +82,11 @@ func (msg MsgClaim) GetSigner() sdk.Address {
 	return msg.FromAddress
 }
 
+// "GetSigners" - Defines whose signature is required
+func (msg MsgClaim) GetRecipient() sdk.Address {
+	return nil
+}
+
 // "IsEmpty" - Returns true if the EvidenceType == 0, this should only happen on initialization and MsgClaim{} calls
 func (msg MsgClaim) IsEmpty() bool {
 	return msg.EvidenceType == 0
@@ -191,6 +196,11 @@ func (msg MsgProof) GetSignBytes() []byte {
 // GetSigners defines whose signature is required
 func (msg MsgProof) GetSigner() sdk.Address {
 	return msg.Leaf.GetSigner()
+}
+
+// "GetSigners" - Defines whose signature is required
+func (msg MsgProof) GetRecipient() sdk.Address {
+	return nil
 }
 
 func (msg MsgProof) GetLeaf() Proof {

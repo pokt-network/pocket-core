@@ -1,7 +1,9 @@
 package rpc
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	sdk "github.com/pokt-network/pocket-core/types"
 	"math/big"
 	"net/http"
 
@@ -115,13 +117,55 @@ type RPCResultTxSearch struct {
 
 // Result of querying for a tx
 type RPCResultTx struct {
-	Hash     bytes.HexBytes         `json:"hash"`
-	Height   int64                  `json:"height"`
-	Index    uint32                 `json:"index"`
-	TxResult abci.ResponseDeliverTx `json:"tx_result"`
-	Tx       types.Tx               `json:"tx"`
-	Proof    types.TxProof          `json:"proof,omitempty"`
-	StdTx    types2.StdTx           `json:"stdTx"`
+	Hash     bytes.HexBytes       `json:"hash"`
+	Height   int64                `json:"height"`
+	Index    uint32               `json:"index"`
+	TxResult RPCResponseDeliverTx `json:"tx_result"`
+	Tx       types.Tx             `json:"tx"`
+	Proof    types.TxProof        `json:"proof,omitempty"`
+	StdTx    RPCStdTx             `json:"stdTx"`
+}
+
+type RPCResponseDeliverTx struct {
+	Code        uint32        `json:"code,omitempty"`
+	Data        []byte        `json:"data,omitempty"`
+	Log         string        `json:"log,omitempty"`
+	Info        string        `json:"info,omitempty"`
+	Events      []abci.Event  `json:"events,omitempty"`
+	Codespace   string        `json:"codespace,omitempty"`
+	Signer      types.Address `json:"signer,omitempty"`
+	Recipient   types.Address `json:"recipient,omitempty"`
+	MessageType string        `json:"message_type,omitempty"`
+}
+
+type RPCStdTx types2.StdTx
+
+type rPCStdTx struct {
+	Msg       json.RawMessage `json:"msg" yaml:"msg"`
+	Fee       sdk.Coins       `json:"fee" yaml:"fee"`
+	Signature RPCStdSignature `json:"signature" yaml:"signature"`
+	Memo      string          `json:"memo" yaml:"memo"`
+	Entropy   int64           `json:"entropy" yaml:"entropy"`
+}
+
+type RPCStdSignature struct {
+	PublicKey string `json:"pub_key"`
+	Signature string `json:"signature"`
+}
+
+func (r RPCStdTx) MarshalJSON() ([]byte, error) {
+	msgBz := (types2.StdTx)(r).Msg.GetSignBytes()
+	sig := RPCStdSignature{
+		PublicKey: r.Signature.RawString(),
+		Signature: hex.EncodeToString(r.Signature.Signature),
+	}
+	return json.Marshal(rPCStdTx{
+		Msg:       msgBz,
+		Fee:       r.Fee,
+		Signature: sig,
+		Memo:      r.Memo,
+		Entropy:   r.Entropy,
+	})
 }
 
 func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
@@ -143,14 +187,29 @@ func ResultTxToRPC(res *core_types.ResultTx) *RPCResultTx {
 		return nil
 	}
 	tx := app.UnmarshalTx(res.Tx, res.Height)
+	if app.GlobalConfig.PocketConfig.DisableTxEvents {
+		res.TxResult.Events = nil
+	}
+	rpcDeliverTx := RPCResponseDeliverTx{
+		Code:        res.TxResult.Code,
+		Data:        res.TxResult.Data,
+		Log:         res.TxResult.Log,
+		Info:        res.TxResult.Info,
+		Events:      res.TxResult.Events,
+		Codespace:   res.TxResult.Codespace,
+		Signer:      res.TxResult.Signer,
+		Recipient:   res.TxResult.Recipient,
+		MessageType: res.TxResult.MessageType,
+	}
+	rpcStdTx := RPCStdTx(tx)
 	r := &RPCResultTx{
 		Hash:     res.Hash,
 		Height:   res.Height,
 		Index:    res.Index,
-		TxResult: res.TxResult,
+		TxResult: rpcDeliverTx,
 		Tx:       res.Tx,
 		Proof:    res.Proof,
-		StdTx:    tx,
+		StdTx:    rpcStdTx,
 	}
 	return r
 }
