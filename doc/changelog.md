@@ -3,6 +3,7 @@
 - Return AllClaims if no address is passed to nodeClaims query
 - No ABCI query during newTx() function in pocket core module
 - Change StdSignature from Base64 to Hex in RPC
+- Added config to drop events from account and blocktxs
 
 ## RC-0.6.1
 - Fixed RelaysToTokensMultiplier bug
