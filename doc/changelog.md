@@ -1,3 +1,9 @@
+## RC-0.6.2
+- Implemented a Custom Transaction Indexer
+- Return AllClaims if no address is passed to nodeClaims query
+- No ABCI query during newTx() function in pocket core module
+- Change StdSignature from Base64 to Hex in RPC
+
 ## RC-0.6.1
 - Fixed RelaysToTokensMultiplier bug
 - Added utility CLI command to convert evidence from amino to protobuf

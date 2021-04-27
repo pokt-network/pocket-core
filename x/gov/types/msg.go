@@ -8,6 +8,7 @@ import (
 var (
 	_ sdk.ProtoMsg = &MsgChangeParam{}
 	_ sdk.ProtoMsg = &MsgDAOTransfer{}
+	_ sdk.ProtoMsg = &MsgUpgrade{}
 )
 
 const (
@@ -38,6 +39,11 @@ func (msg MsgChangeParam) GetFee() sdk.BigInt {
 // GetSigner return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgChangeParam) GetSigner() sdk.Address {
 	return msg.FromAddress
+}
+
+// GetSigner return address(es) that must sign over msg.GetSignBytes()
+func (msg MsgChangeParam) GetRecipient() sdk.Address {
+	return nil
 }
 
 // GetSignBytes returns the message bytes to sign over.
@@ -86,6 +92,11 @@ func (msg MsgDAOTransfer) GetSigner() sdk.Address {
 	return msg.FromAddress
 }
 
+// GetSigner return address(es) that must sign over msg.GetSignBytes()
+func (msg MsgDAOTransfer) GetRecipient() sdk.Address {
+	return nil
+}
+
 // GetSignBytes returns the message bytes to sign over.
 func (msg MsgDAOTransfer) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
@@ -132,6 +143,11 @@ func (msg MsgUpgrade) GetFee() sdk.BigInt {
 // GetSigner return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgUpgrade) GetSigner() sdk.Address {
 	return msg.Address
+}
+
+// GetSigner return address(es) that must sign over msg.GetSignBytes()
+func (msg MsgUpgrade) GetRecipient() sdk.Address {
+	return nil
 }
 
 // GetSignBytes returns the message bytes to sign over.

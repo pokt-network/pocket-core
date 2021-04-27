@@ -29,6 +29,10 @@ func (msg MsgBeginUnstake) GetSigner() sdk.Address {
 	return msg.Address
 }
 
+func (msg MsgBeginUnstake) GetRecipient() sdk.Address {
+	return nil
+}
+
 // GetSignBytes returns the message bytes to sign over.
 func (msg MsgBeginUnstake) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
@@ -61,6 +65,10 @@ func (msg MsgUnjail) GetSigner() sdk.Address {
 	return msg.ValidatorAddr
 }
 
+func (msg MsgUnjail) GetRecipient() sdk.Address {
+	return nil
+}
+
 // GetSignBytes returns the message bytes to sign over.
 func (msg MsgUnjail) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
@@ -91,6 +99,10 @@ func (msg MsgUnjail) GetFee() sdk.BigInt {
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgSend) GetSigner() sdk.Address {
 	return msg.FromAddress
+}
+
+func (msg MsgSend) GetRecipient() sdk.Address {
+	return msg.ToAddress
 }
 
 // GetSignBytes returns the message bytes to sign over.
@@ -179,6 +191,10 @@ func (msg *MsgStake) Unmarshal(data []byte) error {
 
 func (msg MsgStake) GetSigner() sdk.Address {
 	return sdk.Address(msg.PublicKey.Address())
+}
+
+func (msg MsgStake) GetRecipient() sdk.Address {
+	return nil
 }
 
 // GetSignBytes returns the message bytes to sign over.

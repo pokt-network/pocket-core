@@ -23,10 +23,16 @@ type AppCreator func(log.Logger, dbm.DB, io.Writer) *PocketCoreApp
 
 func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error) {
 	// setup the database
-	db, err := OpenDB(GlobalConfig)
+	appDB, err := OpenApplicationDB(GlobalConfig)
 	if err != nil {
 		return nil, nil, err
 	}
+	// setup the transaction indexer
+	txDB, err := OpenTxIndexerDB(GlobalConfig)
+	if err != nil {
+		return nil, nil, err
+	}
+	transactionIndexer := sdk.NewTransactionIndexer(txDB)
 	// open the tracewriter
 	traceWriter, err := openTraceWriter(c.TraceWriter)
 	if err != nil {
@@ -38,7 +44,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		return nil, nil, err
 	}
 	// upgrade the privVal file
-	app := creator(c.Logger, db, traceWriter)
+	app := creator(c.Logger, appDB, traceWriter)
 	PCA = app
 	// create & start tendermint node
 	tmNode, err := node.NewNode(app,
@@ -47,6 +53,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		pvm.LoadOrGenFilePV(c.TmConfig.PrivValidatorKeyFile(), c.TmConfig.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
+		transactionIndexer,
 		node.DefaultGenesisDocProviderFunc(c.TmConfig),
 		node.DefaultDBProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
@@ -59,9 +66,14 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	return tmNode, app, nil
 }
 
-func OpenDB(config sdk.Config) (dbm.DB, error) {
+func OpenApplicationDB(config sdk.Config) (dbm.DB, error) {
 	dataDir := filepath.Join(config.TendermintConfig.RootDir, GlobalConfig.TendermintConfig.DBPath)
 	return sdk.NewLevelDB(sdk.ApplicationDBName, dataDir, config.TendermintConfig.LevelDBOptions.ToGoLevelDBOpts())
+}
+
+func OpenTxIndexerDB(config sdk.Config) (dbm.DB, error) {
+	dataDir := filepath.Join(config.TendermintConfig.RootDir, GlobalConfig.TendermintConfig.DBPath)
+	return sdk.NewLevelDB(sdk.TransactionIndexerDBName, dataDir, config.TendermintConfig.LevelDBOptions.ToGoLevelDBOpts())
 }
 
 func openTraceWriter(traceWriterFile string) (w io.Writer, err error) {
