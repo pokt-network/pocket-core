@@ -127,15 +127,15 @@ type RPCResultTx struct {
 }
 
 type RPCResponseDeliverTx struct {
-	Code        uint32        `json:"code,omitempty"`
-	Data        []byte        `json:"data,omitempty"`
-	Log         string        `json:"log,omitempty"`
-	Info        string        `json:"info,omitempty"`
-	Events      []abci.Event  `json:"events,omitempty"`
-	Codespace   string        `json:"codespace,omitempty"`
-	Signer      types.Address `json:"signer,omitempty"`
-	Recipient   types.Address `json:"recipient,omitempty"`
-	MessageType string        `json:"message_type,omitempty"`
+	Code        uint32        `json:"code"`
+	Data        []byte        `json:"data"`
+	Log         string        `json:"log"`
+	Info        string        `json:"info"`
+	Events      []abci.Event  `json:"events"`
+	Codespace   string        `json:"codespace"`
+	Signer      types.Address `json:"signer"`
+	Recipient   types.Address `json:"recipient"`
+	MessageType string        `json:"message_type"`
 }
 
 type RPCStdTx types2.StdTx
