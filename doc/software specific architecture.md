@@ -98,5 +98,29 @@ In order to reduce network bandwidth and ensure consistent successful delivery o
 
 This algorithm ensures an efficient offset caluclation and an equal distribution of automatic transactions.
 
+### TXIndexer
+Pocket Core uses a custom transaction indexer for optimal usage of resources. Tendermint's default TxIndexer paginates
+and sorts transactions during time of query, resulting in a large consumption of resources. Tendermint's default TxIndexer
+also relies on events to index transactions, and due to a bug in RC-0.5.X pocket core module events are all concatenated
+together. This makes indexing a nightmare.
+
+**Custom Indexer**
+Since LevelDB comparators order lexicongraphically, the implementation uses ELEN to encode numbers to ensure alphanumerical
+ordering at insertion time. https://www.zanopha.com/docs/elen.pdf
+Since the keys are sorted alphanumerically from the start, we don't have to:
+    - Load all results to memory 
+    - Paginate and sort transactions after
+This indexer inserts in sorted order so it can paginate and return based on the db iterator resulting in a significant 
+reduction in resource consumption
+
+The custom pocket core transaction indexer also reduces the scope of the Search() functionality to optimize strictly for 
+the following use cases:
+    - BlockTxs (Get transactions at a certain height)
+    - AccountTxs (Get transactions for a certain account (sent and received))
+    
+The custom pocket core transaction indexer also injects the message_type into the struct to provide an easier method of 
+parsing the transactions. `json:"message_type"`
+
+
 
 
