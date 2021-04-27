@@ -245,12 +245,14 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		return db, nil
 	}
 	app := GetApp(c.Logger, db, traceWriter)
+	txDB := dbm.NewMemDB()
 	tmNode, err := node.NewNode(app.BaseApp,
 		c.TmConfig,
 		0,
 		privVal,
 		&nodeKey,
 		proxy.NewLocalClientCreator(app),
+		sdk.NewTransactionIndexer(txDB),
 		genDocProvider,
 		dbProvider,
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
