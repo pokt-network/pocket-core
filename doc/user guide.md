@@ -28,7 +28,7 @@ Pocket Core is software for Pocket Network 'node runners'. This software impleme
 
 [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 #### Create source code directory
-`mkdir -p $GOPATH/src/github.com/pok-network && cd $GOPATH/src/github.com/pok-network`
+`mkdir -p $GOPATH/src/github.com/pokt-network && cd $GOPATH/src/github.com/pokt-network`
 #### Download the source code
 `git clone https://github.com/pokt-network/pocket-core.git && cd pocket-core`
 #### Checkout the [latest release](https://github.com/pokt-network/pocket-core/releases)
@@ -40,7 +40,7 @@ Example: *git checkout tags/RC-0.6.2*
 
 `go build -o <destination directory> <source code directory>/...`
 
-Example: *go build -o $GOPATH/bin/pocket $GOPATH/src/github.com/pok-network/pocket-core*
+Example: *go build -o $GOPATH/bin/pocket $GOPATH/src/github.com/pokt-network/pocket-core/app/cmd/pocket_core/main.go*
 
 #### Test installation
 ```
