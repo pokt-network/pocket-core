@@ -60,6 +60,11 @@ func (t *TransactionIndexer) AddBatch(b *txindex.Batch) error {
 			storeBatch.Set(keyForSigner(result), hash)
 		}
 
+		// index tx by recipient
+		if result.Result.Recipient != nil {
+			storeBatch.Set(keyForRecipient(result), hash)
+		}
+
 		// index tx by height
 		storeBatch.Set(keyForHeight(result), hash)
 
