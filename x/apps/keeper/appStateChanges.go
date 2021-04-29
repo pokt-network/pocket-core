@@ -48,6 +48,11 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 	if !k.AccountsKeeper.HasCoins(ctx, application.Address, coin) {
 		return types.ErrNotEnoughCoins(k.codespace)
 	}
+	if ctx.IsAfterUpgradeHeight() {
+		if k.getStakedApplicationsCount(ctx) >= k.MaxApplications(ctx){
+			return types.ErrMaxApplications(k.codespace)
+		}
+	}
 	return nil
 }
 

@@ -51,6 +51,10 @@ func ErrNotEnoughCoins(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeNotEnoughCoins, "application does not have enough coins in their account")
 }
 
+func ErrMaxApplications(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeNotEnoughCoins, "the threshold of the amount of applications authorized ")
+}
+
 func ErrMinimumStake(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeMinimumStake, "application isn't staking above the minimum")
 }

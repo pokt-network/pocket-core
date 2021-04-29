@@ -1,3 +1,6 @@
+## RC-0.6.3
+- Implement Max_Applications parameter
+
 ## RC-0.6.2
 - Implemented a Custom Transaction Indexer
 - Return AllClaims if no address is passed to nodeClaims query

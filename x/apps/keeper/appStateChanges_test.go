@@ -1,11 +1,11 @@
 package keeper
 
 import (
-	"reflect"
-	"testing"
-
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
+	"reflect"
+	"testing"
 )
 
 func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
@@ -52,35 +52,65 @@ func TestAppStateChange_ValidateApplicaitonBeginUnstaking(t *testing.T) {
 
 func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
 	tests := []struct {
-		name        string
-		application types.Application
-		panics      bool
-		amount      sdk.BigInt
-		want        interface{}
+		name            string
+		application     types.Application
+		panics          bool
+		amount          sdk.BigInt
+		stakedAppsCount int
+		isAfterUpgrade  bool
+		want            interface{}
 	}{
 		{
-			name:        "validates application",
-			application: getUnstakedApplication(),
-			amount:      sdk.NewInt(1000000),
-			want:        nil,
+			name:            "validates application",
+			stakedAppsCount: 0,
+			application:     getUnstakedApplication(),
+			amount:          sdk.NewInt(1000000),
+			want:            nil,
 		},
 		{
-			name:        "errors if below minimum stake",
-			application: getUnstakedApplication(),
-			amount:      sdk.NewInt(0),
-			want:        types.ErrMinimumStake("apps"),
+			name:            "errors if below minimum stake",
+			application:     getUnstakedApplication(),
+			stakedAppsCount: 0,
+			amount:          sdk.NewInt(0),
+			want:            types.ErrMinimumStake("apps"),
 		},
 		{
-			name:        "errors bank does not have enough coins",
-			application: getUnstakedApplication(),
-			amount:      sdk.NewInt(1000000000000000000),
-			want:        types.ErrNotEnoughCoins("apps"),
+			name:            "errors bank does not have enough coins",
+			application:     getUnstakedApplication(),
+			stakedAppsCount: 0,
+			amount:          sdk.NewInt(1000000000000000000),
+			want:            types.ErrNotEnoughCoins("apps"),
+		},
+		{
+			name:            "errors if max applications hit",
+			application:     getUnstakedApplication(),
+			stakedAppsCount: 5,
+			amount:          sdk.NewInt(1000000),
+			want:            types.ErrMaxApplications("apps"),
+			isAfterUpgrade:  true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			context, _, keeper := createTestInput(t, true)
+			p := keeper.GetParams(context)
+			p.MaxApplications = 5
+			keeper.SetParams(context, p)
+			for i := 0; i < tt.stakedAppsCount; i++ {
+				pk := getRandomPubKey()
+				keeper.SetStakedApplication(context, types.Application{
+					Address:      sdk.Address(pk.Address()),
+					PublicKey:    pk,
+					Jailed:       false,
+					Status:       2,
+					Chains:       []string{"0021"},
+					StakedTokens: sdk.NewInt(10000000),
+				})
+			}
+			if tt.isAfterUpgrade {
+				codec.UpgradeHeight=-1
+			}
 			addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
 			if got := keeper.ValidateApplicationStaking(context, tt.application, tt.amount); !reflect.DeepEqual(got, tt.want) {
