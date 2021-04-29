@@ -60,6 +60,16 @@ func (k Keeper) getStakedApplications(ctx sdk.Ctx) types.Applications {
 	return applications
 }
 
+// getStakedApplicationsCount returns a count of the total staked applcations currently
+func (k Keeper) getStakedApplicationsCount(ctx sdk.Ctx) (count int64) {
+	iterator, _ := k.stakedAppsIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		count++
+	}
+	return
+}
+
 // stakedAppsIterator - Retrieve an iterator for the current staked applications
 func (k Keeper) stakedAppsIterator(ctx sdk.Ctx) (sdk.Iterator, error) {
 	store := ctx.KVStore(k.storeKey)
