@@ -118,31 +118,31 @@ func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int,
 	prove = false
 	received = false
 	order = "desc"
-	if len(args) >= 1 {
+	if len(args) >= 2 {
 		parsedPage, err := strconv.Atoi(args[0])
 		if err == nil {
 			page = parsedPage
 		}
 	}
-	if len(args) >= 2 {
+	if len(args) >= 3 {
 		parsedPerPage, err := strconv.Atoi(args[1])
 		if err == nil {
 			perPage = parsedPerPage
 		}
 	}
-	if len(args) >= 3 {
+	if len(args) >= 4 {
 		parsedProve, err := strconv.ParseBool(args[2])
 		if err == nil {
 			prove = parsedProve
 		}
 	}
-	if len(args) == 4 {
+	if len(args) == 5 {
 		parsedReceived, err := strconv.ParseBool(args[3])
 		if err == nil {
 			received = parsedReceived
 		}
 	}
-	if len(args) == 5 {
+	if len(args) == 6 {
 		parsedOrder := args[4]
 		switch parsedOrder {
 		case "asc":
@@ -156,13 +156,50 @@ func validatePagePerPageProveReceivedArgs(args []string) (page int, perPage int,
 }
 
 var queryAccountTxs = &cobra.Command{
-	Use:   "account-txs <address> <page> <per_page> <prove=(true | false)> <received=(true | false)> <order(asc | desc)>",
+	Use:   "account-txs <address> <page> <per_page> <prove (true | false)> <received (true | false)> <order (asc | desc)>",
 	Short: "Get the transactions sent by the address, paginated by page and per_page",
 	Long:  `Retrieves the transactions sent by the address`,
 	Args:  cobra.RangeArgs(1, 6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		page, perPage, prove, received, order := validatePagePerPageProveReceivedArgs(args[1:])
+		page := 0
+		perPage := 0
+		prove := false
+		received := false
+		order := "desc"
+		if len(args) >= 2 {
+			parsedPage, err := strconv.Atoi(args[1])
+			if err == nil {
+				page = parsedPage
+			}
+		}
+		if len(args) >= 3 {
+			parsedPerPage, err := strconv.Atoi(args[2])
+			if err == nil {
+				perPage = parsedPerPage
+			}
+		}
+		if len(args) >= 4 {
+			parsedProve, err := strconv.ParseBool(args[3])
+			if err == nil {
+				prove = parsedProve
+			}
+		}
+		if len(args) >= 5 {
+			parsedReceived, err := strconv.ParseBool(args[4])
+			if err == nil {
+				received = parsedReceived
+			}
+		}
+		if len(args) >= 6 {
+			parsedOrder := args[5]
+			switch parsedOrder {
+			case "asc":
+				order = "asc"
+			default:
+				order = "desc"
+			}
+		}
 		var err error
 		params := rpc.PaginateAddrParams{
 			Address:  args[0],
@@ -187,13 +224,43 @@ var queryAccountTxs = &cobra.Command{
 }
 
 var queryBlockTxs = &cobra.Command{
-	Use:   "block-txs <height> <page> <per_page> <prove=(true | false)> <order=(asc | desc)>",
+	Use:   "block-txs <height> <page> <per_page> <prove (true | false)> <order (asc | desc)>",
 	Short: "Get the transactions at a certain block height, paginated by page and per_page",
 	Long:  `Retrieves the transactions in the block height`,
 	Args:  cobra.RangeArgs(1, 5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		page, perPage, prove, _, order := validatePagePerPageProveReceivedArgs(args)
+		page := 0
+		perPage := 0
+		prove := false
+		order := "desc"
+		if len(args) >= 2 {
+			parsedPage, err := strconv.Atoi(args[1])
+			if err == nil {
+				page = parsedPage
+			}
+		}
+		if len(args) >= 3 {
+			parsedPerPage, err := strconv.Atoi(args[2])
+			if err == nil {
+				perPage = parsedPerPage
+			}
+		}
+		if len(args) >= 4 {
+			parsedProve, err := strconv.ParseBool(args[3])
+			if err == nil {
+				prove = parsedProve
+			}
+		}
+		if len(args) >= 5 {
+			parsedOrder := args[4]
+			switch parsedOrder {
+			case "asc":
+				order = "asc"
+			default:
+				order = "desc"
+			}
+		}
 		height, parsingErr := strconv.ParseInt(args[0], 10, 64)
 		if parsingErr != nil {
 			fmt.Println(parsingErr)
@@ -206,6 +273,7 @@ var queryBlockTxs = &cobra.Command{
 			Prove:   prove,
 			Sort:    order,
 		}
+		fmt.Println(params.Height, params.Page, params.PerPage, params.Sort)
 		j, err := json.Marshal(params)
 		if err != nil {
 			fmt.Println(err)
@@ -590,11 +658,13 @@ var queryNodeClaims = &cobra.Command{
 	Long:  `Retrieves the list of all pending proof of work submitted by <nodeAddr> at <height>.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		var err error
 		var height int
-		if len(args) == 1 {
-			height = 0 // latest
-		} else {
-			var err error
+		var address string
+		switch len(args){
+		case 1:
+			address = args[0]
+		case 2:
 			height, err = strconv.Atoi(args[1])
 			if err != nil {
 				fmt.Println(err)
@@ -603,7 +673,7 @@ var queryNodeClaims = &cobra.Command{
 		}
 		params := rpc.PaginatedHeightAndAddrParams{
 			Height: int64(height),
-			Addr:   args[0],
+			Addr:   address,
 		}
 		j, err := json.Marshal(params)
 		if err != nil {
