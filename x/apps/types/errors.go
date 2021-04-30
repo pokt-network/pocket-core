@@ -24,6 +24,8 @@ const (
 	CodeNoChains              CodeType          = 116
 	CodeInvalidNetworkID      CodeType          = 117
 	CodeTooManyChains         CodeType          = 118
+	CodeMaxApplications       CodeType          = 119
+	CodeMinimumEditStake      CodeType          = 120
 )
 
 func ErrTooManyChains(Codespace sdk.CodespaceType) sdk.Error {
@@ -52,7 +54,7 @@ func ErrNotEnoughCoins(codespace sdk.CodespaceType) sdk.Error {
 }
 
 func ErrMaxApplications(codespace sdk.CodespaceType) sdk.Error {
-	return sdk.NewError(codespace, CodeNotEnoughCoins, "the threshold of the amount of applications authorized ")
+	return sdk.NewError(codespace, CodeMaxApplications, "the threshold of the amount of applications authorized ")
 }
 
 func ErrMinimumStake(codespace sdk.CodespaceType) sdk.Error {
@@ -94,4 +96,8 @@ func ErrStakeTooLow(codespace sdk.CodespaceType) sdk.Error {
 
 func ErrInvalidNetworkIdentifier(codespace sdk.CodespaceType, err error) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidNetworkID, "the applications network identifier is not valid: "+err.Error())
+}
+
+func ErrMinimumEditStake(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeMinimumEditStake, "application must edit stake with a stake greater than or equal to current stake")
 }

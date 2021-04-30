@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
@@ -40,6 +41,125 @@ func TestKeeper_FinishUnstakingValidator(t *testing.T) {
 			// todo: add more tests scenarios
 			k.FinishUnstakingValidator(tt.args.ctx, tt.args.validator)
 		})
+	}
+}
+
+func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
+	stakeAmount := sdk.NewInt(100000000000)
+	accountAmount := sdk.NewInt(1000000000000).Add(stakeAmount)
+	bumpStakeAmount := sdk.NewInt(1000000000000)
+	newChains := []string{"0021"}
+	val := getUnstakedValidator()
+	val.StakedTokens = sdk.ZeroInt()
+	// updatedStakeAmount
+	updateStakeAmountApp := val
+	updateStakeAmountApp.StakedTokens = bumpStakeAmount
+	// updatedStakeAmountFail
+	updateStakeAmountAppFail := val
+	updateStakeAmountAppFail.StakedTokens = stakeAmount.Sub(sdk.OneInt())
+	// updatedStakeAmountNotEnoughCoins
+	notEnoughCoinsAccount := stakeAmount
+	// updateChains
+	updateChainsVal := val
+	updateChainsVal.StakedTokens = stakeAmount
+	updateChainsVal.Chains = newChains
+	// updateServiceURL
+	updateServiceURL := val
+	updateServiceURL.StakedTokens = stakeAmount
+	updateServiceURL.Chains = newChains
+	updateServiceURL.ServiceURL = "https://newServiceUrl.com"
+	//same app no change no fail
+	updateNothingval := val
+	updateNothingval.StakedTokens = stakeAmount
+	tests := []struct {
+		name          string
+		accountAmount sdk.BigInt
+		origApp       types.Validator
+		amount        sdk.BigInt
+		want          types.Validator
+		err           sdk.Error
+	}{
+		{
+			name:          "edit stake amount of existing validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateStakeAmountApp,
+		},
+		{
+			name:          "FAIL edit stake amount of existing validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateStakeAmountAppFail,
+			err:           types.ErrMinimumEditStake("pos"),
+		},
+		{
+			name:          "edit stake the chains of the validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateChainsVal,
+		},
+		{
+			name:          "edit stake the serviceurl of the validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateChainsVal,
+		},
+		{
+			name:          "FAIL not enough coins to bump stake amount of existing validator",
+			accountAmount: notEnoughCoinsAccount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateStakeAmountApp,
+			err:           types.ErrNotEnoughCoins("pos"),
+		},
+		{
+			name:          "update nothing for the validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateNothingval,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// test setup
+			codec.UpgradeHeight = -1
+			context, _, keeper := createTestInput(t, true)
+			coins := sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), tt.accountAmount))
+			err := keeper.AccountKeeper.MintCoins(context, types.StakedPoolName, coins)
+			if err != nil {
+				t.Fail()
+			}
+			err = keeper.AccountKeeper.SendCoinsFromModuleToAccount(context, types.StakedPoolName, tt.origApp.Address, coins)
+			if err != nil {
+				t.Fail()
+			}
+			err = keeper.StakeValidator(context, tt.origApp, tt.amount)
+			if err != nil {
+				t.Fail()
+			}
+			// test begins here
+			err = keeper.ValidateValidatorStaking(context, tt.want, tt.want.StakedTokens)
+			if err != nil {
+				if tt.err.Error() != err.Error() {
+					t.Fatalf("Got error %s wanted error %s", err, tt.err)
+				}
+				return
+			}
+			// edit stake
+			_ = keeper.StakeValidator(context, tt.want, tt.want.StakedTokens)
+			tt.want.Status = sdk.Staked
+			// see if the changes stuck
+			got, _ := keeper.GetValidator(context, tt.origApp.Address)
+			if !got.Equals(tt.want) {
+				t.Fatalf("Got app %s\nWanted app %s", got.String(), tt.want.String())
+			}
+		})
+
 	}
 }
 

@@ -155,11 +155,11 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 }
 
 func TestNewInMemoryAmino(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNodeAmino(t, oneValTwoNodeGenesisState())
+	_, _, cleanup := NewInMemoryTendermintNodeAmino(t, oneAppTwoNodeGenesis())
 	defer cleanup()
 }
 func TestNewInMemoryProto(t *testing.T) {
-	_, _, cleanup := NewInMemoryTendermintNodeProto(t, oneValTwoNodeGenesisState())
+	_, _, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
 	defer cleanup()
 }
 
@@ -398,7 +398,7 @@ func getUnstakedAccount(kb keys.Keybase) *keys.KeyPair {
 	return nil
 }
 
-func oneValTwoNodeGenesisState() []byte {
+func oneAppTwoNodeGenesis() []byte {
 	kb := getInMemoryKeybase()
 	kp1, err := kb.GetCoinbase()
 	if err != nil {

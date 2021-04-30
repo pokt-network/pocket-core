@@ -109,7 +109,7 @@ func TestAppStateChange_ValidateApplicaitonStaking(t *testing.T) {
 				})
 			}
 			if tt.isAfterUpgrade {
-				codec.UpgradeHeight=-1
+				codec.UpgradeHeight = -1
 			}
 			addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
 			sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, tt.application.Address, sdk.NewInt(100000000000))
@@ -230,6 +230,114 @@ func TestAppStateChange_StakeApplication(t *testing.T) {
 				t.Errorf("AppStateChanges.RegisterApplication() = Did not register app %v", got.StakedTokens)
 			}
 
+		})
+
+	}
+}
+
+func TestAppStateChange_EditAndValidateStakeApplication(t *testing.T) {
+	stakeAmount := sdk.NewInt(100000000000)
+	accountAmount := sdk.NewInt(1000000000000).Add(stakeAmount)
+	bumpStakeAmount := sdk.NewInt(1000000000000)
+	newChains := []string{"0021"}
+	app := getUnstakedApplication()
+	app.StakedTokens = sdk.ZeroInt()
+	// updatedStakeAmount
+	updateStakeAmountApp := app
+	updateStakeAmountApp.StakedTokens = bumpStakeAmount
+	// updatedStakeAmountFail
+	updateStakeAmountAppFail := app
+	updateStakeAmountAppFail.StakedTokens = stakeAmount.Sub(sdk.OneInt())
+	// updatedStakeAmountNotEnoughCoins
+	notEnoughCoinsAccount := stakeAmount
+	// updateChains
+	updateChainsApp := app
+	updateChainsApp.StakedTokens = stakeAmount
+	updateChainsApp.Chains = newChains
+	//same app no change no fail
+	updateNothingApp := app
+	updateNothingApp.StakedTokens = stakeAmount
+	tests := []struct {
+		name          string
+		accountAmount sdk.BigInt
+		origApp       types.Application
+		amount        sdk.BigInt
+		want          types.Application
+		err           sdk.Error
+	}{
+		{
+			name:          "edit stake amount of existing application",
+			accountAmount: accountAmount,
+			origApp:       app,
+			amount:        stakeAmount,
+			want:          updateStakeAmountApp,
+		},
+		{
+			name:          "FAIL edit stake amount of existing application",
+			accountAmount: accountAmount,
+			origApp:       app,
+			amount:        stakeAmount,
+			want:          updateStakeAmountAppFail,
+			err:           types.ErrMinimumEditStake("apps"),
+		},
+		{
+			name:          "edit stake the chains of the application",
+			accountAmount: accountAmount,
+			origApp:       app,
+			amount:        stakeAmount,
+			want:          updateChainsApp,
+		},
+		{
+			name:          "FAIL not enough coins to bump stake amount of existing application",
+			accountAmount: notEnoughCoinsAccount,
+			origApp:       app,
+			amount:        stakeAmount,
+			want:          updateStakeAmountApp,
+			err:           types.ErrNotEnoughCoins("apps"),
+		},
+		{
+			name:          "update nothing for the application",
+			accountAmount: accountAmount,
+			origApp:       app,
+			amount:        stakeAmount,
+			want:          updateNothingApp,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// test setup
+			codec.UpgradeHeight = -1
+			context, _, keeper := createTestInput(t, true)
+			coins := sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), tt.accountAmount))
+			err := keeper.AccountKeeper.MintCoins(context, types.StakedPoolName, coins)
+			if err != nil {
+				t.Fail()
+			}
+			err = keeper.AccountKeeper.SendCoinsFromModuleToAccount(context, types.StakedPoolName, tt.origApp.Address, coins)
+			if err != nil {
+				t.Fail()
+			}
+			err = keeper.StakeApplication(context, tt.origApp, tt.amount)
+			if err != nil {
+				t.Fail()
+			}
+			// test begins here
+			err = keeper.ValidateApplicationStaking(context, tt.want, tt.want.StakedTokens)
+			if err != nil {
+				if tt.err.Error() != err.Error() {
+					t.Fatalf("Got error %s wanted error %s", err, tt.err)
+				}
+				return
+			}
+			// edit stake
+			_ = keeper.StakeApplication(context, tt.want, tt.want.StakedTokens)
+			tt.want.MaxRelays = keeper.CalculateAppRelays(context, tt.want)
+			tt.want.Status = sdk.Staked
+			// see if the changes stuck
+			got, _ := keeper.GetApplication(context, tt.origApp.Address)
+			if !got.Equals(tt.want) {
+				t.Fatalf("Got app %s\nWanted app %s", got.String(), tt.want.String())
+			}
 		})
 
 	}
