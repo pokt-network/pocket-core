@@ -14,11 +14,11 @@ var _ types.ApplicationSet = Keeper{}
 
 // Keeper of the staking store
 type Keeper struct {
-	storeKey       sdk.StoreKey
-	Cdc            *codec.Codec
-	AccountsKeeper types.AuthKeeper
-	POSKeeper      types.PosKeeper
-	Paramstore     sdk.Subspace
+	storeKey      sdk.StoreKey
+	Cdc           *codec.Codec
+	AccountKeeper types.AuthKeeper
+	POSKeeper     types.PosKeeper
+	Paramstore    sdk.Subspace
 	// codespace
 	codespace sdk.CodespaceType
 	// Cache
@@ -37,7 +37,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, su
 
 	return Keeper{
 		storeKey:         key,
-		AccountsKeeper:   supplyKeeper,
+		AccountKeeper:    supplyKeeper,
 		POSKeeper:        posKeeper,
 		Paramstore:       paramstore.WithKeyTable(ParamKeyTable()),
 		codespace:        codespace,

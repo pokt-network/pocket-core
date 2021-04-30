@@ -103,7 +103,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 	return updates
 }
 
-// ValidateValidatorStaking - Check Valdiator before staking
+// ValidateValidatorStaking - Check Validator before staking
 func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt) sdk.Error {
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 	if int64(len(validator.Chains)) > k.MaxChains(ctx) {
@@ -112,7 +112,11 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	// check to see if teh public key has already been register for that validator
 	val, found := k.GetValidator(ctx, validator.Address)
 	if found {
-		if !val.IsUnstaked() {
+		// edit stake in 6.X upgrade
+		if ctx.IsAfterUpgradeHeight() && val.IsStaked() {
+			return k.ValidateEditStake(ctx, val, amount)
+		}
+		if !val.IsUnstaked() { // unstaking or already staked but before the upgrade
 			return types.ErrValidatorStatus(k.codespace)
 		}
 	} else {
@@ -140,8 +144,34 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	return nil
 }
 
+// ValidateEditStake - Validate the updates to a current staked validator
+func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator types.Validator, amount sdk.BigInt) sdk.Error {
+	// ensure not staking less
+	diff := amount.Sub(currentValidator.StakedTokens)
+	if diff.IsNegative() {
+		return types.ErrMinimumEditStake(k.codespace)
+	}
+	// if stake bump
+	if !diff.IsZero() {
+		// ensure account has enough coins for bump
+		coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), diff))
+		if !k.AccountKeeper.HasCoins(ctx, currentValidator.Address, coin) {
+			return types.ErrNotEnoughCoins(k.Codespace())
+		}
+	}
+	return nil
+}
+
 // StakeValidator - Store ops when a validator stakes
 func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt) sdk.Error {
+	// edit stake
+	if ctx.IsAfterUpgradeHeight() {
+		// get Validator to see if edit stake
+		val, found := k.GetValidator(ctx, validator.Address)
+		if found && val.IsStaked() {
+			return k.EditStakeValidator(ctx, val, validator, amount)
+		}
+	}
 	// send the coins from address to staked module account
 	err := k.coinsFromUnstakedToStaked(ctx, validator, amount)
 	if err != nil {
@@ -168,6 +198,39 @@ func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sd
 		k.SetValidatorSigningInfo(ctx, validator.GetAddress(), signingInfo)
 	}
 	ctx.Logger().Info("Successfully staked validator: " + validator.Address.String())
+	return nil
+}
+
+// EditStakeValidator - Edit an already staked validator with the staking message
+func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidator types.Validator, amount sdk.BigInt) sdk.Error {
+	origValForDeletion := currentValidator
+	// get the difference in coins
+	diff := amount.Sub(currentValidator.StakedTokens)
+	// if they bumped the stake amount
+	if diff.IsPositive() {
+		// send the coins from address to staked module account
+		err := k.coinsFromUnstakedToStaked(ctx, currentValidator, diff)
+		if err != nil {
+			return err
+		}
+		currentValidator.StakedTokens = currentValidator.StakedTokens.Add(diff)
+	}
+	// update chains
+	currentValidator.Chains = updatedValidator.Chains
+	// update service url
+	currentValidator.ServiceURL = updatedValidator.ServiceURL
+	// delete the validator from the staking set
+	k.deleteValidatorFromStakingSet(ctx, origValForDeletion)
+	// delete the validator from each individual chains set
+	k.deleteValidatorForChains(ctx, origValForDeletion)
+	// delete in main store
+	k.DeleteValidator(ctx, origValForDeletion.Address)
+	// save in the validator store
+	k.SetValidator(ctx, currentValidator)
+	// save the validator by chains
+	k.SetStakedValidatorByChains(ctx, currentValidator)
+	// log success
+	ctx.Logger().Info("Successfully updated staked validator: " + currentValidator.Address.String())
 	return nil
 }
 

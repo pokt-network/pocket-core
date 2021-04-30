@@ -47,8 +47,8 @@ func TestUnstakeApp(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
 			kp, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -111,7 +111,7 @@ func TestUnstakeNode(t *testing.T) {
 			}
 			var chains = []string{"0001"}
 			_, kb, cleanup := tc.memoryNodeFn(t, twoValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			time.Sleep(2 * time.Second)
 			kp, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -185,7 +185,7 @@ func TestStakeNode(t *testing.T) {
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
 			_, kb, cleanup := tc.memoryNodeFn(t, twoValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			time.Sleep(2 * time.Second)
 			kp, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -200,6 +200,55 @@ func TestStakeNode(t *testing.T) {
 			cleanup()
 			stopCli()
 
+		})
+	}
+}
+
+func TestEditStakeNode(t *testing.T) {
+	tt := []struct {
+		name         string
+		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		*upgrades
+	}{
+		{name: "editStake a proto node with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 2}}},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			var newChains = []string{"2121"}
+			var newServiceURL = "https://newServiceUrl.com:8081"
+			_, kb, cleanup := tc.memoryNodeFn(t, twoValTwoNodeGenesisState())
+			time.Sleep(2 * time.Second)
+			kp, err := kb.GetCoinbase()
+			assert.Nil(t, err)
+			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+			var tx *sdk.TxResponse
+			<-evtChan // Wait for block
+			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+			balance, err := PCA.QueryBalance(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			n, err := PCA.QueryNode(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			var newBalance = balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
+			tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, "test", tc.upgrades.upgradeMod)
+			assert.Nil(t, err)
+			assert.NotNil(t, tx)
+			<-evtChan // Wait for tx
+			nodeUpdated, err := PCA.QueryNode(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			// assert not the same as the old node
+			assert.NotEqual(t, nodeUpdated, n)
+			// assert chains, serviceurl, and stake updated
+			assert.Equal(t, newChains, nodeUpdated.Chains)
+			// assert chains, serviceurl, and stake updated
+			assert.Equal(t, newServiceURL, nodeUpdated.ServiceURL)
+			// assert chains, serviceurl, and stake updated
+			assert.Equal(t, newBalance, nodeUpdated.StakedTokens)
+			cleanup()
+			stopCli()
 		})
 	}
 }
@@ -220,8 +269,8 @@ func TestStakeApp(t *testing.T) {
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
 
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
 			kp, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -249,6 +298,60 @@ func TestStakeApp(t *testing.T) {
 	}
 }
 
+func TestEditStakeApp(t *testing.T) {
+	tt := []struct {
+		name         string
+		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		*upgrades
+	}{
+		{name: "editStake a proto application with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade{true, 2}}},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			var newChains = []string{"2121"}
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
+			kp, err := kb.GetCoinbase()
+			assert.Nil(t, err)
+			kps, err := kb.List()
+			assert.Nil(t, err)
+			for _, k := range kps {
+				if !k.GetAddress().Equals(kp.GetAddress()) {
+					kp = k
+					break
+				}
+			}
+			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+			var tx *sdk.TxResponse
+			<-evtChan // Wait for block
+			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+			balance, err := PCA.QueryBalance(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			n, err := PCA.QueryApp(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			var newBalance = balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
+			tx, err = apps.StakeTx(memCodec(), memCli, kb, newChains, newBalance, kp, "test", tc.upgrades.upgradeMod)
+			assert.Nil(t, err)
+			assert.NotNil(t, tx)
+			<-evtChan // Wait for tx
+			appUpdated, err := PCA.QueryApp(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			// assert not the same as the old node
+			assert.NotEqual(t, appUpdated, n)
+			// assert chains and stake updated
+			assert.Equal(t, newChains, appUpdated.Chains)
+			// assert chains and stake updated
+			assert.Equal(t, newBalance, appUpdated.StakedTokens)
+			cleanup()
+			stopCli()
+		})
+	}
+}
+
 func TestSendTransaction(t *testing.T) {
 
 	tt := []struct {
@@ -265,8 +368,8 @@ func TestSendTransaction(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			kp, err := kb.Create("test")
@@ -310,8 +413,8 @@ func TestDuplicateTxWithRawTx(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			kp, err := kb.Create("test")
@@ -378,8 +481,8 @@ func TestChangeParamsComplexTypeTx(t *testing.T) {
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
 			resetTestACL()
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			kps, err := kb.List()
@@ -424,8 +527,8 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
 			resetTestACL()
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			_, err = kb.List()
@@ -464,8 +567,8 @@ func TestUpgrade(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -505,8 +608,8 @@ func TestDAOTransfer(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
-			time.Sleep(2*time.Second)
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(2 * time.Second)
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -550,7 +653,7 @@ func TestClaimAminoTx(t *testing.T) {
 			genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 			kb := getInMemoryKeybase()
 			_, _, cleanup := tc.memoryNodeFn(t, genBz)
-			time.Sleep(2*time.Second)
+			time.Sleep(2 * time.Second)
 			for i := 0; i < 5; i++ {
 				appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 				assert.Nil(t, err)
@@ -625,7 +728,7 @@ func TestClaimProtoTx(t *testing.T) {
 			genBz, _, validators, app := fiveValidatorsOneAppGenesis()
 			kb := getInMemoryKeybase()
 			_, _, cleanup := tc.memoryNodeFn(t, genBz)
-			time.Sleep(2*time.Second)
+			time.Sleep(2 * time.Second)
 			for i := 0; i < 5; i++ {
 				appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
 				assert.Nil(t, err)

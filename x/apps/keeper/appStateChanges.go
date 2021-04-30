@@ -21,8 +21,11 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 	app, found := k.GetApplication(ctx, application.Address)
 	// if the application exists
 	if found {
-		// ensure unstaked
-		if !app.IsUnstaked() {
+		// edit stake in 6.X upgrade
+		if ctx.IsAfterUpgradeHeight() && app.IsStaked() {
+			return k.ValidateEditStake(ctx, app, amount)
+		}
+		if !app.IsUnstaked() { // unstaking or already staked but before the upgrade
 			return types.ErrApplicationStatus(k.codespace)
 		}
 	} else {
@@ -45,12 +48,30 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 	if amount.LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		return types.ErrMinimumStake(k.codespace)
 	}
-	if !k.AccountsKeeper.HasCoins(ctx, application.Address, coin) {
+	if !k.AccountKeeper.HasCoins(ctx, application.Address, coin) {
 		return types.ErrNotEnoughCoins(k.codespace)
 	}
 	if ctx.IsAfterUpgradeHeight() {
-		if k.getStakedApplicationsCount(ctx) >= k.MaxApplications(ctx){
+		if k.getStakedApplicationsCount(ctx) >= k.MaxApplications(ctx) {
 			return types.ErrMaxApplications(k.codespace)
+		}
+	}
+	return nil
+}
+
+// ValidateEditStake - Validate the updates to a current staked validator
+func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentApp types.Application, amount sdk.BigInt) sdk.Error {
+	// ensure not staking less
+	diff := amount.Sub(currentApp.StakedTokens)
+	if diff.IsNegative() {
+		return types.ErrMinimumEditStake(k.codespace)
+	}
+	// if stake bump
+	if !diff.IsZero() {
+		// ensure account has enough coins for bump
+		coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), diff))
+		if !k.AccountKeeper.HasCoins(ctx, currentApp.Address, coin) {
+			return types.ErrNotEnoughCoins(k.Codespace())
 		}
 	}
 	return nil
@@ -58,6 +79,14 @@ func (k Keeper) ValidateApplicationStaking(ctx sdk.Ctx, application types.Applic
 
 // StakeApplication - Store ops when a application stakes
 func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amount sdk.BigInt) sdk.Error {
+	// edit stake
+	if ctx.IsAfterUpgradeHeight() {
+		// get Validator to see if edit stake
+		curApp, found := k.GetApplication(ctx, application.Address)
+		if found && curApp.IsStaked() {
+			return k.EditStakeApplication(ctx, curApp, application, amount)
+		}
+	}
 	// send the coins from address to staked module account
 	err := k.coinsFromUnstakedToStaked(ctx, application, amount)
 	if err != nil {
@@ -74,6 +103,41 @@ func (k Keeper) StakeApplication(ctx sdk.Ctx, application types.Application, amo
 	application = application.UpdateStatus(sdk.Staked)
 	// save in the application store
 	k.SetApplication(ctx, application)
+	return nil
+}
+
+func (k Keeper) EditStakeApplication(ctx sdk.Ctx, application, updatedApplication types.Application, amount sdk.BigInt) sdk.Error {
+	origAppForDeletion := application
+	// get the difference in coins
+	diff := amount.Sub(application.StakedTokens)
+	// if they bumped the stake amount
+	if diff.IsPositive() {
+		// send the coins from address to staked module account
+		err := k.coinsFromUnstakedToStaked(ctx, application, diff)
+		if err != nil {
+			return err
+		}
+		var er error
+		// add coins to the staked field
+		application, er = application.AddStakedTokens(diff)
+		if er != nil {
+			return sdk.ErrInternal(er.Error())
+		}
+		// update apps max relays
+		application.MaxRelays = k.CalculateAppRelays(ctx, application)
+	}
+	// update chains
+	application.Chains = updatedApplication.Chains
+	// delete the validator from the staking set
+	k.deleteApplicationFromStakingSet(ctx, origAppForDeletion)
+	// delete in main store
+	k.DeleteApplication(ctx, origAppForDeletion.Address)
+	// save in the app store
+	k.SetApplication(ctx, application)
+	// save the app by chains
+	k.SetStakedApplication(ctx, application)
+	// log success
+	ctx.Logger().Info("Successfully updated staked application: " + application.Address.String())
 	return nil
 }
 

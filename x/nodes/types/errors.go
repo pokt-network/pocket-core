@@ -32,6 +32,7 @@ const (
 	CodeInvalidNetworkIdentifier CodeType          = 119
 	CodeTooManyChains            CodeType          = 120
 	CodeStateConvertError        CodeType          = 121
+	CodeMinimumEditStake         CodeType          = 122
 )
 
 func ErrTooManyChains(codespace sdk.CodespaceType) sdk.Error {
@@ -72,6 +73,10 @@ func ErrCantHandleEvidence(codespace sdk.CodespaceType) sdk.Error {
 
 func ErrMinimumStake(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeMinimumStake, "validator isn't staking above the minimum")
+}
+
+func ErrMinimumEditStake(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeMinimumEditStake, "validator must edit stake with a stake greater than or equal to current stake")
 }
 
 func ErrValidatorPubKeyExists(codespace sdk.CodespaceType) sdk.Error {

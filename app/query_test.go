@@ -38,7 +38,7 @@ func TestQueryBlock(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			height := int64(1)
 			<-evtChan // Wait for block
@@ -64,7 +64,7 @@ func TestQueryChainHeight(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			got, err := PCA.QueryHeight()
@@ -91,7 +91,7 @@ func TestQueryTx(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			time.Sleep(time.Second * 2)
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
@@ -133,7 +133,7 @@ func TestQueryAminoTx(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			time.Sleep(time.Second * 2)
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
@@ -211,7 +211,7 @@ func TestQueryApps(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			time.Sleep(time.Second * 2)
 			kp, err := kb.GetCoinbase()
 			assert.Nil(t, err)
@@ -274,7 +274,7 @@ func TestQueryValidator(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			cb, err := kb.GetCoinbase()
 			if err != nil {
 				t.Fatal(err)
@@ -308,7 +308,7 @@ func TestQueryDaoBalance(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			got, err := gov.QueryDAO(memCodec(), memCli, PCA.LastBlockHeight())
@@ -336,7 +336,7 @@ func TestQueryACL(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			got, err := gov.QueryACL(memCodec(), memCli, PCA.LastBlockHeight())
@@ -364,7 +364,7 @@ func TestQueryDaoOwner(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			kb := getInMemoryKeybase()
 			cb, err := kb.GetCoinbase()
 			if err != nil {
@@ -397,7 +397,7 @@ func TestQueryUpgrade(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			var err error
@@ -426,7 +426,7 @@ func TestQuerySupply(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			gotStaked, total, err := PCA.QueryTotalNodeCoins(PCA.LastBlockHeight())
@@ -453,7 +453,7 @@ func TestQueryPOSParams(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			got, err := PCA.QueryNodeParams(PCA.LastBlockHeight())
@@ -484,7 +484,7 @@ func TestAccountBalance(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -511,7 +511,7 @@ func TestQuerySigningInfo(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			cb, err := kb.GetCoinbase()
 			assert.Nil(t, err)
 			cbAddr := cb.GetAddress()
@@ -544,7 +544,7 @@ func TestQueryPocketSupportedBlockchains(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			var err error
@@ -570,7 +570,7 @@ func TestQueryPocketParams(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			got, err := PCA.QueryPocketParams(PCA.LastBlockHeight())
@@ -602,7 +602,7 @@ func TestQueryAccount(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			acc := getUnstakedAccount(kb)
 			assert.NotNil(t, acc)
@@ -633,7 +633,7 @@ func TestQueryStakedApp(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			time.Sleep(2 * time.Second)
 			kp, err := kb.GetCoinbase()
 			assert.Nil(t, err)
@@ -862,7 +862,7 @@ func TestQueryAllParams(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			res, err := PCA.QueryAllParams(PCA.LastBlockHeight())
 			assert.Nil(t, err)
 			assert.NotNil(t, res)
@@ -885,7 +885,7 @@ func TestQueryParam(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			resetTestACL()
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			res, err := PCA.QueryParam(0, "pocketcore/SupportedBlockchains")
 			assert.Nil(t, err)
 			assert.NotNil(t, res)
@@ -913,7 +913,7 @@ func TestQueryAccountBalance(t *testing.T) {
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
-			_, kb, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			acc := getUnstakedAccount(kb)
 			assert.NotNil(t, acc)
@@ -939,7 +939,7 @@ func TestQueryNonExistingAccountBalance(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, cleanup := tc.memoryNodeFn(t, oneValTwoNodeGenesisState())
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			got, err := PCA.QueryBalance("802fddec29f99cae7a601cf648eafced1c062d39", PCA.LastBlockHeight())

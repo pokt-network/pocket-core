@@ -47,7 +47,7 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 		}
 	}
 	// add coins to the total supply
-	keeper.AccountsKeeper.SetSupply(ctx, keeper.AccountsKeeper.GetSupply(ctx).Inflate(stakedCoins))
+	keeper.AccountKeeper.SetSupply(ctx, keeper.AccountKeeper.GetSupply(ctx).Inflate(stakedCoins))
 	// set the params set in the keeper
 	keeper.Paramstore.SetParamSet(ctx, &data.Params)
 }

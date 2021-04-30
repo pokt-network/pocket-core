@@ -16,7 +16,7 @@ import (
 
 func TestBuildSignMultisig(t *testing.T) {
 	codec.UpgradeHeight = 7000
-	_, kb, cleanup := NewInMemoryTendermintNodeAmino(t, oneValTwoNodeGenesisState())
+	_, kb, cleanup := NewInMemoryTendermintNodeAmino(t, oneAppTwoNodeGenesis())
 	cb, err := kb.GetCoinbase()
 	assert.Nil(t, err)
 	kp2, err := kb.Create("test")
