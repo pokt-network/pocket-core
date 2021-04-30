@@ -125,7 +125,7 @@ parsing the transactions. `json:"message_type"`
 Rules:
 1) Must be after 6.X upgrade height
 2) You should ONLY be able to execute this transaction while status = staked
-3) You should be able to execute this transaction while in jail
+3) You can also execute this transaction while in jail
 4) Only can modify certain parts of the structure (see below)
 
 type Application struct {
