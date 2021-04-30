@@ -1,5 +1,6 @@
 ## RC-0.6.3
-- Implement Max_Applications parameter
+- Implement Max_Applications parameter (Consensus Breaking)
+- Implemented Edit Stake (Consensus Breaking)
 
 ## RC-0.6.2
 - Implemented a Custom Transaction Indexer

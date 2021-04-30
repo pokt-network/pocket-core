@@ -121,6 +121,36 @@ the following use cases:
 The custom pocket core transaction indexer also injects the message_type into the struct to provide an easier method of 
 parsing the transactions. `json:"message_type"`
 
+### Edit Stake
+Rules:
+1) Must be after 6.X upgrade height
+2) You should ONLY be able to execute this transaction while status = staked
+3) You should be able to execute this transaction while in jail
+4) Only can modify certain parts of the structure (see below)
+
+type Application struct {
+    Address                 sdk.Address      // SHOULD NOT CHANGE
+    PublicKey               crypto.PublicKey // SHOULD NOT CHANGE
+    Jailed                  bool             // SHOULD NOT CHANGE
+    Status                  sdk.StakeStatus  // SHOULD NOT CHANGE
+    Chains                  []string         // CAN CHANGE
+    StakedTokens            sdk.BigInt       // CAN GO UP ONLY
+    MaxRelays               sdk.BigInt       // CAN GO UP ONLY
+    UnstakingCompletionTime time.Time        // SHOULD NOT CHANGE
+}
+
+
+type Validator struct {
+    Address                 sdk.Address      // SHOULD NOT CHANGE
+    PublicKey               crypto.PublicKey // SHOULD NOT CHANGE
+    Jailed                  bool             // SHOULD NOT CHANGE
+    Status                  sdk.StakeStatus  // SHOULD NOT CHANGE
+    Chains                  []string         // CAN CHANGE
+    ServiceURL              string           // CAN CHANGE
+    StakedTokens            sdk.BigInt       // CAN GO UP ONLY
+    UnstakingCompletionTime time.Time        // SHOULD NOT CHANGE
+}
+
 
 
 
