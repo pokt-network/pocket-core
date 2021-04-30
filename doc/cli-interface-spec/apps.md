@@ -3,7 +3,10 @@ Functions for Application management.
 
 - `pocket app stake <fromAddr> <amount> <relayChainIDs> <chainID> <fee> <legacyCodec=(true | false)>`
 > Stakes the Application into the network, making it available to receive service. Prompts the user for the `<fromAddr>` account passphrase.
->
+> After the 0.6.X upgrade, if the app is already staked, this transaction acts as an *update* transaction.
+> A app can updated relayChainIDs, and raise the stake/max_relays amount with this transaction.
+> If the app is currently staked at X and you submit an update with new stake Y. Only Y-X will be subtracted from an account
+> If no changes are desired for the parameter, just enter the current param value just as before
 > Arguments:
 > - `<fromAddr>`: Target Address to stake.
 > - `<amount>`: The amount of uPOKT to stake. Must be higher than the current minimum amount of Node Stake parameter.

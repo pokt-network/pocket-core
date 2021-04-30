@@ -151,6 +151,30 @@ type Validator struct {
     UnstakingCompletionTime time.Time        // SHOULD NOT CHANGE
 }
 
+### Max Validators & Separation of Service and Consensus
+
+The Max_Validators DAO param assigns a ceiling threshold on the number of *Tendermint Validators*. However, it does
+not limit the number of *Servicer Nodes* in the network. Max_Validators caps *Tendermint Validators* to help with the
+current P2P bottlenecks that exist today. Less Validators = Less Consensus P2P traffic. Max_Validators is not a static
+floor. For instance, if the Max_Validator threshold is exceeded the Validator with the lowest amount of *Stake* out of 
+all the the Validators is removed as a Tendermint Validator and simply exists as a *Servicer*. These changes are likely
+to happen in between blocks as new Validators stake in the network.
+
+Summary:
+- Less Validators = Less Consensus P2P traffic
+- The number of Service Nodes is limited
+- A Validator can join the Tendermint Validators set by staking more than the lowest staked Tendermint Validator which
+in turn changes the lowest state validator into just being a Service Node.
+
+### Max_Applications
+
+Max_Applications is a parameter assigning a ceiling threshold on the number of Applications able to stake in Pocket
+Network. 
+
+The rules for Max_Applications are simple:
+- Applications cannot stake (no matter what amount) if this parameter is enabled and MaxApplications threshold is reached
+- If an Application unstakes a slot will open up
+
 
 
 

@@ -37,7 +37,10 @@ var nodeStakeCmd = &cobra.Command{
 	Use:   "stake <fromAddr> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> [<legacyCodec=(true | false)>]",
 	Short: "Stake a node in the network",
 	Long: `Stake the node into the network, making it available for service.
-Will prompt the user for the <fromAddr> account passphrase.`,
+Will prompt the user for the <fromAddr> account passphrase. After the 0.6.X upgrade, if the node is already staked, this transaction acts as an *update* transaction.
+A node can updated relayChainIDs, serviceURI, and raise the stake amount with this transaction.
+If the node is currently staked at X and you submit an update with new stake Y. Only Y-X will be subtracted from an account
+If no changes are desired for the parameter, just enter the current param value just as before`,
 	Args: cobra.MinimumNArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)

@@ -39,7 +39,10 @@ var appStakeCmd = &cobra.Command{
 	Use:   "stake <fromAddr> <amount> <relayChainIDs> <networkID> <fee> [<legacyCodec=(true | false)>]",
 	Short: "Stake an app into the network",
 	Long: `Stake the app into the network, giving it network throughput for the selected chains.
-Will prompt the user for the <fromAddr> account passphrase.`,
+Will prompt the user for the <fromAddr> account passphrase. After the 0.6.X upgrade, if the app is already staked, this transaction acts as an *update* transaction.
+A app can updated relayChainIDs, and raise the stake/max_relays amount with this transaction.
+If the app is currently staked at X and you submit an update with new stake Y. Only Y-X will be subtracted from an account
+If no changes are desired for the parameter, just enter the current param value just as before`,
 	Args: cobra.MinimumNArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
