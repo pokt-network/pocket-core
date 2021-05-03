@@ -70,7 +70,14 @@ func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string
 	if err != nil {
 		return nil, err
 	}
+	m := make(map[string]struct{})
 	for _, chain := range chains {
+		if _, found := m[chain]; found {
+			return nil, sdk.ErrInternal("cannot stake duplicate relayChainIDs: " + chain)
+		}
+		if len(chain) != pocketTypes.NetworkIdentifierLength {
+			return nil, sdk.ErrInternal("invalid relayChainID " + chain)
+		}
 		err := pocketTypes.NetworkIdentifierVerification(chain)
 		if err != nil {
 			return nil, err
