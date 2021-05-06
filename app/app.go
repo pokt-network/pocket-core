@@ -59,6 +59,7 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 		app.Keys[appsTypes.StoreKey],
 		app.nodesKeeper,
 		app.accountKeeper,
+		app.pocketKeeper,
 		appsSubspace,
 		appsTypes.DefaultCodespace,
 	)
@@ -85,6 +86,7 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 	app.pocketKeeper.TmNode = tmClient
 	// give pocket keeper to nodes module for easy cache clearing
 	app.nodesKeeper.PocketKeeper = app.pocketKeeper
+	app.appsKeeper.PocketKeeper = app.pocketKeeper
 	// setup module manager
 	app.mm = module.NewManager(
 		auth.NewAppModule(app.accountKeeper),

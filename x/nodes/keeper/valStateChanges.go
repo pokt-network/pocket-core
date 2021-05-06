@@ -229,6 +229,8 @@ func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidat
 	k.SetValidator(ctx, currentValidator)
 	// save the validator by chains
 	k.SetStakedValidatorByChains(ctx, currentValidator)
+	// clear cache
+	k.PocketKeeper.ClearSessionCache()
 	// log success
 	ctx.Logger().Info("Successfully updated staked validator: " + currentValidator.Address.String())
 	return nil

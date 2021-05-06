@@ -12,6 +12,11 @@ type PosKeeper interface {
 	GetStakedTokens(ctx sdk.Ctx) sdk.BigInt
 }
 
+type PocketKeeper interface {
+	// clear the cache of validators for sessions and relays
+	ClearSessionCache()
+}
+
 // AuthKeeper defines the expected supply Keeper (noalias)
 type AuthKeeper interface {
 	// get total supply of tokens

@@ -16,4 +16,5 @@ type ValidatorI interface {
 	GetPublicKey() crypto.PublicKey // validation consensus pubkey
 	GetTokens() sdk.BigInt          // validation tokens
 	GetConsensusPower() int64       // validation power in tendermint
+	GetChains() []string            // get chains staked for validator
 }

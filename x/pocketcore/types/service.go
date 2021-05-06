@@ -46,15 +46,15 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 	if r.Proof.SessionBlockHeight != sessionBlockHeight {
 		return sdk.ZeroInt(), NewInvalidBlockHeightError(ModuleName)
 	}
-	// get the application that staked on behalf of the client
-	app, found := GetAppFromPublicKey(ctx, appsKeeper, r.Proof.Token.ApplicationPublicKey)
-	if !found {
-		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
-	}
 	// get the session context
 	sessionCtx, er := ctx.PrevCtx(sessionBlockHeight)
 	if er != nil {
 		return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
+	}
+	// get the application that staked on behalf of the client
+	app, found := GetAppFromPublicKey(sessionCtx, appsKeeper, r.Proof.Token.ApplicationPublicKey)
+	if !found {
+		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
 	}
 	// get session node count from that session height
 	sessionNodeCount := pocketKeeper.SessionNodeCount(sessionCtx)
