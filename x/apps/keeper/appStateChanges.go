@@ -136,6 +136,8 @@ func (k Keeper) EditStakeApplication(ctx sdk.Ctx, application, updatedApplicatio
 	k.SetApplication(ctx, application)
 	// save the app by chains
 	k.SetStakedApplication(ctx, application)
+	// clear session cache
+	k.PocketKeeper.ClearSessionCache()
 	// log success
 	ctx.Logger().Info("Successfully updated staked application: " + application.Address.String())
 	return nil

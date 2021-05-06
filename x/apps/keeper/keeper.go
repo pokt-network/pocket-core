@@ -18,6 +18,7 @@ type Keeper struct {
 	Cdc           *codec.Codec
 	AccountKeeper types.AuthKeeper
 	POSKeeper     types.PosKeeper
+	PocketKeeper  types.PocketKeeper
 	Paramstore    sdk.Subspace
 	// codespace
 	codespace sdk.CodespaceType
@@ -26,7 +27,7 @@ type Keeper struct {
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, supplyKeeper types.AuthKeeper,
+func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, supplyKeeper types.AuthKeeper, pocketKeeper types.PocketKeeper,
 	paramstore sdk.Subspace, codespace sdk.CodespaceType) Keeper {
 
 	// ensure staked module accounts are set
@@ -37,6 +38,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, su
 
 	return Keeper{
 		storeKey:         key,
+		PocketKeeper:     pocketKeeper,
 		AccountKeeper:    supplyKeeper,
 		POSKeeper:        posKeeper,
 		Paramstore:       paramstore.WithKeyTable(ParamKeyTable()),

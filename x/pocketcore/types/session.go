@@ -121,7 +121,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
 		// if not found or jailed, don't add to session and continue
-		if node == nil || node.IsJailed() || sessionNodes.Contains(node.GetAddress()) {
+		if node == nil || node.IsJailed() || NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
 			continue
 		}
 		// else add the node to the session
@@ -257,4 +257,16 @@ func MaxPossibleRelays(app appexported.ApplicationI, sessionNodeCount int64) sdk
 	//GetMaxRelays Max value is bound to math.MaxUint64,
 	//current worse case is 1 chain and 5 nodes per session with a result of 3689348814741910323 which can be used safely as int64
 	return app.GetMaxRelays().ToDec().Quo(sdk.NewDec(int64(len(app.GetChains())))).Quo(sdk.NewDec(sessionNodeCount)).RoundInt()
+}
+
+// "NodeHashChain" - Returns whether or not the node has the relayChain
+func NodeHasChain(chain string, node exported.ValidatorI) bool {
+	hasChain := false
+	for _, c := range node.GetChains() {
+		if c == chain {
+			hasChain = true
+			break
+		}
+	}
+	return hasChain
 }
