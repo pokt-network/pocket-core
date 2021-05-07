@@ -47,6 +47,16 @@ func makeTestCodec() *codec.Codec {
 	return cdc
 }
 
+type MockPocketKeeper struct {
+
+}
+
+func (m MockPocketKeeper) ClearSessionCache() {
+	return
+}
+
+var _ types.PocketKeeper = MockPocketKeeper{}
+
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, keeper.Keeper, types.AuthKeeper, types.PosKeeper) {
 	initPower := int64(100000000000)
 	nAccs := int64(4)
@@ -98,7 +108,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, keeper.Keeper, type
 
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	_ = createTestAccs(ctx, int(nAccs), initialCoins, &ak)
-	keeper := keeper.NewKeeper(cdc, appsKey, nk, ak, appSubspace, "apps")
+	keeper := keeper.NewKeeper(cdc, appsKey, nk, ak, MockPocketKeeper{}, appSubspace, "apps")
 	p := types.DefaultParams()
 	keeper.SetParams(ctx, p)
 	return ctx, keeper, ak, nk

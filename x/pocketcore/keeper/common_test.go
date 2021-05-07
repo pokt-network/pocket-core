@@ -160,9 +160,10 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	pocketSubspace := sdk.NewSubspace(types.DefaultParamspace)
 	ak := auth.NewKeeper(cdc, keyAcc, authSubspace, maccPerms)
 	nk := nodesKeeper.NewKeeper(cdc, nodesKey, ak, nodesSubspace, nodesTypes.ModuleName)
-	appk := appsKeeper.NewKeeper(cdc, appsKey, nk, ak, appSubspace, appsTypes.ModuleName)
+	appk := appsKeeper.NewKeeper(cdc, appsKey, nk, ak, nil, appSubspace, appsTypes.ModuleName)
 	appk.SetApplication(ctx, getTestApplication())
 	keeper := NewKeeper(pocketKey, cdc, ak, nk, appk, &hb, pocketSubspace)
+	appk.PocketKeeper = keeper
 	assert.Nil(t, err)
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
