@@ -107,7 +107,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			if tt.hasError {
 				return
 			}
-			_ = NewKeeper(cdc, appsKey, nk, ak, appSubspace, "apps")
+			_ = NewKeeper(cdc, appsKey, nk, ak, MockPocketKeeper{}, appSubspace, "apps")
 		})
 	}
 }

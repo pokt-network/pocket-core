@@ -48,6 +48,16 @@ func makeTestCodec() *codec.Codec {
 	return cdc
 }
 
+type MockPocketKeeper struct {
+
+}
+
+func (m MockPocketKeeper) ClearSessionCache() {
+	return
+}
+
+var _ types.PocketKeeper = MockPocketKeeper{}
+
 // : deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account, Keeper) {
 	initPower := int64(100000000000)
@@ -104,7 +114,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	moduleManager.InitGenesis(ctx, genesisState)
 	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
 	accs := createTestAccs(ctx, int(nAccs), initialCoins, &ak)
-	keeper := NewKeeper(cdc, appsKey, nk, ak, appSubspace, "apps")
+	keeper := NewKeeper(cdc, appsKey, nk, ak, MockPocketKeeper{}, appSubspace, "apps")
 	p := types.DefaultParams()
 	keeper.SetParams(ctx, p)
 	return ctx, accs, keeper
