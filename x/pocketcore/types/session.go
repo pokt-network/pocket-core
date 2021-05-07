@@ -121,7 +121,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
 		// if not found or jailed, don't add to session and continue
-		if node == nil || node.IsJailed() || NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
+		if node == nil || node.IsJailed() || !NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
 			continue
 		}
 		// else add the node to the session
