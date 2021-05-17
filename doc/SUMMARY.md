@@ -1,4 +1,5 @@
-# Summary​
+# Table of contents
+
 * [Welcome](README.md)
 
 ## Guides
@@ -16,7 +17,7 @@
   * [Query Namespace](specs/cli/query.md)
   * [Util Namespace](specs/cli/util.md)
   * [Gov Namespace](specs/cli/gov.md)
-* [RPC](specs/rpc-spec.yaml)
+* [RPC](specs/rpc-spec.md)
 * [Pocket Core Architecture](specs/architecture.md)
 * [Dispatch](specs/dispatch-spec.md)
 * [Portable Private Key](specs/portable-private-key-spec.md)
@@ -26,5 +27,6 @@
 ## Releases
 
 * [Changelog](releases/changelog.md)
-* [RC-0.6.0](releases/RC-0.6.0.md)
-* [RC-0.5.2.9](releases/RC-0.5.2.9.md)
+* [RC-0.6.0](releases/rc-0.6.0.md)
+* [RC-0.5.2.9](releases/rc-0.5.2.9.md)
+

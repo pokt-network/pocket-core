@@ -1,4 +1,6 @@
-```
+# Dispatch
+
+```text
 Dispatch Request Protocol
 -------------------------
 Node selection begins at the beginning of the session.
@@ -24,3 +26,4 @@ not get selected for the next session
 
 Replacement nodes, provide refreshed service to the clients
 ```
+
