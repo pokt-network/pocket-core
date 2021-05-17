@@ -1,4 +1,5 @@
 # Summary​
+* [Welcome](README.md)
 
 ## Guides
 
@@ -7,7 +8,7 @@
 
 ## Specs
 
-* [CLI Interface](specs/cli/overview.md)
+* [CLI Interface](specs/cli/README.md)
   * [Default Namespace](specs/cli/default.md)
   * [Accounts Namespace](specs/cli/accounts.md)
   * [Apps Namespace](specs/cli/apps.md)
@@ -24,6 +25,6 @@
 
 ## Releases
 
-* [Changelog](releases/changelog.md)
+* [Changelog](releases/README.md)
   * [RC-0.6.0](releases/RC-0.6.0.md)
   * [RC-0.5.2.9](releases/RC-0.5.2.9.md)
