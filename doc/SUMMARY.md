@@ -26,4 +26,4 @@
 
 * [Changelog](releases/changelog.md)
   * [RC-0.6.0](releases/RC-0.6.0.md)
-  * [RC-0.5.2.9](RC-0.5.2.9.md)
+  * [RC-0.5.2.9](releases/RC-0.5.2.9.md)
