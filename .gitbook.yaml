@@ -1,5 +1,5 @@
 root: ./doc/
 
 ​structure:  
-    readme: ./doc/guides/quickstart-guide
+    readme: ./doc/guides/quickstart-guide.md
     summary: SUMMARY.md​
