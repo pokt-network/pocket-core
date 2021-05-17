@@ -4,8 +4,8 @@
 
 ## Guides
 
-* [Quickstart Guide](guides/quickstart-guide.md)
-* [Development Guide](guides/development-guide.md)
+* [Quickstart](guides/quickstart.md)
+* [Development](guides/development.md)
 
 ## Specs
 
