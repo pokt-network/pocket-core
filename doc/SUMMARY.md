@@ -8,7 +8,7 @@
 
 ## Specs
 
-* [CLI Interface](specs/cli/README.md)
+* [CLI](specs/cli/README.md)
   * [Default Namespace](specs/cli/default.md)
   * [Accounts Namespace](specs/cli/accounts.md)
   * [Apps Namespace](specs/cli/apps.md)
