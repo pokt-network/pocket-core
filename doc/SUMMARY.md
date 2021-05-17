@@ -2,7 +2,7 @@
 
 ## Guides
 
-* [Quickstart Guide](guides/user-guide.md)
+* [Quickstart Guide](guides/quickstart-guide.md)
 * [Development Guide](guides/development-guide.md)
 * [Metrics](guides/metrics.md)
 
