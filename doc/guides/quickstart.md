@@ -1,15 +1,6 @@
 # Quickstart
 
-#### Contents
-
-* Install
-* Quickstart
-* Config
-* Operation
-* Resources
-* FAQ
-
-#### Disclaimer
+**Disclaimer**
 
 _PNI is not liable for any slashing or economic penalty that may occur_
 
