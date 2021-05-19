@@ -1,4 +1,4 @@
-# Development Guide
+# Development
 
 This guide contains useful knowledge for development.
 

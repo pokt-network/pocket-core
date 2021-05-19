@@ -1,241 +1,334 @@
+---
+description: >-
+  The accounts namespace handles all account related interactions, from creating
+  and deleting accounts, to importing and exporting accounts.
+---
+
 # Accounts Namespace
 
-The `accounts` namespace handles all account related interactions, from creating and deleting accounts, to importing and exporting accounts.
+## Show All Accounts
 
-* `pocket accounts list`
+```text
+pocket accounts list
+```
 
-  > Lists all the account addresses stored in the keybase. Example output:
-  >
-  > ```text
-  > 0xb3746D30F2A579a2efe7F2F6E8E06277a78054C1
-  > 0xab514F27e98DE7E3ecE3789b511dA955C3F09Bbc
-  > ```
+Lists all the account addresses currently stored in the keybase. 
 
-* `pocket accounts show <address>`
+Example output:
 
-  > Lists an account address and public key.
-  >
-  > Arguments:
-  >
-  > * `<address>`: Target address.
-  >
-  > Example output:
-  >
-  > ```text
-  > Address: 0x.....
-  > Public Key: 0x....
-  > ```
+```text
+(0) 53d809964195172f2970219dfcb0007f33150623
+(1) 59f08710afbad0e20352340780fdbf4e47622a7c
+```
 
-* `pocket accounts delete <address>`
+## Show Details of an Account
 
-  > Deletes an account from the keybase. Will prompt the user for the account passphrase
-  >
-  > Arguments:
-  >
-  > * `<address>`: Target address.
-  >
-  >   Example output:
-  >
-  >   ```text
-  >   KeyPair 0x... deleted successfully.
-  >   ```
+```text
+pocket accounts show <address>
+```
 
-* `pocket accounts unsafe-delete <address>`
+Lists an account address and public key.
 
-  > Deletes an account from the keybase without a passphrase
-  >
-  > Arguments:
-  >
-  > * `<address>`: Target address.
-  >
-  >   Example output:
-  >
-  >   ```text
-  >   KeyPair 0x... deleted successfully.
-  >   ```
+Arguments:
 
-* `pocket accounts update-passphrase <address>`
+* `<address>`: The address to be fetched.
 
-  > Updates the passphrase for the indicated account. Will prompt the user for the current account passphrase and the new account passphrase.
-  >
-  > Arguments:
-  >
-  > * `<address>`: Target address.
-  >
-  >   Example output:
-  >
-  >   ```text
-  >   KeyPair 0x... passphrase updated successfully.
-  >   ```
+Example output:
 
-* `pocket accounts sign <address> <msg>`
+```text
+Address: 0x.....
+Public Key: 0x....
+```
 
-  > Signs the specified `<msg>` using the specified `<address>` account credentials. Will prompt the user for the account passphrase.
-  >
-  > Arguments:
-  >
-  > * `<address>`: The address to be deleted.
-  > * `<msg>`: The message to be signed in hex string format.
-  >
-  >   Example output:
-  >
-  >   ```text
-  >   Original Message: 0x...
-  >   Signature: 0x...
-  >   ```
+## Create an Account
 
-* `pocket accounts create`
+```text
+pocket accounts create
+```
 
-  > Creates and persists a new account in the Keybase. Will prompt the user for a [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) password for the generated mnemonic and for a passphrase to encrypt the generated keypair.
-  >
-  > Example output:
-  >
-  > ```text
-  > Account generated successfully.
-  > Address: 0x....
-  > ```
+Creates and persists a new account in the Keybase. Will prompt the user for a [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) password for the generated mnemonic and for a passphrase to encrypt the generated keypair. _**Make sure to keep a note of this passphrase in a secure place.**_
 
-* `pocket accounts get-validator`
+Example output:
 
-  > Return the main validator from the priv\_val file
+```text
+Account generated successfully.
+Address: 0x....
+```
 
-* `pocket accounts set-validator <address>`
+## Import an Account
 
-  > Return the main validator from the priv\_val file
-  >
-  > Arguments:
-  >
-  > * `<address>`: Target address.
+```text
+pocket accounts import-raw <private-key-hex>
+```
 
-* `pocket accounts import-raw <private-key-hex>`
+Imports an account using the provided `<private-key-hex>`. Will prompt the user for a [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) password for the imported private key and for a passphrase to encrypt the generated keypair. _**Make sure to keep a note of this passphrase in a secure place.**_
 
-  > Imports an account using the provided `<private-key-hex>`. Will prompt the user for a [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) password for the imported private key and for a passphrase to encrypt the generated keypair.
-  >
-  > Arguments:
-  >
-  > * `<import-raw>`: Target raw private key bytes to be stored on keybase
-  >
-  >   Example output:
-  >
-  >   ```text
-  >   Account imported successfully.
-  >   Address: 0x....
-  >   ```
+Arguments:
 
-* `pocket accounts import-armored <aromredJSONFile>`
+* `<private-key-hex>`: Target raw private key bytes to be stored on keybase.
 
-  > Imports an account using the Encrypted ASCII armored `<armoredJSONFile>`. Will prompt the user for a decryption passphrase of the `<armoredJSONFile>` string and for an encryption passphrase to store in the Keybase.
-  >
-  > Arguments:
-  >
-  > * `<armoredJSONFile>`: Target file with encrypted encoded prvate key.
-  >
-  >   Example output:
-  >
-  >   ```text
-  >   Account imported successfully.
-  >   Address: 0x....
-  >   ```
+Example output:
 
-* `pocket accounts export [--path <path>] <address>`
+```text
+Account imported successfully.
+Address: 0x....
+```
 
-  > Exports the account with `<address>`, encrypted and ASCII armored. Will prompt the user for the account passphrase and an encryption passphrase for the exported account.
-  >
-  > Options:
-  >
-  > * `--path`: Target path to send armored private key
+## Encrypted Import
 
-> Arguments:
->
-> * `<address>`: Target address for  exportation.
->
->   Example output:
->
->   ```text
->   Exported account: <armored string>
->   ```
+```text
+pocket accounts import-armored <armoredJSONFile>
+```
 
-* `pocket accounts export-raw <address>`
+Imports an account using the Encrypted ASCII armored `<armoredJSONFile>`. Will prompt the user for a decryption passphrase of the `<armoredJSONFile>` string and for an encryption passphrase to store in the Keybase. _**Make sure to keep a note of this passphrase in a secure place.**_
 
-  > Exports the raw private key in hex format. Will prompt the user for the account passphrase. _**NOTE**_: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.\*
+Arguments:
 
-> Arguments:
->
-> * `<address>`: Target address for exportation.
->
->   Example output:
->
->   ```text
->   Exported account: 0x...
->   ```
+* `<armoredJSONFile>`: Target file with encrypted encoded private key.
 
-* `pocket accounts send-tx <fromAddr> <toAddr> <amount> <chainID> <fee> <memo> <legacyCodec=(true | false)>`
+Example output:
 
-  > Sends `<amount>` uPOKT `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
-  >
-  > Arguments:
-  >
-  > * `<fromAddr>`: Sender address.
-  > * `<toAddr>`: Recipient address for the transaction.
-  > * `<amount>`: The amount of uPOKT to be sent.
-  > * `<chainID>`: The pocket chain identifier.
-  > * `<fee>`:  An amount of uPOKT for the network .
-  > * `<memo>`: Written message.
-  > * `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
+```text
+Account imported successfully.
+Address: 0x....
+```
 
-> Example output:
->
-> ```text
-> Transaction submitted with hash: <Transaction Hash>
-> ```
+## Export an Account
 
-* `pocket accounts send-raw-tx <fromAddr> <txBytes>`
+```text
+pocket accounts export [--path <path>] <address>
+```
 
-  > Sends presigned transactin thrugh tendermint node.
-  >
-  > Arguments:
-  >
-  > * `<fromAddr>`: Sender address.
-  > * : Encoded and signed byte representation of the tx
+Exports the account with `<address>`, encrypted and ASCII armored. Will prompt the user for the account passphrase and an encryption passphrase for the exported account. _**Make sure to keep a note of this passphrase in a secure place.**_
 
-* `pocket accounts create-multi-public <hex-pubkeys>`
+Options:
 
-  > Sends `<amount>` uPOKT `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
-  >
-  > Arguments:
-  >
-  > * `<hex-pubkeys>`: ordered comma separated keys. WARNING: changing the order creates a different addressr.
+* `--path`: Target path to send armored private key.
 
-* `pocket accounts build-MS-Tx <signer-address> <json-message> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>`
+Arguments:
 
-  > Build and sign a multisignature transaction from scratchL result is hex encoded std transaction object.
-  >
-  > Arguments: = `<signer-address>`: Address building & signing. = `<json-message>`: Message structure for the transaction.
-  >
-  > * `<hex-pubkeys>`: ordered comma separated keys. WARNING: changing the order creates a different addressr.
-  > * `<chainID>`: The pocket chain identifier.
-  > * `<fee>`:  An amount of uPOKT for the network.
-  > * `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
+* `<address>`: The address of the account to be exported.
 
-* `pocket accounts sign-ms-tx <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>`
+Example output:
 
-  > Sign a multisignature transaction using public keys, and the transaction object out of order. result is hex encoded standard transaction object.
-  >
-  > Arguments: = `<signer-address>`: Address building & signing. = `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
-  >
-  > * `<hex-pubkeys>`: ordered comma separated keys. WARNING: changing the order creates a different addressr.
-  > * `<chainID>`: The pocket chain identifier.
-  > * `<fee>`:  An amount of uPOKT for the network.
-  > * `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
+```text
+Exported account: <armored string>
+```
 
-* `pocket accounts sign-ms-next <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>`
+## Raw Export
 
-  > Sign a multisignature transaction object, result is hex encoded standard transaction object WARNING: signer addres MUST be the next signer \(in order of public keys in the multisignature\) or the signature will be invalid
-  >
-  > Arguments: = `<signer-address>`: Address building & signing. = `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
-  >
-  > * `<hex-pubkeys>`: ordered comma separated keys. WARNING: changing the order creates a different addressr.
-  > * `<chainID>`: The pocket chain identifier.
-  > * `<fee>`:  An amount of uPOKT for the network.
-  > * `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
+```text
+pocket accounts export-raw <address>
+```
+
+Exports the raw private key in hex format. Will prompt the user for the account passphrase. _**NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.**_
+
+Arguments:
+
+* `<address>`: The address of the account to be exported.
+
+Example output:
+
+```text
+Exported account: 0x...
+```
+
+## Delete an Account
+
+```text
+pocket accounts delete <address>
+```
+
+Deletes an account from the Keybase. Will prompt the user for the account passphrase.
+
+Arguments:
+
+* `<address>`: The address to be deleted.
+
+Example output:
+
+```text
+KeyPair 0x... deleted successfully.
+```
+
+### Unsafe Delete
+
+```text
+pocket accounts unsafe-delete <address>
+```
+
+Deletes an account from the keybase without a passphrase.
+
+Arguments:
+
+* `<address>`: The address to be deleted.
+
+Example output:
+
+```text
+KeyPair 0x... deleted successfully.
+```
+
+## Show the Main Validator
+
+```text
+pocket accounts get-validator
+```
+
+Returns the main validator from the `priv_val` file.
+
+## Set the Main Validator
+
+```text
+pocket accounts set-validator <address>
+```
+
+Sets a new main validator in the `priv_val` file.
+
+Arguments:
+
+* `<address>`: Target address.
+
+## Update an Account's Passphrase
+
+```text
+pocket accounts update-passphrase <address>
+```
+
+Updates the passphrase for the indicated account. Will prompt the user for the current account passphrase and the new account passphrase.
+
+Arguments:
+
+* `<address>`: Target address.
+
+Example output:
+
+```text
+KeyPair 0x... passphrase updated successfully.
+```
+
+## Sign a Message
+
+```text
+pocket accounts sign <address> <msg>
+```
+
+Signs the specified `<msg>` using the specified `<address>` account credentials. Will prompt the user for the account passphrase.
+
+Arguments:
+
+* `<address>`: Target address.
+* `<msg>`: The message to be signed in hex string format.
+
+Example output:
+
+```text
+Original Message: 0x...
+Signature: 0x...
+```
+
+## Send Transaction
+
+```text
+pocket accounts send-tx <fromAddr> <toAddr> <amount> <chainID> <fee> <memo> <legacyCodec=(true | false)>
+```
+
+Sends `<amount>` uPOKT from `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
+
+Arguments:
+
+* `<fromAddr>`: Sender address.
+* `<toAddr>`: Recipient address for the transaction.
+* `<amount>`: The amount of uPOKT to be sent.
+* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+* `<fee>`:  An amount of uPOKT for the network.
+* `<memo>`: Written message.
+* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
+
+Example output:
+
+```text
+Transaction submitted with hash: <Transaction Hash>
+```
+
+## Send Raw Transaction
+
+```text
+pocket accounts send-raw-tx <fromAddr> <txBytes>
+```
+
+Sends presigned transaction through Tendermint node.
+
+Arguments:
+
+* `<fromAddr>`: Sender address.
+* `<txBytes>`: Encoded and signed byte representation of the tx.
+
+## Create a Multi-sig Account
+
+```text
+pocket accounts create-multi-public <hex-pubkeys>
+```
+
+Multi-signature accounts enable multiple individual accounts to share an account and create transactions that require signatures from all accounts.
+
+Important notes:
+
+* Pocket Core does not save the multi-sig account in your keybase.
+* You will need to remember the order in which the public keys have been assigned to the multi-sig account.
+
+Arguments:
+
+* `<hex-pubkeys>`: ordered comma separated keys. _**WARNING: changing the order creates a different address.**_
+
+## Build a Multi-sig Transaction
+
+```text
+pocket accounts build-MS-Tx <signer-address> <json-message> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>
+```
+
+Build and sign a multisignature transaction from scratch. Result is hex encoded std transaction object.
+
+Arguments:
+
+* `<signer-address>`: Address building & signing. 
+* `<json-message>`: Message structure for the transaction.
+* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
+* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+* `<fee>`:  An amount of uPOKT for the network.
+* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
+
+## Sign a Multi-sig Transaction
+
+```text
+pocket accounts sign-ms-tx <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>
+```
+
+Sign a multisignature transaction using public keys, and the transaction object out of order. Result is hex encoded standard transaction object.
+
+Arguments:
+
+* `<signer-address>`: Address building & signing. 
+* `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
+* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
+* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+* `<fee>`:  An amount of uPOKT for the network.
+* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
+
+## Sign a Multi-sig Transaction as the Next Signer
+
+```text
+pocket accounts sign-ms-next <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>
+```
+
+Sign a multisignature transaction object, result is hex encoded standard transaction object. _**WARNING: signer address MUST be the next signer \(in order of public keys in the multisignature\) or the signature will be invalid.**_
+
+Arguments: 
+
+* `<signer-address>`: Address building & signing. 
+* `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
+* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
+* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+* `<fee>`:  An amount of uPOKT for the network.
+* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 

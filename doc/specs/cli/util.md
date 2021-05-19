@@ -1,40 +1,139 @@
+---
+description: Useful operations.
+---
+
 # Util Namespace
 
-* `pocket util generate-chains`
-
-  > Generate the chains.json file for network identifiers.
-  >
-  > Example output:
-  >
-  > \`\`\` Enter the ID of the network identifier: 0001 Enter the URL of the network identifier: [https://ethnode.test.com:8085](https://ethnode.test.com:8085) Would you like to enter another network identifier? \(y/n\) n chains.json contains:
-
-0001 @ [https://ethnode.test.com:8085](https://ethnode.test.com:8085) If incorrect: please remove the chains.json with the delete-chains command
+## Create chains.json
 
 ```text
-- `pocket util convert-pocket-evidence-db`
-> Convert pocket evidence db to proto from amino.
->
-> Example output:
+pocket util generate-chains
 ```
 
+Generate the chains.json file for RelayChain Network Identifiers. Find the RelayChain Network Identifiers [here](https://docs.pokt.network/references/supported-blockchains).
+
+Example output:
+
+```text
+Enter the ID of the network identifier:
+0001 
+Enter the URL of the network identifier: 
+https://ethnode.test.com:8085
+Would you like to enter another network identifier? (y/n)
+n 
+chains.json contains: 
+
+0001 @ https://ethnode.test.com:8085
+If incorrect: please remove the chains.json with the delete-chains command
+```
+
+## Delete chains.json
+
+```text
+pocket util delete-chains
+```
+
+Delete the chains.json file for RelayChain Network Identifiers.  Find the RelayChain Network Identifiers [here](https://docs.pokt.network/references/supported-blockchains).
+
+Example Output:
+
+```text
+Successfully deleted chains.json.
+```
+
+## Rollback the Chain
+
+```text
+pocket util unsafe-rollback <height>
+```
+
+Rolls back the blockchain, the state, and app to a previous height
+
+Arguments:
+
+* `<height>`: the height you want to rollback to.
+
+Flags
+
+* `blocks`: rollback block store and state
+
+## Decode Transaction
+
+```text
+pocket util decode-tx <tx> <legacyCodec=(true | false)>
+```
+
+Decodes a given transaction encoded in Amino/Proto base64 bytes
+
+Arguments:
+
+* `<tx>`: The transaction amino encoded bytes.
+* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
+
+Example output:
+
+```text
+% pocket util decode-tx qgLbCxcNCp0Bq4P6fApLCkA3ZWFjZWFjZTYwNzY1YzhiYjU0NDAzOGUxNGRjOGMyNjQ1NWRmODJmNTVmOGVkZDc1M2EwNDU5ZmY4MzYxZmViEgQwMDIxGP1wEi8KIEd86o3r3PIS6aK3CW+8L3E9JZMEHFdM1kMmy7XmuSQ/EgsQ8YrPpKGm95f/ARieAiIUjDp8K56yjpfHbsHBoLReW9EfapcoARIOCgV1cG9rdBIFMTAwMDAaaQolnVRHdCAO6zUJvs6taFLJzycYSzl2lPHXTYkxOnru2wG+T5y3PxJAckq7juFqII9kg/QPK2JmnLYNUthqZXNbEEQ5Zb/Jk/yqA2kwKUKS9yAZMPX8anDHj5Ycrtkw+LWnyha7aKFFBCiFvpiZ3YOT2JQB
+Type:           claim
+Msg:             286 8C3A7C2B9EB28E97C76EC1C1A0B45E5BD11F6A97 1 0}
+Fee:            10000upokt
+Entropy:        -7732596869214888187
+Memo:
+Signer          8c3a7c2b9eb28e97c76ec1c1a0b45e5bd11f6a97
+Sig:            0eeb3509becead6852c9cf27184b397694f1d74d89313a7aeedb01be4f9cb73f
+```
+
+## Generate Completion Script
+
+```text
+pocket util completion (shell=bash | zsh | fish | powershell)>
+```
+
+Generate completion script for the specified shell
+
+Arguments:
+
+* `<shell>`: the shell you currently use. Supported options: **bash / zsh / fish / powershell**
+
+## Convert Evidence to Proto from Amino
+
+```text
+pocket util convert-pocket-evidence-db
+```
+
+Convert pocket-evidence-db to Proto from Amino.
+
+Example Output:
+
+```
 Successfully converted pocket evidence db
-
-```text
-- `pocket util update-configs`
-> Update the config file with new params defaults for consensus/leveldbopts/p2p/cache/mempool/fastsync.
->
-> Example output:
 ```
 
-Successfuly updated config file.
+## Update config.json With New Param Defaults
 
 ```text
-multisignatruri
-- `pocket print-configs`
-> Prints Default config.json to console.
->
-> Example output:
-```json
+pocket util update-configs
+```
+
+Update the config file with new params defaults for consensus / leveldbopts / p2p / cache / mempool / fastsync.
+
+Example Output: 
+
+```text
+Successfuly updated config file.
+```
+
+## Print Default config.json
+
+```text
+pocket util print-configs
+```
+
+Prints Default config.json to console.
+
+Example Output:
+
+```text
 {
     "tendermint_config": {
         "RootDir": "/Users/admin/.pocket",
@@ -192,54 +291,22 @@ multisignatruri
 }
 ```
 
-* `pocket util delete-chains`
-
-  > Delete the chains.json file for network identifiers.
-  >
-  > Example output:
-  >
-  > ```text
-  > Successfully deleted chains.json.
-  > ```
-
-* `pocket util decode-tx <tx> <legacyCodec=(true | false)>`
-
-  > Decodes a given transaction encoded in Amino/Proto base64 bytes
-  >
-  > Arguments:
-  >
-  > * `<tx>`: the transaction amino encoded bytes.
-  > * `<legacyCodec>`: Enlble/Disable amino encoding for transaction.
-  >
-  >   Example output:
-  >
-  >   \`\`\`
-  >
-  >   % pocket util decode-tx qgLbCxcNCp0Bq4P6fApLCkA3ZWFjZWFjZTYwNzY1YzhiYjU0NDAzOGUxNGRjOGMyNjQ1NWRmODJmNTVmOGVkZDc1M2EwNDU5ZmY4MzYxZmViEgQwMDIxGP1wEi8KIEd86o3r3PIS6aK3CW+8L3E9JZMEHFdM1kMmy7XmuSQ/EgsQ8YrPpKGm95f/ARieAiIUjDp8K56yjpfHbsHBoLReW9EfapcoARIOCgV1cG9rdBIFMTAwMDAaaQolnVRHdCAO6zUJvs6taFLJzycYSzl2lPHXTYkxOnru2wG+T5y3PxJAckq7juFqII9kg/QPK2JmnLYNUthqZXNbEEQ5Zb/Jk/yqA2kwKUKS9yAZMPX8anDHj5Ycrtkw+LWnyha7aKFFBCiFvpiZ3YOT2JQB
-  >
-  >   Type:           claim
-  >
-  >   Msg:             286 8C3A7C2B9EB28E97C76EC1C1A0B45E5BD11F6A97 1 0}
-  >
-  >   Fee:            10000upokt
-  >
-  >   Entropy:        -7732596869214888187
-  >
-  >   Memo:
-  >
-  >   Signer          8c3a7c2b9eb28e97c76ec1c1a0b45e5bd11f6a97
-  >
-  >   Sig:            0eeb3509becead6852c9cf27184b397694f1d74d89313a7aeedb01be4f9cb73f
+## Export Genesis for Reset
 
 ```text
-- `pocket export-genesis-for-reset <height> <newChainID>`
-> In the event of a network reset, this will export a genesis file based on the previous state
->
-> Arguments:
-> - `<height>`: the height to export.
-> - `<newChainID>`: the chainID to use for exporting.
-    > Example output:
-```json
+pocket util export-genesis-for-reset <height> <newChainID>
+```
+
+In the event of a network reset, this will export a genesis file based on the previous state.
+
+Arguments:
+
+* `<height>`: the height from which to generate genesis.json
+* `<newChainID>`: the chainID to use for exporting.
+
+Example Output:
+
+```text
 {
     "app_hash": "",/
     "app_state": {
@@ -263,26 +330,5 @@ multisignatruri
         }
     }
 }
-...
 ```
-
-* `pocket unsafe-rollback <height>`
-
-  > Rollbacks the blockchain, the state, and app to a previous height
-  >
-  > Arguments:
-  >
-  > * `<height>`: the height you want to rollback to.
-  >
-  > Flags
-  >
-  > * `blocks`: rollback block store and state
-
-* `pocket completion (shell=bash | zsh | fish | powershell)>`
-
-  > Generate completion script for the specified shell
-  >
-  > Arguments:
-  >
-  > * `<shell>`: the shell you currently use. Supported options: **bash / zsh / fish / powershell**
 
