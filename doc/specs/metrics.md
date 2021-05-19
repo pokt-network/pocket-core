@@ -19,7 +19,7 @@ Pocket Metrics work expose service metrics per hosted chain for the validator. B
 | relay_count\_for_ | Counter |  | The number of relays executed against a hosted blockchain |
 | challenge_count\_for_ | Counter |  | The number of challenges executed against a hosted blockchain |
 | err_count\_for_ | Counter |  | The number of errors executed against a hosted blockchain |
-| avg_relay\_time\_for_ | Histogram |  | The average relay time in ms exevcuted agianst a hosted blockchain |
+| avg_relay\_time\_for_ | Histogram |  | The average relay time in ms executed against a hosted blockchain |
 | sessions\_count\_for | Counter |  | The number of unique sessions generated for a hosted blockchain |
 | tokens_earned\_for_ | Counter |  | The number of tokens earned in uPOKT for a hosted blockchain |
 
