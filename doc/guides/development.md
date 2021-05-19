@@ -1,10 +1,12 @@
-# Development
+---
+description: This guide contains useful knowledge for development.
+---
 
-This guide contains useful knowledge for development.
+# Development
 
 ## Setup a Development environment
 
-In order to contribute first we need to setup our development environment
+In order to contribute first we need to setup our development environment.
 
 ### Requirements
 
@@ -21,7 +23,7 @@ First we need to clone our repository
 
 ```text
 $ git clone https://github.com/pokt-network/pocket-core.git
-$ git checkout <Your brnach>
+$ git checkout <Your branch>
 ```
 
 vendor dependencies
@@ -39,7 +41,7 @@ $ go build -mod vendor -tags goleveldb -o /tmp/custom-pocket-build ./app/cmd/poc
 
 ### Test
 
-you may run all test witht he following command:
+You may run all test with the following command:
 
 ```text
 $ go test -p 1 ./...
@@ -61,24 +63,24 @@ Mix and match on your needs.
 
 ## Contributing to Pocket Core
 
-All contributions must come with an associated github issue.
+All contributions must come with an associated GitHub issue.
 
-Once you've created an issue on github feel free to clone, branch and develop your issue.
+Once you've created an issue on GitHub feel free to clone, branch and develop your issue.
 
 All PR's must be associated to an authored issue.
 
 ### Reaching out for help
 
-You can reach out for by:
+You can reach out for help by:
 
-* [Writing issues on github](https://github.com/pokt-network/pocket-core/issues/new/choose)
-* [Pocket ecosystem discord community](https://discord.com/invite/KRrqfd3tAK)
+* [Writing issues on GitHub](https://github.com/pokt-network/pocket-core/issues/new/choose)
+* [Joining the Pocket Network Discord](https://discord.com/invite/KRrqfd3tAK)
 
 ## Mocking Interfaces
 
-Sometimes in order to test certain behaviours it's neccesary to use interfaces.
+Sometimes in order to test certain behaviors it's necessary to use interfaces.
 
-Our prime mocking candidate inteface is `Ctx` which denotes specific context expected \(and unexpected\). Any update to the `Ctx` Interface would require an update of our mock struct inside the.
+Our prime mocking candidate interface is `Ctx` which denotes specific context expected \(and unexpected\). Any update to the `Ctx` Interface would require an update of our mock struct inside the.
 
 ### Requirements
 
@@ -90,7 +92,7 @@ This creates a struct that satisfies the Interface as well as use `github.com/st
 
 ### Usage
 
-While usage instructions can be found on the official modkcery [documentation](https://github.com/vektra/mockery/blob/master/README.md)
+While usage instructions can be found on the official mockery [documentation](https://github.com/vektra/mockery/blob/master/README.md)
 
 a quick usage for pocket core specific uses.
 
@@ -112,7 +114,7 @@ Now we just need to move this Ctx struct onto `x/pocketcore/keeper/common_go` fo
 
 ## Creating Proto Go types
 
-As of RC-0.6.0 the adoption of protobuffers for encoding it's neccesary to update poto types which can be located within `proto/`
+As of RC-0.6.0 the adoption of protobuffers for encoding it's necessary to update poto types which can be located within `proto/`
 
 ### Requirements
 
@@ -124,7 +126,7 @@ As of RC-0.6.0 the adoption of protobuffers for encoding it's neccesary to updat
 
 ### Usage
 
-After installing neccesary third party tools. Pocket provides an easy script for updating `.proto.pb` files
+After installing necessary third party tools. Pocket provides an easy script for updating `.proto.pb` files
 
 ```text
 sh protoc/protocgen.sh
