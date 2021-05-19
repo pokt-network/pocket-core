@@ -1,8 +1,8 @@
 # Quickstart
 
-**Disclaimer**
-
-_PNI is not liable for any slashing or economic penalty that may occur_
+{% hint style="danger" %}
+_Disclaimer: Pocket Network Inc. \(PNI\) is not liable for any slashing or economic penalty that may occur._
+{% endhint %}
 
 ## Install
 
@@ -10,48 +10,64 @@ _PNI is not liable for any slashing or economic penalty that may occur_
 
 #### Prerequisite Installations
 
-[go](https://golang.org/doc/install)
-
-[go environment](https://golang.org/doc/gopath_code.html#Workspaces) GOPATH & GOBIN
-
-[git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+* [go](https://golang.org/doc/install)
+* [go environment](https://golang.org/doc/gopath_code.html#Workspaces) GOPATH & GOBIN
+* [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
 #### Create source code directory
 
-`mkdir -p $GOPATH/src/github.com/pokt-network && cd $GOPATH/src/github.com/pokt-network`
+```text
+mkdir -p $GOPATH/src/github.com/pokt-network && cd $GOPATH/src/github.com/pokt-network
+```
 
 #### Download the source code
 
-`git clone https://github.com/pokt-network/pocket-core.git && cd pocket-core`
+```text
+git clone https://github.com/pokt-network/pocket-core.git && cd pocket-core
+```
 
 #### Checkout the [latest release](https://github.com/pokt-network/pocket-core/releases)
 
-`git checkout tags/<release tag>`
+```text
+git checkout tags/<release tag>
+```
 
-Example: _git checkout tags/RC-0.6.2_
+Example:
+
+```text
+git checkout tags/RC-0.6.3 
+```
 
 #### Build
 
-`go build -o <destination directory> <source code directory>/...`
+```text
+go build -o <destination directory> <source code directory>/...
+```
 
-Example: _go build -o $GOPATH/bin/pocket $GOPATH/src/github.com/pokt-network/pocket-core/app/cmd/pocket\_core/main.go_
+Example: 
+
+```text
+go build -o $GOPATH/bin/pocket $GOPATH/src/github.com/pokt-network/pocket-core/app/cmd/pocket_core/main.go
+```
 
 #### Test installation
 
 ```text
 $ pocket version
-> RC-0.6.2
+> RC-0.6.3
 ```
 
 ### From Homebrew
 
-`brew tap pokt-network/pocket-core && brew install pokt-network/pocket-core/pocket`
+```text
+brew tap pokt-network/pocket-core && brew install pokt-network/pocket-core/pocket
+```
 
 #### Test installation
 
 ```text
 $ pocket version
-> RC-0.6.2
+> RC-0.6.3
 ```
 
 ### From Deployment Artifact
@@ -60,33 +76,30 @@ See [pokt-network/pocket-core-deployments](https://github.com/pokt-network/pocke
 
 ## Quickstart
 
-#### Prerequisite Knowledge
+### Prerequisite Knowledge
 
-_This section does not cover the protocol specificiation, rather how to participate in the network as a node runner. For more information on the Pocket Network Protocol, read the wiki_ [_here_](https://forum.pokt.network/)
+{% hint style="info" %}
+This section does not cover the protocol specification, rather how to participate in the network as a node runner. For more information on the Pocket Network protocol, read the wiki [here](https://docs.pokt.network/main-concepts/protocol).
+{% endhint %}
 
-A **Validator** is an infrastructure provider in Pocket Network
+* A **Validator** is an infrastructure provider in Pocket Network
+* **Staking** a Validator locks up a certain **amount** of balance that can be burned as a security mechanism for bad acting
+* A **Relay Chain** is blockchain infrastructure **Validators** expose for application access _Ex: Ethereum, Bitcoin, Pocket Network_ \(identified by 4 hexadecimal characters. _Ex: 0001_\)
+* Apps access **Relay Chains** through the **serviceURI**: the endpoint where **Validators** publicly expose the Pocket API _Ex:_ [https://www.node1.mainnet.pokt.network](https://www.node1.mainnet.pokt.network)
 
-**Staking** a Validator locks up a certain **amount** of balance that can be burned as a security mechanism for bad acting
+### Environment Setup
 
-A **Relay Chain** is blockchain infrastructure **Validators** expose for application access _Ex: Ethereum, Bitcoin, Pocket Network_ \(identified by 4 hexadecimal characters. _Ex: 0001_\)
+* **Hardware Requirements:** 4 CPU’s \(or vCPU’s\) \| 8 GB RAM \| 100GB Disk
+* **Reverse Proxy:** For SSL termination and request management
+* **Ports:** Expose Pocket RPC \(Default :8081\) and P2P port \(Default: 26656\)
+* **SSL Cert:** Required for **Validator's serviceURI**
+* **Open Files Limit:** `ulimit -Sn 16384`
 
-Apps access **Relay Chains** through the **serviceURI**: the endpoint where **Validators** publicly expose the Pocket API _Ex:_ [https://www.node1.mainnet.pokt.network](https://www.node1.mainnet.pokt.network)
+{% hint style="warning" %}
+**Open Files Limit** is very important for the operation of Pocket Core. See [**Config**](quickstart.md#config) section for ulimit calculation.
+{% endhint %}
 
-#### Environment Setup
-
-Hardware Requirements: 4 CPU’s \(or vCPU’s\) \| 8 GB RAM \| 100GB Disk
-
-Reverse Proxy: For SSL termination and request management
-
-Ports: Expose Pocket RPC \(Default :8081\) and P2P port \(Default: 26656\)
-
-SSL Cert: Required for **Validator's serivceURI**
-
-**Open Files Limit**: `ulimit -Sn 16384`
-
-_NOTE_: **Open Files Limit** is very important for the operation of Pocket Core. See **Config** section for ulimit calculation
-
-#### Create an account
+### Create an account
 
 An account is needed to participate at any level of the network.
 
@@ -97,11 +110,15 @@ pocket accounts create
 > Address: <address>
 ```
 
-#### Fund the account
+### Fund the account
 
 To stake a Validator in Pocket Network, the account must have a balance above the **minimum stake**:
 
 `15,000 POKT` or `15,000,000,000 uPOKT`
+
+{% hint style="danger" %}
+If your stake falls below `15,000 POKT` your node will be force-unstake burned. We recommend having a buffer above the 15,000 minimum \(e.g. 15,100-16,000\), so that minor slashing doesn't result in loss of the entire stake.
+{% endhint %}
 
 Send POKT with the following command:
 
@@ -109,15 +126,17 @@ Send POKT with the following command:
 pocket accounts send-tx <fromAddr> <toAddr> <uPOKT amount> mainnet 10000 "" true
 ```
 
-#### Set the account as Validator
+### Set the account as Validator
 
 ```text
 pocket accounts set-validator <address>
 ```
 
-NOTE: Check with _pocket accounts get-validator_
+{% hint style="info" %}
+Check with `pocket accounts get-validator`
+{% endhint %}
 
-#### Set [Relay Chains](https://forum.pokt.network/t/supportedblockchains/607)
+### Set [Relay Chains](https://forum.pokt.network/t/supportedblockchains/607)
 
 ```text
 pocket util generate-chains
@@ -129,21 +148,29 @@ Would you like to enter another network identifier? (y/n)
 n
 ```
 
-NOTE: _Can test with simulate relay flag and endpoint. See_ [_RPC Specification_](https://github.com/pokt-network/pocket-core/tree/18c6dc91425e4e058b5edfbb6d5fe7b7ddb4ed3c/doc/guides/rpc_spec.yaml) _for details_
+{% hint style="info" %}
+Can test with simulate relay flag and endpoint. See [RPC Specification](../specs/rpc-spec.md) for details.
+{% endhint %}
 
-#### Sync the blockchain
+### Sync the blockchain
 
 ```text
 pocket start --seeds=<seeds> --mainnet
 ```
 
-Example: _pocket start --seeds="64c91701ea98440bc3674fdb9a99311461cdfd6f@node1.mainnet.pokt.network:21656" --mainnet_
+Example: 
 
-[Seeds](https://forum.pokt.network/t/list-of-seeds/647)
+```text
+pocket start --seeds="64c91701ea98440bc3674fdb9a99311461cdfd6f@node1.mainnet.pokt.network:21656" --mainnet
+```
 
-NOTE: _Ensure the node is all the way synced before proceeding to the next step_
+[Seeds](https://docs.pokt.network/references/seeds)
 
-#### Stake the Validator
+{% hint style="warning" %}
+Ensure the node is all the way synced before proceeding to the next step.
+{% endhint %}
+
+### Stake the Validator
 
 Stake the account to participate in the Network as a **Validator**
 
@@ -151,9 +178,15 @@ Stake the account to participate in the Network as a **Validator**
 pocket nodes stake <address> <amount> <relay_chains> <serviceURI> mainnet 10000 true
 ```
 
-Example: _pocket nodes stake 3ee61299d5bbbd2974cddcc194d9b547c7629546 20000000000 \["0001", "0002"\]_ [https://pokt.rocks](https://pokt.rocks) _mainnet 10000 true_
+Example: 
 
-**Important:** _Stake 'well over' the minimum stake to avoid force-unstake burning_
+```text
+pocket nodes stake 3ee61299d5bbbd2974cddcc194d9b547c7629546 20000000000 ["0001", "0002"] https://pokt.rocks mainnet 10000 true
+```
+
+{% hint style="danger" %}
+Remember, stake 'well over' the minimum stake to avoid force-unstake burning.
+{% endhint %}
 
 ## Config
 
@@ -324,9 +357,8 @@ Pocket Core operation requires an elevated Ulimit:
 
 Located: `$HOME/.pocket/config/genesis.json`
 
-[Testnet Genesis File](https://raw.githubusercontent.com/pokt-network/pocket-network-genesis/master/testnet/genesis.json)
-
-[Mainnet Genesis File](https://raw.githubusercontent.com/pokt-network/pocket-network-genesis/master/mainnet/genesis.json)
+* [Testnet Genesis File](https://raw.githubusercontent.com/pokt-network/pocket-network-genesis/master/testnet/genesis.json)
+* [Mainnet Genesis File](https://raw.githubusercontent.com/pokt-network/pocket-network-genesis/master/mainnet/genesis.json)
 
 Use pocket core flags --mainnet or --testnet to automatically write
 
@@ -334,7 +366,9 @@ Use pocket core flags --mainnet or --testnet to automatically write
 
 Use the CLI or Manually Edit: `$HOME/.pocket/config/chains.json`
 
-Relay Chain ID's can be found [here](https://forum.pokt.network/t/supportedblockchains/607)
+{% hint style="info" %}
+Relay Chain ID's can be found [here](https://docs.pokt.network/references/supported-blockchains).
+{% endhint %}
 
 ```text
 [
@@ -353,33 +387,34 @@ Relay Chain ID's can be found [here](https://forum.pokt.network/t/supportedblock
 
 Operating a Validator requires \(at a minimum\) some prerequisite basic knowledge of the Pocket Network.
 
-_This section will cover the basics of:_
+This section will cover the basics of:
 
 * Slashing and Jailing
 * Force Unstake
 * Economic Incentives
 
-**Slashing And Jailing**
+### **Slashing And Jailing**
 
 Jailing and Slashing are high level protocol concepts:
 
-_Jailing_ a Validator removes them from both protocol service and consensus.
-
-_Slashing_ a Validator burns a percentage of the 'Staked Tokens'
+*  _Jailing_ a Validator removes them from both protocol service and consensus.
+* _Slashing_ a Validator burns a percentage of the 'Staked Tokens'
 
 A Validator is jailed and subsequently slashed for not signing \(or incorrectly signing\) block proposals. More often than not, this is the reason why Validators are jailed.
 
-Common reasons for not signing blocks are addressed [here](https://github.com/pokt-network/pocket-core/issues/1092)
+Common reasons for not signing blocks are addressed [here](https://github.com/pokt-network/pocket-core/issues/1092).
 
-If a Validator is jailed for too long it will be forcibly removed by the protocol and all Staked Tokens burned
+If a Validator is jailed for too long it will be forcibly removed by the protocol and all Staked Tokens burned.
 
-NOTE: `pocket query params` to see protocol level values like `max_jailed_blocks`
+{% hint style="info" %}
+`pocket query params` to see protocol level values like `max_jailed_blocks`
+{% endhint %}
 
-**Force Unstake**
+### **Force Unstake**
 
-If a Validator falls below the minimum stake \(due to slashing\) it will be forcibly removed by the protocol and all Staked Tokens burned. This feature of the protcol highlights the importance of staking 'well above' the minimum stake.
+If a Validator falls below the minimum stake \(due to slashing\) it will be forcibly removed by the protocol and all Staked Tokens burned. This feature of the protocol highlights the importance of staking 'well above' the minimum stake.
 
-**Economic Incentives**
+### **Economic Incentives**
 
 For providing infrastructure access to applications, Validators are rewarded proportional to the work they provide. Pocket Core attempts to send a _Claim_ and subsequent _Proof_ transaction automatically after the `proof_waiting_period` elapses. If both transactions are successful, Tokens are minted to the address of the Validator.
 
