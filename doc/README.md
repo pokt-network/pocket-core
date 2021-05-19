@@ -14,3 +14,21 @@ Official golang implementation of the Pocket Network Protocol.
 
 The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can visit [pokt.network](https://pokt.network).
 
+## Resources
+
+[Pocket Core CLI Spec](https://github.com/pokt-network/pocket-core/tree/18c6dc91425e4e058b5edfbb6d5fe7b7ddb4ed3c/doc/guides/cli-interface-spec/README.md)
+
+[Pocket Core RPC Spec](https://github.com/pokt-network/pocket-core/tree/18c6dc91425e4e058b5edfbb6d5fe7b7ddb4ed3c/doc/guides/rpc-spec.yaml)
+
+[Software Specific Architecture](https://github.com/pokt-network/pocket-core/tree/18c6dc91425e4e058b5edfbb6d5fe7b7ddb4ed3c/doc/guides/software%20specific%20architecture.md)
+
+[Protocol Forum](https://forum.pokt.network/)
+
+[Protocol Wiki](https://forum.pokt.network/c/wiki)
+
+[Community Discord](https://discord.com/invite/KRrqfd3tAK)
+
+## FAQs
+
+[Frequently Asked Questions](https://github.com/pokt-network/pocket-core/issues?q=is%3Aissue+label%3Afaq)
+

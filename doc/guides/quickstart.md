@@ -383,21 +383,3 @@ If a Validator falls below the minimum stake \(due to slashing\) it will be forc
 
 For providing infrastructure access to applications, Validators are rewarded proportional to the work they provide. Pocket Core attempts to send a _Claim_ and subsequent _Proof_ transaction automatically after the `proof_waiting_period` elapses. If both transactions are successful, Tokens are minted to the address of the Validator.
 
-## Resources
-
-[Pocket Core CLI Spec](https://github.com/pokt-network/pocket-core/tree/18c6dc91425e4e058b5edfbb6d5fe7b7ddb4ed3c/doc/guides/cli-interface-spec/README.md)
-
-[Pocket Core RPC Spec](https://github.com/pokt-network/pocket-core/tree/18c6dc91425e4e058b5edfbb6d5fe7b7ddb4ed3c/doc/guides/rpc-spec.yaml)
-
-[Software Specific Architecture](https://github.com/pokt-network/pocket-core/tree/18c6dc91425e4e058b5edfbb6d5fe7b7ddb4ed3c/doc/guides/software%20specific%20architecture.md)
-
-[Protocol Forum](https://forum.pokt.network/)
-
-[Protocol Wiki](https://forum.pokt.network/c/wiki)
-
-[Community Discord](https://discord.com/invite/KRrqfd3tAK)
-
-## FAQs
-
-[Frequently Asked Questions](https://github.com/pokt-network/pocket-core/issues?q=is%3Aissue+label%3Afaq)
-
