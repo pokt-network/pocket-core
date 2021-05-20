@@ -2,12 +2,13 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/codec"
+	"reflect"
+	"testing"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"reflect"
-	"testing"
 )
 
 func TestKeeper_FinishUnstakingValidator(t *testing.T) {
@@ -314,6 +315,23 @@ func TestKeeper_UpdateTendermintValidators(t *testing.T) {
 				t.Errorf("UpdateTendermintValidators() = %v, want %v", gotUpdates, tt.wantUpdates)
 			}
 		})
+	}
+}
+
+func BenchmarkKeeper_UpdateTendermintValidators(b *testing.B) {
+	b.StopTimer()
+	ctx, _, k := createBenchInput(b, true, 250000, 150000, 300)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		_ = k.UpdateTendermintValidators(ctx)
+	}
+}
+func BenchmarkKeeper_UpdateTendermintValidatorsB(b *testing.B) {
+	b.StopTimer()
+	ctx, _, k := createBenchInput(b, true, 250000, 150000, 300)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		_ = k.UpdateTendermintValidatorsB(ctx)
 	}
 }
 

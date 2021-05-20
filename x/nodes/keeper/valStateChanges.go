@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/strings"
 	"time"
+
+	"github.com/tendermint/tendermint/libs/strings"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -17,10 +18,104 @@ import (
 // UpdateTendermintValidators - Apply and return accumulated updates to the staked validator set
 // It gets called once after genesis, another time maybe after genesis transactions,
 // then once at every EndBlock.
+func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
+	// get the world state
+	store := ctx.KVStore(k.storeKey)
+	// allow all waiting to begin unstaking to begin unstaking
+	// NOTE Consider using switch ?
+	if ctx.BlockHeight()%k.BlocksPerSession(ctx) == 0 { // one block before new session (mod 1 would be session block)
+		k.ReleaseWaitingValidators(ctx)
+	}
+	maxValidators := k.MaxValidators(ctx)
+	totalPower := sdk.ZeroInt()
+	// Retrieve the prevState validator set addresses mapped to their respective staking power
+	prevStatePowerMap := k.getPrevStatePowerMapCached(ctx)
+	// Iterate over staked validators, highest power to lowest.
+	iterator, _ := sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
+	defer iterator.Close()
+	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
+		// get the validator address
+		valAddr := sdk.Address(iterator.Value())
+		// return the validator from the current store
+		validator, found := k.GetValidator(ctx, valAddr)
+		if !found {
+			k.Logger(ctx).Error("staking validator not found in UpdateTendermintValidators: " + valAddr.String())
+			// Cant delete w/out validator object due to ordering
+			continue
+		}
+		// sanity check for no jailed validators
+		if validator.Jailed {
+			k.Logger(ctx).Error("should never retrieve a jailed validator from the staked validators:" + validator.Address.String())
+			continue
+		}
+		if validator.ConsensusPower() == 0 {
+			k.Logger(ctx).Error("should never retrieve a zero power validator from the staked validators:" + validator.Address.String())
+			continue
+		}
+		// fetch the old power bytes
+		var valAddrBytes [sdk.AddrLen]byte
+		copy(valAddrBytes[:], valAddr[:]) // NOTE look into faster copying ? why copy? why not just use ?
+		// check the previous state: if found calculate current power...
+		prevStatePowerBytes, found := prevStatePowerMap[valAddrBytes]
+		curStatePower := validator.ConsensusPower() // Is this constant ?
+		var curStatePowerBytes []byte
+		var err error
+		csp := sdk.Int64(curStatePower)
+		curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(&csp, ctx.BlockHeight())
+		if err != nil {
+			panic(err)
+		}
+		// if not found or the power has changed -> add this validator to the updated list
+		if !found || !bytes.Equal(prevStatePowerBytes, curStatePowerBytes) {
+			ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
+			updates = append(updates, validator.ABCIValidatorUpdate())
+			// update the previous state as this will soon be the previous state
+			k.SetPrevStateValPower(ctx, valAddr, curStatePower)
+		}
+		// remove the validator from power map, this structure is used to keep track of who is no longer staked
+		delete(prevStatePowerMap, valAddrBytes)
+		// keep count of the number of validators to ensure we don't go over the maximum number of validators
+		count++
+		// update the total power
+		totalPower = totalPower.Add(sdk.NewInt(curStatePower))
+	}
+	// sort the no-longer-staked validators
+	// noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
+	// iterate through the sorted no-longer-staked validators
+	// Fan out ??
+	for valAddrBytes := range prevStatePowerMap {
+		valAddr := make([]byte, sdk.AddrLen)
+		copy(valAddr, valAddrBytes[:])
+		validator, found := k.GetValidator(ctx, valAddr) // Already cached by the time of an update
+		if !found {
+			ctx.Logger().Error(fmt.Sprintf("unable to retrieve `nolongerstaked` validator: %s from the world state at height: %d ", hex.EncodeToString(valAddr), ctx.BlockHeight()))
+			continue
+		}
+		// delete from the stake validator index
+		k.DeletePrevStateValPower(ctx, validator.GetAddress())
+		// add to one of the updates for tendermint
+		ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked, at height %d", validator.Address, ctx.BlockHeight()))
+		updates = append(updates, validator.ABCIValidatorUpdate())
+		// if validator was force unstaked, delete the validator from the all validators store
+		if validator.IsUnstaked() {
+			k.DeleteValidator(ctx, validator.Address)
+		}
+	}
+	// set total power on lookup index if there are any updates
+	if len(updates) > 0 {
+		k.SetPrevStateValidatorsPower(ctx, totalPower) // ALSO SET TO CACHE
+	}
+	return updates
+}
+
+// UpdateTendermintValidators - Apply and return accumulated updates to the staked validator set
+// It gets called once after genesis, another time maybe after genesis transactions,
+// then once at every EndBlock.
 func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
 	// get the world state
 	store := ctx.KVStore(k.storeKey)
 	// allow all waiting to begin unstaking to begin unstaking
+	// NOTE Consider using switch ?
 	if ctx.BlockHeight()%k.BlocksPerSession(ctx) == 0 { // one block before new session (mod 1 would be session block)
 		k.ReleaseWaitingValidators(ctx)
 	}
@@ -52,10 +147,10 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		}
 		// fetch the old power bytes
 		var valAddrBytes [sdk.AddrLen]byte
-		copy(valAddrBytes[:], valAddr[:])
+		copy(valAddrBytes[:], valAddr[:]) // NOTE look into faster copying ? why copy? why not just use ?
 		// check the previous state: if found calculate current power...
 		prevStatePowerBytes, found := prevStatePowerMap[valAddrBytes]
-		curStatePower := validator.ConsensusPower()
+		curStatePower := validator.ConsensusPower() // Is this constant ?
 		var curStatePowerBytes []byte
 		var err error
 		csp := sdk.Int64(curStatePower)
@@ -78,12 +173,15 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		totalPower = totalPower.Add(sdk.NewInt(curStatePower))
 	}
 	// sort the no-longer-staked validators
-	noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
+	// noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
 	// iterate through the sorted no-longer-staked validators
-	for _, valAddrBytes := range noLongerStaked {
-		validator, found := k.GetValidator(ctx, valAddrBytes)
+	// Fan out ??
+	for valAddrBytes := range prevStatePowerMap {
+		valAddr := make([]byte, sdk.AddrLen)
+		copy(valAddr, valAddrBytes[:])
+		validator, found := k.GetValidator(ctx, valAddr) // Already cached by the time of an update
 		if !found {
-			ctx.Logger().Error(fmt.Sprintf("unable to retrieve `nolongerstaked` validator: %s from the world state at height: %d ", hex.EncodeToString(valAddrBytes), ctx.BlockHeight()))
+			ctx.Logger().Error(fmt.Sprintf("unable to retrieve `nolongerstaked` validator: %s from the world state at height: %d ", hex.EncodeToString(valAddr), ctx.BlockHeight()))
 			continue
 		}
 		// delete from the stake validator index

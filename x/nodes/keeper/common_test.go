@@ -1,9 +1,10 @@
 package keeper
 
 import (
-	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"math/rand"
 	"testing"
+
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/types/module"
@@ -43,11 +44,77 @@ func makeTestCodec() *codec.Codec {
 
 type MockPocketKeeper struct{}
 
+func (m MockPocketKeeper) UpdateSessionValidator(ctx sdk.Ctx, val exported.ValidatorI) {
+	return
+}
+
 func (m MockPocketKeeper) ClearSessionCache() {
 	return
 }
 
 var _ types.PocketKeeper = MockPocketKeeper{}
+
+func createBenchInput(b *testing.B, isCheckTx bool, accounts, validators, noLongerStaked int64) (sdk.Context, []auth.Account, Keeper) {
+	initPower := int64(100000000000)
+
+	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
+	keyParams := sdk.ParamsKey
+	tkeyParams := sdk.ParamsTKey
+	keyPOS := sdk.NewKVStoreKey(types.ModuleName)
+	db := dbm.NewMemDB()
+	ms := store.NewCommitMultiStore(db)
+	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyPOS, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+	if err := ms.LoadLatestVersion(); err != nil {
+		panic(err)
+	}
+
+	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, isCheckTx, log.NewNopLogger()).WithAppVersion("0.0.0")
+	ctx = ctx.WithConsensusParams(
+		&abci.ConsensusParams{
+			Validator: &abci.ValidatorParams{
+				PubKeyTypes: []string{tmtypes.ABCIPubKeyTypeEd25519},
+			},
+		},
+	)
+	cdc := makeTestCodec()
+
+	maccPerms := map[string][]string{
+		auth.FeeCollectorName: nil,
+		types.StakedPoolName:  {auth.Burner, auth.Staking, auth.Minter},
+		types.ModuleName:      {auth.Burner, auth.Staking, auth.Minter},
+	}
+	modAccAddrs := make(map[string]bool)
+	for acc := range maccPerms {
+		modAccAddrs[auth.NewModuleAddress(acc).String()] = true
+	}
+	valTokens := sdk.TokensFromConsensusPower(initPower)
+	accSubspace := sdk.NewSubspace(auth.DefaultParamspace)
+	posSubspace := sdk.NewSubspace(DefaultParamspace)
+	ak := auth.NewKeeper(cdc, keyAcc, accSubspace, maccPerms)
+	moduleManager := module.NewManager(
+		auth.NewAppModule(ak),
+	)
+	genesisState := ModuleBasics.DefaultGenesis()
+	moduleManager.InitGenesis(ctx, genesisState)
+	initialCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, valTokens))
+	accs := createTestAccs(ctx, int(accounts), initialCoins, &ak)
+	vals := createStakedAccs(ctx, int(validators), initialCoins, &ak)
+	noLongerStakedVals := createStakedAccs(ctx, int(noLongerStaked), initialCoins, &ak)
+	keeper := NewKeeper(cdc, keyPOS, ak, posSubspace, "pos")
+	params := types.DefaultParams()
+	keeper.SetParams(ctx, params)
+	for _, v := range vals {
+		keeper.StakeValidator(ctx, v, valTokens)
+	}
+	for _, v := range noLongerStakedVals {
+		keeper.SetPrevStateValPower(ctx, v.Address, 1)
+	}
+
+	return ctx, accs, keeper
+}
 
 // : deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account, Keeper) {
@@ -115,6 +182,21 @@ func createTestAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.K
 		acc.PubKey = pubKey
 		ak.SetAccount(ctx, &acc)
 		accs = append(accs, &acc)
+	}
+	return
+}
+
+func createStakedAccs(ctx sdk.Ctx, numAccs int, initialCoins sdk.Coins, ak *auth.Keeper) (vals []types.Validator) {
+	for i := 0; i < numAccs; i++ {
+		val := getValidator()
+		// privKey := crypto.GenerateEd25519PrivKey()
+		// pubKey := privKey.PublicKey()
+		// addr := sdk.Address(pubKey.Address())
+		acc := auth.NewBaseAccountWithAddress(val.Address)
+		acc.Coins = initialCoins
+		acc.PubKey = val.PublicKey
+		ak.SetAccount(ctx, &acc)
+		vals = append(vals, val)
 	}
 	return
 }
