@@ -1,10 +1,11 @@
 package keeper
 
 import (
+	"testing"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGetAndSetStakedValidator(t *testing.T) {
@@ -72,6 +73,27 @@ func TestGetSetDeleteValidatorsByChain(t *testing.T) {
 	vals, _ = keeper.GetValidatorsByChain(context, stakedValidator.Chains[2])
 	assert.NotContains(t, vals, stakedValidator.Address)
 }
+
+// func BenchmarkGetValidatorsByChain(b *testing.B) {
+// 	benchmarks := []struct {
+// 		name string
+// 	}{
+// 		{"initial test"},
+// 	}
+
+// 	stakedValidator := getStakedValidator()
+// 	context, _, keeper := createBenchInput(b, true)
+// 	keeper.SetValidator(context, stakedValidator)
+// 	for _, bm := range benchmarks {
+// 		b.Run(bm.name, func(b *testing.B) {
+// 			for i := 0; i < b.N; i++ {
+// 				_, _ = keeper.GetValidatorsByChain(context, stakedValidator.Chains[0])
+// 			}
+// 		})
+// 	}
+
+// 	// When ctx height increases for some reason performance goes down.
+// }
 
 func TestRemoveStakedValidatorTokens(t *testing.T) {
 	stakedValidator := getStakedValidator()

@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"bytes"
+	"sort"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	"sort"
 )
 
 // GetValidator - Retrieve validator with address from the main store
@@ -53,7 +54,7 @@ func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	_ = k.validatorCache.AddWithCtx(ctx, validator.Address.String(), validator)
 }
 
-func (k Keeper) SetValidators(ctx sdk.Ctx, validators types.Validators){
+func (k Keeper) SetValidators(ctx sdk.Ctx, validators types.Validators) {
 	for _, val := range validators {
 		k.SetValidator(ctx, val)
 	}
@@ -192,28 +193,6 @@ func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 		validators = append(validators, validator)
 	}
 	return validators
-}
-
-// map of validator addresses to serialized power
-type valPowerMap map[[sdk.AddrLen]byte][]byte
-
-// getPrevStatePowerMap - Retrieve the prevState validator set
-func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
-	prevState := make(valPowerMap)
-	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
-	defer iterator.Close()
-	// iterate over the prevState validator set index
-	for ; iterator.Valid(); iterator.Next() {
-		var valAddr [sdk.AddrLen]byte
-		// extract the validator address from the key (prefix is 1-byte)
-		copy(valAddr[:], iterator.Key()[1:])
-		// power bytes is just the value
-		powerBytes := iterator.Value()
-		prevState[valAddr] = make([]byte, len(powerBytes))
-		copy(prevState[valAddr], powerBytes)
-	}
-	return prevState
 }
 
 // sortNoLongerStakedValidators - Given a map of remaining validators to previous staked power

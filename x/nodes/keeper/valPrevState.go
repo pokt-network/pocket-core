@@ -76,10 +76,56 @@ func (k Keeper) SetPrevStateValPower(ctx sdk.Ctx, addr sdk.Address, power int64)
 	a := sdk.Int64(power)
 	bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(&a, ctx.BlockHeight())
 	_ = store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
+	k.setPrevStateValidatorsPowerMem(addr, bz)
+}
+
+// SetPrevStateValidatorsPower - Store the prevState total validator power (used in moving the curr to prev)
+func (k Keeper) setPrevStateValidatorsPowerMem(addr sdk.Address, powerBz []byte) {
+	var valAddr [sdk.AddrLen]byte
+	copy(valAddr[:], types.KeyForValidatorPrevStateStateByPower(addr))
+	(*k.valPowerMap)[valAddr] = powerBz
 }
 
 // DeletePrevStateValPower - Remove the power of a SINGLE staked validator from the previous state
 func (k Keeper) DeletePrevStateValPower(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Delete(types.KeyForValidatorPrevStateStateByPower(addr))
+
+}
+
+// DeletePrevStateValPower - Remove the power of a SINGLE staked validator from the previous state
+func (k Keeper) deletePrevStateValPowerMem(addr []byte) {
+	var valAddr [sdk.AddrLen]byte
+	copy(valAddr[:], types.KeyForValidatorPrevStateStateByPower(addr))
+	delete((*k.valPowerMap), valAddr)
+}
+
+// map of validator addresses to serialized power
+type valPowerMap map[[sdk.AddrLen]byte][]byte
+
+// getPrevStatePowerMap - Retrieve the prevState validator set
+func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
+	prevState := make(valPowerMap)
+	store := ctx.KVStore(k.storeKey)
+	iterator, _ := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
+	defer iterator.Close()
+	// iterate over the prevState validator set index
+	for ; iterator.Valid(); iterator.Next() {
+		var valAddr [sdk.AddrLen]byte
+		// extract the validator address from the key (prefix is 1-byte)
+		copy(valAddr[:], iterator.Key()[1:])
+		// power bytes is just the value
+		powerBytes := iterator.Value()
+		prevState[valAddr] = make([]byte, len(powerBytes))
+		copy(prevState[valAddr], powerBytes)
+	}
+	k.valPowerMap = &prevState
+	return prevState
+}
+
+func (k Keeper) getPrevStatePowerMapCached(ctx sdk.Ctx) valPowerMap {
+	if k.valPowerMap == nil {
+		return k.getPrevStatePowerMap(ctx)
+	}
+	return *k.valPowerMap
 }
