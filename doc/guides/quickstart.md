@@ -52,10 +52,19 @@ go build -o $GOPATH/bin/pocket $GOPATH/src/github.com/pokt-network/pocket-core/a
 
 #### Test installation
 
+{% tabs %}
+{% tab title="Command" %}
 ```text
-$ pocket version
-> RC-0.6.3
+pocket version
 ```
+{% endtab %}
+
+{% tab title="Response" %}
+```
+> RC 0.6.3
+```
+{% endtab %}
+{% endtabs %}
 
 ### From Homebrew
 
@@ -65,10 +74,19 @@ brew tap pokt-network/pocket-core && brew install pokt-network/pocket-core/pocke
 
 #### Test installation
 
+{% tabs %}
+{% tab title="Command" %}
 ```text
-$ pocket version
+pocket version
+```
+{% endtab %}
+
+{% tab title="Response" %}
+```
 > RC-0.6.3
 ```
+{% endtab %}
+{% endtabs %}
 
 ### From Deployment Artifact
 
@@ -103,12 +121,21 @@ This section does not cover the protocol specification, rather how to participat
 
 An account is needed to participate at any level of the network.
 
+{% tabs %}
+{% tab title="Command" %}
 ```text
 pocket accounts create
+```
+{% endtab %}
+
+{% tab title="Response" %}
+```
 > Enter Passphrase
 > Account generated successfully:
 > Address: <address>
 ```
+{% endtab %}
+{% endtabs %}
 
 ### Fund the account
 
@@ -138,8 +165,15 @@ Check with `pocket accounts get-validator`
 
 ### Set [Relay Chains](https://forum.pokt.network/t/supportedblockchains/607)
 
+{% tabs %}
+{% tab title="Command" %}
 ```text
 pocket util generate-chains
+```
+{% endtab %}
+
+{% tab title="Response" %}
+```
 > Enter the chain of the network identifier:
 <Relay Chain ID> (Example: 0001)
 > Enter the URL of the network identifier:
@@ -147,6 +181,8 @@ pocket util generate-chains
 Would you like to enter another network identifier? (y/n)
 n
 ```
+{% endtab %}
+{% endtabs %}
 
 {% hint style="info" %}
 Can test with simulate relay flag and endpoint. See [RPC Specification](../specs/rpc-spec.md) for details.
