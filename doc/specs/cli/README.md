@@ -20,7 +20,7 @@ The CLI contains multiple namespaces listed below:
 * [**`default`**](default.md)**:** called when the namespace is blank
 * [**`accounts`**](accounts.md)**:** calls pertinent to accounts and their local storage
 * [**`apps`**](apps.md)**:** functions for app upkeep
-* [**`nodes`**](https://github.com/pokt-network/pocket-core/tree/7fe089d32a648f138a51d44ebf42ef38b57e196e/doc/specs/cli/nodes.md)**:** functions for node upkeep
+* [**`nodes`**](node.md)**:** functions for node upkeep
 * \*\*\*\*[**`query`**](query.md)**:** queries to the world state
 * [**`util`**](util.md)**:** useful operations
 * [**`gov`**](gov.md)**:** functions for governance \(DAO\) transactions, only relevant to the DAOowner \(the account that has the permission to perform these transactions on behalf of the DAO\)

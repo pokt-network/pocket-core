@@ -163,7 +163,7 @@ pocket accounts set-validator <address>
 Check with `pocket accounts get-validator`
 {% endhint %}
 
-### Set [Relay Chains](https://forum.pokt.network/t/supportedblockchains/607)
+### Set [Relay Chains](https://docs.pokt.network/home/references/supported-blockchains)
 
 {% tabs %}
 {% tab title="Command" %}
@@ -403,7 +403,7 @@ Use pocket core flags --mainnet or --testnet to automatically write
 Use the CLI or Manually Edit: `$HOME/.pocket/config/chains.json`
 
 {% hint style="info" %}
-Relay Chain ID's can be found [here](https://docs.pokt.network/references/supported-blockchains).
+Relay Chain ID's can be found [here](https://docs.pokt.network/home/references/supported-blockchains).
 {% endhint %}
 
 ```text

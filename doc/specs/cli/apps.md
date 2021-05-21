@@ -17,8 +17,8 @@ After the 0.6.X upgrade, if the app is already staked, this transaction acts as 
 Arguments:
 
 * `<fromAddr>`: Target Address to stake.
-* `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `ApplicationStakeMinimum`  parameter, found [here](https://docs.pokt.network/references/protocol-parameters#applicationstakeminimum).
-* `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network Identifiers [here](https://docs.pokt.network/references/supported-blockchains).
+* `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `ApplicationStakeMinimum`  parameter, found [here](https://docs.pokt.network/home/references/protocol-parameters#applicationstakeminimum).
+* `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
 * `<legacyCodec>`: Enable/Disable amino encoding for transaction.

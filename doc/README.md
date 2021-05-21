@@ -24,7 +24,7 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 [Protocol Forum](https://forum.pokt.network/)
 
-[Protocol Wiki](https://docs.pokt.network/main-concepts/protocol)
+[Protocol Wiki](https://docs.pokt.network/home/main-concepts/protocol)
 
 [Community Discord](https://discord.com/invite/KRrqfd3tAK)
 
