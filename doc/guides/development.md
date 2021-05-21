@@ -22,21 +22,21 @@ We need the following dependencies:
 First we need to clone our repository
 
 ```text
-$ git clone https://github.com/pokt-network/pocket-core.git
-$ git checkout <Your branch>
+git clone https://github.com/pokt-network/pocket-core.git
+git checkout <Your branch>
 ```
 
 vendor dependencies
 
 ```text
-$ go mod vendor
+go mod vendor
 ```
 
 ### Build
 
 ```text
-$ cd pocket-core/
-$ go build -mod vendor -tags goleveldb -o /tmp/custom-pocket-build ./app/cmd/pocket_core/main.go
+cd pocket-core/
+go build -mod vendor -tags goleveldb -o /tmp/custom-pocket-build ./app/cmd/pocket_core/main.go
 ```
 
 ### Test
@@ -44,19 +44,19 @@ $ go build -mod vendor -tags goleveldb -o /tmp/custom-pocket-build ./app/cmd/poc
 You may run all test with the following command:
 
 ```text
-$ go test -p 1 ./...
+go test -p 1 ./...
 ```
 
 This may take some time to complete, you can also run shorter tests with:
 
 ```text
-$ go test -p 1 -short ./...
+go test -p 1 -short ./...
 ```
 
 or run module tests with:
 
 ```text
-$ go test -p ./x...
+go test -p ./x...
 ```
 
 Mix and match on your needs.
