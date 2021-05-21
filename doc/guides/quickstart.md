@@ -450,6 +450,10 @@ If a Validator is jailed for too long it will be forcibly removed by the protoco
 
 If a Validator falls below the minimum stake \(due to slashing\) it will be forcibly removed by the protocol and all Staked Tokens burned. This feature of the protocol highlights the importance of staking 'well above' the minimum stake.
 
+{% hint style="danger" %}
+If your stake falls below `15,000 POKT` your node will be force-unstake burned. We recommend having a buffer above the 15,000 minimum \(e.g. 15,100-16,000\), so that minor slashing doesn't result in loss of the entire stake.
+{% endhint %}
+
 ### **Economic Incentives**
 
 For providing infrastructure access to applications, Validators are rewarded proportional to the work they provide. Pocket Core attempts to send a _Claim_ and subsequent _Proof_ transaction automatically after the `proof_waiting_period` elapses. If both transactions are successful, Tokens are minted to the address of the Validator.
