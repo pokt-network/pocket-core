@@ -114,7 +114,7 @@ This section does not cover the protocol specification, rather how to participat
 * **Open Files Limit:** `ulimit -Sn 16384`
 
 {% hint style="warning" %}
-**Open Files Limit** is very important for the operation of Pocket Core. See [**Config**](quickstart.md#config) section for ulimit calculation.
+**Open Files Limit** is very important for the operation of Pocket Core. See [**Config**](quickstart.md#open-files-calculation) section for ulimit calculation.
 {% endhint %}
 
 ### Create an account
