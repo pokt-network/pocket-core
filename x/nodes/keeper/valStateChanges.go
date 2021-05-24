@@ -29,7 +29,9 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 	maxValidators := k.MaxValidators(ctx)
 	totalPower := sdk.ZeroInt()
 	// Retrieve the prevState validator set addresses mapped to their respective staking power
-	prevStatePowerMap := k.getPrevStatePowerMapCached(ctx)
+	prevStatePowerMap := k.getPrevStatePowerMapCache(ctx)
+
+	// totalPower, updates := iterateStakedValidatorsAndSetPower(ctx, k, int(maxValidators), &prevStatePowerMap)
 	// Iterate over staked validators, highest power to lowest.
 	iterator, _ := sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
 	defer iterator.Close()
@@ -79,6 +81,7 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 		// update the total power
 		totalPower = totalPower.Add(sdk.NewInt(curStatePower))
 	}
+
 	// sort the no-longer-staked validators
 	// noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
 	// iterate through the sorted no-longer-staked validators
@@ -103,7 +106,7 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 	}
 	// set total power on lookup index if there are any updates
 	if len(updates) > 0 {
-		k.SetPrevStateValidatorsPower(ctx, totalPower) // ALSO SET TO CACHE
+		k.SetPrevStateValidatorsPower(ctx, totalPower)
 	}
 	return updates
 }
@@ -618,4 +621,59 @@ func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	k.SetValidator(ctx, validator)
 	k.ResetValidatorSigningInfo(ctx, addr)
 	k.Logger(ctx).Info(fmt.Sprintf("validator %s unjailed", addr))
+}
+
+func iterateStakedValidatorsAndSetPower(ctx sdk.Ctx, k Keeper, max int, prevStatePowerMap *valPowerMap) (totalPower sdk.BigInt, updates []abci.ValidatorUpdate) {
+	totalPower = sdk.ZeroInt()
+	valAddrs := *k.stakedValAddrs
+	for count := range valAddrs {
+		if count+1 >= max {
+			return
+		}
+		// get the validator address
+		valAddr := sdk.Address(valAddrs[count])
+		// return the validator from the current store
+		validator, found := k.GetValidator(ctx, valAddr)
+		if !found {
+			k.Logger(ctx).Error("staking validator not found in UpdateTendermintValidators: " + valAddr.String())
+			// Cant delete w/out validator object due to ordering
+			continue
+		}
+		// sanity check for no jailed validators
+		if validator.Jailed {
+			k.Logger(ctx).Error("should never retrieve a jailed validator from the staked validators:" + validator.Address.String())
+			continue
+		}
+		if validator.ConsensusPower() == 0 {
+			k.Logger(ctx).Error("should never retrieve a zero power validator from the staked validators:" + validator.Address.String())
+			continue
+		}
+
+		// fetch the old power bytes
+		var valAddrBytes [sdk.AddrLen]byte
+		copy(valAddrBytes[:], valAddr[:]) // NOTE look into faster copying ? why copy? why not just use ?
+		// check the previous state: if found calculate current power...
+		prevStatePowerBytes, found := (*prevStatePowerMap)[valAddrBytes]
+		curStatePower := validator.ConsensusPower() // Is this constant ?
+		var curStatePowerBytes []byte
+		var err error
+		csp := sdk.Int64(curStatePower)
+		curStatePowerBytes, err = k.Cdc.MarshalBinaryLengthPrefixed(&csp, ctx.BlockHeight())
+		if err != nil {
+			panic(err)
+		}
+		// if not found or the power has changed -> add this validator to the updated list
+		if !found || !bytes.Equal(prevStatePowerBytes, curStatePowerBytes) {
+			ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
+			updates = append(updates, validator.ABCIValidatorUpdate())
+			// update the previous state as this will soon be the previous state
+			k.SetPrevStateValPower(ctx, valAddr, curStatePower)
+		}
+		// remove the validator from power map, this structure is used to keep track of who is no longer staked
+		delete(*prevStatePowerMap, valAddrBytes)
+		// keep count of the number of validators to ensure we don't go over the maximum number of validators
+		// update the total power
+		totalPower = totalPower.Add(sdk.NewInt(curStatePower))
+	}
+	return
 }
