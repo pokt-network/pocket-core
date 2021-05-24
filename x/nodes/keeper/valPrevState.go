@@ -76,28 +76,33 @@ func (k Keeper) SetPrevStateValPower(ctx sdk.Ctx, addr sdk.Address, power int64)
 	a := sdk.Int64(power)
 	bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(&a, ctx.BlockHeight())
 	_ = store.Set(types.KeyForValidatorPrevStateStateByPower(addr), bz)
-	k.setPrevStateValidatorsPowerMem(addr, bz)
+	k.setPrevStateValidatorsPowerMem(ctx, addr, bz)
 }
 
 // SetPrevStateValidatorsPower - Store the prevState total validator power (used in moving the curr to prev)
-func (k Keeper) setPrevStateValidatorsPowerMem(addr sdk.Address, powerBz []byte) {
+func (k Keeper) setPrevStateValidatorsPowerMem(ctx sdk.Ctx, addr sdk.Address, powerBz []byte) {
 	var valAddr [sdk.AddrLen]byte
 	copy(valAddr[:], types.KeyForValidatorPrevStateStateByPower(addr))
-	(*k.valPowerMap)[valAddr] = powerBz
+	powerMap := k.getCurrStatePowerMapCache(ctx)
+	powerMap[valAddr] = powerBz
+	k.setCurrStatePowerMapCache(ctx, powerMap)
 }
 
 // DeletePrevStateValPower - Remove the power of a SINGLE staked validator from the previous state
 func (k Keeper) DeletePrevStateValPower(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Delete(types.KeyForValidatorPrevStateStateByPower(addr))
+	k.deletePrevStateValPowerMem(ctx, addr)
 
 }
 
 // DeletePrevStateValPower - Remove the power of a SINGLE staked validator from the previous state
-func (k Keeper) deletePrevStateValPowerMem(addr []byte) {
+func (k Keeper) deletePrevStateValPowerMem(ctx sdk.Ctx, addr []byte) {
 	var valAddr [sdk.AddrLen]byte
 	copy(valAddr[:], types.KeyForValidatorPrevStateStateByPower(addr))
-	delete((*k.valPowerMap), valAddr)
+	powerMap := k.getCurrStatePowerMapCache(ctx)
+	delete(powerMap, valAddr)
+	k.setCurrStatePowerMapCache(ctx, powerMap)
 }
 
 // map of validator addresses to serialized power
@@ -119,13 +124,47 @@ func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
 		prevState[valAddr] = make([]byte, len(powerBytes))
 		copy(prevState[valAddr], powerBytes)
 	}
-	k.valPowerMap = &prevState
+	k.setCurrStatePowerMapCache(ctx, prevState) // on the next height will turn previous, otherwise would be left out of the set
 	return prevState
 }
 
-func (k Keeper) getPrevStatePowerMapCached(ctx sdk.Ctx) valPowerMap {
-	if k.valPowerMap == nil {
+// getPrevStatePowerMapCache - makes sure to retrieve previous power map
+// CONTRACT: immutable, will be deleted once next height is achieved,
+func (k Keeper) getPrevStatePowerMapCache(ctx sdk.Ctx) valPowerMap {
+	v, ok := k.getPowerMapCache(ctx, ctx.BlockHeight()-1)
+	//  if doesn't exist get prev store
+	if !ok {
 		return k.getPrevStatePowerMap(ctx)
 	}
-	return *k.valPowerMap
+	powerM, ok := v.(valPowerMap)
+	//  if corrupt get from store
+	if !ok {
+		return k.getPrevStatePowerMap(ctx)
+	}
+	return powerM
+}
+
+// setCurrStatePowerMapCached - updates current map
+func (k Keeper) setCurrStatePowerMapCache(ctx sdk.Ctx, prevState valPowerMap) {
+	k.valPowerCache.AddWithCtx(ctx, fmt.Sprintf("%d", ctx.BlockHeight()), prevState)
+}
+
+// getCurStatePowerMapCache - makes sure to retrieve current power map, will become prev on the next block
+// CONTRACT: will become prev power map on next height
+func (k Keeper) getCurrStatePowerMapCache(ctx sdk.Ctx) valPowerMap {
+	v, ok := k.getPowerMapCache(ctx, ctx.BlockHeight()) // MAKE SURE EXISTS OTHERWISE GET PREV ??
+	//  if doesn't exist get prev from cache
+	if !ok {
+		return k.getPrevStatePowerMapCache(ctx)
+	}
+	powerM, ok := v.(valPowerMap)
+	//  if corrupt get from prev cache
+	if !ok {
+		return k.getPrevStatePowerMapCache(ctx)
+	}
+	return powerM
+}
+
+func (k Keeper) getPowerMapCache(ctx sdk.Ctx, height int64) (interface{}, bool) {
+	return k.valPowerCache.GetWithCtx(ctx, fmt.Sprintf("%d", height))
 }
