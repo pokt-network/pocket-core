@@ -147,6 +147,6 @@ func (k Keeper) getMemPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
 func (k Keeper) getMemPowerMap(ctx sdk.Ctx) (interface{}, bool) {
 	return k.valPowerCache.Get(ctx, "powermap")
 }
-func (k Keeper) setMemPowerMap(ctx sdk.Ctx, prevState valPowerMap) (interface{}, bool) {
-	return k.valPowerCache.Get(ctx, "powermap")
+func (k Keeper) setMemPowerMap(ctx sdk.Ctx, prevState valPowerMap) bool {
+	return k.valPowerCache.Add(ctx, "powermap", prevState)
 }

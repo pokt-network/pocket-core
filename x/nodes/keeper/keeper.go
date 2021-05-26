@@ -26,7 +26,7 @@ type Keeper struct {
 	// Cache
 	validatorCache *sdk.Cache
 	valPowerCache  *lockedCache
-	stakedValAddrs *[][]byte
+	stakedValAddrs *lockedCache
 }
 
 // NewKeeper creates a new staking Keeper instance
@@ -45,6 +45,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		codespace:      codespace,
 		validatorCache: cache,
 		valPowerCache:  &lockedCache{sdk.NewCache(1), &sync.Mutex{}},
+		stakedValAddrs: &lockedCache{sdk.NewCache(1), &sync.Mutex{}},
 		Cdc:            cdc,
 	}
 }
@@ -103,11 +104,11 @@ type lockedCache struct {
 	l     *sync.Mutex
 }
 
-func (lc *lockedCache) Add(ctx sdk.Ctx, v interface{}, key string) {
+func (lc *lockedCache) Add(ctx sdk.Ctx, key string, v interface{}) bool {
 	lc.l.Lock()
 	defer lc.l.Unlock()
-	lc.store.AddWithCtx(ctx, key, v)
-	return
+	evict := lc.store.AddWithCtx(ctx, key, v)
+	return evict
 }
 
 func (lc *lockedCache) Get(ctx sdk.Ctx, k string) (interface{}, bool) {

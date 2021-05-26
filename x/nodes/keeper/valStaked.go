@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"sort"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
@@ -15,6 +16,7 @@ func (k Keeper) SetStakedValidator(ctx sdk.Ctx, validator types.Validator) {
 	_ = store.Set(types.KeyForValidatorInStakingSet(validator), validator.Address)
 	// save in the network id stores for quick session generations
 	//k.SetStakedValidatorByChains(ctx, validator)
+	k.AddValAddrToCache(ctx, validator.GetAddress())
 }
 
 // SetStakedValidatorByChains - Store staked validator using networkId
@@ -69,6 +71,7 @@ func (k Keeper) validatorByChainsIterator(ctx sdk.Ctx, networkIDBz []byte) (sdk.
 func (k Keeper) deleteValidatorFromStakingSet(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Delete(types.KeyForValidatorInStakingSet(validator))
+	// k.RemoveValAddrFromCache(ctx, validator.Address)
 }
 
 // removeValidatorTokens - Update the staked tokens of an existing validator, update the validators power index key
@@ -101,6 +104,25 @@ func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.Validato
 	return validators
 }
 
+// GetStakedValidators - Retrieve StakedValidators
+func (k Keeper) GetStakedValidatorsAddrs(ctx sdk.Ctx) (addrs []sdk.Address) {
+	store := ctx.KVStore(k.storeKey)
+	iterator, _ := sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		validator, found := k.GetValidator(ctx, iterator.Value())
+		if !found {
+			ctx.Logger().Error(fmt.Errorf("cannot find validator from staking set: %v, at height %d\n", iterator.Value(), ctx.BlockHeight()).Error())
+			continue
+		}
+		if validator.IsStaked() {
+			addrs = append(addrs, validator.Address)
+		}
+	}
+	return addrs
+}
+
 // stakedValsIterator - Retrieve an iterator for the current staked validators
 func (k Keeper) stakedValsIterator(ctx sdk.Ctx) (sdk.Iterator, error) {
 	store := ctx.KVStore(k.storeKey)
@@ -129,4 +151,51 @@ func (k Keeper) IterateAndExecuteOverStakedVals(
 			i++
 		}
 	}
+}
+
+func (k Keeper) GetMemValAddrs(ctx sdk.Ctx) []sdk.Address {
+	v, ok := k.getMemValAddrs(ctx)
+	//  if doesn't exist get prev from cache
+	if !ok {
+		return k.GetStakedValidatorsAddrs(ctx)
+	}
+	addrs, ok := v.([]sdk.Address)
+	//  if corrupt get from prev cache
+	if !ok {
+		return k.GetStakedValidatorsAddrs(ctx)
+	}
+	return addrs
+}
+
+func (k Keeper) AddValAddrToCache(ctx sdk.Ctx, addr sdk.Address) {
+	addrs := k.GetMemValAddrs(ctx)
+	addrs = append(addrs, addr)
+	k.setMemValAddrs(ctx, addrs)
+}
+func (k Keeper) RemoveValAddrFromCache(ctx sdk.Ctx, addr sdk.Address) {
+	addrs := k.GetMemValAddrs(ctx)
+	for i := range addrs {
+		if addrs[i].Equals(addr) {
+			newAddrs := append(addrs[:i], addrs[i+1:]...)
+			k.setMemValAddrs(ctx, newAddrs)
+			return
+		}
+	}
+}
+
+func (k Keeper) getMemValAddrs(ctx sdk.Ctx) (interface{}, bool) {
+	return k.stakedValAddrs.Get(ctx, "staked_val_addrs")
+}
+func (k Keeper) setMemValAddrs(ctx sdk.Ctx, addr []sdk.Address) bool {
+	return k.valPowerCache.Add(ctx, "staked_val_addrs", addr)
+}
+
+func (k Keeper) sortValAddrsByPower(ctx sdk.Ctx, addrs []sdk.Address) []sdk.Address {
+	sort.SliceStable(addrs, func(i, j int) bool {
+		// -1 means strictly less than
+		a, _ := k.GetValidator(ctx, addrs[i])
+		b, _ := k.GetValidator(ctx, addrs[j])
+		return a.ConsensusPower() > b.ConsensusPower()
+	})
+	return addrs
 }
