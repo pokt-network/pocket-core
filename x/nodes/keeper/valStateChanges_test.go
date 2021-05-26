@@ -320,7 +320,8 @@ func TestKeeper_UpdateTendermintValidators(t *testing.T) {
 
 func BenchmarkKeeper_UpdateTendermintValidators(b *testing.B) {
 	b.StopTimer()
-	ctx, _, k := createBenchInput(b, true, 250000, 150000, 300)
+	ctx, _, k := createBenchInput(b, true, 10000, 10000, 300)
+	// ctx, _, k := createBenchInput(b, true, 10000, 10000, 300)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		_ = k.UpdateTendermintValidators(ctx)
@@ -328,7 +329,10 @@ func BenchmarkKeeper_UpdateTendermintValidators(b *testing.B) {
 }
 func BenchmarkKeeper_UpdateTendermintValidatorsB(b *testing.B) {
 	b.StopTimer()
-	ctx, _, k := createBenchInput(b, true, 250000, 150000, 300)
+	ctx, _, k := createBenchInput(b, true, 10000, 10000, 300)
+	// ctx, _, k := createBenchInput(b, true, 10000, 10000, 300)
+	k.GetAllValidatorsAddrs(ctx)
+	k.getPrevStatePowerMap(ctx) // will load the prev state power map
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		_ = k.UpdateTendermintValidatorsB(ctx)
