@@ -18,7 +18,7 @@ import (
 // UpdateTendermintValidators - Apply and return accumulated updates to the staked validator set
 // It gets called once after genesis, another time maybe after genesis transactions,
 // then once at every EndBlock.
-func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
+func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
 	// get the world state
 	store := ctx.KVStore(k.storeKey)
 	// allow all waiting to begin unstaking to begin unstaking
@@ -29,10 +29,8 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 	maxValidators := k.MaxValidators(ctx)
 	totalPower := sdk.ZeroInt()
 	// Retrieve the prevState validator set addresses mapped to their respective staking power
-	prevStatePowerMap := k.getPrevStatePowerMapCache(ctx)
+	prevStatePowerMap := k.getMemPrevStatePowerMap(ctx)
 
-	// totalPower, updates := iterateStakedValidatorsAndSetPower(ctx, k, int(maxValidators), &prevStatePowerMap)
-	// Iterate over staked validators, highest power to lowest.
 	iterator, _ := sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
 	defer iterator.Close()
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
@@ -83,10 +81,10 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 	}
 
 	// sort the no-longer-staked validators
-	// noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
+	noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
 	// iterate through the sorted no-longer-staked validators
 	// Fan out ??
-	for valAddrBytes := range prevStatePowerMap {
+	for _, valAddrBytes := range noLongerStaked {
 		valAddr := make([]byte, sdk.AddrLen)
 		copy(valAddr, valAddrBytes[:])
 		validator, found := k.GetValidator(ctx, valAddr) // Already cached by the time of an update
@@ -114,7 +112,7 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 // UpdateTendermintValidators - Apply and return accumulated updates to the staked validator set
 // It gets called once after genesis, another time maybe after genesis transactions,
 // then once at every EndBlock.
-func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
+func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
 	// get the world state
 	store := ctx.KVStore(k.storeKey)
 	// allow all waiting to begin unstaking to begin unstaking
