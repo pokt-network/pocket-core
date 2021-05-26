@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	log2 "log"
+	"sync"
 
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -24,7 +25,7 @@ type Keeper struct {
 	codespace sdk.CodespaceType
 	// Cache
 	validatorCache *sdk.Cache
-	valPowerCache  *sdk.Cache
+	valPowerCache  *lockedCache
 	stakedValAddrs *[][]byte
 }
 
@@ -36,8 +37,6 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		log2.Fatal(fmt.Errorf("%s module account has not been set", types.StakedPoolName))
 	}
 	cache := sdk.NewCache(int(types.ValidatorCacheSize))
-	// TODO: Let's refactor valPowerMap to use sdk.Cache
-	valPower := sdk.NewCache(2) // store prev state and current state
 
 	return Keeper{
 		storeKey:       key,
@@ -45,7 +44,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		Paramstore:     paramstore.WithKeyTable(ParamKeyTable()),
 		codespace:      codespace,
 		validatorCache: cache,
-		valPowerCache:  valPower,
+		valPowerCache:  &lockedCache{sdk.NewCache(1), &sync.Mutex{}},
 		Cdc:            cdc,
 	}
 }
@@ -97,4 +96,24 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 	k.SetPreviousProposer(ctx, prevProposer)
 	k.SetValidatorSigningInfos(ctx, signingInfos)
 	k.Cdc.DisableUpgradeOverride()
+}
+
+type lockedCache struct {
+	store *sdk.Cache
+	l     *sync.Mutex
+}
+
+func (lc *lockedCache) Add(ctx sdk.Ctx, v interface{}, key string) {
+	lc.l.Lock()
+	defer lc.l.Unlock()
+	lc.store.AddWithCtx(ctx, key, v)
+	return
+}
+
+func (lc *lockedCache) Get(ctx sdk.Ctx, k string) (interface{}, bool) {
+	lc.l.Lock()
+	defer lc.l.Unlock()
+	v, evict := lc.store.GetWithCtx(ctx, k)
+	return v, evict
+
 }
