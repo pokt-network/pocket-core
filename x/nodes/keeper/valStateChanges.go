@@ -19,6 +19,8 @@ import (
 // It gets called once after genesis, another time maybe after genesis transactions,
 // then once at every EndBlock.
 func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
+	defer sdk.TimeTrack(time.Now())
+
 	if ctx.BlockHeight()%k.BlocksPerSession(ctx) == 0 { // one block before new session (mod 1 would be session block)
 		k.ReleaseWaitingValidators(ctx)
 	}
@@ -439,7 +441,8 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 }
 
 func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
-	start := time.Now()
+	defer sdk.TimeTrack(time.Now())
+
 	maxJailedBlocks := k.MaxJailedBlocks(ctx)
 	GlobalJailedValsLock.Lock()
 	defer GlobalJailedValsLock.Unlock()
@@ -468,7 +471,6 @@ func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
 			k.SetValidatorSigningInfo(ctx, addr, signInfo)
 		}
 	}
-	ctx.Logger().Debug(fmt.Sprintf("Increment Jailed Validators duration: %s", time.Since(start)))
 }
 
 // ValidateUnjailMessage - Check unjail message

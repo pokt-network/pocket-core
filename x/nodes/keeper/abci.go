@@ -15,7 +15,8 @@ import (
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
-	start := time.Now()
+	defer sdk.TimeTrack(time.Now())
+
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx) // TODO get from req
@@ -31,11 +32,14 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	minSignedPerWindow := k.MinSignedPerWindow(ctx)
 	downtimeJailDuration := k.DowntimeJailDuration(ctx)
 	slashFractionDowntime := k.SlashFractionDowntime(ctx)
+
+	start := time.Now()
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
 		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock, signedBlocksWindow, minSignedPerWindow, downtimeJailDuration, slashFractionDowntime)
 		// remove those who are part of the tendermint validator set (jailed validators will never be a part of the set)
 	}
-	ctx.Logger().Debug(fmt.Sprintf("Begin Block in nodes took: %s", time.Since(start)))
+	fmt.Println(fmt.Sprintf("P - handle handleValidatorSignature took: %s", time.Since(start)))
+
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
 	// who contributed to valid infractions
@@ -64,6 +68,8 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 
 // EndBlocker - Called at the end of every block, update validator set
 func EndBlocker(ctx sdk.Ctx, k Keeper) []abci.ValidatorUpdate {
+	defer sdk.TimeTrack(time.Now())
+
 	// increment jailed blocks counter
 	k.IncrementJailedValidators(ctx)
 	// NOTE: UpdateTendermintValidators has to come before unstakeAllMatureValidators.

@@ -138,6 +138,7 @@ func LegacySessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string,
 
 // "LegacySessionNodes" - Generates nodes for the session
 func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
+
 	if hex.EncodeToString(sessionKey) == "ef00a93bd1996714e91afea250f019c2d317f99fd42f2124d5c21776f7419580" {
 		fmt.Println("HERE")
 	}

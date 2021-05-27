@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"log"
+	"regexp"
+	"runtime"
 	"time"
 
 	dbm "github.com/tendermint/tm-db"
@@ -107,3 +110,19 @@ func (m *Raw) UnmarshalJSON(data []byte) error {
 
 var _ json.Marshaler = (*Raw)(nil)
 var _ json.Marshaler = (*Raw)(nil)
+
+func TimeTrack(start time.Time) {
+	elapsed := time.Since(start)
+
+	// Skip this function, and fetch the PC and file for its parent.
+	pc, _, _, _ := runtime.Caller(1)
+
+	// Retrieve a function object this functions parent.
+	funcObj := runtime.FuncForPC(pc)
+
+	// Regex to extract just the function name (and not the module path).
+	runtimeFunc := regexp.MustCompile(`^.*\.(.*)$`)
+	name := runtimeFunc.ReplaceAllString(funcObj.Name(), "$1")
+
+	log.Println(fmt.Sprintf("P - %s took %s", name, elapsed))
+}

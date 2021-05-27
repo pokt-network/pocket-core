@@ -5,6 +5,7 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	"time"
 )
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
@@ -22,6 +23,8 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 
 // blockReward - Handles distribution of the collected fees
 func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
+	defer sdk.TimeTrack(time.Now())
+
 	feesCollector := k.getFeePool(ctx)
 	feesCollected := feesCollector.GetCoins().AmountOf(sdk.DefaultStakeDenom)
 	// check for zero fees
@@ -72,6 +75,8 @@ func (k Keeper) mint(ctx sdk.Ctx, amount sdk.BigInt, address sdk.Address) sdk.Re
 
 // GetPreviousProposer - Retrieve the proposer public key for this block
 func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
+	defer sdk.TimeTrack(time.Now())
+
 	store := ctx.KVStore(k.storeKey)
 	b, _ := store.Get(types.ProposerKey)
 	if b == nil {
@@ -86,6 +91,8 @@ func (k Keeper) GetPreviousProposer(ctx sdk.Ctx) (addr sdk.Address) {
 
 // SetPreviousProposer -  Store proposer public key for this block
 func (k Keeper) SetPreviousProposer(ctx sdk.Ctx, consAddr sdk.Address) {
+	defer sdk.TimeTrack(time.Now())
+
 	store := ctx.KVStore(k.storeKey)
 	b, err := k.Cdc.MarshalBinaryLengthPrefixed(&consAddr, ctx.BlockHeight())
 	if err != nil {
