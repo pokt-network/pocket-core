@@ -71,7 +71,7 @@ func (k Keeper) validatorByChainsIterator(ctx sdk.Ctx, networkIDBz []byte) (sdk.
 func (k Keeper) deleteValidatorFromStakingSet(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Delete(types.KeyForValidatorInStakingSet(validator))
-	// k.RemoveValAddrFromCache(ctx, validator.Address)
+	k.RemoveValAddrFromCache(ctx, validator.Address)
 }
 
 // removeValidatorTokens - Update the staked tokens of an existing validator, update the validators power index key
@@ -170,6 +170,7 @@ func (k Keeper) GetMemValAddrs(ctx sdk.Ctx) []sdk.Address {
 func (k Keeper) AddValAddrToCache(ctx sdk.Ctx, addr sdk.Address) {
 	addrs := k.GetMemValAddrs(ctx)
 	addrs = append(addrs, addr)
+	addrs = k.sortValAddrsByPower(ctx, addrs)
 	k.setMemValAddrs(ctx, addrs)
 }
 func (k Keeper) RemoveValAddrFromCache(ctx sdk.Ctx, addr sdk.Address) {
@@ -189,7 +190,6 @@ func (k Keeper) getMemValAddrs(ctx sdk.Ctx) (interface{}, bool) {
 func (k Keeper) setMemValAddrs(ctx sdk.Ctx, addr []sdk.Address) bool {
 	return k.valPowerCache.Add(ctx, "staked_val_addrs", addr)
 }
-
 func (k Keeper) sortValAddrsByPower(ctx sdk.Ctx, addrs []sdk.Address) []sdk.Address {
 	sort.SliceStable(addrs, func(i, j int) bool {
 		// -1 means strictly less than

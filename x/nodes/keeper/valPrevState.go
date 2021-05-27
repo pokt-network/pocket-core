@@ -82,7 +82,7 @@ func (k Keeper) SetPrevStateValPower(ctx sdk.Ctx, addr sdk.Address, power int64)
 // SetPrevStateValidatorsPower - Store the prevState total validator power (used in moving the curr to prev)
 func (k Keeper) setPrevStateValidatorsPowerMem(ctx sdk.Ctx, addr sdk.Address, powerBz []byte) {
 	var valAddr [sdk.AddrLen]byte
-	copy(valAddr[:], types.KeyForValidatorPrevStateStateByPower(addr))
+	copy(valAddr[:], addr)
 	powerMap := k.getMemPrevStatePowerMap(ctx)
 	powerMap[valAddr] = powerBz
 	k.setMemPowerMap(ctx, powerMap)
@@ -99,7 +99,7 @@ func (k Keeper) DeletePrevStateValPower(ctx sdk.Ctx, addr sdk.Address) {
 // DeletePrevStateValPower - Remove the power of a SINGLE staked validator from the previous state
 func (k Keeper) deletePrevStateValPowerMem(ctx sdk.Ctx, addr []byte) {
 	var valAddr [sdk.AddrLen]byte
-	copy(valAddr[:], types.KeyForValidatorPrevStateStateByPower(addr))
+	copy(valAddr[:], addr)
 	powerMap := k.getMemPrevStatePowerMap(ctx)
 	delete(powerMap, valAddr)
 	k.setMemPowerMap(ctx, powerMap)
