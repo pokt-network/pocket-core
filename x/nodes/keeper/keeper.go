@@ -116,5 +116,4 @@ func (lc *lockedCache) Get(ctx sdk.Ctx, k string) (interface{}, bool) {
 	defer lc.l.Unlock()
 	v, evict := lc.store.GetWithCtx(ctx, k)
 	return v, evict
-
 }

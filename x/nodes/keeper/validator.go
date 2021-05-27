@@ -66,6 +66,7 @@ func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
 	_ = store.Delete(types.KeyForValByAllVals(addr))
 	k.DeleteValidatorSigningInfo(ctx, addr)
 	k.validatorCache.RemoveWithCtx(ctx, addr.String())
+<<<<<<< HEAD
 	GlobalJailedValsLock.Lock()
 	delete(GlobalJailedValsCache, addr.String())
 	GlobalJailedValsLock.Unlock()
@@ -73,6 +74,9 @@ func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
 		Address:                 addr,
 		Status:                  sdk.Unstaked,
 	})
+=======
+	k.RemoveValAddrFromCache(ctx, addr)
+>>>>>>> copy prevpowermap from memory
 }
 
 // GetAllValidators - Retrieve set of all validators with no limits from the main store

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/tendermint/tendermint/libs/strings"
@@ -20,21 +19,14 @@ import (
 // It gets called once after genesis, another time maybe after genesis transactions,
 // then once at every EndBlock.
 func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
-	// get the world state
-	// store := ctx.KVStore(k.storeKey)
-	// allow all waiting to begin unstaking to begin unstaking
-	// NOTE Consider using switch ?
 	if ctx.BlockHeight()%k.BlocksPerSession(ctx) == 0 { // one block before new session (mod 1 would be session block)
 		k.ReleaseWaitingValidators(ctx)
 	}
 	maxValidators := k.MaxValidators(ctx)
 	totalPower := sdk.ZeroInt()
 	// Retrieve the prevState validator set addresses mapped to their respective staking power
-	prevStatePowerMap := k.getMemPrevStatePowerMap(ctx)
-	// valAddrs := k.GetStakedValidatorsAddrs(ctx)
-	valAddrs := k.sortValAddrsByPower(ctx, k.GetMemValAddrs(ctx))
-	// valAddrs := k.GetMemValAddrs(ctx)
-
+	prevStatePowerMap := safeCopy(k.getMemPrevStatePowerMap(ctx))
+	valAddrs := k.GetMemValAddrs(ctx)
 	for count := range valAddrs {
 		if !(count+1 < int(maxValidators)) {
 			break
@@ -71,6 +63,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		if err != nil {
 			panic(err)
 		}
+
 		// if not found or the power has changed -> add this validator to the updated list
 		if !found || !bytes.Equal(prevStatePowerBytes, curStatePowerBytes) {
 			ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
@@ -84,7 +77,6 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		// update the total power
 		totalPower = totalPower.Add(sdk.NewInt(curStatePower))
 	}
-
 	// sort the no-longer-staked validators
 	noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
 	// iterate through the sorted no-longer-staked validators
@@ -135,8 +127,6 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
 		// get the validator address
 		valAddr := sdk.Address(iterator.Value())
-		fmt.Println(valAddr)
-		os.Exit(1)
 		// return the validator from the current store
 		validator, found := k.GetValidator(ctx, valAddr)
 		if !found {
@@ -167,6 +157,7 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 			panic(err)
 		}
 		// if not found or the power has changed -> add this validator to the updated list
+
 		if !found || !bytes.Equal(prevStatePowerBytes, curStatePowerBytes) {
 			ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
 			updates = append(updates, validator.ABCIValidatorUpdate())
@@ -180,6 +171,9 @@ func (k Keeper) UpdateTendermintValidatorsB(ctx sdk.Ctx) (updates []abci.Validat
 		// update the total power
 		totalPower = totalPower.Add(sdk.NewInt(curStatePower))
 	}
+	// if ctx.BlockHeight() == 2 {
+	// 	os.Exit(1)
+	// }
 	// sort the no-longer-staked validators
 	// noLongerStaked := sortNoLongerStakedValidators(prevStatePowerMap)
 	// iterate through the sorted no-longer-staked validators
@@ -633,3 +627,11 @@ func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 // 	// valAddrs := *k.stakedValAddrs
 // 	return
 // }
+
+func safeCopy(powerMap valPowerMap) valPowerMap {
+	cpwerMap := make(valPowerMap)
+	for k, v := range powerMap {
+		cpwerMap[k] = v
+	}
+	return cpwerMap
+}
