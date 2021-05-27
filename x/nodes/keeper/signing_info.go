@@ -1,14 +1,60 @@
 package keeper
 
 import (
+	"encoding/binary"
 	"fmt"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	"math"
+	"sync"
+	"time"
 )
+
+var (
+	GlobalSigningInfosCache map[string]types.ValidatorSigningInfo
+	GlobalValMissedAtCache  map[string]map[int64]bool
+	GlobalJailedValsCache map[string]struct{}
+	GlobalJailedValsLock = sync.Mutex{}
+	GlobalValMissedAtLock = sync.Mutex{}
+	GlobalSigningInfosLock = sync.Mutex{}
+)
+
+func (k Keeper) InitSigningInfosCache(ctx sdk.Ctx) error {
+	GlobalSigningInfosCache = make(map[string]types.ValidatorSigningInfo)
+	GlobalValMissedAtCache = make(map[string]map[int64]bool)
+	GlobalJailedValsCache = make(map[string]struct{})
+	GlobalJailedValsLock.Lock()
+	GlobalValMissedAtLock.Lock()
+	defer GlobalJailedValsLock.Unlock()
+	defer GlobalValMissedAtLock.Unlock()
+	ctx.Logger().Info("Intializing signing infos and missed at array")
+	s := time.Now()
+	vals := k.GetValidators(ctx, math.MaxUint16)
+	for _, v := range vals {
+		si, found := k.GetValidatorSigningInfo(ctx, v.Address)
+		if found {
+			GlobalSigningInfosCache[v.Address.String()] = si
+		}
+		GlobalValMissedAtCache[v.Address.String()] = k.getValidatorMissedAllIndex(ctx, v.Address)
+		if v.IsJailed() {
+			GlobalJailedValsCache[v.Address.String()] = struct{}{}
+		}
+	}
+	ctx.Logger().Debug("Done initializing signing infos and missed at array: duration was " + time.Since(s).String())
+	return nil
+}
 
 // GetValidatorSigningInfo - Retrieve signing information for the validator by address
 func (k Keeper) GetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) (info types.ValidatorSigningInfo, found bool) {
 	store := ctx.KVStore(k.storeKey)
+	if !ctx.IsPrevCtx() {
+		GlobalSigningInfosLock.Lock()
+		si, found := GlobalSigningInfosCache[addr.String()]
+		GlobalSigningInfosLock.Unlock()
+		if found {
+			return si, found
+		}
+	}
 	bz, _ := store.Get(types.KeyForValidatorSigningInfo(addr))
 	if bz == nil {
 		found = false
@@ -22,17 +68,32 @@ func (k Keeper) GetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) (info typ
 // SetValidatorSigningInfo - Store signing information for the validator by address
 func (k Keeper) SetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address, info types.ValidatorSigningInfo) {
 	store := ctx.KVStore(k.storeKey)
+	if !ctx.IsPrevCtx() {
+		GlobalSigningInfosLock.Lock()
+		GlobalSigningInfosCache[addr.String()] = info
+		GlobalSigningInfosLock.Unlock()
+	}
 	bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(&info, ctx.BlockHeight())
 	_ = store.Set(types.KeyForValidatorSigningInfo(addr), bz)
 }
 
 func (k Keeper) SetValidatorSigningInfos(ctx sdk.Ctx, infos []types.ValidatorSigningInfo) {
 	for _, info := range infos {
+		if !ctx.IsPrevCtx() {
+			GlobalSigningInfosLock.Lock()
+			GlobalSigningInfosCache[info.Address.String()] = info
+			GlobalSigningInfosLock.Unlock()
+		}
 		k.SetValidatorSigningInfo(ctx, info.Address, info)
 	}
 }
 
 func (k Keeper) DeleteValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
+	if !ctx.IsPrevCtx() {
+		GlobalSigningInfosLock.Lock()
+		delete(GlobalSigningInfosCache, addr.String())
+		GlobalSigningInfosLock.Unlock()
+	}
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Delete(types.KeyForValidatorSigningInfo(addr))
 }
@@ -71,6 +132,17 @@ func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Ctx, handler func(ad
 
 // valMissedAt - Check if validator is missed
 func (k Keeper) valMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64) (missed bool) {
+	if !ctx.IsPrevCtx() {
+		GlobalValMissedAtLock.Lock()
+		if GlobalValMissedAtCache[addr.String()] == nil {
+			GlobalValMissedAtCache[addr.String()] = make(map[int64]bool)
+		}
+		b, found := GlobalValMissedAtCache[addr.String()][index]
+		GlobalValMissedAtLock.Unlock()
+		if found {
+			return b
+		}
+	}
 	store := ctx.KVStore(k.storeKey)
 	bz, _ := store.Get(types.GetValMissedBlockKey(addr, index))
 	if bz == nil { // lazy: treat empty key as not missed
@@ -84,6 +156,14 @@ func (k Keeper) valMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64) (missed 
 
 // SetValidatorMissedAt - Store missed validator
 func (k Keeper) SetValidatorMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64, missed bool) {
+	if !ctx.IsPrevCtx() {
+		GlobalValMissedAtLock.Lock()
+		if GlobalValMissedAtCache[addr.String()] == nil {
+			GlobalValMissedAtCache[addr.String()] = make(map[int64]bool)
+		}
+		GlobalValMissedAtCache[addr.String()][index] = missed
+		GlobalValMissedAtLock.Unlock()
+	}
 	store := ctx.KVStore(k.storeKey)
 	b := sdk.Bool(missed)
 	bz, _ := k.Cdc.MarshalBinaryLengthPrefixed(&b, ctx.BlockHeight())
@@ -92,12 +172,38 @@ func (k Keeper) SetValidatorMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64,
 
 // clearValidatorMissed - Remove all missed validators from store
 func (k Keeper) clearValidatorMissed(ctx sdk.Ctx, addr sdk.Address) {
+	GlobalValMissedAtLock.Lock()
+	delete(GlobalValMissedAtCache, addr.String())
+	GlobalValMissedAtLock.Unlock()
 	store := ctx.KVStore(k.storeKey)
-	iter, _ := sdk.KVStorePrefixIterator(store, types.GetValMissedBlockPrefixKey(addr))
+	prefixKey := types.GetValMissedBlockPrefixKey(addr)
+	iter, _ := sdk.KVStorePrefixIterator(store, prefixKey)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		_ = store.Delete(iter.Key())
 	}
+}
+
+// clearValidatorMissed - Remove all missed validators from store
+func (k Keeper) getValidatorMissedAllIndex(ctx sdk.Ctx, addr sdk.Address) (m map[int64]bool){
+	store := ctx.KVStore(k.storeKey)
+	m = make(map[int64]bool)
+	prefixKey := types.GetValMissedBlockPrefixKey(addr)
+	iter, _ := sdk.KVStorePrefixIterator(store, prefixKey)
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		indexBz := iter.Key()[len(prefixKey):]
+		var missed bool
+		b := sdk.Bool(missed)
+		err := k.Cdc.UnmarshalBinaryLengthPrefixed(iter.Value(), &b, ctx.BlockHeight())
+		if err != nil {
+			ctx.Logger().Error("Unable to unmarshal bool in getValidatorMissedAllIndex")
+			continue
+		}
+		index := binary.LittleEndian.Uint64(indexBz)
+		m[int64(index)] = bool(b)
+	}
+	return
 }
 
 func (k Keeper) UpgradeMissedBlocksArray(ctx sdk.Ctx, validators types.Validators) sdk.Error {

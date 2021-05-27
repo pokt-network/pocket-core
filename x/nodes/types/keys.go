@@ -129,6 +129,7 @@ func GetValMissedBlockPrefixKey(v sdk.Address) []byte {
 	return append(ValidatorMissedBlockBitArrayKey, v.Bytes()...)
 }
 
+
 // generates the key for missing val who missed block through consensus addr
 func GetValMissedBlockKey(v sdk.Address, i int64) []byte {
 	b := make([]byte, 8)

@@ -2,9 +2,14 @@ package keeper
 
 import (
 	"encoding/hex"
+	"fmt"
+	"github.com/pkg/errors"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"os"
+	"sync"
+	"time"
 )
 
 // "HandleDispatch" - Handles a client request for their session information
@@ -86,4 +91,70 @@ func (k Keeper) IsPocketSupportedBlockchain(ctx sdk.Ctx, chain string) bool {
 
 func (Keeper) ClearSessionCache() {
 	types.ClearSessionCache()
+}
+
+func (k Keeper) InitSessionValidators(ctx sdk.Ctx) sdk.Error {
+	ctx.Logger().Info("Started initializing session validators")
+	start := time.Now()
+	blocksBack := int64(25) // TODO get from config
+	blocksPerSession := k.BlocksPerSession(ctx)
+	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
+	// get the session height from x blocks ago as the starting height
+	height := sessionBlockHeight - blocksBack // (genesis block 0 is unable to be used)
+	height = (height/blocksPerSession)*blocksPerSession + 1
+	if height < 1 {
+		height = 1
+	}
+	// create the global structure
+	types.GlobalSessionVals = &types.SessionValidators{
+		M: make(map[int64]map[string]exported.ValidatorI),
+		S: make(map[int64]map[string][]types.SessionValidator),
+		L: &sync.Mutex{},
+	}
+	for ; height <= sessionBlockHeight; height += blocksPerSession {
+		var endHeight int64
+		ctx.Logger().Info(fmt.Sprintf("Initializing session Validators for height: %d", height))
+		sessionCtx, err := ctx.PrevCtx(height)
+		if err != nil {
+			return sdk.ErrInternal(errors.Wrap(err, "an error occurred getting prevctx in InitSessionValidators").Error())
+		}
+		sessionVals := k.posKeeper.AllValidators(sessionCtx)
+		if ctx.BlockHeight()-sessionCtx.BlockHeight() < blocksPerSession {
+			endHeight = ctx.BlockHeight()
+		} else {
+			endHeight = height + blocksPerSession - 1
+		}
+		endSessionCtx, err := ctx.PrevCtx(endHeight)
+		if err != nil {
+			ctx.Logger().Error("ERROR getting end session ctx from init session validators")
+			os.Exit(1)
+		}
+		endSessionVals := k.posKeeper.AllValidators(endSessionCtx)
+		types.InitSessionValidators(height, sessionVals, endSessionVals)
+	}
+	ctx.Logger().Debug("Finished initializing session validators: ", time.Since(start))
+	return nil
+}
+
+func (k Keeper) UpdateSessionValidators(ctx sdk.Ctx) sdk.Error {
+	ctx.Logger().Info("Started updating session validators")
+	start := time.Now()
+	blocksBack := int64(25) // TODO get from config
+	blocksPerSession := k.BlocksPerSession(ctx)
+	err := types.UpdateSessionValidators(ctx.BlockHeight()+1, blocksBack, blocksPerSession)
+	if err != nil {
+		return sdk.ErrInternal(errors.Wrap(err, "unable to update session validators").Error())
+	}
+	ctx.Logger().Debug(fmt.Sprintf("Updating Session Validators Took: %s", time.Since(start)))
+	return nil
+}
+
+func (k Keeper) UpdateSessionValidator(ctx sdk.Ctx, val exported.ValidatorI) {
+	start := time.Now()
+	setS := false
+	if k.IsSessionBlock(ctx) {
+		setS = true
+	}
+	types.SetSessionValidator(k.GetLatestSessionBlockHeight(ctx), val, setS)
+	ctx.Logger().Debug(fmt.Sprintf("Update Session Validator Took: %s", time.Since(start)))
 }

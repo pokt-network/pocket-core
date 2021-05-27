@@ -15,34 +15,37 @@ import (
 // InitGenesis sets up the module based on the genesis state
 // First TM block is at height 1, so state updates applied from
 // genesis.json are in block 0.
-func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
+func InitGenesis(ctx sdk.Ctx, k keeper.Keeper, supplyKeeper types.AuthKeeper, data types.GenesisState) (res []abci.ValidatorUpdate) {
 	// zero out a staked tokens variable for traking the number of staked tokens
 	stakedTokens := sdk.ZeroInt()
 	// set the context
 	ctx = ctx.WithBlockHeight(1 - sdk.ValidatorUpdateDelay)
 	// set the parameters from the data
-	keeper.SetParams(ctx, data.Params)
+	k.SetParams(ctx, data.Params)
 	// set the 'previous state total power' from the data
-	keeper.SetPrevStateValidatorsPower(ctx, data.PrevStateTotalPower)
+	k.SetPrevStateValidatorsPower(ctx, data.PrevStateTotalPower)
+	keeper.GlobalSigningInfosCache = make(map[string]types.ValidatorSigningInfo)
+	keeper.GlobalValMissedAtCache = make(map[string]map[int64]bool)
+	keeper.GlobalJailedValsCache = make(map[string]struct{})
 	// for each validator in validators, setup based on genesis file
 	for _, validator := range data.Validators {
 		// if the validator is unstaked, then panic because, we shouldn't have unstaked validators in the genesis file
 		if validator.IsUnstaked() {
-			keeper.Logger(ctx).Error(fmt.Errorf("%v the validators must be staked or unstaking at genesis", validator).Error())
+			k.Logger(ctx).Error(fmt.Errorf("%v the validators must be staked or unstaking at genesis", validator).Error())
 			os.Exit(1)
 		}
 		// set the validators from the data
-		keeper.SetValidator(ctx, validator)
-		keeper.SetStakedValidatorByChains(ctx, validator)
+		k.SetValidator(ctx, validator)
+		k.SetStakedValidatorByChains(ctx, validator)
 		// ensure there's a signing info entry for the validator (used in slashing)
-		_, found := keeper.GetValidatorSigningInfo(ctx, validator.GetAddress())
+		_, found := k.GetValidatorSigningInfo(ctx, validator.GetAddress())
 		if !found {
 			signingInfo := types.ValidatorSigningInfo{
 				Address:     validator.GetAddress(),
 				StartHeight: ctx.BlockHeight(),
 				JailedUntil: time.Unix(0, 0),
 			}
-			keeper.SetValidatorSigningInfo(ctx, validator.GetAddress(), signingInfo)
+			k.SetValidatorSigningInfo(ctx, validator.GetAddress(), signingInfo)
 		}
 		// if the validator is staked then add their tokens to the staked pool
 		if validator.IsStaked() {
@@ -50,38 +53,38 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 		}
 	}
 	// take the staked amount and create the corresponding coins object
-	stakedCoins := sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(ctx), stakedTokens))
+	stakedCoins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), stakedTokens))
 	// check if the staked pool accounts exists
-	stakedPool := keeper.GetStakedPool(ctx)
+	stakedPool := k.GetStakedPool(ctx)
 	// if the stakedPool is nil
 	if stakedPool == nil {
-		keeper.Logger(ctx).Error(fmt.Errorf("%s module account has not been set", types.StakedPoolName).Error())
+		k.Logger(ctx).Error(fmt.Errorf("%s module account has not been set", types.StakedPoolName).Error())
 		os.Exit(1)
 	}
 	// add coins if not provided on genesis (there's an option to provide the coins in genesis)
 	if stakedPool.GetCoins().IsZero() {
 		if err := stakedPool.SetCoins(stakedCoins); err != nil {
-			keeper.Logger(ctx).Error(fmt.Errorf("unable to set set coins for %s module account", types.StakedPoolName).Error())
+			k.Logger(ctx).Error(fmt.Errorf("unable to set set coins for %s module account", types.StakedPoolName).Error())
 			os.Exit(1)
 		}
 		supplyKeeper.SetModuleAccount(ctx, stakedPool)
 	} else {
 		// if it is provided in the genesis file then ensure the two are equal
 		if !stakedPool.GetCoins().IsEqual(stakedCoins) {
-			keeper.Logger(ctx).Error(fmt.Sprintf("%s module account total does not equal the amount in each validator account", types.StakedPoolName))
+			k.Logger(ctx).Error(fmt.Sprintf("%s module account total does not equal the amount in each validator account", types.StakedPoolName))
 			os.Exit(1)
 		}
 	}
 	// add coins to the total supply
-	keeper.AccountKeeper.SetSupply(ctx, keeper.AccountKeeper.GetSupply(ctx).Inflate(stakedCoins))
+	k.AccountKeeper.SetSupply(ctx, k.AccountKeeper.GetSupply(ctx).Inflate(stakedCoins))
 	// don't need to run Tendermint updates if we exported
 	if data.Exported {
 		for _, lv := range data.PrevStateValidatorPowers {
 			// set the staked validator powers from the previous state
-			keeper.SetPrevStateValPower(ctx, lv.Address, lv.Power)
-			validator, found := keeper.GetValidator(ctx, lv.Address)
+			k.SetPrevStateValPower(ctx, lv.Address, lv.Power)
+			validator, found := k.GetValidator(ctx, lv.Address)
 			if !found {
-				keeper.Logger(ctx).Error(fmt.Sprintf("%s validator not found from exported genesis", lv.Address))
+				k.Logger(ctx).Error(fmt.Sprintf("%s validator not found from exported genesis", lv.Address))
 				continue
 			}
 			update := validator.ABCIValidatorUpdate()
@@ -90,32 +93,37 @@ func InitGenesis(ctx sdk.Ctx, keeper keeper.Keeper, supplyKeeper types.AuthKeepe
 		}
 	} else {
 		// run tendermint updates
-		res = keeper.UpdateTendermintValidators(ctx)
+		res = k.UpdateTendermintValidators(ctx)
 	}
 	// update signing information from genesis state
 	for addr, info := range data.SigningInfos {
 		address, err := sdk.AddressFromHex(addr)
 		if err != nil {
-			keeper.Logger(ctx).Error(fmt.Sprintf("unable to convert address from hex in genesis signing info for addr: %s err: %v", addr, err))
+			k.Logger(ctx).Error(fmt.Sprintf("unable to convert address from hex in genesis signing info for addr: %s err: %v", addr, err))
 			os.Exit(1)
 		}
-		keeper.SetValidatorSigningInfo(ctx, address, info)
+		k.SetValidatorSigningInfo(ctx, address, info)
 	}
 	// update missed block information from genesis state
 	for addr, array := range data.MissedBlocks {
 		address, err := sdk.AddressFromHex(addr)
 		if err != nil {
-			keeper.Logger(ctx).Error(fmt.Sprintf("unable to convert address from hex in genesis missed blocks for addr: %s err: %v", addr, err))
+			k.Logger(ctx).Error(fmt.Sprintf("unable to convert address from hex in genesis missed blocks for addr: %s err: %v", addr, err))
 			os.Exit(1)
 		}
 		for _, missed := range array {
-			keeper.SetValidatorMissedAt(ctx, address, missed.Index, missed.Missed)
+			k.SetValidatorMissedAt(ctx, address, missed.Index, missed.Missed)
 		}
 	}
-	// set the params set in the keeper
-	keeper.Paramstore.SetParamSet(ctx, &data.Params)
+	// set the params set in the k
+	k.Paramstore.SetParamSet(ctx, &data.Params)
 	if data.PreviousProposer != nil {
-		keeper.SetPreviousProposer(ctx, data.PreviousProposer)
+		k.SetPreviousProposer(ctx, data.PreviousProposer)
+	}
+	err := k.InitSigningInfosCache(ctx)
+	if err != nil {
+		ctx.Logger().Error("Unable to initialize signing infos cache: "+ err.Error())
+		os.Exit(1)
 	}
 	return res
 }

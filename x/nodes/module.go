@@ -8,6 +8,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"os"
 )
 
 var (
@@ -114,6 +115,13 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 
 // module begin-block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
+	if keeper.GlobalSigningInfosCache == nil || keeper.GlobalValMissedAtCache == nil {
+		err := am.keeper.InitSigningInfosCache(ctx)
+		if err != nil {
+			ctx.Logger().Error(err.Error())
+			os.Exit(1)
+		}
+	}
 	keeper.BeginBlocker(ctx, req, am.keeper)
 }
 

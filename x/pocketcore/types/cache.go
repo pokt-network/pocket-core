@@ -1,10 +1,13 @@
 package types
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
+	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/tendermint/tendermint/config"
 	"log"
+	"sort"
 	"sync"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -15,6 +18,8 @@ import (
 var (
 	// cache for session objects
 	globalSessionCache *CacheStorage
+	// cache for session validators
+	GlobalSessionVals *SessionValidators
 	// cache for GOBEvidence objects
 	globalEvidenceCache *CacheStorage
 	// sync.once to perform initialization
@@ -260,6 +265,202 @@ func SessionIterator() SessionIt {
 	return SessionIt{
 		Iterator: it,
 	}
+}
+
+type SessionValidators struct {
+	// 3 deep nested map structure height || chain || address -> sessionValidator (Optimizing for speed)
+	M map[int64]map[string]exported.ValidatorI // used to store session end state
+	S map[int64]map[string][]SessionValidator  // used to store session start, needed for sorting
+	L *sync.Mutex
+}
+
+// Set a session validator under all of it's respective relayChains
+func SetSessionValidator(height int64, val exported.ValidatorI, setS bool) {
+	if GlobalSessionVals == nil {
+		return // Only set after initialization
+	}
+	GlobalSessionVals.L.Lock()
+	defer GlobalSessionVals.L.Unlock()
+	// delete sequence
+	if !val.IsStaked() {
+		if val.IsUnstaked() {
+			delete(GlobalSessionVals.M[height], val.GetAddress().String())
+		} else {
+			// set sequence
+			GlobalSessionVals.M[height][val.GetAddress().String()] = val
+		}
+		if setS {
+			for _, c := range val.GetChains() {
+				found := false
+				valIndex := 0
+				for index, sv := range GlobalSessionVals.S[height][c] { // TODO quick search algo
+					if sv.Address.Equals(val.GetAddress()) {
+						found = true
+						valIndex = index
+						break
+					}
+				}
+				if found {
+					// delete from slice
+					GlobalSessionVals.S[height][c] = append(GlobalSessionVals.S[height][c][:valIndex], GlobalSessionVals.S[height][c][valIndex+1:]...)
+				}
+			}
+		}
+		return
+	}
+	// set sequence
+	GlobalSessionVals.M[height][val.GetAddress().String()] = val
+	if setS {
+		for _, c := range val.GetChains() {
+			found := false
+			valIndex := 0
+			for index, sv := range GlobalSessionVals.S[height][c] { // TODO quick search algo
+				if sv.Address.Equals(val.GetAddress()) {
+					found = true
+					valIndex = index
+					break
+				}
+			}
+			if !found {
+				GlobalSessionVals.S[height][c] = append(GlobalSessionVals.S[height][c], SessionValidator{
+					Address:    val.GetAddress(),
+					PublicKey:  val.GetPublicKey().RawString(),
+					ServiceURL: val.GetServiceURL(),
+				})
+				sort.Slice(GlobalSessionVals.S[height][c], func(i, j int) bool {
+					return bytes.Compare(GlobalSessionVals.S[height][c][i].Address, GlobalSessionVals.S[height][c][j].Address) == -1
+				})
+			} else { // needed for edit stake
+				GlobalSessionVals.S[height][c][valIndex] = SessionValidator{
+					Address:    val.GetAddress(),
+					PublicKey:  val.GetPublicKey().RawString(),
+					ServiceURL: val.GetServiceURL(),
+				}
+			}
+		}
+	}
+	return
+}
+
+func GetSessionValidator(height int64, address sdk.Address) (val exported.ValidatorI, found bool) {
+	GlobalSessionVals.L.Lock()
+	defer GlobalSessionVals.L.Unlock()
+	if GlobalSessionVals.M[height] == nil {
+		return
+	}
+	val, found = GlobalSessionVals.M[height][address.String()]
+	return
+}
+
+// get a group of session validators by
+func GetSessionValidators(height int64, relayChain string) (svs []SessionValidator) {
+	GlobalSessionVals.L.Lock()
+	defer GlobalSessionVals.L.Unlock()
+	if GlobalSessionVals.S[height] == nil {
+		return
+	}
+	return GlobalSessionVals.S[height][relayChain]
+}
+
+func InitSessionValidators(height int64, sessionStartState, sessionEndState []exported.ValidatorI) {
+	// lock for thread safety
+	GlobalSessionVals.L.Lock()
+	defer GlobalSessionVals.L.Unlock()
+	// for each session height
+	// create the map [relayChain] SessionValidators slice
+	if GlobalSessionVals.S[height] == nil {
+		GlobalSessionVals.S[height] = make(map[string][]SessionValidator)
+	}
+	// for each validator in the session start
+	for _, val := range sessionStartState {
+		if !val.IsStaked(){
+			continue
+		}
+		// for each validator object let's create the corresponding sessionVal object
+		sv := SessionValidator{
+			Address:    val.GetAddress(),
+			PublicKey:  val.GetPublicKey().RawString(),
+			ServiceURL: val.GetServiceURL(),
+		}
+		for _, chain := range val.GetChains() {
+			if GlobalSessionVals.S[height][chain] == nil {
+				GlobalSessionVals.S[height][chain] = make([]SessionValidator, 0)
+			}
+			GlobalSessionVals.S[height][chain] = append(GlobalSessionVals.S[height][chain], sv)
+		}
+	}
+	// pre-sort starting states by chain:
+	// sort set of validators by chain by address
+	for _, svmp := range GlobalSessionVals.S[height] {
+		sort.Slice(svmp, func(i, j int) bool {
+			return bytes.Compare(svmp[i].Address, svmp[j].Address) == -1
+		})
+	}
+	// setup the sessionEndState 'map'
+	for _, val := range sessionEndState {
+		if val.IsUnstaked() {
+			continue // skip over unstaked validators
+		}
+		if GlobalSessionVals.M[height] == nil {
+			GlobalSessionVals.M[height] = make(map[string]exported.ValidatorI)
+		}
+		GlobalSessionVals.M[height][val.GetAddress().String()] = val
+	}
+}
+
+func UpdateSessionValidators(sessionHeight, blocksAgoHeight, blocksPerSession int64) error {
+	if sessionHeight <= 1 {
+		return nil
+	}
+	// heights we'll prune
+	pruneHeight := sessionHeight - blocksAgoHeight
+	pruneHeight = (pruneHeight/blocksPerSession)*blocksPerSession + 1
+	// next session end height
+	lastSessionHeight := sessionHeight - blocksPerSession
+	// lock for thread safety
+	GlobalSessionVals.L.Lock()
+	defer GlobalSessionVals.L.Unlock()
+
+	// sanity check
+	if GlobalSessionVals.M[lastSessionHeight] == nil {
+		return fmt.Errorf("critical error when updating sessionValidators, previous session endstate (M) was nil for height: %d", lastSessionHeight)
+	}
+	// first let's prune the old ones
+	if pruneHeight >= 1 {
+		delete(GlobalSessionVals.S, pruneHeight)
+		delete(GlobalSessionVals.M, pruneHeight)
+	}
+	// then let's add a new entry for the current session start height
+	GlobalSessionVals.S[sessionHeight] = make(map[string][]SessionValidator)
+	GlobalSessionVals.M[sessionHeight] = make(map[string]exported.ValidatorI)
+	// copy endstate map
+	for addr, val := range GlobalSessionVals.M[lastSessionHeight] {
+		GlobalSessionVals.M[sessionHeight][addr] = val
+		if val.IsUnstaking() {
+			continue // skip over unstaking validators
+		}
+		for _, c := range val.GetChains() {
+			GlobalSessionVals.S[sessionHeight][c] = append(GlobalSessionVals.S[sessionHeight][c], SessionValidator{
+				Address:    val.GetAddress(),
+				PublicKey:  val.GetPublicKey().RawString(),
+				ServiceURL: val.GetServiceURL(),
+			})
+		}
+	}
+	// sort every slice for each chain
+	for _, svSlice := range GlobalSessionVals.S[sessionHeight] {
+		sort.Slice(svSlice, func(i, j int) bool { return bytes.Compare(svSlice[i].Address, svSlice[j].Address) == -1 })
+	}
+	return nil
+}
+
+func (s SessionValidator) MarshalObject() ([]byte, error) {
+	return ModuleCdc.ProtoMarshalBinaryBare(&s)
+}
+
+func (s SessionValidator) UnmarshalObject(b []byte) (SessionValidator, error) {
+	err := ModuleCdc.ProtoUnmarshalBinaryBare(b, &s)
+	return s, err
 }
 
 // "GetEvidence" - Retrieves the GOBEvidence object from the storage

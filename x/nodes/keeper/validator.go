@@ -49,6 +49,7 @@ func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 			k.SetStakedValidator(ctx, validator)
 		}
 	}
+	k.PocketKeeper.UpdateSessionValidator(ctx, validator)
 	_ = k.validatorCache.AddWithCtx(ctx, validator.Address.String(), validator)
 }
 
@@ -64,6 +65,13 @@ func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
 	_ = store.Delete(types.KeyForValByAllVals(addr))
 	k.DeleteValidatorSigningInfo(ctx, addr)
 	k.validatorCache.RemoveWithCtx(ctx, addr.String())
+	GlobalJailedValsLock.Lock()
+	delete(GlobalJailedValsCache, addr.String())
+	GlobalJailedValsLock.Unlock()
+	k.PocketKeeper.UpdateSessionValidator(ctx, types.Validator{
+		Address:                 addr,
+		Status:                  sdk.Unstaked,
+	})
 }
 
 // GetAllValidators - Retrieve set of all validators with no limits from the main store

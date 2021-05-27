@@ -22,6 +22,13 @@ message Session {
 	repeated bytes sessionNodes = 3 [(gogoproto.jsontag) = "nodes", (gogoproto.castrepeated) = "SessionNodes"];
 }
 
+message SessionValidator {
+	option (gogoproto.goproto_getters) = false;
+	bytes address = 1 [(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address", (gogoproto.jsontag) = "address"];
+	string publicKey = 2 [(gogoproto.jsontag) = "public_key"];
+	string serviceURL = 3 [(gogoproto.jsontag) = "service_url"];
+}
+
 message MsgClaim {
 	option (gogoproto.messagename) = true;
 	option (gogoproto.goproto_getters) = false;
