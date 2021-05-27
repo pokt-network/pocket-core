@@ -224,7 +224,7 @@ func TestSessionKey_Validate(t *testing.T) {
 //	allNodes[10] = node10
 //	allNodes[11] = node11
 //	k := MockPosKeeper{Validators: allNodes}
-//	sessionNodes, err := NewSessionNodes(newContext(t, false).WithAppVersion("0.0.0"), newContext(t, false).WithAppVersion("0.0.0"), k, ethereum, fakeSessionKey, 5)
+//	sessionNodes, err := LegacySessionNodes(newContext(t, false).WithAppVersion("0.0.0"), newContext(t, false).WithAppVersion("0.0.0"), k, ethereum, fakeSessionKey, 5)
 //	assert.Nil(t, err)
 //	assert.Len(t, sessionNodes, 5)
 //	assert.Contains(t, sessionNodes, allNodes[0].(nodesTypes.Validator))

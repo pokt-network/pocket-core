@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -14,9 +15,10 @@ import (
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
+	start := time.Now()
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
-		previousProposer := k.GetPreviousProposer(ctx)
+		previousProposer := k.GetPreviousProposer(ctx) // TODO get from req
 		k.blockReward(ctx, previousProposer)
 	}
 	// record the new proposer for when we payout on the next block
@@ -25,10 +27,15 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	// Iterate over all the validators which *should* have signed this block
 	// store whether or not they have actually signed it and slash/unstake any
 	// which have missed too many blocks in a row (downtime slashing)
+	signedBlocksWindow := k.SignedBlocksWindow(ctx)
+	minSignedPerWindow := k.MinSignedPerWindow(ctx)
+	downtimeJailDuration := k.DowntimeJailDuration(ctx)
+	slashFractionDowntime := k.SlashFractionDowntime(ctx)
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
-		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock)
+		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock, signedBlocksWindow, minSignedPerWindow, downtimeJailDuration, slashFractionDowntime)
 		// remove those who are part of the tendermint validator set (jailed validators will never be a part of the set)
 	}
+	ctx.Logger().Debug(fmt.Sprintf("Begin Block in nodes took: %s", time.Since(start)))
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
 	// who contributed to valid infractions

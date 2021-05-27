@@ -100,8 +100,8 @@ func (s Session) Key() ([]byte, error) {
 // "SessionNodes" - Service nodes in a session
 type SessionNodes []sdk.Address
 
-// "NewSessionNodes" - Generates nodes for the session
-func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
+// "LegacySessionNodes" - Generates nodes for the session
+func LegacySessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
 	// all nodesAddrs at session genesis
 	nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
 	// validate nodesAddrs
@@ -126,6 +126,50 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		}
 		// else add the node to the session
 		sessionNodes[numOfNodes] = n
+		// increment the number of nodesAddrs in the sessionNodes slice
+		numOfNodes++
+		// if maxing out the session count end loop
+		if numOfNodes == sessionNodesCount {
+			break
+		}
+	}
+	return sessionNodes, nil
+}
+
+// "LegacySessionNodes" - Generates nodes for the session
+func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, sessionKey SessionKey, sessionNodesCount int) (sessionNodes SessionNodes, err sdk.Error) {
+	if hex.EncodeToString(sessionKey) == "ef00a93bd1996714e91afea250f019c2d317f99fd42f2124d5c21776f7419580" {
+		fmt.Println("HERE")
+	}
+	if GlobalSessionVals.S[sessionCtx.BlockHeight()] == nil {
+		ctx.Logger().Error("Unable to get session validators from memory, falling back to old algorithm")
+		return LegacySessionNodes(sessionCtx, ctx, keeper, chain, sessionKey, sessionNodesCount)
+	}
+	// all nodesAddrs at session genesis
+	// nodesAddrs, totalNodes := keeper.GetValidatorsByChain(sessionCtx, chain)
+	nodes := GetSessionValidators(sessionCtx.BlockHeight(), chain)
+	totalNodes := len(nodes)
+	// validate nodesAddrs
+	if totalNodes < sessionNodesCount {
+		return nil, NewInsufficientNodesError(ModuleName)
+	}
+	sessionNodes = make(SessionNodes, sessionNodesCount)
+	// only select the nodesAddrs if not jailed
+	for i, numOfNodes := 0, 0; ; i++ {
+		// generate the random index
+		index := PseudorandomSelection(sdk.NewInt(int64(totalNodes)), sessionKey)
+		// merkleHash the session key to provide new entropy
+		sessionKey = Hash(sessionKey)
+		// get the node from the array
+		n := nodes[index.Int64()]
+		// cross check the node from the `new` or `end` world state
+		node, found := GetSessionValidator(sessionCtx.BlockHeight(), n.Address)
+		// if not found or jailed, don't add to session and continue
+		if node == nil || !found || node.IsJailed() || !NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
+			continue
+		}
+		// else add the node to the session
+		sessionNodes[numOfNodes] = n.Address
 		// increment the number of nodesAddrs in the sessionNodes slice
 		numOfNodes++
 		// if maxing out the session count end loop

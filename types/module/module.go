@@ -269,9 +269,6 @@ func (m *Manager) ExportGenesis(ctx sdk.Ctx) map[string]json.RawMessage {
 func (m *Manager) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 	if ctx.IsOnUpgradeHeight() {
-		//for _, name := range m.OrderBeginBlockers {
-		//	m.Modules[name].UpgradeCodec(ctx)
-		//}
 		for _, mod := range m.Modules {
 			mod.UpgradeCodec(ctx)
 		}

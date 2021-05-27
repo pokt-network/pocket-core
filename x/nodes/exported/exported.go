@@ -14,6 +14,7 @@ type ValidatorI interface {
 	GetStatus() sdk.StakeStatus     // status of the validator
 	GetAddress() sdk.Address        // operator address to receive/return validators coins
 	GetPublicKey() crypto.PublicKey // validation consensus pubkey
+	GetServiceURL() string          // validation consensus pubkey
 	GetTokens() sdk.BigInt          // validation tokens
 	GetConsensusPower() int64       // validation power in tendermint
 	GetChains() []string            // get chains staked for validator

@@ -45,6 +45,8 @@ type AuthKeeper interface {
 type PocketKeeper interface {
 	// clear the cache of validators for sessions and relays
 	ClearSessionCache()
+	// update the validator in the session structure
+    UpdateSessionValidator(ctx sdk.Ctx, val posexported.ValidatorI)
 }
 
 // ValidatorSet expected properties for the set of all validators (noalias)

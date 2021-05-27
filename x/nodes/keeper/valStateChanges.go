@@ -292,6 +292,7 @@ func (k Keeper) BeginUnstakingValidator(ctx sdk.Ctx, validator types.Validator) 
 	k.deleteValidatorForChains(ctx, validator)
 	// set the status
 	validator = validator.UpdateStatus(sdk.Unstaking)
+	k.PocketKeeper.UpdateSessionValidator(ctx, validator)
 	// set the unstaking completion time and completion height appropriately
 	if validator.UnstakingCompletionTime.IsZero() {
 		validator.UnstakingCompletionTime = ctx.BlockHeader().Time.Add(params.UnstakingTime)
@@ -420,6 +421,9 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	k.ClearSessionCache()
 	k.deleteValidatorFromStakingSet(ctx, validator)
 	validator.Jailed = true
+	GlobalJailedValsLock.Lock()
+	GlobalJailedValsCache[validator.Address.String()] = struct{}{}
+	GlobalJailedValsLock.Unlock()
 	k.SetValidator(ctx, validator)
 	logger := k.Logger(ctx)
 	logger.Info(fmt.Sprintf("validator %s jailed", addr))
@@ -433,40 +437,36 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 }
 
 func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
-	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		val, err := types.UnmarshalValidator(k.Cdc, ctx, iterator.Value())
-		if err != nil {
-			ctx.Logger().Error("could not unmarshal validator in IncrementJailedValidators: ", err.Error())
-			continue
+	start := time.Now()
+	maxJailedBlocks := k.MaxJailedBlocks(ctx)
+	GlobalJailedValsLock.Lock()
+	defer GlobalJailedValsLock.Unlock()
+	for addrStr, _ := range GlobalJailedValsCache {
+		addr, _ := hex.DecodeString(addrStr)
+		signInfo, found := k.GetValidatorSigningInfo(ctx, addr)
+		if !found {
+			k.Logger(ctx).Error("could not find validator signing info in increment jail validator")
+			signInfo = types.ValidatorSigningInfo{
+				Address:     addr,
+				StartHeight: ctx.BlockHeight(),
+			}
 		}
-		if val.IsJailed() {
-			addr := val.Address
-			signInfo, found := k.GetValidatorSigningInfo(ctx, addr)
-			if !found {
-				k.Logger(ctx).Error("could not find validator signing info in increment jail validator")
-				signInfo = types.ValidatorSigningInfo{
-					Address:     addr,
-					StartHeight: ctx.BlockHeight(),
-				}
+		// increase JailedBlockCounter
+		signInfo.JailedBlocksCounter++
+		// compare against MaxJailedBlocks
+		if signInfo.JailedBlocksCounter > maxJailedBlocks {
+			val, _ := k.GetValidator(ctx, addr)
+			// force unstake orphaned validator
+			err := k.ForceValidatorUnstake(ctx, val)
+			if err != nil {
+				k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addrStr)
 			}
-			// increase JailedBlockCounter
-			signInfo.JailedBlocksCounter++
-			// compare against MaxJailedBlocks
-			if signInfo.JailedBlocksCounter > k.MaxJailedBlocks(ctx) {
-				// force unstake orphaned validator
-				err := k.ForceValidatorUnstake(ctx, val)
-				if err != nil {
-					k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addr.String())
-				}
-				k.DeleteValidator(ctx, addr)
-			} else {
-				k.SetValidatorSigningInfo(ctx, addr, signInfo)
-			}
+			k.DeleteValidator(ctx, addr)
+		} else {
+			k.SetValidatorSigningInfo(ctx, addr, signInfo)
 		}
 	}
+	ctx.Logger().Debug(fmt.Sprintf("Increment Jailed Validators duration: %s", time.Since(start)))
 }
 
 // ValidateUnjailMessage - Check unjail message
@@ -514,6 +514,9 @@ func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		return
 	}
 	validator.Jailed = false
+	GlobalJailedValsLock.Lock()
+	delete(GlobalJailedValsCache, addr.String())
+	GlobalJailedValsLock.Unlock()
 	k.SetValidator(ctx, validator)
 	k.ResetValidatorSigningInfo(ctx, addr)
 	k.Logger(ctx).Info(fmt.Sprintf("validator %s unjailed", addr))

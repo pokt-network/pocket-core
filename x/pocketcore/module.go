@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -92,6 +93,16 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // "BeginBlock" - Functionality that is called at the beginning of (every) block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
+	if types.GlobalSessionVals == nil {
+		start := time.Now()
+		err := am.keeper.InitSessionValidators(ctx)
+		ctx.Logger().Debug(fmt.Sprintf("InitSessionVals took %s", time.Since(start)))
+		if err != nil {
+			fmt.Println("Error: Unable to initialize session validators: " + err.Error())
+			os.Exit(1)
+		}
+	}
+
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
 }
@@ -100,6 +111,13 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
+	if (ctx.BlockHeight()+1)%am.keeper.BlocksPerSession(ctx) == 1 { // if next block is a session block
+		err := am.keeper.UpdateSessionValidators(ctx)
+		if err != nil {
+			fmt.Println("Error: Unable to update session validators: " + err.Error())
+			os.Exit(1)
+		}
+	}
 	// get self address
 	addr := am.keeper.GetSelfAddress(ctx)
 	if addr != nil {

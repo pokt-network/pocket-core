@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -133,12 +134,14 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		if er != nil {
 			return sdk.ErrInternal(er.Error())
 		}
+		start := time.Now()
 		// create a new session to validate
 		session, err = pc.NewSession(sessionContext, sessionEndCtx, k.posKeeper, claim.SessionHeader, hex.EncodeToString(hash), sessionNodeCount)
 		if err != nil {
 			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error())
 			return err
 		}
+		ctx.Logger().Debug(fmt.Sprintf("Session Generation took: %s", time.Since(start)))
 	}
 	// validate the session
 	err = session.Validate(claim.FromAddress, app, sessionNodeCount)
