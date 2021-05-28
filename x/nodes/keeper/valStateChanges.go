@@ -29,6 +29,18 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 	// Retrieve the prevState validator set addresses mapped to their respective staking power
 	prevStatePowerMap := safeCopy(k.getMemPrevStatePowerMap(ctx))
 	valAddrs := k.GetMemValAddrs(ctx)
+	// if ctx.BlockHeight() == 2 {
+	// storeVals := k.GetStakedValidatorsAddrs(ctx)
+	// fmt.Println(reflect.DeepEqual(valAddrs, storeVals))
+	// fmt.Println(fmt.Sprintf("mem: %d, store: %d", len(valAddrs), len(storeVals)))
+	// for i := 0; i < 10; i++ {
+	// 	fmt.Println(storeVals[i])
+	// 	fmt.Println(valAddrs[i])
+	// }
+	// // }
+	// if ctx.BlockHeight() == 1 {
+	// 	os.Exit(1)
+	// }
 	for count := range valAddrs {
 		if !(count+1 < int(maxValidators)) {
 			break

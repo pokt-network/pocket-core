@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"sort"
@@ -13,11 +14,11 @@ import (
 
 // SetStakedValidator - Store staked validator
 func (k Keeper) SetStakedValidator(ctx sdk.Ctx, validator types.Validator) {
+	k.AddValAddrToCache(ctx, validator.GetAddress())
 	store := ctx.KVStore(k.storeKey)
 	_ = store.Set(types.KeyForValidatorInStakingSet(validator), validator.Address)
 	// save in the network id stores for quick session generations
 	//k.SetStakedValidatorByChains(ctx, validator)
-	k.AddValAddrToCache(ctx, validator.GetAddress())
 }
 
 // SetStakedValidatorByChains - Store staked validator using networkId
@@ -191,14 +192,14 @@ func (k Keeper) getMemValAddrs(ctx sdk.Ctx) (interface{}, bool) {
 	return k.stakedValAddrs.Get(ctx, "staked_val_addrs")
 }
 func (k Keeper) setMemValAddrs(ctx sdk.Ctx, addr []sdk.Address) bool {
-	return k.valPowerCache.Add(ctx, "staked_val_addrs", addr)
+	return k.stakedValAddrs.Add(ctx, "staked_val_addrs", addr)
 }
 func (k Keeper) sortValAddrsByPower(ctx sdk.Ctx, addrs []sdk.Address) []sdk.Address {
 	sort.SliceStable(addrs, func(i, j int) bool {
 		// -1 means strictly less than
 		a, _ := k.GetValidator(ctx, addrs[i])
 		b, _ := k.GetValidator(ctx, addrs[j])
-		return a.ConsensusPower() > b.ConsensusPower()
+		return bytes.Compare(types.KeyForValidatorInStakingSet(a), types.KeyForValidatorInStakingSet(b)) == 1
 	})
 	return addrs
 }
