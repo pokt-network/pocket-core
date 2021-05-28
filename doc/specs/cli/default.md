@@ -33,6 +33,14 @@ Options:
 * `--testnet`: Run with testnet genesis
 * `--profileApp`: bool exposes cpu & memory profiling"
 
+## Stop Pocket Core
+
+```text
+pocket stop
+```
+
+Stops the Pocket Node.
+
 ## Reset Pocket Core
 
 ```text
