@@ -44,8 +44,8 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		Paramstore:     paramstore.WithKeyTable(ParamKeyTable()),
 		codespace:      codespace,
 		validatorCache: cache,
-		valPowerCache:  &lockedCache{sdk.NewCache(1), &sync.Mutex{}},
-		stakedValAddrs: &lockedCache{sdk.NewCache(1), &sync.Mutex{}},
+		valPowerCache:  &lockedCache{nil, &sync.Mutex{}},
+		stakedValAddrs: &lockedCache{nil, &sync.Mutex{}},
 		Cdc:            cdc,
 	}
 }
@@ -100,20 +100,19 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 }
 
 type lockedCache struct {
-	store *sdk.Cache
+	store interface{}
 	l     *sync.Mutex
 }
 
-func (lc *lockedCache) Add(ctx sdk.Ctx, key string, v interface{}) bool {
+func (lc *lockedCache) Set(ctx sdk.Ctx, v interface{}) {
 	lc.l.Lock()
 	defer lc.l.Unlock()
-	evict := lc.store.AddWithCtx(ctx, key, v)
-	return evict
+	lc.store = v
 }
 
-func (lc *lockedCache) Get(ctx sdk.Ctx, k string) (interface{}, bool) {
+func (lc *lockedCache) Get(ctx sdk.Ctx) interface{} {
 	lc.l.Lock()
 	defer lc.l.Unlock()
-	v, evict := lc.store.GetWithCtx(ctx, k)
-	return v, evict
+	s := lc.store
+	return s
 }

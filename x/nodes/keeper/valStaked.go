@@ -158,9 +158,9 @@ func (k Keeper) IterateAndExecuteOverStakedVals(
 }
 
 func (k Keeper) GetMemValAddrs(ctx sdk.Ctx) []sdk.Address {
-	v, ok := k.getMemValAddrs(ctx)
+	v := k.getMemValAddrs(ctx)
 	//  if doesn't exist get prev from cache
-	if !ok {
+	if v == nil {
 		return k.GetStakedValidatorsAddrs(ctx)
 	}
 	addrs, ok := v.([]sdk.Address)
@@ -188,11 +188,11 @@ func (k Keeper) RemoveValAddrFromCache(ctx sdk.Ctx, addr sdk.Address) {
 	}
 }
 
-func (k Keeper) getMemValAddrs(ctx sdk.Ctx) (interface{}, bool) {
-	return k.stakedValAddrs.Get(ctx, "staked_val_addrs")
+func (k Keeper) getMemValAddrs(ctx sdk.Ctx) interface{} {
+	return k.stakedValAddrs.Get(ctx)
 }
-func (k Keeper) setMemValAddrs(ctx sdk.Ctx, addr []sdk.Address) bool {
-	return k.stakedValAddrs.Add(ctx, "staked_val_addrs", addr)
+func (k Keeper) setMemValAddrs(ctx sdk.Ctx, addr []sdk.Address) {
+	k.stakedValAddrs.Set(ctx, addr)
 }
 func (k Keeper) sortValAddrsByPower(ctx sdk.Ctx, addrs []sdk.Address) []sdk.Address {
 	sort.SliceStable(addrs, func(i, j int) bool {
