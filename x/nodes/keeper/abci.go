@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -21,6 +22,28 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx) // TODO get from req
 		k.blockReward(ctx, previousProposer)
+
+		wg := &sync.WaitGroup{}
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			switch {
+			case k.valPowerCache.Peek():
+				return
+			default:
+				_ = k.getMemPrevStatePowerMap(ctx)
+			}
+		}()
+		go func() {
+			defer wg.Done()
+			switch {
+			case k.stakedValAddrs.Peek():
+				return
+			default:
+				_ = k.GetStakedValidatorsAddrs(ctx)
+			}
+		}()
+		wg.Wait()
 	}
 	// record the new proposer for when we payout on the next block
 	addr := sdk.Address(req.Header.ProposerAddress)

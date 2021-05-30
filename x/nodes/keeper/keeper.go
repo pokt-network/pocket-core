@@ -116,3 +116,7 @@ func (lc *lockedCache) Get(ctx sdk.Ctx) interface{} {
 	s := lc.store
 	return s
 }
+
+func (lc *lockedCache) Peek() bool {
+	return lc.store != nil
+}
