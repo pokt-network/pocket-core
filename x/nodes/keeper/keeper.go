@@ -107,14 +107,20 @@ type lockedCache struct {
 func (lc *lockedCache) Set(ctx sdk.Ctx, v interface{}) {
 	lc.l.Lock()
 	defer lc.l.Unlock()
+	if ctx.IsPrevCtx() {
+		return
+	}
 	lc.store = v
 }
 
-func (lc *lockedCache) Get(ctx sdk.Ctx) interface{} {
+func (lc *lockedCache) Get(ctx sdk.Ctx) (interface{}, bool) {
 	lc.l.Lock()
 	defer lc.l.Unlock()
+	if ctx.IsPrevCtx() {
+		return nil, false
+	}
 	s := lc.store
-	return s
+	return s, true
 }
 
 func (lc *lockedCache) Peek() bool {

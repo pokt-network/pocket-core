@@ -131,9 +131,9 @@ func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
 // getCurStatePowerMapCache - makes sure to retrieve current power map, will become prev on the next block
 // CONTRACT: will become prev power map on next height
 func (k Keeper) getMemPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
-	v := k.getMemPowerMap(ctx)
+	v, ok := k.getMemPowerMap(ctx)
 	//  if doesn't exist get prev from cache
-	if v == nil {
+	if !ok {
 		return k.getPrevStatePowerMap(ctx)
 	}
 	powerM, ok := v.(valPowerMap)
@@ -144,7 +144,7 @@ func (k Keeper) getMemPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
 	return powerM
 }
 
-func (k Keeper) getMemPowerMap(ctx sdk.Ctx) interface{} {
+func (k Keeper) getMemPowerMap(ctx sdk.Ctx) (interface{}, bool) {
 	return k.valPowerCache.Get(ctx)
 }
 func (k Keeper) setMemPowerMap(ctx sdk.Ctx, prevState valPowerMap) {
