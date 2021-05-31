@@ -13,7 +13,7 @@ The upcoming Pocket Core release \(0.6.0\) offers a higher level of security \(2
 ### 1. Shutdown Pocket Core
 
 {% hint style="info" %}
-If Validator, 6 blocks until jailed
+If Validator, 4 blocks until jailed
 {% endhint %}
 
 ### 2. Ensure golang version 1.16 or &gt; [golang upgrade](https://golang.org/doc/install) 
