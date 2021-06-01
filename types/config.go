@@ -83,7 +83,7 @@ const (
 	PlaceholderServiceURL              = PlaceholderURL
 	DefaultRemoteCLIURL                = "http://localhost:8081"
 	DefaultUserAgent                   = ""
-	DefaultValidatorCacheSize          = 100
+	DefaultValidatorCacheSize          = 10000
 	DefaultApplicationCacheSize        = DefaultValidatorCacheSize
 	DefaultPocketPrometheusListenAddr  = "8083"
 	DefaultPrometheusMaxOpenFile       = 3
