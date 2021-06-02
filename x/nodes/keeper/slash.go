@@ -109,7 +109,7 @@ func (k Keeper) slash(ctx sdk.Ctx, addr sdk.Address, infractionHeight, power int
 		}
 	}
 	// Log that a slash occurred
-	logger.Info(fmt.Sprintf("validator %s slashed by slash factor of %s; burned %v tokens",
+	logger.Debug(fmt.Sprintf("validator %s slashed by slash factor of %s; burned %v tokens",
 		validator.GetAddress(), slashFactor.String(), tokensToBurn))
 }
 
@@ -218,7 +218,7 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, addr sdk.Address, power in
 		// Array value has changed from not missed to missed, increment counter
 		k.SetValidatorMissedAt(ctx, addr, signInfo.Index, true)
 		signInfo.MissedBlocksCounter++
-		ctx.Logger().Info(fmt.Sprintf("Absent validator %s at height %d, %d missed, threshold %d", addr, ctx.BlockHeight(), signInfo.MissedBlocksCounter, minSignedPerWindow))
+		//ctx.Logger().Info(fmt.Sprintf("Absent validator %s at height %d, %d missed, threshold %d", addr, ctx.BlockHeight(), signInfo.MissedBlocksCounter, minSignedPerWindow))
 	case previous && signed:
 		// Array value has changed from missed to not missed, decrement counter
 		k.SetValidatorMissedAt(ctx, addr, signInfo.Index, false)
@@ -233,7 +233,7 @@ func (k Keeper) handleValidatorSignature(ctx sdk.Ctx, addr sdk.Address, power in
 	// if we are past the minimum height and the validator has missed too many blocks, punish them
 	if signInfo.MissedBlocksCounter > maxMissed {
 		// Downtime confirmed: slash and jail the validator
-		ctx.Logger().Info(fmt.Sprintf("Validator %s missed more than the max signed blocks: %d", addr, signedBlocksWindow-minSignedPerWindow))
+		// ctx.Logger().Info(fmt.Sprintf("Validator %s missed more than the max signed blocks: %d", addr, signedBlocksWindow-minSignedPerWindow))
 		// height where the infraction occured
 		slashHeight := ctx.BlockHeight() - sdk.ValidatorUpdateDelay - 1
 		// slash them based on their power

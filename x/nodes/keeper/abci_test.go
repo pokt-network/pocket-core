@@ -1,10 +1,12 @@
 package keeper
 
 import (
+	"fmt"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"testing"
+	"time"
 )
 
 func TestBeginBlocker(t *testing.T) {
@@ -37,6 +39,16 @@ func TestBeginBlocker(t *testing.T) {
 			BeginBlocker(tt.args.ctx, tt.args.req, tt.args.k)
 		})
 	}
+}
+
+func TestBenchmarkValMissedAt(t *testing.T) {
+	context, _, keeper := createTestInput(t, true)
+	GlobalValMissedAtCache = make(map[string]map[int64]bool)
+	v := getValidator()
+	s := time.Now()
+	keeper.SetValidatorMissedAt(context, v.Address, 10, true)
+	y := time.Since(s)
+	fmt.Printf("%s\n", y)
 }
 
 func TestEndBlocker(t *testing.T) {

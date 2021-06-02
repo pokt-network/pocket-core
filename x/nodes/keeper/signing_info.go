@@ -137,11 +137,9 @@ func (k Keeper) valMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64) (missed 
 		if GlobalValMissedAtCache[addr.String()] == nil {
 			GlobalValMissedAtCache[addr.String()] = make(map[int64]bool)
 		}
-		b, found := GlobalValMissedAtCache[addr.String()][index]
+		b, _ := GlobalValMissedAtCache[addr.String()][index]
 		GlobalValMissedAtLock.Unlock()
-		if found {
-			return b
-		}
+		return b
 	}
 	store := ctx.KVStore(k.storeKey)
 	bz, _ := store.Get(types.GetValMissedBlockKey(addr, index))

@@ -19,8 +19,6 @@ import (
 // It gets called once after genesis, another time maybe after genesis transactions,
 // then once at every EndBlock.
 func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.ValidatorUpdate) {
-	defer sdk.TimeTrack(time.Now())
-
 	if ctx.BlockHeight()%k.BlocksPerSession(ctx) == 0 { // one block before new session (mod 1 would be session block)
 		k.ReleaseWaitingValidators(ctx)
 	}
@@ -68,7 +66,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 
 		// if not found or the power has changed -> add this validator to the updated list
 		if !found || !bytes.Equal(prevStatePowerBytes, curStatePowerBytes) {
-			ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
+			ctx.Logger().Debug(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
 			updates = append(updates, validator.ABCIValidatorUpdate())
 			// update the previous state as this will soon be the previous state
 			k.SetPrevStateValPower(ctx, valAddr, curStatePower)
@@ -93,7 +91,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		// delete from the stake validator index
 		k.DeletePrevStateValPower(ctx, validator.GetAddress())
 		// add to one of the updates for tendermint
-		ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked, at height %d", validator.Address, ctx.BlockHeight()))
+		ctx.Logger().Debug(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked, at height %d", validator.Address, ctx.BlockHeight()))
 		updates = append(updates, validator.ABCIValidatorUpdate())
 		// if validator was force unstaked, delete the validator from the all validators store
 		if validator.IsUnstaked() {
@@ -430,7 +428,7 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	GlobalJailedValsLock.Unlock()
 	k.SetValidator(ctx, validator)
 	logger := k.Logger(ctx)
-	logger.Info(fmt.Sprintf("validator %s jailed", addr))
+	logger.Debug(fmt.Sprintf("validator %s jailed", addr))
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeJail,
@@ -441,8 +439,6 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 }
 
 func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
-	defer sdk.TimeTrack(time.Now())
-
 	maxJailedBlocks := k.MaxJailedBlocks(ctx)
 	GlobalJailedValsLock.Lock()
 	defer GlobalJailedValsLock.Unlock()

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"

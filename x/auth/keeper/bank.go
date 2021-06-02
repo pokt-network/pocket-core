@@ -105,7 +105,7 @@ func (k Keeper) BurnCoins(ctx sdk.Ctx, moduleName string, amt sdk.Coins) sdk.Err
 	k.SetSupply(ctx, supply)
 
 	logger := k.Logger(ctx)
-	logger.Info(fmt.Sprintf("burned %s from %s module account", amt.String(), moduleName))
+	logger.Debug(fmt.Sprintf("burned %s from %s module account", amt.String(), moduleName))
 
 	return nil
 }
