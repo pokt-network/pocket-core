@@ -1,4 +1,12 @@
 # Changelog
+=======
+## RC-0.6.4
+- Upped V1 Timeout
+- Introduced valMissedAt cache
+- Introduced valStakedAddrs cache
+- Introduced signingInfos cache
+- Introduced jailedValidators cache
+- Introduced cachified session generation algorithm (backwards compatible)
 
 ## RC-0.6.3
 
