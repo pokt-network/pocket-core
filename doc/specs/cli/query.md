@@ -287,6 +287,7 @@ Example output:
 Account balance: <balance of the account>
 ```
 
+<<<<<<< HEAD
 ## Nodes
 
 ### List of All Nodes at Height
@@ -342,7 +343,17 @@ Arguments:
 * `<address>`: Target address.
 * `<height>`: The specified height of the block to be queried, defaults to `0` which brings the latest block known to this node.
 
-### List of Relay Batch Proofs Submitted by Node
+
+### Validator Signing Info
+- `pocket query signing-info <address> [<height>]`
+> Retrieves the validator signing info with `<address>` at specified `<height>`.
+>
+> Arguments:
+> - `<address>`: Target address.
+> Optional Arguments:
+> - `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+
+### List of Relay Proofs Submitted by Node
 
 ```text
 pocket query node-claims [<address>] [<height>]
@@ -355,7 +366,7 @@ Optional Arguments:
 * `<address>`: Target address. Defaults to `0` which brings all the claims for the specified height.
 * `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
-### Relay Batch Proof Details
+### Relay Proof Details
 
 ```text
 pocket query node-claim <address> <appPubKey> <claimType=(relay | challenge)> <chainID> <sessionHeight> [<height>]
@@ -448,4 +459,3 @@ Retrieves the latest protocol upgrade executed by governance using the `pocket g
 Optional Arguments:
 
 * `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
-

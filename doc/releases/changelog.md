@@ -7,6 +7,7 @@
 - Introduced signingInfos cache
 - Introduced jailedValidators cache
 - Introduced cachified session generation algorithm (backwards compatible)
+- Introduced new rpc endpoint to check validator signingInfo (cli cmd available)
 
 ## RC-0.6.3
 
