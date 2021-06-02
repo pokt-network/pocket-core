@@ -172,6 +172,33 @@ func (app PocketCoreApp) QuerySigningInfo(height int64, addr string) (res nodesT
 	return
 }
 
+func (app PocketCoreApp) QuerySigningInfos(address string, height int64, page, perPage int) (res Page, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	signingInfos := make([]nodesTypes.ValidatorSigningInfo, 0)
+
+	page, perPage = checkPagination(page, perPage)
+	if address != "" {
+		addr, err := sdk.AddressFromHex(address)
+		if err != nil {
+			return Page{}, err
+		}
+		sinfo, found := app.nodesKeeper.GetValidatorSigningInfo(ctx, addr)
+		if !found {
+			return Page{}, err
+		}
+		signingInfos = append(signingInfos, sinfo)
+	} else {
+		app.nodesKeeper.IterateAndExecuteOverValSigningInfo(ctx, func(address sdk.Address, info nodesTypes.ValidatorSigningInfo) (stop bool) {
+			signingInfos = append(signingInfos, info)
+			return false
+		})
+	}
+	return paginate(page, perPage, signingInfos, int(app.nodesKeeper.MaxValidators(ctx)))
+}
+
 func (app PocketCoreApp) QueryTotalNodeCoins(height int64) (stakedTokens sdk.BigInt, totalTokens sdk.BigInt, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {
