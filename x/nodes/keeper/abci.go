@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -16,34 +15,16 @@ import (
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
-	defer sdk.TimeTrack(time.Now())
-
+	if !k.valPowerCache.Peek(){
+		k.getMemPowerMap(ctx)
+	}
+	if !k.stakedValAddrs.Peek() {
+		k.GetMemValAddrs(ctx)
+	}
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx) // TODO get from req
 		k.blockReward(ctx, previousProposer)
-
-		wg := &sync.WaitGroup{}
-		wg.Add(2)
-		go func() {
-			defer wg.Done()
-			switch {
-			case k.valPowerCache.Peek():
-				return
-			default:
-				_ = k.getMemPrevStatePowerMap(ctx)
-			}
-		}()
-		go func() {
-			defer wg.Done()
-			switch {
-			case k.stakedValAddrs.Peek():
-				return
-			default:
-				_ = k.GetStakedValidatorsAddrs(ctx)
-			}
-		}()
-		wg.Wait()
 	}
 	// record the new proposer for when we payout on the next block
 	addr := sdk.Address(req.Header.ProposerAddress)
@@ -66,11 +47,12 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
 	// who contributed to valid infractions
+	maxEvidenceAgeMin := int(k.GetParams(ctx).MaxEvidenceAge.Minutes())
 	for _, evidence := range req.ByzantineValidators {
 		switch evidence.Type {
 		case tmtypes.ABCIEvidenceTypeDuplicateVote:
 			if ctx.IsAfterUpgradeHeight() {
-				evidenceAgeInBlocks := int(k.GetParams(ctx).MaxEvidenceAge.Minutes()) / 15
+				evidenceAgeInBlocks := maxEvidenceAgeMin / 15
 				if evidenceAgeInBlocks == 0 {
 					// minimum of 1 block ago
 					evidenceAgeInBlocks = 1
@@ -91,8 +73,6 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 
 // EndBlocker - Called at the end of every block, update validator set
 func EndBlocker(ctx sdk.Ctx, k Keeper) []abci.ValidatorUpdate {
-	defer sdk.TimeTrack(time.Now())
-
 	// increment jailed blocks counter
 	k.IncrementJailedValidators(ctx)
 	// NOTE: UpdateTendermintValidators has to come before unstakeAllMatureValidators.

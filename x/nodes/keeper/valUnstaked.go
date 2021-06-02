@@ -147,8 +147,6 @@ func (k Keeper) getMatureValidators(ctx sdk.Ctx) (matureValsAddrs []sdk.Address)
 
 // unstakeAllMatureValidators -  Unstake all the unstaking validators that have finished their unstaking period
 func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
-	defer sdk.TimeTrack(time.Now())
-
 	store := ctx.KVStore(k.storeKey)
 	unstakingValidatorsIterator, _ := k.unstakingValidatorsIterator(ctx, ctx.BlockHeader().Time)
 	defer unstakingValidatorsIterator.Close()
