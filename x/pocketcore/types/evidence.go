@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/types"
@@ -242,4 +243,28 @@ func EvidenceTypeFromString(evidenceType string) (et EvidenceType, err types.Err
 		err = types.ErrInternal("type in the receipt query is not recognized: (relay or challenge)")
 	}
 	return
+}
+
+type evidenceMap struct {
+	sync.RWMutex
+	m map[string]interface{}
+}
+
+func (em *evidenceMap) Load(key string) (interface{}, bool) {
+	em.RLock()
+	result, ok := em.m[key]
+	em.RUnlock()
+	return result, ok
+}
+
+func (em *evidenceMap) Delete(key string) {
+	em.Lock()
+	delete(em.m, key)
+	em.Unlock()
+}
+
+func (em *evidenceMap) Store(key string, v interface{}) {
+	em.Lock()
+	em.m[key] = v
+	em.Unlock()
 }

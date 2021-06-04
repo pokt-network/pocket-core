@@ -21,7 +21,7 @@ var (
 	// sync.once to perform initialization
 	cacheOnce sync.Once
 
-	globalEvidenceSealedMap sync.Map
+	globalEvidenceSealedMap *evidenceMap
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
@@ -344,7 +344,7 @@ func SealEvidence(evidence Evidence) (Evidence, bool) {
 func ClearEvidence() {
 	if globalEvidenceCache != nil {
 		globalEvidenceCache.Clear()
-		globalEvidenceSealedMap = sync.Map{}
+		globalEvidenceSealedMap = &evidenceMap{sync.RWMutex{}, make(map[string]interface{})}
 	}
 }
 
