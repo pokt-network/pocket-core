@@ -276,7 +276,7 @@ type SessionValidators struct {
 
 // Set a session validator under all of it's respective relayChains
 func SetSessionValidator(height int64, val exported.ValidatorI, setS bool) {
-	if GlobalSessionVals == nil {
+	if GlobalSessionVals == nil || height < 0 {
 		return // Only set after initialization
 	}
 	GlobalSessionVals.L.Lock()
@@ -373,7 +373,7 @@ func InitSessionValidators(height int64, sessionStartState, sessionEndState []ex
 	}
 	// for each validator in the session start
 	for _, val := range sessionStartState {
-		if !val.IsStaked(){
+		if !val.IsStaked() {
 			continue
 		}
 		// for each validator object let's create the corresponding sessionVal object

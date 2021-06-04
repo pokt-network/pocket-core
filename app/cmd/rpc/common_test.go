@@ -79,6 +79,7 @@ func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNod
 		}
 		pocketTypes.ClearEvidence()
 		pocketTypes.ClearSessionCache()
+		pocketTypes.GlobalSessionVals = nil
 		inMemKB = nil
 		//err = os.RemoveAll(tendermintNode.Config().DBPath)
 		if err != nil {
@@ -524,6 +525,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
 	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
 	pocketGenesisState.Params.ClaimSubmissionWindow = 10
+	//pocketGenesisState.Params.SessionNodeCount = 1
 	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
 	defaultGenesis[pocketTypes.ModuleName] = res3
 	// set default governance in genesis

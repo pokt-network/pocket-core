@@ -142,7 +142,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	if hex.EncodeToString(sessionKey) == "ef00a93bd1996714e91afea250f019c2d317f99fd42f2124d5c21776f7419580" {
 		fmt.Println("HERE")
 	}
-	if GlobalSessionVals.S[sessionCtx.BlockHeight()] == nil {
+	if GlobalSessionVals == nil || GlobalSessionVals.S[sessionCtx.BlockHeight()] == nil {
 		ctx.Logger().Error("Unable to get session validators from memory, falling back to old algorithm")
 		return LegacySessionNodes(sessionCtx, ctx, keeper, chain, sessionKey, sessionNodesCount)
 	}
