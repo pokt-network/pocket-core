@@ -168,6 +168,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	keeper.PocketKeeper = MockPocketKeeper{}
 	params := types.DefaultParams()
 	keeper.SetParams(ctx, params)
+	_ = keeper.InitSigningInfosCache(ctx)
 	return ctx, accs, keeper
 }
 

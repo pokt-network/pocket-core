@@ -85,6 +85,8 @@ func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermi
 		}
 		pocketTypes.ClearEvidence()
 		pocketTypes.ClearSessionCache()
+		pocketTypes.GlobalSessionVals = nil
+
 		PCA = nil
 		inMemKB = nil
 		err := inMemDB.Close()
@@ -99,7 +101,7 @@ func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermi
 		if err != nil {
 			panic(err)
 		}
-		time.Sleep(2*time.Second)
+		time.Sleep(2 * time.Second)
 	}
 	return
 }
@@ -134,6 +136,7 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 		}
 		pocketTypes.ClearEvidence()
 		pocketTypes.ClearSessionCache()
+		pocketTypes.GlobalSessionVals = nil
 
 		PCA = nil
 		inMemKB = nil
@@ -149,7 +152,7 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 		if err != nil {
 			panic(err)
 		}
-		time.Sleep(2*time.Second)
+		time.Sleep(2 * time.Second)
 	}
 	return
 }
@@ -754,6 +757,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j, kys, posGenesisState.Validators, appsGenesisState.Applications[0]
 }
+
 //
 //func TestGatewayChecker(t *testing.T) {
 //	startheight := 14681

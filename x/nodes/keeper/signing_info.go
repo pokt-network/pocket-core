@@ -13,10 +13,10 @@ import (
 var (
 	GlobalSigningInfosCache map[string]types.ValidatorSigningInfo
 	GlobalValMissedAtCache  map[string]map[int64]bool
-	GlobalJailedValsCache map[string]struct{}
-	GlobalJailedValsLock = sync.Mutex{}
-	GlobalValMissedAtLock = sync.Mutex{}
-	GlobalSigningInfosLock = sync.Mutex{}
+	GlobalJailedValsCache   map[string]struct{}
+	GlobalJailedValsLock    = sync.Mutex{}
+	GlobalValMissedAtLock   = sync.Mutex{}
+	GlobalSigningInfosLock  = sync.Mutex{}
 )
 
 func (k Keeper) InitSigningInfosCache(ctx sdk.Ctx) error {
@@ -185,7 +185,7 @@ func (k Keeper) clearValidatorMissed(ctx sdk.Ctx, addr sdk.Address) {
 }
 
 // clearValidatorMissed - Remove all missed validators from store
-func (k Keeper) getValidatorMissedAllIndex(ctx sdk.Ctx, addr sdk.Address) (m map[int64]bool){
+func (k Keeper) getValidatorMissedAllIndex(ctx sdk.Ctx, addr sdk.Address) (m map[int64]bool) {
 	store := ctx.KVStore(k.storeKey)
 	m = make(map[int64]bool)
 	prefixKey := types.GetValMissedBlockPrefixKey(addr)

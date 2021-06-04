@@ -69,6 +69,8 @@ func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 func (k Keeper) ConvertState(ctx sdk.Ctx) {
 	k.Cdc.SetUpgradeOverride(false)
 	_ = k.InitSigningInfosCache(ctx)
+	k.valPowerCache = &lockedCache{nil, &sync.Mutex{}}
+	k.stakedValAddrs = &lockedCache{nil, &sync.Mutex{}}
 	params := k.GetParams(ctx)
 	prevStateTotalPower := k.PrevStateValidatorsPower(ctx)
 	validators := k.GetAllValidators(ctx)
