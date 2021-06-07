@@ -287,7 +287,6 @@ Example output:
 Account balance: <balance of the account>
 ```
 
-<<<<<<< HEAD
 ## Nodes
 
 ### List of All Nodes at Height
