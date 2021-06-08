@@ -28,7 +28,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 	prevStatePowerMap := safeCopy(k.getMemPrevStatePowerMap(ctx))
 	valAddrs := k.GetMemValAddrs(ctx)
 	for count := range valAddrs {
-		if !(count+1 < int(maxValidators)) {
+		if !(count < int(maxValidators)) {
 			break
 		}
 		// get the validator address
