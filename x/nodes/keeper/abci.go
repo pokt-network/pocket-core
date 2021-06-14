@@ -15,7 +15,7 @@ import (
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
-	if !k.valPowerCache.Peek(){
+	if !k.valPowerCache.Peek() {
 		k.getMemPowerMap(ctx)
 	}
 	if !k.stakedValAddrs.Peek() {
@@ -42,7 +42,7 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock, signedBlocksWindow, minSignedPerWindow, downtimeJailDuration, slashFractionDowntime)
 		// remove those who are part of the tendermint validator set (jailed validators will never be a part of the set)
 	}
-	fmt.Println(fmt.Sprintf("P - handle handleValidatorSignature took: %s", time.Since(start)))
+	ctx.Logger().Debug(fmt.Sprintf("P - handle handleValidatorSignature took: %s", time.Since(start)))
 
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
