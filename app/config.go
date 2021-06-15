@@ -186,7 +186,7 @@ func UpdateConfig(datadir string) {
 	GlobalConfig.TendermintConfig.Mempool.Size = 9000
 	GlobalConfig.TendermintConfig.Mempool.CacheSize = 9000
 	GlobalConfig.TendermintConfig.FastSync = &config2.FastSyncConfig{
-		Version: "v1",
+		Version: "v0",
 	}
 	GlobalConfig.PocketConfig.ValidatorCacheSize = sdk.DefaultValidatorCacheSize
 	GlobalConfig.PocketConfig.ApplicationCacheSize = sdk.DefaultApplicationCacheSize

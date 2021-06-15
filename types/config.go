@@ -144,7 +144,7 @@ func DefaultConfig(dataDir string) Config {
 	c.TendermintConfig.Mempool.Size = 9000
 	c.TendermintConfig.Mempool.CacheSize = 9000
 	c.TendermintConfig.FastSync = &config.FastSyncConfig{
-		Version: "v1",
+		Version: "v0",
 	}
 	DefaultPocketConsensusConfig(c.TendermintConfig.Consensus)
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
