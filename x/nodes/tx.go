@@ -107,7 +107,7 @@ func newTx(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, tmNode clie
 		return
 	}
 	fee := msg.GetFee()
-	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LTE(fee) { // todo get stake denom
+	if account.GetCoins().AmountOf(sdk.DefaultStakeDenom).LT(fee) { // todo get stake denom
 		_ = fmt.Errorf("insufficient funds: the fee needed is %v", fee)
 		return
 	}
