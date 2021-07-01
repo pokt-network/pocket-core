@@ -40,7 +40,7 @@ func (k Keeper) DeleteValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
 func (k Keeper) ResetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
 	signInfo, found := k.GetValidatorSigningInfo(ctx, addr)
 	if !found {
-		ctx.Logger().Error(fmt.Sprintf("error in ResetValidatorSigningInfo: signing info not found, at height: %d", ctx.BlockHeight()))
+		ctx.Logger().Info(fmt.Sprintf("resetting not found signing info: %d", ctx.BlockHeight()))
 		signInfo = types.ValidatorSigningInfo{
 			Address:     addr,
 			StartHeight: ctx.BlockHeight(),
