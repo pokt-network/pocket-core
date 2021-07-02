@@ -73,8 +73,10 @@ var startCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		t := time.Unix(1625263200, 0) // Friday, July 2, 2021 6:00:00 PM GMT-04:00
 		sleepDuration := time.Until(t)
-		fmt.Println("Sleeping for ", sleepDuration)
-		time.Sleep(sleepDuration)
+		if time.Now().Before(t) {
+			fmt.Println("Sleeping for ", sleepDuration)
+			time.Sleep(sleepDuration)
+		}
 		start(cmd, args)
 	},
 }
