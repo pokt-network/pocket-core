@@ -87,8 +87,11 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 	session, found := GetSession(header)
 	// if not found generate the session
 	if !found {
-		var err sdk.Error
-		session, err = NewSession(sessionCtx, ctx, posKeeper, header, BlockHash(sessionCtx), int(sessionNodeCount))
+		bh, err := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
+		if err != nil {
+			return sdk.ZeroInt(), err
+		}
+		session, err = NewSession(sessionCtx, ctx, posKeeper, header, hex.EncodeToString(bh), int(sessionNodeCount))
 		if err != nil {
 			return sdk.ZeroInt(), err
 		}

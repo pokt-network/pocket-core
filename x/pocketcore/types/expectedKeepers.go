@@ -1,6 +1,7 @@
 package types
 
 import (
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
 	authexported "github.com/pokt-network/pocket-core/x/auth/exported"
@@ -31,6 +32,7 @@ type AppsKeeper interface {
 
 type PocketKeeper interface {
 	SessionNodeCount(ctx sdk.Ctx) (res int64)
+	Codec() *codec.Codec
 }
 
 type AuthKeeper interface {
