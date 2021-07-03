@@ -34,7 +34,7 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKee
 }
 
 func (k Keeper) Codec() *codec.Codec{
-	return k.Cdc()
+	return k.Cdc
 }
 
 // "GetBlock" returns the block from the tendermint node at a certain height
