@@ -16,11 +16,11 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 ## Resources
 
-[Pocket Core CLI Spec](specs/cli/)
+[Pocket Core CLI Spec](doc/specs/cli)
 
-[Pocket Core RPC Spec](specs/rpc-spec.md)
+[Pocket Core RPC Spec](doc/specs/rpc-spec.yaml)
 
-[Pocket Core Architecture](specs/architecture.md)
+[Pocket Core Architecture](doc/specs/architecture.md) 
 
 [Protocol Forum](https://forum.pokt.network/)
 
