@@ -718,6 +718,29 @@ paths:
                 $ref: '#/components/schemas/QueryNodeClaimsResponse'
         '400':
           description: Failed to retrieve the node proof information
+  /query/signinginfo:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: 'Returns the list of the Tendermint Validator signing information for nodes. No address = all signing infos in the state'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryPaginatedHeightAndAddrParams'
+            example:
+              address: '0xA5DE6D4184016708c1040c355F1c958192276DB5'
+              height: 2
+              page: 1
+              per_page: 1
+        required: true
+      responses:
+        '200':
+          description: Signing Info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuerySigningInfoResponse'
   /query/node:
     post:
       tags:
@@ -1756,6 +1779,34 @@ components:
           $ref: '#/components/schemas/SessionHeader'
         merkle_root:
           $ref: '#/components/schemas/HashSum'
+
+    SigningInfo:
+      type: object
+      properties:
+        address:
+          type: string
+          format: hex
+          description: operator address of the signing info
+        index_offset:
+          type: integer
+          format: int64
+          description: The counter for the signing info (reset to 0 after SignedBlocksWindow elapses)
+        jailed_blocks_counter:
+          type: integer
+          format: int64
+          description: The number of blocks jailed (reset to 0 after unjail)
+        jailed_until:
+          type: string
+          format: time.Time
+          description: The time the node can be unjailed
+        missed_blocks_counter:
+          type: integer
+          format: int64
+          description: The number of blocks missed within SignedBlocksWindow (can be decremented after the fact if new signature information/evidence is found)
+        start_height:
+          type: integer
+          format: int64
+          description: The origin height of the node (when it first joined the network)
     HashSum:
       type: object
       properties:
@@ -1951,6 +2002,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MsgClaim'
+        page:
+          type: integer
+          format: int64
+          description: current page
+        total_pages:
+          type: integer
+          format: int64
+          description: maximum amount of pages
+    QuerySigningInfoResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/SigningInfo'
         page:
           type: integer
           format: int64
