@@ -321,6 +321,19 @@ Arguments:
 * `<address>`: Target address.
 * `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
 
+### Node Signing Info
+
+```text
+pocket query signing-info <address> [<height>]
+```
+
+Returns the signing info of the node `<address>` at `<height>`.
+
+Arguments:
+
+* `<address>`: Target address.
+* `<height>`: The specified height of the block to be queried, defaults to `0` which brings the latest block known to this node.
+
 ### List of Relay Proofs Submitted by Node
 
 ```text
