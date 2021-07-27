@@ -194,5 +194,5 @@ func (cdc *Codec) IsAfterUpgrade(height int64) bool {
 	if cdc.upgradeOverride != -1 {
 		return cdc.upgradeOverride == 1
 	}
-	return UpgradeHeight <= height || height == -1
+	return UpgradeHeight < height || height == -1
 }
