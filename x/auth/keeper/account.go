@@ -111,7 +111,7 @@ func (k Keeper) GetAllAccountsExport(ctx sdk.Ctx) []exported.Account {
 		//not get empty coins accounts
 		if !acc.GetCoins().Empty() {
 			//sanity check here
-			if acc.GetAddress() != nil && acc.GetPubKey() != nil {
+			if acc.GetAddress() != nil {
 				accounts = append(accounts, acc)
 			}
 		}
