@@ -25,18 +25,24 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	// Iterate over all the validators which *should* have signed this block
 	// store whether or not they have actually signed it and slash/unstake any
 	// which have missed too many blocks in a row (downtime slashing)
+	signedBlocksWindow := k.SignedBlocksWindow(ctx)
+	minSignedPerWindow := k.MinSignedPerWindow(ctx)
+	downtimeJailDuration := k.DowntimeJailDuration(ctx)
+	slashFractionDowntime := k.SlashFractionDowntime(ctx)
+
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
-		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock)
+		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock, signedBlocksWindow, minSignedPerWindow, downtimeJailDuration, slashFractionDowntime)
 		// remove those who are part of the tendermint validator set (jailed validators will never be a part of the set)
 	}
 	// Iterate through any newly discovered evidence of infraction
 	// slash any validators (and since-unstaked stake within the unstaking period)
 	// who contributed to valid infractions
+	maxEvidenceAgeMin := int(k.GetParams(ctx).MaxEvidenceAge.Minutes())
 	for _, evidence := range req.ByzantineValidators {
 		switch evidence.Type {
 		case tmtypes.ABCIEvidenceTypeDuplicateVote:
 			if ctx.IsAfterUpgradeHeight() {
-				evidenceAgeInBlocks := int(k.GetParams(ctx).MaxEvidenceAge.Minutes()) / 15
+				evidenceAgeInBlocks := maxEvidenceAgeMin / 15
 				if evidenceAgeInBlocks == 0 {
 					// minimum of 1 block ago
 					evidenceAgeInBlocks = 1

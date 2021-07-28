@@ -24,7 +24,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 	if ctx.BlockHeight()%k.BlocksPerSession(ctx) == 0 { // one block before new session (mod 1 would be session block)
 		k.ReleaseWaitingValidators(ctx)
 	}
-	maxValidators := k.GetParams(ctx).MaxValidators
+	maxValidators := k.MaxValidators(ctx)
 	totalPower := sdk.ZeroInt()
 	// Retrieve the prevState validator set addresses mapped to their respective staking power
 	prevStatePowerMap := k.getPrevStatePowerMap(ctx)
@@ -65,7 +65,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		}
 		// if not found or the power has changed -> add this validator to the updated list
 		if !found || !bytes.Equal(prevStatePowerBytes, curStatePowerBytes) {
-			ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
+			ctx.Logger().Debug(fmt.Sprintf("Updating Validator-Set to Tendermint: %s power changed to %d", validator.Address, validator.ConsensusPower()))
 			updates = append(updates, validator.ABCIValidatorUpdate())
 			// update the previous state as this will soon be the previous state
 			k.SetPrevStateValPower(ctx, valAddr, curStatePower)
@@ -89,7 +89,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		// delete from the stake validator index
 		k.DeletePrevStateValPower(ctx, validator.GetAddress())
 		// add to one of the updates for tendermint
-		ctx.Logger().Info(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked, at height %d", validator.Address, ctx.BlockHeight()))
+		ctx.Logger().Debug(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked, at height %d", validator.Address, ctx.BlockHeight()))
 		updates = append(updates, validator.ABCIValidatorUpdate())
 		// if validator was force unstaked, delete the validator from the all validators store
 		if validator.IsUnstaked() {
@@ -427,7 +427,7 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	validator.Jailed = true
 	k.SetValidator(ctx, validator)
 	logger := k.Logger(ctx)
-	logger.Info(fmt.Sprintf("validator %s jailed", addr))
+	logger.Debug(fmt.Sprintf("validator %s jailed", addr))
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeJail,

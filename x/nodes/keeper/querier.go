@@ -63,7 +63,7 @@ func queryValidators(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 	validators := k.GetAllValidatorsWithOpts(ctx, params)
-	validatorsPage := paginate(params.Page, params.Limit, validators, int(k.GetParams(ctx).MaxValidators))
+	validatorsPage := paginate(params.Page, params.Limit, validators, int(k.MaxValidators(ctx)))
 	res, err := codec.MarshalJSONIndent(types.ModuleCdc, validatorsPage)
 	if err != nil {
 		return nil, sdk.ErrInternal(sdk.AppendMsgToErr("failed to JSON marshal result: %s", err.Error()))

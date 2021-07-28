@@ -244,7 +244,7 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.ProtoMsg, n client.Client, key c
 	}
 	// check the fee amount
 	fee := k.authKeeper.GetFee(ctx, msg)
-	if account.GetCoins().AmountOf(k.posKeeper.StakeDenom(ctx)).LTE(fee) {
+	if account.GetCoins().AmountOf(k.posKeeper.StakeDenom(ctx)).LT(fee) {
 		return txBuilder, cliCtx, fmt.Errorf("insufficient funds for the auto %s transaction: the fee needed is %v ", msg.Type(), fee)
 	}
 	// ensure that the tx builder has the correct tx encoder, chainID, fee

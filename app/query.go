@@ -129,7 +129,7 @@ func (app PocketCoreApp) QueryNodes(height int64, opts nodesTypes.QueryValidator
 	}
 	opts.Page, opts.Limit = checkPagination(opts.Page, opts.Limit)
 	nodes := app.nodesKeeper.GetAllValidatorsWithOpts(ctx, opts)
-	return paginate(opts.Page, opts.Limit, nodes, int(app.nodesKeeper.GetParams(ctx).MaxValidators))
+	return paginate(opts.Page, opts.Limit, nodes, int(app.nodesKeeper.MaxValidators(ctx)))
 }
 
 func (app PocketCoreApp) QueryNode(addr string, height int64) (res nodesTypes.Validator, err error) {
