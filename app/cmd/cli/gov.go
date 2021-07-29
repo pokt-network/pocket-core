@@ -36,11 +36,11 @@ func init() {
 }
 
 var govDAOTransfer = &cobra.Command{
-	Use:   "transfer <amount> <fromAddr> <toAddr> <networkID> <fees> [<legacyCodec=(true | false)>]",
+	Use:   "transfer <amount> <fromAddr> <toAddr> <networkID> <fees>",
 	Short: "Transfer from DAO",
 	Long: `If authorized, move funds from the DAO.
 Actions: [burn, transfer]`,
-	Args: cobra.MinimumNArgs(5),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		toAddr := args[2]
@@ -55,18 +55,9 @@ Actions: [burn, transfer]`,
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 5 {
-			legacyCodec = true
-		} else {
-			legacy := args[5]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials(pwd)
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[3], int64(fees), legacyCodec)
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_transfer", args[3], int64(fees), false)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -86,11 +77,11 @@ Actions: [burn, transfer]`,
 }
 
 var govDAOBurn = &cobra.Command{
-	Use:   "burn <amount> <fromAddr> <toAddr> <networkID> <fees> [<legacyCodec=(true | false)>]",
+	Use:   "burn <amount> <fromAddr> <toAddr> <networkID> <fees>",
 	Short: "Burn from DAO",
 	Long: `If authorized, burn funds from the DAO.
 Actions: [burn, transfer]`,
-	Args: cobra.MinimumNArgs(5),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		var toAddr string
@@ -108,18 +99,9 @@ Actions: [burn, transfer]`,
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 5 {
-			legacyCodec = true
-		} else {
-			legacy := args[5]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
 		fmt.Println("Enter Password: ")
 		pass := app.Credentials(pwd)
-		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[3], int64(fees), legacyCodec)
+		res, err := DAOTx(fromAddr, toAddr, pass, types.NewInt(int64(amount)), "dao_burn", args[3], int64(fees), false)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -138,11 +120,11 @@ Actions: [burn, transfer]`,
 	},
 }
 var govChangeParam = &cobra.Command{
-	Use:   "change_param <fromAddr> <networkID> <paramKey module/param> <paramValue (jsonObj)> <fees> [<legacyCodec=(true | false)>]",
+	Use:   "change_param <fromAddr> <networkID> <paramKey module/param> <paramValue (jsonObj)> <fees>",
 	Short: "Edit a param in the network",
 	Long: `If authorized, submit a tx to change any param from any module.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.MinimumNArgs(5),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fmt.Println("Enter Password: ")
@@ -151,16 +133,8 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 5 {
-			legacyCodec = true
-		} else {
-			legacy := args[5]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
-		res, err := ChangeParam(args[0], args[2], []byte(args[3]), app.Credentials(pwd), args[1], int64(fees), legacyCodec)
+
+		res, err := ChangeParam(args[0], args[2], []byte(args[3]), app.Credentials(pwd), args[1], int64(fees), false)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -180,11 +154,11 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var govUpgrade = &cobra.Command{
-	Use:   "upgrade <fromAddr> <atHeight> <version> <networkID> <fees> [<legacyCodec=(true | false)>]",
+	Use:   "upgrade <fromAddr> <atHeight> <version> <networkID> <fees>",
 	Short: "Upgrade the protocol",
 	Long: `If authorized, upgrade the protocol.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.MinimumNArgs(5),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		i, err := strconv.Atoi(args[1])
@@ -200,17 +174,9 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 5 {
-			legacyCodec = true
-		} else {
-			legacy := args[5]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
+
 		fmt.Println("Enter Password: ")
-		res, err := Upgrade(args[0], u, app.Credentials(pwd), args[3], int64(fees), legacyCodec)
+		res, err := Upgrade(args[0], u, app.Credentials(pwd), args[3], int64(fees), false)
 		if err != nil {
 			fmt.Println(err)
 			return

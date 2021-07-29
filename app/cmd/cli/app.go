@@ -36,14 +36,14 @@ func init() {
 }
 
 var appStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <relayChainIDs> <networkID> <fee> [<legacyCodec=(true | false)>]",
+	Use:   "stake <fromAddr> <amount> <relayChainIDs> <networkID> <fee> ",
 	Short: "Stake an app into the network",
 	Long: `Stake the app into the network, giving it network throughput for the selected chains.
 Will prompt the user for the <fromAddr> account passphrase. After the 0.6.X upgrade, if the app is already staked, this transaction acts as an *update* transaction.
 A app can updated relayChainIDs, and raise the stake/max_relays amount with this transaction.
 If the app is currently staked at X and you submit an update with new stake Y. Only Y-X will be subtracted from an account
 If no changes are desired for the parameter, just enter the current param value just as before`,
-	Args: cobra.MinimumNArgs(5),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fromAddr := args[0]
@@ -61,19 +61,10 @@ If no changes are desired for the parameter, just enter the current param value 
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 5 {
-			legacyCodec = true
-		} else {
-			legacy := args[5]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
 		rawChains := reg.ReplaceAllString(args[2], "")
 		chains := strings.Split(rawChains, ",")
 		fmt.Println("Enter passphrase: ")
-		res, err := StakeApp(chains, fromAddr, app.Credentials(pwd), args[3], types.NewInt(int64(amount)), int64(fee), legacyCodec)
+		res, err := StakeApp(chains, fromAddr, app.Credentials(pwd), args[3], types.NewInt(int64(amount)), int64(fee), false)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -93,11 +84,11 @@ If no changes are desired for the parameter, just enter the current param value 
 }
 
 var appUnstakeCmd = &cobra.Command{
-	Use:   "unstake <fromAddr> <networkID> <fee> [<legacyCodec(true | false)>]",
+	Use:   "unstake <fromAddr> <networkID> <fee>",
 	Short: "Unstake an app from the network",
 	Long: `Unstake an app from the network, changing it's status to Unstaking.
 Prompts the user for the <fromAddr> account passphrase.`,
-	Args: cobra.MinimumNArgs(3),
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fee, err := strconv.Atoi(args[2])
@@ -105,17 +96,8 @@ Prompts the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 3 {
-			legacyCodec = true
-		} else {
-			legacy := args[3]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
 		fmt.Println("Enter Password: ")
-		res, err := UnstakeApp(args[0], app.Credentials(pwd), args[1], int64(fee), legacyCodec)
+		res, err := UnstakeApp(args[0], app.Credentials(pwd), args[1], int64(fee), false)
 		if err != nil {
 			fmt.Println(err)
 			return

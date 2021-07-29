@@ -34,14 +34,14 @@ func init() {
 }
 
 var nodeStakeCmd = &cobra.Command{
-	Use:   "stake <fromAddr> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> [<legacyCodec=(true | false)>]",
+	Use:   "stake <fromAddr> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee>",
 	Short: "Stake a node in the network",
 	Long: `Stake the node into the network, making it available for service.
 Will prompt the user for the <fromAddr> account passphrase. After the 0.6.X upgrade, if the node is already staked, this transaction acts as an *update* transaction.
 A node can updated relayChainIDs, serviceURI, and raise the stake amount with this transaction.
 If the node is currently staked at X and you submit an update with new stake Y. Only Y-X will be subtracted from an account
 If no changes are desired for the parameter, just enter the current param value just as before`,
-	Args: cobra.MinimumNArgs(6),
+	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fromAddr := args[0]
@@ -62,17 +62,8 @@ If no changes are desired for the parameter, just enter the current param value 
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 6 {
-			legacyCodec = true
-		} else {
-			legacy := args[6]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
 		fmt.Println("Enter Passphrase: ")
-		res, err := StakeNode(chains, serviceURI, fromAddr, app.Credentials(pwd), args[4], types.NewInt(int64(amount)), int64(fee), legacyCodec)
+		res, err := StakeNode(chains, serviceURI, fromAddr, app.Credentials(pwd), args[4], types.NewInt(int64(amount)), int64(fee), false)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -92,11 +83,11 @@ If no changes are desired for the parameter, just enter the current param value 
 }
 
 var nodeUnstakeCmd = &cobra.Command{
-	Use:   "unstake <fromAddr> <networkID> <fee> [<legacyCodec=(true | false)>]",
+	Use:   "unstake <fromAddr> <networkID> <fee>",
 	Short: "Unstake a node in the network",
 	Long: `Unstake a node from the network, changing it's status to Unstaking.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.MinimumNArgs(3),
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fee, err := strconv.Atoi(args[2])
@@ -104,17 +95,8 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 3 {
-			legacyCodec = true
-		} else {
-			legacy := args[3]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
 		fmt.Println("Enter Password: ")
-		res, err := UnstakeNode(args[0], app.Credentials(pwd), args[1], int64(fee), legacyCodec)
+		res, err := UnstakeNode(args[0], app.Credentials(pwd), args[1], int64(fee), false)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -134,11 +116,11 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 }
 
 var nodeUnjailCmd = &cobra.Command{
-	Use:   "unjail <fromAddr> <networkID> <fee> [<legacyCodec=(true | false)>]",
+	Use:   "unjail <fromAddr> <networkID> <fee>",
 	Short: "Unjails a node in the network",
 	Long: `Unjails a node from the network, allowing it to participate in service and consensus again.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.MinimumNArgs(3),
+	Args: cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fee, err := strconv.Atoi(args[2])
@@ -146,17 +128,8 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
-		var legacyCodec bool
-		if len(args) == 3 {
-			legacyCodec = true
-		} else {
-			legacy := args[3]
-			if legacy == "true" || legacy == "t" {
-				legacyCodec = true
-			}
-		}
 		fmt.Println("Enter Password: ")
-		res, err := UnjailNode(args[0], app.Credentials(pwd), args[1], int64(fee), legacyCodec)
+		res, err := UnjailNode(args[0], app.Credentials(pwd), args[1], int64(fee), false)
 		if err != nil {
 			fmt.Println(err)
 			return
