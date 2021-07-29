@@ -12,7 +12,7 @@ description: >-
 pocket accounts list
 ```
 
-Lists all the account addresses currently stored in the keybase. 
+Lists all the account addresses currently stored in the keybase.
 
 Example output:
 
@@ -230,7 +230,7 @@ Signature: 0x...
 ## Send Transaction
 
 ```text
-pocket accounts send-tx <fromAddr> <toAddr> <amount> <chainID> <fee> <memo> <legacyCodec=(true | false)>
+pocket accounts send-tx <fromAddr> <toAddr> <amount> <chainID> <fee> <memo>
 ```
 
 Sends `<amount>` uPOKT from `<fromAddr>` to `<toAddr>`. Prompts the user for `<fromAddr>` account passphrase.
@@ -243,7 +243,6 @@ Arguments:
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
 * `<memo>`: Written message.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 Example output:
 
@@ -284,51 +283,47 @@ Arguments:
 ## Build a Multi-sig Transaction
 
 ```text
-pocket accounts build-MS-Tx <signer-address> <json-message> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>
+pocket accounts build-MS-Tx <signer-address> <json-message> <hex-pubkeys> <chainID> <fee>
 ```
 
 Build and sign a multisignature transaction from scratch. Result is hex encoded std transaction object.
 
 Arguments:
 
-* `<signer-address>`: Address building & signing. 
+* `<signer-address>`: Address building & signing.
 * `<json-message>`: Message structure for the transaction.
 * `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 ## Sign a Multi-sig Transaction
 
 ```text
-pocket accounts sign-ms-tx <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>
+pocket accounts sign-ms-tx <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee>
 ```
 
 Sign a multisignature transaction using public keys, and the transaction object out of order. Result is hex encoded standard transaction object.
 
 Arguments:
 
-* `<signer-address>`: Address building & signing. 
+* `<signer-address>`: Address building & signing.
 * `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
 * `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 ## Sign a Multi-sig Transaction as the Next Signer
 
 ```text
-pocket accounts sign-ms-next <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee> <legacyCodec=(true|false)>
+pocket accounts sign-ms-next <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee>
 ```
 
 Sign a multisignature transaction object, result is hex encoded standard transaction object. _**WARNING: signer address MUST be the next signer \(in order of public keys in the multisignature\) or the signature will be invalid.**_
 
-Arguments: 
+Arguments:
 
-* `<signer-address>`: Address building & signing. 
+* `<signer-address>`: Address building & signing.
 * `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
 * `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
-

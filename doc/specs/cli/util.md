@@ -16,12 +16,12 @@ Example output:
 
 ```text
 Enter the ID of the network identifier:
-0001 
-Enter the URL of the network identifier: 
+0001
+Enter the URL of the network identifier:
 https://ethnode.test.com:8085
 Would you like to enter another network identifier? (y/n)
-n 
-chains.json contains: 
+n
+chains.json contains:
 
 0001 @ https://ethnode.test.com:8085
 If incorrect: please remove the chains.json with the delete-chains command
@@ -117,7 +117,7 @@ pocket util update-configs
 
 Update the config file with new params defaults for consensus / leveldbopts / p2p / cache / mempool / fastsync.
 
-Example Output: 
+Example Output:
 
 ```text
 Successfuly updated config file.

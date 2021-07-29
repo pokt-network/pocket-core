@@ -7,10 +7,10 @@ description: Functions for Application management.
 ## Stake an App / Update Stake
 
 ```text
-pocket app stake <fromAddr> <amount> <relayChainIDs> <chainID> <fee> <legacyCodec=(true | false)>
+pocket app stake <fromAddr> <amount> <relayChainIDs> <chainID> <fee>
 ```
 
-Stakes the Application into the network, making it available to receive service. Prompts the user for the `<fromAddr>` account passphrase. 
+Stakes the Application into the network, making it available to receive service. Prompts the user for the `<fromAddr>` account passphrase.
 
 After the 0.6.X upgrade, if the app is already staked, this transaction acts as an _update_ transaction. An app can update `<relayChainIDs>` and increase the stake `<amount>`. If the app is currently staked at `X` and you submit an update with new stake `Y`, only `Y-X` will be subtracted from an account. If no changes are desired for the parameter, just enter the current parameter value \(the same one you entered for your initial stake\).
 
@@ -21,7 +21,6 @@ Arguments:
 * `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 Example output:
 
@@ -32,7 +31,7 @@ Transaction submitted with hash: <Transaction Hash>
 ## Unstake an App
 
 ```text
-pocket app unstake <fromAddr> <chainID> <fee> <legacyCodec=(true | false)>
+pocket app unstake <fromAddr> <chainID> <fee>
 ```
 
 Unstakes an Application from the `<chainID>` network, changing its status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
@@ -42,7 +41,6 @@ Arguments:
 * `<fromAddr>`: The address of the sender.
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 Example output:
 
@@ -56,7 +54,7 @@ Transaction submitted with hash: <Transaction Hash>
 pocket app create-aat <appAddr> <clientPubKey>
 ```
 
-Creates a signed application authentication token \(version `0.0.1` of the AAT spec\), that can be embedded into application software for Relay servicing. Will prompt the user for the `<appAddr>` account passphrase. 
+Creates a signed application authentication token \(version `0.0.1` of the AAT spec\), that can be embedded into application software for Relay servicing. Will prompt the user for the `<appAddr>` account passphrase.
 
 Read the Application Authentication Token documentation here:
 

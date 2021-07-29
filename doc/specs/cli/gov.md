@@ -22,7 +22,6 @@ Arguments:
 * `<paramKey>`: Target parameter key to change in format module/param, e.g. `pos/ProposerPercentage`.
 * `<paramValue>`: New value for key.
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 Example output:
 
@@ -45,7 +44,6 @@ Arguments:
 * `<version>`: The target version the protocol will be upgraded to.
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 Example output:
 
@@ -56,7 +54,7 @@ Transaction submitted with hash: <Transaction Hash>
 ## Send DAO Funds
 
 ```text
-pocket gov transfer <amount> <fromAddr> <toAddr> <chainID> <fee> <legacyCodec=(true | false)>
+pocket gov transfer <amount> <fromAddr> <toAddr> <chainID> <fee>
 ```
 
 If authorized by the DAO, move funds from the DAO treasury account. Will prompt the user for the account passphrase.
@@ -68,7 +66,6 @@ Arguments:
 * `<fromAddr>`: Leave blank with " " \(because DAO treasury account is the fromAddr\).
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 Example output:
 
@@ -91,7 +88,6 @@ Arguments:
 * `<fromAddr>`: Leave blank with " " \(because DAO treasury account is the fromAddr\).
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
-* `<legacyCodec>`: Enable/Disable amino encoding for transaction.
 
 Example output:
 
