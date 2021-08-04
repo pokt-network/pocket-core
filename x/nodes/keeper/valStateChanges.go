@@ -414,7 +414,7 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		return
 	}
 	if validator.Jailed {
-		ctx.Logger().Error(fmt.Errorf("cannot jail already jailed validator, validator: %v a height: %d\n", validator, ctx.BlockHeight()).Error())
+		ctx.Logger().Debug(fmt.Errorf("cannot jail already jailed validator, validator: %v a height: %d\n", validator, ctx.BlockHeight()).Error())
 		return
 	}
 	if validator.IsUnstaked() {
