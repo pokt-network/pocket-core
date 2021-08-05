@@ -308,7 +308,7 @@ Pocket Core provides a configuration file found in `<datadir>/config/config.json
 * **"RootDir"**: The data directory of Tendermint's P2P config \(should be the same directory as Pocket Core's data dir\)
 * **"ListenAddress"**: The listening address Tendermint will use for peer connections.
 * **"ExternalAddress"**: Address to advertise to peers for them to dial. NOTE: If empty, will use the same port as the laddr
-* **"Seeds"**: The seed nodes used to connect to the network. Must be a comma-separated list in this format: &lt;ADDRESS&gt;@ \(Ex: 03b74fa3c68356bb40d58ecc10129479b159a145@seed1.mainnet.pokt.network:20656\). Click here to see a list of seed nodes on [Mainnet](https://docs.pokt.network/docs/mainnet-dispatcher-and-seed-list) or [Testnet](https://docs.pokt.network/docs/known-dispatcher-list)
+* **"Seeds"**: The seed nodes used to connect to the network. Must be a comma-separated list in this format: &lt;ADDRESS&gt;@ \(Ex: 03b74fa3c68356bb40d58ecc10129479b159a145@seed1.mainnet.pokt.network:20656\). Click [here](https://docs.pokt.network/home/resources/references/seeds) to see a list of seed nodes on Mainnet or Testnet
 * **"PersistentPeers"**: Comma separated list of nodes to keep persistent connections to. Must be a comma separated list in this format: &lt;ADDRESS&gt;@ \(Ex: 03b74fa3c68356bb40d58ecc10129479b159a145@seed1.mainnet.pokt.network:20656\)
 * **"UPNP"**: Enable or disable UPNP forwarding.
 * **"AddrBook"**: The path to the addrbook.json file local to the datadir \("config/addrbook.json"\)
