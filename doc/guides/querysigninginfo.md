@@ -1,6 +1,6 @@
 ## Feature Description:
 ### Query Node signing Info
-New on 0.6.4 is the cmd/rpc that enables easy querying for the signing information of the nodes.
+New cmd/rpc that enables easy querying for the signing information of the nodes.
 Some active and skillful node runners have already played with this, parsing the information available from the state (using the v1/query/state rpc call). Now on this release we are providing an easier way to query this useful information.
 
 
