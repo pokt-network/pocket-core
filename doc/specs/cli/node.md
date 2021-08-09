@@ -7,7 +7,7 @@ description: Functions for Node management.
 ## Stake a Node / Update Stake
 
 ```text
-pocket node stake <fromAddr> <amount> <relayChainIDs> <serviceURI> <chainID> <fee> <legacyCodec=(true | false)>
+pocket nodes stake <fromAddr> <amount> <relayChainIDs> <serviceURI> <chainID> <fee> <legacyCodec=(true | false)>
 ```
 
 Stakes the Node into the network, making it available for service. Prompts the user for the `<fromAddr>` account passphrase. 
@@ -33,7 +33,7 @@ Transaction submitted with hash: <Transaction Hash>
 ## Unstake a Node
 
 ```text
-pocket node unstake <fromAddr> <chainID> <fee> <legacyCodec=(true | false)>
+pocket nodes unstake <fromAddr> <chainID> <fee> <legacyCodec=(true | false)>
 ```
 
 Unstakes a Node from the `<chainID>` network, changing its status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
@@ -54,7 +54,7 @@ Transaction submitted with hash: <Transaction Hash>
 ## Unjail a Node
 
 ```text
-pocket node unjail <fromAddr> <chainID> <fee> <legacyCodec=(true | false)>
+pocket nodes unjail <fromAddr> <chainID> <fee> <legacyCodec=(true | false)>
 ```
 
 Unjails a Node from the `<chainID>` network, allowing it to participate in service and consensus again. Prompts the user for the `<fromAddr>` account passphrase.
