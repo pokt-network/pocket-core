@@ -67,7 +67,7 @@ Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go
 
 ## Documentation
 
-[Visit our developer portal](https://pocket-network.readme.io) for tutorials and technical documentation for the Pocket Network.
+[Visit our developer portal](https://docs.pokt.network) for tutorials and technical documentation for the Pocket Network.
 
 ## Running the tests
 
