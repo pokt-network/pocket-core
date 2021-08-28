@@ -213,8 +213,8 @@ func (ndb *nodeDB) DeleteVersionsFrom(version int64) error {
 	}
 
 	// Next, delete orphans:
-	// - Delete orphan entries *and referred nodes* with fromVersion >= version
-	// - Delete orphan entries with toVersion >= version-1 (since orphans at latest are not orphans)
+	// - Remove orphan entries *and referred nodes* with fromVersion >= version
+	// - Remove orphan entries with toVersion >= version-1 (since orphans at latest are not orphans)
 	ndb.traverseOrphans(func(key, hash []byte) {
 		var fromVersion, toVersion int64
 		orphanKeyFormat.Scan(key, &toVersion, &fromVersion)
@@ -301,7 +301,7 @@ func (ndb *nodeDB) deleteOrphans(version int64) {
 		// `toVersion` are always equal.
 		orphanKeyFormat.Scan(key, &toVersion, &fromVersion)
 
-		// Delete orphan key and reverse-lookup key.
+		// Remove orphan key and reverse-lookup key.
 		ndb.batch.Delete(key)
 
 		// If there is no predecessor, or the predecessor is earlier than the

@@ -140,7 +140,7 @@ var setValidator = &cobra.Command{
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
 	Use:   "delete <address>",
-	Short: "Delete an account",
+	Short: "Remove an account",
 	Long: `Deletes a keypair from the keybase.
 Will prompt the user for the account passphrase`,
 	Args: cobra.ExactArgs(1),
@@ -170,7 +170,7 @@ Will prompt the user for the account passphrase`,
 // unsafeDeleteCmd represents the unsafe delete command (no passphrase)
 var unsafeDeleteCmd = &cobra.Command{
 	Use:   "unsafe-delete <address>",
-	Short: "Delete an account without passphrase",
+	Short: "Remove an account without passphrase",
 	Long:  `Deletes a keypair from the keybase without passphrase verification`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

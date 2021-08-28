@@ -71,9 +71,10 @@ const (
 	DefaultGenesisType
 )
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, useCache bool) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+	GlobalConfig.PocketConfig.Cache = useCache
 	// init AuthToken
 	InitAuthToken()
 	// init the keyfiles
@@ -309,7 +310,7 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 		keys = MustGetKeybase()
 	}
 	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, baseapp.SetPruning(store.PruneNothing))
 	}
 	tmNode, app, err := NewClient(config(c), appCreatorFunc)
 	if err != nil {

@@ -134,7 +134,7 @@ func (cs *CacheStorage) SetWithoutLockAndSealCheck(key string, val CacheObject) 
 	cs.Cache.Add(key, val)
 }
 
-// "Delete" - Deletes the item from stores
+// "Remove" - Deletes the item from stores
 func (cs *CacheStorage) Delete(key []byte) {
 	cs.l.Lock()
 	defer cs.l.Unlock()
@@ -315,7 +315,7 @@ func SetEvidence(evidence Evidence) {
 	globalEvidenceCache.Set(key, evidence)
 }
 
-// "DeleteEvidence" - Delete the GOBEvidence from the stores
+// "DeleteEvidence" - Remove the GOBEvidence from the stores
 func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
 	// generate key for GOBEvidence
 	key, err := KeyForEvidence(header, evidenceType)

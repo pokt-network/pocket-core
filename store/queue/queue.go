@@ -56,7 +56,7 @@ func (m Queue) Peek(ptr interface{}) error {
 // Pop() returns the element at the front of the queue and removes it
 func (m Queue) Pop() {
 	top := m.getTop()
-	m.List.Delete(top)
+	m.List.Remove(top)
 	m.setTop(top + 1)
 }
 
@@ -83,7 +83,7 @@ func (m Queue) Flush(ptr interface{}, fn func() bool) {
 			// TODO: Handle with #870
 			panic(err)
 		}
-		m.List.Delete(i)
+		m.List.Remove(i)
 		if fn() {
 			break
 		}

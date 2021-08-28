@@ -49,8 +49,8 @@ var chainsGenCmd = &cobra.Command{
 
 var chainsDelCmd = &cobra.Command{
 	Use:   "delete-chains",
-	Short: "Delete chains file.",
-	Long:  `Delete the chains file for network identifiers.`,
+	Short: "Remove chains file.",
+	Long:  `Remove the chains file for network identifiers.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		app.DeleteHostedChains()
@@ -118,7 +118,7 @@ var exportGenesisForReset = &cobra.Command{
 			return
 		}
 		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db)
+		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db, false)
 		// initialize stores
 		blockStore, _, _, _, err := state.BlocksAndStateFromDB(&app.GlobalConfig.TendermintConfig, state.DefaultDBProvider)
 		if err != nil {
@@ -178,7 +178,7 @@ var unsafeRollbackCmd = &cobra.Command{
 			return
 		}
 		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketBaseApp(log.NewTMLogger(loggerFile), db)
+		a := app.NewPocketBaseApp(log.NewTMLogger(loggerFile), db, false)
 		// initialize stores
 		a.MountKVStores(a.Keys)
 		a.MountTransientStores(a.Tkeys)

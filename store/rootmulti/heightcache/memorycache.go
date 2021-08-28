@@ -41,11 +41,10 @@ func (m MemoryCache) Has(height int64, key []byte) (bool, error) {
 	return false, errors.New("not implemented")
 }
 
-func (m MemoryCache) Set(key []byte, value []byte) error {
-	return errors.New("not implemented")
+func (m MemoryCache) Set(key []byte, value []byte) {
 }
 
-func (m MemoryCache) Delete(height int64, key []byte) error {
+func (m MemoryCache) Remove(key []byte) error {
 	return errors.New("not implemented")
 }
 
@@ -57,7 +56,7 @@ func (m MemoryCache) ReverseIterator(height int64, start, end []byte) (types.Ite
 	return nil, errors.New("not implemented")
 }
 
-func (m MemoryCache) Commit(hash string, height int64) {
+func (m MemoryCache) Commit(height int64) {
 	panic("implement me")
 }
 
