@@ -15,6 +15,7 @@ import (
 	"github.com/pokt-network/pocket-core/store/dbadapter"
 	"github.com/pokt-network/pocket-core/store/errors"
 	"github.com/pokt-network/pocket-core/store/iavl"
+	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
 	"github.com/pokt-network/pocket-core/store/tracekv"
 	"github.com/pokt-network/pocket-core/store/transient"
 	"github.com/pokt-network/pocket-core/store/types"
@@ -30,6 +31,7 @@ const (
 // the CommitMultiStore interface.
 type Store struct {
 	DB           dbm.DB
+	Cache        types.MultiStoreCache
 	lastCommitID types.CommitID
 	pruningOpts  types.PruningOptions
 	storesParams map[types.StoreKey]storeParams
@@ -60,6 +62,7 @@ func (rs *Store) CopyStore() *types.Store {
 	}
 	s := types.Store(&Store{
 		DB:           rs.DB,
+		Cache:        rs.Cache,
 		lastCommitID: rs.lastCommitID,
 		pruningOpts:  rs.pruningOpts,
 		storesParams: newParams,
@@ -79,6 +82,7 @@ var _ types.Queryable = (*Store)(nil)
 func NewStore(db dbm.DB) *Store {
 	return &Store{
 		DB:           db,
+		Cache:        heightcache.NewMultiStoreInvalidCache(),
 		storesParams: make(map[types.StoreKey]storeParams),
 		stores:       make(map[types.StoreKey]types.CommitStore),
 		keysByName:   make(map[string]types.StoreKey),
@@ -249,7 +253,7 @@ func (rs *Store) LoadVersion(ver int64) error {
 	return nil
 }
 
-func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error)  {
+func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 	newStores := make(map[types.StoreKey]types.CommitStore)
 	for k, v := range rs.stores {
 		a, ok := (v).(*iavl.Store)
