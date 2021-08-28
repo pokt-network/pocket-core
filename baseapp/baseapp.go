@@ -119,13 +119,13 @@ var _ abci.Application = (*BaseApp)(nil)
 // configuration choices.
 //
 // NOTE: The db is used to store the version number for now.
-func NewBaseApp(name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecoder, cdc *codec.Codec, options ...func(*BaseApp)) *BaseApp {
+func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, txDecoder sdk.TxDecoder, cdc *codec.Codec, options ...func(*BaseApp)) *BaseApp {
 	app := &BaseApp{
 		logger:         logger,
 		name:           name,
 		db:             db,
 		cdc:            cdc,
-		cms:            store.NewCommitMultiStore(db),
+		cms:            store.NewCommitMultiStore(db, cache),
 		router:         NewRouter(),
 		queryRouter:    NewQueryRouter(),
 		txDecoder:      txDecoder,
@@ -779,18 +779,17 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		recipient = msg.GetRecipient()
 	}
 
-
 	return abci.ResponseDeliverTx{
-		Code:      uint32(result.Code),
-		Data:      result.Data,
-		Log:       result.Log,
-		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
-		Events:    result.Events.ToABCIEvents(),
-		Codespace: string(result.Codespace),
-		Signer:    signer,
-		Recipient:recipient,
-		MessageType:messageType,
+		Code:        uint32(result.Code),
+		Data:        result.Data,
+		Log:         result.Log,
+		GasWanted:   int64(result.GasWanted), // TODO: Should type accept unsigned ints?
+		GasUsed:     int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
+		Events:      result.Events.ToABCIEvents(),
+		Codespace:   string(result.Codespace),
+		Signer:      signer,
+		Recipient:   recipient,
+		MessageType: messageType,
 	}
 }
 

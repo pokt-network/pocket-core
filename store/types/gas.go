@@ -11,7 +11,7 @@ const (
 	GasWriteCostFlatDesc    = "WriteFlat"
 	GasReadCostFlatDesc     = "ReadFlat"
 	GasHasDesc              = "Has"
-	GasDeleteDesc           = "Delete"
+	GasDeleteDesc           = "Remove"
 )
 
 // Gas measured by the SDK

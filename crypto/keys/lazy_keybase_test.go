@@ -145,7 +145,7 @@ func Test_lazyKeybase_Delete(t *testing.T) {
 				t.Fatalf("Creation Failed")
 			}
 			if err := lkb.Delete(wkp.GetAddress(), "ENCRYPTIONPASSPHRASE"); (err != nil) != tt.wantErr {
-				t.Fatalf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Fatalf("Remove() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -669,7 +669,7 @@ func Test_lazyKeybase_Update(t *testing.T) {
 			}
 
 			if err := lkb.Delete(wkb.GetAddress(), tt.args.newpass); (err != nil) != tt.wantErr {
-				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Remove() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 		})

@@ -18,11 +18,10 @@ func (i InvalidCache) Has(height int64, key []byte) (bool, error) {
 	return false, errors.New("invalid cache cannot get")
 }
 
-func (i InvalidCache) Set(key []byte, value []byte) error {
-	return errors.New("invalid cache cannot set")
+func (i InvalidCache) Set(key []byte, value []byte) {
 }
 
-func (i InvalidCache) Delete(height int64, key []byte) error {
+func (i InvalidCache) Remove(key []byte) error {
 	return errors.New("invalid cache cannot delete")
 }
 
@@ -34,7 +33,7 @@ func (i InvalidCache) ReverseIterator(height int64, start, end []byte) (types.It
 	return nil, errors.New("invalid cache has no iterators")
 }
 
-func (i InvalidCache) Commit(hash string, height int64) {
+func (i InvalidCache) Commit(height int64) {
 }
 
 func (i InvalidCache) Initialize(currentData map[string]string, version int64) {

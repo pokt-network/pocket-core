@@ -24,7 +24,7 @@ type TestStruct struct {
 
 func defaultComponents(key sdk.StoreKey) (sdk.Context, *codec.Codec) {
 	db := dbm.NewMemDB()
-	cms := rootmulti.NewStore(db)
+	cms := rootmulti.NewStore(db, false)
 	cms.MountStoreWithDB(key, sdk.StoreTypeIAVL, db)
 	_ = cms.LoadLatestVersion()
 	ctx := sdk.NewContext(cms, abci.Header{}, false, log.NewNopLogger())

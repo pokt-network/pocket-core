@@ -24,6 +24,7 @@ var (
 	mainnet         bool
 	testnet         bool
 	profileApp      bool
+	useCache        bool
 )
 
 var CLIVersion = app.AppVersion
@@ -54,6 +55,7 @@ func init() {
 	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
 	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
 	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
+	startCmd.Flags().BoolVar(&useCache, "useCache", false, "use cache")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
@@ -88,7 +90,7 @@ func start(cmd *cobra.Command, args []string) {
 	if testnet {
 		genesisType = app.TestnetGenesisType
 	}
-	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType)
+	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache)
 	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp)
 	// trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)

@@ -22,7 +22,7 @@ const (
 )
 
 // LoadStore loads the iavl store
-func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool) (types.CommitStore, error) {
+func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool, cache types.SingleStoreCache) (types.CommitStore, error) {
 	var err error
 
 	tree, err := NewMutableTree(db, defaultIAVLCacheSize)
@@ -40,7 +40,7 @@ func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyL
 		return nil, err
 	}
 
-	iavl := UnsafeNewStore(tree, int64(0), int64(0))
+	iavl := UnsafeNewStore(tree, int64(0), int64(0), cache)
 	iavl.SetPruning(pruning)
 
 	return iavl, nil
@@ -67,15 +67,18 @@ type Store struct {
 	// By default this value should be set the same across all nodes,
 	// so that nodes can know the waypoints their peers store.
 	storeEvery int64
+
+	cache types.SingleStoreCache
 }
 
 // CONTRACT: tree should be fully loaded.
 // nolint: unparam
-func UnsafeNewStore(tree *MutableTree, numRecent int64, storeEvery int64) *Store {
+func UnsafeNewStore(tree *MutableTree, numRecent int64, storeEvery int64, cache types.SingleStoreCache) *Store {
 	st := &Store{
 		tree:       tree,
 		numRecent:  numRecent,
 		storeEvery: storeEvery,
+		cache:      cache,
 	}
 	return st
 }
@@ -85,7 +88,7 @@ func UnsafeNewStore(tree *MutableTree, numRecent int64, storeEvery int64) *Store
 // be used for querying and iteration only. If the version does not exist or has
 // been pruned, an error will be returned. Any mutable operations executed will
 // result in a panic.
-func (st *Store) LazyLoadStore(version int64) (*Store, error) {
+func (st *Store) LazyLoadStore(version int64, cache types.SingleStoreCache) (*Store, error) {
 	a, ok := st.tree.(*MutableTree)
 	if !ok {
 		return nil, fmt.Errorf("not immutable tree in LazyLoadStore")
@@ -95,7 +98,7 @@ func (st *Store) LazyLoadStore(version int64) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	iavl := UnsafeNewStore(tree, int64(0), int64(0))
+	iavl := UnsafeNewStore(tree, int64(0), int64(0), cache)
 	return iavl, nil
 }
 
@@ -115,6 +118,7 @@ func (st *Store) Rollback(version int64) error {
 func (st *Store) Commit() types.CommitID {
 	// Save a new version.
 	hash, version, err := st.tree.SaveVersion()
+	st.cache.Commit(version)
 	if err != nil {
 		// TODO: Do we want to extend Commit to allow returning errors?
 		panic(err)
@@ -176,23 +180,31 @@ func (st *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.Ca
 func (st *Store) Set(key, value []byte) error {
 	types.AssertValidValue(value)
 	st.tree.Set(key, value)
+	st.cache.Set(key, value)
 	return nil
 }
 
 // Implements types.KVStore.
 func (st *Store) Get(key []byte) (value []byte, err error) {
+	if val, err := st.cache.Get(st.tree.Version(), key); err == nil {
+		return val, nil
+	}
 	_, v := st.tree.Get(key)
 	return v, nil
 }
 
 // Implements types.KVStore.
 func (st *Store) Has(key []byte) (exists bool, err error) {
+	if val, err := st.cache.Has(st.tree.Version(), key); err == nil {
+		return val, nil
+	}
 	return st.tree.Has(key), nil
 }
 
 // Implements types.KVStore.
 func (st *Store) Delete(key []byte) error {
 	st.tree.Remove(key)
+	st.cache.Remove(key)
 	return nil
 }
 
@@ -206,7 +218,9 @@ func (st *Store) Iterator(start, end []byte) (types.Iterator, error) {
 	case *MutableTree:
 		iTree = tree.ImmutableTree
 	}
-
+	if val, err := st.cache.Iterator(iTree.version, start, end); err == nil {
+		return val, nil
+	}
 	return newIAVLIterator(iTree, start, end, true), nil
 }
 
@@ -219,6 +233,9 @@ func (st *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
 		iTree = tree.ImmutableTree
 	case *MutableTree:
 		iTree = tree.ImmutableTree
+	}
+	if val, err := st.cache.ReverseIterator(iTree.version, start, end); err == nil {
+		return val, nil
 	}
 
 	return newIAVLIterator(iTree, start, end, false), nil
@@ -258,7 +275,7 @@ func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
 	res.Height = getHeight(tree, req)
 
 	switch req.Path {
-	case "/key":        // get by key
+	case "/key": // get by key
 		key := req.Data // data holds the key bytes
 
 		res.Key = key

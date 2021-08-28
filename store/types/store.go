@@ -286,11 +286,11 @@ type TraceContext map[string]interface{}
 type SingleStoreCache interface {
 	Get(height int64, key []byte) ([]byte, error)
 	Has(height int64, key []byte) (bool, error)
-	Set(key []byte, value []byte) error
-	Delete(height int64, key []byte) error
+	Set(key []byte, value []byte)
+	Remove(key []byte) error
 	Iterator(height int64, start, end []byte) (Iterator, error)
 	ReverseIterator(height int64, start, end []byte) (Iterator, error)
-	Commit(hash string, height int64)
+	Commit(height int64)
 	Initialize(currentData map[string]string, version int64)
 }
 

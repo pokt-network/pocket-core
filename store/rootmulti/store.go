@@ -78,11 +78,17 @@ func (rs *Store) CopyStore() *types.Store {
 var _ types.CommitMultiStore = (*Store)(nil)
 var _ types.Queryable = (*Store)(nil)
 
-// nolint
-func NewStore(db dbm.DB) *Store {
+func NewStore(db dbm.DB, cache bool) *Store {
+	var multiStoreCache types.MultiStoreCache
+	if cache {
+		multiStoreCache = heightcache.NewMultiStoreMemoryCache(25)
+	} else {
+		multiStoreCache = heightcache.NewMultiStoreInvalidCache()
+	}
+
 	return &Store{
 		DB:           db,
-		Cache:        heightcache.NewMultiStoreInvalidCache(),
+		Cache:        multiStoreCache,
 		storesParams: make(map[types.StoreKey]storeParams),
 		stores:       make(map[types.StoreKey]types.CommitStore),
 		keysByName:   make(map[string]types.StoreKey),
@@ -263,7 +269,7 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 			}
 			return nil, fmt.Errorf("cannot convert store into iavl store in get immutable")
 		}
-		s, err := a.LazyLoadStore(ver)
+		s, err := a.LazyLoadStore(ver, rs.Cache.GetSingleStoreCache(k))
 		if err != nil {
 			return nil, fmt.Errorf("error loading store: %s, in LoadLazyVersion: %s", k, err.Error())
 		}
@@ -388,7 +394,7 @@ func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStor
 		case types.StoreTypeIAVL:
 			// Attempt to lazy-load an already saved IAVL store version. If the
 			// version does not exist or is pruned, an error should be returned.
-			iavlStore, err := store.(*iavl.Store).LazyLoadStore(version)
+			iavlStore, err := store.(*iavl.Store).LazyLoadStore(version, rs.Cache.GetSingleStoreCache(key))
 			if err != nil {
 				return nil, err
 			}
@@ -532,7 +538,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		panic("recursive MultiStores not yet supported")
 
 	case types.StoreTypeIAVL:
-		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading)
+		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading, rs.Cache.GetSingleStoreCache(key))
 
 	case types.StoreTypeDB:
 		return commitDBStoreAdapter{dbadapter.Store{DB: db}}, nil

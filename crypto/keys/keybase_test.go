@@ -147,7 +147,7 @@ func TestArmoredExportImport(t *testing.T) {
 	_, err = cstore.ImportPrivKey(armoredKey, passphrase, passphrase)
 	require.Error(t, err)
 
-	// Delete the account, because otherwise it would error out
+	// Remove the account, because otherwise it would error out
 	err = cstore.Delete(kp.GetAddress(), passphrase)
 	require.NoError(t, err)
 
@@ -179,7 +179,7 @@ func TestRawExportImport(t *testing.T) {
 	_, err = cstore.ImportPrivateKeyObject(rawPk.(crypto.Ed25519PrivateKey), passphrase)
 	require.Error(t, err)
 
-	// Delete the account, because otherwise it would error out
+	// Remove the account, because otherwise it would error out
 	err = cstore.Delete(kp.GetAddress(), passphrase)
 	require.NoError(t, err)
 

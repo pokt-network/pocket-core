@@ -33,7 +33,7 @@ func setupTestInput() testInput {
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
 
-	ms := store.NewCommitMultiStore(db)
+	ms := store.NewCommitMultiStore(db, false)
 	ms.MountStoreWithDB(authCapKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
