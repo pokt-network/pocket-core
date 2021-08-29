@@ -75,22 +75,32 @@ func (m MemoryCache) Iterator(height int64, start, end []byte) (types.Iterator, 
 	if !m.isValid(height) {
 		return nil, errors.New("invalid height for iterator")
 	}
-	var dataset map[string]string
 	if height == m.current.height {
-		dataset = m.current.data
+		return NewMemoryHeightIterator(m.current.data, string(start), string(end), []string{}, true), nil
 	} else {
 		for _, v := range m.pastHeights {
 			if v.height == height {
-				dataset = v.data
-				return NewMemoryHeightIterator(dataset, string(start), string(end), v.orderedKeys), nil
+				return NewMemoryHeightIterator(v.data, string(start), string(end), v.orderedKeys, true), nil
 			}
 		}
 	}
-	return NewMemoryHeightIterator(dataset, string(start), string(end), []string{}), nil
+	return NewMemoryHeightIterator(map[string]string{}, string(start), string(end), []string{}, true), nil
 }
 
 func (m MemoryCache) ReverseIterator(height int64, start, end []byte) (types.Iterator, error) {
-	return nil, errors.New("not implemented")
+	if !m.isValid(height) {
+		return nil, errors.New("invalid height for iterator")
+	}
+	if height == m.current.height {
+		return NewMemoryHeightIterator(m.current.data, string(start), string(end), []string{}, false), nil
+	} else {
+		for _, v := range m.pastHeights {
+			if v.height == height {
+				return NewMemoryHeightIterator(v.data, string(start), string(end), v.orderedKeys, false), nil
+			}
+		}
+	}
+	return NewMemoryHeightIterator(map[string]string{}, string(start), string(end), []string{}, false), nil
 }
 
 func (m MemoryCache) Commit(height int64) {
