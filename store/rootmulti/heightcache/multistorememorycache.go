@@ -21,7 +21,7 @@ func NewMultiStoreMemoryCache(capacity int64) types.MultiStoreCache {
 
 func (m MultiStoreMemoryCache) InitializeSingleStoreCache(height int64, storeKey types.StoreKey) error {
 	if m.stores[storeKey] == nil {
-		m.stores[storeKey] = NewStoreMemoryCache(m.capacity)
+		m.stores[storeKey] = NewMemoryCache(m.capacity)
 	}
 	return m.stores[storeKey].InitializeStoreCache(height)
 }
