@@ -15,13 +15,19 @@ type MemoryHeightIterator struct {
 	endIdx     int
 	start      string
 	end        string
+	ascending  bool
 }
 
-func NewMemoryHeightIterator(dataset map[string]string, start string, end string, sortedKeys []string) *MemoryHeightIterator {
+func NewMemoryHeightIterator(dataset map[string]string, start string, end string, sortedKeys []string, ascending bool) *MemoryHeightIterator {
 	if start != "" || end != "" {
 		if start != "" && end != "" && start > end { // start has to be smaller than end!
 			return &MemoryHeightIterator{endIdx: -1, startIdx: 1}
 		}
+	}
+	if start > end {
+		tmp := start
+		start = end
+		end = tmp
 	}
 	if len(sortedKeys) == 0 {
 		sortedKeys = make([]string, 0, len(dataset))
@@ -46,7 +52,10 @@ func NewMemoryHeightIterator(dataset map[string]string, start string, end string
 			}
 		}
 	}
-
+	curIdx := startIdx
+	if !ascending {
+		curIdx = endIdx
+	}
 	// the start string, if not null, should be somewhere
 	// the end string, if not null, should be somewhere _after_ the start string
 	// curIdx is calculated to be just before the start string
@@ -55,11 +64,12 @@ func NewMemoryHeightIterator(dataset map[string]string, start string, end string
 	return &MemoryHeightIterator{
 		dataset:    dataset,
 		sortedKeys: sortedKeys,
-		curIdx:     startIdx,
+		curIdx:     curIdx,
 		startIdx:   startIdx,
 		endIdx:     endIdx,
 		start:      start,
 		end:        end,
+		ascending:  ascending,
 	}
 }
 
@@ -81,13 +91,18 @@ func (m *MemoryHeightIterator) Valid() bool {
 		return false // out of range!
 	}
 	return true
+
 }
 
 func (m *MemoryHeightIterator) Next() {
 	if !m.Valid() {
 		panic("Invalid Iterator.")
 	}
-	m.curIdx++
+	if m.ascending {
+		m.curIdx++
+	} else {
+		m.curIdx--
+	}
 }
 
 func (m *MemoryHeightIterator) Key() (key []byte) {
