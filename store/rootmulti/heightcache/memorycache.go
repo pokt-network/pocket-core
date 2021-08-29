@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/pokt-network/pocket-core/store/types"
 	"math"
+	"sort"
 )
 
 var _ types.SingleStoreCache = &MemoryCache{}
@@ -81,10 +82,11 @@ func (m MemoryCache) Iterator(height int64, start, end []byte) (types.Iterator, 
 		for _, v := range m.pastHeights {
 			if v.height == height {
 				dataset = v.data
+				return NewMemoryHeightIterator(dataset, string(start), string(end), v.orderedKeys), nil
 			}
 		}
 	}
-	return NewMemoryHeightIterator(dataset, string(start), string(end)), nil
+	return NewMemoryHeightIterator(dataset, string(start), string(end), []string{}), nil
 }
 
 func (m MemoryCache) ReverseIterator(height int64, start, end []byte) (types.Iterator, error) {
@@ -94,6 +96,7 @@ func (m MemoryCache) ReverseIterator(height int64, start, end []byte) (types.Ite
 func (m MemoryCache) Commit(height int64) {
 	lowestHeight := int64(math.MaxInt64)
 	lowestIdx := -1
+
 	for idx, v := range m.pastHeights {
 		if v.height < lowestHeight {
 			lowestHeight = v.height
@@ -104,9 +107,14 @@ func (m MemoryCache) Commit(height int64) {
 
 	m.pastHeights[lowestIdx].height = m.current.height
 	m.pastHeights[lowestIdx].data = map[string]string{}
+
+	orderedKeys := make([]string, len(m.current.data))
 	for k, v := range m.current.data {
 		m.pastHeights[lowestIdx].data[k] = v
+		orderedKeys = append(orderedKeys, k)
 	}
+	sort.Strings(orderedKeys)
+	m.pastHeights[lowestIdx].orderedKeys = orderedKeys
 }
 
 func (m MemoryCache) Initialize(currentData map[string]string, version int64) {

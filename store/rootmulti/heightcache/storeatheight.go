@@ -1,9 +1,9 @@
 package heightcache
 
 type StoreAtHeight struct {
-	height int64
-	hash   string
-	data   map[string]string
+	height      int64
+	data        map[string]string
+	orderedKeys []string
 }
 
 func NewStoreAtHeight() *StoreAtHeight {
