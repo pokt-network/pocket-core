@@ -17,17 +17,19 @@ type MemoryHeightIterator struct {
 	end        string
 }
 
-func NewMemoryHeightIterator(dataset map[string]string, start string, end string) *MemoryHeightIterator {
+func NewMemoryHeightIterator(dataset map[string]string, start string, end string, sortedKeys []string) *MemoryHeightIterator {
 	if start != "" || end != "" {
 		if start != "" && end != "" && start > end { // start has to be smaller than end!
 			return &MemoryHeightIterator{endIdx: -1, startIdx: 1}
 		}
 	}
-	sortedKeys := make([]string, 0, len(dataset))
-	for k, _ := range dataset {
-		sortedKeys = append(sortedKeys, k)
+	if len(sortedKeys) == 0 {
+		sortedKeys = make([]string, 0, len(dataset))
+		for k, _ := range dataset {
+			sortedKeys = append(sortedKeys, k)
+		}
+		sort.Strings(sortedKeys)
 	}
-	sort.Strings(sortedKeys)
 	startIdx := 0
 	if start != "" { // this is a risky assumption -- what's the diff between string([]bytes{}) and (string[]bytes(nil)) ? those are considered smallest and largest by iavl.
 		for ; startIdx < len(sortedKeys)-1; startIdx++ {
