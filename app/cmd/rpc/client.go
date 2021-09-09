@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -84,6 +85,39 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
+// UpdateChains
+func UpdateChains(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	value := r.URL.Query().Get("authtoken")
+	if value == app.AuthToken.Value {
+		var hostedChainsSlice []types.HostedBlockchain
+		if err := PopModel(w, r, ps, &hostedChainsSlice); err != nil {
+			WriteErrorResponse(w, 400, err.Error())
+			return
+		}
+		m := make(map[string]types.HostedBlockchain)
+		for _, chain := range hostedChainsSlice {
+			if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
+				WriteErrorResponse(w, 400, fmt.Sprintf("invalid ID: %s in network identifier in json", chain.ID))
+				return
+			}
+			m[chain.ID] = chain
+		}
+		result, err := app.PCA.SetHostedChains(m)
+		if err != nil {
+			WriteErrorResponse(w, 400, err.Error())
+		} else {
+			j, er := json.Marshal(result)
+			if er != nil {
+				WriteErrorResponse(w, 400, er.Error())
+				return
+			}
+			WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+		}
+	} else {
+		WriteErrorResponse(w, 401, "wrong authtoken "+value)
+	}
 }
 
 // Stop

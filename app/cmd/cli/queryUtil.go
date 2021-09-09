@@ -41,7 +41,8 @@ var (
 	GetSupplyPath,
 	GetAllParamsPath,
 	GetParamPath,
-	GetStopPath string
+	GetStopPath,
+	GetQueryChains string
 )
 
 func init() {
@@ -100,6 +101,8 @@ func init() {
 			GetParamPath = route.Path
 		case "Stop":
 			GetStopPath = route.Path
+		case "QueryChains":
+			GetQueryChains = route.Path
 		default:
 			continue
 		}
