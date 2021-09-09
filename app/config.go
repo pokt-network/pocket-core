@@ -501,7 +501,7 @@ func getTMClient() client.Client {
 func HotReloadChains(chains *types.HostedBlockchains) {
 	go func() {
 		for {
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Minute * 1)
 			// create the chains path
 			var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + sdk.ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
 			// if file exists open, else create and open
