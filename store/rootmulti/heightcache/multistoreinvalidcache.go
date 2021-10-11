@@ -17,5 +17,5 @@ func (m MultiStoreInvalidCache) InitializeSingleStoreCache(height int64, storeKe
 }
 
 func (m MultiStoreInvalidCache) GetSingleStoreCache(storekey types.StoreKey) types.SingleStoreCache {
-	return m.invalidCache
+	return &InvalidCache{}
 }
