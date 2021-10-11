@@ -3,6 +3,7 @@ package iavl
 import (
 	"fmt"
 	"io"
+	"log"
 	"sync"
 
 	"github.com/tendermint/tendermint/libs/kv"
@@ -52,7 +53,7 @@ func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyL
 		}
 
 		iavl.cache.Initialize(cacheDataset, iavl.tree.Version())
-		fmt.Println("Cache warmed.")
+		log.Println("Cache warmed.")
 	}
 	return iavl, nil
 }

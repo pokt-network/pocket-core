@@ -3,13 +3,13 @@ package rootmulti
 import (
 	"fmt"
 	sdk "github.com/pokt-network/pocket-core/types"
-	"io"
-	"strings"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	dbm "github.com/tendermint/tm-db"
+	"io"
+	"log"
+	"strings"
 
 	"github.com/pokt-network/pocket-core/store/cachemulti"
 	"github.com/pokt-network/pocket-core/store/dbadapter"
@@ -540,7 +540,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 	case types.StoreTypeIAVL:
 		cacheForStore := rs.Cache.GetSingleStoreCache(key)
 		if cacheForStore.IsValid() {
-			fmt.Printf("Warming up cache for %s\n", key.Name())
+			log.Printf("Warming up cache for %s\n", key.Name())
 		}
 		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading, cacheForStore)
 
