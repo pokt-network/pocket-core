@@ -31,7 +31,8 @@ Options:
 * `--keybase`: Run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions
 * `--mainnet`: Run with mainnet genesis
 * `--testnet`: Run with testnet genesis
-* `--profileApp`: bool exposes cpu & memory profiling"
+* `--profileApp`: bool exposes cpu & memory profiling
+* `--useCache`: If added, runs with a cache for the IAVL store, which trades increases RAM usage and reduces CPU usage in consensus operations.
 
 ## Stop Pocket Core
 
