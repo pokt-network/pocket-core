@@ -292,6 +292,7 @@ type SingleStoreCache interface {
 	ReverseIterator(height int64, start, end []byte) (Iterator, error)
 	Commit(height int64)
 	Initialize(currentData map[string]string, version int64)
+	IsValid() bool
 }
 
 type MultiStoreCache interface {

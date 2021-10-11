@@ -43,15 +43,17 @@ func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyL
 	iavl := UnsafeNewStore(tree, int64(0), int64(0), cache)
 	iavl.SetPruning(pruning)
 
-	cacheDatasetIterator, _ := iavl.Iterator(nil, nil)
-	cacheDataset := make(map[string]string, 10)
-	for cacheDatasetIterator.Valid() {
-		cacheDataset[string(cacheDatasetIterator.Key())] = string(cacheDatasetIterator.Value())
-		cacheDatasetIterator.Next()
+	if iavl.cache.IsValid() {
+		cacheDatasetIterator, _ := iavl.Iterator(nil, nil)
+		cacheDataset := make(map[string]string, 10)
+		for cacheDatasetIterator.Valid() {
+			cacheDataset[string(cacheDatasetIterator.Key())] = string(cacheDatasetIterator.Value())
+			cacheDatasetIterator.Next()
+		}
+
+		iavl.cache.Initialize(cacheDataset, iavl.tree.Version())
+		fmt.Println("Cache warmed.")
 	}
-
-	iavl.cache.Initialize(cacheDataset, iavl.tree.Version())
-
 	return iavl, nil
 }
 

@@ -131,3 +131,7 @@ func (m MemoryCache) Initialize(currentData map[string]string, version int64) {
 	m.current.data = currentData
 	m.current.height = version
 }
+
+func (m MemoryCache) IsValid() bool {
+	return true
+}

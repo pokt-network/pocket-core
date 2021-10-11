@@ -38,3 +38,7 @@ func (i InvalidCache) Commit(height int64) {
 
 func (i InvalidCache) Initialize(currentData map[string]string, version int64) {
 }
+
+func (i InvalidCache) IsValid() bool {
+	return false
+}

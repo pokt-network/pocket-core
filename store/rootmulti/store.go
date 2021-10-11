@@ -538,7 +538,11 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		panic("recursive MultiStores not yet supported")
 
 	case types.StoreTypeIAVL:
-		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading, rs.Cache.GetSingleStoreCache(key))
+		cacheForStore := rs.Cache.GetSingleStoreCache(key)
+		if cacheForStore.IsValid() {
+			fmt.Printf("Warming up cache for %s\n", key.Name())
+		}
+		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading, cacheForStore)
 
 	case types.StoreTypeDB:
 		return commitDBStoreAdapter{dbadapter.Store{DB: db}}, nil
