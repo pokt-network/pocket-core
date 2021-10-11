@@ -74,7 +74,7 @@ const (
 func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, useCache bool) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-	GlobalConfig.PocketConfig.Cache = GlobalConfig.PocketConfig.Cache || useCache
+	GlobalConfig.PocketConfig.Cache = useCache
 	// init AuthToken
 	InitAuthToken()
 	// init the keyfiles

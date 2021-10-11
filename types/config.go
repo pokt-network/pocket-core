@@ -42,7 +42,7 @@ type PocketConfig struct {
 	ABCILogging              bool   `json:"abci_logging"`
 	RelayErrors              bool   `json:"show_relay_errors"`
 	DisableTxEvents          bool   `json:"disable_tx_events"`
-	Cache                    bool   `json:"cache"`
+	Cache                    bool   `json:"-"`
 }
 
 type Config struct {
