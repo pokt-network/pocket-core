@@ -72,19 +72,14 @@ func (m MemoryCache) Remove(key []byte) error {
 }
 
 func (m MemoryCache) Iterator(height int64, start, end []byte) (types.Iterator, error) {
-	if !m.isValid(height) {
-		return nil, errors.New("invalid height for iterator")
-	}
-	if height == m.current.height {
-		return NewMemoryHeightIterator(m.current.data, string(start), string(end), []string{}, true), nil
-	} else {
+	if height != m.current.height && m.isValid(height) {
 		for _, v := range m.pastHeights {
 			if v.height == height {
 				return NewMemoryHeightIterator(v.data, string(start), string(end), v.orderedKeys, true), nil
 			}
 		}
 	}
-	return NewMemoryHeightIterator(map[string]string{}, string(start), string(end), []string{}, true), nil
+	return nil, errors.New("invalid height for iterator")
 }
 
 func (m MemoryCache) ReverseIterator(height int64, start, end []byte) (types.Iterator, error) {
