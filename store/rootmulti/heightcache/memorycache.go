@@ -35,8 +35,8 @@ func (m *MemoryCache) InitializeStoreCache(height int64) error {
 	return nil
 }
 
-func (m MemoryCache) isValid(height int64) bool {
-	if height > m.current.height-m.capacity {
+func (m MemoryCache) isHeightSafeToRead(height int64) bool {
+	if height != m.current.height && height > m.current.height-(1+m.capacity) {
 		for _, v := range m.pastHeights {
 			if v.height == height {
 				return true
@@ -48,7 +48,7 @@ func (m MemoryCache) isValid(height int64) bool {
 }
 
 func (m MemoryCache) Get(height int64, key []byte) ([]byte, error) {
-	if height != m.current.height && m.isValid(height) {
+	if m.isHeightSafeToRead(height) {
 		for i := range m.pastHeights {
 			if m.pastHeights[i].height == height {
 				return []byte(m.pastHeights[i].data[string(key)]), nil
@@ -72,7 +72,7 @@ func (m MemoryCache) Remove(key []byte) error {
 }
 
 func (m MemoryCache) Iterator(height int64, start, end []byte) (types.Iterator, error) {
-	if height != m.current.height && m.isValid(height) {
+	if m.isHeightSafeToRead(height) {
 		for _, v := range m.pastHeights {
 			if v.height == height {
 				return NewMemoryHeightIterator(v.data, string(start), string(end), v.orderedKeys, true), nil
@@ -83,19 +83,14 @@ func (m MemoryCache) Iterator(height int64, start, end []byte) (types.Iterator, 
 }
 
 func (m MemoryCache) ReverseIterator(height int64, start, end []byte) (types.Iterator, error) {
-	if !m.isValid(height) {
-		return nil, errors.New("invalid height for iterator")
-	}
-	if height == m.current.height {
-		return NewMemoryHeightIterator(m.current.data, string(start), string(end), []string{}, false), nil
-	} else {
+	if m.isHeightSafeToRead(height) {
 		for _, v := range m.pastHeights {
 			if v.height == height {
 				return NewMemoryHeightIterator(v.data, string(start), string(end), v.orderedKeys, false), nil
 			}
 		}
 	}
-	return NewMemoryHeightIterator(map[string]string{}, string(start), string(end), []string{}, false), nil
+	return nil, errors.New("invalid height for iterator")
 }
 
 func (m MemoryCache) Commit(height int64) {
