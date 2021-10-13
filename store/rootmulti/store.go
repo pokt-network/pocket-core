@@ -78,10 +78,12 @@ func (rs *Store) CopyStore() *types.Store {
 var _ types.CommitMultiStore = (*Store)(nil)
 var _ types.Queryable = (*Store)(nil)
 
+const MemoryCacheCapacity = 26
+
 func NewStore(db dbm.DB, cache bool) *Store {
 	var multiStoreCache types.MultiStoreCache
 	if cache {
-		multiStoreCache = heightcache.NewMultiStoreMemoryCache(25)
+		multiStoreCache = heightcache.NewMultiStoreMemoryCache(MemoryCacheCapacity)
 	} else {
 		multiStoreCache = heightcache.NewMultiStoreInvalidCache()
 	}
