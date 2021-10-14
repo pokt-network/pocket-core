@@ -2,10 +2,13 @@ package types
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/tendermint/tendermint/config"
 	"log"
+	"path/filepath"
 	"sync"
+	"syscall"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	db "github.com/tendermint/tm-db"
@@ -46,6 +49,10 @@ func (cs *CacheStorage) Init(dir, name string, options config.LevelDBOptions, ma
 	var err error
 	cs.DB, err = sdk.NewLevelDB(name, dir, options.ToGoLevelDBOpts())
 	if err != nil {
+		if err == syscall.EWOULDBLOCK {
+			message := fmt.Sprintf("can't open files needed for execution. Another instance may be running. path: %s\n", filepath.Join(dir, name+".db"))
+			panic(errors.New(message))
+		}
 		panic(err)
 	}
 }
