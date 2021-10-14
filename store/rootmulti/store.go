@@ -299,6 +299,7 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 		lazyLoading:  rs.lazyLoading,
 		traceWriter:  rs.traceWriter,
 		traceContext: newTraceCtx,
+		Cache:        rs.Cache,
 	})
 	return &s, nil
 }
