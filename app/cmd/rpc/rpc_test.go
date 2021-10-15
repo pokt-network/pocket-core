@@ -1163,6 +1163,7 @@ func TestRPC_QueryNodeClaim(t *testing.T) {
 }
 
 func TestRPC_Challenge(t *testing.T) {
+	types.VbCCache = types.NewCache(1)
 	codec.UpgradeHeight = 7000
 	kb := getInMemoryKeybase()
 	genBZ, keys, _, app := fiveValidatorsOneAppGenesis()

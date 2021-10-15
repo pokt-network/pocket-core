@@ -78,6 +78,7 @@ func makeTestCodec() *codec.Codec {
 
 // : deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper, map[string]*sdk.KVStoreKey, keys.Keybase) {
+	sdk.VbCCache = sdk.NewCache(1)
 	initPower := int64(100000000000)
 	nAccs := int64(5)
 	kb := NewTestKeybase()
@@ -181,11 +182,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	defaultPocketParams := types.DefaultParams()
 	defaultPocketParams.SupportedBlockchains = []string{getTestSupportedBlockchain()}
 	keeper.SetParams(ctx, defaultPocketParams)
-	logger := log.NewNopLogger()
-	// init cache in memory
-	types.InitConfig(&types.HostedBlockchains{
-		M: make(map[string]types.HostedBlockchain),
-	}, logger, sdk.DefaultTestingPocketConfig())
 	return ctx, vals, ap, accs, keeper, keys, kb
 }
 
@@ -367,6 +363,10 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
 	}
+	logger := log.NewNopLogger()
+	types.InitConfig(&types.HostedBlockchains{
+		M: make(map[string]types.HostedBlockchain),
+	}, logger, sdk.DefaultTestingPocketConfig())
 
 	// NOTE Add a minimum of 5 proofs to memInvoice to be able to create a merkle tree
 	for j := 0; j < maxRelays; j++ {

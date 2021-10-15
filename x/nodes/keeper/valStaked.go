@@ -3,7 +3,6 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
-
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -32,19 +31,31 @@ func (k Keeper) SetStakedValidatorByChains(ctx sdk.Ctx, validator types.Validato
 
 // GetValidatorByChains - Returns the validator staked by network identifier
 func (k Keeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, count int) {
-	cBz, err := hex.DecodeString(networkID)
-	if err != nil {
-		ctx.Logger().Error(fmt.Errorf("could not hex decode chains when GetValidatorByChain: with network ID: %s, at height: %d", networkID, ctx.BlockHeight()).Error())
-		return
+
+	l, exist := sdk.VbCCache.Get(sdk.GetCacheKey(int(ctx.BlockHeight()), networkID))
+
+	if !exist {
+		cBz, err := hex.DecodeString(networkID)
+		if err != nil {
+			ctx.Logger().Error(fmt.Errorf("could not hex decode chains when GetValidatorByChain: with network ID: %s, at height: %d", networkID, ctx.BlockHeight()).Error())
+			return
+		}
+		iterator, _ := k.validatorByChainsIterator(ctx, cBz)
+		defer iterator.Close()
+		for ; iterator.Valid(); iterator.Next() {
+			address := types.AddressForValidatorByNetworkIDKey(iterator.Key(), cBz)
+			count++
+			validators = append(validators, address)
+		}
+		if sdk.VbCCache.Cap() > 1 {
+			_ = sdk.VbCCache.Add(sdk.GetCacheKey(int(ctx.BlockHeight()), networkID), validators)
+		}
+
+		return validators, count
 	}
-	iterator, _ := k.validatorByChainsIterator(ctx, cBz)
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		address := types.AddressForValidatorByNetworkIDKey(iterator.Key(), cBz)
-		count++
-		validators = append(validators, address)
-	}
-	return validators, count
+
+	validators = l.([]sdk.Address)
+	return validators, len(validators)
 }
 
 func (k Keeper) deleteValidatorForChains(ctx sdk.Ctx, validator types.Validator) {

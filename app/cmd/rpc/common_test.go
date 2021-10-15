@@ -49,6 +49,7 @@ import (
 var FS = string(fp.Separator)
 
 func NewInMemoryTendermintNode(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
+	sdk.VbCCache = sdk.NewCache(1)
 	app.MakeCodec() // needed for queries and tx
 	// create the in memory tendermint node and keybase
 	tendermintNode, keybase = inMemTendermintNode(genesisState)
