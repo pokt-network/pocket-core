@@ -54,6 +54,8 @@ func TestGetAndSetStakedValidator(t *testing.T) {
 }
 
 func TestGetSetDeleteValidatorsByChain(t *testing.T) {
+	sdk.VbCCache = sdk.NewCache(1)
+
 	stakedValidator := getStakedValidator()
 	context, _, keeper := createTestInput(t, true)
 	keeper.SetValidator(context, stakedValidator)

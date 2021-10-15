@@ -725,6 +725,7 @@ func TestQueryRelay(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
+			sdk.VbCCache = sdk.NewCache(1)
 			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
@@ -817,6 +818,7 @@ func TestQueryDispatch(t *testing.T) {
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
+			sdk.VbCCache = sdk.NewCache(1)
 			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)

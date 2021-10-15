@@ -6,6 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"log"
+	"regexp"
+	"runtime"
+	"strconv"
 	"time"
 
 	dbm "github.com/tendermint/tm-db"
@@ -14,7 +18,19 @@ import (
 var (
 	// This is set at compile time. Could be cleveldb, defaults is goleveldb.
 	DBBackend = ""
+	VbCCache  *Cache
 )
+
+func init() {
+	VbCCache = NewCache(1000)
+}
+
+func GetCacheKey(height int, value string) (key string) {
+	sh := strconv.Itoa(height)
+	key = fmt.Sprintf("%s-%s", sh, value)
+
+	return key
+}
 
 // SortedJSON takes any JSON and returns it sorted by keys. Also, all white-spaces
 // are removed.
@@ -106,4 +122,19 @@ func (m *Raw) UnmarshalJSON(data []byte) error {
 }
 
 var _ json.Marshaler = (*Raw)(nil)
-var _ json.Marshaler = (*Raw)(nil)
+
+func TimeTrack(start time.Time) {
+	elapsed := time.Since(start)
+
+	// Skip this function, and fetch the PC and file for its parent.
+	pc, _, _, _ := runtime.Caller(1)
+
+	// Retrieve a function object this functions parent.
+	funcObj := runtime.FuncForPC(pc)
+
+	// Regex to extract just the function name (and not the module path).
+	runtimeFunc := regexp.MustCompile(`^.*\.(.*)$`)
+	name := runtimeFunc.ReplaceAllString(funcObj.Name(), "$1")
+
+	log.Println(fmt.Sprintf("%s took %s", name, elapsed))
+}
