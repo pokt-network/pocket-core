@@ -1306,7 +1306,7 @@ components:
       properties:
         msg_index:
           type: integer
-          format: uint16
+          format: uint32
           description: Ordered index of the log message
         success:
           type: boolean
@@ -2072,6 +2072,8 @@ components:
         txhash:
           type: string
           description: Hash of the transaction
+        codespace:
+          type: string
         code:
           type: integer
           format: uint32
@@ -2095,8 +2097,8 @@ components:
         gas_used:
           type: integer
           format: int64
-        codespace:
-          type: string
+        Tx:
+          type: object
         timestamp:
           type: string
           description: Timestamp of the transaction
@@ -2310,7 +2312,7 @@ components:
           items:
             $ref: '#/components/schemas/Transaction'
         total_count:
-          type: string
+          type: integer
     UpgradeResponse:
       type: object
       properties:
