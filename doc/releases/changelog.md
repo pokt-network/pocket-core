@@ -1,13 +1,15 @@
 # Changelog
 =======
-## RC-0.6.4
+## RC-0.6.X
 - Upped V1 Timeout
-- Introduced valMissedAt cache
-- Introduced valStakedAddrs cache
-- Introduced signingInfos cache
-- Introduced jailedValidators cache
-- Introduced cachified session generation algorithm (backwards compatible)
-- Introduced new rpc endpoint to check validator signingInfo (cli cmd available)
+- Introduced Cache layer. Use --UseCache flag to run pocket with cache.
+- Introduced new rpc endpoint to check validator signingInfo (cli cmd available).
+- Remove legacyCodec parameter from CLI commands for better UX.
+- Backport optimizations and fixes present on last revert.
+- Fixed bug that sporadically showed a race condition on the evidence map when the node was under heavy load.
+- Fixed bug for query around network upgrade height (30024).
+- Fixed bug that caused nodes on V1 fast sync to be get stuck after some hours running.
+- patched tendermint version with several improvements/fixes.
 
 ## RC-0.6.3
 
