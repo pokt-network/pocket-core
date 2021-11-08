@@ -1,6 +1,6 @@
 # Changelog
 =======
-## RC-0.6.X
+## RC-0.6.4
 - Upped V1 Timeout
 - Introduced Cache layer. Use --UseCache flag to run pocket with cache.
 - Introduced new rpc endpoint to check validator signingInfo (cli cmd available).
