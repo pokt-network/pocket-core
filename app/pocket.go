@@ -185,27 +185,17 @@ func (app *PocketCoreApp) ExportState(height int64, chainID string) (string, err
 func (app *PocketCoreApp) HealthMetricsServiceURL(ctx sdk.Ctx) {
 	fmt.Println("Health Metrics callback called")
 	consensusMetrics := app.HealthMetrics.GetConsensusMetrics(ctx.BlockHeight())
-	fmt.Println("Got consensus metrics - ", consensusMetrics)
 	for h, r := range consensusMetrics.Rounds {
-		fmt.Println("Iterating rounds... ", r.RoundNumber)
 		pv := r.PreVotes
 		pc := r.PreCommits
 		for i, v := range pv.Voters {
-			fmt.Println("Iterating PreVoters... ", v)
-			val,found := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
-			if !found {
-				fmt.Println("NOT FOUND")
-			}
+			val,_ := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
 			v.ServiceURL = val.GetServiceURL()
 			v.Power = val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64()
-			pc.Voters[i] = v
+			pv.Voters[i] = v
 		}
 		for i, v := range pc.Voters {
-			fmt.Println("Iterating PreCommitVoters... ", v)
-			val, found := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
-			if !found {
-				fmt.Println("NOT FOUND")
-			}
+			val, _ := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
 			v.ServiceURL = val.GetServiceURL()
 			v.Power = val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64()
 			pc.Voters[i] = v
