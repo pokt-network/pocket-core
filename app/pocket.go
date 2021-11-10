@@ -183,7 +183,6 @@ func (app *PocketCoreApp) ExportState(height int64, chainID string) (string, err
 }
 
 func (app *PocketCoreApp) HealthMetricsServiceURL(ctx sdk.Ctx) {
-	fmt.Println("Health Metrics callback called")
 	consensusMetrics := app.HealthMetrics.GetConsensusMetrics(ctx.BlockHeight())
 	for h, r := range consensusMetrics.Rounds {
 		pv := r.PreVotes
