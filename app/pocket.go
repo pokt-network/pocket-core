@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tendermint/tendermint/health"
 	"github.com/tendermint/tendermint/libs/os"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
@@ -184,12 +183,25 @@ func (app *PocketCoreApp) ExportState(height int64, chainID string) (string, err
 }
 
 func (app *PocketCoreApp) HealthMetricsServiceURL(ctx sdk.Ctx) {
-	vsu := (*health.ValServiceURL).NewValServiceURL(nil)
-	validators := app.nodesKeeper.GetAllValidators(ctx)
-	for _, val := range validators {
-		vsu.AddValidator(val.Address.Bytes(), val.ServiceURL, val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64())
+	consensusMetrics := app.HealthMetrics.GetConsensusMetrics(ctx.BlockHeight())
+	for h, r := range consensusMetrics.Rounds {
+		pv := r.PreVotes
+		pc := r.PreCommits
+		for _, v := range pv.Voters {
+			val,_ := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
+			v.ServiceURL = val.GetServiceURL()
+			v.Power = val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64()
+		}
+		for _, v := range pc.Voters {
+			val,_ := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
+			v.ServiceURL = val.GetServiceURL()
+			v.Power = val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64()
+		}
+		r.PreVotes = pv
+		r.PreCommits = pc
+		consensusMetrics.Rounds[h] = r
 	}
-	app.HealthMetrics.AddServiceUrls(ctx, vsu)
+	app.HealthMetrics.SetConsensusMetrics(ctx.BlockHeight(), consensusMetrics)
 	app.HealthMetrics.Prune(ctx.BlockHeight())
 }
 
