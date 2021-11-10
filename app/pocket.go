@@ -187,7 +187,7 @@ func (app *PocketCoreApp) HealthMetricsServiceURL(ctx sdk.Ctx) {
 	vsu := (*health.ValServiceURL).NewValServiceURL(nil)
 	validators := app.nodesKeeper.GetAllValidators(ctx)
 	for _, val := range validators {
-		vsu.AddValidator(val.Address, val.ServiceURL, val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64())
+		vsu.AddValidator(val.Address.Bytes(), val.ServiceURL, val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64())
 	}
 	app.HealthMetrics.AddServiceUrls(ctx, vsu)
 	app.HealthMetrics.Prune(ctx.BlockHeight())
