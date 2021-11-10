@@ -9,15 +9,8 @@ package baseapp
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec/types"
-	"github.com/pokt-network/pocket-core/crypto"
-	types2 "github.com/pokt-network/pocket-core/x/apps/types"
-	"github.com/pokt-network/pocket-core/x/auth"
-	"github.com/tendermint/tendermint/evidence"
-	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/state/txindex"
-	tmStore "github.com/tendermint/tendermint/store"
 	"io"
 	"os"
 	"reflect"
@@ -26,7 +19,15 @@ import (
 	"strings"
 	"syscall"
 
-	"errors"
+	"github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/crypto"
+	types2 "github.com/pokt-network/pocket-core/x/apps/types"
+	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/tendermint/tendermint/evidence"
+	"github.com/tendermint/tendermint/health"
+	"github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/state/txindex"
+	tmStore "github.com/tendermint/tendermint/store"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -41,8 +42,10 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
-var ABCILogging bool
-var cdc = codec.NewCodec(types.NewInterfaceRegistry())
+var (
+	ABCILogging bool
+	cdc         = codec.NewCodec(types.NewInterfaceRegistry())
+)
 
 // Key to store the consensus params in the main store.
 var mainConsensusParamsKey = []byte("consensus_params")
@@ -68,20 +71,18 @@ const (
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct {
 	// initialized on creation
-	logger           log.Logger
-	name             string               // application name from abci.Info
-	db               dbm.DB               // common DB backend
-	tmNode           *node.Node           // <---- todo updated here
-	txIndexer        txindex.TxIndexer    // <---- todo updated here
-	blockstore       *tmStore.BlockStore  // <---- todo updated here
-	evidencePool     *evidence.Pool       // <---- todo updated here
-	cms              sdk.CommitMultiStore // Main (uncached) state
-	cdc              *codec.Codec
-	router           sdk.Router      // handle any kind of message
-	queryRouter      sdk.QueryRouter // router for redirecting query calls
-	txDecoder        sdk.TxDecoder   // unmarshal []byte into sdk.Tx
-	transactionCache map[string]struct{}
-
+	logger       log.Logger
+	name         string               // application name from abci.Info
+	db           dbm.DB               // common DB backend
+	tmNode       *node.Node           // <---- todo updated here
+	txIndexer    txindex.TxIndexer    // <---- todo updated here
+	blockstore   *tmStore.BlockStore  // <---- todo updated here
+	evidencePool *evidence.Pool       // <---- todo updated here
+	cms          sdk.CommitMultiStore // Main (uncached) state
+	cdc          *codec.Codec
+	router       sdk.Router      // handle any kind of message
+	queryRouter  sdk.QueryRouter // router for redirecting query calls
+	txDecoder    sdk.TxDecoder   // unmarshal []byte into sdk.Tx
 	// set upon RollbackVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
@@ -117,6 +118,12 @@ type BaseApp struct {
 
 	// application's version string
 	appVersion string
+
+	// health metrics
+	HealthMetrics         *health.HealthMetrics
+	applicationDBPath     string
+	previousAppDBSize     int64
+	healthMetricsCallback func(ctx sdk.Ctx)
 }
 
 var _ abci.Application = (*BaseApp)(nil)
@@ -138,12 +145,25 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, iavlCache
 		transactionCache: make(map[string]struct{}),
 		txDecoder:        txDecoder,
 		fauxMerkleMode:   false,
+		HealthMetrics:    health.NewHealthMetrics(25),
 	}
 	for _, option := range options {
 		option(app)
 	}
 
 	return app
+}
+
+func (app *BaseApp) GetHealthMetrics() *health.HealthMetrics {
+	return app.HealthMetrics
+}
+
+func (app *BaseApp) SetHealthMetricsCallback(callback func(ctx sdk.Ctx)) {
+	app.healthMetricsCallback = callback
+}
+
+func (app *BaseApp) SetAppDBPath(path string) {
+	app.applicationDBPath = path
 }
 
 func (app *BaseApp) SetTendermintNode(node *node.Node) {
@@ -272,6 +292,7 @@ func (app *BaseApp) LoadLatestVersion(baseKey *sdk.KVStoreKey) error {
 	if err != nil {
 		return err
 	}
+	app.HealthMetrics.InitHeight(app.LastBlockHeight())
 	return app.initFromMainStore(baseKey)
 }
 
@@ -295,7 +316,6 @@ func (app *BaseApp) initFromMainStore(baseKey *sdk.KVStoreKey) error {
 	// memoize baseKey
 	if app.baseKey != nil {
 		return fmt.Errorf("app.baseKey expected to be nil; possible duplicate init")
-
 	}
 	app.baseKey = baseKey
 
@@ -305,7 +325,7 @@ func (app *BaseApp) initFromMainStore(baseKey *sdk.KVStoreKey) error {
 	// TODO: assert that InitChain hasn't yet been called.
 	consensusParamsBz, _ := mainStore.Get(mainConsensusParamsKey)
 	if consensusParamsBz != nil {
-		var consensusParams = &abci.ConsensusParams{}
+		consensusParams := &abci.ConsensusParams{}
 
 		err := proto.Unmarshal(consensusParamsBz, consensusParams)
 		if err != nil {
@@ -700,6 +720,7 @@ func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
 	if req.Header.Height == codec.GetCodecUpgradeHeight() {
+		app.HealthMetrics.SetIsCheckTx(false)
 		app.cdc.SetUpgradeOverride(true)
 		app.txDecoder = auth.DefaultTxDecoder(app.cdc)
 	}
@@ -763,6 +784,8 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 	//	}
 	//}
 
+	// ensure metrics are NOT applied for checkTx
+	app.HealthMetrics.SetIsCheckTx(true)
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
@@ -794,6 +817,9 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	} else {
 		app.transactionCache[TxCacheKey(req.Tx, runTxModeDeliver)] = struct{}{}
 	}
+	// ensure metrics are applied for deliverTx
+	app.HealthMetrics.SetIsCheckTx(false)
+	tt := sdk.NewTimeTracker()
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
@@ -819,7 +845,11 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 			signer = sdk.Address(signerPK.Address())
 		}
 	}
-
+	app.HealthMetrics.AddTransaction(app.LastBlockHeight(), health.Transaction{
+		TypeOf:         messageType,
+		ProcessingTime: tt.End().String(),
+		IsValid:        result.Code == 0,
+	})
 	return abci.ResponseDeliverTx{
 		Code:        uint32(result.Code),
 		Data:        result.Data,
@@ -930,7 +960,8 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 // txContext returns a new context based off of the provided context with
 // a cache wrapped multi-store.
 func (app *BaseApp) txContext(ctx sdk.Ctx, txBytes []byte) (
-	sdk.Context, sdk.MultiStore) { // todo edit here!!!
+	sdk.Context, sdk.MultiStore,
+) { // todo edit here!!!
 	newMS := store.MultiStore((*app.cms.(store.CommitMultiStore).(*rootMulti.Store).CopyStore()).(*rootMulti.Store))
 	if newMS.TracingEnabled() {
 		newMS = newMS.SetTracingContext(
@@ -945,8 +976,8 @@ func (app *BaseApp) txContext(ctx sdk.Ctx, txBytes []byte) (
 // txContext returns a new context based off of the provided context with
 // a cache wrapped multi-store.
 func (app *BaseApp) cacheTxContext(ctx sdk.Ctx, txBytes []byte) (
-	sdk.Context, sdk.CacheMultiStore) {
-
+	sdk.Context, sdk.CacheMultiStore,
+) {
 	ms := ctx.MultiStore()
 	// TODO: https://github.com/cosmos/cosmos-sdk/issues/2824
 	msCache := ms.CacheMultiStore()
@@ -1002,7 +1033,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 		}
 
 		result.GasWanted = gasWanted
-		//result.GasUsed = ctx.GasMeter().GasConsumed()
+		// result.GasUsed = ctx.GasMeter().GasConsumed()
 		result.GasUsed = 0
 	}()
 
@@ -1024,7 +1055,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 			}
 		}
 	}()
-	var msgs = tx.GetMsg()
+	msgs := tx.GetMsg()
 	if err := validateBasicTxMsgs(msgs); err != nil {
 		return err.Result(), nil
 	}
@@ -1089,7 +1120,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	//if app.deliverState.ms.TracingEnabled() {
 	//	app.deliverState.ms = app.deliverState.ms.SetTracingContext(nil).(sdk.CacheMultiStore)
 	//} // todo edit here!!!!
-
+	app.HealthMetrics.SetIsCheckTx(false)
 	if app.endBlocker != nil {
 		res = app.endBlocker(app.deliverState.ctx, req)
 	}
@@ -1105,6 +1136,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 // against that height and gracefully halt if it matches the latest committed
 // height.
 func (app *BaseApp) Commit() (res abci.ResponseCommit) {
+	app.HealthMetrics.SetIsCheckTx(false)
 	header := app.deliverState.ctx.BlockHeader()
 
 	var halt bool
@@ -1124,7 +1156,6 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 		// can be ignored.
 		return abci.ResponseCommit{}
 	}
-
 	// Write the DeliverTx state which is cache-wrapped and commit the MultiStore.
 	// The write to the DeliverTx state writes all state transitions to the root
 	// MultiStore (app.cms) so when Commit() is called is persists those values.
@@ -1138,8 +1169,27 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 	// Commit. Use the header from this latest block.
 	app.setCheckState(header)
 
+	// callback for health metrics to do something upon commit
+	if app.HealthMetrics != nil {
+		app.HealthMetrics.AddAppHash(app.deliverState.ctx, hex.EncodeToString(commitID.Hash))
+		app.healthMetricsCallback(app.deliverState.ctx)
+	}
+
 	// empty/reset the deliver state
 	app.deliverState = nil
+	// health metrics for application.db storage size
+	if app.applicationDBPath != "" {
+		fi, err := os.Stat(app.applicationDBPath)
+		if err != nil {
+			fmt.Println("Unable to stat applicationDB, state size health metric will go unfilled: ", err.Error())
+		} else {
+			size := fi.Size()
+			if app.previousAppDBSize != 0 {
+				app.HealthMetrics.AddStateSizeMetric(app.LastBlockHeight(), size-app.previousAppDBSize)
+			}
+			app.previousAppDBSize = size
+		}
+	}
 
 	return abci.ResponseCommit{
 		Data: commitID.Hash,
@@ -1184,7 +1234,7 @@ func (st *state) Context() sdk.Context {
 	return st.ctx
 }
 
-//ABCI logging
+// ABCI logging
 
 func SetABCILogging(value bool) {
 	ABCILogging = value

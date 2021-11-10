@@ -5,13 +5,14 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"math"
+
 	"github.com/jordanorelli/lexnum"
 	"github.com/pkg/errors"
 	"github.com/tendermint/tendermint/libs/pubsub/query"
 	"github.com/tendermint/tendermint/state/txindex"
 	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"math"
 )
 
 var (

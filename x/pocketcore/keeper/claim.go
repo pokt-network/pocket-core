@@ -3,8 +3,9 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
 	"time"
+
+	"github.com/pokt-network/pocket-core/codec"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -136,6 +137,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	// check cache
 	session, found := pc.GetSession(claim.SessionHeader, pc.GlobalSessionCache)
 	if !found {
+		tt := sdk.NewTimeTracker()
 		// use the session end context to ensure that people who were jailed mid session do not get to submit claims
 		sessionEndCtx, er := ctx.PrevCtx(sessionEndHeight)
 		if er != nil {
@@ -151,6 +153,8 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error())
 			return err
 		}
+		// add session metric
+		k.GetHealthMetrics().AddSessionDuration(ctx, tt.End())
 	}
 	// validate the session
 	err = session.Validate(claim.FromAddress, app, sessionNodeCount)
@@ -316,7 +320,7 @@ func (k Keeper) ClaimIsMature(ctx sdk.Ctx, sessionBlockHeight int64) bool {
 
 // "DeleteExpiredClaims" - Deletes the expired (claim expiration > # of session passed since claim genesis) claims
 func (k Keeper) DeleteExpiredClaims(ctx sdk.Ctx) {
-	var msg = pc.MsgClaim{}
+	msg := pc.MsgClaim{}
 	store := ctx.KVStore(k.storeKey)
 	iterator, _ := sdk.KVStorePrefixIterator(store, pc.ClaimKey)
 	defer iterator.Close()

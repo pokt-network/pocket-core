@@ -39,13 +39,14 @@ func StartRPC(port string, timeout int64, simulation, debug, allBlockTxs, hotRel
 		routes = append(routes, Route{Name: "MemStats", Method: "GET", Path: "/debug/memstats", HandlerFunc: MemStats})
 		routes = append(routes, Route{Name: "QuerySecondUpgrade", Method: "POST", Path: "/debug/second", HandlerFunc: SecondUpgrade})
 		routes = append(routes, Route{Name: "QueryValidatorByChain", Method: "POST", Path: "/debug/vbc", HandlerFunc: QueryValidatorsByChain})
+		routes = append(routes, Route{Name: "Health", Method: "GET", Path: "/debug/health", HandlerFunc: HealthMetrics})
 	}
 
 	if allBlockTxs {
 		routes = append(routes, Route{Name: "QueryAllBlockTxs", Method: "POST", Path: "/v1/query/allblocktxs", HandlerFunc: AllBlockTxs})
 	}
 
-	//if hot reload is not enabled, enable manual reload.
+	// if hot reload is not enabled, enable manual reload.
 	if !hotReloadChains {
 		routes = append(routes, Route{Name: "UpdateChains", Method: "POST", Path: "/v1/private/updatechains", HandlerFunc: UpdateChains})
 	}
@@ -133,6 +134,7 @@ func FreeMemory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	debug.FreeOSMemory()
 	WriteResponse(w, "MemoryFreed", r.URL.Path, r.Host)
 }
+
 func MemStats(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -175,7 +177,9 @@ func WriteJSONResponse(w http.ResponseWriter, jsn, path, ip string) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(raw)
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	err := enc.Encode(raw)
 	if err != nil {
 		fmt.Println(fmt.Errorf("error in RPC Handler WriteJSONResponse: %v", err))
 		return

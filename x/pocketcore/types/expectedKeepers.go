@@ -1,11 +1,13 @@
 package types
 
 import (
-	"github.com/pokt-network/pocket-core/codec"
-	sdk "github.com/pokt-network/pocket-core/types"
-	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
-	authexported "github.com/pokt-network/pocket-core/x/auth/exported"
-	nodesexported "github.com/pokt-network/pocket-core/x/nodes/exported"
+
+"github.com/pokt-network/pocket-core/codec"
+sdk "github.com/pokt-network/pocket-core/types"
+appexported "github.com/pokt-network/pocket-core/x/apps/exported"
+authexported "github.com/pokt-network/pocket-core/x/auth/exported"
+nodesexported "github.com/pokt-network/pocket-core/x/nodes/exported"
+"github.com/tendermint/tendermint/health"
 )
 
 type PosKeeper interface {
@@ -20,6 +22,7 @@ type PosKeeper interface {
 	BlocksPerSession(ctx sdk.Ctx) (res int64)
 	StakeDenom(ctx sdk.Ctx) (res string)
 	GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, total int)
+	GetHealthMetrics() *health.HealthMetrics
 }
 
 type AppsKeeper interface {

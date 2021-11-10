@@ -3,10 +3,11 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"time"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"time"
 )
 
 // HandleRelay handles an api (read/write) request to a non-native (external) blockchain
@@ -102,7 +103,6 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 
 // "HandleChallenge" - Handles a client relay response challenge request
 func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidData) (*pc.ChallengeResponse, sdk.Error) {
-
 	var node *pc.PocketNode
 	// There is reference to self address so that way we don't have to recreate address twice for pre-leanpokt
 	var nodeAddress sdk.Address
@@ -152,6 +152,7 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	session, found := pc.GetSession(header, node.SessionStore)
 	// if not found generate the session
 	if !found {
+		tt := sdk.NewTimeTracker()
 		var err sdk.Error
 		blockHashBz, er := sessionCtx.BlockHash(k.Cdc, sessionCtx.BlockHeight())
 		if er != nil {
@@ -163,6 +164,9 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 		}
 		// add to cache
 		pc.SetSession(session, node.SessionStore)
+
+		// add session metric
+		k.GetHealthMetrics().AddSessionDuration(ctx, tt.End())
 	}
 	// validate the challenge
 	err := challenge.ValidateLocal(header, app.GetMaxRelays(), app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, nodeAddress, node.EvidenceStore)

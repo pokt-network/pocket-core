@@ -150,3 +150,20 @@ func ContainsString(s []string, e string) bool {
 	}
 	return false
 }
+
+type TimeTracker struct {
+	startTime time.Time
+}
+
+func NewTimeTracker() (tt TimeTracker) {
+	tt.startTime = time.Now()
+	return tt
+}
+
+func (tt TimeTracker) Start() {
+	tt.startTime = time.Now()
+}
+
+func (tt TimeTracker) End() time.Duration {
+	return time.Since(tt.startTime)
+}

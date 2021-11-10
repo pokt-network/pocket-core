@@ -52,6 +52,7 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 		app.accountKeeper,
 		nodesSubspace,
 		nodesTypes.DefaultCodespace,
+		app.HealthMetrics,
 	)
 	// The apps keeper handles pocket core applications
 	app.appsKeeper = appsKeeper.NewKeeper(
@@ -72,6 +73,7 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 		app.appsKeeper,
 		hostedChains,
 		pocketSubspace,
+		app.HealthMetrics,
 	)
 	// The governance keeper
 	app.govKeeper = govKeeper.NewKeeper(
@@ -82,6 +84,8 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 		app.accountKeeper,
 		authSubspace, nodesSubspace, appsSubspace, pocketSubspace,
 	)
+	// callback for health metrics to execute something upon commit()
+	app.SetHealthMetricsCallback(app.HealthMetricsServiceURL)
 	// add the keybase to the pocket core keeper
 	app.pocketKeeper.TmNode = tmClient
 	// give pocket keeper to nodes module for easy cache clearing

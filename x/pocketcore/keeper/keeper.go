@@ -19,10 +19,14 @@ type Keeper struct {
 	Paramstore        sdk.Subspace
 	storeKey          sdk.StoreKey // Unexposed key to access store from sdk.Context
 	Cdc               *codec.Codec // The wire codec for binary encoding/decoding.
+	// Health Metrics
+	HealthMetrics *health.HealthMetrics
 }
 
 // NewKeeper creates new instances of the pocketcore module Keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKeeper, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKeeper, posKeeper types.PosKeeper,
+	appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace, healthMetrics *health.HealthMetrics,
+) Keeper {
 	return Keeper{
 		authKeeper:        authKeeper,
 		posKeeper:         posKeeper,
@@ -31,6 +35,7 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKee
 		Paramstore:        paramstore.WithKeyTable(ParamKeyTable()),
 		storeKey:          storeKey,
 		Cdc:               cdc,
+		HealthMetrics:     healthMetrics,
 	}
 }
 
@@ -62,12 +67,12 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 
 func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
 	currentHeightBlockSize := k.BlockByteSize(ctx)
-	//If not 0 and different update
+	// If not 0 and different update
 	if currentHeightBlockSize > 0 {
 		previousBlockCtx, _ := ctx.PrevCtx(ctx.BlockHeight() - 1)
 		lastBlockSize := k.BlockByteSize(previousBlockCtx)
 		if lastBlockSize != currentHeightBlockSize {
-			//not go under default value
+			// not go under default value
 			if currentHeightBlockSize < types.DefaultBlockByteSize {
 				return &abci.ConsensusParams{}
 			}
@@ -84,4 +89,8 @@ func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
 	}
 
 	return &abci.ConsensusParams{}
+}
+
+func (k Keeper) GetHealthMetrics() *health.HealthMetrics {
+	return k.HealthMetrics
 }
