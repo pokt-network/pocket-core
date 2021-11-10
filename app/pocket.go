@@ -190,17 +190,25 @@ func (app *PocketCoreApp) HealthMetricsServiceURL(ctx sdk.Ctx) {
 		fmt.Println("Iterating rounds... ", r.RoundNumber)
 		pv := r.PreVotes
 		pc := r.PreCommits
-		for _, v := range pv.Voters {
+		for i, v := range pv.Voters {
 			fmt.Println("Iterating PreVoters... ", v)
-			val,_ := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
+			val,found := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
+			if !found {
+				fmt.Println("NOT FOUND")
+			}
 			v.ServiceURL = val.GetServiceURL()
 			v.Power = val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64()
+			pc.Voters[i] = v
 		}
-		for _, v := range pc.Voters {
+		for i, v := range pc.Voters {
 			fmt.Println("Iterating PreCommitVoters... ", v)
-			val,_ := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
+			val, found := app.nodesKeeper.GetValidator(ctx, sdk.Address(v.Address))
+			if !found {
+				fmt.Println("NOT FOUND")
+			}
 			v.ServiceURL = val.GetServiceURL()
 			v.Power = val.StakedTokens.Quo(sdk.NewInt(1000000)).Int64()
+			pc.Voters[i] = v
 		}
 		r.PreVotes = pv
 		r.PreCommits = pc
