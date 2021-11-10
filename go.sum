@@ -311,6 +311,10 @@ github.com/pokt-network/tendermint v0.32.11-0.20211110170423-f1942113c3bb h1:5Uq
 github.com/pokt-network/tendermint v0.32.11-0.20211110170423-f1942113c3bb/go.mod h1:9d0mDiPf3kQhoAR6K9A69fdd1pREFyT9G1XciG813zE=
 github.com/pokt-network/tendermint v0.32.11-0.20211110170929-371e61222409 h1:8BnrfHPr5WysXdk3LT880mfgm8d2cn6Bc91PHl7j7TA=
 github.com/pokt-network/tendermint v0.32.11-0.20211110170929-371e61222409/go.mod h1:9d0mDiPf3kQhoAR6K9A69fdd1pREFyT9G1XciG813zE=
+github.com/pokt-network/tendermint v0.32.11-0.20211110213433-b7e9d08ceb10 h1:1NY6aDUz9jcobqRpdd/Vg8Zj97E1dQqTBw6L2IZEW/w=
+github.com/pokt-network/tendermint v0.32.11-0.20211110213433-b7e9d08ceb10/go.mod h1:9d0mDiPf3kQhoAR6K9A69fdd1pREFyT9G1XciG813zE=
+github.com/pokt-network/tendermint v0.32.11-0.20211110214250-2468d123ff45 h1:5lt6rZK0H9vNmKf035LaQwD6CSPr5+0Z1LFGWpGcj/g=
+github.com/pokt-network/tendermint v0.32.11-0.20211110214250-2468d123ff45/go.mod h1:9d0mDiPf3kQhoAR6K9A69fdd1pREFyT9G1XciG813zE=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829/go.mod h1:p2iRAGwDERtqlqzRXnrOVns+ignqQo//hLXqYxZYVNs=
