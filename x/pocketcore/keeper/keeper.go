@@ -1,11 +1,13 @@
 package keeper
 
 import (
-	"github.com/pokt-network/pocket-core/codec"
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/tendermint/tendermint/rpc/client"
-	coretypes "github.com/tendermint/tendermint/rpc/core/types"
+
+"github.com/pokt-network/pocket-core/codec"
+sdk "github.com/pokt-network/pocket-core/types"
+"github.com/pokt-network/pocket-core/x/pocketcore/types"
+"github.com/tendermint/tendermint/health"
+"github.com/tendermint/tendermint/rpc/client"
+coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
 // Keeper maintains the link to storage and exposes getter/setter methods for the various parts of the state machine
@@ -18,10 +20,13 @@ type Keeper struct {
 	Paramstore        sdk.Subspace
 	storeKey          sdk.StoreKey // Unexposed key to access store from sdk.Context
 	Cdc               *codec.Codec // The wire codec for binary encoding/decoding.
+	// Health Metrics
+	HealthMetrics *health.HealthMetrics
 }
 
 // NewKeeper creates new instances of the pocketcore module Keeper
-func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKeeper, posKeeper types.PosKeeper, appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace) Keeper {
+func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKeeper, posKeeper types.PosKeeper,
+	appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace, healthMetrics *health.HealthMetrics) Keeper {
 	return Keeper{
 		authKeeper:        authKeeper,
 		posKeeper:         posKeeper,
@@ -30,10 +35,11 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKee
 		Paramstore:        paramstore.WithKeyTable(ParamKeyTable()),
 		storeKey:          storeKey,
 		Cdc:               cdc,
+		HealthMetrics: healthMetrics,
 	}
 }
 
-func (k Keeper) Codec() *codec.Codec{
+func (k Keeper) Codec() *codec.Codec {
 	return k.Cdc
 }
 
@@ -49,7 +55,7 @@ func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 	}
 }
 
-func (k Keeper) ConvertState(ctx sdk.Ctx){
+func (k Keeper) ConvertState(ctx sdk.Ctx) {
 	k.Cdc.SetUpgradeOverride(false)
 	params := k.GetParams(ctx)
 	claims := k.GetAllClaims(ctx)
@@ -57,4 +63,8 @@ func (k Keeper) ConvertState(ctx sdk.Ctx){
 	k.SetParams(ctx, params)
 	k.SetClaims(ctx, claims)
 	k.Cdc.DisableUpgradeOverride()
+}
+
+func (k Keeper) GetHealthMetrics() *health.HealthMetrics {
+	return k.HealthMetrics
 }

@@ -24,6 +24,10 @@ const (
 	txHeightQuery          = "tx.height=%d"
 )
 
+func (app PocketCoreApp) QueryHealthMetrics() (healthMetricsJSON []byte, err error) {
+	return json.MarshalIndent(app.HealthMetrics, "", "    ")
+}
+
 // zero for height = latest
 func (app PocketCoreApp) QueryBlock(height *int64) (blockJSON []byte, err error) {
 	tmClient := app.GetClient()

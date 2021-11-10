@@ -3,7 +3,6 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
-
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
@@ -124,6 +123,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	// check cache
 	session, found := pc.GetSession(claim.SessionHeader)
 	if !found {
+		tt := sdk.NewTimeTracker()
 		// use the session end context to ensure that people who were jailed mid session do not get to submit claims
 		sessionEndCtx, er := ctx.PrevCtx(sessionEndHeight)
 		if er != nil {
@@ -139,6 +139,8 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error())
 			return err
 		}
+		// add session metric
+		k.GetHealthMetrics().AddSessionDuration(ctx, tt.End())
 	}
 	// validate the session
 	err = session.Validate(claim.FromAddress, app, sessionNodeCount)

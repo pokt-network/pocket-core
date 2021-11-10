@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"github.com/tendermint/tendermint/health"
 	"github.com/tendermint/tendermint/libs/strings"
+	tmtypes "github.com/tendermint/tendermint/types"
 	"time"
 
 	"github.com/pokt-network/pocket-core/crypto"
@@ -433,6 +435,12 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 	k.SetValidator(ctx, validator)
 	logger := k.Logger(ctx)
 	logger.Debug(fmt.Sprintf("validator %s jailed", addr))
+	// health metrics -> jailed validators
+	k.HealthMetrics.AddJailedValidator(ctx, health.Validator{
+		Address:    tmtypes.Address(validator.Address),
+		ServiceURL: validator.ServiceURL,
+		Power:      validator.StakedTokens.Quo(sdk.NewInt(1000000)).Int64(),
+	})
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeJail,

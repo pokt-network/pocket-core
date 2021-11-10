@@ -103,6 +103,7 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	session, found := pc.GetSession(header)
 	// if not found generate the session
 	if !found {
+		tt := sdk.NewTimeTracker()
 		var err sdk.Error
 		blockHashBz, er := sessionCtx.BlockHash(k.Cdc, sessionCtx.BlockHeight())
 		if er != nil {
@@ -114,6 +115,8 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 		}
 		// add to cache
 		pc.SetSession(session)
+		// add session metric
+		k.GetHealthMetrics().AddSessionDuration(ctx, tt.End())
 	}
 	// validate the challenge
 	err := challenge.ValidateLocal(header, app.GetMaxRelays(), app.GetChains(), int(k.SessionNodeCount(sessionCtx)), session.SessionNodes, selfNode)

@@ -360,6 +360,7 @@ func (rs *Store) Commit() types.CommitID {
 		Hash:    commitInfo.Hash(),
 	}
 	rs.lastCommitID = commitID
+
 	return commitID
 }
 

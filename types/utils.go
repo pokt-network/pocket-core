@@ -138,3 +138,20 @@ func TimeTrack(start time.Time) {
 
 	log.Println(fmt.Sprintf("%s took %s", name, elapsed))
 }
+
+type TimeTracker struct {
+	startTime time.Time
+}
+
+func NewTimeTracker() (tt TimeTracker) {
+	tt.startTime = time.Now()
+	return tt
+}
+
+func (tt TimeTracker) Start() {
+	tt.startTime = time.Now()
+}
+
+func (tt TimeTracker) End() time.Duration {
+	return time.Since(tt.startTime)
+}

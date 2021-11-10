@@ -74,6 +74,15 @@ type PaginatedHeightAndAddrParams struct {
 	PerPage int    `json:"per_page,omitempty"`
 }
 
+func HealthMetrics(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	res, err := app.PCA.QueryHealthMetrics()
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteRaw(w, string(res), r.URL.Path, r.Host)
+}
+
 func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = HeightParams{Height: 0}
 	if err := PopModel(w, r, ps, &params); err != nil {

@@ -45,6 +45,8 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	}
 	// upgrade the privVal file
 	app := creator(c.Logger, appDB, traceWriter)
+	dataDir := filepath.Join(c.TmConfig.RootDir, GlobalConfig.TendermintConfig.DBPath)
+	app.SetAppDBPath(filepath.Join(dataDir, sdk.ApplicationDBName+".db"))
 	PCA = app
 	// create & start tendermint node
 	tmNode, err := node.NewNode(app,

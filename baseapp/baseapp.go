@@ -8,10 +8,12 @@
 package baseapp
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/evidence"
+	"github.com/tendermint/tendermint/health"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/state/txindex"
 	tmStore "github.com/tendermint/tendermint/store"
@@ -74,7 +76,6 @@ type BaseApp struct {
 	router       sdk.Router      // handle any kind of message
 	queryRouter  sdk.QueryRouter // router for redirecting query calls
 	txDecoder    sdk.TxDecoder   // unmarshal []byte into sdk.Tx
-
 	// set upon RollbackVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
@@ -110,6 +111,12 @@ type BaseApp struct {
 
 	// application's version string
 	appVersion string
+
+	// health metrics
+	HealthMetrics         *health.HealthMetrics
+	applicationDBPath     string
+	previousAppDBSize     int64
+	healthMetricsCallback func(ctx sdk.Ctx)
 }
 
 var _ abci.Application = (*BaseApp)(nil)
@@ -130,12 +137,25 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, txDecoder
 		queryRouter:    NewQueryRouter(),
 		txDecoder:      txDecoder,
 		fauxMerkleMode: false,
+		HealthMetrics:  health.NewHealthMetrics(25),
 	}
 	for _, option := range options {
 		option(app)
 	}
 
 	return app
+}
+
+func (app *BaseApp) GetHealthMetrics() *health.HealthMetrics {
+	return app.HealthMetrics
+}
+
+func (app *BaseApp) SetHealthMetricsCallback(callback func(ctx sdk.Ctx)) {
+	app.healthMetricsCallback = callback
+}
+
+func (app *BaseApp) SetAppDBPath(path string) {
+	app.applicationDBPath = path
 }
 
 func (app *BaseApp) SetTendermintNode(node *node.Node) {
@@ -264,6 +284,7 @@ func (app *BaseApp) LoadLatestVersion(baseKey *sdk.KVStoreKey) error {
 	if err != nil {
 		return err
 	}
+	app.HealthMetrics.InitHeight(app.LastBlockHeight())
 	return app.initFromMainStore(baseKey)
 }
 
@@ -692,6 +713,7 @@ func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
 	if req.Header.Height == codec.GetCodecUpgradeHeight() {
+		app.HealthMetrics.SetIsCheckTx(false)
 		app.cdc.SetUpgradeOverride(true)
 		app.txDecoder = auth.DefaultTxDecoder(app.cdc)
 	}
@@ -744,7 +766,8 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 // NOTE:CheckTx does not run the actual ProtoMsg handler function(s).
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
 	var result sdk.Result
-
+	// ensure metrics are NOT applied for checkTx
+	app.HealthMetrics.SetIsCheckTx(true)
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
@@ -768,6 +791,9 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	var signer sdk.Address
 	var recipient sdk.Address
 	var messageType string
+	// ensure metrics are applied for deliverTx
+	app.HealthMetrics.SetIsCheckTx(false)
+	tt := sdk.NewTimeTracker()
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
@@ -778,7 +804,11 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		signer = msg.GetSigner()
 		recipient = msg.GetRecipient()
 	}
-
+	app.HealthMetrics.AddTransaction(app.LastBlockHeight(), health.Transaction{
+		TypeOf:         messageType,
+		ProcessingTime: tt.End().String(),
+		IsValid:        result.Code == 0,
+	})
 	return abci.ResponseDeliverTx{
 		Code:        uint32(result.Code),
 		Data:        result.Data,
@@ -1047,7 +1077,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	//if app.deliverState.ms.TracingEnabled() {
 	//	app.deliverState.ms = app.deliverState.ms.SetTracingContext(nil).(sdk.CacheMultiStore)
 	//} // todo edit here!!!!
-
+	app.HealthMetrics.SetIsCheckTx(false)
 	if app.endBlocker != nil {
 		res = app.endBlocker(app.deliverState.ctx, req)
 	}
@@ -1063,6 +1093,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 // against that height and gracefully halt if it matches the latest committed
 // height.
 func (app *BaseApp) Commit() (res abci.ResponseCommit) {
+	app.HealthMetrics.SetIsCheckTx(false)
 	header := app.deliverState.ctx.BlockHeader()
 
 	var halt bool
@@ -1082,7 +1113,6 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 		// can be ignored.
 		return abci.ResponseCommit{}
 	}
-
 	// Write the DeliverTx state which is cache-wrapped and commit the MultiStore.
 	// The write to the DeliverTx state writes all state transitions to the root
 	// MultiStore (app.cms) so when Commit() is called is persists those values.
@@ -1096,8 +1126,27 @@ func (app *BaseApp) Commit() (res abci.ResponseCommit) {
 	// Commit. Use the header from this latest block.
 	app.setCheckState(header)
 
+	// callback for health metrics to do something upon commit
+	if app.HealthMetrics != nil {
+		app.HealthMetrics.AddAppHash(app.deliverState.ctx, hex.EncodeToString(commitID.Hash))
+		app.healthMetricsCallback(app.deliverState.ctx)
+	}
+
 	// empty/reset the deliver state
 	app.deliverState = nil
+	// health metrics for application.db storage size
+	if app.applicationDBPath != "" {
+		fi, err := os.Stat(app.applicationDBPath)
+		if err != nil {
+			fmt.Println("Unable to stat applicationDB, state size health metric will go unfilled: ", err.Error())
+		} else {
+			size := fi.Size()
+			if app.previousAppDBSize != 0 {
+				app.HealthMetrics.AddStateSizeMetric(app.LastBlockHeight(), size-app.previousAppDBSize)
+			}
+			app.previousAppDBSize = size
+		}
+	}
 
 	return abci.ResponseCommit{
 		Data: commitID.Hash,

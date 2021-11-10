@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/tendermint/tendermint/health"
 	log2 "log"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -24,11 +25,13 @@ type Keeper struct {
 	codespace sdk.CodespaceType
 	// Cache
 	validatorCache *sdk.Cache
+	// Health Metrics
+	HealthMetrics *health.HealthMetrics
 }
 
 // NewKeeper creates a new staking Keeper instance
 func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeeper,
-	paramstore sdk.Subspace, codespace sdk.CodespaceType) Keeper {
+	paramstore sdk.Subspace, codespace sdk.CodespaceType, healthMetrics *health.HealthMetrics) Keeper {
 	// ensure staked module accounts are set
 	if addr := accountKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
 		log2.Fatal(fmt.Errorf("%s module account has not been set", types.StakedPoolName))
@@ -41,6 +44,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		Paramstore:     paramstore.WithKeyTable(ParamKeyTable()),
 		codespace:      codespace,
 		validatorCache: cache,
+		HealthMetrics:  healthMetrics,
 		Cdc:            cdc,
 	}
 }
@@ -92,4 +96,8 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 	k.SetPreviousProposer(ctx, prevProposer)
 	k.SetValidatorSigningInfos(ctx, signingInfos)
 	k.Cdc.DisableUpgradeOverride()
+}
+
+func (k Keeper) GetHealthMetrics() *health.HealthMetrics {
+	return k.HealthMetrics
 }

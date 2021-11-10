@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tendermint/tendermint/health"
 	"github.com/tendermint/tendermint/libs/os"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
@@ -180,6 +181,16 @@ func (app *PocketCoreApp) ExportState(height int64, chainID string) (string, err
 		AppState:   j,
 	}, "", "    ")
 	return SortJSON(j), err
+}
+
+func (app *PocketCoreApp) HealthMetricsServiceURL(ctx sdk.Ctx) {
+	vsu := (*health.ValServiceURL).NewValServiceURL(nil)
+	validators := app.nodesKeeper.GetAllValidators(ctx)
+	for _, val := range validators {
+		vsu.AddValidator(val.Address, val.ServiceURL)
+	}
+	app.HealthMetrics.AddServiceUrls(ctx, vsu)
+	app.HealthMetrics.Prune(ctx.BlockHeight())
 }
 
 func (app *PocketCoreApp) NewContext(height int64) (sdk.Ctx, error) {

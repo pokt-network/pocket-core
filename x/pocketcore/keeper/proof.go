@@ -168,6 +168,8 @@ func (k Keeper) ExecuteProof(ctx sdk.Ctx, proof pc.MsgProof, claim pc.MsgClaim) 
 	switch l.(type) {
 	case pc.RelayProof:
 		ctx.Logger().Info(fmt.Sprintf("reward coins to %s, for %d relays", claim.FromAddress.String(), claim.TotalProofs))
+		// add relays to health metrics
+		k.HealthMetrics.AddRelays(ctx, claim.TotalProofs)
 		tokens = k.AwardCoinsForRelays(ctx, claim.TotalProofs, claim.FromAddress)
 		err := k.DeleteClaim(ctx, claim.FromAddress, claim.SessionHeader, pc.RelayEvidence)
 		if err != nil {
