@@ -24,8 +24,20 @@ const (
 	txHeightQuery          = "tx.height=%d"
 )
 
-func (app PocketCoreApp) QueryHealthMetrics() (healthMetricsJSON []byte, err error) {
-	return json.MarshalIndent(app.HealthMetrics, "", "    ")
+func (app PocketCoreApp) QueryHealthMetrics(height int64) (healthMetricsJSON []byte, err error) {
+	if height == 0 {
+		max := int64(0)
+		for i, _ := range app.HealthMetrics.BlockMetrics {
+			if i > max {
+				max = i
+			}
+		}
+		if max == 0 {
+			return json.MarshalIndent(app.HealthMetrics, "", "    ")
+		}
+		return json.MarshalIndent(app.HealthMetrics.BlockMetrics[max], "", "    ")
+	}
+	return json.MarshalIndent(app.HealthMetrics.BlockMetrics[height], "", "    ")
 }
 
 // zero for height = latest

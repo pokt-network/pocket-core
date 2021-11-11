@@ -4,18 +4,20 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	sdk "github.com/pokt-network/pocket-core/types"
-	types2 "github.com/pokt-network/pocket-core/x/auth/types"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/bytes"
-	"github.com/tendermint/tendermint/types"
+
 	"math/big"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
 	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
+	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/bytes"
 	core_types "github.com/tendermint/tendermint/rpc/core/types"
+	"github.com/tendermint/tendermint/types"
 )
 
 func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -75,7 +77,16 @@ type PaginatedHeightAndAddrParams struct {
 }
 
 func HealthMetrics(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	res, err := app.PCA.QueryHealthMetrics()
+	height := int64(0)
+	keys, ok := r.URL.Query()["height"]
+	if ok && len(keys[0]) >= 1 {
+		i, err := strconv.ParseInt(keys[0], 10, 64)
+		if err != nil {
+			panic(err)
+		}
+		height = i
+	}
+	res, err := app.PCA.QueryHealthMetrics(height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return
