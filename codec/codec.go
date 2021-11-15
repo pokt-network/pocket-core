@@ -198,9 +198,10 @@ func (cdc *Codec) ProtoCodec() *ProtoCodec {
 	return cdc.protoCdc
 }
 
+//Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterUpgrade(height int64) bool {
 	if cdc.upgradeOverride != -1 {
 		return cdc.upgradeOverride == 1
 	}
-	return UpgradeHeight < height || height == -1
+	return UpgradeHeight <= height || height == -1
 }
