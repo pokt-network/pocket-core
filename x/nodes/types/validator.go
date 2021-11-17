@@ -49,6 +49,15 @@ func (v Validator) ABCIValidatorUpdate() abci.ValidatorUpdate {
 	}
 }
 
+// ABCIValidatorUpdate returns an abci.ValidatorUpdate from a staking validator type
+// with the full validator power
+func (v Validator) ABCIValidatorZeroUpdate() abci.ValidatorUpdate {
+	return abci.ValidatorUpdate{
+		PubKey: tmtypes.TM2PB.PubKey(v.PublicKey.PubKey()),
+		Power:  0,
+	}
+}
+
 // get the consensus-engine power
 // a reduction of 10^6 from validator tokens is applied
 func (v Validator) ConsensusPower() int64 {
