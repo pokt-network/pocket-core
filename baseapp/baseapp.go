@@ -806,7 +806,8 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	}
 	app.HealthMetrics.AddTransaction(app.LastBlockHeight(), health.Transaction{
 		TypeOf:         messageType,
-		ProcessingTime: tt.End().String(),
+		ProcessingTime: tt.End().Milliseconds(),
+		Sender:         signer.String(),
 		IsValid:        result.Code == 0,
 	})
 	return abci.ResponseDeliverTx{
