@@ -18,7 +18,7 @@ The Pocket Core application will allow anyone to spin up a Pocket Network full n
 
 [Pocket Core CLI Spec](specs/cli/)
 
-[Pocket Core RPC Spec](specs/rpc-spec.yaml)
+[Pocket Core RPC Spec](specs/rpc-spec.md)
 
 [Pocket Core Architecture](specs/architecture.md)
 
