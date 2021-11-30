@@ -24,7 +24,7 @@ func ClaimTx(kp crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuil
 		return nil, err
 	}
 	var legacyCodec bool
-	if cliCtx.Height < codec.UpgradeHeight {
+	if cliCtx.Height < codec.GetCodecUpgradeHeight() {
 		legacyCodec = true
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
@@ -42,7 +42,7 @@ func ProofTx(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof types
 		return nil, err
 	}
 	var legacyCodec bool
-	if cliCtx.Height < codec.UpgradeHeight {
+	if cliCtx.Height < codec.GetCodecUpgradeHeight() {
 		legacyCodec = true
 	}
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)

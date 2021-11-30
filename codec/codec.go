@@ -25,8 +25,23 @@ func NewCodec(anyUnpacker types.AnyUnpacker) *Codec {
 
 var (
 	UpgradeHeight                    int64 = math.MaxInt64
+	OldUpgradeHeight                 int64 = 0
 	NotProtoCompatibleInterfaceError       = errors.New("the interface passed for encoding does not implement proto marshaller")
 )
+
+const UpgradeCodecHeight = int64(30024)
+
+func GetCodecUpgradeHeight() int64 {
+	if UpgradeHeight >= UpgradeCodecHeight {
+		return UpgradeCodecHeight
+	} else {
+		if OldUpgradeHeight != 0 && OldUpgradeHeight < UpgradeHeight {
+			return OldUpgradeHeight
+		} else {
+			return UpgradeHeight
+		}
+	}
+}
 
 func (cdc *Codec) RegisterStructure(o interface{}, name string) {
 	cdc.legacyCdc.RegisterConcrete(o, name, nil)
@@ -203,5 +218,10 @@ func (cdc *Codec) IsAfterUpgrade(height int64) bool {
 	if cdc.upgradeOverride != -1 {
 		return cdc.upgradeOverride == 1
 	}
-	return UpgradeHeight <= height || height == -1
+	return GetCodecUpgradeHeight() <= height || height == -1
+}
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsAfterSecondUpgrade(height int64) bool {
+	return height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()
 }

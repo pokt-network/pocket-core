@@ -691,7 +691,7 @@ func (app *BaseApp) validateHeight(req abci.RequestBeginBlock) error {
 
 // BeginBlock implements the ABCI application interface.
 func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeginBlock) {
-	if req.Header.Height == codec.UpgradeHeight {
+	if req.Header.Height == codec.GetCodecUpgradeHeight() {
 		app.cdc.SetUpgradeOverride(true)
 		app.txDecoder = auth.DefaultTxDecoder(app.cdc)
 	}

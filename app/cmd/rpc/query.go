@@ -4,13 +4,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	sdk "github.com/pokt-network/pocket-core/types"
-	"math/big"
-	"net/http"
-
 	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/types"
+	"math/big"
+	"net/http"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -401,6 +400,23 @@ func SigningInfo(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
+func SecondUpgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = HeightParams{Height: 0}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	if params.Height == 0 {
+		params.Height = app.PCA.BaseApp.LastBlockHeight()
+	}
+	result := app.Codec().IsAfterSecondUpgrade(params.Height)
+	j, _ := json.Marshal(struct {
+		R bool `json:"r"`
+	}{R: result})
+
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
