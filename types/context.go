@@ -123,10 +123,10 @@ func (c Context) EventManager() *EventManager { return c.eventManager }
 func (c Context) AppVersion() string          { return dropTag(c.appVersion) }
 func (c Context) ClearGlobalCache()           { c.cachedStore.Purge() }
 func (c Context) IsAfterUpgradeHeight() bool {
-	return c.header.Height >= codec.UpgradeHeight
+	return c.header.Height >= codec.GetCodecUpgradeHeight()
 }
 func (c Context) IsOnUpgradeHeight() bool {
-	return c.header.Height == codec.UpgradeHeight
+	return c.header.Height == codec.GetCodecUpgradeHeight()
 }
 
 // clone the header before returning

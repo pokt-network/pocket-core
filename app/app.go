@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	AppVersion = "RC-0.6.4.1"
+	AppVersion = "BETA-0.7.0"
 )
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
@@ -127,8 +127,9 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 		cmn.Exit(err.Error())
 	}
 	ctx := sdk.NewContext(app.Store(), abci.Header{}, false, app.Logger()).WithBlockStore(app.BlockStore())
-	if upgradeHeight := app.govKeeper.GetUpgrade(ctx).Height; upgradeHeight != 0 {
-		codec.UpgradeHeight = upgradeHeight
+	if upgrade := app.govKeeper.GetUpgrade(ctx); upgrade.Height != 0 {
+		codec.UpgradeHeight = upgrade.Height
+		codec.OldUpgradeHeight = upgrade.OldUpgradeHeight
 	}
 	return app
 }

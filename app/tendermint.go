@@ -49,7 +49,7 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	// create & start tendermint node
 	tmNode, err := node.NewNode(app,
 		c.TmConfig,
-		codec.UpgradeHeight,
+		codec.GetCodecUpgradeHeight(),
 		pvm.LoadOrGenFilePV(c.TmConfig.PrivValidatorKeyFile(), c.TmConfig.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
