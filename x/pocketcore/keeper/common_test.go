@@ -155,6 +155,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 			URL: "https://www.google.com:443",
 		}},
 	}
+	types.InitConfig(&hb, log.NewTMLogger(os.Stdout), sdk.DefaultTestingPocketConfig())
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
 	appSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
@@ -354,6 +355,7 @@ func getRandomPubKey() crypto.Ed25519PublicKey {
 func getRandomValidatorAddress() sdk.Address {
 	return sdk.Address(getRandomPubKey().Address())
 }
+
 func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk crypto.PublicKey, validHeader types.SessionHeader, keys simulateRelayKeys) {
 	npk = getRandomPubKey()
 	ethereum := hex.EncodeToString([]byte{01})
