@@ -20,7 +20,6 @@ type PocketConfig struct {
 	DataDir                  string `json:"data_dir"`
 	GenesisName              string `json:"genesis_file"`
 	ChainsName               string `json:"chains_name"`
-	SessionDBName            string `json:"session_db_name"`
 	EvidenceDBName           string `json:"evidence_db_name"`
 	TendermintURI            string `json:"tendermint_uri"`
 	KeybaseName              string `json:"keybase_name"`
@@ -64,7 +63,6 @@ const (
 	DefaultChainsName                  = "chains.json"
 	DefaultGenesisName                 = "genesis.json"
 	DefaultRPCPort                     = "8081"
-	DefaultSessionDBName               = "session"
 	DefaultEvidenceDBName              = "pocket_evidence"
 	DefaultTMURI                       = "tcp://localhost:26657"
 	DefaultMaxSessionCacheEntries      = 500
@@ -104,7 +102,6 @@ func DefaultConfig(dataDir string) Config {
 			DataDir:                  dataDir,
 			GenesisName:              DefaultGenesisName,
 			ChainsName:               DefaultChainsName,
-			SessionDBName:            DefaultSessionDBName,
 			EvidenceDBName:           DefaultEvidenceDBName,
 			TendermintURI:            DefaultTMURI,
 			KeybaseName:              DefaultKeybaseName,

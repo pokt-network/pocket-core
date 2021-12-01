@@ -28,3 +28,5 @@ require (
 )
 
 replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20211022155741-0dc25b2413ec
+
+replace github.com/tendermint/tm-db => github.com/pokt-network/tm-db v0.5.2-0.20211201002244-cf20b828a106
