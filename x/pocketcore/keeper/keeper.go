@@ -33,7 +33,7 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKee
 	}
 }
 
-func (k Keeper) Codec() *codec.Codec{
+func (k Keeper) Codec() *codec.Codec {
 	return k.Cdc
 }
 
@@ -49,7 +49,7 @@ func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 	}
 }
 
-func (k Keeper) ConvertState(ctx sdk.Ctx){
+func (k Keeper) ConvertState(ctx sdk.Ctx) {
 	k.Cdc.SetUpgradeOverride(false)
 	params := k.GetParams(ctx)
 	claims := k.GetAllClaims(ctx)

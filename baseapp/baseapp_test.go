@@ -394,7 +394,7 @@ package baseapp
 //func (msg msgCounter) Route() string             { return routeMsgCounter }
 //func (msg msgCounter) Type() string              { return "counter1" }
 //func (msg msgCounter) GetSignBytes() []byte      { return nil }
-//func (msg msgCounter) GetSigner() []sdk.Address { return nil }
+//func (msg msgCounter) GetSigners() []sdk.Address { return nil }
 //func (msg msgCounter) ValidateBasic() sdk.Error {
 //	if msg.Counter >= 0 {
 //		return nil
@@ -433,7 +433,7 @@ package baseapp
 //func (msg msgCounter2) Route() string             { return routeMsgCounter2 }
 //func (msg msgCounter2) Type() string              { return "counter2" }
 //func (msg msgCounter2) GetSignBytes() []byte      { return nil }
-//func (msg msgCounter2) GetSigner() []sdk.Address { return nil }
+//func (msg msgCounter2) GetSigners() []sdk.Address { return nil }
 //func (msg msgCounter2) ValidateBasic() sdk.Error {
 //	if msg.Counter >= 0 {
 //		return nil

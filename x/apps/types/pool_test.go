@@ -35,7 +35,7 @@ func TestPool_String(t *testing.T) {
 	}{
 		{
 			"returns pool with tokens",
-			StakingPool{(sdk.NewInt(10))},
+			StakingPool{sdk.NewInt(10)},
 			fmt.Sprintf(`Staked Tokens:      %s`, sdk.NewInt(10)),
 		},
 	}

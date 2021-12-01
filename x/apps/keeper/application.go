@@ -42,13 +42,13 @@ func (k Keeper) SetApplication(ctx sdk.Ctx, application types.Application) {
 	if application.IsUnstaking() {
 		k.SetUnstakingApplication(ctx, application)
 	}
-	if application.IsStaked() && !application.IsJailed(){
+	if application.IsStaked() && !application.IsJailed() {
 		k.SetStakedApplication(ctx, application)
 	}
 	_ = k.ApplicationCache.AddWithCtx(ctx, application.Address.String(), application)
 }
 
-func (k Keeper) SetApplications(ctx sdk.Ctx, applications types.Applications){
+func (k Keeper) SetApplications(ctx sdk.Ctx, applications types.Applications) {
 	for _, app := range applications {
 		k.SetApplication(ctx, app)
 	}

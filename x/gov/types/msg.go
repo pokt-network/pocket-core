@@ -36,12 +36,12 @@ func (msg MsgChangeParam) GetFee() sdk.BigInt {
 	return sdk.NewInt(GovFeeMap[msg.Type()])
 }
 
-// GetSigner return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgChangeParam) GetSigner() sdk.Address {
-	return msg.FromAddress
+// GetSigners return address(es) that must sign over msg.GetSignBytes()
+func (msg MsgChangeParam) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.FromAddress}
 }
 
-// GetSigner return address(es) that must sign over msg.GetSignBytes()
+// GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgChangeParam) GetRecipient() sdk.Address {
 	return nil
 }
@@ -87,12 +87,12 @@ func (msg MsgDAOTransfer) GetFee() sdk.BigInt {
 	return sdk.NewInt(GovFeeMap[msg.Type()])
 }
 
-// GetSigner return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgDAOTransfer) GetSigner() sdk.Address {
-	return msg.FromAddress
+// GetSigners return address(es) that must sign over msg.GetSignBytes()
+func (msg MsgDAOTransfer) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.FromAddress}
 }
 
-// GetSigner return address(es) that must sign over msg.GetSignBytes()
+// GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgDAOTransfer) GetRecipient() sdk.Address {
 	return nil
 }
@@ -140,12 +140,12 @@ func (msg MsgUpgrade) GetFee() sdk.BigInt {
 	return sdk.NewInt(GovFeeMap[msg.Type()])
 }
 
-// GetSigner return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgUpgrade) GetSigner() sdk.Address {
-	return msg.Address
+// GetSigners return address(es) that must sign over msg.GetSignBytes()
+func (msg MsgUpgrade) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.Address}
 }
 
-// GetSigner return address(es) that must sign over msg.GetSignBytes()
+// GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgUpgrade) GetRecipient() sdk.Address {
 	return nil
 }

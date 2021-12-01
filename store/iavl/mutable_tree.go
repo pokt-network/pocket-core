@@ -22,11 +22,11 @@ var ErrVersionDoesNotExist = errors.New("version does not exist")
 //
 // The inner ImmutableTree should not be used directly by callers.
 type MutableTree struct {
-	*ImmutableTree             // The current, working tree.
-	lastSaved *ImmutableTree   // The most recently saved tree.
-	orphans   map[string]int64 // Nodes removed by changes to working tree.
-	versions  map[int64]bool   // The previous, saved versions of the tree.
-	ndb       *nodeDB
+	*ImmutableTree                  // The current, working tree.
+	lastSaved      *ImmutableTree   // The most recently saved tree.
+	orphans        map[string]int64 // Nodes removed by changes to working tree.
+	versions       map[int64]bool   // The previous, saved versions of the tree.
+	ndb            *nodeDB
 }
 
 // NewMutableTree returns a new tree with the specified cache size and datastore.

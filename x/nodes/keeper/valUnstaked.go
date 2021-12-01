@@ -15,7 +15,7 @@ func (k Keeper) SetWaitingValidator(ctx sdk.Ctx, val types.Validator) {
 	_ = store.Set(types.KeyForValWaitingToBeginUnstaking(val.Address), val.Address)
 }
 
-func (k Keeper) SetWaitingValidators(ctx sdk.Ctx, vals types.Validators){
+func (k Keeper) SetWaitingValidators(ctx sdk.Ctx, vals types.Validators) {
 	for _, val := range vals {
 		k.SetWaitingValidator(ctx, val)
 	}
@@ -153,7 +153,7 @@ func (k Keeper) unstakeAllMatureValidators(ctx sdk.Ctx) {
 	for ; unstakingValidatorsIterator.Valid(); unstakingValidatorsIterator.Next() {
 		var unstakingVals sdk.Addresses
 		_ = k.Cdc.UnmarshalBinaryLengthPrefixed(unstakingValidatorsIterator.Value(), &unstakingVals, ctx.BlockHeight())
-		for _, valAddr := range unstakingVals{
+		for _, valAddr := range unstakingVals {
 			val, found := k.GetValidator(ctx, valAddr)
 			if !found {
 				ctx.Logger().Error("validator in the unstaking queue was not found, possible forced unstake? At height: ", ctx.BlockHeight())

@@ -177,7 +177,7 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 			ID:  sdk.PlaceholderHash,
 			URL: dummyChainsURL,
 		}}
-		p := app.NewPocketCoreApp(app.GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, false, bam.SetPruning(store.PruneNothing))
+		p := app.NewPocketCoreApp(app.GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, false, 5000000, bam.SetPruning(store.PruneNothing))
 		return p
 	}
 	//upgradePrivVal(c.TmConfig)

@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	tmtypes "github.com/tendermint/tendermint/types"
 	"math"
 	"reflect"
 	"strconv"
@@ -77,6 +78,41 @@ func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bo
 	query := fmt.Sprintf(txHeightQuery, height)
 	page, perPage = checkPagination(page, perPage)
 	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
+	return
+}
+
+func (app PocketCoreApp) QueryAllBlockTxs(height int64, page, perPage int) (res *core_types.ResultTxSearch, err error) {
+	res = &core_types.ResultTxSearch{}
+	tmClient := app.GetClient()
+	defer func() { _ = tmClient.Stop() }()
+	page, perPage = checkPagination(page, perPage)
+	b, err := tmClient.Block(&height)
+	if err != nil {
+		return nil, err
+	}
+	skip := (page - 1) * perPage
+	b1, err := tmClient.BlockResults(&height)
+	if err != nil {
+		return nil, err
+	}
+	for i, t := range b1.TxsResults {
+		if i < skip {
+			continue
+		}
+		tx := b.Block.Txs[i]
+		res.Txs = append(res.Txs, &core_types.ResultTx{
+			Hash:     tx.Hash(),
+			Height:   height,
+			Index:    uint32(i),
+			TxResult: *t,
+			Tx:       tx,
+			Proof:    tmtypes.TxProof{},
+		})
+		res.TotalCount++ // this
+		if len(res.Txs) >= perPage {
+			break
+		}
+	}
 	return
 }
 
@@ -154,6 +190,14 @@ func (app PocketCoreApp) QueryNodeParams(height int64) (res nodesTypes.Params, e
 		return
 	}
 	return app.nodesKeeper.GetParams(ctx), nil
+}
+
+func (app PocketCoreApp) QueryHostedChains() (res map[string]pocketTypes.HostedBlockchain, err error) {
+	return app.pocketKeeper.GetHostedBlockchains().M, nil
+}
+
+func (app PocketCoreApp) SetHostedChains(req map[string]pocketTypes.HostedBlockchain) (res map[string]pocketTypes.HostedBlockchain, err error) {
+	return app.pocketKeeper.SetHostedBlockchains(req).M, nil
 }
 
 func (app PocketCoreApp) QuerySigningInfo(height int64, addr string) (res nodesTypes.ValidatorSigningInfo, err error) {
@@ -365,6 +409,15 @@ func (app PocketCoreApp) QueryAppParams(height int64) (res appsTypes.Params, err
 		return
 	}
 	return app.appsKeeper.GetParams(ctx), nil
+}
+
+func (app PocketCoreApp) QueryValidatorByChain(height int64, chain string) (amount int64, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	_, count := app.nodesKeeper.GetValidatorsByChain(ctx, chain)
+	return int64(count), nil
 }
 
 func (app PocketCoreApp) QueryPocketSupportedBlockchains(height int64) (res []string, err error) {

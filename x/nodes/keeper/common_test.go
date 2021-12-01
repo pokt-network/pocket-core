@@ -59,7 +59,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	tkeyParams := sdk.ParamsTKey
 	keyPOS := sdk.NewKVStoreKey(types.ModuleName)
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db, false)
+	ms := store.NewCommitMultiStore(db, false, 5000000)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyPOS, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
@@ -151,13 +151,14 @@ func getRandomValidatorAddress() sdk.Address {
 func getValidator() types.Validator {
 	pub := getRandomPubKey()
 	return types.Validator{
-		Address:      sdk.Address(pub.Address()),
-		StakedTokens: sdk.NewInt(100000000000),
-		PublicKey:    pub,
-		Jailed:       false,
-		Status:       sdk.Staked,
-		ServiceURL:   "https://www.google.com:443",
-		Chains:       []string{"0001", "0002", "FFFF"},
+		Address:       sdk.Address(pub.Address()),
+		StakedTokens:  sdk.NewInt(100000000000),
+		PublicKey:     pub,
+		Jailed:        false,
+		Status:        sdk.Staked,
+		ServiceURL:    "https://www.google.com:443",
+		Chains:        []string{"0001", "0002", "FFFF"},
+		OutputAddress: nil,
 	}
 }
 

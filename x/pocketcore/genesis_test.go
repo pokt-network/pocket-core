@@ -25,4 +25,3 @@ func TestInitExportGenesis(t *testing.T) {
 	gen := ExportGenesis(ctx, k)
 	assert.Equal(t, genesisState, gen)
 }
-

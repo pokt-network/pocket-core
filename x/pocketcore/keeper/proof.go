@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
@@ -81,7 +82,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d, level count", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 				continue
 			}
-			if !mProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, leaf, levelCount) {
+			if isValid, _ := mProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, leaf, levelCount); !isValid {
 				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 				continue
 			}
@@ -102,7 +103,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 
 func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.Address, claim pc.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the claim
-	servicerAddr = proof.GetSigner()
+	servicerAddr = proof.GetSigners()[0]
 	// get the claim for the address
 	claim, found := k.GetClaim(ctx, servicerAddr, proof.GetLeaf().SessionHeader(), proof.EvidenceType)
 	// if the claim is not found for this claim
@@ -140,9 +141,12 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate the merkle proofs
-	isValid := proof.MerkleProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, proof.GetLeaf(), levelCount)
+	isValid, isReplayAttack := proof.MerkleProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, proof.GetLeaf(), levelCount)
 	// if is not valid for other reasons
 	if !isValid {
+		if isReplayAttack && k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.ReplayBurnKey) {
+			return servicerAddr, claim, pc.NewReplayAttackError(pc.ModuleName)
+		}
 		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// get the application

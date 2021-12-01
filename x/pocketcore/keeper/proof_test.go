@@ -45,7 +45,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	// generate the pseudorandom proof
 	neededLeafIndex, er := keeper.getPseudorandomIndex(mockCtx, totalRelays, header, mockCtx)
 	assert.Nil(t, er)
-	merkleProofs, _ := evidence.GenerateMerkleProof(0,int(neededLeafIndex))
+	merkleProofs, _ := evidence.GenerateMerkleProof(0, int(neededLeafIndex))
 	// get leaf and cousin node
 	leafNode := types.GetProof(header, types.RelayEvidence, neededLeafIndex)
 	// create proof message
@@ -66,7 +66,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 }
 
 func TestKeeper_GetPsuedorandomIndex(t *testing.T) {
-	var totalRelays []int = []int{10, 100, 10000000}
+	var totalRelays = []int{10, 100, 10000000}
 	for _, relays := range totalRelays {
 		ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
 		header := types.SessionHeader{

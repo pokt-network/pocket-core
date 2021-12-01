@@ -18,7 +18,7 @@ import (
 
 var APIVersion = app.AppVersion
 
-func StartRPC(port string, timeout int64, simulation bool, debug bool) {
+func StartRPC(port string, timeout int64, simulation, debug, allBlockTxs, hotReloadChains bool) {
 	routes := GetRoutes()
 	if simulation {
 		simRoute := Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: SimRequest}
@@ -38,6 +38,16 @@ func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 		routes = append(routes, Route{Name: "FreeOsMemory", Method: "GET", Path: "/debug/freememory", HandlerFunc: FreeMemory})
 		routes = append(routes, Route{Name: "MemStats", Method: "GET", Path: "/debug/memstats", HandlerFunc: MemStats})
 		routes = append(routes, Route{Name: "QuerySecondUpgrade", Method: "POST", Path: "/debug/second", HandlerFunc: SecondUpgrade})
+		routes = append(routes, Route{Name: "QueryValidatorByChain", Method: "POST", Path: "/debug/vbc", HandlerFunc: QueryValidatorsByChain})
+	}
+
+	if allBlockTxs {
+		routes = append(routes, Route{Name: "QueryAllBlockTxs", Method: "POST", Path: "/v1/query/allblocktxs", HandlerFunc: AllBlockTxs})
+	}
+
+	//if hot reload is not enabled, enable manual reload.
+	if !hotReloadChains {
+		routes = append(routes, Route{Name: "UpdateChains", Method: "POST", Path: "/v1/private/updatechains", HandlerFunc: UpdateChains})
 	}
 
 	srv := &http.Server{
@@ -110,6 +120,7 @@ func GetRoutes() Routes {
 		Route{Name: "QueryTX", Method: "POST", Path: "/v1/query/tx", HandlerFunc: Tx},
 		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
 		Route{Name: "QuerySigningInfo", Method: "POST", Path: "/v1/query/signinginfo", HandlerFunc: SigningInfo},
+		Route{Name: "QueryChains", Method: "POST", Path: "/v1/private/chains", HandlerFunc: Chains},
 	}
 	return routes
 }

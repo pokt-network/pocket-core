@@ -1285,8 +1285,93 @@ paths:
                   message:
                     type: string
                     description: The error msg.
+  /private/chains:
+    post:
+      tags:
+        - private
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      responses:
+        '200':
+          description: Return the Current Hosted Chains map
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+        '401':
+          description: Wrong Authtoken
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
+  /private/updatechains:
+    post:
+      tags:
+        - private
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Chain'
+        required: true
+      responses:
+        '200':
+          description: Return the Current Hosted Chains map
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Wrong Authtoken
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
 components:
   schemas:
+    Chain:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        basic_auth:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
     ABCIEvent:
       type: object
       properties:
@@ -1357,7 +1442,7 @@ components:
           items:
             type: string
           description: Blockchains supported
-        tokens:
+        staked_tokens:
           type: string
           description: How many tokens has this node staked in uPOKT
         max_relays:
@@ -2287,8 +2372,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
-        total_count:
-          type: string
+        page_count:
+          type: integer
+        total_txs:
+          type: integer
     QueryBlockTXs:
       type: object
       properties:
@@ -2311,7 +2398,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
-        total_count:
+        page_count:
+          type: integer
+        total_txs:
           type: integer
     UpgradeResponse:
       type: object

@@ -35,7 +35,7 @@ git checkout tags/<release tag>
 Example:
 
 ```text
-git checkout tags/RC-0.6.3 
+git checkout tags/RC-0.8.0
 ```
 
 #### Build
@@ -44,7 +44,7 @@ git checkout tags/RC-0.6.3
 go build -o <destination directory> <source code directory>/...
 ```
 
-Example: 
+Example:
 
 ```text
 go build -o $GOPATH/bin/pocket $GOPATH/src/github.com/pokt-network/pocket-core/app/cmd/pocket_core/main.go
@@ -61,7 +61,7 @@ pocket version
 
 {% tab title="Response" %}
 ```
-> RC 0.6.3
+> RC 0.8.0
 ```
 {% endtab %}
 {% endtabs %}
@@ -83,7 +83,7 @@ pocket version
 
 {% tab title="Response" %}
 ```
-> RC-0.6.3
+> RC-0.8.0
 ```
 {% endtab %}
 {% endtabs %}
@@ -194,7 +194,7 @@ Can test with simulate relay flag and endpoint. See [RPC Specification](../specs
 pocket start --seeds=<seeds> --mainnet
 ```
 
-Example: 
+Example:
 
 ```text
 pocket start --seeds="64c91701ea98440bc3674fdb9a99311461cdfd6f@node1.mainnet.pokt.network:21656" --mainnet
@@ -214,7 +214,7 @@ Stake the account to participate in the Network as a **Validator**
 pocket nodes stake <address> <amount> <relay_chains> <serviceURI>:<port> mainnet 10000
 ```
 
-Example: 
+Example:
 
 ```text
 pocket nodes stake 3ee61299d5bbbd2974cddcc194d9b547c7629546 20000000000 ["0001","0002"] https://pokt.rocks:443 mainnet 10000
@@ -239,7 +239,6 @@ Pocket Core provides a configuration file found in `<datadir>/config/config.json
 * **"data\_dir"**: The data directory of Pocket Core \(should be the same directory as Tendermint data dir\)
 * **"genesis\_file"**: The name of the genesis file
 * **"chains\_name"**: The name of the chains file
-* **"session\_db\_name"**: The name of the SessionDB \(where Pocket Core store's Sessions\)
 * **"evidence\_db\_name"**: The name of the EvidenceDB \(where Pocket Core store's Relay Evidence\)
 * **"tendermint\_uri"**: The RPC Port of Tendermint \(also defined above in Tendermint/RPC\)
 * **"keybase\_name"**: The name of the keybase
@@ -253,7 +252,7 @@ Pocket Core provides a configuration file found in `<datadir>/config/config.json
 * **"validator\_cache\_size"**: Maximum number of validators stored in cache memory
 * **"application\_cache\_size"**: Maximum number of applications stored in cache memory
 * **"pocket\_prometheus\_port"**: Pocket port for Prometheus metrics \(5.1 +\)
-* **"prometheus\_max\_open\_files"**: Max connections to Pocket prometheus 
+* **"prometheus\_max\_open\_files"**: Max connections to Pocket prometheus
 * **"max\_claim\_age\_for\_proof\_retry"**: Maximum age of a claim where a proof transaction will be sent
 * **"proof\_prevalidation"**:  Avoid invalid proof transactions by prevalidating claims \(extra compute\)
 * **"ctx\_cache\_size"**: Size of the state cache

@@ -2,7 +2,10 @@ package codec
 
 import (
 	"errors"
+	"fmt"
 	"math"
+	"strconv"
+	"strings"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/pokt-network/pocket-core/codec/types"
@@ -24,12 +27,23 @@ func NewCodec(anyUnpacker types.AnyUnpacker) *Codec {
 }
 
 var (
+	UpgradeFeatureMap                      = make(map[string]int64)
 	UpgradeHeight                    int64 = math.MaxInt64
 	OldUpgradeHeight                 int64 = 0
 	NotProtoCompatibleInterfaceError       = errors.New("the interface passed for encoding does not implement proto marshaller")
+	TestMode                         int64 = 0
 )
 
-const UpgradeCodecHeight = int64(30024)
+const (
+	UpgradeCodecHeight      = int64(30024)
+	CodecChainHaltHeight    = int64(30334)
+	ValidatorSplitHeight    = int64(45353)
+	UpgradeCodecUpdateKey   = "CODEC"
+	ValidatorSplitUpdateKey = "SPLIT"
+	NonCustodialUpdateKey   = "NCUST"
+	TxCacheEnhancementKey   = "REDUP"
+	ReplayBurnKey           = "REPBR"
+)
 
 func GetCodecUpgradeHeight() int64 {
 	if UpgradeHeight >= UpgradeCodecHeight {
@@ -79,12 +93,12 @@ func (cdc *Codec) RegisterImplementation(iface interface{}, impls ...proto.Messa
 func (cdc *Codec) MarshalBinaryBare(o interface{}, height int64) ([]byte, error) { // TODO take height as parameter, move upgrade height to this package, switch based on height not upgrade mod
 	p, ok := o.(ProtoMarshaler)
 	if !ok {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return nil, NotProtoCompatibleInterfaceError
 		}
 		return cdc.legacyCdc.MarshalBinaryBare(o)
 	} else {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return cdc.protoCdc.MarshalBinaryBare(p)
 		}
 		return cdc.legacyCdc.MarshalBinaryBare(p)
@@ -94,12 +108,12 @@ func (cdc *Codec) MarshalBinaryBare(o interface{}, height int64) ([]byte, error)
 func (cdc *Codec) MarshalBinaryLengthPrefixed(o interface{}, height int64) ([]byte, error) {
 	p, ok := o.(ProtoMarshaler)
 	if !ok {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return nil, NotProtoCompatibleInterfaceError
 		}
 		return cdc.legacyCdc.MarshalBinaryLengthPrefixed(o)
 	} else {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return cdc.protoCdc.MarshalBinaryLengthPrefixed(p)
 		}
 		return cdc.legacyCdc.MarshalBinaryLengthPrefixed(p)
@@ -109,12 +123,19 @@ func (cdc *Codec) MarshalBinaryLengthPrefixed(o interface{}, height int64) ([]by
 func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) error {
 	p, ok := ptr.(ProtoMarshaler)
 	if !ok {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return NotProtoCompatibleInterfaceError
 		}
 		return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
 	}
-	if cdc.IsAfterUpgrade(height) {
+	if cdc.IsAfterCodecUpgrade(height) {
+		if height == UpgradeCodecHeight {
+			e := cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
+			if e != nil {
+				return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
+			}
+			return e
+		}
 		return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
 	}
 	e := cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
@@ -127,12 +148,19 @@ func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) 
 func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}, height int64) error {
 	p, ok := ptr.(ProtoMarshaler)
 	if !ok {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return NotProtoCompatibleInterfaceError
 		}
 		return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
 	}
-	if cdc.IsAfterUpgrade(height) {
+	if cdc.IsAfterCodecUpgrade(height) {
+		if height == UpgradeCodecHeight {
+			e := cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
+			if e != nil {
+				return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
+			}
+			return e
+		}
 		return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
 	}
 	e := cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
@@ -214,14 +242,78 @@ func (cdc *Codec) ProtoCodec() *ProtoCodec {
 }
 
 //Note: includes the actual upgrade height
-func (cdc *Codec) IsAfterUpgrade(height int64) bool {
+func (cdc *Codec) IsAfterCodecUpgrade(height int64) bool {
 	if cdc.upgradeOverride != -1 {
 		return cdc.upgradeOverride == 1
 	}
-	return GetCodecUpgradeHeight() <= height || height == -1
+	return (GetCodecUpgradeHeight() <= height || height == -1) || TestMode <= -1
 }
 
 //Note: includes the actual upgrade height
-func (cdc *Codec) IsAfterSecondUpgrade(height int64) bool {
-	return height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()
+func (cdc *Codec) IsAfterValidatorSplitUpgrade(height int64) bool {
+	return height >= ValidatorSplitHeight || (height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()) || TestMode <= -2
+}
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsAfterNonCustodialUpgrade(height int64) bool {
+	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height >= UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
+}
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsOnNonCustodialUpgrade(height int64) bool {
+	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
+}
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsAfterNamedFeatureActivationHeight(height int64, key string) bool {
+	return UpgradeFeatureMap[key] != 0 && height >= UpgradeFeatureMap[key]
+}
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsOnNamedFeatureActivationHeight(height int64, key string) bool {
+	return UpgradeFeatureMap[key] != 0 && height == UpgradeFeatureMap[key]
+}
+
+// Upgrade Utils for feature map
+
+//merge slice to existing map
+func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {
+	var fmap = make(map[string]int64)
+	for k, v := range m {
+		fmap[k] = v
+	}
+	for _, v := range arr {
+		kv := strings.Split(v, ":")
+		i, _ := strconv.ParseInt(kv[1], 10, 64)
+		fmap[kv[0]] = i
+	}
+	return fmap
+}
+
+//converts slice to map
+func SliceToMap(arr []string) map[string]int64 {
+	var fmap = make(map[string]int64)
+	for _, v := range arr {
+		kv := strings.Split(v, ":")
+		i, _ := strconv.ParseInt(kv[1], 10, 64)
+		fmap[kv[0]] = i
+	}
+	return fmap
+}
+
+//converts map to slice
+func MapToSlice(m map[string]int64) []string {
+	var fslice = make([]string, 0)
+	for k, v := range m {
+		kv := fmt.Sprintf("%s:%d", k, v)
+		fslice = append(fslice, kv)
+	}
+	return fslice
+}
+
+//convert slice to map and back to remove duplicates
+func CleanUpgradeFeatureSlice(arr []string) []string {
+	m := SliceToMap(arr)
+	s := MapToSlice(m)
+	return s
 }

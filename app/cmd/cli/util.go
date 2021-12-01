@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"os"
@@ -18,7 +17,6 @@ func init() {
 	utilCmd.AddCommand(chainsGenCmd)
 	utilCmd.AddCommand(chainsDelCmd)
 	utilCmd.AddCommand(decodeTxCmd)
-	utilCmd.AddCommand(unsafeRollbackCmd)
 	utilCmd.AddCommand(exportGenesisForReset)
 	utilCmd.AddCommand(convertPocketEvidenceDB)
 	utilCmd.AddCommand(completionCmd)
@@ -94,8 +92,8 @@ var decodeTxCmd = &cobra.Command{
 		}
 		stdTx := app.UnmarshalTxStr(txStr, height)
 		fmt.Printf(
-			"Type:\t\t%s\nMsg:\t\t%v\nFee:\t\t%s\nEntropy:\t%d\nMemo:\t\t%s\nSigner\t\t%s\nSig:\t\t%s\n",
-			stdTx.GetMsg().Type(), stdTx.GetMsg(), stdTx.GetFee().String(), stdTx.GetEntropy(), stdTx.GetMemo(), stdTx.GetMsg().GetSigner().String(),
+			"Type:\t\t%s\nMsg:\t\t%v\nFee:\t\t%s\nEntropy:\t%d\nMemo:\t\t%s\nSigners\t\t%v\nSig:\t\t%s\n",
+			stdTx.GetMsg().Type(), stdTx.GetMsg(), stdTx.GetFee().String(), stdTx.GetEntropy(), stdTx.GetMemo(), stdTx.GetMsg().GetSigners(),
 			stdTx.GetSignature().GetPublicKey())
 	},
 }
@@ -118,7 +116,7 @@ var exportGenesisForReset = &cobra.Command{
 			return
 		}
 		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db, false)
+		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db, false, app.GlobalConfig.PocketConfig.IavlCacheSize)
 		// initialize stores
 		blockStore, _, _, _, err := state.BlocksAndStateFromDB(&app.GlobalConfig.TendermintConfig, state.DefaultDBProvider)
 		if err != nil {
@@ -152,59 +150,9 @@ var convertPocketEvidenceDB = &cobra.Command{
 	},
 }
 
-func init() {
-	unsafeRollbackCmd.Flags().BoolVar(&blocks, "blocks", false, "rollback blocks as well as the state")
-}
-
 var (
 	blocks bool
 )
-
-var unsafeRollbackCmd = &cobra.Command{
-	Use:   "unsafe-rollback <height>",
-	Short: "Rollbacks the blockchain, the state, and app to a previous height",
-	Long:  "Rollbacks the blockchain, the state, and app to a previous height",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		height, err := strconv.Atoi(args[0])
-		if err != nil {
-			fmt.Println("error parsing height: ", err)
-			return
-		}
-		db, err := app.OpenApplicationDB(app.GlobalConfig)
-		if err != nil {
-			fmt.Println("error loading application database: ", err)
-			return
-		}
-		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketBaseApp(log.NewTMLogger(loggerFile), db, false)
-		// initialize stores
-		a.MountKVStores(a.Keys)
-		a.MountTransientStores(a.Tkeys)
-		// rollback the txIndexer
-
-		err = state.RollbackTxIndexer(&app.GlobalConfig.TendermintConfig, int64(height), context.Background())
-		if err != nil {
-			fmt.Println("error rolling back txIndexer: ", err)
-			return
-		}
-		// rollback the app store
-		err = a.Store().RollbackVersion(int64(height))
-		if err != nil {
-			fmt.Println("error rolling back app: ", err)
-			return
-		}
-		if blocks {
-			// rollback block store and state
-			err = app.UnsafeRollbackData(&app.GlobalConfig.TendermintConfig, true, int64(height))
-			if err != nil {
-				fmt.Println("error rolling back block and state: ", err)
-				return
-			}
-		}
-	},
-}
 
 var completionCmd = &cobra.Command{
 	Use:   "completion (bash | zsh | fish | powershell)",

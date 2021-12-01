@@ -171,8 +171,8 @@ func (tx StdTx) GetSignature() StdSignature {
 	return tx.Signature
 }
 
-func (tx StdTx) GetSigner() sdk.Address {
-	return tx.GetMsg().GetSigner()
+func (tx StdTx) GetSigners() []sdk.Address {
+	return tx.GetMsg().GetSigners()
 }
 
 // GetMsg returns the all the transaction's messages.
@@ -222,7 +222,7 @@ var _ codec.ProtoMarshaler = &StdSignature{}
 // ProtoStdSignature represents a sig
 type StdSignature struct {
 	posCrypto.PublicKey `json:"pub_key" yaml:"pub_key"` // technically optional if the public key is in the world state
-	Signature           []byte `json:"signature" yaml:"signature"`
+	Signature           []byte                          `json:"signature" yaml:"signature"`
 }
 
 func (ss *StdSignature) Reset() {

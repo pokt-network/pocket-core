@@ -2,6 +2,7 @@ package gov
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/crypto"
 	"reflect"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -10,7 +11,7 @@ import (
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.Msg, _ crypto.PublicKey) sdk.Result {
 		ctx = ctx.WithEventManager(sdk.NewEventManager())
 		// convert to value for switch consistency
 		if reflect.ValueOf(msg).Kind() == reflect.Ptr {

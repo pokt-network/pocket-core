@@ -9,8 +9,11 @@ import (
 	"github.com/pokt-network/pocket-core/x/gov/types"
 )
 
-const maxValidatorChangeAllowedMinHeight = 40000
-const maxValidatorACLKey = "pos/MaxValidators"
+const (
+	FeatureUpgradeKey                    = "FEATURE"
+	mAxValidatorsACLKey                  = "pos/MaxValidators"
+	minSafeMaxValidatorParamChangeHeight = 40000
+)
 
 // Allocate subspace used for keepers
 func (k Keeper) Subspace(s string) sdk.Subspace {
@@ -138,7 +141,25 @@ func handleUpgradeAfterUpdate(ctx sdk.Ctx, aclKey string, paramValue interface{}
 	oldUpgrade := types.Upgrade{}
 	space.Get(ctx, []byte(paramKey), &oldUpgrade)
 	newUpgrade, ok := paramValue.(types.Upgrade)
-	newUpgrade.OldUpgradeHeight = oldUpgrade.GetHeight()
+
+	if newUpgrade.UpgradeHeight() != 1 && newUpgrade.UpgradeVersion() != FeatureUpgradeKey {
+		newUpgrade.OldUpgradeHeight = oldUpgrade.GetHeight()
+		if oldUpgrade.GetFeatures() == nil {
+			oldUpgrade.Features = make([]string, 0)
+		}
+		featureSet := append(oldUpgrade.Features, newUpgrade.Features...)
+		newUpgrade.Features = codec.CleanUpgradeFeatureSlice(featureSet)
+	} else {
+		//copy old one to new as we just want to update the features
+		newUpgrade.OldUpgradeHeight = oldUpgrade.OldUpgradeHeight
+		newUpgrade.Version = oldUpgrade.Version
+		newUpgrade.Height = oldUpgrade.Height
+		if oldUpgrade.GetFeatures() == nil {
+			oldUpgrade.Features = make([]string, 0)
+		}
+		featureSet := append(oldUpgrade.Features, newUpgrade.Features...)
+		newUpgrade.Features = codec.CleanUpgradeFeatureSlice(featureSet)
+	}
 
 	space.Set(ctx, []byte(paramKey), newUpgrade)
 	k.spaces[subspaceName] = space
@@ -164,6 +185,7 @@ func handleUpgradeAfterUpdate(ctx sdk.Ctx, aclKey string, paramValue interface{}
 		}
 		codec.UpgradeHeight = newUpgrade.Height
 		codec.OldUpgradeHeight = newUpgrade.OldUpgradeHeight
+		codec.UpgradeFeatureMap = codec.SliceToExistingMap(newUpgrade.GetFeatures(), codec.UpgradeFeatureMap)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventUpgrade,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
@@ -179,9 +201,8 @@ func (k Keeper) ModifyParam(ctx sdk.Ctx, aclKey string, paramValue []byte, owner
 		return err.Result()
 	}
 
-	if ctx.BlockHeight() >= maxValidatorChangeAllowedMinHeight {
-
-		if !k.cdc.IsAfterSecondUpgrade(ctx.BlockHeight()) && aclKey == maxValidatorACLKey {
+	if ctx.BlockHeight() >= minSafeMaxValidatorParamChangeHeight {
+		if !k.cdc.IsAfterValidatorSplitUpgrade(ctx.BlockHeight()) && aclKey == mAxValidatorsACLKey {
 			return types.ErrUnauthorizedHeightParamChange(types.ModuleName, codec.UpgradeHeight, aclKey).Result()
 		}
 	}

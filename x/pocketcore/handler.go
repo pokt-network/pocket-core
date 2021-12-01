@@ -2,15 +2,17 @@ package pocketcore
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"reflect"
+	"time"
 )
 
 // "NewHandler" - Returns a handler for "pocketCore" type messages.
 func NewHandler(keeper keeper.Keeper) sdk.Handler {
-	return func(ctx sdk.Ctx, msg sdk.Msg) sdk.Result {
+	return func(ctx sdk.Ctx, msg sdk.Msg, _ crypto.PublicKey) sdk.Result {
 		if ctx.IsAfterUpgradeHeight() {
 			ctx = ctx.WithEventManager(sdk.NewEventManager())
 		}
@@ -34,6 +36,7 @@ func NewHandler(keeper keeper.Keeper) sdk.Handler {
 
 // "handleClaimMsg" - General handler for the claim message
 func handleClaimMsg(ctx sdk.Ctx, k keeper.Keeper, msg types.MsgClaim) sdk.Result {
+	defer sdk.TimeTrack(time.Now())
 	// validate the claim message
 	if err := k.ValidateClaim(ctx, msg); err != nil {
 		return err.Result()
@@ -55,17 +58,19 @@ func handleClaimMsg(ctx sdk.Ctx, k keeper.Keeper, msg types.MsgClaim) sdk.Result
 
 // "handleProofMsg" - General handler for the proof message
 func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Result {
+	defer sdk.TimeTrack(time.Now())
+
 	// validate the claim claim
 	addr, claim, err := k.ValidateProof(ctx, proof)
 	if err != nil {
-		if err.Code() == types.CodeInvalidMerkleVerifyError && !claim.IsEmpty(){
+		if err.Code() == types.CodeInvalidMerkleVerifyError && !claim.IsEmpty() {
 			// delete local evidence
-			processSelf(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
+			processSelf(ctx, k, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
 			return err.Result()
 		}
 		if err.Code() == types.CodeReplayAttackError && !claim.IsEmpty() {
 			// delete local evidence
-			processSelf(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
+			processSelf(ctx, k, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
 			// if is a replay attack, handle accordingly
 			k.HandleReplayAttack(ctx, addr, sdk.NewInt(claim.TotalProofs))
 			err := k.DeleteClaim(ctx, addr, claim.SessionHeader, claim.EvidenceType)
@@ -81,7 +86,7 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 		return err.Result()
 	}
 	// delete local evidence
-	processSelf(ctx, k, proof.GetSigner(), claim.SessionHeader, claim.EvidenceType, tokens)
+	processSelf(ctx, k, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, tokens)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

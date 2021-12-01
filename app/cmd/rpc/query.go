@@ -10,6 +10,7 @@ import (
 	"github.com/tendermint/tendermint/types"
 	"math/big"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -110,8 +111,9 @@ func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 // Result of searching for txs
 type RPCResultTxSearch struct {
-	Txs        []*RPCResultTx `json:"txs"`
-	TotalCount int            `json:"total_count"`
+	Txs       []*RPCResultTx `json:"txs"`
+	PageCount int            `json:"page_count"`
+	TotalTxs  int            `json:"total_txs"`
 }
 
 // Result of querying for a tx
@@ -171,9 +173,11 @@ func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
 	if res == nil {
 		return RPCResultTxSearch{}
 	}
+	pageCount := len(res.Txs)
 	rpcTxSearch := RPCResultTxSearch{
-		Txs:        make([]*RPCResultTx, 0, res.TotalCount),
-		TotalCount: res.TotalCount,
+		Txs:       make([]*RPCResultTx, 0, res.TotalCount),
+		PageCount: pageCount,
+		TotalTxs:  res.TotalCount,
 	}
 	for _, result := range res.Txs {
 		rpcTxSearch.Txs = append(rpcTxSearch.Txs, ResultTxToRPC(result))
@@ -249,6 +253,28 @@ func BlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		params.Height = app.PCA.BaseApp.LastBlockHeight()
 	}
 	res, err := app.PCA.QueryBlockTxs(params.Height, params.Page, params.PerPage, params.Prove, params.Sort)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+	}
+	rpcResponse := ResultTxSearchToRPC(res)
+	s, er := json.MarshalIndent(rpcResponse, "", "  ")
+	if er != nil {
+		WriteErrorResponse(w, 400, er.Error())
+		return
+	}
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
+}
+
+func AllBlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = PaginatedHeightParams{}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	if params.Height == 0 {
+		params.Height = app.PCA.BaseApp.LastBlockHeight()
+	}
+	res, err := app.PCA.QueryAllBlockTxs(params.Height, params.Page, params.PerPage)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 	}
@@ -412,12 +438,31 @@ func SecondUpgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	if params.Height == 0 {
 		params.Height = app.PCA.BaseApp.LastBlockHeight()
 	}
-	result := app.Codec().IsAfterSecondUpgrade(params.Height)
+	result := app.Codec().IsAfterValidatorSplitUpgrade(params.Height)
 	j, _ := json.Marshal(struct {
 		R bool `json:"r"`
 	}{R: result})
 
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
+func Chains(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	value := r.URL.Query().Get("authtoken")
+	if value == app.AuthToken.Value {
+		res, err := app.PCA.QueryHostedChains()
+		if err != nil {
+			WriteErrorResponse(w, 400, err.Error())
+			return
+		}
+		j, err := app.Codec().MarshalJSON(res)
+		if err != nil {
+			WriteErrorResponse(w, 400, err.Error())
+			return
+		}
+		WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+	} else {
+		WriteErrorResponse(w, 401, "wrong authtoken "+value)
+	}
 }
 
 func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -436,6 +481,31 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
+func QueryValidatorsByChain(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = HeightAndValidatorOptsParams{
+		Height: 0,
+		Opts: nodeTypes.QueryValidatorsParams{
+			Blockchain: "0001",
+		},
+	}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.PCA.QueryValidatorByChain(params.Height, params.Opts.Blockchain)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+
+	j, _ := json.Marshal(struct {
+		Chain string `json:"chain"`
+		Count string `json:"count"`
+	}{Chain: params.Opts.Blockchain, Count: strconv.FormatInt(res, 10)})
+
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 

@@ -23,22 +23,22 @@ func TestCoinsFromUnstakedToStaked(t *testing.T) {
 	}{
 		{
 			name:      "stake coins on pool",
-			validator: types.Validator{Address: validatorAddress},
+			validator: types.Validator{OutputAddress: validatorAddress},
 			amount:    sdk.NewInt(10),
-			errors:    true,
+			errors:    false,
 		},
 		{
 			name:      "error if negative ammount",
-			validator: types.Validator{Address: validatorAddress},
+			validator: types.Validator{OutputAddress: validatorAddress},
 			amount:    sdk.NewInt(-1),
 			expected:  "negative coin amount: -1",
 			errors:    true,
 		},
 		{name: "error if no supply is set",
-			validator: types.Validator{Address: validatorAddress},
+			validator: types.Validator{OutputAddress: validatorAddress},
 			expected:  "insufficient account funds",
 			amount:    sdk.NewInt(10),
-			errors:    false,
+			errors:    true,
 		},
 	}
 	for _, test := range tests {
@@ -49,14 +49,14 @@ func TestCoinsFromUnstakedToStaked(t *testing.T) {
 			case true:
 				if strings.Contains(test.name, "setup") {
 					addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, sdk.NewInt(100000000000))
+					sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.OutputAddress, sdk.NewInt(100000000000))
 				}
-				err := keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				err := keeper.coinsFromUnstakedToStaked(context, test.validator.OutputAddress, test.amount)
 				assert.NotNil(t, err)
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, sdk.NewInt(100000000000))
-				err := keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.OutputAddress, sdk.NewInt(100000000000))
+				err := keeper.coinsFromUnstakedToStaked(context, test.validator.OutputAddress, test.amount)
 				assert.Nil(t, err)
 				staked := keeper.GetStakedTokens(context)
 				assert.True(t, test.amount.Add(sdk.NewInt(100000000000)).Equal(staked), "values do not match")
@@ -126,14 +126,14 @@ func TestBurnStakedTokens(t *testing.T) {
 	}{
 		{
 			name:       "burn coins from pool",
-			validator:  types.Validator{Address: validatorAddress},
+			validator:  types.Validator{OutputAddress: validatorAddress},
 			burnAmount: sdk.NewInt(5),
 			amount:     sdk.NewInt(10),
 			errs:       false,
 		},
 		{
 			name:       "errs trying to burn from pool",
-			validator:  types.Validator{Address: validatorAddress},
+			validator:  types.Validator{OutputAddress: validatorAddress},
 			burnAmount: sdk.NewInt(-1),
 			amount:     sdk.NewInt(10),
 			errs:       true,
@@ -146,14 +146,14 @@ func TestBurnStakedTokens(t *testing.T) {
 			switch test.errs {
 			case true:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, supplySize)
-				_ = keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.OutputAddress, supplySize)
+				_ = keeper.coinsFromUnstakedToStaked(context, test.validator.OutputAddress, test.amount)
 				err := keeper.burnStakedTokens(context, test.burnAmount)
 				assert.Nil(t, err, "error is not nil")
 			default:
 				addMintedCoinsToModule(t, context, &keeper, types.StakedPoolName)
-				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.Address, supplySize)
-				_ = keeper.coinsFromUnstakedToStaked(context, test.validator, test.amount)
+				sendFromModuleToAccount(t, context, &keeper, types.StakedPoolName, test.validator.OutputAddress, supplySize)
+				_ = keeper.coinsFromUnstakedToStaked(context, test.validator.OutputAddress, test.amount)
 				err := keeper.burnStakedTokens(context, test.burnAmount)
 				if err != nil {
 					t.Fail()

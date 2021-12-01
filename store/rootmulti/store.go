@@ -39,8 +39,9 @@ type Store struct {
 	keysByName   map[string]types.StoreKey
 	lazyLoading  bool
 
-	traceWriter  io.Writer
-	traceContext types.TraceContext
+	traceWriter   io.Writer
+	traceContext  types.TraceContext
+	iavlCacheSize int64
 }
 
 func (rs *Store) CopyStore() *types.Store {
@@ -78,9 +79,9 @@ func (rs *Store) CopyStore() *types.Store {
 var _ types.CommitMultiStore = (*Store)(nil)
 var _ types.Queryable = (*Store)(nil)
 
-const MemoryCacheCapacity = 26
+const MemoryCacheCapacity = 12
 
-func NewStore(db dbm.DB, cache bool) *Store {
+func NewStore(db dbm.DB, cache bool, iavlCacheSize int64) *Store {
 	var multiStoreCache types.MultiStoreCache
 	if cache {
 		multiStoreCache = heightcache.NewMultiStoreMemoryCache(MemoryCacheCapacity)
@@ -89,11 +90,12 @@ func NewStore(db dbm.DB, cache bool) *Store {
 	}
 
 	return &Store{
-		DB:           db,
-		Cache:        multiStoreCache,
-		storesParams: make(map[types.StoreKey]storeParams),
-		stores:       make(map[types.StoreKey]types.CommitStore),
-		keysByName:   make(map[string]types.StoreKey),
+		DB:            db,
+		Cache:         multiStoreCache,
+		storesParams:  make(map[types.StoreKey]storeParams),
+		stores:        make(map[types.StoreKey]types.CommitStore),
+		keysByName:    make(map[string]types.StoreKey),
+		iavlCacheSize: iavlCacheSize,
 	}
 }
 
@@ -545,7 +547,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		if cacheForStore.IsValid() {
 			log.Printf("Warming up cache for %s\n", key.Name())
 		}
-		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading, cacheForStore)
+		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading, cacheForStore, rs.iavlCacheSize)
 
 	case types.StoreTypeDB:
 		return commitDBStoreAdapter{dbadapter.Store{DB: db}}, nil

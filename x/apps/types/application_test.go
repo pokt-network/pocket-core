@@ -1298,7 +1298,7 @@ func TestApplicationUtil_UnMarshalApplication(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := sdk.NewContext(nil, types2.Header{Height:1}, false, nil)
+			c := sdk.NewContext(nil, types2.Header{Height: 1}, false, nil)
 			c.BlockHeight()
 			bz, _ := MarshalApplication(tt.args.codec, c, tt.args.application)
 			unmarshaledApp, err := UnmarshalApplication(tt.args.codec, c, bz)

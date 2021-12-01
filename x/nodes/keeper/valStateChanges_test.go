@@ -8,6 +8,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestKeeper_FinishUnstakingValidator(t *testing.T) {
@@ -51,6 +52,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 	newChains := []string{"0021"}
 	val := getUnstakedValidator()
 	val.StakedTokens = sdk.ZeroInt()
+	val.OutputAddress = val.Address
 	// updatedStakeAmount
 	updateStakeAmountApp := val
 	updateStakeAmountApp.StakedTokens = bumpStakeAmount
@@ -68,6 +70,10 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 	updateServiceURL.StakedTokens = stakeAmount
 	updateServiceURL.Chains = newChains
 	updateServiceURL.ServiceURL = "https://newServiceUrl.com"
+	// nil output addresss
+	nilOutputAddress := val
+	nilOutputAddress.OutputAddress = nil
+	nilOutputAddress.StakedTokens = stakeAmount
 	//same app no change no fail
 	updateNothingval := val
 	updateNothingval.StakedTokens = stakeAmount
@@ -138,12 +144,12 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			if err != nil {
 				t.Fail()
 			}
-			err = keeper.StakeValidator(context, tt.origApp, tt.amount)
+			err = keeper.StakeValidator(context, tt.origApp, tt.amount, tt.origApp.PublicKey)
 			if err != nil {
 				t.Fail()
 			}
 			// test begins here
-			err = keeper.ValidateValidatorStaking(context, tt.want, tt.want.StakedTokens)
+			err = keeper.ValidateValidatorStaking(context, tt.want, tt.want.StakedTokens, sdk.Address(tt.origApp.PublicKey.Address()))
 			if err != nil {
 				if tt.err.Error() != err.Error() {
 					t.Fatalf("Got error %s wanted error %s", err, tt.err)
@@ -151,7 +157,139 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 				return
 			}
 			// edit stake
-			_ = keeper.StakeValidator(context, tt.want, tt.want.StakedTokens)
+			_ = keeper.StakeValidator(context, tt.want, tt.want.StakedTokens, tt.want.PublicKey)
+			tt.want.Status = sdk.Staked
+			// see if the changes stuck
+			got, _ := keeper.GetValidator(context, tt.origApp.Address)
+			if !got.Equals(tt.want) {
+				t.Fatalf("Got app %s\nWanted app %s", got.String(), tt.want.String())
+			}
+		})
+
+	}
+}
+func TestValidatorStateChange_EditAndValidateStakeValidatorAfterNonCustodialUpgrade(t *testing.T) {
+	stakeAmount := sdk.NewInt(100000000000)
+	accountAmount := sdk.NewInt(1000000000000).Add(stakeAmount)
+	bumpStakeAmount := sdk.NewInt(1000000000000)
+	newChains := []string{"0021"}
+	val := getUnstakedValidator()
+	val.StakedTokens = sdk.ZeroInt()
+	val.OutputAddress = val.Address
+	// updatedStakeAmount
+	updateStakeAmountApp := val
+	updateStakeAmountApp.StakedTokens = bumpStakeAmount
+	// updatedStakeAmountFail
+	updateStakeAmountAppFail := val
+	updateStakeAmountAppFail.StakedTokens = stakeAmount.Sub(sdk.OneInt())
+	// updatedStakeAmountNotEnoughCoins
+	notEnoughCoinsAccount := stakeAmount
+	// updateChains
+	updateChainsVal := val
+	updateChainsVal.StakedTokens = stakeAmount
+	updateChainsVal.Chains = newChains
+	// updateServiceURL
+	updateServiceURL := val
+	updateServiceURL.StakedTokens = stakeAmount
+	updateServiceURL.Chains = newChains
+	updateServiceURL.ServiceURL = "https://newServiceUrl.com"
+	// nil output addresss
+	nilOutputAddress := val
+	nilOutputAddress.OutputAddress = nil
+	nilOutputAddress.StakedTokens = stakeAmount
+	//same app no change no fail
+	updateNothingval := val
+	updateNothingval.StakedTokens = stakeAmount
+	tests := []struct {
+		name          string
+		accountAmount sdk.BigInt
+		origApp       types.Validator
+		amount        sdk.BigInt
+		want          types.Validator
+		err           sdk.Error
+	}{
+		{
+			name:          "edit stake amount of existing validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateStakeAmountApp,
+		},
+		{
+			name:          "FAIL edit stake amount of existing validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateStakeAmountAppFail,
+			err:           types.ErrMinimumEditStake("pos"),
+		},
+		{
+			name:          "edit stake the chains of the validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateChainsVal,
+		},
+		{
+			name:          "edit stake the serviceurl of the validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateChainsVal,
+		},
+		{
+			name:          "FAIL not enough coins to bump stake amount of existing validator",
+			accountAmount: notEnoughCoinsAccount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateStakeAmountApp,
+			err:           types.ErrNotEnoughCoins("pos"),
+		},
+		{
+			name:          "FAIL nil output address",
+			accountAmount: notEnoughCoinsAccount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          nilOutputAddress,
+			err:           types.ErrNilOutputAddr("pos"),
+		},
+		{
+			name:          "update nothing for the validator",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        stakeAmount,
+			want:          updateNothingval,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// test setup
+			codec.TestMode = -3
+			codec.UpgradeHeight = -1
+			context, _, keeper := createTestInput(t, true)
+			coins := sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), tt.accountAmount))
+			err := keeper.AccountKeeper.MintCoins(context, types.StakedPoolName, coins)
+			if err != nil {
+				t.Fail()
+			}
+			err = keeper.AccountKeeper.SendCoinsFromModuleToAccount(context, types.StakedPoolName, tt.origApp.Address, coins)
+			if err != nil {
+				t.Fail()
+			}
+			err = keeper.StakeValidator(context, tt.origApp, tt.amount, tt.origApp.PublicKey)
+			if err != nil {
+				t.Fail()
+			}
+			// test begins here
+			err = keeper.ValidateValidatorStaking(context, tt.want, tt.want.StakedTokens, sdk.Address(tt.origApp.PublicKey.Address()))
+			if err != nil {
+				if tt.err.Error() != err.Error() {
+					t.Fatalf("Got error %s wanted error %s", err, tt.err)
+				}
+				return
+			}
+			// edit stake
+			_ = keeper.StakeValidator(context, tt.want, tt.want.StakedTokens, tt.want.PublicKey)
 			tt.want.Status = sdk.Staked
 			// see if the changes stuck
 			got, _ := keeper.GetValidator(context, tt.origApp.Address)
@@ -249,7 +387,7 @@ func TestKeeper_StakeValidator(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
-			if got := k.StakeValidator(tt.args.ctx, tt.args.validator, tt.args.amount); !reflect.DeepEqual(got, tt.want) {
+			if got := k.StakeValidator(tt.args.ctx, tt.args.validator, tt.args.amount, tt.args.validator.PublicKey); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("StakeValidator() = %v, want %v", got, tt.want)
 			}
 		})
@@ -411,7 +549,8 @@ func TestKeeper_ValidateValidatorStaking(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
-			if got := k.ValidateValidatorStaking(tt.args.ctx, tt.args.validator, tt.args.amount); !reflect.DeepEqual(got, tt.want) {
+			codec.TestMode = -2
+			if got := k.ValidateValidatorStaking(tt.args.ctx, tt.args.validator, tt.args.amount, sdk.Address(tt.args.validator.PublicKey.Address())); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ValidateValidatorStaking() = %v, want %v", got, tt.want)
 			}
 		})
@@ -447,6 +586,92 @@ func TestKeeper_WaitToBeginUnstakingValidator(t *testing.T) {
 			if got := k.WaitToBeginUnstakingValidator(tt.args.ctx, tt.args.validator); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("WaitToBeginUnstakingValidator() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestKeeper_ValidateUnjailMessage(t *testing.T) {
+	type args struct {
+		ctx sdk.Context
+		k   Keeper
+		v   types.Validator
+		msg types.MsgUnjail
+	}
+	unauthSigner := getRandomValidatorAddress()
+	validator := getStakedValidator()
+	validator.Jailed = true
+	validator.OutputAddress = getRandomValidatorAddress()
+	validatorNoOuptut := validator
+	validatorNoOuptut.OutputAddress = nil
+	context, _, keeper := createTestInput(t, true)
+	msgUnjailAuthorizedByValidator := types.MsgUnjail{
+		ValidatorAddr: validator.Address,
+		Signer:        validator.Address,
+	}
+	msgUnjailAuthorizedByOutput := types.MsgUnjail{
+		ValidatorAddr: validator.Address,
+		Signer:        validator.OutputAddress,
+	}
+	msgUnjailUnauthorizedSigner := types.MsgUnjail{
+		ValidatorAddr: validator.Address,
+		Signer:        unauthSigner,
+	}
+	tests := []struct {
+		name string
+		args args
+		want error
+	}{
+		{"Test ValidateUnjailMessage With Output Address & AuthorizedByValidator", args{
+			ctx: context,
+			k:   keeper,
+			v:   validator,
+			msg: msgUnjailAuthorizedByValidator,
+		}, nil},
+		{"Test ValidateUnjailMessage With Output Address & AuthorizedByOutput", args{
+			ctx: context,
+			k:   keeper,
+			v:   validator,
+			msg: msgUnjailAuthorizedByOutput,
+		}, nil},
+		{"Test ValidateUnjailMessage Without Output Address & AuthorizedByValidator", args{
+			ctx: context,
+			k:   keeper,
+			v:   validatorNoOuptut,
+			msg: msgUnjailAuthorizedByValidator,
+		}, nil},
+		{"Test ValidateUnjailMessage Without Output Address & AuthroizedByOutput", args{
+			ctx: context,
+			k:   keeper,
+			v:   validatorNoOuptut,
+			msg: msgUnjailAuthorizedByOutput,
+		}, types.ErrUnauthorizedSigner("pos")},
+		{"Test ValidateUnjailMessage Without Output Address & Unauthorized", args{
+			ctx: context,
+			k:   keeper,
+			v:   validatorNoOuptut,
+			msg: msgUnjailUnauthorizedSigner,
+		}, types.ErrUnauthorizedSigner("pos")},
+
+		{"Test ValidateUnjailMessage With Output Address & Unauthorized", args{
+			ctx: context,
+			k:   keeper,
+			v:   validator,
+			msg: msgUnjailUnauthorizedSigner,
+		}, types.ErrUnauthorizedSigner("pos")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			keeper.SetValidator(tt.args.ctx, tt.args.v)
+			keeper.SetValidatorSigningInfo(tt.args.ctx, tt.args.v.Address, types.ValidatorSigningInfo{
+				Address:             tt.args.v.Address,
+				StartHeight:         0,
+				Index:               0,
+				JailedUntil:         time.Time{},
+				MissedBlocksCounter: 0,
+				JailedBlocksCounter: 0,
+			})
+			_, err := tt.args.k.ValidateUnjailMessage(tt.args.ctx, tt.args.msg)
+			assert.Equal(t, tt.want, err)
 		})
 	}
 }

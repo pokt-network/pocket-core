@@ -132,7 +132,6 @@ func AddressVerification(addr string) sdk.Error {
 	return nil
 }
 
-
 // "ID"- Converts []byte to hashed []byte
 func Hash(b []byte) []byte {
 	hasher := Hasher.New()

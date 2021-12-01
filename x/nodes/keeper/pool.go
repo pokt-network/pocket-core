@@ -27,7 +27,8 @@ func (k Keeper) GetStakedPool(ctx sdk.Ctx) (stakedPool exported.ModuleAccountI) 
 // coinsFromStakedToUnstaked - Transfer coins from the module account to the validator -> used in unstaking
 func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, validator types.Validator) error {
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), validator.StakedTokens))
-	err := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, validator.Address, coins)
+	output, _ := k.GetValidatorOutputAddress(ctx, validator.Address)
+	err := k.AccountKeeper.SendCoinsFromModuleToAccount(ctx, types.StakedPoolName, output, coins)
 	if err != nil {
 		return fmt.Errorf("unable to send coins from staked to unstaked for address: %s", validator.Address)
 	}
@@ -35,12 +36,12 @@ func (k Keeper) coinsFromStakedToUnstaked(ctx sdk.Ctx, validator types.Validator
 }
 
 // coinsFromUnstakedToStaked - Transfer coins from the module account to validator -> used in staking
-func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt) sdk.Error {
+func (k Keeper) coinsFromUnstakedToStaked(ctx sdk.Ctx, address sdk.Address, amount sdk.BigInt) sdk.Error {
 	if amount.LT(sdk.ZeroInt()) {
 		return sdk.ErrInternal("cannot send a negative")
 	}
 	coins := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	err := k.AccountKeeper.SendCoinsFromAccountToModule(ctx, validator.Address, types.StakedPoolName, coins)
+	err := k.AccountKeeper.SendCoinsFromAccountToModule(ctx, address, types.StakedPoolName, coins)
 	return err
 }
 

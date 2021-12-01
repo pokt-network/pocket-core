@@ -14,7 +14,7 @@ import (
 
 func TestStoreType(t *testing.T) {
 	db := dbm.NewMemDB()
-	store := NewStore(db, false)
+	store := NewStore(db, false, 5000000)
 	store.MountStoreWithDB(
 		types.NewKVStoreKey("store1"), types.StoreTypeIAVL, db)
 
@@ -22,7 +22,7 @@ func TestStoreType(t *testing.T) {
 
 func TestStoreMount(t *testing.T) {
 	db := dbm.NewMemDB()
-	store := NewStore(db, false)
+	store := NewStore(db, false, 5000000)
 
 	key1 := types.NewKVStoreKey("store1")
 	key2 := types.NewKVStoreKey("store2")
@@ -246,7 +246,7 @@ func TestMultiStoreQuery(t *testing.T) {
 // utils
 
 func newMultiStoreWithMounts(db dbm.DB) *Store {
-	store := NewStore(db, false)
+	store := NewStore(db, false, 5000000)
 	store.pruningOpts = types.PruneSyncable
 	store.MountStoreWithDB(
 		types.NewKVStoreKey("store1"), types.StoreTypeIAVL, nil)

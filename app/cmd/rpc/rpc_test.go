@@ -157,7 +157,6 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	unmarshalErr := json.Unmarshal([]byte(resp), &resTXs)
 	assert.Nil(t, unmarshalErr)
 	assert.NotEmpty(t, resTXs.Txs)
-	assert.NotZero(t, resTXs.TotalCount)
 
 	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -171,7 +170,6 @@ func TestRPC_QueryAccountTXs(t *testing.T) {
 	unmarshalErr = json.Unmarshal([]byte(resp), &resTXs2)
 	assert.Nil(t, unmarshalErr)
 	assert.NotEmpty(t, resTXs2.Txs)
-	assert.NotZero(t, resTXs2.TotalCount)
 
 	cleanup()
 	stopCli()
@@ -221,7 +219,6 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	unmarshalErr := json.Unmarshal([]byte(heightResp), &resTXs)
 	assert.Nil(t, unmarshalErr)
 	assert.NotEmpty(t, resTXs.Txs)
-	assert.NotZero(t, resTXs.TotalCount)
 
 	_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlock)
 	<-evtChan // Wait for block
@@ -235,7 +232,6 @@ func TestRPC_QueryBlockTXs(t *testing.T) {
 	unmarshalErr = json.Unmarshal([]byte(heightResp), &resTXs2)
 	assert.Nil(t, unmarshalErr)
 	assert.NotEmpty(t, resTXs2.Txs)
-	assert.NotZero(t, resTXs2.TotalCount)
 
 	cleanup()
 	stopCli()

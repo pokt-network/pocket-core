@@ -27,12 +27,12 @@ import (
 )
 
 const (
-	AppVersion = "RC-0.7.1"
+	AppVersion = "BETA-0.8.0"
 )
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
-func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, cache bool, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
-	app := NewPocketBaseApp(logger, db, cache, baseAppOptions...)
+func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
+	app := NewPocketBaseApp(logger, db, cache, iavlCacheSize, baseAppOptions...)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
@@ -130,6 +130,7 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 	if upgrade := app.govKeeper.GetUpgrade(ctx); upgrade.Height != 0 {
 		codec.UpgradeHeight = upgrade.Height
 		codec.OldUpgradeHeight = upgrade.OldUpgradeHeight
+		codec.UpgradeFeatureMap = codec.SliceToExistingMap(upgrade.GetFeatures(), codec.UpgradeFeatureMap)
 	}
 	return app
 }

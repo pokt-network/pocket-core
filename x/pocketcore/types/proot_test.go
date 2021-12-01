@@ -157,7 +157,7 @@ func TestRelayProof_ValidateLocal(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.proof.(RelayProof).ValidateLocal([]string{getTestSupportedBlockchain()}, tt.sessionNodeCount, 1, sdk.Address(verifyAddr))!= nil, tt.hasError)
+			assert.Equal(t, tt.proof.(RelayProof).ValidateLocal([]string{getTestSupportedBlockchain()}, tt.sessionNodeCount, 1, sdk.Address(verifyAddr)) != nil, tt.hasError)
 		})
 	}
 }

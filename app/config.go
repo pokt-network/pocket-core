@@ -43,6 +43,7 @@ import (
 	"os"
 	fp "path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -81,12 +82,16 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitKeyfiles()
 	// get hosted blockchains
 	chains := NewHostedChains(false)
+	if GlobalConfig.PocketConfig.ChainsHotReload {
+		// hot reload chains
+		HotReloadChains(chains)
+	}
 	// create logger
 	logger := InitLogger()
 	// init cache
 	InitPocketCoreConfig(chains, logger)
 	// init genesis
-	InitGenesis(genesisType)
+	InitGenesis(genesisType, logger)
 	// log the config and chains
 	logger.Debug(fmt.Sprintf("Pocket Config: \n%v", GlobalConfig))
 	// init the tendermint node
@@ -94,6 +99,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
+	log2.Println("Initializing Pocket Datadir")
 	// setup the codec
 	MakeCodec()
 	if datadir == "" {
@@ -102,11 +108,13 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 			log2.Fatal("could not get home directory for data dir creation: " + err.Error())
 		}
 		datadir = home + FS + sdk.DefaultDDName
+		log2.Println("datadir = " + datadir)
 	}
 	c := sdk.DefaultConfig(datadir)
 	// read from ccnfig file
 	configFilepath := datadir + FS + sdk.ConfigDirName + FS + sdk.ConfigFileName
 	if _, err := os.Stat(configFilepath); os.IsNotExist(err) {
+		log2.Println("no config file found... creating the datadir @ "+c.PocketConfig.DataDir+FS+sdk.ConfigDirName, os.ModePerm)
 		// ensure directory path made
 		err = os.MkdirAll(c.PocketConfig.DataDir+FS+sdk.ConfigDirName, os.ModePerm)
 		if err != nil {
@@ -192,6 +200,8 @@ func UpdateConfig(datadir string) {
 	GlobalConfig.PocketConfig.ValidatorCacheSize = sdk.DefaultValidatorCacheSize
 	GlobalConfig.PocketConfig.ApplicationCacheSize = sdk.DefaultApplicationCacheSize
 	GlobalConfig.PocketConfig.CtxCacheSize = sdk.DefaultCtxCacheSize
+	GlobalConfig.PocketConfig.RPCTimeout = sdk.DefaultRPCTimeout
+	GlobalConfig.PocketConfig.IavlCacheSize = sdk.DefaultIavlCacheSize
 
 	// Backup and Save the File
 	var jsonFile *os.File
@@ -250,7 +260,8 @@ func backupConfigFile(filepath string, filepath2 string) {
 	}
 }
 
-func InitGenesis(genesisType GenesisType) {
+func InitGenesis(genesisType GenesisType, logger log.Logger) {
+	logger.Info("Initializing genesis file")
 	// set global variable for init
 	GlobalGenesisType = genesisType
 	// setup file if not exists
@@ -297,6 +308,7 @@ type Config struct {
 }
 
 func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger) *node.Node {
+	logger.Info("Initializing Tendermint")
 	c := Config{
 		TmConfig:    &GlobalConfig.TendermintConfig,
 		Logger:      logger,
@@ -310,7 +322,7 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 		keys = MustGetKeybase()
 	}
 	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize, baseapp.SetPruning(store.PruneNothing))
 	}
 	tmNode, app, err := NewClient(config(c), appCreatorFunc)
 	if err != nil {
@@ -372,9 +384,13 @@ func InitLogger() (logger log.Logger) {
 }
 
 func InitPocketCoreConfig(chains *types.HostedBlockchains, logger log.Logger) {
+	logger.Info("Initializing pocket core config")
 	types.InitConfig(chains, logger, GlobalConfig)
+	logger.Info("Initializing ctx cache")
 	sdk.InitCtxCache(GlobalConfig.PocketConfig.CtxCacheSize)
+	logger.Info("Initializing pos config")
 	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
+	logger.Info("Initializing app config")
 	appsTypes.InitConfig(GlobalConfig.PocketConfig.ApplicationCacheSize)
 }
 
@@ -484,6 +500,53 @@ func getTMClient() client.Client {
 	return tmClient
 }
 
+func HotReloadChains(chains *types.HostedBlockchains) {
+	go func() {
+		for {
+			time.Sleep(time.Minute * 1)
+			// create the chains path
+			var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + sdk.ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
+			// if file exists open, else create and open
+			var jsonFile *os.File
+			var bz []byte
+			if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
+				log2.Println(fmt.Sprintf("no chains.json found @ %s, defaulting to empty chains", chainsPath))
+				return
+			}
+			// reopen the file to read into the variable
+			jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+			if err != nil {
+				log2.Fatal(NewInvalidChainsError(err))
+			}
+			bz, err = ioutil.ReadAll(jsonFile)
+			if err != nil {
+				log2.Fatal(NewInvalidChainsError(err))
+			}
+			// unmarshal into the structure
+			var hostedChainsSlice []types.HostedBlockchain
+			err = json.Unmarshal(bz, &hostedChainsSlice)
+			if err != nil {
+				log2.Fatal(NewInvalidChainsError(err))
+			}
+			// close the file
+			err = jsonFile.Close()
+			if err != nil {
+				log2.Fatal(NewInvalidChainsError(err))
+			}
+			m := make(map[string]types.HostedBlockchain)
+			for _, chain := range hostedChainsSlice {
+				if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
+					log2.Fatal(fmt.Sprintf("invalid ID: %s in network identifier in %s file", chain.ID, GlobalConfig.PocketConfig.ChainsName))
+				}
+				m[chain.ID] = chain
+			}
+			chains.L.Lock()
+			chains.M = m
+			chains.L.Unlock()
+		}
+	}()
+}
+
 // get the hosted chains variable
 func NewHostedChains(generate bool) *types.HostedBlockchains {
 	// create the chains path
@@ -526,7 +589,10 @@ func NewHostedChains(generate bool) *types.HostedBlockchains {
 		m[chain.ID] = chain
 	}
 	// return the map
-	return &types.HostedBlockchains{M: m}
+	return &types.HostedBlockchains{
+		M: m,
+		L: sync.Mutex{},
+	}
 }
 
 func generateChainsJson(chainsPath string) *types.HostedBlockchains {
@@ -561,7 +627,7 @@ func generateChainsJson(chainsPath string) *types.HostedBlockchains {
 		m[chain.ID] = chain
 	}
 	// return the map
-	return &types.HostedBlockchains{M: m}
+	return &types.HostedBlockchains{M: m, L: sync.Mutex{}}
 }
 
 const (
@@ -796,18 +862,18 @@ func InitAuthToken() {
 
 	jsonFile, err := os.OpenFile(configFilepath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
-		log2.Fatalf("canot open/create json file: " + err.Error())
+		log2.Fatalf("canot open/create auth token json file: " + err.Error())
 	}
 	err = jsonFile.Truncate(0)
 
 	b, err := json.MarshalIndent(t, "", "    ")
 	if err != nil {
-		log2.Fatalf("cannot marshal into json: " + err.Error())
+		log2.Fatalf("cannot marshal auth token into json: " + err.Error())
 	}
 	// write to the file
 	_, err = jsonFile.Write(b)
 	if err != nil {
-		log2.Fatalf("cannot write  to json file: " + err.Error())
+		log2.Fatalf("cannot write auth token to json file: " + err.Error())
 	}
 
 	AuthToken = t

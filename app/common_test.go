@@ -5,6 +5,7 @@ import (
 	"github.com/tendermint/tendermint/privval"
 	"io"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -47,11 +48,16 @@ const (
 )
 
 type upgrades struct {
-	codecUpgrade
+	codecUpgrade  codecUpgrade
+	eight0Upgrade upgrade
+}
+type upgrade struct {
+	height int64
 }
 type codecUpgrade struct {
 	upgradeMod bool
 	height     int64
+	//after8     bool
 }
 
 func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
@@ -100,6 +106,7 @@ func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermi
 			panic(err)
 		}
 		time.Sleep(2 * time.Second)
+		codec.TestMode = 0
 	}
 	return
 }
@@ -128,6 +135,8 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 	assert.Nil(t, err)
 	// provide cleanup function
 	cleanup = func() {
+		codec.TestMode = 0
+
 		err = tendermintNode.Stop()
 		if err != nil {
 			panic(err)
@@ -149,7 +158,7 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 		if err != nil {
 			panic(err)
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 	return
 }
@@ -282,7 +291,7 @@ func GetApp(logger log.Logger, db dbm.DB, traceWriter io.Writer) *PocketCoreApp 
 			ID:  sdk.PlaceholderHash,
 			URL: sdk.PlaceholderURL,
 		}}
-		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m}, logger, db, false, bam.SetPruning(store.PruneNothing))
+		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m, L: sync.Mutex{}}, logger, db, false, 5000000, bam.SetPruning(store.PruneNothing))
 		return p
 	}
 	return creator(logger, db, traceWriter)
@@ -346,7 +355,7 @@ func subscribeTo(t *testing.T, eventType string) (cli client.Client, stopClient 
 		memCLI = nil
 		cancel()
 	}
-	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(eventType).String())
+	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(eventType).String(), 5)
 	if err != nil {
 		panic(err)
 	}
@@ -370,10 +379,10 @@ func getTestConfig() (newTMConfig *tmCfg.Config) {
 	newTMConfig.Consensus = tmCfg.TestConsensusConfig()
 	newTMConfig.Consensus.CreateEmptyBlocks = true // Set this to false to only produce blocks when there are txs or when the AppHash changes
 	newTMConfig.Consensus.SkipTimeoutCommit = false
-	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(100) * time.Millisecond
-	newTMConfig.Consensus.TimeoutCommit = time.Duration(100) * time.Millisecond
-	newTMConfig.P2P.MaxNumInboundPeers = 40
-	newTMConfig.P2P.MaxNumOutboundPeers = 10
+	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(500) * time.Millisecond
+	newTMConfig.Consensus.TimeoutCommit = time.Duration(500) * time.Millisecond
+	newTMConfig.P2P.MaxNumInboundPeers = 4
+	newTMConfig.P2P.MaxNumOutboundPeers = 4
 	pocketTypes.InitClientBlockAllowance(10000)
 	return
 }
@@ -539,7 +548,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 	return testACL
 }
 
-func twoValTwoNodeGenesisState() []byte {
+func twoValTwoNodeGenesisState8() (genbz []byte, vals []nodesTypes.Validator) {
 	kb := getInMemoryKeybase()
 	kp1, err := kb.GetCoinbase()
 	if err != nil {
@@ -549,8 +558,18 @@ func twoValTwoNodeGenesisState() []byte {
 	if err != nil {
 		panic(err)
 	}
+	kp3, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	kp4, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
 	pubKey := kp1.PublicKey
 	pubKey2 := kp2.PublicKey
+	pubKey3 := kp3.PublicKey
+	pubkey4 := kp4.PublicKey
 	defaultGenesis := module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
@@ -563,19 +582,29 @@ func twoValTwoNodeGenesisState() []byte {
 	var posGenesisState nodesTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
 	posGenesisState.Validators = append(posGenesisState.Validators,
-		nodesTypes.Validator{Address: sdk.Address(pubKey.Address()),
-			PublicKey:    pubKey,
-			Status:       sdk.Staked,
-			Chains:       []string{dummyChainsHash},
-			ServiceURL:   sdk.PlaceholderServiceURL,
-			StakedTokens: sdk.NewInt(1000000000000000)})
+		nodesTypes.Validator{
+			Address:                 sdk.Address(pubKey.Address()),
+			PublicKey:               pubKey,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{dummyChainsHash},
+			ServiceURL:              sdk.PlaceholderServiceURL,
+			StakedTokens:            sdk.NewInt(1000000000000000),
+			UnstakingCompletionTime: time.Time{},
+			OutputAddress:           kp3.GetAddress(),
+		})
 	posGenesisState.Validators = append(posGenesisState.Validators,
-		nodesTypes.Validator{Address: sdk.Address(pubKey2.Address()),
-			PublicKey:    pubKey2,
-			Status:       sdk.Staked,
-			Chains:       []string{dummyChainsHash},
-			ServiceURL:   sdk.PlaceholderServiceURL,
-			StakedTokens: sdk.NewInt(1000000000)})
+		nodesTypes.Validator{
+			Address:                 sdk.Address(pubKey2.Address()),
+			PublicKey:               pubKey2,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{dummyChainsHash},
+			ServiceURL:              sdk.PlaceholderServiceURL,
+			StakedTokens:            sdk.NewInt(1000000000),
+			UnstakingCompletionTime: time.Time{},
+			OutputAddress:           kp4.GetAddress(),
+		})
 	posGenesisState.Params.UnstakingTime = time.Nanosecond
 	posGenesisState.Params.SessionBlockFrequency = 5
 	res := memCodec().MustMarshalJSON(posGenesisState)
@@ -594,6 +623,17 @@ func twoValTwoNodeGenesisState() []byte {
 		Address: sdk.Address(pubKey2.Address()),
 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
 		PubKey:  pubKey,
+	})
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubKey3.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey3,
+	})
+	// add second account
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubkey4.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubkey4,
 	})
 	res2 := memCodec().MustMarshalJSON(authGenState)
 	defaultGenesis[auth.ModuleName] = res2
@@ -618,7 +658,120 @@ func twoValTwoNodeGenesisState() []byte {
 	// end genesis setup
 	GenState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
-	return j
+	return j, posGenesisState.Validators
+}
+
+func twoValTwoNodeGenesisState() (genbz []byte, vals []nodesTypes.Validator) {
+	kb := getInMemoryKeybase()
+	kp1, err := kb.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	kp2, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	kp3, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	kp4, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	pubKey := kp1.PublicKey
+	pubKey2 := kp2.PublicKey
+	pubKey3 := kp3.PublicKey
+	pubkey4 := kp4.PublicKey
+	defaultGenesis := module.NewBasicManager(
+		apps.AppModuleBasic{},
+		auth.AppModuleBasic{},
+		gov.AppModuleBasic{},
+		nodes.AppModuleBasic{},
+		pocket.AppModuleBasic{},
+	).DefaultGenesis()
+	// set coinbase as a validator
+	rawPOS := defaultGenesis[nodesTypes.ModuleName]
+	var posGenesisState nodesTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{
+			Address:                 sdk.Address(pubKey.Address()),
+			PublicKey:               pubKey,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{dummyChainsHash},
+			ServiceURL:              sdk.PlaceholderServiceURL,
+			StakedTokens:            sdk.NewInt(1000000000000000),
+			UnstakingCompletionTime: time.Time{},
+			OutputAddress:           nil,
+		})
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{
+			Address:                 sdk.Address(pubKey2.Address()),
+			PublicKey:               pubKey2,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{dummyChainsHash},
+			ServiceURL:              sdk.PlaceholderServiceURL,
+			StakedTokens:            sdk.NewInt(1000000000),
+			UnstakingCompletionTime: time.Time{},
+			OutputAddress:           nil,
+		})
+	posGenesisState.Params.UnstakingTime = time.Nanosecond
+	posGenesisState.Params.SessionBlockFrequency = 5
+	res := memCodec().MustMarshalJSON(posGenesisState)
+	defaultGenesis[nodesTypes.ModuleName] = res
+	// set coinbase as account holding coins
+	rawAccounts := defaultGenesis[auth.ModuleName]
+	var authGenState auth.GenesisState
+	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubKey.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
+	})
+	// add second account
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubKey2.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
+	})
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubKey3.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey3,
+	})
+	// add second account
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubkey4.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubkey4,
+	})
+	res2 := memCodec().MustMarshalJSON(authGenState)
+	defaultGenesis[auth.ModuleName] = res2
+	// set default chain for module
+	rawPocket := defaultGenesis[pocketTypes.ModuleName]
+	var pocketGenesisState pocketTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
+	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
+	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
+	defaultGenesis[pocketTypes.ModuleName] = res3
+	// set default governance in genesis
+	var govGenesisState govTypes.GenesisState
+	rawGov := defaultGenesis[govTypes.ModuleName]
+	memCodec().MustUnmarshalJSON(rawGov, &govGenesisState)
+	nMACL := createTestACL(kp1)
+	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
+	govGenesisState.Params.ACL = nMACL
+	govGenesisState.Params.DAOOwner = kp1.GetAddress()
+	govGenesisState.DAOTokens = sdk.NewInt(1000)
+	res4 := memCodec().MustMarshalJSON(govGenesisState)
+	defaultGenesis[govTypes.ModuleName] = res4
+	// end genesis setup
+	GenState = defaultGenesis
+	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
+	return j, posGenesisState.Validators
 }
 
 func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, validators nodesTypes.Validators, app appsTypes.Application) {

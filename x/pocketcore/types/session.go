@@ -110,14 +110,27 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	}
 	sessionNodes = make(SessionNodes, sessionNodesCount)
 	var node exported.ValidatorI
+	//unique address map to avoid re-checking a pseudorandomly selected servicer
+	m := make(map[string]struct{})
 	// only select the nodesAddrs if not jailed
 	for i, numOfNodes := 0, 0; ; i++ {
+		//if this is true we already checked all nodes we got on getValidatorsBychain
+		if len(m) >= totalNodes {
+			return nil, NewInsufficientNodesError(ModuleName)
+		}
 		// generate the random index
 		index := PseudorandomSelection(sdk.NewInt(int64(totalNodes)), sessionKey)
 		// merkleHash the session key to provide new entropy
 		sessionKey = Hash(sessionKey)
 		// get the node from the array
 		n := nodesAddrs[index.Int64()]
+		//if we already have seen this address we continue as it's either on the list or discarded
+		if _, ok := m[n.String()]; ok {
+			continue
+		}
+		//add the node address to the map
+		m[n.String()] = struct{}{}
+
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
 		// if not found or jailed, don't add to session and continue

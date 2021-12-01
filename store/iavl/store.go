@@ -19,12 +19,16 @@ import (
 )
 
 const (
-	defaultIAVLCacheSize = 10000
+	defaultIAVLCacheSize = 5000000
 )
 
 // LoadStore loads the iavl store
-func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool, cache types.SingleStoreCache) (types.CommitStore, error) {
+func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool, cache types.SingleStoreCache, iavlCacheSize int64) (types.CommitStore, error) {
 	var err error
+
+	if iavlCacheSize <= 0 {
+		iavlCacheSize = defaultIAVLCacheSize
+	}
 
 	tree, err := NewMutableTree(db, defaultIAVLCacheSize)
 	if err != nil {

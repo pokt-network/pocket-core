@@ -152,7 +152,7 @@ func (lkb lazyKeybase) ImportPrivateKeyObject(privateKey [64]byte, encryptPassph
 }
 
 func (lkb lazyKeybase) ExportPrivateKeyObject(address types.Address, passphrase string) (crypto.PrivateKey, error) {
-	db, err := sdk.NewLevelDB(lkb.name, lkb.dir,config.DefaultLevelDBOpts().ToGoLevelDBOpts())
+	db, err := sdk.NewLevelDB(lkb.name, lkb.dir, config.DefaultLevelDBOpts().ToGoLevelDBOpts())
 	if err != nil {
 		return nil, err
 	}

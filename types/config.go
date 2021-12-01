@@ -20,7 +20,6 @@ type PocketConfig struct {
 	DataDir                  string `json:"data_dir"`
 	GenesisName              string `json:"genesis_file"`
 	ChainsName               string `json:"chains_name"`
-	SessionDBName            string `json:"session_db_name"`
 	EvidenceDBName           string `json:"evidence_db_name"`
 	TendermintURI            string `json:"tendermint_uri"`
 	KeybaseName              string `json:"keybase_name"`
@@ -43,6 +42,8 @@ type PocketConfig struct {
 	RelayErrors              bool   `json:"show_relay_errors"`
 	DisableTxEvents          bool   `json:"disable_tx_events"`
 	Cache                    bool   `json:"-"`
+	IavlCacheSize            int64  `json:"iavl_cache_size"`
+	ChainsHotReload          bool   `json:"chains_hot_reload"`
 }
 
 type Config struct {
@@ -64,7 +65,6 @@ const (
 	DefaultChainsName                  = "chains.json"
 	DefaultGenesisName                 = "genesis.json"
 	DefaultRPCPort                     = "8081"
-	DefaultSessionDBName               = "session"
 	DefaultEvidenceDBName              = "pocket_evidence"
 	DefaultTMURI                       = "tcp://localhost:26657"
 	DefaultMaxSessionCacheEntries      = 500
@@ -84,17 +84,19 @@ const (
 	PlaceholderServiceURL              = PlaceholderURL
 	DefaultRemoteCLIURL                = "http://localhost:8081"
 	DefaultUserAgent                   = ""
-	DefaultValidatorCacheSize          = 10000
-	DefaultApplicationCacheSize        = DefaultValidatorCacheSize
+	DefaultValidatorCacheSize          = 40000
+	DefaultApplicationCacheSize        = DefaultValidatorCacheSize / 4
 	DefaultPocketPrometheusListenAddr  = "8083"
 	DefaultPrometheusMaxOpenFile       = 3
-	DefaultRPCTimeout                  = 3000
+	DefaultRPCTimeout                  = 30000
 	DefaultMaxClaimProofRetryAge       = 32
 	DefaultProofPrevalidation          = false
 	DefaultCtxCacheSize                = 20
 	DefaultABCILogging                 = false
 	DefaultRelayErrors                 = true
 	AuthFileName                       = "auth.json"
+	DefaultIavlCacheSize               = 5000000
+	DefaultChainHotReload              = false
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -104,7 +106,6 @@ func DefaultConfig(dataDir string) Config {
 			DataDir:                  dataDir,
 			GenesisName:              DefaultGenesisName,
 			ChainsName:               DefaultChainsName,
-			SessionDBName:            DefaultSessionDBName,
 			EvidenceDBName:           DefaultEvidenceDBName,
 			TendermintURI:            DefaultTMURI,
 			KeybaseName:              DefaultKeybaseName,
@@ -126,6 +127,8 @@ func DefaultConfig(dataDir string) Config {
 			ABCILogging:              DefaultABCILogging,
 			RelayErrors:              DefaultRelayErrors,
 			DisableTxEvents:          DefaultRPCDisableTransactionEvents,
+			IavlCacheSize:            DefaultIavlCacheSize,
+			ChainsHotReload:          DefaultChainHotReload,
 		},
 	}
 	c.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()

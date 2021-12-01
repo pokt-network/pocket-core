@@ -47,11 +47,11 @@ type PocketCoreApp struct {
 }
 
 // new pocket core base
-func NewPocketBaseApp(logger log.Logger, db db.DB, cache bool, options ...func(*bam.BaseApp)) *PocketCoreApp {
+func NewPocketBaseApp(logger log.Logger, db db.DB, cache bool, iavlCacheSize int64, options ...func(*bam.BaseApp)) *PocketCoreApp {
 	cdc = Codec()
 	bam.SetABCILogging(GlobalConfig.PocketConfig.ABCILogging)
 	// BaseApp handles interactions with Tendermint through the ABCI protocol
-	bApp := bam.NewBaseApp(appName, logger, db, cache, auth.DefaultTxDecoder(cdc), cdc, options...)
+	bApp := bam.NewBaseApp(appName, logger, db, cache, iavlCacheSize, auth.DefaultTxDecoder(cdc), cdc, options...)
 	// set version of the baseapp
 	bApp.SetAppVersion(AppVersion)
 	// setup the key value store Keys

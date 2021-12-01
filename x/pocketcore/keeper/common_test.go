@@ -107,7 +107,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	keys["application"] = appsKey
 
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db, false)
+	ms := store.NewCommitMultiStore(db, false, 5000000)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
@@ -155,6 +155,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 			URL: "https://www.google.com:443",
 		}},
 	}
+	types.InitConfig(&hb, log.NewTMLogger(os.Stdout), sdk.DefaultTestingPocketConfig())
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
 	appSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
@@ -243,7 +244,10 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.BigInt, nk *nod
 		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
 		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
-		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com:443", valCoins)
+		privKey2 := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+		pubKey2 := privKey2.PublicKey()
+		addr2 := sdk.Address(pubKey2.Address())
+		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com:443", valCoins, addr2)
 		// set the vals from the data
 		nk.SetValidator(ctx, val)
 		nk.SetStakedValidatorByChains(ctx, val)
@@ -264,7 +268,7 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.BigInt, nk *nod
 	if er != nil {
 		panic(er)
 	}
-	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com:443", valCoins)
+	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com:443", valCoins, kp.GetAddress())
 	// set the vals from the data
 	nk.SetValidator(ctx, val)
 	nk.SetStakedValidatorByChains(ctx, val)
@@ -354,6 +358,7 @@ func getRandomPubKey() crypto.Ed25519PublicKey {
 func getRandomValidatorAddress() sdk.Address {
 	return sdk.Address(getRandomPubKey().Address())
 }
+
 func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk crypto.PublicKey, validHeader types.SessionHeader, keys simulateRelayKeys) {
 	npk = getRandomPubKey()
 	ethereum := hex.EncodeToString([]byte{01})
