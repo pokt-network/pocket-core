@@ -1,5 +1,8 @@
 # Changelog
 =======
+## RC-0.6.4.1
+- Fix for block Upgrade Height Testnet.
+
 ## RC-0.6.4
 - Upped V1 Timeout
 - Introduced Cache layer. Use --UseCache flag to run pocket with cache.
