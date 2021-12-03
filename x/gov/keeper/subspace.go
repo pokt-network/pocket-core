@@ -175,6 +175,10 @@ func (k Keeper) ModifyParam(ctx sdk.Ctx, aclKey string, paramValue []byte, owner
 	if err := k.VerifyACL(ctx, aclKey, owner); err != nil {
 		return err.Result()
 	}
+	if !k.cdc.IsAfterSecondUpgrade(ctx.BlockHeight()) && aclKey == "pos/MaxValidators" {
+		return types.ErrUnauthorizedHeightParamChange(types.ModuleName, codec.UpgradeHeight, aclKey).Result()
+	}
+
 	subspaceName, paramKey := types.SplitACLKey(aclKey)
 	space, ok := k.spaces[subspaceName]
 	if !ok {

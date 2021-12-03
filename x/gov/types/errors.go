@@ -7,16 +7,17 @@ import (
 
 // Param module codespace constants
 const (
-	CodeUnknownSubspace         sdk.CodeType = 1
-	CodeSettingParameter        sdk.CodeType = 2
-	CodeEmptyData               sdk.CodeType = 3
-	CodeInvalidACL              sdk.CodeType = 4
-	CodeUnauthorizedParamChange sdk.CodeType = 5
-	CodeSubspaceNotFound        sdk.CodeType = 6
-	CodeUnrecognizedDAOAction   sdk.CodeType = 7
-	CodeZeroValueDAOAction      sdk.CodeType = 8
-	CodeZeroHeightUpgrade       sdk.CodeType = 9
-	CodeEmptyVersionUpgrade     sdk.CodeType = 10
+	CodeUnknownSubspace               sdk.CodeType = 1
+	CodeSettingParameter              sdk.CodeType = 2
+	CodeEmptyData                     sdk.CodeType = 3
+	CodeInvalidACL                    sdk.CodeType = 4
+	CodeUnauthorizedParamChange       sdk.CodeType = 5
+	CodeSubspaceNotFound              sdk.CodeType = 6
+	CodeUnrecognizedDAOAction         sdk.CodeType = 7
+	CodeZeroValueDAOAction            sdk.CodeType = 8
+	CodeZeroHeightUpgrade             sdk.CodeType = 9
+	CodeEmptyVersionUpgrade           sdk.CodeType = 10
+	CodeUnauthorizedHeightParamChange sdk.CodeType = 11
 )
 
 func ErrZeroHeightUpgrade(codespace sdk.CodespaceType) sdk.Error {
@@ -42,6 +43,11 @@ func ErrSubspaceNotFound(codespace sdk.CodespaceType, subspaceName string) sdk.E
 func ErrUnauthorizedParamChange(codespace sdk.CodespaceType, owner sdk.Address, param string) sdk.Error {
 	return sdk.NewError(codespace, CodeUnauthorizedParamChange,
 		fmt.Sprintf("the param change is unathorized: Account %s does not have the permission to change param %s", owner, param))
+}
+
+func ErrUnauthorizedHeightParamChange(codespace sdk.CodespaceType, height int64, param string) sdk.Error {
+	return sdk.NewError(codespace, CodeUnauthorizedHeightParamChange,
+		fmt.Sprintf("the param change is unathorized: Wait For Upgrade Height %v to change param %s", height, param))
 }
 
 // ErrUnknownSubspace returns an unknown subspace error.
