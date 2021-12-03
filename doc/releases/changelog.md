@@ -1,5 +1,9 @@
 # Changelog
 =======
+## RC-0.7.0 (WIP)
+- Enabled Validator/Servicer split on future upgrade height.
+- Modified upgrade behaviour to allow upcoming upgrades.
+
 ## RC-0.6.4.1
 - Fix for block Upgrade Height Testnet.
 
