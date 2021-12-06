@@ -13,3 +13,7 @@
 - Jailed Validators may unstake/be-unstaked (will wait the unstaking period)
 - Coins are returned from unstaked validators to the output account
 
+3) **BlockTxs & AccountTxs returns Page_Total & Total_Txs**
+- total_count is deprecated in rpc
+- page_total returns total count in the page
+- total_txs returns total possible in query

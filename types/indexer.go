@@ -15,13 +15,13 @@ import (
 )
 
 var (
-	_           txindex.TxIndexer = &TransactionIndexer{}
+	_ txindex.TxIndexer = &TransactionIndexer{}
 	// Since LevelDB comparators order lexicongraphically, the implementation uses ELEN to encode numbers to ensure alphanumerical
 	// ordering at insertion time. https://www.zanopha.com/docs/elen.pdf
 	// Since the keys are sorted alphanumerically from the start, we don't have to:
 	// (a) load all results to memory (b) paginate and sort transactions after
 	// This indexer inserts in sorted order so it can paginate and return based on the db iterator
-	elenEncoder                   = lexnum.NewEncoder('=', '-')
+	elenEncoder = lexnum.NewEncoder('=', '-')
 )
 
 const (
@@ -130,10 +130,10 @@ func (t *TransactionIndexer) Get(hash []byte) (*types.TxResult, error) {
 
 // NOTE: Only supports op.Equal for hash, height, signer, or recipient, we only support op.Equal for simplicity and
 // optimization of our use case
-func (t *TransactionIndexer) Search(ctx context.Context, q *query.Query) ([]*types.TxResult, error) {
+func (t *TransactionIndexer) Search(ctx context.Context, q *query.Query) (res []*types.TxResult, total int, err error) {
 	condition, err := q.Condition()
 	if err != nil {
-		return nil, errors.Wrap(err, "error during parsing condition from query")
+		return nil, 0, errors.Wrap(err, "error during parsing condition from query")
 	}
 
 	if q.Pagination.Size > maxPerPage {
@@ -141,7 +141,7 @@ func (t *TransactionIndexer) Search(ctx context.Context, q *query.Query) ([]*typ
 	}
 
 	if condition.Op != query.OpEqual {
-		return nil, fmt.Errorf("transaction indexer only supports op.Equal not %v", condition.Op)
+		return nil, 0, fmt.Errorf("transaction indexer only supports op.Equal not %v", condition.Op)
 	}
 
 	switch condition.CompositeKey {
@@ -154,7 +154,7 @@ func (t *TransactionIndexer) Search(ctx context.Context, q *query.Query) ([]*typ
 	case TxHashKey:
 		return t.hashQuery(condition)
 	default:
-		return nil, fmt.Errorf("Condition.CompositeKey: %v not supported on this indexer", condition.CompositeKey)
+		return nil, 0, fmt.Errorf("Condition.CompositeKey: %v not supported on this indexer", condition.CompositeKey)
 	}
 }
 
@@ -180,55 +180,62 @@ func (t *TransactionIndexer) DeleteFromHeight(ctx context.Context, height int64)
 	return b.WriteSync()
 }
 
-func (t *TransactionIndexer) hashQuery(condition query.Condition) (res []*types.TxResult, err error) {
+func (t *TransactionIndexer) hashQuery(condition query.Condition) (res []*types.TxResult, total int, err error) {
 	hash, err := hex.DecodeString(condition.Operand.(string))
 	if err != nil {
-		return nil, errors.Wrap(err, "error during searching for a hash in the query")
+		return nil, 0, errors.Wrap(err, "error during searching for a hash in the query")
 	}
 	result, err := t.Get(hash)
-	return []*types.TxResult{result}, err
+	if err == nil {
+		total = 1
+	}
+	return []*types.TxResult{result}, total, err
 }
 
-func (t *TransactionIndexer) heightQuery(condition query.Condition, pagination *query.Page) (res []*types.TxResult, err error) {
+func (t *TransactionIndexer) heightQuery(condition query.Condition, pagination *query.Page) (res []*types.TxResult, total int, err error) {
 	height, ok := condition.Operand.(int64)
 	if !ok {
-		return nil, errors.New("error during searching for a height in the query, c.Operand not type int64")
+		return nil, 0, errors.New("error during searching for a height in the query, c.Operand not type int64")
 	}
 	return t.getByPrefix(prefixKeyForHeight(height), pagination)
 }
 
-func (t *TransactionIndexer) signerQuery(condition query.Condition, pagination *query.Page) (res []*types.TxResult, err error) {
+func (t *TransactionIndexer) signerQuery(condition query.Condition, pagination *query.Page) (res []*types.TxResult, total int, err error) {
 	signer, err := hex.DecodeString(condition.Operand.(string))
 	if err != nil {
-		return nil, errors.Wrap(err, "error during searching for a address in the query")
+		return nil, 0, errors.Wrap(err, "error during searching for a address in the query")
 	}
 	return t.getByPrefix(prefixKeyForSigner(signer), pagination)
 }
 
-func (t *TransactionIndexer) recipientQuery(condition query.Condition, pagination *query.Page) (res []*types.TxResult, err error) {
+func (t *TransactionIndexer) recipientQuery(condition query.Condition, pagination *query.Page) (res []*types.TxResult, total int, err error) {
 	recipient, err := hex.DecodeString(condition.Operand.(string))
 	if err != nil {
-		return nil, errors.Wrap(err, "error during searching for a address in the query")
+		return nil, 0, errors.Wrap(err, "error during searching for a address in the query")
 	}
 	return t.getByPrefix(prefixKeyForRecipient(recipient), pagination)
 }
 
-func (t *TransactionIndexer) getByPrefix(prefix []byte, pagination *query.Page) (res []*types.TxResult, err error) {
+func (t *TransactionIndexer) getByPrefix(prefix []byte, pagination *query.Page) (res []*types.TxResult, total int, err error) {
 	it, err := PrefixIterator(t.store, prefix, pagination.Sort)
 	if err != nil {
-		return nil, errors.Wrap(err, "error creating prefix iterator")
+		return nil, 0, errors.Wrap(err, "error creating prefix iterator")
 	}
 	defer it.Close()
-	for i, skipCount := 0, 0; it.Valid() && i < pagination.Size; it.Next() {
+	for i, skipCount := 0, 0; it.Valid(); it.Next() {
 		if skipCount < pagination.Skip {
 			skipCount++
+			total++
 			continue
 		}
 		val, err := t.Get(it.Value())
 		if err != nil {
-			return nil, errors.Wrap(err, "error during query iteration get()")
+			return nil, 0, errors.Wrap(err, "error during query iteration get()")
 		}
-		res = append(res, val)
+		if i < pagination.Size {
+			res = append(res, val)
+		}
+		total++
 		i++
 	}
 	return
