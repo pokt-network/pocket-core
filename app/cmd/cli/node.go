@@ -50,6 +50,13 @@ If no changes are desired for the parameter, just enter the current param value 
 			fmt.Println(err)
 			return
 		}
+		am := types.NewInt(int64(amount))
+		if am.LTE(types.NewInt(15100000000)) {
+			fmt.Println("The amount you are staking for is below the recommendation of 15100 POKT, would you still like to continue? y|n")
+			if !app.Confirmation() {
+				return
+			}
+		}
 		reg, err := regexp.Compile("[^,a-fA-F0-9]+")
 		if err != nil {
 			log.Fatal(err)
