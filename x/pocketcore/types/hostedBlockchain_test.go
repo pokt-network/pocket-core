@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,7 @@ func TestHostedBlockchains_GetChainURL(t *testing.T) {
 	}
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain},
+		L:sync.Mutex{},
 	}
 	u, err := hb.GetChainURL(ethereum)
 	assert.Nil(t, err)
@@ -32,6 +34,7 @@ func TestHostedBlockchains_ContainsFromString(t *testing.T) {
 	}
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain},
+		L:sync.Mutex{},
 	}
 	assert.True(t, hb.Contains(ethereum))
 	assert.False(t, hb.Contains(bitcoin))
@@ -63,22 +66,22 @@ func TestHostedBlockchains_Validate(t *testing.T) {
 	}{
 		{
 			name:     "Invalid HostedBlockchain, no URL",
-			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoURL.URL: HCNoURL}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoURL.URL: HCNoURL}, L:sync.Mutex{}},
 			hasError: true,
 		},
 		{
 			name:     "Invalid HostedBlockchain, no URL",
-			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoHash.URL: HCNoHash}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoHash.URL: HCNoHash}, L:sync.Mutex{}},
 			hasError: true,
 		},
 		{
 			name:     "Invalid HostedBlockchain, invalid ID",
-			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCInvalidHash.URL: HCInvalidHash}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCInvalidHash.URL: HCInvalidHash}, L:sync.Mutex{}},
 			hasError: true,
 		},
 		{
 			name:     "Valid HostedBlockchain",
-			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain}, L:sync.Mutex{}},
 			hasError: false,
 		},
 	}

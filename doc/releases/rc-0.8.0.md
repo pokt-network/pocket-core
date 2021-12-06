@@ -17,3 +17,5 @@
 - total_count is deprecated in rpc
 - page_total returns total count in the page
 - total_txs returns total possible in query
+
+4) **Chains.json is now automatically refreshed every 5 seconds based on chains.json file**
