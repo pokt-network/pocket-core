@@ -89,7 +89,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// init cache
 	InitPocketCoreConfig(chains, logger)
 	// init genesis
-	InitGenesis(genesisType)
+	InitGenesis(genesisType, logger)
 	// log the config and chains
 	logger.Debug(fmt.Sprintf("Pocket Config: \n%v", GlobalConfig))
 	// init the tendermint node
@@ -97,6 +97,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
+	log2.Println("Initializing Pocket Datadir")
 	// setup the codec
 	MakeCodec()
 	if datadir == "" {
@@ -105,11 +106,13 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 			log2.Fatal("could not get home directory for data dir creation: " + err.Error())
 		}
 		datadir = home + FS + sdk.DefaultDDName
+		log2.Println("datadir = " + datadir)
 	}
 	c := sdk.DefaultConfig(datadir)
 	// read from ccnfig file
 	configFilepath := datadir + FS + sdk.ConfigDirName + FS + sdk.ConfigFileName
 	if _, err := os.Stat(configFilepath); os.IsNotExist(err) {
+		log2.Println("no config file found... creating the datadir @ "+c.PocketConfig.DataDir+FS+sdk.ConfigDirName, os.ModePerm)
 		// ensure directory path made
 		err = os.MkdirAll(c.PocketConfig.DataDir+FS+sdk.ConfigDirName, os.ModePerm)
 		if err != nil {
@@ -253,7 +256,8 @@ func backupConfigFile(filepath string, filepath2 string) {
 	}
 }
 
-func InitGenesis(genesisType GenesisType) {
+func InitGenesis(genesisType GenesisType, logger log.Logger) {
+	logger.Info("Initializing genesis file")
 	// set global variable for init
 	GlobalGenesisType = genesisType
 	// setup file if not exists
@@ -300,6 +304,7 @@ type Config struct {
 }
 
 func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger) *node.Node {
+	logger.Info("Initializing Tendermint")
 	c := Config{
 		TmConfig:    &GlobalConfig.TendermintConfig,
 		Logger:      logger,
@@ -375,9 +380,13 @@ func InitLogger() (logger log.Logger) {
 }
 
 func InitPocketCoreConfig(chains *types.HostedBlockchains, logger log.Logger) {
+	logger.Info("Initializing pocket core config")
 	types.InitConfig(chains, logger, GlobalConfig)
+	logger.Info("Initializing ctx cache")
 	sdk.InitCtxCache(GlobalConfig.PocketConfig.CtxCacheSize)
+	logger.Info("Initializing pos config")
 	nodesTypes.InitConfig(GlobalConfig.PocketConfig.ValidatorCacheSize)
+	logger.Info("Initializing app config")
 	appsTypes.InitConfig(GlobalConfig.PocketConfig.ApplicationCacheSize)
 }
 
@@ -849,18 +858,18 @@ func InitAuthToken() {
 
 	jsonFile, err := os.OpenFile(configFilepath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
-		log2.Fatalf("canot open/create json file: " + err.Error())
+		log2.Fatalf("canot open/create auth token json file: " + err.Error())
 	}
 	err = jsonFile.Truncate(0)
 
 	b, err := json.MarshalIndent(t, "", "    ")
 	if err != nil {
-		log2.Fatalf("cannot marshal into json: " + err.Error())
+		log2.Fatalf("cannot marshal auth token into json: " + err.Error())
 	}
 	// write to the file
 	_, err = jsonFile.Write(b)
 	if err != nil {
-		log2.Fatalf("cannot write  to json file: " + err.Error())
+		log2.Fatalf("cannot write auth token to json file: " + err.Error())
 	}
 
 	AuthToken = t
