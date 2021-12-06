@@ -18,4 +18,8 @@
 - page_total returns total count in the page
 - total_txs returns total possible in query
 
-4) **Chains.json is now automatically refreshed every 5 seconds based on chains.json file**
+4) **Chains.json is now automatically refreshed**
+- Every 5 seconds based on chains.json file
+
+5) **Tendermint Evidence is double-checked before proposal block creation and evidence receive**
+- Changes ported from Tendermint PR [5574](https://github.com/tendermint/tendermint/pull/5574)
