@@ -225,3 +225,10 @@ func (cdc *Codec) IsAfterUpgrade(height int64) bool {
 func (cdc *Codec) IsAfterSecondUpgrade(height int64) bool {
 	return height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()
 }
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsAfterThirdUpgrade(height int64) bool {
+	return true
+	// TODO
+	panic("second upgrade height not implemented yet")
+}
