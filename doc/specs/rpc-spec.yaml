@@ -2287,8 +2287,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
-        total_count:
-          type: string
+        page_count:
+          type: integer
+        total_txs:
+          type: integer
     QueryBlockTXs:
       type: object
       properties:
@@ -2311,7 +2313,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
-        total_count:
+        page_count:
+          type: integer
+        total_txs:
           type: integer
     UpgradeResponse:
       type: object

@@ -110,8 +110,9 @@ func Tx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 // Result of searching for txs
 type RPCResultTxSearch struct {
-	Txs        []*RPCResultTx `json:"txs"`
-	TotalCount int            `json:"total_count"`
+	Txs       []*RPCResultTx `json:"txs"`
+	PageCount int            `json:"page_count"`
+	TotalTxs  int            `json:"total_txs"`
 }
 
 // Result of querying for a tx
@@ -171,9 +172,11 @@ func ResultTxSearchToRPC(res *core_types.ResultTxSearch) RPCResultTxSearch {
 	if res == nil {
 		return RPCResultTxSearch{}
 	}
+	pageCount := len(res.Txs)
 	rpcTxSearch := RPCResultTxSearch{
-		Txs:        make([]*RPCResultTx, 0, res.TotalCount),
-		TotalCount: res.TotalCount,
+		Txs:       make([]*RPCResultTx, 0, res.TotalCount),
+		PageCount: pageCount,
+		TotalTxs:  res.TotalCount,
 	}
 	for _, result := range res.Txs {
 		rpcTxSearch.Txs = append(rpcTxSearch.Txs, ResultTxToRPC(result))

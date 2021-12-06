@@ -3,6 +3,11 @@
 ## RC-0.8.0
 - Deprecated SessionDB (In Memory GolevelDB only)
 - Force Unstake now jails -> unstakes (refunds)
+- Fixed RPC docs for query/apps
+- *RPC API Break* Added total_txs & page_total to block & account txs - deprecated total_count
+- Implemented Relay Replay Error
+- Prompt 100 POKT over the minimum stake in CLI for UX
+- 
 
 ## RC-0.7.1
 - Fix for sync from scratch issue @ height 28153
