@@ -164,6 +164,11 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator types.Validator,
 			return types.ErrNotEnoughCoins(k.Codespace())
 		}
 	}
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		if k.IsWaitingValidator(ctx, currentValidator.Address) {
+			return types.ErrValidatorWaitingToUnstake(types.ModuleName)
+		}
+	}
 	return nil
 }
 
@@ -252,6 +257,9 @@ func (k Keeper) ValidateValidatorBeginUnstaking(ctx sdk.Ctx, validator types.Val
 	if !validator.IsStaked() {
 		return types.ErrValidatorStatus(k.codespace)
 	}
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) { // allow jailed validators to begin unstaking
+		return nil
+	}
 	if validator.IsJailed() {
 		return types.ErrValidatorJailed(k.codespace)
 	}
@@ -316,6 +324,9 @@ func (k Keeper) ValidateValidatorFinishUnstaking(ctx sdk.Ctx, validator types.Va
 	if !validator.IsUnstaking() {
 		return types.ErrValidatorStatus(k.codespace)
 	}
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) { // allow jailed validators to finish unstaking
+		return nil
+	}
 	if validator.IsJailed() {
 		return types.ErrValidatorJailed(k.codespace)
 	}
@@ -362,8 +373,8 @@ func (k Keeper) FinishUnstakingValidator(ctx sdk.Ctx, validator types.Validator)
 	})
 }
 
-// ForceValidatorUnstake - Coerce unstake (called when slashed below the minimum)
-func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sdk.Error {
+// LegacyForceValidatorUnstake - Coerce unstake (called when slashed below the minimum)
+func (k Keeper) LegacyForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sdk.Error {
 	k.ClearSessionCache()
 	// delete the validator from staking set as they are unstaked
 	switch validator.Status {
@@ -399,6 +410,31 @@ func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sd
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeUnstake,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, validator.Address.String()),
+		),
+		sdk.NewEvent(
+			sdk.EventTypeMessage,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, validator.Address.String()),
+		),
+	})
+	return nil
+}
+
+// ForceValidatorUnstake - Coerce unstake (called when slashed below the minimum)
+func (k Keeper) ForceValidatorUnstake(ctx sdk.Ctx, validator types.Validator) sdk.Error {
+	k.ClearSessionCache()
+	// send validator to jail || if already jailed, do nothing
+	k.JailValidator(ctx, validator.Address)
+	ctx.Logger().Info("Sent Validator to Jail for falling below minimum stake" + validator.Address.String())
+	k.SetWaitingValidator(ctx, validator)
+	ctx.Logger().Info("Validator is waiting to begin unstaking" + validator.Address.String())
+	ctx.Logger().Info("" + validator.Address.String())
+	// create the event
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeBeginUnstake,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
 			sdk.NewAttribute(sdk.AttributeKeySender, validator.Address.String()),
 		),
@@ -466,12 +502,20 @@ func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
 			signInfo.JailedBlocksCounter++
 			// compare against MaxJailedBlocks
 			if signInfo.JailedBlocksCounter > k.MaxJailedBlocks(ctx) {
-				// force unstake orphaned validator
-				err := k.ForceValidatorUnstake(ctx, val)
-				if err != nil {
-					k.Logger(ctx).Error("could not forceUnstake jailed validator: " + err.Error() + "\nfor validator " + addr.String())
+				if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+					err := k.ForceValidatorUnstake(ctx, val)
+					if err != nil {
+						k.Logger(ctx).Error("could not force unstake in simpleSlash: " + err.Error() + "\nfor validator " + addr.String())
+						return
+					}
+				} else {
+					err := k.LegacyForceValidatorUnstake(ctx, val)
+					if err != nil {
+						k.Logger(ctx).Error("could not force unstake in simpleSlash: " + err.Error() + "\nfor validator " + addr.String())
+						return
+					}
+					k.DeleteValidator(ctx, addr)
 				}
-				k.DeleteValidator(ctx, addr)
 			} else {
 				k.SetValidatorSigningInfo(ctx, addr, signInfo)
 			}
@@ -490,7 +534,10 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 	if selfDel == sdk.ZeroInt() {
 		return nil, types.ErrMissingSelfDelegation(k.Codespace())
 	}
-	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) { // TODO look into this state change (stuck in jail)
+	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
+		if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+			k.SetWaitingValidator(ctx, validator) // defensive against 'stuck in jail'
+		}
 		return nil, types.ErrSelfDelegationTooLowToUnjail(k.Codespace())
 	}
 	// cannot be unjailed if not jailed

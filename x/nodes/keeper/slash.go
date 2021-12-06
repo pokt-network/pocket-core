@@ -40,9 +40,14 @@ func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.BigInt) {
 	}
 	// if falls below minimum force burn all of the stake
 	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		err := k.ForceValidatorUnstake(ctx, validator)
+		var err error
+		if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+			err = k.ForceValidatorUnstake(ctx, validator)
+		} else {
+			err = k.LegacyForceValidatorUnstake(ctx, validator)
+		}
 		if err != nil {
-			k.Logger(ctx).Error("could not burn forceUnstake in simpleSlash: " + err.Error() + "\nfor validator " + addr.String())
+			k.Logger(ctx).Error("could not force unstake in simpleSlash: " + err.Error() + "\nfor validator " + addr.String())
 			return
 		}
 	}
@@ -102,9 +107,14 @@ func (k Keeper) slash(ctx sdk.Ctx, addr sdk.Address, infractionHeight, power int
 	}
 	// if falls below minimum force burn all of the stake
 	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
-		err := k.ForceValidatorUnstake(ctx, validator)
+		var err error
+		if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+			err = k.ForceValidatorUnstake(ctx, validator)
+		} else {
+			err = k.LegacyForceValidatorUnstake(ctx, validator)
+		}
 		if err != nil {
-			k.Logger(ctx).Error("could not forceUnstake in slash: " + err.Error() + "\nfor validator " + addr.String())
+			k.Logger(ctx).Error("could not force unstake in Slash: " + err.Error() + "\nfor validator " + addr.String())
 			return
 		}
 	}

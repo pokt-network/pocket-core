@@ -2,6 +2,7 @@
 =======
 ## RC-0.8.0
 - Deprecated SessionDB (In Memory GolevelDB only)
+- Force Unstake now jails -> unstakes (refunds)
 
 ## RC-0.7.1
 - Fix for sync from scratch issue @ height 28153
