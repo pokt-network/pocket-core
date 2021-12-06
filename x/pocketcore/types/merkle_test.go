@@ -387,18 +387,18 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 	root := i.GenerateMerkleRoot(0)
 	proofs, leaf := i.GenerateMerkleProof(0,index)
 	// validate level count on claim by total relays
-	res := proofs.Validate(0,root, leaf, len(proofs.HashRanges))
+	res, _ := proofs.Validate(0,root, leaf, len(proofs.HashRanges))
 	assert.True(t, res)
 	index2 := 0
 	root2 := i2.GenerateMerkleRoot(0)
 	proofs2, leaf2 := i2.GenerateMerkleProof(0,index2)
-	res = proofs2.Validate(0,root2, leaf2, len(proofs2.HashRanges))
+	res, _ = proofs2.Validate(0,root2, leaf2, len(proofs2.HashRanges))
 	assert.True(t, res)
 	// wrong root
-	res = proofs.Validate(0,root2, leaf, len(proofs.HashRanges))
+	res, _ = proofs.Validate(0,root2, leaf, len(proofs.HashRanges))
 	assert.False(t, res)
 	// wrong leaf provided
-	res = proofs.Validate(0,root, leaf2, len(proofs.HashRanges))
+	res, _ = proofs.Validate(0,root, leaf2, len(proofs.HashRanges))
 	assert.False(t, res)
 }
 
