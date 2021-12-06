@@ -1357,7 +1357,7 @@ components:
           items:
             type: string
           description: Blockchains supported
-        tokens:
+        staked_tokens:
           type: string
           description: How many tokens has this node staked in uPOKT
         max_relays:
