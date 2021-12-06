@@ -43,6 +43,7 @@ import (
 	"os"
 	fp "path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -81,6 +82,8 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitKeyfiles()
 	// get hosted blockchains
 	chains := NewHostedChains(false)
+	// hot reload chains
+	HotReloadChains(chains)
 	// create logger
 	logger := InitLogger()
 	// init cache
@@ -484,6 +487,53 @@ func getTMClient() client.Client {
 	return tmClient
 }
 
+func HotReloadChains(chains *types.HostedBlockchains) {
+	go func() {
+		for {
+			time.Sleep(time.Second * 5)
+			// create the chains path
+			var chainsPath = GlobalConfig.PocketConfig.DataDir + FS + sdk.ConfigDirName + FS + GlobalConfig.PocketConfig.ChainsName
+			// if file exists open, else create and open
+			var jsonFile *os.File
+			var bz []byte
+			if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
+				log2.Println(fmt.Sprintf("no chains.json found @ %s, defaulting to empty chains", chainsPath))
+				return
+			}
+			// reopen the file to read into the variable
+			jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+			if err != nil {
+				log2.Fatal(NewInvalidChainsError(err))
+			}
+			bz, err = ioutil.ReadAll(jsonFile)
+			if err != nil {
+				log2.Fatal(NewInvalidChainsError(err))
+			}
+			// unmarshal into the structure
+			var hostedChainsSlice []types.HostedBlockchain
+			err = json.Unmarshal(bz, &hostedChainsSlice)
+			if err != nil {
+				log2.Fatal(NewInvalidChainsError(err))
+			}
+			// close the file
+			err = jsonFile.Close()
+			if err != nil {
+				log2.Fatal(NewInvalidChainsError(err))
+			}
+			m := make(map[string]types.HostedBlockchain)
+			for _, chain := range hostedChainsSlice {
+				if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
+					log2.Fatal(fmt.Sprintf("invalid ID: %s in network identifier in %s file", chain.ID, GlobalConfig.PocketConfig.ChainsName))
+				}
+				m[chain.ID] = chain
+			}
+			chains.L.Lock()
+			chains.M = m
+			chains.L.Unlock()
+		}
+	}()
+}
+
 // get the hosted chains variable
 func NewHostedChains(generate bool) *types.HostedBlockchains {
 	// create the chains path
@@ -526,7 +576,10 @@ func NewHostedChains(generate bool) *types.HostedBlockchains {
 		m[chain.ID] = chain
 	}
 	// return the map
-	return &types.HostedBlockchains{M: m}
+	return &types.HostedBlockchains{
+		M: m,
+		L: sync.Mutex{},
+	}
 }
 
 func generateChainsJson(chainsPath string) *types.HostedBlockchains {
@@ -561,7 +614,7 @@ func generateChainsJson(chainsPath string) *types.HostedBlockchains {
 		m[chain.ID] = chain
 	}
 	// return the map
-	return &types.HostedBlockchains{M: m}
+	return &types.HostedBlockchains{M: m, L: sync.Mutex{}}
 }
 
 const (

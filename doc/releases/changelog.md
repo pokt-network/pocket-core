@@ -7,7 +7,7 @@
 - *RPC API Break* Added total_txs & page_total to block & account txs - deprecated total_count
 - Implemented Relay Replay Error
 - Prompt 100 POKT over the minimum stake in CLI for UX
-- 
+- Chains.json is hot-reloaded every 5 seconds
 
 ## RC-0.7.1
 - Fix for sync from scratch issue @ height 28153
