@@ -53,7 +53,7 @@ func (hr HashRange) Equal(hr2 HashRange) bool {
 }
 
 // "Validate" - Verifies the Proof from the leaf/cousin node data, the merkle root, and the Proof object
-func (mp MerkleProof) Validate(height int64, root HashRange, leaf Proof, numOfLevels int) (isValid bool) {
+func (mp MerkleProof) Validate(height int64, root HashRange, leaf Proof, numOfLevels int) (isValid bool, isReplayAttack bool) {
 	// ensure root lower is zero
 	if root.Range.Lower != 0 {
 		return
@@ -66,17 +66,18 @@ func (mp MerkleProof) Validate(height int64, root HashRange, leaf Proof, numOfLe
 	if mp.Target.Range.Upper != sumFromHash(mp.Target.Hash) {
 		return
 	}
+	// after this point - an invalid merkle proof due to an invalid range must be treated as a replay attack
 	// execute the for loop for each level
 	for i := 0; i < numOfLevels; i++ {
 		// check for valid range
 		if !mp.Target.isValidRange() {
-			return
+			return false, true
 		}
 		// get sibling from mp object
 		sibling := mp.HashRanges[i]
 		// check to see if sibling is within a valid range
 		if !sibling.isValidRange() {
-			return
+			return false, true
 		}
 		if mp.TargetIndex%2 == 1 { // odd target index
 			// target lower should be GTE sibling upper
@@ -103,7 +104,11 @@ func (mp MerkleProof) Validate(height int64, root HashRange, leaf Proof, numOfLe
 		mp.TargetIndex /= 2
 	}
 	// ensure root == verification for leaf and cousin
-	return root.Equal(mp.Target)
+	isValid = root.Equal(mp.Target)
+	if !isValid {
+		return isValid, true
+	}
+	return isValid, false
 }
 
 // "sumFromHash" - get leaf sum from merkleHash

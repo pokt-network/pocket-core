@@ -81,7 +81,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d, level count", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 				continue
 			}
-			if !mProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, leaf, levelCount) {
+			if isValid, _ := mProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, leaf, levelCount); !isValid {
 				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 				continue
 			}
@@ -140,9 +140,12 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return servicerAddr, claim, pc.NewInvalidProofsError(pc.ModuleName)
 	}
 	// validate the merkle proofs
-	isValid := proof.MerkleProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, proof.GetLeaf(), levelCount)
+	isValid, isReplayAttack := proof.MerkleProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, proof.GetLeaf(), levelCount)
 	// if is not valid for other reasons
 	if !isValid {
+		if isReplayAttack && k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+			return servicerAddr, claim, pc.NewReplayAttackError(pc.ModuleName)
+		}
 		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// get the application
