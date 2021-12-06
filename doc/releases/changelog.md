@@ -8,6 +8,7 @@
 - Implemented Relay Replay Error
 - Prompt 100 POKT over the minimum stake in CLI for UX
 - Chains.json is hot-reloaded every 5 seconds
+- Fixed 'evidence already committed' error
 
 ## RC-0.7.1
 - Fix for sync from scratch issue @ height 28153
