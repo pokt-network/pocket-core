@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"context"
 	"fmt"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"os"
@@ -18,7 +17,6 @@ func init() {
 	utilCmd.AddCommand(chainsGenCmd)
 	utilCmd.AddCommand(chainsDelCmd)
 	utilCmd.AddCommand(decodeTxCmd)
-	utilCmd.AddCommand(unsafeRollbackCmd)
 	utilCmd.AddCommand(exportGenesisForReset)
 	utilCmd.AddCommand(convertPocketEvidenceDB)
 	utilCmd.AddCommand(completionCmd)
@@ -152,59 +150,9 @@ var convertPocketEvidenceDB = &cobra.Command{
 	},
 }
 
-func init() {
-	unsafeRollbackCmd.Flags().BoolVar(&blocks, "blocks", false, "rollback blocks as well as the state")
-}
-
 var (
 	blocks bool
 )
-
-var unsafeRollbackCmd = &cobra.Command{
-	Use:   "unsafe-rollback <height>",
-	Short: "Rollbacks the blockchain, the state, and app to a previous height",
-	Long:  "Rollbacks the blockchain, the state, and app to a previous height",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		height, err := strconv.Atoi(args[0])
-		if err != nil {
-			fmt.Println("error parsing height: ", err)
-			return
-		}
-		db, err := app.OpenApplicationDB(app.GlobalConfig)
-		if err != nil {
-			fmt.Println("error loading application database: ", err)
-			return
-		}
-		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketBaseApp(log.NewTMLogger(loggerFile), db, false)
-		// initialize stores
-		a.MountKVStores(a.Keys)
-		a.MountTransientStores(a.Tkeys)
-		// rollback the txIndexer
-
-		err = state.RollbackTxIndexer(&app.GlobalConfig.TendermintConfig, int64(height), context.Background())
-		if err != nil {
-			fmt.Println("error rolling back txIndexer: ", err)
-			return
-		}
-		// rollback the app store
-		err = a.Store().RollbackVersion(int64(height))
-		if err != nil {
-			fmt.Println("error rolling back app: ", err)
-			return
-		}
-		if blocks {
-			// rollback block store and state
-			err = app.UnsafeRollbackData(&app.GlobalConfig.TendermintConfig, true, int64(height))
-			if err != nil {
-				fmt.Println("error rolling back block and state: ", err)
-				return
-			}
-		}
-	},
-}
 
 var completionCmd = &cobra.Command{
 	Use:   "completion (bash | zsh | fish | powershell)",

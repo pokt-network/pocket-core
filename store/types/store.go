@@ -103,7 +103,6 @@ type CommitMultiStore interface {
 	// Load a specific persisted version in a memory saving fashion.
 	// Don't iterate through and collect all the roots and versions
 	LoadLazyVersion(ver int64) (*Store, error)
-	RollbackVersion(ver int64) error
 	CopyStore() *Store
 }
 
