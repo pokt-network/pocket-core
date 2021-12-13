@@ -21,7 +21,7 @@ type Msg interface {
 	// Signers returns the addrs of signers that must sign.
 	// CONTRACT: All signatures must be present to be valid.
 	// CONTRACT: Returns addrs in some deterministic order.
-	GetSigner() Address
+	GetSigners() []Address
 
 	// Returns the recipient of the tx, if no recipient returns nil
 	GetRecipient() Address
@@ -53,7 +53,7 @@ type ProtoMsg interface {
 	// Signers returns the addrs of signers that must sign.
 	// CONTRACT: All signatures must be present to be valid.
 	// CONTRACT: Returns addrs in some deterministic order.
-	GetSigner() Address
+	GetSigners() []Address
 
 	// Returns the recipient of the tx, if no recipient returns nil
 	GetRecipient() Address

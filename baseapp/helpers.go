@@ -12,17 +12,20 @@ var isAlphaNumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
 
 // nolint - Mostly for testing
 func (app *BaseApp) Check(tx sdk.Tx) (result sdk.Result) {
-	return app.runTx(runTxModeCheck, nil, tx)
+	result, _ = app.runTx(runTxModeCheck, nil, tx)
+	return
 }
 
 // nolint - full tx execution
 func (app *BaseApp) Simulate(txBytes []byte, tx sdk.Tx) (result sdk.Result) {
-	return app.runTx(runTxModeSimulate, txBytes, tx)
+	result, _ = app.runTx(runTxModeSimulate, nil, tx)
+	return
 }
 
 // nolint
 func (app *BaseApp) Deliver(tx sdk.Tx) (result sdk.Result) {
-	return app.runTx(runTxModeDeliver, nil, tx)
+	result, _ = app.runTx(runTxModeDeliver, nil, tx)
+	return
 }
 
 // Context with current {check, deliver}State of the app

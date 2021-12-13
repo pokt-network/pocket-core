@@ -171,8 +171,8 @@ func (tx StdTx) GetSignature() StdSignature {
 	return tx.Signature
 }
 
-func (tx StdTx) GetSigner() sdk.Address {
-	return tx.GetMsg().GetSigner()
+func (tx StdTx) GetSigners() []sdk.Address {
+	return tx.GetMsg().GetSigners()
 }
 
 // GetMsg returns the all the transaction's messages.

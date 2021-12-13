@@ -1,6 +1,7 @@
 # Changelog
 =======
 ## RC-0.8.0
+- Added Non-Custodial Validator Security Operation with Output Address
 - Deprecated SessionDB (In Memory GolevelDB only)
 - Force Unstake now jails -> unstakes (refunds)
 - Fixed RPC docs for query/apps

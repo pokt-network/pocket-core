@@ -244,7 +244,10 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.BigInt, nk *nod
 		privKey := crypto.Ed25519PrivateKey{}.GenPrivateKey()
 		pubKey := privKey.PublicKey()
 		addr := sdk.Address(pubKey.Address())
-		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com:443", valCoins)
+		privKey2 := crypto.Ed25519PrivateKey{}.GenPrivateKey()
+		pubKey2 := privKey2.PublicKey()
+		addr2 := sdk.Address(pubKey2.Address())
+		val := nodesTypes.NewValidator(addr, pubKey, []string{ethereum}, "https://www.google.com:443", valCoins, addr2)
 		// set the vals from the data
 		nk.SetValidator(ctx, val)
 		nk.SetStakedValidatorByChains(ctx, val)
@@ -265,7 +268,7 @@ func createTestValidators(ctx sdk.Ctx, numAccs int, valCoins sdk.BigInt, nk *nod
 	if er != nil {
 		panic(er)
 	}
-	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com:443", valCoins)
+	val := nodesTypes.NewValidator(sdk.Address(kp.GetAddress()), kp.PublicKey, []string{ethereum}, "https://www.google.com:443", valCoins, kp.GetAddress())
 	// set the vals from the data
 	nk.SetValidator(ctx, val)
 	nk.SetStakedValidatorByChains(ctx, val)

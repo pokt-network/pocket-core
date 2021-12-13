@@ -13,15 +13,25 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 )
 
-func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, serviceURL string, amount sdk.BigInt, kp keys.KeyPair, passphrase string, legacyCodec bool) (*sdk.TxResponse, error) {
-	fromAddr := kp.GetAddress()
-	msg := types.MsgStake{
-		PublicKey:  kp.PublicKey,
-		Value:      amount,
-		ServiceUrl: serviceURL, // url where pocket service api is hosted
-		Chains:     chains,     // non native blockchains
+func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chains []string, serviceURL string, amount sdk.BigInt, kp keys.KeyPair, output sdk.Address, passphrase string, legacyCodec, isAfter8 bool, fromAddr sdk.Address) (*sdk.TxResponse, error) {
+	var msg sdk.ProtoMsg
+	if isAfter8 {
+		msg = &types.MsgStake{
+			PublicKey:  kp.PublicKey,
+			Chains:     chains,
+			Value:      amount,
+			ServiceUrl: serviceURL,
+			Output:     output,
+		}
+	} else {
+		msg = &types.LegacyMsgStake{
+			PublicKey:  kp.PublicKey,
+			Value:      amount,
+			ServiceUrl: serviceURL, // url where pocket service api is hosted
+			Chains:     chains,     // non native blockchains
+		}
 	}
-	txBuilder, cliCtx, err := newTx(cdc, &msg, fromAddr, tmNode, keybase, passphrase)
+	txBuilder, cliCtx, err := newTx(cdc, msg, fromAddr, tmNode, keybase, passphrase)
 	if err != nil {
 		return nil, err
 	}
@@ -29,12 +39,17 @@ func StakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, chain
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg, legacyCodec)
 }
 
-func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string, legacyCodec bool) (*sdk.TxResponse, error) {
-	msg := types.MsgBeginUnstake{Address: address}
-	txBuilder, cliCtx, err := newTx(cdc, &msg, address, tmNode, keybase, passphrase)
+func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address, signer sdk.Address, passphrase string, legacyCodec bool, isAfter8 bool) (*sdk.TxResponse, error) {
+	var msg sdk.ProtoMsg
+	if isAfter8 {
+		msg = &types.MsgBeginUnstake{Address: address, Signer: signer}
+	}else {
+		msg = &types.LegacyMsgBeginUnstake{Address: address}
+	}
+	txBuilder, cliCtx, err := newTx(cdc, msg, address, tmNode, keybase, passphrase)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +57,7 @@ func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, add
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg, legacyCodec)
 }
 
 func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string, legacyCodec bool) (*sdk.TxResponse, error) {

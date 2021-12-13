@@ -23,10 +23,9 @@ const (
 )
 
 //----------------------------------------------------------------------------------------------------------------------
-
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgBeginUnstake) GetSigner() sdk.Address {
-	return msg.Address
+func (msg MsgBeginUnstake) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.Signer}
 }
 
 func (msg MsgBeginUnstake) GetRecipient() sdk.Address {
@@ -43,6 +42,9 @@ func (msg MsgBeginUnstake) GetSignBytes() []byte {
 func (msg MsgBeginUnstake) ValidateBasic() sdk.Error {
 	if msg.Address.Empty() {
 		return ErrNilValidatorAddr(DefaultCodespace)
+	}
+	if msg.Signer.Empty() {
+		return ErrNilSignerAddr(DefaultCodespace)
 	}
 	return nil
 }
@@ -61,8 +63,8 @@ func (msg MsgBeginUnstake) GetFee() sdk.BigInt {
 //----------------------------------------------------------------------------------------------------------------------
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgUnjail) GetSigner() sdk.Address {
-	return msg.ValidatorAddr
+func (msg MsgUnjail) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.Signer}
 }
 
 func (msg MsgUnjail) GetRecipient() sdk.Address {
@@ -79,6 +81,9 @@ func (msg MsgUnjail) GetSignBytes() []byte {
 func (msg MsgUnjail) ValidateBasic() sdk.Error {
 	if msg.ValidatorAddr.Empty() {
 		return ErrNoValidatorFound(DefaultCodespace)
+	}
+	if msg.Signer.Empty() {
+		return ErrNilSignerAddr(DefaultCodespace)
 	}
 	return nil
 }
@@ -97,8 +102,8 @@ func (msg MsgUnjail) GetFee() sdk.BigInt {
 //----------------------------------------------------------------------------------------------------------------------
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgSend) GetSigner() sdk.Address {
-	return msg.FromAddress
+func (msg MsgSend) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.FromAddress}
 }
 
 func (msg MsgSend) GetRecipient() sdk.Address {
@@ -145,6 +150,7 @@ type MsgStake struct {
 	Chains     []string         `json:"chains" yaml:"chains"`
 	Value      sdk.BigInt       `json:"value" yaml:"value"`
 	ServiceUrl string           `json:"service_url" yaml:"service_url"`
+	Output     sdk.Address      `json:"output_address,omitempty" yaml:"output_address"`
 }
 
 func (msg *MsgStake) Marshal() ([]byte, error) {
@@ -173,24 +179,27 @@ func (msg *MsgStake) Unmarshal(data []byte) error {
 	if err != nil {
 		return err
 	}
-	pk, err := crypto.NewPublicKeyBz(m.Publickey)
+	publicKey, err := crypto.NewPublicKeyBz(m.Publickey)
 	if err != nil {
 		return err
 	}
 	newMsg := MsgStake{
-		PublicKey:  pk,
+		PublicKey:  publicKey,
 		Chains:     m.Chains,
 		Value:      m.Value,
 		ServiceUrl: m.ServiceUrl,
+		Output:     m.OutputAddress,
 	}
 	*msg = newMsg
 	return nil
 }
 
-// GetSigners retrun address(es) that must sign over msg.GetSignBytes()
-
-func (msg MsgStake) GetSigner() sdk.Address {
-	return sdk.Address(msg.PublicKey.Address())
+// GetSigners return address(es) that could sign over msg.GetSignBytes()
+func (msg MsgStake) GetSigners() []sdk.Address {
+	signers := make([]sdk.Address, 2)
+	signers[0] = sdk.Address(msg.PublicKey.Address())
+	signers[1] = msg.Output
+	return signers
 }
 
 func (msg MsgStake) GetRecipient() sdk.Address {
@@ -205,6 +214,9 @@ func (msg MsgStake) GetSignBytes() []byte {
 
 // ValidateBasic quick validity check, stateless
 func (msg MsgStake) ValidateBasic() sdk.Error {
+	if msg.Output == nil {
+		return ErrNilOutputAddr(DefaultCodespace)
+	}
 	if msg.PublicKey == nil || msg.PublicKey.RawString() == "" {
 		return ErrNilValidatorAddr(DefaultCodespace)
 	}
@@ -246,26 +258,26 @@ func (msg *MsgStake) XXX_MessageName() string {
 }
 
 func (msg MsgStake) String() string {
-	return fmt.Sprintf("Public Key: %s\nChains: %s\nValue: %s\n", msg.PublicKey.RawString(), msg.Chains, msg.Value.String())
+	return fmt.Sprintf("Public Key: %s\nChains: %s\nValue: %s\nOutputAddress: %s\n", msg.PublicKey.RawString(), msg.Chains, msg.Value.String(), msg.Output)
 }
 
 func (msg *MsgStake) ProtoMessage() {
 	m := msg.ToProto()
 	m.ProtoMessage()
+	return
 }
 
 // GetFee get fee for msg
 func (msg MsgStake) ToProto() MsgProtoStake {
-	var pkbz []byte
+	pubKeyBz := make([]byte, 0)
 	if msg.PublicKey != nil {
-		pkbz = msg.PublicKey.RawBytes()
+		pubKeyBz = msg.PublicKey.RawBytes()
 	}
 	return MsgProtoStake{
-		Publickey:  pkbz,
-		Chains:     msg.Chains,
-		Value:      msg.Value,
-		ServiceUrl: msg.ServiceUrl,
+		Publickey:     pubKeyBz,
+		Chains:        msg.Chains,
+		Value:         msg.Value,
+		ServiceUrl:    msg.ServiceUrl,
+		OutputAddress: msg.Output,
 	}
 }
-
-//----------------------------------------------------------------------------------------------------------------------

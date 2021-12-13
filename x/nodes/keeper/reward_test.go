@@ -92,11 +92,18 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 	type args struct {
 		ctx              sdk.Context
 		previousProposer sdk.Address
+		Output           sdk.Address
+		Amount           sdk.BigInt
 	}
 	stakedValidator := getStakedValidator()
-
+	amount := sdk.NewInt(10000)
+	fees := sdk.NewCoins(sdk.NewCoin("upokt", amount))
 	context, _, keeper := createTestInput(t, true)
-
+	fp := keeper.getFeePool(context)
+	keeper.AccountKeeper.SetCoins(context, fp.GetAddress(), fees)
+	fp = keeper.getFeePool(context)
+	keeper.SetValidator(context, stakedValidator)
+	assert.Equal(t, fees, fp.GetCoins())
 	tests := []struct {
 		name   string
 		fields fields
@@ -106,14 +113,71 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 			args{
 				ctx:              context,
 				previousProposer: stakedValidator.GetAddress(),
+				Output:           stakedValidator.OutputAddress,
 			}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
-
+			ctx := tt.args.ctx
 			k.blockReward(tt.args.ctx, tt.args.previousProposer)
+			acc := k.GetAccount(ctx, tt.args.Output)
+			assert.False(t, acc.Coins.IsZero())
+			assert.True(t, acc.Coins.IsEqual(sdk.NewCoins(sdk.NewCoin("upokt", sdk.NewInt(910)))))
+			acc = k.GetAccount(ctx, tt.args.previousProposer)
+			assert.True(t, acc.Coins.IsZero())
+		})
+	}
+}
 
+func TestKeeper_rewardFromRelays(t *testing.T) {
+	type fields struct {
+		keeper Keeper
+	}
+	type args struct {
+		ctx               sdk.Context
+		validator         sdk.Address
+		Output            sdk.Address
+		validatorNoOutput sdk.Address
+		OutputNoOutput    sdk.Address
+	}
+	stakedValidator := getStakedValidator()
+	stakedValidatorNoOutput := getStakedValidator()
+	stakedValidatorNoOutput.OutputAddress = nil
+	context, _, keeper := createTestInput(t, true)
+	keeper.SetValidator(context, stakedValidator)
+	keeper.SetValidator(context, stakedValidatorNoOutput)
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{"Test RelayReward", fields{keeper: keeper},
+			args{
+				ctx:               context,
+				validator:         stakedValidator.GetAddress(),
+				Output:            stakedValidator.OutputAddress,
+				validatorNoOutput: stakedValidatorNoOutput.GetAddress(),
+				OutputNoOutput:    stakedValidatorNoOutput.GetAddress(),
+			}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			k := tt.fields.keeper
+			ctx := tt.args.ctx
+			k.RewardForRelays(tt.args.ctx, sdk.NewInt(10000), tt.args.validator)
+			acc := k.GetAccount(ctx, tt.args.Output)
+			assert.False(t, acc.Coins.IsZero())
+			assert.True(t, acc.Coins.IsEqual(sdk.NewCoins(sdk.NewCoin("upokt", sdk.NewInt(8900000)))))
+			acc = k.GetAccount(ctx, tt.args.validator)
+			assert.True(t, acc.Coins.IsZero())
+			// no output now
+			k.RewardForRelays(tt.args.ctx, sdk.NewInt(10000), tt.args.validatorNoOutput)
+			acc = k.GetAccount(ctx, tt.args.OutputNoOutput)
+			assert.False(t, acc.Coins.IsZero())
+			assert.True(t, acc.Coins.IsEqual(sdk.NewCoins(sdk.NewCoin("upokt", sdk.NewInt(8900000)))))
+			acc2 := k.GetAccount(ctx, tt.args.validatorNoOutput)
+			assert.Equal(t, acc, acc2)
 		})
 	}
 }

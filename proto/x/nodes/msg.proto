@@ -19,6 +19,27 @@ message MsgProtoStake {
 		(gogoproto.jsontag) = "value",
 		(gogoproto.moretags) = "yaml:\"value\""];
 	string ServiceUrl = 4 [(gogoproto.moretags) = "yaml:\"service_url\"", (gogoproto.jsontag) = "service_url"];
+	bytes OutputAddress = 5 [
+                            		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
+                            		(gogoproto.jsontag) = "validator_address",
+                            		(gogoproto.moretags) = "yaml:\"output_address\""
+                            	];
+}
+
+message LegacyMsgProtoStake {
+	option (gogoproto.messagename) = true;
+	option (gogoproto.equal) = true;
+	option (gogoproto.goproto_stringer) = true;
+	option (gogoproto.goproto_getters)  = false;
+
+	bytes Publickey = 1 [(gogoproto.moretags) = "yaml:\"public_key\"", (gogoproto.jsontag) = "public_key"];
+	repeated string Chains = 2 [(gogoproto.moretags) = "yaml:\"chains\"",(gogoproto.jsontag) = "chains"];
+	string value           = 3 [
+		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
+		(gogoproto.nullable)   = false,
+		(gogoproto.jsontag) = "value",
+		(gogoproto.moretags) = "yaml:\"value\""];
+	string ServiceUrl = 4 [(gogoproto.moretags) = "yaml:\"service_url\"", (gogoproto.jsontag) = "service_url"];
 }
 
 message MsgBeginUnstake {
@@ -32,9 +53,45 @@ message MsgBeginUnstake {
 		(gogoproto.jsontag) = "validator_address",
 		(gogoproto.moretags) = "yaml:\"validator_address\""
 	];
+	bytes Signer = 2 [
+	        (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
+    		(gogoproto.jsontag) = "signer_address",
+    		(gogoproto.moretags) = "yaml:\"signer_address\""
+	];
+}
+
+message LegacyMsgBeginUnstake {
+	option (gogoproto.messagename) = true;
+	option (gogoproto.equal) = true;
+	option (gogoproto.goproto_stringer) = true;
+	option (gogoproto.goproto_getters)  = false;
+
+	bytes Address = 1 [
+		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
+		(gogoproto.jsontag) = "validator_address",
+		(gogoproto.moretags) = "yaml:\"validator_address\""
+	];
 }
 
 message MsgUnjail {
+	option (gogoproto.messagename) = true;
+	option (gogoproto.equal) = true;
+	option (gogoproto.goproto_stringer) = true;
+	option (gogoproto.goproto_getters)  = false;
+
+	bytes ValidatorAddr = 1 [
+    		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
+    		(gogoproto.jsontag) = "address",
+    		(gogoproto.moretags) = "yaml:\"address\""
+	];
+	bytes Signer = 2 [
+	        (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
+    		(gogoproto.jsontag) = "signer_address",
+    		(gogoproto.moretags) = "yaml:\"signer_address\""
+	];
+}
+
+message LegacyMsgUnjail {
 	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;

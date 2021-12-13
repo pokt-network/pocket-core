@@ -3,10 +3,12 @@ package cli
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
 	appsType "github.com/pokt-network/pocket-core/x/apps/types"
 	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
@@ -57,18 +59,31 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Bi
 }
 
 // StakeNode - Deliver Stake message to node
-func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
-	fa, err := sdk.AddressFromHex(fromAddr)
-	if err != nil {
-		return nil, err
-	}
+func StakeNode(chains []string, serviceURL, operator, output, passphrase, chainID string, amount sdk.BigInt, fees int64, isBefore8 bool) (*rpc.SendRawTxParams, error) {
+	var operatorPublicKey crypto.PublicKey
+	var fromAddress sdk.Address
 	kb, err := app.GetKeybase()
 	if err != nil {
 		return nil, err
 	}
-	kp, err := kb.Get(fa)
+	outputAddress, err := sdk.AddressFromHex(output)
 	if err != nil {
 		return nil, err
+	}
+	kp, err := kb.Get(outputAddress)
+	if err != nil {
+		operatorAddress, err := sdk.AddressFromHex(operator)
+		if err != nil {
+			return nil, errors.New("OutputAddress not found in keybase & Operator field doesn't seem to be an address: " + err.Error())
+		}
+		kp, err = kb.Get(operatorAddress)
+		if err != nil {
+			return nil, errors.New("Neither the Output Address nor the Operator Address is able to be retrieved from the keybase" + err.Error())
+		}
+		operatorPublicKey = kp.PublicKey
+		fromAddress = kp.GetAddress()
+	} else {
+		fromAddress = outputAddress
 	}
 	m := make(map[string]struct{})
 	for _, chain := range chains {
@@ -90,34 +105,57 @@ func StakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string
 	if err != nil {
 		return nil, err
 	}
-	msg := nodeTypes.MsgStake{
-		PublicKey:  kp.PublicKey,
-		Chains:     chains,
-		Value:      amount,
-		ServiceUrl: serviceURL,
+	var msg sdk.ProtoMsg
+	if isBefore8 {
+		msg = &nodeTypes.LegacyMsgStake{
+			PublicKey:  operatorPublicKey,
+			Chains:     chains,
+			Value:      amount,
+			ServiceUrl: serviceURL,
+		}
+	} else {
+		msg = &nodeTypes.MsgStake{
+			PublicKey:  operatorPublicKey,
+			Chains:     chains,
+			Value:      amount,
+			ServiceUrl: serviceURL,
+			Output:     outputAddress,
+		}
 	}
 	err = msg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
+	txBz, err := newTxBz(app.Codec(), msg, fromAddress, chainID, kb, passphrase, fees, "", false)
 	if err != nil {
 		return nil, err
 	}
 	return &rpc.SendRawTxParams{
-		Addr:        fromAddr,
+		Addr:        operator,
 		RawHexBytes: hex.EncodeToString(txBz),
 	}, nil
 }
 
 // UnstakeNode - start unstaking message to node
-func UnstakeNode(fromAddr, passphrase, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
+func UnstakeNode(operatorAddr, fromAddr, passphrase, chainID string, fees int64, isBefore8 bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
 	}
-	msg := nodeTypes.MsgBeginUnstake{
-		Address: fa,
+	oa, err := sdk.AddressFromHex(operatorAddr)
+	if err != nil {
+		return nil, err
+	}
+	var msg sdk.ProtoMsg
+	if isBefore8 {
+		msg = &nodeTypes.LegacyMsgBeginUnstake{
+			Address: oa,
+		}
+	} else {
+		msg = &nodeTypes.MsgBeginUnstake{
+			Address: oa,
+			Signer:  fa,
+		}
 	}
 	kb, err := app.GetKeybase()
 	if err != nil {
@@ -127,7 +165,7 @@ func UnstakeNode(fromAddr, passphrase, chainID string, fees int64, legacyCodec b
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees, "", false)
 	if err != nil {
 		return nil, err
 	}
@@ -138,13 +176,25 @@ func UnstakeNode(fromAddr, passphrase, chainID string, fees int64, legacyCodec b
 }
 
 // UnjailNode - Remove node from jail
-func UnjailNode(fromAddr, passphrase, chainID string, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
+func UnjailNode(operatorAddr, fromAddr, passphrase, chainID string, fees int64, isBefore8 bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
 	}
-	msg := nodeTypes.MsgUnjail{
-		ValidatorAddr: fa,
+	oa, err := sdk.AddressFromHex(operatorAddr)
+	if err != nil {
+		return nil, err
+	}
+	var msg sdk.ProtoMsg
+	if isBefore8 {
+		msg = &nodeTypes.LegacyMsgUnjail{
+			ValidatorAddr: oa,
+		}
+	} else {
+		msg = &nodeTypes.MsgUnjail{
+			ValidatorAddr: oa,
+			Signer:        fa,
+		}
 	}
 	kb, err := app.GetKeybase()
 	if err != nil {
@@ -154,7 +204,7 @@ func UnjailNode(fromAddr, passphrase, chainID string, fees int64, legacyCodec bo
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees, "", false)
 	if err != nil {
 		return nil, err
 	}

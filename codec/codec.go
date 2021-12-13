@@ -24,6 +24,7 @@ func NewCodec(anyUnpacker types.AnyUnpacker) *Codec {
 }
 
 var (
+	ThirdUpgradeHeight                     = int64(math.MaxInt64)
 	UpgradeHeight                    int64 = math.MaxInt64
 	OldUpgradeHeight                 int64 = 0
 	NotProtoCompatibleInterfaceError       = errors.New("the interface passed for encoding does not implement proto marshaller")
@@ -228,7 +229,10 @@ func (cdc *Codec) IsAfterSecondUpgrade(height int64) bool {
 
 //Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterThirdUpgrade(height int64) bool {
-	return true
-	// TODO
-	panic("second upgrade height not implemented yet")
+	return height >= ThirdUpgradeHeight
+}
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsOnThirdUpgrade(height int64) bool {
+	return height == ThirdUpgradeHeight
 }

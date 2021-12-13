@@ -102,7 +102,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 
 func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.Address, claim pc.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the claim
-	servicerAddr = proof.GetSigner()
+	servicerAddr = proof.GetSigners()[0]
 	// get the claim for the address
 	claim, found := k.GetClaim(ctx, servicerAddr, proof.GetLeaf().SessionHeader(), proof.EvidenceType)
 	// if the claim is not found for this claim

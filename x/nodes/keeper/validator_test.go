@@ -42,6 +42,46 @@ func TestKeeper_GetValidators(t *testing.T) {
 	}
 }
 
+func TestKeeper_GetValidatorOutputAddress(t *testing.T) {
+	type args struct {
+		ctx sdk.Context
+		k   Keeper
+		v   types.Validator
+	}
+	validator := getStakedValidator()
+	validatorNoOuptut := getStakedValidator()
+	validatorNoOuptut.OutputAddress = nil
+	context, _, keeper := createTestInput(t, true)
+	keeper.SetValidator(context, validator)
+	keeper.SetValidator(context, validatorNoOuptut)
+	tests := []struct {
+		name string
+		args args
+		want sdk.Address
+	}{
+		{"Test GetValidatorOutput With Output Address", args{
+			ctx: context,
+			k:   keeper,
+			v: validator,
+		}, validator.OutputAddress},
+		{"Test GetValidatorOutput Without Output Address", args{
+			ctx: context,
+			k:   keeper,
+			v: validatorNoOuptut,
+		}, validatorNoOuptut.Address},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, found := tt.args.k.GetValidatorOutputAddress(tt.args.ctx, tt.args.v.Address)
+			if !assert.True(t, len(got) == len(tt.want)) {
+				t.Errorf("GetValidatorOutputAddress() = %v, want %v", got, tt.want)
+			}
+			assert.True(t, found)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestMustGetValidator(t *testing.T) {
 	stakedValidator := getStakedValidator()
 
