@@ -14,100 +14,103 @@ import (
 
 // NewAnteHandler returns an AnteHandler that checks signatures and deducts fees from the first signer.
 func NewAnteHandler(ak keeper.Keeper) sdk.AnteHandler {
-	return func(ctx sdk.Ctx, tx sdk.Tx, txBz []byte, txIndexer txindex.TxIndexer, simulate bool) (newCtx sdk.Ctx, res sdk.Result, abort bool) {
+	return func(ctx sdk.Ctx, tx sdk.Tx, txBz []byte, txIndexer txindex.TxIndexer, simulate bool) (newCtx sdk.Ctx, res sdk.Result, signer posCrypto.PublicKey, abort bool) {
 		if addr := ak.GetModuleAddress(types.FeeCollectorName); addr == nil {
 			ctx.Logger().Error(fmt.Sprintf("%s module account has not been set", types.FeeCollectorName))
 			os.Exit(1)
 		}
 		// validate the transaction
 		if err := tx.ValidateBasic(); err != nil {
-			return newCtx, err.Result(), true
+			return newCtx, err.Result(), nil, true
 		}
 		stdTx, ok := tx.(types.StdTx)
 		if !ok {
-			return newCtx, sdk.ErrInternal("all transactions must be convertible to inteface: ProtoStdTx").Result(), true
+			return newCtx, sdk.ErrInternal("all transactions must be convertible to inteface: ProtoStdTx").Result(), nil, true
 		}
-		err := ValidateTransaction(ctx, ak, stdTx, ak.GetParams(ctx), txIndexer, txBz, simulate)
+		signer, err := ValidateTransaction(ctx, ak, stdTx, ak.GetParams(ctx), txIndexer, txBz, simulate)
 		if err != nil {
-			return newCtx, err.Result(), true
+			return newCtx, err.Result(), signer, true
 		}
-		err = DeductFees(ak, ctx, stdTx)
+		err = DeductFees(ak, ctx, stdTx, signer)
 		if err != nil {
-			return newCtx, err.Result(), true
+			return newCtx, err.Result(), signer, true
 		}
-		return ctx, sdk.Result{}, false // continue...
+		return ctx, sdk.Result{}, signer, false // continue...
 	}
 }
 
-func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params, txIndexer txindex.TxIndexer, txBz []byte, simulate bool) sdk.Error {
+func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params, txIndexer txindex.TxIndexer, txBz []byte, simulate bool) (signer posCrypto.PublicKey, sdkErr sdk.Error) {
 	// validate the memo
 	if err := ValidateMemo(stdTx, params); err != nil {
-		return types.ErrInvalidMemo(ModuleName, err)
-	}
-	var pk posCrypto.PublicKey
-	// attempt to get the public key from the signature
-	if stdTx.GetSignature().GetPublicKey() != "" {
-		var err error
-		pk, err = posCrypto.NewPublicKey(stdTx.GetSignature().GetPublicKey())
-		if err != nil {
-			return sdk.ErrInvalidPubKey(err.Error())
-		}
-	} else {
-		// public key in the signature not found so check world state
-		acc := k.GetAccount(ctx, stdTx.GetSigner())
-		if acc == nil {
-			return types.ErrAccountNotFound(ModuleName)
-		}
-		if pk = acc.GetPubKey(); pk == nil {
-			return types.ErrEmptyPublicKey(ModuleName)
-		}
+		return nil, types.ErrInvalidMemo(ModuleName, err)
 	}
 	// check for duplicate transaction to prevent replay attacks
 	txHash := tmTypes.Tx(txBz).Hash()
 	// make http call to tendermint to check txIndexer
 	if txIndexer == nil {
 		ctx.Logger().Error(types.ErrNilTxIndexer(ModuleName).Error())
-		return types.ErrNilTxIndexer(ModuleName)
+		return nil, types.ErrNilTxIndexer(ModuleName)
 	}
 	res, err := (txIndexer).Get(txHash)
 	if err != nil {
 		ctx.Logger().Error(err.Error())
-		return sdk.ErrInternal(err.Error())
+		return nil, sdk.ErrInternal(err.Error())
 	}
 	if res != nil {
-		return types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
+		return nil, types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
 	}
-	// get the sign bytes from the tx
-	signBytes, err := GetSignBytes(ctx.ChainID(), stdTx)
-	if err != nil {
-		return sdk.ErrInternal(err.Error())
-	}
-	// get the fees from the tx
-	expectedFee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, k.GetParams(ctx).FeeMultiplier.GetFee(stdTx.GetMsg())))
-	// test for public key type
-	p, ok := pk.(posCrypto.PublicKeyMultiSig)
-	// if standard public key
-	if !ok {
-		// validate the fees for a standard public key
-		if !stdTx.GetFee().IsAllGTE(expectedFee) {
-			return types.ErrInsufficientFee(ModuleName, expectedFee, stdTx.GetFee())
+	var pk posCrypto.PublicKey
+	for _, signer := range stdTx.GetSigners() {
+		// attempt to get the public key from the signature
+		if stdTx.GetSignature().GetPublicKey() != "" {
+			var err error
+			pk, err = posCrypto.NewPublicKey(stdTx.GetSignature().GetPublicKey())
+			if err != nil {
+				return nil, sdk.ErrInvalidPubKey(err.Error())
+			}
+		} else {
+			// public key in the signature not found so check world state
+			acc := k.GetAccount(ctx, signer)
+			if acc == nil {
+				return nil, types.ErrAccountNotFound(ModuleName)
+			}
+			if pk = acc.GetPubKey(); pk == nil {
+				return nil, types.ErrEmptyPublicKey(ModuleName)
+			}
 		}
-		// validate signature for regular public key
+		// get the sign bytes from the tx
+		signBytes, err := GetSignBytes(ctx.ChainID(), stdTx)
+		if err != nil {
+			return nil, sdk.ErrInternal(err.Error())
+		}
+		// get the fees from the tx
+		expectedFee := sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, k.GetParams(ctx).FeeMultiplier.GetFee(stdTx.GetMsg())))
+		// test for public key type
+		p, ok := pk.(posCrypto.PublicKeyMultiSig)
+		// if standard public key
+		if !ok {
+			// validate the fees for a standard public key
+			if !stdTx.GetFee().IsAllGTE(expectedFee) {
+				return nil, types.ErrInsufficientFee(ModuleName, expectedFee, stdTx.GetFee())
+			}
+			// validate signature for regular public key
+			if !simulate && !pk.VerifyBytes(signBytes, stdTx.GetSignature().GetSignature()) {
+				continue
+			}
+			return pk, nil
+		}
+		// validate the signature depth
+		ok = ValidateSignatureDepth(params.TxSigLimit, p)
+		if !ok {
+			return nil, types.ErrTooManySignatures(ModuleName, params.TxSigLimit)
+		}
+		// validate the multi sig
 		if !simulate && !pk.VerifyBytes(signBytes, stdTx.GetSignature().GetSignature()) {
-			return sdk.ErrUnauthorized("signature verification failed for the transaction")
+			continue
 		}
-		return nil
+		return pk, nil
 	}
-	// validate the signature depth
-	ok = ValidateSignatureDepth(params.TxSigLimit, p)
-	if !ok {
-		return types.ErrTooManySignatures(ModuleName, params.TxSigLimit)
-	}
-	// validate the multi sig
-	if !simulate && !pk.VerifyBytes(signBytes, stdTx.GetSignature().GetSignature()) {
-		return sdk.ErrUnauthorized("multisignature verification failed for the transaction")
-	}
-	return nil
+	return nil, sdk.ErrUnauthorized("signature verification failed for the transaction")
 }
 
 func ValidateSignatureDepth(limit uint64, publicKey posCrypto.PublicKeyMultiSig) (ok bool) {
@@ -156,12 +159,12 @@ func ValidateMemo(stdTx types.StdTx, params Params) sdk.Error {
 }
 
 // DeductFees deducts fees from the given account.
-func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTx) sdk.Error {
+func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTx, signer posCrypto.PublicKey) sdk.Error {
 	fees := tx.GetFee()
 	if !fees.IsValid() {
 		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee amount: %s", fees))
 	}
-	acc, err := GetSignerAcc(ctx, keeper, tx.GetSigner())
+	acc, err := GetSignerAcc(ctx, keeper, sdk.Address(signer.Address()))
 	if err != nil {
 		return err
 	}

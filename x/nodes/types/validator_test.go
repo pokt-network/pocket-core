@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/go-amino"
 	"math/rand"
 	"reflect"
@@ -39,15 +40,16 @@ func TestNewValidator(t *testing.T) {
 				PublicKey:               pub,
 				Jailed:                  false,
 				Status:                  sdk.Staked,
-				StakedTokens:            sdk.ZeroInt(),
 				Chains:                  []string{"0001"},
 				ServiceURL:              "https://www.google.com:443",
+				StakedTokens:            sdk.ZeroInt(),
 				UnstakingCompletionTime: time.Time{}, // zero out because status: staked
+				OutputAddress:           sdk.Address(pub.Address()),
 			}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewValidator(tt.args.addr, tt.args.consPubKey, tt.args.chains, tt.args.serviceURL, tt.args.tokensToStake); !reflect.DeepEqual(got, tt.want) {
+			if got := NewValidator(tt.args.addr, tt.args.consPubKey, tt.args.chains, tt.args.serviceURL, tt.args.tokensToStake, tt.args.addr); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewValidator() = %v, want %v", got, tt.want)
 			}
 		})
@@ -1153,9 +1155,9 @@ func TestValidators_String(t *testing.T) {
 		wantOut string
 	}{
 		{"String Test", v, fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
-			"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v"+
+			"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v\nOutput Address:\t\t%s"+
 			"\n----",
-			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "https://www.google.com:443", []string{"0001"}, time.Unix(0, 0).UTC(),
+			sdk.Address(pub.Address()), pub.RawString(), false, sdk.Staked, sdk.ZeroInt(), "https://www.google.com:443", []string{"0001"}, time.Unix(0, 0).UTC(), "",
 		)},
 	}
 	for _, tt := range tests {
@@ -1166,6 +1168,29 @@ func TestValidators_String(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestToFromProto(t *testing.T) {
+	var pub crypto.Ed25519PublicKey
+	_, err := rand.Read(pub[:])
+	if err != nil {
+		_ = err
+	}
+	lv := Validator{
+		Address:                 sdk.Address(pub.Address()),
+		PublicKey:               pub,
+		Jailed:                  false,
+		Status:                  sdk.Staked,
+		Chains:                  []string{"0001"},
+		ServiceURL:              "foo.bar",
+		StakedTokens:            sdk.OneInt(),
+		UnstakingCompletionTime: time.Now(),
+		OutputAddress: sdk.Address(pub.Address()),
+	}
+	pV := lv.ToProto()
+	v, err := pV.FromProto()
+	assert.Nil(t, err)
+	assert.True(t, reflect.DeepEqual(v, lv))
 }
 
 func TestValidator_MarshalJSON(t *testing.T) {

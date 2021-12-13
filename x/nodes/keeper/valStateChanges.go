@@ -114,12 +114,17 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	if int64(len(validator.Chains)) > k.MaxChains(ctx) {
 		return types.ErrTooManyChains(types.ModuleName)
 	}
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		if validator.OutputAddress == nil {
+			return types.ErrNilOutputAddr(k.codespace)
+		}
+	}
 	// check to see if teh public key has already been register for that validator
 	val, found := k.GetValidator(ctx, validator.Address)
 	if found {
 		// edit stake in 6.X upgrade
 		if ctx.IsAfterUpgradeHeight() && val.IsStaked() {
-			return k.ValidateEditStake(ctx, val, amount)
+			return k.ValidateEditStake(ctx, val, validator, amount)
 		}
 		if !val.IsUnstaked() { // unstaking or already staked but before the upgrade
 			return types.ErrValidatorStatus(k.codespace)
@@ -150,7 +155,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 }
 
 // ValidateEditStake - Validate the updates to a current staked validator
-func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator types.Validator, amount sdk.BigInt) sdk.Error {
+func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator, newValidtor types.Validator, amount sdk.BigInt) sdk.Error {
 	// ensure not staking less
 	diff := amount.Sub(currentValidator.StakedTokens)
 	if diff.IsNegative() {
@@ -165,6 +170,13 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator types.Validator,
 		}
 	}
 	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		// ensure output address doesn't change
+		if currentValidator.OutputAddress != nil {
+			if !newValidtor.OutputAddress.Equals(currentValidator.OutputAddress) {
+				return types.ErrUnequalOutputAddr(k.Codespace())
+			}
+		}
+		// prevent waiting vals from modifying anything
 		if k.IsWaitingValidator(ctx, currentValidator.Address) {
 			return types.ErrValidatorWaitingToUnstake(types.ModuleName)
 		}
@@ -173,17 +185,17 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator types.Validator,
 }
 
 // StakeValidator - Store ops when a validator stakes
-func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt) sdk.Error {
+func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt, signer crypto.PublicKey) sdk.Error {
 	// edit stake
 	if ctx.IsAfterUpgradeHeight() {
 		// get Validator to see if edit stake
 		val, found := k.GetValidator(ctx, validator.Address)
 		if found && val.IsStaked() {
-			return k.EditStakeValidator(ctx, val, validator, amount)
+			return k.EditStakeValidator(ctx, val, validator, amount, signer)
 		}
 	}
 	// send the coins from address to staked module account
-	err := k.coinsFromUnstakedToStaked(ctx, validator, amount)
+	err := k.coinsFromUnstakedToStaked(ctx, sdk.Address(signer.Address()), amount)
 	if err != nil {
 		return err
 	}
@@ -212,18 +224,23 @@ func (k Keeper) StakeValidator(ctx sdk.Ctx, validator types.Validator, amount sd
 }
 
 // EditStakeValidator - Edit an already staked validator with the staking message
-func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidator types.Validator, amount sdk.BigInt) sdk.Error {
+func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidator types.Validator, amount sdk.BigInt, signer crypto.PublicKey) sdk.Error {
 	origValForDeletion := currentValidator
 	// get the difference in coins
 	diff := amount.Sub(currentValidator.StakedTokens)
 	// if they bumped the stake amount
 	if diff.IsPositive() {
 		// send the coins from address to staked module account
-		err := k.coinsFromUnstakedToStaked(ctx, currentValidator, diff)
+		err := k.coinsFromUnstakedToStaked(ctx, sdk.Address(signer.Address()), diff)
 		if err != nil {
 			return err
 		}
 		currentValidator.StakedTokens = currentValidator.StakedTokens.Add(diff)
+	}
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		if currentValidator.OutputAddress == nil {
+			currentValidator.OutputAddress = updatedValidator.OutputAddress
+		}
 	}
 	// update chains
 	currentValidator.Chains = updatedValidator.Chains
@@ -483,7 +500,7 @@ func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		val, err := types.UnmarshalValidator(k.Cdc, ctx, iterator.Value())
+		val, err := k.UnmarshalValidator(ctx, iterator.Value())
 		if err != nil {
 			ctx.Logger().Error("could not unmarshal validator in IncrementJailedValidators: ", err.Error())
 			continue
@@ -528,6 +545,9 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 	validator, found := k.GetValidator(ctx, msg.ValidatorAddr)
 	if !found {
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())
+	}
+	if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress) {
+		return nil, types.ErrUnauthorizedSigner(k.Codespace())
 	}
 	// cannot be unjailed if no self-delegation exists
 	selfDel := validator.GetTokens()

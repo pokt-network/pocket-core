@@ -10,6 +10,7 @@ package baseapp
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/node"
@@ -749,7 +750,7 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 	if err != nil {
 		result = err.Result()
 	} else {
-		result = app.runTx(runTxModeCheck, req.Tx, tx)
+		result, _ = app.runTx(runTxModeCheck, req.Tx, tx)
 	}
 
 	return abci.ResponseCheckTx{
@@ -765,6 +766,7 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 // DeliverTx implements the ABCI interface.
 func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliverTx) {
 	var result sdk.Result
+	var signerPK crypto.PublicKey
 	var signer sdk.Address
 	var recipient sdk.Address
 	var messageType string
@@ -772,11 +774,18 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	if err != nil {
 		result = err.Result()
 	} else {
-		result = app.runTx(runTxModeDeliver, req.Tx, tx)
+		result, signerPK = app.runTx(runTxModeDeliver, req.Tx, tx)
 		msg := tx.GetMsg()
 		messageType = msg.Type()
-		signer = msg.GetSigner()
 		recipient = msg.GetRecipient()
+		if signerPK == nil {
+			signers := msg.GetSigners()
+			if len(signers)>=1 {
+				signer = signers[0]
+			}
+		} else {
+			signer = sdk.Address(signerPK.Address())
+		}
 	}
 
 	return abci.ResponseDeliverTx{
@@ -822,7 +831,7 @@ func (app *BaseApp) getContextForTx(mode runTxMode, txBytes []byte) (ctx sdk.Ctx
 
 // runMsg iterates through all the messages and executes them.
 // nolint: gocyclo
-func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode) (result sdk.Result) {
+func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode, signer crypto.PublicKey) (result sdk.Result) {
 	var msgLogs sdk.ABCIMessageLogs
 
 	if GetABCILogging() {
@@ -845,7 +854,7 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode) (result sdk
 	var msgResult sdk.Result
 	// skip actual execution for CheckTx mode
 	if mode != runTxModeCheck {
-		msgResult = handler(ctx, msg)
+		msgResult = handler(ctx, msg, signer)
 	}
 	// Each message result's Data must be length prefixed in order to separate
 	// each result.
@@ -926,7 +935,7 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Ctx, txBytes []byte) (
 // anteHandler. The provided txBytes may be nil in some cases, eg. in tests. For
 // further details on transaction execution, reference the BaseApp SDK
 // documentation.
-func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk.Result) {
+func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk.Result, signer crypto.PublicKey) {
 	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
 	// determined by the GasMeter. We need access to the context to get the gas
 	// meter so we initialize upfront.
@@ -937,7 +946,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 
 	// only run the tx if there is block gas remaining
 	if mode == runTxModeDeliver && ctx.BlockGasMeter().IsOutOfGas() {
-		return sdk.ErrOutOfGas("no block gas left to run tx").Result()
+		return sdk.ErrOutOfGas("no block gas left to run tx").Result(), nil
 	}
 
 	var startingGas uint64
@@ -985,11 +994,12 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	}()
 	var msgs = tx.GetMsg()
 	if err := validateBasicTxMsgs(msgs); err != nil {
-		return err.Result()
+		return err.Result(), nil
 	}
 
 	if app.anteHandler != nil {
-		var anteCtx sdk.Context
+		anteCtx, newCtx := sdk.Ctx(sdk.Context{}), sdk.Ctx(sdk.Context{})
+		abort := false
 		var msCache sdk.CacheMultiStore // todo edit here
 
 		// Cache wrap context before anteHandler call in case it aborts.
@@ -1000,7 +1010,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 		// writes do not happen if aborted/failed.  This may have some
 		// performance benefits, but it'll be more difficult to get right.
 		anteCtx, msCache = app.cacheTxContext(ctx, txBytes)
-		newCtx, result, abort := app.anteHandler(anteCtx, tx, txBytes, app.txIndexer, mode == runTxModeSimulate)
+		newCtx, result, signer, abort = app.anteHandler(anteCtx, tx, txBytes, app.txIndexer, mode == runTxModeSimulate)
 		if newCtx != nil && !newCtx.IsZero() {
 			// At this point, newCtx.MultiStore() is cache-wrapped, or something else
 			// replaced by the ante handler. We want the original multistore, not one
@@ -1015,7 +1025,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 		gasWanted = result.GasWanted
 
 		if abort {
-			return result
+			return result, signer
 		}
 
 		if mode == runTxModeDeliver {
@@ -1026,12 +1036,12 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	// Create a new context based off of the existing context with a cache wrapped
 	// multi-store in case message processing fails.
 	runMsgCtx, newMS := app.txContext(ctx, txBytes) // todo edit here!!!
-	result = app.runMsg(runMsgCtx, msgs, mode)
+	result = app.runMsg(runMsgCtx, msgs, mode, signer)
 	result.GasWanted = gasWanted
 
 	// Safety check: don't write the cache state unless we're in DeliverTx.
 	if mode != runTxModeDeliver {
-		return result
+		return result, signer
 	}
 
 	// only update state if all messages pass
@@ -1039,7 +1049,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 		newMS.CacheMultiStore().Write() // todo edit here!!!
 	}
 
-	return result
+	return result, signer
 }
 
 // EndBlock implements the ABCI interface.

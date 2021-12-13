@@ -29,8 +29,8 @@ type MsgStake struct {
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgStake) GetSigner() sdk.Address {
-	return sdk.Address(msg.PubKey.Address())
+func (msg MsgStake) GetSigners() []sdk.Address {
+	return []sdk.Address{sdk.Address(msg.PubKey.Address())}
 }
 
 func (msg MsgStake) GetRecipient() sdk.Address {
@@ -144,8 +144,8 @@ func (msg MsgStake) ToProto() MsgProtoStake {
 //----------------------------------------------------------------------------------------------------------------------
 
 // GetSigners address(es) that must sign over msg.GetSignBytes()
-func (msg MsgBeginUnstake) GetSigner() sdk.Address {
-	return msg.Address
+func (msg MsgBeginUnstake) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.Address}
 }
 
 func (msg MsgBeginUnstake) GetRecipient() sdk.Address {
@@ -190,8 +190,8 @@ func (msg MsgUnjail) GetFee() sdk.BigInt {
 }
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
-func (msg MsgUnjail) GetSigner() sdk.Address {
-	return msg.AppAddr
+func (msg MsgUnjail) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.AppAddr}
 }
 
 func (msg MsgUnjail) GetRecipient() sdk.Address {

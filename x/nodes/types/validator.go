@@ -24,19 +24,21 @@ type Validator struct {
 	ServiceURL              string           `json:"service_url" yaml:"service_url"`       // url where the pocket service api is hosted
 	StakedTokens            sdk.BigInt       `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
+	OutputAddress           sdk.Address      `json:"output_address" yaml:"output_address"` // the custodial output address of the validator
 }
 
 // NewValidator - initialize a new validator
-func NewValidator(addr sdk.Address, consPubKey crypto.PublicKey, chains []string, serviceURL string, tokensToStake sdk.BigInt) Validator {
+func NewValidator(addr sdk.Address, consPubKey crypto.PublicKey, chains []string, serviceURL string, tokensToStake sdk.BigInt, outputAddress sdk.Address) Validator {
 	return Validator{
 		Address:                 addr,
 		PublicKey:               consPubKey,
 		Jailed:                  false,
 		Status:                  sdk.Staked,
 		Chains:                  chains,
-		StakedTokens:            tokensToStake,
 		ServiceURL:              serviceURL,
+		StakedTokens:            tokensToStake,
 		UnstakingCompletionTime: time.Time{},
+		OutputAddress:           outputAddress,
 	}
 }
 
@@ -93,7 +95,8 @@ func (v Validator) Equals(v2 Validator) bool {
 	return v.PublicKey.Equals(v2.PublicKey) &&
 		bytes.Equal(v.Address, v2.Address) &&
 		v.Status.Equal(v2.Status) &&
-		v.StakedTokens.Equal(v2.StakedTokens)
+		v.StakedTokens.Equal(v2.StakedTokens) &&
+		v.OutputAddress.Equals(v2.OutputAddress)
 }
 
 // UpdateStatus updates the staking status
@@ -162,17 +165,15 @@ func (v *Validator) Unmarshal(data []byte) error {
 
 // String returns a human readable string representation of a validator.
 func (v Validator) String() string {
+	outputPubKeyString := ""
+	if v.OutputAddress != nil {
+		outputPubKeyString = v.OutputAddress.String()
+	}
 	return fmt.Sprintf("Address:\t\t%s\nPublic Key:\t\t%s\nJailed:\t\t\t%v\nStatus:\t\t\t%s\nTokens:\t\t\t%s\n"+
-		"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v"+
+		"ServiceUrl:\t\t%s\nChains:\t\t\t%v\nUnstaking Completion Time:\t\t%v\nOutput Address:\t\t%s"+
 		"\n----\n",
-		v.Address, v.PublicKey.RawString(), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime,
+		v.Address, v.PublicKey.RawString(), v.Jailed, v.Status, v.StakedTokens, v.ServiceURL, v.Chains, v.UnstakingCompletionTime, outputPubKeyString,
 	)
-}
-
-// MUST decode the validator from the bytes
-func UnmarshalValidator(cdc *codec.Codec, ctx sdk.Ctx, valBytes []byte) (v Validator, err error) {
-	err = cdc.UnmarshalBinaryLengthPrefixed(valBytes, &v, ctx.BlockHeight())
-	return
 }
 
 var _ codec.ProtoMarshaler = &Validator{}
@@ -229,6 +230,7 @@ func (v ProtoValidator) FromProto() (Validator, error) {
 		Chains:                  v.Chains,
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
+		OutputAddress:           v.OutputAddress,
 	}, nil
 }
 
@@ -239,10 +241,11 @@ func (v Validator) ToProto() ProtoValidator {
 		PublicKey:               v.PublicKey.RawBytes(),
 		Jailed:                  v.Jailed,
 		Status:                  int32(v.Status),
-		ServiceURL:              v.ServiceURL,
 		Chains:                  v.Chains,
+		ServiceURL:              v.ServiceURL,
 		StakedTokens:            v.StakedTokens,
 		UnstakingCompletionTime: v.UnstakingCompletionTime,
+		OutputAddress:           v.OutputAddress,
 	}
 }
 
@@ -255,6 +258,7 @@ type JSONValidator struct {
 	ServiceURL              string          `json:"service_url" yaml:"service_url"`       // url where the pocket service api is hosted
 	StakedTokens            sdk.BigInt      `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
 	UnstakingCompletionTime time.Time       `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
+	OutputAddress           sdk.Address     `json:"output_address" yaml:"output_address"` // custodial output address of tokens
 }
 
 // Validators is a collection of Validator

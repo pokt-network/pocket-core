@@ -9,6 +9,14 @@ import (
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		var found bool
+		address, found = k.GetValidatorOutputAddress(ctx, address)
+		if !found {
+			k.Logger(ctx).Error(fmt.Sprintf("no validator found for address %s; unable to mint the relay reward...", address.String()))
+			return sdk.ZeroInt()
+		}
+	}
 	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
 	toNode, toFeeCollector := k.NodeReward(ctx, coins)
 	if toNode.IsPositive() {
@@ -44,9 +52,21 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the dao: %s, at height %d", daoCut.String(), err.Error(), ctx.BlockHeight()))
 	}
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		outputAddress, found := k.GetValidatorOutputAddress(ctx, previousProposer)
+		if !found {
+			ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, with error %s, at height %d", proposerCut.String(), previousProposer, types.ErrNoValidatorForAddress(types.ModuleName), ctx.BlockHeight()))
+			return
+		}
+		err = k.AccountKeeper.SendCoins(ctx, feeAddr, outputAddress, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, with error %s, at height %d", proposerCut.String(), previousProposer, err.Error(), ctx.BlockHeight()))
+		}
+		return
+	}
 	err = k.AccountKeeper.SendCoins(ctx, feeAddr, previousProposer, sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, proposerCut)))
 	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, at height %d", proposerCut.String(), err.Error(), ctx.BlockHeight()))
+		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, with error %s, at height %d", proposerCut.String(), previousProposer, err.Error(), ctx.BlockHeight()))
 	}
 }
 

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"testing"
@@ -36,6 +37,42 @@ func TestBeginBlocker(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			BeginBlocker(tt.args.ctx, tt.args.req, tt.args.k)
 		})
+	}
+}
+
+func TestKeeper_ConvertValidatorsState(t *testing.T) {
+	v1 := getValidator()
+	v1.OutputAddress = nil
+	v2 := getValidator()
+	v2.OutputAddress = nil
+	v3 := getValidator()
+	v3.OutputAddress = nil
+	v := []types.Validator{v1, v2, v3}
+	lv1 := v1.ToLegacy()
+	lv2 := v2.ToLegacy()
+	lv3 := v3.ToLegacy()
+	lvs := []types.LegacyValidator{lv1, lv2, lv3}
+	ctx, _, k := createTestInput(t, true)
+	// manually set the validators
+	store := ctx.KVStore(k.storeKey)
+	for i, lv := range lvs {
+		bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&lv, ctx.BlockHeight())
+		if err != nil {
+			ctx.Logger().Error("could not marshal validator: " + err.Error())
+		}
+		if err != nil {
+			ctx.Logger().Error("could not marshal validator: " + err.Error())
+		}
+		err = store.Set(types.KeyForValByAllVals(lv.Address), bz)
+		// convert the state
+		k.ConvertValidatorsState(ctx)
+		// manually get validators using new structure
+		value, err := store.Get(types.KeyForValByAllVals(lv.Address))
+		assert.Nil(t, err)
+		var val types.Validator
+		err = k.Cdc.UnmarshalBinaryLengthPrefixed(value, &val, ctx.BlockHeight())
+		assert.Nil(t, err)
+		assert.Equal(t, v[i], val)
 	}
 }
 

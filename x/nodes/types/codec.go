@@ -11,14 +11,20 @@ import (
 
 // Register concrete types on codec
 func RegisterCodec(cdc *codec.Codec) {
-	cdc.RegisterStructure(MsgProtoStake{}, "pos/MsgProtoStake")
-	cdc.RegisterStructure(MsgBeginUnstake{}, "pos/MsgBeginUnstake")
-	cdc.RegisterStructure(MsgUnjail{}, "pos/MsgUnjail")
+	cdc.RegisterStructure(LegacyMsgProtoStake{}, "pos/MsgProtoStake")
+	cdc.RegisterStructure(LegacyMsgBeginUnstake{}, "pos/MsgBeginUnstake")
+	cdc.RegisterStructure(LegacyMsgUnjail{}, "pos/MsgUnjail")
 	cdc.RegisterStructure(MsgSend{}, "pos/Send")
-	cdc.RegisterStructure(MsgStake{}, "pos/MsgStake")
-	cdc.RegisterImplementation((*sdk.ProtoMsg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{})
-	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{})
-	cdc.RegisterInterface("nodes/validatorI", (*exported.ValidatorI)(nil), &Validator{})
+	cdc.RegisterStructure(LegacyMsgStake{}, "pos/MsgStake")
+	cdc.RegisterStructure(MsgUnjail{}, "pos/8.0MsgUnjail")
+	cdc.RegisterStructure(MsgBeginUnstake{}, "pos/8.0MsgBeginUnstake")
+	cdc.RegisterStructure(MsgProtoStake{}, "pos/8.0MsgProtoStake")
+	cdc.RegisterStructure(MsgStake{}, "pos/8.0MsgStake")
+	cdc.RegisterImplementation((*sdk.ProtoMsg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{},
+	&LegacyMsgUnjail{}, &LegacyMsgBeginUnstake{}, &LegacyMsgStake{})
+	cdc.RegisterImplementation((*sdk.Msg)(nil), &MsgUnjail{}, &MsgBeginUnstake{}, &MsgSend{}, &MsgStake{},
+	&LegacyMsgUnjail{}, &LegacyMsgBeginUnstake{}, &LegacyMsgStake{})
+	cdc.RegisterInterface("nodes/validatorI", (*exported.ValidatorI)(nil), &Validator{}, &LegacyValidator{})
 	ModuleCdc = cdc
 }
 

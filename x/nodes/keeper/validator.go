@@ -8,6 +8,38 @@ import (
 	"sort"
 )
 
+func (k Keeper) MarshalValidator(ctx sdk.Ctx, validator types.Validator) ([]byte, error) {
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&validator, ctx.BlockHeight())
+		if err != nil {
+			ctx.Logger().Error("could not marshal validator: " + err.Error())
+		}
+		return bz, err
+	}
+	v := validator.ToLegacy()
+	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&v, ctx.BlockHeight())
+	if err != nil {
+		ctx.Logger().Error("could not marshal validator: " + err.Error())
+	}
+	return bz, err
+}
+
+func (k Keeper) UnmarshalValidator(ctx sdk.Ctx, valBytes []byte) (val types.Validator, err error) {
+	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		err = k.Cdc.UnmarshalBinaryLengthPrefixed(valBytes, &val, ctx.BlockHeight())
+		if err != nil {
+			ctx.Logger().Error("could not unmarshal validator: " + err.Error())
+		}
+		return val, err
+	}
+	v := types.LegacyValidator{}
+	err = k.Cdc.UnmarshalBinaryLengthPrefixed(valBytes, &v, ctx.BlockHeight())
+	if err != nil {
+		ctx.Logger().Error("could not unmarshal legcy validator: " + err.Error())
+	}
+	return v.ToValidator(), err
+}
+
 // GetValidator - Retrieve validator with address from the main store
 func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
 	val, found := k.validatorCache.GetWithCtx(ctx, addr.String())
@@ -19,7 +51,7 @@ func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Val
 	if value == nil {
 		return validator, false
 	}
-	validator, err := types.UnmarshalValidator(k.Cdc, ctx, value)
+	validator, err := k.UnmarshalValidator(ctx, value)
 	if err != nil {
 		ctx.Logger().Error("can't get validator: " + err.Error())
 		return validator, false
@@ -31,7 +63,7 @@ func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Val
 // SetValidator - Store validator in the main store and state stores (stakingset/ unstakingset)
 func (k Keeper) SetValidator(ctx sdk.Ctx, validator types.Validator) {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&validator, ctx.BlockHeight())
+	bz, err := k.MarshalValidator(ctx, validator)
 	if err != nil {
 		ctx.Logger().Error("could not marshal validator: " + err.Error())
 	}
@@ -58,6 +90,14 @@ func (k Keeper) SetValidators(ctx sdk.Ctx, validators types.Validators){
 	}
 }
 
+func (k Keeper) GetValidatorOutputAddress(ctx sdk.Ctx, operatorAddress sdk.Address) (sdk.Address, bool) {
+	val, found := k.GetValidator(ctx, operatorAddress)
+	if val.OutputAddress == nil {
+		return val.Address, found
+	}
+	return val.OutputAddress, found
+}
+
 // SetValidator - Store validator in the main store
 func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
@@ -73,7 +113,7 @@ func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		validator, err := types.UnmarshalValidator(k.Cdc, ctx, iterator.Value())
+		validator, err := k.UnmarshalValidator(ctx, iterator.Value())
 		if err != nil {
 			ctx.Logger().Error("can't get validator in GetAllValidators: " + err.Error())
 			continue
@@ -102,7 +142,7 @@ func (k Keeper) GetAllValidatorsWithOpts(ctx sdk.Ctx, opts types.QueryValidators
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		validator, err := types.UnmarshalValidator(k.Cdc, ctx, iterator.Value())
+		validator, err := k.UnmarshalValidator(ctx, iterator.Value())
 		if err != nil {
 			ctx.Logger().Error("could not unmarshal validator in GetAllValidatorsWithOpts: ", err.Error())
 			continue
@@ -122,7 +162,7 @@ func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []typ
 	defer iterator.Close()
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
-		validator, err := types.UnmarshalValidator(k.Cdc, ctx, iterator.Value())
+		validator, err := k.UnmarshalValidator(ctx, iterator.Value())
 		if err != nil {
 			ctx.Logger().Error("could not unmarshal validator in GetValidators: ", err.Error())
 			continue
@@ -147,7 +187,7 @@ func (k Keeper) IterateAndExecuteOverVals(
 	defer iterator.Close()
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
-		validator, err := types.UnmarshalValidator(k.Cdc, ctx, iterator.Value())
+		validator, err := k.UnmarshalValidator(ctx, iterator.Value())
 		if err != nil {
 			ctx.Logger().Error("could not unmarshal validator in IterateAndExecuteOverVals: ", err.Error())
 			continue
@@ -176,7 +216,7 @@ func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		validator, err := types.UnmarshalValidator(k.Cdc, ctx, iterator.Value())
+		validator, err := k.UnmarshalValidator(ctx, iterator.Value())
 		if err != nil {
 			ctx.Logger().Error("could not unmarshal validator in AllValidators: ", err.Error())
 			continue

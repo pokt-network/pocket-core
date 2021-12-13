@@ -30,7 +30,8 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterStructure(ProofI_RelayProof{}, "pocketcore/proto_relay_proofI")
 	cdc.RegisterStructure(ProofI_ChallengeProof{}, "pocketcore/proto_challenge_proofI")
 	cdc.RegisterStructure(ProtoEvidence{}, "pocketcore/evidence_persisted")
-	cdc.RegisterStructure(nodesTypes.Validator{}, "pos/Validator") // todo does this really need to depend on nodes/types
+	cdc.RegisterStructure(nodesTypes.Validator{}, "pos/8.0Validator")       // todo does this really need to depend on nodes/types
+	cdc.RegisterStructure(nodesTypes.LegacyValidator{}, "pos/Validator") // todo does this really need to depend on nodes/types
 	cdc.RegisterInterface("x.pocketcore.Proof", (*Proof)(nil), &RelayProof{}, &ChallengeProofInvalidData{})
 	cdc.RegisterInterface("types.isProofI_Proof", (*isProofI_Proof)(nil))
 	cdc.RegisterImplementation((*sdk.ProtoMsg)(nil), &MsgClaim{}, &MsgProof{})

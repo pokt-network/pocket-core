@@ -33,6 +33,10 @@ const (
 	CodeTooManyChains            CodeType          = 120
 	CodeStateConvertError        CodeType          = 121
 	CodeMinimumEditStake         CodeType          = 122
+	CodeNilOutputAddr            CodeType          = 123
+	CodeUnequalOutputAddr        CodeType          = 124
+	CodeUnauthorizedSigner       CodeType          = 125
+	CodeNilSigner                CodeType          = 126
 )
 
 func ErrTooManyChains(codespace sdk.CodespaceType) sdk.Error {
@@ -51,6 +55,18 @@ func ErrNoChains(codespace sdk.CodespaceType) sdk.Error {
 }
 func ErrNilValidatorAddr(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidInput, "validator address is nil")
+}
+func ErrNilSignerAddr(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeNilSigner, "signer address is nil")
+}
+func ErrNilOutputAddr(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeNilOutputAddr, "output address is nil")
+}
+func ErrUnequalOutputAddr(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeUnequalOutputAddr, "output address is already set to a different value")
+}
+func ErrUnauthorizedSigner(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeUnauthorizedSigner, "the signer for this message is not the operator or the output address")
 }
 func ErrValidatorStatus(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidStatus, "validator status is not valid")

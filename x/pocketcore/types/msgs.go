@@ -79,8 +79,8 @@ func (msg MsgClaim) GetSignBytes() []byte {
 }
 
 // "GetSigners" - Defines whose signature is required
-func (msg MsgClaim) GetSigner() sdk.Address {
-	return msg.FromAddress
+func (msg MsgClaim) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.FromAddress}
 }
 
 // "GetSigners" - Defines whose signature is required
@@ -195,8 +195,8 @@ func (msg MsgProof) GetSignBytes() []byte {
 }
 
 // GetSigners defines whose signature is required
-func (msg MsgProof) GetSigner() sdk.Address {
-	return msg.Leaf.GetSigner()
+func (msg MsgProof) GetSigners() []sdk.Address {
+	return []sdk.Address{msg.Leaf.GetSigner()}
 }
 
 // "GetSigners" - Defines whose signature is required
