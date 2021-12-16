@@ -115,7 +115,7 @@ func TestUnstakeNode(t *testing.T) {
 			// 8.0 release
 			isAfter8 := false
 			if tc.eight0Upgrade.height != 0 {
-				codec.ThirdUpgradeHeight = tc.eight0Upgrade.height
+				codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = tc.eight0Upgrade.height
 				isAfter8 = true
 			}
 			var chains = []string{"0001"}
@@ -210,7 +210,7 @@ func TestStakeNode(t *testing.T) {
 			// 8.0 release
 			isAfter8 := false
 			if tc.eight0Upgrade.height != 0 {
-				codec.ThirdUpgradeHeight = tc.eight0Upgrade.height
+				codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = tc.eight0Upgrade.height
 				isAfter8 = true
 			}
 			gen, _ := twoValTwoNodeGenesisState()
@@ -260,7 +260,7 @@ func TestEditStakeNode(t *testing.T) {
 			// 8.0 upgrade
 			isAfter8 := false
 			if tc.eight0Upgrade.height != 0 {
-				codec.ThirdUpgradeHeight = tc.eight0Upgrade.height
+				codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = tc.eight0Upgrade.height
 				isAfter8 = true
 			}
 			var newChains = []string{"2121"}

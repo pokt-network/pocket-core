@@ -130,6 +130,7 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 	if upgrade := app.govKeeper.GetUpgrade(ctx); upgrade.Height != 0 {
 		codec.UpgradeHeight = upgrade.Height
 		codec.OldUpgradeHeight = upgrade.OldUpgradeHeight
+		codec.UpgradeFeatureMap = codec.SliceToExistingMap(upgrade.GetFeatures(), codec.UpgradeFeatureMap)
 	}
 	return app
 }

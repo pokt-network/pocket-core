@@ -9,7 +9,7 @@ import (
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
-	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 		var found bool
 		address, found = k.GetValidatorOutputAddress(ctx, address)
 		if !found {
@@ -52,7 +52,7 @@ func (k Keeper) blockReward(ctx sdk.Ctx, previousProposer sdk.Address) {
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the dao: %s, at height %d", daoCut.String(), err.Error(), ctx.BlockHeight()))
 	}
-	if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 		outputAddress, found := k.GetValidatorOutputAddress(ctx, previousProposer)
 		if !found {
 			ctx.Logger().Error(fmt.Sprintf("unable to send %s cut of block reward to the proposer: %s, with error %s, at height %d", proposerCut.String(), previousProposer, types.ErrNoValidatorForAddress(types.ModuleName), ctx.BlockHeight()))

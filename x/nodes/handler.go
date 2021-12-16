@@ -16,7 +16,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		if reflect.ValueOf(msg).Kind() == reflect.Ptr {
 			msg = reflect.Indirect(reflect.ValueOf(msg)).Interface().(sdk.Msg)
 		}
-		if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 			switch msg := msg.(type) {
 			case types.MsgBeginUnstake:
 				return handleMsgBeginUnstake(ctx, msg, k)
@@ -87,7 +87,7 @@ func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginUnstake, k keeper.Keep
 	if !found {
 		return types.ErrNoValidatorFound(k.Codespace()).Result()
 	}
-	if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress){
+	if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress) {
 		return types.ErrUnauthorizedSigner(k.Codespace()).Result()
 	}
 	if err := k.ValidateValidatorBeginUnstaking(ctx, validator); err != nil {

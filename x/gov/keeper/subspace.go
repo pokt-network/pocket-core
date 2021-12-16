@@ -9,6 +9,8 @@ import (
 	"github.com/pokt-network/pocket-core/x/gov/types"
 )
 
+const FeatureUpgradeKey = "FEATURE"
+
 const maxValidatorChangeAllowedMinHeight = 40000
 const maxValidatorACLKey = "pos/MaxValidators"
 
@@ -138,7 +140,19 @@ func handleUpgradeAfterUpdate(ctx sdk.Ctx, aclKey string, paramValue interface{}
 	oldUpgrade := types.Upgrade{}
 	space.Get(ctx, []byte(paramKey), &oldUpgrade)
 	newUpgrade, ok := paramValue.(types.Upgrade)
-	newUpgrade.OldUpgradeHeight = oldUpgrade.GetHeight()
+
+	if newUpgrade.UpgradeHeight() != 1 && newUpgrade.UpgradeVersion() != FeatureUpgradeKey {
+		newUpgrade.OldUpgradeHeight = oldUpgrade.GetHeight()
+	} else {
+		newUpgrade.OldUpgradeHeight = oldUpgrade.OldUpgradeHeight
+		newUpgrade.Version = oldUpgrade.Version
+		newUpgrade.Height = oldUpgrade.Height
+		if oldUpgrade.GetFeatures() == nil {
+			oldUpgrade.Features = make([]string, 0)
+		}
+		featureSet := append(oldUpgrade.Features, newUpgrade.Features...)
+		newUpgrade.Features = codec.CleanUpgradeFeatureSlice(featureSet)
+	}
 
 	space.Set(ctx, []byte(paramKey), newUpgrade)
 	k.spaces[subspaceName] = space

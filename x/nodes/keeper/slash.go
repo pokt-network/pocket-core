@@ -41,7 +41,7 @@ func (k Keeper) simpleSlash(ctx sdk.Ctx, addr sdk.Address, amount sdk.BigInt) {
 	// if falls below minimum force burn all of the stake
 	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		var err error
-		if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 			err = k.ForceValidatorUnstake(ctx, validator)
 		} else {
 			err = k.LegacyForceValidatorUnstake(ctx, validator)
@@ -108,7 +108,7 @@ func (k Keeper) slash(ctx sdk.Ctx, addr sdk.Address, infractionHeight, power int
 	// if falls below minimum force burn all of the stake
 	if validator.GetTokens().LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		var err error
-		if k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 			err = k.ForceValidatorUnstake(ctx, validator)
 		} else {
 			err = k.LegacyForceValidatorUnstake(ctx, validator)

@@ -2,7 +2,10 @@ package codec
 
 import (
 	"errors"
+	"fmt"
 	"math"
+	"strconv"
+	"strings"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/pokt-network/pocket-core/codec/types"
@@ -24,13 +27,17 @@ func NewCodec(anyUnpacker types.AnyUnpacker) *Codec {
 }
 
 var (
-	ThirdUpgradeHeight                     = int64(math.MaxInt64)
+	UpgradeFeatureMap                      = make(map[string]int64)
 	UpgradeHeight                    int64 = math.MaxInt64
 	OldUpgradeHeight                 int64 = 0
 	NotProtoCompatibleInterfaceError       = errors.New("the interface passed for encoding does not implement proto marshaller")
 )
 
-const UpgradeCodecHeight = int64(30024)
+const (
+	UpgradeCodecHeight    = int64(30024)
+	ValidatorSplitHeight  = int64(45353)
+	NonCustodialUpdateKey = "NCUSTODIAL"
+)
 
 func GetCodecUpgradeHeight() int64 {
 	if UpgradeHeight >= UpgradeCodecHeight {
@@ -224,15 +231,52 @@ func (cdc *Codec) IsAfterUpgrade(height int64) bool {
 
 //Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterSecondUpgrade(height int64) bool {
-	return height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()
+	return (height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()) || height >= ValidatorSplitHeight
 }
 
 //Note: includes the actual upgrade height
-func (cdc *Codec) IsAfterThirdUpgrade(height int64) bool {
-	return height >= ThirdUpgradeHeight
+func (cdc *Codec) IsAfterNonCustodialUpgrade(height int64) bool {
+	return UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height >= UpgradeFeatureMap[NonCustodialUpdateKey]
 }
 
 //Note: includes the actual upgrade height
-func (cdc *Codec) IsOnThirdUpgrade(height int64) bool {
-	return height == ThirdUpgradeHeight
+func (cdc *Codec) IsOnNonCustodialUpgrade(height int64) bool {
+	return UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]
+}
+
+func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {
+	var fmap = make(map[string]int64)
+	for k, v := range m {
+		fmap[k] = v
+	}
+	for _, v := range arr {
+		kv := strings.Split(v, ":")
+		i, _ := strconv.ParseInt(kv[1], 10, 64)
+		fmap[kv[0]] = i
+	}
+	return fmap
+}
+func SliceToMap(arr []string) map[string]int64 {
+	var fmap = make(map[string]int64)
+	for _, v := range arr {
+		kv := strings.Split(v, ":")
+		i, _ := strconv.ParseInt(kv[1], 10, 64)
+		fmap[kv[0]] = i
+	}
+	return fmap
+}
+
+func MapToSlice(m map[string]int64) []string {
+	var fslice = make([]string, 0)
+	for k, v := range m {
+		kv := fmt.Sprintf("%s:%d", k, v)
+		fslice = append(fslice, kv)
+	}
+	return fslice
+}
+
+func CleanUpgradeFeatureSlice(arr []string) []string {
+	m := SliceToMap(arr)
+	s := MapToSlice(m)
+	return s
 }

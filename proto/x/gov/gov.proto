@@ -30,6 +30,7 @@ message Upgrade {
 	int64 height = 1 [(gogoproto.jsontag) = "Height"];
 	string version = 2 [(gogoproto.jsontag) = "Version"];
 	int64 oldUpgradeHeight = 3 [(gogoproto.jsontag) = "OldUpgradeHeight,omitempty"];
+	repeated string features = 4 [(gogoproto.jsontag) = "Features,omitempty"];
 }
 
 message ACLPair {
