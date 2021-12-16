@@ -296,16 +296,6 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/pokt-network/tendermint v0.32.11-0.20211022155741-0dc25b2413ec h1:9wA0ySWvDygWHKviAfFroS8VyYeIxfWx6xSFjiBmh9c=
-github.com/pokt-network/tendermint v0.32.11-0.20211022155741-0dc25b2413ec/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
-github.com/pokt-network/tendermint v0.32.11-0.20211206172708-f3a7b5326354 h1:ylSEBt4yb890hFVXxG4bYxnAhZ/l8b7Glbl7S1Weym0=
-github.com/pokt-network/tendermint v0.32.11-0.20211206172708-f3a7b5326354/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
-github.com/pokt-network/tendermint v0.32.11-0.20211206173105-17b130c5b06e h1:CYwo34TplDdHf8Cb3GPt2Y1ucyC+nFZdeAzhcogbfYY=
-github.com/pokt-network/tendermint v0.32.11-0.20211206173105-17b130c5b06e/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
-github.com/pokt-network/tendermint v0.32.11-0.20211206173304-a28c24a4404a h1:J8JRuyRIW5m3gw+e71mhGPZVe22D0xNWJih9pOVwViE=
-github.com/pokt-network/tendermint v0.32.11-0.20211206173304-a28c24a4404a/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
-github.com/pokt-network/tendermint v0.32.11-0.20211206181751-d2120ba2a7c8 h1:fn3q5ORDbseT1oFaBxYfQTLvvzzyowkxw17dy+2kDvQ=
-github.com/pokt-network/tendermint v0.32.11-0.20211206181751-d2120ba2a7c8/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
 github.com/pokt-network/tendermint v0.32.11-0.20211206194538-760ff32a8749 h1:KypP+frNxH0uKvMxW93YGsLbsKUIk493LZ9ZStC5T0M=
 github.com/pokt-network/tendermint v0.32.11-0.20211206194538-760ff32a8749/go.mod h1:AO+KV7pmYJ2xI1GKa6xh9I1KJYvVoWYvofxG9h33xms=
 github.com/pokt-network/tm-db v0.5.2-0.20211201002244-cf20b828a106 h1:OHjoH1Aw5ECg/LGj41FiWzzy5drILyU/gLEqkJ4NUz8=
@@ -394,8 +384,6 @@ github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c/go.mod h1:ahpPrc7
 github.com/tendermint/go-amino v0.14.1/go.mod h1:i/UKE5Uocn+argJJBb12qTZsCDBcAYMbR92AaJVmKso=
 github.com/tendermint/go-amino v0.15.0 h1:TC4e66P59W7ML9+bxio17CPKnxW3nKIRAYskntMAoRk=
 github.com/tendermint/go-amino v0.15.0/go.mod h1:TQU0M1i/ImAo+tYpZi73AU3V/dKeCoMC9Sphe2ZwGME=
-github.com/tendermint/tm-db v0.5.1 h1:H9HDq8UEA7Eeg13kdYckkgwwkQLBnJGgX4PgLJRhieY=
-github.com/tendermint/tm-db v0.5.1/go.mod h1:g92zWjHpCYlEvQXvy9M168Su8V1IBEeawpXVVBaK4f4=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/ugorji/go v1.1.4/go.mod h1:uQMGLiO92mf5W77hV/PUCpI3pbzQx3CRekS0kk+RGrc=

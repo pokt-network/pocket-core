@@ -19,6 +19,7 @@ func init() {
 	govCmd.AddCommand(govDAOBurn)
 	govCmd.AddCommand(govChangeParam)
 	govCmd.AddCommand(govUpgrade)
+	govCmd.AddCommand(govFeatureEnable)
 }
 
 var govCmd = &cobra.Command{
@@ -201,4 +202,50 @@ func dropTag(version string) string {
 	}
 	s := strings.Split(version, "-")
 	return s[1]
+}
+
+const FeatureUpgradeKey = "FEATURE"
+const FeatureUpgradeHeight = int64(1)
+
+var govFeatureEnable = &cobra.Command{
+	Use:   "enable <fromAddr> <atHeight> <key> <networkID> <fees>",
+	Short: "enable a protocol feature",
+	Long: `If authorized, enable the protocol feature with the key.
+Will prompt the user for the <fromAddr> account passphrase.`,
+	Args: cobra.ExactArgs(5),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		height := args[1]
+		key := args[2]
+		fstring := fmt.Sprintf("%s:%s", key, height)
+
+		u := govTypes.Upgrade{
+			Height:   FeatureUpgradeHeight,
+			Version:  FeatureUpgradeKey,
+			Features: []string{fstring},
+		}
+		fees, err := strconv.Atoi(args[4])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Println("Enter Password: ")
+		res, err := Upgrade(args[0], u, app.Credentials(pwd), args[3], int64(fees), false)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		j, err := json.Marshal(res)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		resp, err := QueryRPC(SendRawTxPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(resp)
+	},
 }

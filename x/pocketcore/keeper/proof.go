@@ -143,7 +143,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	isValid, isReplayAttack := proof.MerkleProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, proof.GetLeaf(), levelCount)
 	// if is not valid for other reasons
 	if !isValid {
-		if isReplayAttack && k.Cdc.IsAfterThirdUpgrade(ctx.BlockHeight()) {
+		if isReplayAttack && k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 			return servicerAddr, claim, pc.NewReplayAttackError(pc.ModuleName)
 		}
 		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
