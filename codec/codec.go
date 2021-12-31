@@ -31,6 +31,7 @@ var (
 	UpgradeHeight                    int64 = math.MaxInt64
 	OldUpgradeHeight                 int64 = 0
 	NotProtoCompatibleInterfaceError       = errors.New("the interface passed for encoding does not implement proto marshaller")
+	TestMode                         int64 = 0
 )
 
 const (
@@ -226,22 +227,22 @@ func (cdc *Codec) IsAfterUpgrade(height int64) bool {
 	if cdc.upgradeOverride != -1 {
 		return cdc.upgradeOverride == 1
 	}
-	return GetCodecUpgradeHeight() <= height || height == -1
+	return (GetCodecUpgradeHeight() <= height || height == -1) || TestMode <= -1
 }
 
 //Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterSecondUpgrade(height int64) bool {
-	return (height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()) || height >= ValidatorSplitHeight
+	return (height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()) || height >= ValidatorSplitHeight || TestMode <= -2
 }
 
 //Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterNonCustodialUpgrade(height int64) bool {
-	return UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height >= UpgradeFeatureMap[NonCustodialUpdateKey]
+	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height >= UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
 }
 
 //Note: includes the actual upgrade height
 func (cdc *Codec) IsOnNonCustodialUpgrade(height int64) bool {
-	return UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]
+	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
 }
 
 func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {

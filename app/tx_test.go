@@ -249,7 +249,6 @@ func TestEditStakeNode(t *testing.T) {
 	}{
 		{name: "editStake after 8.0 upgrade; output is signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 3}}},
 		{name: "editStake after 8.0 upgrade; output is not signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: false, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 3}}},
-		{name: "editStake a proto node with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -357,6 +356,79 @@ func TestStakeApp(t *testing.T) {
 
 			stopCli()
 			cleanup()
+		})
+	}
+}
+func TestEditStakeNodeproto(t *testing.T) {
+	tt := []struct {
+		name           string
+		memoryNodeFn   func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		outputIsSigner bool
+		*upgrades
+	}{
+		{name: "editStake a proto node with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			// 8.0 upgrade
+			isAfter8 := false
+			if tc.eight0Upgrade.height != 0 {
+				codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = tc.eight0Upgrade.height
+				isAfter8 = true
+			}
+			var newChains = []string{"2121"}
+			var newServiceURL = "https://newServiceUrl.com:8081"
+			gen, _ := twoValTwoNodeGenesisState()
+			_, kb, cleanup := tc.memoryNodeFn(t, gen)
+			time.Sleep(2 * time.Second)
+			kp, err := kb.GetCoinbase()
+			assert.Nil(t, err)
+			signer := kp.GetAddress()
+			list, err := kb.List()
+			assert.Nil(t, err)
+			if tc.outputIsSigner {
+				signer = list[2].GetAddress()
+			}
+			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+			var tx *sdk.TxResponse
+			<-evtChan // Wait for block
+			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+			balance, err := PCA.QueryBalance(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			n, err := PCA.QueryNode(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			var newBalance = balance.Sub(sdk.NewInt(100000)).Add(n.StakedTokens)
+			tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+			assert.Nil(t, err)
+			assert.NotNil(t, tx)
+			<-evtChan // Wait for tx
+			if isAfter8 {
+				// try to modify output address
+				tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, list[3].GetAddress(), "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+				assert.Nil(t, err)
+				assert.NotNil(t, tx)
+				<-evtChan // Wait for tx
+			}
+			nodeUpdated, err := PCA.QueryNode(kp.GetAddress().String(), PCA.LastBlockHeight())
+			assert.Nil(t, err)
+			// assert not the same as the old node
+			assert.NotEqual(t, nodeUpdated, n)
+			// assert chains, serviceurl, and stake updated
+			assert.Equal(t, newChains, nodeUpdated.Chains)
+			// assert chains, serviceurl, and stake updated
+			assert.Equal(t, newServiceURL, nodeUpdated.ServiceURL)
+			// assert chains, serviceurl, and stake updated
+			assert.Equal(t, newBalance, nodeUpdated.StakedTokens)
+			if isAfter8 {
+				// assert output address is added
+				assert.Equal(t, nodeUpdated.OutputAddress, signer)
+			}
+			cleanup()
+			stopCli()
 		})
 	}
 }

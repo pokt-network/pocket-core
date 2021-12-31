@@ -54,4 +54,3 @@ func TestBuildSignMultisig(t *testing.T) {
 	cleanup()
 	stopCli()
 }
-

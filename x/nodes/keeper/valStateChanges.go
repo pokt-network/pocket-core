@@ -546,9 +546,16 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 	if !found {
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())
 	}
-	if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress) {
-		return nil, types.ErrUnauthorizedSigner(k.Codespace())
+	if validator.OutputAddress == nil {
+		if !msg.Signer.Equals(validator.Address) {
+			return nil, types.ErrUnauthorizedSigner(k.Codespace())
+		}
+	} else {
+		if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress) {
+			return nil, types.ErrUnauthorizedSigner(k.Codespace())
+		}
 	}
+
 	// cannot be unjailed if no self-delegation exists
 	selfDel := validator.GetTokens()
 	if selfDel == sdk.ZeroInt() {

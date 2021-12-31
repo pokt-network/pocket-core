@@ -72,6 +72,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 	// nil output addresss
 	nilOutputAddress := val
 	nilOutputAddress.OutputAddress = nil
+	nilOutputAddress.StakedTokens = stakeAmount
 	//same app no change no fail
 	updateNothingval := val
 	updateNothingval.StakedTokens = stakeAmount
@@ -473,6 +474,7 @@ func TestKeeper_ValidateUnjailMessage(t *testing.T) {
 	unauthSigner := getRandomValidatorAddress()
 	validator := getStakedValidator()
 	validator.Jailed = true
+	validator.OutputAddress = getRandomValidatorAddress()
 	validatorNoOuptut := validator
 	validatorNoOuptut.OutputAddress = nil
 	context, _, keeper := createTestInput(t, true)
@@ -496,38 +498,38 @@ func TestKeeper_ValidateUnjailMessage(t *testing.T) {
 		{"Test ValidateUnjailMessage With Output Address & AuthorizedByValidator", args{
 			ctx: context,
 			k:   keeper,
-			v: validator,
+			v:   validator,
 			msg: msgUnjailAuthorizedByValidator,
 		}, nil},
 		{"Test ValidateUnjailMessage With Output Address & AuthorizedByOutput", args{
 			ctx: context,
 			k:   keeper,
-			v: validator,
+			v:   validator,
 			msg: msgUnjailAuthorizedByOutput,
 		}, nil},
 		{"Test ValidateUnjailMessage Without Output Address & AuthorizedByValidator", args{
 			ctx: context,
 			k:   keeper,
-			v: validatorNoOuptut,
+			v:   validatorNoOuptut,
 			msg: msgUnjailAuthorizedByValidator,
 		}, nil},
 		{"Test ValidateUnjailMessage Without Output Address & AuthroizedByOutput", args{
 			ctx: context,
 			k:   keeper,
-			v: validatorNoOuptut,
+			v:   validatorNoOuptut,
 			msg: msgUnjailAuthorizedByOutput,
 		}, types.ErrUnauthorizedSigner("pos")},
 		{"Test ValidateUnjailMessage Without Output Address & Unauthorized", args{
 			ctx: context,
 			k:   keeper,
-			v: validatorNoOuptut,
+			v:   validatorNoOuptut,
 			msg: msgUnjailUnauthorizedSigner,
 		}, types.ErrUnauthorizedSigner("pos")},
 
 		{"Test ValidateUnjailMessage With Output Address & Unauthorized", args{
 			ctx: context,
 			k:   keeper,
-			v: validator,
+			v:   validator,
 			msg: msgUnjailUnauthorizedSigner,
 		}, types.ErrUnauthorizedSigner("pos")},
 	}
@@ -547,4 +549,3 @@ func TestKeeper_ValidateUnjailMessage(t *testing.T) {
 		})
 	}
 }
-
