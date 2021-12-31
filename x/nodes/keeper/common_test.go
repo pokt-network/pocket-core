@@ -150,16 +150,15 @@ func getRandomValidatorAddress() sdk.Address {
 
 func getValidator() types.Validator {
 	pub := getRandomPubKey()
-	pub2 := getRandomPubKey()
 	return types.Validator{
-		Address:      sdk.Address(pub.Address()),
-		StakedTokens: sdk.NewInt(100000000000),
-		PublicKey:    pub,
-		Jailed:       false,
-		Status:       sdk.Staked,
-		ServiceURL:   "https://www.google.com:443",
-		Chains:       []string{"0001", "0002", "FFFF"},
-		OutputAddress: sdk.Address(pub2.Address()),
+		Address:       sdk.Address(pub.Address()),
+		StakedTokens:  sdk.NewInt(100000000000),
+		PublicKey:     pub,
+		Jailed:        false,
+		Status:        sdk.Staked,
+		ServiceURL:    "https://www.google.com:443",
+		Chains:        []string{"0001", "0002", "FFFF"},
+		OutputAddress: nil,
 	}
 }
 

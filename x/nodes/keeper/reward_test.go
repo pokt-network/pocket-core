@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/pokt-network/pocket-core/codec"
 	"testing"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -89,6 +90,7 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 	type fields struct {
 		keeper Keeper
 	}
+
 	type args struct {
 		ctx              sdk.Context
 		previousProposer sdk.Address
@@ -96,6 +98,8 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 		Amount           sdk.BigInt
 	}
 	stakedValidator := getStakedValidator()
+	stakedValidator.OutputAddress = getRandomValidatorAddress()
+	codec.TestMode = -3
 	amount := sdk.NewInt(10000)
 	fees := sdk.NewCoins(sdk.NewCoin("upokt", amount))
 	context, _, keeper := createTestInput(t, true)
@@ -144,6 +148,8 @@ func TestKeeper_rewardFromRelays(t *testing.T) {
 	stakedValidator := getStakedValidator()
 	stakedValidatorNoOutput := getStakedValidator()
 	stakedValidatorNoOutput.OutputAddress = nil
+	stakedValidator.OutputAddress = getRandomValidatorAddress()
+	codec.TestMode = -3
 	context, _, keeper := createTestInput(t, true)
 	keeper.SetValidator(context, stakedValidator)
 	keeper.SetValidator(context, stakedValidatorNoOutput)

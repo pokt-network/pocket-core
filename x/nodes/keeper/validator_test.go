@@ -49,6 +49,7 @@ func TestKeeper_GetValidatorOutputAddress(t *testing.T) {
 		v   types.Validator
 	}
 	validator := getStakedValidator()
+	validator.OutputAddress = validator.Address
 	validatorNoOuptut := getStakedValidator()
 	validatorNoOuptut.OutputAddress = nil
 	context, _, keeper := createTestInput(t, true)
@@ -62,12 +63,12 @@ func TestKeeper_GetValidatorOutputAddress(t *testing.T) {
 		{"Test GetValidatorOutput With Output Address", args{
 			ctx: context,
 			k:   keeper,
-			v: validator,
+			v:   validator,
 		}, validator.OutputAddress},
 		{"Test GetValidatorOutput Without Output Address", args{
 			ctx: context,
 			k:   keeper,
-			v: validatorNoOuptut,
+			v:   validatorNoOuptut,
 		}, validatorNoOuptut.Address},
 	}
 	for _, tt := range tests {
