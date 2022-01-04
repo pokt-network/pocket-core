@@ -4,6 +4,15 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	log2 "log"
+	"os"
+	fp "path/filepath"
+	"strings"
+	"sync"
+	"time"
+
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/pokt-network/pocket-core/baseapp"
@@ -37,15 +46,6 @@ import (
 	"github.com/tendermint/tendermint/rpc/client/local"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
-	"io"
-	"io/ioutil"
-	log2 "log"
-	"os"
-	fp "path/filepath"
-	"strings"
-	"sync"
-	"syscall"
-	"time"
 )
 
 var (
@@ -730,7 +730,7 @@ func Credentials(pwd string) string {
 	if pwd != "" && strings.TrimSpace(pwd) != "" {
 		return strings.TrimSpace(pwd)
 	} else {
-		bytePassword, err := terminal.ReadPassword(syscall.Stdin)
+		bytePassword, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
 			fmt.Println(err)
 		}
