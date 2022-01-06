@@ -214,9 +214,6 @@ func (msg MsgStake) GetSignBytes() []byte {
 
 // ValidateBasic quick validity check, stateless
 func (msg MsgStake) ValidateBasic() sdk.Error {
-	if msg.Output == nil {
-		return ErrNilOutputAddr(DefaultCodespace)
-	}
 	if msg.PublicKey == nil || msg.PublicKey.RawString() == "" {
 		return ErrNilValidatorAddr(DefaultCodespace)
 	}
@@ -280,4 +277,16 @@ func (msg MsgStake) ToProto() MsgProtoStake {
 		ServiceUrl:    msg.ServiceUrl,
 		OutputAddress: msg.Output,
 	}
+}
+
+func (*MsgProtoStake) XXX_MessageName() string {
+	return "x.nodes.MsgProtoStake8"
+}
+
+func (*MsgBeginUnstake) XXX_MessageName() string {
+	return "x.nodes.MsgBeginUnstake8"
+}
+
+func (*MsgUnjail) XXX_MessageName() string {
+	return "x.nodes.MsgUnjail8"
 }

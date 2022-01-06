@@ -20,11 +20,7 @@ message ProtoValidator {
 	string ServiceURL = 6 [(gogoproto.jsontag) = "service_url"];
 	string StakedTokens = 7 [(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt", (gogoproto.jsontag) = "tokens", (gogoproto.nullable) = false];
 	google.protobuf.Timestamp UnstakingCompletionTime = 8 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true, (gogoproto.jsontag) = "unstaking_time", (gogoproto.moretags) = "yaml:\"unstaking_time\""];
-	bytes OutputAddress = 9 [
-                                		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
-                                		(gogoproto.jsontag) = "validator_address",
-                                		(gogoproto.moretags) = "yaml:\"output_address\""
-                                	];
+	bytes OutputAddress = 9 [(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",(gogoproto.jsontag) = "output_address,omitempty",(gogoproto.moretags) = "yaml:\"output_address\""];
 }
 
 message LegacyProtoValidator {

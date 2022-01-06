@@ -16,15 +16,15 @@ import (
 )
 
 type Validator struct {
-	Address                 sdk.Address      `json:"address" yaml:"address"`               // address of the validator; hex encoded in JSON
-	PublicKey               crypto.PublicKey `json:"public_key" yaml:"public_key"`         // the consensus public key of the validator; hex encoded in JSON
-	Jailed                  bool             `json:"jailed" yaml:"jailed"`                 // has the validator been jailed from staked status?
-	Status                  sdk.StakeStatus  `json:"status" yaml:"status"`                 // validator status (staked/unstaking/unstaked)
-	Chains                  []string         `json:"chains" yaml:"chains"`                 // validator non native blockchains
-	ServiceURL              string           `json:"service_url" yaml:"service_url"`       // url where the pocket service api is hosted
-	StakedTokens            sdk.BigInt       `json:"tokens" yaml:"tokens"`                 // tokens staked in the network
-	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"` // if unstaking, min time for the validator to complete unstaking
-	OutputAddress           sdk.Address      `json:"output_address" yaml:"output_address"` // the custodial output address of the validator
+	Address                 sdk.Address      `json:"address" yaml:"address"`                         // address of the validator; hex encoded in JSON
+	PublicKey               crypto.PublicKey `json:"public_key" yaml:"public_key"`                   // the consensus public key of the validator; hex encoded in JSON
+	Jailed                  bool             `json:"jailed" yaml:"jailed"`                           // has the validator been jailed from staked status?
+	Status                  sdk.StakeStatus  `json:"status" yaml:"status"`                           // validator status (staked/unstaking/unstaked)
+	Chains                  []string         `json:"chains" yaml:"chains"`                           // validator non native blockchains
+	ServiceURL              string           `json:"service_url" yaml:"service_url"`                 // url where the pocket service api is hosted
+	StakedTokens            sdk.BigInt       `json:"tokens" yaml:"tokens"`                           // tokens staked in the network
+	UnstakingCompletionTime time.Time        `json:"unstaking_time" yaml:"unstaking_time"`           // if unstaking, min time for the validator to complete unstaking
+	OutputAddress           sdk.Address      `json:"output_address,omitempty" yaml:"output_address"` // the custodial output address of the validator
 }
 
 // NewValidator - initialize a new validator
