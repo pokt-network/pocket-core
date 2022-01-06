@@ -6,7 +6,6 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/pokt-network/pocket-core/x/nodes/types";
 
 message MsgProtoStake {
-	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
@@ -21,13 +20,12 @@ message MsgProtoStake {
 	string ServiceUrl = 4 [(gogoproto.moretags) = "yaml:\"service_url\"", (gogoproto.jsontag) = "service_url"];
 	bytes OutputAddress = 5 [
                             		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
-                            		(gogoproto.jsontag) = "validator_address",
+                            		(gogoproto.jsontag) = "output_address,omitempty",
                             		(gogoproto.moretags) = "yaml:\"output_address\""
                             	];
 }
 
 message LegacyMsgProtoStake {
-	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
@@ -43,7 +41,6 @@ message LegacyMsgProtoStake {
 }
 
 message MsgBeginUnstake {
-	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
@@ -55,13 +52,12 @@ message MsgBeginUnstake {
 	];
 	bytes Signer = 2 [
 	        (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
-    		(gogoproto.jsontag) = "signer_address",
+    		(gogoproto.jsontag) = "signer_address,omitempty",
     		(gogoproto.moretags) = "yaml:\"signer_address\""
 	];
 }
 
 message LegacyMsgBeginUnstake {
-	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
@@ -74,7 +70,6 @@ message LegacyMsgBeginUnstake {
 }
 
 message MsgUnjail {
-	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;
@@ -92,7 +87,6 @@ message MsgUnjail {
 }
 
 message LegacyMsgUnjail {
-	option (gogoproto.messagename) = true;
 	option (gogoproto.equal) = true;
 	option (gogoproto.goproto_stringer) = true;
 	option (gogoproto.goproto_getters)  = false;

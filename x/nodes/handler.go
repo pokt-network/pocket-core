@@ -87,8 +87,14 @@ func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginUnstake, k keeper.Keep
 	if !found {
 		return types.ErrNoValidatorFound(k.Codespace()).Result()
 	}
-	if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress) {
-		return types.ErrUnauthorizedSigner(k.Codespace()).Result()
+	if validator.OutputAddress == nil {
+		if !msg.Signer.Equals(validator.Address) {
+			return types.ErrUnauthorizedSigner(k.Codespace()).Result()
+		}
+	} else {
+		if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress) {
+			return types.ErrUnauthorizedSigner(k.Codespace()).Result()
+		}
 	}
 	if err := k.ValidateValidatorBeginUnstaking(ctx, validator); err != nil {
 		return err.Result()

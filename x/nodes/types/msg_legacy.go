@@ -39,6 +39,9 @@ func (m LegacyMsgUnjail) GetRecipient() sdk.Address {
 func (m LegacyMsgUnjail) GetFee() sdk.BigInt {
 	return sdk.NewInt(NodeFeeMap[m.Type()])
 }
+func (*LegacyMsgUnjail) XXX_MessageName() string {
+	return "x.nodes.MsgUnjail"
+}
 
 // Unstake Legacy
 
@@ -72,6 +75,10 @@ func (m LegacyMsgBeginUnstake) GetRecipient() sdk.Address {
 
 func (m LegacyMsgBeginUnstake) GetFee() sdk.BigInt {
 	return sdk.NewInt(NodeFeeMap[m.Type()])
+}
+
+func (*LegacyMsgBeginUnstake) XXX_MessageName() string {
+	return "x.nodes.MsgBeginUnstake"
 }
 
 // stake legacy
@@ -156,7 +163,6 @@ func (m *LegacyMsgStake) LegacyToProto() LegacyMsgProtoStake {
 	}
 }
 
-
 func (msg *LegacyMsgStake) Marshal() ([]byte, error) {
 	p := msg.LegacyToProto()
 	return p.Marshal()
@@ -214,4 +220,8 @@ func (msg MsgStake) LegacyToProto() LegacyMsgProtoStake {
 		Value:      msg.Value,
 		ServiceUrl: msg.ServiceUrl,
 	}
+}
+
+func (*LegacyMsgProtoStake) XXX_MessageName() string {
+	return "x.nodes.MsgProtoStake"
 }
