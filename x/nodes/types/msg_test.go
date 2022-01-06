@@ -469,10 +469,10 @@ func TestMsgStake_GetSigners(t *testing.T) {
 		want   []sdk.Address
 	}{
 		{"Test GetSigners", fields{
-			PubKey:     pub,
-			Chains:     chains,
-			Value:      value,
-			ServiceURL: surl,
+			PubKey:        pub,
+			Chains:        chains,
+			Value:         value,
+			ServiceURL:    surl,
 			OutputAddress: sdk.Address(pub2.Address()),
 		}, []sdk.Address{sdk.Address(pub.Address()), sdk.Address(pub2.Address())}},
 	}
@@ -646,14 +646,6 @@ func TestMsgStake_ValidateBasic(t *testing.T) {
 			ServiceURL: surl,
 			Output:     outputAddr,
 		}, ErrInvalidNetworkIdentifier(DefaultCodespace, fmt.Errorf("net id is empty"))},
-
-		{"Test Validate Basic no output address", fields{
-			PubKey:     pub,
-			Chains:     []string{""},
-			Value:      value,
-			ServiceURL: surl,
-			Output:     nil,
-		}, ErrNilOutputAddr(DefaultCodespace)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
