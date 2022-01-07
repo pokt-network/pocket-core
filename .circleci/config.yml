@@ -13,6 +13,7 @@ jobs:
       - image: circleci/golang:1.16
         environment:
           GO111MODULE: "on"
+    resource_class: medium+
     working_directory: /go/src/github.com/pokt-network/pocket-core
     steps:
       # Checkout the code
@@ -46,7 +47,7 @@ jobs:
       # Run tests
       - run:
          name: 'test'
-         command: go test -short -timeout 800s -v -p 1 ./...
+         command: go test -short -p 1 ./...
          no_output_timeout: 20m
   # Job to trigger the Pocket Core deployments CI with a specific branch
   trigger-pocket-core-deployments-branches:

@@ -376,8 +376,8 @@ func getTestConfig() (newTMConfig *tmCfg.Config) {
 	newTMConfig.Consensus = tmCfg.TestConsensusConfig()
 	newTMConfig.Consensus.CreateEmptyBlocks = true // Set this to false to only produce blocks when there are txs or when the AppHash changes
 	newTMConfig.Consensus.SkipTimeoutCommit = false
-	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(200) * time.Millisecond
-	newTMConfig.Consensus.TimeoutCommit = time.Duration(200) * time.Millisecond
+	newTMConfig.Consensus.CreateEmptyBlocksInterval = time.Duration(500) * time.Millisecond
+	newTMConfig.Consensus.TimeoutCommit = time.Duration(500) * time.Millisecond
 	newTMConfig.P2P.MaxNumInboundPeers = 4
 	newTMConfig.P2P.MaxNumOutboundPeers = 4
 	pocketTypes.InitClientBlockAllowance(10000)
