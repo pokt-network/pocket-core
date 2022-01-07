@@ -45,12 +45,12 @@ jobs:
       # Run tests
       - run:
          name: 'test'
-         command: go test -short -p 1 ./...
+         command: go test -short -timeout 800s -v -p 1 ./...
          no_output_timeout: 20m
   # Job to trigger the Pocket Core deployments CI with a specific branch
   trigger-pocket-core-deployments-branches:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/pokt-network/pocket-core
@@ -65,11 +65,11 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build using branch.
-          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_BRANCH} 1.13 staging"
+          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_BRANCH} 1.16 staging"
   # Job to trigger the Pocket Core deployments CI with a specific tag
   trigger-pocket-core-deployments-tags:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/pokt-network/pocket-core
@@ -84,7 +84,7 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build using tags.
-          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_TAG} 1.13 staging"
+          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_TAG} 1.16 staging"
 
 # Workflow definitions
 workflows:
