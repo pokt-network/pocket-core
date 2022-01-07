@@ -1,5 +1,8 @@
 # Changelog
 =======
+## RC-0.7.1
+- Fix for sync from scratch issue @ height 28153
+
 ## RC-0.7.0
 - Enabled Validator/Servicer split on future upgrade height.
 - Modified upgrade behaviour to allow upcoming upgrades.
