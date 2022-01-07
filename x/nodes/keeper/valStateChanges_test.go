@@ -52,6 +52,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 	newChains := []string{"0021"}
 	val := getUnstakedValidator()
 	val.StakedTokens = sdk.ZeroInt()
+	val.OutputAddress = val.Address
 	// updatedStakeAmount
 	updateStakeAmountApp := val
 	updateStakeAmountApp.StakedTokens = bumpStakeAmount
@@ -424,6 +425,7 @@ func TestKeeper_ValidateValidatorStaking(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			k := tt.fields.keeper
+			codec.TestMode = -2
 			if got := k.ValidateValidatorStaking(tt.args.ctx, tt.args.validator, tt.args.amount); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ValidateValidatorStaking() = %v, want %v", got, tt.want)
 			}
