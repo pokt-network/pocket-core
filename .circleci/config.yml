@@ -38,6 +38,7 @@ jobs:
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/pokt-network/pocket-core
+    resource_class: large
     steps:
       # Restore build cache
       - restore_cache:
