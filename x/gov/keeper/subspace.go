@@ -9,7 +9,8 @@ import (
 	"github.com/pokt-network/pocket-core/x/gov/types"
 )
 
-const maxValidatorChangeAllowedHeight = 40000
+const maxValidatorChangeAllowedMinHeight = 40000
+const maxValidatorACLKey = "pos/MaxValidators"
 
 // Allocate subspace used for keepers
 func (k Keeper) Subspace(s string) sdk.Subspace {
@@ -178,8 +179,9 @@ func (k Keeper) ModifyParam(ctx sdk.Ctx, aclKey string, paramValue []byte, owner
 		return err.Result()
 	}
 
-	if ctx.BlockHeight() >= maxValidatorChangeAllowedHeight {
-		if !k.cdc.IsAfterSecondUpgrade(ctx.BlockHeight()) && aclKey == "pos/MaxValidators" {
+	if ctx.BlockHeight() >= maxValidatorChangeAllowedMinHeight {
+
+		if !k.cdc.IsAfterSecondUpgrade(ctx.BlockHeight()) && aclKey == maxValidatorACLKey {
 			return types.ErrUnauthorizedHeightParamChange(types.ModuleName, codec.UpgradeHeight, aclKey).Result()
 		}
 	}
