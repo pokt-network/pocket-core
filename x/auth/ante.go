@@ -164,10 +164,21 @@ func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTx, signer posCry
 	if !fees.IsValid() {
 		return sdk.ErrInsufficientFee(fmt.Sprintf("invalid fee amount: %s", fees))
 	}
-	acc, err := GetSignerAcc(ctx, keeper, sdk.Address(signer.Address()))
-	if err != nil {
-		return err
+	var acc Account
+	var err sdk.Error
+
+	if keeper.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
+		acc, err = GetSignerAcc(ctx, keeper, sdk.Address(signer.Address()))
+		if err != nil {
+			return err
+		}
+	} else {
+		acc, err = GetSignerAcc(ctx, keeper, tx.GetSigners()[0])
+		if err != nil {
+			return err
+		}
 	}
+
 	coins := acc.GetCoins()
 	// verify the account has enough funds to pay for fees
 	_, hasNeg := coins.SafeSub(fees)

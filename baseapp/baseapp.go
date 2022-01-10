@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
+	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/node"
@@ -778,9 +779,9 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		msg := tx.GetMsg()
 		messageType = msg.Type()
 		recipient = msg.GetRecipient()
-		if signerPK == nil {
+		if signerPK == nil || messageType == types2.MsgAppStakeName {
 			signers := msg.GetSigners()
-			if len(signers)>=1 {
+			if len(signers) >= 1 {
 				signer = signers[0]
 			}
 		} else {
