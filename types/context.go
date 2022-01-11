@@ -141,7 +141,7 @@ var _ codec.ProtoMarshaler = &abci.Header{}
 
 // clone the header before returning
 func (c Context) BlockHash(cdc *codec.Codec, height int64) ([]byte, error) {
-	if cdc.IsAfterUpgrade(height) {
+	if cdc.IsAfterCodecUpgrade(height) {
 		if c.header.Equal(abci.Header{}) {
 			return nil, errors.New(blockHashError + ": the header is empty")
 		}

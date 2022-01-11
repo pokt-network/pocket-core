@@ -415,7 +415,7 @@ func SecondUpgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	if params.Height == 0 {
 		params.Height = app.PCA.BaseApp.LastBlockHeight()
 	}
-	result := app.Codec().IsAfterSecondUpgrade(params.Height)
+	result := app.Codec().IsAfterValidatorSplitUpgrade(params.Height)
 	j, _ := json.Marshal(struct {
 		R bool `json:"r"`
 	}{R: result})

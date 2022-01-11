@@ -35,9 +35,11 @@ var (
 )
 
 const (
-	UpgradeCodecHeight    = int64(30024)
-	ValidatorSplitHeight  = int64(45353)
-	NonCustodialUpdateKey = "NCUSTODIAL"
+	UpgradeCodecHeight      = int64(30024)
+	ValidatorSplitHeight    = int64(45353)
+	UpgradeCodecUpdateKey   = "CODEC"
+	ValidatorSplitUpdateKey = "SPLIT"
+	NonCustodialUpdateKey   = "NCUST"
 )
 
 func GetCodecUpgradeHeight() int64 {
@@ -88,12 +90,12 @@ func (cdc *Codec) RegisterImplementation(iface interface{}, impls ...proto.Messa
 func (cdc *Codec) MarshalBinaryBare(o interface{}, height int64) ([]byte, error) { // TODO take height as parameter, move upgrade height to this package, switch based on height not upgrade mod
 	p, ok := o.(ProtoMarshaler)
 	if !ok {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return nil, NotProtoCompatibleInterfaceError
 		}
 		return cdc.legacyCdc.MarshalBinaryBare(o)
 	} else {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return cdc.protoCdc.MarshalBinaryBare(p)
 		}
 		return cdc.legacyCdc.MarshalBinaryBare(p)
@@ -103,12 +105,12 @@ func (cdc *Codec) MarshalBinaryBare(o interface{}, height int64) ([]byte, error)
 func (cdc *Codec) MarshalBinaryLengthPrefixed(o interface{}, height int64) ([]byte, error) {
 	p, ok := o.(ProtoMarshaler)
 	if !ok {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return nil, NotProtoCompatibleInterfaceError
 		}
 		return cdc.legacyCdc.MarshalBinaryLengthPrefixed(o)
 	} else {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return cdc.protoCdc.MarshalBinaryLengthPrefixed(p)
 		}
 		return cdc.legacyCdc.MarshalBinaryLengthPrefixed(p)
@@ -118,12 +120,12 @@ func (cdc *Codec) MarshalBinaryLengthPrefixed(o interface{}, height int64) ([]by
 func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) error {
 	p, ok := ptr.(ProtoMarshaler)
 	if !ok {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return NotProtoCompatibleInterfaceError
 		}
 		return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
 	}
-	if cdc.IsAfterUpgrade(height) {
+	if cdc.IsAfterCodecUpgrade(height) {
 		return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
 	}
 	e := cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
@@ -136,12 +138,12 @@ func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) 
 func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}, height int64) error {
 	p, ok := ptr.(ProtoMarshaler)
 	if !ok {
-		if cdc.IsAfterUpgrade(height) {
+		if cdc.IsAfterCodecUpgrade(height) {
 			return NotProtoCompatibleInterfaceError
 		}
 		return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
 	}
-	if cdc.IsAfterUpgrade(height) {
+	if cdc.IsAfterCodecUpgrade(height) {
 		return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
 	}
 	e := cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
@@ -223,7 +225,7 @@ func (cdc *Codec) ProtoCodec() *ProtoCodec {
 }
 
 //Note: includes the actual upgrade height
-func (cdc *Codec) IsAfterUpgrade(height int64) bool {
+func (cdc *Codec) IsAfterCodecUpgrade(height int64) bool {
 	if cdc.upgradeOverride != -1 {
 		return cdc.upgradeOverride == 1
 	}
@@ -231,7 +233,7 @@ func (cdc *Codec) IsAfterUpgrade(height int64) bool {
 }
 
 //Note: includes the actual upgrade height
-func (cdc *Codec) IsAfterSecondUpgrade(height int64) bool {
+func (cdc *Codec) IsAfterValidatorSplitUpgrade(height int64) bool {
 	return (height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()) || height >= ValidatorSplitHeight || TestMode <= -2
 }
 
@@ -245,6 +247,9 @@ func (cdc *Codec) IsOnNonCustodialUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
 }
 
+// Upgrade Utils for feature map
+
+//merge slice to existing map
 func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {
 	var fmap = make(map[string]int64)
 	for k, v := range m {
@@ -257,6 +262,8 @@ func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {
 	}
 	return fmap
 }
+
+//converts slice to map
 func SliceToMap(arr []string) map[string]int64 {
 	var fmap = make(map[string]int64)
 	for _, v := range arr {
@@ -267,6 +274,7 @@ func SliceToMap(arr []string) map[string]int64 {
 	return fmap
 }
 
+//converts map to slice
 func MapToSlice(m map[string]int64) []string {
 	var fslice = make([]string, 0)
 	for k, v := range m {
@@ -276,6 +284,7 @@ func MapToSlice(m map[string]int64) []string {
 	return fslice
 }
 
+//convert slice to map and back to remove duplicates
 func CleanUpgradeFeatureSlice(arr []string) []string {
 	m := SliceToMap(arr)
 	s := MapToSlice(m)
