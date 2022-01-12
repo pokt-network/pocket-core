@@ -261,6 +261,28 @@ func BlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
 }
 
+func AllBlockTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = PaginatedHeightParams{}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	if params.Height == 0 {
+		params.Height = app.PCA.BaseApp.LastBlockHeight()
+	}
+	res, err := app.PCA.QueryAllBlockTxs(params.Height, params.Page, params.PerPage)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+	}
+	rpcResponse := ResultTxSearchToRPC(res)
+	s, er := json.MarshalIndent(rpcResponse, "", "  ")
+	if er != nil {
+		WriteErrorResponse(w, 400, er.Error())
+		return
+	}
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
+}
+
 type queryHeightResponse struct {
 	Height int64 `json:"height"`
 }
