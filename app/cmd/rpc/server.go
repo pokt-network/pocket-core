@@ -18,7 +18,7 @@ import (
 
 var APIVersion = app.AppVersion
 
-func StartRPC(port string, timeout int64, simulation bool, debug bool) {
+func StartRPC(port string, timeout int64, simulation, debug, allBlockTxs bool) {
 	routes := GetRoutes()
 	if simulation {
 		simRoute := Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: SimRequest}
@@ -38,6 +38,10 @@ func StartRPC(port string, timeout int64, simulation bool, debug bool) {
 		routes = append(routes, Route{Name: "FreeOsMemory", Method: "GET", Path: "/debug/freememory", HandlerFunc: FreeMemory})
 		routes = append(routes, Route{Name: "MemStats", Method: "GET", Path: "/debug/memstats", HandlerFunc: MemStats})
 		routes = append(routes, Route{Name: "QuerySecondUpgrade", Method: "POST", Path: "/debug/second", HandlerFunc: SecondUpgrade})
+	}
+
+	if allBlockTxs {
+		routes = append(routes, Route{Name: "QueryAllBlockTxs", Method: "POST", Path: "/v1/query/allblocktxs", HandlerFunc: AllBlockTxs})
 	}
 
 	srv := &http.Server{
@@ -95,7 +99,6 @@ func GetRoutes() Routes {
 		Route{Name: "QueryBalance", Method: "POST", Path: "/v1/query/balance", HandlerFunc: Balance},
 		Route{Name: "QueryBlock", Method: "POST", Path: "/v1/query/block", HandlerFunc: Block},
 		Route{Name: "QueryBlockTxs", Method: "POST", Path: "/v1/query/blocktxs", HandlerFunc: BlockTxs},
-		Route{Name: "QueryAllBlockTxs", Method: "POST", Path: "/v1/query/allblocktxs", HandlerFunc: AllBlockTxs},
 		Route{Name: "QueryDAOOwner", Method: "POST", Path: "/v1/query/daoowner", HandlerFunc: DAOOwner},
 		Route{Name: "QueryHeight", Method: "POST", Path: "/v1/query/height", HandlerFunc: Height},
 		Route{Name: "QueryNode", Method: "POST", Path: "/v1/query/node", HandlerFunc: Node},

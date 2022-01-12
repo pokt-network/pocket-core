@@ -22,6 +22,7 @@ var (
 	simulateRelay   bool
 	keybase         bool
 	mainnet         bool
+	allBlockTxs     bool
 	testnet         bool
 	profileApp      bool
 	useCache        bool
@@ -53,6 +54,7 @@ func init() {
 	startCmd.Flags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
 	startCmd.Flags().BoolVar(&keybase, "keybase", true, "run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
 	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
+	startCmd.Flags().BoolVar(&allBlockTxs, "allblocktxs", false, "run with the allblocktxs endpoint (not recommended)")
 	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
 	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
 	startCmd.Flags().BoolVar(&useCache, "useCache", false, "use cache")
@@ -91,7 +93,7 @@ func start(cmd *cobra.Command, args []string) {
 		genesisType = app.TestnetGenesisType
 	}
 	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache)
-	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp)
+	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs)
 	// trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
