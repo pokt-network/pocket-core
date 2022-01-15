@@ -28,7 +28,7 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 		globalSessionCache = new(CacheStorage)
 		globalEvidenceSealedMap = sync.Map{}
 		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
-		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, false)
+		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
 		InitGlobalServiceMetric(chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
 	})
 	GlobalPocketConfig = c.PocketConfig

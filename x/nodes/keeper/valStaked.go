@@ -6,6 +6,7 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	"time"
 )
 
 // SetStakedValidator - Store staked validator
@@ -31,7 +32,7 @@ func (k Keeper) SetStakedValidatorByChains(ctx sdk.Ctx, validator types.Validato
 
 // GetValidatorByChains - Returns the validator staked by network identifier
 func (k Keeper) GetValidatorsByChain(ctx sdk.Ctx, networkID string) (validators []sdk.Address, count int) {
-
+	defer sdk.TimeTrack(time.Now())
 	l, exist := sdk.VbCCache.Get(sdk.GetCacheKey(int(ctx.BlockHeight()), networkID))
 
 	if !exist {

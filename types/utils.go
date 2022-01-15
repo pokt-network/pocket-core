@@ -17,12 +17,14 @@ import (
 
 var (
 	// This is set at compile time. Could be cleveldb, defaults is goleveldb.
-	DBBackend = ""
-	VbCCache  *Cache
+	DBBackend         = ""
+	VbCCache          *Cache
+	ShowTimeTrackData = false
 )
 
 func init() {
-	VbCCache = NewCache(1000)
+	VbCCache = NewCache(3000)
+	ShowTimeTrackData = true
 }
 
 func GetCacheKey(height int, value string) (key string) {
@@ -135,6 +137,7 @@ func TimeTrack(start time.Time) {
 	// Regex to extract just the function name (and not the module path).
 	runtimeFunc := regexp.MustCompile(`^.*\.(.*)$`)
 	name := runtimeFunc.ReplaceAllString(funcObj.Name(), "$1")
-
-	log.Println(fmt.Sprintf("%s took %s", name, elapsed))
+	if ShowTimeTrackData {
+		log.Println(fmt.Sprintf("%s took %s", name, elapsed))
+	}
 }
