@@ -78,7 +78,7 @@ func (rs *Store) CopyStore() *types.Store {
 var _ types.CommitMultiStore = (*Store)(nil)
 var _ types.Queryable = (*Store)(nil)
 
-const MemoryCacheCapacity = 26
+const MemoryCacheCapacity = 12
 
 func NewStore(db dbm.DB, cache bool) *Store {
 	var multiStoreCache types.MultiStoreCache

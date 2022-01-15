@@ -48,7 +48,7 @@ func (cs *CacheStorage) Init(dir, name string, options config.LevelDBOptions, ma
 	// intialize the db
 	var err error
 	if inMemoryDB {
-		cs.DB = db.NewGoLevelMemDB()
+		cs.DB = db.NewGoLevelMemDBWithCapacity(maxEntries)
 		return
 	}
 	cs.DB, err = sdk.NewLevelDB(name, dir, options.ToGoLevelDBOpts())

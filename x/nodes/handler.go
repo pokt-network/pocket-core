@@ -7,6 +7,7 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"reflect"
+	"time"
 )
 
 func NewHandler(k keeper.Keeper) sdk.Handler {
@@ -49,6 +50,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 }
 
 func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper, signer crypto.PublicKey) sdk.Result {
+	defer sdk.TimeTrack(time.Now())
 	pk := msg.PublicKey
 	addr := pk.Address()
 	// create validator object using the message fields
@@ -80,6 +82,8 @@ func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper, signer crypto
 }
 
 func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginUnstake, k keeper.Keeper) sdk.Result {
+	defer sdk.TimeTrack(time.Now())
+
 	ctx.Logger().Info("Begin Unstaking Message received from " + msg.Address.String())
 	// move coins from the msg.Address account to a (self-delegation) delegator account
 	// the validator account and global shares are updated within here
@@ -121,6 +125,8 @@ func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginUnstake, k keeper.Keep
 // Validators must submit a transaction to unjail itself after todo
 // having been jailed (and thus unstaked) for downtime
 func handleMsgUnjail(ctx sdk.Ctx, msg types.MsgUnjail, k keeper.Keeper) sdk.Result {
+	defer sdk.TimeTrack(time.Now())
+
 	ctx.Logger().Info("Unjail Message received from " + msg.ValidatorAddr.String())
 	addr, err := k.ValidateUnjailMessage(ctx, msg)
 	if err != nil {
@@ -138,6 +144,8 @@ func handleMsgUnjail(ctx sdk.Ctx, msg types.MsgUnjail, k keeper.Keeper) sdk.Resu
 }
 
 func handleMsgSend(ctx sdk.Ctx, msg types.MsgSend, k keeper.Keeper) sdk.Result {
+	defer sdk.TimeTrack(time.Now())
+
 	ctx.Logger().Info("Send Message from " + msg.FromAddress.String() + " received")
 	err := k.SendCoins(ctx, msg.FromAddress, msg.ToAddress, msg.Amount)
 	if err != nil {
