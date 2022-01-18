@@ -76,4 +76,4 @@ require (
 
 replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20211206194538-760ff32a8749
 
-replace github.com/tendermint/tm-db => github.com/oten91/tm-db v0.5.2-0.20220115185855-3f2109364419
+replace github.com/tendermint/tm-db => github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba
