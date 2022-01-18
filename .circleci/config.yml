@@ -10,7 +10,7 @@ jobs:
   # TODO: Make builds for all platforms where Pocket Core is expected to run
   build:
     docker:
-      - image: circleci/golang:1.16
+      - image: circleci/golang:1.17
         environment:
           GO111MODULE: "on"
     resource_class: medium+
@@ -35,7 +35,7 @@ jobs:
   # TODO: Expand the testing capabilities
   test:
     docker:
-      - image: circleci/golang:1.16
+      - image: circleci/golang:1.17
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/pokt-network/pocket-core
@@ -52,7 +52,7 @@ jobs:
   # Job to trigger the Pocket Core deployments CI with a specific branch
   trigger-pocket-core-deployments-branches:
     docker:
-      - image: circleci/golang:1.16
+      - image: circleci/golang:1.17
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/pokt-network/pocket-core
@@ -67,11 +67,11 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build using branch.
-          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_BRANCH} 1.16 staging"
+          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_BRANCH} 1.17 staging"
   # Job to trigger the Pocket Core deployments CI with a specific tag
   trigger-pocket-core-deployments-tags:
     docker:
-      - image: circleci/golang:1.16
+      - image: circleci/golang:1.17
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/pokt-network/pocket-core
@@ -86,7 +86,7 @@ jobs:
       # Trigger Pocket Core deployments CI
       - run:
           name: Trigger Pocket Core Deployment build using tags.
-          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_TAG} 1.16 staging"
+          command: "sh .circleci/trigger.sh ${POCKET_CORE_DEPLOYMENTS_TRIGGER_API_KEY} ${CIRCLE_TAG} 1.17 staging"
 
 # Workflow definitions
 workflows:
