@@ -126,6 +126,13 @@ func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) 
 		return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
 	}
 	if cdc.IsAfterCodecUpgrade(height) {
+		if height == UpgradeCodecHeight {
+			e := cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
+			if e != nil {
+				return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
+			}
+			return e
+		}
 		return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
 	}
 	e := cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
@@ -144,6 +151,13 @@ func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}, heig
 		return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
 	}
 	if cdc.IsAfterCodecUpgrade(height) {
+		if height == UpgradeCodecHeight {
+			e := cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
+			if e != nil {
+				return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
+			}
+			return e
+		}
 		return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
 	}
 	e := cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
