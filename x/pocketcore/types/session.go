@@ -122,6 +122,12 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		node = keeper.Validator(ctx, n)
 		// if not found or jailed, don't add to session and continue
 		if node == nil || node.IsJailed() || !NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
+			if node.IsJailed() {
+				totalNodes--
+				if totalNodes < sessionNodesCount {
+					return nil, NewInsufficientNodesError(ModuleName)
+				}
+			}
 			continue
 		}
 		// else add the node to the session
