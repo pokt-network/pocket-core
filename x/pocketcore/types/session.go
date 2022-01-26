@@ -108,6 +108,8 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	if totalNodes < sessionNodesCount {
 		return nil, NewInsufficientNodesError(ModuleName)
 	}
+	applicableNodes := totalNodes
+	uniqueMap := make(map[string]struct{})
 	sessionNodes = make(SessionNodes, sessionNodesCount)
 	var node exported.ValidatorI
 	// only select the nodesAddrs if not jailed
@@ -122,9 +124,9 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		node = keeper.Validator(ctx, n)
 		// if not found or jailed, don't add to session and continue
 		if node == nil || node.IsJailed() || !NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
-			if node.IsJailed() {
-				totalNodes--
-				if totalNodes < sessionNodesCount {
+			if NodeIsNotUseableAndNotCounted(node, uniqueMap) {
+				applicableNodes--
+				if applicableNodes < sessionNodesCount {
 					return nil, NewInsufficientNodesError(ModuleName)
 				}
 			}
@@ -141,6 +143,18 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	}
 	// return the nodesAddrs
 	return sessionNodes, nil
+}
+
+func NodeIsNotUseableAndNotCounted(node exported.ValidatorI, uniqueAddressM map[string]struct{}) bool {
+	if !node.IsJailed() {
+		return false
+	}
+	addrString := hex.EncodeToString(node.GetAddress())
+	if _, alreadyCounted := uniqueAddressM[addrString]; alreadyCounted {
+		return false
+	}
+	uniqueAddressM[addrString] = struct{}{}
+	return true
 }
 
 // "Validate" - Validates the session node object
