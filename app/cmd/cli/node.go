@@ -34,14 +34,14 @@ func init() {
 }
 
 var nodeStakeCmd = &cobra.Command{
-	Use:   "stake <operatorPublicKey||signerAddress> <amount> <RelayChainIDs> <serviceURI> <outputAddress||signerAddress> <networkID> <fee> <isBefore8.0>",
+	Use:   "stake <operatorAddress||signerAddress> <amount> <RelayChainIDs> <serviceURI> <outputAddress||signerAddress> <networkID> <fee> <isBefore8.0>",
 	Short: "Stake a node in the network, the signer may be the operator or the output address. The signer must specify the public key of the output or operator",
 	Long: `Stake the node into the network, making it available for service.
-Will prompt the user for the <fromAddr> account passphrase. After the 0.6.X upgrade, if the node is already staked, this transaction acts as an *update* transaction.
+Will prompt the user for the <signerAddress> account passphrase. After the 0.6.X upgrade, if the node is already staked, this transaction acts as an *update* transaction.
 A node can updated relayChainIDs, serviceURI, and raise the stake amount with this transaction.
 If the node is currently staked at X and you submit an update with new stake Y. Only Y-X will be subtracted from an account
 If no changes are desired for the parameter, just enter the current param value just as before.
-The signer may be the operator or the output address. The signer must specify the public key of the output or operator`,
+The signer may be the operator or the output address.`,
 	Args: cobra.ExactArgs(8),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
