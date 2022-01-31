@@ -83,6 +83,7 @@ func StakeNode(chains []string, serviceURL, operator, output, passphrase, chainI
 		operatorPublicKey = kp.PublicKey
 		fromAddress = kp.GetAddress()
 	} else {
+		operatorPublicKey = kp.PublicKey
 		fromAddress = outputAddress
 	}
 	m := make(map[string]struct{})

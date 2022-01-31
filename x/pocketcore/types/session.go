@@ -108,12 +108,15 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	if totalNodes < sessionNodesCount {
 		return nil, NewInsufficientNodesError(ModuleName)
 	}
-	applicableNodes := totalNodes
-	uniqueMap := make(map[string]struct{})
 	sessionNodes = make(SessionNodes, sessionNodesCount)
 	var node exported.ValidatorI
 	// only select the nodesAddrs if not jailed
+	iterations := 0
 	for i, numOfNodes := 0, 0; ; i++ {
+		iterations++
+		if iterations > (totalNodes * 10) {
+			return nil, NewInsufficientNodesError(ModuleName)
+		}
 		// generate the random index
 		index := PseudorandomSelection(sdk.NewInt(int64(totalNodes)), sessionKey)
 		// merkleHash the session key to provide new entropy
@@ -124,12 +127,6 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		node = keeper.Validator(ctx, n)
 		// if not found or jailed, don't add to session and continue
 		if node == nil || node.IsJailed() || !NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
-			if NodeIsNotUseableAndNotCounted(node, uniqueMap) {
-				applicableNodes--
-				if applicableNodes < sessionNodesCount {
-					return nil, NewInsufficientNodesError(ModuleName)
-				}
-			}
 			continue
 		}
 		// else add the node to the session
@@ -143,18 +140,6 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	}
 	// return the nodesAddrs
 	return sessionNodes, nil
-}
-
-func NodeIsNotUseableAndNotCounted(node exported.ValidatorI, uniqueAddressM map[string]struct{}) bool {
-	if !node.IsJailed() {
-		return false
-	}
-	addrString := hex.EncodeToString(node.GetAddress())
-	if _, alreadyCounted := uniqueAddressM[addrString]; alreadyCounted {
-		return false
-	}
-	uniqueAddressM[addrString] = struct{}{}
-	return true
 }
 
 // "Validate" - Validates the session node object
