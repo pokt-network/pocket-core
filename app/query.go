@@ -367,6 +367,15 @@ func (app PocketCoreApp) QueryAppParams(height int64) (res appsTypes.Params, err
 	return app.appsKeeper.GetParams(ctx), nil
 }
 
+func (app PocketCoreApp) QueryValidatorByChain(height int64, chain string) (amount int64, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	_, count := app.nodesKeeper.GetValidatorsByChain(ctx, chain)
+	return int64(count), nil
+}
+
 func (app PocketCoreApp) QueryPocketSupportedBlockchains(height int64) (res []string, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {
