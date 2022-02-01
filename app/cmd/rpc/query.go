@@ -10,6 +10,7 @@ import (
 	"github.com/tendermint/tendermint/types"
 	"math/big"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -439,6 +440,31 @@ func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
+func QueryValidatorsByChain(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = HeightAndValidatorOptsParams{
+		Height: 0,
+		Opts: nodeTypes.QueryValidatorsParams{
+			Blockchain: "0001",
+		},
+	}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	res, err := app.PCA.QueryValidatorByChain(params.Height, params.Opts.Blockchain)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+
+	j, _ := json.Marshal(struct {
+		Chain string `json:"chain"`
+		Count string `json:"count"`
+	}{Chain: params.Opts.Blockchain, Count: strconv.FormatInt(res, 10)})
+
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
