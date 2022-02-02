@@ -34,7 +34,7 @@ func init() {
 }
 
 var nodeStakeCmd = &cobra.Command{
-	Use:   "stake <operatorAddress||signerAddress> <amount> <RelayChainIDs> <serviceURI> <outputAddress||signerAddress> <networkID> <fee> <isBefore8.0>",
+	Use:   "stake <operatorPublicKey> <amount> <RelayChainIDs> <serviceURI> <outputAddress> <networkID> <fee> <isBefore8.0>",
 	Short: "Stake a node in the network, the signer may be the operator or the output address. The signer must specify the public key of the output or operator",
 	Long: `Stake the node into the network, making it available for service.
 Will prompt the user for the <signerAddress> account passphrase. After the 0.6.X upgrade, if the node is already staked, this transaction acts as an *update* transaction.
@@ -45,7 +45,7 @@ The signer may be the operator or the output address.`,
 	Args: cobra.ExactArgs(8),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		operator := args[0]
+		operatorPubKey := args[0]
 		output := args[4]
 		amount, err := strconv.Atoi(args[1])
 		if err != nil {
@@ -77,7 +77,7 @@ The signer may be the operator or the output address.`,
 			return
 		}
 		fmt.Println("Enter Passphrase: ")
-		res, err := StakeNode(chains, serviceURI, operator, output, app.Credentials(pwd), args[5], types.NewInt(int64(amount)), int64(fee), isBefore8)
+		res, err := StakeNode(chains, serviceURI, operatorPubKey, output, app.Credentials(pwd), args[5], types.NewInt(int64(amount)), int64(fee), isBefore8)
 		if err != nil {
 			fmt.Println(err)
 			return

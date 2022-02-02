@@ -59,20 +59,32 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Bi
 }
 
 // StakeNode - Deliver Stake message to node
-func StakeNode(chains []string, serviceURL, operator, output, passphrase, chainID string, amount sdk.BigInt, fees int64, isBefore8 bool) (*rpc.SendRawTxParams, error) {
+func StakeNode(chains []string, serviceURL, operatorPubKey, output, passphrase, chainID string, amount sdk.BigInt, fees int64, isBefore8 bool) (*rpc.SendRawTxParams, error) {
 	var operatorPublicKey crypto.PublicKey
+	var operatorAddress sdk.Address
 	var fromAddress sdk.Address
 	kb, err := app.GetKeybase()
 	if err != nil {
 		return nil, err
 	}
+	bz, err := hex.DecodeString(operatorPubKey)
+	if err != nil {
+		return nil, err
+	}
+
+	pbkey, err := crypto.NewPublicKeyBz(bz)
+	if err != nil {
+		return nil, err
+	}
+	operatorPublicKey = pbkey
+
 	outputAddress, err := sdk.AddressFromHex(output)
 	if err != nil {
 		return nil, err
 	}
 	kp, err := kb.Get(outputAddress)
 	if err != nil {
-		operatorAddress, err := sdk.AddressFromHex(operator)
+		operatorAddress = sdk.Address(operatorPublicKey.Address())
 		if err != nil {
 			return nil, errors.New("OutputAddress not found in keybase & Operator field doesn't seem to be an address: " + err.Error())
 		}
@@ -80,10 +92,8 @@ func StakeNode(chains []string, serviceURL, operator, output, passphrase, chainI
 		if err != nil {
 			return nil, errors.New("Neither the Output Address nor the Operator Address is able to be retrieved from the keybase" + err.Error())
 		}
-		operatorPublicKey = kp.PublicKey
 		fromAddress = kp.GetAddress()
 	} else {
-		operatorPublicKey = kp.PublicKey
 		fromAddress = outputAddress
 	}
 	m := make(map[string]struct{})
@@ -132,7 +142,7 @@ func StakeNode(chains []string, serviceURL, operator, output, passphrase, chainI
 		return nil, err
 	}
 	return &rpc.SendRawTxParams{
-		Addr:        operator,
+		Addr:        operatorAddress.String(),
 		RawHexBytes: hex.EncodeToString(txBz),
 	}, nil
 }
