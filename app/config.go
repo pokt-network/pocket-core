@@ -499,7 +499,7 @@ func NewHostedChains(generate bool) *types.HostedBlockchains {
 		return generateChainsJson(chainsPath)
 	}
 	// reopen the file to read into the variable
-	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	jsonFile, err := os.OpenFile(chainsPath, os.O_RDONLY|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		log2.Fatal(NewInvalidChainsError(err))
 	}
