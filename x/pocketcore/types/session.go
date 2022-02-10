@@ -111,7 +111,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	sessionNodes = make(SessionNodes, sessionNodesCount)
 	var node exported.ValidatorI
 	//unique address map
-	m := make(map[string]sdk.Address)
+	m := make(map[string]struct{})
 	// only select the nodesAddrs if not jailed
 	for i, numOfNodes := 0, 0; ; i++ {
 		//if this is true we already checked all nodes we got on getValidatorsBychain
@@ -129,7 +129,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 			continue
 		} else {
 			//add the node address to the map
-			m[n.String()] = n
+			m[n.String()] = struct{}{}
 		}
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
