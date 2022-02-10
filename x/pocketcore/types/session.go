@@ -127,11 +127,12 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		//if we already have seen this address we continue as it's either on the list or discarded
 		if _, ok := m[n.String()]; ok {
 			continue
+		} else {
+			//add the node address to the map
+			m[n.String()] = n
 		}
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
-		//add the node address to the list
-		m[n.String()] = n
 		// if not found or jailed, don't add to session and continue
 		if node == nil || node.IsJailed() || !NodeHasChain(chain, node) || sessionNodes.Contains(node.GetAddress()) {
 			continue
