@@ -110,7 +110,7 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 	}
 	sessionNodes = make(SessionNodes, sessionNodesCount)
 	var node exported.ValidatorI
-	//unique address map
+	//unique address map to avoid re-checking a pseudorandomly selected servicer
 	m := make(map[string]struct{})
 	// only select the nodesAddrs if not jailed
 	for i, numOfNodes := 0, 0; ; i++ {
@@ -127,10 +127,10 @@ func NewSessionNodes(sessionCtx, ctx sdk.Ctx, keeper PosKeeper, chain string, se
 		//if we already have seen this address we continue as it's either on the list or discarded
 		if _, ok := m[n.String()]; ok {
 			continue
-		} else {
-			//add the node address to the map
-			m[n.String()] = struct{}{}
 		}
+		//add the node address to the map
+		m[n.String()] = struct{}{}
+
 		// cross check the node from the `new` or `end` world state
 		node = keeper.Validator(ctx, n)
 		// if not found or jailed, don't add to session and continue
