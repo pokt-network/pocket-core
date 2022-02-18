@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	posCrypto "github.com/pokt-network/pocket-core/crypto"
@@ -77,6 +78,9 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 			if pk = acc.GetPubKey(); pk == nil {
 				return nil, types.ErrEmptyPublicKey(ModuleName)
 			}
+		}
+		if !bytes.Equal(pk.Address(), signer) {
+			continue
 		}
 		// get the sign bytes from the tx
 		signBytes, err := GetSignBytes(ctx.ChainID(), stdTx)
