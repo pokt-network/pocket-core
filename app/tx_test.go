@@ -361,7 +361,8 @@ func TestStakeNode(t *testing.T) {
 		*upgrades
 	}{
 		{name: "stake node with amino codec", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "stake a proto node with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
+		{name: "stake a proto node with proto codec", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},                                  // TODO: FULL PROTO SCENARIO
+		{name: "stake a proto node with proto codec bad signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
 		{name: "stake after 8.0 upgrade; output is signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 3}}},
 		{name: "stake after 8.0 upgrade; output is not signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: false, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 3}}},
 	}
@@ -385,7 +386,12 @@ func TestStakeNode(t *testing.T) {
 			if tc.outputIsSigner {
 				list, err := kb.List()
 				assert.Nil(t, err)
-				signer = list[2].GetAddress()
+				signer = list[3].GetAddress()
+				if tc.outputIsSigner && !isAfter8 {
+					if kp.GetAddress().String() == signer.String() {
+						signer = list[2].GetAddress()
+					}
+				}
 			}
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
@@ -396,7 +402,11 @@ func TestStakeNode(t *testing.T) {
 			tx, err = nodes.StakeTx(memCodec(), memCli, kb, chains, "https://myPocketNode.com:8080", sdk.NewInt(10000000), kp, signer, "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
-			assert.Equal(t, int(tx.Code), 0)
+			if isAfter8 == false && tc.outputIsSigner {
+				assert.Equal(t, 4, int(tx.Code))
+			} else {
+				assert.Equal(t, int(tx.Code), 0)
+			}
 			cleanup()
 			stopCli()
 
