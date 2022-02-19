@@ -211,13 +211,13 @@ Ensure the node is all the way synced before proceeding to the next step.
 Stake the account to participate in the Network as a **Validator**
 
 ```text
-pocket nodes stake <address> <amount> <relay_chains> <serviceURI> mainnet 10000 true
+pocket nodes stake <address> <amount> <relay_chains> <serviceURI>:<port> mainnet 10000
 ```
 
 Example: 
 
 ```text
-pocket nodes stake 3ee61299d5bbbd2974cddcc194d9b547c7629546 20000000000 ["0001", "0002"] https://pokt.rocks mainnet 10000 true
+pocket nodes stake 3ee61299d5bbbd2974cddcc194d9b547c7629546 20000000000 ["0001","0002"] https://pokt.rocks:443 mainnet 10000
 ```
 
 {% hint style="danger" %}
