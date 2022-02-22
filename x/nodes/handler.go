@@ -56,7 +56,7 @@ func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper, signer crypto
 	// create validator object using the message fields
 	validator := types.NewValidator(sdk.Address(addr), pk, msg.Chains, msg.ServiceUrl, sdk.ZeroInt(), msg.Output)
 	// check if they can stake
-	if err := k.ValidateValidatorStaking(ctx, validator, msg.Value); err != nil {
+	if err := k.ValidateValidatorStaking(ctx, validator, msg.Value, sdk.Address(signer.Address())); err != nil {
 		return err.Result()
 	}
 	// change the validator state to staked
@@ -91,15 +91,11 @@ func handleMsgBeginUnstake(ctx sdk.Ctx, msg types.MsgBeginUnstake, k keeper.Keep
 	if !found {
 		return types.ErrNoValidatorFound(k.Codespace()).Result()
 	}
-	if validator.OutputAddress == nil {
-		if !msg.Signer.Equals(validator.Address) {
-			return types.ErrUnauthorizedSigner(k.Codespace()).Result()
-		}
-	} else {
-		if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress) {
-			return types.ErrUnauthorizedSigner(k.Codespace()).Result()
-		}
+	err, valid := keeper.ValidateValidatorMsgSignature(validator, msg.Signer, k)
+	if !valid {
+		return err.Result()
 	}
+
 	if err := k.ValidateValidatorBeginUnstaking(ctx, validator); err != nil {
 		return err.Result()
 	}
