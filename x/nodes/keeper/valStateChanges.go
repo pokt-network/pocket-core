@@ -109,17 +109,29 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 }
 
 // ValidateValidatorStaking - Check Validator before staking
-func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt) sdk.Error {
-	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
-	if int64(len(validator.Chains)) > k.MaxChains(ctx) {
-		return types.ErrTooManyChains(types.ModuleName)
+func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt, signerAddress sdk.Address) sdk.Error {
+
+	//check the "new" validator's signature validity
+	err, valid := ValidateValidatorMsgSignature(validator, signerAddress, k)
+	if !valid {
+		return err
 	}
+
+	//check that we don't allow nil output if we are after noncustodial upgrade
+	//so we won't accept stakes/edits with nil outputAddress
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 		if validator.OutputAddress == nil {
 			return types.ErrNilOutputAddr(k.codespace)
 		}
 	}
-	// check to see if teh public key has already been register for that validator
+
+	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
+
+	if int64(len(validator.Chains)) > k.MaxChains(ctx) {
+		return types.ErrTooManyChains(types.ModuleName)
+	}
+
+	// check to see if the public key has already been register for that validator
 	val, found := k.GetValidator(ctx, validator.Address)
 	if found {
 		// edit stake in 6.X upgrade
@@ -152,6 +164,21 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 		return types.ErrNotEnoughCoins(k.codespace)
 	}
 	return nil
+}
+
+//ValidateValidatorMsgSignature Check Validator Signature
+func ValidateValidatorMsgSignature(validator types.Validator, signerAddress sdk.Address, k Keeper) (sdk.Error, bool) {
+	//check if outputAddress is defined, if not only the operator/node signature is valid
+	if validator.OutputAddress == nil {
+		if !signerAddress.Equals(validator.Address) {
+			return types.ErrUnauthorizedSigner(k.Codespace()), false
+		}
+	} else {
+		if !signerAddress.Equals(validator.Address) && !signerAddress.Equals(validator.OutputAddress) {
+			return types.ErrUnauthorizedSigner(k.Codespace()), false
+		}
+	}
+	return nil, true
 }
 
 // ValidateEditStake - Validate the updates to a current staked validator
@@ -546,14 +573,10 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 	if !found {
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())
 	}
-	if validator.OutputAddress == nil {
-		if !msg.Signer.Equals(validator.Address) {
-			return nil, types.ErrUnauthorizedSigner(k.Codespace())
-		}
-	} else {
-		if !msg.Signer.Equals(validator.Address) && !msg.Signer.Equals(validator.OutputAddress) {
-			return nil, types.ErrUnauthorizedSigner(k.Codespace())
-		}
+	//Check msg Signature
+	err, valid := ValidateValidatorMsgSignature(validator, msg.Signer, k)
+	if !valid {
+		return nil, err
 	}
 
 	// cannot be unjailed if no self-delegation exists
