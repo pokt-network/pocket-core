@@ -464,7 +464,7 @@ func TestEditStakeNode(t *testing.T) {
 			<-evtChan // Wait for tx
 			if isAfter8 {
 				// try to modify output address
-				tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, list[3].GetAddress(), "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, signer)
+				tx, err = nodes.StakeTx(memCodec(), memCli, kb, newChains, newServiceURL, newBalance, kp, list[3].GetAddress(), "test", tc.upgrades.codecUpgrade.upgradeMod, isAfter8, kp.GetAddress())
 				assert.Nil(t, err)
 				assert.NotNil(t, tx)
 				<-evtChan // Wait for tx
