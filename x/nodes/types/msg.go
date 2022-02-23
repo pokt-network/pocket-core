@@ -25,7 +25,7 @@ const (
 //----------------------------------------------------------------------------------------------------------------------
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgBeginUnstake) GetSigners() []sdk.Address {
-	return []sdk.Address{msg.Signer}
+	return []sdk.Address{msg.Signer, msg.Address}
 }
 
 func (msg MsgBeginUnstake) GetRecipient() sdk.Address {
@@ -64,7 +64,7 @@ func (msg MsgBeginUnstake) GetFee() sdk.BigInt {
 
 // GetSigners return address(es) that must sign over msg.GetSignBytes()
 func (msg MsgUnjail) GetSigners() []sdk.Address {
-	return []sdk.Address{msg.Signer}
+	return []sdk.Address{msg.Signer, msg.ValidatorAddr}
 }
 
 func (msg MsgUnjail) GetRecipient() sdk.Address {

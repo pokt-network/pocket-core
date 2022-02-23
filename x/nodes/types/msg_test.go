@@ -76,7 +76,7 @@ func TestMsgBeginUnstake_GetSigners(t *testing.T) {
 		fields fields
 		want   []sdk.Address
 	}{
-		{"Test GetSigners", fields{va, va2}, []sdk.Address{mesg.Signer}},
+		{"Test GetSigners", fields{va, va2}, []sdk.Address{mesg.Signer, mesg.Address}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -732,7 +732,7 @@ func TestMsgUnjail_GetSigners(t *testing.T) {
 		fields fields
 		want   []sdk.Address
 	}{
-		{"Test GetSigners", fields{va, va2}, []sdk.Address{sdk.Address(va2)}},
+		{"Test GetSigners", fields{va, va2}, []sdk.Address{va2, va}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -352,7 +352,7 @@ func subscribeTo(t *testing.T, eventType string) (cli client.Client, stopClient 
 		memCLI = nil
 		cancel()
 	}
-	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(eventType).String())
+	eventChan, err := cli.Subscribe(ctx, "helpers", types.QueryForEvent(eventType).String(), 5)
 	if err != nil {
 		panic(err)
 	}
