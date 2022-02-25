@@ -85,9 +85,6 @@ func StakeNode(chains []string, serviceURL, operatorPubKey, output, passphrase, 
 	kp, err := kb.Get(outputAddress)
 	if err != nil {
 		operatorAddress = sdk.Address(operatorPublicKey.Address())
-		if err != nil {
-			return nil, errors.New("OutputAddress not found in keybase & Operator field doesn't seem to be an address: " + err.Error())
-		}
 		kp, err = kb.Get(operatorAddress)
 		if err != nil {
 			return nil, errors.New("Neither the Output Address nor the Operator Address is able to be retrieved from the keybase" + err.Error())
