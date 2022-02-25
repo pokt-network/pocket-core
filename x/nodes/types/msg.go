@@ -150,7 +150,7 @@ type MsgStake struct {
 	Chains     []string         `json:"chains" yaml:"chains"`
 	Value      sdk.BigInt       `json:"value" yaml:"value"`
 	ServiceUrl string           `json:"service_url" yaml:"service_url"`
-	Output     sdk.Address      `json:"output_address,omitempty" yaml:"output_address"`
+	Output     sdk.Address      `json:"output_address" yaml:"output_address"`
 }
 
 func (msg *MsgStake) Marshal() ([]byte, error) {

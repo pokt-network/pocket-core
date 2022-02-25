@@ -112,7 +112,8 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt, signerAddress sdk.Address) sdk.Error {
 
 	//check the "new" validator's signature validity
-	err, valid := ValidateValidatorMsgSignature(validator, signerAddress, k)
+	//will recheck if validator exists
+	err, valid := ValidateValidatorMsgSigner(validator, signerAddress, k)
 	if !valid {
 		return err
 	}
@@ -134,6 +135,11 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	// check to see if the public key has already been register for that validator
 	val, found := k.GetValidator(ctx, validator.Address)
 	if found {
+		//check again based on the found "state" validator
+		err, valid := ValidateValidatorMsgSigner(val, signerAddress, k)
+		if !valid {
+			return err
+		}
 		// edit stake in 6.X upgrade
 		if ctx.IsAfterUpgradeHeight() && val.IsStaked() {
 			return k.ValidateEditStake(ctx, val, validator, amount)
@@ -166,8 +172,8 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	return nil
 }
 
-//ValidateValidatorMsgSignature Check Validator Signature
-func ValidateValidatorMsgSignature(validator types.Validator, signerAddress sdk.Address, k Keeper) (sdk.Error, bool) {
+//ValidateValidatorMsgSigner Check Validator Signature
+func ValidateValidatorMsgSigner(validator types.Validator, signerAddress sdk.Address, k Keeper) (sdk.Error, bool) {
 	//check if outputAddress is defined, if not only the operator/node signature is valid
 	if validator.OutputAddress == nil {
 		if !signerAddress.Equals(validator.Address) {
@@ -200,6 +206,7 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator, newValidtor typ
 		// ensure output address doesn't change
 		if currentValidator.OutputAddress != nil {
 			if !newValidtor.OutputAddress.Equals(currentValidator.OutputAddress) {
+				fmt.Println(currentValidator.String())
 				return types.ErrUnequalOutputAddr(k.Codespace())
 			}
 		}
@@ -574,7 +581,7 @@ func (k Keeper) ValidateUnjailMessage(ctx sdk.Ctx, msg types.MsgUnjail) (addr sd
 		return nil, types.ErrNoValidatorForAddress(k.Codespace())
 	}
 	//Check msg Signature
-	err, valid := ValidateValidatorMsgSignature(validator, msg.Signer, k)
+	err, valid := ValidateValidatorMsgSigner(validator, msg.Signer, k)
 	if !valid {
 		return nil, err
 	}
