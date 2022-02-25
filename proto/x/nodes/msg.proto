@@ -20,7 +20,7 @@ message MsgProtoStake {
 	string ServiceUrl = 4 [(gogoproto.moretags) = "yaml:\"service_url\"", (gogoproto.jsontag) = "service_url"];
 	bytes OutputAddress = 5 [
                             		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
-                            		(gogoproto.jsontag) = "output_address,omitempty",
+                            		(gogoproto.jsontag) = "output_address",
                             		(gogoproto.moretags) = "yaml:\"output_address\""
                             	];
 }
