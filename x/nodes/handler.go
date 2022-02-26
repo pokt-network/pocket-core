@@ -58,11 +58,19 @@ func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper, signer crypto
 	fmt.Println(validator.String())
 	// check if they can stake
 	if err := k.ValidateValidatorStaking(ctx, validator, msg.Value, sdk.Address(signer.Address())); err != nil {
+		if sdk.ShowTimeTrackData {
+			result := err.Result()
+			fmt.Println(result.String())
+		}
 		return err.Result()
 	}
 	// change the validator state to staked
 	err := k.StakeValidator(ctx, validator, msg.Value, signer)
 	if err != nil {
+		if sdk.ShowTimeTrackData {
+			result := err.Result()
+			fmt.Println(result.String())
+		}
 		return err.Result()
 	}
 	// create the event

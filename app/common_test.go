@@ -106,6 +106,7 @@ func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermi
 			panic(err)
 		}
 		time.Sleep(2 * time.Second)
+		codec.TestMode = 0
 	}
 	return
 }
@@ -134,6 +135,8 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 	assert.Nil(t, err)
 	// provide cleanup function
 	cleanup = func() {
+		codec.TestMode = 0
+
 		err = tendermintNode.Stop()
 		if err != nil {
 			panic(err)
@@ -155,7 +158,7 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 		if err != nil {
 			panic(err)
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 	return
 }

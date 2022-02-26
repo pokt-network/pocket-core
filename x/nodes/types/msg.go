@@ -150,7 +150,7 @@ type MsgStake struct {
 	Chains     []string         `json:"chains" yaml:"chains"`
 	Value      sdk.BigInt       `json:"value" yaml:"value"`
 	ServiceUrl string           `json:"service_url" yaml:"service_url"`
-	Output     sdk.Address      `json:"output_address" yaml:"output_address"`
+	Output     sdk.Address      `json:"output_address,omitempty" yaml:"output_address"`
 }
 
 func (msg *MsgStake) Marshal() ([]byte, error) {
@@ -196,10 +196,7 @@ func (msg *MsgStake) Unmarshal(data []byte) error {
 
 // GetSigners return address(es) that could sign over msg.GetSignBytes()
 func (msg MsgStake) GetSigners() []sdk.Address {
-	signers := make([]sdk.Address, 2)
-	signers[0] = sdk.Address(msg.PublicKey.Address())
-	signers[1] = msg.Output
-	return signers
+	return []sdk.Address{sdk.Address(msg.PublicKey.Address()), msg.Output}
 }
 
 func (msg MsgStake) GetRecipient() sdk.Address {
