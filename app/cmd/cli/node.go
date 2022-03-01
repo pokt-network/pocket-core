@@ -139,10 +139,10 @@ var nodeUnjailCmd = &cobra.Command{
 	Short: "Unjails a node in the network",
 	Long: `Unjails a node from the network, allowing it to participate in service and consensus again.
 Will prompt the user for the <fromAddr> account passphrase.`,
-	Args: cobra.ExactArgs(4),
+	Args: cobra.ExactArgs(5),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		fee, err := strconv.Atoi(args[2])
+		fee, err := strconv.Atoi(args[3])
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -153,7 +153,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			return
 		}
 		fmt.Println("Enter Password: ")
-		res, err := UnjailNode(args[0], args[1], app.Credentials(pwd), args[1], int64(fee), isBefore8)
+		res, err := UnjailNode(args[0], args[1], app.Credentials(pwd), args[2], int64(fee), isBefore8)
 		if err != nil {
 			fmt.Println(err)
 			return
