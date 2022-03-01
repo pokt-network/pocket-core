@@ -147,7 +147,7 @@ Will prompt the user for the <fromAddr> account passphrase.`,
 			fmt.Println(err)
 			return
 		}
-		isBefore8, err := strconv.ParseBool(args[3])
+		isBefore8, err := strconv.ParseBool(args[4])
 		if err != nil {
 			fmt.Println(err)
 			return
