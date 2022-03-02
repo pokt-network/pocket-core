@@ -548,7 +548,7 @@ func createTestACL(kp keys.KeyPair) govTypes.ACL {
 	return testACL
 }
 
-func twoValTwoNodeGenesisState() (genbz []byte, vals []nodesTypes.Validator) {
+func twoValTwoNodeGenesisState8() (genbz []byte, vals []nodesTypes.Validator) {
 	kb := getInMemoryKeybase()
 	kp1, err := kb.GetCoinbase()
 	if err != nil {
@@ -604,6 +604,119 @@ func twoValTwoNodeGenesisState() (genbz []byte, vals []nodesTypes.Validator) {
 			StakedTokens:            sdk.NewInt(1000000000),
 			UnstakingCompletionTime: time.Time{},
 			OutputAddress:           kp4.GetAddress(),
+		})
+	posGenesisState.Params.UnstakingTime = time.Nanosecond
+	posGenesisState.Params.SessionBlockFrequency = 5
+	res := memCodec().MustMarshalJSON(posGenesisState)
+	defaultGenesis[nodesTypes.ModuleName] = res
+	// set coinbase as account holding coins
+	rawAccounts := defaultGenesis[auth.ModuleName]
+	var authGenState auth.GenesisState
+	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubKey.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
+	})
+	// add second account
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubKey2.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey,
+	})
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubKey3.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubKey3,
+	})
+	// add second account
+	authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+		Address: sdk.Address(pubkey4.Address()),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(1000000000))),
+		PubKey:  pubkey4,
+	})
+	res2 := memCodec().MustMarshalJSON(authGenState)
+	defaultGenesis[auth.ModuleName] = res2
+	// set default chain for module
+	rawPocket := defaultGenesis[pocketTypes.ModuleName]
+	var pocketGenesisState pocketTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
+	pocketGenesisState.Params.SupportedBlockchains = []string{dummyChainsHash}
+	res3 := memCodec().MustMarshalJSON(pocketGenesisState)
+	defaultGenesis[pocketTypes.ModuleName] = res3
+	// set default governance in genesis
+	var govGenesisState govTypes.GenesisState
+	rawGov := defaultGenesis[govTypes.ModuleName]
+	memCodec().MustUnmarshalJSON(rawGov, &govGenesisState)
+	nMACL := createTestACL(kp1)
+	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
+	govGenesisState.Params.ACL = nMACL
+	govGenesisState.Params.DAOOwner = kp1.GetAddress()
+	govGenesisState.DAOTokens = sdk.NewInt(1000)
+	res4 := memCodec().MustMarshalJSON(govGenesisState)
+	defaultGenesis[govTypes.ModuleName] = res4
+	// end genesis setup
+	GenState = defaultGenesis
+	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
+	return j, posGenesisState.Validators
+}
+
+func twoValTwoNodeGenesisState() (genbz []byte, vals []nodesTypes.Validator) {
+	kb := getInMemoryKeybase()
+	kp1, err := kb.GetCoinbase()
+	if err != nil {
+		panic(err)
+	}
+	kp2, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	kp3, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	kp4, err := kb.Create("test")
+	if err != nil {
+		panic(err)
+	}
+	pubKey := kp1.PublicKey
+	pubKey2 := kp2.PublicKey
+	pubKey3 := kp3.PublicKey
+	pubkey4 := kp4.PublicKey
+	defaultGenesis := module.NewBasicManager(
+		apps.AppModuleBasic{},
+		auth.AppModuleBasic{},
+		gov.AppModuleBasic{},
+		nodes.AppModuleBasic{},
+		pocket.AppModuleBasic{},
+	).DefaultGenesis()
+	// set coinbase as a validator
+	rawPOS := defaultGenesis[nodesTypes.ModuleName]
+	var posGenesisState nodesTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{
+			Address:                 sdk.Address(pubKey.Address()),
+			PublicKey:               pubKey,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{dummyChainsHash},
+			ServiceURL:              sdk.PlaceholderServiceURL,
+			StakedTokens:            sdk.NewInt(1000000000000000),
+			UnstakingCompletionTime: time.Time{},
+			OutputAddress:           nil,
+		})
+	posGenesisState.Validators = append(posGenesisState.Validators,
+		nodesTypes.Validator{
+			Address:                 sdk.Address(pubKey2.Address()),
+			PublicKey:               pubKey2,
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{dummyChainsHash},
+			ServiceURL:              sdk.PlaceholderServiceURL,
+			StakedTokens:            sdk.NewInt(1000000000),
+			UnstakingCompletionTime: time.Time{},
+			OutputAddress:           nil,
 		})
 	posGenesisState.Params.UnstakingTime = time.Nanosecond
 	posGenesisState.Params.SessionBlockFrequency = 5
