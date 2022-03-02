@@ -303,8 +303,9 @@ func TestStakeNode(t *testing.T) {
 			signer := kp.GetAddress()
 			if tc.outputIsSigner {
 				for _, val := range vals {
-					if val.Address.String() == signer.String() {
-						signer = val.OutputAddress
+					if val.Address.String() != signer.String() {
+						signer = val.Address
+						break
 					}
 				}
 			}
@@ -493,7 +494,7 @@ func TestUnstakeNode8(t *testing.T) {
 				isAfter8 = true
 			}
 			var chains = []string{"0001"}
-			gen, vals := twoValTwoNodeGenesisState()
+			gen, vals := twoValTwoNodeGenesisState8()
 			_, kb, cleanup := tc.memoryNodeFn(t, gen)
 			time.Sleep(1 * time.Second)
 			kp, err := kb.GetCoinbase()
@@ -595,7 +596,7 @@ func TestStakeNodeAfter8(t *testing.T) {
 				codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = tc.eight0Upgrade.height
 				isAfter8 = true
 			}
-			gen, vals := twoValTwoNodeGenesisState()
+			gen, vals := twoValTwoNodeGenesisState8()
 			_, kb, cleanup := tc.memoryNodeFn(t, gen)
 			time.Sleep(1 * time.Second)
 			kp, err := kb.GetCoinbase()
@@ -654,7 +655,7 @@ func TestEditStakeNode8(t *testing.T) {
 			}
 			var newChains = []string{"2121"}
 			var newServiceURL = "https://newServiceUrl.com:8081"
-			gen, vals := twoValTwoNodeGenesisState()
+			gen, vals := twoValTwoNodeGenesisState8()
 			_, kb, cleanup := tc.memoryNodeFn(t, gen)
 			time.Sleep(1 * time.Second)
 			kp, err := kb.GetCoinbase()

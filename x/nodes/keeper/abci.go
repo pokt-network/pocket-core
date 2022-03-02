@@ -13,9 +13,9 @@ import (
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
-	if k.Cdc.IsOnNonCustodialUpgrade(ctx.BlockHeight()) { // TODO MUST BE ON UPGRADE HEIGHT
-		k.ConvertValidatorsState(ctx)
-	}
+	//if k.Cdc.IsOnNonCustodialUpgrade(ctx.BlockHeight()) { // TODO delete?0
+	//	k.ConvertValidatorsState(ctx)
+	//}
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx)

@@ -61,19 +61,25 @@ func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 	}
 }
 
+//TODO delete?0
 func (k Keeper) ConvertValidatorsState(ctx sdk.Ctx) {
 	validators := make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		v := &types.LegacyValidator{}
-		err := k.Cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &v, ctx.BlockHeight())
+		vl := &types.LegacyValidator{}
+		v := &types.Validator{}
+		err := k.Cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &vl, ctx.BlockHeight())
 		if err != nil {
 			ctx.Logger().Error("could not unmarshal validator in ConvertValidtorState(): " + err.Error())
+			err := k.Cdc.UnmarshalBinaryLengthPrefixed(iterator.Value(), &v, ctx.BlockHeight())
+			if err == nil {
+				ctx.Logger().Error("Already new validator in ConvertValidtorState(): " + err.Error())
+			}
 			continue
 		}
-		validators = append(validators, v.ToValidator())
+		validators = append(validators, vl.ToValidator())
 	}
 	for _, val := range validators {
 		k.SetValidator(ctx, val)

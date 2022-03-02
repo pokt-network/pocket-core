@@ -80,8 +80,6 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 			}
 		}
 		if !bytes.Equal(pk.Address(), signer) {
-			fmt.Println(pk.Address().String())
-			fmt.Println(signer.String())
 			continue
 		}
 		// get the sign bytes from the tx
