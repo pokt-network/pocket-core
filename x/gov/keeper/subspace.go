@@ -180,6 +180,7 @@ func handleUpgradeAfterUpdate(ctx sdk.Ctx, aclKey string, paramValue interface{}
 		}
 		codec.UpgradeHeight = newUpgrade.Height
 		codec.OldUpgradeHeight = newUpgrade.OldUpgradeHeight
+		codec.UpgradeFeatureMap = codec.SliceToExistingMap(newUpgrade.GetFeatures(), codec.UpgradeFeatureMap)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventUpgrade,
 			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
