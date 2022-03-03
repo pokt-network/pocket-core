@@ -248,7 +248,7 @@ func (cdc *Codec) IsAfterCodecUpgrade(height int64) bool {
 
 //Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterValidatorSplitUpgrade(height int64) bool {
-	return (height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()) || height >= ValidatorSplitHeight || TestMode <= -2
+	return height >= ValidatorSplitHeight || (height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()) || TestMode <= -2
 }
 
 //Note: includes the actual upgrade height
