@@ -90,7 +90,6 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 		k.DeletePrevStateValPower(ctx, validator.GetAddress())
 		// add to one of the updates for tendermint
 		ctx.Logger().Debug(fmt.Sprintf("Updating Validator-Set to Tendermint: %s is no longer staked, at height %d", validator.Address, ctx.BlockHeight()))
-		//TODO WIP check new upgrade flow // define a height instead of upgrade?
 		if k.Cdc.IsAfterValidatorSplitUpgrade(ctx.BlockHeight()) {
 			updates = append(updates, validator.ABCIValidatorZeroUpdate())
 		} else {

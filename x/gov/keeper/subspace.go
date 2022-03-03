@@ -144,6 +144,11 @@ func handleUpgradeAfterUpdate(ctx sdk.Ctx, aclKey string, paramValue interface{}
 
 	if newUpgrade.UpgradeHeight() != 1 && newUpgrade.UpgradeVersion() != FeatureUpgradeKey {
 		newUpgrade.OldUpgradeHeight = oldUpgrade.GetHeight()
+		if oldUpgrade.GetFeatures() == nil {
+			oldUpgrade.Features = make([]string, 0)
+		}
+		featureSet := append(oldUpgrade.Features, newUpgrade.Features...)
+		newUpgrade.Features = codec.CleanUpgradeFeatureSlice(featureSet)
 	} else {
 		//copy old one to new as we just want to update the features
 		newUpgrade.OldUpgradeHeight = oldUpgrade.OldUpgradeHeight
