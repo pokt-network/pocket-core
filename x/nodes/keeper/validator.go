@@ -9,20 +9,6 @@ import (
 )
 
 func (k Keeper) MarshalValidator(ctx sdk.Ctx, validator types.Validator) ([]byte, error) {
-	//TODO delete?0
-	//if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
-	//	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&validator, ctx.BlockHeight())
-	//	if err != nil {
-	//		ctx.Logger().Error("could not marshal validator: " + err.Error())
-	//	}
-	//	return bz, err
-	//}
-	//v := validator.ToLegacy()
-	//bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&v, ctx.BlockHeight())
-	//if err != nil {
-	//	ctx.Logger().Error("could not marshal validator: " + err.Error())
-	//}
-	//return bz, err
 	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&validator, ctx.BlockHeight())
 	if err != nil {
 		ctx.Logger().Error("could not marshal validator: " + err.Error())
@@ -31,20 +17,6 @@ func (k Keeper) MarshalValidator(ctx sdk.Ctx, validator types.Validator) ([]byte
 }
 
 func (k Keeper) UnmarshalValidator(ctx sdk.Ctx, valBytes []byte) (val types.Validator, err error) {
-	//TODO delete?0
-	//if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
-	//	err = k.Cdc.UnmarshalBinaryLengthPrefixed(valBytes, &val, ctx.BlockHeight())
-	//	if err != nil {
-	//		ctx.Logger().Error("could not unmarshal validator: " + err.Error())
-	//	}
-	//	return val, err
-	//}
-	//v := types.LegacyValidator{}
-	//err = k.Cdc.UnmarshalBinaryLengthPrefixed(valBytes, &v, ctx.BlockHeight())
-	//if err != nil {
-	//	ctx.Logger().Error("could not unmarshal legcy validator: " + err.Error())
-	//}
-	//return v.ToValidator(), err
 	err = k.Cdc.UnmarshalBinaryLengthPrefixed(valBytes, &val, ctx.BlockHeight())
 	if err != nil {
 		ctx.Logger().Error("could not unmarshal validator: " + err.Error())

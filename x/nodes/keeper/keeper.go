@@ -61,7 +61,6 @@ func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 	}
 }
 
-//TODO delete?0
 func (k Keeper) ConvertValidatorsState(ctx sdk.Ctx) {
 	validators := make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
