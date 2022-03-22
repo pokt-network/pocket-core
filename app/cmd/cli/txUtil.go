@@ -58,6 +58,60 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Bi
 	}, nil
 }
 
+// LegacyStakeNode - Deliver Stake message to node
+func LegacyStakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
+	fa, err := sdk.AddressFromHex(fromAddr)
+	if err != nil {
+		return nil, err
+	}
+	kb, err := app.GetKeybase()
+	if err != nil {
+		return nil, err
+	}
+	kp, err := kb.Get(fa)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]struct{})
+	for _, chain := range chains {
+		if _, found := m[chain]; found {
+			return nil, sdk.ErrInternal("cannot stake duplicate relayChainIDs: " + chain)
+		}
+		if len(chain) != pocketTypes.NetworkIdentifierLength {
+			return nil, sdk.ErrInternal("invalid relayChainID " + chain)
+		}
+		err := pocketTypes.NetworkIdentifierVerification(chain)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if amount.LTE(sdk.NewInt(0)) {
+		return nil, sdk.ErrInternal("must stake above zero")
+	}
+	err = nodeTypes.ValidateServiceURL(serviceURL)
+	if err != nil {
+		return nil, err
+	}
+	msg := nodeTypes.LegacyMsgStake{
+		PublicKey:  kp.PublicKey,
+		Chains:     chains,
+		Value:      amount,
+		ServiceUrl: serviceURL,
+	}
+	err = msg.ValidateBasic()
+	if err != nil {
+		return nil, err
+	}
+	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
+	if err != nil {
+		return nil, err
+	}
+	return &rpc.SendRawTxParams{
+		Addr:        fromAddr,
+		RawHexBytes: hex.EncodeToString(txBz),
+	}, nil
+}
+
 // StakeNode - Deliver Stake message to node
 func StakeNode(chains []string, serviceURL, operatorPubKey, output, passphrase, chainID string, amount sdk.BigInt, fees int64, isBefore8 bool) (*rpc.SendRawTxParams, error) {
 	var operatorPublicKey crypto.PublicKey
