@@ -16,6 +16,7 @@ import (
 func init() {
 	rootCmd.AddCommand(nodesCmd)
 	nodesCmd.AddCommand(nodeStakeCmd)
+	nodesCmd.AddCommand(nonCustodialNodeStakeCmd)
 	nodesCmd.AddCommand(nodeUnstakeCmd)
 	nodesCmd.AddCommand(nodeUnjailCmd)
 }
@@ -29,12 +30,71 @@ from staking and unstaking; to unjailing.`,
 
 func init() {
 	nodeStakeCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
+	nonCustodialNodeStakeCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
 	nodeUnstakeCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
 	nodeUnjailCmd.Flags().StringVar(&pwd, "pwd", "", "passphrase used by the cmd, non empty usage bypass interactive prompt")
 }
 
 var nodeStakeCmd = &cobra.Command{
-	Use:   "stake <operatorPublicKey> <amount> <RelayChainIDs> <serviceURI> <outputAddress> <networkID> <fee> <isBefore8.0>",
+	Use:   "stake <fromAddr> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee>",
+	Short: "Stake a node in the network",
+	Long: `Stake the node into the network, making it available for service.
+Will prompt the user for the <fromAddr> account passphrase. After the 0.6.X upgrade, if the node is already staked, this transaction acts as an *update* transaction.
+A node can updated relayChainIDs, serviceURI, and raise the stake amount with this transaction.
+If the node is currently staked at X and you submit an update with new stake Y. Only Y-X will be subtracted from an account
+If no changes are desired for the parameter, just enter the current param value just as before`,
+	Args: cobra.ExactArgs(6),
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("### Warning ###")
+		fmt.Println("Using Legacy Command , this will not work after RC 0.8.0 upgrade is activated.")
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		fromAddr := args[0]
+		amount, err := strconv.Atoi(args[1])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		am := types.NewInt(int64(amount))
+		if am.LTE(types.NewInt(15100000000)) {
+			fmt.Println("The amount you are staking for is below the recommendation of 15100 POKT, would you still like to continue? y|n")
+			if !app.Confirmation() {
+				return
+			}
+		}
+		reg, err := regexp.Compile("[^,a-fA-F0-9]+")
+		if err != nil {
+			log.Fatal(err)
+		}
+		rawChains := reg.ReplaceAllString(args[2], "")
+		chains := strings.Split(rawChains, ",")
+		serviceURI := args[3]
+		fee, err := strconv.Atoi(args[5])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println("Enter Passphrase: ")
+		res, err := LegacyStakeNode(chains, serviceURI, fromAddr, app.Credentials(pwd), args[4], types.NewInt(int64(amount)), int64(fee), false)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		j, err := json.Marshal(res)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		resp, err := QueryRPC(SendRawTxPath, j)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(resp)
+	},
+}
+
+var nonCustodialNodeStakeCmd = &cobra.Command{
+	Use:   "nstake <operatorPublicKey> <amount> <RelayChainIDs> <serviceURI> <outputAddress> <networkID> <fee> <isBefore8.0>",
 	Short: "Stake a node in the network, the signer may be the operator or the output address. The signer must specify the public key of the output or operator",
 	Long: `Stake the node into the network, making it available for service.
 Will prompt the user for the <signerAddress> account passphrase. After the 0.6.X upgrade, if the node is already staked, this transaction acts as an *update* transaction.
