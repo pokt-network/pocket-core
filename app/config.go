@@ -198,6 +198,7 @@ func UpdateConfig(datadir string) {
 	GlobalConfig.PocketConfig.ValidatorCacheSize = sdk.DefaultValidatorCacheSize
 	GlobalConfig.PocketConfig.ApplicationCacheSize = sdk.DefaultApplicationCacheSize
 	GlobalConfig.PocketConfig.CtxCacheSize = sdk.DefaultCtxCacheSize
+	GlobalConfig.PocketConfig.RPCTimeout = sdk.DefaultRPCTimeout
 
 	// Backup and Save the File
 	var jsonFile *os.File
