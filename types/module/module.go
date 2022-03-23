@@ -29,6 +29,7 @@ package module
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -267,6 +268,7 @@ func (m *Manager) ExportGenesis(ctx sdk.Ctx) map[string]json.RawMessage {
 // child context with an event manager to aggregate events emitted from all
 // modules.
 func (m *Manager) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
+	defer sdk.TimeTrack(time.Now())
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 	if ctx.IsOnUpgradeHeight() {
 		//for _, name := range m.OrderBeginBlockers {
@@ -289,6 +291,7 @@ func (m *Manager) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) abci.Respo
 // child context with an event manager to aggregate events emitted from all
 // modules.
 func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseEndBlock {
+	defer sdk.TimeTrack(time.Now())
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 	validatorUpdates := []abci.ValidatorUpdate{}
 

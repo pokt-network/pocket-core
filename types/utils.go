@@ -23,8 +23,8 @@ var (
 )
 
 func init() {
-	VbCCache = NewCache(3000)
-	ShowTimeTrackData = true
+	VbCCache = NewCache(1200)
+	ShowTimeTrackData = false
 }
 
 func GetCacheKey(height int, value string) (key string) {

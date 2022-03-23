@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	defaultIAVLCacheSize = 100000000
+	defaultIAVLCacheSize = 5000000
 )
 
 // LoadStore loads the iavl store
