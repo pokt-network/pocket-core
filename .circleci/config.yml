@@ -14,7 +14,7 @@ jobs:
         environment:
           GO111MODULE: "on"
     resource_class: medium+
-    working_directory: /go/src/github.com/pokt-network/pocket-core
+    working_directory: /home/circleci/go/src/github.com/pokt-network/pocket-core
     steps:
       # Checkout the code
       - checkout
@@ -28,7 +28,7 @@ jobs:
       - save_cache:
           key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            -  /go/src/github.com/pokt-network/pocket-core
+            -  /home/circleci/go/src/github.com/pokt-network/pocket-core
       # Run tests
       #- run: go test -p 1 ./...
   # Generic test job
@@ -38,7 +38,7 @@ jobs:
       - image: cimg/go:1.17
         environment:
           GO111MODULE: "on"
-    working_directory: /go/src/github.com/pokt-network/pocket-core
+    working_directory: /home/circleci/go/src/github.com/pokt-network/pocket-core
     resource_class: large
     steps:
       # Restore build cache
@@ -55,7 +55,7 @@ jobs:
       - image: cimg/go:1.17
         environment:
           GO111MODULE: "on"
-    working_directory: /go/src/github.com/pokt-network/pocket-core
+    working_directory: /home/circleci/go/src/github.com/pokt-network/pocket-core
     steps:
       # Restore build cache
       - restore_cache:
@@ -74,7 +74,7 @@ jobs:
       - image: cimg/go:1.17
         environment:
           GO111MODULE: "on"
-    working_directory: /go/src/github.com/pokt-network/pocket-core
+    working_directory: /home/circleci/go/src/github.com/pokt-network/pocket-core
     steps:
       # Restore build cache
       - restore_cache:
