@@ -62,14 +62,15 @@ Transaction submitted with hash: <Transaction Hash>
 ## Unstake a Node
 
 ```text
-pocket nodes unstake <fromAddr> <networkID> <fee> <isBefore8.0>
+pocket nodes unstake <operatorAddr> <fromAddr> <networkID> <fee> <isBefore8.0>
 ```
 
 Unstakes a Node from the `<networkID>` network, changing its status to `Unstaking`. Prompts the user for the `<fromAddr>` account passphrase.
 
 Arguments:
 
-* `<fromAddr>`: Target staked address.
+* `<operatorAddr>`: Target staked operator address.
+* `<fromAddr>`: Signer address.
 * `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
 * `<isBefore8.0>`:  true or false depending if non custodial upgrade is activated.
@@ -84,14 +85,14 @@ Transaction submitted with hash: <Transaction Hash>
 ## Unjail a Node
 
 ```text
-pocket nodes unjail <fromAddr> <networkID> <fee> <isBefore8.0>
+pocket nodes unjail <operatorAddr> <fromAddr> <networkID> <fee> <isBefore8.0>
 ```
 
 Unjails a Node from the `<networkID>` network, allowing it to participate in service and consensus again. Prompts the user for the `<fromAddr>` account passphrase.
 
 Arguments:
-
-* `<fromAddr>`: Target jailed address.
+* `<operatorAddr>`: Target jailed operator address.
+* `<fromAddr>`: Signer address.
 * `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
 * `<isBefore8.0>`:  true or false depending if non custodial upgrade is activated.
