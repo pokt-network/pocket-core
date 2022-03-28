@@ -10,7 +10,7 @@ Official golang implementation of the Pocket Network Protocol.
 <div>
   <a href="https://godoc.org/github.com/pokt-network/pocket-core"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"/></a>
   <a href="https://goreportcard.com/report/github.com/pokt-network/pocket-core"><img src="https://goreportcard.com/badge/github.com/pokt-network/pocket-core"/></a>
-  <a href="https://golang.org"><img  src="https://img.shields.io/badge/golang-v1.16-red.svg"/></a>
+  <a href="https://golang.org"><img  src="https://img.shields.io/badge/golang-v1.17-red.svg"/></a>
   <a href="https://github.com/tools/godep" ><img src="https://img.shields.io/badge/godep-dependency-71a3d9.svg"/></a>
 </div>
 
