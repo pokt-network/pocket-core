@@ -482,8 +482,8 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/pokt-network/tendermint v0.32.11-0.20220328150456-352291d15068 h1:Abno64sV5X5GGG8fxaGe6ecsIttNGOI44XfnLd7LSkk=
-github.com/pokt-network/tendermint v0.32.11-0.20220328150456-352291d15068/go.mod h1:qjLZkCaExiSSY6VRzwZ4z+H7TnmIPjq7EFqcf97AyfA=
+github.com/pokt-network/tendermint v0.32.11-0.20220330172101-d29c97194a7f h1:DJeK+takEPoDJOHGT9bDhSs3pVXAgq4fc8nK+KPGYes=
+github.com/pokt-network/tendermint v0.32.11-0.20220330172101-d29c97194a7f/go.mod h1:jpUvUU2sHmJ6LT0Dz6DYwq2yceCD566zjspJxAtydDg=
 github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba h1:u2yqCF5l3Kaz8fra6A023nx9Bsfj+KCm2t5xEO4weOo=
 github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba/go.mod h1:7TGWH92hEbEFVzNJxGi8Ka0O+OohcLLjZCxco/xMrWY=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
