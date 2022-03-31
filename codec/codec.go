@@ -40,6 +40,7 @@ const (
 	UpgradeCodecUpdateKey   = "CODEC"
 	ValidatorSplitUpdateKey = "SPLIT"
 	NonCustodialUpdateKey   = "NCUST"
+	TxCacheEnhancementKey   = "REDUP"
 )
 
 func GetCodecUpgradeHeight() int64 {
@@ -259,6 +260,16 @@ func (cdc *Codec) IsAfterNonCustodialUpgrade(height int64) bool {
 //Note: includes the actual upgrade height
 func (cdc *Codec) IsOnNonCustodialUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
+}
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsAfterNamedFeatureActivationHeight(height int64, key string) bool {
+	return UpgradeFeatureMap[key] != 0 && height >= UpgradeFeatureMap[key]
+}
+
+//Note: includes the actual upgrade height
+func (cdc *Codec) IsOnNamedFeatureActivationHeight(height int64, key string) bool {
+	return UpgradeFeatureMap[key] != 0 && height == UpgradeFeatureMap[key]
 }
 
 // Upgrade Utils for feature map

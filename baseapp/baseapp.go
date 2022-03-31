@@ -127,15 +127,16 @@ var _ abci.Application = (*BaseApp)(nil)
 // NOTE: The db is used to store the version number for now.
 func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, txDecoder sdk.TxDecoder, cdc *codec.Codec, options ...func(*BaseApp)) *BaseApp {
 	app := &BaseApp{
-		logger:         logger,
-		name:           name,
-		db:             db,
-		cdc:            cdc,
-		cms:            store.NewCommitMultiStore(db, cache),
-		router:         NewRouter(),
-		queryRouter:    NewQueryRouter(),
-		txDecoder:      txDecoder,
-		fauxMerkleMode: false,
+		logger:           logger,
+		name:             name,
+		db:               db,
+		cdc:              cdc,
+		cms:              store.NewCommitMultiStore(db, cache),
+		router:           NewRouter(),
+		queryRouter:      NewQueryRouter(),
+		transactionCache: make(map[string]struct{}),
+		txDecoder:        txDecoder,
+		fauxMerkleMode:   false,
 	}
 	for _, option := range options {
 		option(app)
@@ -794,7 +795,7 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	if err != nil {
 		result = err.Result()
 	} else {
-		if duplicateTransaction && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), "some_key_here") {
+		if duplicateTransaction && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), codec.TxCacheEnhancementKey) {
 			result = sdk.Result{
 				Code: codeDuplicateTransaction,
 			}
