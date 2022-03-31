@@ -9,7 +9,8 @@ import (
 )
 
 func (k Keeper) MarshalValidator(ctx sdk.Ctx, validator types.Validator) ([]byte, error) {
-	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&validator, ctx.BlockHeight())
+	v := validator.ToLegacy()
+	bz, err := k.Cdc.MarshalBinaryLengthPrefixed(&v, ctx.BlockHeight())
 	if err != nil {
 		ctx.Logger().Error("could not marshal validator: " + err.Error())
 	}
@@ -17,11 +18,12 @@ func (k Keeper) MarshalValidator(ctx sdk.Ctx, validator types.Validator) ([]byte
 }
 
 func (k Keeper) UnmarshalValidator(ctx sdk.Ctx, valBytes []byte) (val types.Validator, err error) {
-	err = k.Cdc.UnmarshalBinaryLengthPrefixed(valBytes, &val, ctx.BlockHeight())
+	v := types.LegacyValidator{}
+	err = k.Cdc.UnmarshalBinaryLengthPrefixed(valBytes, &v, ctx.BlockHeight())
 	if err != nil {
 		ctx.Logger().Error("could not unmarshal validator: " + err.Error())
 	}
-	return val, err
+	return v.ToValidator(), err
 }
 
 // GetValidator - Retrieve validator with address from the main store
