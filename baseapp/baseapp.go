@@ -8,6 +8,7 @@
 package baseapp
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
@@ -59,23 +60,26 @@ const (
 
 	// MainStoreKey is the string representation of the main store
 	MainStoreKey = "main"
+
+	codeDuplicateTransaction = 6
 )
 
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct {
 	// initialized on creation
-	logger       log.Logger
-	name         string               // application name from abci.Info
-	db           dbm.DB               // common DB backend
-	tmNode       *node.Node           // <---- todo updated here
-	txIndexer    txindex.TxIndexer    // <---- todo updated here
-	blockstore   *tmStore.BlockStore  // <---- todo updated here
-	evidencePool *evidence.Pool       // <---- todo updated here
-	cms          sdk.CommitMultiStore // Main (uncached) state
-	cdc          *codec.Codec
-	router       sdk.Router      // handle any kind of message
-	queryRouter  sdk.QueryRouter // router for redirecting query calls
-	txDecoder    sdk.TxDecoder   // unmarshal []byte into sdk.Tx
+	logger           log.Logger
+	name             string               // application name from abci.Info
+	db               dbm.DB               // common DB backend
+	tmNode           *node.Node           // <---- todo updated here
+	txIndexer        txindex.TxIndexer    // <---- todo updated here
+	blockstore       *tmStore.BlockStore  // <---- todo updated here
+	evidencePool     *evidence.Pool       // <---- todo updated here
+	cms              sdk.CommitMultiStore // Main (uncached) state
+	cdc              *codec.Codec
+	router           sdk.Router      // handle any kind of message
+	queryRouter      sdk.QueryRouter // router for redirecting query calls
+	txDecoder        sdk.TxDecoder   // unmarshal []byte into sdk.Tx
+	transactionCache map[string]struct{}
 
 	// set upon RollbackVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
@@ -746,6 +750,16 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 // NOTE:CheckTx does not run the actual ProtoMsg handler function(s).
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
 	var result sdk.Result
+	//if _, ok := app.transactionCache[TxCacheKey(req.Tx, runTxModeCheck)]; ok && && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), "some_key_here") {
+	//	return abci.ResponseCheckTx{
+	//		Code:      uint32(codeDuplicateTransaction),
+	//		Data:      result.Data,
+	//		Log:       result.Log,
+	//		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
+	//		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
+	//		Events:    result.Events.ToABCIEvents(),
+	//	}
+	//}
 
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
@@ -771,11 +785,22 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 	var signer sdk.Address
 	var recipient sdk.Address
 	var messageType string
+	var duplicateTransaction bool
+
+	if _, ok := app.transactionCache[TxCacheKey(req.Tx, runTxModeDeliver)]; ok {
+		duplicateTransaction = true
+	}
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
 	} else {
-		result, signerPK = app.runTx(runTxModeDeliver, req.Tx, tx)
+		if duplicateTransaction && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), "some_key_here") {
+			result = sdk.Result{
+				Code: codeDuplicateTransaction,
+			}
+		} else {
+			result, signerPK = app.runTx(runTxModeDeliver, req.Tx, tx)
+		}
 		msg := tx.GetMsg()
 		messageType = msg.Type()
 		recipient = msg.GetRecipient()
@@ -1062,7 +1087,7 @@ func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBloc
 	if app.endBlocker != nil {
 		res = app.endBlocker(app.deliverState.ctx, req)
 	}
-
+	app.transactionCache = make(map[string]struct{})
 	return
 }
 
@@ -1161,4 +1186,8 @@ func SetABCILogging(value bool) {
 
 func GetABCILogging() bool {
 	return ABCILogging
+}
+
+func TxCacheKey(txBytes []byte, mode runTxMode) string {
+	return hex.EncodeToString(txBytes) + "/" + string(mode)
 }
