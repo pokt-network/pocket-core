@@ -790,13 +790,14 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 
 	if _, ok := app.transactionCache[TxCacheKey(req.Tx, runTxModeDeliver)]; ok {
 		duplicateTransaction = true
+	} else {
+		app.transactionCache[TxCacheKey(req.Tx, runTxModeDeliver)] = struct{}{}
 	}
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
 		result = err.Result()
 	} else {
 		if duplicateTransaction && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), codec.TxCacheEnhancementKey) {
-			//TODO Can remove when confirmed working
 			app.logger.Error("Duplicate Tx Found")
 			result = sdk.Result{
 				Code: codeDuplicateTransaction,
