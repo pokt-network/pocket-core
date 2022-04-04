@@ -62,6 +62,7 @@ const (
 	MainStoreKey = "main"
 
 	codeDuplicateTransaction = 6
+	authCodespace            = "auth"
 )
 
 // BaseApp reflects the ABCI application implementation.
@@ -800,7 +801,8 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		if duplicateTransaction && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), codec.TxCacheEnhancementKey) {
 			app.logger.Error("Duplicate Tx Found")
 			result = sdk.Result{
-				Code: codeDuplicateTransaction,
+				Code:      codeDuplicateTransaction,
+				Codespace: authCodespace,
 			}
 		} else {
 			result, signerPK = app.runTx(runTxModeDeliver, req.Tx, tx)
