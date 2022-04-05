@@ -126,13 +126,13 @@ var _ abci.Application = (*BaseApp)(nil)
 // configuration choices.
 //
 // NOTE: The db is used to store the version number for now.
-func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, txDecoder sdk.TxDecoder, cdc *codec.Codec, options ...func(*BaseApp)) *BaseApp {
+func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, txDecoder sdk.TxDecoder, cdc *codec.Codec, options ...func(*BaseApp)) *BaseApp {
 	app := &BaseApp{
 		logger:           logger,
 		name:             name,
 		db:               db,
 		cdc:              cdc,
-		cms:              store.NewCommitMultiStore(db, cache),
+		cms:              store.NewCommitMultiStore(db, cache, iavlCacheSize),
 		router:           NewRouter(),
 		queryRouter:      NewQueryRouter(),
 		transactionCache: make(map[string]struct{}),

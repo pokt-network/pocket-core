@@ -7,8 +7,8 @@ import (
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
-func NewCommitMultiStore(db dbm.DB, cache bool) types.CommitMultiStore {
-	return rootmulti.NewStore(db, cache)
+func NewCommitMultiStore(db dbm.DB, cache bool, iavlCacheSize int64) types.CommitMultiStore {
+	return rootmulti.NewStore(db, cache, iavlCacheSize)
 }
 
 func NewPruningOptionsFromString(strategy string) (opt PruningOptions) {

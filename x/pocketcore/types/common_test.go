@@ -33,7 +33,7 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	tkeyParams := sdk.ParamsTKey
 
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db, false)
+	ms := store.NewCommitMultiStore(db, false, 5000000)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
