@@ -54,7 +54,7 @@ func getRandomValidatorAddress() sdk.Address {
 func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keeper) {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db, false)
+	ms := store.NewCommitMultiStore(db, false, 5000000)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(sdk.ParamsKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(sdk.ParamsTKey, sdk.StoreTypeTransient, db)

@@ -199,6 +199,7 @@ func UpdateConfig(datadir string) {
 	GlobalConfig.PocketConfig.ApplicationCacheSize = sdk.DefaultApplicationCacheSize
 	GlobalConfig.PocketConfig.CtxCacheSize = sdk.DefaultCtxCacheSize
 	GlobalConfig.PocketConfig.RPCTimeout = sdk.DefaultRPCTimeout
+	GlobalConfig.PocketConfig.IavlCacheSize = sdk.DefaultIavlCacheSize
 
 	// Backup and Save the File
 	var jsonFile *os.File
@@ -319,7 +320,7 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 		keys = MustGetKeybase()
 	}
 	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize, baseapp.SetPruning(store.PruneNothing))
 	}
 	tmNode, app, err := NewClient(config(c), appCreatorFunc)
 	if err != nil {
