@@ -447,17 +447,22 @@ func SecondUpgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 }
 
 func Chains(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	res, err := app.PCA.QueryHostedChains()
-	if err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
+	value := r.URL.Query().Get("authtoken")
+	if value == app.AuthToken.Value {
+		res, err := app.PCA.QueryHostedChains()
+		if err != nil {
+			WriteErrorResponse(w, 400, err.Error())
+			return
+		}
+		j, err := app.Codec().MarshalJSON(res)
+		if err != nil {
+			WriteErrorResponse(w, 400, err.Error())
+			return
+		}
+		WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+	} else {
+		WriteErrorResponse(w, 401, "wrong authtoken "+value)
 	}
-	j, err := app.Codec().MarshalJSON(res)
-	if err != nil {
-		WriteErrorResponse(w, 400, err.Error())
-		return
-	}
-	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
 func NodeParams(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

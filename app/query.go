@@ -192,12 +192,12 @@ func (app PocketCoreApp) QueryNodeParams(height int64) (res nodesTypes.Params, e
 	return app.nodesKeeper.GetParams(ctx), nil
 }
 
-func (app PocketCoreApp) QueryHostedChains() (res *pocketTypes.HostedBlockchains, err error) {
-	return app.pocketKeeper.GetHostedBlockchains(), nil
+func (app PocketCoreApp) QueryHostedChains() (res map[string]pocketTypes.HostedBlockchain, err error) {
+	return app.pocketKeeper.GetHostedBlockchains().M, nil
 }
 
-func (app PocketCoreApp) SetHostedChains(req map[string]pocketTypes.HostedBlockchain) (res *pocketTypes.HostedBlockchains, err error) {
-	return app.pocketKeeper.SetHostedBlockchains(req), nil
+func (app PocketCoreApp) SetHostedChains(req map[string]pocketTypes.HostedBlockchain) (res map[string]pocketTypes.HostedBlockchain, err error) {
+	return app.pocketKeeper.SetHostedBlockchains(req).M, nil
 }
 
 func (app PocketCoreApp) QuerySigningInfo(height int64, addr string) (res nodesTypes.ValidatorSigningInfo, err error) {

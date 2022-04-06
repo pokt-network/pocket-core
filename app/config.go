@@ -82,8 +82,10 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitKeyfiles()
 	// get hosted blockchains
 	chains := NewHostedChains(false)
-	// hot reload chains
-	HotReloadChains(chains)
+	if GlobalConfig.PocketConfig.ChainsHotReload {
+		// hot reload chains
+		HotReloadChains(chains)
+	}
 	// create logger
 	logger := InitLogger()
 	// init cache
