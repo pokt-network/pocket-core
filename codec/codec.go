@@ -41,7 +41,7 @@ const (
 	ValidatorSplitUpdateKey = "SPLIT"
 	NonCustodialUpdateKey   = "NCUST"
 	TxCacheEnhancementKey   = "REDUP"
-	ReplayAttackKey         = "REATK"
+	ReplayBurnKey           = "REPBR"
 )
 
 func GetCodecUpgradeHeight() int64 {
