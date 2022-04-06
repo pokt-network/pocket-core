@@ -1,14 +1,14 @@
 # Changelog
 =======
 ## RC-0.8.0
-- Added Non-Custodial Validator Security Operation with Output Address
+- Added Non-Custodial Validator Security Operation with Output Address (Activated with upgrade)
 - Deprecated SessionDB (In Memory GolevelDB only)
-- Force Unstake now jails -> unstakes (refunds)
+- Force Unstake now jails -> unstakes (refunds) (Activated with upgrade)
 - Fixed RPC docs for query/apps
 - *RPC API Break* Added total_txs & page_total to block & account txs - deprecated total_count
-- Implemented Relay Replay Error
+- Implemented Relay Replay Error (Activated with upgrade)
 - Prompt 100 POKT over the minimum stake in CLI for UX
-- Chains.json is hot-reloaded every 5 seconds
+- Enable Chains.json to be hot-reloaded every 1 minute
 - Fixed 'evidence already committed' error
 
 ## RC-0.7.1

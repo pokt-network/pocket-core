@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth"
@@ -143,7 +144,7 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 	isValid, isReplayAttack := proof.MerkleProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, proof.GetLeaf(), levelCount)
 	// if is not valid for other reasons
 	if !isValid {
-		if isReplayAttack && k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
+		if isReplayAttack && k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.ReplayAttackKey) {
 			return servicerAddr, claim, pc.NewReplayAttackError(pc.ModuleName)
 		}
 		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
