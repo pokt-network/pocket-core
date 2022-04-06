@@ -92,6 +92,7 @@ func (sm *ServiceMetrics) AddRelayFor(networkID string) {
 	nnc, ok := sm.NonNativeChains[networkID]
 	if !ok {
 		sm.tmLogger.Error("unable to find corresponding networkID in service metrics: ", networkID)
+		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
 		return
 	}
 	// add relay to accumulated count
@@ -109,6 +110,7 @@ func (sm *ServiceMetrics) AddChallengeFor(networkID string) {
 	nnc, ok := sm.NonNativeChains[networkID]
 	if !ok {
 		sm.tmLogger.Error("unable to find corresponding networkID in service metrics: ", networkID)
+		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
 		return
 	}
 	// add to accumulated count
@@ -126,6 +128,7 @@ func (sm *ServiceMetrics) AddErrorFor(networkID string) {
 	nnc, ok := sm.NonNativeChains[networkID]
 	if !ok {
 		sm.tmLogger.Error("unable to find corresponding networkID in service metrics: ", networkID)
+		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
 		return
 	}
 	// add to accumulated count
@@ -143,6 +146,7 @@ func (sm *ServiceMetrics) AddRelayTimingFor(networkID string, relayTime float64)
 	nnc, ok := sm.NonNativeChains[networkID]
 	if !ok {
 		sm.tmLogger.Error("unable to find corresponding networkID in service metrics: ", networkID)
+		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
 		return
 	}
 	// add to accumulated hist
@@ -160,6 +164,8 @@ func (sm *ServiceMetrics) AddSessionFor(networkID string) {
 	nnc, ok := sm.NonNativeChains[networkID]
 	if !ok {
 		sm.tmLogger.Error("unable to find corresponding networkID in service metrics: ", networkID)
+		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
+
 		return
 	}
 	// add to accumulated count
@@ -177,6 +183,7 @@ func (sm *ServiceMetrics) AddUPOKTEarnedFor(networkID string, upoktEarned float6
 	nnc, ok := sm.NonNativeChains[networkID]
 	if !ok {
 		sm.tmLogger.Error("unable to find corresponding networkID in service metrics: ", networkID)
+		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
 		return
 	}
 	// add to accumulated count

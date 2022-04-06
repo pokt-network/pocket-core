@@ -46,7 +46,7 @@ If no changes are desired for the parameter, just enter the current param value 
 	Args: cobra.ExactArgs(6),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("### Warning ###")
-		fmt.Println("Using Legacy Command , this will not work after RC 0.8.0 upgrade is activated.")
+		fmt.Println("Using Legacy Command, this will not work after RC 0.8.0 upgrade is activated.")
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		fromAddr := args[0]
 		amount, err := strconv.Atoi(args[1])
