@@ -9,7 +9,6 @@ func (k Keeper) GetHostedBlockchains() *pc.HostedBlockchains {
 	return k.hostedBlockchains
 }
 
-// "GetHostedBlockchains" returns the non native chains hosted locally on this node
 func (k Keeper) SetHostedBlockchains(m map[string]pc.HostedBlockchain) *pc.HostedBlockchains {
 	k.hostedBlockchains.L.Lock()
 	k.hostedBlockchains.M = m

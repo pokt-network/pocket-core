@@ -43,6 +43,7 @@ type PocketConfig struct {
 	DisableTxEvents          bool   `json:"disable_tx_events"`
 	Cache                    bool   `json:"-"`
 	IavlCacheSize            int64  `json:"iavl_cache_size"`
+	ChainsHotReload          bool   `json:"chains_hot_reload"`
 }
 
 type Config struct {
@@ -95,6 +96,7 @@ const (
 	DefaultRelayErrors                 = true
 	AuthFileName                       = "auth.json"
 	DefaultIavlCacheSize               = 5000000
+	DefaultChainHotReload              = false
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -126,6 +128,7 @@ func DefaultConfig(dataDir string) Config {
 			RelayErrors:              DefaultRelayErrors,
 			DisableTxEvents:          DefaultRPCDisableTransactionEvents,
 			IavlCacheSize:            DefaultIavlCacheSize,
+			ChainsHotReload:          DefaultChainHotReload,
 		},
 	}
 	c.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()
