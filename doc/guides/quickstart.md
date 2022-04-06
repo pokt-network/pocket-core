@@ -35,7 +35,7 @@ git checkout tags/<release tag>
 Example:
 
 ```text
-git checkout tags/RC-0.6.3
+git checkout tags/RC-0.8.0
 ```
 
 #### Build
@@ -61,7 +61,7 @@ pocket version
 
 {% tab title="Response" %}
 ```
-> RC 0.6.3
+> RC 0.8.0
 ```
 {% endtab %}
 {% endtabs %}
@@ -83,7 +83,7 @@ pocket version
 
 {% tab title="Response" %}
 ```
-> RC-0.6.3
+> RC-0.8.0
 ```
 {% endtab %}
 {% endtabs %}

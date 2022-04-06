@@ -1285,8 +1285,93 @@ paths:
                   message:
                     type: string
                     description: The error msg.
+  /private/chains:
+    post:
+      tags:
+        - private
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      responses:
+        '200':
+          description: Return the Current Hosted Chains map
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+        '401':
+          description: Wrong Authtoken
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
+  /private/updatechains:
+    post:
+      tags:
+        - private
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Chain'
+        required: true
+      responses:
+        '200':
+          description: Return the Current Hosted Chains map
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Wrong Authtoken
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
 components:
   schemas:
+    Chain:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        basic_auth:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
     ABCIEvent:
       type: object
       properties:
