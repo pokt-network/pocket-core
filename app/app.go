@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	AppVersion = "BETA-0.8.0"
+	AppVersion = "BETA-0.8.1"
 )
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
