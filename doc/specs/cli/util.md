@@ -10,7 +10,8 @@ description: Useful operations.
 pocket util generate-chains
 ```
 
-Generate the chains.json file for RelayChain Network Identifiers. Find the RelayChain Network Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
+Generate the chains.json file for RelayChain Network Identifiers. Find the RelayChain Network
+Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
 
 Example output:
 
@@ -33,7 +34,8 @@ If incorrect: please remove the chains.json with the delete-chains command
 pocket util delete-chains
 ```
 
-Delete the chains.json file for RelayChain Network Identifiers.  Find the RelayChain Network Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
+Delete the chains.json file for RelayChain Network Identifiers. Find the RelayChain Network
+Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
 
 Example Output:
 

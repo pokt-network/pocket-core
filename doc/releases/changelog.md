@@ -1,6 +1,8 @@
 # Changelog
 =======
+
 ## RC-0.8.0
+
 - Added Non-Custodial Validator Security Operation with Output Address (Activated with upgrade)
 - Deprecated SessionDB (In Memory GolevelDB only)
 - Force Unstake now jails -> unstakes (refunds) (Activated with upgrade)
@@ -12,16 +14,20 @@
 - Fixed 'evidence already committed' error
 
 ## RC-0.7.1
+
 - Fix for sync from scratch issue @ height 28153
 
 ## RC-0.7.0
+
 - Enabled Validator/Servicer split on future upgrade height.
 - Modified upgrade behaviour to allow upcoming upgrades.
 
 ## RC-0.6.4.1
+
 - Fix for block Upgrade Height Testnet.
 
 ## RC-0.6.4
+
 - Upped V1 Timeout
 - Introduced Cache layer. Use --UseCache flag to run pocket with cache.
 - Introduced new rpc endpoint to check validator signingInfo (cli cmd available).
@@ -214,19 +220,19 @@
 ## RC-0.3.0
 
 * Added governance module from pocket-core
-  * Multisignature public keys / tx building to cli
-  * Governance level protocol upgrade signalling
-  * Access control list for params
-  * Ability to edit params TX
-  * Introduced DAO-Owner
-  * Ability to send and receive from DAO
+	* Multisignature public keys / tx building to cli
+	* Governance level protocol upgrade signalling
+	* Access control list for params
+	* Ability to edit params TX
+	* Introduced DAO-Owner
+	* Ability to send and receive from DAO
 * Added persistence to Sessions and Evidence through
-  * LRU cache sessions/evidence
-  * Sessions/evidence level-db
+	* LRU cache sessions/evidence
+	* Sessions/evidence level-db
 * Added Start without passphrase on pocket core
-  * sign msgs with private key or keybase
-  * removed password from keeper
-  * Updated pocket-core version
+	* sign msgs with private key or keybase
+	* removed password from keeper
+	* Updated pocket-core version
 * Removed default genesis and seeds
 * Prevent unstaking time reset if not equals 0 \(for vesting\)
 * Relay Response now has the entire proof when sent back to the client
@@ -235,9 +241,9 @@
 * Added export app command to cli
 * Changed Struct used to generate RequestHash to remove empty proof object
 * Changed public key field json marshalling
-  * update pocket-core version
-  * transitive change in Account JSON response for RPC
-  * Updated rpc-spec to reflect change
+	* update pocket-core version
+	* transitive change in Account JSON response for RPC
+	* Updated rpc-spec to reflect change
 * Updated pocket-core to address duplicated minting logs
 * Add pagination to Application Queries for RPC & CLI
 * Add pagination to Nodes Queries for RPC & CLI
@@ -259,7 +265,8 @@
 * Updated the import-armored and export commands for better UX keeping backward compatibility with pre RC 0.3.0 .
 * Fixed issue querying apps/validators was ignoring the blockchain key
 * Added protocol level enforcement of service url `https|http`
-* Added `/v1/query/blocktxs` and `/v1/query/acounttxs` to get the list of transactions in a block or sent/received by an account respectively.
+* Added `/v1/query/blocktxs` and `/v1/query/acounttxs` to get the list of transactions in a block or sent/received by an
+  account respectively.
 * Added `query account-txs` and `query block-txs` to the CLI matching the above mentioned endpoints.
 * Fixed `getTMClient()` function to avoid Tendermint opening files every time a Relay/Dispatch.
 * Add flag to to simulate relays, default false.
@@ -304,7 +311,8 @@
 * Added block height to dispatch response
 * Removed all MustGetPrevCtx and used PrevCtx for panic safety
 * Changed receipt structure \(added evidence type\)
-* Change `querySupplyResponse` struct to use `totalStaked`, `totalUnstaked` & `Total` as `*big.Int` due to memory overflow
+* Change `querySupplyResponse` struct to use `totalStaked`, `totalUnstaked` & `Total` as `*big.Int` due to memory
+  overflow
 * Added RPC SPEC doc in yaml and json with swagger support
 * Add off chain relay RPC for testing purposes, wont' create proof & does not affect validator
 

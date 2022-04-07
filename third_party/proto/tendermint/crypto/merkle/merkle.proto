@@ -6,12 +6,12 @@ option  go_package = "github.com/tendermint/tendermint/crypto/merkle";
 // https://github.com/gogo/protobuf/blob/master/extensions.md
 import "gogoproto/gogo.proto";
 
-option (gogoproto.marshaler_all)   = true;
+option (gogoproto.marshaler_all) = true;
 option (gogoproto.unmarshaler_all) = true;
-option (gogoproto.sizer_all)       = true;
+option (gogoproto.sizer_all) = true;
 
 option (gogoproto.populate_all) = true;
-option (gogoproto.equal_all)    = true;
+option (gogoproto.equal_all) = true;
 
 //----------------------------------------
 // Message types
@@ -20,12 +20,12 @@ option (gogoproto.equal_all)    = true;
 // The data could be arbitrary format, providing nessecary data
 // for example neighbouring node hash
 message ProofOp {
-  string type = 1;
-  bytes  key  = 2;
-  bytes  data = 3;
+	string type = 1;
+	bytes  key = 2;
+	bytes  data = 3;
 }
 
 // Proof is Merkle proof defined by the list of ProofOps
 message Proof {
-  repeated ProofOp ops = 1 [(gogoproto.nullable) = false];
+	repeated ProofOp ops = 1 [(gogoproto.nullable) = false];
 }

@@ -636,7 +636,7 @@ paths:
         description: Returns the current height
         content:
           application/json:
-            schema: {}
+            schema: { }
         required: false
       responses:
         '200':
@@ -1922,7 +1922,7 @@ components:
         proof:
           $ref: '#/components/schemas/TXProof'
         stdTx:
-          $ref:  '#/components/schemas/StdTx'
+          $ref: '#/components/schemas/StdTx'
     StdTx:
       type: object
       properties:

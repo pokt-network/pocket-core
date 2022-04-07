@@ -1,8 +1,6 @@
 ---
-description: >-
-  Functions for governance (DAO) transactions; only relevant to the DAOowner
-  (the account that has the permission to perform these transactions on behalf
-  of the DAO).
+description: >- Functions for governance (DAO) transactions; only relevant to the DAOowner
+(the account that has the permission to perform these transactions on behalf of the DAO).
 ---
 
 # Gov Namespace
@@ -13,7 +11,8 @@ description: >-
 pocket gov change_param <fromAddr> <chainID> <paramKey module/param> <paramValue (jsonObj)> <fee> <legacyCodec=(true | false)
 ```
 
-If authorized by the DAO, submit a tx to change any param from any module. Will prompt the user for the account passphrase.
+If authorized by the DAO, submit a tx to change any param from any module. Will prompt the user for the account
+passphrase.
 
 Arguments:
 

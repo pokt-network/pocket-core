@@ -16,14 +16,14 @@ message MsgDAOTransfer {
 	option (gogoproto.messagename) = true;
 	bytes fromAddress = 1 [(gogoproto.jsontag) = "from_address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
 	bytes toAddress = 2 [(gogoproto.jsontag) = "to_address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
-	string amount = 3 [(gogoproto.jsontag) = "amount",(gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt"];
+	string amount = 3 [(gogoproto.jsontag) = "amount", (gogoproto.nullable) = false, (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt"];
 	string action = 4 [(gogoproto.jsontag) = "action"];
 }
 
 message MsgUpgrade {
 	option (gogoproto.messagename) = true;
 	bytes address = 1 [(gogoproto.jsontag) = "address", (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address"];
-	Upgrade upgrade = 2 [(gogoproto.jsontag) = "upgrade",(gogoproto.nullable) = false];
+	Upgrade upgrade = 2 [(gogoproto.jsontag) = "upgrade", (gogoproto.nullable) = false];
 }
 
 message Upgrade {

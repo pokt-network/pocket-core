@@ -30,7 +30,8 @@ Returns the total amount of POKT staked/unstaked by nodes, apps, DAO, and totals
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 Example Output:
 
@@ -54,11 +55,13 @@ _Note: the `dao` value is currently included in the `total_staked` value._
 pocket query supported-networks [<height>]
 ```
 
-Returns the list of RelayChain Network Identifiers supported by the network at the specified `<height>`, meaning they've been whitelisted to generate revenue for nodes.
+Returns the list of RelayChain Network Identifiers supported by the network at the specified `<height>`, meaning they've
+been whitelisted to generate revenue for nodes.
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 Example Output:
 
@@ -80,7 +83,8 @@ Returns the block at the specified height.
 
 Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### Block Transactions
 
@@ -92,7 +96,8 @@ Retrieves the transactions in the block `<height>` .
 
 Arguments:
 
-* `<address>`: The specified height of the block to be queried, defaults to `0` which brings the latest block known to this node
+* `<address>`: The specified height of the block to be queried, defaults to `0` which brings the latest block known to
+  this node
 
 Optional arguments:
 
@@ -113,7 +118,8 @@ Returns all the parameters at the specified `<height>`.
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### Specific Parameter
 
@@ -129,7 +135,8 @@ Arguments:
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### Pocket Core Parameters
 
@@ -141,7 +148,8 @@ Returns the list of parameters in the Pocket Core module at the specified `<heig
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ```text
 {
@@ -167,7 +175,8 @@ Returns the list of parameters in the PoS \(Node\) module at the specified `<hei
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ```text
 {
@@ -200,7 +209,8 @@ Returns the list of parameters in the Application module at the specified `<heig
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ```text
 http://localhost:8082/v1/query/appparams
@@ -231,7 +241,8 @@ Arguments:
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### Account Transactions
 
@@ -279,7 +290,8 @@ Arguments:
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 Example output:
 
@@ -300,13 +312,15 @@ Returns a page containing a list of nodes known at the specified `<height>`.
 Options:
 
 * `--staking-status`: Filters the node list with a staking status. Supported statuses are: `staked` and `unstaking`.
-* `--jailed-status`: Filters the node list with jailed/unjailed validators. Supported statuses are: `jailed` and `unjailed`.
+* `--jailed-status`: Filters the node list with jailed/unjailed validators. Supported statuses are: `jailed`
+  and `unjailed`.
 * `--page`: The current page you want to query.
 * `--limit`: The maximum amount of nodes per page.
 
 Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### Node Details
 
@@ -319,7 +333,8 @@ Returns the node at the specified `<height>`.
 Arguments:
 
 * `<address>`: Target address.
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### Node Signing Info
 
@@ -332,7 +347,8 @@ Returns the signing info of the node `<address>` at `<height>`.
 Arguments:
 
 * `<address>`: Target address.
-* `<height>`: The specified height of the block to be queried, defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried, defaults to `0` which brings the latest block known to
+  this node.
 
 ### List of Relay Proofs Submitted by Node
 
@@ -345,7 +361,8 @@ Returns the list of all pending claims submitted by `<address>` at specified `<h
 Optional Arguments:
 
 * `<address>`: Target address. Defaults to `0` which brings all the claims for the specified height.
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### Relay Proof Details
 
@@ -365,7 +382,8 @@ Arguments:
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ## Apps
 
@@ -385,7 +403,8 @@ Options:
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### App Details
 
@@ -401,7 +420,8 @@ Arguments:
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ## Gov
 
@@ -411,11 +431,13 @@ Optional Arguments:
 pocket query daoOwner [<height>]
 ```
 
-Retrieves the owner of the DAO, the account which has the permission to submit governance transactions on behalf of the DAO.
+Retrieves the owner of the DAO, the account which has the permission to submit governance transactions on behalf of the
+DAO.
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### ACL
 
@@ -427,7 +449,8 @@ Returns the access control list of governance param \(which account can change t
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.
 
 ### Latest Upgrade
 
@@ -439,4 +462,5 @@ Retrieves the latest protocol upgrade executed by governance using the `pocket g
 
 Optional Arguments:
 
-* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to this node.
+* `<height>`: The specified height of the block to be queried. Defaults to `0` which brings the latest block known to
+  this node.

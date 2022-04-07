@@ -2,7 +2,9 @@
 
 ## RC-0.5.2.9
 
-After nine Beta releases, two Month's worth of continuous internal and external testing, and investigation and QA, Pocket Network's Engineering team feels the resource problems of RC-0.5.0 are _fixed_ \(see below for known issues\) with the upcoming RC-0.5.2. Official upgrade guide [here](https://docs.pokt.network/docs/network-upgrade-guide)
+After nine Beta releases, two Month's worth of continuous internal and external testing, and investigation and QA,
+Pocket Network's Engineering team feels the resource problems of RC-0.5.0 are _fixed_ \(see below for known issues\)
+with the upcoming RC-0.5.2. Official upgrade guide [here](https://docs.pokt.network/docs/network-upgrade-guide)
 
 ### Important Release Notes
 
@@ -10,14 +12,18 @@ After nine Beta releases, two Month's worth of continuous internal and external 
 
 * `rm -rf <datadir>/session.db`
 
-2\) **Run this release with the following environment variable: `export GODEBUG="madvdontneed=1"`** [Link to Golang Issue](https://github.com/golang/go/issues/42330) 3\) **Use the default config for all options \(except unique configurations like moniker, external addr, etc\). You have two options:**
+2\) **Run this release with the following environment
+variable: `export GODEBUG="madvdontneed=1"`** [Link to Golang Issue](https://github.com/golang/go/issues/42330) 3\) **
+Use the default config for all options \(except unique configurations like moniker, external addr, etc\). You have two
+options:**
 
 * Remove`/config/config.json` file, execute a CLI command, and update the custom configurations
-* Run `pocket util update-configs` command \(creates a new config file and backs up old config file\) 
+* Run `pocket util update-configs` command \(creates a new config file and backs up old config file\)
 
 **GoLevelDB is the only supported database from RC-0.5.2 onward**
 
-* If previously using CLevelDB, users might experience incompatibility issues due to known incompatibilities between the two
+* If previously using CLevelDB, users might experience incompatibility issues due to known incompatibilities between the
+  two
 * PNI temporarily will provide a backup datadir to download to avoid syncing from scratch:
 
   [13K .zip](https://storage.googleapis.com/blockchains-data/backup_5.2.zip)
@@ -28,7 +34,13 @@ After nine Beta releases, two Month's worth of continuous internal and external 
 
 ### Context And Original Issues
 
-After a series related issues of Pocket Core's RC-0.5.0 were opened \(\#1115 \#1094 \#1116 \#1117 ++\) in October 2020, PNI opened a formal investigation into the related resource consumption issues of RC-0.5.0 \(and subsequently the more stable RC-0.5.1\). The main metric of concern with RC-0.5.0 Resources is 'Memory' \(virtual, real, RSS, you name it\), with a very tangible 'Memory Leak'. 'Relay Stability', though a primary concern for any release, is a secondary concern for RC-0.5.2 as RC-0.5.1 seemed to solve the immediate, emergency level `Code 66` errors that plagued blocks 6K-7.5K. Speed is a tertiary concern with RC-0.5.0, taking 10+ hours to [sync](https://github.com/pokt-network/pocket-core/issues/1089#issuecomment-708439110) to Mainnet Block 7000.
+After a series related issues of Pocket Core's RC-0.5.0 were opened \(\#1115 \#1094 \#1116 \#1117 ++\) in October 2020,
+PNI opened a formal investigation into the related resource consumption issues of RC-0.5.0 \(and subsequently the more
+stable RC-0.5.1\). The main metric of concern with RC-0.5.0 Resources is 'Memory' \(virtual, real, RSS, you name it\),
+with a very tangible 'Memory Leak'. 'Relay Stability', though a primary concern for any release, is a secondary concern
+for RC-0.5.2 as RC-0.5.1 seemed to solve the immediate, emergency level `Code 66` errors that plagued blocks 6K-7.5K.
+Speed is a tertiary concern with RC-0.5.0, taking 10+ hours
+to [sync](https://github.com/pokt-network/pocket-core/issues/1089#issuecomment-708439110) to Mainnet Block 7000.
 
 ### Tooling
 
@@ -47,7 +59,9 @@ Listed in no particular order:
 
   **Debugging and Changelog**
 
-  Immediately, PNI's team recognized many [optimizations](https://github.com/pokt-network/pocket-core/commits/staging?after=d637db6bc5d397812fa3b8e68d9ba661f89fc0cc+69&branch=staging) to be made within Pocket Core's own source code. This includes the following: 
+  Immediately, PNI's team recognized
+  many [optimizations](https://github.com/pokt-network/pocket-core/commits/staging?after=d637db6bc5d397812fa3b8e68d9ba661f89fc0cc+69&branch=staging)
+  to be made within Pocket Core's own source code. This includes the following:
 
   \`\`\`
 
@@ -59,7 +73,7 @@ Listed in no particular order:
 * Added configurable cache PrevCtx, Validators, and Applications
 * Don't broadcast claims/proofs if syncing
 * Spread out claims/proofs between non-session blocks
-* Added max claim age configuration for proof submission 
+* Added max claim age configuration for proof submission
 * Reorganized non-consensus breaking code in Relay/Merkle Verify for efficiency before reads from state
 * Configuration to remove ABCILogs
 * Fixed \(pseudo\) memory leak in Tendermints RecvPacketMsg\(\)
@@ -110,7 +124,7 @@ Listed in no particular order:
 
   \`\`\`
 
-  Finally, in Beta-0.5.2.8, memory seemed to be at a constant rate. 
+  Finally, in Beta-0.5.2.8, memory seemed to be at a constant rate.
 
   **Evidence**
 
@@ -148,5 +162,7 @@ Listed in no particular order:
 
 ### Disclaimer
 
-Though, the memory seems to be both significantly decreased and stabilized, the team is still not convinced the memory growth issue is fully fixed \(though not supported with evidence currently\). The team expects to dive deeper and provide even more visibility into Tendermint and Pocket Core in future releases.
+Though, the memory seems to be both significantly decreased and stabilized, the team is still not convinced the memory
+growth issue is fully fixed \(though not supported with evidence currently\). The team expects to dive deeper and
+provide even more visibility into Tendermint and Pocket Core in future releases.
 

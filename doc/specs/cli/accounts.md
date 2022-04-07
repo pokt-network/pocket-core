@@ -1,7 +1,6 @@
 ---
-description: >-
-  The accounts namespace handles all account related interactions, from creating
-  and deleting accounts, to importing and exporting accounts.
+description: >- The accounts namespace handles all account related interactions, from creating and deleting accounts, to
+importing and exporting accounts.
 ---
 
 # Accounts Namespace
@@ -46,7 +45,9 @@ Public Key: 0x....
 pocket accounts create
 ```
 
-Creates and persists a new account in the Keybase. Will prompt the user for a [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) password for the generated mnemonic and for a passphrase to encrypt the generated keypair. _**Make sure to keep a note of this passphrase in a secure place.**_
+Creates and persists a new account in the Keybase. Will prompt the user for
+a [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) password for the generated mnemonic and for
+a passphrase to encrypt the generated keypair. _**Make sure to keep a note of this passphrase in a secure place.**_
 
 Example output:
 
@@ -61,7 +62,9 @@ Address: 0x....
 pocket accounts import-raw <private-key-hex>
 ```
 
-Imports an account using the provided `<private-key-hex>`. Will prompt the user for a [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) password for the imported private key and for a passphrase to encrypt the generated keypair. _**Make sure to keep a note of this passphrase in a secure place.**_
+Imports an account using the provided `<private-key-hex>`. Will prompt the user for
+a [BIP-0039](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki) password for the imported private key and
+for a passphrase to encrypt the generated keypair. _**Make sure to keep a note of this passphrase in a secure place.**_
 
 Arguments:
 
@@ -80,7 +83,9 @@ Address: 0x....
 pocket accounts import-armored <armoredJSONFile>
 ```
 
-Imports an account using the Encrypted ASCII armored `<armoredJSONFile>`. Will prompt the user for a decryption passphrase of the `<armoredJSONFile>` string and for an encryption passphrase to store in the Keybase. _**Make sure to keep a note of this passphrase in a secure place.**_
+Imports an account using the Encrypted ASCII armored `<armoredJSONFile>`. Will prompt the user for a decryption
+passphrase of the `<armoredJSONFile>` string and for an encryption passphrase to store in the Keybase. _**Make sure to
+keep a note of this passphrase in a secure place.**_
 
 Arguments:
 
@@ -99,7 +104,8 @@ Address: 0x....
 pocket accounts export [--path <path>] <address>
 ```
 
-Exports the account with `<address>`, encrypted and ASCII armored. Will prompt the user for the account passphrase and an encryption passphrase for the exported account. _**Make sure to keep a note of this passphrase in a secure place.**_
+Exports the account with `<address>`, encrypted and ASCII armored. Will prompt the user for the account passphrase and
+an encryption passphrase for the exported account. _**Make sure to keep a note of this passphrase in a secure place.**_
 
 Options:
 
@@ -121,7 +127,8 @@ Exported account: <armored string>
 pocket accounts export-raw <address>
 ```
 
-Exports the raw private key in hex format. Will prompt the user for the account passphrase. _**NOTE: THIS METHOD IS NOT RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.**_
+Exports the raw private key in hex format. Will prompt the user for the account passphrase. _**NOTE: THIS METHOD IS NOT
+RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.**_
 
 Arguments:
 
@@ -195,7 +202,8 @@ Arguments:
 pocket accounts update-passphrase <address>
 ```
 
-Updates the passphrase for the indicated account. Will prompt the user for the current account passphrase and the new account passphrase.
+Updates the passphrase for the indicated account. Will prompt the user for the current account passphrase and the new
+account passphrase.
 
 Arguments:
 
@@ -213,7 +221,8 @@ KeyPair 0x... passphrase updated successfully.
 pocket accounts sign <address> <msg>
 ```
 
-Signs the specified `<msg>` using the specified `<address>` account credentials. Will prompt the user for the account passphrase.
+Signs the specified `<msg>` using the specified `<address>` account credentials. Will prompt the user for the account
+passphrase.
 
 Arguments:
 
@@ -269,7 +278,8 @@ Arguments:
 pocket accounts create-multi-public <hex-pubkeys>
 ```
 
-Multi-signature accounts enable multiple individual accounts to share an account and create transactions that require signatures from all accounts.
+Multi-signature accounts enable multiple individual accounts to share an account and create transactions that require
+signatures from all accounts.
 
 Important notes:
 
@@ -292,7 +302,8 @@ Arguments:
 
 * `<signer-address>`: Address building & signing.
 * `<json-message>`: Message structure for the transaction.
-* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
+* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
+  account.**_
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
 
@@ -302,13 +313,15 @@ Arguments:
 pocket accounts sign-ms-tx <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee>
 ```
 
-Sign a multisignature transaction using public keys, and the transaction object out of order. Result is hex encoded standard transaction object.
+Sign a multisignature transaction using public keys, and the transaction object out of order. Result is hex encoded
+standard transaction object.
 
 Arguments:
 
 * `<signer-address>`: Address building & signing.
 * `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
-* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
+* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
+  account.**_
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
 
@@ -318,12 +331,14 @@ Arguments:
 pocket accounts sign-ms-next <signer-address> <hex-stdtx> <hex-pubkeys> <chainID> <fee>
 ```
 
-Sign a multisignature transaction object, result is hex encoded standard transaction object. _**WARNING: signer address MUST be the next signer \(in order of public keys in the multisignature\) or the signature will be invalid.**_
+Sign a multisignature transaction object, result is hex encoded standard transaction object. _**WARNING: signer address
+MUST be the next signer \(in order of public keys in the multisignature\) or the signature will be invalid.**_
 
 Arguments:
 
 * `<signer-address>`: Address building & signing.
 * `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
-* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig account.**_
+* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
+  account.**_
 * `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.

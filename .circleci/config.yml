@@ -28,7 +28,7 @@ jobs:
       - save_cache:
           key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            -  /home/circleci/go/src/github.com/pokt-network/pocket-core
+            - /home/circleci/go/src/github.com/pokt-network/pocket-core
       # Run tests
       #- run: go test -p 1 ./...
   # Generic test job
@@ -46,9 +46,9 @@ jobs:
           key: pocket-core-build-{{ .Environment.CIRCLE_SHA1 }}
       # Run tests
       - run:
-         name: 'test'
-         command: go test -short -p 1 ./...
-         no_output_timeout: 20m
+          name: 'test'
+          command: go test -short -p 1 ./...
+          no_output_timeout: 20m
   # Job to trigger the Pocket Core deployments CI with a specific branch
   trigger-pocket-core-deployments-branches:
     docker:

@@ -28,11 +28,13 @@ Starts the Pocket Node, picks up the config from the assigned `<datadir>`.
 Options:
 
 * `--simulateRelay`: Would you like to be able to test your relays.
-* `--keybase`: Run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions
+* `--keybase`: Run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is
+  still neccesary for staking for apps & sending transactions
 * `--mainnet`: Run with mainnet genesis
 * `--testnet`: Run with testnet genesis
 * `--profileApp`: bool exposes cpu & memory profiling
-* `--useCache`: If added, runs with a cache for the IAVL store, which trades increases RAM usage and reduces CPU usage in consensus operations.
+* `--useCache`: If added, runs with a cache for the IAVL store, which trades increases RAM usage and reduces CPU usage
+  in consensus operations.
 
 ## Stop Pocket Core
 

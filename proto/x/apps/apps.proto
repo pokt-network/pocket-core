@@ -14,49 +14,49 @@ option go_package = "github.com/pokt-network/pocket-core/x/apps/types";
 // delegated divided by the current exchange rate. Voting power can be
 // calculated as total bonded shares multiplied by exchange rate.
 message ProtoApplication {
-  option (gogoproto.equal)            = true;
-  option (gogoproto.goproto_getters)  = false;
+	option (gogoproto.equal) = true;
+	option (gogoproto.goproto_getters) = false;
 
-  bytes address = 1 [
-    (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
-    (gogoproto.jsontag) = "address",
-    (gogoproto.moretags) = "yaml:\"address\""
-  ];
-  bytes public_key = 2 [
-    (gogoproto.jsontag) = "public_key",
-    (gogoproto.moretags) = "yaml:\"public_key\""];
-  bool   jailed           = 3[
-    (gogoproto.jsontag) = "jailed",
-    (gogoproto.moretags) = "yaml:\"jailed\""];
-  int32  status           = 4 [
-    (gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.StakeStatus",
-    (gogoproto.jsontag) = "status",
-    (gogoproto.moretags) = "yaml:\"status\""];
-  repeated string chains = 5 [
-    (gogoproto.jsontag) = "chains",
-    (gogoproto.moretags) = "yaml:\"chains\""];
-  string staked_tokens           = 6 [
-    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
-    (gogoproto.nullable)   = false,
-    (gogoproto.jsontag) = "tokens",
-    (gogoproto.moretags) = "yaml:\"tokens\""];
-  string max_relays           = 7 [
-    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
-    (gogoproto.nullable)   = false,
-    (gogoproto.jsontag) = "max_relays",
-    (gogoproto.moretags) = "yaml:\"max_relays\""];
-  google.protobuf.Timestamp unstaking_completion_time   = 8 [
-    (gogoproto.nullable) = false,
-    (gogoproto.stdtime)  = true,
-    (gogoproto.jsontag) = "unstaking_time",
-    (gogoproto.moretags) = "yaml:\"unstaking_time\""];
+	bytes address = 1 [
+		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",
+		(gogoproto.jsontag) = "address",
+		(gogoproto.moretags) = "yaml:\"address\""
+	];
+	bytes public_key = 2 [
+		(gogoproto.jsontag) = "public_key",
+		(gogoproto.moretags) = "yaml:\"public_key\""];
+	bool   jailed = 3[
+		(gogoproto.jsontag) = "jailed",
+		(gogoproto.moretags) = "yaml:\"jailed\""];
+	int32  status = 4 [
+		(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.StakeStatus",
+		(gogoproto.jsontag) = "status",
+		(gogoproto.moretags) = "yaml:\"status\""];
+	repeated string chains = 5 [
+		(gogoproto.jsontag) = "chains",
+		(gogoproto.moretags) = "yaml:\"chains\""];
+	string staked_tokens = 6 [
+		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
+		(gogoproto.nullable) = false,
+		(gogoproto.jsontag) = "tokens",
+		(gogoproto.moretags) = "yaml:\"tokens\""];
+	string max_relays = 7 [
+		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
+		(gogoproto.nullable) = false,
+		(gogoproto.jsontag) = "max_relays",
+		(gogoproto.moretags) = "yaml:\"max_relays\""];
+	google.protobuf.Timestamp unstaking_completion_time = 8 [
+		(gogoproto.nullable) = false,
+		(gogoproto.stdtime) = true,
+		(gogoproto.jsontag) = "unstaking_time",
+		(gogoproto.moretags) = "yaml:\"unstaking_time\""];
 }
 
 // Pool - tracking bonded and not-bonded token supply of the bond denomination
 message Pool {
-  option (gogoproto.description) = true;
-  option (gogoproto.equal)       = true;
-  string tokens       = 1 [
-    (gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
-    (gogoproto.nullable)   = false];
+	option (gogoproto.description) = true;
+	option (gogoproto.equal) = true;
+	string tokens = 1 [
+		(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt",
+		(gogoproto.nullable) = false];
 }

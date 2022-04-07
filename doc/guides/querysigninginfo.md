@@ -1,10 +1,13 @@
 ## Feature Description:
-### Query Node signing Info
-New cmd/rpc that enables easy querying for the signing information of the nodes.
-Some active and skillful node runners have already played with this, parsing the information available from the state (using the v1/query/state rpc call). Now on this release we are providing an easier way to query this useful information.
 
+### Query Node signing Info
+
+New cmd/rpc that enables easy querying for the signing information of the nodes. Some active and skillful node runners
+have already played with this, parsing the information available from the state (using the v1/query/state rpc call). Now
+on this release we are providing an easier way to query this useful information.
 
 ### How To Check node's signing-info
+
 - Use the command ```pocket query signing-info <node-address> ```
 - You should see an output similar to this one :
     ```
@@ -29,7 +32,8 @@ Some active and skillful node runners have already played with this, parsing the
 
   ```jailed_until```: The time in jail until the node is able to submit an unjail tx.
 
-  ```missed_block_counter``` : The amount of blocks this node has missed in the current block windows (currently set at ```10``` blocks)
+  ```missed_block_counter``` : The amount of blocks this node has missed in the current block windows (currently set
+  at ```10``` blocks)
 
 	- To get the latest value for the param use the command ```pocket query param pos/SignedBlocksWindow```
 	  you should see an output like this:
@@ -59,6 +63,7 @@ Some active and skillful node runners have already played with this, parsing the
 # What else I  can do with this query?
 
 ## How to check if my node is about to get jailed?
+
 - Use the command ```pocket query signing-info <node-address> ```
 - You should see an output similar to this one :
     ```
@@ -78,12 +83,12 @@ Some active and skillful node runners have already played with this, parsing the
     }
     ```
 - Look for the property **"missed_blocks_counter"**, if that value is larger than 0, means your node is missing blocks.
-- For any given block window, currently defined at ```10``` blocks (```pos/SignedBlocksWindow```),
-  your node is required to sign ```60%``` of the blocks on that window (```pos/MinSignedPerWindow```).
-- That set of values currently means your node will need to sign at least ```6``` blocks out of ```10``` blocks in the window.
+- For any given block window, currently defined at ```10``` blocks (```pos/SignedBlocksWindow```), your node is required
+  to sign ```60%``` of the blocks on that window (```pos/MinSignedPerWindow```).
+- That set of values currently means your node will need to sign at least ```6``` blocks out of ```10``` blocks in the
+  window.
 - If the **"missed_blocks_counter"** is at ```4``` you are about to get jailed on the next block.
 - The **"missed_blocks_counter"** will reset every block window (```10``` blocks)
-
 
 ## How to check if my node is near the max jailed blocks
 
@@ -92,9 +97,11 @@ this is the maximun amount of block a node can be in jail.
 
 If a node is left jailed this amount of blocks, it will become ```Force Unstaked```.
 
-To be ```Force Unstaked``` means that **your node will receive a slash equivalent to the total amount that it is staked for, effectively removing it from the network and burning staked the tokens**.
+To be ```Force Unstaked``` means that **your node will receive a slash equivalent to the total amount that it is staked
+for, effectively removing it from the network and burning staked the tokens**.
 
-Force unstaking only happens when you get under the minimun stake amount (```pos/StakeMinimum```) by getting slashed for bad behaviour or if your node is left on jail for the max jailed blocks (```pos/MaxJailedBlocks```).
+Force unstaking only happens when you get under the minimun stake amount (```pos/StakeMinimum```) by getting slashed for
+bad behaviour or if your node is left on jail for the max jailed blocks (```pos/MaxJailedBlocks```).
 
 Now lets see how to check if your node is at risk:
 
@@ -116,7 +123,8 @@ Now lets see how to check if your node is at risk:
     "total_pages": 1
     }
     ```
-- Look for the property **"jailed_blocks_counter"** and compare the value against the ```max_jailed_blocks``` param ( currently ```37,960``` )
+- Look for the property **"jailed_blocks_counter"** and compare the value against the ```max_jailed_blocks``` param (
+  currently ```37,960``` )
 - To get the latest value for the param use the command ```pocket query param pos/MaxJailedBlocks```
   you should see an output like this:
     ```
@@ -125,5 +133,6 @@ Now lets see how to check if your node is at risk:
         "param_value": "37960"
     }
     ```
-- If your node  **"jailed_blocks_counter"** is close to that value, is ```highly recommended``` that you send and unjail tx immediately to solve this situation, or you may risk losing you staked tokens.
+- If your node  **"jailed_blocks_counter"** is close to that value, is ```highly recommended``` that you send and unjail
+  tx immediately to solve this situation, or you may risk losing you staked tokens.
 

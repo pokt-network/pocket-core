@@ -15,6 +15,7 @@ Official golang implementation of the Pocket Network Protocol.
 </div>
 
 ## Overview
+
 <div>
     <a  href="https://github.com/pokt-network/pocket-core/releases"><img src="https://img.shields.io/github/release-pre/pokt-network/pocket-core.svg"/></a>
     <a href="https://circleci.com/gh/pokt-network/pocket-core"><img src="https://circleci.com/gh/pokt-network/pocket-core.svg?style=svg"/></a>
@@ -26,13 +27,16 @@ Official golang implementation of the Pocket Network Protocol.
     <!--<a href="https://github.com/pokt-network/pocket-core/issues"><img src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/></a>-->
 </div>
 
-The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can visit [pokt.network](https://pokt.network).
+The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable
+functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can
+visit [pokt.network](https://pokt.network).
 
 ## Getting Started
 
 ### Example usage
 
 To run the Pocket Core binary you can use the following flags alongside the `main` executable:
+
 ````
 Usage:
   pocket [command]
@@ -67,7 +71,8 @@ Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go
 
 ## Documentation
 
-[Visit our developer portal](https://docs.pokt.network) for tutorials and technical documentation for the Pocket Network.
+[Visit our developer portal](https://docs.pokt.network) for tutorials and technical documentation for the Pocket
+Network.
 
 ## Running the tests
 
@@ -75,7 +80,8 @@ To run the Pocket Core unit tests, use the go testing tools and the `go test ./.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/pokt-network/pocket-core/blob/master/README.md) for details on contributions and the process of submitting pull requests.
+Please read [CONTRIBUTING.md](https://github.com/pokt-network/pocket-core/blob/master/README.md) for details on
+contributions and the process of submitting pull requests.
 
 ## Support & Contact
 

@@ -66,13 +66,13 @@ option objc_class_prefix = "GAPI";
 // Use of this type only changes how the request and response bodies are
 // handled, all other features will continue to work unchanged.
 message HttpBody {
-  // The HTTP Content-Type header value specifying the content type of the body.
-  string content_type = 1;
+	// The HTTP Content-Type header value specifying the content type of the body.
+	string content_type = 1;
 
-  // The HTTP request/response body as raw binary.
-  bytes data = 2;
+	// The HTTP request/response body as raw binary.
+	bytes data = 2;
 
-  // Application specific response metadata. Must be set in the first response
-  // for streaming APIs.
-  repeated google.protobuf.Any extensions = 3;
+	// Application specific response metadata. Must be set in the first response
+	// for streaming APIs.
+	repeated google.protobuf.Any extensions = 3;
 }

@@ -20,7 +20,7 @@ message ProtoValidator {
 	string ServiceURL = 6 [(gogoproto.jsontag) = "service_url"];
 	string StakedTokens = 7 [(gogoproto.customtype) = "github.com/pokt-network/pocket-core/types.BigInt", (gogoproto.jsontag) = "tokens", (gogoproto.nullable) = false];
 	google.protobuf.Timestamp UnstakingCompletionTime = 8 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true, (gogoproto.jsontag) = "unstaking_time", (gogoproto.moretags) = "yaml:\"unstaking_time\""];
-	bytes OutputAddress = 9 [(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address",(gogoproto.jsontag) = "output_address,omitempty",(gogoproto.moretags) = "yaml:\"output_address\""];
+	bytes OutputAddress = 9 [(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address", (gogoproto.jsontag) = "output_address,omitempty", (gogoproto.moretags) = "yaml:\"output_address\""];
 }
 
 message LegacyProtoValidator {
@@ -44,7 +44,7 @@ message ValidatorSigningInfo {
 	option (gogoproto.goproto_stringer) = false;
 
 	bytes address = 1 [(gogoproto.casttype) = "github.com/pokt-network/pocket-core/types.Address", // validator consensus address
-					  (gogoproto.jsontag) = "address"];
+		(gogoproto.jsontag) = "address"];
 	// height at which validator was first a candidate OR was unjailed
 	int64 start_height = 2 [(gogoproto.jsontag) = "start_height", (gogoproto.moretags) = "yaml:\"start_height\""];
 	// index offset into signed block bit array
