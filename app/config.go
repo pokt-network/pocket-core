@@ -556,7 +556,9 @@ func NewHostedChains(generate bool) *types.HostedBlockchains {
 	var bz []byte
 	if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
 		if !generate {
-			log2.Println(fmt.Sprintf("no chains.json found @ %s, defaulting to empty chains", chainsPath))
+			log2.Println(fmt.Sprintf("no chains.json found @ %s, defaulting to sample chains", chainsPath))
+			// added for hot reload compatibility chain.json should exist even if empty
+			createMissingChainsJson(chainsPath)
 			return &types.HostedBlockchains{} // default to empty object
 		}
 		return generateChainsJson(chainsPath)
@@ -903,4 +905,34 @@ func GetAuthTokenFromFile() sdk.AuthToken {
 	}
 
 	return t
+}
+
+func createMissingChainsJson(chainsPath string) {
+	// reopen the file to read into the variable
+	jsonFile, err := os.OpenFile(chainsPath, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		log2.Fatal(NewInvalidChainsError(err))
+	}
+
+	var hostedChainsSlice []types.HostedBlockchain
+
+	hostedChainsSlice = append(hostedChainsSlice, types.HostedBlockchain{
+		ID:  "0001",
+		URL: "http://localhost:8081/",
+	})
+
+	// write to the file
+	res, err := json.MarshalIndent(hostedChainsSlice, "", "  ")
+	if err != nil {
+		log2.Fatal(NewInvalidChainsError(err))
+	}
+	_, err = jsonFile.Write(res)
+	if err != nil {
+		log2.Fatal(NewInvalidChainsError(err))
+	}
+	// close the file
+	err = jsonFile.Close()
+	if err != nil {
+		log2.Fatal(NewInvalidChainsError(err))
+	}
 }
