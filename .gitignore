@@ -28,4 +28,6 @@ tests/unit/*.json
 # Data dir
 app/data/*
 
+**/.DS_Store
+
 
