@@ -4,13 +4,11 @@ description: Functions for Node management.
 
 # Nodes Namespace
 
-## Stake a Node / Update Stake (Legacy)
-
-### Deprecation Warning - will stop working after 0.8.0 update is activated
+## Stake a Node / Update Stake
 
 ```text
 
-pocket nodes stake <fromAddr> <amount> <relayChainIDs> <serviceURI> <networkID> <fee>
+pocket nodes stake custodial <fromAddr> <amount> <relayChainIDs> <serviceURI> <networkID> <fee> <isBefore8.0>
 ```
 
 Stakes the Node into the network, making it available for service. Prompts the user for the `<fromAddr>` account
@@ -31,6 +29,8 @@ Arguments:
 * `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
 * `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
+* `<isBefore8.0>`:  true or false depending if non-custodial upgrade is activated.
+
 
 Example output:
 
@@ -41,7 +41,7 @@ Transaction submitted with hash: <Transaction Hash>
 ## Stake a Node / Update Stake (0.8.0)
 
 ```text
-pocket nodes nstake <operatorPublicKey> <amount> <RelayChainIDs> <serviceURI> <outputAddress> <networkID> <fee> <isBefore8.0>
+pocket nodes stake non-custodial <operatorPublicKey> <outputAddress> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> <isBefore8.0>
 ```
 
 Stake a node in the network, the signer may be the operator or the output address. The signer must specify the public
