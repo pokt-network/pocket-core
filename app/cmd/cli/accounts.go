@@ -186,7 +186,7 @@ var unsafeDeleteCmd = &cobra.Command{
 			return
 		}
 		fmt.Printf("Are you sure you would like to delete account %s \n", addr.String())
-		if !app.Confirmation() {
+		if !app.Confirmation("") {
 			return
 		}
 		err = kb.UnsafeDelete(addr)

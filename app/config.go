@@ -738,23 +738,29 @@ func Credentials(pwd string) string {
 	}
 }
 
-func Confirmation() bool {
-	reader := bufio.NewReader(os.Stdin)
+func Confirmation(pwd string) bool {
 
-	for {
-		fmt.Println("yes | no")
-		response, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println("Error reading string: ", err.Error())
-			return false
-		}
-		response = strings.ToLower(strings.TrimSpace(response))
-		if response == "y" || response == "yes" {
-			return true
-		} else if response == "n" || response == "no" {
-			return false
+	if pwd != "" && strings.TrimSpace(pwd) != "" {
+		return true
+	} else {
+		reader := bufio.NewReader(os.Stdin)
+
+		for {
+			fmt.Println("yes | no")
+			response, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Println("Error reading string: ", err.Error())
+				return false
+			}
+			response = strings.ToLower(strings.TrimSpace(response))
+			if response == "y" || response == "yes" {
+				return true
+			} else if response == "n" || response == "no" {
+				return false
+			}
 		}
 	}
+
 }
 
 func SetValidator(address sdk.Address, passphrase string) {

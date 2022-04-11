@@ -59,7 +59,7 @@ func SendTransaction(fromAddr, toAddr, passphrase, chainID string, amount sdk.Bi
 }
 
 // LegacyStakeNode - Deliver Stake message to node
-func LegacyStakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, legacyCodec bool) (*rpc.SendRawTxParams, error) {
+func LegacyStakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID string, amount sdk.BigInt, fees int64, isBefore8 bool) (*rpc.SendRawTxParams, error) {
 	fa, err := sdk.AddressFromHex(fromAddr)
 	if err != nil {
 		return nil, err
@@ -92,17 +92,28 @@ func LegacyStakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID 
 	if err != nil {
 		return nil, err
 	}
-	msg := nodeTypes.LegacyMsgStake{
-		PublicKey:  kp.PublicKey,
-		Chains:     chains,
-		Value:      amount,
-		ServiceUrl: serviceURL,
+	var msg sdk.ProtoMsg
+	if isBefore8 {
+		msg = &nodeTypes.LegacyMsgStake{
+			PublicKey:  kp.PublicKey,
+			Chains:     chains,
+			Value:      amount,
+			ServiceUrl: serviceURL,
+		}
+	} else {
+		msg = &nodeTypes.MsgStake{
+			PublicKey:  kp.PublicKey,
+			Chains:     chains,
+			Value:      amount,
+			ServiceUrl: serviceURL,
+			Output:     fa,
+		}
 	}
 	err = msg.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), &msg, fa, chainID, kb, passphrase, fees, "", legacyCodec)
+	txBz, err := newTxBz(app.Codec(), msg, fa, chainID, kb, passphrase, fees, "", false)
 	if err != nil {
 		return nil, err
 	}
