@@ -55,7 +55,7 @@ For 0.8.X we added a feature to allow the reloading of the chains.json without r
 
 To enable the feature be sure to either run `pocket util update-configs` to have the new parameter added to your
 config.json automatically (must edit manually afterwards to turn on as feature ships disabled)
-or manually add the new key `"chains_hot_reload": true` to the `"pocket_config"` inside your chains.json
+or manually add the new key `"chains_hot_reload": true` to the `"pocket_config"` inside your config.json
 
 After starting your node with this value set to `true` pocket will reload the information from the chains.json every
 minute.
