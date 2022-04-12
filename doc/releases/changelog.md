@@ -1,7 +1,7 @@
 # Changelog
 =======
 
-## RC-0.8.0
+## RC-0.8.1
 
 - Added Non-Custodial Validator Security Operation with Output Address (Activated with upgrade)
 - Deprecated SessionDB (In Memory GolevelDB only)
@@ -12,6 +12,7 @@
 - Prompt 100 POKT over the minimum stake in CLI for UX
 - Enable Chains.json to be hot-reloaded every 1 minute
 - Fixed 'evidence already committed' error
+- Changed stake command. Now with Custodial / Non-custodial stake commands versions.
 
 ## RC-0.7.1
 

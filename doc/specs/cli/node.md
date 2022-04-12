@@ -4,7 +4,7 @@ description: Functions for Node management.
 
 # Nodes Namespace
 
-## Stake a Node / Update Stake
+## Stake a Node / Update Stake (Custodial)
 
 ```text
 
@@ -38,7 +38,7 @@ Example output:
 Transaction submitted with hash: <Transaction Hash>
 ```
 
-## Stake a Node / Update Stake (0.8.0)
+## Stake a Node / Update Stake (Non-custodial / 0.8.X)
 
 ```text
 pocket nodes stake non-custodial <operatorPublicKey> <outputAddress> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> <isBefore8.0>
