@@ -23,7 +23,7 @@ const (
 )
 
 // LoadStore loads the iavl store
-func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool, cache types.SingleStoreCache, iavlCacheSize int64) (types.CommitStore, error) {
+func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool, cache types.SingleStoreCache, iavlCacheSize int64) (*Store, error) {
 	var err error
 
 	if iavlCacheSize <= 0 {
