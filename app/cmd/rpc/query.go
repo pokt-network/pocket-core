@@ -3,6 +3,7 @@ package rpc
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	sdk "github.com/pokt-network/pocket-core/types"
 	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -185,7 +186,6 @@ func ResultTxToRPC(res *core_types.ResultTx) *RPCResultTx {
 	if res == nil {
 		return nil
 	}
-	tx := app.UnmarshalTx(res.Tx, res.Height)
 	if app.GlobalConfig.PocketConfig.DisableTxEvents {
 		res.TxResult.Events = nil
 	}
@@ -200,7 +200,6 @@ func ResultTxToRPC(res *core_types.ResultTx) *RPCResultTx {
 		Recipient:   res.TxResult.Recipient,
 		MessageType: res.TxResult.MessageType,
 	}
-	rpcStdTx := RPCStdTx(tx)
 	r := &RPCResultTx{
 		Hash:     res.Hash,
 		Height:   res.Height,
@@ -208,8 +207,13 @@ func ResultTxToRPC(res *core_types.ResultTx) *RPCResultTx {
 		TxResult: rpcDeliverTx,
 		Tx:       res.Tx,
 		Proof:    res.Proof,
-		StdTx:    rpcStdTx,
 	}
+	tx, err := app.UnmarshalTx(res.Tx, res.Height)
+	if err != nil {
+		fmt.Println("an error occurred unmarshalling the transaction", err.Error())
+		return r
+	}
+	r.StdTx = RPCStdTx(tx)
 	return r
 }
 
