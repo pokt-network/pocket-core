@@ -30,7 +30,7 @@ func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyL
 		iavlCacheSize = defaultIAVLCacheSize
 	}
 
-	tree, err := NewMutableTree(db, defaultIAVLCacheSize)
+	tree, err := NewMutableTree(db, int(iavlCacheSize))
 	if err != nil {
 		return nil, err
 	}
