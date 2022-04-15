@@ -40,7 +40,7 @@
 
 5) **Chains.json is now automatically refreshed**
 
-- Every 5 seconds based on chains.json file
+- Every minute based on chains.json file
 
 6) **Tendermint Evidence is double-checked before proposal block creation and evidence receive**
 
