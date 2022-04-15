@@ -43,7 +43,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 				return legacyHandleMsgStake(ctx, msg, k, signer)
 			default:
 				errMsg := fmt.Sprintf("unrecognized staking message type: %T", msg)
-				return sdk.ErrUnknownRequest(errMsg).Result()
+				return sdk.ErrTxDecode(errMsg).Result()
 			}
 		}
 	}
