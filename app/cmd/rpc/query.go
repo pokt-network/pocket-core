@@ -154,7 +154,9 @@ type RPCStdSignature struct {
 }
 
 func (r RPCStdTx) MarshalJSON() ([]byte, error) {
-
+	if r.Msg == nil {
+		return json.Marshal(rPCStdTx{})
+	}
 	msgBz := (types2.StdTx)(r).Msg.GetSignBytes()
 	sig := RPCStdSignature{
 		PublicKey: r.Signature.RawString(),
