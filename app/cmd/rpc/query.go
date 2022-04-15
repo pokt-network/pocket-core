@@ -123,7 +123,7 @@ type RPCResultTx struct {
 	TxResult RPCResponseDeliverTx `json:"tx_result"`
 	Tx       types.Tx             `json:"tx"`
 	Proof    types.TxProof        `json:"proof,omitempty"`
-	StdTx    RPCStdTx             `json:"stdTx"`
+	StdTx    RPCStdTx             `json:"stdTx,omitempty"`
 }
 
 type RPCResponseDeliverTx struct {
@@ -154,6 +154,7 @@ type RPCStdSignature struct {
 }
 
 func (r RPCStdTx) MarshalJSON() ([]byte, error) {
+
 	msgBz := (types2.StdTx)(r).Msg.GetSignBytes()
 	sig := RPCStdSignature{
 		PublicKey: r.Signature.RawString(),
