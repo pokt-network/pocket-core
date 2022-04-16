@@ -7,6 +7,7 @@ import (
 	"github.com/pokt-network/pocket-core/codec/types"
 	posCrypto "github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	types2 "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"gopkg.in/yaml.v2"
@@ -305,6 +306,12 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 		// ProtoStdTx.ProtoMsg is an interface. The concrete types
 		// are registered by MakeTxCodec
 		err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx, blockHeight)
+
+		//replicate error on new stake msg sent before upgrade block for compatibility reasons (happened on 56550 BU)
+		if _, ok := tx.Msg.(*types2.MsgStake); ok && !cdc.IsAfterNonCustodialUpgrade(blockHeight) {
+			return nil, sdk.ErrTxDecode("error decoding transaction: no concrete type registered for type URL /x.nodes.MsgProtoStake8 against interface *types.ProtoMsg")
+		}
+
 		if err != nil {
 			return nil, sdk.ErrTxDecode("error decoding transaction: " + err.Error()).TraceSDK(err.Error())
 		}
