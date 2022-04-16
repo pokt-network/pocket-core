@@ -581,12 +581,12 @@ func TestStakeNodeAfter8(t *testing.T) {
 		outputIsSigner bool
 		*upgrades
 	}{
-		{name: "stake after 8.0 upgrade; output is signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 3}}},
-		{name: "stake after 8.0 upgrade; output is not signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: false, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 3}}},
+		{name: "stake after 8.0 upgrade; output is signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: true, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 2}}},
+		{name: "stake after 8.0 upgrade; output is not signer", memoryNodeFn: NewInMemoryTendermintNodeProto, outputIsSigner: false, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}, eight0Upgrade: upgrade{height: 2}}},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+			if tc.upgrades != nil { // NOTE: Use to perform necessary upgrades for test
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
 			}
@@ -620,7 +620,7 @@ func TestStakeNodeAfter8(t *testing.T) {
 			if isAfter8 == false && tc.outputIsSigner {
 				assert.Equal(t, 4, int(tx.Code))
 			} else {
-				assert.Equal(t, int(tx.Code), 0)
+				assert.Equal(t, 0, int(tx.Code))
 			}
 			cleanup()
 			stopCli()
