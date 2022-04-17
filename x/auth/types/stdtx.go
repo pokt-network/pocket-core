@@ -308,8 +308,16 @@ func DefaultTxDecoder(cdc *codec.Codec) sdk.TxDecoder {
 		err := cdc.UnmarshalBinaryLengthPrefixed(txBytes, &tx, blockHeight)
 
 		//replicate error on new stake msg sent before upgrade block for compatibility reasons (happened on 56550 BU)
-		if _, ok := tx.Msg.(*types2.MsgStake); ok && !cdc.IsAfterNonCustodialUpgrade(blockHeight) {
-			return nil, sdk.ErrTxDecode("error decoding transaction: no concrete type registered for type URL /x.nodes.MsgProtoStake8 against interface *types.ProtoMsg")
+		if !cdc.IsAfterNonCustodialUpgrade(blockHeight) {
+			if _, ok := tx.Msg.(*types2.MsgStake); ok {
+				return nil, sdk.ErrTxDecode("error decoding transaction: no concrete type registered for type URL /x.nodes.MsgProtoStake8 against interface *types.ProtoMsg")
+			}
+			if _, ok := tx.Msg.(*types2.MsgUnjail); ok {
+				return nil, sdk.ErrTxDecode("error decoding transaction: no concrete type registered for type URL /x.nodes.MsgUnjail8 against interface *types.ProtoMsg")
+			}
+			if _, ok := tx.Msg.(*types2.MsgBeginUnstake); ok {
+				return nil, sdk.ErrTxDecode("error decoding transaction: no concrete type registered for type URL /x.nodes.MsgBeginUnstake8 against interface *types.ProtoMsg")
+			}
 		}
 
 		if err != nil {

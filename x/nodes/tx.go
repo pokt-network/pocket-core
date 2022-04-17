@@ -60,9 +60,14 @@ func UnstakeTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, add
 	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg, legacyCodec)
 }
 
-func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string, legacyCodec bool) (*sdk.TxResponse, error) {
-	msg := types.MsgUnjail{ValidatorAddr: address}
-	txBuilder, cliCtx, err := newTx(cdc, &msg, address, tmNode, keybase, passphrase)
+func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, address sdk.Address, passphrase string, legacyCodec bool, isAfter8 bool) (*sdk.TxResponse, error) {
+	var msg sdk.ProtoMsg
+	if isAfter8 {
+		msg = &types.MsgUnjail{ValidatorAddr: address}
+	} else {
+		msg = &types.LegacyMsgUnjail{ValidatorAddr: address}
+	}
+	txBuilder, cliCtx, err := newTx(cdc, msg, address, tmNode, keybase, passphrase)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +75,7 @@ func UnjailTx(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, addr
 	if err != nil {
 		return nil, err
 	}
-	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, &msg, legacyCodec)
+	return util.CompleteAndBroadcastTxCLI(txBuilder, cliCtx, msg, legacyCodec)
 }
 
 func Send(cdc *codec.Codec, tmNode client.Client, keybase keys.Keybase, fromAddr, toAddr sdk.Address, passphrase string, amount sdk.BigInt, legacyCodec bool) (*sdk.TxResponse, error) {
