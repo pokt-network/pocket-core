@@ -239,6 +239,8 @@ func TestUnstakeNode(t *testing.T) {
 			assert.NotNil(t, tx)
 			if isAfter8 {
 				assert.Equal(t, 2, int(tx.Code))
+				cleanup()
+
 			} else {
 				<-evtChan // Wait for tx
 				_, _, evtChan = subscribeTo(t, tmTypes.EventNewBlockHeader)
