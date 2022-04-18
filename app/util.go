@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
 	"reflect"
 
@@ -103,19 +104,19 @@ func SortJSON(toSortJSON []byte) string {
 	return string(js)
 }
 
-func UnmarshalTxStr(txStr string, height int64) types.StdTx {
+func UnmarshalTxStr(txStr string, height int64) (types.StdTx, error) {
 	txBytes, err := base64.StdEncoding.DecodeString(txStr)
 	if err != nil {
-		log.Fatal("error:", err)
+		return types.StdTx{}, err
 	}
 	return UnmarshalTx(txBytes, height)
 }
 
-func UnmarshalTx(txBytes []byte, height int64) types.StdTx {
+func UnmarshalTx(txBytes []byte, height int64) (types.StdTx, error) {
 	defaultTxDecoder := auth.DefaultTxDecoder(cdc)
 	tx, err := defaultTxDecoder(txBytes, height)
 	if err != nil {
-		log.Fatalf("Could not decode transaction: " + err.Error())
+		return types.StdTx{}, fmt.Errorf("Could not decode transaction: " + err.Error())
 	}
-	return tx.(auth.StdTx)
+	return tx.(auth.StdTx), nil
 }

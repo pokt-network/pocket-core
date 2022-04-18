@@ -90,7 +90,11 @@ var decodeTxCmd = &cobra.Command{
 		if legacy == "true" || legacy == "t" {
 			height = 0
 		}
-		stdTx := app.UnmarshalTxStr(txStr, height)
+		stdTx, err := app.UnmarshalTxStr(txStr, height)
+		if err != nil {
+			fmt.Println("an error occurred unmarshalling the transaction string", err.Error())
+			return
+		}
 		fmt.Printf(
 			"Type:\t\t%s\nMsg:\t\t%v\nFee:\t\t%s\nEntropy:\t%d\nMemo:\t\t%s\nSigners\t\t%v\nSig:\t\t%s\n",
 			stdTx.GetMsg().Type(), stdTx.GetMsg(), stdTx.GetFee().String(), stdTx.GetEntropy(), stdTx.GetMemo(), stdTx.GetMsg().GetSigners(),
