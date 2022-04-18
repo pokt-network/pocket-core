@@ -2,8 +2,10 @@ package fastarchival
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/store/cachekv"
 	"github.com/pokt-network/pocket-core/store/iavl"
 	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
+	"github.com/pokt-network/pocket-core/store/tracekv"
 	"github.com/pokt-network/pocket-core/types"
 	dbm "github.com/tendermint/tm-db"
 	"io"
@@ -65,13 +67,11 @@ func (s *Store) GetStoreType() types.StoreType {
 }
 
 func (s *Store) CacheWrap() types.CacheWrap {
-	//TODO implement me
-	panic("implement me")
+	return cachekv.NewStore(s)
 }
 
 func (s *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
-	//TODO implement me
-	panic("implement me")
+	return cachekv.NewStore(tracekv.NewStore(s, w, tc))
 }
 
 func (s *Store) Get(key []byte) ([]byte, error) {
