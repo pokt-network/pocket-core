@@ -634,7 +634,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
 	}
 	// new multistore for copy
-	store, err := app.cms.(*rootMulti.Store).LoadLazyVersion(req.Height)
+	multiStore, err := app.cms.(*rootMulti.Store).LoadLazyVersion(req.Height)
 	if err != nil {
 		return sdk.ErrInternal(
 			fmt.Sprintf(
@@ -643,7 +643,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 			),
 		).QueryResult()
 	}
-	newMS, ok := (*store).(*rootMulti.Store)
+	newMS, ok := (*multiStore).(*rootMulti.Store)
 	if !ok {
 		return sdk.ErrInternal(
 			fmt.Sprintf(
@@ -984,14 +984,14 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 		if r := recover(); r != nil {
 			switch rType := r.(type) {
 			case sdk.ErrorOutOfGas:
-				log := fmt.Sprintf(
+				logMessage := fmt.Sprintf(
 					"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
 					rType.Descriptor, gasWanted, ctx.GasMeter().GasConsumed(),
 				)
-				result = sdk.ErrOutOfGas(log).Result()
+				result = sdk.ErrOutOfGas(logMessage).Result()
 			default:
-				log := fmt.Sprintf("recovered: %v\nstack:\n%v", r, string(debug.Stack()))
-				result = sdk.ErrInternal(log).Result()
+				logMessage := fmt.Sprintf("recovered: %v\nstack:\n%v", r, string(debug.Stack()))
+				result = sdk.ErrInternal(logMessage).Result()
 			}
 		}
 
