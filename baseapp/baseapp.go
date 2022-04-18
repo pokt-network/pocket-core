@@ -253,12 +253,6 @@ func (app *BaseApp) MountTransientStores(keys map[string]*sdk.TransientStoreKey)
 	}
 }
 
-// MountStoreWithDB mounts a store to the provided key in the BaseApp
-// multistore, using a specified DB.
-func (app *BaseApp) MountStoreWithDB(key sdk.StoreKey, typ sdk.StoreType, db dbm.DB) {
-	app.cms.MountStoreWithDB(key, typ, db)
-}
-
 // MountStore mounts a store to the provided key in the BaseApp multistore,
 // using the default DB.
 func (app *BaseApp) MountStore(key sdk.StoreKey, typ sdk.StoreType) {
