@@ -95,6 +95,7 @@ func (app PocketCoreApp) QueryAllBlockTxs(height int64, page, perPage int) (res 
 	if err != nil {
 		return nil, err
 	}
+	res.TotalCount = len(b1.TxsResults) // this
 	for i, t := range b1.TxsResults {
 		if i < skip {
 			continue
@@ -108,7 +109,6 @@ func (app PocketCoreApp) QueryAllBlockTxs(height int64, page, perPage int) (res 
 			Tx:       tx,
 			Proof:    tmtypes.TxProof{},
 		})
-		res.TotalCount++ // this
 		if len(res.Txs) >= perPage {
 			break
 		}

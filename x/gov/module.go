@@ -113,7 +113,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 // module begin-block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	u := am.keeper.GetUpgrade(ctx)
-	if ctx.AppVersion() < u.Version && ctx.BlockHeight() == u.UpgradeHeight() && ctx.BlockHeight() != 0 {
+	if ctx.AppVersion() < u.Version && ctx.BlockHeight() >= u.UpgradeHeight() && ctx.BlockHeight() != 0 {
 		ctx.Logger().Error("MUST UPGRADE TO NEXT VERSION: ", u.Version)
 		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventMustUpgrade,
 			sdk.NewAttribute("VERSION:", u.UpgradeVersion())))
