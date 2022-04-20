@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/pokt-network/pocket-core/codec"
 	"github.com/tendermint/tendermint/libs/strings"
 	"time"
 
@@ -166,7 +165,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	if amount.LT(sdk.NewInt(k.MinimumStake(ctx))) {
 		return types.ErrMinimumStake(k.codespace)
 	}
-	if k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.StrictBalanceCheckKey) {
+	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 		if !k.AccountKeeper.HasCoins(ctx, signerAddress, coin) {
 			return types.ErrNotEnoughCoins(k.codespace)
 		}
@@ -205,7 +204,7 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator, newValidtor typ
 	if !diff.IsZero() {
 		// ensure account has enough coins for bump
 		coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), diff))
-		if k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.StrictBalanceCheckKey) {
+		if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
 			if !k.AccountKeeper.HasCoins(ctx, signer, coin) {
 				return types.ErrNotEnoughCoins(k.Codespace())
 			}
