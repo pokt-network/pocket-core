@@ -96,7 +96,7 @@ Retrieves the transactions in the block `<height>` .
 
 Arguments:
 
-* `<address>`: The specified height of the block to be queried, defaults to `0` which brings the latest block known to
+* `<height>`: The specified height of the block to be queried, defaults to `0` which brings the latest block known to
   this node
 
 Optional arguments:
