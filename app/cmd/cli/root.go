@@ -5,6 +5,7 @@ import (
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"github.com/spf13/cobra"
+	"github.com/tendermint/tendermint/node"
 	"log"
 	"os"
 	"os/signal"
@@ -68,24 +69,24 @@ var startCmd = &cobra.Command{
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		start(cmd, args)
+		var genesisType app.GenesisType
+		if mainnet && testnet {
+			fmt.Println("cannot run with mainnet and testnet genesis simultaneously, please choose one")
+			return
+		}
+		if mainnet {
+			genesisType = app.MainnetGenesisType
+		}
+		if testnet {
+			genesisType = app.TestnetGenesisType
+		}
+		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache)
+		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload)
+		captureExitSignal(tmNode)
 	},
 }
 
-func start(cmd *cobra.Command, args []string) {
-	var genesisType app.GenesisType
-	if mainnet && testnet {
-		fmt.Println("cannot run with mainnet and testnet genesis simultaneously, please choose one")
-		return
-	}
-	if mainnet {
-		genesisType = app.MainnetGenesisType
-	}
-	if testnet {
-		genesisType = app.TestnetGenesisType
-	}
-	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache)
-	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload)
+func captureExitSignal(tmNode *node.Node) {
 	// trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
@@ -95,18 +96,15 @@ func start(cmd *cobra.Command, args []string) {
 		os.Kill, //nolint
 		os.Interrupt)
 
-	defer func() {
-		sig := <-signalChannel
-		app.ShutdownPocketCore()
-		err := tmNode.Stop()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+	sig := <-signalChannel
+	app.ShutdownPocketCore()
+	err := tmNode.Stop()
+	if err != nil {
+		fmt.Println(err)
+	} else {
 		message := fmt.Sprintf("Exit signal %s received\n", sig)
 		fmt.Println(message)
-		os.Exit(0)
-	}()
+	}
 }
 
 // resetCmd represents the reset command
