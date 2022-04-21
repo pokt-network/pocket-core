@@ -70,7 +70,6 @@ type BaseApp struct {
 	// initialized on creation
 	logger           log.Logger
 	name             string               // application name from abci.Info
-	db               dbm.DB               // common DB backend
 	tmNode           *node.Node           // <---- todo updated here
 	txIndexer        txindex.TxIndexer    // <---- todo updated here
 	blockstore       *tmStore.BlockStore  // <---- todo updated here
@@ -130,7 +129,6 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, iavlCache
 	app := &BaseApp{
 		logger:           logger,
 		name:             name,
-		db:               db,
 		cdc:              cdc,
 		cms:              store.NewCommitMultiStore(db, cache, iavlCacheSize),
 		router:           NewRouter(),

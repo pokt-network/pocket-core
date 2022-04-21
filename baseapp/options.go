@@ -2,8 +2,6 @@
 package baseapp
 
 import (
-	dbm "github.com/tendermint/tm-db"
-
 	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
@@ -33,10 +31,6 @@ func (app *BaseApp) SetName(name string) {
 // SetAppVersion sets the application's version string.
 func (app *BaseApp) SetAppVersion(v string) {
 	app.appVersion = v
-}
-
-func (app *BaseApp) SetDB(db dbm.DB) {
-	app.db = db
 }
 
 func (app *BaseApp) SetCMS(cms store.CommitMultiStore) {
