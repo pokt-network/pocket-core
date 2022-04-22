@@ -30,8 +30,8 @@ const (
 // cacheMultiStore which is for cache-wrapping other MultiStores. It implements
 // the CommitMultiStore interface.
 type Store struct {
-	DB           dbm.DB
-	Cache        types.MultiStoreCache
+	db           dbm.DB
+	cache        types.MultiStoreCache
 	lastCommitID types.CommitID
 	pruningOpts  types.PruningOptions
 	storesParams map[types.StoreKey]storeParams
@@ -62,8 +62,8 @@ func (rs *Store) CopyStore() *types.Store {
 		newTraceCtx[k] = v
 	}
 	s := types.Store(&Store{
-		DB:           rs.DB,
-		Cache:        rs.Cache,
+		db:           rs.db,
+		cache:        rs.cache,
 		lastCommitID: rs.lastCommitID,
 		pruningOpts:  rs.pruningOpts,
 		storesParams: newParams,
@@ -90,8 +90,8 @@ func NewStore(db dbm.DB, cache bool, iavlCacheSize int64) *Store {
 	}
 
 	return &Store{
-		DB:            db,
-		Cache:         multiStoreCache,
+		db:            db,
+		cache:         multiStoreCache,
 		storesParams:  make(map[types.StoreKey]storeParams),
 		stores:        make(map[types.StoreKey]types.CommitStore),
 		keysByName:    make(map[string]types.StoreKey),
@@ -148,23 +148,23 @@ func (rs *Store) GetCommitKVStore(key types.StoreKey) types.CommitKVStore {
 
 // Implements CommitMultiStore.
 func (rs *Store) LoadLatestVersion() error {
-	ver := getLatestVersion(rs.DB)
+	ver := getLatestVersion(rs.db)
 	return rs.LoadVersion(ver)
 }
 
 // Implements CommitMultiStore.
 func (rs *Store) RollbackVersion(height int64) error {
 	// ensure latest version is greater than rollback height
-	ver := getLatestVersion(rs.DB)
+	ver := getLatestVersion(rs.db)
 	if height >= ver {
 		return fmt.Errorf("the rollback height: %d must be less than the actual app height: %d", height, ver)
 	}
 	// create a new db
-	b := rs.DB.NewBatch()
+	b := rs.db.NewBatch()
 	// set the latest version so that we always start from this height
 	setLatestVersion(b, height)
 	// get commit info
-	cInfo, err := getCommitInfo(rs.DB, ver)
+	cInfo, err := getCommitInfo(rs.db, ver)
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func (rs *Store) LoadVersion(ver int64) error {
 		return nil
 	}
 
-	cInfo, err := getCommitInfo(rs.DB, ver)
+	cInfo, err := getCommitInfo(rs.db, ver)
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 			}
 			return nil, fmt.Errorf("cannot convert store into iavl store in get immutable")
 		}
-		s, err := a.LazyLoadStore(ver, rs.Cache.GetSingleStoreCache(k))
+		s, err := a.LazyLoadStore(ver, rs.cache.GetSingleStoreCache(k))
 		if err != nil {
 			return nil, fmt.Errorf("error loading store: %s, in LoadLazyVersion: %s", k, err.Error())
 		}
@@ -292,7 +292,7 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 		newTraceCtx[k] = v
 	}
 	s := types.Store(&Store{
-		DB:           rs.DB,
+		db:           rs.db,
 		lastCommitID: rs.lastCommitID,
 		pruningOpts:  rs.pruningOpts,
 		storesParams: newParams,
@@ -301,7 +301,7 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 		lazyLoading:  rs.lazyLoading,
 		traceWriter:  rs.traceWriter,
 		traceContext: newTraceCtx,
-		Cache:        rs.Cache,
+		cache:        rs.cache,
 	})
 	return &s, nil
 }
@@ -350,7 +350,7 @@ func (rs *Store) Commit() types.CommitID {
 	commitInfo := commitStores(version, rs.stores)
 
 	// Need to update atomically.
-	batch := rs.DB.NewBatch()
+	batch := rs.db.NewBatch()
 	defer batch.Close()
 	setCommitInfo(batch, version, commitInfo)
 	setLatestVersion(batch, version)
@@ -385,7 +385,7 @@ func (rs *Store) CacheMultiStore() types.CacheMultiStore {
 		stores[k] = v
 	}
 
-	return cachemulti.NewStore(rs.DB, stores, rs.keysByName, rs.traceWriter, rs.traceContext)
+	return cachemulti.NewStore(rs.db, stores, rs.keysByName, rs.traceWriter, rs.traceContext)
 }
 
 // CacheMultiStoreWithVersion is analogous to CacheMultiStore except that it
@@ -399,7 +399,7 @@ func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStor
 		case types.StoreTypeIAVL:
 			// Attempt to lazy-load an already saved IAVL store version. If the
 			// version does not exist or is pruned, an error should be returned.
-			iavlStore, err := store.(*iavl.Store).LazyLoadStore(version, rs.Cache.GetSingleStoreCache(key))
+			iavlStore, err := store.(*iavl.Store).LazyLoadStore(version, rs.cache.GetSingleStoreCache(key))
 			if err != nil {
 				return nil, err
 			}
@@ -411,7 +411,7 @@ func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStor
 		}
 	}
 
-	return cachemulti.NewStore(rs.DB, cachedStores, rs.keysByName, rs.traceWriter, rs.traceContext), nil
+	return cachemulti.NewStore(rs.db, cachedStores, rs.keysByName, rs.traceWriter, rs.traceContext), nil
 }
 
 // Implements MultiStore.
@@ -491,7 +491,7 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 		return errors.ErrInternal("proof is unexpectedly empty; ensure height has not been pruned").QueryResult()
 	}
 
-	commitInfo, errMsg := getCommitInfo(rs.DB, res.Height)
+	commitInfo, errMsg := getCommitInfo(rs.db, res.Height)
 	if errMsg != nil {
 		return errors.ErrInternal(errMsg.Error()).QueryResult()
 	}
@@ -535,7 +535,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 	if params.db != nil {
 		db = dbm.NewPrefixDB(params.db, []byte("s/_/"))
 	} else {
-		db = dbm.NewPrefixDB(rs.DB, []byte("s/k:"+params.key.Name()+"/"))
+		db = dbm.NewPrefixDB(rs.db, []byte("s/k:"+params.key.Name()+"/"))
 	}
 
 	switch params.typ {
@@ -543,7 +543,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		panic("recursive MultiStores not yet supported")
 
 	case types.StoreTypeIAVL:
-		cacheForStore := rs.Cache.GetSingleStoreCache(key)
+		cacheForStore := rs.cache.GetSingleStoreCache(key)
 		if cacheForStore.IsValid() {
 			log.Printf("Warming up cache for %s\n", key.Name())
 		}
