@@ -25,6 +25,7 @@ var (
 	testnet         bool
 	profileApp      bool
 	useCache        bool
+	fastArchival    bool
 )
 
 var CLIVersion = app.AppVersion
@@ -57,6 +58,10 @@ func init() {
 	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
 	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
 	startCmd.Flags().BoolVar(&useCache, "useCache", false, "use cache")
+
+	startCmd.Flags().BoolVar(&fastArchival, "fastArchival", false, "")
+	_ = startCmd.Flags().MarkHidden("fastArchival")
+
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
@@ -80,7 +85,7 @@ var startCmd = &cobra.Command{
 		if testnet {
 			genesisType = app.TestnetGenesisType
 		}
-		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache)
+		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache, fastArchival)
 		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload)
 		captureExitSignal(tmNode)
 	},
