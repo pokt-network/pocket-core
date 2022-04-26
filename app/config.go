@@ -6,12 +6,10 @@ import (
 	"fmt"
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
-	"github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	kb "github.com/pokt-network/pocket-core/crypto/keys"
-	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -35,7 +33,6 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/rpc/client/http"
 	"github.com/tendermint/tendermint/rpc/client/local"
-	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"io/ioutil"
@@ -321,10 +318,7 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 	default:
 		keys = MustGetKeybase()
 	}
-	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize, baseapp.SetPruning(store.PruneNothing))
-	}
-	tmNode, app, err := NewClient(config(c), appCreatorFunc)
+	tmNode, app, err := NewClient(config(c), keys, chains, logger)
 	if err != nil {
 		log2.Fatal(err)
 	}

@@ -1,7 +1,11 @@
 package app
 
 import (
+	"github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto/keys"
+	"github.com/pokt-network/pocket-core/store"
+	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io"
 	"os"
 	"path/filepath"
@@ -16,9 +20,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-type AppCreator func(log.Logger, dbm.DB, io.Writer) *PocketCoreApp
-
-func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error) {
+func NewClient(c config, keys keys.Keybase, chains *types.HostedBlockchains, logger log.Logger) (*node.Node, *PocketCoreApp, error) {
 	// setup the database
 	appDB, err := OpenApplicationDB(GlobalConfig)
 	if err != nil {
@@ -30,18 +32,13 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		return nil, nil, err
 	}
 	transactionIndexer := sdk.NewTransactionIndexer(txDB)
-	// open the tracewriter
-	traceWriter, err := openTraceWriter(c.TraceWriter)
-	if err != nil {
-		return nil, nil, err
-	}
 	// load the node key
 	nodeKey, err := p2p.LoadOrGenNodeKey(c.TmConfig.NodeKeyFile())
 	if err != nil {
 		return nil, nil, err
 	}
 	// upgrade the privVal file
-	app := creator(c.Logger, appDB, traceWriter)
+	app := NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, appDB, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize, baseapp.SetPruning(store.PruneNothing))
 	PCA = app
 	// create & start tendermint node
 	tmNode, err := node.NewNode(app,
