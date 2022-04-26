@@ -64,12 +64,12 @@ var (
 type GenesisType int
 
 const (
-	MainnetGenesisType GenesisType = iota + 1
+	DefaultGenesisType GenesisType = iota
+	MainnetGenesisType
 	TestnetGenesisType
-	DefaultGenesisType
 )
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, useCache, fastArchival bool) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, genesisType GenesisType, useCache, fastArchival bool) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	GlobalConfig.PocketConfig.Cache = useCache
@@ -92,7 +92,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// log the config and chains
 	logger.Debug(fmt.Sprintf("Pocket Config: \n%v", GlobalConfig))
 	// init the tendermint node
-	return InitTendermint(keybase, chains, logger)
+	return InitTendermint(chains, logger)
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
@@ -304,21 +304,14 @@ type Config struct {
 	TraceWriter string
 }
 
-func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger) *node.Node {
+func InitTendermint(chains *types.HostedBlockchains, logger log.Logger) *node.Node {
 	logger.Info("Initializing Tendermint")
 	c := Config{
 		TmConfig:    &GlobalConfig.TendermintConfig,
 		Logger:      logger,
 		TraceWriter: "",
 	}
-	var keys kb.Keybase
-	switch keybase {
-	case false:
-		keys, _ = GetKeybase()
-	default:
-		keys = MustGetKeybase()
-	}
-	tmNode, app, err := NewClient(config(c), keys, chains, logger)
+	tmNode, app, err := NewClient(config(c), chains, logger)
 	if err != nil {
 		log2.Fatal(err)
 	}

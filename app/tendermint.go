@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/crypto/keys"
 	"github.com/pokt-network/pocket-core/store"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io"
@@ -20,7 +19,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-func NewClient(c config, keys keys.Keybase, chains *types.HostedBlockchains, logger log.Logger) (*node.Node, *PocketCoreApp, error) {
+func NewClient(c config, chains *types.HostedBlockchains, logger log.Logger) (*node.Node, *PocketCoreApp, error) {
 	// setup the database
 	appDB, err := OpenApplicationDB(GlobalConfig)
 	if err != nil {
@@ -38,7 +37,7 @@ func NewClient(c config, keys keys.Keybase, chains *types.HostedBlockchains, log
 		return nil, nil, err
 	}
 	// upgrade the privVal file
-	app := NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, appDB, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize, baseapp.SetPruning(store.PruneNothing))
+	app := NewPocketCoreApp(nil, getTMClient(), chains, logger, appDB, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize, baseapp.SetPruning(store.PruneNothing))
 	PCA = app
 	// create & start tendermint node
 	tmNode, err := node.NewNode(app,

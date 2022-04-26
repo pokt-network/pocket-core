@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
@@ -52,7 +53,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&persistentPeers, "persistent_peers", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	rootCmd.PersistentFlags().StringVar(&seeds, "seeds", "", "a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'")
 	startCmd.Flags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
+
 	startCmd.Flags().BoolVar(&keybase, "keybase", true, "run with keybase, if disabled allows you to stake for the current validator only. providing a keybase is still neccesary for staking for apps & sending transactions")
+	_ = startCmd.Flags().MarkDeprecated("keybase", "keybase is no longer used. Register a private key with pocket accounts set-validator instead.")
+
 	startCmd.Flags().BoolVar(&mainnet, "mainnet", false, "run with mainnet genesis")
 	startCmd.Flags().BoolVar(&allBlockTxs, "allblocktxs", false, "run with the allblocktxs endpoint (not recommended)")
 	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
@@ -74,21 +78,26 @@ var startCmd = &cobra.Command{
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var genesisType app.GenesisType
-		if mainnet && testnet {
-			fmt.Println("cannot run with mainnet and testnet genesis simultaneously, please choose one")
-			return
+		if genesisType, err := genesisType(mainnet, testnet); err == nil {
+			tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, genesisType, useCache, fastArchival)
+			go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload)
+			captureExitSignal(tmNode)
+		} else {
+			fmt.Println(err)
 		}
-		if mainnet {
-			genesisType = app.MainnetGenesisType
-		}
-		if testnet {
-			genesisType = app.TestnetGenesisType
-		}
-		tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache, fastArchival)
-		go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload)
-		captureExitSignal(tmNode)
 	},
+}
+
+func genesisType(mainnet, testnet bool) (gt app.GenesisType, err error) {
+	if mainnet && testnet {
+		err = errors.New("cannot run with mainnet and testnet genesis simultaneously, please choose one")
+	}
+	if mainnet {
+		gt = app.MainnetGenesisType
+	} else if testnet {
+		gt = app.TestnetGenesisType
+	}
+	return
 }
 
 func captureExitSignal(tmNode *node.Node) {
