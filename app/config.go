@@ -6,12 +6,10 @@ import (
 	"fmt"
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
-	"github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	kb "github.com/pokt-network/pocket-core/crypto/keys"
-	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -23,7 +21,7 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/spf13/cobra"
-	config2 "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/config"
 	cryptoamino "github.com/tendermint/tendermint/crypto/encoding/amino"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
@@ -35,7 +33,6 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/rpc/client/http"
 	"github.com/tendermint/tendermint/rpc/client/local"
-	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"io/ioutil"
@@ -67,12 +64,12 @@ var (
 type GenesisType int
 
 const (
-	MainnetGenesisType GenesisType = iota + 1
+	DefaultGenesisType GenesisType = iota
+	MainnetGenesisType
 	TestnetGenesisType
-	DefaultGenesisType
 )
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, useCache, fastArchival bool) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, genesisType GenesisType, useCache, fastArchival bool) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	GlobalConfig.PocketConfig.Cache = useCache
@@ -95,7 +92,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// log the config and chains
 	logger.Debug(fmt.Sprintf("Pocket Config: \n%v", GlobalConfig))
 	// init the tendermint node
-	return InitTendermint(keybase, chains, logger)
+	return InitTendermint(chains, logger)
 }
 
 func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
@@ -184,7 +181,7 @@ func UpdateConfig(datadir string) {
 	}
 
 	//Write Defaults on GlobalConfig.
-	GlobalConfig.TendermintConfig.LevelDBOptions = config2.DefaultLevelDBOpts()
+	GlobalConfig.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()
 	sdk.DefaultPocketConsensusConfig(GlobalConfig.TendermintConfig.Consensus)
 	GlobalConfig.TendermintConfig.P2P.AllowDuplicateIP = true
 	GlobalConfig.TendermintConfig.P2P.AddrBookStrict = false
@@ -194,7 +191,7 @@ func UpdateConfig(datadir string) {
 	GlobalConfig.TendermintConfig.RPC.MaxOpenConnections = 2500
 	GlobalConfig.TendermintConfig.Mempool.Size = 9000
 	GlobalConfig.TendermintConfig.Mempool.CacheSize = 9000
-	GlobalConfig.TendermintConfig.FastSync = &config2.FastSyncConfig{
+	GlobalConfig.TendermintConfig.FastSync = &config.FastSyncConfig{
 		Version: "v1",
 	}
 	GlobalConfig.PocketConfig.ValidatorCacheSize = sdk.DefaultValidatorCacheSize
@@ -301,30 +298,9 @@ func InitGenesis(genesisType GenesisType, logger log.Logger) {
 	}
 }
 
-type Config struct {
-	TmConfig    *config2.Config
-	Logger      log.Logger
-	TraceWriter string
-}
-
-func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Logger) *node.Node {
+func InitTendermint(chains *types.HostedBlockchains, logger log.Logger) *node.Node {
 	logger.Info("Initializing Tendermint")
-	c := Config{
-		TmConfig:    &GlobalConfig.TendermintConfig,
-		Logger:      logger,
-		TraceWriter: "",
-	}
-	var keys kb.Keybase
-	switch keybase {
-	case false:
-		keys, _ = GetKeybase()
-	default:
-		keys = MustGetKeybase()
-	}
-	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize, baseapp.SetPruning(store.PruneNothing))
-	}
-	tmNode, app, err := NewClient(config(c), appCreatorFunc)
+	tmNode, app, err := NewClient(&GlobalConfig.TendermintConfig, chains, logger)
 	if err != nil {
 		log2.Fatal(err)
 	}

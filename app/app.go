@@ -3,7 +3,6 @@ package app
 import (
 	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/crypto/keys"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -31,7 +30,7 @@ const (
 )
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
-func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
+func NewPocketCoreApp(genState GenesisState, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
 	app := NewPocketBaseApp(logger, db, cache, iavlCacheSize, baseAppOptions...)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
