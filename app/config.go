@@ -298,20 +298,9 @@ func InitGenesis(genesisType GenesisType, logger log.Logger) {
 	}
 }
 
-type Config struct {
-	TmConfig    *config.Config
-	Logger      log.Logger
-	TraceWriter string
-}
-
 func InitTendermint(chains *types.HostedBlockchains, logger log.Logger) *node.Node {
 	logger.Info("Initializing Tendermint")
-	c := Config{
-		TmConfig:    &GlobalConfig.TendermintConfig,
-		Logger:      logger,
-		TraceWriter: "",
-	}
-	tmNode, app, err := NewClient(c, chains, logger)
+	tmNode, app, err := NewClient(&GlobalConfig.TendermintConfig, chains, logger)
 	if err != nil {
 		log2.Fatal(err)
 	}

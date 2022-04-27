@@ -19,7 +19,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-func NewClient(c Config, chains *types.HostedBlockchains, logger log.Logger) (*node.Node, *PocketCoreApp, error) {
+func NewClient(tmConfig *config.Config, chains *types.HostedBlockchains, logger log.Logger) (*node.Node, *PocketCoreApp, error) {
 	// setup the database
 	appDB, err := OpenApplicationDB(GlobalConfig)
 	if err != nil {
@@ -32,7 +32,7 @@ func NewClient(c Config, chains *types.HostedBlockchains, logger log.Logger) (*n
 	}
 	transactionIndexer := sdk.NewTransactionIndexer(txDB)
 	// load the node key
-	nodeKey, err := p2p.LoadOrGenNodeKey(c.TmConfig.NodeKeyFile())
+	nodeKey, err := p2p.LoadOrGenNodeKey(tmConfig.NodeKeyFile())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -41,16 +41,16 @@ func NewClient(c Config, chains *types.HostedBlockchains, logger log.Logger) (*n
 	PCA = app
 	// create & start tendermint node
 	tmNode, err := node.NewNode(app,
-		c.TmConfig,
+		tmConfig,
 		codec.GetCodecUpgradeHeight(),
-		pvm.LoadOrGenFilePV(c.TmConfig.PrivValidatorKeyFile(), c.TmConfig.PrivValidatorStateFile()),
+		pvm.LoadOrGenFilePV(tmConfig.PrivValidatorKeyFile(), tmConfig.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
 		transactionIndexer,
-		node.DefaultGenesisDocProviderFunc(c.TmConfig),
+		node.DefaultGenesisDocProviderFunc(tmConfig),
 		node.DefaultDBProvider,
-		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
-		c.Logger.With("module", "node"),
+		node.DefaultMetricsProvider(tmConfig.Instrumentation),
+		logger.With("module", "node"),
 	)
 	if err != nil {
 		return nil, nil, err
