@@ -21,7 +21,7 @@ import (
 	pocket "github.com/pokt-network/pocket-core/x/pocketcore"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/spf13/cobra"
-	config2 "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/config"
 	cryptoamino "github.com/tendermint/tendermint/crypto/encoding/amino"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
@@ -181,7 +181,7 @@ func UpdateConfig(datadir string) {
 	}
 
 	//Write Defaults on GlobalConfig.
-	GlobalConfig.TendermintConfig.LevelDBOptions = config2.DefaultLevelDBOpts()
+	GlobalConfig.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()
 	sdk.DefaultPocketConsensusConfig(GlobalConfig.TendermintConfig.Consensus)
 	GlobalConfig.TendermintConfig.P2P.AllowDuplicateIP = true
 	GlobalConfig.TendermintConfig.P2P.AddrBookStrict = false
@@ -191,7 +191,7 @@ func UpdateConfig(datadir string) {
 	GlobalConfig.TendermintConfig.RPC.MaxOpenConnections = 2500
 	GlobalConfig.TendermintConfig.Mempool.Size = 9000
 	GlobalConfig.TendermintConfig.Mempool.CacheSize = 9000
-	GlobalConfig.TendermintConfig.FastSync = &config2.FastSyncConfig{
+	GlobalConfig.TendermintConfig.FastSync = &config.FastSyncConfig{
 		Version: "v1",
 	}
 	GlobalConfig.PocketConfig.ValidatorCacheSize = sdk.DefaultValidatorCacheSize
@@ -299,7 +299,7 @@ func InitGenesis(genesisType GenesisType, logger log.Logger) {
 }
 
 type Config struct {
-	TmConfig    *config2.Config
+	TmConfig    *config.Config
 	Logger      log.Logger
 	TraceWriter string
 }
@@ -311,7 +311,7 @@ func InitTendermint(chains *types.HostedBlockchains, logger log.Logger) *node.No
 		Logger:      logger,
 		TraceWriter: "",
 	}
-	tmNode, app, err := NewClient(config(c), chains, logger)
+	tmNode, app, err := NewClient(c, chains, logger)
 	if err != nil {
 		log2.Fatal(err)
 	}

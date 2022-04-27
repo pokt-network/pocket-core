@@ -234,17 +234,16 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		}, nil
 	}
 	loggerFile, _ := os.Open(os.DevNull)
-	c := config{
-		TmConfig: getTestConfig(),
-		Logger:   log.NewTMLogger(loggerFile),
-	}
+	tmConfig := getTestConfig()
+	logger := log.NewTMLogger(loggerFile)
+
 	db := getInMemoryDB()
-	traceWriter, err := openTraceWriter(c.TraceWriter)
+	traceWriter, err := openTraceWriter("")
 	if err != nil {
 		panic(err)
 	}
 	nodeKey := p2p.NodeKey{PrivKey: pk}
-	privVal := GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
+	privVal := GenFilePV(tmConfig.PrivValidatorKey, tmConfig.PrivValidatorState)
 	privVal.Key.PrivKey = pk
 	privVal.Key.PubKey = pk.PubKey()
 	privVal.Key.Address = pk.PubKey().Address()
@@ -253,10 +252,10 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	dbProvider := func(*node.DBContext) (dbm.DB, error) {
 		return db, nil
 	}
-	app := GetApp(c.Logger, db, traceWriter)
+	app := GetApp(logger, db, traceWriter)
 	txDB := dbm.NewMemDB()
 	tmNode, err := node.NewNode(app.BaseApp,
-		c.TmConfig,
+		tmConfig,
 		0,
 		privVal,
 		&nodeKey,
@@ -264,8 +263,8 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		sdk.NewTransactionIndexer(txDB),
 		genDocProvider,
 		dbProvider,
-		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
-		c.Logger.With("module", "node"),
+		node.DefaultMetricsProvider(tmConfig.Instrumentation),
+		logger.With("module", "node"),
 	)
 	if err != nil {
 		panic(err)

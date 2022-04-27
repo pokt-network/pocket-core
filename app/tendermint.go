@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	sdk "github.com/pokt-network/pocket-core/types"
-	cfg "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
@@ -19,7 +19,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-func NewClient(c config, chains *types.HostedBlockchains, logger log.Logger) (*node.Node, *PocketCoreApp, error) {
+func NewClient(c Config, chains *types.HostedBlockchains, logger log.Logger) (*node.Node, *PocketCoreApp, error) {
 	// setup the database
 	appDB, err := OpenApplicationDB(GlobalConfig)
 	if err != nil {
@@ -81,23 +81,7 @@ func openTraceWriter(traceWriterFile string) (w io.Writer, err error) {
 	return
 }
 
-//// upgradePrivVal converts old priv_validator.json file (prior to Tendermint 0.28)
-//// to the new priv_validator_key.json and priv_validator_state.json files.
-//func upgradePrivVal(config *cfg.Config) {
-//	if _, err := os.Stat(config.OldPrivValidatorFile()); !os.IsNotExist(err) {
-//		if oldFilePV, err := pvm.LoadOldFilePV(config.OldPrivValidatorFile()); err == nil {
-//			oldFilePV.Upgrade(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
-//		}
-//	}
-//}
-
-type config struct {
-	TmConfig    *cfg.Config
-	Logger      log.Logger
-	TraceWriter string
-}
-
-func modifyPrivValidatorsFile(config *cfg.Config, rollbackHeight int64) error {
+func modifyPrivValidatorsFile(config *config.Config, rollbackHeight int64) error {
 	var sig []byte
 	filePv := pvm.LoadOrGenFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
 	filePv.LastSignState.Height = rollbackHeight
