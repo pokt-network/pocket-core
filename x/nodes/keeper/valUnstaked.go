@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"time"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -32,7 +33,7 @@ func (k Keeper) IsWaitingValidator(ctx sdk.Ctx, valAddr sdk.Address) bool {
 func (k Keeper) GetWaitingValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.WaitingToBeginUnstakingKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.WaitingToBeginUnstakingKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -81,7 +82,7 @@ func (k Keeper) deleteUnstakingValidator(ctx sdk.Ctx, val types.Validator) {
 func (k Keeper) getAllUnstakingValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.UnstakingValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.UnstakingValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var addrs sdk.Addresses
@@ -126,9 +127,9 @@ func (k Keeper) deleteUnstakingValidators(ctx sdk.Ctx, unstakingTime time.Time) 
 }
 
 // unstakingValidatorsIterator - Retrieve an iterator for all unstaking validators up to a certain time
-func (k Keeper) unstakingValidatorsIterator(ctx sdk.Ctx, endTime time.Time) (sdk.Iterator, error) {
+func (k Keeper) unstakingValidatorsIterator(ctx sdk.Ctx, endTime time.Time) (storeTypes.Iterator, error) {
 	store := ctx.KVStore(k.storeKey)
-	return store.Iterator(types.UnstakingValidatorsKey, sdk.InclusiveEndBytes(types.KeyForUnstakingValidators(endTime)))
+	return store.Iterator(types.UnstakingValidatorsKey, storeTypes.InclusiveEndBytes(types.KeyForUnstakingValidators(endTime)))
 }
 
 // getMatureValidators - Retrieve a list of all the mature validators

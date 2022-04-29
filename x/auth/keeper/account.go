@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/exported"
 	"github.com/pokt-network/pocket-core/x/auth/types"
@@ -150,7 +151,7 @@ func (k Keeper) RemoveAccount(ctx sdk.Ctx, acc exported.Account) {
 // IterateAccounts implements sdk.Keeper.
 func (k Keeper) IterateAccounts(ctx sdk.Ctx, process func(exported.Account) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iter, _ := sdk.KVStorePrefixIterator(store, types.AddressStoreKeyPrefix)
+	iter, _ := storeTypes.KVStorePrefixIterator(store, types.AddressStoreKeyPrefix)
 	defer iter.Close()
 	for {
 		if !iter.Valid() {

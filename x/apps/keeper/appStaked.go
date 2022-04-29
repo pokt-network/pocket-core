@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
@@ -71,16 +72,16 @@ func (k Keeper) getStakedApplicationsCount(ctx sdk.Ctx) (count int64) {
 }
 
 // stakedAppsIterator - Retrieve an iterator for the current staked applications
-func (k Keeper) stakedAppsIterator(ctx sdk.Ctx) (sdk.Iterator, error) {
+func (k Keeper) stakedAppsIterator(ctx sdk.Ctx) (storeTypes.Iterator, error) {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStoreReversePrefixIterator(store, types.StakedAppsKey)
+	return storeTypes.KVStoreReversePrefixIterator(store, types.StakedAppsKey)
 }
 
 // IterateAndExecuteOverStakedApps - Goes through the staked application set and execute handler
 func (k Keeper) IterateAndExecuteOverStakedApps(
 	ctx sdk.Ctx, fn func(index int64, application exported.ApplicationI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStoreReversePrefixIterator(store, types.StakedAppsKey)
+	iterator, _ := storeTypes.KVStoreReversePrefixIterator(store, types.StakedAppsKey)
 	defer iterator.Close()
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {

@@ -232,6 +232,14 @@ type KVStoreKey struct {
 	name string
 }
 
+func NewKVStoreKeys(names ...string) map[string]*KVStoreKey {
+	keys := make(map[string]*KVStoreKey)
+	for _, name := range names {
+		keys[name] = NewKVStoreKey(name)
+	}
+	return keys
+}
+
 // NewKVStoreKey returns a new pointer to a KVStoreKey.
 // Use a pointer so keys don't collide.
 func NewKVStoreKey(name string) *KVStoreKey {
@@ -251,6 +259,14 @@ func (key *KVStoreKey) String() string {
 // TransientStoreKey is used for indexing transient stores in a MultiStore
 type TransientStoreKey struct {
 	name string
+}
+
+func NewTransientStoreKeys(names ...string) map[string]*TransientStoreKey {
+	keys := make(map[string]*TransientStoreKey)
+	for _, name := range names {
+		keys[name] = NewTransientStoreKey(name)
+	}
+	return keys
 }
 
 // Constructs new TransientStoreKey

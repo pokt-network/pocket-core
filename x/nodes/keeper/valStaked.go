@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -72,9 +73,9 @@ func (k Keeper) deleteValidatorForChains(ctx sdk.Ctx, validator types.Validator)
 }
 
 // validatorByChainsIterator - returns an iterator for the current staked validators
-func (k Keeper) validatorByChainsIterator(ctx sdk.Ctx, networkIDBz []byte) (sdk.Iterator, error) {
+func (k Keeper) validatorByChainsIterator(ctx sdk.Ctx, networkIDBz []byte) (storeTypes.Iterator, error) {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStorePrefixIterator(store, types.KeyForValidatorsByNetworkID(networkIDBz))
+	return storeTypes.KVStorePrefixIterator(store, types.KeyForValidatorsByNetworkID(networkIDBz))
 }
 
 // deleteValidatorFromStakingSet - delete validator from staked set
@@ -97,7 +98,7 @@ func (k Keeper) removeValidatorTokens(ctx sdk.Ctx, v types.Validator, tokensToRe
 // GetStakedValidators - Retrieve StakedValidators
 func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.StakedValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.StakedValidatorsKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -114,16 +115,16 @@ func (k Keeper) GetStakedValidators(ctx sdk.Ctx) (validators []exported.Validato
 }
 
 // stakedValsIterator - Retrieve an iterator for the current staked validators
-func (k Keeper) stakedValsIterator(ctx sdk.Ctx) (sdk.Iterator, error) {
+func (k Keeper) stakedValsIterator(ctx sdk.Ctx) (storeTypes.Iterator, error) {
 	store := ctx.KVStore(k.storeKey)
-	return sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
+	return storeTypes.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
 }
 
 // IterateAndExecuteOverStakedVals - Goes through the staked validator set and execute handler
 func (k Keeper) IterateAndExecuteOverStakedVals(
 	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
+	iterator, _ := storeTypes.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
 	defer iterator.Close()
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {

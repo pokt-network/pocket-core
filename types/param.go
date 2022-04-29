@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"reflect"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -15,8 +16,8 @@ const (
 )
 
 var (
-	ParamsKey  = NewKVStoreKey(paramsKey)
-	ParamsTKey = NewTransientStoreKey(paramsTKey)
+	ParamsKey  = storeTypes.NewKVStoreKey(paramsKey)
+	ParamsTKey = storeTypes.NewTransientStoreKey(paramsTKey)
 )
 
 // Individual parameter store for each keeper
@@ -24,8 +25,8 @@ var (
 // recording whether the parameter has been changed or not
 type Subspace struct {
 	cdc   *codec.Codec
-	key   StoreKey // []byte -> []byte, stores parameter
-	tkey  StoreKey // []byte -> bool, stores parameter change
+	key   storeTypes.StoreKey // []byte -> []byte, stores parameter
+	tkey  storeTypes.StoreKey // []byte -> bool, stores parameter change
 	name  []byte
 	table KeyTable
 }
@@ -71,14 +72,14 @@ func (s Subspace) WithKeyTable(table KeyTable) Subspace {
 }
 
 // Returns a KVStore identical with ctx.KVStore(s.key).Prefix()
-func (s Subspace) kvStore(ctx Ctx) KVStore {
+func (s Subspace) kvStore(ctx Ctx) storeTypes.KVStore {
 	// append here is safe, appends within a function won't cause
 	// weird side effects when its singlethreaded
 	return prefix.NewStore(ctx.KVStore(s.key), append(s.name, '/'))
 }
 
 // Returns a transient store for modification
-func (s Subspace) transientStore(ctx Ctx) KVStore {
+func (s Subspace) transientStore(ctx Ctx) storeTypes.KVStore {
 	// append here is safe, appends within a function won't cause
 	// weird side effects when its singlethreaded
 	return prefix.NewStore(ctx.TransientStore(s.tkey), append(s.name, '/'))
@@ -167,7 +168,7 @@ func (s Subspace) Modified(ctx Ctx, key []byte) (bool, error) {
 	return tstore.Has(key)
 }
 
-func (s Subspace) checkType(store KVStore, key []byte, param interface{}) {
+func (s Subspace) checkType(key []byte, param interface{}) {
 	attr, ok := s.table.m[string(key)]
 	if !ok {
 		panic("Parameter not registered")
@@ -193,7 +194,7 @@ func (s Subspace) checkType(store KVStore, key []byte, param interface{}) {
 // It also set to the transient store to record change.
 func (s Subspace) Set(ctx Ctx, key []byte, param interface{}) {
 	store := s.kvStore(ctx)
-	s.checkType(store, key, param)
+	s.checkType(key, param)
 	bz, err := s.cdc.MarshalJSON(param)
 	if err != nil {
 		panic(err)
@@ -232,7 +233,7 @@ func (s Subspace) Update(ctx Ctx, key []byte, param []byte) error {
 func (s Subspace) SetWithSubkey(ctx Ctx, key []byte, subkey []byte, param interface{}) {
 	store := s.kvStore(ctx)
 
-	s.checkType(store, key, param)
+	s.checkType(key, param)
 
 	newkey := concatKeys(key, subkey)
 

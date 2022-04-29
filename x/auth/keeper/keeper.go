@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -11,13 +12,13 @@ import (
 // Keeper of the supply store
 type Keeper struct {
 	Cdc       *codec.Codec
-	storeKey  sdk.StoreKey
+	storeKey  storeTypes.StoreKey
 	subspace  sdk.Subspace
 	permAddrs map[string]types.PermissionsForAddress
 }
 
 // NewKeeper creates a new Keeper instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, subspace sdk.Subspace, maccPerms map[string][]string) Keeper {
+func NewKeeper(cdc *codec.Codec, key storeTypes.StoreKey, subspace sdk.Subspace, maccPerms map[string][]string) Keeper {
 	// set the addresses
 	permAddrs := make(map[string]types.PermissionsForAddress)
 	for name, perms := range maccPerms {

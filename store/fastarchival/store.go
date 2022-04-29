@@ -6,7 +6,7 @@ import (
 	"github.com/pokt-network/pocket-core/store/iavl"
 	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
 	"github.com/pokt-network/pocket-core/store/tracekv"
-	"github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/store/types"
 	dbm "github.com/tendermint/tm-db"
 	"io"
 )

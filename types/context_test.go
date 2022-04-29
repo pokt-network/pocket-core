@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"testing"
 	"time"
 
@@ -44,16 +45,16 @@ func (l MockLogger) With(kvs ...interface{}) log.Logger {
 	panic("not implemented")
 }
 
-func defaultContext(key types.StoreKey) types.Context {
+func defaultContext(key storeTypes.StoreKey) types.Context {
 	db := dbm.NewMemDB()
 	cms := store.NewCommitMultiStore(db, false, 5000000)
-	cms.MountStoreWithDB(key, types.StoreTypeIAVL, db)
+	cms.MountStoreWithDB(key, storeTypes.StoreTypeIAVL, db)
 	_ = cms.LoadLatestVersion()
 	ctx := types.NewContext(cms, abci.Header{}, false, log.NewNopLogger())
 	return ctx
 }
 func TestImplementsCtx(t *testing.T) {
-	key := types.NewKVStoreKey(t.Name())
+	key := storeTypes.NewKVStoreKey(t.Name())
 
 	ctx := defaultContext(key)
 
@@ -61,7 +62,7 @@ func TestImplementsCtx(t *testing.T) {
 }
 
 func TestCacheContext(t *testing.T) {
-	key := types.NewKVStoreKey(t.Name())
+	key := storeTypes.NewKVStoreKey(t.Name())
 	k1 := []byte("hello")
 	v1 := []byte("world")
 	k2 := []byte("key")
@@ -94,7 +95,7 @@ func TestCacheContext(t *testing.T) {
 }
 
 func TestLogContext(t *testing.T) {
-	key := types.NewKVStoreKey(t.Name())
+	key := storeTypes.NewKVStoreKey(t.Name())
 	ctx := defaultContext(key)
 	logger := NewMockLogger()
 	ctx = ctx.WithLogger(logger)
@@ -116,7 +117,7 @@ func TestContextWithCustom(t *testing.T) {
 	txbytes := []byte("txbytes")
 	logger := NewMockLogger()
 	voteinfos := []abci.VoteInfo{{}}
-	meter := types.NewGasMeter(10000)
+	meter := storeTypes.NewGasMeter(10000)
 	minGasPrices := types.DecCoins{types.NewInt64DecCoin("feetoken", 1)}
 
 	ctx = types.NewContext(nil, header, ischeck, logger)

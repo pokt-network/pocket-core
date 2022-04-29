@@ -2,6 +2,7 @@ package keeper
 
 import (
 	types2 "github.com/pokt-network/pocket-core/codec/types"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"math/rand"
 	"testing"
 
@@ -54,16 +55,16 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	initPower := int64(100000000000)
 	nAccs := int64(4)
 
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
+	keyAcc := storeTypes.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
-	keyPOS := sdk.NewKVStoreKey(types.ModuleName)
+	keyPOS := storeTypes.NewKVStoreKey(types.ModuleName)
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db, false, 5000000)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyPOS, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+	ms.MountStoreWithDB(keyAcc, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyPOS, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyParams, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, storeTypes.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"github.com/tendermint/tendermint/libs/strings"
 	"time"
 
@@ -29,7 +30,7 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 	// Retrieve the prevState validator set addresses mapped to their respective staking power
 	prevStatePowerMap := k.getPrevStatePowerMap(ctx)
 	// Iterate over staked validators, highest power to lowest.
-	iterator, _ := sdk.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
+	iterator, _ := storeTypes.KVStoreReversePrefixIterator(store, types.StakedValidatorsKey)
 	defer iterator.Close()
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
 		// get the validator address
@@ -543,7 +544,7 @@ func (k Keeper) JailValidator(ctx sdk.Ctx, addr sdk.Address) {
 
 func (k Keeper) IncrementJailedValidators(ctx sdk.Ctx) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		val, err := k.UnmarshalValidator(ctx, iterator.Value())

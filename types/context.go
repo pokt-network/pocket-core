@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	strings "strings"
+	"strings"
 	"time"
 
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/tendermint/tendermint/store"
 	"golang.org/x/crypto/sha3"
+
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -34,15 +36,15 @@ var GlobalCtxCache *Cache
 
 type Context struct {
 	ctx           context.Context
-	ms            MultiStore
+	ms            storeTypes.MultiStore
 	blockstore    *store.BlockStore
 	header        abci.Header
 	chainID       string
 	txBytes       []byte
 	logger        log.Logger
 	voteInfo      []abci.VoteInfo
-	gasMeter      GasMeter
-	blockGasMeter GasMeter
+	gasMeter      storeTypes.GasMeter
+	blockGasMeter storeTypes.GasMeter
 	checkTx       bool
 	minGasPrice   DecCoins
 	consParams    *abci.ConsensusParams
@@ -54,15 +56,15 @@ type Context struct {
 
 type Ctx interface {
 	Context() context.Context
-	MultiStore() MultiStore
+	MultiStore() storeTypes.MultiStore
 	BlockHeight() int64
 	BlockTime() time.Time
 	ChainID() string
 	TxBytes() []byte
 	Logger() log.Logger
 	VoteInfos() []abci.VoteInfo
-	GasMeter() GasMeter
-	BlockGasMeter() GasMeter
+	GasMeter() storeTypes.GasMeter
+	BlockGasMeter() storeTypes.GasMeter
 	IsCheckTx() bool
 	MinGasPrices() DecCoins
 	EventManager() *EventManager
@@ -74,7 +76,7 @@ type Ctx interface {
 	BlockStore() *store.BlockStore
 	GetPrevBlockHash(height int64) (hash []byte, err error)
 	WithContext(ctx context.Context) Context
-	WithMultiStore(ms MultiStore) Context
+	WithMultiStore(ms storeTypes.MultiStore) Context
 	WithBlockHeader(header abci.Header) Context
 	WithBlockTime(newTime time.Time) Context
 	WithProposer(addr Address) Context
@@ -83,16 +85,16 @@ type Ctx interface {
 	WithTxBytes(txBytes []byte) Context
 	WithLogger(logger log.Logger) Context
 	WithVoteInfos(voteInfo []abci.VoteInfo) Context
-	WithGasMeter(meter GasMeter) Context
-	WithBlockGasMeter(meter GasMeter) Context
+	WithGasMeter(meter storeTypes.GasMeter) Context
+	WithBlockGasMeter(meter storeTypes.GasMeter) Context
 	WithIsCheckTx(isCheckTx bool) Context
 	WithMinGasPrices(gasPrices DecCoins) Context
 	WithConsensusParams(params *abci.ConsensusParams) Context
 	WithEventManager(em *EventManager) Context
 	WithValue(key, value interface{}) Context
 	Value(key interface{}) interface{}
-	KVStore(key StoreKey) KVStore
-	TransientStore(key StoreKey) KVStore
+	KVStore(key storeTypes.StoreKey) storeTypes.KVStore
+	TransientStore(key storeTypes.StoreKey) storeTypes.KVStore
 	CacheContext() (cc Context, writeCache func())
 	IsZero() bool
 	AppVersion() string
@@ -107,21 +109,21 @@ type Ctx interface {
 type Request = Context
 
 // Read-only accessors
-func (c Context) Context() context.Context    { return c.ctx }
-func (c Context) MultiStore() MultiStore      { return c.ms }
-func (c Context) BlockHeight() int64          { return c.header.Height }
-func (c Context) BlockTime() time.Time        { return c.header.Time }
-func (c Context) ChainID() string             { return c.chainID }
-func (c Context) TxBytes() []byte             { return c.txBytes }
-func (c Context) Logger() log.Logger          { return c.logger }
-func (c Context) VoteInfos() []abci.VoteInfo  { return c.voteInfo }
-func (c Context) GasMeter() GasMeter          { return c.gasMeter }
-func (c Context) BlockGasMeter() GasMeter     { return c.blockGasMeter }
-func (c Context) IsCheckTx() bool             { return c.checkTx }
-func (c Context) MinGasPrices() DecCoins      { return c.minGasPrice }
-func (c Context) EventManager() *EventManager { return c.eventManager }
-func (c Context) AppVersion() string          { return dropTag(c.appVersion) }
-func (c Context) ClearGlobalCache()           { c.cachedStore.Purge() }
+func (c Context) Context() context.Context           { return c.ctx }
+func (c Context) MultiStore() storeTypes.MultiStore  { return c.ms }
+func (c Context) BlockHeight() int64                 { return c.header.Height }
+func (c Context) BlockTime() time.Time               { return c.header.Time }
+func (c Context) ChainID() string                    { return c.chainID }
+func (c Context) TxBytes() []byte                    { return c.txBytes }
+func (c Context) Logger() log.Logger                 { return c.logger }
+func (c Context) VoteInfos() []abci.VoteInfo         { return c.voteInfo }
+func (c Context) GasMeter() storeTypes.GasMeter      { return c.gasMeter }
+func (c Context) BlockGasMeter() storeTypes.GasMeter { return c.blockGasMeter }
+func (c Context) IsCheckTx() bool                    { return c.checkTx }
+func (c Context) MinGasPrices() DecCoins             { return c.minGasPrice }
+func (c Context) EventManager() *EventManager        { return c.eventManager }
+func (c Context) AppVersion() string                 { return dropTag(c.appVersion) }
+func (c Context) ClearGlobalCache()                  { c.cachedStore.Purge() }
 func (c Context) IsAfterUpgradeHeight() bool {
 	return c.header.Height >= codec.GetCodecUpgradeHeight()
 }
@@ -168,7 +170,7 @@ func InitCtxCache(size int) {
 }
 
 // create a new context
-func NewContext(ms MultiStore, header abci.Header, isCheckTx bool, logger log.Logger) Context {
+func NewContext(ms storeTypes.MultiStore, header abci.Header, isCheckTx bool, logger log.Logger) Context {
 	// https://github.com/gogo/protobuf/issues/519
 	header.Time = header.Time.UTC()
 	return Context{
@@ -248,7 +250,7 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
 		return cachedCtx.(Context), nil
 	}
-	ms, err := (c.ms).(CommitMultiStore).LoadLazyVersion(height)
+	ms, err := (c.ms).(storeTypes.CommitMultiStore).LoadLazyVersion(height)
 	if err != nil {
 		return Context{}, err
 	}
@@ -287,7 +289,7 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 		EvidenceHash:       meta.Header.EvidenceHash,
 		ProposerAddress:    meta.Header.ProposerAddress,
 	}
-	newCtx := NewContext((*ms).(MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams).SetPrevCtx(true)
+	newCtx := NewContext((*ms).(storeTypes.MultiStore), header, false, c.logger).WithAppVersion(c.appVersion).WithBlockStore(c.blockstore).WithConsensusParams(c.consParams).SetPrevCtx(true)
 	_ = c.addToCache(fmt.Sprintf("%d", height), newCtx)
 	return newCtx, nil
 }
@@ -316,7 +318,7 @@ func (c Context) WithContext(ctx context.Context) Context {
 	return c
 }
 
-func (c Context) WithMultiStore(ms MultiStore) Context {
+func (c Context) WithMultiStore(ms storeTypes.MultiStore) Context {
 	c.ms = ms
 	return c
 }
@@ -367,12 +369,12 @@ func (c Context) WithVoteInfos(voteInfo []abci.VoteInfo) Context {
 	return c
 }
 
-func (c Context) WithGasMeter(meter GasMeter) Context {
+func (c Context) WithGasMeter(meter storeTypes.GasMeter) Context {
 	c.gasMeter = meter
 	return c
 }
 
-func (c Context) WithBlockGasMeter(meter GasMeter) Context {
+func (c Context) WithBlockGasMeter(meter storeTypes.GasMeter) Context {
 	c.blockGasMeter = meter
 	return c
 }
@@ -426,12 +428,12 @@ func (c Context) Value(key interface{}) interface{} {
 // ----------------------------------------------------------------------------
 
 // KVStore fetches a KVStore from the MultiStore.
-func (c Context) KVStore(key StoreKey) KVStore {
+func (c Context) KVStore(key storeTypes.StoreKey) storeTypes.KVStore {
 	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.GasMeter(), stypes.KVGasConfig())
 }
 
 // TransientStore fetches a TransientStore from the MultiStore.
-func (c Context) TransientStore(key StoreKey) KVStore {
+func (c Context) TransientStore(key storeTypes.StoreKey) storeTypes.KVStore {
 	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.GasMeter(), stypes.TransientGasConfig())
 }
 

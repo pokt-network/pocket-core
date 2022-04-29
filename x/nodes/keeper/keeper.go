@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	log2 "log"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -15,7 +16,7 @@ var _ types.ValidatorSet = Keeper{}
 
 // Keeper of the staking store
 type Keeper struct {
-	storeKey      sdk.StoreKey
+	storeKey      storeTypes.StoreKey
 	Cdc           *codec.Codec
 	AccountKeeper types.AuthKeeper
 	PocketKeeper  types.PocketKeeper // todo combine all modules
@@ -27,7 +28,7 @@ type Keeper struct {
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeeper,
+func NewKeeper(cdc *codec.Codec, key storeTypes.StoreKey, accountKeeper types.AuthKeeper,
 	paramstore sdk.Subspace, codespace sdk.CodespaceType) Keeper {
 	// ensure staked module accounts are set
 	if addr := accountKeeper.GetModuleAddress(types.StakedPoolName); addr == nil {
@@ -64,7 +65,7 @@ func (k Keeper) UpgradeCodec(ctx sdk.Ctx) {
 func (k Keeper) ConvertValidatorsState(ctx sdk.Ctx) {
 	validators := make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		vl := &types.LegacyValidator{}
