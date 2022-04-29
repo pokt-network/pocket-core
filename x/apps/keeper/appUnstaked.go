@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"time"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -36,7 +37,7 @@ func (k Keeper) deleteUnstakingApplication(ctx sdk.Ctx, val types.Application) {
 func (k Keeper) getAllUnstakingApplications(ctx sdk.Ctx) (applications []types.Application) {
 	applications = make(types.Applications, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.UnstakingAppsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.UnstakingAppsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		var addrs sdk.Addresses
@@ -90,9 +91,9 @@ func (k Keeper) deleteUnstakingApplications(ctx sdk.Ctx, unstakingTime time.Time
 }
 
 // unstakingApplicationsIterator - Retrieve an iterator for all unstaking applications up to a certain time
-func (k Keeper) unstakingApplicationsIterator(ctx sdk.Ctx, endTime time.Time) (sdk.Iterator, error) {
+func (k Keeper) unstakingApplicationsIterator(ctx sdk.Ctx, endTime time.Time) (storeTypes.Iterator, error) {
 	store := ctx.KVStore(k.storeKey)
-	return store.Iterator(types.UnstakingAppsKey, sdk.InclusiveEndBytes(types.KeyForUnstakingApps(endTime)))
+	return store.Iterator(types.UnstakingAppsKey, storeTypes.InclusiveEndBytes(types.KeyForUnstakingApps(endTime)))
 }
 
 // getMatureApplications - Retrieve a list of all the mature validators

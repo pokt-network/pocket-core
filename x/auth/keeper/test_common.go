@@ -4,6 +4,7 @@ import (
 	"fmt"
 	cdcTypes "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"os"
 	"testing"
 
@@ -41,14 +42,14 @@ func makeTestCodec() *codec.Codec {
 
 // nolint: deadcode unused
 func createTestInput(t *testing.T, isCheckTx bool, initPower int64, nAccs int64) (sdk.Context, Keeper) {
-	keyAcc := sdk.NewKVStoreKey(types.StoreKey)
+	keyAcc := storeTypes.NewKVStoreKey(types.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db, false, 5000000)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+	ms.MountStoreWithDB(keyAcc, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyParams, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, storeTypes.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "supply-chain"}, isCheckTx, log.NewNopLogger()).WithAppVersion("0.0.0")

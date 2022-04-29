@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/stretchr/testify/assert"
@@ -172,7 +173,7 @@ func TestGetValsIterator(t *testing.T) {
 			}
 
 			it, _ := keeper.stakedAppsIterator(context)
-			assert.Implements(t, (*sdk.Iterator)(nil), it, "does not implement interface")
+			assert.Implements(t, (*storeTypes.Iterator)(nil), it, "does not implement interface")
 		})
 	}
 }

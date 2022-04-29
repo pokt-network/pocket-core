@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 )
@@ -54,7 +55,7 @@ func (k Keeper) ResetValidatorSigningInfo(ctx sdk.Ctx, addr sdk.Address) {
 // IterateAndExecuteOverValSigningInfo - Goes over signing info validators and executes handler
 func (k Keeper) IterateAndExecuteOverValSigningInfo(ctx sdk.Ctx, handler func(addr sdk.Address, info types.ValidatorSigningInfo) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iter, _ := sdk.KVStorePrefixIterator(store, types.ValidatorSigningInfoKey)
+	iter, _ := storeTypes.KVStorePrefixIterator(store, types.ValidatorSigningInfoKey)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		address, err := types.GetValidatorSigningInfoAddress(iter.Key())
@@ -93,7 +94,7 @@ func (k Keeper) SetValidatorMissedAt(ctx sdk.Ctx, addr sdk.Address, index int64,
 // clearValidatorMissed - Remove all missed validators from store
 func (k Keeper) clearValidatorMissed(ctx sdk.Ctx, addr sdk.Address) {
 	store := ctx.KVStore(k.storeKey)
-	iter, _ := sdk.KVStorePrefixIterator(store, types.GetValMissedBlockPrefixKey(addr))
+	iter, _ := storeTypes.KVStorePrefixIterator(store, types.GetValMissedBlockPrefixKey(addr))
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		_ = store.Delete(iter.Key())

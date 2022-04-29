@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"testing"
 	"time"
 
@@ -59,21 +60,21 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	initPower := int64(100000000000)
 	nAccs := int64(5)
 
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
+	keyAcc := storeTypes.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
-	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
-	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
-	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
+	nodesKey := storeTypes.NewKVStoreKey(nodesTypes.StoreKey)
+	appsKey := storeTypes.NewKVStoreKey(appsTypes.StoreKey)
+	pocketKey := storeTypes.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db, false, 5000000)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+	ms.MountStoreWithDB(keyAcc, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyParams, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(nodesKey, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(appsKey, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(pocketKey, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, storeTypes.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 

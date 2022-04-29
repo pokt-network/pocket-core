@@ -7,6 +7,7 @@ import (
 	cdcTypes "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/store"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	authTypes "github.com/pokt-network/pocket-core/x/auth/types"
 	govKeeper "github.com/pokt-network/pocket-core/x/gov/keeper"
@@ -29,14 +30,14 @@ func setupTestInput() testInput {
 	authTypes.RegisterCodec(cdc)
 	crypto.RegisterAmino(cdc.AminoCodec().Amino)
 
-	authCapKey := sdk.NewKVStoreKey("auth")
+	authCapKey := storeTypes.NewKVStoreKey("auth")
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
 
 	ms := store.NewCommitMultiStore(db, false, 5000000)
-	ms.MountStoreWithDB(authCapKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+	ms.MountStoreWithDB(authCapKey, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyParams, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, storeTypes.StoreTypeTransient, db)
 	_ = ms.LoadLatestVersion()
 	akSubspace := sdk.NewSubspace(authTypes.DefaultCodespace)
 	ak := NewKeeper(

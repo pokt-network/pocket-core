@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
@@ -18,7 +19,7 @@ func (k Keeper) Application(ctx sdk.Ctx, address sdk.Address) exported.Applicati
 // AllApplications - Retrieve a list of all applications
 func (k Keeper) AllApplications(ctx sdk.Ctx) (apps []exported.ApplicationI) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		app, err := types.UnmarshalApplication(k.Cdc, ctx, iterator.Value())

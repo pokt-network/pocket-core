@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/store"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/apps/types"
@@ -46,19 +47,19 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			initPower := int64(100000000000)
 			nAccs := int64(4)
 
-			keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
+			keyAcc := storeTypes.NewKVStoreKey(auth.StoreKey)
 			keyParams := sdk.ParamsKey
 			tkeyParams := sdk.ParamsTKey
-			nodesKey := sdk.NewKVStoreKey(nodestypes.StoreKey)
-			appsKey := sdk.NewKVStoreKey(types.StoreKey)
+			nodesKey := storeTypes.NewKVStoreKey(nodestypes.StoreKey)
+			appsKey := storeTypes.NewKVStoreKey(types.StoreKey)
 
 			db := dbm.NewMemDB()
 			ms := store.NewCommitMultiStore(db, false, 5000000)
-			ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-			ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-			ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
-			ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-			ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+			ms.MountStoreWithDB(keyAcc, storeTypes.StoreTypeIAVL, db)
+			ms.MountStoreWithDB(keyParams, storeTypes.StoreTypeIAVL, db)
+			ms.MountStoreWithDB(nodesKey, storeTypes.StoreTypeIAVL, db)
+			ms.MountStoreWithDB(appsKey, storeTypes.StoreTypeIAVL, db)
+			ms.MountStoreWithDB(tkeyParams, storeTypes.StoreTypeTransient, db)
 			err := ms.LoadLatestVersion()
 			if err != nil {
 				t.FailNow()

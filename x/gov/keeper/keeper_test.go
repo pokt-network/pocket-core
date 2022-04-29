@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"reflect"
 	"testing"
 
@@ -187,7 +188,7 @@ type s struct {
 	I int
 }
 
-func testComponents(t *testing.T) (*codec.LegacyAmino, sdk.Context, sdk.StoreKey, sdk.StoreKey, Keeper) {
+func testComponents(t *testing.T) (*codec.LegacyAmino, sdk.Context, storeTypes.StoreKey, storeTypes.StoreKey, Keeper) {
 	mkey := sdk.ParamsKey
 	tkey := sdk.ParamsTKey
 	ctx, keeper := createTestKeeperAndContext(t, false)

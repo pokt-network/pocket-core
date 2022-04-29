@@ -1,6 +1,7 @@
 package list
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"math/rand"
 	"testing"
 
@@ -22,17 +23,17 @@ type TestStruct struct {
 	B bool
 }
 
-func defaultComponents(key sdk.StoreKey) (sdk.Context, *codec.Codec) {
+func defaultComponents(key storeTypes.StoreKey) (sdk.Context, *codec.Codec) {
 	db := dbm.NewMemDB()
 	cms := rootmulti.NewStore(db, false, 5000000)
-	cms.MountStoreWithDB(key, sdk.StoreTypeIAVL, db)
+	cms.MountStoreWithDB(key, storeTypes.StoreTypeIAVL, db)
 	_ = cms.LoadLatestVersion()
 	ctx := sdk.NewContext(cms, abci.Header{}, false, log.NewNopLogger())
 	cdc := codec.NewCodec(types.NewInterfaceRegistry())
 	return ctx, cdc
 }
 func TestList(t *testing.T) {
-	key := sdk.NewKVStoreKey("test")
+	key := storeTypes.NewKVStoreKey("test")
 	ctx, cdc := defaultComponents(key)
 	store := ctx.KVStore(key)
 	lm := NewList(cdc, store)
@@ -78,7 +79,7 @@ func TestList(t *testing.T) {
 }
 
 func TestListRandom(t *testing.T) {
-	key := sdk.NewKVStoreKey("test")
+	key := storeTypes.NewKVStoreKey("test")
 	ctx, cdc := defaultComponents(key)
 	store := ctx.KVStore(key)
 	list := NewList(cdc, store)

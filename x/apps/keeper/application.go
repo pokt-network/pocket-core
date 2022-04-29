@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/exported"
 	"github.com/pokt-network/pocket-core/x/apps/types"
@@ -65,7 +66,7 @@ func (k Keeper) DeleteApplication(ctx sdk.Ctx, addr sdk.Address) {
 func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications) {
 	applications = make([]types.Application, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -83,7 +84,7 @@ func (k Keeper) GetAllApplications(ctx sdk.Ctx) (applications types.Applications
 func (k Keeper) GetAllApplicationsWithOpts(ctx sdk.Ctx, opts types.QueryApplicationsWithOpts) (applications types.Applications) {
 	applications = make([]types.Application, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -104,7 +105,7 @@ func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications t
 	store := ctx.KVStore(k.storeKey)
 	applications = make([]types.Application, maxRetrieve)
 
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
 
 	i := 0
@@ -124,7 +125,7 @@ func (k Keeper) GetApplications(ctx sdk.Ctx, maxRetrieve uint16) (applications t
 func (k Keeper) IterateAndExecuteOverApps(
 	ctx sdk.Ctx, fn func(index int64, application exported.ApplicationI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllApplicationsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllApplicationsKey)
 	defer iterator.Close()
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {

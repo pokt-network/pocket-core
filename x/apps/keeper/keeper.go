@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -14,7 +15,7 @@ var _ types.ApplicationSet = Keeper{}
 
 // Keeper of the staking store
 type Keeper struct {
-	storeKey      sdk.StoreKey
+	storeKey      storeTypes.StoreKey
 	Cdc           *codec.Codec
 	AccountKeeper types.AuthKeeper
 	POSKeeper     types.PosKeeper
@@ -27,7 +28,7 @@ type Keeper struct {
 }
 
 // NewKeeper creates a new staking Keeper instance
-func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, posKeeper types.PosKeeper, supplyKeeper types.AuthKeeper, pocketKeeper types.PocketKeeper,
+func NewKeeper(cdc *codec.Codec, key storeTypes.StoreKey, posKeeper types.PosKeeper, supplyKeeper types.AuthKeeper, pocketKeeper types.PocketKeeper,
 	paramstore sdk.Subspace, codespace sdk.CodespaceType) Keeper {
 
 	// ensure staked module accounts are set

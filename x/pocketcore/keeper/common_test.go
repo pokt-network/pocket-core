@@ -77,7 +77,7 @@ func makeTestCodec() *codec.Codec {
 }
 
 // : deadcode unused
-func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper, map[string]*sdk.KVStoreKey, keys.Keybase) {
+func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper, map[string]*storeTypes.KVStoreKey, keys.Keybase) {
 	sdk.VbCCache = sdk.NewCache(1)
 	initPower := int64(100000000000)
 	nAccs := int64(5)
@@ -94,26 +94,26 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 		PubKey:  cb.PublicKey,
 		PrivKey: pk,
 	})
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
+	keyAcc := storeTypes.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
-	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
-	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
-	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
+	nodesKey := storeTypes.NewKVStoreKey(nodesTypes.StoreKey)
+	appsKey := storeTypes.NewKVStoreKey(appsTypes.StoreKey)
+	pocketKey := storeTypes.NewKVStoreKey(types.StoreKey)
 
-	keys := make(map[string]*sdk.KVStoreKey)
+	keys := make(map[string]*storeTypes.KVStoreKey)
 	keys["params"] = keyParams
 	keys["pos"] = nodesKey
 	keys["application"] = appsKey
 
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db, false, 5000000)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
+	ms.MountStoreWithDB(keyAcc, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(keyParams, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(nodesKey, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(appsKey, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(pocketKey, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(tkeyParams, storeTypes.StoreTypeTransient, db)
 	err = ms.LoadLatestVersion()
 	require.Nil(t, err)
 

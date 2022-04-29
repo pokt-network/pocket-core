@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -110,7 +111,7 @@ func (k Keeper) DeleteValidator(ctx sdk.Ctx, addr sdk.Address) {
 func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		validator, err := k.UnmarshalValidator(ctx, iterator.Value())
@@ -127,7 +128,7 @@ func (k Keeper) GetAllValidators(ctx sdk.Ctx) (validators []types.Validator) {
 func (k Keeper) GetAllValidatorsAddrs(ctx sdk.Ctx) (validators []sdk.Address) {
 	validators = make([]sdk.Address, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		validators = append(validators, iterator.Key())
@@ -139,7 +140,7 @@ func (k Keeper) GetAllValidatorsAddrs(ctx sdk.Ctx) (validators []sdk.Address) {
 func (k Keeper) GetAllValidatorsWithOpts(ctx sdk.Ctx, opts types.QueryValidatorsParams) (validators []types.Validator) {
 	validators = make([]types.Validator, 0)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
 		validator, err := k.UnmarshalValidator(ctx, iterator.Value())
@@ -158,7 +159,7 @@ func (k Keeper) GetAllValidatorsWithOpts(ctx sdk.Ctx, opts types.QueryValidators
 func (k Keeper) GetValidators(ctx sdk.Ctx, maxRetrieve uint16) (validators []types.Validator) {
 	store := ctx.KVStore(k.storeKey)
 	validators = make([]types.Validator, maxRetrieve)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
@@ -183,7 +184,7 @@ func (k Keeper) ClearSessionCache() {
 func (k Keeper) IterateAndExecuteOverVals(
 	ctx sdk.Ctx, fn func(index int64, validator exported.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	i := int64(0)
 	for ; iterator.Valid(); iterator.Next() {
@@ -212,7 +213,7 @@ func (k Keeper) Validator(ctx sdk.Ctx, address sdk.Address) exported.ValidatorI 
 // AllValidators - Retrieve a list of all validators
 func (k Keeper) AllValidators(ctx sdk.Ctx) (validators []exported.ValidatorI) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
@@ -233,7 +234,7 @@ type valPowerMap map[[sdk.AddrLen]byte][]byte
 func (k Keeper) getPrevStatePowerMap(ctx sdk.Ctx) valPowerMap {
 	prevState := make(valPowerMap)
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
+	iterator, _ := storeTypes.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
 	defer iterator.Close()
 	// iterate over the prevState validator set index
 	for ; iterator.Valid(); iterator.Next() {

@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
@@ -27,9 +28,9 @@ func (k Keeper) SetPrevStateValidatorsPower(ctx sdk.Ctx, power sdk.BigInt) {
 }
 
 // prevStateValidatorIterator - Retrieve an iterator for the consensus validators in the prevState block
-func (k Keeper) prevStateValidatorsIterator(ctx sdk.Ctx) (iterator sdk.Iterator) {
+func (k Keeper) prevStateValidatorsIterator(ctx sdk.Ctx) (iterator storeTypes.Iterator) {
 	store := ctx.KVStore(k.storeKey)
-	iterator, _ = sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
+	iterator, _ = storeTypes.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
 	return iterator
 }
 
@@ -37,7 +38,7 @@ func (k Keeper) prevStateValidatorsIterator(ctx sdk.Ctx) (iterator sdk.Iterator)
 func (k Keeper) IterateAndExecuteOverPrevStateValsByPower(
 	ctx sdk.Ctx, handler func(address sdk.Address, power int64) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
-	iter, _ := sdk.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
+	iter, _ := storeTypes.KVStorePrefixIterator(store, types.PrevStateValidatorsPowerKey)
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.Address(iter.Key()[len(types.PrevStateValidatorsPowerKey):])

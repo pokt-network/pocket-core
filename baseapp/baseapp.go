@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/evidence"
@@ -69,12 +70,12 @@ const (
 type BaseApp struct {
 	// initialized on creation
 	logger           log.Logger
-	name             string               // application name from abci.Info
-	tmNode           *node.Node           // <---- todo updated here
-	txIndexer        txindex.TxIndexer    // <---- todo updated here
-	blockstore       *tmStore.BlockStore  // <---- todo updated here
-	evidencePool     *evidence.Pool       // <---- todo updated here
-	cms              sdk.CommitMultiStore // Main (uncached) state
+	name             string                      // application name from abci.Info
+	tmNode           *node.Node                  // <---- todo updated here
+	txIndexer        txindex.TxIndexer           // <---- todo updated here
+	blockstore       *tmStore.BlockStore         // <---- todo updated here
+	evidencePool     *evidence.Pool              // <---- todo updated here
+	cms              storeTypes.CommitMultiStore // Main (uncached) state
 	cdc              *codec.Codec
 	router           sdk.Router      // handle any kind of message
 	queryRouter      sdk.QueryRouter // router for redirecting query calls
@@ -82,7 +83,7 @@ type BaseApp struct {
 	transactionCache map[string]struct{}
 
 	// set upon RollbackVersion or LoadLatestVersion.
-	baseKey *sdk.KVStoreKey // Main KVStore in cms
+	baseKey *storeTypes.KVStoreKey // Main KVStore in cms
 
 	anteHandler    sdk.AnteHandler  // ante handler for fee and auth
 	initChainer    sdk.InitChainer  // initialize state with validators and state blob
@@ -187,7 +188,7 @@ func (app *BaseApp) Logger() log.Logger {
 	return app.logger
 }
 
-func (app *BaseApp) Store() sdk.CommitMultiStore {
+func (app *BaseApp) Store() storeTypes.CommitMultiStore {
 	return app.cms
 }
 
@@ -207,19 +208,19 @@ func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
 
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
 // multistore.
-func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
+func (app *BaseApp) MountStores(keys ...storeTypes.StoreKey) {
 	for _, key := range keys {
 		switch key.(type) {
-		case *sdk.KVStoreKey:
+		case *storeTypes.KVStoreKey:
 			if !app.fauxMerkleMode {
-				app.MountStore(key, sdk.StoreTypeIAVL)
+				app.MountStore(key, storeTypes.StoreTypeIAVL)
 			} else {
 				// StoreTypeDB doesn't do anything upon commit, and it doesn't
 				// retain history, but it's useful for faster simulation.
-				app.MountStore(key, sdk.StoreTypeDB)
+				app.MountStore(key, storeTypes.StoreTypeDB)
 			}
-		case *sdk.TransientStoreKey:
-			app.MountStore(key, sdk.StoreTypeTransient)
+		case *storeTypes.TransientStoreKey:
+			app.MountStore(key, storeTypes.StoreTypeTransient)
 		default:
 			fmt.Println("Unrecognized store key type " + reflect.TypeOf(key).Name())
 			os.Exit(1)
@@ -229,37 +230,37 @@ func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
 
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
 // multistore.
-func (app *BaseApp) MountKVStores(keys map[string]*sdk.KVStoreKey) {
+func (app *BaseApp) MountKVStores(keys map[string]*storeTypes.KVStoreKey) {
 	keys[sdk.ParamsKey.Name()] = sdk.ParamsKey
 	for _, key := range keys {
 		if !app.fauxMerkleMode {
-			app.MountStore(key, sdk.StoreTypeIAVL)
+			app.MountStore(key, storeTypes.StoreTypeIAVL)
 		} else {
 			// StoreTypeDB doesn't do anything upon commit, and it doesn't
 			// retain history, but it's useful for faster simulation.
-			app.MountStore(key, sdk.StoreTypeDB)
+			app.MountStore(key, storeTypes.StoreTypeDB)
 		}
 	}
 }
 
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
 // multistore.
-func (app *BaseApp) MountTransientStores(keys map[string]*sdk.TransientStoreKey) {
+func (app *BaseApp) MountTransientStores(keys map[string]*storeTypes.TransientStoreKey) {
 	keys[sdk.ParamsTKey.Name()] = sdk.ParamsTKey
 	for _, key := range keys {
-		app.MountStore(key, sdk.StoreTypeTransient)
+		app.MountStore(key, storeTypes.StoreTypeTransient)
 	}
 }
 
 // MountStore mounts a store to the provided key in the BaseApp multistore,
 // using the default DB.
-func (app *BaseApp) MountStore(key sdk.StoreKey, typ sdk.StoreType) {
+func (app *BaseApp) MountStore(key storeTypes.StoreKey, typ storeTypes.StoreType) {
 	app.cms.MountStoreWithDB(key, typ, nil)
 }
 
 // LoadLatestVersion loads the latest application version. It will panic if
 // called more than once on a running BaseApp.
-func (app *BaseApp) LoadLatestVersion(baseKey *sdk.KVStoreKey) error {
+func (app *BaseApp) LoadLatestVersion(baseKey *storeTypes.KVStoreKey) error {
 	err := app.cms.LoadLatestVersion()
 	if err != nil {
 		return err
@@ -268,7 +269,7 @@ func (app *BaseApp) LoadLatestVersion(baseKey *sdk.KVStoreKey) error {
 }
 
 // LastCommitID returns the last CommitID of the multistore.
-func (app *BaseApp) LastCommitID() sdk.CommitID {
+func (app *BaseApp) LastCommitID() storeTypes.CommitID {
 	return app.cms.LastCommitID()
 }
 
@@ -278,7 +279,7 @@ func (app *BaseApp) LastBlockHeight() int64 {
 }
 
 // initializes the remaining logic from app.cms
-func (app *BaseApp) initFromMainStore(baseKey *sdk.KVStoreKey) error {
+func (app *BaseApp) initFromMainStore(baseKey *storeTypes.KVStoreKey) error {
 	mainStore := app.cms.GetKVStore(baseKey)
 	if mainStore == nil {
 		return errors.New("baseapp expects MultiStore with 'main' KVStore")
@@ -439,7 +440,7 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 
 	// add block gas meter for any genesis transactions (allow infinite gas)
 	app.deliverState.ctx = app.deliverState.ctx.
-		WithBlockGasMeter(sdk.NewInfiniteGasMeter())
+		WithBlockGasMeter(storeTypes.NewInfiniteGasMeter())
 
 	res = app.initChainer(app.deliverState.ctx, req)
 
@@ -561,7 +562,7 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 
 func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.ResponseQuery {
 	// "/store" prefix for store queries
-	queryable, ok := app.cms.(sdk.Queryable)
+	queryable, ok := app.cms.(storeTypes.Queryable)
 	if !ok {
 		msg := "multistore doesn't support queries"
 		return sdk.ErrUnknownRequest(msg).QueryResult()
@@ -696,7 +697,7 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		app.txDecoder = auth.DefaultTxDecoder(app.cdc)
 	}
 	if app.cms.TracingEnabled() {
-		app.cms.SetTracingContext(sdk.TraceContext(
+		app.cms.SetTracingContext(storeTypes.TraceContext(
 			map[string]interface{}{"blockHeight": req.Header.Height},
 		))
 	}
@@ -719,11 +720,11 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 	}
 
 	// add block gas meter
-	var gasMeter sdk.GasMeter
+	var gasMeter storeTypes.GasMeter
 	if maxGas := app.getMaximumBlockGas(); maxGas > 0 {
-		gasMeter = sdk.NewGasMeter(maxGas)
+		gasMeter = storeTypes.NewGasMeter(maxGas)
 	} else {
-		gasMeter = sdk.NewInfiniteGasMeter()
+		gasMeter = storeTypes.NewInfiniteGasMeter()
 	}
 
 	app.deliverState.ctx = app.deliverState.ctx.WithBlockGasMeter(gasMeter)
@@ -922,7 +923,7 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 // txContext returns a new context based off of the provided context with
 // a cache wrapped multi-store.
 func (app *BaseApp) txContext(ctx sdk.Ctx, txBytes []byte) (
-	sdk.Context, sdk.MultiStore) { // todo edit here!!!
+	sdk.Context, storeTypes.MultiStore) { // todo edit here!!!
 	newMS := store.MultiStore((*app.cms.(store.CommitMultiStore).(*rootMulti.Store).CopyStore()).(*rootMulti.Store))
 	if newMS.TracingEnabled() {
 		newMS = newMS.SetTracingContext(
@@ -937,19 +938,19 @@ func (app *BaseApp) txContext(ctx sdk.Ctx, txBytes []byte) (
 // txContext returns a new context based off of the provided context with
 // a cache wrapped multi-store.
 func (app *BaseApp) cacheTxContext(ctx sdk.Ctx, txBytes []byte) (
-	sdk.Context, sdk.CacheMultiStore) {
+	sdk.Context, storeTypes.CacheMultiStore) {
 
 	ms := ctx.MultiStore()
 	// TODO: https://github.com/cosmos/cosmos-sdk/issues/2824
 	msCache := ms.CacheMultiStore()
 	if msCache.TracingEnabled() {
 		msCache = msCache.SetTracingContext(
-			sdk.TraceContext(
+			storeTypes.TraceContext(
 				map[string]interface{}{
 					"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
 				},
 			),
-		).(sdk.CacheMultiStore)
+		).(storeTypes.CacheMultiStore)
 	}
 
 	return ctx.WithMultiStore(msCache), msCache
@@ -981,7 +982,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	defer func() {
 		if r := recover(); r != nil {
 			switch rType := r.(type) {
-			case sdk.ErrorOutOfGas:
+			case storeTypes.ErrorOutOfGas:
 				logMessage := fmt.Sprintf(
 					"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
 					rType.Descriptor, gasWanted, ctx.GasMeter().GasConsumed(),
@@ -1011,7 +1012,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 			)
 
 			if ctx.BlockGasMeter().GasConsumed() < startingGas {
-				fmt.Println(sdk.ErrorGasOverflow{Descriptor: "tx gas summation"}) // todo remove w/ gas
+				fmt.Println(storeTypes.ErrorGasOverflow{Descriptor: "tx gas summation"}) // todo remove w/ gas
 				os.Exit(1)
 			}
 		}
@@ -1024,7 +1025,7 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	if app.anteHandler != nil {
 		anteCtx, newCtx := sdk.Ctx(sdk.Context{}), sdk.Ctx(sdk.Context{})
 		abort := false
-		var msCache sdk.CacheMultiStore // todo edit here
+		var msCache storeTypes.CacheMultiStore // todo edit here
 
 		// Cache wrap context before anteHandler call in case it aborts.
 		// This is required for both CheckTx and DeliverTx.
@@ -1164,11 +1165,11 @@ func (app *BaseApp) halt() {
 // State
 
 type state struct {
-	ms  sdk.CacheMultiStore
+	ms  storeTypes.CacheMultiStore
 	ctx sdk.Context
 }
 
-func (st *state) CacheMultiStore() sdk.CacheMultiStore {
+func (st *state) CacheMultiStore() storeTypes.CacheMultiStore {
 	return st.ms.CacheMultiStore()
 }
 

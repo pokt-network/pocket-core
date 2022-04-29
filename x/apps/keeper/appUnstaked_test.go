@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"testing"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -260,7 +261,7 @@ func TestAppUnstaked_UnstakingApplicationsIterator(t *testing.T) {
 			}
 
 			it, _ := keeper.unstakingApplicationsIterator(context, context.BlockHeader().Time)
-			if v, ok := it.(sdk.Iterator); !ok {
+			if v, ok := it.(storeTypes.Iterator); !ok {
 				t.Errorf("appUnstaked.UnstakingApplicationsIterator()= %v does not implement sdk.Iterator", v)
 			}
 		})

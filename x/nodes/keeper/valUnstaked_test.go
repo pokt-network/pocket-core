@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"testing"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -256,7 +257,7 @@ func TestUnstakingValidatorsIterator(t *testing.T) {
 			}
 
 			it, _ := keeper.unstakingValidatorsIterator(context, context.BlockHeader().Time)
-			assert.Implements(t, (*sdk.Iterator)(nil), it, "does not implement interface")
+			assert.Implements(t, (*storeTypes.Iterator)(nil), it, "does not implement interface")
 		})
 	}
 }

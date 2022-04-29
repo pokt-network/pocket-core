@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/codec/types"
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	"math/rand"
 	"testing"
 
@@ -52,12 +53,12 @@ func getRandomValidatorAddress() sdk.Address {
 
 // nolint: deadcode unused
 func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keeper) {
-	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
+	keyAcc := storeTypes.NewKVStoreKey(auth.StoreKey)
 	db := dbm.NewMemDB()
 	ms := store.NewCommitMultiStore(db, false, 5000000)
-	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(sdk.ParamsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(sdk.ParamsTKey, sdk.StoreTypeTransient, db)
+	ms.MountStoreWithDB(keyAcc, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(sdk.ParamsKey, storeTypes.StoreTypeIAVL, db)
+	ms.MountStoreWithDB(sdk.ParamsTKey, storeTypes.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 

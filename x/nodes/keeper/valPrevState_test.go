@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -195,12 +196,12 @@ func TestKeeper_prevStateValidatorsIterator(t *testing.T) {
 		ctx sdk.Context
 	}
 	context, _, keeper := createTestInput(t, true)
-	it, _ := sdk.KVStorePrefixIterator(context.KVStore(keeper.storeKey), types.PrevStateValidatorsPowerKey)
+	it, _ := storeTypes.KVStorePrefixIterator(context.KVStore(keeper.storeKey), types.PrevStateValidatorsPowerKey)
 	tests := []struct {
 		name         string
 		fields       fields
 		args         args
-		wantIterator sdk.Iterator
+		wantIterator storeTypes.Iterator
 	}{
 		{"Test prevStateValidatorsIterator", fields{keeper: keeper}, args{ctx: context},
 			it,
