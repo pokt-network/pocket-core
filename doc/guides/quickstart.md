@@ -96,6 +96,19 @@ pocket version
 
 See [pokt-network/pocket-core-deployments](https://github.com/pokt-network/pocket-core-deployments)
 
+### Snapshots
+
+If you do not want to wait for your pocket node to sync from 0. You can give it a head start by downloading a snapshot.
+
+#### Enter your data directory:
+```text
+cd $HOME/.pocket/data/
+```
+
+#### Download and untar the latest snapshot:
+```text
+wget -qO- https://snapshot.nodes.pokt.network/latest.tar | tar xvf -
+```
 ## Quickstart
 
 ### Prerequisite Knowledge
@@ -248,6 +261,7 @@ Pocket Core provides a configuration file found in `<datadir>/config/config.json
 * **"tendermint\_uri"**: The RPC Port of Tendermint \(also defined above in Tendermint/RPC\)
 * **"keybase\_name"**: The name of the keybase
 * **"rpc\_port"**: The port of Pocket Core's RPC
+* **"rpc\_timeout"**: The amount of time Pocket should wait on a request before timing out (ms).
 * **"client\_block\_sync\_allowance"**: The +/- allowance in blocks for of a relay request \(security mechanism that can
   help filter misconfigured clients\)
 * **"max\_evidence\_cache\_entries"**: Maximum number of relay evidence stored in cache memory
