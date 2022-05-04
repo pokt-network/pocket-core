@@ -1,5 +1,6 @@
 ---
-description: Queries the current world state built on the Pocket node.
+description: >-
+ Queries the current world state built on the Pocket node.
 ---
 
 # Query Namespace

@@ -1,7 +1,7 @@
 # Changelog
 =======
 
-## RC-0.8.1
+## RC-0.8.2
 
 - Added Non-Custodial Validator Security Operation with Output Address (Activated with upgrade)
 - Deprecated SessionDB (In Memory GolevelDB only)
@@ -13,6 +13,7 @@
 - Enable Chains.json to be hot-reloaded every 1 minute
 - Fixed 'evidence already committed' error
 - Changed stake command. Now with Custodial / Non-custodial stake commands versions.
+- Increase max per_page for rpc calls to 10,000
 
 ## RC-0.7.1
 

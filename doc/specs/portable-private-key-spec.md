@@ -1,6 +1,7 @@
 ---
-description: >- Version 0.0.1. The Pocket Network protocol Portable Private Key. This specification will serve to
-describe the Portable Private Key (PPK) enabling multiple use cases like the creation of wallets.
+description: >-
+ Version 0.0.1. The Pocket Network protocol Portable Private Key. This specification will serve to
+ describe the Portable Private Key (PPK) enabling multiple use cases like the creation of wallets.
 ---
 
 # Portable Private Key
@@ -14,23 +15,13 @@ Ensuring a safe and portable store for private key.
 
 ## PPK Example
 
-```javascript
+```json
 {
-	"kdf"
-:
-	"scrypt",
-		"salt"
-:
-	"8AA85775977952115075E68278C070A6",
-		"secparam"
-:
-	"12",
-		"hint"
-:
-	"",
-		"ciphertext"
-:
-	"3oGW8vJfpEtW57XQ4AB+wdHfcPGdJb266eD8RMoJ3EAb2bgnUSyxV4oHYtnXoqEQY6kxb9+hB1tvA5TMacYCRZOEDA4Ml0fevUvh2oRTwVE="
+	"kdf" : "scrypt",
+	"salt" : "8AA85775977952115075E68278C070A6",
+	"secparam" : "12",
+	"hint" : "",
+	"ciphertext" : "3oGW8vJfpEtW57XQ4AB+wdHfcPGdJb266eD8RMoJ3EAb2bgnUSyxV4oHYtnXoqEQY6kxb9+hB1tvA5TMacYCRZOEDA4Ml0fevUvh2oRTwVE="
 }
 ```
 

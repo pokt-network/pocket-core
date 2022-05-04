@@ -1,6 +1,7 @@
 ---
-description: >- The accounts namespace handles all account related interactions, from creating and deleting accounts, to
-importing and exporting accounts.
+description: >-
+ The accounts namespace handles all account related interactions, from creating and deleting accounts, to
+ importing and exporting accounts.
 ---
 
 # Accounts Namespace

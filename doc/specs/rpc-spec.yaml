@@ -8,7 +8,7 @@ info:
   license:
     name: MIT License
     url: 'https://github.com/pokt-network/pocket-core/LICENSE.md'
-  version: 0.6.0
+  version: 0.8.0
 externalDocs:
   description: Find out more about Pocket Network
   url: 'https://pokt.network'
@@ -344,7 +344,7 @@ paths:
                 $ref: '#/components/schemas/QueryAccountTXsResponse'
         '400':
           description: Failed to retrieve the transaction information
-  /query/allParams:
+  /query/allparams:
     post:
       tags:
         - query

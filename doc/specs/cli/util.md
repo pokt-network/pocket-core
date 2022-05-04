@@ -1,5 +1,6 @@
 ---
-description: Useful operations.
+description: >-
+ Useful operations.
 ---
 
 # Util Namespace

@@ -1,5 +1,6 @@
 ---
-description: Functions for Application management.
+description: >-
+ Functions for Application management.
 ---
 
 # Apps Namespace

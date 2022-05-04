@@ -1,5 +1,6 @@
 ---
-description: Functions for Node management.
+description: >-
+ Functions for Node management.
 ---
 
 # Nodes Namespace

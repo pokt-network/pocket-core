@@ -1,5 +1,6 @@
 ---
-description: >- Pocket Core is the Official Golang implementation of the Pocket Network protocol.
+description: >-
+ Pocket Core is the Official Golang implementation of the Pocket Network protocol.
 ---
 
 # Pocket Core Architecture

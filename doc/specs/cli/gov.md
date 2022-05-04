@@ -1,6 +1,7 @@
 ---
-description: >- Functions for governance (DAO) transactions; only relevant to the DAOowner
-(the account that has the permission to perform these transactions on behalf of the DAO).
+description: >-
+ Functions for governance (DAO) transactions; only relevant to the DAOowner (the account that has the permission
+ to perform these transactions on behalf of the DAO).
 ---
 
 # Gov Namespace

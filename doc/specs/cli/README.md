@@ -1,6 +1,7 @@
 ---
-description: >- This specification outlines all of the CLI commands to perform any function in Pocket Core. There's no
-protocol verification for these commands because they map closely to protocol functions.
+description: >-
+ This specification outlines all of the CLI commands to perform any function in Pocket Core. There's no
+ protocol verification for these commands because they map closely to protocol functions.
 ---
 
 # CLI
