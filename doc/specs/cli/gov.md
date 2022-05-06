@@ -1,6 +1,7 @@
 ---
-description: >- Functions for governance (DAO) transactions; only relevant to the DAOowner
-(the account that has the permission to perform these transactions on behalf of the DAO).
+description: >-
+  Functions for governance (DAO) transactions; only relevant to the DAOowner
+  (the account that has the permission to perform these transactions on behalf of the DAO).
 ---
 
 # Gov Namespace
@@ -16,11 +17,11 @@ passphrase.
 
 Arguments:
 
-* `<fromAddr>`: Sender address.
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<paramKey>`: Target parameter key to change in format module/param, e.g. `pos/ProposerPercentage`.
-* `<paramValue>`: New value for key.
-* `<fee>`:  An amount of uPOKT for the network.
+- `<fromAddr>`: Sender address.
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<paramKey>`: Target parameter key to change in format module/param, e.g. `pos/ProposerPercentage`.
+- `<paramValue>`: New value for key.
+- `<fee>`: An amount of uPOKT for the network.
 
 Example output:
 
@@ -38,11 +39,11 @@ If authorized by the DAO, upgrade the protocol. Will prompt the user for the acc
 
 Arguments:
 
-* `<fromAddr>`: Sender address.
-* `<atHeight>`: The target height at which the protocol will be upgraded.
-* `<version>`: The target version the protocol will be upgraded to.
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
+- `<fromAddr>`: Sender address.
+- `<atHeight>`: The target height at which the protocol will be upgraded.
+- `<version>`: The target version the protocol will be upgraded to.
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
 
 Example output:
 
@@ -60,11 +61,11 @@ If authorized by the DAO, move funds from the DAO treasury account. Will prompt 
 
 Arguments:
 
-* `<amount>`: The amount of uPOKT to be sent.
-* `<toAddr>`: Recipient address for the transaction.
-* `<fromAddr>`: Leave blank with " " \(because DAO treasury account is the fromAddr\).
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
+- `<amount>`: The amount of uPOKT to be sent.
+- `<toAddr>`: Recipient address for the transaction.
+- `<fromAddr>`: Leave blank with " " \(because DAO treasury account is the fromAddr\).
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
 
 Example output:
 
@@ -82,15 +83,14 @@ If authorized, burn funds from the DAO treasury account. Will prompt the user fo
 
 Arguments:
 
-* `<amount>`: The amount of uPOKT to be sent.
-* `<toAddr>`: Recipient address for the transaction.
-* `<fromAddr>`: Leave blank with " " \(because DAO treasury account is the fromAddr\).
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
+- `<amount>`: The amount of uPOKT to be sent.
+- `<toAddr>`: Recipient address for the transaction.
+- `<fromAddr>`: Leave blank with " " \(because DAO treasury account is the fromAddr\).
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
 
 Example output:
 
 ```text
 Transaction submitted with hash: <Transaction Hash>
 ```
-

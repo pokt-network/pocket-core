@@ -1,6 +1,7 @@
 ---
-description: >- Version 0.0.1. The Pocket Network protocol Portable Private Key. This specification will serve to
-describe the Portable Private Key (PPK) enabling multiple use cases like the creation of wallets.
+description: >-
+  Version 0.0.1. The Pocket Network protocol Portable Private Key. This specification will serve to
+  describe the Portable Private Key (PPK) enabling multiple use cases like the creation of wallets.
 ---
 
 # Portable Private Key
@@ -101,10 +102,10 @@ key. PPK must contain the following fields:
 
 1. Unmarshall or read the PPK JSON file to be able to use the values stored.
 2. Validate the PPK passes these validations
-	* **kdf** value equals to `"scrypt"`
-	* **salt** value is not `""` \(empty\)
-	* **salt** value can be decoded from `hex(base16)`
-	* **ciphertext** can be decoded from `base64`
+   - **kdf** value equals to `"scrypt"`
+   - **salt** value is not `""` \(empty\)
+   - **salt** value can be decoded from `hex(base16)`
+   - **ciphertext** can be decoded from `base64`
 3. Using base64 decoding, "Unarmor" the **ciphertext** armored string and store it as the `encryptedBytes`
 4. Using the decoded **salt** value, the **secparam** as `cost` and the encryption `password` we generate a `key` using
    scrypt
@@ -112,4 +113,3 @@ key. PPK must contain the following fields:
 6. Decrypt the `encryptedBytes` from 3\) using AES-256-GCM with the `key` and the `nonce`
 7. If the password used was the correct one you should have the decrypted private key bytes if not, the password was
    wrong and should retry from step 4\)
-
