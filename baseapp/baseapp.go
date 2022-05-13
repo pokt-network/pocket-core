@@ -799,7 +799,7 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		result = err.Result()
 	} else {
 		if duplicateTransaction && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), codec.TxCacheEnhancementKey) {
-			app.logger.Error("Duplicate Tx Found")
+			app.logger.Debug("Duplicate Tx Found")
 			result = sdk.Result{
 				Code:      codeDuplicateTransaction,
 				Codespace: authCodespace,

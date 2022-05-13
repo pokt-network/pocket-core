@@ -153,6 +153,17 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 			log2.Fatalf("cannot write default config to json file: " + err.Error())
 		}
 	}
+
+	// Config Checks
+	// Mempool Cache size should be at least the size of the Mempool Size
+	if c.TendermintConfig.Mempool.CacheSize < c.TendermintConfig.Mempool.Size {
+		log2.Fatalf("Mempool cache size: %v should be larger or equal to Mempool size: %v. Check your config.json", c.TendermintConfig.Mempool.CacheSize, c.TendermintConfig.Mempool.Size)
+	}
+	//Indexer null block
+	if c.TendermintConfig.TxIndex.Indexer == "null" {
+		log2.Fatalf("TxIndexer cannot be null, type should be kv. Check your config.json")
+	}
+
 	// flags trump config file
 	if tmNode != "" {
 		c.PocketConfig.TendermintURI = tmNode

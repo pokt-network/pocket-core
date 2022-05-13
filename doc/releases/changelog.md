@@ -1,5 +1,8 @@
 # Changelog
 =======
+## RC-0.8.3
+
+- Add config.json check for Indexer and Mempool.
 
 ## RC-0.8.1
 
