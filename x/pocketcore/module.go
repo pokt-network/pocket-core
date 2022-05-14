@@ -112,8 +112,6 @@ func (am AppModule) EndBlockOld(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Vali
 	if addr != nil {
 		// use the offset as a trigger to see if it's time to attempt to submit proofs
 
-		// can't send claim session 4 blocks after 12 blocks
-
 		if (ctx.BlockHeight()+int64(addr[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
 			// run go routine because cannot access TmNode during end-block period
 			go func() {
