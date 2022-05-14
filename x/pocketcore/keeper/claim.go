@@ -89,9 +89,9 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 	}
 }
 
-func (k Keeper) SendClaimTxWithPk(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, address *sdk.Address, n client.Client, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	// get the private val key (main) account from the keybase
-	kp, err := k.GetPKFromFile(ctx)
+	kp, err := k.GetPkFromAddress(address)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the private key from file for the claim transaction:\n%s", err.Error()))
 		return
@@ -136,7 +136,7 @@ func (k Keeper) SendClaimTxWithPk(ctx sdk.Ctx, keeper Keeper, n client.Client, c
 			continue
 		}
 		// check the current state to see if the unverified evidence has already been sent and processed (if so, then skip this evidence)
-		if _, found := k.GetClaim(ctx, sdk.Address(kp.PublicKey().Address()), evidence.SessionHeader, evidenceType); found {
+		if _, found := k.GetClaim(ctx, *address, evidence.SessionHeader, evidenceType); found {
 			continue
 		}
 		// if the claim is mature, delete it because we cannot submit a mature claim
