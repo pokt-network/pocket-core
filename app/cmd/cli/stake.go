@@ -109,7 +109,7 @@ The signer may be the operator or the output address.`,
 			return
 		}
 		am := types.NewInt(int64(amount))
-		if am.LTE(types.NewInt(15100000000)) {
+		if am.LTE(types.NewInt(15099999999)) {
 			fmt.Println("The amount you are staking for is below the recommendation of 15100 POKT, would you still like to continue? y|n")
 			if !app.Confirmation("") {
 				return
