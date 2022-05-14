@@ -17,14 +17,14 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	relaysDone := 8
 	maxRelays := int64(5)
 	ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
-	types.ClearEvidence()
+	types.ClearEvidence(types.GlobalEvidenceCache)
 	npk, header, _ := simulateRelays(t, keeper, &ctx, relaysDone)
-	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
+	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
 	if err != nil {
 		t.Fatalf("Set evidence not found")
 	}
-	root := evidence.GenerateMerkleRoot(0, maxRelays)
-	_, totalRelays := types.GetTotalProofs(header, types.RelayEvidence, sdk.NewInt(1000))
+	root := evidence.GenerateMerkleRoot(0, maxRelays, types.GlobalEvidenceCache)
+	_, totalRelays := types.GetTotalProofs(header, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
 	assert.Equal(t, totalRelays, int64(relaysDone))
 	// generate a claim message
 	claimMsg := types.MsgClaim{
@@ -49,7 +49,7 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	assert.Nil(t, er)
 	merkleProofs, _ := evidence.GenerateMerkleProof(0, int(neededLeafIndex), maxRelays)
 	// get leaf and cousin node
-	leafNode := types.GetProof(header, types.RelayEvidence, neededLeafIndex)
+	leafNode := types.GetProof(header, types.RelayEvidence, neededLeafIndex, types.GlobalEvidenceCache)
 	// create proof message
 	proofMsg := types.MsgProof{
 		MerkleProof:  merkleProofs,

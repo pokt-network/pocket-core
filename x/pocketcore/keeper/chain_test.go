@@ -2,10 +2,9 @@ package keeper
 
 import (
 	"encoding/hex"
-	"testing"
-
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestKeeper_GetHostedBlockchains(t *testing.T) {

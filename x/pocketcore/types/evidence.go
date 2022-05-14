@@ -2,11 +2,10 @@ package types
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/willf/bloom"
+	"strings"
 )
 
 // "Evidence" - A proof of work/burn for nodes.
@@ -18,22 +17,14 @@ type Evidence struct {
 	EvidenceType  EvidenceType             `json:"evidence_type"`
 }
 
-func (e Evidence) IsSealed() bool {
-	globalEvidenceCache.l.Lock()
-	defer globalEvidenceCache.l.Unlock()
-	_, ok := globalEvidenceSealedMap.Load(e.HashString())
-	return ok
-}
-
-func (e Evidence) Seal() CacheObject {
-	globalEvidenceSealedMap.Store(e.HashString(), struct{}{})
-	return e
+func (e Evidence) IsSealable() bool {
+	return true
 }
 
 // "GenerateMerkleRoot" - Generates the merkle root for an GOBEvidence object
-func (e *Evidence) GenerateMerkleRoot(height int64, maxRelays int64) (root HashRange) {
+func (e *Evidence) GenerateMerkleRoot(height int64, maxRelays int64, storage *CacheStorage) (root HashRange) {
 	// seal the evidence in cache/db
-	ev, ok := SealEvidence(*e)
+	ev, ok := SealEvidence(*e, storage)
 	if !ok {
 		return HashRange{}
 	}

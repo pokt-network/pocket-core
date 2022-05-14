@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
+	"time"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -14,18 +15,15 @@ import (
 )
 
 // "SendClaimTx" - Automatically sends a claim of work/challenge based on relays or challenges stored.
-func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, node *pc.PocketNode, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	// get the private val key (main) account from the keybase
-	kp, err := k.GetPKFromFile(ctx)
-	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the private key from file for the claim transaction:\n%s", err.Error()))
-		return
-	}
+	address := node.GetAddress()
 	// retrieve the iterator to go through each piece of evidence in storage
-	iter := pc.EvidenceIterator()
+	iter := pc.EvidenceIterator(node.EvidenceStore)
 	defer iter.Close()
 	// loop through each evidence
 	for ; iter.Valid(); iter.Next() {
+		now := time.Now()
 		evidence := iter.Value()
 		// if the number of proofs in the evidence object is zero
 		if evidence.NumOfProofs == 0 {
@@ -42,7 +40,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 		}
 		// if the evidence length is less than minimum, it would not satisfy our merkle tree needs
 		if evidence.NumOfProofs < keeper.MinimumNumberOfProofs(sessionCtx) {
-			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
+			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType, node.EvidenceStore); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
 			continue
@@ -54,18 +52,18 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid/challenged for unsupported blockchains
 		if !k.IsPocketSupportedBlockchain(sessionCtx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) {
 			ctx.Logger().Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
-			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
+			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType, node.EvidenceStore); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
 			continue
 		}
 		// check the current state to see if the unverified evidence has already been sent and processed (if so, then skip this evidence)
-		if _, found := k.GetClaim(ctx, sdk.Address(kp.PublicKey().Address()), evidence.SessionHeader, evidenceType); found {
+		if _, found := k.GetClaim(ctx, address, evidence.SessionHeader, evidenceType); found {
 			continue
 		}
 		// if the claim is mature, delete it because we cannot submit a mature claim
 		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
-			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType); err != nil {
+			if err := pc.DeleteEvidence(evidence.SessionHeader, evidenceType, node.EvidenceStore); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
 			continue
@@ -75,15 +73,19 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 			ctx.Logger().Error(fmt.Sprintf("an error occurred creating the claim transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
 		}
 		// generate the merkle root for this evidence
-		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight, pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64())
+		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight, pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64(), node.EvidenceStore)
+		claimTxTotalTime := float64(time.Since(now).Milliseconds())
+		go func() {
+			pc.GlobalServiceMetric().AddClaimTiming(evidence.SessionHeader.Chain, claimTxTotalTime, &address)
+		}()
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgClaim{}, n, kp, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgClaim{}, n, node.PrivateKey, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured creating the tx builder for the claim tx:\n%s", err.Error()))
 			return
 		}
 		// send in the evidence header, the total relays completed, and the merkle root (ensures data integrity)
-		if _, err := claimTx(kp, cliCtx, txBuilder, evidence.SessionHeader, evidence.NumOfProofs, root, evidenceType); err != nil {
+		if _, err := claimTx(node.PrivateKey, cliCtx, txBuilder, evidence.SessionHeader, evidence.NumOfProofs, root, evidenceType); err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured executing the claim transaciton: \n%s", err.Error()))
 		}
 	}
@@ -132,7 +134,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))
 	// check cache
-	session, found := pc.GetSession(claim.SessionHeader)
+	session, found := pc.GetSession(claim.SessionHeader, pc.GlobalSessionCache)
 	if !found {
 		// use the session end context to ensure that people who were jailed mid session do not get to submit claims
 		sessionEndCtx, er := ctx.PrevCtx(sessionEndHeight)

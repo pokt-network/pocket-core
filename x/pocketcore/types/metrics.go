@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-kit/kit/metrics"
 	"github.com/go-kit/kit/metrics/prometheus"
+	sdk "github.com/pokt-network/pocket-core/types"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tendermint/tendermint/libs/log"
@@ -30,6 +31,10 @@ const (
 	SessionsCountHelp       = "the number of unique sessions generated for: "
 	UPOKTCountName          = "tokens_earned_for_"
 	UPOKTCountHelp          = "the number of tokens earned in uPOKT for : "
+	AvgClaimTimeName        = "avg_claim_time_for_"
+	AvgClaimTimeHelp        = "the average time in ms to generate the work needed for claim tx:"
+	AvgProofTimeName        = "avg_proof_time_for_"
+	AvgProofTimeHelp        = "the average time in ms to generate the work needed for claim tx:"
 )
 
 type ServiceMetrics struct {
@@ -64,6 +69,10 @@ func StopServiceMetrics() {
 	}
 }
 
+func (sm *ServiceMetrics) getValidatorLabel(nodeAddress *sdk.Address) []string {
+	return []string{"validator_address", nodeAddress.String()}
+}
+
 // startPrometheusServer starts a Prometheus HTTP server, listening for metrics
 // collectors on addr.
 func (sm *ServiceMetrics) StartPrometheusServer(addr string, maxOpenConn int) *http.Server {
@@ -85,7 +94,7 @@ func (sm *ServiceMetrics) StartPrometheusServer(addr string, maxOpenConn int) *h
 	return srv
 }
 
-func (sm *ServiceMetrics) AddRelayFor(networkID string) {
+func (sm *ServiceMetrics) AddRelayFor(networkID string, nodeAddress *sdk.Address) {
 	sm.l.Lock()
 	defer sm.l.Unlock()
 	// attempt to locate nn chain
@@ -96,14 +105,15 @@ func (sm *ServiceMetrics) AddRelayFor(networkID string) {
 		return
 	}
 	// add relay to accumulated count
-	sm.RelayCount.Add(1)
+	labels := sm.getValidatorLabel(nodeAddress)
+	sm.RelayCount.With(labels...).Add(1)
 	// add to individual relay count
-	nnc.RelayCount.Add(1)
+	nnc.RelayCount.With(labels...).Add(1)
 	// update nnc
 	sm.NonNativeChains[networkID] = nnc
 }
 
-func (sm *ServiceMetrics) AddChallengeFor(networkID string) {
+func (sm *ServiceMetrics) AddChallengeFor(networkID string, nodeAddress *sdk.Address) {
 	sm.l.Lock()
 	defer sm.l.Unlock()
 	// attempt to locate nn chain
@@ -113,15 +123,16 @@ func (sm *ServiceMetrics) AddChallengeFor(networkID string) {
 		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
 		return
 	}
+	labels := sm.getValidatorLabel(nodeAddress)
 	// add to accumulated count
-	sm.ChallengeCount.Add(1)
+	sm.ChallengeCount.With(labels...).Add(1)
 	// add to individual count
-	nnc.ChallengeCount.Add(1)
+	nnc.ChallengeCount.With(labels...).Add(1)
 	// update nnc
 	sm.NonNativeChains[networkID] = nnc
 }
 
-func (sm *ServiceMetrics) AddErrorFor(networkID string) {
+func (sm *ServiceMetrics) AddErrorFor(networkID string, nodeAddress *sdk.Address) {
 	sm.l.Lock()
 	defer sm.l.Unlock()
 	// attempt to locate nn chain
@@ -131,15 +142,15 @@ func (sm *ServiceMetrics) AddErrorFor(networkID string) {
 		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
 		return
 	}
-	// add to accumulated count
-	sm.ErrCount.Add(1)
+	labels := sm.getValidatorLabel(nodeAddress)
+	sm.ErrCount.With(labels...).Add(1)
 	// add to individual count
-	nnc.ErrCount.Add(1)
+	nnc.ErrCount.With(labels...).Add(1)
 	// update nnc
 	sm.NonNativeChains[networkID] = nnc
 }
 
-func (sm *ServiceMetrics) AddRelayTimingFor(networkID string, relayTime float64) {
+func (sm *ServiceMetrics) AddRelayTimingFor(networkID string, relayTime float64, nodeAddress *sdk.Address) {
 	sm.l.Lock()
 	defer sm.l.Unlock()
 	// attempt to locate nn chain
@@ -150,14 +161,56 @@ func (sm *ServiceMetrics) AddRelayTimingFor(networkID string, relayTime float64)
 		return
 	}
 	// add to accumulated hist
-	sm.AverageRelayTime.Observe(relayTime)
+	labels := sm.getValidatorLabel(nodeAddress)
+	sm.AverageRelayTime.With(labels...).Observe(relayTime)
 	// add to individual hist
-	nnc.AverageRelayTime.Observe(relayTime)
+	nnc.AverageRelayTime.With(labels...).Observe(relayTime)
 	// update nnc
 	sm.NonNativeChains[networkID] = nnc
 }
 
-func (sm *ServiceMetrics) AddSessionFor(networkID string) {
+func (sm *ServiceMetrics) AddClaimTiming(networkID string, time float64, nodeAddress *sdk.Address) {
+
+	sm.l.Lock()
+	defer sm.l.Unlock()
+	// attempt to locate nn chain
+	nnc, ok := sm.NonNativeChains[networkID]
+	if !ok {
+		sm.tmLogger.Error("unable to find corresponding networkID in service metrics: ", networkID)
+		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
+		return
+	}
+	labels := sm.getValidatorLabel(nodeAddress)
+	// add to accumulated hist
+	sm.AverageClaimTime.With(labels...).Observe(time)
+	// add to individual hist
+	nnc.AverageClaimTime.With(labels...).Observe(time)
+	// update nnc
+	sm.NonNativeChains[networkID] = nnc
+}
+
+func (sm *ServiceMetrics) AddProofTiming(networkID string, time float64, nodeAddress *sdk.Address) {
+
+	sm.l.Lock()
+	defer sm.l.Unlock()
+	// attempt to locate nn chain
+	nnc, ok := sm.NonNativeChains[networkID]
+	if !ok {
+		sm.tmLogger.Error("unable to find corresponding networkID in service metrics: ", networkID)
+		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
+		return
+	}
+	labels := sm.getValidatorLabel(nodeAddress)
+
+	// add to accumulated hist
+	sm.AverageProofTime.With(labels...).Observe(time)
+	// add to individual hist
+	nnc.AverageProofTime.With(labels...).Observe(time)
+	// update nnc
+	sm.NonNativeChains[networkID] = nnc
+}
+
+func (sm *ServiceMetrics) AddSessionFor(networkID string, nodeAddress *sdk.Address) {
 	sm.l.Lock()
 	defer sm.l.Unlock()
 	// attempt to locate nn chain
@@ -168,15 +221,29 @@ func (sm *ServiceMetrics) AddSessionFor(networkID string) {
 
 		return
 	}
+
+	if nodeAddress == nil {
+		// this implies that user is not running in lean pocket
+		node := GetPocketNode()
+		if node == nil {
+			sm.tmLogger.Error("unable to load privateKey", networkID)
+			return
+		}
+		addr := sdk.GetAddress(node.PrivateKey.PublicKey())
+		nodeAddress = &addr
+	}
+	labels := sm.getValidatorLabel(nodeAddress)
+
 	// add to accumulated count
-	sm.TotalSessions.Add(1)
+	sm.TotalSessions.With(labels...).Add(1)
 	// add to individual count
-	nnc.TotalSessions.Add(1)
+	nnc.TotalSessions.With(labels...).Add(1)
+
 	// update nnc
 	sm.NonNativeChains[networkID] = nnc
 }
 
-func (sm *ServiceMetrics) AddUPOKTEarnedFor(networkID string, upoktEarned float64) {
+func (sm *ServiceMetrics) AddUPOKTEarnedFor(networkID string, upoktEarned float64, nodeAddress *sdk.Address) {
 	sm.l.Lock()
 	defer sm.l.Unlock()
 	// attempt to locate nn chain
@@ -186,10 +253,11 @@ func (sm *ServiceMetrics) AddUPOKTEarnedFor(networkID string, upoktEarned float6
 		sm.NonNativeChains[networkID] = NewServiceMetricsFor(networkID)
 		return
 	}
+	labels := sm.getValidatorLabel(nodeAddress)
 	// add to accumulated count
-	sm.UPOKTEarned.Add(1)
+	sm.UPOKTEarned.With(labels...).Add(upoktEarned)
 	// add to individual count
-	nnc.UPOKTEarned.Add(1)
+	nnc.UPOKTEarned.With(labels...).Add(upoktEarned)
 	// update nnc
 	sm.NonNativeChains[networkID] = nnc
 }
@@ -219,6 +287,8 @@ type ServiceMetric struct {
 	ChallengeCount   metrics.Counter   `json:"challenge_count"`
 	ErrCount         metrics.Counter   `json:"err_count"`
 	AverageRelayTime metrics.Histogram `json:"avg_relay_time"`
+	AverageClaimTime metrics.Histogram `json:"avg_claim_time"`
+	AverageProofTime metrics.Histogram `json:"avg_proof_time"`
 	TotalSessions    metrics.Counter   `json:"total_sessions"`
 	UPOKTEarned      metrics.Counter   `json:"upokt_earned"`
 }
@@ -226,26 +296,27 @@ type ServiceMetric struct {
 func NewServiceMetricsFor(networkID string) ServiceMetric {
 	//labels := make([]string, 1)
 	// relay counter metric
+	labels := []string{}
 	relayCounter := prometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: ModuleName,
 		Subsystem: ServiceMetricsNamespace,
 		Name:      RelayCountName + networkID,
 		Help:      RelayCountHelp + networkID,
-	}, nil)
+	}, append(labels, "validator_address"))
 	// challenge counter metric
 	challengeCounter := prometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: ModuleName,
 		Subsystem: ServiceMetricsNamespace,
 		Name:      ChallengeCountName + networkID,
 		Help:      ChallengeCountHelp + networkID,
-	}, nil)
+	}, append(labels, "validator_address"))
 	// err counter metric
 	errCounter := prometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: ModuleName,
 		Subsystem: ServiceMetricsNamespace,
 		Name:      ErrCountName + networkID,
 		Help:      ErrCountHelp + networkID,
-	}, nil)
+	}, append(labels, "validator_address"))
 	// Avg relay time histogram metric
 	avgRelayTime := prometheus.NewHistogramFrom(stdPrometheus.HistogramOpts{
 		Namespace:   ModuleName,
@@ -254,21 +325,37 @@ func NewServiceMetricsFor(networkID string) ServiceMetric {
 		Help:        AvgrelayHistHelp + networkID,
 		ConstLabels: nil,
 		Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
-	}, nil)
+	}, append(labels, "validator_address"))
 	// session counter metric
 	totalSessions := prometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: ModuleName,
 		Subsystem: ServiceMetricsNamespace,
 		Name:      SessionsCountName + networkID,
 		Help:      SessionsCountHelp + networkID,
-	}, nil)
+	}, append(labels, "validator_address"))
 	// tokens earned metric
 	uPOKTEarned := prometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: ModuleName,
 		Subsystem: ServiceMetricsNamespace,
 		Name:      UPOKTCountName + networkID,
 		Help:      UPOKTCountHelp + networkID,
-	}, nil)
+	}, append(labels, "validator_address"))
+	avgClaimTime := prometheus.NewHistogramFrom(stdPrometheus.HistogramOpts{
+		Namespace:   ModuleName,
+		Subsystem:   ServiceMetricsNamespace,
+		Name:        AvgClaimTimeName + networkID,
+		Help:        AvgClaimTimeHelp + networkID,
+		ConstLabels: nil,
+		Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
+	}, append(labels, "validator_address"))
+	avgProofTime := prometheus.NewHistogramFrom(stdPrometheus.HistogramOpts{
+		Namespace:   ModuleName,
+		Subsystem:   ServiceMetricsNamespace,
+		Name:        AvgProofTimeName + networkID,
+		Help:        AvgProofTimeHelp + networkID,
+		ConstLabels: nil,
+		Buckets:     stdPrometheus.LinearBuckets(1, 20, 20),
+	}, append(labels, "validator_address"))
 	return ServiceMetric{
 		RelayCount:       relayCounter,
 		ChallengeCount:   challengeCounter,
@@ -276,5 +363,7 @@ func NewServiceMetricsFor(networkID string) ServiceMetric {
 		AverageRelayTime: avgRelayTime,
 		TotalSessions:    totalSessions,
 		UPOKTEarned:      uPOKTEarned,
+		AverageClaimTime: avgClaimTime,
+		AverageProofTime: avgProofTime,
 	}
 }

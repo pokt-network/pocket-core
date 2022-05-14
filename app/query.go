@@ -577,17 +577,20 @@ func (app PocketCoreApp) HandleDispatch(header pocketTypes.SessionHeader) (res *
 
 func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *pocketTypes.DispatchResponse, err error) {
 	ctx, err := app.NewContext(app.LastBlockHeight())
+
 	if err != nil {
 		return nil, nil, err
 	}
 
-	status, err := app.pocketKeeper.TmNode.Status()
-	if err != nil {
-		return nil, nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
+	status, sErr := app.pocketKeeper.TmNode.ConsensusReactorStatus()
+	if sErr != nil {
+		return nil, nil, fmt.Errorf("pocket node is unable to retrieve synced status from tendermint node, cannot service in this state")
 	}
-	if status.SyncInfo.CatchingUp {
+
+	if status.IsCatchingUp {
 		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
 	}
+
 	res, err = app.pocketKeeper.HandleRelay(ctx, r)
 	var err1 error
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {

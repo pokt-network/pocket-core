@@ -2,21 +2,22 @@ package types
 
 import (
 	"encoding/hex"
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/log"
 	"os"
 	"reflect"
 	"testing"
-
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/stretchr/testify/assert"
 )
 
 func InitCacheTest() {
 	logger := log.NewNopLogger()
-	// init cache in memory
+	testingConfig := sdk.DefaultTestingPocketConfig()
+	CleanPocketNodes()
+	AddPocketNode(GetRandomPrivateKey(), log.NewNopLogger())
 	InitConfig(&HostedBlockchains{
 		M: make(map[string]HostedBlockchain),
-	}, logger, sdk.DefaultTestingPocketConfig())
+	}, logger, testingConfig)
 }
 
 func TestMain(m *testing.M) {
@@ -35,7 +36,7 @@ func TestIsUniqueProof(t *testing.T) {
 		Chain:              "0001",
 		SessionBlockHeight: 0,
 	}
-	e, _ := GetEvidence(h, RelayEvidence, sdk.NewInt(100000))
+	e, _ := GetEvidence(h, RelayEvidence, sdk.NewInt(100000), GlobalEvidenceCache)
 	p := RelayProof{
 		Entropy: 1,
 	}
@@ -44,12 +45,11 @@ func TestIsUniqueProof(t *testing.T) {
 	}
 	assert.True(t, IsUniqueProof(p, e), "p is unique")
 	e.AddProof(p)
-	SetEvidence(e)
-	e, err := GetEvidence(h, RelayEvidence, sdk.ZeroInt())
+	SetEvidence(e, GlobalEvidenceCache)
+	e, err := GetEvidence(h, RelayEvidence, sdk.ZeroInt(), GlobalEvidenceCache)
 	assert.Nil(t, err)
 	assert.False(t, IsUniqueProof(p, e), "p is no longer unique")
 	assert.True(t, IsUniqueProof(p1, e), "p is unique")
-
 }
 
 func TestAllEvidence_AddGetEvidence(t *testing.T) {
@@ -76,8 +76,43 @@ func TestAllEvidence_AddGetEvidence(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000))
-	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000), GlobalEvidenceCache)
+	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0, GlobalEvidenceCache), proof))
+}
+
+func TestAllEvidence_Iterator(t *testing.T) {
+	ClearEvidence(GlobalEvidenceCache)
+	appPubKey := getRandomPubKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := getRandomPubKey().RawString()
+	ethereum := hex.EncodeToString([]byte{0001})
+	header := SessionHeader{
+		ApplicationPubKey:  appPubKey,
+		Chain:              ethereum,
+		SessionBlockHeight: 1,
+	}
+	proof := RelayProof{
+		Entropy:            0,
+		RequestHash:        header.HashString(), // fake
+		SessionBlockHeight: 1,
+		ServicerPubKey:     servicerPubKey,
+		Blockchain:         ethereum,
+		Token: AAT{
+			Version:              "0.0.1",
+			ApplicationPublicKey: appPubKey,
+			ClientPublicKey:      clientPubKey,
+			ApplicationSignature: "",
+		},
+		Signature: "",
+	}
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000), GlobalEvidenceCache)
+	iter := EvidenceIterator(GlobalEvidenceCache)
+	var count = 0
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		count++
+	}
+	assert.Equal(t, 1, int(count))
 }
 
 func TestAllEvidence_DeleteEvidence(t *testing.T) {
@@ -104,11 +139,11 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000))
-	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
-	GetProof(header, RelayEvidence, 0)
-	_ = DeleteEvidence(header, RelayEvidence)
-	assert.Empty(t, GetProof(header, RelayEvidence, 0))
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000), GlobalEvidenceCache)
+	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0, GlobalEvidenceCache), proof))
+	GetProof(header, RelayEvidence, 0, GlobalEvidenceCache)
+	_ = DeleteEvidence(header, RelayEvidence, GlobalEvidenceCache)
+	assert.Empty(t, GetProof(header, RelayEvidence, 0, GlobalEvidenceCache))
 }
 
 func TestAllEvidence_GetTotalProofs(t *testing.T) {
@@ -154,41 +189,41 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000))
-	SetProof(header, RelayEvidence, proof2, sdk.NewInt(100000))
-	SetProof(header2, RelayEvidence, proof2, sdk.NewInt(100000)) // different header so shouldn't be counted
-	_, totalRelays := GetTotalProofs(header, RelayEvidence, sdk.NewInt(100000))
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000), GlobalEvidenceCache)
+	SetProof(header, RelayEvidence, proof2, sdk.NewInt(100000), GlobalEvidenceCache)
+	SetProof(header2, RelayEvidence, proof2, sdk.NewInt(100000), GlobalEvidenceCache) // different header so shouldn't be counted
+	_, totalRelays := GetTotalProofs(header, RelayEvidence, sdk.NewInt(100000), GlobalEvidenceCache)
 	assert.Equal(t, totalRelays, int64(2))
 }
 
 func TestSetGetSession(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	session2 := NewTestSession(t, hex.EncodeToString(Hash([]byte("bar"))))
-	SetSession(session)
-	s, found := GetSession(session.SessionHeader)
+	SetSession(session, GlobalSessionCache)
+	s, found := GetSession(session.SessionHeader, GlobalSessionCache)
 	assert.True(t, found)
 	assert.Equal(t, s, session)
-	_, found = GetSession(session2.SessionHeader)
+	_, found = GetSession(session2.SessionHeader, GlobalSessionCache)
 	assert.False(t, found)
-	SetSession(session2)
-	s, found = GetSession(session2.SessionHeader)
+	SetSession(session2, GlobalSessionCache)
+	s, found = GetSession(session2.SessionHeader, GlobalSessionCache)
 	assert.True(t, found)
 	assert.Equal(t, s, session2)
 }
 
 func TestDeleteSession(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
-	SetSession(session)
-	DeleteSession(session.SessionHeader)
-	_, found := GetSession(session.SessionHeader)
+	SetSession(session, GlobalSessionCache)
+	DeleteSession(session.SessionHeader, GlobalSessionCache)
+	_, found := GetSession(session.SessionHeader, GlobalSessionCache)
 	assert.False(t, found)
 }
 
 func TestClearCache(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
-	SetSession(session)
-	ClearSessionCache()
-	iter := SessionIterator()
+	SetSession(session, GlobalSessionCache)
+	ClearSessionCache(GlobalSessionCache)
+	iter := SessionIterator(GlobalSessionCache)
 	var count = 0
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {

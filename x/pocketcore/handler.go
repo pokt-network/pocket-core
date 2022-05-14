@@ -65,12 +65,12 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	if err != nil {
 		if err.Code() == types.CodeInvalidMerkleVerifyError && !claim.IsEmpty() {
 			// delete local evidence
-			processSelf(ctx, k, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
+			processSelf(ctx, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
 			return err.Result()
 		}
 		if err.Code() == types.CodeReplayAttackError && !claim.IsEmpty() {
 			// delete local evidence
-			processSelf(ctx, k, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
+			processSelf(ctx, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
 			// if is a replay attack, handle accordingly
 			k.HandleReplayAttack(ctx, addr, sdk.NewInt(claim.TotalProofs))
 			err := k.DeleteClaim(ctx, addr, claim.SessionHeader, claim.EvidenceType)
@@ -86,7 +86,7 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 		return err.Result()
 	}
 	// delete local evidence
-	processSelf(ctx, k, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, tokens)
+	processSelf(ctx, proof.GetSigners()[0], claim.SessionHeader, claim.EvidenceType, tokens)
 	// create the event
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
@@ -97,15 +97,21 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
 
-func processSelf(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.SessionHeader, evidenceType types.EvidenceType, tokens sdk.BigInt) {
-	// delete local evidence
-	if signer.Equals(k.GetSelfAddress(ctx)) {
-		err := types.DeleteEvidence(header, evidenceType)
-		if err != nil {
-			ctx.Logger().Error("Unable to delete evidence: " + err.Error())
-		}
-		if !tokens.IsZero() {
-			types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()))
+func processSelf(ctx sdk.Ctx, signer sdk.Address, header types.SessionHeader, evidenceType types.EvidenceType, tokens sdk.BigInt) {
+	node, ok := types.GlobalPocketNodes[signer.String()]
+	if !ok {
+		return
+	}
+	evidenceStore := node.EvidenceStore
+	err := types.DeleteEvidence(header, evidenceType, evidenceStore)
+	if err != nil {
+		ctx.Logger().Error("Unable to delete evidence: " + err.Error())
+	}
+	if !tokens.IsZero() {
+		if types.GlobalPocketConfig.LeanPocket {
+			go types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()), &signer)
+		} else {
+			types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()), &signer)
 		}
 	}
 }

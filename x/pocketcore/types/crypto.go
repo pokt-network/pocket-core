@@ -66,20 +66,6 @@ func SignatureVerification(publicKey, msgHex, sigHex string) sdk.Error {
 	return nil
 }
 
-// "InitPVKeyFile" - Initializes the global private validator key variable
-func InitPVKeyFile(filePVKey privval.FilePVKey) {
-	globalPVKeyFile = filePVKey
-}
-
-// "GetPVKeyFile" - Returns the globalPVKeyFile instance
-func GetPVKeyFile() (privval.FilePVKey, sdk.Error) {
-	if globalPVKeyFile.PrivKey == nil {
-		return globalPVKeyFile, NewInvalidPKError(ModuleName)
-	} else {
-		return globalPVKeyFile, nil
-	}
-}
-
 // "PubKeyVerification" - Verifies the public key format (hex string)
 func PubKeyVerification(pk string) sdk.Error {
 	// decode the bz

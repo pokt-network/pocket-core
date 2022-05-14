@@ -13,48 +13,45 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	"math"
 	"reflect"
+	"time"
 )
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
-	kp, err := k.GetPKFromFile(ctx)
-	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
-		return
-	}
-	// get the self address
-	addr := sdk.Address(kp.PublicKey().Address())
+func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+	addr := node.GetAddress()
 	// get all mature (waiting period has passed) claims for your address
 	claims, err := k.GetMatureClaims(ctx, addr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the Proof Transaction:\n%v", err))
 		return
 	}
+
 	// for every claim of the mature set
 	for _, claim := range claims {
+		now := time.Now()
 		// check to see if evidence is stored in cache
-		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
+		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt(), node.EvidenceStore)
 		if err != nil || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 			continue
 		}
 		if ctx.BlockHeight()-claim.SessionHeader.SessionBlockHeight > int64(pc.GlobalPocketConfig.MaxClaimAgeForProofRetry) {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
 			ctx.Logger().Error(fmt.Sprintf("deleting evidence older than MaxClaimAgeForProofRetry"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("unable to delete evidence that is older than 32 blocks: %s", err.Error()))
 			}
 			continue
 		}
-		if !evidence.IsSealed() {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+		if !node.EvidenceStore.IsSealed(evidence) {
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
 			ctx.Logger().Error(fmt.Sprintf("evidence is not sealed, could cause a relay leak:"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("could not delete evidence is not sealed, could cause a relay leak: %s", err.Error()))
 			}
 		}
 		if evidence.NumOfProofs != claim.TotalProofs {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
 			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
@@ -91,8 +88,12 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 				continue
 			}
 		}
+		proofTxTotalTime := float64(time.Since(now))
+		go func() {
+			pc.GlobalServiceMetric().AddProofTiming(evidence.SessionHeader.Chain, proofTxTotalTime, &addr)
+		}()
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgProof{}, n, kp, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgProof{}, n, node.PrivateKey, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the Proof Transaction:\n%v", err))
 			return
@@ -237,11 +238,8 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.ProtoMsg, n client.Client, key c
 	fromAddr := sdk.Address(key.PublicKey().Address())
 	// create a client context for sending
 	cliCtx = util.NewCLIContext(n, fromAddr, "").WithCodec(k.Cdc).WithHeight(ctx.BlockHeight())
-	pk, err := k.GetPKFromFile(ctx)
-	if err != nil {
-		return txBuilder, cliCtx, err
-	}
-	cliCtx.PrivateKey = pk
+
+	cliCtx.PrivateKey = key
 	// broadcast synchronously
 	cliCtx.BroadcastMode = util.BroadcastSync
 	// get the account to ensure balance

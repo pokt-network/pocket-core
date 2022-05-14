@@ -60,9 +60,16 @@ type codecUpgrade struct {
 	//after8     bool
 }
 
+// NewInMemoryTendermintNodeAmino will create a TM node with only one validator. LeanPocket is disabled.
 func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
+	return NewInMemoryTendermintNodeAminoWithValidators(t, genesisState, nil)
+}
+
+// NewInMemoryTendermintNodeAminoWithValidators will create a TM node with 'n' "validators".
+// If "validators" is nil, LeanPOKT is disabled
+func NewInMemoryTendermintNodeAminoWithValidators(t *testing.T, genesisState []byte, validators []crypto.PrivateKey) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
 	// create the in memory tendermint node and keybase
-	tendermintNode, keybase = inMemTendermintNode(genesisState)
+	tendermintNode, keybase = inMemTendermintNodeWithValidators(genesisState, validators)
 	// test assertions
 	if tendermintNode == nil {
 		panic("tendermintNode should not be nil")
@@ -72,10 +79,16 @@ func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermi
 	}
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
+
 	// init cache in memory
+	defaultConfig := sdk.DefaultTestingPocketConfig()
+	if validators != nil {
+		defaultConfig.PocketConfig.LeanPocket = true
+	}
+
 	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
-	}, tendermintNode.Logger, sdk.DefaultTestingPocketConfig())
+	}, tendermintNode.Logger, defaultConfig)
 	// start the in memory node
 	err := tendermintNode.Start()
 	if err != nil {
@@ -89,8 +102,7 @@ func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermi
 		if err != nil {
 			panic(err)
 		}
-		pocketTypes.ClearEvidence()
-		pocketTypes.ClearSessionCache()
+		pocketTypes.CleanPocketNodes()
 		PCA = nil
 		inMemKB = nil
 		err := inMemDB.Close()
@@ -110,9 +122,17 @@ func NewInMemoryTendermintNodeAmino(t *testing.T, genesisState []byte) (tendermi
 	}
 	return
 }
+
+// NewInMemoryTendermintNodeProto will create a TM node with only one validator. LeanPocket is disabled.
 func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
+	return NewInMemoryTendermintNodeProtoWithValidators(t, genesisState, nil)
+}
+
+// NewInMemoryTendermintNodeWithValidators will create a TM node with 'n' "validators".
+// If "validators" is nil, this creates a pre-leanpokt TM node, else it will enable lean pocket
+func NewInMemoryTendermintNodeProtoWithValidators(t *testing.T, genesisState []byte, validators []crypto.PrivateKey) (tendermintNode *node.Node, keybase keys.Keybase, cleanup func()) {
 	// create the in memory tendermint node and keybase
-	tendermintNode, keybase = inMemTendermintNode(genesisState)
+	tendermintNode, keybase = inMemTendermintNodeWithValidators(genesisState, validators)
 	// test assertions
 	if tendermintNode == nil {
 		panic("tendermintNode should not be nil")
@@ -122,10 +142,15 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 	}
 	assert.NotNil(t, tendermintNode)
 	assert.NotNil(t, keybase)
+
 	// init cache in memory
+	defaultConfig := sdk.DefaultTestingPocketConfig()
+	if validators != nil {
+		defaultConfig.PocketConfig.LeanPocket = true
+	}
 	pocketTypes.InitConfig(&pocketTypes.HostedBlockchains{
 		M: make(map[string]pocketTypes.HostedBlockchain),
-	}, tendermintNode.Logger, sdk.DefaultTestingPocketConfig())
+	}, tendermintNode.Logger, defaultConfig)
 	// start the in memory node
 	err := tendermintNode.Start()
 	if err != nil {
@@ -141,8 +166,8 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 		if err != nil {
 			panic(err)
 		}
-		pocketTypes.ClearEvidence()
-		pocketTypes.ClearSessionCache()
+
+		pocketTypes.CleanPocketNodes()
 
 		PCA = nil
 		inMemKB = nil
@@ -161,6 +186,18 @@ func NewInMemoryTendermintNodeProto(t *testing.T, genesisState []byte) (tendermi
 		time.Sleep(3 * time.Second)
 	}
 	return
+}
+
+func TestNewInMemoryAminoWithValidators(t *testing.T) {
+	gbz, validators, _, _ := generateGenesis(5, 5, 10)
+	_, _, cleanup := NewInMemoryTendermintNodeAminoWithValidators(t, gbz, validators)
+	defer cleanup()
+}
+
+func TestNewInMemoryProtoWithValidators(t *testing.T) {
+	gbz, validators, _, _ := generateGenesis(5, 5, 10)
+	_, _, cleanup := NewInMemoryTendermintNodeProtoWithValidators(t, gbz, validators)
+	defer cleanup()
 }
 
 func TestNewInMemoryAmino(t *testing.T) {
@@ -201,7 +238,9 @@ func getInMemoryDB() dbm.DB {
 	return inMemDB
 }
 
-func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
+// inMemTendermintNodeWithValidators will create a TM node with 'n' "validators".
+// If "validators" is nil, LeanPokt is disabled and uses in memory CB as the sole validator for consensus
+func inMemTendermintNodeWithValidators(genesisState []byte, validatorsPk []crypto.PrivateKey) (*node.Node, keys.Keybase) {
 	kb := getInMemoryKeybase()
 	cb, err := kb.GetCoinbase()
 	if err != nil {
@@ -244,11 +283,28 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		panic(err)
 	}
 	nodeKey := p2p.NodeKey{PrivKey: pk}
-	privVal := GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
-	privVal.Key.PrivKey = pk
-	privVal.Key.PubKey = pk.PubKey()
-	privVal.Key.Address = pk.PubKey().Address()
-	pocketTypes.InitPVKeyFile(privVal.Key)
+	var privVal *privval.FilePVLean
+	if validatorsPk == nil {
+		// only set cb as validator
+		privVal = privval.GenFilePVLean(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
+		privVal.Keys[0].PrivKey = pk
+		privVal.Keys[0].PubKey = pk.PubKey()
+		privVal.Keys[0].Address = pk.PubKey().Address()
+		pocketTypes.CleanPocketNodes()
+		pocketTypes.AddPocketNodeByFilePVKey(privVal.Keys[0], c.Logger)
+	} else {
+		// (LeanPOKT) Set multiple nodes as validators
+		pocketTypes.CleanPocketNodes()
+		// generating a stub of n validators
+		privVal = privval.GenFilePVsLean(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState, uint(len(validatorsPk)))
+		// replace the stub validators with the correct validators
+		for i, pk := range validatorsPk {
+			privVal.Keys[i].PrivKey = pk.PrivKey()
+			privVal.Keys[i].PubKey = pk.PubKey()
+			privVal.Keys[i].Address = pk.PubKey().Address()
+			pocketTypes.AddPocketNode(pk, c.Logger)
+		}
+	}
 
 	dbProvider := func(*node.DBContext) (dbm.DB, error) {
 		return db, nil
@@ -279,19 +335,13 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	return tmNode, kb
 }
 
-// GenFilePV generates a new validator with randomly generated private key
-// and sets the filePaths, but does not call Save().
-func GenFilePV(keyFilePath, stateFilePath string) *privval.FilePV {
-	return privval.GenFilePV(keyFilePath, stateFilePath)
-}
-
 func GetApp(logger log.Logger, db dbm.DB, traceWriter io.Writer) *PocketCoreApp {
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
 		m := map[string]pocketTypes.HostedBlockchain{"0001": {
 			ID:  sdk.PlaceholderHash,
 			URL: sdk.PlaceholderURL,
 		}}
-		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m, L: sync.Mutex{}}, logger, db, false, 5000000, bam.SetPruning(store.PruneNothing))
+		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m, L: sync.RWMutex{}}, logger, db, false, 5000000, bam.SetPruning(store.PruneNothing))
 		return p
 	}
 	return creator(logger, db, traceWriter)
@@ -906,6 +956,157 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 	GenState = defaultGenesis
 	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
 	return j, kys, posGenesisState.Validators, appsGenesisState.Applications[0]
+}
+
+// generateGenesis generates a genesis state of n validators, n servicers, and n apps
+func generateGenesis(validators int, servicers int, appss int) ([]byte, []crypto.PrivateKey, []crypto.PrivateKey, []crypto.PrivateKey) {
+
+	kb := getInMemoryKeybase()
+	kp1, err := kb.GetCoinbase()
+
+	if err != nil {
+		panic(err)
+	}
+
+	validatorPks := []crypto.PrivateKey{}
+	servicerPks := []crypto.PrivateKey{}
+	appPks := []crypto.PrivateKey{}
+
+	encryptPassPhrase := "test"
+	for i := 0; i < validators; i++ {
+		keyPair, err := kb.Create(encryptPassPhrase)
+		if err != nil {
+			panic(err)
+		}
+		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), encryptPassPhrase)
+		if err != nil {
+			panic(err)
+		}
+		validatorPks = append(validatorPks, pk)
+	}
+
+	for i := 0; i < servicers; i++ {
+		keyPair, err := kb.Create(encryptPassPhrase)
+		if err != nil {
+			panic(err)
+		}
+		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), encryptPassPhrase)
+		if err != nil {
+			panic(err)
+		}
+		servicerPks = append(servicerPks, pk)
+	}
+
+	for i := 0; i < appss; i++ {
+		keyPair, err := kb.Create(encryptPassPhrase)
+		if err != nil {
+			panic(err)
+		}
+		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), encryptPassPhrase)
+		if err != nil {
+			panic(err)
+		}
+		appPks = append(appPks, pk)
+	}
+
+	defaultGenesis := module.NewBasicManager(
+		apps.AppModuleBasic{},
+		auth.AppModuleBasic{},
+		gov.AppModuleBasic{},
+		nodes.AppModuleBasic{},
+		pocket.AppModuleBasic{},
+	).DefaultGenesis()
+
+	rawPOS := defaultGenesis[nodesTypes.ModuleName]
+	var posGenesisState nodesTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPOS, &posGenesisState)
+
+	rawAccounts := defaultGenesis[auth.ModuleName]
+	var authGenState auth.GenesisState
+	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
+
+	MinStake := int64(10000000000)
+	ValidatorStake := MinStake + 1000000
+
+	posGenesisState.Params.StakeMinimum = MinStake
+	posGenesisState.Params.MaxValidators = int64(validators)
+	// validators kp
+	for _, v := range validatorPks {
+		posGenesisState.Validators = append(posGenesisState.Validators,
+			nodesTypes.Validator{Address: sdk.Address(v.PublicKey().Address()),
+				PublicKey:    v.PublicKey(),
+				Status:       sdk.Staked,
+				Chains:       []string{dummyChainsHash},
+				ServiceURL:   sdk.PlaceholderServiceURL,
+				StakedTokens: sdk.NewInt(ValidatorStake)})
+
+		authGenState.Accounts = append(authGenState.Accounts, &auth.BaseAccount{
+			Address: sdk.Address(v.PublicKey().Address()),
+			Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultStakeDenom, sdk.NewInt(ValidatorStake))),
+			PubKey:  v.PublicKey(),
+		})
+	}
+
+	for _, v := range servicerPks {
+		posGenesisState.Validators = append(posGenesisState.Validators,
+			nodesTypes.Validator{Address: sdk.Address(v.PublicKey().Address()),
+				PublicKey:    v.PublicKey(),
+				Status:       sdk.Staked,
+				Chains:       []string{dummyChainsHash},
+				ServiceURL:   sdk.PlaceholderServiceURL,
+				StakedTokens: sdk.NewInt(MinStake)})
+	}
+
+	// validators+servicers
+	res := memCodec().MustMarshalJSON(posGenesisState)
+	defaultGenesis[nodesTypes.ModuleName] = res
+
+	// pokt holders
+	res3 := memCodec().MustMarshalJSON(authGenState)
+	defaultGenesis[auth.ModuleName] = res3
+
+	// setup application
+	rawApps := defaultGenesis[appsTypes.ModuleName]
+	var appsGenesisState appsTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawApps, &appsGenesisState)
+	for _, pk := range appPks {
+		appsGenesisState.Applications = append(appsGenesisState.Applications, appsTypes.Application{
+			Address:                 sdk.GetAddress(pk.PublicKey()),
+			PublicKey:               pk.PublicKey(),
+			Jailed:                  false,
+			Status:                  sdk.Staked,
+			Chains:                  []string{dummyChainsHash},
+			StakedTokens:            sdk.NewInt(10000000),
+			MaxRelays:               sdk.NewInt(100000),
+			UnstakingCompletionTime: time.Time{},
+		})
+	}
+	res2 := memCodec().MustMarshalJSON(appsGenesisState)
+	defaultGenesis[appsTypes.ModuleName] = res2
+
+	// set default chain for module
+	rawPocket := defaultGenesis[pocketTypes.ModuleName]
+	var pocketGenesisState pocketTypes.GenesisState
+	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
+	pocketGenesisState.Params.SessionNodeCount = int64(validators + servicers)
+	pocketGenesisState.Params.SupportedBlockchains = []string{"0001"}
+	res4 := memCodec().MustMarshalJSON(pocketGenesisState)
+	defaultGenesis[pocketTypes.ModuleName] = res4
+	// set default governance in genesis
+	var govGenesisState govTypes.GenesisState
+	rawGov := defaultGenesis[govTypes.ModuleName]
+	memCodec().MustUnmarshalJSON(rawGov, &govGenesisState)
+	nMACL := createTestACL(kp1)
+	govGenesisState.Params.Upgrade = govTypes.NewUpgrade(10000, "2.0.0")
+	govGenesisState.Params.ACL = nMACL
+	govGenesisState.Params.DAOOwner = kp1.GetAddress()
+	govGenesisState.DAOTokens = sdk.NewInt(1000)
+	res5 := memCodec().MustMarshalJSON(govGenesisState)
+	defaultGenesis[govTypes.ModuleName] = res5
+	// end genesis setup
+	GenState = defaultGenesis
+	j, _ := memCodec().MarshalJSONIndent(defaultGenesis, "", "    ")
+	return j, validatorPks, servicerPks, appPks
 }
 
 //

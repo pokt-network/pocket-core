@@ -13,11 +13,16 @@
 
 # Ignore vendor folder: every environment needs to build their own based on package management.
 vendor/
+pocket
 
 # Log files should be ignored
 *.log
 logs/Logs
 *.idea/
+
+
+app/cmd/rpc/data/pocket_evidence.db
+app/cmd/rpc/data/session.db
 
 tests/unit/*.log
 tests/unit/*.json
