@@ -102,18 +102,8 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	am.keeper.DeleteExpiredClaims(ctx)
 }
 
-// ActivateAdditionalParameters activate additional parameters on their respective upgrade heights
-func ActivateAdditionalParameters(ctx sdk.Ctx, am AppModule) {
-	if am.keeper.Cdc.IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.BlockSizeModifyKey) {
-		//on the height we set the default value
-		params := am.keeper.GetParams(ctx)
-		params.BlockByteSize = types.DefaultBlockByteSize
-		am.keeper.SetParams(ctx, params)
-	}
-}
-
-// EndBlock "EndBlock" - Functionality that is called at the end of (every) block
-func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+// "EndBlock" - Functionality that is called at the end of (every) block
+func (am AppModule) EndBlockOld(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
 	// get self address
@@ -150,7 +140,42 @@ func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Validat
 	return []abci.ValidatorUpdate{}
 }
 
-// InitGenesis "InitGenesis" - Inits the module genesis from raw json
+func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	// get blocks per session
+	blocksPerSession := am.keeper.BlocksPerSession(ctx)
+	// get self address
+
+	if keeper.PkFromAddressMap != nil {
+		for _, v := range keeper.PkFromAddressMap {
+			addr := sdk.Address(v.PublicKey().Address())
+			if (ctx.BlockHeight()+int64(addr[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
+				// run go routine because cannot access TmNode during end-block period
+				go func() {
+					// use this sleep timer to bypass the beginBlock lock over transactions
+					time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
+					s, err := am.keeper.TmNode.Status()
+					if err != nil {
+						ctx.Logger().Error(fmt.Sprintf("could not get status for tendermint node (cannot submit claims/proofs in this state): %s", err.Error()))
+					} else {
+						if !s.SyncInfo.CatchingUp {
+							// auto send the proofs
+							am.keeper.SendClaimTxWithNodeAddress(ctx, am.keeper, am.keeper.TmNode, &addr, ClaimTx)
+							// auto claim the proofs
+							am.keeper.SendProofTxWithNodeAddress(ctx, am.keeper.TmNode, &addr, ProofTx)
+							// clear session cache and db
+							types.ClearSessionCacheWithNodeAddress(&addr)
+						}
+					}
+				}()
+			}
+		}
+	} else {
+		ctx.Logger().Error("pk map not initialized yet in end block")
+	}
+	return []abci.ValidatorUpdate{}
+}
+
+// "InitGenesis" - Inits the module genesis from raw json
 func (am AppModule) InitGenesis(ctx sdk.Ctx, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	if data == nil {

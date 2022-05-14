@@ -23,9 +23,6 @@ func (k Keeper) GetPKFromFile(ctx sdk.Ctx) (crypto.PrivateKey, error) {
 
 var PkFromAddressMap map[string]crypto.PrivateKey
 
-func getPkMap() {
-	return PkFromAddressMap
-}
 func InitializePkMap() error {
 	PkFromAddressMap = make(map[string]crypto.PrivateKey)
 	for _, pvKey := range types.GlobalPVKeyFiles {

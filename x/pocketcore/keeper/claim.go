@@ -89,7 +89,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 	}
 }
 
-func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, address *sdk.Address, n client.Client, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, n client.Client, address *sdk.Address, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	// get the private val key (main) account from the keybase
 	kp, err := k.GetPkFromAddress(address)
 	if err != nil {
