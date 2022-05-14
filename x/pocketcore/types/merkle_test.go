@@ -40,7 +40,7 @@ func TestMultiAppend(t *testing.T) {
 }
 
 func TestEvidence_GenerateMerkleRoot(t *testing.T) {
-	ClearEvidence()
+	ClearEvidence(GlobalEvidenceCache)
 	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	clientPrivateKey := GetRandomPrivateKey()
@@ -115,7 +115,7 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 			},
 		},
 	}
-	root := i.GenerateMerkleRoot(0, 5)
+	root := i.GenerateMerkleRoot(0, 5, GlobalEvidenceCache)
 	assert.NotNil(t, root.Hash)
 	assert.NotEmpty(t, root.Hash)
 	assert.Nil(t, HashVerification(hex.EncodeToString(root.Hash)))
@@ -123,13 +123,13 @@ func TestEvidence_GenerateMerkleRoot(t *testing.T) {
 	assert.Zero(t, root.Range.Lower)
 	assert.NotZero(t, root.Range.Upper)
 
-	iter := EvidenceIterator()
+	iter := EvidenceIterator(GlobalEvidenceCache)
 	// Make sure its stored in order!
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		e := iter.Value()
 		assert.Equal(t, i, e)
-		newRoot := e.GenerateMerkleRoot(0, 5)
+		newRoot := e.GenerateMerkleRoot(0, 5, GlobalEvidenceCache)
 		assert.Equal(t, root, newRoot)
 	}
 }
@@ -384,13 +384,13 @@ func TestEvidence_VerifyMerkleProof(t *testing.T) {
 		},
 	}
 	index := 4
-	root := i.GenerateMerkleRoot(0, 9)
+	root := i.GenerateMerkleRoot(0, 9, GlobalEvidenceCache)
 	proofs, leaf := i.GenerateMerkleProof(0, index, 9)
 	// validate level count on claim by total relays
 	res, _ := proofs.Validate(0, root, leaf, len(proofs.HashRanges))
 	assert.True(t, res)
 	index2 := 0
-	root2 := i2.GenerateMerkleRoot(0, 9)
+	root2 := i2.GenerateMerkleRoot(0, 9, GlobalEvidenceCache)
 	proofs2, leaf2 := i2.GenerateMerkleProof(0, index2, 9)
 	res, _ = proofs2.Validate(0, root2, leaf2, len(proofs2.HashRanges))
 	assert.True(t, res)

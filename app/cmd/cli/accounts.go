@@ -40,6 +40,8 @@ func init() {
 	accountsCmd.AddCommand(signNexMS)
 	accountsCmd.AddCommand(buildMultisig)
 	accountsCmd.AddCommand(unsafeDeleteCmd)
+	accountsCmd.AddCommand(getNodesLean)
+	accountsCmd.AddCommand(setValidatorsLean)
 }
 
 // accountsCmd represents the accounts namespace command
@@ -104,6 +106,29 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	},
 }
 
+var getNodesLean = &cobra.Command{
+	Use:   "get-validators",
+	Short: "Retrieves all nodes set by set-validators",
+	Long:  `Retrieves all nodes set by set-validators`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		config := app.GlobalConfig
+		if !config.PocketConfig.LeanPocket {
+			fmt.Println("Lean pocket is not enabled")
+			return
+		}
+
+		keys, err := app.LoadFilePVKeysFromFileLean(config.PocketConfig.DataDir + app.FS + config.TendermintConfig.PrivValidatorKey)
+		if err != nil {
+			fmt.Println("Failed to read set validators")
+			return
+		}
+		for _, value := range keys {
+			fmt.Printf("Node Address: %s\n", strings.ToLower(value.Address.String()))
+		}
+	},
+}
+
 var getValidator = &cobra.Command{
 	Use:   "get-validator",
 	Short: "Retrieves the main validator from the priv_val file",
@@ -117,6 +142,33 @@ var getValidator = &cobra.Command{
 		}
 		val := app.GetPrivValFile()
 		fmt.Printf("Validator Address:%s\n", strings.ToLower(val.Address.String()))
+	},
+}
+
+var setValidatorsLean = &cobra.Command{
+	Use:   `set-validators <path to keyfile>`,
+	Short: "Sets the main validator accounts for tendermint; NOTE: keyfile should be a json string array of private keys",
+	Long:  `Sets the main validator accounts that will be used across all Tendermint functions; NOTE: keyfile should be a json string array of private keys`,
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+
+		if !app.GlobalConfig.PocketConfig.LeanPocket {
+			fmt.Println("Lean pocket is not enabled")
+			return
+		}
+
+		keys, err := app.ReadValidatorPrivateKeyFileLean(args[0])
+		if err != nil {
+			fmt.Println("Failed to read validators json file ", err)
+			os.Exit(1)
+		}
+		err = app.SetValidatorsFilesLean(keys)
+		if err != nil {
+			fmt.Println("Failed to set validators", err)
+			os.Exit(1)
+			return
+		}
 	},
 }
 

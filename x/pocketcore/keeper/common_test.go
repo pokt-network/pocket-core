@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
+	"github.com/tendermint/tendermint/privval"
 	"math"
 	"math/big"
 	"os"
@@ -35,7 +36,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	abcitypes "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
-	"github.com/tendermint/tendermint/privval"
 	tmStore "github.com/tendermint/tendermint/store"
 	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
@@ -84,16 +84,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	kb := NewTestKeybase()
 	_, err := kb.Create("test")
 	assert.Nil(t, err)
-	cb, err := kb.GetCoinbase()
-	assert.Nil(t, err)
-	addr := tmtypes.Address(cb.GetAddress())
-	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
-	assert.Nil(t, err)
-	types.InitPVKeyFile(privval.FilePVKey{
-		Address: addr,
-		PubKey:  cb.PublicKey,
-		PrivKey: pk,
-	})
+
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
@@ -155,7 +146,20 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 			URL: "https://www.google.com:443",
 		}},
 	}
+
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	addr := tmtypes.Address(cb.GetAddress())
+	pk, err := kb.ExportPrivateKeyObject(cb.GetAddress(), "test")
+	assert.Nil(t, err)
+	types.CleanPocketNodes()
+	types.AddPocketNodeByFilePVKey(privval.FilePVKey{
+		Address: addr,
+		PubKey:  cb.PublicKey,
+		PrivKey: pk,
+	}, ctx.Logger())
 	types.InitConfig(&hb, log.NewTMLogger(os.Stdout), sdk.DefaultTestingPocketConfig())
+
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
 	appSubspace := sdk.NewSubspace(appsTypes.DefaultParamspace)
@@ -183,6 +187,11 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	defaultPocketParams := types.DefaultParams()
 	defaultPocketParams.SupportedBlockchains = []string{getTestSupportedBlockchain()}
 	keeper.SetParams(ctx, defaultPocketParams)
+	return ctx, vals, ap, accs, keeper, keys, kb
+}
+
+func createTestInputWithLean(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Validator, []appsTypes.Application, []auth.BaseAccount, Keeper, map[string]*sdk.KVStoreKey, keys.Keybase) {
+	ctx, vals, ap, accs, keeper, keys, kb := createTestInput(t, isCheckTx)
 	return ctx, vals, ap, accs, keeper, keys, kb
 }
 
@@ -376,7 +385,7 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	// NOTE Add a minimum of 5 proofs to memInvoice to be able to create a merkle tree
 	for j := 0; j < maxRelays; j++ {
 		proof := createProof(getTestApplicationPrivateKey(), clientKey, npk, ethereum, j)
-		types.SetProof(validHeader, types.RelayEvidence, proof, sdk.NewInt(100000))
+		types.SetProof(validHeader, types.RelayEvidence, proof, sdk.NewInt(100000), types.GlobalEvidenceCache)
 	}
 	mockCtx := new(Ctx)
 	mockCtx.On("KVStore", k.storeKey).Return((*ctx).KVStore(k.storeKey))
@@ -385,6 +394,7 @@ func simulateRelays(t *testing.T, k Keeper, ctx *sdk.Ctx, maxRelays int) (npk cr
 	keys = simulateRelayKeys{getTestApplicationPrivateKey(), clientKey}
 	return
 }
+
 func createProof(private, client crypto.PrivateKey, npk crypto.PublicKey, chain string, entropy int) types.Proof {
 	aat := types.AAT{
 		Version:              "0.0.1",

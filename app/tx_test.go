@@ -26,8 +26,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	pocketTypes.ClearSessionCache()
-	pocketTypes.ClearEvidence()
+	pocketTypes.CleanPocketNodes()
 	sdk.InitCtxCache(1)
 	m.Run()
 }
@@ -1236,12 +1235,11 @@ func TestClaimAminoTx(t *testing.T) {
 					ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
 					Chain:              sdk.PlaceholderHash,
 					SessionBlockHeight: 1,
-				}, pocketTypes.RelayEvidence, proof, sdk.NewInt(1000000))
+				}, pocketTypes.RelayEvidence, proof, sdk.NewInt(1000000), pocketTypes.GlobalEvidenceCache)
 				assert.Nil(t, err)
 			}
 			_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 			res := <-evtChan
-			fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 				t.Fatal("claim message was not received first")
 			}
@@ -1311,7 +1309,7 @@ func TestClaimProtoTx(t *testing.T) {
 					ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
 					Chain:              sdk.PlaceholderHash,
 					SessionBlockHeight: 1,
-				}, pocketTypes.RelayEvidence, proof, sdk.NewInt(1000000))
+				}, pocketTypes.RelayEvidence, proof, sdk.NewInt(1000000), pocketTypes.GlobalEvidenceCache)
 				assert.Nil(t, err)
 			}
 			_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
@@ -1349,7 +1347,7 @@ func TestAminoClaimTxChallenge(t *testing.T) {
 			challenges := NewValidChallengeProof(t, keys, 5)
 			_, _, cleanup := tc.memoryNodeFn(t, genBz)
 			for _, c := range challenges {
-				c.Store(sdk.NewInt(1000000))
+				c.Store(sdk.NewInt(1000000), pocketTypes.GlobalEvidenceCache)
 			}
 			_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 			res := <-evtChan // Wait for tx
@@ -1386,7 +1384,7 @@ func TestProtoClaimTxChallenge(t *testing.T) {
 			challenges := NewValidChallengeProof(t, keys, 5)
 			_, _, cleanup := tc.memoryNodeFn(t, genBz)
 			for _, c := range challenges {
-				c.Store(sdk.NewInt(1000000))
+				c.Store(sdk.NewInt(1000000), pocketTypes.GlobalEvidenceCache)
 			}
 			_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 			res := <-evtChan // Wait for tx

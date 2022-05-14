@@ -516,7 +516,7 @@ func TestChallengeProofInvalidData_ValidateLocal(t *testing.T) {
 				Chain:              tt.proof.MinorityResponse.Proof.Blockchain,
 				SessionBlockHeight: tt.proof.MinorityResponse.Proof.SessionBlockHeight,
 			}
-			if err := tt.proof.ValidateLocal(h, tt.maxRelays, tt.supportedBlockchains, 5, tt.sessionNodes, tt.reporterAddress); (err != nil) != tt.hasError {
+			if err := tt.proof.ValidateLocal(h, tt.maxRelays, tt.supportedBlockchains, 5, tt.sessionNodes, tt.reporterAddress, GlobalEvidenceCache); (err != nil) != tt.hasError {
 				fmt.Println(tt.name)
 				fmt.Println(err)
 				t.Fatalf(err.Error())

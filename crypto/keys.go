@@ -69,6 +69,14 @@ type MultiSig interface {
 	GetSignatureByIndex(i int) (sig []byte, found bool)
 }
 
+func NewPrivateKey(hexString string) (PrivateKey, error) {
+	b, err := hex.DecodeString(hexString)
+	if err != nil {
+		return nil, err
+	}
+	return NewPrivateKeyBz(b)
+}
+
 func NewPublicKey(hexString string) (PublicKey, error) {
 	b, err := hex.DecodeString(hexString)
 	if err != nil {

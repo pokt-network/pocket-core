@@ -16,29 +16,24 @@ import (
 )
 
 var (
-	// cache for session objects
-	globalSessionCache *CacheStorage
-	// cache for GOBEvidence objects
-	globalEvidenceCache *CacheStorage
 	// sync.once to perform initialization
-	cacheOnce sync.Once
-
-	globalEvidenceSealedMap sync.Map
+	ConfigOnce sync.Once
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
 type CacheStorage struct {
-	Cache *sdk.Cache // lru cache
-	DB    db.DB      // persisted
-	l     sync.Mutex // lock
+	Cache   *sdk.Cache // lru cache
+	DB      db.DB      // persisted
+	l       sync.Mutex // lock
+	SealMap *sync.Map
 }
 
 type CacheObject interface {
 	MarshalObject() ([]byte, error)
 	UnmarshalObject(b []byte) (CacheObject, error)
 	Key() ([]byte, error)
-	Seal() CacheObject
-	IsSealed() bool
+	IsSealable() bool
+	HashString() string
 }
 
 // "Init" - Initializes a cache storage object
@@ -59,6 +54,7 @@ func (cs *CacheStorage) Init(dir, name string, options config.LevelDBOptions, ma
 		}
 		panic(err)
 	}
+	cs.SealMap = &sync.Map{}
 }
 
 // "Get" - Returns the value from a key
@@ -88,11 +84,41 @@ func (cs *CacheStorage) GetWithoutLock(key []byte, object CacheObject) (interfac
 	return res, true
 }
 
+// "DeleteEvidence" - Remove the GOBEvidence from the store
+func DeleteEvidence(header SessionHeader, evidenceType EvidenceType, evidenceStore *CacheStorage) error {
+	// generate key for GOBEvidence
+	key, err := KeyForEvidence(header, evidenceType)
+	if err != nil {
+		return err
+	}
+	// delete from cache
+	evidenceStore.Delete(key)
+	evidenceStore.SealMap.Delete(header.HashString())
+	return nil
+}
+
+func (cs *CacheStorage) IsSealedWithoutLock(object CacheObject) bool {
+	_, ok := cs.SealMap.Load(object.HashString())
+	return ok
+}
+
+func (cs *CacheStorage) IsSealed(object CacheObject) bool {
+	cs.l.Lock()
+	defer cs.l.Unlock()
+	return cs.IsSealedWithoutLock(object)
+}
+
 // "Seal" - Seals the cache object so it is no longer writable in the cache store
 func (cs *CacheStorage) Seal(object CacheObject) (cacheObject CacheObject, isOK bool) {
-	if object.IsSealed() {
+
+	if !object.IsSealable() {
+		return object, false
+	}
+
+	if cs.IsSealed(object) {
 		return object, true
 	}
+
 	cs.l.Lock()
 	defer cs.l.Unlock()
 	// get the key from the object
@@ -101,10 +127,10 @@ func (cs *CacheStorage) Seal(object CacheObject) (cacheObject CacheObject, isOK 
 		return object, false
 	}
 	// make READONLY
-	sealed := object.Seal()
+	cs.SealMap.Store(object.HashString(), struct{}{})
 	// set in db and cache
-	cs.SetWithoutLockAndSealCheck(hex.EncodeToString(k), sealed)
-	return sealed, true
+	cs.SetWithoutLockAndSealCheck(hex.EncodeToString(k), object)
+	return object, true
 }
 
 // "Set" - Sets the KV pair in cache and db
@@ -121,8 +147,8 @@ func (cs *CacheStorage) Set(key []byte, val CacheObject) {
 			return
 		}
 		// if evidence, check sealed map
-		if ev, ok := co.(Evidence); ok {
-			if _, ok := globalEvidenceSealedMap.Load(ev.HashString()); ok {
+		if co.IsSealable() {
+			if ok := cs.IsSealedWithoutLock(co); ok {
 				return
 			}
 		}
@@ -208,15 +234,16 @@ func (cs *CacheStorage) Iterator() (db.Iterator, error) {
 	if err != nil {
 		fmt.Printf("unable to flush to db before iterator created in cacheStorage Iterator(): %s", err.Error())
 	}
+
 	return cs.DB.Iterator(nil, nil)
 }
 
 // "GetSession" - Returns a session (value) from the stores using a header (key)
-func GetSession(header SessionHeader) (session Session, found bool) {
+func GetSession(header SessionHeader, sessionStore *CacheStorage) (session Session, found bool) {
 	// generate the key from the header
 	key := header.Hash()
 	// check stores
-	val, found := globalSessionCache.Get(key, session)
+	val, found := sessionStore.Get(key, session)
 	if !found {
 		return Session{}, found
 	}
@@ -228,22 +255,22 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 }
 
 // "SetSession" - Sets a session (value) in the stores using the header (key)
-func SetSession(session Session) {
+func SetSession(session Session, sessionStore *CacheStorage) {
 	// get the key for the session
 	key := session.SessionHeader.Hash()
-	globalSessionCache.Set(key, session)
+	sessionStore.Set(key, session)
 }
 
 // "DeleteSession" - Deletes a session (value) from the stores
-func DeleteSession(header SessionHeader) {
+func DeleteSession(header SessionHeader, sessionStore *CacheStorage) {
 	// delete from stores using header.ID as key
-	globalSessionCache.Delete(header.Hash())
+	sessionStore.Delete(header.Hash())
 }
 
 // "ClearSessionCache" - Clears all items from the session cache db
-func ClearSessionCache() {
-	if globalSessionCache != nil {
-		globalSessionCache.Clear()
+func ClearSessionCache(sessionStore *CacheStorage) {
+	if sessionStore != nil {
+		sessionStore.Clear()
 	}
 }
 
@@ -265,30 +292,37 @@ func (si *SessionIt) Value() (session Session) {
 	return
 }
 
-// "SessionIterator" - Returns an instance iterator of the globalSessionCache
-func SessionIterator() SessionIt {
-	it, _ := globalSessionCache.Iterator()
+// "SessionIterator" - Returns an instance iterator of the GlobalSessionCache
+func SessionIterator(sessionStore *CacheStorage) SessionIt {
+	it, _ := sessionStore.Iterator()
 	return SessionIt{
 		Iterator: it,
 	}
 }
 
 // "GetEvidence" - Retrieves the GOBEvidence object from the storage
-func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.BigInt) (evidence Evidence, err error) {
+func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.BigInt, storage *CacheStorage) (evidence Evidence, err error) {
 	// generate the key for the GOBEvidence
 	key, err := KeyForEvidence(header, evidenceType)
 	if err != nil {
 		return
 	}
 	// get the bytes from the storage
-	val, found := globalEvidenceCache.Get(key, evidence)
+	val, found := storage.Get(key, evidence)
 	if !found && max.Equal(sdk.ZeroInt()) {
 		return Evidence{}, fmt.Errorf("GOBEvidence not found")
 	}
 	if !found {
 		bloomFilter := bloom.NewWithEstimates(uint(sdk.NewUintFromBigInt(max.BigInt()).Uint64()), .01)
 		// add to metric
-		GlobalServiceMetric().AddSessionFor(header.Chain)
+		addSessionMetricFunc := func() {
+			GlobalServiceMetric().AddSessionFor(header.Chain, nil)
+		}
+		if GlobalPocketConfig.LeanPocket {
+			go addSessionMetricFunc()
+		} else {
+			addSessionMetricFunc()
+		}
 		return Evidence{
 			Bloom:         *bloomFilter,
 			SessionHeader: header,
@@ -302,12 +336,12 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.BigInt
 		err = fmt.Errorf("could not unmarshal into evidence from cache with header %v", header)
 		return
 	}
-	if evidence.IsSealed() {
+	if storage.IsSealed(evidence) {
 		return evidence, nil
 	}
 	// if hit relay limit... Seal the evidence
 	if found && !max.Equal(sdk.ZeroInt()) && evidence.NumOfProofs >= max.Int64() {
-		evidence, ok = SealEvidence(evidence)
+		evidence, ok = SealEvidence(evidence, storage)
 		if !ok {
 			err = fmt.Errorf("max relays is hit and could not seal evidence! GetEvidence() with header %v", header)
 			return
@@ -317,32 +351,18 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.BigInt
 }
 
 // "SetEvidence" - Sets an GOBEvidence object in the storage
-func SetEvidence(evidence Evidence) {
+func SetEvidence(evidence Evidence, evidenceStore *CacheStorage) {
 	// generate the key for the evidence
 	key, err := evidence.Key()
 	if err != nil {
 		return
 	}
-	globalEvidenceCache.Set(key, evidence)
-}
-
-// "DeleteEvidence" - Remove the GOBEvidence from the stores
-func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
-	// generate key for GOBEvidence
-	key, err := KeyForEvidence(header, evidenceType)
-	if err != nil {
-		return err
-	}
-	// delete from cache
-	globalEvidenceCache.Delete(key)
-	globalEvidenceSealedMap.Delete(header.HashString())
-	return nil
+	evidenceStore.Set(key, evidence)
 }
 
 // "SealEvidence" - Locks/sets the evidence from the stores
-func SealEvidence(evidence Evidence) (Evidence, bool) {
-	// delete from cache
-	co, ok := globalEvidenceCache.Seal(evidence)
+func SealEvidence(evidence Evidence, storage *CacheStorage) (Evidence, bool) {
+	co, ok := storage.Seal(evidence)
 	if !ok {
 		return Evidence{}, ok
 	}
@@ -351,14 +371,14 @@ func SealEvidence(evidence Evidence) (Evidence, bool) {
 }
 
 // "ClearEvidence" - Clear stores of all evidence
-func ClearEvidence() {
-	if globalEvidenceCache != nil {
-		globalEvidenceCache.Clear()
-		globalEvidenceSealedMap = sync.Map{}
+func ClearEvidence(evidenceStore *CacheStorage) {
+	if evidenceStore != nil {
+		evidenceStore.Clear()
+		evidenceStore.SealMap = &sync.Map{}
 	}
 }
 
-// "EvidenceIt" - An GOBEvidence iterator instance of the globalEvidenceCache
+// "EvidenceIt" - An GOBEvidence iterator instance of the GlobalEvidenceCache
 type EvidenceIt struct {
 	db.Iterator
 }
@@ -377,19 +397,18 @@ func (ei *EvidenceIt) Value() (evidence Evidence) {
 	return
 }
 
-// "EvidenceIterator" - Returns a globalEvidenceCache iterator instance
-func EvidenceIterator() EvidenceIt {
-	it, _ := globalEvidenceCache.Iterator()
-
+// "EvidenceIterator" - Returns a GlobalEvidenceCache iterator instance
+func EvidenceIterator(evidenceStore *CacheStorage) EvidenceIt {
+	it, _ := evidenceStore.Iterator()
 	return EvidenceIt{
 		Iterator: it,
 	}
 }
 
 // "GetProof" - Returns the Proof object from a specific piece of GOBEvidence at a certain index
-func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proof {
+func GetProof(header SessionHeader, evidenceType EvidenceType, index int64, evidenceStore *CacheStorage) Proof {
 	// retrieve the GOBEvidence
-	evidence, err := GetEvidence(header, evidenceType, sdk.ZeroInt())
+	evidence, err := GetEvidence(header, evidenceType, sdk.ZeroInt(), evidenceStore)
 	if err != nil {
 		return nil
 	}
@@ -402,9 +421,9 @@ func GetProof(header SessionHeader, evidenceType EvidenceType, index int64) Proo
 }
 
 // "SetProof" - Sets a proof object in the GOBEvidence, using the header and GOBEvidence type
-func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.BigInt) {
+func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.BigInt, evidenceStore *CacheStorage) {
 	// retireve the GOBEvidence
-	evidence, err := GetEvidence(header, evidenceType, max)
+	evidence, err := GetEvidence(header, evidenceType, max, evidenceStore)
 	// if not found generate the GOBEvidence object
 	if err != nil {
 		log.Fatalf("could not set proof object: %s", err.Error())
@@ -412,7 +431,7 @@ func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.
 	// add proof
 	evidence.AddProof(p)
 	// set GOBEvidence back
-	SetEvidence(evidence)
+	SetEvidence(evidence, evidenceStore)
 }
 
 func IsUniqueProof(p Proof, evidence Evidence) bool {
@@ -420,9 +439,9 @@ func IsUniqueProof(p Proof, evidence Evidence) bool {
 }
 
 // "GetTotalProofs" - Returns the total number of proofs for a piece of GOBEvidence
-func GetTotalProofs(h SessionHeader, et EvidenceType, maxPossibleRelays sdk.BigInt) (Evidence, int64) {
+func GetTotalProofs(h SessionHeader, et EvidenceType, maxPossibleRelays sdk.BigInt, evidenceStore *CacheStorage) (Evidence, int64) {
 	// retrieve the GOBEvidence
-	evidence, err := GetEvidence(h, et, maxPossibleRelays)
+	evidence, err := GetEvidence(h, et, maxPossibleRelays, evidenceStore)
 	if err != nil {
 		log.Fatalf("could not get total proofs for GOBEvidence: %s", err.Error())
 	}

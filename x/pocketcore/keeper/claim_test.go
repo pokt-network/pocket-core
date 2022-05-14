@@ -12,11 +12,11 @@ import (
 func TestKeeper_GetSetClaim(t *testing.T) {
 	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
 	npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
-	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(100000))
+	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(100000), types.GlobalEvidenceCache)
 	assert.Nil(t, err)
 	claim := types.MsgClaim{
 		SessionHeader: header,
-		MerkleRoot:    evidence.GenerateMerkleRoot(0, 5),
+		MerkleRoot:    evidence.GenerateMerkleRoot(0, 5, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk.Address()),
 		EvidenceType:  types.RelayEvidence,
@@ -40,11 +40,11 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 
 	for i := 0; i < 2; i++ {
 		npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
-		evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
+		evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
 		assert.Nil(t, err)
 		claim := types.MsgClaim{
 			SessionHeader: header,
-			MerkleRoot:    evidence.GenerateMerkleRoot(0, 5),
+			MerkleRoot:    evidence.GenerateMerkleRoot(0, 5, types.GlobalEvidenceCache),
 			TotalProofs:   9,
 			FromAddress:   sdk.Address(sdk.Address(npk.Address())),
 			EvidenceType:  types.RelayEvidence,
@@ -70,21 +70,21 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 	npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
 	npk2, header2, _ := simulateRelays(t, keeper, &ctx, 20)
 
-	i, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
+	i, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
 	assert.Nil(t, err)
-	i2, err := types.GetEvidence(header2, types.RelayEvidence, sdk.NewInt(1000))
+	i2, err := types.GetEvidence(header2, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
 	assert.Nil(t, err)
 
 	matureClaim := types.MsgClaim{
 		SessionHeader: header,
-		MerkleRoot:    i.GenerateMerkleRoot(0, 9),
+		MerkleRoot:    i.GenerateMerkleRoot(0, 9, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk.Address()),
 		EvidenceType:  types.RelayEvidence,
 	}
 	immatureClaim := types.MsgClaim{
 		SessionHeader: header2,
-		MerkleRoot:    i2.GenerateMerkleRoot(0, 9),
+		MerkleRoot:    i2.GenerateMerkleRoot(0, 9, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk2.Address()),
 		EvidenceType:  types.RelayEvidence,
@@ -117,13 +117,13 @@ func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
 	npk2, header2, _ := simulateRelays(t, keeper, &ctx, 20)
 
-	i, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000))
+	i, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
 	assert.Nil(t, err)
-	i2, err := types.GetEvidence(header2, types.RelayEvidence, sdk.NewInt(1000))
+	i2, err := types.GetEvidence(header2, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
 	assert.Nil(t, err)
 	expiredClaim := types.MsgClaim{
 		SessionHeader: header,
-		MerkleRoot:    i.GenerateMerkleRoot(0, 9),
+		MerkleRoot:    i.GenerateMerkleRoot(0, 9, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk.Address()),
 		EvidenceType:  types.RelayEvidence,
@@ -131,7 +131,7 @@ func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	header2.SessionBlockHeight = int64(20) // NOTE start a later block than 1
 	notExpired := types.MsgClaim{
 		SessionHeader: header2,
-		MerkleRoot:    i2.GenerateMerkleRoot(0, 9),
+		MerkleRoot:    i2.GenerateMerkleRoot(0, 9, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk2.Address()),
 		EvidenceType:  types.RelayEvidence,

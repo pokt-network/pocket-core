@@ -25,7 +25,7 @@ type Relay struct {
 }
 
 // "Validate" - Checks the validity of a relay request using store data
-func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, node sdk.Address, hb *HostedBlockchains, sessionBlockHeight int64) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
+func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, hb *HostedBlockchains, sessionBlockHeight int64, node *PocketNode) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return sdk.ZeroInt(), NewEmptyPayloadDataError(ModuleName)
@@ -67,8 +67,8 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays)
-	if evidence.IsSealed() {
+	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays, node.EvidenceStore)
+	if node.EvidenceStore.IsSealed(evidence) {
 		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
 	}
 	// get evidence key by proof
@@ -80,11 +80,12 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 		return sdk.ZeroInt(), NewOverServiceError(ModuleName)
 	}
 	// validate the Proof
-	if err := r.Proof.ValidateLocal(app.GetChains(), int(sessionNodeCount), sessionBlockHeight, node); err != nil {
+	nodeAddr := node.GetAddress()
+	if err := r.Proof.ValidateLocal(app.GetChains(), int(sessionNodeCount), sessionBlockHeight, nodeAddr); err != nil {
 		return sdk.ZeroInt(), err
 	}
 	// check cache
-	session, found := GetSession(header)
+	session, found := GetSession(header, node.SessionStore)
 	// if not found generate the session
 	if !found {
 		bh, err := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
@@ -97,10 +98,10 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 			return sdk.ZeroInt(), er
 		}
 		// add to cache
-		SetSession(session)
+		SetSession(session, node.SessionStore)
 	}
 	// validate the session
-	err = session.Validate(node, app, int(sessionNodeCount))
+	err = session.Validate(nodeAddr, app, int(sessionNodeCount))
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
@@ -111,13 +112,21 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 	return maxPossibleRelays, nil
 }
 
+func addServiceMetricErrorFor(blockchain string, address *sdk.Address) {
+	if GlobalPocketConfig.LeanPocket {
+		go GlobalServiceMetric().AddErrorFor(blockchain, address)
+	} else {
+		GlobalServiceMetric().AddErrorFor(blockchain, address)
+	}
+}
+
 // "Execute" - Attempts to do a request on the non-native blockchain specified
-func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error) {
+func (r Relay) Execute(hostedBlockchains *HostedBlockchains, address *sdk.Address) (string, sdk.Error) {
 	// retrieve the hosted blockchain url requested
 	chain, err := hostedBlockchains.GetChain(r.Proof.Blockchain)
 	if err != nil {
 		// metric track
-		GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain)
+		addServiceMetricErrorFor(r.Proof.Blockchain, address)
 		return "", err
 	}
 	url := strings.Trim(chain.URL, `/`)
@@ -128,7 +137,7 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error)
 	res, er := executeHTTPRequest(r.Payload.Data, url, GlobalPocketConfig.UserAgent, chain.BasicAuth, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
 		// metric track
-		GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain)
+		addServiceMetricErrorFor(r.Proof.Blockchain, address)
 		return res, NewHTTPExecutionError(ModuleName, er)
 	}
 	return res, nil

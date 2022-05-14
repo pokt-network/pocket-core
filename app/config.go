@@ -3,11 +3,13 @@ package app
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	log2 "log"
 	"os"
+	"path"
 	fp "path/filepath"
 	"strings"
 	"sync"
@@ -72,14 +74,12 @@ const (
 	DefaultGenesisType
 )
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, useCache bool) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, useCache bool, forceSetValidatorsLean bool) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	GlobalConfig.PocketConfig.Cache = useCache
 	// init AuthToken
 	InitAuthToken(GlobalConfig.PocketConfig.GenerateTokenOnStart)
-	// init the keyfiles
-	InitKeyfiles()
 	// get hosted blockchains
 	chains := NewHostedChains(false)
 	if GlobalConfig.PocketConfig.ChainsHotReload {
@@ -88,7 +88,28 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	}
 	// create logger
 	logger := InitLogger()
-	// init cache
+	// prestart hook, so users don't have to create their own set-validator prestart script
+	if GlobalConfig.PocketConfig.LeanPocket {
+		userProvidedKeyPath := GlobalConfig.PocketConfig.GetLeanPocketUserKeyFilePath()
+		pvkName := path.Join(GlobalConfig.PocketConfig.DataDir, GlobalConfig.TendermintConfig.PrivValidatorKey)
+		if _, err := os.Stat(pvkName); err != nil && os.IsNotExist(err) || forceSetValidatorsLean { // user has not ran set-validators
+			// read the user provided lean nodes
+			keys, err := ReadValidatorPrivateKeyFileLean(userProvidedKeyPath)
+			if err != nil {
+				logger.Error("Can't read user provided validator keys, did you create keys in", userProvidedKeyPath, err)
+				os.Exit(1)
+			}
+			// set them
+			err = SetValidatorsFilesLean(keys)
+			if err != nil {
+				logger.Error("Failed to set validators for user provided file, try pocket accounts set-validators", userProvidedKeyPath, err)
+				os.Exit(1)
+			}
+		}
+	}
+	// init key files
+	InitKeyfiles(logger)
+	// init configs & evidence/session caches
 	InitPocketCoreConfig(chains, logger)
 	// init genesis
 	InitGenesis(genesisType, logger)
@@ -181,6 +202,11 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 	c.TendermintConfig.P2P.AllowDuplicateIP = true
 
 	GlobalConfig = c
+	if GlobalConfig.PocketConfig.LeanPocket {
+		GlobalConfig.TendermintConfig.PrivValidatorState = sdk.DefaultPVSNameLean
+		GlobalConfig.TendermintConfig.PrivValidatorKey = sdk.DefaultPVKNameLean
+		GlobalConfig.TendermintConfig.NodeKey = sdk.DefaultNKNameLean
+	}
 }
 
 func UpdateConfig(datadir string) {
@@ -213,6 +239,7 @@ func UpdateConfig(datadir string) {
 	GlobalConfig.PocketConfig.CtxCacheSize = sdk.DefaultCtxCacheSize
 	GlobalConfig.PocketConfig.RPCTimeout = sdk.DefaultRPCTimeout
 	GlobalConfig.PocketConfig.IavlCacheSize = sdk.DefaultIavlCacheSize
+	GlobalConfig.PocketConfig.LeanPocket = sdk.DefaultLeanPocket
 
 	// Backup and Save the File
 	var jsonFile *os.File
@@ -346,7 +373,17 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 	return tmNode
 }
 
-func InitKeyfiles() {
+func InitKeyfiles(logger log.Logger) {
+
+	if GlobalConfig.PocketConfig.LeanPocket {
+		err := InitNodesLean(logger)
+		if err != nil {
+			logger.Error("Failed to init lean nodes", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	datadir := GlobalConfig.PocketConfig.DataDir
 	// Check if privvalkey file exist
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
@@ -354,9 +391,10 @@ func InitKeyfiles() {
 		if os.IsNotExist(err) {
 			// generate random key for easy orchestration
 			randomKey := crypto.GenerateEd25519PrivKey()
-			privValKey(randomKey)
+			privValKey := privValKey(randomKey)
 			privValState()
 			nodeKey(randomKey)
+			types.AddPocketNodeByFilePVKey(privValKey, logger)
 			log2.Printf("No Validator Set! Creating Random Key: %s", randomKey.PublicKey().RawString())
 			return
 		} else {
@@ -366,8 +404,35 @@ func InitKeyfiles() {
 	} else {
 		// file exist so we can load pk from file.
 		file, _ := loadPKFromFile(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
-		types.InitPVKeyFile(file)
+		types.AddPocketNodeByFilePVKey(file, logger)
 	}
+}
+
+func InitNodesLean(logger log.Logger) error {
+	pvkName := path.Join(GlobalConfig.PocketConfig.DataDir, GlobalConfig.TendermintConfig.PrivValidatorKey)
+
+	if _, err := os.Stat(pvkName); err != nil {
+		if os.IsNotExist(err) {
+			return errors.New("pocket accounts set-validators must be ran first")
+		}
+		return errors.New("Failed to retrieve information on " + pvkName)
+	}
+
+	leanNodesTm, err := LoadFilePVKeysFromFileLean(pvkName)
+
+	if err != nil {
+		return err
+	}
+
+	if len(leanNodesTm) == 0 {
+		return errors.New("failed to load lean validators, length of zero")
+	}
+
+	for _, node := range leanNodesTm {
+		types.AddPocketNodeByFilePVKey(node, logger)
+	}
+
+	return nil
 }
 
 func InitLogger() (logger log.Logger) {
@@ -446,7 +511,45 @@ func loadPKFromFile(path string) (privval.FilePVKey, string) {
 	return pvKey, path
 }
 
-func privValKey(res crypto.PrivateKey) {
+func LoadFilePVKeysFromFileLean(path string) ([]privval.FilePVKey, error) {
+	keyJSONBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var pvKey []privval.FilePVKey
+	err = cdc.UnmarshalJSON(keyJSONBytes, &pvKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return pvKey, nil
+}
+
+func privValKeysLean(res []crypto.PrivateKey) error {
+	var pvKL []privval.FilePVKey
+	for _, pk := range res {
+		pvKL = append(pvKL, privval.FilePVKey{
+			Address: pk.PubKey().Address(),
+			PubKey:  pk.PubKey(),
+			PrivKey: pk.PrivKey(),
+		})
+	}
+	pvkBz, err := cdc.MarshalJSONIndent(pvKL, "", "  ")
+	if err != nil {
+		return err
+	}
+	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	_, err = pvFile.Write(pvkBz)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func privValKey(res crypto.PrivateKey) privval.FilePVKey {
 	privValKey := privval.FilePVKey{
 		Address: res.PubKey().Address(),
 		PubKey:  res.PubKey(),
@@ -464,7 +567,7 @@ func privValKey(res crypto.PrivateKey) {
 	if err != nil {
 		log2.Fatal(err)
 	}
-	types.InitPVKeyFile(privValKey)
+	return privValKey
 }
 
 func nodeKey(res crypto.PrivateKey) {
@@ -483,6 +586,41 @@ func nodeKey(res crypto.PrivateKey) {
 	if err != nil {
 		log2.Fatal(err)
 	}
+}
+
+func nodeKeyLean(res crypto.PrivateKey) error {
+	nodeKey := p2p.NodeKey{
+		PrivKey: res.PrivKey(),
+	}
+	pvkBz, err := cdc.MarshalJSONIndent(nodeKey, "", "  ")
+	if err != nil {
+		return err
+	}
+	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.NodeKey, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	_, err = pvFile.Write(pvkBz)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func privValStateLean(size int) error {
+	pvkBz, err := cdc.MarshalJSONIndent(make([]privval.FilePVLastSignState, size), "", "  ")
+	if err != nil {
+		return err
+	}
+	pvFile, err := os.OpenFile(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorState, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	_, err = pvFile.Write(pvkBz)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func privValState() {
@@ -604,7 +742,7 @@ func NewHostedChains(generate bool) *types.HostedBlockchains {
 	// return the map
 	return &types.HostedBlockchains{
 		M: m,
-		L: sync.Mutex{},
+		L: sync.RWMutex{},
 	}
 }
 
@@ -640,7 +778,7 @@ func generateChainsJson(chainsPath string) *types.HostedBlockchains {
 		m[chain.ID] = chain
 	}
 	// return the map
-	return &types.HostedBlockchains{M: m, L: sync.Mutex{}}
+	return &types.HostedBlockchains{M: m, L: sync.RWMutex{}}
 }
 
 const (
@@ -771,7 +909,62 @@ func Confirmation(pwd string) bool {
 			}
 		}
 	}
+}
 
+func ReadValidatorPrivateKeyFileLean(filePath string) ([]crypto.PrivateKey, error) {
+	var arr []privval.PrivateKeyFile
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("an error occurred attempting to read the key file: %s", err.Error())
+	}
+	if err := json.Unmarshal(data, &arr); err != nil {
+		return nil, fmt.Errorf("an error occurred unmarshalling the addresses into json format. Please make sure the input for this is a proper json array with priv_key as key value")
+	}
+
+	pkFileDeduped := map[privval.PrivateKeyFile]struct{}{}
+	for _, pk := range arr {
+		_, exists := pkFileDeduped[pk]
+		if exists {
+			return nil, fmt.Errorf("duplicate validator private key found in " + filePath)
+		}
+		pkFileDeduped[pk] = struct{}{}
+	}
+
+	var pks []crypto.PrivateKey
+	for _, pk := range arr {
+		a, err := crypto.NewPrivateKey(pk.PrivateKey)
+		if err != nil {
+			return nil, err
+		}
+		pks = append(pks, a)
+	}
+	return pks, nil
+}
+
+func SetValidatorsFilesLean(keys []crypto.PrivateKey) error {
+	return SetValidatorsFilesWithPeerLean(keys, keys[0].PublicKey().Address().String())
+}
+
+func SetValidatorsFilesWithPeerLean(keys []crypto.PrivateKey, address string) error {
+	resetFilePVLean(GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorKey, GlobalConfig.PocketConfig.DataDir+FS+GlobalConfig.TendermintConfig.PrivValidatorState, log.NewNopLogger())
+
+	err := privValKeysLean(keys)
+	if err != nil {
+		return err
+	}
+
+	err = privValStateLean(len(keys))
+	if err != nil {
+		return err
+	}
+	for _, k := range keys {
+		if strings.EqualFold(k.PublicKey().Address().String(), address) {
+			err := nodeKeyLean(k)
+			return err
+		}
+	}
+	log2.Println("Could not find " + address + " setting default peering to address: " + keys[0].PublicKey().Address().String())
+	return nodeKeyLean(keys[0])
 }
 
 func SetValidator(address sdk.Address, passphrase string) {
@@ -833,6 +1026,17 @@ func ResetAll(dbDir, addrBookFile, privValKeyFile, privValStateFile string, logg
 
 func resetFilePV(privValKeyFile, privValStateFile string, logger log.Logger) {
 	if _, err := os.Stat(privValKeyFile); err == nil {
+		_ = os.Remove(privValKeyFile)
+		_ = os.Remove(privValStateFile)
+		_ = os.Remove(GlobalConfig.PocketConfig.DataDir + FS + GlobalConfig.TendermintConfig.NodeKey)
+	}
+	logger.Info("Reset private validator file", "keyFile", privValKeyFile,
+		"stateFile", privValStateFile)
+}
+
+func resetFilePVLean(privValKeyFile, privValStateFile string, logger log.Logger) {
+	_, err := os.Stat(privValKeyFile)
+	if err == nil {
 		_ = os.Remove(privValKeyFile)
 		_ = os.Remove(privValStateFile)
 		_ = os.Remove(GlobalConfig.PocketConfig.DataDir + FS + GlobalConfig.TendermintConfig.NodeKey)

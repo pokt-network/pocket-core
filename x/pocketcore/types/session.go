@@ -12,12 +12,12 @@ import (
 
 // "Session" - The relationship between an application and the pocket network
 
-func (s Session) IsSealed() bool {
+func (s Session) IsSealable() bool {
 	return false
 }
 
-func (s Session) Seal() CacheObject {
-	return s
+func (s Session) HashString() string {
+	return s.HashString()
 }
 
 // "NewSession" - create a new session from seed data

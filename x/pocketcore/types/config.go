@@ -3,11 +3,11 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	"sync"
-	"time"
-
+	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/types"
+	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
+	"time"
 )
 
 const (
@@ -17,27 +17,33 @@ const (
 )
 
 var (
-	globalRPCTimeout   time.Duration
-	GlobalPocketConfig types.PocketConfig
+	globalRPCTimeout       time.Duration
+	GlobalPocketConfig     types.PocketConfig
+	GlobalTenderMintConfig config.Config
 )
 
-// "InitConfig" - Initializes the cache for sessions and evidence
 func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
-	cacheOnce.Do(func() {
-		globalEvidenceCache = new(CacheStorage)
-		globalSessionCache = new(CacheStorage)
-		globalEvidenceSealedMap = sync.Map{}
-		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
-		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
+	ConfigOnce.Do(func() {
 		InitGlobalServiceMetric(chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
 	})
+	InitPocketNodeCaches(c, logger)
 	GlobalPocketConfig = c.PocketConfig
+	GlobalTenderMintConfig = c.TendermintConfig
+	if GlobalPocketConfig.LeanPocket {
+		GlobalTenderMintConfig.PrivValidatorState = types.DefaultPVSNameLean
+		GlobalTenderMintConfig.PrivValidatorKey = types.DefaultPVKNameLean
+		GlobalTenderMintConfig.NodeKey = types.DefaultPVSNameLean
+	}
 	SetRPCTimeout(c.PocketConfig.RPCTimeout)
 }
 
 func ConvertEvidenceToProto(config types.Config) error {
+	// we have to add a random pocket node so that way lean pokt can still support getting the global evidence cache
+	node := AddPocketNode(crypto.GenerateEd25519PrivKey().GenPrivateKey(), log.NewNopLogger())
+
 	InitConfig(nil, log.NewNopLogger(), config)
-	gec := globalEvidenceCache
+
+	gec := node.EvidenceStore
 	it, err := gec.Iterator()
 	if err != nil {
 		return fmt.Errorf("error creating evidence iterator: %s", err.Error())
@@ -61,15 +67,20 @@ func ConvertEvidenceToProto(config types.Config) error {
 	return nil
 }
 
-// NOTE: evidence cache is flushed every time db iterator is created (every claim/proof submission)
 func FlushSessionCache() {
-	err := globalSessionCache.FlushToDB()
-	if err != nil {
-		fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
-	}
-	err = globalEvidenceCache.FlushToDB()
-	if err != nil {
-		fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
+	for _, k := range GlobalPocketNodes {
+		if k.SessionStore != nil {
+			err := k.SessionStore.FlushToDB()
+			if err != nil {
+				fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
+			}
+		}
+		if k.EvidenceStore != nil {
+			err := k.EvidenceStore.FlushToDB()
+			if err != nil {
+				fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
+			}
+		}
 	}
 }
 

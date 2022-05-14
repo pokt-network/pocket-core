@@ -1425,8 +1425,45 @@ paths:
                   message:
                     type: string
                     description: The error msg.
+  /private/nodes:
+    post:
+      tags:
+        - private
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      responses:
+        '200':
+          description: Return the json array of pocket core client's current set validators' addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocalNode'
+        '401':
+          description: Wrong Authtoken
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
 components:
   schemas:
+    LocalNode:
+      type: object
+      properties:
+        address:
+          type: string
     Chain:
       type: object
       properties:
