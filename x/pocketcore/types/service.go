@@ -170,7 +170,7 @@ func (r *Relay) ValidateWithAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper
 		return sdk.ZeroInt(), err
 	}
 	// check cache
-	session, found := GetSession(header)
+	session, found := GetSessionWithNodeAddress(header, &node)
 	// if not found generate the session
 	if !found {
 		bh, err := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
@@ -183,7 +183,7 @@ func (r *Relay) ValidateWithAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper
 			return sdk.ZeroInt(), er
 		}
 		// add to cache
-		SetSession(session)
+		SetSessionWithNodeAddress(session, &node)
 	}
 	// validate the session
 	err = session.Validate(node, app, int(sessionNodeCount))
