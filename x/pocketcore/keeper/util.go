@@ -20,3 +20,32 @@ func (k Keeper) GetPKFromFile(ctx sdk.Ctx) (crypto.PrivateKey, error) {
 	}
 	return pk, nil
 }
+
+var PkFromAddressMap map[string]crypto.PrivateKey
+
+func getPkMap() {
+	return PkFromAddressMap
+}
+func InitializePkMap() error {
+	PkFromAddressMap = make(map[string]crypto.PrivateKey)
+	for _, pvKey := range types.GlobalPVKeyFiles {
+		pk, er := crypto.PrivKeyToPrivateKey(pvKey.PrivKey)
+
+		address := sdk.Address(pk.PublicKey().Address())
+		if er != nil {
+			return er
+		}
+		PkFromAddressMap[address.String()] = pk
+	}
+	return nil
+}
+
+func (k Keeper) GetPkFromAddress(address *sdk.Address) (crypto.PrivateKey, error) {
+	if PkFromAddressMap == nil {
+		err := InitializePkMap()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return PkFromAddressMap[address.String()], nil
+}

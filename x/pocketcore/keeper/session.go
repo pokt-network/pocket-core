@@ -50,6 +50,48 @@ func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.
 	}, BlockHeight: ctx.BlockHeight()}, nil
 }
 
+func (k Keeper) HandleDispatchWithNodeAddress(ctx sdk.Ctx, header types.SessionHeader, address *sdk.Address) (*types.DispatchResponse, sdk.Error) {
+	// retrieve the latest session block height
+	latestSessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
+	// set the session block height
+	header.SessionBlockHeight = latestSessionBlockHeight
+	// validate the header
+	err := header.ValidateHeader()
+	if err != nil {
+		return nil, err
+	}
+	// get the session context
+	sessionCtx, er := ctx.PrevCtx(latestSessionBlockHeight)
+	if er != nil {
+		return nil, sdk.ErrInternal(er.Error())
+	}
+	// check cache
+	session, found := types.GetSessionWithNodeAddress(header, address)
+	// if not found generate the session
+	if !found {
+		var err sdk.Error
+		blockHashBz, er := sessionCtx.BlockHash(k.Cdc, sessionCtx.BlockHeight())
+		if er != nil {
+			return nil, sdk.ErrInternal(er.Error())
+		}
+		session, err = types.NewSession(sessionCtx, ctx, k.posKeeper, header, hex.EncodeToString(blockHashBz), int(k.SessionNodeCount(sessionCtx)))
+		if err != nil {
+			return nil, err
+		}
+		// add to cache
+		types.SetSessionWithNodeAddress(session, address)
+	}
+	actualNodes := make([]exported.ValidatorI, len(session.SessionNodes))
+	for i, addr := range session.SessionNodes {
+		actualNodes[i], _ = k.GetNode(sessionCtx, addr)
+	}
+	return &types.DispatchResponse{Session: types.DispatchSession{
+		SessionHeader: session.SessionHeader,
+		SessionKey:    session.SessionKey,
+		SessionNodes:  actualNodes,
+	}, BlockHeight: ctx.BlockHeight()}, nil
+}
+
 // "IsSessionBlock" - Returns true if current block, is a session block (beginning of a session)
 func (k Keeper) IsSessionBlock(ctx sdk.Ctx) bool {
 	return ctx.BlockHeight()%k.posKeeper.BlocksPerSession(ctx) == 1

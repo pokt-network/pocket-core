@@ -80,6 +80,10 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitAuthToken(GlobalConfig.PocketConfig.GenerateTokenOnStart)
 	// init the keyfiles
 	InitKeyfiles()
+
+	// init more servicer nodes
+	InitNodeKeyFiles()
+
 	// get hosted blockchains
 	chains := NewHostedChains(false)
 	if GlobalConfig.PocketConfig.ChainsHotReload {
@@ -367,6 +371,30 @@ func InitKeyfiles() {
 		// file exist so we can load pk from file.
 		file, _ := loadPKFromFile(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
 		types.InitPVKeyFile(file)
+		types.AddPVKeyFile(file)
+	}
+}
+
+func InitNodeKeyFiles() {
+	datadir := GlobalConfig.PocketConfig.DataDir
+	// Check if privvalkey file exist
+	privValKeyFileBase := GlobalConfig.TendermintConfig.PrivValidatorKey
+	privValKeyFileExtension := fp.Ext(privValKeyFileBase)
+	privValKeyFileWithoutExtension := privValKeyFileBase[0 : len(privValKeyFileBase)-len(privValKeyFileExtension)]
+	for i := 1; i < 5000; i++ {
+		privValKeyFile := datadir + FS + fmt.Sprintf("%s-%d.%s", privValKeyFileWithoutExtension, i, privValKeyFileExtension)
+		if _, err := os.Stat(privValKeyFile); err != nil {
+			if i == 0 {
+				log2.Fatal(err) // couldn't load first node
+			} else {
+				log2.Printf("Loaded %d nodes", i)
+				return
+			}
+		} else {
+			// file exist so we can load pk from file.
+			file, _ := loadPKFromFile(privValKeyFile)
+			types.AddPVKeyFile(file)
+		}
 	}
 }
 

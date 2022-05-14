@@ -89,6 +89,78 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 	}
 }
 
+func (k Keeper) SendClaimTxWithPk(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+	// get the private val key (main) account from the keybase
+	kp, err := k.GetPKFromFile(ctx)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the private key from file for the claim transaction:\n%s", err.Error()))
+		return
+	}
+
+	// retrieve the iterator to go through each piece of evidence in storage
+	iter := pc.EvidenceIteratorWithNodeAddress(address)
+	defer iter.Close()
+	// loop through each evidence
+	for ; iter.Valid(); iter.Next() {
+		evidence := iter.Value()
+		// if the number of proofs in the evidence object is zero
+		if evidence.NumOfProofs == 0 {
+			ctx.Logger().Error("evidence of length zero was found in evidence storage")
+			continue
+		}
+		// get the type of the first piece of evidence to know if we are dealing with challenge or relays
+		evidenceType := evidence.EvidenceType
+		// get the session context
+		sessionCtx, er := ctx.PrevCtx(evidence.SessionHeader.SessionBlockHeight)
+		if er != nil {
+			ctx.Logger().Info("could not get sessionCtx in auto send claim tx, could be due to relay timing before commit is in store: " + er.Error())
+			continue
+		}
+		// if the evidence length is less than minimum, it would not satisfy our merkle tree needs
+		if evidence.NumOfProofs < keeper.MinimumNumberOfProofs(sessionCtx) {
+			if err := pc.DeleteEvidenceWithNodeAddress(evidence.SessionHeader, evidenceType, address); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
+			continue
+		}
+		if ctx.BlockHeight() <= evidence.SessionBlockHeight+k.BlocksPerSession(sessionCtx)-1 { // ensure session is over
+			ctx.Logger().Info("the session is ongoing, so will not send the claim-tx yet")
+			continue
+		}
+		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid/challenged for unsupported blockchains
+		if !k.IsPocketSupportedBlockchain(sessionCtx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) {
+			ctx.Logger().Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
+			if err := pc.DeleteEvidenceWithNodeAddress(evidence.SessionHeader, evidenceType, address); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
+			continue
+		}
+		// check the current state to see if the unverified evidence has already been sent and processed (if so, then skip this evidence)
+		if _, found := k.GetClaim(ctx, sdk.Address(kp.PublicKey().Address()), evidence.SessionHeader, evidenceType); found {
+			continue
+		}
+		// if the claim is mature, delete it because we cannot submit a mature claim
+		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
+			if err := pc.DeleteEvidenceWithNodeAddress(evidence.SessionHeader, evidenceType, address); err != nil {
+				ctx.Logger().Debug(err.Error())
+			}
+			continue
+		}
+		// generate the merkle root for this evidence
+		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight)
+		// generate the auto txbuilder and clictx
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgClaim{}, n, kp, k)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("an error occured creating the tx builder for the claim tx:\n%s", err.Error()))
+			return
+		}
+		// send in the evidence header, the total relays completed, and the merkle root (ensures data integrity)
+		if _, err := claimTx(kp, cliCtx, txBuilder, evidence.SessionHeader, evidence.NumOfProofs, root, evidenceType); err != nil {
+			ctx.Logger().Error(fmt.Sprintf("an error occured executing the claim transaciton: \n%s", err.Error()))
+		}
+	}
+}
+
 // "ValidateClaim" - Validates a claim message and returns an sdk error if invalid
 func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	// check to see if evidence type is included in the message

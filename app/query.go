@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	tmtypes "github.com/tendermint/tendermint/types"
+	"github.com/pokt-network/pocket-core/crypto"
 	"math"
 	"reflect"
 	"strconv"
@@ -520,6 +521,14 @@ func (app PocketCoreApp) HandleDispatch(header pocketTypes.SessionHeader) (res *
 	return app.pocketKeeper.HandleDispatch(ctx, header)
 }
 
+func (app PocketCoreApp) HandleDispatchWithNodeAddress(header pocketTypes.SessionHeader, address *sdk.Address) (res *pocketTypes.DispatchResponse, err error) {
+	ctx, err := app.NewContext(app.LastBlockHeight())
+	if err != nil {
+		return nil, err
+	}
+	return app.pocketKeeper.HandleDispatchWithNodeAddress(ctx, header, address)
+}
+
 func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *pocketTypes.DispatchResponse, err error) {
 	ctx, err := app.NewContext(app.LastBlockHeight())
 	if err != nil {
@@ -537,6 +546,40 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 	var err1 error
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
 		dispatch, err1 = app.HandleDispatch(r.Proof.SessionHeader())
+		if err1 != nil {
+			return
+		}
+	}
+	return
+}
+
+func (app PocketCoreApp) HandleRelayLightClient(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *pocketTypes.DispatchResponse, err error) {
+	ctx, err := app.NewContext(app.LastBlockHeight())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	status, err := app.pocketKeeper.TmNode.Status()
+	if err != nil {
+		return nil, nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
+	}
+	if status.SyncInfo.CatchingUp {
+		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
+	}
+	res, err = app.pocketKeeper.HandleRelay(ctx, r)
+
+	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
+
+		servicerRelayPublicKeyHex := r.Proof.ServicerPubKey
+
+		servicerRelayPublicKey, err1 := crypto.NewPublicKey(servicerRelayPublicKeyHex)
+
+		if err1 != nil {
+			return nil, nil, fmt.Errorf("can't convert servicer pb key")
+		}
+
+		address := sdk.GetAddress(servicerRelayPublicKey)
+		dispatch, err1 = app.HandleDispatchWithNodeAddress(r.Proof.SessionHeader(), &address)
 		if err1 != nil {
 			return
 		}

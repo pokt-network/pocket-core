@@ -18,12 +18,20 @@ import (
 var (
 	// cache for session objects
 	globalSessionCache *CacheStorage
+
+	// cache for session objects
+	globalSessionCacheMap map[string]*CacheStorage
+
 	// cache for GOBEvidence objects
 	globalEvidenceCache *CacheStorage
+
+	globalEvidenceCacheMap map[string]*CacheStorage
 	// sync.once to perform initialization
 	cacheOnce sync.Once
 
 	globalEvidenceSealedMap sync.Map
+
+	globalEvidenceSealedMapMap map[string]sync.Map
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
@@ -208,6 +216,7 @@ func (cs *CacheStorage) Iterator() (db.Iterator, error) {
 	if err != nil {
 		fmt.Printf("unable to flush to db before iterator created in cacheStorage Iterator(): %s", err.Error())
 	}
+
 	return cs.DB.Iterator(nil, nil)
 }
 
@@ -227,11 +236,32 @@ func GetSession(header SessionHeader) (session Session, found bool) {
 	return
 }
 
+func GetSessionWithNodeAddress(header SessionHeader, address *sdk.Address) (session Session, found bool) {
+	// generate the key from the header
+	key := header.Hash()
+	// check stores
+	val, found := globalSessionCacheMap[address.String()].Get(key, session)
+	if !found {
+		return Session{}, found
+	}
+	session, ok := val.(Session)
+	if !ok {
+		fmt.Println(fmt.Errorf("could not unmarshal into session from cache with header %v", header))
+	}
+	return
+}
+
 // "SetSession" - Sets a session (value) in the stores using the header (key)
 func SetSession(session Session) {
 	// get the key for the session
 	key := session.SessionHeader.Hash()
 	globalSessionCache.Set(key, session)
+}
+
+func SetSessionWithNodeAddress(session Session, address *sdk.Address) {
+	// get the key for the session
+	key := session.SessionHeader.Hash()
+	globalSessionCacheMap[address.String()].Set(key, session)
 }
 
 // "DeleteSession" - Deletes a session (value) from the stores
@@ -240,10 +270,21 @@ func DeleteSession(header SessionHeader) {
 	globalSessionCache.Delete(header.Hash())
 }
 
+func DeleteSessionWithNodeAddress(header SessionHeader, address *sdk.Address) {
+	// delete from stores using header.ID as key
+	globalSessionCacheMap[address.String()].Delete(header.Hash())
+}
+
 // "ClearSessionCache" - Clears all items from the session cache db
 func ClearSessionCache() {
 	if globalSessionCache != nil {
 		globalSessionCache.Clear()
+	}
+}
+
+func ClearSessionCacheWithNodeAddress(address *sdk.Address) {
+	if globalSessionCacheMap != nil {
+		globalSessionCacheMap[address.String()].Clear()
 	}
 }
 
@@ -316,6 +357,48 @@ func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.BigInt
 	return
 }
 
+func GetEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceType, max sdk.BigInt, address *sdk.Address) (evidence Evidence, err error) {
+	// generate the key for the GOBEvidence
+	key, err := KeyForEvidence(header, evidenceType)
+	if err != nil {
+		return
+	}
+	// get the bytes from the storage
+	val, found := globalEvidenceCacheMap[address.String()].Get(key, evidence)
+	if !found && max.Equal(sdk.ZeroInt()) {
+		return Evidence{}, fmt.Errorf("GOBEvidence not found")
+	}
+	if !found {
+		bloomFilter := bloom.NewWithEstimates(uint(sdk.NewUintFromBigInt(max.BigInt()).Uint64()), .01)
+		// add to metric
+		GlobalServiceMetric().AddSessionFor(header.Chain)
+		return Evidence{
+			Bloom:         *bloomFilter,
+			SessionHeader: header,
+			NumOfProofs:   0,
+			Proofs:        make([]Proof, 0),
+			EvidenceType:  evidenceType,
+		}, nil
+	}
+	evidence, ok := val.(Evidence)
+	if !ok {
+		err = fmt.Errorf("could not unmarshal into evidence from cache with header %v", header)
+		return
+	}
+	if evidence.IsSealed() {
+		return evidence, nil
+	}
+	// if hit relay limit... Seal the evidence
+	if found && !max.Equal(sdk.ZeroInt()) && evidence.NumOfProofs >= max.Int64() {
+		evidence, ok = SealEvidence(evidence)
+		if !ok {
+			err = fmt.Errorf("max relays is hit and could not seal evidence! GetEvidence() with header %v", header)
+			return
+		}
+	}
+	return
+}
+
 // "SetEvidence" - Sets an GOBEvidence object in the storage
 func SetEvidence(evidence Evidence) {
 	// generate the key for the evidence
@@ -324,6 +407,16 @@ func SetEvidence(evidence Evidence) {
 		return
 	}
 	globalEvidenceCache.Set(key, evidence)
+}
+
+// "SetEvidenceWithAddress" - Sets an GOBEvidence object in the storage
+func SetEvidenceWithAddress(evidence Evidence, address *sdk.Address) {
+	// generate the key for the evidence
+	key, err := evidence.Key()
+	if err != nil {
+		return
+	}
+	globalEvidenceCacheMap[address.String()].Set(key, evidence)
 }
 
 // "DeleteEvidence" - Remove the GOBEvidence from the stores
@@ -339,10 +432,35 @@ func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
 	return nil
 }
 
+// "DeleteEvidenceWithAddress" - Remove the GOBEvidence from the stores
+func DeleteEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceType, address *sdk.Address) error {
+	// generate key for GOBEvidence
+	key, err := KeyForEvidence(header, evidenceType)
+	if err != nil {
+		return err
+	}
+	// delete from cache
+
+	globalEvidenceCacheMap[address.String()].Delete(key)
+	syncMap := globalEvidenceSealedMapMap[address.String()]
+	syncMap.Delete(header.HashString())
+	return nil
+}
+
 // "SealEvidence" - Locks/sets the evidence from the stores
 func SealEvidence(evidence Evidence) (Evidence, bool) {
 	// delete from cache
 	co, ok := globalEvidenceCache.Seal(evidence)
+	if !ok {
+		return Evidence{}, ok
+	}
+	e, ok := co.(Evidence)
+	return e, ok
+}
+
+func SealEvidenceWithAddress(evidence Evidence, address *sdk.Address) (Evidence, bool) {
+	// delete from cache
+	co, ok := globalEvidenceCacheMap[address.String()].Seal(evidence)
 	if !ok {
 		return Evidence{}, ok
 	}
@@ -355,6 +473,13 @@ func ClearEvidence() {
 	if globalEvidenceCache != nil {
 		globalEvidenceCache.Clear()
 		globalEvidenceSealedMap = sync.Map{}
+	}
+}
+
+func ClearEvidenceWithNodeAddress(address *sdk.Addresses) {
+	if globalEvidenceCacheMap != nil {
+		globalEvidenceCacheMap[address.String()].Clear()
+		globalEvidenceSealedMapMap[address.String()] = sync.Map{}
 	}
 }
 
@@ -381,6 +506,13 @@ func (ei *EvidenceIt) Value() (evidence Evidence) {
 func EvidenceIterator() EvidenceIt {
 	it, _ := globalEvidenceCache.Iterator()
 
+	return EvidenceIt{
+		Iterator: it,
+	}
+}
+
+func EvidenceIteratorWithNodeAddress(address *sdk.Address) EvidenceIt {
+	it, _ := globalEvidenceCacheMap[address.String()].Iterator()
 	return EvidenceIt{
 		Iterator: it,
 	}
@@ -415,12 +547,50 @@ func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.
 	SetEvidence(evidence)
 }
 
+func GetProofWithAddress(header SessionHeader, evidenceType EvidenceType, index int64, address *sdk.Address) Proof {
+	// retrieve the GOBEvidence
+	evidence, err := GetEvidenceWithNodeAddress(header, evidenceType, sdk.ZeroInt(), address)
+	if err != nil {
+		return nil
+	}
+	// check for out of bounds
+	if evidence.NumOfProofs-1 < index || index < 0 {
+		return nil
+	}
+	// return the propoer proof
+	return evidence.Proofs[index]
+}
+
+// "SetProof" - Sets a proof object in the GOBEvidence, using the header and GOBEvidence type
+func SetProofWithNodeAddress(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.BigInt, address *sdk.Address) {
+	// retireve the GOBEvidence
+	evidence, err := GetEvidenceWithNodeAddress(header, evidenceType, max, address)
+	// if not found generate the GOBEvidence object
+	if err != nil {
+		log.Fatalf("could not set proof object: %s", err.Error())
+	}
+	// add proof
+	evidence.AddProof(p)
+	// set GOBEvidence back
+	SetEvidenceWithAddress(evidence, address)
+}
+
 func IsUniqueProof(p Proof, evidence Evidence) bool {
 	return !evidence.Bloom.Test(p.Hash())
 }
 
 // "GetTotalProofs" - Returns the total number of proofs for a piece of GOBEvidence
 func GetTotalProofs(h SessionHeader, et EvidenceType, maxPossibleRelays sdk.BigInt) (Evidence, int64) {
+	// retrieve the GOBEvidence
+	evidence, err := GetEvidence(h, et, maxPossibleRelays)
+	if err != nil {
+		log.Fatalf("could not get total proofs for GOBEvidence: %s", err.Error())
+	}
+	// return number of proofs
+	return evidence, evidence.NumOfProofs
+}
+
+func GetTotalProofsWithAddress(h SessionHeader, et EvidenceType, maxPossibleRelays sdk.BigInt, address sdk.Address) (Evidence, int64) {
 	// retrieve the GOBEvidence
 	evidence, err := GetEvidence(h, et, maxPossibleRelays)
 	if err != nil {

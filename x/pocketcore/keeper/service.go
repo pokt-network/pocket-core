@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/pokt-network/pocket-core/crypto"
 	"time"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -48,6 +49,85 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
 	relay.Proof.Store(maxPossibleRelays)
+	// attempt to execute
+	respPayload, err := relay.Execute(hostedBlockchains)
+	if err != nil {
+		ctx.Logger().Error(fmt.Sprintf("could not send relay with error: %s", err.Error()))
+		return nil, err
+	}
+	// generate response object
+	resp := &pc.RelayResponse{
+		Response: respPayload,
+		Proof:    relay.Proof,
+	}
+	// sign the response
+	sig, er := pk.Sign(resp.Hash())
+	if er != nil {
+		ctx.Logger().Error(
+			fmt.Sprintf("could not sign response for address: %s with hash: %v, with error: %s",
+				selfAddr.String(), resp.HashString(), er.Error()),
+		)
+		return nil, pc.NewKeybaseError(pc.ModuleName, er)
+	}
+	// attach the signature in hex to the response
+	resp.Signature = hex.EncodeToString(sig)
+	// track the relay time
+	relayTime := time.Since(relayTimeStart)
+	// add to metrics
+	pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()))
+	pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain)
+	return resp, nil
+}
+
+func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
+	relayTimeStart := time.Now()
+	// get the latest session block height because this relay will correspond with the latest session
+	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
+
+	servicerRelayPublicKeyHex := relay.Proof.ServicerPubKey
+
+	servicerRelayPublicKey, err1 := crypto.NewPublicKey(servicerRelayPublicKeyHex)
+
+	if err1 != nil {
+		return nil, sdk.ErrInternal("Could not convert servicer hex to public key")
+	}
+
+	selfAddr := sdk.GetAddress(servicerRelayPublicKey)
+
+	pk, err1 := k.GetPkFromAddress(&selfAddr)
+
+	if err1 != nil {
+		return nil, sdk.ErrInternal("Failed to find correct servicer PK")
+	}
+
+	// retrieve the nonNative blockchains your node is hosting
+	hostedBlockchains := k.GetHostedBlockchains()
+	// ensure the validity of the relay
+	maxPossibleRelays, err := relay.ValidateWithAddress(ctx, k.posKeeper, k.appKeeper, k, selfAddr, hostedBlockchains, sessionBlockHeight)
+	if err != nil {
+		if pc.GlobalPocketConfig.RelayErrors {
+			ctx.Logger().Error(
+				fmt.Sprintf("could not validate relay for app: %s for chainID: %v with error: %s",
+					relay.Proof.ServicerPubKey,
+					relay.Proof.Blockchain,
+					err.Error(),
+				),
+			)
+			ctx.Logger().Debug(
+				fmt.Sprintf(
+					"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
+					relay.Proof.ServicerPubKey,
+					relay.Proof.Blockchain,
+					selfAddr.String(),
+					sessionBlockHeight,
+					err.Error(),
+				),
+			)
+		}
+		return nil, err
+	}
+	// store the proof before execution, because the proof corresponds to the previous relay
+	relay.Proof.StoreWithNodeAddress(maxPossibleRelays, &selfAddr)
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains)
 	if err != nil {
