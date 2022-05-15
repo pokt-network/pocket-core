@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/privval"
 	"log"
 	"path/filepath"
 	"sync"
@@ -33,11 +32,11 @@ var (
 
 	globalEvidenceSealedMap sync.Map
 
-	PkFromAddressMap map[string]crypto.PrivateKey
+	GlobalServicerPrivateKeysMap map[string]crypto.PrivateKey
 
 	globalEvidenceSealedMapMap map[string]sync.Map
 
-	GlobalPVKeyFiles []privval.FilePVKey
+	GlobalServicerPrivateKeys []crypto.PrivateKey
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
@@ -257,31 +256,12 @@ func GetSessionWithNodeAddress(header SessionHeader, address *sdk.Address) (sess
 	return
 }
 
-func InitializePkMap() error {
-	PkFromAddressMap = make(map[string]crypto.PrivateKey)
-	for _, pvKey := range GlobalPVKeyFiles {
-		pk, er := crypto.PrivKeyToPrivateKey(pvKey.PrivKey)
-		address := sdk.Address(pk.PublicKey().Address())
-		if er != nil {
-			return er
-		}
-		PkFromAddressMap[address.String()] = pk
-	}
-	return nil
+func AddPrivateKeyToGlobalServicers(key crypto.PrivateKey) {
+	GlobalServicerPrivateKeys = append(GlobalServicerPrivateKeys, key)
 }
 
-func AddPVKeyFileMap(filePVKey privval.FilePVKey) {
-	GlobalPVKeyFiles = append(GlobalPVKeyFiles, filePVKey)
-}
-
-func GetPkFromAddress(address *sdk.Address) (crypto.PrivateKey, error) {
-	if PkFromAddressMap == nil {
-		err := InitializePkMap()
-		if err != nil {
-			return nil, err
-		}
-	}
-	return PkFromAddressMap[address.String()], nil
+func GetServicerPkFromAddress(address *sdk.Address) (crypto.PrivateKey, error) {
+	return GlobalServicerPrivateKeysMap[address.String()], nil
 }
 
 // "SetSession" - Sets a session (value) in the stores using the header (key)

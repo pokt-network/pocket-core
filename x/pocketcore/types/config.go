@@ -3,8 +3,6 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/tendermint/tendermint/privval"
-
 	"sync"
 	"time"
 
@@ -39,13 +37,12 @@ func InitConfigOld(chains *HostedBlockchains, logger log.Logger, c types.Config)
 
 func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 	cacheOnce.Do(func() {
-		GlobalPVKeyFiles = make([]privval.FilePVKey, 5)
 		globalEvidenceCache = new(CacheStorage)
 		globalSessionCache = new(CacheStorage)
 		globalEvidenceSealedMap = sync.Map{}
 		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
 		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
-		for key := range PkFromAddressMap {
+		for key := range GlobalServicerPrivateKeysMap {
 			globalEvidenceCacheMap[key] = new(CacheStorage)
 			globalEvidenceSealedMapMap[key] = sync.Map{}
 			globalSessionCacheMap[key] = new(CacheStorage)
@@ -97,7 +94,7 @@ func FlushSessionCache() {
 }
 
 func FlushSessionCacheAll() {
-	for k, _ := range PkFromAddressMap {
+	for k, _ := range GlobalServicerPrivateKeysMap {
 		err := globalSessionCacheMap[k].FlushToDB()
 		if err != nil {
 			fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())

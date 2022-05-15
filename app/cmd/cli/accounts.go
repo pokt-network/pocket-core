@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -40,6 +41,7 @@ func init() {
 	accountsCmd.AddCommand(signNexMS)
 	accountsCmd.AddCommand(buildMultisig)
 	accountsCmd.AddCommand(unsafeDeleteCmd)
+	accountsCmd.AddCommand(getLightServicers)
 }
 
 // accountsCmd represents the accounts namespace command
@@ -101,6 +103,20 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 			return
 		}
 
+	},
+}
+
+var getLightServicers = &cobra.Command{
+	Use:   "get-servicers",
+	Short: "Retrieves all servicers using the v0 optimized client",
+	Long:  `Retrieves the main validator from the priv_val file`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		app.LoadLightNodeServicersFromFiles()
+
+		for index, value := range pc.GlobalServicerPrivateKeys {
+			fmt.Printf("[%d] Servicer Address: %s\n", index, strings.ToLower(value.PublicKey().Address().String()))
+		}
 	},
 }
 

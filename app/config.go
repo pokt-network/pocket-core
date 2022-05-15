@@ -66,6 +66,10 @@ var (
 
 type GenesisType int
 
+type ServicerPrivateKeyFile struct {
+	PrivateKey string `json:"priv_key"`
+}
+
 const (
 	MainnetGenesisType GenesisType = iota + 1
 	TestnetGenesisType
@@ -82,7 +86,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitKeyfiles()
 
 	// init more servicer nodes
-	InitNodeKeyFiles()
+	LoadLightNodeServicersFromFiles()
 
 	// get hosted blockchains
 	chains := NewHostedChains(false)
@@ -351,6 +355,12 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 }
 
 func InitKeyfiles() {
+
+	if _, err := types.GetPVKeyFile(); err == nil { // already init once guard
+		log2.Println("global key file already initialized")
+		return
+	}
+
 	datadir := GlobalConfig.PocketConfig.DataDir
 	// Check if privvalkey file exist
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
@@ -371,30 +381,52 @@ func InitKeyfiles() {
 		// file exist so we can load pk from file.
 		file, _ := loadPKFromFile(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
 		types.InitPVKeyFile(file)
-		types.AddPVKeyFileMap(file)
 	}
 }
 
-func InitNodeKeyFiles() {
+func LoadLightNodeServicersFromFiles() {
+
+	if types.GlobalServicerPrivateKeys != nil {
+		log2.Println("Light servicers already initialized")
+		return
+	}
+
+	types.GlobalServicerPrivateKeys = make([]crypto.PrivateKey, 0)
+	InitKeyfiles() // So that the main validator gets set as well
+
 	datadir := GlobalConfig.PocketConfig.DataDir
 	// Check if privvalkey file exist
 	privValKeyFileBase := GlobalConfig.TendermintConfig.PrivValidatorKey
 	privValKeyFileExtension := fp.Ext(privValKeyFileBase)
 	privValKeyFileWithoutExtension := privValKeyFileBase[0 : len(privValKeyFileBase)-len(privValKeyFileExtension)]
 	for i := 1; i < 5000; i++ {
-		privValKeyFile := datadir + FS + fmt.Sprintf("%s-%d.%s", privValKeyFileWithoutExtension, i, privValKeyFileExtension)
-		if _, err := os.Stat(privValKeyFile); err != nil {
-			if i == 0 {
-				log2.Fatal(err) // couldn't load first node
-			} else {
-				log2.Printf("Loaded %d nodes", i)
-				return
-			}
+		privValKeyFilePath := datadir + FS + fmt.Sprintf("%s_%d%s", privValKeyFileWithoutExtension, i, privValKeyFileExtension)
+		log2.Println("Searching for " + privValKeyFilePath + " to load as a servicer node")
+		if _, err := os.Stat(privValKeyFilePath); err != nil {
+			log2.Printf("Loaded %d nodes", i)
+			return
 		} else {
 			// file exist so we can load pk from file.
-			file, _ := loadPKFromFile(privValKeyFile)
-			types.AddPVKeyFileMap(file)
+			file, _ := loadServicerPKFromFile(privValKeyFilePath)
+			types.AddPrivateKeyToGlobalServicers(file)
 		}
+	}
+
+	mainValidatorPk, err := types.GetPVKeyFile()
+	if err == nil {
+		pk, err1 := crypto.PrivKeyToPrivateKey(mainValidatorPk.PrivKey)
+		if err1 == nil {
+			types.AddPrivateKeyToGlobalServicers(pk)
+		} else {
+			log2.Println("Failed to find a set validator to add to servicer nodes")
+		}
+	}
+
+	// init lookup map
+	types.GlobalServicerPrivateKeysMap = make(map[string]crypto.PrivateKey)
+	for _, pk := range types.GlobalServicerPrivateKeys {
+		address := sdk.Address(pk.PublicKey().Address())
+		types.GlobalServicerPrivateKeysMap[address.String()] = pk
 	}
 }
 
@@ -473,6 +505,25 @@ func loadPKFromFile(path string) (privval.FilePVKey, string) {
 	}
 
 	return pvKey, path
+}
+
+func loadServicerPKFromFile(path string) (crypto.PrivateKey, string) {
+	keyJSONBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		cmn.Exit(err.Error())
+	}
+	pvKey := ServicerPrivateKeyFile{}
+	err = cdc.UnmarshalJSON(keyJSONBytes, &pvKey)
+	if err != nil {
+		cmn.Exit(fmt.Sprintf("Error reading PrivValidator key from %v: %v\n", path, err))
+	}
+	key, err := crypto.NewPrivateKey(pvKey.PrivateKey)
+
+	if err != nil {
+		cmn.Exit(fmt.Sprintf("Failed to decode hex pk to ed25519 pk struct %v: %v\n", path, err))
+	}
+
+	return key, path
 }
 
 func privValKey(res crypto.PrivateKey) {

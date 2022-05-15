@@ -94,7 +94,7 @@ func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayRe
 
 	selfAddr := sdk.GetAddress(servicerRelayPublicKey)
 
-	pk, err1 := pc.GetPkFromAddress(&selfAddr)
+	pk, err1 := pc.GetServicerPkFromAddress(&selfAddr)
 
 	if err1 != nil {
 		return nil, sdk.ErrInternal("Failed to find correct servicer PK")
