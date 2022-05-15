@@ -103,7 +103,7 @@ func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayRe
 	// retrieve the nonNative blockchains your node is hosting
 	hostedBlockchains := k.GetHostedBlockchains()
 	// ensure the validity of the relay
-	maxPossibleRelays, err := relay.ValidateWithAddress(ctx, k.posKeeper, k.appKeeper, k, selfAddr, hostedBlockchains, sessionBlockHeight)
+	maxPossibleRelays, err := relay.ValidateWithNodeAddress(ctx, k.posKeeper, k.appKeeper, k, selfAddr, hostedBlockchains, sessionBlockHeight)
 	if err != nil {
 		if pc.GlobalPocketConfig.RelayErrors {
 			ctx.Logger().Error(

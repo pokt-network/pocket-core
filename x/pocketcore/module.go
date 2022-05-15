@@ -103,7 +103,11 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 }
 
 // "EndBlock" - Functionality that is called at the end of (every) block
-func (am AppModule) EndBlockOld(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+
+	if types.GlobalPocketConfig.LeanPocket {
+		return am.LeanPocketEndBlockLogic(ctx)
+	}
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
 	// get self address
@@ -138,7 +142,7 @@ func (am AppModule) EndBlockOld(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Vali
 	return []abci.ValidatorUpdate{}
 }
 
-func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) LeanPocketEndBlockLogic(ctx sdk.Ctx) []abci.ValidatorUpdate {
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
 	// get self address

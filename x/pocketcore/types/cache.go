@@ -331,6 +331,13 @@ func SessionIterator() SessionIt {
 	}
 }
 
+func SessionIteratorWithNodeAddress(address *sdk.Address) SessionIt {
+	it, _ := globalSessionCacheMap[address.String()].Iterator()
+	return SessionIt{
+		Iterator: it,
+	}
+}
+
 // "GetEvidence" - Retrieves the GOBEvidence object from the storage
 func GetEvidence(header SessionHeader, evidenceType EvidenceType, max sdk.BigInt) (evidence Evidence, err error) {
 	// generate the key for the GOBEvidence
@@ -380,7 +387,7 @@ func GetEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceType,
 	if err != nil {
 		return
 	}
-	// get the bytes from the storage
+
 	val, found := globalEvidenceCacheMap[address.String()].Get(key, evidence)
 	if !found && max.Equal(sdk.ZeroInt()) {
 		return Evidence{}, fmt.Errorf("GOBEvidence not found")

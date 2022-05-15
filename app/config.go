@@ -386,6 +386,11 @@ func InitKeyfiles() {
 
 func LoadLightNodeServicersFromFiles() {
 
+	if !GlobalConfig.PocketConfig.LeanPocket {
+		log2.Println("Lean Pocket not enabled")
+		return
+	}
+
 	if types.GlobalServicerPrivateKeys != nil {
 		log2.Println("Light servicers already initialized")
 		return

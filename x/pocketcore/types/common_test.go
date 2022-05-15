@@ -62,6 +62,10 @@ func GetRandomPrivateKey() crypto.Ed25519PrivateKey {
 	return crypto.Ed25519PrivateKey{}.GenPrivateKey().(crypto.Ed25519PrivateKey)
 }
 
+func GetServicerKey() crypto.Ed25519PrivateKey {
+	return GlobalServicerPrivateKeys[0].(crypto.Ed25519PrivateKey)
+}
+
 func getRandomPubKey() crypto.Ed25519PublicKey {
 	pk := GetRandomPrivateKey()
 	return pk.PublicKey().(crypto.Ed25519PublicKey)

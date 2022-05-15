@@ -21,20 +21,6 @@ var (
 	GlobalPocketConfig types.PocketConfig
 )
 
-// "InitConfig" - Initializes the cache for sessions and evidence
-func InitConfigOld(chains *HostedBlockchains, logger log.Logger, c types.Config) {
-	cacheOnce.Do(func() {
-		globalEvidenceCache = new(CacheStorage)
-		globalSessionCache = new(CacheStorage)
-		globalEvidenceSealedMap = sync.Map{}
-		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
-		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
-		InitGlobalServiceMetric(chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
-	})
-	GlobalPocketConfig = c.PocketConfig
-	SetRPCTimeout(c.PocketConfig.RPCTimeout)
-}
-
 func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 	cacheOnce.Do(func() {
 		globalEvidenceCache = new(CacheStorage)
@@ -42,13 +28,20 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 		globalEvidenceSealedMap = sync.Map{}
 		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
 		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
+
+		globalEvidenceCacheMap = make(map[string]*CacheStorage)
+		globalEvidenceSealedMapMap = make(map[string]sync.Map)
+		globalSessionCacheMap = make(map[string]*CacheStorage)
 		for key := range GlobalServicerPrivateKeysMap {
+
+			fmt.Println("Adding key" + key + " to evidence cache map")
 			globalEvidenceCacheMap[key] = new(CacheStorage)
 			globalEvidenceSealedMapMap[key] = sync.Map{}
 			globalSessionCacheMap[key] = new(CacheStorage)
 			globalEvidenceCacheMap[key].Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName+"-"+key, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
 			globalSessionCacheMap[key].Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
 		}
+
 		InitGlobalServiceMetric(chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
 	})
 	GlobalPocketConfig = c.PocketConfig

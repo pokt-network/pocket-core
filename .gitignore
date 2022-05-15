@@ -21,6 +21,10 @@ logs/Logs
 
 main
 
+
+app/cmd/rpc/data/pocket_evidence.db
+app/cmd/rpc/data/session.db
+
 tests/unit/*.log
 tests/unit/*.json
 
