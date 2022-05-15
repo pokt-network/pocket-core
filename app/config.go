@@ -392,7 +392,18 @@ func LoadLightNodeServicersFromFiles() {
 	}
 
 	types.GlobalServicerPrivateKeys = make([]crypto.PrivateKey, 0)
-	InitKeyfiles() // So that the main validator gets set as well
+
+	mainValidatorPk, err := types.GetPVKeyFile()
+	if err == nil {
+		pk, err1 := crypto.PrivKeyToPrivateKey(mainValidatorPk.PrivKey)
+		if err1 == nil {
+			types.AddPrivateKeyToGlobalServicers(pk)
+		} else {
+			log2.Println("Failed to convert main validator private key to ed25519 private key struct")
+		}
+	} else {
+		log2.Println("Failed to find main validator to add to servicer nodes")
+	}
 
 	datadir := GlobalConfig.PocketConfig.DataDir
 	// Check if privvalkey file exist
@@ -404,21 +415,11 @@ func LoadLightNodeServicersFromFiles() {
 		log2.Println("Searching for " + privValKeyFilePath + " to load as a servicer node")
 		if _, err := os.Stat(privValKeyFilePath); err != nil {
 			log2.Printf("Loaded %d nodes", i)
-			return
+			break
 		} else {
 			// file exist so we can load pk from file.
 			file, _ := loadServicerPKFromFile(privValKeyFilePath)
 			types.AddPrivateKeyToGlobalServicers(file)
-		}
-	}
-
-	mainValidatorPk, err := types.GetPVKeyFile()
-	if err == nil {
-		pk, err1 := crypto.PrivKeyToPrivateKey(mainValidatorPk.PrivKey)
-		if err1 == nil {
-			types.AddPrivateKeyToGlobalServicers(pk)
-		} else {
-			log2.Println("Failed to find a set validator to add to servicer nodes")
 		}
 	}
 

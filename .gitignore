@@ -19,6 +19,8 @@ vendor/
 logs/Logs
 *.idea/
 
+main
+
 tests/unit/*.log
 tests/unit/*.json
 

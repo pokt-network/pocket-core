@@ -112,6 +112,7 @@ var getLightServicers = &cobra.Command{
 	Long:  `Retrieves the main validator from the priv_val file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		app.InitKeyfiles()
 		app.LoadLightNodeServicersFromFiles()
 
 		for index, value := range pc.GlobalServicerPrivateKeys {

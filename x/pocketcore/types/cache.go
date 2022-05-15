@@ -261,7 +261,11 @@ func AddPrivateKeyToGlobalServicers(key crypto.PrivateKey) {
 }
 
 func GetServicerPkFromAddress(address *sdk.Address) (crypto.PrivateKey, error) {
-	return GlobalServicerPrivateKeysMap[address.String()], nil
+	pk := GlobalServicerPrivateKeysMap[address.String()]
+	if pk == nil {
+		return nil, fmt.Errorf("failed to find private key for %s", address.String())
+	}
+	return pk, nil
 }
 
 // "SetSession" - Sets a session (value) in the stores using the header (key)
