@@ -153,7 +153,7 @@ func (r *Relay) ValidateWithAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofsWithAddress(header, RelayEvidence, maxPossibleRelays, node)
+	evidence, totalRelays := GetTotalProofsWithNodeAddress(header, RelayEvidence, maxPossibleRelays, &node)
 	if evidence.IsSealed() {
 		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
 	}

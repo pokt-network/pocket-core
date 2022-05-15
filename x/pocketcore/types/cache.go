@@ -426,8 +426,8 @@ func SetEvidence(evidence Evidence) {
 	globalEvidenceCache.Set(key, evidence)
 }
 
-// "SetEvidenceWithAddress" - Sets an GOBEvidence object in the storage
-func SetEvidenceWithAddress(evidence Evidence, address *sdk.Address) {
+// "SetEvidenceWithNodeAddress" - Sets an GOBEvidence object in the storage
+func SetEvidenceWithNodeAddress(evidence Evidence, address *sdk.Address) {
 	// generate the key for the evidence
 	key, err := evidence.Key()
 	if err != nil {
@@ -449,7 +449,7 @@ func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
 	return nil
 }
 
-// "DeleteEvidenceWithAddress" - Remove the GOBEvidence from the stores
+// "DeleteEvidenceWithNodeAddress" - Remove the GOBEvidence from the stores
 func DeleteEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceType, address *sdk.Address) error {
 	// generate key for GOBEvidence
 	key, err := KeyForEvidence(header, evidenceType)
@@ -475,7 +475,7 @@ func SealEvidence(evidence Evidence) (Evidence, bool) {
 	return e, ok
 }
 
-func SealEvidenceWithAddress(evidence Evidence, address *sdk.Address) (Evidence, bool) {
+func SealEvidenceWithNodeAddress(evidence Evidence, address *sdk.Address) (Evidence, bool) {
 	// delete from cache
 	co, ok := globalEvidenceCacheMap[address.String()].Seal(evidence)
 	if !ok {
@@ -564,7 +564,7 @@ func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.
 	SetEvidence(evidence)
 }
 
-func GetProofWithAddress(header SessionHeader, evidenceType EvidenceType, index int64, address *sdk.Address) Proof {
+func GetProofWithNodeAddress(header SessionHeader, evidenceType EvidenceType, index int64, address *sdk.Address) Proof {
 	// retrieve the GOBEvidence
 	evidence, err := GetEvidenceWithNodeAddress(header, evidenceType, sdk.ZeroInt(), address)
 	if err != nil {
@@ -589,7 +589,7 @@ func SetProofWithNodeAddress(header SessionHeader, evidenceType EvidenceType, p 
 	// add proof
 	evidence.AddProof(p)
 	// set GOBEvidence back
-	SetEvidenceWithAddress(evidence, address)
+	SetEvidenceWithNodeAddress(evidence, address)
 }
 
 func IsUniqueProof(p Proof, evidence Evidence) bool {
@@ -607,9 +607,9 @@ func GetTotalProofs(h SessionHeader, et EvidenceType, maxPossibleRelays sdk.BigI
 	return evidence, evidence.NumOfProofs
 }
 
-func GetTotalProofsWithAddress(h SessionHeader, et EvidenceType, maxPossibleRelays sdk.BigInt, address sdk.Address) (Evidence, int64) {
+func GetTotalProofsWithNodeAddress(h SessionHeader, et EvidenceType, maxPossibleRelays sdk.BigInt, address *sdk.Address) (Evidence, int64) {
 	// retrieve the GOBEvidence
-	evidence, err := GetEvidence(h, et, maxPossibleRelays)
+	evidence, err := GetEvidenceWithNodeAddress(h, et, maxPossibleRelays, address)
 	if err != nil {
 		log.Fatalf("could not get total proofs for GOBEvidence: %s", err.Error())
 	}
