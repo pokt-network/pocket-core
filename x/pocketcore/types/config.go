@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/pokt-network/pocket-core/x/pocketcore/keeper"
 	"sync"
 	"time"
 
@@ -22,6 +23,19 @@ var (
 )
 
 // "InitConfig" - Initializes the cache for sessions and evidence
+func InitConfigOld(chains *HostedBlockchains, logger log.Logger, c types.Config) {
+	cacheOnce.Do(func() {
+		globalEvidenceCache = new(CacheStorage)
+		globalSessionCache = new(CacheStorage)
+		globalEvidenceSealedMap = sync.Map{}
+		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
+		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
+		InitGlobalServiceMetric(chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
+	})
+	GlobalPocketConfig = c.PocketConfig
+	SetRPCTimeout(c.PocketConfig.RPCTimeout)
+}
+
 func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 	cacheOnce.Do(func() {
 		globalEvidenceCache = new(CacheStorage)
@@ -29,6 +43,13 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 		globalEvidenceSealedMap = sync.Map{}
 		globalEvidenceCache.Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
 		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
+		for key, _ := range keeper.PkFromAddressMap {
+			globalEvidenceCacheMap[key] = new(CacheStorage)
+			globalEvidenceSealedMapMap[key] = sync.Map{}
+			globalSessionCacheMap[key] = new(CacheStorage)
+			globalEvidenceCacheMap[key].Init(c.PocketConfig.DataDir, c.PocketConfig.EvidenceDBName+"-"+key, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
+			globalSessionCacheMap[key].Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
+		}
 		InitGlobalServiceMetric(chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
 	})
 	GlobalPocketConfig = c.PocketConfig
@@ -70,6 +91,19 @@ func FlushSessionCache() {
 	err = globalEvidenceCache.FlushToDB()
 	if err != nil {
 		fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
+	}
+}
+
+func FlushSessionCacheAll() {
+	for k, _ := range keeper.PkFromAddressMap {
+		err := globalSessionCacheMap[k].FlushToDB()
+		if err != nil {
+			fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
+		}
+		err = globalEvidenceCacheMap[k].FlushToDB()
+		if err != nil {
+			fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
+		}
 	}
 }
 

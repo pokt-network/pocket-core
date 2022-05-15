@@ -435,6 +435,7 @@ func InitPocketCoreConfig(chains *types.HostedBlockchains, logger log.Logger) {
 
 func ShutdownPocketCore() {
 	types.FlushSessionCache()
+	types.FlushSessionCacheAll()
 	types.StopServiceMetrics()
 }
 
