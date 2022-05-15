@@ -371,7 +371,7 @@ func InitKeyfiles() {
 		// file exist so we can load pk from file.
 		file, _ := loadPKFromFile(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
 		types.InitPVKeyFile(file)
-		types.AddPVKeyFile(file)
+		types.AddPVKeyFileMap(file)
 	}
 }
 
@@ -393,7 +393,7 @@ func InitNodeKeyFiles() {
 		} else {
 			// file exist so we can load pk from file.
 			file, _ := loadPKFromFile(privValKeyFile)
-			types.AddPVKeyFile(file)
+			types.AddPVKeyFileMap(file)
 		}
 	}
 }

@@ -143,8 +143,8 @@ func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Validat
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
 	// get self address
 
-	if keeper.PkFromAddressMap != nil {
-		for _, v := range keeper.PkFromAddressMap {
+	if types.PkFromAddressMap != nil {
+		for _, v := range types.PkFromAddressMap {
 			addr := sdk.Address(v.PublicKey().Address())
 			if (ctx.BlockHeight()+int64(addr[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
 				// run go routine because cannot access TmNode during end-block period
