@@ -30,6 +30,9 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 		globalSessionCache.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
 
 		if c.PocketConfig.LeanPocket {
+			globalEvidenceCacheMap = make(map[string]*CacheStorage)
+			globalEvidenceSealedMapMap = make(map[string]sync.Map)
+			globalSessionCacheMap = make(map[string]*CacheStorage)
 			for key := range GlobalServicerPrivateKeysMap {
 				globalEvidenceCacheMap[key] = new(CacheStorage)
 				globalEvidenceSealedMapMap[key] = sync.Map{}

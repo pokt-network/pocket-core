@@ -18,14 +18,17 @@ func InitCacheTest() {
 	// init needed maps for cache
 	GlobalServicerPrivateKeys = make([]crypto.PrivateKey, 0)
 
+	testingConfig := sdk.DefaultTestingPocketConfig()
+	testingConfig.PocketConfig.LeanPocket = true
 	servicerPk := GetRandomPrivateKey()
+
 	AddPrivateKeyToGlobalServicers(servicerPk)
 	GlobalServicerPrivateKeysMap = make(map[string]crypto.PrivateKey)
 	GlobalServicerPrivateKeysMap[sdk.GetAddress(servicerPk.PublicKey()).String()] = servicerPk
 
 	InitConfig(&HostedBlockchains{
 		M: make(map[string]HostedBlockchain),
-	}, logger, sdk.DefaultTestingPocketConfig())
+	}, logger, testingConfig)
 }
 
 func TestMain(m *testing.M) {
