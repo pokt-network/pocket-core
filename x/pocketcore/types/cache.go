@@ -261,8 +261,8 @@ func AddPrivateKeyToGlobalServicers(key crypto.PrivateKey) {
 }
 
 func GetServicerPkWithNodeAddress(address *sdk.Address) (crypto.PrivateKey, error) {
-	pk := GlobalServicerPrivateKeysMap[address.String()]
-	if pk == nil {
+	pk, ok := GlobalServicerPrivateKeysMap[address.String()]
+	if !ok {
 		return nil, fmt.Errorf("failed to find private key for %s", address.String())
 	}
 	return pk, nil
