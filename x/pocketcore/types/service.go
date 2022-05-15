@@ -169,6 +169,7 @@ func (r *Relay) ValidateWithNodeAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKe
 	if err := r.Proof.ValidateLocal(app.GetChains(), int(sessionNodeCount), sessionBlockHeight, node); err != nil {
 		return sdk.ZeroInt(), err
 	}
+
 	// check cache
 	session, found := GetSessionWithNodeAddress(header, &node)
 	// if not found generate the session
@@ -185,11 +186,14 @@ func (r *Relay) ValidateWithNodeAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKe
 		// add to cache
 		SetSessionWithNodeAddress(session, &node)
 	}
+
 	// validate the session
 	err = session.Validate(node, app, int(sessionNodeCount))
+
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
+
 	// if the payload method is empty, set it to the default
 	if r.Payload.Method == "" {
 		r.Payload.Method = DEFAULTHTTPMETHOD

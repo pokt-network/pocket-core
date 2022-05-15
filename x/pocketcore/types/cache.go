@@ -256,8 +256,27 @@ func GetSessionWithNodeAddress(header SessionHeader, address *sdk.Address) (sess
 	return
 }
 
-func AddPrivateKeyToGlobalServicers(key crypto.PrivateKey) {
-	GlobalServicerPrivateKeys = append(GlobalServicerPrivateKeys, key)
+func AddPrivateKeyToGlobalServicers(pk crypto.PrivateKey) {
+	GlobalServicerPrivateKeys = append(GlobalServicerPrivateKeys, pk)
+
+	if GlobalServicerPrivateKeysMap == nil {
+		GlobalServicerPrivateKeysMap = make(map[string]crypto.PrivateKey)
+		globalEvidenceCacheMap = make(map[string]*CacheStorage)
+		globalEvidenceSealedMapMap = make(map[string]sync.Map)
+		globalSessionCacheMap = make(map[string]*CacheStorage)
+	}
+
+	key := sdk.Address(pk.PublicKey().Address()).String()
+	fmt.Println("Adding " + key + " to servicers")
+	globalEvidenceCacheMap[key] = new(CacheStorage)
+
+	globalEvidenceSealedMapMap[key] = sync.Map{}
+	globalSessionCacheMap[key] = new(CacheStorage)
+	globalEvidenceCacheMap[key].Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"-"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)
+	globalSessionCacheMap[key].Init(GlobalPocketConfig.DataDir, "", GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxSessionCacheEntries, true)
+
+	GlobalServicerPrivateKeysMap[key] = pk
+
 }
 
 func GetServicerPkWithNodeAddress(address *sdk.Address) (crypto.PrivateKey, error) {
@@ -387,6 +406,8 @@ func GetEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceType,
 	if err != nil {
 		return
 	}
+
+	fmt.Println("node address" + address.String())
 
 	val, found := globalEvidenceCacheMap[address.String()].Get(key, evidence)
 	if !found && max.Equal(sdk.ZeroInt()) {

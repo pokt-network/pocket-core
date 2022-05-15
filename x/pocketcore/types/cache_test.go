@@ -23,8 +23,6 @@ func InitCacheTest() {
 	servicerPk := GetRandomPrivateKey()
 
 	AddPrivateKeyToGlobalServicers(servicerPk)
-	GlobalServicerPrivateKeysMap = make(map[string]crypto.PrivateKey)
-	GlobalServicerPrivateKeysMap[sdk.GetAddress(servicerPk.PublicKey()).String()] = servicerPk
 
 	InitConfig(&HostedBlockchains{
 		M: make(map[string]HostedBlockchain),
