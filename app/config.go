@@ -85,10 +85,6 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// init the keyfiles
 	InitKeyfiles()
 
-	// init more servicer nodes
-	LoadLightNodeServicersFromFiles()
-
-	// get hosted blockchains
 	chains := NewHostedChains(false)
 	if GlobalConfig.PocketConfig.ChainsHotReload {
 		// hot reload chains
@@ -98,6 +94,12 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	logger := InitLogger()
 	// init cache
 	InitPocketCoreConfig(chains, logger)
+
+	// init more servicer nodes
+	LoadLightNodeServicersFromFiles()
+
+	// get hosted blockchains
+
 	// init genesis
 	InitGenesis(genesisType, logger)
 	// log the config and chains
