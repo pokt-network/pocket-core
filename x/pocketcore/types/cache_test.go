@@ -13,20 +13,19 @@ import (
 
 func InitCacheTest() {
 	logger := log.NewNopLogger()
+	testingConfig := sdk.DefaultTestingPocketConfig()
+	testingConfig.PocketConfig.LeanPocket = true
+	InitConfig(&HostedBlockchains{
+		M: make(map[string]HostedBlockchain),
+	}, logger, testingConfig)
 	// init cache in memory
 
 	// init needed maps for cache
 	GlobalServicerPrivateKeys = make([]crypto.PrivateKey, 0)
-
-	testingConfig := sdk.DefaultTestingPocketConfig()
-	testingConfig.PocketConfig.LeanPocket = true
 	servicerPk := GetRandomPrivateKey()
 
 	AddPrivateKeyToGlobalServicers(servicerPk)
 
-	InitConfig(&HostedBlockchains{
-		M: make(map[string]HostedBlockchain),
-	}, logger, testingConfig)
 }
 
 func TestMain(m *testing.M) {
