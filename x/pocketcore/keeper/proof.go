@@ -322,11 +322,8 @@ func newTxBuilderAndCliCtx(ctx sdk.Ctx, msg sdk.ProtoMsg, n client.Client, key c
 	fromAddr := sdk.Address(key.PublicKey().Address())
 	// create a client context for sending
 	cliCtx = util.NewCLIContext(n, fromAddr, "").WithCodec(k.Cdc).WithHeight(ctx.BlockHeight())
-	pk, err := k.GetPKFromFile(ctx)
-	if err != nil {
-		return txBuilder, cliCtx, err
-	}
-	cliCtx.PrivateKey = pk
+
+	cliCtx.PrivateKey = key
 	// broadcast synchronously
 	cliCtx.BroadcastMode = util.BroadcastSync
 	// get the account to ensure balance
