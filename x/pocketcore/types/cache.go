@@ -410,8 +410,6 @@ func GetEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceType,
 		return
 	}
 
-	fmt.Println("node address" + address.String())
-
 	val, found := globalEvidenceCacheMap[address.String()].Get(key, evidence)
 	if !found && max.Equal(sdk.ZeroInt()) {
 		return Evidence{}, fmt.Errorf("GOBEvidence not found")
