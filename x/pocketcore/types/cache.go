@@ -57,6 +57,7 @@ type CacheObject interface {
 // "Init" - Initializes a cache storage object
 func (cs *CacheStorage) Init(dir, name string, options config.LevelDBOptions, maxEntries int, inMemoryDB bool) {
 	// init the lru cache with a max entries
+
 	cs.Cache = sdk.NewCache(maxEntries)
 	// intialize the db
 	var err error
@@ -268,11 +269,13 @@ func AddPrivateKeyToGlobalServicers(pk crypto.PrivateKey) {
 
 	key := sdk.Address(pk.PublicKey().Address()).String()
 	fmt.Println("Adding " + key + " to servicers")
+
 	globalEvidenceCacheMap[key] = new(CacheStorage)
+	globalEvidenceCacheMap[key].Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"-"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)
 
 	globalEvidenceSealedMapMap[key] = sync.Map{}
+
 	globalSessionCacheMap[key] = new(CacheStorage)
-	globalEvidenceCacheMap[key].Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"-"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)
 	globalSessionCacheMap[key].Init(GlobalPocketConfig.DataDir, "", GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxSessionCacheEntries, true)
 
 	GlobalServicerPrivateKeysMap[key] = pk

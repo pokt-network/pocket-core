@@ -112,6 +112,14 @@ var getLightServicers = &cobra.Command{
 	Long:  `Retrieves the main validator from the priv_val file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		chains := app.NewHostedChains(false)
+		if app.GlobalConfig.PocketConfig.ChainsHotReload {
+			// hot reload chains
+			app.HotReloadChains(chains)
+		}
+		// create logger
+		logger := app.InitLogger()
+		app.InitPocketCoreConfig(chains, logger)
 		app.InitKeyfiles()
 		app.LoadLightNodeServicersFromFiles()
 
