@@ -271,7 +271,7 @@ func AddPrivateKeyToGlobalServicers(pk crypto.PrivateKey) {
 	fmt.Println("Adding " + key + " to servicers")
 
 	globalEvidenceCacheMap[key] = new(CacheStorage)
-	globalEvidenceCacheMap[key].Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"-"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)
+	globalEvidenceCacheMap[key].Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"_"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)
 
 	globalEvidenceSealedMapMap[key] = sync.Map{}
 
