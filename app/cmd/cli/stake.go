@@ -46,7 +46,7 @@ If no changes are desired for the parameter, just enter the current param value 
 			return
 		}
 		am := types.NewInt(int64(amount))
-		if am.LTE(types.NewInt(15100000000)) {
+		if am.LT(types.NewInt(15100000000)) {
 			fmt.Println("The amount you are staking for is below the recommendation of 15100 POKT, would you still like to continue? y|n")
 			if !app.Confirmation(pwd) {
 				return
