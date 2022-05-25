@@ -398,7 +398,7 @@ func loadLightNodesFromFile(path string) []crypto.PrivateKey {
 	if err != nil {
 		cmn.Exit(fmt.Sprintf("Error reading PrivValidator key from %v: %v\n", path, err))
 	}
-	pks := make([]crypto.PrivateKey, 2)
+	pks := make([]crypto.PrivateKey, len(pvKeys))
 
 	for index, pvKey := range pvKeys {
 		key, errr := crypto.NewPrivateKey(pvKey.PrivateKey)
@@ -438,7 +438,6 @@ func LoadLightNodes() {
 
 	lightNodesFilePath := datadir + FS + GlobalConfig.PocketConfig.LightNodesKeyFileName
 	lightNodes := loadLightNodesFromFile(lightNodesFilePath)
-	fmt.Println(len(lightNodes))
 	for _, lightNode := range lightNodes {
 		types.InitLiteNode(lightNode)
 	}
