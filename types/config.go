@@ -23,7 +23,7 @@ type PocketConfig struct {
 	EvidenceDBName           string `json:"evidence_db_name"`
 	TendermintURI            string `json:"tendermint_uri"`
 	KeybaseName              string `json:"keybase_name"`
-	LightNodesKeyFile        string `json:"light_nodes_key_file"`
+	LightNodesKeyFileName    string `json:"light_nodes_key_file_name"`
 	RPCPort                  string `json:"rpc_port"`
 	ClientBlockSyncAllowance int    `json:"client_block_sync_allowance"`
 	MaxEvidenceCacheEntires  int    `json:"max_evidence_cache_entries"`
@@ -61,7 +61,7 @@ type AuthToken struct {
 const (
 	DefaultDDName                      = ".pocket"
 	DefaultKeybaseName                 = "pocket-keybase"
-	DefaultLightNodesKeyFile           = "light_nodes_keys.json"
+	DefaultLightNodesKeyFileName       = "light_nodes_keys.json"
 	DefaultPVKName                     = "priv_val_key.json"
 	DefaultPVSName                     = "priv_val_state.json"
 	DefaultNKName                      = "node_key.json"
@@ -108,7 +108,7 @@ func DefaultConfig(dataDir string) Config {
 		TendermintConfig: *config.DefaultConfig(),
 		PocketConfig: PocketConfig{
 			DataDir:                  dataDir,
-			LightNodesKeyFile:        DefaultLightNodesKeyFile,
+			LightNodesKeyFileName:    DefaultLightNodesKeyFileName,
 			GenesisName:              DefaultGenesisName,
 			ChainsName:               DefaultChainsName,
 			EvidenceDBName:           DefaultEvidenceDBName,

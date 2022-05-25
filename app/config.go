@@ -435,8 +435,8 @@ func LoadLightNodes() {
 
 	datadir := GlobalConfig.PocketConfig.DataDir
 
-	privValKeyFilePath := datadir + FS + GlobalConfig.PocketConfig.LightNodesKeyFile
-	lightNodes := loadLightNodesFromFile(privValKeyFilePath)
+	lightNodesFilePath := datadir + FS + GlobalConfig.PocketConfig.LightNodesKeyFileName
+	lightNodes := loadLightNodesFromFile(lightNodesFilePath)
 
 	for _, lightNode := range lightNodes {
 		types.InitLiteNode(lightNode)
