@@ -106,7 +106,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 }
 
 func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *sdk.Address, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
-	kp, err := pc.GetServicerPkWithNodeAddress(addr)
+	kp, err := pc.GetLightNodePkWithNodeAddress(addr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
 		return

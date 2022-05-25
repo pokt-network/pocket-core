@@ -32,11 +32,9 @@ var (
 
 	globalEvidenceSealedMap sync.Map
 
-	GlobalServicerPrivateKeysMap map[string]crypto.PrivateKey
+	GlobalLightNodesPrivateKeyMap map[string]crypto.PrivateKey
 
 	globalEvidenceSealedMapMap map[string]sync.Map
-
-	GlobalServicerPrivateKeys []crypto.PrivateKey
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
@@ -257,18 +255,17 @@ func GetSessionWithNodeAddress(header SessionHeader, address *sdk.Address) (sess
 	return
 }
 
-func AddPrivateKeyToGlobalServicers(pk crypto.PrivateKey) {
-	GlobalServicerPrivateKeys = append(GlobalServicerPrivateKeys, pk)
+func InitLiteNode(pk crypto.PrivateKey) {
 
-	if GlobalServicerPrivateKeysMap == nil {
-		GlobalServicerPrivateKeysMap = make(map[string]crypto.PrivateKey)
+	if GlobalLightNodesPrivateKeyMap == nil {
+		GlobalLightNodesPrivateKeyMap = make(map[string]crypto.PrivateKey)
 		globalEvidenceCacheMap = make(map[string]*CacheStorage)
 		globalEvidenceSealedMapMap = make(map[string]sync.Map)
 		globalSessionCacheMap = make(map[string]*CacheStorage)
 	}
 
 	key := sdk.Address(pk.PublicKey().Address()).String()
-	fmt.Println("Adding " + key + " to servicers")
+	fmt.Println("Adding " + key + " as a light node")
 
 	globalEvidenceCacheMap[key] = new(CacheStorage)
 	globalEvidenceCacheMap[key].Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"_"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)
@@ -278,12 +275,12 @@ func AddPrivateKeyToGlobalServicers(pk crypto.PrivateKey) {
 	globalSessionCacheMap[key] = new(CacheStorage)
 	globalSessionCacheMap[key].Init(GlobalPocketConfig.DataDir, "", GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxSessionCacheEntries, true)
 
-	GlobalServicerPrivateKeysMap[key] = pk
+	GlobalLightNodesPrivateKeyMap[key] = pk
 
 }
 
-func GetServicerPkWithNodeAddress(address *sdk.Address) (crypto.PrivateKey, error) {
-	pk, ok := GlobalServicerPrivateKeysMap[address.String()]
+func GetLightNodePkWithNodeAddress(address *sdk.Address) (crypto.PrivateKey, error) {
+	pk, ok := GlobalLightNodesPrivateKeyMap[address.String()]
 	if !ok {
 		return nil, fmt.Errorf("failed to find private key for %s", address.String())
 	}

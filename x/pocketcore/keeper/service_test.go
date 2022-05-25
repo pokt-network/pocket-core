@@ -115,7 +115,7 @@ func TestKeeper_HandleRelayLightClient(t *testing.T) {
 	npk := kp.PublicKey
 	nodePubKey := npk.RawString()
 
-	types.AddPrivateKeyToGlobalServicers(pk)
+	types.InitLiteNode(pk)
 
 	p := types.Payload{
 		Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",

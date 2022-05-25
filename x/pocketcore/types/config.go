@@ -77,7 +77,7 @@ func FlushSessionCache() {
 }
 
 func FlushSessionCacheAll() {
-	for k, _ := range GlobalServicerPrivateKeysMap {
+	for k, _ := range GlobalLightNodesPrivateKeyMap {
 		err := globalSessionCacheMap[k].FlushToDB()
 		if err != nil {
 			fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())

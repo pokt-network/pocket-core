@@ -41,7 +41,7 @@ func init() {
 	accountsCmd.AddCommand(signNexMS)
 	accountsCmd.AddCommand(buildMultisig)
 	accountsCmd.AddCommand(unsafeDeleteCmd)
-	accountsCmd.AddCommand(getLightServicers)
+	accountsCmd.AddCommand(getLightNodes)
 }
 
 // accountsCmd represents the accounts namespace command
@@ -106,10 +106,10 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	},
 }
 
-var getLightServicers = &cobra.Command{
-	Use:   "get-servicers",
-	Short: "Retrieves all servicers using the v0 optimized client",
-	Long:  `Retrieves the main validator from the priv_val file`,
+var getLightNodes = &cobra.Command{
+	Use:   "get-light-nodes",
+	Short: "Retrieves all light nodes using the v0 optimized client",
+	Long:  `Retrieves all light nodes using the v0 optimized client`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		chains := app.NewHostedChains(false)
@@ -121,10 +121,10 @@ var getLightServicers = &cobra.Command{
 		logger := app.InitLogger()
 		app.InitPocketCoreConfig(chains, logger)
 		app.InitKeyfiles()
-		app.LoadLightNodeServicersFromFiles()
+		app.LoadLightNodes()
 
-		for index, value := range pc.GlobalServicerPrivateKeys {
-			fmt.Printf("[%d] Servicer Address: %s\n", index, strings.ToLower(value.PublicKey().Address().String()))
+		for index, value := range pc.GlobalLightNodesPrivateKeyMap {
+			fmt.Printf("[%d] Light Node Address: %s\n", index, strings.ToLower(value.PublicKey().Address().String()))
 		}
 	},
 }

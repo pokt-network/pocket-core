@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/libs/log"
@@ -21,10 +20,10 @@ func InitCacheTest() {
 	// init cache in memory
 
 	// init needed maps for cache
-	GlobalServicerPrivateKeys = make([]crypto.PrivateKey, 0)
+
 	servicerPk := GetRandomPrivateKey()
 
-	AddPrivateKeyToGlobalServicers(servicerPk)
+	InitLiteNode(servicerPk)
 
 }
 
@@ -91,7 +90,7 @@ func TestAllEvidence_AddGetEvidence(t *testing.T) {
 
 func TestAllEvidence_AddGetEvidenceWithNodeAddress(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
-	servicerPubKey := GetServicerKey().PublicKey()
+	servicerPubKey := GetLightNodePrivateKey().PublicKey()
 	address := sdk.GetAddress(servicerPubKey)
 	servicerPubKeyString := servicerPubKey.RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -152,7 +151,7 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 
 func TestAllEvidence_DeleteEvidenceWithNodeAddress(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
-	servicerPubKey := GetServicerKey().PublicKey()
+	servicerPubKey := GetLightNodePrivateKey().PublicKey()
 	address := sdk.GetAddress(servicerPubKey)
 	servicerPubKeyString := servicerPubKey.RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -235,7 +234,7 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 
 func TestAllEvidence_GetTotalProofsWithNodeAddress(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
-	servicerPubKey := GetServicerKey().PublicKey()
+	servicerPubKey := GetLightNodePrivateKey().PublicKey()
 	address := sdk.GetAddress(servicerPubKey)
 	servicerPubKeyString := servicerPubKey.RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -304,7 +303,7 @@ func TestSetGetSessionWithNodeAddress(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	session2 := NewTestSession(t, hex.EncodeToString(Hash([]byte("bar"))))
 
-	randomAddr := sdk.GetAddress(GetServicerKey().PublicKey())
+	randomAddr := sdk.GetAddress(GetLightNodePrivateKey().PublicKey())
 	SetSessionWithNodeAddress(session, &randomAddr)
 
 	s, found := GetSessionWithNodeAddress(session.SessionHeader, &randomAddr)
@@ -328,7 +327,7 @@ func TestDeleteSession(t *testing.T) {
 
 func TestDeleteSessionWithNodeAddress(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
-	randomAddr := sdk.GetAddress(GetServicerKey().PublicKey())
+	randomAddr := sdk.GetAddress(GetLightNodePrivateKey().PublicKey())
 	SetSessionWithNodeAddress(session, &randomAddr)
 	DeleteSessionWithNodeAddress(session.SessionHeader, &randomAddr)
 	_, found := GetSessionWithNodeAddress(session.SessionHeader, &randomAddr)
@@ -350,7 +349,7 @@ func TestClearCache(t *testing.T) {
 
 func TestClearCacheWithNodeAddress(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
-	randomAddr := sdk.GetAddress(GetServicerKey().PublicKey())
+	randomAddr := sdk.GetAddress(GetLightNodePrivateKey().PublicKey())
 	SetSessionWithNodeAddress(session, &randomAddr)
 	ClearSessionCacheWithNodeAddress(&randomAddr)
 	iter := SessionIteratorWithNodeAddress(&randomAddr)

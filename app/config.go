@@ -96,7 +96,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitPocketCoreConfig(chains, logger)
 
 	// init more servicer nodes
-	LoadLightNodeServicersFromFiles()
+	LoadLightNodes()
 
 	// get hosted blockchains
 
@@ -386,25 +386,46 @@ func InitKeyfiles() {
 	}
 }
 
-func LoadLightNodeServicersFromFiles() {
+func loadLightNodesFromFile(path string) []crypto.PrivateKey {
+	keyJSONBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		cmn.Exit(err.Error())
+	}
+	var pvKeys []ServicerPrivateKeyFile
+	err = cdc.UnmarshalJSON(keyJSONBytes, &pvKeys)
+	if err != nil {
+		cmn.Exit(fmt.Sprintf("Error reading PrivValidator key from %v: %v\n", path, err))
+	}
+
+	pks := make([]crypto.PrivateKey, len(pvKeys))
+
+	for _, pvKey := range pvKeys {
+		key, errr := crypto.NewPrivateKey(pvKey.PrivateKey)
+		if errr != nil {
+			cmn.Exit(errr.Error())
+		}
+		pks = append(pks, key)
+	}
+
+	if err != nil {
+		cmn.Exit(fmt.Sprintf("Failed to decode hex pk to ed25519 pk struct %v: %v\n", path, err))
+	}
+
+	return pks
+}
+
+func LoadLightNodes() {
 
 	if !GlobalConfig.PocketConfig.LeanPocket {
 		log2.Println("Lean Pocket not enabled")
 		return
 	}
 
-	if types.GlobalServicerPrivateKeys != nil {
-		log2.Println("Light servicers already initialized")
-		return
-	}
-
-	types.GlobalServicerPrivateKeys = make([]crypto.PrivateKey, 0)
-
 	mainValidatorPk, err := types.GetPVKeyFile()
 	if err == nil {
 		pk, err1 := crypto.PrivKeyToPrivateKey(mainValidatorPk.PrivKey)
 		if err1 == nil {
-			types.AddPrivateKeyToGlobalServicers(pk)
+			types.InitLiteNode(pk)
 		} else {
 			log2.Println("Failed to convert main validator private key to ed25519 private key struct")
 		}
@@ -413,23 +434,13 @@ func LoadLightNodeServicersFromFiles() {
 	}
 
 	datadir := GlobalConfig.PocketConfig.DataDir
-	// Check if privvalkey file exist
-	privValKeyFileBase := GlobalConfig.TendermintConfig.PrivValidatorKey
-	privValKeyFileExtension := fp.Ext(privValKeyFileBase)
-	privValKeyFileWithoutExtension := privValKeyFileBase[0 : len(privValKeyFileBase)-len(privValKeyFileExtension)]
-	for i := 1; i < 5000; i++ {
-		privValKeyFilePath := datadir + FS + fmt.Sprintf("%s_%d%s", privValKeyFileWithoutExtension, i, privValKeyFileExtension)
-		log2.Println("Searching for " + privValKeyFilePath + " to load as a servicer node")
-		if _, err := os.Stat(privValKeyFilePath); err != nil {
-			log2.Printf("Loaded %d nodes", i)
-			break
-		} else {
-			// file exist so we can load pk from file.
-			file, _ := loadServicerPKFromFile(privValKeyFilePath)
-			types.AddPrivateKeyToGlobalServicers(file)
-		}
-	}
 
+	privValKeyFilePath := datadir + FS + GlobalConfig.PocketConfig.LightNodesKeyFile
+	lightNodes := loadLightNodesFromFile(privValKeyFilePath)
+
+	for _, lightNode := range lightNodes {
+		types.InitLiteNode(lightNode)
+	}
 }
 
 func InitLogger() (logger log.Logger) {
@@ -507,25 +518,6 @@ func loadPKFromFile(path string) (privval.FilePVKey, string) {
 	}
 
 	return pvKey, path
-}
-
-func loadServicerPKFromFile(path string) (crypto.PrivateKey, string) {
-	keyJSONBytes, err := ioutil.ReadFile(path)
-	if err != nil {
-		cmn.Exit(err.Error())
-	}
-	pvKey := ServicerPrivateKeyFile{}
-	err = cdc.UnmarshalJSON(keyJSONBytes, &pvKey)
-	if err != nil {
-		cmn.Exit(fmt.Sprintf("Error reading PrivValidator key from %v: %v\n", path, err))
-	}
-	key, err := crypto.NewPrivateKey(pvKey.PrivateKey)
-
-	if err != nil {
-		cmn.Exit(fmt.Sprintf("Failed to decode hex pk to ed25519 pk struct %v: %v\n", path, err))
-	}
-
-	return key, path
 }
 
 func privValKey(res crypto.PrivateKey) {
