@@ -20,7 +20,6 @@ func InitCacheTest() {
 	// init cache in memory
 
 	// init needed maps for cache
-
 	servicerPk := GetRandomPrivateKey()
 
 	InitLiteNode(servicerPk)
@@ -57,7 +56,6 @@ func TestIsUniqueProof(t *testing.T) {
 	assert.Nil(t, err)
 	assert.False(t, IsUniqueProof(p, e), "p is no longer unique")
 	assert.True(t, IsUniqueProof(p1, e), "p is unique")
-
 }
 
 func TestAllEvidence_AddGetEvidence(t *testing.T) {

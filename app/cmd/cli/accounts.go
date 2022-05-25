@@ -123,8 +123,8 @@ var getLightNodes = &cobra.Command{
 		app.InitKeyfiles()
 		app.LoadLightNodes()
 
-		for index, value := range pc.GlobalLightNodesPrivateKeyMap {
-			fmt.Printf("[%d] Light Node Address: %s\n", index, strings.ToLower(value.PublicKey().Address().String()))
+		for _, value := range pc.GlobalLightNodesPrivateKeyMap {
+			fmt.Printf("Light Node Address: %s\n", strings.ToLower(value.PublicKey().Address().String()))
 		}
 	},
 }
