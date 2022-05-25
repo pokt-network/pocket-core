@@ -387,6 +387,8 @@ func InitKeyfiles() {
 }
 
 func loadLightNodesFromFile(path string) []crypto.PrivateKey {
+
+	log2.Println("Reading Light Nodes from " + path)
 	keyJSONBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		cmn.Exit(err.Error())
@@ -396,15 +398,14 @@ func loadLightNodesFromFile(path string) []crypto.PrivateKey {
 	if err != nil {
 		cmn.Exit(fmt.Sprintf("Error reading PrivValidator key from %v: %v\n", path, err))
 	}
+	pks := make([]crypto.PrivateKey, 2)
 
-	pks := make([]crypto.PrivateKey, len(pvKeys))
-
-	for _, pvKey := range pvKeys {
+	for index, pvKey := range pvKeys {
 		key, errr := crypto.NewPrivateKey(pvKey.PrivateKey)
 		if errr != nil {
 			cmn.Exit(errr.Error())
 		}
-		pks = append(pks, key)
+		pks[index] = key
 	}
 
 	if err != nil {
@@ -430,14 +431,14 @@ func LoadLightNodes() {
 			log2.Println("Failed to convert main validator private key to ed25519 private key struct")
 		}
 	} else {
-		log2.Println("Failed to find main validator to add to servicer nodes")
+		log2.Println("Failed to find main validator to add to light nodes")
 	}
 
 	datadir := GlobalConfig.PocketConfig.DataDir
 
 	lightNodesFilePath := datadir + FS + GlobalConfig.PocketConfig.LightNodesKeyFileName
 	lightNodes := loadLightNodesFromFile(lightNodesFilePath)
-
+	fmt.Println(len(lightNodes))
 	for _, lightNode := range lightNodes {
 		types.InitLiteNode(lightNode)
 	}
