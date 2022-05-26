@@ -82,6 +82,9 @@ func Block(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
+	if params.Height == 0 {
+		params.Height = app.PCA.BaseApp.LastBlockHeight()
+	}
 	res, err := app.PCA.QueryBlock(&params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
