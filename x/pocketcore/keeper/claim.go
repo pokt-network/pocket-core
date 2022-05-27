@@ -147,7 +147,7 @@ func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, n client.
 			continue
 		}
 		// generate the merkle root for this evidence
-		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight)
+		root := evidence.GenerateMerkleRootWithNodeAddress(evidence.SessionHeader.SessionBlockHeight, address)
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgClaim{}, n, kp, k)
 		if err != nil {

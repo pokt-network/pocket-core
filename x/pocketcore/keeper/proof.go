@@ -135,7 +135,7 @@ func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *s
 			}
 			continue
 		}
-		if !evidence.IsSealed() {
+		if !evidence.IsSealedWithNodeAddress(addr) {
 			err := pc.DeleteEvidenceWithNodeAddress(claim.SessionHeader, claim.EvidenceType, addr)
 			ctx.Logger().Error(fmt.Sprintf("evidence is not sealed, could cause a relay leak:"))
 			if err != nil {

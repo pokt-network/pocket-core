@@ -154,7 +154,7 @@ func (r *Relay) ValidateWithNodeAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKe
 	}
 	// validate unique relay
 	evidence, totalRelays := GetTotalProofsWithNodeAddress(header, RelayEvidence, maxPossibleRelays, &node)
-	if evidence.IsSealed() {
+	if evidence.IsSealedWithNodeAddress(&node) {
 		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
 	}
 	// get evidence key by proof

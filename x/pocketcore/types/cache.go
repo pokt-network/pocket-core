@@ -49,7 +49,9 @@ type CacheObject interface {
 	UnmarshalObject(b []byte) (CacheObject, error)
 	Key() ([]byte, error)
 	Seal() CacheObject
+	SealWithNodeAddress(addr *sdk.Address) CacheObject
 	IsSealed() bool
+	IsSealedWithNodeAddress(addr *sdk.Address) bool
 }
 
 // "Init" - Initializes a cache storage object
@@ -119,6 +121,24 @@ func (cs *CacheStorage) Seal(object CacheObject) (cacheObject CacheObject, isOK 
 	return sealed, true
 }
 
+func (cs *CacheStorage) SealWithNodeAddress(object CacheObject, address *sdk.Address) (cacheObject CacheObject, isOK bool) {
+	if object.IsSealedWithNodeAddress(address) {
+		return object, true
+	}
+	cs.l.Lock()
+	defer cs.l.Unlock()
+	// get the key from the object
+	k, err := object.Key()
+	if err != nil {
+		return object, false
+	}
+	// make READONLY
+	sealed := object.SealWithNodeAddress(address)
+	// set in db and cache
+	cs.SetWithoutLockAndSealCheck(hex.EncodeToString(k), sealed)
+	return sealed, true
+}
+
 // "Set" - Sets the KV pair in cache and db
 func (cs *CacheStorage) Set(key []byte, val CacheObject) {
 	keyString := hex.EncodeToString(key)
@@ -135,6 +155,29 @@ func (cs *CacheStorage) Set(key []byte, val CacheObject) {
 		// if evidence, check sealed map
 		if ev, ok := co.(Evidence); ok {
 			if _, ok := globalEvidenceSealedMap.Load(ev.HashString()); ok {
+				return
+			}
+		}
+	}
+	cs.SetWithoutLockAndSealCheck(keyString, val)
+}
+
+func (cs *CacheStorage) SetWithNodeAddress(key []byte, val CacheObject, address *sdk.Address) {
+	keyString := hex.EncodeToString(key)
+	cs.l.Lock()
+	defer cs.l.Unlock()
+	// get object to check if sealed
+	res, found := cs.GetWithoutLock(key, val)
+	if found {
+		co, ok := res.(CacheObject)
+		if !ok {
+			fmt.Printf("ERROR: cannot convert object into cache object (in set)")
+			return
+		}
+		// if evidence, check sealed map
+		if ev, ok := co.(Evidence); ok {
+			sealedMap := globalEvidenceSealedMapMap[address.String()]
+			if _, ok := sealedMap.Load(ev.HashString()); ok {
 				return
 			}
 		}
@@ -297,7 +340,7 @@ func SetSession(session Session) {
 func SetSessionWithNodeAddress(session Session, address *sdk.Address) {
 	// get the key for the session
 	key := session.SessionHeader.Hash()
-	globalSessionCacheMap[address.String()].Set(key, session)
+	globalSessionCacheMap[address.String()].SetWithNodeAddress(key, session, address)
 }
 
 // "DeleteSession" - Deletes a session (value) from the stores
@@ -428,12 +471,12 @@ func GetEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceType,
 		err = fmt.Errorf("could not unmarshal into evidence from cache with header %v", header)
 		return
 	}
-	if evidence.IsSealed() {
+	if evidence.IsSealedWithNodeAddress(address) {
 		return evidence, nil
 	}
 	// if hit relay limit... Seal the evidence
 	if found && !max.Equal(sdk.ZeroInt()) && evidence.NumOfProofs >= max.Int64() {
-		evidence, ok = SealEvidence(evidence)
+		evidence, ok = SealEvidenceWithNodeAddress(evidence, address)
 		if !ok {
 			err = fmt.Errorf("max relays is hit and could not seal evidence! GetEvidence() with header %v", header)
 			return
@@ -503,7 +546,7 @@ func SealEvidence(evidence Evidence) (Evidence, bool) {
 
 func SealEvidenceWithNodeAddress(evidence Evidence, address *sdk.Address) (Evidence, bool) {
 	// delete from cache
-	co, ok := globalEvidenceCacheMap[address.String()].Seal(evidence)
+	co, ok := globalEvidenceCacheMap[address.String()].SealWithNodeAddress(evidence, address)
 	if !ok {
 		return Evidence{}, ok
 	}
