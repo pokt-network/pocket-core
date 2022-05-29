@@ -108,4 +108,17 @@ func processSelf(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.
 			types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()))
 		}
 	}
+	if types.GlobalPocketConfig.LeanPocket {
+		_, ok := types.GlobalLightNodesPrivateKeyMap[signer.String()]
+		if ok {
+			err := types.DeleteEvidenceWithNodeAddress(header, evidenceType, &signer)
+			if err != nil {
+				ctx.Logger().Error("Unable to delete evidence: " + err.Error())
+			}
+			//if !tokens.IsZero() {
+			//	types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()))
+			//}
+		}
+	}
+
 }
