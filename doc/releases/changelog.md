@@ -3,6 +3,7 @@
 ## RC-0.8.3
 
 - Add config.json check for Indexer and Mempool.
+- Update Indirect Dependency related to CVE-2022-28948
 
 ## RC-0.8.1
 
