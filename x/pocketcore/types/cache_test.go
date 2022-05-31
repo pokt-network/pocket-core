@@ -22,7 +22,7 @@ func InitCacheTest() {
 	// init needed maps for cache
 	servicerPk := GetRandomPrivateKey()
 
-	InitLiteNode(servicerPk)
+	InitLightNode(servicerPk)
 
 }
 

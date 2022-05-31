@@ -426,7 +426,7 @@ func LoadLightNodes() {
 	if err == nil {
 		pk, err1 := crypto.PrivKeyToPrivateKey(mainValidatorPk.PrivKey)
 		if err1 == nil {
-			types.InitLiteNode(pk)
+			types.InitLightNode(pk)
 		} else {
 			log2.Println("Failed to convert main validator private key to ed25519 private key struct")
 		}
@@ -439,7 +439,7 @@ func LoadLightNodes() {
 	lightNodesFilePath := datadir + FS + GlobalConfig.PocketConfig.LightNodesKeyFileName
 	lightNodes := loadLightNodesFromFile(lightNodesFilePath)
 	for _, lightNode := range lightNodes {
-		types.InitLiteNode(lightNode)
+		types.InitLightNode(lightNode)
 	}
 }
 

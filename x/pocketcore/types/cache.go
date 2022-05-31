@@ -298,7 +298,7 @@ func GetSessionWithNodeAddress(header SessionHeader, address *sdk.Address) (sess
 	return
 }
 
-func InitLiteNode(pk crypto.PrivateKey) {
+func InitLightNode(pk crypto.PrivateKey) {
 
 	if GlobalLightNodesPrivateKeyMap == nil {
 		GlobalLightNodesPrivateKeyMap = make(map[string]crypto.PrivateKey)
