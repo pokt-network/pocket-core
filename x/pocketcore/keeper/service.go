@@ -154,8 +154,10 @@ func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayRe
 	// track the relay time
 	relayTime := time.Since(relayTimeStart)
 	// add to metrics
-	pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()))
-	pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain)
+	go func() {
+		pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()))
+		pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain)
+	}()
 	return resp, nil
 }
 
