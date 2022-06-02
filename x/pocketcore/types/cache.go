@@ -34,7 +34,7 @@ var (
 
 	GlobalLightNodesPrivateKeyMap map[string]crypto.PrivateKey
 
-	globalEvidenceSealedMapMap map[string]sync.Map
+	globalEvidenceSealedMapMap map[string]*sync.Map
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
@@ -303,17 +303,17 @@ func InitLightNode(pk crypto.PrivateKey) {
 	if GlobalLightNodesPrivateKeyMap == nil {
 		GlobalLightNodesPrivateKeyMap = make(map[string]crypto.PrivateKey)
 		globalEvidenceCacheMap = make(map[string]*CacheStorage)
-		globalEvidenceSealedMapMap = make(map[string]sync.Map)
+		globalEvidenceSealedMapMap = make(map[string]*sync.Map)
 		globalSessionCacheMap = make(map[string]*CacheStorage)
 	}
 
-	key := sdk.Address(pk.PublicKey().Address()).String()
+	key := sdk.GetAddress(pk.PublicKey()).String()
 	fmt.Println("Adding " + key + " as a light node")
 
 	globalEvidenceCacheMap[key] = new(CacheStorage)
 	globalEvidenceCacheMap[key].Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"_"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)
 
-	globalEvidenceSealedMapMap[key] = sync.Map{}
+	globalEvidenceSealedMapMap[key] = &sync.Map{}
 
 	globalSessionCacheMap[key] = new(CacheStorage)
 	globalSessionCacheMap[key].Init(GlobalPocketConfig.DataDir, "", GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxSessionCacheEntries, true)
@@ -502,7 +502,7 @@ func SetEvidenceWithNodeAddress(evidence Evidence, address *sdk.Address) {
 	if err != nil {
 		return
 	}
-	globalEvidenceCacheMap[address.String()].Set(key, evidence)
+	globalEvidenceCacheMap[address.String()].SetWithNodeAddress(key, evidence, address)
 }
 
 // "DeleteEvidence" - Remove the GOBEvidence from the stores
@@ -527,9 +527,10 @@ func DeleteEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceTy
 	}
 	// delete from cache
 
-	globalEvidenceCacheMap[address.String()].Delete(key)
-	syncMap := globalEvidenceSealedMapMap[address.String()]
-	syncMap.Delete(header.HashString())
+	addr := address.String()
+	globalEvidenceCacheMap[addr].Delete(key)
+	sealedMap := globalEvidenceSealedMapMap[addr]
+	sealedMap.Delete(header.HashString())
 	return nil
 }
 
@@ -565,7 +566,7 @@ func ClearEvidence() {
 func ClearEvidenceWithNodeAddress(address *sdk.Addresses) {
 	if globalEvidenceCacheMap != nil {
 		globalEvidenceCacheMap[address.String()].Clear()
-		globalEvidenceSealedMapMap[address.String()] = sync.Map{}
+		globalEvidenceSealedMapMap[address.String()] = &sync.Map{}
 	}
 }
 

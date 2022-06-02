@@ -141,20 +141,25 @@ func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *s
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("could not delete evidence is not sealed, could cause a relay leak: %s", err.Error()))
 			}
+			// TODO: why is this not existing with a continue?
 		}
+
 		if evidence.NumOfProofs != claim.TotalProofs {
 			err := pc.DeleteEvidenceWithNodeAddress(claim.SessionHeader, claim.EvidenceType, addr)
 			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
 			}
+			// TODO: why is this not existing with a continue
 		}
+
 		// get the session context
 		sessionCtx, err := ctx.PrevCtx(claim.SessionHeader.SessionBlockHeight)
 		if err != nil {
 			ctx.Logger().Info(fmt.Sprintf("could not get Session Context, ignoring pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 			continue
 		}
+
 		// generate the needed pseudorandom index using the information found in the first transaction
 		index, err := k.getPseudorandomIndex(ctx, claim.TotalProofs, claim.SessionHeader, sessionCtx)
 		if err != nil {
