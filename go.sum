@@ -157,6 +157,8 @@ github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870/go.mod h1:5tD+ne
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/fatih/color v1.12.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
+github.com/fiagdao/tendermint v0.0.0-20220606074044-85220b27145d h1:DKKPefE0CvRpXRWpyb88f/79LmhZF5KdIH94jICpB7g=
+github.com/fiagdao/tendermint v0.0.0-20220606074044-85220b27145d/go.mod h1:wnGPuEk2hA1XJ/5tVIgmkdAXzvwonvaTUGSO7L679u0=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/fortytw2/leaktest v1.3.0 h1:u8491cBMTQ8ft8aeV+adlcytMZylmA5nnwwkRZjI8vw=
 github.com/fortytw2/leaktest v1.3.0/go.mod h1:jDsjWgpAGjm2CA7WthBh/CdZYEPF31XHquHwclZch5g=
@@ -482,8 +484,6 @@ github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pkg/profile v1.2.1/go.mod h1:hJw3o1OdXxsrSjjVksARp5W95eeEaEfptyVZyv6JUPA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/pokt-network/tendermint v0.32.11-0.20220420160934-de1729fc7dba h1:Fc7cRJrE7LhMf9dOFnI+EystuncZRpxpUKaxg/K8kd0=
-github.com/pokt-network/tendermint v0.32.11-0.20220420160934-de1729fc7dba/go.mod h1:jpUvUU2sHmJ6LT0Dz6DYwq2yceCD566zjspJxAtydDg=
 github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba h1:u2yqCF5l3Kaz8fra6A023nx9Bsfj+KCm2t5xEO4weOo=
 github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba/go.mod h1:7TGWH92hEbEFVzNJxGi8Ka0O+OohcLLjZCxco/xMrWY=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=

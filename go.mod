@@ -74,6 +74,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/tendermint/tendermint => github.com/pokt-network/tendermint v0.32.11-0.20220713165017-a165a87b48af
+replace github.com/tendermint/tendermint => github.com/fiagdao/tendermint v0.0.0-20220606074044-85220b27145d
 
 replace github.com/tendermint/tm-db => github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba

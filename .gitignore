@@ -13,6 +13,7 @@
 
 # Ignore vendor folder: every environment needs to build their own based on package management.
 vendor/
+pocket
 
 # Log files should be ignored
 *.log
