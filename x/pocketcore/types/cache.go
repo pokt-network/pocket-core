@@ -308,7 +308,11 @@ func InitLightNode(pk crypto.PrivateKey) {
 	}
 
 	key := sdk.GetAddress(pk.PublicKey()).String()
-	fmt.Println("Adding " + key + " as a light node")
+	_, exists := GlobalLightNodesPrivateKeyMap[key]
+	if exists {
+		fmt.Println( key + " already added as a light node")
+		return
+	}
 
 	globalEvidenceCacheMap[key] = new(CacheStorage)
 	globalEvidenceCacheMap[key].Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"_"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)

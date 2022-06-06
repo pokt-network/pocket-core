@@ -441,6 +441,9 @@ func LoadLightNodes() {
 	for _, lightNode := range lightNodes {
 		types.InitLightNode(lightNode)
 	}
+	if len(types.GlobalLightNodesPrivateKeyMap) <= 1 {
+		log2.Fatal("Lean pocket enabled with <= 1 light node added")
+	} 
 }
 
 func InitLogger() (logger log.Logger) {
