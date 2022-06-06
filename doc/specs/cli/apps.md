@@ -7,7 +7,7 @@ description: Functions for Application management.
 ## Stake an App / Update Stake
 
 ```text
-pocket app stake <fromAddr> <amount> <relayChainIDs> <chainID> <fee>
+pocket apps stake <fromAddr> <amount> <relayChainIDs> <chainID> <fee>
 ```
 
 Stakes the Application into the network, making it available to receive service. Prompts the user for the `<fromAddr>`
@@ -37,7 +37,7 @@ Transaction submitted with hash: <Transaction Hash>
 ## Unstake an App
 
 ```text
-pocket app unstake <fromAddr> <chainID> <fee>
+pocket apps unstake <fromAddr> <chainID> <fee>
 ```
 
 Unstakes an Application from the `<chainID>` network, changing its status to `Unstaking`. Prompts the user for
@@ -58,7 +58,7 @@ Transaction submitted with hash: <Transaction Hash>
 ## Create an Application Authentication Token \(AAT\)
 
 ```text
-pocket app create-aat <appAddr> <clientPubKey>
+pocket apps create-aat <appAddr> <clientPubKey>
 ```
 
 Creates a signed application authentication token \(version `0.0.1` of the AAT spec\), that can be embedded into
