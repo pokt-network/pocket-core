@@ -94,3 +94,13 @@ Beta releases in Pocket Core are the first step for changes to be deployed. Mark
 
 RC (or release candidates) are releases meant for production deployment. Release candidates have been tested extensively by the developer and other third parties, and are of stable behaviour and considered safe. Your proposal can be considered released once it is included in a Release Candidate and has been deployed to `Pocket Mainnet`.
 
+### Security Bugs Disclosure
+
+#### Starting a disclosure
+
+To start the disclosure process, please send an email containing all evidence, documents and/or links for the vulnerability you are disclosing to `pocket-core-security@pokt.network`. You will receive a response within a 24 hour window outlining next steps.
+
+#### Public disclosure
+
+Once the vulnerability has been patched and deployed to the appropiate environments, the team will create a public disclosure announcement, acknowledging the vulnerability and giving credit to the original discloser or disclosers in case more than one person identifies and discloses the vulnerability.
+
