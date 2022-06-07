@@ -65,7 +65,7 @@ Pocket Core contains unit tests where applicated and it is encouraged that if yo
 
 #### Regression Testing
 
-The Regression Testing suite of Pocket Core is a series of scenarios that need to be manually run and submitted in a Regression Testing Report with each PR. The test suite can be found [here](). Please add any scenarios regarding your changes as needed.
+The Regression Testing suite of Pocket Core is a series of scenarios that need to be manually run and submitted in a Regression Testing Report with each PR. The test suite can be found [here](./doc/qa/regression). Please add any scenarios regarding your changes as needed.
 
 ### The Pull Request Process
 

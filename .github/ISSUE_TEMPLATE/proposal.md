@@ -1,6 +1,6 @@
 ---
 name: Contribution Proposal about: Submit a contribution proposal to Pocket Core title: "[CONTRIBUTION PROPOSAL]"
-labels: enhancement assignees: ''
+labels: 'proposal' enhancement assignees: ''
 
 ---
 

@@ -1,0 +1,7 @@
+Title,Multi-signature accounts,,,,,,
+Issue/Branch,-,,,,,,
+Assignee,-,,,,,,
+Scenarios,Case ID,Executed On,Status (Pass/Failed/Not Tested),Actual Results,Code Release Version,Comments,Linked issue (bug)
+create multi signature account,190,,,,,,
+"create multi signature account, invalid character",191,,,,,,
+build a multi-signature transaction,192,,,,,,
