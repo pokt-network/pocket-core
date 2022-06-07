@@ -4,6 +4,15 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	log2 "log"
+	"os"
+	fp "path/filepath"
+	"strings"
+	"sync"
+	"time"
+
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/pokt-network/pocket-core/baseapp"
@@ -37,15 +46,6 @@ import (
 	"github.com/tendermint/tendermint/rpc/client/local"
 	dbm "github.com/tendermint/tm-db"
 	"golang.org/x/crypto/ssh/terminal"
-	"io"
-	"io/ioutil"
-	log2 "log"
-	"os"
-	fp "path/filepath"
-	"strings"
-	"sync"
-	"syscall"
-	"time"
 )
 
 var (
@@ -153,6 +153,17 @@ func InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string) {
 			log2.Fatalf("cannot write default config to json file: " + err.Error())
 		}
 	}
+
+	// Config Checks
+	// Mempool Cache size should be at least the size of the Mempool Size
+	if c.TendermintConfig.Mempool.CacheSize < c.TendermintConfig.Mempool.Size {
+		log2.Fatalf("Mempool cache size: %v should be larger or equal to Mempool size: %v. Check your config.json", c.TendermintConfig.Mempool.CacheSize, c.TendermintConfig.Mempool.Size)
+	}
+	//Indexer null block
+	if c.TendermintConfig.TxIndex.Indexer == "null" {
+		log2.Fatalf("TxIndexer cannot be null, type should be kv. Check your config.json")
+	}
+
 	// flags trump config file
 	if tmNode != "" {
 		c.PocketConfig.TendermintURI = tmNode
@@ -730,7 +741,7 @@ func Credentials(pwd string) string {
 	if pwd != "" && strings.TrimSpace(pwd) != "" {
 		return strings.TrimSpace(pwd)
 	} else {
-		bytePassword, err := terminal.ReadPassword(syscall.Stdin)
+		bytePassword, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 		if err != nil {
 			fmt.Println(err)
 		}

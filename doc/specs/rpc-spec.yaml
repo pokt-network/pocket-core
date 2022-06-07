@@ -789,7 +789,7 @@ paths:
                 staking_status: 0x02
                 page: 1
                 per_page: 100
-                chain: ""
+                blockchain: ""
                 jailed_status: 1
               height: 2
         required: true

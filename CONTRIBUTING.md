@@ -1,22 +1,106 @@
-## How to contribute
+## Pocket Core Contribution Guide
 
-Pocket Core is an open source project, and as such we welcome any contribution from anyone on the internet. Please read
-our [Developer Setup Guide](https://github.com/pokt-network/pocket-core/wiki/Developer-Setup-Guide) on how get started.
+This Contribution Guide aims to guide contributors through the process of proposing, developing, testing and upstreaming changes to the Pocket Core client.
 
-Please fork, code and submit a Pull Request for the Pocket Core Team to review and merge. We ask that you please follow
-the guidelines below in order to submit your contributions for review:
+### Proposing changes
 
-### High impact or architectural changes
+#### Communicating proposals
 
-Reach out to us on [Telegram](https://t.me/POKTnetwork) and start a discussion with the Pocket Core Team regarding your
-change before you start working. Communication is key for open source projects and asynchronous contributions.
+The first step towards contribution is to effectively propose your change by opening up a new issue using the **Contribution Proposal** issue template. Communicating your proposal effectively will be of the upmost importance throughout the lifecycle of your contribution, so make sure your description is clear and concise.
 
-For an active research forum, checkout and post on [our forum](https://research.pokt.network).
+#### Consensus-breaking changes
 
-### Coding style
+A consensus-breaking change means a change that would require 66% of the Validator Power in the network to be adopted. Furthermore these changes need to be voted in and approved by the DAO. To propose a consensus-breaking change please follow the Pocket Improvement Proposal documentation found [here](https://docs.pokt.network/home/paths/governor/submit-a-proposal/pip-pocket-improvement-proposal).
+
+#### Quality Assurance
+
+Proposals must be accompanied by a Quality Assurance plan outlining if implemented, how they will be tested end-to-end. More on this on the Quality Assurance section of this guide.
+
+### Development Guide
+
+#### Forking Pocket Core
+
+The first step towards modifying Pocket Core is to fork the repository. All changes will be upstreamed from forks. To fork a repository on Github please follow this [guide](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
+
+Within your fork you are free to work however you want, but keep in mind that in the end you need to Pull Request into the official Pocket Core repository so your changes are included within an official release.
+
+#### Setting up the Go Environment
+
+Please follow the [Official Installation Guide](https://go.dev/doc/install) to complete this step. Pocket Core uses `go 1.17` so make sure to install the appropiate version before beginning development.
+
+#### Installing dependencies
+
+Pocket Core uses Go Modules, listed in the `go.mod` file in the root of the project. To add a new dependency to the `go.mod` follow the official guide [here](https://pkg.go.dev/cmd/go#hdr-Add_dependencies_to_current_module_and_install_them).
+
+##### Forked dependencies
+
+Pocket Core uses 2 forked dependencies:
+
+- `github.com/pokt-network/tendermint` which is a fork of `github.com/tendermint/tendermint`.
+- `github.com/pokt-network/tm-db` which is a fork of `github.com/tendermint/tm-db`.
+
+If you need to make changes to these dependencies, you will need to fork them and follow all the steps in this guide to this point before proceeding further.
+
+#### Building Pocket Core Binary
+
+From the root of the project run:
+
+`go build -o pocket app/cmd/pocket_core/main.go`
+
+And you will build a `pocket` binary in the root folder which can now be run.
+
+#### Coding style
 
 - Code must adhere to the official Go formatting guidelines (i.e. uses [gofmt](https://golang.org/cmd/gofmt)).
-- (Optional) Use [Editor Config](https://editorconfig.org) to help your Text Editor keep the same formatting used
-  throughout the project.
 - Code must be documented adhering to the official Go commentary guidelines.
 - Pull requests need to be based on and opened against the `staging` branch.
+
+### Quality Assurance
+
+When proposing new changes, you also need to propose how these changes will be tested and added to the project's Unit Testing and Regression Testing suites.
+
+#### Unit Testing
+
+Pocket Core contains unit tests where applicated and it is encouraged that if you are making changes to the codebase, that you include the appropiate unit tests which will be run by the repository configured CI/CD (Continous Integration/Continous Deployment) pipeline.
+
+#### Regression Testing
+
+The Regression Testing suite of Pocket Core is a series of scenarios that need to be manually run and submitted in a Regression Testing Report with each PR. The test suite can be found [here](./doc/qa/regression). Please add any scenarios regarding your changes as needed.
+
+### The Pull Request Process
+
+#### Submitting a PR
+
+Open a PR against the `staging` branch in the official repository: `https://github.com/pokt-network/pocket-core`. To learn how to open a PR in Github please follow this [guide](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+
+#### The PR review process
+
+Every Pull Request will require at least 1 reviewer from the Core team. Every proposal is different in scope and complexity, so the following points will increase the likelihood of you submitting a successful Pull Request:
+
+- Your proposal issue is clear, concise and informative.
+- Your PR is within the scope of the proposal.
+- Your code follows the code style outlined in this guide.
+- Your Quality Assurance additions are clear and well documented.
+- The CI/CD pipeline automated testing is **all green**.
+- You provide any necessary documentation for your implementation and reasoning in implementation decisions.
+
+### Releases
+
+#### Beta releases
+
+Beta releases in Pocket Core are the first step for changes to be deployed. Marked with the `BETA-` prefix in the release tag, these releases are the first step to test changes in testing environments such as `Pocket Testnet` and other local environments. A Beta release should not be used in production, and if used, it should be at that user's own risk.
+
+#### Release Candidate releases
+
+RC (or release candidates) are releases meant for production deployment. Release candidates have been tested extensively by the developer and other third parties, and are of stable behaviour and considered safe. Your proposal can be considered released once it is included in a Release Candidate and has been deployed to `Pocket Mainnet`.
+
+### Security Bugs Disclosure
+
+#### Starting a disclosure
+
+To start the disclosure process, please send an email containing all evidence, documents and/or links for the vulnerability you are disclosing to `pocket-core-security@pokt.network`. You will receive a response within a 24 hour window outlining next steps.
+
+#### Public disclosure
+
+Once the vulnerability has been patched and deployed to the appropiate environments, the team will create a public disclosure announcement, acknowledging the vulnerability and giving credit to the original discloser or disclosers in case more than one person identifies and discloses the vulnerability.
+

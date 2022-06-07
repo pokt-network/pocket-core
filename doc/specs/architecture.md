@@ -1,5 +1,6 @@
 ---
-description: >- Pocket Core is the Official Golang implementation of the Pocket Network protocol.
+description: >-
+  Pocket Core is the Official Golang implementation of the Pocket Network protocol.
 ---
 
 # Pocket Core Architecture
@@ -80,9 +81,9 @@ not use close to their maximum relay capacity.
 
 _Alternatives:_
 
-* Pocket Core could store the evidence ordered with the tradeoff of quality of service and speed to the client. This
+- Pocket Core could store the evidence ordered with the tradeoff of quality of service and speed to the client. This
   comes with a compute benefit at the time of the Merkle Tree generation \(proof/claim submisison\)
-* Pocket Core could fix the array to the maximum size for each application, because the relay capacity is known at the
+- Pocket Core could fix the array to the maximum size for each application, because the relay capacity is known at the
   time of array creation. This comes with a tradeoff in higher memory consumption but for a decrease in compute.
 
 **Bloom Filter**
@@ -99,7 +100,7 @@ membership with O\(1\) time
 
 _Alternatives:_
 
-* Use a standard Golang Map to store the Evidence and just use that structure to check for membership. Also O\(1\) time.
+- Use a standard Golang Map to store the Evidence and just use that structure to check for membership. Also O\(1\) time.
   The tradeoff here is more memory because the membership is stored as a hash vs bits.
 
 ## Automatic Randomized Proof and Claim Submissions
@@ -124,7 +125,7 @@ transactions.
 
 _Alternative_
 
-* Pocket Core can ask the users to manually submit the claim and proof transaction or offload the work to a third party
+- Pocket Core can ask the users to manually submit the claim and proof transaction or offload the work to a third party
   application. The tradeoff is both convenience and robustness of the application
 
 **Address Randomization**
@@ -150,8 +151,8 @@ alphanumerical ordering at insertion
 time. [https://www.zanopha.com/docs/elen.pdf](https://www.zanopha.com/docs/elen.pdf) Since the keys are sorted
 alphanumerically from the start, we don't have to:
 
-* Load all results to memory
-* Paginate and sort transactions after
+- Load all results to memory
+- Paginate and sort transactions after
 
 This indexer inserts in sorted order so it can paginate and return based on the db iterator resulting in a significant
 reduction in resource consumption.
@@ -159,10 +160,10 @@ reduction in resource consumption.
 The custom pocket core transaction indexer also reduces the scope of the Search\(\) functionality to optimize strictly
 for the following use cases:
 
-* BlockTxs \(Get transactions at a certain height\)
-* AccountTxs \(Get transactions for a certain account \(sent and received\)\)
+- BlockTxs \(Get transactions at a certain height\)
+- AccountTxs \(Get transactions for a certain account \(sent and received\)\)
 
-The custom pocket core transaction indexer also injects the message\_type into the struct to provide an easier method of
+The custom pocket core transaction indexer also injects the message_type into the struct to provide an easier method of
 parsing the transactions. `json:"message_type"`
 
 ## Edit Stake
@@ -202,27 +203,26 @@ type Validator struct {
 ## Max Validators & Separation of Service and Consensus
 
 The `Max_Validators` DAO param assigns a ceiling threshold on the number of _Tendermint Validators_. However, it does
-not limit the number of _Servicer Nodes_ in the network. Max\_Validators caps _Tendermint Validators_ to help with the
-current P2P bottlenecks that exist today. Less Validators = Less Consensus P2P traffic. Max\_Validators is not a static
-floor. For instance, if the Max\_Validator threshold is exceeded the Validator with the lowest amount of _Stake_ out of
+not limit the number of _Servicer Nodes_ in the network. Max*Validators caps \_Tendermint Validators* to help with the
+current P2P bottlenecks that exist today. Less Validators = Less Consensus P2P traffic. Max*Validators is not a static
+floor. For instance, if the Max_Validator threshold is exceeded the Validator with the lowest amount of \_Stake* out of
 all the the Validators is removed as a Tendermint Validator and simply exists as a _Servicer_. These changes are likely
 to happen in between blocks as new Validators stake in the network.
 
 Summary:
 
-* Less Validators = Less Consensus P2P traffic
-* The number of Service Nodes is limited
-* A Validator can join the Tendermint Validators set by staking more than the lowest staked Tendermint Validator which
+- Less Validators = Less Consensus P2P traffic
+- The number of Service Nodes is limited
+- A Validator can join the Tendermint Validators set by staking more than the lowest staked Tendermint Validator which
   in turn changes the lowest state validator into just being a Service Node.
 
-## Max\_Applications
+## Max_Applications
 
-Max\_Applications is a parameter assigning a ceiling threshold on the number of Applications able to stake in Pocket
+Max_Applications is a parameter assigning a ceiling threshold on the number of Applications able to stake in Pocket
 Network.
 
-The rules for Max\_Applications are simple:
+The rules for Max_Applications are simple:
 
-* Applications cannot stake \(no matter what amount\) if this parameter is enabled and MaxApplications threshold is
+- Applications cannot stake \(no matter what amount\) if this parameter is enabled and MaxApplications threshold is
   reached
-* If an Application unstakes a slot will open up
-
+- If an Application unstakes a slot will open up

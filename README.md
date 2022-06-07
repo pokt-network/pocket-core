@@ -80,7 +80,7 @@ To run the Pocket Core unit tests, use the go testing tools and the `go test ./.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://github.com/pokt-network/pocket-core/blob/master/README.md) for details on
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on
 contributions and the process of submitting pull requests.
 
 ## Support & Contact

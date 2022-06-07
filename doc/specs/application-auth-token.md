@@ -1,6 +1,7 @@
 ---
-description: >- Version 0.0.1. The Pocket Network protocol contemplates the use of Application Auth Tokens to allow
-Application Clients to access Service Nodes on behalf of the Application.
+description: >-
+  Version 0.0.1. The Pocket Network protocol contemplates the use of Application Auth Tokens to allow
+  Application Clients to access Service Nodes on behalf of the Application.
 ---
 
 # Application Authentication Token
@@ -61,4 +62,3 @@ AAT {
 `Message = SHA3-256(AATBytes)`
 
 `AAT.Signature = ED25519.Sign(Message)`
-

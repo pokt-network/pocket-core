@@ -1,6 +1,7 @@
 ---
-description: >- The accounts namespace handles all account related interactions, from creating and deleting accounts, to
-importing and exporting accounts.
+description: >-
+  The accounts namespace handles all account related interactions, from creating and deleting accounts, to
+  importing and exporting accounts.
 ---
 
 # Accounts Namespace
@@ -30,7 +31,7 @@ Lists an account address and public key.
 
 Arguments:
 
-* `<address>`: The address to be fetched.
+- `<address>`: The address to be fetched.
 
 Example output:
 
@@ -68,7 +69,7 @@ for a passphrase to encrypt the generated keypair. _**Make sure to keep a note o
 
 Arguments:
 
-* `<private-key-hex>`: Target raw private key bytes to be stored on keybase.
+- `<private-key-hex>`: Target raw private key bytes to be stored on keybase.
 
 Example output:
 
@@ -89,7 +90,7 @@ keep a note of this passphrase in a secure place.**_
 
 Arguments:
 
-* `<armoredJSONFile>`: Target file with encrypted encoded private key.
+- `<armoredJSONFile>`: Target file with encrypted encoded private key.
 
 Example output:
 
@@ -109,11 +110,11 @@ an encryption passphrase for the exported account. _**Make sure to keep a note o
 
 Options:
 
-* `--path`: Target path to send armored private key.
+- `--path`: Target path to send armored private key.
 
 Arguments:
 
-* `<address>`: The address of the account to be exported.
+- `<address>`: The address of the account to be exported.
 
 Example output:
 
@@ -132,7 +133,7 @@ RECOMMENDED FOR SECURITY REASONS, USE AT YOUR OWN RISK.**_
 
 Arguments:
 
-* `<address>`: The address of the account to be exported.
+- `<address>`: The address of the account to be exported.
 
 Example output:
 
@@ -150,7 +151,7 @@ Deletes an account from the Keybase. Will prompt the user for the account passph
 
 Arguments:
 
-* `<address>`: The address to be deleted.
+- `<address>`: The address to be deleted.
 
 Example output:
 
@@ -168,7 +169,7 @@ Deletes an account from the keybase without a passphrase.
 
 Arguments:
 
-* `<address>`: The address to be deleted.
+- `<address>`: The address to be deleted.
 
 Example output:
 
@@ -194,7 +195,7 @@ Sets a new main validator in the `priv_val` file.
 
 Arguments:
 
-* `<address>`: Target address.
+- `<address>`: Target address.
 
 ## Update an Account's Passphrase
 
@@ -207,7 +208,7 @@ account passphrase.
 
 Arguments:
 
-* `<address>`: Target address.
+- `<address>`: Target address.
 
 Example output:
 
@@ -226,8 +227,8 @@ passphrase.
 
 Arguments:
 
-* `<address>`: Target address.
-* `<msg>`: The message to be signed in hex string format.
+- `<address>`: Target address.
+- `<msg>`: The message to be signed in hex string format.
 
 Example output:
 
@@ -246,12 +247,12 @@ Sends `<amount>` uPOKT from `<fromAddr>` to `<toAddr>`. Prompts the user for `<f
 
 Arguments:
 
-* `<fromAddr>`: Sender address.
-* `<toAddr>`: Recipient address for the transaction.
-* `<amount>`: The amount of uPOKT to be sent.
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
-* `<memo>`: Written message.
+- `<fromAddr>`: Sender address.
+- `<toAddr>`: Recipient address for the transaction.
+- `<amount>`: The amount of uPOKT to be sent.
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
+- `<memo>`: Written message.
 
 Example output:
 
@@ -269,8 +270,8 @@ Sends presigned transaction through Tendermint node.
 
 Arguments:
 
-* `<fromAddr>`: Sender address.
-* `<txBytes>`: Encoded and signed byte representation of the tx.
+- `<fromAddr>`: Sender address.
+- `<txBytes>`: Encoded and signed byte representation of the tx.
 
 ## Create a Multi-sig Account
 
@@ -283,12 +284,12 @@ signatures from all accounts.
 
 Important notes:
 
-* Pocket Core does not save the multi-sig account in your keybase.
-* You will need to remember the order in which the public keys have been assigned to the multi-sig account.
+- Pocket Core does not save the multi-sig account in your keybase.
+- You will need to remember the order in which the public keys have been assigned to the multi-sig account.
 
 Arguments:
 
-* `<hex-pubkeys>`: ordered comma separated keys. _**WARNING: changing the order creates a different address.**_
+- `<hex-pubkeys>`: ordered comma separated keys. _**WARNING: changing the order creates a different address.**_
 
 ## Build a Multi-sig Transaction
 
@@ -300,12 +301,12 @@ Build and sign a multisignature transaction from scratch. Result is hex encoded 
 
 Arguments:
 
-* `<signer-address>`: Address building & signing.
-* `<json-message>`: Message structure for the transaction.
-* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
+- `<signer-address>`: Address building & signing.
+- `<json-message>`: Message structure for the transaction.
+- `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
   account.**_
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
 
 ## Sign a Multi-sig Transaction
 
@@ -318,12 +319,12 @@ standard transaction object.
 
 Arguments:
 
-* `<signer-address>`: Address building & signing.
-* `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
-* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
+- `<signer-address>`: Address building & signing.
+- `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
+- `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
   account.**_
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
 
 ## Sign a Multi-sig Transaction as the Next Signer
 
@@ -336,9 +337,9 @@ MUST be the next signer \(in order of public keys in the multisignature\) or the
 
 Arguments:
 
-* `<signer-address>`: Address building & signing.
-* `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
-* `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
+- `<signer-address>`: Address building & signing.
+- `<hex-stdtx>`: Prebuilt hexadecimal standard transaction.
+- `<hex-pubkeys>`: Ordered comma separated keys. _**WARNING: must be in the same order as when you created the multi-sig
   account.**_
-* `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
+- `<chainID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
