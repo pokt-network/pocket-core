@@ -1,0 +1,11 @@
+Title,Disptach/Relay/Challenge RPC,,,,,,
+Issue/Branch,-,,,,,,
+Assignee,-,,,,,,
+Scenarios,Case ID,Executed On,Status (Pass/Failed/Not Tested),Actual Results,Code Release Version,Comments,Linked issue (bug)
+Sends request to check dispatch that will be servicing your requests for the session.,295,,,,,,
+"Given a transaction, the relay should send that transaction and respond with the correct message of success",296,,,,,,
+User Submits Challenge Request,297,,,,,,
+Challenge Transaction submitted to the network,298,,,,,,
+User Submits Challenge Request without majority proof,299,,,,,,
+"Given a transaction, the relay should send that transaction and respond with the correct message of success",300,,,,,,
+chains.json contains url with self signed cert,301,,,,,,

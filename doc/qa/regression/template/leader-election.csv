@@ -1,0 +1,6 @@
+Title,Leader election and distribution overtime,,,,,,
+Issue/Branch,-,,,,,,
+Assignee,-,,,,,,
+Scenarios,Case ID,Executed On,Status (Pass/Failed/Not Tested),Actual Results,Code Release Version,Comments,Linked issue (bug)
+Same power validators,132,,,,,,
+Different Validator stake,133,,,,,,
