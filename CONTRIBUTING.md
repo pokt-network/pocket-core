@@ -16,6 +16,18 @@ A consensus-breaking change means a change that would require 66% of the Validat
 
 Proposals must be accompanied by a Quality Assurance plan outlining if implemented, how they will be tested end-to-end. More on this on the Quality Assurance section of this guide.
 
+### Request for proposals
+
+A request for proposals (RFP) is used when the author wants to specify a desired behaviour of the software, but they don't have enough context or information to make a proposal for the change, inviting others to propose solutions and surfacing the need for the desired behaviour.
+
+#### Browsing RFPs
+
+Issues in the repository marked with the `rfp` tag will be considered requests for proposals. More than one proposal could be linked to a RFP which should be tracked via issue linking in the RFP issue.
+
+#### Submitting a RFP
+
+To submit a RFP, please use the Request for Proposals issue template when creating a new issue. This template will automatically include the tag and any necessary information to be able to move on with the RFP.
+
 ### Development Guide
 
 #### Forking Pocket Core
