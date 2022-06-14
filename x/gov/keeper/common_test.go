@@ -2,12 +2,12 @@ package keeper
 
 import (
 	"github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/store/slim"
 	"math/rand"
 	"testing"
 
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/auth"
@@ -54,10 +54,9 @@ func getRandomValidatorAddress() sdk.Address {
 func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keeper) {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db, false, 5000000)
+	ms := slim.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(sdk.ParamsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(sdk.ParamsTKey, sdk.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -82,7 +81,7 @@ func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keep
 	akSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	ak := keeper.NewKeeper(cdc, keyAcc, akSubspace, maccPerms)
 	ak.GetModuleAccount(ctx, "FAKE")
-	pk := NewKeeper(cdc, sdk.ParamsKey, sdk.ParamsTKey, govTypes.DefaultParamspace, ak, akSubspace)
+	pk := NewKeeper(cdc, sdk.ParamsKey, govTypes.DefaultParamspace, ak, akSubspace)
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
 	)

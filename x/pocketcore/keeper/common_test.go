@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/store/slim"
 	"github.com/tendermint/tendermint/privval"
 	"math"
 	"math/big"
@@ -15,7 +16,6 @@ import (
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
-	"github.com/pokt-network/pocket-core/store"
 	storeTypes "github.com/pokt-network/pocket-core/store/types"
 	pocketTypes "github.com/pokt-network/pocket-core/types"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -87,7 +87,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
-	tkeyParams := sdk.ParamsTKey
 	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
 	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -98,13 +97,12 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	keys["application"] = appsKey
 
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db, false, 5000000)
+	ms := slim.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	err = ms.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -453,22 +451,6 @@ func (_m *Ctx) IsPrevCtx() bool {
 	return true
 }
 
-// BlockGasMeter provides a mock function with given fields:
-func (_m *Ctx) BlockGasMeter() storeTypes.GasMeter {
-	ret := _m.Called()
-
-	var r0 storeTypes.GasMeter
-	if rf, ok := ret.Get(0).(func() storeTypes.GasMeter); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.GasMeter)
-		}
-	}
-
-	return r0
-}
-
 // BlockHeader provides a mock function with given fields:
 func (_m *Ctx) BlockHeader() abcitypes.Header {
 	ret := _m.Called()
@@ -606,22 +588,6 @@ func (_m *Ctx) EventManager() *pocketTypes.EventManager {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*pocketTypes.EventManager)
-		}
-	}
-
-	return r0
-}
-
-// GasMeter provides a mock function with given fields:
-func (_m *Ctx) GasMeter() storeTypes.GasMeter {
-	ret := _m.Called()
-
-	var r0 storeTypes.GasMeter
-	if rf, ok := ret.Get(0).(func() storeTypes.GasMeter); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.GasMeter)
 		}
 	}
 
@@ -783,22 +749,6 @@ func (_m *Ctx) PrevCtx(height int64) (pocketTypes.Context, error) {
 	return r0, r1
 }
 
-// TransientStore provides a mock function with given fields: key
-func (_m *Ctx) TransientStore(key storeTypes.StoreKey) storeTypes.KVStore {
-	ret := _m.Called(key)
-
-	var r0 storeTypes.KVStore
-	if rf, ok := ret.Get(0).(func(storeTypes.StoreKey) storeTypes.KVStore); ok {
-		r0 = rf(key)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.KVStore)
-		}
-	}
-
-	return r0
-}
-
 // TxBytes provides a mock function with given fields:
 func (_m *Ctx) TxBytes() []byte {
 	ret := _m.Called()
@@ -842,20 +792,6 @@ func (_m *Ctx) VoteInfos() []abcitypes.VoteInfo {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]abcitypes.VoteInfo)
 		}
-	}
-
-	return r0
-}
-
-// WithBlockGasMeter provides a mock function with given fields: meter
-func (_m *Ctx) WithBlockGasMeter(meter storeTypes.GasMeter) pocketTypes.Context {
-	ret := _m.Called(meter)
-
-	var r0 pocketTypes.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) pocketTypes.Context); ok {
-		r0 = rf(meter)
-	} else {
-		r0 = ret.Get(0).(pocketTypes.Context)
 	}
 
 	return r0
@@ -966,20 +902,6 @@ func (_m *Ctx) WithEventManager(em *pocketTypes.EventManager) pocketTypes.Contex
 	var r0 pocketTypes.Context
 	if rf, ok := ret.Get(0).(func(*pocketTypes.EventManager) pocketTypes.Context); ok {
 		r0 = rf(em)
-	} else {
-		r0 = ret.Get(0).(pocketTypes.Context)
-	}
-
-	return r0
-}
-
-// WithGasMeter provides a mock function with given fields: meter
-func (_m *Ctx) WithGasMeter(meter storeTypes.GasMeter) pocketTypes.Context {
-	ret := _m.Called(meter)
-
-	var r0 pocketTypes.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) pocketTypes.Context); ok {
-		r0 = rf(meter)
 	} else {
 		r0 = ret.Get(0).(pocketTypes.Context)
 	}

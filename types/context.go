@@ -15,9 +15,6 @@ import (
 	"github.com/gogo/protobuf/proto"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
-
-	"github.com/pokt-network/pocket-core/store/gaskv"
-	stypes "github.com/pokt-network/pocket-core/store/types"
 )
 
 /*
@@ -33,23 +30,20 @@ and standard additions here would be better just to add to the Context struct
 var GlobalCtxCache *Cache
 
 type Context struct {
-	ctx           context.Context
-	ms            MultiStore
-	blockstore    *store.BlockStore
-	header        abci.Header
-	chainID       string
-	txBytes       []byte
-	logger        log.Logger
-	voteInfo      []abci.VoteInfo
-	gasMeter      GasMeter
-	blockGasMeter GasMeter
-	checkTx       bool
-	minGasPrice   DecCoins
-	consParams    *abci.ConsensusParams
-	eventManager  *EventManager
-	appVersion    string
-	cachedStore   *Cache
-	isPrev        bool
+	ctx          context.Context
+	ms           MultiStore
+	blockstore   *store.BlockStore
+	header       abci.Header
+	chainID      string
+	txBytes      []byte
+	logger       log.Logger
+	voteInfo     []abci.VoteInfo
+	checkTx      bool
+	consParams   *abci.ConsensusParams
+	eventManager *EventManager
+	appVersion   string
+	cachedStore  *Cache
+	isPrev       bool
 }
 
 type Ctx interface {
@@ -61,10 +55,7 @@ type Ctx interface {
 	TxBytes() []byte
 	Logger() log.Logger
 	VoteInfos() []abci.VoteInfo
-	GasMeter() GasMeter
-	BlockGasMeter() GasMeter
 	IsCheckTx() bool
-	MinGasPrices() DecCoins
 	EventManager() *EventManager
 	BlockHeader() abci.Header
 	ConsensusParams() *abci.ConsensusParams
@@ -83,16 +74,11 @@ type Ctx interface {
 	WithTxBytes(txBytes []byte) Context
 	WithLogger(logger log.Logger) Context
 	WithVoteInfos(voteInfo []abci.VoteInfo) Context
-	WithGasMeter(meter GasMeter) Context
-	WithBlockGasMeter(meter GasMeter) Context
-	WithIsCheckTx(isCheckTx bool) Context
-	WithMinGasPrices(gasPrices DecCoins) Context
 	WithConsensusParams(params *abci.ConsensusParams) Context
 	WithEventManager(em *EventManager) Context
 	WithValue(key, value interface{}) Context
 	Value(key interface{}) interface{}
 	KVStore(key StoreKey) KVStore
-	TransientStore(key StoreKey) KVStore
 	CacheContext() (cc Context, writeCache func())
 	IsZero() bool
 	AppVersion() string
@@ -115,10 +101,7 @@ func (c Context) ChainID() string             { return c.chainID }
 func (c Context) TxBytes() []byte             { return c.txBytes }
 func (c Context) Logger() log.Logger          { return c.logger }
 func (c Context) VoteInfos() []abci.VoteInfo  { return c.voteInfo }
-func (c Context) GasMeter() GasMeter          { return c.gasMeter }
-func (c Context) BlockGasMeter() GasMeter     { return c.blockGasMeter }
 func (c Context) IsCheckTx() bool             { return c.checkTx }
-func (c Context) MinGasPrices() DecCoins      { return c.minGasPrice }
 func (c Context) EventManager() *EventManager { return c.eventManager }
 func (c Context) AppVersion() string          { return dropTag(c.appVersion) }
 func (c Context) ClearGlobalCache()           { c.cachedStore.Purge() }
@@ -178,8 +161,6 @@ func NewContext(ms MultiStore, header abci.Header, isCheckTx bool, logger log.Lo
 		chainID:      header.ChainID,
 		checkTx:      isCheckTx,
 		logger:       logger,
-		gasMeter:     stypes.NewInfiniteGasMeter(),
-		minGasPrice:  DecCoins{},
 		eventManager: NewEventManager(),
 		cachedStore:  GlobalCtxCache,
 	}
@@ -245,10 +226,10 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 		return c.WithBlockHeader(header), nil
 	}
 
-	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
-		return cachedCtx.(Context), nil
-	}
-	ms, err := (c.ms).(CommitMultiStore).LoadLazyVersion(height)
+	//if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
+	//	return cachedCtx.(Context), nil
+	//}
+	ms, err := (c.ms).(CommitMultiStore).LoadVersion(height)
 	if err != nil {
 		return Context{}, err
 	}
@@ -367,23 +348,8 @@ func (c Context) WithVoteInfos(voteInfo []abci.VoteInfo) Context {
 	return c
 }
 
-func (c Context) WithGasMeter(meter GasMeter) Context {
-	c.gasMeter = meter
-	return c
-}
-
-func (c Context) WithBlockGasMeter(meter GasMeter) Context {
-	c.blockGasMeter = meter
-	return c
-}
-
 func (c Context) WithIsCheckTx(isCheckTx bool) Context {
 	c.checkTx = isCheckTx
-	return c
-}
-
-func (c Context) WithMinGasPrices(gasPrices DecCoins) Context {
-	c.minGasPrice = gasPrices
 	return c
 }
 
@@ -427,12 +393,7 @@ func (c Context) Value(key interface{}) interface{} {
 
 // KVStore fetches a KVStore from the MultiStore.
 func (c Context) KVStore(key StoreKey) KVStore {
-	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.GasMeter(), stypes.KVGasConfig())
-}
-
-// TransientStore fetches a TransientStore from the MultiStore.
-func (c Context) TransientStore(key StoreKey) KVStore {
-	return gaskv.NewStore(c.MultiStore().GetKVStore(key), c.GasMeter(), stypes.TransientGasConfig())
+	return c.MultiStore().GetKVStore(key)
 }
 
 // CacheContext returns a new Context with the multi-store cached and a new

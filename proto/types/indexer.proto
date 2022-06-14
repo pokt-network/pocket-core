@@ -1,0 +1,17 @@
+syntax = "proto3";
+package types;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/pokt-network/pocket-core/types";
+option (gogoproto.goproto_stringer_all) = false;
+
+message TxResultSlim {
+	option (gogoproto.equal) = true;
+	option (gogoproto.stringer) = true;
+	uint32 height = 1;
+	uint32 Index = 2;
+	uint32 code = 3 [(gogoproto.casttype) = "CodeType"];
+	string codespace = 4 [(gogoproto.casttype) = "CodespaceType"];
+	bytes  Tx = 5;
+}

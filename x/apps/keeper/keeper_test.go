@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/store"
+	"github.com/pokt-network/pocket-core/store/slim"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/apps/types"
@@ -48,17 +48,15 @@ func TestKeepers_NewKeeper(t *testing.T) {
 
 			keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 			keyParams := sdk.ParamsKey
-			tkeyParams := sdk.ParamsTKey
 			nodesKey := sdk.NewKVStoreKey(nodestypes.StoreKey)
 			appsKey := sdk.NewKVStoreKey(types.StoreKey)
 
 			db := dbm.NewMemDB()
-			ms := store.NewCommitMultiStore(db, false, 5000000)
+			ms := slim.NewStore(db)
 			ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-			ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 			err := ms.LoadLatestVersion()
 			if err != nil {
 				t.FailNow()

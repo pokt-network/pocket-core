@@ -13,6 +13,10 @@ import (
 // 3) set new proposer
 // 4) check block sigs and byzantine evidence to slash
 func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
+	if !isPrevValCacheInit {
+		ctx.Logger().Info("Initializing PrevValidatorCache, this could take some time")
+		k.InitPrevValidatorsCache(ctx)
+	}
 	// reward the proposer with fees
 	if ctx.BlockHeight() > 1 {
 		previousProposer := k.GetPreviousProposer(ctx)
@@ -28,7 +32,6 @@ func BeginBlocker(ctx sdk.Ctx, req abci.RequestBeginBlock, k Keeper) {
 	minSignedPerWindow := k.MinSignedPerWindow(ctx)
 	downtimeJailDuration := k.DowntimeJailDuration(ctx)
 	slashFractionDowntime := k.SlashFractionDowntime(ctx)
-
 	for _, voteInfo := range req.LastCommitInfo.GetVotes() {
 		k.handleValidatorSignature(ctx, voteInfo.Validator.Address, voteInfo.Validator.Power, voteInfo.SignedLastBlock, signedBlocksWindow, minSignedPerWindow, downtimeJailDuration, slashFractionDowntime)
 		// remove those who are part of the tendermint validator set (jailed validators will never be a part of the set)
@@ -68,5 +71,7 @@ func EndBlocker(ctx sdk.Ctx, k Keeper) []abci.ValidatorUpdate {
 	validatorUpdates := k.UpdateTendermintValidators(ctx)
 	// Unstake all mature validators from the unstakeing queue.
 	k.unstakeAllMatureValidators(ctx)
+	// Update prevValidators cache
+	k.UpdatePrevValidatorsCache(ctx)
 	return validatorUpdates
 }

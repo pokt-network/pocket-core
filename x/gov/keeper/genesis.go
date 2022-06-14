@@ -9,7 +9,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-// InitGenesis - Init store state from genesis data
+// InitGenesis - Seek store state from genesis data
 func (k Keeper) InitGenesis(ctx sdk.Ctx, data types.GenesisState) []abci.ValidatorUpdate {
 	k.SetParams(ctx, data.Params)
 	// validate acl

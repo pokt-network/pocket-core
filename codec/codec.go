@@ -97,37 +97,52 @@ func (cdc *Codec) RegisterImplementation(iface interface{}, impls ...proto.Messa
 	res.RegisterImplementations(iface, impls...)
 }
 
-func (cdc *Codec) MarshalBinaryBare(o interface{}, height int64) ([]byte, error) { // TODO take height as parameter, move upgrade height to this package, switch based on height not upgrade mod
+func (cdc *Codec) MarshalBinaryBare(o interface{}, height int64) (bz []byte, err error) { // TODO take height as parameter, move upgrade height to this package, switch based on height not upgrade mod
 	p, ok := o.(ProtoMarshaler)
 	if !ok {
 		if cdc.IsAfterCodecUpgrade(height) {
 			return nil, NotProtoCompatibleInterfaceError
+		} else {
+			bz, err = cdc.legacyCdc.MarshalBinaryBare(o)
 		}
-		return cdc.legacyCdc.MarshalBinaryBare(o)
 	} else {
 		if cdc.IsAfterCodecUpgrade(height) {
-			return cdc.protoCdc.MarshalBinaryBare(p)
+			bz, err = cdc.protoCdc.MarshalBinaryBare(p)
+		} else {
+			bz, err = cdc.legacyCdc.MarshalBinaryBare(p)
 		}
-		return cdc.legacyCdc.MarshalBinaryBare(p)
 	}
+	if err == nil {
+		GlobalCodecCache.Add(bz, o)
+	}
+	return
 }
 
-func (cdc *Codec) MarshalBinaryLengthPrefixed(o interface{}, height int64) ([]byte, error) {
+func (cdc *Codec) MarshalBinaryLengthPrefixed(o interface{}, height int64) (bz []byte, err error) {
 	p, ok := o.(ProtoMarshaler)
 	if !ok {
 		if cdc.IsAfterCodecUpgrade(height) {
 			return nil, NotProtoCompatibleInterfaceError
+		} else {
+			bz, err = cdc.legacyCdc.MarshalBinaryLengthPrefixed(o)
 		}
-		return cdc.legacyCdc.MarshalBinaryLengthPrefixed(o)
 	} else {
 		if cdc.IsAfterCodecUpgrade(height) {
-			return cdc.protoCdc.MarshalBinaryLengthPrefixed(p)
+			bz, err = cdc.protoCdc.MarshalBinaryLengthPrefixed(p)
+		} else {
+			bz, err = cdc.legacyCdc.MarshalBinaryLengthPrefixed(p)
 		}
-		return cdc.legacyCdc.MarshalBinaryLengthPrefixed(p)
 	}
+	if err == nil {
+		GlobalCodecCache.Add(bz, o)
+	}
+	return
 }
 
-func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) error {
+func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) (err error) {
+	if GlobalCodecCache.GetAndAssign(bz, ptr) {
+		return
+	}
 	p, ok := ptr.(ProtoMarshaler)
 	if !ok {
 		if cdc.IsAfterCodecUpgrade(height) {
@@ -152,7 +167,10 @@ func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) 
 	return e
 }
 
-func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}, height int64) error {
+func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}, height int64) (err error) {
+	if GlobalCodecCache.GetAndAssign(bz, ptr) {
+		return
+	}
 	p, ok := ptr.(ProtoMarshaler)
 	if !ok {
 		if cdc.IsAfterCodecUpgrade(height) {

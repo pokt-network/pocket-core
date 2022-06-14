@@ -81,7 +81,6 @@ package baseapp
 //// Test that LoadLatestVersion actually does.
 //func TestLoadVersion(t *testing.T) {
 //	logger := defaultLogger()
-//	pruningOpt := SetPruning(store.PruneSyncable)
 //	db := dbm.NewMemDB()
 //	name := t.Name()
 //	app := NewBaseApp(name, logger, db, nil, pruningOpt)
@@ -133,7 +132,6 @@ package baseapp
 //
 //func TestAppVersionSetterGetter(t *testing.T) {
 //	logger := defaultLogger()
-//	pruningOpt := SetPruning(store.PruneSyncable)
 //	db := dbm.NewMemDB()
 //	name := t.Name()
 //	app := NewBaseApp(name, logger, db, nil, pruningOpt)
@@ -153,7 +151,6 @@ package baseapp
 //
 //func TestLoadVersionInvalid(t *testing.T) {
 //	logger := log.NewNopLogger()
-//	pruningOpt := SetPruning(store.PruneSyncable)
 //	db := dbm.NewMemDB()
 //	name := t.Name()
 //	app := NewBaseApp(name, logger, db, nil, pruningOpt)

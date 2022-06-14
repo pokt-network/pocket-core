@@ -107,31 +107,7 @@ that case, some of the elements are traversed even they are not starting with th
 object-capability keys. The keys are memory addresses, so it is impossible to forge the key unless an object is a valid
 owner(or a receiver) of the key, according to the object capability principles.
 
-## TraceKV
-
-`tracekv.Store` is a wrapper `KVStore` which provides operation tracing functionalities over the underlying `KVStore`.
-
-```go
-type Store struct {
-    parent types.KVStore
-    writer io.Writer
-    context types.TraceContext
-}
 ```
-
-When each `KVStore` methods are called, `tracekv.Store` automatically logs `traceOperation` to the `Store.writer`.
-
-```go
-type traceOperation struct {
-    Operation operation
-    Key string
-    Value string
-    Metadata map[string]interface{}
-}
-```
-
-`traceOperation.Metadata` is filled with `Store.context` when it is not nil. `TraceContext` is
-a `map[string]interface{}`.
 
 ## Transient
 

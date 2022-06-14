@@ -137,9 +137,36 @@ func (k Keeper) GetAllValidatorsAddrs(ctx sdk.Ctx) (validators []sdk.Address) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		validators = append(validators, iterator.Key())
+		validators = append(validators, iterator.Key()[1:])
 	}
 	return validators
+}
+
+func (k Keeper) UpdatePrevValidatorsCache(ctx sdk.Ctx) {
+	addrs := k.GetAllValidatorsAddrs(ctx)
+	for _, addr := range addrs {
+		val, _ := k.GetValidator(ctx, addr)
+		k.AddToPrevValidatorCache(ctx, addr, val)
+	}
+}
+
+func (k *Keeper) AddToPrevValidatorCache(ctx sdk.Ctx, addr sdk.Address, val types.Validator) {
+	k.prevValidatorCache.Add(sdk.GetCacheKey(int(ctx.BlockHeight()), addr.String()), val) // TODO possibly one off error (blockHeight+/-1)
+}
+
+func (k *Keeper) InitPrevValidatorsCache(ctx sdk.Ctx) {
+	h := ctx.BlockHeight() - 25
+	if h < 1 {
+		h = 1
+	}
+	for ; h < ctx.BlockHeight(); h++ {
+		isPrevValCacheInit = true
+		prevCtx, err := ctx.PrevCtx(h)
+		if err != nil {
+			panic("an error occurred retrieving the prevCtx in InitPrevValidatorsCache" + err.Error())
+		}
+		k.UpdatePrevValidatorsCache(prevCtx)
+	}
 }
 
 // GetAllValidators - - Retrieve the set of all validators with no limits from the main store

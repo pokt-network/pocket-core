@@ -13,7 +13,6 @@ import (
 type Keeper struct {
 	cdc        *codec.Codec
 	key        sdk.StoreKey
-	tkey       sdk.StoreKey
 	codespace  sdk.CodespaceType
 	paramstore sdk.Subspace
 	AuthKeeper types.AuthKeeper
@@ -21,11 +20,10 @@ type Keeper struct {
 }
 
 // NewKeeper constructs a params keeper
-func NewKeeper(cdc *codec.Codec, key *sdk.KVStoreKey, tkey *sdk.TransientStoreKey, codespace sdk.CodespaceType, authKeeper types.AuthKeeper, subspaces ...sdk.Subspace) (k Keeper) {
+func NewKeeper(cdc *codec.Codec, key *sdk.KVStoreKey, codespace sdk.CodespaceType, authKeeper types.AuthKeeper, subspaces ...sdk.Subspace) (k Keeper) {
 	k = Keeper{
 		cdc:        cdc,
 		key:        key,
-		tkey:       tkey,
 		codespace:  codespace,
 		AuthKeeper: authKeeper,
 		spaces:     make(map[string]sdk.Subspace),

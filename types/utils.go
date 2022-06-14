@@ -123,6 +123,12 @@ func (m *Raw) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func Cpy(bz []byte) (ret []byte) {
+	ret = make([]byte, len(bz))
+	copy(ret, bz)
+	return ret
+}
+
 var _ json.Marshaler = (*Raw)(nil)
 
 func TimeTrack(start time.Time) {

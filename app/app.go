@@ -31,8 +31,8 @@ const (
 )
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
-func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, baseAppOptions ...func(*bam.BaseApp)) *PocketCoreApp {
-	app := NewPocketBaseApp(logger, db, cache, iavlCacheSize, baseAppOptions...)
+func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB) *PocketCoreApp {
+	app := NewPocketBaseApp(logger, db)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)
@@ -77,7 +77,6 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 	app.govKeeper = govKeeper.NewKeeper(
 		app.cdc,
 		app.Keys[pocketTypes.StoreKey],
-		app.Tkeys[pocketTypes.StoreKey],
 		govTypes.DefaultCodespace,
 		app.accountKeeper,
 		authSubspace, nodesSubspace, appsSubspace, pocketSubspace,
@@ -119,7 +118,6 @@ func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient clie
 	app.SetEndBlocker(app.EndBlocker)
 	// initialize stores
 	app.MountKVStores(app.Keys)
-	app.MountTransientStores(app.Tkeys)
 	app.SetAppVersion(AppVersion)
 	// load the latest persistent version of the store
 	err := app.LoadLatestVersion(app.Keys[bam.MainStoreKey])

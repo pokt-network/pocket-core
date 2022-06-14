@@ -1,0 +1,31 @@
+syntax = "proto3";
+package store.slim;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/pokt-network/pocket-core/store/slim";
+
+// CommitInfo defines commit information used by the multi-store when committing
+// a version/height.
+message CommitInfo {
+	int64 version = 1;
+	repeated StoreInfo store_infos = 2 [(gogoproto.nullable) = false];
+}
+
+// StoreInfo defines store-specific commit information. It contains a reference
+// between a store name and the commit ID.
+message StoreInfo {
+	string name = 1;
+	StoreCore core = 2 [(gogoproto.nullable) = false];
+}
+
+message StoreCore {
+	CommitID commitID = 2 [(gogoproto.nullable) = false, (gogoproto.casttype) = "github.com/pokt-network/pocket-core/store/types.CommitID"];
+}
+
+message CommitID {
+	option (gogoproto.goproto_stringer) = true;
+
+	int64 version = 1;
+	bytes hash = 2;
+}

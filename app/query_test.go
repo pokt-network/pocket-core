@@ -26,6 +26,46 @@ import (
 	"gopkg.in/h2non/gock.v1"
 )
 
+func TestQueryDispatch(t *testing.T) {
+	tt := []struct {
+		name         string
+		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		*upgrades
+	}{
+		{name: "query dispatch amino", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
+		{name: "query dispatch proto", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			sdk.VbCCache = sdk.NewCache(1)
+			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			genBz, _, validators, app := fiveValidatorsOneAppGenesis()
+			_, kb, cleanup := tc.memoryNodeFn(t, genBz)
+			appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
+			assert.Nil(t, err)
+			// Setup HandleDispatch Request
+			key := types.SessionHeader{
+				ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
+				Chain:              sdk.PlaceholderHash,
+				SessionBlockHeight: 1,
+			}
+			// setup the query
+			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+			<-evtChan // Wait for block
+			res, err := PCA.HandleDispatch(key)
+			assert.Nil(t, err)
+			for _, val := range validators {
+				assert.Contains(t, res.Session.SessionNodes, val)
+			}
+			cleanup()
+			stopCli()
+		})
+	}
+}
+
 func TestQueryBlock(t *testing.T) {
 
 	tt := []struct {
@@ -916,46 +956,6 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 				gock.Off()
 			}
 			return
-		})
-	}
-}
-
-func TestQueryDispatch(t *testing.T) {
-	tt := []struct {
-		name         string
-		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
-		*upgrades
-	}{
-		{name: "query dispatch amino", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "query dispatch proto", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
-	}
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			sdk.VbCCache = sdk.NewCache(1)
-			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
-				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
-				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
-			}
-			genBz, _, validators, app := fiveValidatorsOneAppGenesis()
-			_, kb, cleanup := tc.memoryNodeFn(t, genBz)
-			appPrivateKey, err := kb.ExportPrivateKeyObject(app.Address, "test")
-			assert.Nil(t, err)
-			// Setup HandleDispatch Request
-			key := types.SessionHeader{
-				ApplicationPubKey:  appPrivateKey.PublicKey().RawString(),
-				Chain:              sdk.PlaceholderHash,
-				SessionBlockHeight: 1,
-			}
-			// setup the query
-			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-			<-evtChan // Wait for block
-			res, err := PCA.HandleDispatch(key)
-			assert.Nil(t, err)
-			for _, val := range validators {
-				assert.Contains(t, res.Session.SessionNodes, val)
-			}
-			cleanup()
-			stopCli()
 		})
 	}
 }

@@ -6,11 +6,8 @@ import (
 )
 
 const (
-	StoreKey         = types.StoreKey
-	TStoreKey        = types.TStoreKey
-	DefaultCodespace = types.DefaultCodespace
-	ModuleName       = types.ModuleName
-	RouterKey        = types.RouterKey
+	StoreKey   = types.StoreKey
+	ModuleName = types.ModuleName
 )
 
 var (

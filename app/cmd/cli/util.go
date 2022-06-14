@@ -120,7 +120,7 @@ var exportGenesisForReset = &cobra.Command{
 			return
 		}
 		loggerFile, _ := os.Open(os.DevNull)
-		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db, false, app.GlobalConfig.PocketConfig.IavlCacheSize)
+		a := app.NewPocketCoreApp(nil, nil, nil, nil, log.NewTMLogger(loggerFile), db)
 		// initialize stores
 		blockStore, _, _, _, err := state.BlocksAndStateFromDB(&app.GlobalConfig.TendermintConfig, state.DefaultDBProvider)
 		if err != nil {

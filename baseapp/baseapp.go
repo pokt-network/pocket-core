@@ -12,15 +12,15 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/store/slim"
+	types3 "github.com/pokt-network/pocket-core/store/types"
 	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/evidence"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/state/txindex"
 	tmStore "github.com/tendermint/tendermint/store"
-	"io"
 	"os"
-	"reflect"
 	"runtime/debug"
 	"sort"
 	"strings"
@@ -30,14 +30,11 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	rootMulti "github.com/pokt-network/pocket-core/store/rootmulti"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
@@ -91,7 +88,6 @@ type BaseApp struct {
 	endBlocker     sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
 	addrPeerFilter sdk.PeerFilter   // filter peers by address and port
 	idPeerFilter   sdk.PeerFilter   // filter peers by node ID
-	fauxMerkleMode bool             // if true, IAVL MountStores uses MountStoresDB for simulation speed.
 
 	// --------------------
 	// Volatile state
@@ -126,21 +122,17 @@ var _ abci.Application = (*BaseApp)(nil)
 // configuration choices.
 //
 // NOTE: The db is used to store the version number for now.
-func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, txDecoder sdk.TxDecoder, cdc *codec.Codec, options ...func(*BaseApp)) *BaseApp {
+func NewBaseApp(name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecoder, cdc *codec.Codec) *BaseApp {
 	app := &BaseApp{
 		logger:           logger,
 		name:             name,
 		db:               db,
 		cdc:              cdc,
-		cms:              store.NewCommitMultiStore(db, cache, iavlCacheSize),
+		cms:              slim.NewStore(db),
 		router:           NewRouter(),
 		queryRouter:      NewQueryRouter(),
 		transactionCache: make(map[string]struct{}),
 		txDecoder:        txDecoder,
-		fauxMerkleMode:   false,
-	}
-	for _, option := range options {
-		option(app)
 	}
 
 	return app
@@ -201,32 +193,24 @@ func (app *BaseApp) TMNode() *node.Node {
 	return app.tmNode
 }
 
-// SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
-// CommitMultiStore.
-func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
-	app.cms.SetTracer(w)
-}
-
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
 // multistore.
 func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
-	for _, key := range keys {
-		switch key.(type) {
-		case *sdk.KVStoreKey:
-			if !app.fauxMerkleMode {
-				app.MountStore(key, sdk.StoreTypeIAVL)
-			} else {
-				// StoreTypeDB doesn't do anything upon commit, and it doesn't
-				// retain history, but it's useful for faster simulation.
-				app.MountStore(key, sdk.StoreTypeDB)
-			}
-		case *sdk.TransientStoreKey:
-			app.MountStore(key, sdk.StoreTypeTransient)
-		default:
-			fmt.Println("Unrecognized store key type " + reflect.TypeOf(key).Name())
-			os.Exit(1)
-		}
-	}
+	//for _, key := range keys { NO OP
+	//	switch key.(type) {
+	//	case *sdk.KVStoreKey:
+	//		if !app.fauxMerkleMode {
+	//			app.MountStore(key, sdk.StoreTypeIAVL)
+	//		} else {
+	//			// StoreTypeDB doesn't do anything upon commit, and it doesn't
+	//			// retain history, but it's useful for faster simulation.
+	//			app.MountStore(key, sdk.StoreTypeDB)
+	//		}
+	//	default:
+	//		fmt.Println("Unrecognized store key type " + reflect.TypeOf(key).Name())
+	//		os.Exit(1)
+	//	}
+	//}
 }
 
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
@@ -234,22 +218,7 @@ func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
 func (app *BaseApp) MountKVStores(keys map[string]*sdk.KVStoreKey) {
 	keys[sdk.ParamsKey.Name()] = sdk.ParamsKey
 	for _, key := range keys {
-		if !app.fauxMerkleMode {
-			app.MountStore(key, sdk.StoreTypeIAVL)
-		} else {
-			// StoreTypeDB doesn't do anything upon commit, and it doesn't
-			// retain history, but it's useful for faster simulation.
-			app.MountStore(key, sdk.StoreTypeDB)
-		}
-	}
-}
-
-// MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
-// multistore.
-func (app *BaseApp) MountTransientStores(keys map[string]*sdk.TransientStoreKey) {
-	keys[sdk.ParamsTKey.Name()] = sdk.ParamsTKey
-	for _, key := range keys {
-		app.MountStore(key, sdk.StoreTypeTransient)
+		app.MountStore(key, sdk.StoreTypeIAVL)
 	}
 }
 
@@ -385,27 +354,6 @@ func (app *BaseApp) storeConsensusParams(consensusParams *abci.ConsensusParams) 
 	_ = mainStore.Set(mainConsensusParamsKey, consensusParamsBz)
 }
 
-// getMaximumBlockGas gets the maximum gas from the consensus params. It panics
-// if maximum block gas is less than negative one and returns zero if negative
-// one.
-func (app *BaseApp) getMaximumBlockGas() uint64 {
-	if app.consensusParams == nil || app.consensusParams.Block == nil {
-		return 0
-	}
-
-	maxGas := app.consensusParams.Block.MaxGas
-	switch {
-	case maxGas < -1:
-		fmt.Println(fmt.Errorf("invalid maximum block gas: %d", maxGas))
-		return 0
-	case maxGas == -1:
-		return 0
-
-	default:
-		return uint64(maxGas)
-	}
-}
-
 // ----------------------------------------------------------------------------
 // ABCI
 
@@ -444,10 +392,6 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	if app.initChainer == nil {
 		return
 	}
-
-	// add block gas meter for any genesis transactions (allow infinite gas)
-	app.deliverState.ctx = app.deliverState.ctx.
-		WithBlockGasMeter(sdk.NewInfiniteGasMeter())
 
 	res = app.initChainer(app.deliverState.ctx, req)
 
@@ -569,27 +513,8 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 
 func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.ResponseQuery {
 	// "/store" prefix for store queries
-	queryable, ok := app.cms.(sdk.Queryable)
-	if !ok {
-		msg := "multistore doesn't support queries"
-		return sdk.ErrUnknownRequest(msg).QueryResult()
-	}
-
-	req.Path = "/" + strings.Join(path[1:], "/")
-
-	// when a client did not provide a query height, manually inject the latest
-	if req.Height == 0 {
-		req.Height = app.LastBlockHeight()
-	}
-
-	if req.Height <= 1 && req.Prove {
-		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
-	}
-
-	resp := queryable.Query(req)
-	resp.Height = req.Height
-
-	return resp
+	msg := "multistore doesn't support queries"
+	return sdk.ErrUnknownRequest(msg).QueryResult()
 }
 
 func handleQueryP2P(app *BaseApp, path []string, _ abci.RequestQuery) (res abci.ResponseQuery) {
@@ -640,7 +565,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
 	}
 	// new multistore for copy
-	store, err := app.cms.(*rootMulti.Store).LoadLazyVersion(req.Height)
+	store, err := app.cms.(*slim.MultiStore).LoadVersion(req.Height)
 	if err != nil {
 		return sdk.ErrInternal(
 			fmt.Sprintf(
@@ -649,7 +574,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 			),
 		).QueryResult()
 	}
-	newMS, ok := (*store).(*rootMulti.Store)
+	newMS, ok := (*store).(*slim.MultiStore)
 	if !ok {
 		return sdk.ErrInternal(
 			fmt.Sprintf(
@@ -703,11 +628,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		app.cdc.SetUpgradeOverride(true)
 		app.txDecoder = auth.DefaultTxDecoder(app.cdc)
 	}
-	if app.cms.TracingEnabled() {
-		app.cms.SetTracingContext(sdk.TraceContext(
-			map[string]interface{}{"blockHeight": req.Header.Height},
-		))
-	}
 
 	if err := app.validateHeight(req); err != nil {
 		fmt.Println(fmt.Errorf("unable to validate height for req: %v err: %s", req, err))
@@ -726,16 +646,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 			WithBlockHeight(req.Header.Height)
 	}
 
-	// add block gas meter
-	var gasMeter sdk.GasMeter
-	if maxGas := app.getMaximumBlockGas(); maxGas > 0 {
-		gasMeter = sdk.NewGasMeter(maxGas)
-	} else {
-		gasMeter = sdk.NewInfiniteGasMeter()
-	}
-
-	app.deliverState.ctx = app.deliverState.ctx.WithBlockGasMeter(gasMeter)
-
 	if app.beginBlocker != nil {
 		res = app.beginBlocker(app.deliverState.ctx, req)
 	}
@@ -752,16 +662,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 // NOTE:CheckTx does not run the actual ProtoMsg handler function(s).
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
 	var result sdk.Result
-	//if _, ok := app.transactionCache[TxCacheKey(req.Tx, runTxModeCheck)]; ok && && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), "some_key_here") {
-	//	return abci.ResponseCheckTx{
-	//		Code:      uint32(codeDuplicateTransaction),
-	//		Data:      result.Data,
-	//		Log:       result.Log,
-	//		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-	//		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
-	//		Events:    result.Events.ToABCIEvents(),
-	//	}
-	//}
 
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
@@ -771,12 +671,10 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 	}
 
 	return abci.ResponseCheckTx{
-		Code:      uint32(result.Code),
-		Data:      result.Data,
-		Log:       result.Log,
-		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
-		Events:    result.Events.ToABCIEvents(),
+		Code:   uint32(result.Code),
+		Data:   result.Data,
+		Log:    result.Log,
+		Events: result.Events.ToABCIEvents(),
 	}
 }
 
@@ -824,8 +722,6 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		Code:        uint32(result.Code),
 		Data:        result.Data,
 		Log:         result.Log,
-		GasWanted:   int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:     int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
 		Events:      result.Events.ToABCIEvents(),
 		Codespace:   string(result.Codespace),
 		Signer:      signer,
@@ -876,7 +772,6 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode, signer cryp
 		codespace sdk.CodespaceType
 	)
 	events := sdk.EmptyEvents()
-	// NOTE: GasWanted is determined by ante handler and GasUsed by the GasMeter.
 	// match message route
 	msgRoute := msg.Route()
 	handler := app.router.Route(msgRoute)
@@ -910,7 +805,6 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode, signer cryp
 		Codespace: codespace,
 		Data:      data,
 		Log:       strings.TrimSpace(msgLogs.String()),
-		GasUsed:   0,
 		Events:    events,
 	}
 
@@ -931,14 +825,7 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 // a cache wrapped multi-store.
 func (app *BaseApp) txContext(ctx sdk.Ctx, txBytes []byte) (
 	sdk.Context, sdk.MultiStore) { // todo edit here!!!
-	newMS := store.MultiStore((*app.cms.(store.CommitMultiStore).(*rootMulti.Store).CopyStore()).(*rootMulti.Store))
-	if newMS.TracingEnabled() {
-		newMS = newMS.SetTracingContext(
-			map[string]interface{}{
-				"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
-			},
-		)
-	}
+	newMS := types3.MultiStore((*app.cms.(types3.CommitMultiStore).(*slim.MultiStore).CopyStore()).(*slim.MultiStore))
 	return ctx.WithMultiStore(newMS), newMS
 }
 
@@ -950,15 +837,6 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Ctx, txBytes []byte) (
 	ms := ctx.MultiStore()
 	// TODO: https://github.com/cosmos/cosmos-sdk/issues/2824
 	msCache := ms.CacheMultiStore()
-	if msCache.TracingEnabled() {
-		msCache = msCache.SetTracingContext(
-			sdk.TraceContext(
-				map[string]interface{}{
-					"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
-				},
-			),
-		).(sdk.CacheMultiStore)
-	}
 
 	return ctx.WithMultiStore(msCache), msCache
 }
@@ -968,61 +846,20 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Ctx, txBytes []byte) (
 // further details on transaction execution, reference the BaseApp SDK
 // documentation.
 func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk.Result, signer crypto.PublicKey) {
-	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
-	// determined by the GasMeter. We need access to the context to get the gas
-	// meter so we initialize upfront.
-	var gasWanted uint64
-
 	ctx := app.getContextForTx(mode, txBytes)
 	ms := ctx.MultiStore()
 
-	// only run the tx if there is block gas remaining
-	if mode == runTxModeDeliver && ctx.BlockGasMeter().IsOutOfGas() {
-		return sdk.ErrOutOfGas("no block gas left to run tx").Result(), nil
-	}
-
-	var startingGas uint64
-	if mode == runTxModeDeliver {
-		startingGas = ctx.BlockGasMeter().GasConsumed()
-	}
-
 	defer func() {
 		if r := recover(); r != nil {
-			switch rType := r.(type) {
-			case sdk.ErrorOutOfGas:
-				log := fmt.Sprintf(
-					"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
-					rType.Descriptor, gasWanted, ctx.GasMeter().GasConsumed(),
-				)
-				result = sdk.ErrOutOfGas(log).Result()
+			switch r.(type) {
 			default:
 				log := fmt.Sprintf("recovered: %v\nstack:\n%v", r, string(debug.Stack()))
 				result = sdk.ErrInternal(log).Result()
 			}
 		}
-
-		result.GasWanted = gasWanted
-		//result.GasUsed = ctx.GasMeter().GasConsumed()
-		result.GasUsed = 0
 	}()
-
-	// If BlockGasMeter() panics it will be caught by the above recover and will
-	// return an error - in any case BlockGasMeter will consume gas past the limit.
-	//
-	// NOTE: This must exist in a separate defer function for the above recovery
-	// to recover from this one.
 	defer func() {
-		if mode == runTxModeDeliver {
-			ctx.BlockGasMeter().ConsumeGas(
-				ctx.GasMeter().GasConsumedToLimit(),
-				"block gas meter",
-			)
-
-			if ctx.BlockGasMeter().GasConsumed() < startingGas {
-				fmt.Println(sdk.ErrorGasOverflow{Descriptor: "tx gas summation"}) // todo remove w/ gas
-				os.Exit(1)
-			}
-		}
+		// no op
 	}()
 	var msgs = tx.GetMsg()
 	if err := validateBasicTxMsgs(msgs); err != nil {
@@ -1048,13 +885,8 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 			// replaced by the ante handler. We want the original multistore, not one
 			// which was cache-wrapped for the ante handler.
 			//
-			// Also, in the case of the tx aborting, we need to track gas consumed via
-			// the instantiated gas meter in the ante handler, so we update the context
-			// prior to returning.
 			ctx = newCtx.WithMultiStore(ms)
 		}
-
-		gasWanted = result.GasWanted
 
 		if abort {
 			return result, signer
@@ -1069,7 +901,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	// multi-store in case message processing fails.
 	runMsgCtx, newMS := app.txContext(ctx, txBytes) // todo edit here!!!
 	result = app.runMsg(runMsgCtx, msgs, mode, signer)
-	result.GasWanted = gasWanted
 
 	// Safety check: don't write the cache state unless we're in DeliverTx.
 	if mode != runTxModeDeliver {
@@ -1086,10 +917,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 
 // EndBlock implements the ABCI interface.
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
-	//if app.deliverState.ms.TracingEnabled() {
-	//	app.deliverState.ms = app.deliverState.ms.SetTracingContext(nil).(sdk.CacheMultiStore)
-	//} // todo edit here!!!!
-
 	if app.endBlocker != nil {
 		res = app.endBlocker(app.deliverState.ctx, req)
 	}
