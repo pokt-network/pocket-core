@@ -31,18 +31,16 @@ func setupTestInput() testInput {
 
 	authCapKey := sdk.NewKVStoreKey("auth")
 	keyParams := sdk.ParamsKey
-	tkeyParams := sdk.ParamsTKey
 
 	ms := rootmulti.NewStore(db, false, 5000000)
 	ms.MountStoreWithDB(authCapKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	_ = ms.LoadLatestVersion()
 	akSubspace := sdk.NewSubspace(authTypes.DefaultCodespace)
 	ak := NewKeeper(
 		cdc, authCapKey, akSubspace, nil,
 	)
-	govKeeper.NewKeeper(cdc, sdk.ParamsKey, sdk.ParamsTKey, govTypes.DefaultCodespace, ak, akSubspace)
+	govKeeper.NewKeeper(cdc, sdk.ParamsKey, govTypes.DefaultCodespace, ak, akSubspace)
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain-id"}, false, log.NewNopLogger())
 	ak.SetParams(ctx, authTypes.DefaultParams())
 	return testInput{Keeper: ak, cdc: cdc, ctx: ctx}

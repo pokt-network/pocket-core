@@ -5,9 +5,8 @@ import (
 )
 
 const (
-	ModuleName = "pocketcore"            // name of the module
-	StoreKey   = ModuleName              // key for state store
-	TStoreKey  = "transient_" + StoreKey // transient key for state store
+	ModuleName = "pocketcore" // name of the module
+	StoreKey   = ModuleName   // key for state store
 )
 
 var (

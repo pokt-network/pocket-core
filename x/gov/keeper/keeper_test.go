@@ -35,7 +35,7 @@ func TestKeeper(t *testing.T) {
 		[]byte("extra1"), bool(false),
 		[]byte("extra2"), string(""),
 	)
-	cdc, ctx, skey, _, keeper := testComponents(t)
+	cdc, ctx, skey, keeper := testComponents(t)
 	store := sdk.NewPrefixStore(ctx.KVStore(skey), []byte("test/"))
 	space := keeper.Subspace("test").WithKeyTable(table)
 	// Set params
@@ -88,7 +88,7 @@ func indirect(ptr interface{}) interface{} {
 }
 
 func TestSubspace(t *testing.T) {
-	cdc, ctx, key, _, keeper := testComponents(t)
+	cdc, ctx, key, keeper := testComponents(t)
 	kvs := []struct {
 		key   string
 		param interface{}
@@ -164,7 +164,7 @@ type paramJSON struct {
 }
 
 func TestJSONUpdate(t *testing.T) {
-	_, ctx, _, _, keeper := testComponents(t)
+	_, ctx, _, keeper := testComponents(t)
 	key := []byte("key")
 	space := keeper.Subspace("test").WithKeyTable(sdk.NewKeyTable(key, paramJSON{}))
 	var param paramJSON
@@ -186,9 +186,8 @@ type s struct {
 	I int
 }
 
-func testComponents(t *testing.T) (*codec.LegacyAmino, sdk.Context, sdk.StoreKey, sdk.StoreKey, Keeper) {
+func testComponents(t *testing.T) (*codec.LegacyAmino, sdk.Context, sdk.StoreKey, Keeper) {
 	mkey := sdk.ParamsKey
-	tkey := sdk.ParamsTKey
 	ctx, keeper := createTestKeeperAndContext(t, false)
-	return keeper.cdc.AminoCodec(), ctx, mkey, tkey, keeper
+	return keeper.cdc.AminoCodec(), ctx, mkey, keeper
 }

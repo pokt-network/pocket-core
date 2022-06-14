@@ -42,17 +42,14 @@ type StoreType = types.StoreType
 
 // nolint - reexport
 const (
-	StoreTypeMulti     = types.StoreTypeMulti
-	StoreTypeDB        = types.StoreTypeDB
-	StoreTypeIAVL      = types.StoreTypeIAVL
-	StoreTypeTransient = types.StoreTypeTransient
+	StoreTypeDB   = types.StoreTypeDB
+	StoreTypeIAVL = types.StoreTypeIAVL
 )
 
 // nolint - reexport
 type (
-	StoreKey          = types.StoreKey
-	KVStoreKey        = types.KVStoreKey
-	TransientStoreKey = types.TransientStoreKey
+	StoreKey   = types.StoreKey
+	KVStoreKey = types.KVStoreKey
 )
 
 // NewKVStoreKey returns a new pointer to a KVStoreKey.
@@ -67,22 +64,6 @@ func NewKVStoreKeys(names ...string) map[string]*KVStoreKey {
 	keys := make(map[string]*KVStoreKey)
 	for _, name := range names {
 		keys[name] = NewKVStoreKey(name)
-	}
-	return keys
-}
-
-// Constructs new TransientStoreKey
-// Must return a pointer according to the ocap principle
-func NewTransientStoreKey(name string) *TransientStoreKey {
-	return types.NewTransientStoreKey(name)
-}
-
-// NewTransientStoreKeys constructs a new map of TransientStoreKey's
-// Must return pointers according to the ocap principle
-func NewTransientStoreKeys(names ...string) map[string]*TransientStoreKey {
-	keys := make(map[string]*TransientStoreKey)
-	for _, name := range names {
-		keys[name] = NewTransientStoreKey(name)
 	}
 	return keys
 }

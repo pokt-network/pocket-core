@@ -34,8 +34,7 @@ type PocketCoreApp struct {
 	// the codec (uses amino)
 	cdc *codec.Codec
 	// Keys to access the substores
-	Keys  map[string]*sdk.KVStoreKey
-	Tkeys map[string]*sdk.TransientStoreKey
+	Keys map[string]*sdk.KVStoreKey
 	// Keepers for each module
 	accountKeeper auth.Keeper
 	appsKeeper    appsKeeper.Keeper
@@ -56,15 +55,12 @@ func NewPocketBaseApp(logger log.Logger, db db.DB, cache bool, iavlCacheSize int
 	bApp.SetAppVersion(AppVersion)
 	// setup the key value store Keys
 	k := sdk.NewKVStoreKeys(bam.MainStoreKey, auth.StoreKey, nodesTypes.StoreKey, appsTypes.StoreKey, gov.StoreKey, pocketTypes.StoreKey)
-	// setup the transient store Keys
-	tkeys := sdk.NewTransientStoreKeys(nodesTypes.TStoreKey, appsTypes.TStoreKey, pocketTypes.TStoreKey, gov.TStoreKey)
 	// add params Keys too
 	// Create the application
 	return &PocketCoreApp{
 		BaseApp: bApp,
 		cdc:     cdc,
 		Keys:    k,
-		Tkeys:   tkeys,
 	}
 }
 

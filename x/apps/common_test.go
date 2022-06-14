@@ -61,7 +61,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, keeper.Keeper, type
 	nAccs := int64(4)
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
-	tkeyParams := sdk.ParamsTKey
 	nodesKey := sdk.NewKVStoreKey(nodestypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(types.StoreKey)
 	db := dbm.NewMemDB()
@@ -70,7 +69,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, keeper.Keeper, type
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 	ctx := sdk.NewContext(ms, abci.Header{ChainID: "test-chain"}, isCheckTx, log.NewNopLogger()).WithAppVersion("0.0.0")

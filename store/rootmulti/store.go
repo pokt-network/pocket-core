@@ -16,7 +16,6 @@ import (
 	"github.com/pokt-network/pocket-core/store/dbadapter"
 	"github.com/pokt-network/pocket-core/store/iavl"
 	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
-	"github.com/pokt-network/pocket-core/store/transient"
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
@@ -135,64 +134,6 @@ func (rs *Store) LoadLatestVersion() error {
 }
 
 // Implements CommitMultiStore.
-func (rs *Store) RollbackVersion(height int64) error {
-	// ensure latest version is greater than rollback height
-	ver := getLatestVersion(rs.DB)
-	if height >= ver {
-		return fmt.Errorf("the rollback height: %d must be less than the actual app height: %d", height, ver)
-	}
-	// create a new db
-	b := rs.DB.NewBatch()
-	// set the latest version so that we always start from this height
-	setLatestVersion(b, height)
-	// get commit info
-	cInfo, err := getCommitInfo(rs.DB, ver)
-	if err != nil {
-		return err
-	}
-	// convert StoreInfos slice to map
-	infos := make(map[types.StoreKey]StoreInfo)
-	for _, storeInfo := range cInfo.StoreInfos {
-		infos[rs.nameToKey(storeInfo.Name)] = storeInfo
-	}
-	// for each store
-	for key, storeParams := range rs.storesParams {
-		var id types.CommitID
-		info, ok := infos[key]
-		if ok {
-			id = info.Core.CommitID
-		}
-		// load the kvStore using the commit id
-		store, err := rs.loadCommitStoreFromParams(key, id, storeParams)
-		if err != nil {
-			return fmt.Errorf("failed to load Store: %v", err)
-		}
-		if store.GetStoreType() == types.StoreTypeTransient {
-			continue
-		}
-		// convert to iavl
-		s, ok := store.(*iavl.Store)
-		if !ok {
-			panic("store type not supported for rollback, (iavl or transient) type: " + fmt.Sprintf("%v", s.GetStoreType()))
-		}
-		// rollback to a certain height
-		err = s.Rollback(height)
-		if err != nil {
-			return err
-		}
-		rs.stores[key] = s
-	}
-	// delete commit info from height + 1
-	for i := height + 1; i <= ver; i++ {
-		cInfoKey := fmt.Sprintf(commitInfoKeyFmt, i)
-		b.Delete([]byte(cInfoKey))
-	}
-	// write to db
-	_ = b.Write()
-	return nil
-}
-
-// Implements CommitMultiStore.
 func (rs *Store) LoadVersion(ver int64) error {
 	if ver == 0 {
 		// Special logic for version 0 where there is no need to get commit
@@ -250,9 +191,6 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 	for k, v := range rs.stores {
 		a, ok := (v).(*iavl.Store)
 		if !ok {
-			if _, ok := (v).(*transient.Store); ok {
-				continue
-			}
 			return nil, fmt.Errorf("cannot convert store into iavl store in get immutable")
 		}
 		s, err := a.LazyLoadStore(ver, rs.Cache.GetSingleStoreCache(k))
@@ -487,14 +425,6 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 	case types.StoreTypeDB:
 		return commitDBStoreAdapter{dbadapter.Store{DB: db}}, nil
 
-	case types.StoreTypeTransient:
-		_, ok := key.(*types.TransientStoreKey)
-		if !ok {
-			return store, fmt.Errorf("invalid storeKey for StoreTypeTransient: %s", key.String())
-		}
-
-		return transient.NewStore(), nil
-
 	default:
 		panic(fmt.Sprintf("unrecognized store type %v", params.typ))
 	}
@@ -612,10 +542,6 @@ func commitStores(version int64, storeMap map[types.StoreKey]types.CommitStore) 
 	for key, store := range storeMap {
 		// Commit
 		commitID := store.Commit()
-
-		if store.GetStoreType() == types.StoreTypeTransient {
-			continue
-		}
 
 		// Record CommitID
 		si := StoreInfo{}

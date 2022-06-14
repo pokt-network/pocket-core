@@ -57,7 +57,6 @@ func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keep
 	ms := rootmulti.NewStore(db, false, 5000000)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(sdk.ParamsKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(sdk.ParamsTKey, sdk.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -82,7 +81,7 @@ func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keep
 	akSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	ak := keeper.NewKeeper(cdc, keyAcc, akSubspace, maccPerms)
 	ak.GetModuleAccount(ctx, "FAKE")
-	pk := NewKeeper(cdc, sdk.ParamsKey, sdk.ParamsTKey, govTypes.DefaultParamspace, ak, akSubspace)
+	pk := NewKeeper(cdc, sdk.ParamsKey, govTypes.DefaultParamspace, ak, akSubspace)
 	moduleManager := module.NewManager(
 		auth.NewAppModule(ak),
 	)

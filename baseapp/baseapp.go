@@ -209,8 +209,6 @@ func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
 				// retain history, but it's useful for faster simulation.
 				app.MountStore(key, sdk.StoreTypeDB)
 			}
-		case *sdk.TransientStoreKey:
-			app.MountStore(key, sdk.StoreTypeTransient)
 		default:
 			fmt.Println("Unrecognized store key type " + reflect.TypeOf(key).Name())
 			os.Exit(1)
@@ -230,15 +228,6 @@ func (app *BaseApp) MountKVStores(keys map[string]*sdk.KVStoreKey) {
 			// retain history, but it's useful for faster simulation.
 			app.MountStore(key, sdk.StoreTypeDB)
 		}
-	}
-}
-
-// MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
-// multistore.
-func (app *BaseApp) MountTransientStores(keys map[string]*sdk.TransientStoreKey) {
-	keys[sdk.ParamsTKey.Name()] = sdk.ParamsTKey
-	for _, key := range keys {
-		app.MountStore(key, sdk.StoreTypeTransient)
 	}
 }
 

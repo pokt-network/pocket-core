@@ -48,7 +48,6 @@ func TestKeepers_NewKeeper(t *testing.T) {
 
 			keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 			keyParams := sdk.ParamsKey
-			tkeyParams := sdk.ParamsTKey
 			nodesKey := sdk.NewKVStoreKey(nodestypes.StoreKey)
 			appsKey := sdk.NewKVStoreKey(types.StoreKey)
 
@@ -58,7 +57,6 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
-			ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 			err := ms.LoadLatestVersion()
 			if err != nil {
 				t.FailNow()

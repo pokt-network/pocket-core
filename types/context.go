@@ -79,7 +79,6 @@ type Ctx interface {
 	WithValue(key, value interface{}) Context
 	Value(key interface{}) interface{}
 	KVStore(key StoreKey) KVStore
-	TransientStore(key StoreKey) KVStore
 	CacheContext() (cc Context, writeCache func())
 	IsZero() bool
 	AppVersion() string
@@ -394,11 +393,6 @@ func (c Context) Value(key interface{}) interface{} {
 
 // KVStore fetches a KVStore from the MultiStore.
 func (c Context) KVStore(key StoreKey) KVStore {
-	return c.MultiStore().GetKVStore(key)
-}
-
-// TransientStore fetches a TransientStore from the MultiStore.
-func (c Context) TransientStore(key StoreKey) KVStore {
 	return c.MultiStore().GetKVStore(key)
 }
 

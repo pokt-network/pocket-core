@@ -61,7 +61,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
-	tkeyParams := sdk.ParamsTKey
 	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
 	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -73,7 +72,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, nodesKeeper.Keeper,
 	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 

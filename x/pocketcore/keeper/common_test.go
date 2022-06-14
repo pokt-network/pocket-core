@@ -96,7 +96,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	})
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
-	tkeyParams := sdk.ParamsTKey
 	nodesKey := sdk.NewKVStoreKey(nodesTypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(appsTypes.StoreKey)
 	pocketKey := sdk.NewKVStoreKey(types.StoreKey)
@@ -113,7 +112,6 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, []nodesTypes.Valida
 	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(appsKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(pocketKey, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	err = ms.LoadLatestVersion()
 	require.Nil(t, err)
 
@@ -739,22 +737,6 @@ func (_m *Ctx) PrevCtx(height int64) (pocketTypes.Context, error) {
 	}
 
 	return r0, r1
-}
-
-// TransientStore provides a mock function with given fields: key
-func (_m *Ctx) TransientStore(key storeTypes.StoreKey) storeTypes.KVStore {
-	ret := _m.Called(key)
-
-	var r0 storeTypes.KVStore
-	if rf, ok := ret.Get(0).(func(storeTypes.StoreKey) storeTypes.KVStore); ok {
-		r0 = rf(key)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.KVStore)
-		}
-	}
-
-	return r0
 }
 
 // TxBytes provides a mock function with given fields:

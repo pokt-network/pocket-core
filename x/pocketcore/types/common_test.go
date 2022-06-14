@@ -30,13 +30,11 @@ func getTestSupportedBlockchain() string {
 func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	keyParams := sdk.ParamsKey
-	tkeyParams := sdk.ParamsTKey
 
 	db := dbm.NewMemDB()
 	ms := rootmulti.NewStore(db, false, 5000000)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	require.Nil(t, err)
 

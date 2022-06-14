@@ -7,11 +7,10 @@ import (
 )
 
 const (
-	ModuleName   = "application"             // name of module
-	StoreKey     = ModuleName                // StoreKey is the string store representation
-	TStoreKey    = "transient_" + ModuleName // TStoreKey is the string transient store representation
-	QuerierRoute = ModuleName                // QuerierRoute is the querier route for the staking module
-	RouterKey    = ModuleName                // RouterKey is the msg router key for the staking module
+	ModuleName   = "application" // name of module
+	StoreKey     = ModuleName    // StoreKey is the string store representation
+	QuerierRoute = ModuleName    // QuerierRoute is the querier route for the staking module
+	RouterKey    = ModuleName    // RouterKey is the msg router key for the staking module
 )
 
 var (
