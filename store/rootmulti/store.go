@@ -7,7 +7,6 @@ import (
 	"github.com/tendermint/tendermint/crypto/merkle"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	dbm "github.com/tendermint/tm-db"
-	"io"
 	"log"
 	"strings"
 
@@ -16,7 +15,6 @@ import (
 	"github.com/pokt-network/pocket-core/store/errors"
 	"github.com/pokt-network/pocket-core/store/iavl"
 	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
-	"github.com/pokt-network/pocket-core/store/tracekv"
 	"github.com/pokt-network/pocket-core/store/transient"
 	"github.com/pokt-network/pocket-core/store/types"
 )
@@ -30,17 +28,14 @@ const (
 // cacheMultiStore which is for cache-wrapping other MultiStores. It implements
 // the CommitMultiStore interface.
 type Store struct {
-	DB           dbm.DB
-	Cache        types.MultiStoreCache
-	lastCommitID types.CommitID
-	pruningOpts  types.PruningOptions
-	storesParams map[types.StoreKey]storeParams
-	stores       map[types.StoreKey]types.CommitStore
-	keysByName   map[string]types.StoreKey
-	lazyLoading  bool
-
-	traceWriter   io.Writer
-	traceContext  types.TraceContext
+	DB            dbm.DB
+	Cache         types.MultiStoreCache
+	lastCommitID  types.CommitID
+	pruningOpts   types.PruningOptions
+	storesParams  map[types.StoreKey]storeParams
+	stores        map[types.StoreKey]types.CommitStore
+	keysByName    map[string]types.StoreKey
+	lazyLoading   bool
 	iavlCacheSize int64
 }
 
@@ -57,10 +52,6 @@ func (rs *Store) CopyStore() *types.Store {
 	for k, v := range rs.keysByName {
 		newKeysByName[k] = v
 	}
-	newTraceCtx := map[string]interface{}{}
-	for k, v := range rs.traceContext {
-		newTraceCtx[k] = v
-	}
 	s := types.Store(&Store{
 		DB:           rs.DB,
 		Cache:        rs.Cache,
@@ -70,8 +61,6 @@ func (rs *Store) CopyStore() *types.Store {
 		stores:       newStores,
 		keysByName:   newKeysByName,
 		lazyLoading:  rs.lazyLoading,
-		traceWriter:  rs.traceWriter,
-		traceContext: newTraceCtx,
 	})
 	return &s
 }
@@ -287,10 +276,6 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 	for k, v := range rs.keysByName {
 		newKeysByName[k] = v
 	}
-	newTraceCtx := map[string]interface{}{}
-	for k, v := range rs.traceContext {
-		newTraceCtx[k] = v
-	}
 	s := types.Store(&Store{
 		DB:           rs.DB,
 		lastCommitID: rs.lastCommitID,
@@ -299,39 +284,9 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 		stores:       newStores,
 		keysByName:   newKeysByName,
 		lazyLoading:  rs.lazyLoading,
-		traceWriter:  rs.traceWriter,
-		traceContext: newTraceCtx,
 		Cache:        rs.Cache,
 	})
 	return &s, nil
-}
-
-// SetTracer sets the tracer for the MultiStore that the underlying
-// stores will utilize to trace operations. A MultiStore is returned.
-func (rs *Store) SetTracer(w io.Writer) types.MultiStore {
-	rs.traceWriter = w
-	return rs
-}
-
-// SetTracingContext updates the tracing context for the MultiStore by merging
-// the given context with the existing context by Key. Any existing keys will
-// be overwritten. It is implied that the caller should update the context when
-// necessary between tracing operations. It returns a modified MultiStore.
-func (rs *Store) SetTracingContext(tc types.TraceContext) types.MultiStore {
-	if rs.traceContext != nil {
-		for k, v := range tc {
-			rs.traceContext[k] = v
-		}
-	} else {
-		rs.traceContext = tc
-	}
-
-	return rs
-}
-
-// TracingEnabled returns if tracing is enabled for the MultiStore.
-func (rs *Store) TracingEnabled() bool {
-	return rs.traceWriter != nil
 }
 
 //----------------------------------------
@@ -370,11 +325,6 @@ func (rs *Store) CacheWrap() types.CacheWrap {
 	return rs.CacheMultiStore().(types.CacheWrap)
 }
 
-// CacheWrapWithTrace implements the CacheWrapper interface.
-func (rs *Store) CacheWrapWithTrace(_ io.Writer, _ types.TraceContext) types.CacheWrap {
-	return rs.CacheWrap()
-}
-
 //----------------------------------------
 // +MultiStore
 
@@ -385,7 +335,7 @@ func (rs *Store) CacheMultiStore() types.CacheMultiStore {
 		stores[k] = v
 	}
 
-	return cachemulti.NewStore(rs.DB, stores, rs.keysByName, rs.traceWriter, rs.traceContext)
+	return cachemulti.NewStore(rs.DB, stores, rs.keysByName)
 }
 
 // CacheMultiStoreWithVersion is analogous to CacheMultiStore except that it
@@ -411,7 +361,7 @@ func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStor
 		}
 	}
 
-	return cachemulti.NewStore(rs.DB, cachedStores, rs.keysByName, rs.traceWriter, rs.traceContext), nil
+	return cachemulti.NewStore(rs.DB, cachedStores, rs.keysByName), nil
 }
 
 // Implements MultiStore.
@@ -424,18 +374,11 @@ func (rs *Store) GetStore(key types.StoreKey) types.Store {
 	return store
 }
 
-// GetKVStore implements the MultiStore interface. If tracing is enabled on the
-// Store, a wrapped TraceKVStore will be returned with the given
-// tracer, otherwise, the original KVStore will be returned.
+// GetKVStore implements the MultiStore interface.
+// the original KVStore will be returned.
 // If the store does not exist, panics.
 func (rs *Store) GetKVStore(key types.StoreKey) types.KVStore {
-	store := rs.stores[key].(types.KVStore)
-
-	if rs.TracingEnabled() {
-		store = tracekv.NewStore(store, rs.traceWriter, rs.traceContext)
-	}
-
-	return store
+	return rs.stores[key].(types.KVStore)
 }
 
 // Implements MultiStore

@@ -2,8 +2,6 @@ package types
 
 import (
 	"fmt"
-	"io"
-
 	"github.com/tendermint/tendermint/libs/kv"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -55,19 +53,6 @@ type MultiStore interface { //nolint
 	// If the store does not exist, panics.
 	GetStore(StoreKey) Store
 	GetKVStore(StoreKey) KVStore
-
-	// TracingEnabled returns if tracing is enabled for the MultiStore.
-	TracingEnabled() bool
-
-	// SetTracer sets the tracer for the MultiStore that the underlying
-	// stores will utilize to trace operations. The modified MultiStore is
-	// returned.
-	SetTracer(w io.Writer) MultiStore
-
-	// SetTracingContext sets the tracing context for a MultiStore. It is
-	// implied that the caller should update the context when necessary between
-	// tracing operations. The modified MultiStore is returned.
-	SetTracingContext(TraceContext) MultiStore
 }
 
 // From MultiStore.CacheMultiStore()....
@@ -173,17 +158,11 @@ type CacheWrap interface {
 
 	// CacheWrap recursively wraps again.
 	CacheWrap() CacheWrap
-
-	// CacheWrapWithTrace recursively wraps again with tracing enabled.
-	CacheWrapWithTrace(w io.Writer, tc TraceContext) CacheWrap
 }
 
 type CacheWrapper interface { //nolint
 	// CacheWrap cache wraps.
 	CacheWrap() CacheWrap
-
-	// CacheWrapWithTrace cache wraps with tracing enabled.
-	CacheWrapWithTrace(w io.Writer, tc TraceContext) CacheWrap
 }
 
 //----------------------------------------
@@ -275,12 +254,6 @@ func (key *TransientStoreKey) String() string {
 
 // key-value result for iterator queries
 type KVPair kv.Pair
-
-//----------------------------------------
-
-// TraceContext contains TraceKVStore context data. It will be written with
-// every trace operation.
-type TraceContext map[string]interface{}
 
 type SingleStoreCache interface {
 	Get(height int64, key []byte) ([]byte, error)

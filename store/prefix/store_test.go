@@ -39,13 +39,6 @@ func setRandomKVPairs(t *testing.T, store types.KVStore) []kvpair {
 	return kvps
 }
 
-//func TestPrefixKVStoreNoNilSet(t *testing.T) {
-//	meter := types.NewGasMeter(100000000)
-//	mem := dbadapter.Store{DB: dbm.NewMemDB()}
-//	gasStore := gaskv.NewStore(mem, meter, types.KVGasConfig())
-//	require.Panics(t, func() { _ = gasStore.Set([]byte("key"), nil) }, "setting a nil value should panic")
-//}
-
 func TestPrefixStoreIterate(t *testing.T) {
 	db := dbm.NewMemDB()
 	baseStore := dbadapter.Store{DB: db}

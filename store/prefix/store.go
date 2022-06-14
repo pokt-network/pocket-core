@@ -2,10 +2,7 @@ package prefix
 
 import (
 	"bytes"
-	"io"
-
 	"github.com/pokt-network/pocket-core/store/cachekv"
-	"github.com/pokt-network/pocket-core/store/tracekv"
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
@@ -49,11 +46,6 @@ func (s Store) GetStoreType() types.StoreType {
 // Implements CacheWrap
 func (s Store) CacheWrap() types.CacheWrap {
 	return cachekv.NewStore(s)
-}
-
-// CacheWrapWithTrace implements the KVStore interface.
-func (s Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
-	return cachekv.NewStore(tracekv.NewStore(s, w, tc))
 }
 
 // Implements KVStore

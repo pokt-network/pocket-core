@@ -1,8 +1,6 @@
 package cachemulti
 
 import (
-	"io"
-
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/pokt-network/pocket-core/store/cachekv"
@@ -21,9 +19,6 @@ type Store struct {
 	db     types.CacheKVStore
 	stores map[types.StoreKey]types.CacheWrap
 	keys   map[string]types.StoreKey
-
-	traceWriter  io.Writer
-	traceContext types.TraceContext
 }
 
 var _ types.CacheMultiStore = Store{}
@@ -31,22 +26,15 @@ var _ types.CacheMultiStore = Store{}
 func NewFromKVStore(
 	store types.KVStore,
 	stores map[types.StoreKey]types.CacheWrapper, keys map[string]types.StoreKey,
-	traceWriter io.Writer, traceContext types.TraceContext,
 ) Store {
 	cms := Store{
-		db:           cachekv.NewStore(store),
-		stores:       make(map[types.StoreKey]types.CacheWrap, len(stores)),
-		keys:         keys,
-		traceWriter:  traceWriter,
-		traceContext: traceContext,
+		db:     cachekv.NewStore(store),
+		stores: make(map[types.StoreKey]types.CacheWrap, len(stores)),
+		keys:   keys,
 	}
 
 	for key, store := range stores {
-		if cms.TracingEnabled() {
-			cms.stores[key] = store.CacheWrapWithTrace(cms.traceWriter, cms.traceContext)
-		} else {
-			cms.stores[key] = store.CacheWrap()
-		}
+		cms.stores[key] = store.CacheWrap()
 	}
 
 	return cms
@@ -55,9 +43,8 @@ func NewFromKVStore(
 func NewStore(
 	db dbm.DB,
 	stores map[types.StoreKey]types.CacheWrapper, keys map[string]types.StoreKey,
-	traceWriter io.Writer, traceContext types.TraceContext,
 ) Store {
-	return NewFromKVStore(dbadapter.Store{DB: db}, stores, keys, traceWriter, traceContext)
+	return NewFromKVStore(dbadapter.Store{DB: db}, stores, keys)
 }
 
 func newCacheMultiStoreFromCMS(cms Store) Store {
@@ -65,35 +52,7 @@ func newCacheMultiStoreFromCMS(cms Store) Store {
 	for k, v := range cms.stores {
 		stores[k] = v
 	}
-	return NewFromKVStore(cms.db, stores, nil, cms.traceWriter, cms.traceContext)
-}
-
-// SetTracer sets the tracer for the MultiStore that the underlying
-// stores will utilize to trace operations. A MultiStore is returned.
-func (cms Store) SetTracer(w io.Writer) types.MultiStore {
-	cms.traceWriter = w
-	return cms
-}
-
-// SetTracingContext updates the tracing context for the MultiStore by merging
-// the given context with the existing context by key. Any existing keys will
-// be overwritten. It is implied that the caller should update the context when
-// necessary between tracing operations. It returns a modified MultiStore.
-func (cms Store) SetTracingContext(tc types.TraceContext) types.MultiStore {
-	if cms.traceContext != nil {
-		for k, v := range tc {
-			cms.traceContext[k] = v
-		}
-	} else {
-		cms.traceContext = tc
-	}
-
-	return cms
-}
-
-// TracingEnabled returns if tracing is enabled for the MultiStore.
-func (cms Store) TracingEnabled() bool {
-	return cms.traceWriter != nil
+	return NewFromKVStore(cms.db, stores, nil)
 }
 
 // GetStoreType returns the type of the store.
@@ -112,11 +71,6 @@ func (cms Store) Write() {
 // Implements CacheWrapper.
 func (cms Store) CacheWrap() types.CacheWrap {
 	return cms.CacheMultiStore().(types.CacheWrap)
-}
-
-// CacheWrapWithTrace implements the CacheWrapper interface.
-func (cms Store) CacheWrapWithTrace(_ io.Writer, _ types.TraceContext) types.CacheWrap {
-	return cms.CacheWrap()
 }
 
 // Implements MultiStore.

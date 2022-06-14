@@ -18,7 +18,6 @@ import (
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/state/txindex"
 	tmStore "github.com/tendermint/tendermint/store"
-	"io"
 	"os"
 	"reflect"
 	"runtime/debug"
@@ -32,7 +31,6 @@ import (
 
 	rootMulti "github.com/pokt-network/pocket-core/store/rootmulti"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
@@ -199,12 +197,6 @@ func (app *BaseApp) BlockStore() *tmStore.BlockStore {
 
 func (app *BaseApp) TMNode() *node.Node {
 	return app.tmNode
-}
-
-// SetCommitMultiStoreTracer sets the store tracer on the BaseApp's underlying
-// CommitMultiStore.
-func (app *BaseApp) SetCommitMultiStoreTracer(w io.Writer) {
-	app.cms.SetTracer(w)
 }
 
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
@@ -678,11 +670,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 		app.cdc.SetUpgradeOverride(true)
 		app.txDecoder = auth.DefaultTxDecoder(app.cdc)
 	}
-	if app.cms.TracingEnabled() {
-		app.cms.SetTracingContext(sdk.TraceContext(
-			map[string]interface{}{"blockHeight": req.Header.Height},
-		))
-	}
 
 	if err := app.validateHeight(req); err != nil {
 		fmt.Println(fmt.Errorf("unable to validate height for req: %v err: %s", req, err))
@@ -881,13 +868,6 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 func (app *BaseApp) txContext(ctx sdk.Ctx, txBytes []byte) (
 	sdk.Context, sdk.MultiStore) { // todo edit here!!!
 	newMS := store.MultiStore((*app.cms.(store.CommitMultiStore).(*rootMulti.Store).CopyStore()).(*rootMulti.Store))
-	if newMS.TracingEnabled() {
-		newMS = newMS.SetTracingContext(
-			map[string]interface{}{
-				"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
-			},
-		)
-	}
 	return ctx.WithMultiStore(newMS), newMS
 }
 
@@ -899,15 +879,6 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Ctx, txBytes []byte) (
 	ms := ctx.MultiStore()
 	// TODO: https://github.com/cosmos/cosmos-sdk/issues/2824
 	msCache := ms.CacheMultiStore()
-	if msCache.TracingEnabled() {
-		msCache = msCache.SetTracingContext(
-			sdk.TraceContext(
-				map[string]interface{}{
-					"txHash": fmt.Sprintf("%X", tmhash.Sum(txBytes)),
-				},
-			),
-		).(sdk.CacheMultiStore)
-	}
 
 	return ctx.WithMultiStore(msCache), msCache
 }
@@ -988,10 +959,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 
 // EndBlock implements the ABCI interface.
 func (app *BaseApp) EndBlock(req abci.RequestEndBlock) (res abci.ResponseEndBlock) {
-	//if app.deliverState.ms.TracingEnabled() {
-	//	app.deliverState.ms = app.deliverState.ms.SetTracingContext(nil).(sdk.CacheMultiStore)
-	//} // todo edit here!!!!
-
 	if app.endBlocker != nil {
 		res = app.endBlocker(app.deliverState.ctx, req)
 	}

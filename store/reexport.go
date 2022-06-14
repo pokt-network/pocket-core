@@ -25,12 +25,9 @@ type (
 	StoreKey         = types.StoreKey
 	StoreType        = types.StoreType
 	Queryable        = types.Queryable
-	TraceContext     = types.TraceContext
 )
 
 // nolint - reexport
 var (
-	PruneNothing    = types.PruneNothing
-	PruneEverything = types.PruneEverything
-	PruneSyncable   = types.PruneSyncable
+	PruneNothing = types.PruneNothing
 )

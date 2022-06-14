@@ -120,7 +120,3 @@ type KVPair = types.KVPair
 type KvPairs []types.KVPair
 
 //----------------------------------------
-
-// TraceContext contains TraceKVStore context data. It will be written with
-// every trace operation.
-type TraceContext = types.TraceContext

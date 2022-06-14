@@ -2,7 +2,6 @@ package iavl
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"sync"
 
@@ -10,7 +9,6 @@ import (
 
 	"github.com/pokt-network/pocket-core/store/cachekv"
 	serrors "github.com/pokt-network/pocket-core/store/errors"
-	"github.com/pokt-network/pocket-core/store/tracekv"
 	"github.com/pokt-network/pocket-core/store/types"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -185,11 +183,6 @@ func (st *Store) GetStoreType() types.StoreType {
 // Implements Store.
 func (st *Store) CacheWrap() types.CacheWrap {
 	return cachekv.NewStore(st)
-}
-
-// CacheWrapWithTrace implements the Store interface.
-func (st *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
-	return cachekv.NewStore(tracekv.NewStore(st, w, tc))
 }
 
 // Implements types.KVStore.

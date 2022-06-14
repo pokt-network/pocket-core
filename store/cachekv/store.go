@@ -4,15 +4,12 @@ import (
 	"bytes"
 	"container/list"
 	"github.com/tendermint/tendermint/libs/kv"
-	"io"
 	"sort"
 	"sync"
 
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/pokt-network/pocket-core/store/types"
-
-	"github.com/pokt-network/pocket-core/store/tracekv"
 )
 
 // If value is nil but deleted is false, it means the parent doesn't have the
@@ -134,11 +131,6 @@ func (store *Store) Write() {
 // Implements CacheWrapper.
 func (store *Store) CacheWrap() types.CacheWrap {
 	return NewStore(store)
-}
-
-// CacheWrapWithTrace implements the CacheWrapper interface.
-func (store *Store) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
-	return NewStore(tracekv.NewStore(store, w, tc))
 }
 
 //----------------------------------------
