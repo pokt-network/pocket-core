@@ -2,7 +2,6 @@ package store
 
 import (
 	"github.com/pokt-network/pocket-core/store/types"
-	stypes "github.com/pokt-network/pocket-core/store/types"
 )
 
 // Import pocket-core/types/store.go for convenience.
@@ -27,9 +26,6 @@ type (
 	StoreType        = types.StoreType
 	Queryable        = types.Queryable
 	TraceContext     = types.TraceContext
-	Gas              = stypes.Gas
-	GasMeter         = types.GasMeter
-	GasConfig        = stypes.GasConfig
 )
 
 // nolint - reexport

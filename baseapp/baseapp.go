@@ -385,27 +385,6 @@ func (app *BaseApp) storeConsensusParams(consensusParams *abci.ConsensusParams) 
 	_ = mainStore.Set(mainConsensusParamsKey, consensusParamsBz)
 }
 
-// getMaximumBlockGas gets the maximum gas from the consensus params. It panics
-// if maximum block gas is less than negative one and returns zero if negative
-// one.
-func (app *BaseApp) getMaximumBlockGas() uint64 {
-	if app.consensusParams == nil || app.consensusParams.Block == nil {
-		return 0
-	}
-
-	maxGas := app.consensusParams.Block.MaxGas
-	switch {
-	case maxGas < -1:
-		fmt.Println(fmt.Errorf("invalid maximum block gas: %d", maxGas))
-		return 0
-	case maxGas == -1:
-		return 0
-
-	default:
-		return uint64(maxGas)
-	}
-}
-
 // ----------------------------------------------------------------------------
 // ABCI
 
@@ -444,10 +423,6 @@ func (app *BaseApp) InitChain(req abci.RequestInitChain) (res abci.ResponseInitC
 	if app.initChainer == nil {
 		return
 	}
-
-	// add block gas meter for any genesis transactions (allow infinite gas)
-	app.deliverState.ctx = app.deliverState.ctx.
-		WithBlockGasMeter(sdk.NewInfiniteGasMeter())
 
 	res = app.initChainer(app.deliverState.ctx, req)
 
@@ -726,16 +701,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 			WithBlockHeight(req.Header.Height)
 	}
 
-	// add block gas meter
-	var gasMeter sdk.GasMeter
-	if maxGas := app.getMaximumBlockGas(); maxGas > 0 {
-		gasMeter = sdk.NewGasMeter(maxGas)
-	} else {
-		gasMeter = sdk.NewInfiniteGasMeter()
-	}
-
-	app.deliverState.ctx = app.deliverState.ctx.WithBlockGasMeter(gasMeter)
-
 	if app.beginBlocker != nil {
 		res = app.beginBlocker(app.deliverState.ctx, req)
 	}
@@ -752,16 +717,6 @@ func (app *BaseApp) BeginBlock(req abci.RequestBeginBlock) (res abci.ResponseBeg
 // NOTE:CheckTx does not run the actual ProtoMsg handler function(s).
 func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) {
 	var result sdk.Result
-	//if _, ok := app.transactionCache[TxCacheKey(req.Tx, runTxModeCheck)]; ok && && cdc.IsAfterNamedFeatureActivationHeight(app.LastBlockHeight(), "some_key_here") {
-	//	return abci.ResponseCheckTx{
-	//		Code:      uint32(codeDuplicateTransaction),
-	//		Data:      result.Data,
-	//		Log:       result.Log,
-	//		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-	//		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
-	//		Events:    result.Events.ToABCIEvents(),
-	//	}
-	//}
 
 	tx, err := app.txDecoder(req.Tx, app.LastBlockHeight())
 	if err != nil {
@@ -771,12 +726,10 @@ func (app *BaseApp) CheckTx(req abci.RequestCheckTx) (res abci.ResponseCheckTx) 
 	}
 
 	return abci.ResponseCheckTx{
-		Code:      uint32(result.Code),
-		Data:      result.Data,
-		Log:       result.Log,
-		GasWanted: int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:   int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
-		Events:    result.Events.ToABCIEvents(),
+		Code:   uint32(result.Code),
+		Data:   result.Data,
+		Log:    result.Log,
+		Events: result.Events.ToABCIEvents(),
 	}
 }
 
@@ -824,8 +777,6 @@ func (app *BaseApp) DeliverTx(req abci.RequestDeliverTx) (res abci.ResponseDeliv
 		Code:        uint32(result.Code),
 		Data:        result.Data,
 		Log:         result.Log,
-		GasWanted:   int64(result.GasWanted), // TODO: Should type accept unsigned ints?
-		GasUsed:     int64(result.GasUsed),   // TODO: Should type accept unsigned ints?
 		Events:      result.Events.ToABCIEvents(),
 		Codespace:   string(result.Codespace),
 		Signer:      signer,
@@ -876,7 +827,6 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode, signer cryp
 		codespace sdk.CodespaceType
 	)
 	events := sdk.EmptyEvents()
-	// NOTE: GasWanted is determined by ante handler and GasUsed by the GasMeter.
 	// match message route
 	msgRoute := msg.Route()
 	handler := app.router.Route(msgRoute)
@@ -910,7 +860,6 @@ func (app *BaseApp) runMsg(ctx sdk.Ctx, msg sdk.Msg, mode runTxMode, signer cryp
 		Codespace: codespace,
 		Data:      data,
 		Log:       strings.TrimSpace(msgLogs.String()),
-		GasUsed:   0,
 		Events:    events,
 	}
 
@@ -968,61 +917,20 @@ func (app *BaseApp) cacheTxContext(ctx sdk.Ctx, txBytes []byte) (
 // further details on transaction execution, reference the BaseApp SDK
 // documentation.
 func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk.Result, signer crypto.PublicKey) {
-	// NOTE: GasWanted should be returned by the AnteHandler. GasUsed is
-	// determined by the GasMeter. We need access to the context to get the gas
-	// meter so we initialize upfront.
-	var gasWanted uint64
-
 	ctx := app.getContextForTx(mode, txBytes)
 	ms := ctx.MultiStore()
 
-	// only run the tx if there is block gas remaining
-	if mode == runTxModeDeliver && ctx.BlockGasMeter().IsOutOfGas() {
-		return sdk.ErrOutOfGas("no block gas left to run tx").Result(), nil
-	}
-
-	var startingGas uint64
-	if mode == runTxModeDeliver {
-		startingGas = ctx.BlockGasMeter().GasConsumed()
-	}
-
 	defer func() {
 		if r := recover(); r != nil {
-			switch rType := r.(type) {
-			case sdk.ErrorOutOfGas:
-				log := fmt.Sprintf(
-					"out of gas in location: %v; gasWanted: %d, gasUsed: %d",
-					rType.Descriptor, gasWanted, ctx.GasMeter().GasConsumed(),
-				)
-				result = sdk.ErrOutOfGas(log).Result()
+			switch r.(type) {
 			default:
 				log := fmt.Sprintf("recovered: %v\nstack:\n%v", r, string(debug.Stack()))
 				result = sdk.ErrInternal(log).Result()
 			}
 		}
-
-		result.GasWanted = gasWanted
-		//result.GasUsed = ctx.GasMeter().GasConsumed()
-		result.GasUsed = 0
 	}()
-
-	// If BlockGasMeter() panics it will be caught by the above recover and will
-	// return an error - in any case BlockGasMeter will consume gas past the limit.
-	//
-	// NOTE: This must exist in a separate defer function for the above recovery
-	// to recover from this one.
 	defer func() {
-		if mode == runTxModeDeliver {
-			ctx.BlockGasMeter().ConsumeGas(
-				ctx.GasMeter().GasConsumedToLimit(),
-				"block gas meter",
-			)
-
-			if ctx.BlockGasMeter().GasConsumed() < startingGas {
-				fmt.Println(sdk.ErrorGasOverflow{Descriptor: "tx gas summation"}) // todo remove w/ gas
-				os.Exit(1)
-			}
-		}
+		// no op
 	}()
 	var msgs = tx.GetMsg()
 	if err := validateBasicTxMsgs(msgs); err != nil {
@@ -1048,13 +956,8 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 			// replaced by the ante handler. We want the original multistore, not one
 			// which was cache-wrapped for the ante handler.
 			//
-			// Also, in the case of the tx aborting, we need to track gas consumed via
-			// the instantiated gas meter in the ante handler, so we update the context
-			// prior to returning.
 			ctx = newCtx.WithMultiStore(ms)
 		}
-
-		gasWanted = result.GasWanted
 
 		if abort {
 			return result, signer
@@ -1069,7 +972,6 @@ func (app *BaseApp) runTx(mode runTxMode, txBytes []byte, tx sdk.Tx) (result sdk
 	// multi-store in case message processing fails.
 	runMsgCtx, newMS := app.txContext(ctx, txBytes) // todo edit here!!!
 	result = app.runMsg(runMsgCtx, msgs, mode, signer)
-	result.GasWanted = gasWanted
 
 	// Safety check: don't write the cache state unless we're in DeliverTx.
 	if mode != runTxModeDeliver {

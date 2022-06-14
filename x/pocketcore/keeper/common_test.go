@@ -443,22 +443,6 @@ func (_m *Ctx) IsPrevCtx() bool {
 	return true
 }
 
-// BlockGasMeter provides a mock function with given fields:
-func (_m *Ctx) BlockGasMeter() storeTypes.GasMeter {
-	ret := _m.Called()
-
-	var r0 storeTypes.GasMeter
-	if rf, ok := ret.Get(0).(func() storeTypes.GasMeter); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.GasMeter)
-		}
-	}
-
-	return r0
-}
-
 // BlockHeader provides a mock function with given fields:
 func (_m *Ctx) BlockHeader() abcitypes.Header {
 	ret := _m.Called()
@@ -596,22 +580,6 @@ func (_m *Ctx) EventManager() *pocketTypes.EventManager {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*pocketTypes.EventManager)
-		}
-	}
-
-	return r0
-}
-
-// GasMeter provides a mock function with given fields:
-func (_m *Ctx) GasMeter() storeTypes.GasMeter {
-	ret := _m.Called()
-
-	var r0 storeTypes.GasMeter
-	if rf, ok := ret.Get(0).(func() storeTypes.GasMeter); ok {
-		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(storeTypes.GasMeter)
 		}
 	}
 
@@ -837,20 +805,6 @@ func (_m *Ctx) VoteInfos() []abcitypes.VoteInfo {
 	return r0
 }
 
-// WithBlockGasMeter provides a mock function with given fields: meter
-func (_m *Ctx) WithBlockGasMeter(meter storeTypes.GasMeter) pocketTypes.Context {
-	ret := _m.Called(meter)
-
-	var r0 pocketTypes.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) pocketTypes.Context); ok {
-		r0 = rf(meter)
-	} else {
-		r0 = ret.Get(0).(pocketTypes.Context)
-	}
-
-	return r0
-}
-
 // WithBlockHeader provides a mock function with given fields: header
 func (_m *Ctx) WithBlockHeader(header abcitypes.Header) pocketTypes.Context {
 	ret := _m.Called(header)
@@ -956,20 +910,6 @@ func (_m *Ctx) WithEventManager(em *pocketTypes.EventManager) pocketTypes.Contex
 	var r0 pocketTypes.Context
 	if rf, ok := ret.Get(0).(func(*pocketTypes.EventManager) pocketTypes.Context); ok {
 		r0 = rf(em)
-	} else {
-		r0 = ret.Get(0).(pocketTypes.Context)
-	}
-
-	return r0
-}
-
-// WithGasMeter provides a mock function with given fields: meter
-func (_m *Ctx) WithGasMeter(meter storeTypes.GasMeter) pocketTypes.Context {
-	ret := _m.Called(meter)
-
-	var r0 pocketTypes.Context
-	if rf, ok := ret.Get(0).(func(storeTypes.GasMeter) pocketTypes.Context); ok {
-		r0 = rf(meter)
 	} else {
 		r0 = ret.Get(0).(pocketTypes.Context)
 	}

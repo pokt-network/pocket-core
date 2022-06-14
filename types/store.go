@@ -124,28 +124,3 @@ type KvPairs []types.KVPair
 // TraceContext contains TraceKVStore context data. It will be written with
 // every trace operation.
 type TraceContext = types.TraceContext
-
-// --------------------------------------
-
-// nolint - reexport
-type (
-	Gas       = types.Gas
-	GasMeter  = types.GasMeter
-	GasConfig = types.GasConfig
-)
-
-// nolint - reexport
-func NewGasMeter(limit Gas) GasMeter {
-	return types.NewGasMeter(limit)
-}
-
-// nolint - reexport
-type (
-	ErrorOutOfGas    = types.ErrorOutOfGas
-	ErrorGasOverflow = types.ErrorGasOverflow
-)
-
-// nolint - reexport
-func NewInfiniteGasMeter() GasMeter {
-	return types.NewInfiniteGasMeter()
-}
