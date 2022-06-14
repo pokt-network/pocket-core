@@ -2,6 +2,8 @@ package rootmulti
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
@@ -12,7 +14,6 @@ import (
 
 	"github.com/pokt-network/pocket-core/store/cachemulti"
 	"github.com/pokt-network/pocket-core/store/dbadapter"
-	"github.com/pokt-network/pocket-core/store/errors"
 	"github.com/pokt-network/pocket-core/store/iavl"
 	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
 	"github.com/pokt-network/pocket-core/store/transient"
@@ -24,6 +25,8 @@ const (
 	commitInfoKeyFmt = "s/%d" // s/<version>
 )
 
+var cdc = codec.NewCodec(types2.NewInterfaceRegistry())
+
 // Store is composed of many CommitStores. Name contrasts with
 // cacheMultiStore which is for cache-wrapping other MultiStores. It implements
 // the CommitMultiStore interface.
@@ -31,7 +34,6 @@ type Store struct {
 	DB            dbm.DB
 	Cache         types.MultiStoreCache
 	lastCommitID  types.CommitID
-	pruningOpts   types.PruningOptions
 	storesParams  map[types.StoreKey]storeParams
 	stores        map[types.StoreKey]types.CommitStore
 	keysByName    map[string]types.StoreKey
@@ -56,7 +58,6 @@ func (rs *Store) CopyStore() *types.Store {
 		DB:           rs.DB,
 		Cache:        rs.Cache,
 		lastCommitID: rs.lastCommitID,
-		pruningOpts:  rs.pruningOpts,
 		storesParams: newParams,
 		stores:       newStores,
 		keysByName:   newKeysByName,
@@ -85,14 +86,6 @@ func NewStore(db dbm.DB, cache bool, iavlCacheSize int64) *Store {
 		stores:        make(map[types.StoreKey]types.CommitStore),
 		keysByName:    make(map[string]types.StoreKey),
 		iavlCacheSize: iavlCacheSize,
-	}
-}
-
-// Implements CommitMultiStore
-func (rs *Store) SetPruning(pruningOpts types.PruningOptions) {
-	rs.pruningOpts = pruningOpts
-	for _, substore := range rs.stores {
-		substore.SetPruning(pruningOpts)
 	}
 }
 
@@ -279,7 +272,6 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 	s := types.Store(&Store{
 		DB:           rs.DB,
 		lastCommitID: rs.lastCommitID,
-		pruningOpts:  rs.pruningOpts,
 		storesParams: newParams,
 		stores:       newStores,
 		keysByName:   newKeysByName,
@@ -413,13 +405,13 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	store := rs.getStoreByName(storeName)
 	if store == nil {
 		msg := fmt.Sprintf("no such store: %s", storeName)
-		return errors.ErrUnknownRequest(msg).QueryResult()
+		return sdk.ErrUnknownRequest(msg).QueryResult()
 	}
 
 	queryable, ok := store.(types.Queryable)
 	if !ok {
 		msg := fmt.Sprintf("store %s doesn't support queries", storeName)
-		return errors.ErrUnknownRequest(msg).QueryResult()
+		return sdk.ErrUnknownRequest(msg).QueryResult()
 	}
 
 	// trim the path and make the query
@@ -431,12 +423,12 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 	}
 
 	if res.Proof == nil || len(res.Proof.Ops) == 0 {
-		return errors.ErrInternal("proof is unexpectedly empty; ensure height has not been pruned").QueryResult()
+		return sdk.ErrInternal("proof is unexpectedly empty; ensure height has not been pruned").QueryResult()
 	}
 
 	commitInfo, errMsg := getCommitInfo(rs.DB, res.Height)
 	if errMsg != nil {
-		return errors.ErrInternal(errMsg.Error()).QueryResult()
+		return sdk.ErrInternal(errMsg.Error()).QueryResult()
 	}
 
 	proofOp := NewMultiStoreProofOp(
@@ -454,9 +446,9 @@ func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
 // parsePath expects a format like /<storeName>[/<subpath>]
 // Must start with /, subpath may be empty
 // Returns error if it doesn't start with /
-func parsePath(path string) (storeName string, subpath string, err errors.Error) {
+func parsePath(path string) (storeName string, subpath string, err sdk.Error) {
 	if !strings.HasPrefix(path, "/") {
-		err = errors.ErrUnknownRequest(fmt.Sprintf("invalid path: %s", path))
+		err = sdk.ErrUnknownRequest(fmt.Sprintf("invalid path: %s", path))
 		return
 	}
 
@@ -490,7 +482,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		if cacheForStore.IsValid() {
 			log.Printf("Warming up cache for %s\n", key.Name())
 		}
-		return iavl.LoadStore(db, id, rs.pruningOpts, rs.lazyLoading, cacheForStore, rs.iavlCacheSize)
+		return iavl.LoadStore(db, id, rs.lazyLoading, cacheForStore, rs.iavlCacheSize)
 
 	case types.StoreTypeDB:
 		return commitDBStoreAdapter{dbadapter.Store{DB: db}}, nil

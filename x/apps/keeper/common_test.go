@@ -2,6 +2,7 @@ package keeper
 
 import (
 	types2 "github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/store/rootmulti"
 	"math/rand"
 	"testing"
 
@@ -19,7 +20,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
@@ -69,7 +69,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	appsKey := sdk.NewKVStoreKey(types.StoreKey)
 
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db, false, 5000000)
+	ms := rootmulti.NewStore(db, false, 5000000)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)

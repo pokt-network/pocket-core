@@ -4,6 +4,7 @@ import (
 	"fmt"
 	cdcTypes "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/store/rootmulti"
 	"os"
 	"testing"
 
@@ -15,7 +16,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/store"
 	"github.com/pokt-network/pocket-core/x/auth/types"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -45,7 +45,7 @@ func createTestInput(t *testing.T, isCheckTx bool, initPower int64, nAccs int64)
 	keyParams := sdk.ParamsKey
 	tkeyParams := sdk.ParamsTKey
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db, false, 5000000)
+	ms := rootmulti.NewStore(db, false, 5000000)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(tkeyParams, sdk.StoreTypeTransient, db)

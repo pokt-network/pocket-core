@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
+	types3 "github.com/pokt-network/pocket-core/store/types"
 	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/tendermint/tendermint/evidence"
@@ -35,7 +36,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/pokt-network/pocket-core/codec"
-	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
@@ -124,21 +124,18 @@ var _ abci.Application = (*BaseApp)(nil)
 // configuration choices.
 //
 // NOTE: The db is used to store the version number for now.
-func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, txDecoder sdk.TxDecoder, cdc *codec.Codec, options ...func(*BaseApp)) *BaseApp {
+func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, txDecoder sdk.TxDecoder, cdc *codec.Codec) *BaseApp {
 	app := &BaseApp{
 		logger:           logger,
 		name:             name,
 		db:               db,
 		cdc:              cdc,
-		cms:              store.NewCommitMultiStore(db, cache, iavlCacheSize),
+		cms:              rootMulti.NewStore(db, cache, iavlCacheSize),
 		router:           NewRouter(),
 		queryRouter:      NewQueryRouter(),
 		transactionCache: make(map[string]struct{}),
 		txDecoder:        txDecoder,
 		fauxMerkleMode:   false,
-	}
-	for _, option := range options {
-		option(app)
 	}
 
 	return app
@@ -867,7 +864,7 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 // a cache wrapped multi-store.
 func (app *BaseApp) txContext(ctx sdk.Ctx, txBytes []byte) (
 	sdk.Context, sdk.MultiStore) { // todo edit here!!!
-	newMS := store.MultiStore((*app.cms.(store.CommitMultiStore).(*rootMulti.Store).CopyStore()).(*rootMulti.Store))
+	newMS := types3.MultiStore((*app.cms.(types3.CommitMultiStore).(*rootMulti.Store).CopyStore()).(*rootMulti.Store))
 	return ctx.WithMultiStore(newMS), newMS
 }
 

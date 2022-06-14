@@ -2,13 +2,13 @@ package iavl
 
 import (
 	"fmt"
+	serrors "github.com/pokt-network/pocket-core/types"
 	"log"
 	"sync"
 
 	"github.com/tendermint/tendermint/libs/kv"
 
 	"github.com/pokt-network/pocket-core/store/cachekv"
-	serrors "github.com/pokt-network/pocket-core/store/errors"
 	"github.com/pokt-network/pocket-core/store/types"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -21,7 +21,7 @@ const (
 )
 
 // LoadStore loads the iavl store
-func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyLoading bool, cache types.SingleStoreCache, iavlCacheSize int64) (types.CommitStore, error) {
+func LoadStore(db dbm.DB, id types.CommitID, lazyLoading bool, cache types.SingleStoreCache, iavlCacheSize int64) (types.CommitStore, error) {
 	var err error
 
 	if iavlCacheSize <= 0 {
@@ -44,7 +44,6 @@ func LoadStore(db dbm.DB, id types.CommitID, pruning types.PruningOptions, lazyL
 	}
 
 	iavl := UnsafeNewStore(tree, int64(0), int64(0), cache)
-	iavl.SetPruning(pruning)
 
 	if iavl.cache.IsValid() {
 		cacheDatasetIterator, _ := iavl.Iterator(nil, nil)
@@ -87,12 +86,10 @@ type Store struct {
 
 // CONTRACT: tree should be fully loaded.
 // nolint: unparam
-func UnsafeNewStore(tree *MutableTree, numRecent int64, storeEvery int64, cache types.SingleStoreCache) *Store {
+func UnsafeNewStore(tree *MutableTree, _ int64, _ int64, cache types.SingleStoreCache) *Store {
 	st := &Store{
-		tree:       tree,
-		numRecent:  numRecent,
-		storeEvery: storeEvery,
-		cache:      cache,
+		tree:  tree,
+		cache: cache,
 	}
 	return st
 }
@@ -162,12 +159,6 @@ func (st *Store) LastCommitID() types.CommitID {
 		Version: st.tree.Version(),
 		Hash:    st.tree.Hash(),
 	}
-}
-
-// Implements Committer.
-func (st *Store) SetPruning(opt types.PruningOptions) {
-	st.numRecent = opt.KeepRecent()
-	st.storeEvery = opt.KeepEvery()
 }
 
 // VersionExists returns whether or not a given version is stored.

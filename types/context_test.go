@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	"github.com/pokt-network/pocket-core/store/rootmulti"
 	"testing"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/pokt-network/pocket-core/store"
 	"github.com/pokt-network/pocket-core/types"
 )
 
@@ -46,7 +46,7 @@ func (l MockLogger) With(kvs ...interface{}) log.Logger {
 
 func defaultContext(key types.StoreKey) types.Context {
 	db := dbm.NewMemDB()
-	cms := store.NewCommitMultiStore(db, false, 5000000)
+	cms := rootmulti.NewStore(db, false, 5000000)
 	cms.MountStoreWithDB(key, types.StoreTypeIAVL, db)
 	_ = cms.LoadLatestVersion()
 	ctx := types.NewContext(cms, abci.Header{}, false, log.NewNopLogger())

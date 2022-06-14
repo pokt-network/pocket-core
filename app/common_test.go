@@ -14,12 +14,9 @@ import (
 	"github.com/tendermint/tendermint/rpc/client/http"
 	"github.com/tendermint/tendermint/rpc/client/local"
 
-	bam "github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
-	"github.com/pokt-network/pocket-core/store"
-
 	// sdk "github.com/pokt-network/pocket-core/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
@@ -291,7 +288,7 @@ func GetApp(logger log.Logger, db dbm.DB, traceWriter io.Writer) *PocketCoreApp 
 			ID:  sdk.PlaceholderHash,
 			URL: sdk.PlaceholderURL,
 		}}
-		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m, L: sync.Mutex{}}, logger, db, false, 5000000, bam.SetPruning(store.PruneNothing))
+		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m, L: sync.Mutex{}}, logger, db, false, 5000000)
 		return p
 	}
 	return creator(logger, db, traceWriter)

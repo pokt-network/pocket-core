@@ -7,11 +7,6 @@ import (
 
 // nolint - reexport
 type (
-	PruningOptions = types.PruningOptions
-)
-
-// nolint - reexport
-type (
 	Store            = types.Store
 	Committer        = types.Committer
 	CommitStore      = types.CommitStore

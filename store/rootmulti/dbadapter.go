@@ -29,5 +29,3 @@ func (cdsa commitDBStoreAdapter) LastCommitID() types.CommitID {
 		Hash:    commithash,
 	}
 }
-
-func (cdsa commitDBStoreAdapter) SetPruning(_ types.PruningOptions) {}

@@ -17,7 +17,6 @@ type Store interface { //nolint
 type Committer interface {
 	Commit() CommitID
 	LastCommitID() CommitID
-	SetPruning(PruningOptions)
 }
 
 // Stores of MultiStore must implement CommitStore.

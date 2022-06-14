@@ -15,12 +15,10 @@ import (
 
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
-	"github.com/pokt-network/pocket-core/baseapp"
 	"github.com/pokt-network/pocket-core/codec"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
 	kb "github.com/pokt-network/pocket-core/crypto/keys"
-	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	apps "github.com/pokt-network/pocket-core/x/apps"
@@ -333,7 +331,7 @@ func InitTendermint(keybase bool, chains *types.HostedBlockchains, logger log.Lo
 		keys = MustGetKeybase()
 	}
 	appCreatorFunc := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
-		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize, baseapp.SetPruning(store.PruneNothing))
+		return NewPocketCoreApp(nil, keys, getTMClient(), chains, logger, db, GlobalConfig.PocketConfig.Cache, GlobalConfig.PocketConfig.IavlCacheSize)
 	}
 	tmNode, app, err := NewClient(config(c), appCreatorFunc)
 	if err != nil {
