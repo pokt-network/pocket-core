@@ -5,8 +5,6 @@ import (
 	"reflect"
 
 	"github.com/pokt-network/pocket-core/codec"
-
-	"github.com/pokt-network/pocket-core/store/prefix"
 )
 
 const (
@@ -74,14 +72,14 @@ func (s Subspace) WithKeyTable(table KeyTable) Subspace {
 func (s Subspace) kvStore(ctx Ctx) KVStore {
 	// append here is safe, appends within a function won't cause
 	// weird side effects when its singlethreaded
-	return prefix.NewStore(ctx.KVStore(s.key), append(s.name, '/'))
+	return NewPrefixStore(ctx.KVStore(s.key), append(s.name, '/'))
 }
 
 // Returns a transient store for modification
 func (s Subspace) transientStore(ctx Ctx) KVStore {
 	// append here is safe, appends within a function won't cause
 	// weird side effects when its singlethreaded
-	return prefix.NewStore(ctx.TransientStore(s.tkey), append(s.name, '/'))
+	return NewPrefixStore(ctx.TransientStore(s.tkey), append(s.name, '/'))
 }
 
 func concatKeys(key, subkey []byte) (res []byte) {

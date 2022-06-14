@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/pokt-network/pocket-core/store/prefix"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
@@ -37,7 +36,7 @@ func TestKeeper(t *testing.T) {
 		[]byte("extra2"), string(""),
 	)
 	cdc, ctx, skey, _, keeper := testComponents(t)
-	store := prefix.NewStore(ctx.KVStore(skey), []byte("test/"))
+	store := sdk.NewPrefixStore(ctx.KVStore(skey), []byte("test/"))
 	space := keeper.Subspace("test").WithKeyTable(table)
 	// Set params
 	for i, kv := range kvs {
@@ -123,7 +122,7 @@ func TestSubspace(t *testing.T) {
 		[]byte("dec"), sdk.BigDec{},
 		[]byte("struct"), s{},
 	)
-	store := prefix.NewStore(ctx.KVStore(key), []byte("test/"))
+	store := sdk.NewPrefixStore(ctx.KVStore(key), []byte("test/"))
 	space := keeper.Subspace("test").WithKeyTable(table)
 	// Test space.Set, space.Modified
 	for i, kv := range kvs {
