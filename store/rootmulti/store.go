@@ -31,7 +31,6 @@ type Store struct {
 	storesParams map[types.StoreKey]storeParams
 	stores       map[types.StoreKey]types.CommitStore
 	keysByName   map[string]types.StoreKey
-	lazyLoading  bool
 }
 
 func (rs *Store) CopyStore() *types.Store {
@@ -53,7 +52,6 @@ func (rs *Store) CopyStore() *types.Store {
 		storesParams: newParams,
 		stores:       newStores,
 		keysByName:   newKeysByName,
-		lazyLoading:  rs.lazyLoading,
 	})
 	return &s
 }
@@ -67,11 +65,6 @@ func NewStore(db dbm.DB) *Store {
 		stores:       make(map[types.StoreKey]types.CommitStore),
 		keysByName:   make(map[string]types.StoreKey),
 	}
-}
-
-// SetLazyLoading sets if the iavl store should be loaded lazily or not
-func (rs *Store) SetLazyLoading(lazyLoading bool) {
-	rs.lazyLoading = lazyLoading
 }
 
 // Implements Store.
@@ -111,11 +104,6 @@ func (rs *Store) GetCommitKVStore(key types.StoreKey) types.CommitKVStore {
 // Implements CommitMultiStore.
 func (rs *Store) LoadLatestVersion() error {
 	ver := getLatestVersion(rs.DB)
-	return rs.LoadVersion(ver)
-}
-
-// Implements CommitMultiStore.
-func (rs *Store) LoadVersion(ver int64) error {
 	if ver == 0 {
 		// Special logic for version 0 where there is no need to get commit
 		// information.
@@ -167,7 +155,7 @@ func (rs *Store) LoadVersion(ver int64) error {
 	return nil
 }
 
-func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
+func (rs *Store) LoadHistoricalVersion(ver int64) (*types.Store, error) {
 	newStores := make(map[types.StoreKey]types.CommitStore)
 	for k, v := range rs.stores {
 		a, ok := (v).(*iavl.Store)
@@ -176,7 +164,7 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 		}
 		s, err := a.LazyLoadStore(ver)
 		if err != nil {
-			return nil, fmt.Errorf("error loading store: %s, in LoadLazyVersion: %s", k, err.Error())
+			return nil, fmt.Errorf("error loading store: %s, in LoadHistoricalVersion: %s", k, err.Error())
 		}
 		newStores[k] = s
 	}
@@ -194,7 +182,6 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 		storesParams: newParams,
 		stores:       newStores,
 		keysByName:   newKeysByName,
-		lazyLoading:  rs.lazyLoading,
 	})
 	return &s, nil
 }
@@ -245,7 +232,7 @@ func (rs *Store) CacheMultiStore() types.CacheMultiStore {
 		stores[k] = v
 	}
 
-	return cachemulti.NewMultiCache(rs.stores)
+	return cachemulti.NewCacheMulti(rs.stores)
 }
 
 // Implements MultiStore.
@@ -316,7 +303,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		panic("recursive MultiStores not yet supported")
 
 	case types.StoreTypeIAVL:
-		return iavl.LoadStore(db, id, rs.lazyLoading)
+		return iavl.LoadStore(db, id)
 
 	default:
 		panic(fmt.Sprintf("unrecognized store type %v", params.typ))

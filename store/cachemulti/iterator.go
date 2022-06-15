@@ -2,322 +2,146 @@ package cachemulti
 
 import (
 	"bytes"
-	"container/list"
-	"github.com/tendermint/tendermint/libs/kv"
-	dbm "github.com/tendermint/tm-db"
-
+	"fmt"
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
-// cacheMergeIterator merges a parent Iterator and a cache Iterator.
-// The cache iterator may return nil keys to signal that an item
-// had been deleted (but not deleted in the parent).
-// If the cache iterator has the same key as the parent, the
-// cache shadows (overrides) the parent.
-//
-// TODO: Optimize by memoizing.
 type cacheMergeIterator struct {
-	parent    types.Iterator
-	cache     types.Iterator
-	ascending bool
+	parent        types.Iterator
+	sortedCache   [][]byte
+	unsortedCache map[string]CacheObject
+	cacheLen      int
+	cacheIndex    int
+	ascending     bool
 }
 
-func (iter *cacheMergeIterator) Error() error {
-	//TODO IMplement
-	return nil
-}
-
-var _ types.Iterator = (*cacheMergeIterator)(nil)
-
-func newCacheMergeIterator(parent, cache types.Iterator, ascending bool) *cacheMergeIterator {
-	iter := &cacheMergeIterator{
-		parent:    parent,
-		cache:     cache,
-		ascending: ascending,
+func NewCacheMergeIterator(parent types.Iterator, sortedCache [][]byte, unsortedCache map[string]CacheObject, ascending bool) types.Iterator {
+	fmt.Println("merge iterator called")
+	l := len(sortedCache)
+	cacheIndex := 0
+	if !ascending {
+		cacheIndex = l - 1
 	}
-	return iter
-}
-
-// Domain implements Iterator.
-// If the domains are different, returns the union.
-func (iter *cacheMergeIterator) Domain() (start, end []byte) {
-	startP, endP := iter.parent.Domain()
-	startC, endC := iter.cache.Domain()
-	if iter.compare(startP, startC) < 0 {
-		start = startP
-	} else {
-		start = startC
+	sc := make([][]byte, 0)
+	copy(sortedCache, sc)
+	return cacheMergeIterator{
+		parent:        parent,
+		sortedCache:   sc,
+		unsortedCache: unsortedCache,
+		cacheLen:      l,
+		cacheIndex:    cacheIndex,
+		ascending:     ascending,
 	}
-	if iter.compare(endP, endC) < 0 {
-		end = endC
-	} else {
-		end = endP
-	}
-	return start, end
 }
 
-// Valid implements Iterator.
-func (iter *cacheMergeIterator) Valid() bool {
-	return iter.skipUntilExistsOrInvalid()
-}
-
-// Next implements Iterator
-func (iter *cacheMergeIterator) Next() {
-	iter.skipUntilExistsOrInvalid()
-	iter.assertValid()
-
-	// If parent is invalid, get the next cache item.
-	if !iter.parent.Valid() {
-		iter.cache.Next()
+func (c cacheMergeIterator) Next() {
+	switch c.IteratorState() {
+	case Neither:
 		return
-	}
-
-	// If cache is invalid, get the next parent item.
-	if !iter.cache.Valid() {
-		iter.parent.Next()
-		return
-	}
-
-	// Both are valid.  Compare keys.
-	keyP, keyC := iter.parent.Key(), iter.cache.Key()
-	switch iter.compare(keyP, keyC) {
-	case -1: // parent < cache
-		iter.parent.Next()
-	case 0: // parent == cache
-		iter.parent.Next()
-		iter.cache.Next()
-	case 1: // parent > cache
-		iter.cache.Next()
+	case Cache:
+		c.cacheNext()
+	case Parent:
+		c.parent.Next()
 	}
 }
 
-// Key implements Iterator
-func (iter *cacheMergeIterator) Key() []byte {
-	iter.skipUntilExistsOrInvalid()
-	iter.assertValid()
-
-	// If parent is invalid, get the cache key.
-	if !iter.parent.Valid() {
-		return iter.cache.Key()
+func (c cacheMergeIterator) Key() (key []byte) {
+	switch c.IteratorState() {
+	case Cache:
+		return c.sortedCache[c.cacheIndex]
+	case Parent:
+		return c.parent.Key()
+	default:
+		return nil
 	}
+}
 
-	// If cache is invalid, get the parent key.
-	if !iter.cache.Valid() {
-		return iter.parent.Key()
+func (c cacheMergeIterator) Value() (value []byte) {
+	switch c.IteratorState() {
+	case Cache:
+		co := c.unsortedCache[string(c.sortedCache[c.cacheIndex])]
+		return co.value
+	case Parent:
+		return c.parent.Value()
+	default:
+		return nil
 	}
+}
 
+func (c cacheMergeIterator) Valid() bool {
+	if !c.parent.Valid() && !c.cacheValid() {
+		return false
+	}
+	return true
+}
+
+func (c cacheMergeIterator) Close() {
+	c.parent.Close()
+}
+
+func (c cacheMergeIterator) Error() error {
+	panic("error is not implemented on cacheMergeIterator")
+}
+
+func (c cacheMergeIterator) Domain() (start []byte, end []byte) {
+	panic("domain is not implemented on cacheMergeIterator")
+}
+
+func (c cacheMergeIterator) IteratorState() State {
+	pValid, cValid := c.parent.Valid(), c.cacheValid()
+	if !pValid && !cValid {
+		return Neither
+	}
+	if !cValid {
+		return Cache
+	}
+	if !cValid {
+		return Parent
+	}
 	// Both are valid.  Compare keys.
-	keyP, keyC := iter.parent.Key(), iter.cache.Key()
-	cmp := iter.compare(keyP, keyC)
+	keyP, keyC := c.parent.Key(), c.sortedCache[c.cacheIndex]
+	cmp := c.compare(keyP, keyC)
 	switch cmp {
 	case -1: // parent < cache
-		return keyP
+		return Cache
 	case 0: // parent == cache
-		return keyP
+		return Cache
 	case 1: // parent > cache
-		return keyC
+		return Parent
 	default:
 		panic("invalid compare result")
 	}
 }
 
-// Value implements Iterator
-func (iter *cacheMergeIterator) Value() []byte {
-	iter.skipUntilExistsOrInvalid()
-	iter.assertValid()
-
-	// If parent is invalid, get the cache value.
-	if !iter.parent.Valid() {
-		return iter.cache.Value()
-	}
-
-	// If cache is invalid, get the parent value.
-	if !iter.cache.Valid() {
-		return iter.parent.Value()
-	}
-
-	// Both are valid.  Compare keys.
-	keyP, keyC := iter.parent.Key(), iter.cache.Key()
-	cmp := iter.compare(keyP, keyC)
-	switch cmp {
-	case -1: // parent < cache
-		return iter.parent.Value()
-	case 0: // parent == cache
-		return iter.cache.Value()
-	case 1: // parent > cache
-		return iter.cache.Value()
-	default:
-		panic("invalid comparison result")
-	}
-}
-
-// Close implements Iterator
-func (iter *cacheMergeIterator) Close() {
-	iter.parent.Close()
-	iter.cache.Close()
-}
-
-// Like bytes.Compare but opposite if not ascending.
-func (iter *cacheMergeIterator) compare(a, b []byte) int {
-	if iter.ascending {
+func (c cacheMergeIterator) compare(a, b []byte) int {
+	if c.ascending {
 		return bytes.Compare(a, b)
 	}
 	return bytes.Compare(a, b) * -1
 }
 
-// Skip all delete-items from the cache w/ `key < until`.  After this function,
-// current cache item is a non-delete-item, or `until <= key`.
-// If the current cache item is not a delete item, does nothing.
-// If `until` is nil, there is no limit, and cache may end up invalid.
-// CONTRACT: cache is valid.
-func (iter *cacheMergeIterator) skipCacheDeletes(until []byte) {
-	for iter.cache.Valid() &&
-		iter.cache.Value() == nil &&
-		(until == nil || iter.compare(iter.cache.Key(), until) < 0) {
-
-		iter.cache.Next()
-	}
-}
-
-// Fast forwards cache (or parent+cache in case of deleted items) until current
-// item exists, or until iterator becomes invalid.
-// Returns whether the iterator is valid.
-func (iter *cacheMergeIterator) skipUntilExistsOrInvalid() bool {
-	for {
-
-		// If parent is invalid, fast-forward cache.
-		if !iter.parent.Valid() {
-			iter.skipCacheDeletes(nil)
-			return iter.cache.Valid()
-		}
-		// Parent is valid.
-
-		if !iter.cache.Valid() {
-			return true
-		}
-		// Parent is valid, cache is valid.
-
-		// Compare parent and cache.
-		keyP := iter.parent.Key()
-		keyC := iter.cache.Key()
-		switch iter.compare(keyP, keyC) {
-
-		case -1: // parent < cache.
-			return true
-
-		case 0: // parent == cache.
-
-			// Skip over if cache item is a delete.
-			valueC := iter.cache.Value()
-			if valueC == nil {
-				iter.parent.Next()
-				iter.cache.Next()
-				continue
-			}
-			// Cache is not a delete.
-
-			return true // cache exists.
-
-		case 1: // cache < parent
-
-			// Skip over if cache item is a delete.
-			valueC := iter.cache.Value()
-			if valueC == nil {
-				iter.skipCacheDeletes(keyP)
-				continue
-			}
-			// Cache is not a delete.
-
-			return true // cache exists.
-		}
-	}
-}
-
-// If not valid, panics.
-// NOTE: May have side-effect of iterating over cache.
-func (iter *cacheMergeIterator) assertValid() {
-	if !iter.Valid() {
-		panic("iterator is invalid")
-	}
-}
-
-// Iterates over iterKVCache items.
-// if key is nil, means it was deleted.
-// Implements Iterator.
-type memIterator struct {
-	start, end []byte
-	items      []*kv.Pair
-	ascending  bool
-}
-
-func (mi *memIterator) Error() error {
-	panic("implement me")
-}
-
-func newMemIterator(start, end []byte, items *list.List, ascending bool) *memIterator {
-	itemsInDomain := make([]*kv.Pair, 0)
-	var entered bool
-	for e := items.Front(); e != nil; e = e.Next() {
-		item := e.Value.(*kv.Pair)
-		if !dbm.IsKeyInDomain(item.Key, start, end) {
-			if entered {
-				break
-			}
-			continue
-		}
-		itemsInDomain = append(itemsInDomain, item)
-		entered = true
-	}
-
-	return &memIterator{
-		start:     start,
-		end:       end,
-		items:     itemsInDomain,
-		ascending: ascending,
-	}
-}
-
-func (mi *memIterator) Domain() ([]byte, []byte) {
-	return mi.start, mi.end
-}
-
-func (mi *memIterator) Valid() bool {
-	return len(mi.items) > 0
-}
-
-func (mi *memIterator) assertValid() {
-	if !mi.Valid() {
-		panic("memIterator is invalid")
-	}
-}
-
-func (mi *memIterator) Next() {
-	mi.assertValid()
-	if mi.ascending {
-		mi.items = mi.items[1:]
+func (c cacheMergeIterator) cacheValid() bool {
+	if c.ascending {
+		return c.cacheIndex < c.cacheLen
 	} else {
-		mi.items = mi.items[:len(mi.items)-1]
+		return c.cacheIndex > -1
 	}
 }
 
-func (mi *memIterator) Key() []byte {
-	mi.assertValid()
-	if mi.ascending {
-		return mi.items[0].Key
+func (c cacheMergeIterator) cacheNext() {
+	if c.ascending {
+		c.cacheIndex += 1
+	} else {
+		c.cacheIndex -= 1
 	}
-	return mi.items[len(mi.items)-1].Key
 }
 
-func (mi *memIterator) Value() []byte {
-	mi.assertValid()
-	if mi.ascending {
-		return mi.items[0].Value
-	}
-	return mi.items[len(mi.items)-1].Value
-}
+var _ types.Iterator = (*cacheMergeIterator)(nil)
 
-func (mi *memIterator) Close() {
-	mi.start = nil
-	mi.end = nil
-	mi.items = nil
-}
+type State int
+
+const (
+	Neither State = iota
+	Cache
+	Parent
+)

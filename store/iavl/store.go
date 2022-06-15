@@ -17,7 +17,7 @@ const (
 )
 
 // LoadStore loads the iavl store
-func LoadStore(db dbm.DB, id types.CommitID, lazyLoading bool) (types.CommitStore, error) {
+func LoadStore(db dbm.DB, id types.CommitID) (types.CommitStore, error) {
 	var err error
 
 	tree, err := NewMutableTree(db, defaultIAVLCacheSize)
@@ -25,11 +25,7 @@ func LoadStore(db dbm.DB, id types.CommitID, lazyLoading bool) (types.CommitStor
 		return nil, err
 	}
 
-	if lazyLoading {
-		_, err = tree.LazyLoadVersion(id.Version)
-	} else {
-		_, err = tree.LoadVersion(id.Version)
-	}
+	_, err = tree.LoadVersion(id.Version)
 
 	if err != nil {
 		return nil, err
@@ -70,7 +66,7 @@ func UnsafeNewStore(tree *MutableTree, _ int64, _ int64) *Store {
 	return st
 }
 
-// LoadLazyVersion returns a reference to a new store backed by an immutable IAVL
+// LoadHistoricalVersion returns a reference to a new store backed by an immutable IAVL
 // tree at a specific version (height) without any pruning options. This should
 // be used for querying and iteration only. If the version does not exist or has
 // been pruned, an error will be returned. Any mutable operations executed will
@@ -147,12 +143,11 @@ func (st *Store) GetStoreType() types.StoreType {
 
 // Implements Store.
 func (st *Store) CacheWrap() types.CacheWrap {
-	return cachemulti.NewStore(st)
+	return cachemulti.NewStoreCache(st)
 }
 
 // Implements types.KVStore.
 func (st *Store) Set(key, value []byte) error {
-	types.AssertValidValue(value)
 	st.tree.Set(key, value)
 	return nil
 }

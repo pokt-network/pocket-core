@@ -65,15 +65,9 @@ type CommitMultiStore interface {
 	// Load the latest persisted version. Called once after all calls to
 	// Mount*Store() are complete.
 	LoadLatestVersion() error
-
-	// Load a specific persisted version. When you load an old version, or when
-	// the last commit attempt didn't complete, the next commit after loading
-	// must be idempotent (return the same commit id). Otherwise the behavior is
-	// undefined.
-	LoadVersion(ver int64) error
 	// Load a specific persisted version in a memory saving fashion.
 	// Don't iterate through and collect all the roots and versions
-	LoadLazyVersion(ver int64) (*Store, error)
+	LoadHistoricalVersion(ver int64) (*Store, error)
 	CopyStore() *Store
 }
 

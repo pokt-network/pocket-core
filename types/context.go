@@ -229,7 +229,7 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
 		return cachedCtx.(Context), nil
 	}
-	ms, err := (c.ms).(CommitMultiStore).LoadLazyVersion(height)
+	ms, err := (c.ms).(CommitMultiStore).LoadHistoricalVersion(height)
 	if err != nil {
 		return Context{}, err
 	}

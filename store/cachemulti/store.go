@@ -2,218 +2,147 @@ package cachemulti
 
 import (
 	"bytes"
-	"container/list"
-	"github.com/tendermint/tendermint/libs/kv"
+	"fmt"
+	"github.com/pokt-network/pocket-core/store/types"
 	"sort"
 	"sync"
-
-	dbm "github.com/tendermint/tm-db"
-
-	"github.com/pokt-network/pocket-core/store/types"
 )
 
-// If value is nil but deleted is false, it means the parent doesn't have the
-// key.  (No need to delete upon Write())
-type cValue struct {
-	value   []byte
-	deleted bool
-	dirty   bool
+var _ types.CacheKVStore = (*StoreCache)(nil)
+
+type Operation int64
+
+const (
+	Delete Operation = iota
+	Set
+)
+
+type CacheObject struct {
+	key       []byte
+	value     []byte
+	operation Operation
 }
 
 // Store wraps an in-memory cache around an underlying types.KVStore.
-type Store struct {
+type StoreCache struct {
 	mtx           sync.Mutex
-	cache         map[string]*cValue
-	unsortedCache map[string]struct{}
-	sortedCache   *list.List // always ascending sorted
-	parent        types.KVStore
+	unsortedCache map[string]CacheObject // used for reading
+	sortedCache   [][]byte               // used for writing and iterating
+	parent        types.KVStore          // the parent this store is caching
 }
 
-var _ types.CacheKVStore = (*Store)(nil)
-
-// nolint
-func NewStore(parent types.KVStore) *Store {
-	return &Store{
-		cache:         make(map[string]*cValue),
-		unsortedCache: make(map[string]struct{}),
-		sortedCache:   list.New(),
+func NewStoreCache(parent types.KVStore) *StoreCache {
+	return &StoreCache{
+		mtx:           sync.Mutex{},
+		unsortedCache: make(map[string]CacheObject),
+		sortedCache:   make([][]byte, 0),
 		parent:        parent,
 	}
 }
 
-// Implements Store.
-func (store *Store) GetStoreType() types.StoreType {
-	return store.parent.GetStoreType()
-}
-
-// Implements types.KVStore.
-func (store *Store) Get(key []byte) (value []byte, err error) {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
-	types.AssertValidKey(key)
-
-	cacheValue, ok := store.cache[string(key)]
-	if !ok {
-		value, _ = store.parent.Get(key)
-		store.setCacheValue(key, value, false, false)
-	} else {
-		value = cacheValue.value
-	}
-
-	return value, nil
-}
-
-// Implements types.KVStore.
-func (store *Store) Set(key []byte, value []byte) error {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
-	types.AssertValidKey(key)
-	types.AssertValidValue(value)
-
-	store.setCacheValue(key, value, false, true)
-	return nil
-}
-
-// Implements types.KVStore.
-func (store *Store) Has(key []byte) (bool, error) {
-	value, _ := store.Get(key)
-	return value != nil, nil
-}
-
-// Implements types.KVStore.
-func (store *Store) Delete(key []byte) error {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
-	types.AssertValidKey(key)
-
-	store.setCacheValue(key, nil, true, true)
-	return nil
-}
-
-// Implements Cachetypes.KVStore.
-func (store *Store) Write() {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
-
-	// We need a copy of all of the keys.
-	// Not the best, but probably not a bottleneck depending.
-	keys := make([]string, 0, len(store.cache))
-	for key, dbValue := range store.cache {
-		if dbValue.dirty {
-			keys = append(keys, key)
-		}
-	}
-
-	sort.Strings(keys)
-
-	// TODO: Consider allowing usage of Batch, which would allow the write to
-	// at least happen atomically.
-	for _, key := range keys {
-		cacheValue := store.cache[key]
-		if cacheValue.deleted {
-			_ = store.parent.Delete([]byte(key))
-		} else if cacheValue.value == nil {
-			// Skip, it already doesn't exist in parent.
+func (i *StoreCache) Get(key []byte) ([]byte, error) {
+	if cacheObj, ok := i.unsortedCache[string(key)]; ok {
+		if cacheObj.operation == Delete {
+			return nil, nil
 		} else {
-			_ = store.parent.Set([]byte(key), cacheValue.value)
+			return cacheObj.value, nil
 		}
 	}
-
-	// Clear the cache
-	store.cache = make(map[string]*cValue)
-	store.unsortedCache = make(map[string]struct{})
-	store.sortedCache = list.New()
+	return i.parent.Get(key)
 }
 
-//----------------------------------------
-// To cache-wrap this Store further.
-
-// Implements CacheWrapper.
-func (store *Store) CacheWrap() types.CacheWrap {
-	return NewStore(store)
+func (i *StoreCache) Has(key []byte) (bool, error) {
+	if cacheObj, ok := i.unsortedCache[string(key)]; ok {
+		if cacheObj.operation == Delete {
+			return false, nil
+		} else {
+			return true, nil
+		}
+	}
+	return i.parent.Has(key)
 }
 
-//----------------------------------------
-// Iteration
-
-// Implements types.KVStore.
-func (store *Store) Iterator(start, end []byte) (types.Iterator, error) {
-	return store.iterator(start, end, true)
-}
-
-// Implements types.KVStore.
-func (store *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
-	return store.iterator(start, end, false)
-}
-
-func (store *Store) iterator(start, end []byte, ascending bool) (it types.Iterator, err error) {
-	store.mtx.Lock()
-	defer store.mtx.Unlock()
-
-	var parent, cache types.Iterator
-
-	if ascending {
-		parent, err = store.parent.Iterator(start, end)
+func (i *StoreCache) Set(key, value []byte) error {
+	_, found := i.unsortedCache[string(key)]
+	i.unsortedCache[string(key)] = CacheObject{
+		key:       key,
+		value:     value,
+		operation: Set,
+	}
+	// TODO naive
+	if found {
+		fmt.Println("Setting from found storeCache")
+		index := sort.Search(len(i.sortedCache), func(a int) bool { return bytes.Equal(i.sortedCache[a], key) })
+		i.sortedCache[index] = key
 	} else {
-		parent, err = store.parent.ReverseIterator(start, end)
+		i.sortedCache = append(i.sortedCache, key)
+		sort.Slice(i.sortedCache, func(x, y int) bool {
+			return bytes.Compare(i.sortedCache[x], i.sortedCache[y]) < 0
+		})
 	}
-
-	store.dirtyItems(start, end)
-	cache = newMemIterator(start, end, store.sortedCache, ascending)
-
-	return newCacheMergeIterator(parent, cache, ascending), err
+	return nil
 }
 
-// Constructs a slice of dirty items, to use w/ memIterator.
-func (store *Store) dirtyItems(start, end []byte) {
-	unsorted := make([]*kv.Pair, 0)
-
-	for key := range store.unsortedCache {
-		cacheValue := store.cache[key]
-		if dbm.IsKeyInDomain([]byte(key), start, end) {
-			unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
-			delete(store.unsortedCache, key)
+func (i *StoreCache) Delete(key []byte) error {
+	// let's see if it found in the unsorted cache
+	_, found := i.unsortedCache[string(key)]
+	i.unsortedCache[string(key)] = CacheObject{
+		key:       key,
+		value:     nil,
+		operation: Delete,
+	}
+	// TODO naive
+	// if found, let's delete it from the sorted cache too
+	if found {
+		fmt.Println("deleting from found storeCache")
+		l := len(i.sortedCache)
+		index := sort.Search(l, func(a int) bool { return bytes.Equal(i.sortedCache[a], key) })
+		if index+1 == l {
+			i.sortedCache = i.sortedCache[:index]
+		} else {
+			i.sortedCache = append(i.sortedCache[:index], i.sortedCache[index+1:]...)
 		}
 	}
-
-	sort.Slice(unsorted, func(i, j int) bool {
-		return bytes.Compare(unsorted[i].Key, unsorted[j].Key) < 0
-	})
-
-	for e := store.sortedCache.Front(); e != nil && len(unsorted) != 0; {
-		uitem := unsorted[0]
-		sitem := e.Value.(*kv.Pair)
-		comp := bytes.Compare(uitem.Key, sitem.Key)
-		switch comp {
-		case -1:
-			unsorted = unsorted[1:]
-			store.sortedCache.InsertBefore(uitem, e)
-		case 1:
-			e = e.Next()
-		case 0:
-			unsorted = unsorted[1:]
-			e.Value = uitem
-			e = e.Next()
-		}
-	}
-
-	for _, kvp := range unsorted {
-		store.sortedCache.PushBack(kvp)
-	}
-
+	return nil
 }
 
-//----------------------------------------
-// etc
+func (i *StoreCache) Iterator(start, end []byte) (types.Iterator, error) {
+	fmt.Println("iterating on StoreCache")
+	parent, err := i.parent.Iterator(start, end)
+	if err != nil {
+		return nil, err
+	}
+	return NewCacheMergeIterator(parent, i.sortedCache, i.unsortedCache, false), nil
+}
 
-// Only entrypoint to mutate store.cache.
-func (store *Store) setCacheValue(key, value []byte, deleted bool, dirty bool) {
-	store.cache[string(key)] = &cValue{
-		value:   value,
-		deleted: deleted,
-		dirty:   dirty,
+func (i *StoreCache) ReverseIterator(start, end []byte) (types.Iterator, error) {
+	fmt.Println("reverse-iterating on StoreCache")
+	parent, err := i.parent.ReverseIterator(start, end)
+	if err != nil {
+		return nil, err
 	}
-	if dirty {
-		store.unsortedCache[string(key)] = struct{}{}
+	return NewCacheMergeIterator(parent, i.sortedCache, i.unsortedCache, false), nil
+}
+
+func (i *StoreCache) Write() {
+	for _, k := range i.sortedCache {
+		co, _ := i.unsortedCache[string(k)]
+		switch co.operation {
+		case Set:
+			_ = i.parent.Set(co.key, co.value)
+		case Delete:
+			_ = i.parent.Delete(co.key)
+		}
 	}
+	// Clear the cache
+	i.unsortedCache = make(map[string]CacheObject)
+	i.sortedCache = make([][]byte, 0)
+}
+
+func (i *StoreCache) GetStoreType() types.StoreType {
+	panic("GetStoreType not implemented for StoreCache")
+}
+
+func (i *StoreCache) CacheWrap() types.CacheWrap {
+	panic("CacheWrap not implemented for StoreCache")
 }
