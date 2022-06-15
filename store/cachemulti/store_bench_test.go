@@ -1,19 +1,17 @@
-package cachekv_test
+package cachemulti_test
 
 import (
 	"crypto/rand"
+	"github.com/pokt-network/pocket-core/store/cachemulti"
 	"sort"
 	"testing"
 
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/pokt-network/pocket-core/store/cachekv"
-	"github.com/pokt-network/pocket-core/store/dbadapter"
 )
 
 func benchmarkCacheKVStoreIterator(numKVs int, b *testing.B) {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
-	cstore := cachekv.NewStore(mem)
+	mem := DBAdapterStore{DB: dbm.NewMemDB()}
+	cstore := cachemulti.NewStore(mem)
 	keys := make([]string, numKVs)
 
 	for i := 0; i < numKVs; i++ {

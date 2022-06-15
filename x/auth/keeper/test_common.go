@@ -44,7 +44,7 @@ func createTestInput(t *testing.T, isCheckTx bool, initPower int64, nAccs int64)
 	keyAcc := sdk.NewKVStoreKey(types.StoreKey)
 	keyParams := sdk.ParamsKey
 	db := dbm.NewMemDB()
-	ms := rootmulti.NewStore(db, false, 5000000)
+	ms := rootmulti.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()

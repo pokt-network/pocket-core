@@ -31,8 +31,8 @@ const (
 )
 
 // NewPocketCoreApp is a constructor function for PocketCoreApp
-func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64) *PocketCoreApp {
-	app := NewPocketBaseApp(logger, db, cache, iavlCacheSize)
+func NewPocketCoreApp(genState GenesisState, keybase keys.Keybase, tmClient client.Client, hostedChains *pocketTypes.HostedBlockchains, logger log.Logger, db dbm.DB) *PocketCoreApp {
+	app := NewPocketBaseApp(logger, db)
 	// setup subspaces
 	authSubspace := sdk.NewSubspace(auth.DefaultParamspace)
 	nodesSubspace := sdk.NewSubspace(nodesTypes.DefaultParamspace)

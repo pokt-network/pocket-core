@@ -45,7 +45,3 @@ func (app *BaseApp) SetAddrPeerFilter(pf sdk.PeerFilter) {
 func (app *BaseApp) SetIDPeerFilter(pf sdk.PeerFilter) {
 	app.idPeerFilter = pf
 }
-
-func (app *BaseApp) SetFauxMerkleMode() {
-	app.fauxMerkleMode = true
-}

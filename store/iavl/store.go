@@ -2,13 +2,12 @@ package iavl
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/store/cachemulti"
 	serrors "github.com/pokt-network/pocket-core/types"
-	"log"
 	"sync"
 
 	"github.com/tendermint/tendermint/libs/kv"
 
-	"github.com/pokt-network/pocket-core/store/cachekv"
 	"github.com/pokt-network/pocket-core/store/types"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -21,14 +20,10 @@ const (
 )
 
 // LoadStore loads the iavl store
-func LoadStore(db dbm.DB, id types.CommitID, lazyLoading bool, cache types.SingleStoreCache, iavlCacheSize int64) (types.CommitStore, error) {
+func LoadStore(db dbm.DB, id types.CommitID, lazyLoading bool) (types.CommitStore, error) {
 	var err error
 
-	if iavlCacheSize <= 0 {
-		iavlCacheSize = defaultIAVLCacheSize
-	}
-
-	tree, err := NewMutableTree(db, int(iavlCacheSize))
+	tree, err := NewMutableTree(db, defaultIAVLCacheSize)
 	if err != nil {
 		return nil, err
 	}
@@ -43,19 +38,7 @@ func LoadStore(db dbm.DB, id types.CommitID, lazyLoading bool, cache types.Singl
 		return nil, err
 	}
 
-	iavl := UnsafeNewStore(tree, int64(0), int64(0), cache)
-
-	if iavl.cache.IsValid() {
-		cacheDatasetIterator, _ := iavl.Iterator(nil, nil)
-		cacheDataset := make(map[string]string, 10)
-		for cacheDatasetIterator.Valid() {
-			cacheDataset[string(cacheDatasetIterator.Key())] = string(cacheDatasetIterator.Value())
-			cacheDatasetIterator.Next()
-		}
-
-		iavl.cache.Initialize(cacheDataset, iavl.tree.Version())
-		log.Println("Cache warmed.")
-	}
+	iavl := UnsafeNewStore(tree, int64(0), int64(0))
 	return iavl, nil
 }
 
@@ -80,16 +63,13 @@ type Store struct {
 	// By default this value should be set the same across all nodes,
 	// so that nodes can know the waypoints their peers store.
 	storeEvery int64
-
-	cache types.SingleStoreCache
 }
 
 // CONTRACT: tree should be fully loaded.
 // nolint: unparam
-func UnsafeNewStore(tree *MutableTree, _ int64, _ int64, cache types.SingleStoreCache) *Store {
+func UnsafeNewStore(tree *MutableTree, _ int64, _ int64) *Store {
 	st := &Store{
-		tree:  tree,
-		cache: cache,
+		tree: tree,
 	}
 	return st
 }
@@ -99,7 +79,7 @@ func UnsafeNewStore(tree *MutableTree, _ int64, _ int64, cache types.SingleStore
 // be used for querying and iteration only. If the version does not exist or has
 // been pruned, an error will be returned. Any mutable operations executed will
 // result in a panic.
-func (st *Store) LazyLoadStore(version int64, cache types.SingleStoreCache) (*Store, error) {
+func (st *Store) LazyLoadStore(version int64) (*Store, error) {
 	a, ok := st.tree.(*MutableTree)
 	if !ok {
 		return nil, fmt.Errorf("not immutable tree in LazyLoadStore")
@@ -109,7 +89,7 @@ func (st *Store) LazyLoadStore(version int64, cache types.SingleStoreCache) (*St
 	if err != nil {
 		return nil, err
 	}
-	iavl := UnsafeNewStore(tree, int64(0), int64(0), cache)
+	iavl := UnsafeNewStore(tree, int64(0), int64(0))
 	return iavl, nil
 }
 
@@ -129,9 +109,7 @@ func (st *Store) Rollback(version int64) error {
 func (st *Store) Commit() types.CommitID {
 	// Save a new version.
 	hash, version, err := st.tree.SaveVersion()
-	st.cache.Commit(version)
 	if err != nil {
-		// TODO: Do we want to extend Commit to allow returning errors?
 		panic(err)
 	}
 
@@ -173,38 +151,30 @@ func (st *Store) GetStoreType() types.StoreType {
 
 // Implements Store.
 func (st *Store) CacheWrap() types.CacheWrap {
-	return cachekv.NewStore(st)
+	return cachemulti.NewStore(st)
 }
 
 // Implements types.KVStore.
 func (st *Store) Set(key, value []byte) error {
 	types.AssertValidValue(value)
 	st.tree.Set(key, value)
-	st.cache.Set(key, value)
 	return nil
 }
 
 // Implements types.KVStore.
 func (st *Store) Get(key []byte) (value []byte, err error) {
-	if val, err := st.cache.Get(st.tree.Version(), key); err == nil {
-		return val, nil
-	}
 	_, v := st.tree.Get(key)
 	return v, nil
 }
 
 // Implements types.KVStore.
 func (st *Store) Has(key []byte) (exists bool, err error) {
-	if val, err := st.cache.Has(st.tree.Version(), key); err == nil {
-		return val, nil
-	}
 	return st.tree.Has(key), nil
 }
 
 // Implements types.KVStore.
 func (st *Store) Delete(key []byte) error {
 	st.tree.Remove(key)
-	st.cache.Remove(key)
 	return nil
 }
 
@@ -217,9 +187,6 @@ func (st *Store) Iterator(start, end []byte) (types.Iterator, error) {
 		iTree = tree.ImmutableTree
 	case *MutableTree:
 		iTree = tree.ImmutableTree
-	}
-	if val, err := st.cache.Iterator(iTree.version, start, end); err == nil {
-		return val, nil
 	}
 	return newIAVLIterator(iTree, start, end, true), nil
 }
@@ -234,10 +201,6 @@ func (st *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
 	case *MutableTree:
 		iTree = tree.ImmutableTree
 	}
-	if val, err := st.cache.ReverseIterator(iTree.version, start, end); err == nil {
-		return val, nil
-	}
-
 	return newIAVLIterator(iTree, start, end, false), nil
 }
 

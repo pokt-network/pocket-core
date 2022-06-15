@@ -1,29 +1,46 @@
-package cachekv_test
+package cachemulti_test
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/store/cachemulti"
 	rand2 "github.com/tendermint/tendermint/libs/rand"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/pokt-network/pocket-core/store/cachekv"
-	"github.com/pokt-network/pocket-core/store/dbadapter"
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
+// Wrapper type for dbm.Db with implementation of KVStore
+type DBAdapterStore struct {
+	dbm.DB
+}
+
+// GetStoreType returns the type of the store.
+func (DBAdapterStore) GetStoreType() types.StoreType {
+	return types.StoreTypeDB
+}
+
+// CacheWrap cache wraps the underlying store.
+func (dsa DBAdapterStore) CacheWrap() types.CacheWrap {
+	return cachemulti.NewStore(dsa)
+}
+
+// dbm.DB implements KVStore so we can CacheKVStore it.
+var _ types.KVStore = DBAdapterStore{}
+
 func newCacheKVStore() types.CacheKVStore {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
-	return cachekv.NewStore(mem)
+	mem := DBAdapterStore{DB: dbm.NewMemDB()}
+	return cachemulti.NewStore(mem)
 }
 
 func keyFmt(i int) []byte { return bz(fmt.Sprintf("key%0.8d", i)) }
 func valFmt(i int) []byte { return bz(fmt.Sprintf("value%0.8d", i)) }
 
 func TestCacheKVStore(t *testing.T) {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
-	st := cachekv.NewStore(mem)
+	mem := DBAdapterStore{DB: dbm.NewMemDB()}
+	st := cachemulti.NewStore(mem)
 
 	g, _ := st.Get(keyFmt(1))
 	require.Empty(t, g, "Expected `key1` to be empty")
@@ -57,12 +74,12 @@ func TestCacheKVStore(t *testing.T) {
 	require.Equal(t, valFmt(2), sg)
 
 	// make a new one, check it
-	st = cachekv.NewStore(mem)
+	st = cachemulti.NewStore(mem)
 	sg, _ = st.Get(keyFmt(1))
 	require.Equal(t, valFmt(2), sg)
 
 	// make a new one and delete - should not be removed from mem
-	st = cachekv.NewStore(mem)
+	st = cachemulti.NewStore(mem)
 	_ = st.Delete(keyFmt(1))
 	sg, _ = st.Get(keyFmt(1))
 	require.Empty(t, sg)
@@ -78,14 +95,14 @@ func TestCacheKVStore(t *testing.T) {
 }
 
 func TestCacheKVStoreNoNilSet(t *testing.T) {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
-	st := cachekv.NewStore(mem)
+	mem := DBAdapterStore{DB: dbm.NewMemDB()}
+	st := cachemulti.NewStore(mem)
 	require.Panics(t, func() { _ = st.Set([]byte("key"), nil) }, "setting a nil value should panic")
 }
 
 func TestCacheKVStoreNested(t *testing.T) {
-	mem := dbadapter.Store{DB: dbm.NewMemDB()}
-	st := cachekv.NewStore(mem)
+	mem := DBAdapterStore{DB: dbm.NewMemDB()}
+	st := cachemulti.NewStore(mem)
 
 	// set. check its there on st and not on mem.
 	_ = st.Set(keyFmt(1), valFmt(1))
@@ -95,7 +112,7 @@ func TestCacheKVStoreNested(t *testing.T) {
 	require.Equal(t, valFmt(1), sg)
 
 	// make a new from st and check
-	st2 := cachekv.NewStore(st)
+	st2 := cachemulti.NewStore(st)
 	sg2, _ := st2.Get(keyFmt(1))
 	require.Equal(t, valFmt(1), sg2)
 

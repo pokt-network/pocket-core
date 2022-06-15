@@ -44,10 +44,6 @@ type MultiStore interface { //nolint
 	// call CacheMultiStore.Write().
 	CacheMultiStore() CacheMultiStore
 
-	// CacheMultiStoreWithVersion cache-wraps the underlying MultiStore where
-	// each stored is loaded at a specific version (height).
-	CacheMultiStoreWithVersion(version int64) (CacheMultiStore, error)
-
 	// Convenience for fetching substores.
 	// If the store does not exist, panics.
 	GetStore(StoreKey) Store
@@ -227,20 +223,3 @@ func (key *KVStoreKey) String() string {
 
 // key-value result for iterator queries
 type KVPair kv.Pair
-
-type SingleStoreCache interface {
-	Get(height int64, key []byte) ([]byte, error)
-	Has(height int64, key []byte) (bool, error)
-	Set(key []byte, value []byte)
-	Remove(key []byte) error
-	Iterator(height int64, start, end []byte) (Iterator, error)
-	ReverseIterator(height int64, start, end []byte) (Iterator, error)
-	Commit(height int64)
-	Initialize(currentData map[string]string, version int64)
-	IsValid() bool
-}
-
-type MultiStoreCache interface {
-	InitializeSingleStoreCache(height int64, storeKey StoreKey) error
-	GetSingleStoreCache(storekey StoreKey) SingleStoreCache
-}

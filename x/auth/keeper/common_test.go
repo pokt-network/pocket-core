@@ -32,7 +32,7 @@ func setupTestInput() testInput {
 	authCapKey := sdk.NewKVStoreKey("auth")
 	keyParams := sdk.ParamsKey
 
-	ms := rootmulti.NewStore(db, false, 5000000)
+	ms := rootmulti.NewStore(db)
 	ms.MountStoreWithDB(authCapKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	_ = ms.LoadLatestVersion()

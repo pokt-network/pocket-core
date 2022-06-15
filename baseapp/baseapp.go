@@ -20,7 +20,6 @@ import (
 	"github.com/tendermint/tendermint/state/txindex"
 	tmStore "github.com/tendermint/tendermint/store"
 	"os"
-	"reflect"
 	"runtime/debug"
 	"sort"
 	"strings"
@@ -89,7 +88,6 @@ type BaseApp struct {
 	endBlocker     sdk.EndBlocker   // logic to run after all txs, and to determine valset changes
 	addrPeerFilter sdk.PeerFilter   // filter peers by address and port
 	idPeerFilter   sdk.PeerFilter   // filter peers by node ID
-	fauxMerkleMode bool             // if true, IAVL MountStores uses MountStoresDB for simulation speed.
 
 	// --------------------
 	// Volatile state
@@ -124,18 +122,17 @@ var _ abci.Application = (*BaseApp)(nil)
 // configuration choices.
 //
 // NOTE: The db is used to store the version number for now.
-func NewBaseApp(name string, logger log.Logger, db dbm.DB, cache bool, iavlCacheSize int64, txDecoder sdk.TxDecoder, cdc *codec.Codec) *BaseApp {
+func NewBaseApp(name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecoder, cdc *codec.Codec) *BaseApp {
 	app := &BaseApp{
 		logger:           logger,
 		name:             name,
 		db:               db,
 		cdc:              cdc,
-		cms:              rootMulti.NewStore(db, cache, iavlCacheSize),
+		cms:              rootMulti.NewStore(db),
 		router:           NewRouter(),
 		queryRouter:      NewQueryRouter(),
 		transactionCache: make(map[string]struct{}),
 		txDecoder:        txDecoder,
-		fauxMerkleMode:   false,
 	}
 
 	return app
@@ -199,21 +196,21 @@ func (app *BaseApp) TMNode() *node.Node {
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
 // multistore.
 func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
-	for _, key := range keys {
-		switch key.(type) {
-		case *sdk.KVStoreKey:
-			if !app.fauxMerkleMode {
-				app.MountStore(key, sdk.StoreTypeIAVL)
-			} else {
-				// StoreTypeDB doesn't do anything upon commit, and it doesn't
-				// retain history, but it's useful for faster simulation.
-				app.MountStore(key, sdk.StoreTypeDB)
-			}
-		default:
-			fmt.Println("Unrecognized store key type " + reflect.TypeOf(key).Name())
-			os.Exit(1)
-		}
-	}
+	//for _, key := range keys { NO OP
+	//	switch key.(type) {
+	//	case *sdk.KVStoreKey:
+	//		if !app.fauxMerkleMode {
+	//			app.MountStore(key, sdk.StoreTypeIAVL)
+	//		} else {
+	//			// StoreTypeDB doesn't do anything upon commit, and it doesn't
+	//			// retain history, but it's useful for faster simulation.
+	//			app.MountStore(key, sdk.StoreTypeDB)
+	//		}
+	//	default:
+	//		fmt.Println("Unrecognized store key type " + reflect.TypeOf(key).Name())
+	//		os.Exit(1)
+	//	}
+	//}
 }
 
 // MountStores mounts all IAVL or DB stores to the provided keys in the BaseApp
@@ -221,13 +218,7 @@ func (app *BaseApp) MountStores(keys ...sdk.StoreKey) {
 func (app *BaseApp) MountKVStores(keys map[string]*sdk.KVStoreKey) {
 	keys[sdk.ParamsKey.Name()] = sdk.ParamsKey
 	for _, key := range keys {
-		if !app.fauxMerkleMode {
-			app.MountStore(key, sdk.StoreTypeIAVL)
-		} else {
-			// StoreTypeDB doesn't do anything upon commit, and it doesn't
-			// retain history, but it's useful for faster simulation.
-			app.MountStore(key, sdk.StoreTypeDB)
-		}
+		app.MountStore(key, sdk.StoreTypeIAVL)
 	}
 }
 

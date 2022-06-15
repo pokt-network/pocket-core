@@ -1,98 +1,219 @@
 package cachemulti
 
 import (
+	"bytes"
+	"container/list"
+	"github.com/tendermint/tendermint/libs/kv"
+	"sort"
+	"sync"
+
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/pokt-network/pocket-core/store/cachekv"
-	"github.com/pokt-network/pocket-core/store/dbadapter"
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
-//----------------------------------------
-// Store
+// If value is nil but deleted is false, it means the parent doesn't have the
+// key.  (No need to delete upon Write())
+type cValue struct {
+	value   []byte
+	deleted bool
+	dirty   bool
+}
 
-// Store holds many cache-wrapped stores.
-// Implements MultiStore.
-// NOTE: a Store (and MultiStores in general) should never expose the
-// keys for the substores.
+// Store wraps an in-memory cache around an underlying types.KVStore.
 type Store struct {
-	db     types.CacheKVStore
-	stores map[types.StoreKey]types.CacheWrap
-	keys   map[string]types.StoreKey
+	mtx           sync.Mutex
+	cache         map[string]*cValue
+	unsortedCache map[string]struct{}
+	sortedCache   *list.List // always ascending sorted
+	parent        types.KVStore
 }
 
-var _ types.CacheMultiStore = Store{}
+var _ types.CacheKVStore = (*Store)(nil)
 
-func NewFromKVStore(
-	store types.KVStore,
-	stores map[types.StoreKey]types.CacheWrapper, keys map[string]types.StoreKey,
-) Store {
-	cms := Store{
-		db:     cachekv.NewStore(store),
-		stores: make(map[types.StoreKey]types.CacheWrap, len(stores)),
-		keys:   keys,
-	}
-
-	for key, store := range stores {
-		cms.stores[key] = store.CacheWrap()
-	}
-
-	return cms
-}
-
-func NewStore(
-	db dbm.DB,
-	stores map[types.StoreKey]types.CacheWrapper, keys map[string]types.StoreKey,
-) Store {
-	return NewFromKVStore(dbadapter.Store{DB: db}, stores, keys)
-}
-
-func newCacheMultiStoreFromCMS(cms Store) Store {
-	stores := make(map[types.StoreKey]types.CacheWrapper)
-	for k, v := range cms.stores {
-		stores[k] = v
-	}
-	return NewFromKVStore(cms.db, stores, nil)
-}
-
-// GetStoreType returns the type of the store.
-func (cms Store) GetStoreType() types.StoreType {
-	return types.StoreTypeMulti
-}
-
-// Write calls Write on each underlying store.
-func (cms Store) Write() {
-	cms.db.Write()
-	for _, store := range cms.stores {
-		store.Write()
+// nolint
+func NewStore(parent types.KVStore) *Store {
+	return &Store{
+		cache:         make(map[string]*cValue),
+		unsortedCache: make(map[string]struct{}),
+		sortedCache:   list.New(),
+		parent:        parent,
 	}
 }
+
+// Implements Store.
+func (store *Store) GetStoreType() types.StoreType {
+	return store.parent.GetStoreType()
+}
+
+// Implements types.KVStore.
+func (store *Store) Get(key []byte) (value []byte, err error) {
+	store.mtx.Lock()
+	defer store.mtx.Unlock()
+	types.AssertValidKey(key)
+
+	cacheValue, ok := store.cache[string(key)]
+	if !ok {
+		value, _ = store.parent.Get(key)
+		store.setCacheValue(key, value, false, false)
+	} else {
+		value = cacheValue.value
+	}
+
+	return value, nil
+}
+
+// Implements types.KVStore.
+func (store *Store) Set(key []byte, value []byte) error {
+	store.mtx.Lock()
+	defer store.mtx.Unlock()
+	types.AssertValidKey(key)
+	types.AssertValidValue(value)
+
+	store.setCacheValue(key, value, false, true)
+	return nil
+}
+
+// Implements types.KVStore.
+func (store *Store) Has(key []byte) (bool, error) {
+	value, _ := store.Get(key)
+	return value != nil, nil
+}
+
+// Implements types.KVStore.
+func (store *Store) Delete(key []byte) error {
+	store.mtx.Lock()
+	defer store.mtx.Unlock()
+	types.AssertValidKey(key)
+
+	store.setCacheValue(key, nil, true, true)
+	return nil
+}
+
+// Implements Cachetypes.KVStore.
+func (store *Store) Write() {
+	store.mtx.Lock()
+	defer store.mtx.Unlock()
+
+	// We need a copy of all of the keys.
+	// Not the best, but probably not a bottleneck depending.
+	keys := make([]string, 0, len(store.cache))
+	for key, dbValue := range store.cache {
+		if dbValue.dirty {
+			keys = append(keys, key)
+		}
+	}
+
+	sort.Strings(keys)
+
+	// TODO: Consider allowing usage of Batch, which would allow the write to
+	// at least happen atomically.
+	for _, key := range keys {
+		cacheValue := store.cache[key]
+		if cacheValue.deleted {
+			_ = store.parent.Delete([]byte(key))
+		} else if cacheValue.value == nil {
+			// Skip, it already doesn't exist in parent.
+		} else {
+			_ = store.parent.Set([]byte(key), cacheValue.value)
+		}
+	}
+
+	// Clear the cache
+	store.cache = make(map[string]*cValue)
+	store.unsortedCache = make(map[string]struct{})
+	store.sortedCache = list.New()
+}
+
+//----------------------------------------
+// To cache-wrap this Store further.
 
 // Implements CacheWrapper.
-func (cms Store) CacheWrap() types.CacheWrap {
-	return cms.CacheMultiStore().(types.CacheWrap)
+func (store *Store) CacheWrap() types.CacheWrap {
+	return NewStore(store)
 }
 
-// Implements MultiStore.
-func (cms Store) CacheMultiStore() types.CacheMultiStore {
-	return newCacheMultiStoreFromCMS(cms)
+//----------------------------------------
+// Iteration
+
+// Implements types.KVStore.
+func (store *Store) Iterator(start, end []byte) (types.Iterator, error) {
+	return store.iterator(start, end, true)
 }
 
-// CacheMultiStoreWithVersion implements the MultiStore interface. It will panic
-// as an already cached multi-store cannot load previous versions.
-//
-// TODO: The store implementation can possibly be modified to support this as it
-// seems safe to load previous versions (heights).
-func (cms Store) CacheMultiStoreWithVersion(_ int64) (types.CacheMultiStore, error) {
-	panic("cannot cache-wrap cached multi-store with a version")
+// Implements types.KVStore.
+func (store *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
+	return store.iterator(start, end, false)
 }
 
-// GetStore returns an underlying Store by key.
-func (cms Store) GetStore(key types.StoreKey) types.Store {
-	return cms.stores[key].(types.Store)
+func (store *Store) iterator(start, end []byte, ascending bool) (it types.Iterator, err error) {
+	store.mtx.Lock()
+	defer store.mtx.Unlock()
+
+	var parent, cache types.Iterator
+
+	if ascending {
+		parent, err = store.parent.Iterator(start, end)
+	} else {
+		parent, err = store.parent.ReverseIterator(start, end)
+	}
+
+	store.dirtyItems(start, end)
+	cache = newMemIterator(start, end, store.sortedCache, ascending)
+
+	return newCacheMergeIterator(parent, cache, ascending), err
 }
 
-// GetKVStore returns an underlying KVStore by key.
-func (cms Store) GetKVStore(key types.StoreKey) types.KVStore {
-	return cms.stores[key].(types.KVStore)
+// Constructs a slice of dirty items, to use w/ memIterator.
+func (store *Store) dirtyItems(start, end []byte) {
+	unsorted := make([]*kv.Pair, 0)
+
+	for key := range store.unsortedCache {
+		cacheValue := store.cache[key]
+		if dbm.IsKeyInDomain([]byte(key), start, end) {
+			unsorted = append(unsorted, &kv.Pair{Key: []byte(key), Value: cacheValue.value})
+			delete(store.unsortedCache, key)
+		}
+	}
+
+	sort.Slice(unsorted, func(i, j int) bool {
+		return bytes.Compare(unsorted[i].Key, unsorted[j].Key) < 0
+	})
+
+	for e := store.sortedCache.Front(); e != nil && len(unsorted) != 0; {
+		uitem := unsorted[0]
+		sitem := e.Value.(*kv.Pair)
+		comp := bytes.Compare(uitem.Key, sitem.Key)
+		switch comp {
+		case -1:
+			unsorted = unsorted[1:]
+			store.sortedCache.InsertBefore(uitem, e)
+		case 1:
+			e = e.Next()
+		case 0:
+			unsorted = unsorted[1:]
+			e.Value = uitem
+			e = e.Next()
+		}
+	}
+
+	for _, kvp := range unsorted {
+		store.sortedCache.PushBack(kvp)
+	}
+
+}
+
+//----------------------------------------
+// etc
+
+// Only entrypoint to mutate store.cache.
+func (store *Store) setCacheValue(key, value []byte, deleted bool, dirty bool) {
+	store.cache[string(key)] = &cValue{
+		value:   value,
+		deleted: deleted,
+		dirty:   dirty,
+	}
+	if dirty {
+		store.unsortedCache[string(key)] = struct{}{}
+	}
 }

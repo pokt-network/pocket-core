@@ -4,18 +4,15 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/store/cachemulti"
 	sdk "github.com/pokt-network/pocket-core/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	dbm "github.com/tendermint/tm-db"
-	"log"
 	"strings"
 
-	"github.com/pokt-network/pocket-core/store/cachemulti"
-	"github.com/pokt-network/pocket-core/store/dbadapter"
 	"github.com/pokt-network/pocket-core/store/iavl"
-	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
@@ -30,14 +27,12 @@ var cdc = codec.NewCodec(types2.NewInterfaceRegistry())
 // cacheMultiStore which is for cache-wrapping other MultiStores. It implements
 // the CommitMultiStore interface.
 type Store struct {
-	DB            dbm.DB
-	Cache         types.MultiStoreCache
-	lastCommitID  types.CommitID
-	storesParams  map[types.StoreKey]storeParams
-	stores        map[types.StoreKey]types.CommitStore
-	keysByName    map[string]types.StoreKey
-	lazyLoading   bool
-	iavlCacheSize int64
+	DB           dbm.DB
+	lastCommitID types.CommitID
+	storesParams map[types.StoreKey]storeParams
+	stores       map[types.StoreKey]types.CommitStore
+	keysByName   map[string]types.StoreKey
+	lazyLoading  bool
 }
 
 func (rs *Store) CopyStore() *types.Store {
@@ -55,7 +50,6 @@ func (rs *Store) CopyStore() *types.Store {
 	}
 	s := types.Store(&Store{
 		DB:           rs.DB,
-		Cache:        rs.Cache,
 		lastCommitID: rs.lastCommitID,
 		storesParams: newParams,
 		stores:       newStores,
@@ -68,23 +62,12 @@ func (rs *Store) CopyStore() *types.Store {
 var _ types.CommitMultiStore = (*Store)(nil)
 var _ types.Queryable = (*Store)(nil)
 
-const MemoryCacheCapacity = 12
-
-func NewStore(db dbm.DB, cache bool, iavlCacheSize int64) *Store {
-	var multiStoreCache types.MultiStoreCache
-	if cache {
-		multiStoreCache = heightcache.NewMultiStoreMemoryCache(MemoryCacheCapacity)
-	} else {
-		multiStoreCache = heightcache.NewMultiStoreInvalidCache()
-	}
-
+func NewStore(db dbm.DB) *Store {
 	return &Store{
-		DB:            db,
-		Cache:         multiStoreCache,
-		storesParams:  make(map[types.StoreKey]storeParams),
-		stores:        make(map[types.StoreKey]types.CommitStore),
-		keysByName:    make(map[string]types.StoreKey),
-		iavlCacheSize: iavlCacheSize,
+		DB:           db,
+		storesParams: make(map[types.StoreKey]storeParams),
+		stores:       make(map[types.StoreKey]types.CommitStore),
+		keysByName:   make(map[string]types.StoreKey),
 	}
 }
 
@@ -104,10 +87,10 @@ func (rs *Store) MountStoreWithDB(key types.StoreKey, typ types.StoreType, db db
 		panic("MountIAVLStore() Key cannot be nil")
 	}
 	if _, ok := rs.storesParams[key]; ok {
-		panic(fmt.Sprintf("Store duplicate store Key %v", key))
+		panic(fmt.Sprintf("CacheMultiStore duplicate store Key %v", key))
 	}
 	if _, ok := rs.keysByName[key.Name()]; ok {
-		panic(fmt.Sprintf("Store duplicate store Key name %v", key))
+		panic(fmt.Sprintf("CacheMultiStore duplicate store Key name %v", key))
 	}
 	rs.storesParams[key] = storeParams{
 		key: key,
@@ -141,7 +124,7 @@ func (rs *Store) LoadVersion(ver int64) error {
 		for key, storeParams := range rs.storesParams {
 			store, err := rs.loadCommitStoreFromParams(key, types.CommitID{}, storeParams)
 			if err != nil {
-				return fmt.Errorf("failed to load Store: %v", err)
+				return fmt.Errorf("failed to load CacheMultiStore: %v", err)
 			}
 
 			rs.stores[key] = store
@@ -162,7 +145,7 @@ func (rs *Store) LoadVersion(ver int64) error {
 		infos[rs.nameToKey(storeInfo.Name)] = storeInfo
 	}
 
-	// load each Store
+	// load each CacheMultiStore
 	var newStores = make(map[types.StoreKey]types.CommitStore)
 	for key, storeParams := range rs.storesParams {
 		var id types.CommitID
@@ -174,7 +157,7 @@ func (rs *Store) LoadVersion(ver int64) error {
 
 		store, err := rs.loadCommitStoreFromParams(key, id, storeParams)
 		if err != nil {
-			return fmt.Errorf("failed to load Store: %v", err)
+			return fmt.Errorf("failed to load CacheMultiStore: %v", err)
 		}
 
 		newStores[key] = store
@@ -193,7 +176,7 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 		if !ok {
 			return nil, fmt.Errorf("cannot convert store into iavl store in get immutable")
 		}
-		s, err := a.LazyLoadStore(ver, rs.Cache.GetSingleStoreCache(k))
+		s, err := a.LazyLoadStore(ver)
 		if err != nil {
 			return nil, fmt.Errorf("error loading store: %s, in LoadLazyVersion: %s", k, err.Error())
 		}
@@ -214,7 +197,6 @@ func (rs *Store) LoadLazyVersion(ver int64) (*types.Store, error) {
 		stores:       newStores,
 		keysByName:   newKeysByName,
 		lazyLoading:  rs.lazyLoading,
-		Cache:        rs.Cache,
 	})
 	return &s, nil
 }
@@ -250,7 +232,7 @@ func (rs *Store) Commit() types.CommitID {
 	return commitID
 }
 
-// Implements CacheWrapper/Store/CommitStore.
+// Implements CacheWrapper/CacheMultiStore/CommitStore.
 func (rs *Store) CacheWrap() types.CacheWrap {
 	return rs.CacheMultiStore().(types.CacheWrap)
 }
@@ -265,33 +247,7 @@ func (rs *Store) CacheMultiStore() types.CacheMultiStore {
 		stores[k] = v
 	}
 
-	return cachemulti.NewStore(rs.DB, stores, rs.keysByName)
-}
-
-// CacheMultiStoreWithVersion is analogous to CacheMultiStore except that it
-// attempts to load stores at a given version (height). An error is returned if
-// any store cannot be loaded. This should only be used for querying and
-// iterating at past heights.
-func (rs *Store) CacheMultiStoreWithVersion(version int64) (types.CacheMultiStore, error) {
-	cachedStores := make(map[types.StoreKey]types.CacheWrapper)
-	for key, store := range rs.stores {
-		switch store.GetStoreType() {
-		case types.StoreTypeIAVL:
-			// Attempt to lazy-load an already saved IAVL store version. If the
-			// version does not exist or is pruned, an error should be returned.
-			iavlStore, err := store.(*iavl.Store).LazyLoadStore(version, rs.Cache.GetSingleStoreCache(key))
-			if err != nil {
-				return nil, err
-			}
-
-			cachedStores[key] = iavlStore
-
-		default:
-			cachedStores[key] = store
-		}
-	}
-
-	return cachemulti.NewStore(rs.DB, cachedStores, rs.keysByName), nil
+	return cachemulti.NewMultiCache(rs.stores)
 }
 
 // Implements MultiStore.
@@ -416,14 +372,7 @@ func (rs *Store) loadCommitStoreFromParams(key types.StoreKey, id types.CommitID
 		panic("recursive MultiStores not yet supported")
 
 	case types.StoreTypeIAVL:
-		cacheForStore := rs.Cache.GetSingleStoreCache(key)
-		if cacheForStore.IsValid() {
-			log.Printf("Warming up cache for %s\n", key.Name())
-		}
-		return iavl.LoadStore(db, id, rs.lazyLoading, cacheForStore, rs.iavlCacheSize)
-
-	case types.StoreTypeDB:
-		return commitDBStoreAdapter{dbadapter.Store{DB: db}}, nil
+		return iavl.LoadStore(db, id, rs.lazyLoading)
 
 	default:
 		panic(fmt.Sprintf("unrecognized store type %v", params.typ))
@@ -456,13 +405,12 @@ type storeParams struct {
 // 	// Version
 // 	Version int64
 
-// 	// Store info for
+// 	// CacheMultiStore info for
 // 	StoreInfos []StoreInfo
 // }
 
 // Hash returns the simple merkle root hash of the stores sorted by name.
 func (ci *CommitInfo) Hash() []byte {
-	// TODO: cache to ci.hash []byte
 	m := make(map[string][]byte, len(ci.StoreInfos))
 	for _, storeInfo := range ci.StoreInfos {
 		m[storeInfo.Name] = storeInfo.Hash()
@@ -565,14 +513,14 @@ func getCommitInfo(db dbm.DB, ver int64) (CommitInfo, error) {
 	cInfoKey := fmt.Sprintf(commitInfoKeyFmt, ver)
 	cInfoBytes, _ := db.Get([]byte(cInfoKey))
 	if cInfoBytes == nil {
-		return CommitInfo{}, fmt.Errorf("failed to get Store: no data")
+		return CommitInfo{}, fmt.Errorf("failed to get CacheMultiStore: no data")
 	}
 
 	var cInfo CommitInfo
 
 	err := cdc.LegacyUnmarshalBinaryLengthPrefixed(cInfoBytes, &cInfo)
 	if err != nil {
-		return CommitInfo{}, fmt.Errorf("failed to get Store: %v", err)
+		return CommitInfo{}, fmt.Errorf("failed to get CacheMultiStore: %v", err)
 	}
 
 	return cInfo, nil

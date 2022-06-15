@@ -1,4 +1,4 @@
-package cachekv
+package cachemulti
 
 import (
 	"container/list"

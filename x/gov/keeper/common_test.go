@@ -54,7 +54,7 @@ func getRandomValidatorAddress() sdk.Address {
 func createTestKeeperAndContext(t *testing.T, isCheckTx bool) (sdk.Context, Keeper) {
 	keyAcc := sdk.NewKVStoreKey(auth.StoreKey)
 	db := dbm.NewMemDB()
-	ms := rootmulti.NewStore(db, false, 5000000)
+	ms := rootmulti.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(sdk.ParamsKey, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()

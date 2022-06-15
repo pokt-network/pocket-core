@@ -32,7 +32,7 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	keyParams := sdk.ParamsKey
 
 	db := dbm.NewMemDB()
-	ms := rootmulti.NewStore(db, false, 5000000)
+	ms := rootmulti.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()

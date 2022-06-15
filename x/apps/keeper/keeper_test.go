@@ -52,7 +52,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			appsKey := sdk.NewKVStoreKey(types.StoreKey)
 
 			db := dbm.NewMemDB()
-			ms := rootmulti.NewStore(db, false, 5000000)
+			ms := rootmulti.NewStore(db)
 			ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)

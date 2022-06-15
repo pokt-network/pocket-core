@@ -1,7 +1,6 @@
 package rootmulti
 
 import (
-	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +14,7 @@ import (
 func TestVerifyIAVLStoreQueryProof(t *testing.T) {
 	// Create main tree for testing.
 	db := dbm.NewMemDB()
-	iStore, err := iavl.LoadStore(db, types.CommitID{}, false, heightcache.InvalidCache{}, 5000000)
+	iStore, err := iavl.LoadStore(db, types.CommitID{}, false)
 	store := iStore.(*iavl.Store)
 	require.Nil(t, err)
 	err = store.Set([]byte("MYKEY"), []byte("MYVALUE"))
@@ -59,7 +58,7 @@ func TestVerifyIAVLStoreQueryProof(t *testing.T) {
 func TestVerifyMultiStoreQueryProof(t *testing.T) {
 	// Create main tree for testing.
 	db := dbm.NewMemDB()
-	store := NewStore(db, false, 5000000)
+	store := NewStore(db)
 	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
 
 	store.MountStoreWithDB(iavlStoreKey, types.StoreTypeIAVL, nil)
@@ -115,7 +114,7 @@ func TestVerifyMultiStoreQueryProof(t *testing.T) {
 func TestVerifyMultiStoreQueryProofEmptyStore(t *testing.T) {
 	// Create main tree for testing.
 	db := dbm.NewMemDB()
-	store := NewStore(db, false, 5000000)
+	store := NewStore(db)
 	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
 
 	store.MountStoreWithDB(iavlStoreKey, types.StoreTypeIAVL, nil)
@@ -144,7 +143,7 @@ func TestVerifyMultiStoreQueryProofEmptyStore(t *testing.T) {
 func TestVerifyMultiStoreQueryProofAbsence(t *testing.T) {
 	// Create main tree for testing.
 	db := dbm.NewMemDB()
-	store := NewStore(db, false, 5000000)
+	store := NewStore(db)
 	iavlStoreKey := types.NewKVStoreKey("iavlStoreKey")
 
 	store.MountStoreWithDB(iavlStoreKey, types.StoreTypeIAVL, nil)

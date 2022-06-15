@@ -2,7 +2,6 @@ package iavl
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/store/rootmulti/heightcache"
 	types2 "github.com/pokt-network/pocket-core/types"
 	"testing"
 
@@ -49,22 +48,22 @@ func newAlohaTree(t *testing.T, db dbm.DB) (*MutableTree, types.CommitID) {
 func TestStore_LazyLoadStore(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, cID := newAlohaTree(t, db)
-	store := UnsafeNewStore(tree, 10, 10, heightcache.InvalidCache{})
+	store := UnsafeNewStore(tree, 10, 10)
 
 	require.True(t, tree.Set([]byte("hello"), []byte("adios")))
 	hash, ver, err := tree.SaveVersion()
 	cID = types.CommitID{Version: ver, Hash: hash}
 	require.Nil(t, err)
 
-	_, err = store.LazyLoadStore(cID.Version+1, heightcache.InvalidCache{})
+	_, err = store.LazyLoadStore(cID.Version + 1)
 	require.Error(t, err)
 
-	newStore, err := store.LazyLoadStore(cID.Version-1, heightcache.InvalidCache{})
+	newStore, err := store.LazyLoadStore(cID.Version - 1)
 	require.NoError(t, err)
 	ng, _ := newStore.Get([]byte("hello"))
 	require.Equal(t, ng, []byte("goodbye"))
 
-	newStore, err = store.LazyLoadStore(cID.Version, heightcache.InvalidCache{})
+	newStore, err = store.LazyLoadStore(cID.Version)
 	require.NoError(t, err)
 	ng, _ = newStore.Get([]byte("hello"))
 	require.Equal(t, ng, []byte("adios"))
@@ -79,9 +78,9 @@ func TestStore_LazyLoadStore(t *testing.T) {
 func TestTestGetImmutableIterator(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, cID := newAlohaTree(t, db)
-	store := UnsafeNewStore(tree, 10, 10, heightcache.InvalidCache{})
+	store := UnsafeNewStore(tree, 10, 10)
 
-	newStore, err := store.LazyLoadStore(cID.Version, heightcache.InvalidCache{})
+	newStore, err := store.LazyLoadStore(cID.Version)
 	require.NoError(t, err)
 
 	iter, _ := newStore.Iterator([]byte("aloha"), []byte("hellz"))
@@ -102,7 +101,7 @@ func TestTestGetImmutableIterator(t *testing.T) {
 func TestIAVLStoreGetSetHasDelete(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, _ := newAlohaTree(t, db)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery, heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	key := "hello"
 
@@ -127,14 +126,14 @@ func TestIAVLStoreGetSetHasDelete(t *testing.T) {
 func TestIAVLStoreNoNilSet(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, _ := newAlohaTree(t, db)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery, heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 	require.Panics(t, func() { _ = iavlStore.Set([]byte("key"), nil) }, "setting a nil value should panic")
 }
 
 func TestIAVLIterator(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, _ := newAlohaTree(t, db)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery, heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 	iter, _ := iavlStore.Iterator([]byte("aloha"), []byte("hellz"))
 	expected := []string{"aloha", "hello"}
 	var i int
@@ -207,7 +206,7 @@ func TestIAVLIterator(t *testing.T) {
 func TestIAVLReverseIterator(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, _ := NewMutableTree(db, cacheSize)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery, heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	_ = iavlStore.Set([]byte{0x00}, []byte("0"))
 	_ = iavlStore.Set([]byte{0x00, 0x00}, []byte("0 0"))
@@ -238,7 +237,7 @@ func TestIAVLReverseIterator(t *testing.T) {
 func TestIAVLPrefixIterator(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, _ := NewMutableTree(db, cacheSize)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery, heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	_ = iavlStore.Set([]byte("test1"), []byte("test1"))
 	_ = iavlStore.Set([]byte("test2"), []byte("test2"))
@@ -300,7 +299,7 @@ func TestIAVLPrefixIterator(t *testing.T) {
 func TestIAVLReversePrefixIterator(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, _ := NewMutableTree(db, cacheSize)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery, heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	_ = iavlStore.Set([]byte("test1"), []byte("test1"))
 	_ = iavlStore.Set([]byte("test2"), []byte("test2"))
@@ -366,7 +365,7 @@ func nextVersion(iavl *Store) {
 func TestIAVLNoPrune(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, _ := NewMutableTree(db, cacheSize)
-	iavlStore := UnsafeNewStore(tree, numRecent, int64(1), heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, int64(1))
 	nextVersion(iavlStore)
 	for i := 1; i < 100; i++ {
 		for j := 1; j <= i; j++ {
@@ -381,7 +380,7 @@ func TestIAVLNoPrune(t *testing.T) {
 func TestIAVLStoreQuery(t *testing.T) {
 	db := dbm.NewMemDB()
 	tree, _ := NewMutableTree(db, cacheSize)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery, heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 
 	k1, v1 := []byte("key1"), []byte("val1")
 	k2, v2 := []byte("key2"), []byte("val2")
@@ -480,7 +479,7 @@ func BenchmarkIAVLIteratorNext(b *testing.B) {
 		value := rand2.Bytes(50)
 		tree.Set(key, value)
 	}
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery, heightcache.InvalidCache{})
+	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
 	iterators := make([]types.Iterator, b.N/treeSize)
 	for i := 0; i < len(iterators); i++ {
 		iterators[i], _ = iavlStore.Iterator([]byte{0}, []byte{255, 255, 255, 255, 255})
