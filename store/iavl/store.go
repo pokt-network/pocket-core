@@ -368,3 +368,21 @@ func (iter *iavlIterator) assertIsValid(unlockMutex bool) {
 		panic("invalid iterator")
 	}
 }
+
+func debug(format string, args ...interface{}) {
+	if false {
+		fmt.Printf(format, args...)
+	}
+}
+
+// Options define tree options.
+type Options struct {
+	Sync bool
+}
+
+// DefaultOptions returns the default options for IAVL.
+func DefaultOptions() *Options {
+	return &Options{
+		Sync: false,
+	}
+}
