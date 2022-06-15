@@ -3,15 +3,12 @@ package iavl
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/store/cachemulti"
-	serrors "github.com/pokt-network/pocket-core/types"
 	"sync"
 
 	"github.com/tendermint/tendermint/libs/kv"
 
 	"github.com/pokt-network/pocket-core/store/types"
 
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/merkle"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -46,7 +43,6 @@ func LoadStore(db dbm.DB, id types.CommitID, lazyLoading bool) (types.CommitStor
 
 var _ types.KVStore = (*Store)(nil)
 var _ types.CommitStore = (*Store)(nil)
-var _ types.Queryable = (*Store)(nil)
 
 // Store Implements types.KVStore and CommitStore.
 type Store struct {
@@ -202,96 +198,6 @@ func (st *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
 		iTree = tree.ImmutableTree
 	}
 	return newIAVLIterator(iTree, start, end, false), nil
-}
-
-// Handle gatest the latest height, if height is 0
-func getHeight(tree Tree, req abci.RequestQuery) int64 {
-	height := req.Height
-	if height == 0 {
-		latest := tree.Version()
-		if tree.VersionExists(latest - 1) {
-			height = latest - 1
-		} else {
-			height = latest
-		}
-	}
-	return height
-}
-
-// Query implements ABCI interface, allows queries
-//
-// by default we will return from (latest height -1),
-// as we will have merkle proofs immediately (header height = data height + 1)
-// If latest-1 is not present, use latest (which must be present)
-// if you care to have the latest data to see a tx results, you must
-// explicitly set the height you want to see
-func (st *Store) Query(req abci.RequestQuery) (res abci.ResponseQuery) {
-	if len(req.Data) == 0 {
-		msg := "Query cannot be zero length"
-		return serrors.ErrTxDecode(msg).QueryResult()
-	}
-
-	tree := st.tree
-
-	// store the height we chose in the response, with 0 being changed to the
-	// latest height
-	res.Height = getHeight(tree, req)
-
-	switch req.Path {
-	case "/key": // get by key
-		key := req.Data // data holds the key bytes
-
-		res.Key = key
-		if !st.VersionExists(res.Height) {
-			res.Log = ErrVersionDoesNotExist.Error()
-			break
-		}
-
-		if req.Prove {
-			value, proof, err := tree.GetVersionedWithProof(key, res.Height)
-			if err != nil {
-				res.Log = err.Error()
-				break
-			}
-			if proof == nil {
-				// Proof == nil implies that the store is empty.
-				if value != nil {
-					panic("unexpected value for an empty proof")
-				}
-			}
-			if value != nil {
-				// value was found
-				res.Value = value
-				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{NewValueOp(key, proof).ProofOp()}}
-			} else {
-				// value wasn't found
-				res.Value = nil
-				res.Proof = &merkle.Proof{Ops: []merkle.ProofOp{NewAbsenceOp(key, proof).ProofOp()}}
-			}
-		} else {
-			_, res.Value = tree.GetVersioned(key, res.Height)
-		}
-
-	case "/subspace":
-		var KVs []types.KVPair
-
-		subspace := req.Data
-		res.Key = subspace
-
-		iterator, _ := types.KVStorePrefixIterator(st, subspace)
-		for ; iterator.Valid(); iterator.Next() {
-			KVs = append(KVs, types.KVPair{Key: iterator.Key(), Value: iterator.Value()})
-		}
-
-		iterator.Close()
-		res.Value, _ = cdc.LegacyMarshalBinaryLengthPrefixed(KVs)
-
-	default:
-		msg := fmt.Sprintf("Unexpected Query path: %v", req.Path)
-		return serrors.ErrUnknownRequest(msg).QueryResult()
-	}
-
-	return
 }
 
 //----------------------------------------

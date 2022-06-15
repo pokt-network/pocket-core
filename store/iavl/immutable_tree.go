@@ -3,8 +3,6 @@ package iavl
 import (
 	"fmt"
 	"strings"
-
-	dbm "github.com/tendermint/tm-db"
 )
 
 // ImmutableTree contains the immutable tree at a given version. It is typically created by calling
@@ -17,26 +15,6 @@ type ImmutableTree struct {
 	root    *Node
 	ndb     *nodeDB
 	version int64
-}
-
-// NewImmutableTree creates both in-memory and persistent instances
-func NewImmutableTree(db dbm.DB, cacheSize int) *ImmutableTree {
-	if db == nil {
-		// In-memory Tree.
-		return &ImmutableTree{}
-	}
-	return &ImmutableTree{
-		// NodeDB-backed Tree.
-		ndb: newNodeDB(db, cacheSize, nil),
-	}
-}
-
-// NewImmutableTreeWithOpts creates an ImmutableTree with the given options.
-func NewImmutableTreeWithOpts(db dbm.DB, cacheSize int, opts *Options) *ImmutableTree {
-	return &ImmutableTree{
-		// NodeDB-backed Tree.
-		ndb: newNodeDB(db, cacheSize, opts),
-	}
 }
 
 // String returns a string representation of Tree.

@@ -513,27 +513,8 @@ func handleQueryApp(app *BaseApp, path []string, req abci.RequestQuery) (res abc
 
 func handleQueryStore(app *BaseApp, path []string, req abci.RequestQuery) abci.ResponseQuery {
 	// "/store" prefix for store queries
-	queryable, ok := app.cms.(sdk.Queryable)
-	if !ok {
-		msg := "multistore doesn't support queries"
-		return sdk.ErrUnknownRequest(msg).QueryResult()
-	}
-
-	req.Path = "/" + strings.Join(path[1:], "/")
-
-	// when a client did not provide a query height, manually inject the latest
-	if req.Height == 0 {
-		req.Height = app.LastBlockHeight()
-	}
-
-	if req.Height <= 1 && req.Prove {
-		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
-	}
-
-	resp := queryable.Query(req)
-	resp.Height = req.Height
-
-	return resp
+	msg := "multistore doesn't support queries"
+	return sdk.ErrUnknownRequest(msg).QueryResult()
 }
 
 func handleQueryP2P(app *BaseApp, path []string, _ abci.RequestQuery) (res abci.ResponseQuery) {

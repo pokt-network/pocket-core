@@ -2,14 +2,12 @@ package iavl
 
 import (
 	"fmt"
-	types2 "github.com/pokt-network/pocket-core/types"
 	"testing"
 
 	rand2 "github.com/tendermint/tendermint/libs/rand"
 
 	"github.com/stretchr/testify/require"
 
-	abci "github.com/tendermint/tendermint/abci/types"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/pokt-network/pocket-core/store/types"
@@ -43,36 +41,6 @@ func newAlohaTree(t *testing.T, db dbm.DB) (*MutableTree, types.CommitID) {
 	hash, ver, err := tree.SaveVersion()
 	require.Nil(t, err)
 	return tree, types.CommitID{Version: ver, Hash: hash}
-}
-
-func TestStore_LazyLoadStore(t *testing.T) {
-	db := dbm.NewMemDB()
-	tree, cID := newAlohaTree(t, db)
-	store := UnsafeNewStore(tree, 10, 10)
-
-	require.True(t, tree.Set([]byte("hello"), []byte("adios")))
-	hash, ver, err := tree.SaveVersion()
-	cID = types.CommitID{Version: ver, Hash: hash}
-	require.Nil(t, err)
-
-	_, err = store.LazyLoadStore(cID.Version + 1)
-	require.Error(t, err)
-
-	newStore, err := store.LazyLoadStore(cID.Version - 1)
-	require.NoError(t, err)
-	ng, _ := newStore.Get([]byte("hello"))
-	require.Equal(t, ng, []byte("goodbye"))
-
-	newStore, err = store.LazyLoadStore(cID.Version)
-	require.NoError(t, err)
-	ng, _ = newStore.Get([]byte("hello"))
-	require.Equal(t, ng, []byte("adios"))
-
-	res := newStore.Query(abci.RequestQuery{Data: []byte("hello"), Height: cID.Version, Path: "/key", Prove: true})
-	require.Equal(t, res.Value, []byte("adios"))
-	require.NotNil(t, res.Proof)
-
-	require.Panics(t, func() { _ = newStore.Set(nil, nil) })
 }
 
 func TestTestGetImmutableIterator(t *testing.T) {
@@ -375,99 +343,6 @@ func TestIAVLNoPrune(t *testing.T) {
 		}
 		nextVersion(iavlStore)
 	}
-}
-
-func TestIAVLStoreQuery(t *testing.T) {
-	db := dbm.NewMemDB()
-	tree, _ := NewMutableTree(db, cacheSize)
-	iavlStore := UnsafeNewStore(tree, numRecent, storeEvery)
-
-	k1, v1 := []byte("key1"), []byte("val1")
-	k2, v2 := []byte("key2"), []byte("val2")
-	v3 := []byte("val3")
-
-	ksub := []byte("key")
-	KVs0 := []types.KVPair{}
-	KVs1 := []types.KVPair{
-		{Key: k1, Value: v1},
-		{Key: k2, Value: v2},
-	}
-	KVs2 := []types.KVPair{
-		{Key: k1, Value: v3},
-		{Key: k2, Value: v2},
-	}
-	valExpSubEmpty, err := cdc.LegacyMarshalBinaryLengthPrefixed(KVs0)
-	require.NoError(t, err)
-	valExpSub1, err := cdc.LegacyMarshalBinaryLengthPrefixed(KVs1)
-	require.NoError(t, err)
-	valExpSub2, err := cdc.LegacyMarshalBinaryLengthPrefixed(KVs2)
-	require.NoError(t, err)
-
-	cid := iavlStore.Commit()
-	ver := cid.Version
-	query := abci.RequestQuery{Path: "/key", Data: k1, Height: ver}
-	querySub := abci.RequestQuery{Path: "/subspace", Data: ksub, Height: ver}
-
-	// query subspace before anything set
-	qres := iavlStore.Query(querySub)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, valExpSubEmpty, qres.Value)
-
-	// set data
-	_ = iavlStore.Set(k1, v1)
-	_ = iavlStore.Set(k2, v2)
-
-	// set data without commit, doesn't show up
-	qres = iavlStore.Query(query)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Nil(t, qres.Value)
-
-	// commit it, but still don't see on old version
-	cid = iavlStore.Commit()
-	qres = iavlStore.Query(query)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Nil(t, qres.Value)
-
-	// but yes on the new version
-	query.Height = cid.Version
-	qres = iavlStore.Query(query)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, v1, qres.Value)
-
-	// and for the subspace
-	qres = iavlStore.Query(querySub)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, valExpSub1, qres.Value)
-
-	// modify
-	_ = iavlStore.Set(k1, v3)
-	cid = iavlStore.Commit()
-
-	// query will return old values, as height is fixed
-	qres = iavlStore.Query(query)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, v1, qres.Value)
-
-	// update to latest in the query and we are happy
-	query.Height = cid.Version
-	qres = iavlStore.Query(query)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, v3, qres.Value)
-	query2 := abci.RequestQuery{Path: "/key", Data: k2, Height: cid.Version}
-
-	qres = iavlStore.Query(query2)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, v2, qres.Value)
-	// and for the subspace
-	qres = iavlStore.Query(querySub)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, valExpSub2, qres.Value)
-
-	// default (height 0) will show latest -1
-	query0 := abci.RequestQuery{Path: "/key", Data: k1}
-	qres = iavlStore.Query(query0)
-	require.Equal(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, v1, qres.Value)
 }
 
 func BenchmarkIAVLIteratorNext(b *testing.B) {

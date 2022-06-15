@@ -10,7 +10,6 @@ type (
 	Store            = types.Store
 	Committer        = types.Committer
 	CommitStore      = types.CommitStore
-	Queryable        = types.Queryable
 	MultiStore       = types.MultiStore
 	CacheMultiStore  = types.CacheMultiStore
 	CommitMultiStore = types.CommitMultiStore

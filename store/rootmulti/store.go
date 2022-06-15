@@ -6,7 +6,6 @@ import (
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/store/cachemulti"
 	sdk "github.com/pokt-network/pocket-core/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	dbm "github.com/tendermint/tm-db"
@@ -60,7 +59,6 @@ func (rs *Store) CopyStore() *types.Store {
 }
 
 var _ types.CommitMultiStore = (*Store)(nil)
-var _ types.Queryable = (*Store)(nil)
 
 func NewStore(db dbm.DB) *Store {
 	return &Store{
@@ -283,60 +281,6 @@ func (rs *Store) getStoreByName(name string) types.Store {
 }
 
 //---------------------- Query ------------------
-
-// Query calls substore.Query with the same `req` where `req.Path` is
-// modified to remove the substore prefix.
-// Ie. `req.Path` here is `/<substore>/<path>`, and trimmed to `/<path>` for the substore.
-// TODO: add proof for `multistore -> substore`.
-func (rs *Store) Query(req abci.RequestQuery) abci.ResponseQuery {
-	// Query just routes this to a substore.
-	path := req.Path
-	storeName, subpath, err := parsePath(path)
-	if err != nil {
-		return err.QueryResult()
-	}
-
-	store := rs.getStoreByName(storeName)
-	if store == nil {
-		msg := fmt.Sprintf("no such store: %s", storeName)
-		return sdk.ErrUnknownRequest(msg).QueryResult()
-	}
-
-	queryable, ok := store.(types.Queryable)
-	if !ok {
-		msg := fmt.Sprintf("store %s doesn't support queries", storeName)
-		return sdk.ErrUnknownRequest(msg).QueryResult()
-	}
-
-	// trim the path and make the query
-	req.Path = subpath
-	res := queryable.Query(req)
-
-	if !req.Prove || !RequireProof(subpath) {
-		return res
-	}
-
-	if res.Proof == nil || len(res.Proof.Ops) == 0 {
-		return sdk.ErrInternal("proof is unexpectedly empty; ensure height has not been pruned").QueryResult()
-	}
-
-	commitInfo, errMsg := getCommitInfo(rs.DB, res.Height)
-	if errMsg != nil {
-		return sdk.ErrInternal(errMsg.Error()).QueryResult()
-	}
-
-	proofOp := NewMultiStoreProofOp(
-		[]byte(storeName),
-		NewMultiStoreProof(commitInfo.StoreInfos),
-	).ProofOp()
-	// Restore origin path and append proof op.
-	res.Proof.Ops = append(res.Proof.Ops, proofOp)
-
-	// TODO: handle in another TM v0.26 update PR
-	// res.Proof = buildMultiStoreProof(res.Proof, storeName, commitInfo.StoreInfos)
-	return res
-}
-
 // parsePath expects a format like /<storeName>[/<subpath>]
 // Must start with /, subpath may be empty
 // Returns error if it doesn't start with /

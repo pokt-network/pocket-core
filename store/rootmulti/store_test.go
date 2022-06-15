@@ -1,11 +1,9 @@
 package rootmulti
 
 import (
-	types2 "github.com/pokt-network/pocket-core/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
 	dbm "github.com/tendermint/tm-db"
 
@@ -138,76 +136,6 @@ func TestParsePath(t *testing.T) {
 	require.Equal(t, substore, "bang")
 	require.Equal(t, subsubpath, "/baz")
 
-}
-
-func TestMultiStoreQuery(t *testing.T) {
-	db := dbm.NewMemDB()
-	multi := newMultiStoreWithMounts(db)
-	err := multi.LoadLatestVersion()
-	require.Nil(t, err)
-
-	k, v := []byte("wind"), []byte("blows")
-	k2, v2 := []byte("water"), []byte("flows")
-	// v3 := []byte("is cold")
-
-	cid := multi.Commit()
-
-	// Make sure we can get by name.
-	garbage := multi.getStoreByName("bad-name")
-	require.Nil(t, garbage)
-
-	// Set and commit data in one store.
-	store1 := multi.getStoreByName("store1").(types.KVStore)
-	_ = store1.Set(k, v)
-
-	// ... and another.
-	store2 := multi.getStoreByName("store2").(types.KVStore)
-	_ = store2.Set(k2, v2)
-
-	// Commit the multistore.
-	cid = multi.Commit()
-	ver := cid.Version
-
-	// Reload multistore from database
-	multi = newMultiStoreWithMounts(db)
-	err = multi.LoadLatestVersion()
-	require.Nil(t, err)
-
-	// Test bad path.
-	query := abci.RequestQuery{Path: "/Key", Data: k, Height: ver}
-	qres := multi.Query(query)
-	require.EqualValues(t, types2.CodeUnknownRequest, qres.Code)
-	require.EqualValues(t, types2.CodespaceRoot, qres.Codespace)
-
-	query.Path = "h897fy32890rf63296r92"
-	qres = multi.Query(query)
-	require.EqualValues(t, types2.CodeUnknownRequest, qres.Code)
-	require.EqualValues(t, types2.CodespaceRoot, qres.Codespace)
-
-	// Test invalid store name.
-	query.Path = "/garbage/Key"
-	qres = multi.Query(query)
-	require.EqualValues(t, types2.CodeUnknownRequest, qres.Code)
-	require.EqualValues(t, types2.CodespaceRoot, qres.Codespace)
-
-	// Test valid query with data.
-	query.Path = "/store1/key"
-	qres = multi.Query(query)
-	require.EqualValues(t, uint32(types2.CodeOK), qres.Code)
-	require.Equal(t, v, qres.Value)
-
-	// Test valid but empty query.
-	query.Path = "/store2/key"
-	query.Prove = true
-	qres = multi.Query(query)
-	require.EqualValues(t, types2.CodeOK, qres.Code)
-	require.Nil(t, qres.Value)
-
-	// Test store2 data.
-	query.Data = k2
-	qres = multi.Query(query)
-	require.EqualValues(t, types2.CodeOK, qres.Code)
-	require.Equal(t, v2, qres.Value)
 }
 
 //-----------------------------------------------------------------------

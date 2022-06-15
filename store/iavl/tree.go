@@ -25,7 +25,6 @@ type (
 		Hash() []byte
 		VersionExists(version int64) bool
 		GetVersioned(key []byte, version int64) (int64, []byte)
-		GetVersionedWithProof(key []byte, version int64) ([]byte, *RangeProof, error)
 		GetImmutable(version int64) (*ImmutableTree, error)
 	}
 
@@ -63,14 +62,6 @@ func (it *immutableTree) GetVersioned(key []byte, version int64) (int64, []byte)
 	}
 
 	return it.Get(key)
-}
-
-func (it *immutableTree) GetVersionedWithProof(key []byte, version int64) ([]byte, *RangeProof, error) {
-	if it.Version() != version {
-		return nil, nil, fmt.Errorf("version mismatch on immutable IAVL tree; got: %d, expected: %d", version, it.Version())
-	}
-
-	return it.GetWithProof(key)
 }
 
 func (it *immutableTree) GetImmutable(version int64) (*ImmutableTree, error) {

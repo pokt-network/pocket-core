@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/tendermint/tendermint/libs/kv"
 
-	abci "github.com/tendermint/tendermint/abci/types"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -23,14 +22,6 @@ type Committer interface {
 type CommitStore interface {
 	Committer
 	Store
-}
-
-// Queryable allows a Store to expose internal state to the abci.Query
-// interface. Multistore can route requests to the proper Store.
-//
-// This is an optional, but useful extension to any CommitStore
-type Queryable interface {
-	Query(abci.RequestQuery) abci.ResponseQuery
 }
 
 //----------------------------------------
