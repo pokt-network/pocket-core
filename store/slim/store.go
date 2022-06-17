@@ -1,84 +1,75 @@
 package slim
 
 import (
-	"github.com/jackc/pgx/v4"
+	"github.com/pokt-network/pocket-core/store/cachemulti"
 	"github.com/pokt-network/pocket-core/store/iavl"
 	"github.com/pokt-network/pocket-core/store/slim/dedup"
-	"github.com/pokt-network/pocket-core/store/slim/historical"
 	"github.com/pokt-network/pocket-core/store/types"
 	db "github.com/tendermint/tm-db"
 )
 
-var _ types.KVStore = &Store{}
-var _ types.CommitStore = &Store{}
-
 type Store struct {
-	RecentStore     dedup.Store
-	HistoricalStore historical.Store
-	IAVLStore       iavl.Store
-	OnlyHistorical  bool
+	Dedup     dedup.Store
+	IAVLStore iavl.Store
 }
 
-func NewStore(height int64, prefix string, onlyHistorical bool, commitID types.CommitID, parentForIAVL db.GoLevelDB, parentForRecentStore db.GoLevelDB, parentForHistoricalStore *pgx.Conn) *Store {
-	if onlyHistorical {
-		return &Store{
-			HistoricalStore: historical.NewStore(height, prefix, parentForHistoricalStore),
-			OnlyHistorical:  onlyHistorical,
-		}
-	}
-	iavlStore, err := iavl.NewStore(&parentForIAVL, commitID)
+func NewStoreWithIAVL(db *db.GoLevelDB, height int64, prefix string, commitID types.CommitID) *Store {
+	iavlStore, err := iavl.NewStore(db, commitID)
 	if err != nil {
 		panic("iavl store failed to load for height: %s prefix: %s")
 	}
 	return &Store{
-		RecentStore:     dedup.NewStore(height, prefix, parentForRecentStore),
-		HistoricalStore: historical.NewStore(height, prefix, parentForHistoricalStore),
-		IAVLStore:       *iavlStore,
-		OnlyHistorical:  false,
+		Dedup:     dedup.NewStore(height, prefix, *db),
+		IAVLStore: *iavlStore,
 	}
 }
 
-func (s *Store) Get(key []byte) ([]byte, error) {
-	//TODO implement me
-	panic("implement me")
+func NewStoreWithoutIAVL(db *db.GoLevelDB, height int64, prefix string) *Store {
+	return &Store{
+		Dedup: dedup.NewStore(height, prefix, *db),
+	}
 }
 
-func (s *Store) Has(key []byte) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+// reads (de-dup only)
+
+func (s *Store) Get(key []byte) ([]byte, error) { return s.Dedup.Get(key) }
+func (s *Store) Has(key []byte) (bool, error)   { return s.Dedup.Has(key) }
+func (s *Store) Iterator(start, end []byte) (types.Iterator, error) {
+	return s.Dedup.Iterator(start, end)
 }
+func (s *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
+	return s.Dedup.ReverseIterator(start, end)
+}
+
+// writes (both stores)
 
 func (s *Store) Set(key, value []byte) error {
-	//TODO implement me
-	panic("implement me")
+	if err := s.Dedup.Set(key, value); err != nil {
+		return err
+	}
+	return s.IAVLStore.Set(key, value)
 }
 
 func (s *Store) Delete(key []byte) error {
-	//TODO implement me
-	panic("implement me")
+	if err := s.Dedup.Delete(key); err != nil {
+		return err
+	}
+	return s.IAVLStore.Delete(key)
 }
 
-func (s *Store) Iterator(start, end []byte) (types.Iterator, error) {
-	//TODO implement me
-	panic("implement me")
+// lifecycle operations (special)
+
+func (s *Store) CommitBatch(b db.Batch) (types.CommitID, db.Batch) {
+	// commit both stores, but only return commitID from IAVL
+	_, b = s.Dedup.CommitBatch(b)
+	return s.IAVLStore.CommitBatch(b)
 }
 
-func (s *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
-	//TODO implement me
-	panic("implement me")
-}
+func (s *Store) CacheWrap() types.CacheWrap   { return cachemulti.NewStoreCache(s) }
+func (s *Store) LastCommitID() types.CommitID { return s.IAVLStore.LastCommitID() }
 
-func (s *Store) CacheWrap() types.CacheWrap {
-	//TODO implement me
-	panic("implement me")
-}
+// unused below
 
 func (s *Store) Commit() types.CommitID {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *Store) LastCommitID() types.CommitID {
-	//TODO implement me
-	panic("implement me")
+	panic("Commit() called in store; should use commitBatch for atomic safety")
 }

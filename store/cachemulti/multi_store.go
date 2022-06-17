@@ -4,6 +4,10 @@ import (
 	"github.com/pokt-network/pocket-core/store/types"
 )
 
+// Cache wrapping is simply a mechanism to allow the application to roll back (or simply not write) state changes
+// between each atomic transaction. This 'cache protection' enables a way to 'apply' the transaction without
+// actually writing (for check transaction etc.)
+
 var _ types.CacheMultiStore = (*CacheMultiStore)(nil)
 
 type CacheMultiStore struct {

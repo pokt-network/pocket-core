@@ -109,22 +109,15 @@ func (st *Store) Commit() types.CommitID {
 		panic(err)
 	}
 
-	// Release an old version of history, if not a sync waypoint.
-	//previous := version - 1 TODO removed for testing
-	//if st.numRecent < previous {
-	//	toRelease := previous - st.numRecent
-	//	if st.storeEvery == 0 || toRelease%st.storeEvery != 0 {
-	//		err := st.tree.DeleteVersion(toRelease)
-	//		if errCause := errors.Cause(err); errCause != nil && errCause != iavl.ErrVersionDoesNotExist {
-	//			panic(err)
-	//		}
-	//	}
-	//}
-
 	return types.CommitID{
 		Version: version,
 		Hash:    hash,
 	}
+}
+
+func (st *Store) CommitBatch(b dbm.Batch) (types.CommitID, dbm.Batch) {
+	// TODO IAVL is still not batch safe, but as safe as it's ever been
+	return st.Commit(), b
 }
 
 // Implements Committer.
