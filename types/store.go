@@ -121,11 +121,6 @@ func (s PrefixStore) key(key []byte) (res []byte) {
 	return
 }
 
-// Implements PrefixStore
-func (s PrefixStore) GetStoreType() StoreType {
-	return s.parent.GetStoreType()
-}
-
 // Implements CacheWrap
 func (s PrefixStore) CacheWrap() CacheWrap {
 	panic("")

@@ -18,6 +18,10 @@ const (
 
 // LoadStore loads the iavl store
 func LoadStore(db dbm.DB, id types.CommitID) (types.CommitStore, error) {
+	return NewStore(db, id)
+}
+
+func NewStore(db dbm.DB, id types.CommitID) (*Store, error) {
 	var err error
 
 	tree, err := NewMutableTree(db, defaultIAVLCacheSize)
@@ -66,7 +70,7 @@ func UnsafeNewStore(tree *MutableTree, _ int64, _ int64) *Store {
 	return st
 }
 
-// LoadHistoricalVersion returns a reference to a new store backed by an immutable IAVL
+// LoadVersion returns a reference to a new store backed by an immutable IAVL
 // tree at a specific version (height) without any pruning options. This should
 // be used for querying and iteration only. If the version does not exist or has
 // been pruned, an error will be returned. Any mutable operations executed will

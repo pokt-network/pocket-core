@@ -8,7 +8,6 @@ import (
 )
 
 type Store interface { //nolint
-	GetStoreType() StoreType
 	CacheWrapper
 }
 
@@ -37,7 +36,6 @@ type MultiStore interface { //nolint
 
 	// Convenience for fetching substores.
 	// If the store does not exist, panics.
-	GetStore(StoreKey) Store
 	GetKVStore(StoreKey) KVStore
 }
 
@@ -56,18 +54,12 @@ type CommitMultiStore interface {
 	// If db == nil, the new store will use the CommitMultiStore db.
 	MountStoreWithDB(key StoreKey, typ StoreType, db dbm.DB)
 
-	// Panics on a nil key.
-	GetCommitStore(key StoreKey) CommitStore
-
-	// Panics on a nil key.
-	GetCommitKVStore(key StoreKey) CommitKVStore
-
 	// Load the latest persisted version. Called once after all calls to
 	// Mount*Store() are complete.
 	LoadLatestVersion() error
 	// Load a specific persisted version in a memory saving fashion.
 	// Don't iterate through and collect all the roots and versions
-	LoadHistoricalVersion(ver int64) (*Store, error)
+	LoadVersion(ver int64) (*Store, error)
 	CopyStore() *Store
 }
 

@@ -565,7 +565,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
 	}
 	// new multistore for copy
-	store, err := app.cms.(*rootMulti.Store).LoadHistoricalVersion(req.Height)
+	store, err := app.cms.(*rootMulti.Store).LoadVersion(req.Height)
 	if err != nil {
 		return sdk.ErrInternal(
 			fmt.Sprintf(

@@ -92,16 +92,6 @@ func (rs *Store) MountStoreWithDB(key types.StoreKey, typ types.StoreType, db db
 }
 
 // Implements CommitMultiStore.
-func (rs *Store) GetCommitStore(key types.StoreKey) types.CommitStore {
-	return rs.stores[key]
-}
-
-// Implements CommitMultiStore.
-func (rs *Store) GetCommitKVStore(key types.StoreKey) types.CommitKVStore {
-	return rs.stores[key].(types.CommitKVStore)
-}
-
-// Implements CommitMultiStore.
 func (rs *Store) LoadLatestVersion() error {
 	ver := getLatestVersion(rs.DB)
 	if ver == 0 {
@@ -155,7 +145,7 @@ func (rs *Store) LoadLatestVersion() error {
 	return nil
 }
 
-func (rs *Store) LoadHistoricalVersion(ver int64) (*types.Store, error) {
+func (rs *Store) LoadVersion(ver int64) (*types.Store, error) {
 	newStores := make(map[types.StoreKey]types.CommitStore)
 	for k, v := range rs.stores {
 		a, ok := (v).(*iavl.Store)
@@ -164,7 +154,7 @@ func (rs *Store) LoadHistoricalVersion(ver int64) (*types.Store, error) {
 		}
 		s, err := a.LazyLoadStore(ver)
 		if err != nil {
-			return nil, fmt.Errorf("error loading store: %s, in LoadHistoricalVersion: %s", k, err.Error())
+			return nil, fmt.Errorf("error loading store: %s, in LoadVersion: %s", k, err.Error())
 		}
 		newStores[k] = s
 	}
@@ -233,16 +223,6 @@ func (rs *Store) CacheMultiStore() types.CacheMultiStore {
 	}
 
 	return cachemulti.NewCacheMulti(rs.stores)
-}
-
-// Implements MultiStore.
-// If the store does not exist, panics.
-func (rs *Store) GetStore(key types.StoreKey) types.Store {
-	store := rs.stores[key]
-	if store == nil {
-		panic("Could not load store " + key.String())
-	}
-	return store
 }
 
 // GetKVStore implements the MultiStore interface.
