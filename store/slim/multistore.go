@@ -14,23 +14,36 @@ type MultiStore struct {
 	LastCommit types.CommitID
 }
 
+func NewStore(d db.DB) *MultiStore {
+	return &MultiStore{
+		DB:         d.(*db.GoLevelDB),
+		Stores:     make(map[types.StoreKey]types.CommitStore),
+		LastCommit: types.CommitID{},
+	}
+}
+
 func (m *MultiStore) LoadLatestVersion() (err error) {
 	latestHeight := getLatestVersion(m.DB)
 	commitID := types.CommitID{}
 	if latestHeight != 0 {
 		commitID, err = getCommitID(m.DB, latestHeight)
+		if err != nil {
+			return err
+		}
+		m.LastCommit = commitID
 	}
 	for key := range m.Stores {
 		m.Stores[key] = NewStoreWithIAVL(m.DB, latestHeight, key.Name(), commitID)
 	}
 	// reset next height upon launch incase there was 'dirty' data on the next working height
+	//return nil
 	return m.ResetNextHeight()
 }
 
 func (m *MultiStore) LoadVersion(ver int64) (store *types.Store, err error) {
 	newStores := make(map[types.StoreKey]types.CommitStore)
 	for key := range m.Stores {
-		newStores[key] = NewStoreWithoutIAVL(m.DB, ver, key.Name())
+		newStores[key] = NewStoreWithoutIAVL(m.DB, ver-1, key.Name())
 	}
 	return multiStoreToStore(m.DB, newStores), nil
 }
@@ -80,8 +93,13 @@ func (m *MultiStore) ResetNextHeight() (err error) {
 	return batch.Write()
 }
 
-func (m *MultiStore) LastCommitID() types.CommitID { return m.LastCommit }
-func (m *MultiStore) CacheWrap() types.CacheWrap   { return m.CacheMultiStore() }
+func (m *MultiStore) LastCommitID() types.CommitID {
+	if m.LastCommit.Hash == nil {
+		m.LoadLatestVersion()
+	}
+	return m.LastCommit
+}
+func (m *MultiStore) CacheWrap() types.CacheWrap { return m.CacheMultiStore() }
 func (m *MultiStore) CacheMultiStore() types.CacheMultiStore {
 	return cachemulti.NewCacheMulti(m.Stores)
 }

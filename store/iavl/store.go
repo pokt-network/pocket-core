@@ -14,6 +14,7 @@ import (
 
 const (
 	defaultIAVLCacheSize = 5000000
+	defaultKeepRecent    = 1000
 )
 
 // LoadStore loads the iavl store
@@ -108,6 +109,9 @@ func (st *Store) Commit() types.CommitID {
 	if err != nil {
 		panic(err)
 	}
+
+	// prune the n-1000 blocks
+	st.tree.DeleteVersion(version - defaultKeepRecent)
 
 	return types.CommitID{
 		Version: version,

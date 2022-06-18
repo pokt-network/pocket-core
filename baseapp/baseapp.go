@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
+	"github.com/pokt-network/pocket-core/store/slim"
 	types3 "github.com/pokt-network/pocket-core/store/types"
 	types2 "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
@@ -29,7 +30,6 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	rootMulti "github.com/pokt-network/pocket-core/store/rootmulti"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
@@ -128,7 +128,7 @@ func NewBaseApp(name string, logger log.Logger, db dbm.DB, txDecoder sdk.TxDecod
 		name:             name,
 		db:               db,
 		cdc:              cdc,
-		cms:              rootMulti.NewStore(db),
+		cms:              slim.NewStore(db),
 		router:           NewRouter(),
 		queryRouter:      NewQueryRouter(),
 		transactionCache: make(map[string]struct{}),
@@ -565,7 +565,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 		return sdk.ErrInternal("cannot query with proof when height <= 1; please provide a valid height").QueryResult()
 	}
 	// new multistore for copy
-	store, err := app.cms.(*rootMulti.Store).LoadVersion(req.Height)
+	store, err := app.cms.(*slim.MultiStore).LoadVersion(req.Height)
 	if err != nil {
 		return sdk.ErrInternal(
 			fmt.Sprintf(
@@ -574,7 +574,7 @@ func handleQueryCustom(app *BaseApp, path []string, req abci.RequestQuery) (res 
 			),
 		).QueryResult()
 	}
-	newMS, ok := (*store).(*rootMulti.Store)
+	newMS, ok := (*store).(*slim.MultiStore)
 	if !ok {
 		return sdk.ErrInternal(
 			fmt.Sprintf(
@@ -825,7 +825,7 @@ func (app *BaseApp) getState(mode runTxMode) *state {
 // a cache wrapped multi-store.
 func (app *BaseApp) txContext(ctx sdk.Ctx, txBytes []byte) (
 	sdk.Context, sdk.MultiStore) { // todo edit here!!!
-	newMS := types3.MultiStore((*app.cms.(types3.CommitMultiStore).(*rootMulti.Store).CopyStore()).(*rootMulti.Store))
+	newMS := types3.MultiStore((*app.cms.(types3.CommitMultiStore).(*slim.MultiStore).CopyStore()).(*slim.MultiStore))
 	return ctx.WithMultiStore(newMS), newMS
 }
 

@@ -42,10 +42,10 @@ func (k Keeper) UnmarshalValidator(ctx sdk.Ctx, valBytes []byte) (val types.Vali
 
 // GetValidator - Retrieve validator with address from the main store
 func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
-	val, found := k.validatorCache.GetWithCtx(ctx, addr.String())
-	if found {
-		return val.(types.Validator), found
-	}
+	//val, found := k.validatorCache.GetWithCtx(ctx, addr.String())
+	//if found {
+	//	return val.(types.Validator), found
+	//}
 	store := ctx.KVStore(k.storeKey)
 	value, _ := store.Get(types.KeyForValByAllVals(addr))
 	if value == nil {

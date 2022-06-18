@@ -46,11 +46,11 @@ func (d *DedupIterator) Value() (value []byte) {
 	return
 }
 
-func (d *DedupIterator) Error() error { return d.Error() }
+func (d *DedupIterator) Error() error { return d.it.Error() }
 
-func (d *DedupIterator) Close() { d.Close() }
+func (d *DedupIterator) Close() { d.it.Close() }
 
-func (d *DedupIterator) Valid() bool { return d.Valid() }
+func (d *DedupIterator) Valid() bool { return d.it.Valid() }
 
 func (d *DedupIterator) Domain() (start []byte, end []byte) {
 	st, end := d.it.Domain()

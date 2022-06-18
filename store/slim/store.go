@@ -13,13 +13,13 @@ type Store struct {
 	IAVLStore iavl.Store
 }
 
-func NewStoreWithIAVL(db *db.GoLevelDB, height int64, prefix string, commitID types.CommitID) *Store {
-	iavlStore, err := iavl.NewStore(db, commitID)
+func NewStoreWithIAVL(d *db.GoLevelDB, height int64, prefix string, commitID types.CommitID) *Store {
+	iavlStore, err := iavl.NewStore(db.NewPrefixDB(d, []byte("s/k:"+prefix+"/")), commitID)
 	if err != nil {
 		panic("iavl store failed to load for height: %s prefix: %s")
 	}
 	return &Store{
-		Dedup:     dedup.NewStore(height, prefix, *db),
+		Dedup:     dedup.NewStore(height, prefix, *d),
 		IAVLStore: *iavlStore,
 	}
 }

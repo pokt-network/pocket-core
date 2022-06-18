@@ -55,7 +55,8 @@ func (s *Store) Get(k []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.ParentDB.Get(dataStoreKey)
+	val, err := s.ParentDB.Get(dataStoreKey)
+	return val, err
 }
 
 func (s *Store) Has(k []byte) (bool, error) {
@@ -93,26 +94,25 @@ func (s *Store) Delete(k []byte) error {
 // lifecycle ops
 
 func (s *Store) CommitBatch(b db.Batch) (types.CommitID, db.Batch) {
-	b = s.PrepareNextHeight(b)
 	s.Height = s.Height + 1
-	return types.CommitID{}, b
+	return types.CommitID{}, s.PrepareNextHeight(b)
 }
 
 func (s *Store) PrepareNextHeight(b db.Batch) db.Batch {
-	// iterate through the LINKSTORE to prepare the next height
-	startKey := HeightKey(s.Height, s.Prefix, nil)
-	endKey := types.PrefixEndBytes(startKey)
-	it, err := s.Iterator(startKey, endKey)
+	var err error
+	start := HeightKey(s.Height-1, s.Prefix, nil)
+	end := types.PrefixEndBytes(start)
+	it := &DedupIterator{parent: s.ParentDB}
+	it.it, err = s.ParentDB.Iterator(start, end)
 	if err != nil {
 		panic(fmt.Sprintf("unable to create an iterator for height/prefix %d/%s in Commit()", s.Height, s.Prefix))
 	}
-	nextHeight := s.Height + 1
+	nextHeight := s.Height
 	defer it.Close()
 	for ; it.Valid(); it.Next() {
-		heightKey := it.Key()
-		k := KeyFromHeightKey(heightKey)
+		k := it.Key()
 		nextHeightKey := HeightKey(nextHeight, s.Prefix, k)
-		linkValue := it.Value()
+		linkValue := it.it.Value()
 		b.Set(nextHeightKey, linkValue)
 	}
 	return b
@@ -122,21 +122,22 @@ func (s *Store) PrepareNextHeight(b db.Batch) db.Batch {
 // data is written each op to the db instead of saving it for commit() phase at the end.
 // While this is conceptually simpler, it comes with the tradeoff that the next working height
 // must be reset upon restart.
+// NOTE: The assumption is that the entire block is rolled back upon replay. If this isn't the case
+// this actually will be both unnecessary (see cache-wrapping) and not work.
 
 func (s *Store) ResetNextHeight(b db.Batch) (batch db.Batch, err error) {
 	b, err = s.ClearNextHeight(b)
 	if err != nil {
 		return b, err
 	}
-	b = s.PrepareNextHeight(b)
-	return b, nil
+	return s.PrepareNextHeight(b), nil
 }
 
 func (s *Store) ClearNextHeight(b db.Batch) (db.Batch, error) {
 	// iterate through the LINKSTORE to clear the 'next height'
 	// we need to do this in case the db was shut down at an
 	// unsafe point
-	nextHeight := s.Height + 1
+	nextHeight := s.Height
 	startKey := HeightKey(nextHeight, s.Prefix, nil)
 	endKey := types.PrefixEndBytes(startKey)
 	it, err := s.Iterator(startKey, endKey)
@@ -162,7 +163,7 @@ func (s *Store) ClearNextHeight(b db.Batch) (db.Batch, error) {
 // key ops
 
 func HeightKey(height int64, prefix string, k []byte) []byte {
-	return []byte(fmt.Sprintf("%d/%s/%s/", height, prefix, string(k)))
+	return []byte(fmt.Sprintf("%d/%s/%s", height, prefix, string(k)))
 }
 
 func FromHeightKey(heightKey string) (height int64, prefix string, k []byte) {
