@@ -1,9 +1,9 @@
 syntax = "proto3";
-package store.rootmulti;
+package store.slim;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/pokt-network/pocket-core/store/rootmulti";
+option go_package = "github.com/pokt-network/pocket-core/store/slim";
 
 // CommitInfo defines commit information used by the multi-store when committing
 // a version/height.
@@ -28,15 +28,4 @@ message CommitID {
 
 	int64 version = 1;
 	bytes hash = 2;
-}
-
-message MultiStoreProof {
-	repeated StoreInfo storeInfos = 1 [(gogoproto.nullable) = false];
-}
-
-message MultiStoreProofOp {
-	option (gogoproto.goproto_stringer) = true;
-
-	bytes key = 1;
-	MultiStoreProof proof = 2 [(gogoproto.jsontag) = "proof"];
 }

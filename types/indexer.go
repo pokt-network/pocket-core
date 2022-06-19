@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/jordanorelli/lexnum"
 	"github.com/pkg/errors"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/pubsub/query"
 	"github.com/tendermint/tendermint/state/txindex"
 	"github.com/tendermint/tendermint/types"
@@ -69,7 +70,7 @@ func (t *TransactionIndexer) AddBatch(b *txindex.Batch) error {
 		storeBatch.Set(keyForHeight(result), hash)
 
 		// index tx by hash
-		rawBytes, err := cdc.MarshalBinaryBare(result, 0) // TODO make protobuf compatible
+		rawBytes, err := cdc.ProtoMarshalBinaryBare(TxResultToSlim(result))
 		if err != nil {
 			return err
 		}
@@ -100,7 +101,8 @@ func (t *TransactionIndexer) Index(result *types.TxResult) error {
 	storeBatch.Set(keyForHeight(result), hash)
 
 	// index tx by hash
-	rawBytes, err := cdc.MarshalBinaryBare(result, 0) // TODO make protobuf compatible
+	//rawBytes, err := cdc.MarshalBinaryBare(result, 0) // TODO make protobuf compatible
+	rawBytes, err := cdc.ProtoMarshalBinaryBare(TxResultToSlim(result))
 	if err != nil {
 		return err
 	}
@@ -119,13 +121,13 @@ func (t *TransactionIndexer) Get(hash []byte) (*types.TxResult, error) {
 		return nil, nil
 	}
 
-	txResult := new(types.TxResult)
-	err := cdc.UnmarshalBinaryBare(rawBytes, &txResult, 0)
+	txResult := new(TxResultSlim)
+	err := cdc.ProtoUnmarshalBinaryBare(rawBytes, txResult)
 	if err != nil {
 		return nil, fmt.Errorf("error reading TxResult: %v", err)
 	}
 
-	return txResult, nil
+	return SlimToResult(txResult), nil
 }
 
 // NOTE: Only supports op.Equal for hash, height, signer, or recipient, we only support op.Equal for simplicity and
@@ -306,4 +308,26 @@ func endKey(prefix []byte) []byte {
 	bz := bytes.Split(prefix, []byte(sep))
 	bz = append(bz[:len(bz)-1], []byte(elenEncoder.EncodeInt(math.MaxInt64)))
 	return bytes.Join(bz[:], []byte(sep))
+}
+
+func TxResultToSlim(result *types.TxResult) *TxResultSlim {
+	return &TxResultSlim{
+		Height:    uint32(result.Height),
+		Index:     result.Index,
+		Code:      CodeType(result.Result.Code),
+		Codespace: CodespaceType(result.Result.Codespace),
+		Tx:        result.Tx,
+	}
+}
+
+func SlimToResult(slim *TxResultSlim) *types.TxResult {
+	return &types.TxResult{
+		Height: int64(slim.Height),
+		Index:  slim.Index,
+		Tx:     slim.Tx,
+		Result: abci.ResponseDeliverTx{
+			Code:      uint32(slim.Code),
+			Codespace: string(slim.Codespace),
+		},
+	}
 }
