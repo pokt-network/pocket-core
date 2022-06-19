@@ -2,7 +2,7 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/store/rootmulti"
+	"github.com/pokt-network/pocket-core/store/slim"
 	"testing"
 	"time"
 
@@ -32,7 +32,7 @@ func newContext(t *testing.T, isCheckTx bool) sdk.Context {
 	keyParams := sdk.ParamsKey
 
 	db := dbm.NewMemDB()
-	ms := rootmulti.NewStore(db)
+	ms := slim.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()

@@ -2,7 +2,7 @@ package nodes
 
 import (
 	types2 "github.com/pokt-network/pocket-core/codec/types"
-	"github.com/pokt-network/pocket-core/store/rootmulti"
+	"github.com/pokt-network/pocket-core/store/slim"
 	"github.com/tendermint/tendermint/rpc/client/http"
 	"math/rand"
 	"testing"
@@ -66,7 +66,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	keyParams := sdk.ParamsKey
 
 	db := dbm.NewMemDB()
-	ms := rootmulti.NewStore(db)
+	ms := slim.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyPOS, sdk.StoreTypeIAVL, db)

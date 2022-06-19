@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"fmt"
-	"github.com/pokt-network/pocket-core/store/rootmulti"
+	"github.com/pokt-network/pocket-core/store/slim"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/apps/types"
@@ -52,7 +52,7 @@ func TestKeepers_NewKeeper(t *testing.T) {
 			appsKey := sdk.NewKVStoreKey(types.StoreKey)
 
 			db := dbm.NewMemDB()
-			ms := rootmulti.NewStore(db)
+			ms := slim.NewStore(db)
 			ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 			ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)

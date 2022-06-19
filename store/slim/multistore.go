@@ -10,6 +10,7 @@ var _ types.CommitMultiStore = &MultiStore{}
 
 type MultiStore struct {
 	DB         *db.GoLevelDB
+	CacheDB    *db.GoLevelMemDB
 	Stores     map[types.StoreKey]types.CommitStore
 	LastCommit types.CommitID
 }
@@ -17,6 +18,7 @@ type MultiStore struct {
 func NewStore(d db.DB) *MultiStore {
 	return &MultiStore{
 		DB:         d.(*db.GoLevelDB),
+		CacheDB:    db.NewGoLevelMemDB(),
 		Stores:     make(map[types.StoreKey]types.CommitStore),
 		LastCommit: types.CommitID{},
 	}
@@ -33,19 +35,20 @@ func (m *MultiStore) LoadLatestVersion() (err error) {
 		m.LastCommit = commitID
 	}
 	for key := range m.Stores {
-		m.Stores[key] = NewStoreWithIAVL(m.DB, latestHeight, key.Name(), commitID)
+		m.Stores[key] = NewStoreWithIAVL(m.DB, m.CacheDB, latestHeight, key.Name(), commitID)
 	}
 	// reset next height upon launch incase there was 'dirty' data on the next working height
-	//return nil
-	return m.ResetNextHeight()
+	_ = m.ResetNextHeight()
+	m.PreloadCache()
+	return nil
 }
 
 func (m *MultiStore) LoadVersion(ver int64) (store *types.Store, err error) {
 	newStores := make(map[types.StoreKey]types.CommitStore)
 	for key := range m.Stores {
-		newStores[key] = NewStoreWithoutIAVL(m.DB, ver-1, key.Name())
+		newStores[key] = NewStoreWithoutIAVL(m.DB, m.CacheDB, getLatestVersion(m.DB), ver-1, key.Name())
 	}
-	return multiStoreToStore(m.DB, newStores), nil
+	return multiStoreToStore(m.DB, m.CacheDB, m.LastCommit, newStores), nil
 }
 
 func (m *MultiStore) Commit() (commitID types.CommitID) {
@@ -78,7 +81,7 @@ func (m *MultiStore) CopyStore() *types.Store {
 	for key, store := range m.Stores {
 		newStores[key] = store
 	}
-	return multiStoreToStore(m.DB, newStores)
+	return multiStoreToStore(m.DB, m.CacheDB, m.LastCommit, newStores)
 }
 
 func (m *MultiStore) ResetNextHeight() (err error) {
@@ -91,6 +94,12 @@ func (m *MultiStore) ResetNextHeight() (err error) {
 		}
 	}
 	return batch.Write()
+}
+
+func (m *MultiStore) PreloadCache() {
+	for _, store := range m.Stores {
+		store.(*Store).PreloadCache(m.LastCommit.Version)
+	}
 }
 
 func (m *MultiStore) LastCommitID() types.CommitID {

@@ -36,14 +36,16 @@ import (
 type Store struct {
 	Height   int64
 	Prefix   string
-	ParentDB db.GoLevelDB
+	ParentDB db.DB
+	isCache  bool
 }
 
-func NewStore(height int64, prefix string, parent db.GoLevelDB) Store {
-	return Store{
+func NewStore(height int64, prefix string, parent db.DB, isCache bool) *Store {
+	return &Store{
 		Height:   height,
 		Prefix:   prefix,
 		ParentDB: parent,
+		isCache:  isCache,
 	}
 }
 
@@ -95,25 +97,23 @@ func (s *Store) Delete(k []byte) error {
 
 func (s *Store) CommitBatch(b db.Batch) (types.CommitID, db.Batch) {
 	s.Height = s.Height + 1
+	if b == nil {
+		s.DeleteHeight2(s.Height - DefaultCacheKeepHeights)
+	}
 	return types.CommitID{}, s.PrepareNextHeight(b)
 }
 
 func (s *Store) PrepareNextHeight(b db.Batch) db.Batch {
-	var err error
-	start := HeightKey(s.Height-1, s.Prefix, nil)
-	end := types.PrefixEndBytes(start)
-	it := &DedupIterator{parent: s.ParentDB}
-	it.it, err = s.ParentDB.Iterator(start, end)
-	if err != nil {
-		panic(fmt.Sprintf("unable to create an iterator for height/prefix %d/%s in Commit()", s.Height, s.Prefix))
-	}
-	nextHeight := s.Height
+	it := NewDedupIteratorForHeight(s.ParentDB, s.Height-1, s.Prefix)
 	defer it.Close()
 	for ; it.Valid(); it.Next() {
-		k := it.Key()
-		nextHeightKey := HeightKey(nextHeight, s.Prefix, k)
+		nextHeightKey := HeightKey(s.Height, s.Prefix, it.Key())
 		linkValue := it.it.Value()
-		b.Set(nextHeightKey, linkValue)
+		if b == nil {
+			_ = s.ParentDB.Set(nextHeightKey, linkValue)
+		} else {
+			b.Set(nextHeightKey, linkValue)
+		}
 	}
 	return b
 }
@@ -126,38 +126,63 @@ func (s *Store) PrepareNextHeight(b db.Batch) db.Batch {
 // this actually will be both unnecessary (see cache-wrapping) and not work.
 
 func (s *Store) ResetNextHeight(b db.Batch) (batch db.Batch, err error) {
-	b, err = s.ClearNextHeight(b)
+	b, err = s.DeleteHeight(b, s.Height)
 	if err != nil {
 		return b, err
 	}
 	return s.PrepareNextHeight(b), nil
 }
 
-func (s *Store) ClearNextHeight(b db.Batch) (db.Batch, error) {
+func (s *Store) DeleteHeight(b db.Batch, height int64) (db.Batch, error) {
 	// iterate through the LINKSTORE to clear the 'next height'
 	// we need to do this in case the db was shut down at an
 	// unsafe point
-	nextHeight := s.Height
-	startKey := HeightKey(nextHeight, s.Prefix, nil)
-	endKey := types.PrefixEndBytes(startKey)
-	it, err := s.Iterator(startKey, endKey)
-	if err != nil {
-		panic(fmt.Sprintf("unable to create an iterator for height/prefix %d/%s in ClearNextHeight()", s.Height, s.Prefix))
-	}
 	keysToDelete := make([][]byte, 0)
+	it := NewDedupIteratorForHeight(s.ParentDB, height, s.Prefix)
 	defer it.Close()
 	for ; it.Valid(); it.Next() {
-		linkKey := it.Key()
+		linkKey := it.Key() // TODO I think this is the wrong key
 		keysToDelete = append(keysToDelete, linkKey)
 		// delete any data that was created for next height as well
 		// or the result will be orphaned data that has no link
-		dataKey := HashKey(linkKey)
+		dataKey, _ := s.ParentDB.Get(linkKey)
 		keysToDelete = append(keysToDelete, dataKey)
 	}
 	for _, k := range keysToDelete {
 		b.Delete(k)
 	}
 	return b, nil
+}
+
+func (s *Store) DeleteHeight2(height int64) {
+	keysToDelete := make([][]byte, 0)
+	dIt := NewDedupIteratorForHeight(s.ParentDB, height, s.Prefix)
+	defer dIt.Close()
+	for ; dIt.Valid(); dIt.Next() {
+		linkKey := dIt.it.Key()
+		keysToDelete = append(keysToDelete, linkKey)
+		// delete any data that was created for next height as well
+		// or the result will be orphaned data that has no link
+		dataKey, _ := s.ParentDB.Get(linkKey)
+		keysToDelete = append(keysToDelete, dataKey)
+	}
+	for _, k := range keysToDelete {
+		_ = s.Delete(k)
+	}
+	return
+}
+
+func (s *Store) PreloadCache(latestHeight int64, cache *Store) {
+	fmt.Printf("Preloading cache for %s\n", s.Prefix)
+	for i := getPreloadStartHeight(latestHeight); i <= latestHeight; i++ {
+		cache.Height = i
+		it := NewDedupIteratorForHeight(s.ParentDB, i, s.Prefix)
+		for ; it.Valid(); it.Next() {
+			_ = cache.Set(it.Key(), it.Value())
+		}
+		it.Close()
+	}
+	return
 }
 
 // key ops
@@ -186,6 +211,20 @@ func KeyFromHeightKey(heightKey []byte) (k []byte) {
 
 func HashKey(key []byte) []byte {
 	return sdk.Hash(key)
+}
+
+// util
+
+const (
+	DefaultCacheKeepHeights = 50
+)
+
+func getPreloadStartHeight(latestHeight int64) int64 {
+	startHeight := latestHeight - DefaultCacheKeepHeights
+	if startHeight < 0 {
+		startHeight = 0
+	}
+	return startHeight
 }
 
 // unused below

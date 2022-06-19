@@ -6,7 +6,7 @@ import (
 	"github.com/pokt-network/pocket-core/codec"
 	cdcTypes "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/store/rootmulti"
+	"github.com/pokt-network/pocket-core/store/slim"
 	sdk "github.com/pokt-network/pocket-core/types"
 	authTypes "github.com/pokt-network/pocket-core/x/auth/types"
 	govKeeper "github.com/pokt-network/pocket-core/x/gov/keeper"
@@ -32,7 +32,7 @@ func setupTestInput() testInput {
 	authCapKey := sdk.NewKVStoreKey("auth")
 	keyParams := sdk.ParamsKey
 
-	ms := rootmulti.NewStore(db)
+	ms := slim.NewStore(db)
 	ms.MountStoreWithDB(authCapKey, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	_ = ms.LoadLatestVersion()

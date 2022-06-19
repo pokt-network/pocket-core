@@ -4,7 +4,7 @@ import (
 	"fmt"
 	cdcTypes "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/store/rootmulti"
+	"github.com/pokt-network/pocket-core/store/slim"
 	"os"
 	"testing"
 
@@ -44,7 +44,7 @@ func createTestInput(t *testing.T, isCheckTx bool, initPower int64, nAccs int64)
 	keyAcc := sdk.NewKVStoreKey(types.StoreKey)
 	keyParams := sdk.ParamsKey
 	db := dbm.NewMemDB()
-	ms := rootmulti.NewStore(db)
+	ms := slim.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	err := ms.LoadLatestVersion()

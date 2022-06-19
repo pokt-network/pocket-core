@@ -2,7 +2,7 @@ package keeper
 
 import (
 	types2 "github.com/pokt-network/pocket-core/codec/types"
-	"github.com/pokt-network/pocket-core/store/rootmulti"
+	"github.com/pokt-network/pocket-core/store/slim"
 	"math/rand"
 	"testing"
 
@@ -58,7 +58,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Context, []auth.Account,
 	keyParams := sdk.ParamsKey
 	keyPOS := sdk.NewKVStoreKey(types.ModuleName)
 	db := dbm.NewMemDB()
-	ms := rootmulti.NewStore(db)
+	ms := slim.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyPOS, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)

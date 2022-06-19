@@ -2,7 +2,7 @@ package pos
 
 import (
 	types3 "github.com/pokt-network/pocket-core/codec/types"
-	"github.com/pokt-network/pocket-core/store/rootmulti"
+	"github.com/pokt-network/pocket-core/store/slim"
 	"math/rand"
 	"testing"
 
@@ -64,7 +64,7 @@ func createTestInput(t *testing.T, isCheckTx bool) (sdk.Ctx, keeper.Keeper, type
 	nodesKey := sdk.NewKVStoreKey(nodestypes.StoreKey)
 	appsKey := sdk.NewKVStoreKey(types.StoreKey)
 	db := dbm.NewMemDB()
-	ms := rootmulti.NewStore(db)
+	ms := slim.NewStore(db)
 	ms.MountStoreWithDB(keyAcc, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyParams, sdk.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(nodesKey, sdk.StoreTypeIAVL, db)

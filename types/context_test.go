@@ -1,7 +1,7 @@
 package types_test
 
 import (
-	"github.com/pokt-network/pocket-core/store/rootmulti"
+	"github.com/pokt-network/pocket-core/store/slim"
 	"testing"
 	"time"
 
@@ -46,7 +46,7 @@ func (l MockLogger) With(kvs ...interface{}) log.Logger {
 
 func defaultContext(key types.StoreKey) types.Context {
 	db := dbm.NewMemDB()
-	cms := rootmulti.NewStore(db)
+	cms := slim.NewStore(db)
 	cms.MountStoreWithDB(key, types.StoreTypeIAVL, db)
 	_ = cms.LoadLatestVersion()
 	ctx := types.NewContext(cms, abci.Header{}, false, log.NewNopLogger())
