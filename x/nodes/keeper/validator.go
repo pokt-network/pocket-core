@@ -42,8 +42,15 @@ func (k Keeper) UnmarshalValidator(ctx sdk.Ctx, valBytes []byte) (val types.Vali
 
 // GetValidator - Retrieve validator with address from the main store
 func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
-	if val, found := k.validatorCache.GetWithCtx(ctx, addr.String()); found {
+	addrString := addr.String()
+	if val, found := k.validatorCache.GetWithCtx(ctx, addrString); found {
 		return val.(types.Validator), found
+	}
+	if isPrevValCacheInit {
+		prevValCacheKey := sdk.GetCacheKey(int(ctx.BlockHeight()), addrString)
+		if val, found := k.prevValidatorCache.Get(prevValCacheKey); found {
+			return val.(types.Validator), found
+		}
 	}
 	store := ctx.KVStore(k.storeKey)
 	value, _ := store.Get(types.KeyForValByAllVals(addr))
@@ -55,7 +62,7 @@ func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Val
 		ctx.Logger().Error("can't get validator: " + err.Error())
 		return validator, false
 	}
-	_ = k.validatorCache.AddWithCtx(ctx, addr.String(), validator)
+	_ = k.validatorCache.AddWithCtx(ctx, addrString, validator)
 	return validator, true
 }
 
@@ -129,9 +136,36 @@ func (k Keeper) GetAllValidatorsAddrs(ctx sdk.Ctx) (validators []sdk.Address) {
 	iterator, _ := sdk.KVStorePrefixIterator(store, types.AllValidatorsKey)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		validators = append(validators, iterator.Key())
+		validators = append(validators, iterator.Key()[1:])
 	}
 	return validators
+}
+
+func (k Keeper) UpdatePrevValidatorsCache(ctx sdk.Ctx) {
+	addrs := k.GetAllValidatorsAddrs(ctx)
+	for _, addr := range addrs {
+		val, _ := k.GetValidator(ctx, addr)
+		k.AddToPrevValidatorCache(ctx, addr, val)
+	}
+}
+
+func (k *Keeper) AddToPrevValidatorCache(ctx sdk.Ctx, addr sdk.Address, val types.Validator) {
+	k.prevValidatorCache.Add(sdk.GetCacheKey(int(ctx.BlockHeight()), addr.String()), val) // TODO possibly one off error (blockHeight+/-1)
+}
+
+func (k *Keeper) InitPrevValidatorsCache(ctx sdk.Ctx) {
+	h := ctx.BlockHeight() - 1000
+	if h < 0 {
+		h = 0
+	}
+	for ; h < ctx.BlockHeight(); h++ {
+		prevCtx, err := ctx.PrevCtx(h)
+		if err != nil {
+			panic("an error occurred retrieving the prevCtx in InitPrevValidatorsCache" + err.Error())
+		}
+		k.UpdatePrevValidatorsCache(prevCtx)
+	}
+	isPrevValCacheInit = true
 }
 
 // GetAllValidators - - Retrieve the set of all validators with no limits from the main store
