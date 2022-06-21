@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -41,7 +40,8 @@ func init() {
 	accountsCmd.AddCommand(signNexMS)
 	accountsCmd.AddCommand(buildMultisig)
 	accountsCmd.AddCommand(unsafeDeleteCmd)
-	accountsCmd.AddCommand(getLightNodes)
+	accountsCmd.AddCommand(getNodesLean)
+	accountsCmd.AddCommand(setValidatorsLean)
 }
 
 // accountsCmd represents the accounts namespace command
@@ -106,25 +106,19 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 	},
 }
 
-var getLightNodes = &cobra.Command{
-	Use:   "get-light-nodes",
-	Short: "Retrieves all light nodes using the v0 optimized client",
-	Long:  `Retrieves all light nodes using the v0 optimized client`,
+var getNodesLean = &cobra.Command{
+	Use:   "get-validators-lean",
+	Short: "Retrieves all lean nodes",
+	Long:  `Retrieves all lean nodes`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		chains := app.NewHostedChains(false)
-		if app.GlobalConfig.PocketConfig.ChainsHotReload {
-			// hot reload chains
-			app.HotReloadChains(chains)
+		if !app.GlobalConfig.PocketConfig.LeanPocket {
+			fmt.Println("Lean pocket is not enabled")
+			return
 		}
-		// create logger
-		logger := app.InitLogger()
-		app.InitPocketCoreConfig(chains, logger)
-		app.InitKeyfiles()
-		app.LoadLightNodes()
-
-		for _, value := range pc.GlobalLightNodesPrivateKeyMap {
-			fmt.Printf("Light Node Address: %s\n", strings.ToLower(value.PublicKey().Address().String()))
+		keys, _ := app.ReadValidatorPrivateKeyFileLean(datadir)
+		for _, value := range keys {
+			fmt.Printf("Lean Address: %s\n", strings.ToLower(value.PublicKey().Address().String()))
 		}
 	},
 }
@@ -142,6 +136,28 @@ var getValidator = &cobra.Command{
 		}
 		val := app.GetPrivValFile()
 		fmt.Printf("Validator Address:%s\n", strings.ToLower(val.Address.String()))
+	},
+}
+
+var setValidatorsLean = &cobra.Command{
+	Use:   `set-validators-lean <path to keyfile>`,
+	Short: "Sets the main validator accounts for tendermint; NOTE: keyfile should be a json string array of private keys",
+	Long:  `Sets the main validator accounts that will be used across all Tendermint functions; NOTE: keyfile should be a json string array of private keys`,
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+
+		if !app.GlobalConfig.PocketConfig.LeanPocket {
+			fmt.Println("Lean pocket is not enabled")
+			return
+		}
+
+		keys, err := app.ReadValidatorPrivateKeyFileLean(args[0])
+		if err != nil {
+			fmt.Println("Failed to set validators ", err)
+			os.Exit(1)
+		}
+		app.SetValidatorsFilesLean(keys)
 	},
 }
 

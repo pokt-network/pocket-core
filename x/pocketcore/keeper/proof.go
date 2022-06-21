@@ -13,6 +13,7 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	"math"
 	"reflect"
+	"time"
 )
 
 // auto sends a proof transaction for the claim
@@ -31,6 +32,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 		return
 	}
 	// for every claim of the mature set
+	now := time.Now()
 	for _, claim := range claims {
 		// check to see if evidence is stored in cache
 		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
@@ -91,6 +93,10 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 				continue
 			}
 		}
+		proofTxTotalTime := float64(time.Since(now))
+		go func() {
+			pc.GlobalServiceMetric().AddProofTiming(evidence.SessionHeader.Chain, proofTxTotalTime, &addr)
+		}()
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgProof{}, n, kp, k)
 		if err != nil {
@@ -106,11 +112,12 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 }
 
 func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *sdk.Address, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
-	kp, err := pc.GetLightNodePkWithNodeAddress(addr)
+	node, err := pc.GetNodeLean(addr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
 		return
 	}
+	kp := node.PrivateKey
 	// get the self address
 
 	// get all mature (waiting period has passed) claims for your address
@@ -121,8 +128,9 @@ func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *s
 	}
 	// for every claim of the mature set
 	for _, claim := range claims {
+		now := time.Now()
 		// check to see if evidence is stored in cache
-		evidence, err := pc.GetEvidenceWithNodeAddress(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt(), addr)
+		evidence, err := pc.GetEvidenceLean(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt(), addr)
 		if err != nil || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 			continue
@@ -135,7 +143,7 @@ func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *s
 			}
 			continue
 		}
-		if !evidence.IsSealedWithNodeAddress(addr) {
+		if !evidence.IsSealedLean(addr) {
 			err := pc.DeleteEvidenceWithNodeAddress(claim.SessionHeader, claim.EvidenceType, addr)
 			ctx.Logger().Error(fmt.Sprintf("evidence is not sealed, could cause a relay leak:"))
 			if err != nil {
@@ -182,6 +190,10 @@ func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *s
 			}
 		}
 		// generate the auto txbuilder and clictx
+		proofTxTotalTime := float64(time.Since(now))
+		go func() {
+			pc.GlobalServiceMetric().AddProofTiming(evidence.SessionHeader.Chain, proofTxTotalTime, addr)
+		}()
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgProof{}, n, kp, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the Proof Transaction:\n%v", err))

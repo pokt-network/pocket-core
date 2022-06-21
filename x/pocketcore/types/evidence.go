@@ -25,12 +25,12 @@ func (e Evidence) IsSealed() bool {
 	return ok
 }
 
-func (e Evidence) IsSealedWithNodeAddress(address *types.Address) bool {
+func (e Evidence) IsSealedLean(address *types.Address) bool {
 	addr := address.String()
-	globalEvidenceCacheMap[addr].l.Lock()
-	defer globalEvidenceCacheMap[addr].l.Unlock()
-	evidenceSealedMap := globalEvidenceSealedMapMap[addr]
-	_, ok := evidenceSealedMap.Load(e.HashString())
+	leanNode := GlobalNodesLean[addr]
+	leanNode.GlobalEvidenceCacheLean.l.Lock()
+	defer leanNode.GlobalEvidenceCacheLean.l.Unlock()
+	_, ok := leanNode.GlobalEvidenceSealedMapLean.Load(e.HashString())
 	return ok
 }
 
@@ -39,9 +39,9 @@ func (e Evidence) Seal() CacheObject {
 	return e
 }
 
-func (e Evidence) SealWithNodeAddress(address *types.Address) CacheObject {
-	sealedMap := globalEvidenceSealedMapMap[address.String()]
-	sealedMap.Store(e.HashString(), struct{}{})
+func (e Evidence) SealLean(address *types.Address) CacheObject {
+	node := GlobalNodesLean[address.String()]
+	node.GlobalEvidenceSealedMapLean.Store(e.HashString(), struct{}{})
 	return e
 }
 
@@ -61,9 +61,9 @@ func (e *Evidence) GenerateMerkleRoot(height int64, maxRelays int64) (root HashR
 	return
 }
 
-func (e *Evidence) GenerateMerkleRootWithNodeAddress(height int64, address *types.Address) (root HashRange) {
+func (e *Evidence) GenerateMerkleRootLean(height int64, address *types.Address) (root HashRange) {
 	// seal the evidence in cache/db
-	ev, ok := SealEvidenceWithNodeAddress(*e, address)
+	ev, ok := SealEvidenceLean(*e, address)
 	if !ok {
 		return HashRange{}
 	}

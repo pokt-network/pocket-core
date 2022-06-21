@@ -2,10 +2,6 @@ package app
 
 import (
 	"github.com/pokt-network/pocket-core/codec"
-	"io"
-	"os"
-	"path/filepath"
-
 	sdk "github.com/pokt-network/pocket-core/types"
 	cfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
@@ -14,9 +10,51 @@ import (
 	pvm "github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
 	dbm "github.com/tendermint/tm-db"
+	"io"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 type AppCreator func(log.Logger, dbm.DB, io.Writer) *PocketCoreApp
+
+func loadFilePVWithConfig(c config) *pvm.FilePVLite {
+	privValPath := c.TmConfig.PrivValidatorKeyFile()
+	privStatePath := c.TmConfig.PrivValidatorStateFile()
+	if GlobalConfig.PocketConfig.LeanPocket {
+		return pvm.LoadOrGenFilePV(privValPath, privStatePath)
+	}
+	legacyFilePV := pvm.LoadOrGenFilePVLegacy(privValPath, privStatePath)
+	return &pvm.FilePVLite{
+		Key:           []pvm.FilePVKey{legacyFilePV.Key},
+		LastSignState: []pvm.FilePVLastSignState{legacyFilePV.LastSignState},
+		KeyFilepath:   privValPath,
+		StateFilepath: privStatePath,
+	}
+}
+
+
+func loadValidatorsLean(c config, tmNode *node.Node) error {
+	// add a read to nodes.json -> convert with setValidators()
+	validators := loadFilePVWithConfig(c)
+	err := InitNodesLean() // reinitialize lean nodes
+	tmNode.ConsensusState().SetPrivValidators(validators) // set new lean nodes
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// hotReloadValidatorsLean - spins off a goroutine that reads from validator files  TODO: add load file with error
+func hotReloadValidatorsLean(c config, tmNode *node.Node) {
+	go func() {
+		for {
+			loadValidatorsLean(c, tmNode)
+			// init light node, but add removal code for validators that aren't part of it.
+			time.Sleep(time.Minute * 1)
+		}
+	}()
+}
 
 func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error) {
 	// setup the database
@@ -35,19 +73,21 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 	if err != nil {
 		return nil, nil, err
 	}
-	// load the node key
+
 	nodeKey, err := p2p.LoadOrGenNodeKey(c.TmConfig.NodeKeyFile())
 	if err != nil {
 		return nil, nil, err
 	}
+
 	// upgrade the privVal file
+
 	app := creator(c.Logger, appDB, traceWriter)
 	PCA = app
 	// create & start tendermint node
 	tmNode, err := node.NewNode(app,
 		c.TmConfig,
 		codec.GetCodecUpgradeHeight(),
-		pvm.LoadOrGenFilePV(c.TmConfig.PrivValidatorKeyFile(), c.TmConfig.PrivValidatorStateFile()),
+		loadFilePVWithConfig(c),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
 		transactionIndexer,
@@ -56,8 +96,15 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
 		c.Logger.With("module", "node"),
 	)
+
+
+
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if GlobalConfig.PocketConfig.LeanPocket {
+		go hotReloadValidatorsLean(c, tmNode)
 	}
 
 	return tmNode, app, nil
@@ -101,14 +148,14 @@ type config struct {
 	TraceWriter string
 }
 
-func modifyPrivValidatorsFile(config *cfg.Config, rollbackHeight int64) error {
-	var sig []byte
-	filePv := pvm.LoadOrGenFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
-	filePv.LastSignState.Height = rollbackHeight
-	filePv.LastSignState.Round = 0
-	filePv.LastSignState.Step = 0
-	filePv.LastSignState.Signature = sig
-	filePv.LastSignState.SignBytes = nil
-	filePv.Save()
-	return nil
-}
+//func modifyPrivValidatorsFile(config *cfg.Config, rollbackHeight int64) error {
+//	var sig []byte
+//	filePv := pvm.LoadOrGenFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+//	filePv.LastSignState.Height = rollbackHeight
+//	filePv.LastSignState.Round = 0
+//	filePv.LastSignState.Step = 0
+//	filePv.LastSignState.Signature = sig
+//	filePv.LastSignState.SignBytes = nil
+//	filePv.Save()
+//	return nil
+//}

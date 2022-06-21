@@ -244,11 +244,11 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 		panic(err)
 	}
 	nodeKey := p2p.NodeKey{PrivKey: pk}
-	privVal := GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
-	privVal.Key.PrivKey = pk
-	privVal.Key.PubKey = pk.PubKey()
-	privVal.Key.Address = pk.PubKey().Address()
-	pocketTypes.InitPVKeyFile(privVal.Key)
+	privVal := privval.GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
+	privVal.Key[0].PrivKey = pk
+	privVal.Key[0].PubKey = pk.PubKey()
+	privVal.Key[0].Address = pk.PubKey().Address()
+	pocketTypes.InitPVKeyFile(privVal.Key[0])
 
 	dbProvider := func(*node.DBContext) (dbm.DB, error) {
 		return db, nil
@@ -281,9 +281,9 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 
 // GenFilePV generates a new validator with randomly generated private key
 // and sets the filePaths, but does not call Save().
-func GenFilePV(keyFilePath, stateFilePath string) *privval.FilePV {
-	return privval.GenFilePV(keyFilePath, stateFilePath)
-}
+//func GenFilePV(keyFilePath, stateFilePath string) *privval.FilePV {
+//	return privval.GenFilePV(keyFilePath, stateFilePath)
+//}
 
 func GetApp(logger log.Logger, db dbm.DB, traceWriter io.Writer) *PocketCoreApp {
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *PocketCoreApp {
@@ -291,7 +291,7 @@ func GetApp(logger log.Logger, db dbm.DB, traceWriter io.Writer) *PocketCoreApp 
 			ID:  sdk.PlaceholderHash,
 			URL: sdk.PlaceholderURL,
 		}}
-		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m, L: sync.Mutex{}}, logger, db, false, 5000000, bam.SetPruning(store.PruneNothing))
+		p := NewPocketCoreApp(GenState, getInMemoryKeybase(), getInMemoryTMClient(), &pocketTypes.HostedBlockchains{M: m, L: sync.RWMutex{}}, logger, db, false, 5000000, bam.SetPruning(store.PruneNothing))
 		return p
 	}
 	return creator(logger, db, traceWriter)

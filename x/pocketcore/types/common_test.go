@@ -62,9 +62,9 @@ func GetRandomPrivateKey() crypto.Ed25519PrivateKey {
 	return crypto.Ed25519PrivateKey{}.GenPrivateKey().(crypto.Ed25519PrivateKey)
 }
 
-func GetLightNodePrivateKey() crypto.PrivateKey {
-	for _, k := range GlobalLightNodesPrivateKeyMap {
-		return k
+func GetPrivateKeyLean() crypto.PrivateKey {
+	for _, k := range GlobalNodesLean {
+		return k.PrivateKey
 	}
 	return crypto.Ed25519PrivateKey{}
 }

@@ -153,8 +153,8 @@ func (r *Relay) ValidateWithNodeAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKe
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofsWithNodeAddress(header, RelayEvidence, maxPossibleRelays, &node)
-	if evidence.IsSealedWithNodeAddress(&node) {
+	evidence, totalRelays := GetTotalProofsLean(header, RelayEvidence, maxPossibleRelays, &node)
+	if evidence.IsSealedLean(&node) {
 		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
 	}
 	// get evidence key by proof
@@ -171,7 +171,7 @@ func (r *Relay) ValidateWithNodeAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKe
 	}
 
 	// check cache
-	session, found := GetSessionWithNodeAddress(header, &node)
+	session, found := GetSessionLean(header, &node)
 	// if not found generate the session
 	if !found {
 		bh, err := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
@@ -184,7 +184,7 @@ func (r *Relay) ValidateWithNodeAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKe
 			return sdk.ZeroInt(), er
 		}
 		// add to cache
-		SetSessionWithNodeAddress(session, &node)
+		SetSessionLean(session, &node)
 	}
 
 	// validate the session
@@ -202,12 +202,14 @@ func (r *Relay) ValidateWithNodeAddress(ctx sdk.Ctx, posKeeper PosKeeper, appsKe
 }
 
 // "Execute" - Attempts to do a request on the non-native blockchain specified
-func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error) {
+func (r Relay) Execute(hostedBlockchains *HostedBlockchains, address *sdk.Address) (string, sdk.Error) {
+
+	//time := time.Now()
 	// retrieve the hosted blockchain url requested
 	chain, err := hostedBlockchains.GetChain(r.Proof.Blockchain)
 	if err != nil {
 		// metric track
-		go func() { GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain) }()
+		go func() { GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain, address) }()
 		return "", err
 	}
 	url := strings.Trim(chain.URL, `/`)
@@ -218,7 +220,7 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains) (string, sdk.Error)
 	res, er := executeHTTPRequest(r.Payload.Data, url, GlobalPocketConfig.UserAgent, chain.BasicAuth, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
 		// metric track
-		go func() { GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain) }()
+		go func() { GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain, address) }()
 
 		return res, NewHTTPExecutionError(ModuleName, er)
 	}

@@ -22,7 +22,7 @@ func InitCacheTest() {
 	// init needed maps for cache
 	servicerPk := GetRandomPrivateKey()
 
-	InitLightNode(servicerPk)
+	InitNodeWithCacheLean(servicerPk)
 
 }
 
@@ -88,7 +88,7 @@ func TestAllEvidence_AddGetEvidence(t *testing.T) {
 
 func TestAllEvidence_AddGetEvidenceWithNodeAddress(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
-	servicerPubKey := GetLightNodePrivateKey().PublicKey()
+	servicerPubKey := GetPrivateKeyLean().PublicKey()
 	address := sdk.GetAddress(servicerPubKey)
 	servicerPubKeyString := servicerPubKey.RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -112,7 +112,7 @@ func TestAllEvidence_AddGetEvidenceWithNodeAddress(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProofWithNodeAddress(header, RelayEvidence, proof, sdk.NewInt(100000), &address)
+	SetProofLean(header, RelayEvidence, proof, sdk.NewInt(100000), &address)
 	assert.True(t, reflect.DeepEqual(GetProofWithNodeAddress(header, RelayEvidence, 0, &address), proof), &address)
 }
 
@@ -149,7 +149,7 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 
 func TestAllEvidence_DeleteEvidenceWithNodeAddress(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
-	servicerPubKey := GetLightNodePrivateKey().PublicKey()
+	servicerPubKey := GetPrivateKeyLean().PublicKey()
 	address := sdk.GetAddress(servicerPubKey)
 	servicerPubKeyString := servicerPubKey.RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -173,7 +173,7 @@ func TestAllEvidence_DeleteEvidenceWithNodeAddress(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProofWithNodeAddress(header, RelayEvidence, proof, sdk.NewInt(100000), &address)
+	SetProofLean(header, RelayEvidence, proof, sdk.NewInt(100000), &address)
 	assert.True(t, reflect.DeepEqual(GetProofWithNodeAddress(header, RelayEvidence, 0, &address), proof))
 	GetProofWithNodeAddress(header, RelayEvidence, 0, &address)
 	_ = DeleteEvidenceWithNodeAddress(header, RelayEvidence, &address)
@@ -232,7 +232,7 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 
 func TestAllEvidence_GetTotalProofsWithNodeAddress(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
-	servicerPubKey := GetLightNodePrivateKey().PublicKey()
+	servicerPubKey := GetPrivateKeyLean().PublicKey()
 	address := sdk.GetAddress(servicerPubKey)
 	servicerPubKeyString := servicerPubKey.RawString()
 	clientPubKey := getRandomPubKey().RawString()
@@ -275,10 +275,10 @@ func TestAllEvidence_GetTotalProofsWithNodeAddress(t *testing.T) {
 		},
 		Signature: "",
 	}
-	SetProofWithNodeAddress(header, RelayEvidence, proof, sdk.NewInt(100000), &address)
-	SetProofWithNodeAddress(header, RelayEvidence, proof2, sdk.NewInt(100000), &address)
-	SetProofWithNodeAddress(header2, RelayEvidence, proof2, sdk.NewInt(100000), &address) // different header so shouldn't be counted
-	_, totalRelays := GetTotalProofsWithNodeAddress(header, RelayEvidence, sdk.NewInt(100000), &address)
+	SetProofLean(header, RelayEvidence, proof, sdk.NewInt(100000), &address)
+	SetProofLean(header, RelayEvidence, proof2, sdk.NewInt(100000), &address)
+	SetProofLean(header2, RelayEvidence, proof2, sdk.NewInt(100000), &address) // different header so shouldn't be counted
+	_, totalRelays := GetTotalProofsLean(header, RelayEvidence, sdk.NewInt(100000), &address)
 	assert.Equal(t, totalRelays, int64(2))
 }
 
@@ -301,16 +301,16 @@ func TestSetGetSessionWithNodeAddress(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	session2 := NewTestSession(t, hex.EncodeToString(Hash([]byte("bar"))))
 
-	randomAddr := sdk.GetAddress(GetLightNodePrivateKey().PublicKey())
-	SetSessionWithNodeAddress(session, &randomAddr)
+	randomAddr := sdk.GetAddress(GetPrivateKeyLean().PublicKey())
+	SetSessionLean(session, &randomAddr)
 
-	s, found := GetSessionWithNodeAddress(session.SessionHeader, &randomAddr)
+	s, found := GetSessionLean(session.SessionHeader, &randomAddr)
 	assert.True(t, found)
 	assert.Equal(t, s, session)
-	_, found = GetSessionWithNodeAddress(session2.SessionHeader, &randomAddr)
+	_, found = GetSessionLean(session2.SessionHeader, &randomAddr)
 	assert.False(t, found)
 	SetSession(session2)
-	s, found = GetSessionWithNodeAddress(session2.SessionHeader, &randomAddr)
+	s, found = GetSessionLean(session2.SessionHeader, &randomAddr)
 	assert.True(t, found)
 	assert.Equal(t, s, session2)
 }
@@ -325,10 +325,10 @@ func TestDeleteSession(t *testing.T) {
 
 func TestDeleteSessionWithNodeAddress(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
-	randomAddr := sdk.GetAddress(GetLightNodePrivateKey().PublicKey())
-	SetSessionWithNodeAddress(session, &randomAddr)
-	DeleteSessionWithNodeAddress(session.SessionHeader, &randomAddr)
-	_, found := GetSessionWithNodeAddress(session.SessionHeader, &randomAddr)
+	randomAddr := sdk.GetAddress(GetPrivateKeyLean().PublicKey())
+	SetSessionLean(session, &randomAddr)
+	DeleteSessionLean(session.SessionHeader, &randomAddr)
+	_, found := GetSessionLean(session.SessionHeader, &randomAddr)
 	assert.False(t, found)
 }
 
@@ -347,10 +347,10 @@ func TestClearCache(t *testing.T) {
 
 func TestClearCacheWithNodeAddress(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
-	randomAddr := sdk.GetAddress(GetLightNodePrivateKey().PublicKey())
-	SetSessionWithNodeAddress(session, &randomAddr)
-	ClearSessionCacheWithNodeAddress(&randomAddr)
-	iter := SessionIteratorWithNodeAddress(&randomAddr)
+	randomAddr := sdk.GetAddress(GetPrivateKeyLean().PublicKey())
+	SetSessionLean(session, &randomAddr)
+	ClearSessionCacheLean(&randomAddr)
+	iter := SessionIteratorLean(&randomAddr)
 	var count = 0
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {

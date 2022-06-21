@@ -17,7 +17,7 @@ func TestHostedBlockchains_GetChainURL(t *testing.T) {
 	}
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain},
-		L: sync.Mutex{},
+		L: sync.RWMutex{},
 	}
 	u, err := hb.GetChainURL(ethereum)
 	assert.Nil(t, err)
@@ -34,7 +34,7 @@ func TestHostedBlockchains_ContainsFromString(t *testing.T) {
 	}
 	hb := HostedBlockchains{
 		M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain},
-		L: sync.Mutex{},
+		L: sync.RWMutex{},
 	}
 	assert.True(t, hb.Contains(ethereum))
 	assert.False(t, hb.Contains(bitcoin))
@@ -66,22 +66,22 @@ func TestHostedBlockchains_Validate(t *testing.T) {
 	}{
 		{
 			name:     "Invalid HostedBlockchain, no URL",
-			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoURL.URL: HCNoURL}, L: sync.Mutex{}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoURL.URL: HCNoURL}, L: sync.RWMutex{}},
 			hasError: true,
 		},
 		{
 			name:     "Invalid HostedBlockchain, no URL",
-			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoHash.URL: HCNoHash}, L: sync.Mutex{}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCNoHash.URL: HCNoHash}, L: sync.RWMutex{}},
 			hasError: true,
 		},
 		{
 			name:     "Invalid HostedBlockchain, invalid ID",
-			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCInvalidHash.URL: HCInvalidHash}, L: sync.Mutex{}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{HCInvalidHash.URL: HCInvalidHash}, L: sync.RWMutex{}},
 			hasError: true,
 		},
 		{
 			name:     "Valid HostedBlockchain",
-			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain}, L: sync.Mutex{}},
+			hc:       &HostedBlockchains{M: map[string]HostedBlockchain{testHostedBlockchain.ID: testHostedBlockchain}, L: sync.RWMutex{}},
 			hasError: false,
 		},
 	}

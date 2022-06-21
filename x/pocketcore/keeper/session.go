@@ -66,7 +66,7 @@ func (k Keeper) HandleDispatchWithNodeAddress(ctx sdk.Ctx, header types.SessionH
 		return nil, sdk.ErrInternal(er.Error())
 	}
 	// check cache
-	session, found := types.GetSessionWithNodeAddress(header, address)
+	session, found := types.GetSessionLean(header, address)
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
@@ -79,7 +79,7 @@ func (k Keeper) HandleDispatchWithNodeAddress(ctx sdk.Ctx, header types.SessionH
 			return nil, err
 		}
 		// add to cache
-		types.SetSessionWithNodeAddress(session, address)
+		types.SetSessionLean(session, address)
 	}
 	actualNodes := make([]exported.ValidatorI, len(session.SessionNodes))
 	for i, addr := range session.SessionNodes {

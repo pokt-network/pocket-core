@@ -167,10 +167,10 @@ func inMemTendermintNode(genesisState []byte) (*node.Node, keys.Keybase) {
 	db := dbm.NewMemDB()
 	nodeKey := p2p.NodeKey{PrivKey: pk}
 	privVal := privval.GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
-	privVal.Key.PrivKey = pk
-	privVal.Key.PubKey = pk.PubKey()
-	privVal.Key.Address = pk.PubKey().Address()
-	pocketTypes.InitPVKeyFile(privVal.Key)
+	privVal.Key[0].PrivKey = pk
+	privVal.Key[0].PubKey = pk.PubKey()
+	privVal.Key[0].Address = pk.PubKey().Address()
+	pocketTypes.InitPVKeyFile(privVal.Key[0])
 
 	creator := func(logger log.Logger, db dbm.DB, _ io.Writer) *app.PocketCoreApp {
 		m := map[string]pocketTypes.HostedBlockchain{sdk.PlaceholderHash: {

@@ -146,6 +146,7 @@ func TestRelay_Execute(t *testing.T) {
 	appPrivateKey := GetRandomPrivateKey()
 	appPubKey := appPrivateKey.PublicKey().RawString()
 	npk := getRandomPubKey()
+	nodeAddr := sdk.Address(npk.Address())
 	nodePubKey := npk.RawString()
 	ethereum := hex.EncodeToString([]byte{01})
 	p := Payload{
@@ -184,7 +185,7 @@ func TestRelay_Execute(t *testing.T) {
 			URL: "https://server.com/relay/",
 		}},
 	}
-	response, err := validRelay.Execute(&hb)
+	response, err := validRelay.Execute(&hb, &nodeAddr)
 	assert.True(t, err == nil)
 	assert.Equal(t, response, "bar")
 }

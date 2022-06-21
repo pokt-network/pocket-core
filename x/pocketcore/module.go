@@ -147,9 +147,9 @@ func (am AppModule) LeanPocketEndBlockLogic(ctx sdk.Ctx) []abci.ValidatorUpdate 
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
 	// get self address
 
-	if types.GlobalLightNodesPrivateKeyMap != nil {
-		for _, v := range types.GlobalLightNodesPrivateKeyMap {
-			addr := sdk.Address(v.PublicKey().Address())
+	if types.GlobalNodesLean != nil {
+		for _, v := range types.GlobalNodesLean {
+			addr := sdk.Address(v.PrivateKey.PublicKey().Address())
 			if (ctx.BlockHeight()+int64(addr[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
 				// run go routine because cannot access TmNode during end-block period
 				go func() {
@@ -165,7 +165,7 @@ func (am AppModule) LeanPocketEndBlockLogic(ctx sdk.Ctx) []abci.ValidatorUpdate 
 							// auto claim the proofs
 							am.keeper.SendProofTxWithNodeAddress(ctx, am.keeper.TmNode, &addr, ProofTx)
 							// clear session cache and db
-							types.ClearSessionCacheWithNodeAddress(&addr)
+							types.ClearSessionCacheLean(&addr)
 						}
 					}
 				}()

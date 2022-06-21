@@ -3,12 +3,11 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
+	types "github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tendermint/libs/log"
 	"sync"
 	"time"
-
-	"github.com/pokt-network/pocket-core/types"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 const (
@@ -35,6 +34,11 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 	})
 	GlobalPocketConfig = c.PocketConfig
 	GlobalTenderMintConfig = c.TendermintConfig
+	if GlobalPocketConfig.LeanPocket {
+		GlobalTenderMintConfig.PrivValidatorState = types.DefaultPVSNameLean
+		GlobalTenderMintConfig.PrivValidatorKey = types.DefaultPVKNameLean
+		GlobalTenderMintConfig.NodeKey = types.DefaultPVSNameLean
+	}
 	SetRPCTimeout(c.PocketConfig.RPCTimeout)
 }
 
@@ -77,12 +81,12 @@ func FlushSessionCache() {
 }
 
 func FlushSessionCacheAll() {
-	for k, _ := range GlobalLightNodesPrivateKeyMap {
-		err := globalSessionCacheMap[k].FlushToDB()
+	for _, k := range GlobalNodesLean {
+		err := k.GlobalSessionCacheLean.FlushToDB()
 		if err != nil {
 			fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
 		}
-		err = globalEvidenceCacheMap[k].FlushToDB()
+		err = k.GlobalEvidenceCacheLean.FlushToDB()
 		if err != nil {
 			fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
 		}

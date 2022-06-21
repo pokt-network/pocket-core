@@ -50,7 +50,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// store the proof before execution, because the proof corresponds to the previous relay
 	relay.Proof.Store(maxPossibleRelays)
 	// attempt to execute
-	respPayload, err := relay.Execute(hostedBlockchains)
+	respPayload, err := relay.Execute(hostedBlockchains, &selfAddr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("could not send relay with error: %s", err.Error()))
 		return nil, err
@@ -74,8 +74,8 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	// track the relay time
 	relayTime := time.Since(relayTimeStart)
 	// add to metrics
-	pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()))
-	pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain)
+	pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()), &selfAddr)
+	pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain, &selfAddr)
 	return resp, nil
 }
 
@@ -94,11 +94,13 @@ func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayRe
 
 	selfAddr := sdk.GetAddress(servicerRelayPublicKey)
 
-	pk, err1 := pc.GetLightNodePkWithNodeAddress(&selfAddr)
+	node, err1 := pc.GetNodeLean(&selfAddr)
 
 	if err1 != nil {
 		return nil, sdk.ErrInternal("Failed to find correct servicer PK")
 	}
+
+	pk := node.PrivateKey
 
 	// retrieve the nonNative blockchains your node is hosting
 	hostedBlockchains := k.GetHostedBlockchains()
@@ -130,7 +132,7 @@ func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayRe
 	// store the proof before execution, because the proof corresponds to the previous relay
 	relay.Proof.StoreWithNodeAddress(maxPossibleRelays, &selfAddr)
 	// attempt to execute
-	respPayload, err := relay.Execute(hostedBlockchains)
+	respPayload, err := relay.Execute(hostedBlockchains, &selfAddr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("could not send relay with error: %s", err.Error()))
 		return nil, err
@@ -155,8 +157,8 @@ func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayRe
 	relayTime := time.Since(relayTimeStart)
 	// add to metrics
 	go func() {
-		pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()))
-		pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain)
+		pc.GlobalServiceMetric().AddRelayTimingFor(relay.Proof.Blockchain, float64(relayTime.Milliseconds()), &selfAddr)
+		pc.GlobalServiceMetric().AddRelayFor(relay.Proof.Blockchain, &selfAddr)
 	}()
 	return resp, nil
 }
