@@ -107,11 +107,12 @@ func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, n client.
 	kp := node.PrivateKey
 
 	// retrieve the iterator to go through each piece of evidence in storage
-	now := time.Now()
+
 	iter := pc.EvidenceIteratorWithNodeAddress(address)
 	defer iter.Close()
 	// loop through each evidence
 	for ; iter.Valid(); iter.Next() {
+		now := time.Now()
 		evidence := iter.Value()
 		// if the number of proofs in the evidence object is zero
 		if evidence.NumOfProofs == 0 {
