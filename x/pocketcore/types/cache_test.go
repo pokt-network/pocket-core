@@ -21,7 +21,6 @@ func InitCacheTest() {
 
 	// init needed maps for cache
 	servicerPk := GetRandomPrivateKey()
-
 	InitNodeWithCacheLean(servicerPk)
 
 }
@@ -86,35 +85,6 @@ func TestAllEvidence_AddGetEvidence(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0), proof))
 }
 
-func TestAllEvidence_AddGetEvidenceWithNodeAddress(t *testing.T) {
-	appPubKey := getRandomPubKey().RawString()
-	servicerPubKey := GetPrivateKeyLean().PublicKey()
-	address := sdk.GetAddress(servicerPubKey)
-	servicerPubKeyString := servicerPubKey.RawString()
-	clientPubKey := getRandomPubKey().RawString()
-	ethereum := hex.EncodeToString([]byte{0001})
-	header := SessionHeader{
-		ApplicationPubKey:  appPubKey,
-		Chain:              ethereum,
-		SessionBlockHeight: 1,
-	}
-	proof := RelayProof{
-		Entropy:            0,
-		RequestHash:        header.HashString(), // fake
-		SessionBlockHeight: 1,
-		ServicerPubKey:     servicerPubKeyString,
-		Blockchain:         ethereum,
-		Token: AAT{
-			Version:              "0.0.1",
-			ApplicationPublicKey: appPubKey,
-			ClientPublicKey:      clientPubKey,
-			ApplicationSignature: "",
-		},
-		Signature: "",
-	}
-	SetProofLean(header, RelayEvidence, proof, sdk.NewInt(100000), &address)
-	assert.True(t, reflect.DeepEqual(GetProofWithNodeAddress(header, RelayEvidence, 0, &address), proof), &address)
-}
 
 func TestAllEvidence_DeleteEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
@@ -147,7 +117,7 @@ func TestAllEvidence_DeleteEvidence(t *testing.T) {
 	assert.Empty(t, GetProof(header, RelayEvidence, 0))
 }
 
-func TestAllEvidence_DeleteEvidenceWithNodeAddress(t *testing.T) {
+func TestAllEvidence_DeleteEvidenceLean(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := GetPrivateKeyLean().PublicKey()
 	address := sdk.GetAddress(servicerPubKey)
@@ -174,10 +144,10 @@ func TestAllEvidence_DeleteEvidenceWithNodeAddress(t *testing.T) {
 		Signature: "",
 	}
 	SetProofLean(header, RelayEvidence, proof, sdk.NewInt(100000), &address)
-	assert.True(t, reflect.DeepEqual(GetProofWithNodeAddress(header, RelayEvidence, 0, &address), proof))
-	GetProofWithNodeAddress(header, RelayEvidence, 0, &address)
-	_ = DeleteEvidenceWithNodeAddress(header, RelayEvidence, &address)
-	assert.Empty(t, GetProofWithNodeAddress(header, RelayEvidence, 0, &address))
+	assert.True(t, reflect.DeepEqual(GetProofLean(header, RelayEvidence, 0, &address), proof))
+	GetProofLean(header, RelayEvidence, 0, &address)
+	_ = DeleteEvidenceLean(header, RelayEvidence, &address)
+	assert.Empty(t, GetProofLean(header, RelayEvidence, 0, &address))
 }
 
 func TestAllEvidence_GetTotalProofs(t *testing.T) {
@@ -230,7 +200,7 @@ func TestAllEvidence_GetTotalProofs(t *testing.T) {
 	assert.Equal(t, totalRelays, int64(2))
 }
 
-func TestAllEvidence_GetTotalProofsWithNodeAddress(t *testing.T) {
+func TestAllEvidence_GetTotalProofsLean(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := GetPrivateKeyLean().PublicKey()
 	address := sdk.GetAddress(servicerPubKey)
@@ -297,7 +267,7 @@ func TestSetGetSession(t *testing.T) {
 	assert.Equal(t, s, session2)
 }
 
-func TestSetGetSessionWithNodeAddress(t *testing.T) {
+func TestSetGetSessionLean(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	session2 := NewTestSession(t, hex.EncodeToString(Hash([]byte("bar"))))
 
@@ -323,7 +293,7 @@ func TestDeleteSession(t *testing.T) {
 	assert.False(t, found)
 }
 
-func TestDeleteSessionWithNodeAddress(t *testing.T) {
+func TestDeleteSessionLean(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	randomAddr := sdk.GetAddress(GetPrivateKeyLean().PublicKey())
 	SetSessionLean(session, &randomAddr)
@@ -345,7 +315,7 @@ func TestClearCache(t *testing.T) {
 	assert.Zero(t, count)
 }
 
-func TestClearCacheWithNodeAddress(t *testing.T) {
+func TestClearCacheLean(t *testing.T) {
 	session := NewTestSession(t, hex.EncodeToString(Hash([]byte("foo"))))
 	randomAddr := sdk.GetAddress(GetPrivateKeyLean().PublicKey())
 	SetSessionLean(session, &randomAddr)

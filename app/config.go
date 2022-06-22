@@ -470,7 +470,7 @@ func ShutdownPocketCore() {
 	types.FlushSessionCache()
 
 	if types.GlobalPocketConfig.LeanPocket {
-		types.FlushSessionCacheAll()
+		types.FlushSessionCacheLean()
 	}
 
 	types.StopServiceMetrics()

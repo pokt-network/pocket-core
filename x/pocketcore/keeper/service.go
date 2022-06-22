@@ -79,7 +79,7 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	return resp, nil
 }
 
-func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
+func (k Keeper) HandleRelayLean(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
 	relayTimeStart := time.Now()
 	// get the latest session block height because this relay will correspond with the latest session
 	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
@@ -106,7 +106,7 @@ func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayRe
 	hostedBlockchains := k.GetHostedBlockchains()
 	// ensure the validity of the relay
 
-	maxPossibleRelays, err := relay.ValidateWithNodeAddress(ctx, k.posKeeper, k.appKeeper, k, selfAddr, hostedBlockchains, sessionBlockHeight)
+	maxPossibleRelays, err := relay.ValidateLean(ctx, k.posKeeper, k.appKeeper, k, selfAddr, hostedBlockchains, sessionBlockHeight)
 	if err != nil {
 		if pc.GlobalPocketConfig.RelayErrors {
 			ctx.Logger().Error(
@@ -130,7 +130,7 @@ func (k Keeper) HandleRelayLightClient(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayRe
 		return nil, err
 	}
 	// store the proof before execution, because the proof corresponds to the previous relay
-	relay.Proof.StoreWithNodeAddress(maxPossibleRelays, &selfAddr)
+	relay.Proof.StoreLean(maxPossibleRelays, &selfAddr)
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains, &selfAddr)
 	if err != nil {

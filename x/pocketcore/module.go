@@ -106,7 +106,7 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 
 	if types.GlobalPocketConfig.LeanPocket {
-		return am.LeanPocketEndBlockLogic(ctx)
+		return am.EndBlockLean(ctx)
 	}
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
@@ -142,7 +142,7 @@ func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Validat
 	return []abci.ValidatorUpdate{}
 }
 
-func (am AppModule) LeanPocketEndBlockLogic(ctx sdk.Ctx) []abci.ValidatorUpdate {
+func (am AppModule) EndBlockLean(ctx sdk.Ctx) []abci.ValidatorUpdate {
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
 	// get self address
@@ -161,9 +161,9 @@ func (am AppModule) LeanPocketEndBlockLogic(ctx sdk.Ctx) []abci.ValidatorUpdate 
 					} else {
 						if !s.SyncInfo.CatchingUp {
 							// auto send the proofs
-							am.keeper.SendClaimTxWithNodeAddress(ctx, am.keeper, am.keeper.TmNode, &addr, ClaimTx)
+							am.keeper.SendClaimTxLean(ctx, am.keeper, am.keeper.TmNode, &addr, ClaimTx)
 							// auto claim the proofs
-							am.keeper.SendProofTxWithNodeAddress(ctx, am.keeper.TmNode, &addr, ProofTx)
+							am.keeper.SendProofLean(ctx, am.keeper.TmNode, &addr, ProofTx)
 							// clear session cache and db
 							types.ClearSessionCacheLean(&addr)
 						}

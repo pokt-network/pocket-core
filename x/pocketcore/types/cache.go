@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/tendermint/tendermint/config"
 	"log"
 	"path/filepath"
@@ -22,9 +21,8 @@ var (
 	// cache for GOBEvidence objects
 	globalEvidenceCache *CacheStorage
 	// sync.once to perform initialization
-	cacheOnce sync.Once
+	cacheOnce               sync.Once
 	globalEvidenceSealedMap sync.Map
-
 )
 
 // "CacheStorage" - Contains an LRU cache and a database instance w/ mutex
@@ -33,8 +31,6 @@ type CacheStorage struct {
 	DB    db.DB      // persisted
 	l     sync.Mutex // lock
 }
-
-
 
 type CacheObject interface {
 	MarshalObject() ([]byte, error)
@@ -49,7 +45,6 @@ type CacheObject interface {
 // "Init" - Initializes a cache storage object
 func (cs *CacheStorage) Init(dir, name string, options config.LevelDBOptions, maxEntries int, inMemoryDB bool) {
 	// init the lru cache with a max entries
-
 	cs.Cache = sdk.NewCache(maxEntries)
 	// intialize the db
 	var err error
@@ -168,7 +163,7 @@ func (cs *CacheStorage) SetLean(key []byte, val CacheObject, address *sdk.Addres
 		}
 		// if evidence, check sealed map
 		if ev, ok := co.(Evidence); ok {
-			sealedMap := GlobalNodesLean[address.String()].GlobalEvidenceSealedMapLean
+			sealedMap := GlobalNodesLean[address.String()].EvidenceSealedMap
 			if _, ok := sealedMap.Load(ev.HashString()); ok {
 				return
 			}
@@ -279,7 +274,7 @@ func GetSessionLean(header SessionHeader, address *sdk.Address) (session Session
 	// generate the key from the header
 	key := header.Hash()
 	// check stores
-	val, found := GlobalNodesLean[address.String()].GlobalSessionCacheLean.Get(key, session)
+	val, found := GlobalNodesLean[address.String()].SessionCache.Get(key, session)
 	if !found {
 		return Session{}, found
 	}
@@ -288,35 +283,6 @@ func GetSessionLean(header SessionHeader, address *sdk.Address) (session Session
 		fmt.Println(fmt.Errorf("could not unmarshal into session from cache with header %v", header))
 	}
 	return
-}
-
-func InitNodeWithCacheLean(pk crypto.PrivateKey) {
-
-	if GlobalNodesLean == nil {
-		GlobalNodesLean = make(map[string]*LeanNode)
-
-	}
-
-	leanNode := LeanNode{PrivateKey: pk, GlobalEvidenceCacheLean: new(CacheStorage), GlobalSessionCacheLean: new(CacheStorage), GlobalEvidenceSealedMapLean: &sync.Map{}}
-	key := sdk.GetAddress(pk.PublicKey()).String()
-	_, exists := GlobalNodesLean[key]
-	if exists {
-		fmt.Println( key + " already added as a lean node")
-		return
-	}
-
-	leanNode.GlobalEvidenceCacheLean.Init(GlobalPocketConfig.DataDir, GlobalPocketConfig.EvidenceDBName+"_"+key, GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxEvidenceCacheEntires, false)
-	leanNode.GlobalSessionCacheLean.Init(GlobalPocketConfig.DataDir, "", GlobalTenderMintConfig.LevelDBOptions, GlobalPocketConfig.MaxSessionCacheEntries, true)
-
-	GlobalNodesLean[key] = &leanNode
-}
-
-func GetNodeLean(address *sdk.Address) (*LeanNode, error) {
-	node, ok := GlobalNodesLean[address.String()]
-	if !ok {
-		return nil, fmt.Errorf("failed to find private key for %s", address.String())
-	}
-	return node, nil
 }
 
 // "SetSession" - Sets a session (value) in the stores using the header (key)
@@ -329,7 +295,7 @@ func SetSession(session Session) {
 func SetSessionLean(session Session, address *sdk.Address) {
 	// get the key for the session
 	key := session.SessionHeader.Hash()
-	GlobalNodesLean[address.String()].GlobalSessionCacheLean.SetLean(key, session, address)
+	GlobalNodesLean[address.String()].SessionCache.SetLean(key, session, address)
 }
 
 // "DeleteSession" - Deletes a session (value) from the stores
@@ -340,7 +306,7 @@ func DeleteSession(header SessionHeader) {
 
 func DeleteSessionLean(header SessionHeader, address *sdk.Address) {
 	// delete from stores using header.ID as key
-	GlobalNodesLean[address.String()].GlobalSessionCacheLean.Delete(header.Hash())
+	GlobalNodesLean[address.String()].SessionCache.Delete(header.Hash())
 }
 
 // "ClearSessionCache" - Clears all items from the session cache db
@@ -352,7 +318,7 @@ func ClearSessionCache() {
 
 func ClearSessionCacheLean(address *sdk.Address) {
 	if GlobalNodesLean != nil {
-		GlobalNodesLean[address.String()].GlobalSessionCacheLean.Clear()
+		GlobalNodesLean[address.String()].SessionCache.Clear()
 	}
 }
 
@@ -383,7 +349,7 @@ func SessionIterator() SessionIt {
 }
 
 func SessionIteratorLean(address *sdk.Address) SessionIt {
-	it, _ := GlobalNodesLean[address.String()].GlobalSessionCacheLean.Iterator()
+	it, _ := GlobalNodesLean[address.String()].SessionCache.Iterator()
 	return SessionIt{
 		Iterator: it,
 	}
@@ -440,7 +406,7 @@ func GetEvidenceLean(header SessionHeader, evidenceType EvidenceType, max sdk.Bi
 		return
 	}
 
-	val, found := GlobalNodesLean[address.String()].GlobalEvidenceCacheLean.Get(key, evidence)
+	val, found := GlobalNodesLean[address.String()].EvidenceCache.Get(key, evidence)
 	if !found && max.Equal(sdk.ZeroInt()) {
 		return Evidence{}, fmt.Errorf("GOBEvidence not found")
 	}
@@ -492,7 +458,7 @@ func SetEvidenceLean(evidence Evidence, address *sdk.Address) {
 	if err != nil {
 		return
 	}
-	GlobalNodesLean[address.String()].GlobalEvidenceCacheLean.SetLean(key, evidence, address)
+	GlobalNodesLean[address.String()].EvidenceCache.SetLean(key, evidence, address)
 }
 
 // "DeleteEvidence" - Remove the GOBEvidence from the stores
@@ -508,8 +474,8 @@ func DeleteEvidence(header SessionHeader, evidenceType EvidenceType) error {
 	return nil
 }
 
-// "DeleteEvidenceWithNodeAddress" - Remove the GOBEvidence from the stores
-func DeleteEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceType, address *sdk.Address) error {
+// "DeleteEvidenceLean" - Remove the GOBEvidence from the stores
+func DeleteEvidenceLean(header SessionHeader, evidenceType EvidenceType, address *sdk.Address) error {
 	// generate key for GOBEvidence
 	key, err := KeyForEvidence(header, evidenceType)
 	if err != nil {
@@ -518,8 +484,8 @@ func DeleteEvidenceWithNodeAddress(header SessionHeader, evidenceType EvidenceTy
 	// delete from cache
 
 	addr := address.String()
-	GlobalNodesLean[addr].GlobalEvidenceCacheLean.Delete(key)
-	sealedMap := GlobalNodesLean[addr].GlobalEvidenceSealedMapLean
+	GlobalNodesLean[addr].EvidenceCache.Delete(key)
+	sealedMap := GlobalNodesLean[addr].EvidenceSealedMap
 	sealedMap.Delete(header.HashString())
 	return nil
 }
@@ -537,7 +503,7 @@ func SealEvidence(evidence Evidence) (Evidence, bool) {
 
 func SealEvidenceLean(evidence Evidence, address *sdk.Address) (Evidence, bool) {
 	// delete from cache
-	co, ok := GlobalNodesLean[address.String()].GlobalEvidenceCacheLean.SealLean(evidence, address)
+	co, ok := GlobalNodesLean[address.String()].EvidenceCache.SealLean(evidence, address)
 	if !ok {
 		return Evidence{}, ok
 	}
@@ -553,10 +519,10 @@ func ClearEvidence() {
 	}
 }
 
-func ClearEvidenceWithNodeAddress(address *sdk.Addresses) {
+func ClearEvidenceLean(address *sdk.Addresses) {
 	if GlobalNodesLean != nil {
-		GlobalNodesLean[address.String()].GlobalEvidenceCacheLean.Clear()
-		GlobalNodesLean[address.String()].GlobalEvidenceSealedMapLean = &sync.Map{}
+		GlobalNodesLean[address.String()].EvidenceCache.Clear()
+		GlobalNodesLean[address.String()].EvidenceSealedMap = &sync.Map{}
 	}
 }
 
@@ -588,8 +554,8 @@ func EvidenceIterator() EvidenceIt {
 	}
 }
 
-func EvidenceIteratorWithNodeAddress(address *sdk.Address) EvidenceIt {
-	it, _ := GlobalNodesLean[address.String()].GlobalEvidenceCacheLean.Iterator()
+func EvidenceIteratorLean(address *sdk.Address) EvidenceIt {
+	it, _ := GlobalNodesLean[address.String()].EvidenceCache.Iterator()
 	return EvidenceIt{
 		Iterator: it,
 	}
@@ -624,7 +590,7 @@ func SetProof(header SessionHeader, evidenceType EvidenceType, p Proof, max sdk.
 	SetEvidence(evidence)
 }
 
-func GetProofWithNodeAddress(header SessionHeader, evidenceType EvidenceType, index int64, address *sdk.Address) Proof {
+func GetProofLean(header SessionHeader, evidenceType EvidenceType, index int64, address *sdk.Address) Proof {
 	// retrieve the GOBEvidence
 	evidence, err := GetEvidenceLean(header, evidenceType, sdk.ZeroInt(), address)
 	if err != nil {

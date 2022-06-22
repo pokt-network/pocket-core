@@ -95,7 +95,7 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 	}
 }
 
-func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, n client.Client, address *sdk.Address, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendClaimTxLean(ctx sdk.Ctx, keeper Keeper, n client.Client, address *sdk.Address, claimTx func(pk crypto.PrivateKey, cliCtx util.CLIContext, txBuilder auth.TxBuilder, header pc.SessionHeader, totalProofs int64, root pc.HashRange, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	// get the private val key (main) account from the keybase
 	node, err := pc.GetNodeLean(address)
 
@@ -108,7 +108,7 @@ func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, n client.
 
 	// retrieve the iterator to go through each piece of evidence in storage
 
-	iter := pc.EvidenceIteratorWithNodeAddress(address)
+	iter := pc.EvidenceIteratorLean(address)
 	defer iter.Close()
 	// loop through each evidence
 	for ; iter.Valid(); iter.Next() {
@@ -129,7 +129,7 @@ func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, n client.
 		}
 		// if the evidence length is less than minimum, it would not satisfy our merkle tree needs
 		if evidence.NumOfProofs < keeper.MinimumNumberOfProofs(sessionCtx) {
-			if err := pc.DeleteEvidenceWithNodeAddress(evidence.SessionHeader, evidenceType, address); err != nil {
+			if err := pc.DeleteEvidenceLean(evidence.SessionHeader, evidenceType, address); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
 			continue
@@ -141,7 +141,7 @@ func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, n client.
 		// if the blockchain in the evidence is not supported then delete it because nodes don't get paid/challenged for unsupported blockchains
 		if !k.IsPocketSupportedBlockchain(sessionCtx.WithBlockHeight(evidence.SessionHeader.SessionBlockHeight), evidence.SessionHeader.Chain) {
 			ctx.Logger().Info(fmt.Sprintf("claim for %s blockchain isn't pocket supported, so will not send. Deleting evidence\n", evidence.SessionHeader.Chain))
-			if err := pc.DeleteEvidenceWithNodeAddress(evidence.SessionHeader, evidenceType, address); err != nil {
+			if err := pc.DeleteEvidenceLean(evidence.SessionHeader, evidenceType, address); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
 			continue
@@ -152,7 +152,7 @@ func (k Keeper) SendClaimTxWithNodeAddress(ctx sdk.Ctx, keeper Keeper, n client.
 		}
 		// if the claim is mature, delete it because we cannot submit a mature claim
 		if k.ClaimIsMature(ctx, evidence.SessionBlockHeight) {
-			if err := pc.DeleteEvidenceWithNodeAddress(evidence.SessionHeader, evidenceType, address); err != nil {
+			if err := pc.DeleteEvidenceLean(evidence.SessionHeader, evidenceType, address); err != nil {
 				ctx.Logger().Debug(err.Error())
 			}
 			continue

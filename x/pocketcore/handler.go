@@ -102,7 +102,7 @@ func processSelf(ctx sdk.Ctx, k keeper.Keeper, signer sdk.Address, header types.
 	if types.GlobalPocketConfig.LeanPocket {
 		_, ok := types.GlobalNodesLean[signer.String()]
 		if ok {
-			err := types.DeleteEvidenceWithNodeAddress(header, evidenceType, &signer)
+			err := types.DeleteEvidenceLean(header, evidenceType, &signer)
 			if err != nil {
 				ctx.Logger().Error("Unable to delete evidence: " + err.Error())
 			}

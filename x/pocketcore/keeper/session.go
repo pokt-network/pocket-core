@@ -50,7 +50,7 @@ func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.
 	}, BlockHeight: ctx.BlockHeight()}, nil
 }
 
-func (k Keeper) HandleDispatchWithNodeAddress(ctx sdk.Ctx, header types.SessionHeader, address *sdk.Address) (*types.DispatchResponse, sdk.Error) {
+func (k Keeper) HandleDispatchLean(ctx sdk.Ctx, header types.SessionHeader, address *sdk.Address) (*types.DispatchResponse, sdk.Error) {
 	// retrieve the latest session block height
 	latestSessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
 	// set the session block height

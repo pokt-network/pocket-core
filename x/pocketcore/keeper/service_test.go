@@ -89,7 +89,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	assert.Equal(t, resp.Response, "bar")
 }
 
-func TestKeeper_HandleRelayLightClient(t *testing.T) {
+func TestKeeper_HandleRelayLean(t *testing.T) {
 	ethereum := hex.EncodeToString([]byte{01})
 	ctx, _, _, _, keeper, keys, kb := createTestInput(t, false)
 	mockCtx := new(Ctx)
@@ -168,7 +168,7 @@ func TestKeeper_HandleRelayLightClient(t *testing.T) {
 	mockCtx.On("PrevCtx", keeper.GetLatestSessionBlockHeight(mockCtx)).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
 
-	resp, err := keeper.HandleRelayLightClient(mockCtx, validRelay)
+	resp, err := keeper.HandleRelayLean(mockCtx, validRelay)
 	assert.Nil(t, err, err)
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp)

@@ -217,7 +217,7 @@ func (rp RelayProof) Store(maxRelays sdk.BigInt) {
 }
 
 // "Store" - Handles the relay proof object by adding it to the cache
-func (rp RelayProof) StoreWithNodeAddress(maxRelays sdk.BigInt, address *sdk.Address) {
+func (rp RelayProof) StoreLean(maxRelays sdk.BigInt, address *sdk.Address) {
 	// add the Proof to the global (in memory) collection of proofs
 	SetProofLean(rp.SessionHeader(), RelayEvidence, rp, maxRelays, address)
 }

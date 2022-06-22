@@ -80,13 +80,16 @@ func FlushSessionCache() {
 	}
 }
 
-func FlushSessionCacheAll() {
+func FlushSessionCacheLean() {
+	if GlobalNodesLean == nil {
+		return
+	}
 	for _, k := range GlobalNodesLean {
-		err := k.GlobalSessionCacheLean.FlushToDB()
+		err := k.SessionCache.FlushToDB()
 		if err != nil {
 			fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
 		}
-		err = k.GlobalEvidenceCacheLean.FlushToDB()
+		err = k.EvidenceCache.FlushToDB()
 		if err != nil {
 			fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
 		}

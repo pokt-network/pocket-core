@@ -28,9 +28,9 @@ func (e Evidence) IsSealed() bool {
 func (e Evidence) IsSealedLean(address *types.Address) bool {
 	addr := address.String()
 	leanNode := GlobalNodesLean[addr]
-	leanNode.GlobalEvidenceCacheLean.l.Lock()
-	defer leanNode.GlobalEvidenceCacheLean.l.Unlock()
-	_, ok := leanNode.GlobalEvidenceSealedMapLean.Load(e.HashString())
+	leanNode.EvidenceCache.l.Lock()
+	defer leanNode.EvidenceCache.l.Unlock()
+	_, ok := leanNode.EvidenceSealedMap.Load(e.HashString())
 	return ok
 }
 
@@ -41,7 +41,7 @@ func (e Evidence) Seal() CacheObject {
 
 func (e Evidence) SealLean(address *types.Address) CacheObject {
 	node := GlobalNodesLean[address.String()]
-	node.GlobalEvidenceSealedMapLean.Store(e.HashString(), struct{}{})
+	node.EvidenceSealedMap.Store(e.HashString(), struct{}{})
 	return e
 }
 

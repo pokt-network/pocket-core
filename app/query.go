@@ -521,12 +521,12 @@ func (app PocketCoreApp) HandleDispatch(header pocketTypes.SessionHeader) (res *
 	return app.pocketKeeper.HandleDispatch(ctx, header)
 }
 
-func (app PocketCoreApp) HandleDispatchWithNodeAddress(header pocketTypes.SessionHeader, address *sdk.Address) (res *pocketTypes.DispatchResponse, err error) {
+func (app PocketCoreApp) HandleDispatchLean(header pocketTypes.SessionHeader, address *sdk.Address) (res *pocketTypes.DispatchResponse, err error) {
 	ctx, err := app.NewContext(app.LastBlockHeight())
 	if err != nil {
 		return nil, err
 	}
-	return app.pocketKeeper.HandleDispatchWithNodeAddress(ctx, header, address)
+	return app.pocketKeeper.HandleDispatchLean(ctx, header, address)
 }
 
 func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *pocketTypes.DispatchResponse, err error) {
@@ -542,7 +542,7 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 	}
 
 	if GlobalConfig.PocketConfig.LeanPocket {
-		res, err = app.pocketKeeper.HandleRelayLightClient(ctx, r)
+		res, err = app.pocketKeeper.HandleRelayLean(ctx, r)
 		if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
 
 			servicerRelayPublicKeyHex := r.Proof.ServicerPubKey
@@ -553,7 +553,7 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 			}
 
 			address := sdk.GetAddress(servicerRelayPublicKey)
-			dispatch, err1 = app.HandleDispatchWithNodeAddress(r.Proof.SessionHeader(), &address)
+			dispatch, err1 = app.HandleDispatchLean(r.Proof.SessionHeader(), &address)
 			if err1 != nil {
 				return
 			}

@@ -111,7 +111,7 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 	}
 }
 
-func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *sdk.Address, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+func (k Keeper) SendProofLean(ctx sdk.Ctx, n client.Client, addr *sdk.Address, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
 	node, err := pc.GetNodeLean(addr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
@@ -136,7 +136,7 @@ func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *s
 			continue
 		}
 		if ctx.BlockHeight()-claim.SessionHeader.SessionBlockHeight > int64(pc.GlobalPocketConfig.MaxClaimAgeForProofRetry) {
-			err := pc.DeleteEvidenceWithNodeAddress(claim.SessionHeader, claim.EvidenceType, addr)
+			err := pc.DeleteEvidenceLean(claim.SessionHeader, claim.EvidenceType, addr)
 			ctx.Logger().Error(fmt.Sprintf("deleting evidence older than MaxClaimAgeForProofRetry"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("unable to delete evidence that is older than 32 blocks: %s", err.Error()))
@@ -144,7 +144,7 @@ func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *s
 			continue
 		}
 		if !evidence.IsSealedLean(addr) {
-			err := pc.DeleteEvidenceWithNodeAddress(claim.SessionHeader, claim.EvidenceType, addr)
+			err := pc.DeleteEvidenceLean(claim.SessionHeader, claim.EvidenceType, addr)
 			ctx.Logger().Error(fmt.Sprintf("evidence is not sealed, could cause a relay leak:"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("could not delete evidence is not sealed, could cause a relay leak: %s", err.Error()))
@@ -153,7 +153,7 @@ func (k Keeper) SendProofTxWithNodeAddress(ctx sdk.Ctx, n client.Client, addr *s
 		}
 
 		if evidence.NumOfProofs != claim.TotalProofs {
-			err := pc.DeleteEvidenceWithNodeAddress(claim.SessionHeader, claim.EvidenceType, addr)
+			err := pc.DeleteEvidenceLean(claim.SessionHeader, claim.EvidenceType, addr)
 			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
