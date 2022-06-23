@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"encoding/hex"
+	"github.com/tendermint/tendermint/libs/log"
 	"testing"
 
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -115,7 +116,7 @@ func TestKeeper_HandleRelayLean(t *testing.T) {
 	npk := kp.PublicKey
 	nodePubKey := npk.RawString()
 
-	types.InitNodeWithCacheLean(pk)
+	types.InitNodeWithCacheLean(pk, log.NewNopLogger())
 
 	p := types.Payload{
 		Data:    "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[],\"id\":67}",

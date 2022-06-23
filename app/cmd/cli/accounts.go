@@ -116,7 +116,11 @@ var getNodesLean = &cobra.Command{
 			fmt.Println("Lean pocket is not enabled")
 			return
 		}
-		keys, _ := app.ReadValidatorPrivateKeyFileLean(datadir)
+		keys, err := app.ReadValidatorPrivateKeyFileLean(datadir)
+		if err != nil {
+			fmt.Println("Failed to read lean valida")
+			return
+		}
 		for _, value := range keys {
 			fmt.Printf("Lean Address: %s\n", strings.ToLower(value.PublicKey().Address().String()))
 		}
@@ -139,27 +143,32 @@ var getValidator = &cobra.Command{
 	},
 }
 
-var setValidatorsLean = &cobra.Command{
-	Use:   `set-validators-lean <path to keyfile>`,
-	Short: "Sets the main validator accounts for tendermint; NOTE: keyfile should be a json string array of private keys",
-	Long:  `Sets the main validator accounts that will be used across all Tendermint functions; NOTE: keyfile should be a json string array of private keys`,
-	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-
-		if !app.GlobalConfig.PocketConfig.LeanPocket {
-			fmt.Println("Lean pocket is not enabled")
-			return
-		}
-
-		keys, err := app.ReadValidatorPrivateKeyFileLean(args[0])
-		if err != nil {
-			fmt.Println("Failed to set validators ", err)
-			os.Exit(1)
-		}
-		app.SetValidatorsFilesLean(keys)
-	},
-}
+//var setValidatorsLean = &cobra.Command{
+//	Use:   `set-validators-lean <path to keyfile>`,
+//	Short: "Sets the main validator accounts for tendermint; NOTE: keyfile should be a json string array of private keys",
+//	Long:  `Sets the main validator accounts that will be used across all Tendermint functions; NOTE: keyfile should be a json string array of private keys`,
+//	Args:  cobra.MinimumNArgs(1),
+//	Run: func(cmd *cobra.Command, args []string) {
+//		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+//
+//		if !app.GlobalConfig.PocketConfig.LeanPocket {
+//			fmt.Println("Lean pocket is not enabled")
+//			return
+//		}
+//
+//		//keys, err := app.ReadValidatorPrivateKeyFileLean(args[0])
+//		//if err != nil {
+//		//	fmt.Println("Failed to read validators json file ", err)
+//		//	os.Exit(1)
+//		//}
+//		//// err = app.SetValidatorsFilesLean(keys)
+//		//if err != nil {
+//		//	fmt.Println("Failed to set validators", err)
+//		//	os.Exit(1)
+//		//	return
+//		//}
+//	},
+//}
 
 var setValidator = &cobra.Command{
 	Use:   "set-validator <address>",

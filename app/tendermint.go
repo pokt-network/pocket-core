@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	cfg "github.com/tendermint/tendermint/config"
@@ -33,27 +34,59 @@ func loadFilePVWithConfig(c config) *pvm.FilePVLite {
 	}
 }
 
+func ReloadValidatorKeys(c config, tmNode *node.Node) error {
 
-func loadValidatorsLean(c config, tmNode *node.Node) error {
-	// add a read to nodes.json -> convert with setValidators()
-	validators := loadFilePVWithConfig(c)
-	err := InitNodesLean() // reinitialize lean nodes
-	tmNode.ConsensusState().SetPrivValidators(validators) // set new lean nodes
+	keys, err := ReadValidatorPrivateKeyFileLean(GlobalConfig.PocketConfig.GetLeanPocketUserKeyFilePath())
 	if err != nil {
 		return err
 	}
+
+	if len(keys) == 0 {
+		return errors.New("user key file contained zero validator keys")
+	}
+
+	err = SetValidatorsFilesLean(keys)
+	if err != nil {
+		return err
+	}
+
+	validators := loadFilePVWithConfig(c)
+	tmNode.ConsensusState().SetPrivValidators(validators) // set new lean nodes
+
+	err = InitNodesLean(c.Logger) // initialize lean nodes
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// hotReloadValidatorsLean - spins off a goroutine that reads from validator files  TODO: add load file with error
+// hotReloadValidatorsLean - spins off a goroutine that reads from validator files
 func hotReloadValidatorsLean(c config, tmNode *node.Node) {
-	go func() {
-		for {
-			loadValidatorsLean(c, tmNode)
-			// init light node, but add removal code for validators that aren't part of it.
-			time.Sleep(time.Minute * 1)
+	userKeysPath := GlobalConfig.PocketConfig.GetLeanPocketUserKeyFilePath()
+	stat, err := os.Stat(userKeysPath)
+	if err != nil {
+		c.Logger.Error("Cannot find user provided key file to hot reload")
+		return
+	}
+	for {
+		time.Sleep(time.Second * 5)
+		c.Logger.Info("Checking for hot reload")
+		newStat, err := os.Stat(userKeysPath)
+		if err != nil {
+			continue
 		}
-	}()
+		if newStat.Size() != stat.Size() || stat.ModTime() != newStat.ModTime() {
+			c.Logger.Info("Detected change in files, hot reloading validators")
+			err := ReloadValidatorKeys(c, tmNode)
+			if err != nil {
+				c.Logger.Error("Failed to hot reload validators")
+				continue
+			}
+			c.Logger.Info("Successfully hot reloaded validators")
+			stat = newStat
+		}
+	}
 }
 
 func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error) {
@@ -96,8 +129,6 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		node.DefaultMetricsProvider(c.TmConfig.Instrumentation),
 		c.Logger.With("module", "node"),
 	)
-
-
 
 	if err != nil {
 		return nil, nil, err

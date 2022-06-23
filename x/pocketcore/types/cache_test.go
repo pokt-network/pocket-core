@@ -21,7 +21,7 @@ func InitCacheTest() {
 
 	// init needed maps for cache
 	servicerPk := GetRandomPrivateKey()
-	InitNodeWithCacheLean(servicerPk)
+	InitNodeWithCacheLean(servicerPk, logger)
 
 }
 
