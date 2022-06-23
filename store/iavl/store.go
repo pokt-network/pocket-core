@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultIAVLCacheSize = 5000000
+	defaultIAVLCacheSize = 100000
 	defaultKeepRecent    = 1000
 )
 

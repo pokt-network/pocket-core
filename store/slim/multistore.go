@@ -37,7 +37,7 @@ func (m *MultiStore) LoadLatestVersion() (err error) {
 	for key := range m.Stores {
 		m.Stores[key] = NewStoreWithIAVL(m.DB, m.CacheDB, latestHeight, key.Name(), commitID)
 	}
-	// reset next height upon launch incase there was 'dirty' data on the next working height
+	//// reset next height upon launch incase there was 'dirty' data on the next working height
 	_ = m.ResetNextHeight()
 	m.PreloadCache()
 	return nil

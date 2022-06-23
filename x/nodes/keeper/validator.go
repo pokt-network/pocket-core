@@ -154,7 +154,7 @@ func (k *Keeper) AddToPrevValidatorCache(ctx sdk.Ctx, addr sdk.Address, val type
 }
 
 func (k *Keeper) InitPrevValidatorsCache(ctx sdk.Ctx) {
-	h := ctx.BlockHeight() - 1000
+	h := ctx.BlockHeight() - 25
 	if h < 0 {
 		h = 0
 	}

@@ -130,6 +130,9 @@ func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.
 		return servicerAddr, claim, pc.NewInvalidMerkleVerifyError(pc.ModuleName)
 	}
 	// get the session context
+	if ctx.BlockHeight() == int64(19740) {
+		fmt.Println()
+	}
 	sessionCtx, err := ctx.PrevCtx(claim.SessionHeader.SessionBlockHeight)
 	if err != nil {
 		return servicerAddr, claim, sdk.ErrInternal(err.Error())

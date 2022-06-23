@@ -57,3 +57,26 @@ func NewDedupIteratorForHeight(parentDB dbm.DB, height int64, prefix string) *De
 	it.it, _ = parentDB.Iterator(startKey, endKey)
 	return it
 }
+
+type Orphaniterator struct {
+	parent dbm.DB
+	it     dbm.Iterator
+}
+
+func NewOrphanIteratorForHeight(parentDB dbm.DB, height int64, prefix string) *Orphaniterator {
+	startKey := OrphanKey(HeightKey(height, prefix, nil))
+	endKey := types.PrefixEndBytes(startKey)
+	it := &Orphaniterator{parent: parentDB}
+	it.it, _ = parentDB.Iterator(startKey, endKey)
+	return it
+}
+
+func (d *Orphaniterator) Next()                 { d.it.Next() }
+func (d *Orphaniterator) Key() (key []byte)     { return KeyFromHeightKey(KeyFromOrphanKey(d.it.Key())) }
+func (d *Orphaniterator) Value() (value []byte) { panic("should never call value on orphan iterator") }
+func (d *Orphaniterator) Error() error          { return d.it.Error() }
+func (d *Orphaniterator) Close()                { d.it.Close() }
+func (d *Orphaniterator) Valid() bool           { return d.it.Valid() }
+func (d *Orphaniterator) Domain() ([]byte, []byte) {
+	panic("should never call domain on orphan iterator")
+}

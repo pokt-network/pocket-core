@@ -226,9 +226,9 @@ func (c Context) PrevCtx(height int64) (Context, error) {
 		return c.WithBlockHeader(header), nil
 	}
 
-	if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
-		return cachedCtx.(Context), nil
-	}
+	//if cachedCtx, ok := c.getFromCache(fmt.Sprintf("%d", height)); ok {
+	//	return cachedCtx.(Context), nil
+	//}
 	ms, err := (c.ms).(CommitMultiStore).LoadVersion(height)
 	if err != nil {
 		return Context{}, err

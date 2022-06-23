@@ -37,7 +37,7 @@ func NewKeeper(cdc *codec.Codec, key sdk.StoreKey, accountKeeper types.AuthKeepe
 		log2.Fatal(fmt.Errorf("%s module account has not been set", types.StakedPoolName))
 	}
 	cache := sdk.NewCache(int(types.ValidatorCacheSize))
-	prevValCache := sdk.NewCache(int(types.ValidatorCacheSize) * 2000)
+	prevValCache := sdk.NewCache(int(types.ValidatorCacheSize) * 25)
 	siCache := sdk.NewCache(int(types.ValidatorCacheSize))
 	return Keeper{
 		storeKey:           key,

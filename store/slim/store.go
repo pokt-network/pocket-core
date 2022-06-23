@@ -29,7 +29,7 @@ func NewStoreWithIAVL(d *db.GoLevelDB, cDB *db.GoLevelMemDB, height int64, prefi
 func NewStoreWithoutIAVL(db *db.GoLevelDB, cDB *db.GoLevelMemDB, latestHeight, height int64, prefix string) *Store {
 	var cache *dedup.Store
 	// if cache contains this height
-	if height > latestHeight-dedup.DefaultCacheKeepHeights {
+	if height > latestHeight-dedup.DefaultCacheKeepHeights+1 {
 		cache = dedup.NewStore(height, prefix, cDB, true)
 	}
 	return &Store{
@@ -71,9 +71,9 @@ func (s *Store) Set(key, value []byte) error {
 	if err := s.Cache.Set(key, value); err != nil {
 		return err
 	}
-	if err := s.Dedup.Set(key, value); err != nil {
-		return err
-	}
+	//if err := s.Dedup.Set(key, value); err != nil {
+	//	return err
+	//}
 	return s.IAVLStore.Set(key, value)
 }
 
@@ -81,9 +81,9 @@ func (s *Store) Delete(key []byte) error {
 	if err := s.Cache.Delete(key); err != nil {
 		return err
 	}
-	if err := s.Dedup.Delete(key); err != nil {
-		return err
-	}
+	//if err := s.Dedup.Delete(key); err != nil {
+	//	return err
+	//}
 	return s.IAVLStore.Delete(key)
 }
 
@@ -91,8 +91,8 @@ func (s *Store) Delete(key []byte) error {
 
 func (s *Store) CommitBatch(b db.Batch) (types.CommitID, db.Batch) {
 	// commit both stores, but only return commitID from IAVL
-	_, _ = s.Cache.CommitBatch(nil)
-	_, b = s.Dedup.CommitBatch(b)
+	_, _ = s.Cache.CommitBatch(b, s.Dedup)
+	//_, b = s.Dedup.CommitBatch(b)
 	return s.IAVLStore.CommitBatch(b)
 }
 
