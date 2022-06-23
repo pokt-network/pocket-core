@@ -2,6 +2,7 @@ package slim
 
 import (
 	"github.com/pokt-network/pocket-core/store/cachemulti"
+	"github.com/pokt-network/pocket-core/store/slim/memdb"
 	"github.com/pokt-network/pocket-core/store/types"
 	db "github.com/tendermint/tm-db"
 )
@@ -10,7 +11,7 @@ var _ types.CommitMultiStore = &MultiStore{}
 
 type MultiStore struct {
 	DB         *db.GoLevelDB
-	CacheDB    *db.GoLevelMemDB
+	CacheDB    *memdb.PocketMemDB
 	Stores     map[types.StoreKey]types.CommitStore
 	LastCommit types.CommitID
 }
@@ -18,7 +19,7 @@ type MultiStore struct {
 func NewStore(d db.DB) *MultiStore {
 	return &MultiStore{
 		DB:         d.(*db.GoLevelDB),
-		CacheDB:    db.NewGoLevelMemDB(),
+		CacheDB:    memdb.NewPocketMemDB(),
 		Stores:     make(map[types.StoreKey]types.CommitStore),
 		LastCommit: types.CommitID{},
 	}

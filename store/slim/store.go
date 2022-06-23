@@ -4,6 +4,7 @@ import (
 	"github.com/pokt-network/pocket-core/store/cachemulti"
 	"github.com/pokt-network/pocket-core/store/iavl"
 	"github.com/pokt-network/pocket-core/store/slim/dedup"
+	"github.com/pokt-network/pocket-core/store/slim/memdb"
 	"github.com/pokt-network/pocket-core/store/types"
 	db "github.com/tendermint/tm-db"
 )
@@ -14,7 +15,7 @@ type Store struct {
 	IAVLStore iavl.Store
 }
 
-func NewStoreWithIAVL(d *db.GoLevelDB, cDB *db.GoLevelMemDB, height int64, prefix string, commitID types.CommitID) *Store {
+func NewStoreWithIAVL(d *db.GoLevelDB, cDB *memdb.PocketMemDB, height int64, prefix string, commitID types.CommitID) *Store {
 	iavlStore, err := iavl.NewStore(db.NewPrefixDB(d, []byte("s/k:"+prefix+"/")), commitID)
 	if err != nil {
 		panic("iavl store failed to load for height: %s prefix: %s")
@@ -26,7 +27,7 @@ func NewStoreWithIAVL(d *db.GoLevelDB, cDB *db.GoLevelMemDB, height int64, prefi
 	}
 }
 
-func NewStoreWithoutIAVL(db *db.GoLevelDB, cDB *db.GoLevelMemDB, latestHeight, height int64, prefix string) *Store {
+func NewStoreWithoutIAVL(db *db.GoLevelDB, cDB *memdb.PocketMemDB, latestHeight, height int64, prefix string) *Store {
 	var cache *dedup.Store
 	// if cache contains this height
 	if height > latestHeight-dedup.DefaultCacheKeepHeights+1 {
