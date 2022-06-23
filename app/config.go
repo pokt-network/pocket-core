@@ -92,6 +92,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// init AuthToken
 	InitAuthToken()
 
+	// get hosted blockchains
 	chains := NewHostedChains(false)
 	if GlobalConfig.PocketConfig.ChainsHotReload {
 		// hot reload chains
@@ -105,23 +106,26 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// prestart hook, so users don't have to create their own set-validator prestart script
 	if GlobalConfig.PocketConfig.LeanPocket {
 		userProvidedKeyPath := GlobalConfig.PocketConfig.GetLeanPocketUserKeyFilePath()
-		// add a read to nodes.json -> convert with setValidators()
-		keys, err := ReadValidatorPrivateKeyFileLean(userProvidedKeyPath)
-		if err != nil {
-			logger.Error("Can't read user provided validator keys, did you create keys in", userProvidedKeyPath, err)
-			os.Exit(1)
-		}
-		// check if peering address is set
-		err = SetValidatorsFilesLean(keys)
-		if err != nil {
-			logger.Error("Failed to set validators for user provided file, try pocket accounts set-validators", userProvidedKeyPath, err)
-			os.Exit(1)
+		pvkName := path.Join(GlobalConfig.PocketConfig.DataDir, GlobalConfig.TendermintConfig.PrivValidatorKey)
+		if _, err := os.Stat(pvkName); err != nil { // user has not ran set-validators
+			if os.IsNotExist(err) {
+				// read the user provided lean nodes
+				keys, err := ReadValidatorPrivateKeyFileLean(userProvidedKeyPath)
+				if err != nil {
+					logger.Error("Can't read user provided validator keys, did you create keys in", userProvidedKeyPath, err)
+					os.Exit(1)
+				}
+				// set them
+				err = SetValidatorsFilesLean(keys)
+				if err != nil {
+					logger.Error("Failed to set validators for user provided file, try pocket accounts set-validators", userProvidedKeyPath, err)
+					os.Exit(1)
+				}
+			}
 		}
 	}
 
 	InitKeyfiles(logger)
-
-	// get hosted blockchains
 
 	// init genesis
 	InitGenesis(genesisType, logger)
@@ -459,28 +463,29 @@ func InitNodesLean(logger log.Logger) error {
 		types.InitNodeWithCacheLean(key, logger)
 	}
 
-	for k, v := range types.GlobalNodesLean {
-		if v == nil {
-			continue
-		}
-		_, shouldKeep := addedNodesSet[v.PrivateKey]
-		if !shouldKeep {
-
-			go func() {
-				types.GlobalNodeLeanRWLock.Lock()
-				defer types.GlobalNodeLeanRWLock.Unlock()
-				node := types.GlobalNodesLean[k]
-				logger.Info("Detected node " + k + " has been deleted, flushing session/evidence DB first.")
-				node.SessionCache.FlushToDB()
-				node.EvidenceCache.FlushToDB()
-				node.EvidenceCache.DB.Close()
-				logger.Info(k + " evidence DB successfully closed")
-
-
-				delete(types.GlobalNodesLean, k)
-			}()
-		}
-	}
+	// TODO: Flesh out hotreloading(removing/adding) lean nodes
+	//for k, v := range types.GlobalNodesLean {
+	//	if v == nil {
+	//		continue
+	//	}
+	//	_, shouldKeep := addedNodesSet[v.PrivateKey]
+	//	if !shouldKeep {
+	//
+	//		go func() {
+	//			types.GlobalNodeLeanRWLock.Lock()
+	//			defer types.GlobalNodeLeanRWLock.Unlock()
+	//			node := types.GlobalNodesLean[k]
+	//			logger.Info("Detected node " + k + " has been deleted, flushing session/evidence DB first.")
+	//			node.SessionCache.FlushToDB()
+	//			node.EvidenceCache.FlushToDB()
+	//			node.EvidenceCache.DB.Close()
+	//			logger.Info(k + " evidence DB successfully closed")
+	//
+	//
+	//			delete(types.GlobalNodesLean, k)
+	//		}()
+	//	}
+	//}
 
 	// set the "main (legacy)" validator to first lean node
 	types.InitPVKeyFile(leanNodesTm[0])

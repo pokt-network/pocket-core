@@ -62,6 +62,7 @@ func ReloadValidatorKeys(c config, tmNode *node.Node) error {
 }
 
 // hotReloadValidatorsLean - spins off a goroutine that reads from validator files
+// TODO: Flesh out hot reloading (removing/adding) lean nodes
 func hotReloadValidatorsLean(c config, tmNode *node.Node) {
 	userKeysPath := GlobalConfig.PocketConfig.GetLeanPocketUserKeyFilePath()
 	stat, err := os.Stat(userKeysPath)
@@ -134,9 +135,10 @@ func NewClient(c config, creator AppCreator) (*node.Node, *PocketCoreApp, error)
 		return nil, nil, err
 	}
 
-	if GlobalConfig.PocketConfig.LeanPocket {
-		go hotReloadValidatorsLean(c, tmNode)
-	}
+	// TODO: Flesh out hotreloading(removing/adding) lean nodes
+	//if GlobalConfig.PocketConfig.LeanPocket {
+	//	go hotReloadValidatorsLean(c, tmNode)
+	//}
 
 	return tmNode, app, nil
 }
