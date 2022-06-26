@@ -983,8 +983,13 @@ func ReadValidatorPrivateKeyFileLean(filePath string) ([]crypto.PrivateKey, erro
 		return nil, fmt.Errorf("an error occurred unmarshalling the addresses into json format. Please make sure the input for this is a proper json array with priv_key as key value")
 	}
 
-	var pks []crypto.PrivateKey
+	pkFileDeduped := map[privval.PrivateKeyFile]struct{}{}
 	for _, pk := range arr {
+		pkFileDeduped[pk] = struct{}{}
+	}
+
+	var pks []crypto.PrivateKey
+	for pk, _ := range pkFileDeduped {
 		bz, err := hex.DecodeString(pk.PrivateKey)
 		if err != nil {
 			return nil, fmt.Errorf("an error occurred hex decoding this private key: %s, %s", pk, err.Error())
