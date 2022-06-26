@@ -279,7 +279,7 @@ func TestSetGetSessionLean(t *testing.T) {
 	assert.Equal(t, s, session)
 	_, found = GetSessionLean(session2.SessionHeader, &randomAddr)
 	assert.False(t, found)
-	SetSession(session2)
+	SetSessionLean(session2, &randomAddr)
 	s, found = GetSessionLean(session2.SessionHeader, &randomAddr)
 	assert.True(t, found)
 	assert.Equal(t, s, session2)
