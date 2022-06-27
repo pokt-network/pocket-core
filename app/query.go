@@ -535,13 +535,14 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 		return nil, nil, err
 	}
 
-	status, err := app.pocketKeeper.TmNode.Synced()
-
-	if !status.IsSynced {
-		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
-	}
-
 	if GlobalConfig.PocketConfig.LeanPocket {
+		status, sErr := app.pocketKeeper.TmNode.Synced()
+		if sErr != nil {
+			return nil, nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
+		}
+		if !status.IsSynced {
+			return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
+		}
 		res, err = app.pocketKeeper.HandleRelayLean(ctx, r)
 		if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
 
@@ -559,6 +560,13 @@ func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.Rela
 			}
 		}
 	} else {
+		status, sErr := app.pocketKeeper.TmNode.Status()
+		if sErr != nil {
+			return nil, nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
+		}
+		if status.SyncInfo.CatchingUp {
+			return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
+		}
 		res, err = app.pocketKeeper.HandleRelay(ctx, r)
 		var err1 error
 		if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
