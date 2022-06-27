@@ -102,16 +102,16 @@ func (s *Store) Delete(k []byte) error {
 
 // lifecycle ops
 
-func (s *Store) CommitBatch(b db.Batch, dedupStore *Store) (types.CommitID, db.Batch) {
+func (s *Store) CommitCache(b db.Batch, dedupStore *Store) {
 	s.CopyHeight(s.Height, dedupStore, b)
 	s.Height++
 	dedupStore.Height++
 	s.DeleteCacheHeight(s.Height - DefaultCacheKeepHeights)
 	s.PrepareNextHeight(nil)
-	return types.CommitID{}, b
+	return
 }
 
-func (s *Store) PrepareNextHeight(b db.Batch) db.Batch {
+func (s *Store) PrepareNextHeight(b db.Batch) {
 	it := NewDedupIteratorForHeight(s.ParentDB, s.Height-1, s.Prefix)
 	defer it.Close()
 	for ; it.Valid(); it.Next() {
@@ -123,45 +123,7 @@ func (s *Store) PrepareNextHeight(b db.Batch) db.Batch {
 			b.Set(nextHeightKey, linkValue)
 		}
 	}
-	return b
 }
-
-// The two functions below are needed because of the 'write immediately' db design where the
-// data is written each op to the db instead of saving it for commit() phase at the end.
-// While this is conceptually simpler, it comes with the tradeoff that the next working height
-// must be reset upon restart.
-// NOTE: The assumption is that the entire block is rolled back upon replay. If this isn't the case
-// this actually will be both unnecessary (see cache-wrapping) and not work.
-//
-func (s *Store) ResetNextHeight(b db.Batch) (batch db.Batch, err error) {
-	//b, err = s.DeleteHeight(b, s.Height)
-	//if err != nil {
-	//	return b, err
-	//}
-	return s.PrepareNextHeight(b), nil
-}
-
-//
-//func (s *Store) DeleteHeight(b db.Batch, height int64) (db.Batch, error) {
-//	// iterate through the LINKSTORE to clear the 'next height'
-//	// we need to do this in case the db was shut down at an
-//	// unsafe point
-//	keysToDelete := make([][]byte, 0)
-//	it := NewDedupIteratorForHeight(s.ParentDB, height, s.Prefix)
-//	defer it.Close()
-//	for ; it.Valid(); it.Next() {
-//		linkKey := it.Key() // TODO I think this is the wrong key
-//		keysToDelete = append(keysToDelete, linkKey)
-//		// delete any data that was created for next height as well
-//		// or the result will be orphaned data that has no link
-//		dataKey, _ := s.ParentDB.Get(linkKey)
-//		keysToDelete = append(keysToDelete, dataKey)
-//	}
-//	for _, k := range keysToDelete {
-//		b.Delete(k)
-//	}
-//	return b, nil
-//}
 
 func (s *Store) TrackOrphan(linkStoreKey []byte) error {
 	// only track orphan if is cached store because we only prune on cache store

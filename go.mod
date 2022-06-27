@@ -1,13 +1,12 @@
 module github.com/pokt-network/pocket-core
 
-go 1.17
+go 1.18
 
 require (
 	github.com/go-kit/kit v0.12.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/golang-lru v0.5.4
-	github.com/jackc/pgx/v4 v4.16.1
 	github.com/jordanorelli/lexnum v0.0.0-20141216151731-460eeb125754
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/pkg/errors v0.9.1
@@ -19,6 +18,7 @@ require (
 	github.com/tendermint/go-amino v0.15.1
 	github.com/tendermint/tendermint v0.33.7
 	github.com/tendermint/tm-db v0.5.1
+	github.com/tidwall/btree v1.3.1
 	github.com/willf/bloom v2.0.3+incompatible
 	golang.org/x/crypto v0.0.0-20210915214749-c084706c2272
 	google.golang.org/protobuf v1.27.1
@@ -43,15 +43,7 @@ require (
 	github.com/gtank/merlin v0.1.1 // indirect
 	github.com/gtank/ristretto255 v0.1.2 // indirect
 	github.com/h2non/parth v0.0.0-20190131123155-b4df798d6542 // indirect
-	github.com/huandu/skiplist v1.2.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.12.1 // indirect
-	github.com/jackc/pgio v1.0.0 // indirect
-	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgproto3/v2 v2.3.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
-	github.com/jackc/pgtype v1.11.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/libp2p/go-buffer-pool v0.0.2 // indirect

@@ -41,7 +41,7 @@ type CacheObject interface {
 	IsSealed() bool
 }
 
-// "Init" - Initializes a cache storage object
+// "Seek" - Initializes a cache storage object
 func (cs *CacheStorage) Init(dir, name string, options config.LevelDBOptions, maxEntries int, inMemoryDB bool) {
 	// init the lru cache with a max entries
 	cs.Cache = sdk.NewCache(maxEntries)

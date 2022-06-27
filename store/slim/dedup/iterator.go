@@ -58,25 +58,25 @@ func NewDedupIteratorForHeight(parentDB dbm.DB, height int64, prefix string) *De
 	return it
 }
 
-type Orphaniterator struct {
+// iterators for orphans (only needed when pruning)
+
+type orphanIt struct {
 	parent dbm.DB
 	it     dbm.Iterator
 }
 
-func NewOrphanIteratorForHeight(parentDB dbm.DB, height int64, prefix string) *Orphaniterator {
+func NewOrphanIteratorForHeight(parentDB dbm.DB, height int64, prefix string) *orphanIt {
 	startKey := OrphanKey(HeightKey(height, prefix, nil))
 	endKey := types.PrefixEndBytes(startKey)
-	it := &Orphaniterator{parent: parentDB}
+	it := &orphanIt{parent: parentDB}
 	it.it, _ = parentDB.Iterator(startKey, endKey)
 	return it
 }
 
-func (d *Orphaniterator) Next()                 { d.it.Next() }
-func (d *Orphaniterator) Key() (key []byte)     { return KeyFromHeightKey(KeyFromOrphanKey(d.it.Key())) }
-func (d *Orphaniterator) Value() (value []byte) { panic("should never call value on orphan iterator") }
-func (d *Orphaniterator) Error() error          { return d.it.Error() }
-func (d *Orphaniterator) Close()                { d.it.Close() }
-func (d *Orphaniterator) Valid() bool           { return d.it.Valid() }
-func (d *Orphaniterator) Domain() ([]byte, []byte) {
-	panic("should never call domain on orphan iterator")
-}
+func (d *orphanIt) Next()                    { d.it.Next() }
+func (d *orphanIt) Key() (key []byte)        { return KeyFromHeightKey(KeyFromOrphanKey(d.it.Key())) }
+func (d *orphanIt) Value() (value []byte)    { panic("should never call value on orphan iterator") }
+func (d *orphanIt) Error() error             { return d.it.Error() }
+func (d *orphanIt) Close()                   { d.it.Close() }
+func (d *orphanIt) Valid() bool              { return d.it.Valid() }
+func (d *orphanIt) Domain() ([]byte, []byte) { panic("should never call domain on orphan iterator") }

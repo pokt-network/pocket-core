@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
-	"github.com/pokt-network/pocket-core/store/slim/memdb"
 	"github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
@@ -22,7 +21,7 @@ const (
 var _ types.KVStore = &Store{}
 var _ types.CommitStore = &Store{}
 
-func multiStoreToStore(db *dbm.GoLevelDB, cacheDB *memdb.PocketMemDB, lastcommit types.CommitID, newStores map[types.StoreKey]types.CommitStore) *types.Store {
+func multiStoreToStore(db *dbm.GoLevelDB, cacheDB dbm.DB, lastcommit types.CommitID, newStores map[types.StoreKey]types.CommitStore) *types.Store {
 	newMultiStore := types.Store(&MultiStore{
 		DB:         db,
 		CacheDB:    cacheDB,

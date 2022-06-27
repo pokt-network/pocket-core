@@ -7,6 +7,9 @@ import (
 
 var _ db.Batch = (*PocketMemDBBatch)(nil)
 
+// The batch is a simple design, the idea is to save all of the write operations into a slice and then execute them
+// at once to the parent db upon the Write() call.
+
 type PocketMemDBBatch struct {
 	db  *PocketMemDB
 	ops []operation
@@ -21,28 +24,28 @@ func NewPocketMemDBBatch(db *PocketMemDB) *PocketMemDBBatch {
 
 func (p *PocketMemDBBatch) Set(key, value []byte) {
 	p.ops = append(p.ops, operation{
-		opType: opTypeSet,
-		key:    key,
-		value:  value,
+		operationType: set,
+		key:           key,
+		value:         value,
 	})
 }
 
 func (p *PocketMemDBBatch) Delete(key []byte) {
 	p.ops = append(p.ops, operation{
-		opType: opTypeDelete,
-		key:    key,
+		operationType: del,
+		key:           key,
 	})
 }
 
 func (p *PocketMemDBBatch) Write() error {
 	for _, op := range p.ops {
-		switch op.opType {
-		case opTypeSet:
+		switch op.operationType {
+		case set:
 			_ = p.db.Set(op.key, op.value)
-		case opTypeDelete:
+		case del:
 			_ = p.db.Delete(op.key)
 		default:
-			return errors.Errorf("unknown operation type %v (%v)", op.opType, op)
+			return errors.Errorf("unknown operation type %v (%v)", op.operationType, op)
 		}
 	}
 	return nil
@@ -51,17 +54,15 @@ func (p *PocketMemDBBatch) Write() error {
 func (p *PocketMemDBBatch) WriteSync() error { return p.Write() }
 func (p *PocketMemDBBatch) Close()           { p.ops = nil }
 
-// util struct below
-
-type opType int
+type operationType int
 
 const (
-	opTypeSet opType = iota + 1
-	opTypeDelete
+	set operationType = iota + 1
+	del
 )
 
 type operation struct {
-	opType
+	operationType
 	key   []byte
 	value []byte
 }

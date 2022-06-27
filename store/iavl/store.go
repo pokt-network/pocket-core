@@ -119,9 +119,9 @@ func (st *Store) Commit() types.CommitID {
 	}
 }
 
-func (st *Store) CommitBatch(b dbm.Batch) (types.CommitID, dbm.Batch) {
+func (st *Store) CommitIAVL() types.CommitID {
 	// TODO IAVL is still not batch safe, but as safe as it's ever been
-	return st.Commit(), b
+	return st.Commit()
 }
 
 // Implements Committer.

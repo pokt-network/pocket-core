@@ -145,7 +145,7 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 		// create a new session to validate
 		session, err = pc.NewSession(sessionContext, sessionEndCtx, k.posKeeper, claim.SessionHeader, hex.EncodeToString(hash), sessionNodeCount)
 		if err != nil {
-			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error())
+			ctx.Logger().Error(fmt.Errorf("could not generate session with public key: %s, for chain: %s", app.GetPublicKey().RawString(), claim.SessionHeader.Chain).Error(), err.Error())
 			return err
 		}
 	}

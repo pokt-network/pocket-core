@@ -2,7 +2,7 @@ package slim
 
 import (
 	"github.com/pokt-network/pocket-core/store/cachemulti"
-	"github.com/pokt-network/pocket-core/store/slim/memdb"
+	"github.com/pokt-network/pocket-core/store/slim/dedup/memdb"
 	"github.com/pokt-network/pocket-core/store/types"
 	db "github.com/tendermint/tm-db"
 )
@@ -11,7 +11,7 @@ var _ types.CommitMultiStore = &MultiStore{}
 
 type MultiStore struct {
 	DB         *db.GoLevelDB
-	CacheDB    *memdb.PocketMemDB
+	CacheDB    db.DB
 	Stores     map[types.StoreKey]types.CommitStore
 	LastCommit types.CommitID
 }
@@ -38,8 +38,7 @@ func (m *MultiStore) LoadLatestVersion() (err error) {
 	for key := range m.Stores {
 		m.Stores[key] = NewStoreWithIAVL(m.DB, m.CacheDB, latestHeight, key.Name(), commitID)
 	}
-	//// reset next height upon launch incase there was 'dirty' data on the next working height
-	_ = m.ResetNextHeight()
+	m.PrepareNextHeight()
 	m.PreloadCache()
 	return nil
 }
@@ -61,7 +60,7 @@ func (m *MultiStore) Commit() (commitID types.CommitID) {
 		StoreInfos: make([]StoreInfo, 0),
 	}
 	for key, s := range m.Stores {
-		commitID, batch = s.(*Store).CommitBatch(batch)
+		commitID = s.(*Store).CommitBatch(batch)
 		commitInfo.StoreInfos = append(commitInfo.StoreInfos, StoreInfo{
 			Name: key.Name(),
 			Core: StoreCore{commitID},
@@ -85,16 +84,13 @@ func (m *MultiStore) CopyStore() *types.Store {
 	return multiStoreToStore(m.DB, m.CacheDB, m.LastCommit, newStores)
 }
 
-func (m *MultiStore) ResetNextHeight() (err error) {
+func (m *MultiStore) PrepareNextHeight() {
 	batch := m.DB.NewBatch()
 	defer batch.Close()
 	for _, store := range m.Stores {
-		batch, err = store.(*Store).Dedup.ResetNextHeight(batch)
-		if err != nil {
-			return err
-		}
+		store.(*Store).Dedup.PrepareNextHeight(batch)
 	}
-	return batch.Write()
+	_ = batch.Write()
 }
 
 func (m *MultiStore) PreloadCache() {
@@ -105,10 +101,11 @@ func (m *MultiStore) PreloadCache() {
 
 func (m *MultiStore) LastCommitID() types.CommitID {
 	if m.LastCommit.Hash == nil {
-		m.LoadLatestVersion()
+		_ = m.LoadLatestVersion()
 	}
 	return m.LastCommit
 }
+
 func (m *MultiStore) CacheWrap() types.CacheWrap { return m.CacheMultiStore() }
 func (m *MultiStore) CacheMultiStore() types.CacheMultiStore {
 	return cachemulti.NewCacheMulti(m.Stores)
