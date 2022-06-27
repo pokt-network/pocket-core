@@ -26,9 +26,8 @@ var (
 	testnet         bool
 	profileApp      bool
 	useCache        bool
-	useLean        bool
-	validatorsPathLean string
-	peerNodeLean string
+	forceSetValidatorsLean bool
+	useLean bool
 )
 
 var CLIVersion = app.AppVersion
@@ -62,7 +61,7 @@ func init() {
 	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
 	startCmd.Flags().BoolVar(&useCache, "useCache", false, "use cache")
 	startCmd.Flags().BoolVar(&useLean, "useLean", false, "enable usage of lean pocket through cli")
-	//startCmd.Flags().StringVar(&peerNodeLean, "set-peer-node-lean", "", "change the node lean file to be one of the specified validator by address")
+	startCmd.Flags().BoolVar(&forceSetValidatorsLean, "forceSetValidatorsLean", false, "reads your lean_pocket_user_key_file (lean_nodes_keys.json) and updates your last signed state/validator files before starting your node")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
@@ -97,7 +96,7 @@ func start(cmd *cobra.Command, args []string) {
 	if testnet {
 		genesisType = app.TestnetGenesisType
 	}
-	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache, useLean)
+	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache, useLean, forceSetValidatorsLean)
 	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload)
 	// trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)

@@ -84,7 +84,7 @@ const (
 	DefaultGenesisType
 )
 
-func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, useCache bool, useLean bool) *node.Node {
+func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keybase bool, genesisType GenesisType, useCache bool, useLean bool, forceSetValidatorsLean bool) *node.Node {
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	GlobalConfig.PocketConfig.Cache = useCache
@@ -107,20 +107,18 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	if GlobalConfig.PocketConfig.LeanPocket {
 		userProvidedKeyPath := GlobalConfig.PocketConfig.GetLeanPocketUserKeyFilePath()
 		pvkName := path.Join(GlobalConfig.PocketConfig.DataDir, GlobalConfig.TendermintConfig.PrivValidatorKey)
-		if _, err := os.Stat(pvkName); err != nil { // user has not ran set-validators
-			if os.IsNotExist(err) {
-				// read the user provided lean nodes
-				keys, err := ReadValidatorPrivateKeyFileLean(userProvidedKeyPath)
-				if err != nil {
-					logger.Error("Can't read user provided validator keys, did you create keys in", userProvidedKeyPath, err)
-					os.Exit(1)
-				}
-				// set them
-				err = SetValidatorsFilesLean(keys)
-				if err != nil {
-					logger.Error("Failed to set validators for user provided file, try pocket accounts set-validators", userProvidedKeyPath, err)
-					os.Exit(1)
-				}
+		if _, err := os.Stat(pvkName); err != nil && os.IsNotExist(err) || forceSetValidatorsLean { // user has not ran set-validators
+			// read the user provided lean nodes
+			keys, err := ReadValidatorPrivateKeyFileLean(userProvidedKeyPath)
+			if err != nil {
+				logger.Error("Can't read user provided validator keys, did you create keys in", userProvidedKeyPath, err)
+				os.Exit(1)
+			}
+			// set them
+			err = SetValidatorsFilesLean(keys)
+			if err != nil {
+				logger.Error("Failed to set validators for user provided file, try pocket accounts set-validators", userProvidedKeyPath, err)
+				os.Exit(1)
 			}
 		}
 	}
@@ -428,7 +426,6 @@ func InitKeyfiles(logger log.Logger) {
 		types.InitPVKeyFile(file)
 	}
 }
-
 
 func InitNodesLean(logger log.Logger) error {
 	pvkName := path.Join(GlobalConfig.PocketConfig.DataDir, GlobalConfig.TendermintConfig.PrivValidatorKey)
@@ -1096,7 +1093,7 @@ func resetFilePV(privValKeyFile, privValStateFile string, logger log.Logger) {
 		"stateFile", privValStateFile)
 }
 
-func resetFilePVLean(privValKeyFile, privValStateFile string, logger log.Logger){
+func resetFilePVLean(privValKeyFile, privValStateFile string, logger log.Logger) {
 	_, err := os.Stat(privValKeyFile)
 	if err == nil {
 		_ = os.Remove(privValKeyFile)
