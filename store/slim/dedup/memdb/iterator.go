@@ -12,7 +12,7 @@ import (
 // breaking (which is the requirement for V0 persistence to enable syncing from scratch).
 //
 // The legacy implementation uses an IAVL tree built with goleveldb iterators. The tricky part is to
-// exactly match the behavior pattern when items of the set are deleted, inserted, or modified during the iteration
+// exactly match the behavior pattern when items of the Set are deleted, inserted, or modified during the iteration
 // process ( a feature that pocket's utility layer uses in multiple places ).
 //
 // Alternative Implementations: The memdb implementation in the goleveldb library is the natural choice to satisfy these
@@ -102,7 +102,7 @@ func (p *PocketMemDBIterator) reSeek() (alreadyNexted bool) {
 	// modifying the utilty layer and possibly breaking consensus.
 	p.it = p.parent.BTree.Iter()
 	p.Seek()
-	// seek already did next, this can happen when the set is modified during iteration
+	// seek already did next, this can happen when the Set is modified during iteration
 	if p.prevKey != nil && !bytes.Equal(p.prevKey, p.key) {
 		p.Set()
 		return true

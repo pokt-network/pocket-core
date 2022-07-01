@@ -100,8 +100,9 @@ func (cdc *Codec) MarshalBinaryBare(o interface{}, height int64) (bz []byte, err
 	if !ok {
 		if cdc.IsAfterCodecUpgrade(height) {
 			return nil, NotProtoCompatibleInterfaceError
+		} else {
+			bz, err = cdc.legacyCdc.MarshalBinaryBare(o)
 		}
-		bz, err = cdc.legacyCdc.MarshalBinaryBare(o)
 	} else {
 		if cdc.IsAfterCodecUpgrade(height) {
 			bz, err = cdc.protoCdc.MarshalBinaryBare(p)
@@ -120,13 +121,15 @@ func (cdc *Codec) MarshalBinaryLengthPrefixed(o interface{}, height int64) (bz [
 	if !ok {
 		if cdc.IsAfterCodecUpgrade(height) {
 			return nil, NotProtoCompatibleInterfaceError
+		} else {
+			bz, err = cdc.legacyCdc.MarshalBinaryLengthPrefixed(o)
 		}
-		bz, err = cdc.legacyCdc.MarshalBinaryLengthPrefixed(o)
 	} else {
 		if cdc.IsAfterCodecUpgrade(height) {
 			bz, err = cdc.protoCdc.MarshalBinaryLengthPrefixed(p)
+		} else {
+			bz, err = cdc.legacyCdc.MarshalBinaryLengthPrefixed(p)
 		}
-		bz, err = cdc.legacyCdc.MarshalBinaryLengthPrefixed(p)
 	}
 	if err == nil {
 		GlobalCodecCache.Add(bz, o)
@@ -143,26 +146,23 @@ func (cdc *Codec) UnmarshalBinaryBare(bz []byte, ptr interface{}, height int64) 
 		if cdc.IsAfterCodecUpgrade(height) {
 			return NotProtoCompatibleInterfaceError
 		}
-		err = cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
-	} else if cdc.IsAfterCodecUpgrade(height) {
+		return cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
+	}
+	if cdc.IsAfterCodecUpgrade(height) {
 		if height == UpgradeCodecHeight {
-			err = cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
-			if err != nil {
-				err = cdc.protoCdc.UnmarshalBinaryBare(bz, p)
+			e := cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
+			if e != nil {
+				return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
 			}
-		} else {
-			err = cdc.protoCdc.UnmarshalBinaryBare(bz, p)
+			return e
 		}
-	} else {
-		err = cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
-		if err != nil {
-			err = cdc.protoCdc.UnmarshalBinaryBare(bz, p)
-		}
+		return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
 	}
-	if err == nil {
-		GlobalCodecCache.AddPtr(bz, ptr)
+	e := cdc.legacyCdc.UnmarshalBinaryBare(bz, ptr)
+	if e != nil {
+		return cdc.protoCdc.UnmarshalBinaryBare(bz, p)
 	}
-	return
+	return e
 }
 
 func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}, height int64) (err error) {
@@ -174,26 +174,23 @@ func (cdc *Codec) UnmarshalBinaryLengthPrefixed(bz []byte, ptr interface{}, heig
 		if cdc.IsAfterCodecUpgrade(height) {
 			return NotProtoCompatibleInterfaceError
 		}
-		err = cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
-	} else if cdc.IsAfterCodecUpgrade(height) {
+		return cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
+	}
+	if cdc.IsAfterCodecUpgrade(height) {
 		if height == UpgradeCodecHeight {
-			err = cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
-			if err != nil {
-				err = cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
+			e := cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
+			if e != nil {
+				return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
 			}
-		} else {
-			err = cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
+			return e
 		}
-	} else {
-		err = cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
-		if err != nil {
-			err = cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
-		}
+		return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
 	}
-	if err == nil {
-		GlobalCodecCache.AddPtr(bz, ptr)
+	e := cdc.legacyCdc.UnmarshalBinaryLengthPrefixed(bz, ptr)
+	if e != nil {
+		return cdc.protoCdc.UnmarshalBinaryLengthPrefixed(bz, p)
 	}
-	return
+	return e
 }
 
 func (cdc *Codec) ProtoMarshalBinaryBare(o ProtoMarshaler) ([]byte, error) {

@@ -144,7 +144,7 @@ func op(t *testing.T, dbA, dbB db.DB, keys [][]byte, values [][]byte) {
 		assert.Nil(t, err)
 		assert.Equal(t, val, values[index])
 	case 2:
-		fmt.Println("set")
+		fmt.Println("Set")
 		index := rand.Intn(len(keys))
 		newValue := []byte(randString(rand.Intn(1000)))
 		key := keys[index]

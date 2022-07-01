@@ -2,6 +2,7 @@ package memdb
 
 import (
 	"github.com/pkg/errors"
+	"github.com/pokt-network/pocket-core/store/slim/dedup"
 	db "github.com/tendermint/tm-db"
 )
 
@@ -24,7 +25,7 @@ func NewPocketMemDBBatch(db *PocketMemDB) *PocketMemDBBatch {
 
 func (p *PocketMemDBBatch) Set(key, value []byte) {
 	p.ops = append(p.ops, operation{
-		operationType: set,
+		OperationType: dedup.Set,
 		key:           key,
 		value:         value,
 	})
@@ -32,20 +33,20 @@ func (p *PocketMemDBBatch) Set(key, value []byte) {
 
 func (p *PocketMemDBBatch) Delete(key []byte) {
 	p.ops = append(p.ops, operation{
-		operationType: del,
+		OperationType: dedup.Del,
 		key:           key,
 	})
 }
 
 func (p *PocketMemDBBatch) Write() error {
 	for _, op := range p.ops {
-		switch op.operationType {
-		case set:
+		switch op.OperationType {
+		case dedup.Set:
 			_ = p.db.Set(op.key, op.value)
-		case del:
+		case dedup.Del:
 			_ = p.db.Delete(op.key)
 		default:
-			return errors.Errorf("unknown operation type %v (%v)", op.operationType, op)
+			return errors.Errorf("unknown operation type %v (%v)", op.OperationType, op)
 		}
 	}
 	return nil
@@ -54,15 +55,8 @@ func (p *PocketMemDBBatch) Write() error {
 func (p *PocketMemDBBatch) WriteSync() error { return p.Write() }
 func (p *PocketMemDBBatch) Close()           { p.ops = nil }
 
-type operationType int
-
-const (
-	set operationType = iota + 1
-	del
-)
-
 type operation struct {
-	operationType
+	dedup.OperationType
 	key   []byte
 	value []byte
 }

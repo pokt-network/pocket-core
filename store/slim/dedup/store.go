@@ -4,10 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pokt-network/pocket-core/store/types"
-	sdk "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	db "github.com/tendermint/tm-db"
-	"strconv"
-	"strings"
 )
 
 // Dedup store consists of two different spaces:
@@ -58,13 +55,11 @@ func (s *Store) Get(k []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	val, err := s.ParentDB.Get(dataStoreKey)
-	return val, err
+	return s.ParentDB.Get(dataStoreKey)
 }
 
 func (s *Store) Has(k []byte) (bool, error) {
-	linkStoreKey := HeightKey(s.Height, s.Prefix, k)
-	return s.ParentDB.Has(linkStoreKey)
+	return s.ParentDB.Has(HeightKey(s.Height, s.Prefix, k))
 }
 
 func (s *Store) Iterator(start, end []byte) (types.Iterator, error) {
@@ -80,7 +75,7 @@ func (s *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
 func (s *Store) Set(k, value []byte) error {
 	linkStoreKey := HeightKey(s.Height, s.Prefix, k)
 	dataStoreKey := HashKey(linkStoreKey)
-	if err := s.TrackOrphan(linkStoreKey); err != nil {
+	if err := s.trackOrphan(linkStoreKey, Set); err != nil {
 		return err
 	}
 	if err := s.ParentDB.Set(linkStoreKey, dataStoreKey); err != nil {
@@ -94,7 +89,7 @@ func (s *Store) Set(k, value []byte) error {
 
 func (s *Store) Delete(k []byte) error {
 	linkStoreKey := HeightKey(s.Height, s.Prefix, k)
-	if err := s.TrackOrphan(linkStoreKey); err != nil {
+	if err := s.trackOrphan(linkStoreKey, Del); err != nil {
 		return err
 	}
 	return s.ParentDB.Delete(linkStoreKey)
@@ -102,15 +97,7 @@ func (s *Store) Delete(k []byte) error {
 
 // lifecycle ops
 
-func (s *Store) CommitCache(b db.Batch, dedupStore *Store) {
-	s.CopyHeight(s.Height, dedupStore, b)
-	s.Height++
-	dedupStore.Height++
-	s.DeleteCacheHeight(s.Height - DefaultCacheKeepHeights)
-	s.PrepareNextHeight(nil)
-	return
-}
-
+// PrepareNextHeight : load the current height with the endState of the current-1 height
 func (s *Store) PrepareNextHeight(b db.Batch) {
 	it := NewDedupIteratorForHeight(s.ParentDB, s.Height-1, s.Prefix)
 	defer it.Close()
@@ -125,50 +112,7 @@ func (s *Store) PrepareNextHeight(b db.Batch) {
 	}
 }
 
-func (s *Store) TrackOrphan(linkStoreKey []byte) error {
-	// only track orphan if is cached store because we only prune on cache store
-	if s.isCache {
-		oldDataKey, _ := s.ParentDB.Get(linkStoreKey)
-		if oldDataKey != nil && !bytes.Equal(oldDataKey, HashKey(linkStoreKey)) {
-			orphanHeightKey := OrphanKey(HeightKey(s.Height+1, s.Prefix, oldDataKey))
-			if err := s.ParentDB.Set(orphanHeightKey, nil); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func (s *Store) DeleteCacheHeight(height int64) {
-	if height < 0 {
-		height = 0
-	}
-	keysToDelete := make([][]byte, 0)
-	it := NewDedupIteratorForHeight(s.ParentDB, height, s.Prefix)
-	for ; it.Valid(); it.Next() {
-		linkKey := it.it.Key()
-		keysToDelete = append(keysToDelete, linkKey)
-	}
-	it.Close()
-	oIt := NewOrphanIteratorForHeight(s.ParentDB, height, s.Prefix)
-	for ; oIt.Valid(); oIt.Next() {
-		orphanKey := oIt.it.Key()
-		linkKey := oIt.Key()
-		keysToDelete = append(keysToDelete, orphanKey)
-		keysToDelete = append(keysToDelete, linkKey)
-	}
-	oIt.Close()
-	for _, k := range keysToDelete {
-		if ok, _ := s.ParentDB.Has(k); !ok {
-			fmt.Println("deleting a key that the cache store doesn't have")
-		}
-		if err := s.ParentDB.Delete(k); err != nil {
-			panic("an error occurred deleting in cache")
-		}
-	}
-	return
-}
-
+// PreloadCache : Preload the last N heights into the 'cache' so the most recent lookups are not off of disk
 func (s *Store) PreloadCache(latestHeight int64, cache *Store) {
 	fmt.Printf("Preloading cache for %s\n", s.Prefix)
 	for height := getPreloadStartHeight(latestHeight); height <= latestHeight; height++ {
@@ -183,85 +127,97 @@ func (s *Store) PreloadCache(latestHeight int64, cache *Store) {
 	return
 }
 
+// CommitCache : writes the cache height to batch, prunes a height from cache, and then prepares the next cache height
+func (s *Store) CommitCache(b db.Batch, dedupStore *Store) {
+	// copy the cache to disk
+	s.CopyHeight(s.Height, dedupStore, b)
+	// increment heights before the next logic
+	s.Height++
+	dedupStore.Height++
+	// prune the cache
+	s.PruneCache(s.Height - DefaultCacheKeepHeights)
+	// prepare the current height by copying all of the keys
+	s.PrepareNextHeight(nil)
+	return
+}
+
+// CopyHeight : copy the entire height from the cache to disk using the batch
 func (s *Store) CopyHeight(height int64, dedupStore *Store, b db.Batch) {
 	it := NewDedupIteratorForHeight(s.ParentDB, height, s.Prefix)
 	for ; it.Valid(); it.Next() {
-		// linkstore key
+		// full linkstore key with height
 		linkKey := it.it.Key()
-		// datastore key
+		// full datastore (hash) key
 		dataKey := it.it.Value()
+		// batches don't have the parent.Set() logic
 		b.Set(linkKey, dataKey)
-		// data value
-		if found, err := dedupStore.ParentDB.Has(dataKey); !found {
-			if err != nil {
-				panic("an error occurred in CopyHeight() .Has() func: " + err.Error())
-			}
-			dataValue, err := s.ParentDB.Get(dataKey)
-			if err != nil {
-				panic("an error occurred in CopyHeight() commit getting datavalue: " + err.Error())
-			}
+		// set the data if the data (hash) key isn't already set
+		if found, _ := dedupStore.ParentDB.Has(dataKey); !found {
+			dataValue, _ := s.ParentDB.Get(dataKey)
 			b.Set(dataKey, dataValue)
 		}
 	}
 	it.Close()
 }
 
-// key ops
-
-func HeightKey(height int64, prefix string, k []byte) []byte {
-	return []byte(fmt.Sprintf("%d/%s/%s", height, prefix, string(k)))
-}
-
-func FromHeightKey(heightKey string) (height int64, prefix string, k []byte) {
-	var delim = "/"
-	arr := strings.Split(heightKey, delim)
-	// get height
-	height, err := strconv.ParseInt(arr[0], 10, 64)
-	if err != nil {
-		panic("unable to parse height from height key: " + heightKey)
+// PruneCache : delete the height and orphans from cache
+func (s *Store) PruneCache(height int64) {
+	if height < 0 {
+		height = 0
 	}
-	prefix = arr[1]
-	k = []byte(strings.Join(arr[2:], delim))
+	keysToDelete := make([][]byte, 0)
+	it := NewDedupIteratorForHeight(s.ParentDB, height, s.Prefix)
+	defer it.Close()
+	for ; it.Valid(); it.Next() {
+		linkKey := it.it.Key()
+		keysToDelete = append(keysToDelete, linkKey)
+	}
+	oIt := NewOrphanIteratorForHeight(s.ParentDB, height, s.Prefix)
+	defer oIt.Close()
+	for ; oIt.Valid(); oIt.Next() {
+		orphanKey := oIt.it.Key()
+		hashKey := oIt.Key() // key for actual data
+		keysToDelete = append(keysToDelete, orphanKey)
+		keysToDelete = append(keysToDelete, hashKey)
+	}
+	for _, k := range keysToDelete {
+		if err := s.ParentDB.Delete(k); err != nil {
+			panic("an error occurred deleting in cache")
+		}
+	}
 	return
 }
 
-func KeyFromHeightKey(heightKey []byte) (k []byte) {
-	_, _, k = FromHeightKey(string(heightKey))
-	return
-}
+// An orphan in this context is a data K/V that has no associated link to it. This logic is only applicable
+// during pruning (which is a cache only operation at this point). In order to not prematurely delete the
+// datakey before it's needed in a valid (not pruned) historical lookup, it must be tracked under a specific
+// key set. This enables the deletion of all orphans at the appropriate height (prune height).
+//
+// In this implementation, we store orphan keys at DELETED_HEIGHT+1 OR SET_HEIGHT+1 (for overwrites) which is exactly
+// when it will be removed during the (delete/prune height).
 
-func HashKey(key []byte) []byte {
-	return sdk.Hash(key)
-}
-
-const orphanPrefix = "orphan/"
-
-func OrphanKey(key []byte) []byte {
-	return append([]byte(orphanPrefix), key...)
-}
-
-func KeyFromOrphanKey(orphanKey []byte) []byte {
-	return orphanKey[len(orphanPrefix):]
-}
-
-// util
-
-const (
-	DefaultCacheKeepHeights = 25
-)
-
-func getPreloadStartHeight(latestHeight int64) int64 {
-	startHeight := latestHeight - DefaultCacheKeepHeights
-	if startHeight < 0 {
-		startHeight = 0
+func (s *Store) trackOrphan(linkStoreKey []byte, op OperationType) error {
+	// only track orphan if is cached store because we only prune on cache store
+	if s.isCache {
+		// attempt to delete any previous orphan key for this height to prevent a sameHeight set-del-set condition
+		if op == Set {
+			_ = s.ParentDB.Delete(OrphanKey(s.Height, s.Prefix, HashKey(linkStoreKey)))
+		}
+		dataKey, _ := s.ParentDB.Get(linkStoreKey)
+		if dataKey != nil {
+			if (op == Set && !bytes.Equal(dataKey, HashKey(linkStoreKey))) || op == Del {
+				orphanHeightKey := OrphanKey(s.Height, s.Prefix, dataKey)
+				if err := s.ParentDB.Set(orphanHeightKey, nil); err != nil {
+					return err
+				}
+			}
+		}
 	}
-	return startHeight
+	return nil
 }
 
 // unused below
 
-func (s *Store) Commit() types.CommitID {
-	panic("Commit() called in de-dup store, when commitBatch should be used")
-}
+func (s *Store) Commit() types.CommitID       { panic("Commit() called in de-dup store ") }
 func (s *Store) CacheWrap() types.CacheWrap   { panic("cachewrap not implemented for de-dup store") }
 func (s *Store) LastCommitID() types.CommitID { panic("lastCommitID not implemented for de-dup store") }
