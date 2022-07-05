@@ -133,10 +133,10 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			k := MockPosKeeper{Validators: tt.allNodes}
 			k2 := MockAppsKeeper{Applications: []exported2.ApplicationI{tt.app}}
 			k3 := MockPocketKeeper{}
-			_, err := tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, k2, k3, tt.node.Address, tt.hb, 1)
+			_, err := tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, k2, k3, tt.node.Address, tt.hb, 1, GlobalEvidenceCache)
 			assert.Equal(t, err != nil, tt.hasError)
 		})
-		ClearSessionCache()
+		ClearSessionCache(GlobalSessionCache)
 	}
 }
 
@@ -221,12 +221,12 @@ func TestRelay_HandleProof(t *testing.T) {
 		},
 	}
 	validRelay.Proof.RequestHash = validRelay.RequestHashString()
-	validRelay.Proof.Store(sdk.NewInt(100000))
+	validRelay.Proof.Store(sdk.NewInt(100000), GlobalEvidenceCache)
 	res := GetProof(SessionHeader{
 		ApplicationPubKey:  appPubKey,
 		Chain:              ethereum,
 		SessionBlockHeight: 1,
-	}, RelayEvidence, 0)
+	}, RelayEvidence, 0, GlobalEvidenceCache)
 	assert.True(t, reflect.DeepEqual(validRelay.Proof, res))
 }
 

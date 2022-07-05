@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/crypto"
 	tmtypes "github.com/tendermint/tendermint/types"
 	"math"
 	"reflect"
@@ -521,59 +520,28 @@ func (app PocketCoreApp) HandleDispatch(header pocketTypes.SessionHeader) (res *
 	return app.pocketKeeper.HandleDispatch(ctx, header)
 }
 
-func (app PocketCoreApp) HandleDispatchLean(header pocketTypes.SessionHeader, address *sdk.Address) (res *pocketTypes.DispatchResponse, err error) {
-	ctx, err := app.NewContext(app.LastBlockHeight())
-	if err != nil {
-		return nil, err
-	}
-	return app.pocketKeeper.HandleDispatchLean(ctx, header, address)
-}
-
 func (app PocketCoreApp) HandleRelay(r pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *pocketTypes.DispatchResponse, err error) {
 	ctx, err := app.NewContext(app.LastBlockHeight())
+
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if GlobalConfig.PocketConfig.LeanPocket {
-		status, sErr := app.pocketKeeper.TmNode.Synced()
-		if sErr != nil {
-			return nil, nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
-		}
-		if !status.IsSynced {
-			return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
-		}
-		res, err = app.pocketKeeper.HandleRelayLean(ctx, r)
-		if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
+	status, sErr := app.pocketKeeper.TmNode.ConsensusReactorStatus()
+	if sErr != nil {
+		return nil, nil, fmt.Errorf("pocket node is unable to retrieve synced status from tendermint node, cannot service in this state")
+	}
 
-			servicerRelayPublicKeyHex := r.Proof.ServicerPubKey
-			servicerRelayPublicKey, err1 := crypto.NewPublicKey(servicerRelayPublicKeyHex)
+	if status.IsCatchingUp {
+		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
+	}
 
-			if err1 != nil {
-				return nil, nil, fmt.Errorf("can't convert servicer pb key")
-			}
-
-			address := sdk.GetAddress(servicerRelayPublicKey)
-			dispatch, err1 = app.HandleDispatchLean(r.Proof.SessionHeader(), &address)
-			if err1 != nil {
-				return
-			}
-		}
-	} else {
-		status, sErr := app.pocketKeeper.TmNode.Status()
-		if sErr != nil {
-			return nil, nil, fmt.Errorf("pocket node is unable to retrieve status from tendermint node, cannot service in this state")
-		}
-		if status.SyncInfo.CatchingUp {
-			return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
-		}
-		res, err = app.pocketKeeper.HandleRelay(ctx, r)
-		var err1 error
-		if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
-			dispatch, err1 = app.HandleDispatch(r.Proof.SessionHeader())
-			if err1 != nil {
-				return
-			}
+	res, err = app.pocketKeeper.HandleRelay(ctx, r)
+	var err1 error
+	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
+		dispatch, err1 = app.HandleDispatch(r.Proof.SessionHeader())
+		if err1 != nil {
+			return
 		}
 	}
 	return

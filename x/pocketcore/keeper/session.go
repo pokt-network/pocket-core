@@ -24,7 +24,7 @@ func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.
 		return nil, sdk.ErrInternal(er.Error())
 	}
 	// check cache
-	session, found := types.GetSession(header)
+	session, found := types.GetSession(header, types.GlobalSessionCache)
 	// if not found generate the session
 	if !found {
 		var err sdk.Error
@@ -37,49 +37,7 @@ func (k Keeper) HandleDispatch(ctx sdk.Ctx, header types.SessionHeader) (*types.
 			return nil, err
 		}
 		// add to cache
-		types.SetSession(session)
-	}
-	actualNodes := make([]exported.ValidatorI, len(session.SessionNodes))
-	for i, addr := range session.SessionNodes {
-		actualNodes[i], _ = k.GetNode(sessionCtx, addr)
-	}
-	return &types.DispatchResponse{Session: types.DispatchSession{
-		SessionHeader: session.SessionHeader,
-		SessionKey:    session.SessionKey,
-		SessionNodes:  actualNodes,
-	}, BlockHeight: ctx.BlockHeight()}, nil
-}
-
-func (k Keeper) HandleDispatchLean(ctx sdk.Ctx, header types.SessionHeader, address *sdk.Address) (*types.DispatchResponse, sdk.Error) {
-	// retrieve the latest session block height
-	latestSessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
-	// set the session block height
-	header.SessionBlockHeight = latestSessionBlockHeight
-	// validate the header
-	err := header.ValidateHeader()
-	if err != nil {
-		return nil, err
-	}
-	// get the session context
-	sessionCtx, er := ctx.PrevCtx(latestSessionBlockHeight)
-	if er != nil {
-		return nil, sdk.ErrInternal(er.Error())
-	}
-	// check cache
-	session, found := types.GetSessionLean(header, address)
-	// if not found generate the session
-	if !found {
-		var err sdk.Error
-		blockHashBz, er := sessionCtx.BlockHash(k.Cdc, sessionCtx.BlockHeight())
-		if er != nil {
-			return nil, sdk.ErrInternal(er.Error())
-		}
-		session, err = types.NewSession(sessionCtx, ctx, k.posKeeper, header, hex.EncodeToString(blockHashBz), int(k.SessionNodeCount(sessionCtx)))
-		if err != nil {
-			return nil, err
-		}
-		// add to cache
-		types.SetSessionLean(session, address)
+		types.SetSession(session, types.GlobalSessionCache)
 	}
 	actualNodes := make([]exported.ValidatorI, len(session.SessionNodes))
 	for i, addr := range session.SessionNodes {
@@ -127,5 +85,5 @@ func (k Keeper) IsPocketSupportedBlockchain(ctx sdk.Ctx, chain string) bool {
 }
 
 func (Keeper) ClearSessionCache() {
-	types.ClearSessionCache()
+	types.ClearSessionCache(types.GlobalSessionCache)
 }

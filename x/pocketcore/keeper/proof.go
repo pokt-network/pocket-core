@@ -17,157 +17,70 @@ import (
 )
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
-	kp, err := k.GetPKFromFile(ctx)
-	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
-		return
-	}
-	// get the self address
-	addr := sdk.Address(kp.PublicKey().Address())
-	// get all mature (waiting period has passed) claims for your address
-	claims, err := k.GetMatureClaims(ctx, addr)
-	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the Proof Transaction:\n%v", err))
-		return
-	}
-	// for every claim of the mature set
-	now := time.Now()
-	for _, claim := range claims {
-		// check to see if evidence is stored in cache
-		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt())
-		if err != nil || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
-			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
-			continue
-		}
-		if ctx.BlockHeight()-claim.SessionHeader.SessionBlockHeight > int64(pc.GlobalPocketConfig.MaxClaimAgeForProofRetry) {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
-			ctx.Logger().Error(fmt.Sprintf("deleting evidence older than MaxClaimAgeForProofRetry"))
-			if err != nil {
-				ctx.Logger().Error(fmt.Sprintf("unable to delete evidence that is older than 32 blocks: %s", err.Error()))
-			}
-			continue
-		}
-		if !evidence.IsSealed() {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
-			ctx.Logger().Error(fmt.Sprintf("evidence is not sealed, could cause a relay leak:"))
-			if err != nil {
-				ctx.Logger().Error(fmt.Sprintf("could not delete evidence is not sealed, could cause a relay leak: %s", err.Error()))
-			}
-		}
-		if evidence.NumOfProofs != claim.TotalProofs {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType)
-			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
-			if err != nil {
-				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
-			}
-		}
-		// get the session context
-		sessionCtx, err := ctx.PrevCtx(claim.SessionHeader.SessionBlockHeight)
+func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, addr *sdk.Address, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+	var kp crypto.PrivateKey
+	var err error
+	var node *pc.PocketNode
+	var cacheStorage *pc.CacheStorage
+
+	if pc.GlobalPocketConfig.LeanPocket {
+		node, err = pc.GetPocketNodeByAddress(addr)
 		if err != nil {
-			ctx.Logger().Info(fmt.Sprintf("could not get Session Context, ignoring pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
-			continue
-		}
-		// generate the needed pseudorandom index using the information found in the first transaction
-		index, err := k.getPseudorandomIndex(ctx, claim.TotalProofs, claim.SessionHeader, sessionCtx)
-		if err != nil {
-			ctx.Logger().Error(err.Error())
-			continue
-		}
-		app, found := k.GetAppFromPublicKey(sessionCtx, claim.SessionHeader.ApplicationPubKey)
-		if !found {
-			ctx.Logger().Error(fmt.Sprintf("an error occurred creating the proof transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
-		}
-		// get the merkle proof object for the pseudorandom index
-		mProof, leaf := evidence.GenerateMerkleProof(claim.SessionHeader.SessionBlockHeight, int(index), pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64())
-		// if prevalidation on, then pre-validate
-		if pc.GlobalPocketConfig.ProofPrevalidation {
-			// validate level count on claim by total relays
-			levelCount := len(mProof.HashRanges)
-			if levelCount != int(math.Ceil(math.Log2(float64(claim.TotalProofs)))) {
-				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d, level count", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
-				continue
-			}
-			if isValid, _ := mProof.Validate(claim.SessionHeader.SessionBlockHeight, claim.MerkleRoot, leaf, levelCount); !isValid {
-				ctx.Logger().Error(fmt.Sprintf("produced invalid proof for pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
-				continue
-			}
-		}
-		proofTxTotalTime := float64(time.Since(now))
-		go func() {
-			pc.GlobalServiceMetric().AddProofTiming(evidence.SessionHeader.Chain, proofTxTotalTime, &addr)
-		}()
-		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgProof{}, n, kp, k)
-		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the Proof Transaction:\n%v", err))
 			return
 		}
-		// send the proof TX
-		_, err = proofTx(cliCtx, txBuilder, mProof, leaf, evidence.EvidenceType)
+	} else {
+		// get self node (your validator) from the current state
+		node = pc.GetPocketNode()
 		if err != nil {
-			ctx.Logger().Error(err.Error())
+			return
 		}
 	}
-}
-
-func (k Keeper) SendProofLean(ctx sdk.Ctx, n client.Client, addr *sdk.Address, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
-	node, err := pc.GetNodeLean(addr)
-	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("an error occured retrieving the pk from the file for the Proof Transaction:\n%v", err))
-		return
-	}
-	kp := node.PrivateKey
-	// get the self address
-
+	kp = node.PrivateKey
+	cacheStorage = node.EvidenceStore
 	// get all mature (waiting period has passed) claims for your address
 	claims, err := k.GetMatureClaims(ctx, *addr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the Proof Transaction:\n%v", err))
 		return
 	}
+
 	// for every claim of the mature set
 	for _, claim := range claims {
 		now := time.Now()
 		// check to see if evidence is stored in cache
-		evidence, err := pc.GetEvidenceLean(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt(), addr)
+		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt(), cacheStorage)
 		if err != nil || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 			continue
 		}
 		if ctx.BlockHeight()-claim.SessionHeader.SessionBlockHeight > int64(pc.GlobalPocketConfig.MaxClaimAgeForProofRetry) {
-			err := pc.DeleteEvidenceLean(claim.SessionHeader, claim.EvidenceType, addr)
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, cacheStorage)
 			ctx.Logger().Error(fmt.Sprintf("deleting evidence older than MaxClaimAgeForProofRetry"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("unable to delete evidence that is older than 32 blocks: %s", err.Error()))
 			}
 			continue
 		}
-		if !evidence.IsSealedLean(addr) {
-			err := pc.DeleteEvidenceLean(claim.SessionHeader, claim.EvidenceType, addr)
+		if !cacheStorage.IsSealed(evidence) {
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, cacheStorage)
 			ctx.Logger().Error(fmt.Sprintf("evidence is not sealed, could cause a relay leak:"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("could not delete evidence is not sealed, could cause a relay leak: %s", err.Error()))
 			}
-			// TODO: why is this not existing with a continue?
 		}
-
 		if evidence.NumOfProofs != claim.TotalProofs {
-			err := pc.DeleteEvidenceLean(claim.SessionHeader, claim.EvidenceType, addr)
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, cacheStorage)
 			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
 			}
-			// TODO: why is this not existing with a continue
 		}
-
 		// get the session context
 		sessionCtx, err := ctx.PrevCtx(claim.SessionHeader.SessionBlockHeight)
 		if err != nil {
 			ctx.Logger().Info(fmt.Sprintf("could not get Session Context, ignoring pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 			continue
 		}
-
 		// generate the needed pseudorandom index using the information found in the first transaction
 		index, err := k.getPseudorandomIndex(ctx, claim.TotalProofs, claim.SessionHeader, sessionCtx)
 		if err != nil {
@@ -189,11 +102,11 @@ func (k Keeper) SendProofLean(ctx sdk.Ctx, n client.Client, addr *sdk.Address, p
 				continue
 			}
 		}
-		// generate the auto txbuilder and clictx
 		proofTxTotalTime := float64(time.Since(now))
 		go func() {
 			pc.GlobalServiceMetric().AddProofTiming(evidence.SessionHeader.Chain, proofTxTotalTime, addr)
 		}()
+		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgProof{}, n, kp, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the Proof Transaction:\n%v", err))
@@ -206,6 +119,7 @@ func (k Keeper) SendProofLean(ctx sdk.Ctx, n client.Client, addr *sdk.Address, p
 		}
 	}
 }
+
 
 func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.Address, claim pc.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the claim

@@ -104,75 +104,31 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 
 // "EndBlock" - Functionality that is called at the end of (every) block
 func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-
-	if types.GlobalPocketConfig.LeanPocket {
-		return am.EndBlockLean(ctx)
-	}
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
 	// get self address
-
-	addr := am.keeper.GetSelfAddress(ctx)
-	if addr != nil {
-		// use the offset as a trigger to see if it's time to attempt to submit proofs
-
+	for _, v := range types.GlobalPocketNodes {
+		addr := sdk.Address(v.PrivateKey.PublicKey().Address())
 		if (ctx.BlockHeight()+int64(addr[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
 			// run go routine because cannot access TmNode during end-block period
 			go func() {
 				// use this sleep timer to bypass the beginBlock lock over transactions
 				time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
-				s, err := am.keeper.TmNode.Status()
+				s, err := am.keeper.TmNode.ConsensusReactorStatus()
 				if err != nil {
 					ctx.Logger().Error(fmt.Sprintf("could not get status for tendermint node (cannot submit claims/proofs in this state): %s", err.Error()))
 				} else {
-					if !s.SyncInfo.CatchingUp {
+					if !s.IsCatchingUp {
 						// auto send the proofs
-						am.keeper.SendClaimTx(ctx, am.keeper, am.keeper.TmNode, ClaimTx)
+						am.keeper.SendClaimTx(ctx, am.keeper, am.keeper.TmNode, &addr, ClaimTx)
 						// auto claim the proofs
-						am.keeper.SendProofTx(ctx, am.keeper.TmNode, ProofTx)
+						am.keeper.SendProofTx(ctx, am.keeper.TmNode, &addr, ProofTx)
 						// clear session cache and db
-						types.ClearSessionCache()
+						types.ClearSessionCache(v.SessionStore)
 					}
 				}
 			}()
 		}
-	} else {
-		ctx.Logger().Error("could not get self address in end block")
-	}
-	return []abci.ValidatorUpdate{}
-}
-
-func (am AppModule) EndBlockLean(ctx sdk.Ctx) []abci.ValidatorUpdate {
-	// get blocks per session
-	blocksPerSession := am.keeper.BlocksPerSession(ctx)
-	// get self address
-
-	if types.GlobalNodesLean != nil {
-		for _, v := range types.GlobalNodesLean {
-			addr := sdk.Address(v.PrivateKey.PublicKey().Address())
-			if (ctx.BlockHeight()+int64(addr[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
-				// run go routine because cannot access TmNode during end-block period
-				go func() {
-					// use this sleep timer to bypass the beginBlock lock over transactions
-					time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
-					s, err := am.keeper.TmNode.Status()
-					if err != nil {
-						ctx.Logger().Error(fmt.Sprintf("could not get status for tendermint node (cannot submit claims/proofs in this state): %s", err.Error()))
-					} else {
-						if !s.SyncInfo.CatchingUp {
-							// auto send the proofs
-							am.keeper.SendClaimTxLean(ctx, am.keeper, am.keeper.TmNode, &addr, ClaimTx)
-							// auto claim the proofs
-							am.keeper.SendProofLean(ctx, am.keeper.TmNode, &addr, ProofTx)
-							// clear session cache and db
-							types.ClearSessionCacheLean(&addr)
-						}
-					}
-				}()
-			}
-		}
-	} else {
-		ctx.Logger().Error("pk map not initialized yet in end block")
 	}
 	return []abci.ValidatorUpdate{}
 }

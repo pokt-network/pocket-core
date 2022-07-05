@@ -19,6 +19,7 @@ import (
 
 type AppCreator func(log.Logger, dbm.DB, io.Writer) *PocketCoreApp
 
+// loadFilePVWithConfig returns an array of pvkeys & last sign state for leanpokt or constructs an array of pv keys & lastsignstate if using pre leanpokt to maintain backwards compability
 func loadFilePVWithConfig(c config) *pvm.FilePVLite {
 	privValPath := c.TmConfig.PrivValidatorKeyFile()
 	privStatePath := c.TmConfig.PrivValidatorStateFile()

@@ -144,7 +144,7 @@ var getValidator = &cobra.Command{
 }
 
 var setValidatorsLean = &cobra.Command{
-	Use:   `set-validators-lean <path to keyfile>`,
+	Use:   `set-validators <path to keyfile>`,
 	Short: "Sets the main validator accounts for tendermint; NOTE: keyfile should be a json string array of private keys",
 	Long:  `Sets the main validator accounts that will be used across all Tendermint functions; NOTE: keyfile should be a json string array of private keys`,
 	Args:  cobra.MinimumNArgs(1),

@@ -25,7 +25,7 @@ type Relay struct {
 }
 
 // "Validate" - Checks the validity of a relay request using store data
-func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, node sdk.Address, hb *HostedBlockchains, sessionBlockHeight int64) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
+func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, node sdk.Address, hb *HostedBlockchains, sessionBlockHeight int64, evidenceStore *CacheStorage) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
 		return sdk.ZeroInt(), NewEmptyPayloadDataError(ModuleName)
@@ -67,8 +67,8 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 		SessionBlockHeight: r.Proof.SessionBlockHeight,
 	}
 	// validate unique relay
-	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays)
-	if evidence.IsSealed() {
+	evidence, totalRelays := GetTotalProofs(header, RelayEvidence, maxPossibleRelays, evidenceStore)
+	if evidenceStore.IsSealed(evidence) {
 		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
 	}
 	// get evidence key by proof
@@ -84,7 +84,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 		return sdk.ZeroInt(), err
 	}
 	// check cache
-	session, found := GetSession(header)
+	session, found := GetSession(header, evidenceStore)
 	// if not found generate the session
 	if !found {
 		bh, err := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
@@ -97,7 +97,7 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 			return sdk.ZeroInt(), er
 		}
 		// add to cache
-		SetSession(session)
+		SetSession(session, evidenceStore)
 	}
 	// validate the session
 	err = session.Validate(node, app, int(sessionNodeCount))
@@ -111,105 +111,21 @@ func (r *Relay) Validate(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper
 	return maxPossibleRelays, nil
 }
 
-func (r *Relay) ValidateLean(ctx sdk.Ctx, posKeeper PosKeeper, appsKeeper AppsKeeper, pocketKeeper PocketKeeper, node sdk.Address, hb *HostedBlockchains, sessionBlockHeight int64) (maxPossibleRelays sdk.BigInt, err sdk.Error) {
-	// validate payload
-	if err := r.Payload.Validate(); err != nil {
-		return sdk.ZeroInt(), NewEmptyPayloadDataError(ModuleName)
+func addServiceMetricErrorFor(blockchain string, address *sdk.Address) {
+	if GlobalPocketConfig.LeanPocket {
+		go GlobalServiceMetric().AddErrorFor(blockchain, address)
+	} else {
+		GlobalServiceMetric().AddErrorFor(blockchain, address)
 	}
-	// validate the metadata
-	if err := r.Meta.Validate(ctx); err != nil {
-		return sdk.ZeroInt(), err
-	}
-	// validate the relay merkleHash = request merkleHash
-	if r.Proof.RequestHash != r.RequestHashString() {
-		return sdk.ZeroInt(), NewRequestHashError(ModuleName)
-	}
-	// ensure the blockchain is supported locally
-	if !hb.Contains(r.Proof.Blockchain) {
-		return sdk.ZeroInt(), NewUnsupportedBlockchainNodeError(ModuleName)
-	}
-	// ensure session block height == one in the relay proof
-	if r.Proof.SessionBlockHeight != sessionBlockHeight {
-		return sdk.ZeroInt(), NewInvalidBlockHeightError(ModuleName)
-	}
-	// get the session context
-	sessionCtx, er := ctx.PrevCtx(sessionBlockHeight)
-	if er != nil {
-		return sdk.ZeroInt(), sdk.ErrInternal(er.Error())
-	}
-	// get the application that staked on behalf of the client
-	app, found := GetAppFromPublicKey(sessionCtx, appsKeeper, r.Proof.Token.ApplicationPublicKey)
-	if !found {
-		return sdk.ZeroInt(), NewAppNotFoundError(ModuleName)
-	}
-	// get session node count from that session height
-	sessionNodeCount := pocketKeeper.SessionNodeCount(sessionCtx)
-	// get max possible relays
-	maxPossibleRelays = MaxPossibleRelays(app, sessionNodeCount)
-	// generate the session header
-	header := SessionHeader{
-		ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
-		Chain:              r.Proof.Blockchain,
-		SessionBlockHeight: r.Proof.SessionBlockHeight,
-	}
-	// validate unique relay
-	evidence, totalRelays := GetTotalProofsLean(header, RelayEvidence, maxPossibleRelays, &node)
-	if evidence.IsSealedLean(&node) {
-		return sdk.ZeroInt(), NewSealedEvidenceError(ModuleName)
-	}
-	// get evidence key by proof
-	if !IsUniqueProof(r.Proof, evidence) {
-		return sdk.ZeroInt(), NewDuplicateProofError(ModuleName)
-	}
-	// validate not over service
-	if sdk.NewInt(totalRelays).GTE(maxPossibleRelays) {
-		return sdk.ZeroInt(), NewOverServiceError(ModuleName)
-	}
-	// validate the Proof
-	if err := r.Proof.ValidateLocal(app.GetChains(), int(sessionNodeCount), sessionBlockHeight, node); err != nil {
-		return sdk.ZeroInt(), err
-	}
-
-	// check cache
-	session, found := GetSessionLean(header, &node)
-	// if not found generate the session
-	if !found {
-		bh, err := sessionCtx.BlockHash(pocketKeeper.Codec(), sessionCtx.BlockHeight())
-		if err != nil {
-			return sdk.ZeroInt(), sdk.ErrInternal(err.Error())
-		}
-		var er sdk.Error
-		session, er = NewSession(sessionCtx, ctx, posKeeper, header, hex.EncodeToString(bh), int(sessionNodeCount))
-		if er != nil {
-			return sdk.ZeroInt(), er
-		}
-		// add to cache
-		SetSessionLean(session, &node)
-	}
-
-	// validate the session
-	err = session.Validate(node, app, int(sessionNodeCount))
-
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-
-	// if the payload method is empty, set it to the default
-	if r.Payload.Method == "" {
-		r.Payload.Method = DEFAULTHTTPMETHOD
-	}
-	return maxPossibleRelays, nil
 }
 
 // "Execute" - Attempts to do a request on the non-native blockchain specified
 func (r Relay) Execute(hostedBlockchains *HostedBlockchains, address *sdk.Address) (string, sdk.Error) {
-
-	//time := time.Now()
 	// retrieve the hosted blockchain url requested
 	chain, err := hostedBlockchains.GetChain(r.Proof.Blockchain)
 	if err != nil {
 		// metric track
-		go func() { GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain, address) }()
+		addServiceMetricErrorFor(r.Proof.Blockchain, address)
 		return "", err
 	}
 	url := strings.Trim(chain.URL, `/`)
@@ -220,8 +136,7 @@ func (r Relay) Execute(hostedBlockchains *HostedBlockchains, address *sdk.Addres
 	res, er := executeHTTPRequest(r.Payload.Data, url, GlobalPocketConfig.UserAgent, chain.BasicAuth, r.Payload.Method, r.Payload.Headers)
 	if er != nil {
 		// metric track
-		go func() { GlobalServiceMetric().AddErrorFor(r.Proof.Blockchain, address) }()
-
+		addServiceMetricErrorFor(r.Proof.Blockchain, address)
 		return res, NewHTTPExecutionError(ModuleName, er)
 	}
 	return res, nil

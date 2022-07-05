@@ -795,7 +795,7 @@ func TestQueryRelay(t *testing.T) {
 					ApplicationPubKey:  aat.ApplicationPublicKey,
 					Chain:              relay.Proof.Blockchain,
 					SessionBlockHeight: relay.Proof.SessionBlockHeight,
-				}, types.RelayEvidence, sdk.NewInt(10000))
+				}, types.RelayEvidence, sdk.NewInt(10000), types.GlobalEvidenceCache)
 				assert.Nil(t, err)
 				assert.NotNil(t, inv)
 				assert.Equal(t, inv.NumOfProofs, int64(1))

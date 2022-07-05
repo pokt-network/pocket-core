@@ -398,22 +398,17 @@ func InitKeyfiles(logger log.Logger) {
 		return
 	}
 
-	if _, err := types.GetPVKeyFile(); err == nil { // already init once guard
-		log2.Println("global key file already initialized")
-		return
-	}
-
 	datadir := GlobalConfig.PocketConfig.DataDir
-
 	// Check if privvalkey file exist
 	if _, err := os.Stat(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey); err != nil {
 		// if not exist continue creating as other files may be missing
 		if os.IsNotExist(err) {
 			// generate random key for easy orchestration
 			randomKey := crypto.GenerateEd25519PrivKey()
-			privValKey(randomKey)
+			privValKey := privValKey(randomKey)
 			privValState()
 			nodeKey(randomKey)
+			types.AddPocketNodeByFilePVKey(privValKey, logger)
 			log2.Printf("No Validator Set! Creating Random Key: %s", randomKey.PublicKey().RawString())
 			return
 		} else {
@@ -423,12 +418,13 @@ func InitKeyfiles(logger log.Logger) {
 	} else {
 		// file exist so we can load pk from file.
 		file, _ := loadPKFromFile(datadir + FS + GlobalConfig.TendermintConfig.PrivValidatorKey)
-		types.InitPVKeyFile(file)
+		types.AddPocketNodeByFilePVKey(file, logger)
 	}
 }
 
 func InitNodesLean(logger log.Logger) error {
 	pvkName := path.Join(GlobalConfig.PocketConfig.DataDir, GlobalConfig.TendermintConfig.PrivValidatorKey)
+
 	if _, err := os.Stat(pvkName); err != nil {
 		if os.IsNotExist(err) {
 			return errors.New("pocket accounts set-validators must be ran first")
@@ -446,46 +442,10 @@ func InitNodesLean(logger log.Logger) error {
 		return errors.New("failed to load lean validators, length of zero")
 	}
 
-	// logic here to remove / stop lean nodes that are added
-	types.GlobalNodeLeanRWLock.Lock()
-	defer types.GlobalNodeLeanRWLock.Unlock()
-
-	addedNodesSet := map[crypto.PrivateKey]bool{}
 	for _, node := range leanNodesTm {
-		key, err := crypto.PrivKeyToPrivateKey(node.PrivKey)
-		if err != nil {
-			return errors.New("failed to convert tendermint private key over to pocket private key")
-		}
-		addedNodesSet[key] = true
-		types.InitNodeWithCacheLean(key, logger)
+		types.AddPocketNodeByFilePVKey(node, logger)
 	}
 
-	// TODO: Flesh out hotreloading(removing/adding) lean nodes
-	//for k, v := range types.GlobalNodesLean {
-	//	if v == nil {
-	//		continue
-	//	}
-	//	_, shouldKeep := addedNodesSet[v.PrivateKey]
-	//	if !shouldKeep {
-	//
-	//		go func() {
-	//			types.GlobalNodeLeanRWLock.Lock()
-	//			defer types.GlobalNodeLeanRWLock.Unlock()
-	//			node := types.GlobalNodesLean[k]
-	//			logger.Info("Detected node " + k + " has been deleted, flushing session/evidence DB first.")
-	//			node.SessionCache.FlushToDB()
-	//			node.EvidenceCache.FlushToDB()
-	//			node.EvidenceCache.DB.Close()
-	//			logger.Info(k + " evidence DB successfully closed")
-	//
-	//
-	//			delete(types.GlobalNodesLean, k)
-	//		}()
-	//	}
-	//}
-
-	// set the "main (legacy)" validator to first lean node
-	types.InitPVKeyFile(leanNodesTm[0])
 	return nil
 }
 
@@ -526,11 +486,6 @@ func InitPocketCoreConfig(chains *types.HostedBlockchains, logger log.Logger) {
 
 func ShutdownPocketCore() {
 	types.FlushSessionCache()
-
-	if types.GlobalPocketConfig.LeanPocket {
-		types.FlushSessionCacheLean()
-	}
-
 	types.StopServiceMetrics()
 }
 
@@ -608,7 +563,7 @@ func privValKeysLean(res []crypto.PrivateKey) error {
 	return nil
 }
 
-func privValKey(res crypto.PrivateKey) {
+func privValKey(res crypto.PrivateKey) privval.FilePVKey {
 	privValKey := privval.FilePVKey{
 		Address: res.PubKey().Address(),
 		PubKey:  res.PubKey(),
@@ -626,7 +581,7 @@ func privValKey(res crypto.PrivateKey) {
 	if err != nil {
 		log2.Fatal(err)
 	}
-	types.InitPVKeyFile(privValKey)
+	return privValKey
 }
 
 func nodeKey(res crypto.PrivateKey) {
