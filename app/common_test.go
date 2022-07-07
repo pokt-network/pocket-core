@@ -972,12 +972,13 @@ func generateGenesis(validators int, servicers int, appss int) ([]byte, []crypto
 	servicerPks := []crypto.PrivateKey{}
 	appPks := []crypto.PrivateKey{}
 
+	encryptPassPhrase := "test"
 	for i := 0; i < validators; i++ {
-		keyPair, err := kb.Create("test")
+		keyPair, err := kb.Create(encryptPassPhrase)
 		if err != nil {
 			panic(err)
 		}
-		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), "test")
+		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), encryptPassPhrase)
 		if err != nil {
 			panic(err)
 		}
@@ -985,11 +986,11 @@ func generateGenesis(validators int, servicers int, appss int) ([]byte, []crypto
 	}
 
 	for i := 0; i < servicers; i++ {
-		keyPair, err := kb.Create("test")
+		keyPair, err := kb.Create(encryptPassPhrase)
 		if err != nil {
 			panic(err)
 		}
-		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), "test")
+		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), encryptPassPhrase)
 		if err != nil {
 			panic(err)
 		}
@@ -997,11 +998,11 @@ func generateGenesis(validators int, servicers int, appss int) ([]byte, []crypto
 	}
 
 	for i := 0; i < appss; i++ {
-		keyPair, err := kb.Create("test")
+		keyPair, err := kb.Create(encryptPassPhrase)
 		if err != nil {
 			panic(err)
 		}
-		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), "test")
+		pk, err := kb.ExportPrivateKeyObject(keyPair.GetAddress(), encryptPassPhrase)
 		if err != nil {
 			panic(err)
 		}
@@ -1025,10 +1026,10 @@ func generateGenesis(validators int, servicers int, appss int) ([]byte, []crypto
 	memCodec().MustUnmarshalJSON(rawAccounts, &authGenState)
 
 	MinStake := int64(10000000000)
-	ValidatorStake := MinStake + 10000
+	ValidatorStake := MinStake + 1000000
 
 	posGenesisState.Params.StakeMinimum = MinStake
-	posGenesisState.Params.MaxValidators = int64(len(validatorPks))
+	posGenesisState.Params.MaxValidators = int64(validators)
 	// validators kp
 	for _, v := range validatorPks {
 		posGenesisState.Validators = append(posGenesisState.Validators,
@@ -1087,6 +1088,7 @@ func generateGenesis(validators int, servicers int, appss int) ([]byte, []crypto
 	rawPocket := defaultGenesis[pocketTypes.ModuleName]
 	var pocketGenesisState pocketTypes.GenesisState
 	memCodec().MustUnmarshalJSON(rawPocket, &pocketGenesisState)
+	pocketGenesisState.Params.SessionNodeCount = int64(validators + servicers)
 	pocketGenesisState.Params.SupportedBlockchains = []string{"0001"}
 	res4 := memCodec().MustMarshalJSON(pocketGenesisState)
 	defaultGenesis[pocketTypes.ModuleName] = res4

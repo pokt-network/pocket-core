@@ -4,7 +4,6 @@ package app
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
 	"math/big"
 	"math/rand"
@@ -857,10 +856,8 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 				Data:    expectedRequest,
 				Headers: map[string]string{headerKey: headerVal},
 			}
-			fmt.Println("waiting for new block")
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
-			fmt.Println("new block?")
 			// setup relay
 			for _, v := range validators {
 				relay := types.Relay{
