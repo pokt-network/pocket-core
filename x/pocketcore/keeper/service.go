@@ -14,20 +14,19 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 	relayTimeStart := time.Now()
 	// get the latest session block height because this relay will correspond with the latest session
 	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
-	var err sdk.Error
 	var node *pc.PocketNode
 	// There is reference to node address so that way we don't have to recreate address twice for pre-leanpokt
 	var nodeAddress sdk.Address
 
 	if pc.GlobalPocketConfig.LeanPocket {
 		// if lean pocket enabled, grab the targeted servicer through the relay proof
-		servicerRelayPublicKey, err1 := crypto.NewPublicKey(relay.Proof.ServicerPubKey)
-		if err1 != nil {
+		servicerRelayPublicKey, err := crypto.NewPublicKey(relay.Proof.ServicerPubKey)
+		if err != nil {
 			return nil, sdk.ErrInternal("Could not convert servicer hex to public key")
 		}
 		nodeAddress = sdk.GetAddress(servicerRelayPublicKey)
-		node, err1 = pc.GetPocketNodeByAddress(&nodeAddress)
-		if err1 != nil {
+		node, err = pc.GetPocketNodeByAddress(&nodeAddress)
+		if err != nil {
 			return nil, sdk.ErrInternal("Failed to find correct servicer PK")
 		}
 	} else {
@@ -109,17 +108,20 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	var nodeAddress sdk.Address
 
 	if pc.GlobalPocketConfig.LeanPocket {
-		// try to retrieve one of the nodes that were part of session
+		// try to retrieve a PocketNode that was part of session
 		for _, r := range challenge.MajorityResponses {
-			servicerRelayPublicKey, err1 := crypto.NewPublicKey(r.Proof.ServicerPubKey)
-			if err1 != nil {
+			servicerRelayPublicKey, err := crypto.NewPublicKey(r.Proof.ServicerPubKey)
+			if err != nil {
 				continue
 			}
-			nodeAddress = sdk.GetAddress(servicerRelayPublicKey)
-			node, err1 = pc.GetPocketNodeByAddress(&nodeAddress)
-			if node != nil {
-				break
+			potentialNodeAddress := sdk.GetAddress(servicerRelayPublicKey)
+			potentialNode, err := pc.GetPocketNodeByAddress(&nodeAddress)
+			if err != nil || potentialNode == nil {
+				continue
 			}
+			node = potentialNode
+			nodeAddress = potentialNodeAddress
+			break
 		}
 		if node == nil {
 			return nil, pc.NewNodeNotInSessionError(pc.ModuleName)
