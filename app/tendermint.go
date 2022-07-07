@@ -20,18 +20,18 @@ import (
 type AppCreator func(log.Logger, dbm.DB, io.Writer) *PocketCoreApp
 
 // loadFilePVWithConfig returns an array of pvkeys & last sign state for leanpokt or constructs an array of pv keys & lastsignstate if using pre leanpokt to maintain backwards compability
-func loadFilePVWithConfig(c config) *pvm.FilePVLite {
+func loadFilePVWithConfig(c config) *pvm.FilePVLean {
 	privValPath := c.TmConfig.PrivValidatorKeyFile()
 	privStatePath := c.TmConfig.PrivValidatorStateFile()
 	if GlobalConfig.PocketConfig.LeanPocket {
-		return pvm.LoadOrGenFilePV(privValPath, privStatePath)
+		return pvm.LoadOrGenFilePVLean(privValPath, privStatePath)
 	}
-	legacyFilePV := pvm.LoadOrGenFilePVLegacy(privValPath, privStatePath)
-	return &pvm.FilePVLite{
-		Key:           []pvm.FilePVKey{legacyFilePV.Key},
-		LastSignState: []pvm.FilePVLastSignState{legacyFilePV.LastSignState},
-		KeyFilepath:   privValPath,
-		StateFilepath: privStatePath,
+	legacyFilePV := pvm.LoadOrGenFilePV(privValPath, privStatePath)
+	return &pvm.FilePVLean{
+		Keys:           []pvm.FilePVKey{legacyFilePV.Key},
+		LastSignStates: []pvm.FilePVLastSignState{legacyFilePV.LastSignState},
+		KeyFilepath:    privValPath,
+		StateFilepath:  privStatePath,
 	}
 }
 
@@ -184,7 +184,7 @@ type config struct {
 
 //func modifyPrivValidatorsFile(config *cfg.Config, rollbackHeight int64) error {
 //	var sig []byte
-//	filePv := pvm.LoadOrGenFilePV(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
+//	filePv := pvm.LoadOrGenFilePVLean(config.PrivValidatorKeyFile(), config.PrivValidatorStateFile())
 //	filePv.LastSignState.Height = rollbackHeight
 //	filePv.LastSignState.Round = 0
 //	filePv.LastSignState.Step = 0

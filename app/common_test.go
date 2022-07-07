@@ -283,25 +283,25 @@ func inMemTendermintNodeWithValidators(genesisState []byte, validatorsPk []crypt
 		panic(err)
 	}
 	nodeKey := p2p.NodeKey{PrivKey: pk}
-	var privVal *privval.FilePVLite
+	var privVal *privval.FilePVLean
 	if validatorsPk == nil {
 		// only set cb as validator
-		privVal = privval.GenFilePV(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
-		privVal.Key[0].PrivKey = pk
-		privVal.Key[0].PubKey = pk.PubKey()
-		privVal.Key[0].Address = pk.PubKey().Address()
+		privVal = privval.GenFilePVLean(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState)
+		privVal.Keys[0].PrivKey = pk
+		privVal.Keys[0].PubKey = pk.PubKey()
+		privVal.Keys[0].Address = pk.PubKey().Address()
 		pocketTypes.CleanPocketNodes()
-		pocketTypes.AddPocketNodeByFilePVKey(privVal.Key[0], c.Logger)
+		pocketTypes.AddPocketNodeByFilePVKey(privVal.Keys[0], c.Logger)
 	} else {
 		// (LeanPOKT) Set multiple nodes as validators
 		pocketTypes.CleanPocketNodes()
 		// generating a stub of n validators
-		privVal = privval.GenFilePVs(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState, uint(len(validatorsPk)))
+		privVal = privval.GenFilePVsLean(c.TmConfig.PrivValidatorKey, c.TmConfig.PrivValidatorState, uint(len(validatorsPk)))
 		// replace the stub validators with the correct validators
 		for i, pk := range validatorsPk {
-			privVal.Key[i].PrivKey = pk.PrivKey()
-			privVal.Key[i].PubKey = pk.PubKey()
-			privVal.Key[i].Address = pk.PubKey().Address()
+			privVal.Keys[i].PrivKey = pk.PrivKey()
+			privVal.Keys[i].PubKey = pk.PubKey()
+			privVal.Keys[i].Address = pk.PubKey().Address()
 			pocketTypes.AddPocketNode(pk, c.Logger)
 		}
 	}
