@@ -958,7 +958,7 @@ func fiveValidatorsOneAppGenesis() (genBz []byte, keys []crypto.PrivateKey, vali
 	return j, kys, posGenesisState.Validators, appsGenesisState.Applications[0]
 }
 
-// this function generates a genesis state of n validators, n servicers, and n apps
+// generateGenesis generates a genesis state of n validators, n servicers, and n apps
 func generateGenesis(validators int, servicers int, appss int) ([]byte, []crypto.PrivateKey, []crypto.PrivateKey, []crypto.PrivateKey) {
 
 	kb := getInMemoryKeybase()
