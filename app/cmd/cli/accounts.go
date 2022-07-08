@@ -107,22 +107,23 @@ Will prompt the user for a passphrase to encrypt the generated keypair.`,
 }
 
 var getNodesLean = &cobra.Command{
-	Use:   "get-validators-lean",
-	Short: "Retrieves all lean nodes",
-	Long:  `Retrieves all lean nodes`,
+	Use:   "get-validators",
+	Short: "Retrieves all nodes set by set-validators",
+	Long:  `Retrieves all nodes set by set-validators`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		if !app.GlobalConfig.PocketConfig.LeanPocket {
 			fmt.Println("Lean pocket is not enabled")
 			return
 		}
-		keys, err := app.ReadValidatorPrivateKeyFileLean(app.GlobalConfig.PocketConfig.GetLeanPocketUserKeyFilePath())
+		config := app.GlobalConfig
+		keys, err := app.LoadFilePVKeysFromFileLean(config.PocketConfig.DataDir + app.FS + config.TendermintConfig.PrivValidatorKey)
 		if err != nil {
-			fmt.Println("Failed to read lean valida")
+			fmt.Println("Failed to read set validators")
 			return
 		}
 		for _, value := range keys {
-			fmt.Printf("Lean Address: %s\n", strings.ToLower(value.PublicKey().Address().String()))
+			fmt.Printf("Node Address: %s\n", strings.ToLower(value.Address.String()))
 		}
 	},
 }

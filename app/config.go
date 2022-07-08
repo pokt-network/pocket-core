@@ -432,7 +432,7 @@ func InitNodesLean(logger log.Logger) error {
 		return errors.New("Failed to retrieve information on " + pvkName)
 	}
 
-	leanNodesTm, err := loadFilePVKeysFromFileLean(pvkName)
+	leanNodesTm, err := LoadFilePVKeysFromFileLean(pvkName)
 
 	if err != nil {
 		return err
@@ -525,7 +525,7 @@ func loadPKFromFile(path string) (privval.FilePVKey, string) {
 	return pvKey, path
 }
 
-func loadFilePVKeysFromFileLean(path string) ([]privval.FilePVKey, error) {
+func LoadFilePVKeysFromFileLean(path string) ([]privval.FilePVKey, error) {
 	keyJSONBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
