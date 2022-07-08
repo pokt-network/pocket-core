@@ -38,7 +38,7 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 }
 
 func ConvertEvidenceToProto(config types.Config) error {
-	// we have to add a random pocket node so that way lean pokt can still support getting the legacy evidence cache
+	// we have to add a random pocket node so that way lean pokt can still support getting the global evidence cache
 	node := AddPocketNode(crypto.GenerateEd25519PrivKey().GenPrivateKey(), log.NewNopLogger())
 
 	InitConfig(nil, log.NewNopLogger(), config)

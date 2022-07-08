@@ -65,7 +65,7 @@ func InitPocketNodeCache(node *PocketNode, c types.Config, logger log.Logger) {
 		node.EvidenceStore.Init(c.PocketConfig.DataDir, evidenceDbName, c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxEvidenceCacheEntires, false)
 		node.SessionStore.Init(c.PocketConfig.DataDir, "", c.TendermintConfig.LevelDBOptions, c.PocketConfig.MaxSessionCacheEntries, true)
 
-		// Set the GOBSession and GOBEvidence Caches for legacy compatibility for pre-leanpocket
+		// Set the GOBSession and GOBEvidence Global for backwards compatibility for pre-LeanPocket
 		if GlobalSessionCache == nil {
 			GlobalSessionCache = node.SessionStore
 			GlobalEvidenceCache = node.EvidenceStore

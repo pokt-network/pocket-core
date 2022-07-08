@@ -26,10 +26,10 @@ func loadFilePVWithConfig(c config) *pvm.FilePVLean {
 	if GlobalConfig.PocketConfig.LeanPocket {
 		return pvm.LoadOrGenFilePVLean(privValPath, privStatePath)
 	}
-	legacyFilePV := pvm.LoadOrGenFilePV(privValPath, privStatePath)
+	globalFilePV := pvm.LoadOrGenFilePV(privValPath, privStatePath)
 	return &pvm.FilePVLean{
-		Keys:           []pvm.FilePVKey{legacyFilePV.Key},
-		LastSignStates: []pvm.FilePVLastSignState{legacyFilePV.LastSignState},
+		Keys:           []pvm.FilePVKey{globalFilePV.Key},
+		LastSignStates: []pvm.FilePVLastSignState{globalFilePV.LastSignState},
 		KeyFilepath:    privValPath,
 		StateFilepath:  privStatePath,
 	}

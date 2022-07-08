@@ -26,8 +26,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	pocketTypes.ClearSessionCache(pocketTypes.GlobalSessionCache)
-	pocketTypes.ClearEvidence(pocketTypes.GlobalEvidenceCache)
+	pocketTypes.CleanPocketNodes()
 	sdk.InitCtxCache(1)
 	m.Run()
 }
@@ -1239,7 +1238,6 @@ func TestClaimAminoTx(t *testing.T) {
 			}
 			_, _, evtChan := subscribeTo(t, tmTypes.EventTx)
 			res := <-evtChan
-			fmt.Println(res)
 			if res.Events["message.action"][0] != pocketTypes.EventTypeClaim {
 				t.Fatal("claim message was not received first")
 			}
