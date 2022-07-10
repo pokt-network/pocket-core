@@ -69,13 +69,17 @@ func ConvertEvidenceToProto(config types.Config) error {
 
 func FlushSessionCache() {
 	for _, k := range GlobalPocketNodes {
-		err := k.SessionStore.FlushToDB()
-		if err != nil {
-			fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
+		if k.SessionStore != nil {
+			err := k.SessionStore.FlushToDB()
+			if err != nil {
+				fmt.Printf("unable to flush sessions to the database before shutdown!! %s\n", err.Error())
+			}
 		}
-		err = k.EvidenceStore.FlushToDB()
-		if err != nil {
-			fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
+		if k.EvidenceStore != nil {
+			err := k.EvidenceStore.FlushToDB()
+			if err != nil {
+				fmt.Printf("unable to flush GOBEvidence to the database before shutdown!! %s\n", err.Error())
+			}
 		}
 	}
 }
