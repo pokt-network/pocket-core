@@ -109,7 +109,10 @@ func processSelf(ctx sdk.Ctx, signer sdk.Address, header types.SessionHeader, ev
 		ctx.Logger().Error("Unable to delete evidence: " + err.Error())
 	}
 	if !tokens.IsZero() {
-		types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()), &signer)
+		if types.GlobalPocketConfig.LeanPocket {
+			go types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()), &signer)
+		} else {
+			types.GlobalServiceMetric().AddUPOKTEarnedFor(header.Chain, float64(tokens.Int64()), &signer)
+		}
 	}
-
 }
