@@ -24,6 +24,10 @@ type PocketNode struct {
 	DoCacheInitOnce sync.Once
 }
 
+type PublicPocketNode struct {
+	Address string `json:"address"`
+}
+
 func (n PocketNode) GetAddress() sdk.Address {
 	return sdk.GetAddress(n.PrivateKey.PublicKey())
 }
