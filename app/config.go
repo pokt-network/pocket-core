@@ -88,7 +88,12 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	// init config
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	GlobalConfig.PocketConfig.Cache = useCache
-	GlobalConfig.PocketConfig.LeanPocket = useLean
+
+	// Respect start argument only if config has it to false. (useLean is only set to true if provided with --useLean)
+	if useLean && !GlobalConfig.PocketConfig.LeanPocket {
+		GlobalConfig.PocketConfig.LeanPocket = useLean
+	}
+
 	// init AuthToken
 	InitAuthToken()
 
@@ -100,9 +105,6 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	}
 	// create logger
 	logger := InitLogger()
-
-	// init key files
-	InitKeyfiles(logger)
 
 	// prestart hook, so users don't have to create their own set-validator prestart script
 	if GlobalConfig.PocketConfig.LeanPocket {
@@ -123,6 +125,9 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 			}
 		}
 	}
+
+	// init key files
+	InitKeyfiles(logger)
 
 	// init configs & evidence/session caches
 	InitPocketCoreConfig(chains, logger)
