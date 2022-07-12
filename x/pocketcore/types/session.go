@@ -16,10 +16,6 @@ func (s Session) IsSealable() bool {
 	return false
 }
 
-func (s Session) Seal() CacheObject {
-	return s
-}
-
 func (s Session) HashString() string {
 	return s.HashString()
 }

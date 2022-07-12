@@ -17,28 +17,10 @@ import (
 )
 
 // auto sends a proof transaction for the claim
-func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, addr *sdk.Address, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
-	var kp crypto.PrivateKey
-	var err error
-	var node *pc.PocketNode
-	var cacheStorage *pc.CacheStorage
-
-	if pc.GlobalPocketConfig.LeanPocket {
-		node, err = pc.GetPocketNodeByAddress(addr)
-		if err != nil {
-			return
-		}
-	} else {
-		// get self node (your validator) from the current state
-		node = pc.GetPocketNode()
-		if err != nil {
-			return
-		}
-	}
-	kp = node.PrivateKey
-	cacheStorage = node.EvidenceStore
+func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, proofTx func(cliCtx util.CLIContext, txBuilder auth.TxBuilder, merkleProof pc.MerkleProof, leafNode pc.Proof, evidenceType pc.EvidenceType) (*sdk.TxResponse, error)) {
+	addr := node.GetAddress()
 	// get all mature (waiting period has passed) claims for your address
-	claims, err := k.GetMatureClaims(ctx, *addr)
+	claims, err := k.GetMatureClaims(ctx, addr)
 	if err != nil {
 		ctx.Logger().Error(fmt.Sprintf("an error occured getting the mature claims in the Proof Transaction:\n%v", err))
 		return
@@ -48,28 +30,28 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, addr *sdk.Address, pro
 	for _, claim := range claims {
 		now := time.Now()
 		// check to see if evidence is stored in cache
-		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt(), cacheStorage)
+		evidence, err := pc.GetEvidence(claim.SessionHeader, claim.EvidenceType, sdk.ZeroInt(), node.EvidenceStore)
 		if err != nil || evidence.Proofs == nil || len(evidence.Proofs) == 0 {
 			ctx.Logger().Info(fmt.Sprintf("the evidence object for evidence is not found, ignoring pending claim for app: %s, at sessionHeight: %d", claim.SessionHeader.ApplicationPubKey, claim.SessionHeader.SessionBlockHeight))
 			continue
 		}
 		if ctx.BlockHeight()-claim.SessionHeader.SessionBlockHeight > int64(pc.GlobalPocketConfig.MaxClaimAgeForProofRetry) {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, cacheStorage)
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
 			ctx.Logger().Error(fmt.Sprintf("deleting evidence older than MaxClaimAgeForProofRetry"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("unable to delete evidence that is older than 32 blocks: %s", err.Error()))
 			}
 			continue
 		}
-		if !cacheStorage.IsSealed(evidence) {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, cacheStorage)
+		if !node.EvidenceStore.IsSealed(evidence) {
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
 			ctx.Logger().Error(fmt.Sprintf("evidence is not sealed, could cause a relay leak:"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("could not delete evidence is not sealed, could cause a relay leak: %s", err.Error()))
 			}
 		}
 		if evidence.NumOfProofs != claim.TotalProofs {
-			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, cacheStorage)
+			err := pc.DeleteEvidence(claim.SessionHeader, claim.EvidenceType, node.EvidenceStore)
 			ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak"))
 			if err != nil {
 				ctx.Logger().Error(fmt.Sprintf("evidence num of proofs does not equal claim total proofs... possible relay leak: %s", err.Error()))
@@ -104,10 +86,10 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, addr *sdk.Address, pro
 		}
 		proofTxTotalTime := float64(time.Since(now))
 		go func() {
-			pc.GlobalServiceMetric().AddProofTiming(evidence.SessionHeader.Chain, proofTxTotalTime, addr)
+			pc.GlobalServiceMetric().AddProofTiming(evidence.SessionHeader.Chain, proofTxTotalTime, &addr)
 		}()
 		// generate the auto txbuilder and clictx
-		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgProof{}, n, kp, k)
+		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgProof{}, n, node.PrivateKey, k)
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("an error occured in the transaction process of the Proof Transaction:\n%v", err))
 			return

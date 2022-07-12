@@ -80,6 +80,41 @@ func TestAllEvidence_AddGetEvidence(t *testing.T) {
 	assert.True(t, reflect.DeepEqual(GetProof(header, RelayEvidence, 0, GlobalEvidenceCache), proof))
 }
 
+func TestAllEvidence_Iterator(t *testing.T) {
+	ClearEvidence(GlobalEvidenceCache)
+	appPubKey := getRandomPubKey().RawString()
+	servicerPubKey := getRandomPubKey().RawString()
+	clientPubKey := getRandomPubKey().RawString()
+	ethereum := hex.EncodeToString([]byte{0001})
+	header := SessionHeader{
+		ApplicationPubKey:  appPubKey,
+		Chain:              ethereum,
+		SessionBlockHeight: 1,
+	}
+	proof := RelayProof{
+		Entropy:            0,
+		RequestHash:        header.HashString(), // fake
+		SessionBlockHeight: 1,
+		ServicerPubKey:     servicerPubKey,
+		Blockchain:         ethereum,
+		Token: AAT{
+			Version:              "0.0.1",
+			ApplicationPublicKey: appPubKey,
+			ClientPublicKey:      clientPubKey,
+			ApplicationSignature: "",
+		},
+		Signature: "",
+	}
+	SetProof(header, RelayEvidence, proof, sdk.NewInt(100000), GlobalEvidenceCache)
+	iter := EvidenceIterator(GlobalEvidenceCache)
+	var count = 0
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		count++
+	}
+	assert.Equal(t, 1, int(count))
+}
+
 func TestAllEvidence_DeleteEvidence(t *testing.T) {
 	appPubKey := getRandomPubKey().RawString()
 	servicerPubKey := getRandomPubKey().RawString()

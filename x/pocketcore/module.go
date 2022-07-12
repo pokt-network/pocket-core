@@ -106,30 +106,38 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
-	// get self address
-	for _, v := range types.GlobalPocketNodes {
-		addr := sdk.Address(v.PrivateKey.PublicKey().Address())
-		if (ctx.BlockHeight()+int64(addr[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
-			// run go routine because cannot access TmNode during end-block period
-			go func() {
-				// use this sleep timer to bypass the beginBlock lock over transactions
-				time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
-				s, err := am.keeper.TmNode.ConsensusReactorStatus()
-				if err != nil {
-					ctx.Logger().Error(fmt.Sprintf("could not get status for tendermint node (cannot submit claims/proofs in this state): %s", err.Error()))
-				} else {
-					if !s.IsCatchingUp {
-						// auto send the proofs
-						am.keeper.SendClaimTx(ctx, am.keeper, am.keeper.TmNode, &addr, ClaimTx)
-						// auto claim the proofs
-						am.keeper.SendProofTx(ctx, am.keeper.TmNode, &addr, ProofTx)
-						// clear session cache and db
-						types.ClearSessionCache(v.SessionStore)
-					}
-				}
-			}()
+
+	// run go routine because cannot access TmNode during end-block period
+	go func() {
+		// use this sleep timer to bypass the beginBlock lock over transactions
+		minSleep := 2000
+		maxSleep := 5000
+		time.Sleep(time.Duration(rand.Intn(maxSleep-minSleep)+minSleep) * time.Millisecond)
+
+		// check the consensus reactor sync status
+		status, err := am.keeper.TmNode.ConsensusReactorStatus()
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("could not get status for tendermint node (cannot submit claims/proofs in this state): %s", err.Error()))
+			return
 		}
-	}
+
+		if status.IsCatchingUp {
+			ctx.Logger().Error(fmt.Sprintf("tendermint is currently syncing still (cannot submit claims/proofs in this state): %s", err.Error()))
+			return
+		}
+
+		for _, node := range types.GlobalPocketNodes {
+			address := node.GetAddress()
+			if (ctx.BlockHeight()+int64(address[0]))%blocksPerSession == 1 && ctx.BlockHeight() != 1 {
+				// auto send the proofs
+				am.keeper.SendClaimTx(ctx, am.keeper, am.keeper.TmNode, node, ClaimTx)
+				// auto claim the proofs
+				am.keeper.SendProofTx(ctx, am.keeper.TmNode, node, ProofTx)
+				// clear session cache and db
+				types.ClearSessionCache(node.SessionStore)
+			}
+		}
+	}()
 	return []abci.ValidatorUpdate{}
 }
 

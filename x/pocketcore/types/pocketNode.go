@@ -57,7 +57,7 @@ func AddPocketNodeByFilePVKey(fpvKey privval.FilePVKey, logger log.Logger) {
 // InitPocketNodeCache adds a PocketNode with its SessionStore and EvidenceStore initialized
 func InitPocketNodeCache(node *PocketNode, c types.Config, logger log.Logger) {
 	node.DoCacheInitOnce.Do(func() {
-		evidenceDbName := GlobalPocketConfig.EvidenceDBName
+		evidenceDbName := c.PocketConfig.EvidenceDBName
 		address := node.GetAddress().String()
 		// In LeanPocket, we create a evidence store on disk with suffix of the node's address
 		if c.PocketConfig.LeanPocket {
