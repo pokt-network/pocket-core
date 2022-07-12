@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	types4 "github.com/pokt-network/pocket-core/app/cmd/rpc/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	types2 "github.com/pokt-network/pocket-core/x/auth/types"
 	types3 "github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -25,13 +26,18 @@ func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	WriteResponse(w, APIVersion, r.URL.Path, r.Host)
 }
 
-func LocalNodes(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
-	var localNodes []types3.PublicPocketNode
+func LocalNodes(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	value := r.URL.Query().Get("authtoken")
+	if value != app.AuthToken.Value {
+		WriteErrorResponse(w, 401, "wrong authtoken " + value)
+		return
+	}
+	var localNodes []types4.PublicPocketNode
 	for _, node := range types3.GlobalPocketNodes {
 		if node == nil {
 			continue
 		}
-		localNodes = append(localNodes, types3.PublicPocketNode{Address: node.GetAddress().String()})
+		localNodes = append(localNodes, types4.PublicPocketNode{Address: node.GetAddress().String()})
 	}
 	j, err := json.Marshal(localNodes)
 	if err != nil {

@@ -87,7 +87,6 @@ type Routes []Route
 func GetRoutes() Routes {
 	routes := Routes{
 		Route{Name: "AppVersion", Method: "GET", Path: "/v1", HandlerFunc: Version},
-		Route{Name: "LocalNodes", Method: "GET", Path: "/v1/localnodes", HandlerFunc: LocalNodes},
 		Route{Name: "Challenge", Method: "POST", Path: "/v1/client/challenge", HandlerFunc: Challenge},
 		Route{Name: "ChallengeCORS", Method: "OPTIONS", Path: "/v1/client/challenge", HandlerFunc: Challenge},
 		Route{Name: "HandleDispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: Dispatch},
@@ -122,6 +121,7 @@ func GetRoutes() Routes {
 		Route{Name: "QueryTX", Method: "POST", Path: "/v1/query/tx", HandlerFunc: Tx},
 		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
 		Route{Name: "QuerySigningInfo", Method: "POST", Path: "/v1/query/signinginfo", HandlerFunc: SigningInfo},
+		Route{Name: "LocalNodes", Method: "POST", Path: "/v1/private/nodes", HandlerFunc: LocalNodes},
 		Route{Name: "QueryChains", Method: "POST", Path: "/v1/private/chains", HandlerFunc: Chains},
 	}
 	return routes
