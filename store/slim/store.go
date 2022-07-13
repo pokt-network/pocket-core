@@ -9,65 +9,38 @@ import (
 )
 
 type Store struct {
-	Cache     *dedup.Store
 	Dedup     *dedup.Store
 	IAVLStore iavl.Store
 }
 
-func NewStoreWithIAVL(persisted *db.GoLevelDB, cache db.DB, height int64, prefix string, commitID types.CommitID) *Store {
+func NewStoreWithIAVL(persisted *db.GoLevelDB, height int64, prefix string, commitID types.CommitID) *Store {
 	iavlStore, _ := iavl.NewStore(db.NewPrefixDB(persisted, []byte("s/k:"+prefix+"/")), commitID)
 	return &Store{
-		Cache:     dedup.NewStore(height, prefix, cache, true),
-		Dedup:     dedup.NewStore(height, prefix, persisted, false),
+		Dedup:     dedup.NewStore(height, prefix, persisted),
 		IAVLStore: *iavlStore,
 	}
 }
 
-func NewStoreWithoutIAVL(persisted *db.GoLevelDB, cache db.DB, latestHeight, height int64, prefix string) *Store {
-	var cacheDB *dedup.Store
-	// if cache contains this height
-	//if height > latestHeight-dedup.DefaultCacheKeepHeights+1 {
-	//	cacheDB = dedup.NewStore(height, prefix, cache, true)
-	//}
+func NewStoreWithoutIAVL(persisted *db.GoLevelDB, height int64, prefix string) *Store {
 	return &Store{
-		Cache: cacheDB,
-		Dedup: dedup.NewStore(height, prefix, persisted, false),
+		Dedup: dedup.NewStore(height, prefix, persisted),
 	}
 }
 
 // reads (de-dup only)
 
-func (s *Store) Get(key []byte) ([]byte, error) {
-	//if s.Cache != nil {
-	//	return s.Cache.Get(key)
-	//}
-	return s.Dedup.Get(key)
-}
-func (s *Store) Has(key []byte) (bool, error) {
-	//if s.Cache != nil {
-	//	return s.Cache.Has(key)
-	//}
-	return s.Dedup.Has(key)
-}
+func (s *Store) Get(key []byte) ([]byte, error) { return s.Dedup.Get(key) }
+func (s *Store) Has(key []byte) (bool, error)   { return s.Dedup.Has(key) }
 func (s *Store) Iterator(start, end []byte) (types.Iterator, error) {
-	//if s.Cache != nil {
-	//	return s.Cache.Iterator(start, end)
-	//}
 	return s.Dedup.Iterator(start, end)
 }
 func (s *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
-	//if s.Cache != nil {
-	//	return s.Cache.ReverseIterator(start, end)
-	//}
 	return s.Dedup.ReverseIterator(start, end)
 }
 
 // writes (both stores)
 
 func (s *Store) Set(key, value []byte) error {
-	//if err := s.Cache.Set(key, value); err != nil {
-	//	return err
-	//}
 	if err := s.Dedup.Set(key, value); err != nil {
 		return err
 	}
@@ -75,9 +48,6 @@ func (s *Store) Set(key, value []byte) error {
 }
 
 func (s *Store) Delete(key []byte) error {
-	//if err := s.Cache.Delete(key); err != nil {
-	//	return err
-	//}
 	if err := s.Dedup.Delete(key); err != nil {
 		return err
 	}
@@ -87,11 +57,10 @@ func (s *Store) Delete(key []byte) error {
 // lifecycle operations (special)
 
 func (s *Store) CommitBatch(b db.Batch) types.CommitID {
-	s.Cache.CommitCache(b, s.Dedup)
+	s.Dedup.CommitBatch(b)
 	return s.IAVLStore.CommitIAVL()
 }
 
-func (s *Store) PreloadCache(latestHeight int64) { s.Dedup.PreloadCache(latestHeight, s.Cache) }
-func (s *Store) CacheWrap() types.CacheWrap      { return cachemulti.NewStoreCache(s) }
-func (s *Store) LastCommitID() types.CommitID    { return s.IAVLStore.LastCommitID() }
-func (s *Store) Commit() types.CommitID          { panic("Commit() called in store") }
+func (s *Store) CacheWrap() types.CacheWrap   { return cachemulti.NewStoreCache(s) }
+func (s *Store) LastCommitID() types.CommitID { return s.IAVLStore.LastCommitID() }
+func (s *Store) Commit() types.CommitID       { panic("Commit() called in store") }

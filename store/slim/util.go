@@ -21,10 +21,9 @@ const (
 var _ types.KVStore = &Store{}
 var _ types.CommitStore = &Store{}
 
-func multiStoreToStore(db *dbm.GoLevelDB, cacheDB dbm.DB, lastcommit types.CommitID, newStores map[types.StoreKey]types.CommitStore) *types.Store {
+func multiStoreToStore(db *dbm.GoLevelDB, lastcommit types.CommitID, newStores map[types.StoreKey]types.CommitStore) *types.Store {
 	newMultiStore := types.Store(&MultiStore{
 		DB:         db,
-		CacheDB:    cacheDB,
 		Stores:     newStores,
 		LastCommit: lastcommit,
 	})
