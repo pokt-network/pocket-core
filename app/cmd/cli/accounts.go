@@ -112,11 +112,12 @@ var getNodesLean = &cobra.Command{
 	Long:  `Retrieves all nodes set by set-validators`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-		if !app.GlobalConfig.PocketConfig.LeanPocket {
+		config := app.GlobalConfig
+		if !config.PocketConfig.LeanPocket {
 			fmt.Println("Lean pocket is not enabled")
 			return
 		}
-		config := app.GlobalConfig
+
 		keys, err := app.LoadFilePVKeysFromFileLean(config.PocketConfig.DataDir + app.FS + config.TendermintConfig.PrivValidatorKey)
 		if err != nil {
 			fmt.Println("Failed to read set validators")

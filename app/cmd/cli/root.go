@@ -60,7 +60,6 @@ func init() {
 	startCmd.Flags().BoolVar(&testnet, "testnet", false, "run with testnet genesis")
 	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
 	startCmd.Flags().BoolVar(&useCache, "useCache", false, "use cache")
-	startCmd.Flags().BoolVar(&useLean, "useLean", false, "enable usage of lean pocket through cli")
 	startCmd.Flags().BoolVar(&forceSetValidatorsLean, "forceSetValidators", false, "reads your lean_pocket_user_key_file (lean_nodes_keys.json) and updates your last signed state/validator files before starting your node")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)

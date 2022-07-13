@@ -89,11 +89,6 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	GlobalConfig.PocketConfig.Cache = useCache
 
-	// Respect start argument only if config has it to false. (useLean is only set to true if provided with --useLean)
-	if useLean && !GlobalConfig.PocketConfig.LeanPocket {
-		GlobalConfig.PocketConfig.LeanPocket = useLean
-	}
-
 	// init AuthToken
 	InitAuthToken()
 
