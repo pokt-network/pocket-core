@@ -95,7 +95,7 @@ func start(cmd *cobra.Command, args []string) {
 	if testnet {
 		genesisType = app.TestnetGenesisType
 	}
-	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache, useLean, forceSetValidatorsLean)
+	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache, forceSetValidatorsLean)
 	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload)
 	// trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
