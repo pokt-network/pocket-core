@@ -155,17 +155,17 @@ func (k *Keeper) AddToPrevValidatorCache(ctx sdk.Ctx, addr sdk.Address, val type
 
 func (k *Keeper) InitPrevValidatorsCache(ctx sdk.Ctx) {
 	h := ctx.BlockHeight() - 25
-	if h < 0 {
-		h = 0
+	if h < 1 {
+		h = 1
 	}
 	for ; h < ctx.BlockHeight(); h++ {
+		isPrevValCacheInit = true
 		prevCtx, err := ctx.PrevCtx(h)
 		if err != nil {
 			panic("an error occurred retrieving the prevCtx in InitPrevValidatorsCache" + err.Error())
 		}
 		k.UpdatePrevValidatorsCache(prevCtx)
 	}
-	isPrevValCacheInit = true
 }
 
 // GetAllValidators - - Retrieve the set of all validators with no limits from the main store

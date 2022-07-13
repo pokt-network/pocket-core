@@ -26,9 +26,9 @@ func NewStoreWithIAVL(persisted *db.GoLevelDB, cache db.DB, height int64, prefix
 func NewStoreWithoutIAVL(persisted *db.GoLevelDB, cache db.DB, latestHeight, height int64, prefix string) *Store {
 	var cacheDB *dedup.Store
 	// if cache contains this height
-	if height > latestHeight-dedup.DefaultCacheKeepHeights+1 {
-		cacheDB = dedup.NewStore(height, prefix, cache, true)
-	}
+	//if height > latestHeight-dedup.DefaultCacheKeepHeights+1 {
+	//	cacheDB = dedup.NewStore(height, prefix, cache, true)
+	//}
 	return &Store{
 		Cache: cacheDB,
 		Dedup: dedup.NewStore(height, prefix, persisted, false),
@@ -38,41 +38,47 @@ func NewStoreWithoutIAVL(persisted *db.GoLevelDB, cache db.DB, latestHeight, hei
 // reads (de-dup only)
 
 func (s *Store) Get(key []byte) ([]byte, error) {
-	if s.Cache != nil {
-		return s.Cache.Get(key)
-	}
+	//if s.Cache != nil {
+	//	return s.Cache.Get(key)
+	//}
 	return s.Dedup.Get(key)
 }
 func (s *Store) Has(key []byte) (bool, error) {
-	if s.Cache != nil {
-		return s.Cache.Has(key)
-	}
+	//if s.Cache != nil {
+	//	return s.Cache.Has(key)
+	//}
 	return s.Dedup.Has(key)
 }
 func (s *Store) Iterator(start, end []byte) (types.Iterator, error) {
-	if s.Cache != nil {
-		return s.Cache.Iterator(start, end)
-	}
+	//if s.Cache != nil {
+	//	return s.Cache.Iterator(start, end)
+	//}
 	return s.Dedup.Iterator(start, end)
 }
 func (s *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
-	if s.Cache != nil {
-		return s.Cache.ReverseIterator(start, end)
-	}
+	//if s.Cache != nil {
+	//	return s.Cache.ReverseIterator(start, end)
+	//}
 	return s.Dedup.ReverseIterator(start, end)
 }
 
 // writes (both stores)
 
 func (s *Store) Set(key, value []byte) error {
-	if err := s.Cache.Set(key, value); err != nil {
+	//if err := s.Cache.Set(key, value); err != nil {
+	//	return err
+	//}
+	if err := s.Dedup.Set(key, value); err != nil {
 		return err
 	}
 	return s.IAVLStore.Set(key, value)
 }
 
 func (s *Store) Delete(key []byte) error {
-	if err := s.Cache.Delete(key); err != nil {
+	//if err := s.Cache.Delete(key); err != nil {
+	//	return err
+	//}
+	if err := s.Dedup.Delete(key); err != nil {
 		return err
 	}
 	return s.IAVLStore.Delete(key)

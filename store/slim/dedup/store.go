@@ -75,9 +75,9 @@ func (s *Store) ReverseIterator(start, end []byte) (types.Iterator, error) {
 func (s *Store) Set(k, value []byte) error {
 	linkStoreKey := HeightKey(s.Height, s.Prefix, k)
 	dataStoreKey := HashKey(linkStoreKey)
-	if err := s.trackOrphan(linkStoreKey, Set); err != nil {
-		return err
-	}
+	//if err := s.trackOrphan(linkStoreKey, Set); err != nil {
+	//	return err
+	//}
 	if err := s.ParentDB.Set(linkStoreKey, dataStoreKey); err != nil {
 		return err
 	}
@@ -89,9 +89,9 @@ func (s *Store) Set(k, value []byte) error {
 
 func (s *Store) Delete(k []byte) error {
 	linkStoreKey := HeightKey(s.Height, s.Prefix, k)
-	if err := s.trackOrphan(linkStoreKey, Del); err != nil {
-		return err
-	}
+	//if err := s.trackOrphan(linkStoreKey, Del); err != nil {
+	//	return err
+	//}
 	return s.ParentDB.Delete(linkStoreKey)
 }
 
@@ -109,6 +109,18 @@ func (s *Store) PrepareNextHeight(b db.Batch) {
 		} else {
 			b.Set(nextHeightKey, linkValue)
 		}
+	}
+}
+
+func (s *Store) DeleteNextHeight() {
+	it := NewDedupIteratorForHeight(s.ParentDB, s.Height, s.Prefix)
+	keysToDelete := make([][]byte, 0)
+	defer it.Close()
+	for ; it.Valid(); it.Next() {
+		keysToDelete = append(keysToDelete, it.it.Key())
+	}
+	for _, k := range keysToDelete {
+		_ = s.Delete(k)
 	}
 }
 
@@ -130,14 +142,15 @@ func (s *Store) PreloadCache(latestHeight int64, cache *Store) {
 // CommitCache : writes the cache height to batch, prunes a height from cache, and then prepares the next cache height
 func (s *Store) CommitCache(b db.Batch, dedupStore *Store) {
 	// copy the cache to disk
-	s.CopyHeight(s.Height, dedupStore, b)
+	//s.CopyHeight(s.Height, dedupStore, b)
 	// increment heights before the next logic
-	s.Height++
+	//s.Height++
 	dedupStore.Height++
 	// prune the cache
-	s.PruneCache(s.Height - DefaultCacheKeepHeights)
+	//s.PruneCache(s.Height - DefaultCacheKeepHeights)
 	// prepare the current height by copying all of the keys
-	s.PrepareNextHeight(nil)
+	//s.PrepareNextHeight(nil)
+	dedupStore.PrepareNextHeight(b)
 	return
 }
 

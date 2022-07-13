@@ -38,8 +38,11 @@ func (m *MultiStore) LoadLatestVersion() (err error) {
 	for key := range m.Stores {
 		m.Stores[key] = NewStoreWithIAVL(m.DB, m.CacheDB, latestHeight, key.Name(), commitID)
 	}
-	m.PrepareNextHeight()
-	m.PreloadCache()
+	if latestHeight > 1 {
+		m.DeleteNextHeight()
+		m.PrepareNextHeight()
+	}
+	//m.PreloadCache()
 	return nil
 }
 
@@ -93,6 +96,12 @@ func (m *MultiStore) PrepareNextHeight() {
 	_ = batch.Write()
 }
 
+func (m *MultiStore) DeleteNextHeight() {
+	for _, store := range m.Stores {
+		store.(*Store).Dedup.DeleteNextHeight()
+	}
+}
+
 func (m *MultiStore) PreloadCache() {
 	for _, store := range m.Stores {
 		store.(*Store).PreloadCache(m.LastCommit.Version)
@@ -100,9 +109,9 @@ func (m *MultiStore) PreloadCache() {
 }
 
 func (m *MultiStore) LastCommitID() types.CommitID {
-	if m.LastCommit.Hash == nil {
-		_ = m.LoadLatestVersion()
-	}
+	//if m.LastCommit.Hash == nil {
+	//	_ = m.LoadLatestVersion()
+	//}
 	return m.LastCommit
 }
 

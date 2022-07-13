@@ -10,7 +10,7 @@ import (
 // This will significantly improve subsequent recent Unmarshal calls for data.
 // The implementation uses LRU methodology with a high capacity
 
-var GlobalCodecCache = NewCodecCache(50000)
+var GlobalCodecCache = NewCodecCache(500000)
 
 type CodecCache struct {
 	lru *lru.Cache

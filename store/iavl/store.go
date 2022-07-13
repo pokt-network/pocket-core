@@ -111,7 +111,9 @@ func (st *Store) Commit() types.CommitID {
 	}
 
 	// prune the n-100 blocks
-	st.tree.DeleteVersion(version - defaultKeepRecent)
+	if version-defaultKeepRecent > 1 {
+		st.tree.DeleteVersion(version - defaultKeepRecent)
+	}
 
 	return types.CommitID{
 		Version: version,
