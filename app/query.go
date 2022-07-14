@@ -158,6 +158,16 @@ func (app PocketCoreApp) QueryAccount(addr string, height int64) (res *exported.
 	return &acc, nil
 }
 
+func (app PocketCoreApp) QueryAccounts(height int64, page, perPage int) (res Page, err error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return
+	}
+	page, perPage = checkPagination(page, perPage)
+	accs := app.accountKeeper.GetAllAccountsExport(ctx)
+	return paginate(page, perPage, accs, 10000)
+}
+
 func (app PocketCoreApp) QueryNodes(height int64, opts nodesTypes.QueryValidatorsParams) (res Page, err error) {
 	ctx, err := app.NewContext(height)
 	if err != nil {
