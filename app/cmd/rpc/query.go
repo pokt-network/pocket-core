@@ -364,6 +364,28 @@ func Account(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
 }
 
+func Accounts(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var params = PaginatedHeightParams{Height: 0}
+	if err := PopModel(w, r, ps, &params); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	if params.Height == 0 {
+		params.Height = app.PCA.BaseApp.LastBlockHeight()
+	}
+	res, err := app.PCA.QueryAccounts(params.Height, params.Page, params.PerPage)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	s, err := json.Marshal(res)
+	if err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
+}
+
 func Nodes(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var params = HeightAndValidatorOptsParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
