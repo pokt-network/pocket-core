@@ -954,3 +954,29 @@ func TestQueryNonExistingAccountBalance(t *testing.T) {
 		})
 	}
 }
+
+func TestQueryAccounts(t *testing.T) {
+	tt := []struct {
+		name         string
+		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		*upgrades
+	}{
+		{name: "query accounts amino", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
+		{name: "query accounts proto", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			_, _, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			got, err := PCA.QueryAccounts(PCA.LastBlockHeight(), 1, 1)
+			assert.Nil(t, err)
+			assert.NotNil(t, got)
+			assert.NotEqual(t, 1, got.Total)
+
+			cleanup()
+		})
+	}
+}

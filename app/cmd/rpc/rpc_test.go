@@ -311,6 +311,28 @@ func TestRPC_QueryAccount(t *testing.T) {
 	stopCli()
 }
 
+func TestRPC_QueryAccounts(t *testing.T) {
+	codec.UpgradeHeight = 7000
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	var params = PaginatedHeightParams{
+		Height: 0,
+	}
+	address := cb.GetAddress().String()
+	q := newQueryRequest("accounts", newBody(params))
+	rec := httptest.NewRecorder()
+	Accounts(rec, q, httprouter.Params{})
+	body := rec.Body.String()
+	assert.True(t, strings.Contains(body, address))
+
+	cleanup()
+	stopCli()
+}
+
 func TestRPC_QueryNodes(t *testing.T) {
 	codec.UpgradeHeight = 7000
 	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
