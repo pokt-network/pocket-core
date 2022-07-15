@@ -100,7 +100,6 @@ func handleProofMsg(ctx sdk.Ctx, k keeper.Keeper, proof types.MsgProof) sdk.Resu
 func processSelf(ctx sdk.Ctx, signer sdk.Address, header types.SessionHeader, evidenceType types.EvidenceType, tokens sdk.BigInt) {
 	node, ok := types.GlobalPocketNodes[signer.String()]
 	if !ok {
-		ctx.Logger().Error("Failed to find lean node for: " + signer.String())
 		return
 	}
 	evidenceStore := node.EvidenceStore
