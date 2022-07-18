@@ -108,12 +108,17 @@ type AppModule interface {
 	BeginBlock(sdk.Ctx, abci.RequestBeginBlock)
 	EndBlock(sdk.Ctx, abci.RequestEndBlock) []abci.ValidatorUpdate
 	UpgradeCodec(sdk.Ctx)
+	ConsensusParamsUpdate(ctx sdk.Ctx) *abci.ConsensusParams
 }
 
 //___________________________
 // app module
 type GenesisOnlyAppModule struct {
 	AppModuleGenesis
+}
+
+func (gam GenesisOnlyAppModule) ConsensusParamsUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
+	return &abci.ConsensusParams{}
 }
 
 func (gam GenesisOnlyAppModule) UpgradeCodec(sdk.Ctx) {}
@@ -294,6 +299,7 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 	defer sdk.TimeTrack(time.Now())
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 	validatorUpdates := []abci.ValidatorUpdate{}
+	UpdateToApply := &abci.ConsensusParams{}
 
 	for _, moduleName := range m.OrderEndBlockers {
 		moduleValUpdates := m.Modules[moduleName].EndBlock(ctx, req)
@@ -307,10 +313,17 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 
 			validatorUpdates = moduleValUpdates
 		}
+		//Currently its only a non empty struct on pocketcore module
+		consensusParamUpdate := m.Modules[moduleName].ConsensusParamsUpdate(ctx)
+		if !consensusParamUpdate.Equal(&abci.ConsensusParams{}) {
+			UpdateToApply = consensusParamUpdate
+		}
 	}
+
 	return abci.ResponseEndBlock{
-		ValidatorUpdates: validatorUpdates,
-		Events:           ctx.EventManager().ABCIEvents(),
+		ValidatorUpdates:      validatorUpdates,
+		Events:                ctx.EventManager().ABCIEvents(),
+		ConsensusParamUpdates: UpdateToApply,
 	}
 }
 

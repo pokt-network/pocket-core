@@ -55,6 +55,11 @@ type AppModule struct {
 	keeper         keeper.Keeper // responsible for store operations
 }
 
+func (am AppModule) ConsensusParamsUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
+
+	return am.keeper.ConsensusParamUpdate(ctx)
+}
+
 func (am AppModule) UpgradeCodec(ctx sdk.Ctx) {
 	am.keeper.UpgradeCodec(ctx)
 }
@@ -92,6 +97,12 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // "BeginBlock" - Functionality that is called at the beginning of (every) block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
+	if am.keeper.Cdc.IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.BlockSizeModifyKey) {
+		//on the height we set the default value
+		params := am.keeper.GetParams(ctx)
+		params.BlockByteSize = types.DefaultBlockByteSize
+		am.keeper.SetParams(ctx, params)
+	}
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
 }
