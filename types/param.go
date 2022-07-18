@@ -100,6 +100,11 @@ func (s Subspace) Get(ctx Ctx, key []byte, ptr interface{}) {
 		ctx.Logger().Error("error getting a value from a key in the subspace, could be an empty subspace:", err.Error())
 		return
 	}
+	if len(bz) == 0 {
+		//if bytes are 0 we return
+		return
+	}
+
 	err = s.cdc.UnmarshalJSON(bz, ptr)
 	if err != nil {
 		ctx.Logger().Error("error unmarshalling from the subspace, could be an empty subspace", err.Error())
