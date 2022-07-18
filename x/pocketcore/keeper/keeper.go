@@ -4,6 +4,7 @@ import (
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
+	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/rpc/client"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
@@ -57,4 +58,27 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 	k.SetParams(ctx, params)
 	k.SetClaims(ctx, claims)
 	k.Cdc.DisableUpgradeOverride()
+}
+
+func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
+	currentHeightBlockSize := k.BlockByteSize(ctx)
+	//If not 0 and different update
+	if currentHeightBlockSize > 0 {
+		previousBlockCtx, _ := ctx.PrevCtx(ctx.BlockHeight() - 1)
+		lastBlockSize := k.BlockByteSize(previousBlockCtx)
+		if lastBlockSize != currentHeightBlockSize {
+			//not go under default value
+			if currentHeightBlockSize < types.DefaultBlockByteSize {
+				return &abci.ConsensusParams{}
+			}
+			return &abci.ConsensusParams{
+				Block: &abci.BlockParams{
+					MaxBytes: currentHeightBlockSize,
+					MaxGas:   -1,
+				},
+			}
+		}
+	}
+
+	return &abci.ConsensusParams{}
 }

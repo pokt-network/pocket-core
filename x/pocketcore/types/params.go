@@ -12,11 +12,12 @@ import (
 const (
 	// DefaultParamspace for params keeper
 	DefaultParamspace                 = ModuleName
-	DefaultSessionNodeCount           = int64(5)   // default number of nodes in a session
-	DefaultClaimSubmissionWindow      = int64(3)   // default sessions to submit a claim
-	DefaultClaimExpiration            = int64(100) // default sessions to exprie claims
-	DefaultReplayAttackBurnMultiplier = int64(3)   // default replay attack burn multiplier
-	DefaultMinimumNumberOfProofs      = int64(5)   // default minimum number of proofs
+	DefaultSessionNodeCount           = int64(5)       // default number of nodes in a session
+	DefaultClaimSubmissionWindow      = int64(3)       // default sessions to submit a claim
+	DefaultClaimExpiration            = int64(100)     // default sessions to exprie claims
+	DefaultReplayAttackBurnMultiplier = int64(3)       // default replay attack burn multiplier
+	DefaultMinimumNumberOfProofs      = int64(5)       // default minimum number of proofs
+	DefaultBlockByteSize              = int64(4000000) // default block size in bytes
 
 )
 
@@ -28,6 +29,7 @@ var (
 	KeyClaimExpiration            = []byte("ClaimExpiration")
 	KeyReplayAttackBurnMultiplier = []byte("ReplayAttackBurnMultiplier")
 	KeyMinimumNumberOfProofs      = []byte("MinimumNumberOfProofs")
+	KeyBlockByteSize              = []byte("BlockByteSize")
 )
 
 var _ types.ParamSet = (*Params)(nil)
@@ -40,6 +42,7 @@ type Params struct {
 	ClaimExpiration            int64    `json:"claim_expiration"` // per session
 	ReplayAttackBurnMultiplier int64    `json:"replay_attack_burn_multiplier"`
 	MinimumNumberOfProofs      int64    `json:"minimum_number_of_proofs"`
+	BlockByteSize              int64    `json:"block_byte_size,omitempty"`
 }
 
 // "ParamSetPairs" - returns an kv params object
@@ -52,6 +55,7 @@ func (p *Params) ParamSetPairs() types.ParamSetPairs {
 		{Key: KeyClaimExpiration, Value: &p.ClaimExpiration},
 		{Key: KeyReplayAttackBurnMultiplier, Value: p.ReplayAttackBurnMultiplier},
 		{Key: KeyMinimumNumberOfProofs, Value: p.MinimumNumberOfProofs},
+		{Key: KeyBlockByteSize, Value: p.BlockByteSize},
 	}
 }
 
@@ -110,10 +114,12 @@ func (p Params) String() string {
   Supported Blockchains      %v
   ClaimExpiration            %d
   ReplayAttackBurnMultiplier %d
+  BlockByteSize %d
 `,
 		p.SessionNodeCount,
 		p.ClaimSubmissionWindow,
 		p.SupportedBlockchains,
 		p.ClaimExpiration,
-		p.ReplayAttackBurnMultiplier)
+		p.ReplayAttackBurnMultiplier,
+		p.BlockByteSize)
 }
