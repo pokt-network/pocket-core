@@ -51,6 +51,10 @@ type AppModule struct {
 	accountKeeper keeper.Keeper
 }
 
+func (am AppModule) ConsensusParamsUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
+	return &abci.ConsensusParams{}
+}
+
 // NewAppModule creates a new AppModule object
 func NewAppModule(accountKeeper keeper.Keeper) AppModule {
 	return AppModule{

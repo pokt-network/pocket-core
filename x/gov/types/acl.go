@@ -36,15 +36,7 @@ func (a ACL) Validate(adjacencyMap map[string]bool) error {
 			return ErrInvalidACL(ModuleName, fmt.Errorf("the address provided for: %s is nil", key))
 		}
 	}
-	var unOwnedParams []string
-	for key, val := range adjacencyMap {
-		if !val {
-			unOwnedParams = append(unOwnedParams, key)
-		}
-	}
-	if len(unOwnedParams) != 0 {
-		return ErrInvalidACL(ModuleName, fmt.Errorf("the following params have no owner: %v aclPair", unOwnedParams))
-	}
+	//removing unowned check as we need to be able to add new acl/params that won't be owned until active
 	return nil
 }
 

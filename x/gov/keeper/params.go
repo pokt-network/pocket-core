@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/gov/types"
 )
@@ -38,4 +39,8 @@ func (k Keeper) GetDAOOwner(ctx sdk.Ctx) (res sdk.Address) {
 func (k Keeper) GetUpgrade(ctx sdk.Ctx) (res types.Upgrade) {
 	k.paramstore.Get(ctx, types.UpgradeKey, &res)
 	return
+}
+
+func (k Keeper) GetCodec() *codec.Codec {
+	return k.cdc
 }
