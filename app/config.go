@@ -77,7 +77,7 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 	GlobalConfig.PocketConfig.Cache = useCache
 	// init AuthToken
-	InitAuthToken()
+	InitAuthToken(GlobalConfig.PocketConfig.GenerateTokenOnStart)
 	// init the keyfiles
 	InitKeyfiles()
 	// get hosted blockchains
@@ -868,7 +868,25 @@ func GetDefaultConfig(datadir string) string {
 	return string(jsonbytes)
 }
 
-func InitAuthToken() {
+func InitAuthToken(generateToken bool) {
+	//Example auth.json located in the config folder
+	//{
+	//	"Value": "S6fvg51BOeUO89HafOhF6jPuT",
+	//	"Issued": "2022-06-20T16:06:47.419153-04:00"
+	//}
+
+	if generateToken {
+		//default behaviour: generate a new token on each start.
+		GenerateToken()
+	} else {
+		//new: if config is set to false use existing auth.json and do not generate
+		//User should make sure file exist, else execution will end with error ("cannot open/create auth token json file:"...)
+		t := GetAuthTokenFromFile()
+		AuthToken = t
+	}
+}
+
+func GenerateToken() {
 	var t = sdk.AuthToken{
 		Value:  rand.Str(25),
 		Issued: time.Now(),
@@ -881,7 +899,7 @@ func InitAuthToken() {
 
 	jsonFile, err := os.OpenFile(configFilepath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
-		log2.Fatalf("canot open/create auth token json file: " + err.Error())
+		log2.Fatalf("cannot open/create auth token json file: " + err.Error())
 	}
 	err = jsonFile.Truncate(0)
 
@@ -907,7 +925,7 @@ func GetAuthTokenFromFile() sdk.AuthToken {
 	defer jsonFile.Close()
 
 	if _, err := os.Stat(configFilepath); err == nil {
-		jsonFile, err = os.OpenFile(configFilepath, os.O_RDWR, os.ModePerm)
+		jsonFile, err = os.OpenFile(configFilepath, os.O_RDONLY, os.ModePerm)
 		if err != nil {
 			log2.Fatalf("cannot open config json file: " + err.Error())
 		}
