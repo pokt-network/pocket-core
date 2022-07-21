@@ -318,6 +318,30 @@ paths:
                 $ref: '#/components/schemas/Account'
         '400':
           description: Failed to retrieve the account
+  /query/accounts:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: 'Request accounts at the specified height,  height = 0 is used as latest'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryPaginatedHeightParams'
+            example:
+              height: 100
+              page: 1
+              per_page: 30
+        required: true
+      responses:
+        '200':
+          description: Returns accounts at the specified height
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryAccountsResponse'
+        '400':
+          description: Failed to retrieve the account
   /query/accounttxs:
     post:
       tags:
@@ -2140,6 +2164,21 @@ components:
           type: integer
           format: int64
           description: maximum amount of pages
+    QueryAccountsResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        page:
+          type: integer
+          format: int64
+          description: current page
+        total_pages:
+          type: integer
+          format: int64
+          description: maximum amount of pages
     QueryRawTXRequest:
       type: object
       properties:
@@ -2334,6 +2373,18 @@ components:
       properties:
         transaction:
           $ref: '#/components/schemas/Transaction'
+    QueryPaginatedHeightParams:
+      type: object
+      properties:
+        height:
+          type: integer
+          format: int64
+        page:
+          type: integer
+          format: int64
+        per_page:
+          type: integer
+          format: int64
     QueryPaginatedHeightAndAddrParams:
       type: object
       properties:
