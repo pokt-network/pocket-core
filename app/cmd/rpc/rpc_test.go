@@ -13,13 +13,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/codec"
-
 	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	rand2 "github.com/tendermint/tendermint/libs/rand"
+	"github.com/tendermint/tendermint/rpc/client"
 
 	types3 "github.com/pokt-network/pocket-core/x/apps/types"
 
@@ -119,6 +120,166 @@ func TestRPC_QueryTX(t *testing.T) {
 	err = json.Unmarshal([]byte(resp), &resTX2)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, resTX2.Height)
+
+	cleanup()
+	stopCli()
+}
+
+type RPCResultUnconfirmedTxResponse struct {
+	Hash  string `json:"hash"`
+	StdTx struct {
+		Entropy int64 `json:"entropy"`
+		Fee     []struct {
+			Amount string `json:"amount"`
+			Denom  string `json:"denom"`
+		} `json:"fee"`
+		Memo string `json:"memo"`
+		Msg  struct {
+			Type  string `json:"type"`
+			Value struct {
+				Amount      json.Number `json:"amount"`
+				FromAddress string      `json:"from_address"`
+				ToAddress   string      `json:"to_address"`
+			} `json:"value"`
+		} `json:"msg"`
+		Signature struct {
+			PubKey    string `json:"pub_key"`
+			Signature string `json:"signature"`
+		} `json:"signature"`
+	} `json:"stdTx"`
+}
+
+func TestRPC_QueryUnconfirmedTx(t *testing.T) {
+	codec.UpgradeHeight = 50000
+
+	var tx *types.TxResponse
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	_, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	kp, err := kb.Create("test")
+	tx, err = nodes.Send(memCodec(), memCLI, kb, cb.GetAddress(), kp.GetAddress(), "test", types.NewInt(1000), false)
+	assert.Nil(t, err)
+
+	var params = HashAndProveParams{
+		Hash: tx.TxHash,
+	}
+	q := newQueryRequest("unconfirmedtx", newBody(params))
+	rec := httptest.NewRecorder()
+	UnconfirmedTx(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
+	<-evtChan // Wait for tx
+
+	var resTX RPCResultUnconfirmedTxResponse
+	err = json.Unmarshal(resp, &resTX)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, resTX.Hash)
+	assert.NotNil(t, resTX.StdTx)
+	assert.NotNil(t, resTX.StdTx.Msg)
+	amount, _ := resTX.StdTx.Msg.Value.Amount.Int64()
+	assert.Equal(t, amount, int64(1000))
+	assert.Equal(t, strings.ToLower(resTX.StdTx.Msg.Value.FromAddress), strings.ToLower(cb.GetAddress().String()))
+	assert.Equal(t, strings.ToLower(resTX.StdTx.Msg.Value.ToAddress), strings.ToLower(kp.GetAddress().String()))
+
+	cleanup()
+	stopCli()
+}
+
+type RPCResultUnconfirmedTxsResponse struct {
+	Txs []struct {
+		Hash  string `json:"hash"`
+		StdTx struct {
+			Entropy int64 `json:"entropy"`
+			Fee     []struct {
+				Amount string `json:"amount"`
+				Denom  string `json:"denom"`
+			} `json:"fee"`
+			Memo string `json:"memo"`
+			Msg  struct {
+				Type  string `json:"type"`
+				Value struct {
+					Amount      json.Number `json:"amount"`
+					FromAddress string      `json:"from_address"`
+					ToAddress   string      `json:"to_address"`
+				} `json:"value"`
+			} `json:"msg"`
+			Signature struct {
+				PubKey    string `json:"pub_key"`
+				Signature string `json:"signature"`
+			} `json:"signature"`
+		} `json:"stdTx"`
+	} `json:"txs"`
+	PageCount json.Number `json:"page_count"`
+	TotalTxs  json.Number `json:"total_txs"`
+}
+
+func TestRPC_QueryUnconfirmedTxs(t *testing.T) {
+	codec.UpgradeHeight = 50000
+
+	var tx *types.TxResponse
+	_, _, cleanup := NewInMemoryTendermintNode(t, oneValTwoNodeGenesisState())
+	_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-evtChan // Wait for block
+	memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+	kb := getInMemoryKeybase()
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	kp, err := kb.Create("test")
+	assert.Nil(t, err)
+
+	// create txs asap and proceed to query them before they are gone.
+	// mempool on test is pretty fasts for that reason is using the goroutines to create them in parallel.
+	totalTxs := 2
+	var wg sync.WaitGroup
+	for i := 0; i < totalTxs; i++ {
+		wg.Add(1)
+		go func(memCLI *client.Client, wg *sync.WaitGroup) {
+			tx, err = nodes.Send(memCodec(), *memCLI, kb, cb.GetAddress(), kp.GetAddress(), "test", types.NewInt(1000), false)
+			assert.Nil(t, err)
+			assert.NotNil(t, tx)
+			wg.Done()
+		}(&memCli, &wg)
+	}
+	wg.Wait()
+
+	var params = PaginatedHeightParams{
+		Page:    1,
+		PerPage: 1,
+	}
+	q := newQueryRequest("unconfirmedtxs", newBody(params))
+	rec := httptest.NewRecorder()
+	UnconfirmedTxs(rec, q, httprouter.Params{})
+	resp := getJSONResponse(rec)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+
+	<-evtChan // Wait for tx
+
+	var resTXs RPCResultUnconfirmedTxsResponse
+	err = json.Unmarshal(resp, &resTXs)
+	assert.Nil(t, err)
+
+	pageCount, _ := resTXs.PageCount.Int64()
+	totalCountTxs, _ := resTXs.TotalTxs.Int64()
+
+	assert.Equal(t, pageCount, int64(1))
+	assert.Equal(t, totalCountTxs, int64(totalTxs))
+
+	for _, resTX := range resTXs.Txs {
+		assert.NotEmpty(t, resTX.Hash)
+		assert.NotNil(t, resTX.StdTx)
+		assert.NotNil(t, resTX.StdTx.Msg)
+		amount, _ := resTX.StdTx.Msg.Value.Amount.Int64()
+		assert.Equal(t, amount, int64(1000))
+		assert.Equal(t, strings.ToLower(resTX.StdTx.Msg.Value.FromAddress), strings.ToLower(cb.GetAddress().String()))
+		assert.Equal(t, strings.ToLower(resTX.StdTx.Msg.Value.ToAddress), strings.ToLower(kp.GetAddress().String()))
+	}
 
 	cleanup()
 	stopCli()

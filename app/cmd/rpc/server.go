@@ -122,6 +122,8 @@ func GetRoutes() Routes {
 		Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: Upgrade},
 		Route{Name: "QuerySigningInfo", Method: "POST", Path: "/v1/query/signinginfo", HandlerFunc: SigningInfo},
 		Route{Name: "QueryChains", Method: "POST", Path: "/v1/private/chains", HandlerFunc: Chains},
+		Route{Name: "QueryUnconfirmedTxs", Method: "POST", Path: "/v1/query/unconfirmedtxs", HandlerFunc: UnconfirmedTxs},
+		Route{Name: "QueryUnconfirmedTx", Method: "POST", Path: "/v1/query/unconfirmedtx", HandlerFunc: UnconfirmedTx},
 	}
 	return routes
 }

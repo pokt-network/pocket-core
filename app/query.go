@@ -8,6 +8,7 @@ import (
 	"math"
 	"reflect"
 	"strconv"
+	"strings"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"
@@ -114,6 +115,60 @@ func (app PocketCoreApp) QueryAllBlockTxs(height int64, page, perPage int) (res 
 		}
 	}
 	return
+}
+
+func (app PocketCoreApp) QueryUnconfirmedTxs(page, perPage int) (res *core_types.ResultUnconfirmedTxs, err error) {
+	res = &core_types.ResultUnconfirmedTxs{
+		Count: 0,
+		Total: 0,
+		Txs:   make([]tmtypes.Tx, 0),
+	}
+	tmClient := app.GetClient()
+	defer func() { _ = tmClient.Stop() }()
+	page, perPage = checkPagination(page, perPage)
+
+	unconfirmedTxsResult, err := tmClient.UnconfirmedTxs(app.BaseApp.TMNode().Mempool().Size())
+	if err != nil {
+		return nil, err
+	}
+
+	skip := (page - 1) * perPage
+	res.Total = unconfirmedTxsResult.Total
+
+	for i, t := range unconfirmedTxsResult.Txs {
+		if i < skip {
+			continue
+		}
+		res.Txs = append(res.Txs, t)
+		if len(res.Txs) >= perPage {
+			break
+		}
+	}
+
+	res.Count = len(res.Txs)
+	return
+}
+
+func (app PocketCoreApp) QueryUnconfirmedTx(hash string) (res tmtypes.Tx, err error) {
+	tmClient := app.GetClient()
+	defer func() { _ = tmClient.Stop() }()
+
+	hash = strings.ToLower(hash)
+
+	unconfirmedTxsResult, err := tmClient.UnconfirmedTxs(app.BaseApp.TMNode().Mempool().Size())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, t := range unconfirmedTxsResult.Txs {
+		txHash := strings.ToLower(fmt.Sprintf("%x", t.Hash()))
+
+		if txHash == hash {
+			return t, nil
+		}
+	}
+
+	return nil, nil
 }
 
 func (app PocketCoreApp) QueryHeight() (res int64, err error) {

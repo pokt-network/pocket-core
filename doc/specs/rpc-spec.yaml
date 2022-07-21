@@ -652,6 +652,29 @@ paths:
                 $ref: '#/components/schemas/QueryBlockTXsResponse'
         '400':
           description: Failed to retrieve the transaction information
+  /query/unconfirmedtxs:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns all unconfirmed transactions handled by the mempool; Max per_page = 1000".
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryUnconfirmedTXs'
+            example:
+              page: 1
+              per_page: 1000
+        required: true
+      responses:
+        '200':
+          description: Unconfirmed Transaction list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryUnconfirmedTXsResponse'
+        '400':
+          description: Failed to retrieve the unconfirmed transactions information
   /query/height:
     post:
       tags:
@@ -1187,6 +1210,28 @@ paths:
                 $ref: '#/components/schemas/QueryTXResponse'
         '400':
           description: Failed to retrieve the transaction information
+  /query/unconfirmedtx:
+    post:
+      tags:
+        - query
+      requestBody:
+        description: Returns the unconfirmed transaction by the hash
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryUnconfirmedTX'
+            example:
+              hash: '0x197e4d46009879f28f978a90627c7dfeab64b4777afcc24e2b9c3d72b4dada22'
+        required: true
+      responses:
+        '200':
+          description: Unconfirmed Transaction data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryUnconfirmedTXResponse'
+        '400':
+          description: Failed to retrieve the unconfirmed transaction information
   /query/upgrade:
     post:
       tags:
@@ -2001,6 +2046,17 @@ components:
           type: string
         proof:
           $ref: '#/components/schemas/SimpleProof'
+    UnconfirmedTransaction:
+      type: object
+      properties:
+        hash:
+          type: string
+          description: Hash of the transaction
+        message_type:
+          type: string
+          description: Transaction type like the one provide on Transaction tx_result.message_type
+        stdTx:
+          $ref: '#/components/schemas/StdTx'
     QueryAddressHeight:
       type: object
       properties:
@@ -2385,6 +2441,16 @@ components:
         per_page:
           type: integer
           format: int64
+    QueryUnconfirmedTX:
+      type: object
+      properties:
+        hash:
+          type: string
+    QueryUnconfirmedTXResponse:
+      type: object
+      properties:
+        transaction:
+          $ref: '#/components/schemas/UnconfirmedTransaction'
     QueryPaginatedHeightAndAddrParams:
       type: object
       properties:
@@ -2449,6 +2515,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
+        page_count:
+          type: integer
+        total_txs:
+          type: integer
+    QueryUnconfirmedTXs:
+      type: object
+      properties:
+        page:
+          type: integer
+        per_page:
+          type: integer
+    QueryUnconfirmedTXsResponse:
+      type: object
+      properties:
+        txs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnconfirmedTransaction'
         page_count:
           type: integer
         total_txs:
