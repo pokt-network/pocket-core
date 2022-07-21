@@ -980,3 +980,90 @@ func TestQueryAccounts(t *testing.T) {
 		})
 	}
 }
+
+func TestQueryUnconfirmedTx(t *testing.T) {
+	tt := []struct {
+		name         string
+		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		*upgrades
+	}{
+		{name: "query unconfirmed tx", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if tc.upgrades != nil { // NOTE: Use to perform necessary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(time.Second * 2)
+			cb, err := kb.GetCoinbase()
+			assert.Nil(t, err)
+			kp, err := kb.Create("test")
+			assert.Nil(t, err)
+			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+			var tx *sdk.TxResponse
+			<-evtChan // Wait for block
+			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+			tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(1000), tc.upgrades.codecUpgrade.upgradeMod)
+			assert.Nil(t, err)
+			assert.NotNil(t, tx)
+
+			got, err := PCA.QueryUnconfirmedTx(tx.TxHash)
+			assert.Nil(t, err)
+			assert.NotNil(t, got)
+
+			cleanup()
+			stopCli()
+		})
+	}
+}
+
+func TestQueryUnconfirmedTxs(t *testing.T) {
+	tt := []struct {
+		name         string
+		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		*upgrades
+	}{
+		{name: "query unconfirmed txs", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+			if tc.upgrades != nil { // NOTE: Use to perform necessary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(time.Second * 2)
+			cb, err := kb.GetCoinbase()
+			assert.Nil(t, err)
+			kp, err := kb.Create("test")
+			assert.Nil(t, err)
+			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+			var tx *sdk.TxResponse
+			<-evtChan // Wait for block
+			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+
+			totalTxs := 2
+			for i := 0; i < totalTxs; i++ {
+				tx, err = nodes.Send(memCodec(), memCli, kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(1000), tc.upgrades.codecUpgrade.upgradeMod)
+				assert.Nil(t, err)
+				assert.NotNil(t, tx)
+			}
+
+			got, err := PCA.QueryUnconfirmedTxs(1, 1)
+			assert.Nil(t, err)
+			assert.NotNil(t, got)
+			// check count is same amount of return elements
+			assert.Equal(t, 1, got.Count)
+			assert.Equal(t, 1, len(got.Txs))
+			// check total is the same amount of created elements
+			assert.Equal(t, totalTxs, got.Total)
+
+			cleanup()
+			stopCli()
+		})
+	}
+}
