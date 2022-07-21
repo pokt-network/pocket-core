@@ -6,6 +6,7 @@
   - add validation for edge case on cache equals to 0.
 - backport tendermint #6068 (terminate broadcastEvidenceRoutine when peer is stopped)
 - Add new rpc endpoint /query/accounts
+- New config.json option to enable/disable authToken generation on start (auth.json)
 
 ## RC-0.8.3
 
