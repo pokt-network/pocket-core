@@ -1,5 +1,11 @@
 # Changelog
 =======
+## Unreleased
+- Mempool Refinements :
+  - Tx max life in mempool is 2 blocks, after that
+  - add validation for edge case on cache equals to 0.
+- backport tendermint #6068 (terminate broadcastEvidenceRoutine when peer is stopped)
+
 ## RC-0.8.3
 
 - Add config.json check for Indexer and Mempool.
