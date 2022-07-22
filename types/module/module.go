@@ -320,6 +320,14 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 		}
 	}
 
+	//not adding empty struct  saves us from updating consensus params every block if there are no updates.
+	if UpdateToApply.Equal(&abci.ConsensusParams{}) {
+		return abci.ResponseEndBlock{
+			ValidatorUpdates: validatorUpdates,
+			Events:           ctx.EventManager().ABCIEvents(),
+		}
+	}
+
 	return abci.ResponseEndBlock{
 		ValidatorUpdates:      validatorUpdates,
 		Events:                ctx.EventManager().ABCIEvents(),
