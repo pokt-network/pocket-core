@@ -1,87 +1,44 @@
 package dedup
 
 import (
-	"encoding/binary"
-	"fmt"
-	sdk "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/jordanorelli/lexnum"
+	dbm "github.com/tendermint/tm-db"
 )
 
-func HeightKey(height int64, prefix string, k []byte) []byte {
-	h := make([]byte, 4)
-	binary.LittleEndian.PutUint32(h, uint32(height))
-	return append(append(h, PrefixToByte(prefix)), k...)
+var elenEncoder = lexnum.NewEncoder('=', '-')
+
+func GetLatestHeightKeyRelativeToQuery(prefix string, exclusiveEndHeight, key []byte, parentDB dbm.DB) ([]byte, bool) {
+	// use a reverse iterator's 'seek' functionality in order to track down the latest height key
+	// relative to the query height. Note: this only works because we use ELEN encoding for int64
+	startKey := HeightKey(prefix, SearchStartHeight, key)
+	endKey := HeightKey(prefix, exclusiveEndHeight, key)
+	it, _ := parentDB.ReverseIterator(startKey, endKey)
+	defer it.Close()
+	if it.Valid() {
+		return it.Key(), true
+	}
+	return nil, false
 }
 
-func FromHeightKey(heightKey string) (height int64, prefix string, k []byte) {
-	return int64(binary.LittleEndian.Uint32([]byte(heightKey[:4]))), ByteToPrefix(heightKey[4]), []byte(heightKey[5:])
+func KeyForExists(prefix string, k []byte) []byte {
+	return append([]byte(ExistsPrefix+prefix), k...)
 }
 
-func KeyFromHeightKey(heightKey []byte) (k []byte) {
-	_, _, k = FromHeightKey(string(heightKey))
-	return
+func KeyFromExistsKey(prefix string, k []byte) []byte {
+	return k[len(ExistsPrefix+prefix):]
 }
 
-func HashKey(key []byte) []byte {
-	return sdk.Hash(key)[:16]
+func HeightKey(prefix string, latestHeightString []byte, key []byte) []byte {
+	return append(append([]byte(prefix), key...), latestHeightString...)
 }
 
 // util
 
-const (
-	POSPrefix            = "pos"
-	POSPrefixByte        = byte(0xa)
-	AppPrefix            = "application"
-	AppPrefixByte        = byte(0xb)
-	PocketCorePrefix     = "pocketcore"
-	PocketCorePrefixByte = byte(0xc)
-	GovPrefix            = "gov"
-	GovPrefixByte        = byte(0xd)
-	AuthPrefix           = "auth"
-	AuthPrefixByte       = byte(0xe)
-	ParamsPrefix         = "params"
-	ParamsPrefixByte     = byte(0xf)
-	MainPrefix           = "main"
-	MainPrefixByte       = byte(0x0)
+var (
+	DeletedValue      = []byte("del")
+	SearchStartHeight = []byte("0")
 )
 
-func PrefixToByte(prefix string) (p byte) {
-	switch prefix {
-	case POSPrefix:
-		return POSPrefixByte
-	case AppPrefix:
-		return AppPrefixByte
-	case PocketCorePrefix:
-		return PocketCorePrefixByte
-	case GovPrefix:
-		return GovPrefixByte
-	case AuthPrefix:
-		return AuthPrefixByte
-	case ParamsPrefix:
-		return ParamsPrefixByte
-	case MainPrefix:
-		return MainPrefixByte
-	default:
-		panic("unknown prefix: " + prefix)
-	}
-}
-
-func ByteToPrefix(p byte) (prefix string) {
-	switch p {
-	case POSPrefixByte:
-		return POSPrefix
-	case AppPrefixByte:
-		return AppPrefix
-	case PocketCorePrefixByte:
-		return PocketCorePrefix
-	case GovPrefixByte:
-		return GovPrefix
-	case AuthPrefixByte:
-		return AuthPrefix
-	case ParamsPrefixByte:
-		return ParamsPrefix
-	case MainPrefixByte:
-		return MainPrefix
-	default:
-		panic(fmt.Sprintf("unknown prefix byte %v", p))
-	}
-}
+const (
+	ExistsPrefix = "ex"
+)

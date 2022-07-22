@@ -3,9 +3,8 @@ package iavl
 import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/store/cachemulti"
-	"sync"
-
 	"github.com/tendermint/tendermint/libs/kv"
+	"sync"
 
 	"github.com/pokt-network/pocket-core/store/types"
 
@@ -13,7 +12,7 @@ import (
 )
 
 const (
-	defaultIAVLCacheSize = 1000
+	defaultIAVLCacheSize = 50000000
 	defaultKeepRecent    = 100
 )
 
@@ -114,7 +113,6 @@ func (st *Store) Commit() types.CommitID {
 	if version-defaultKeepRecent > 1 {
 		st.tree.DeleteVersion(version - defaultKeepRecent)
 	}
-
 	return types.CommitID{
 		Version: version,
 		Hash:    hash,

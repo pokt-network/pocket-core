@@ -15,7 +15,7 @@ func KVStoreReversePrefixIterator(kvs KVStore, prefix []byte) (Iterator, error) 
 // Deals with last byte of prefix being FF without overflowing
 func PrefixEndBytes(prefix []byte) []byte {
 	if len(prefix) == 0 {
-		return nil
+		return []byte{byte(255)}
 	}
 
 	end := make([]byte, len(prefix))

@@ -1,15 +1,23 @@
 package slim
 
 import (
+	"fmt"
 	"github.com/pokt-network/pocket-core/store/cachemulti"
+	"github.com/pokt-network/pocket-core/store/slim/cache"
 	"github.com/pokt-network/pocket-core/store/types"
 	db "github.com/tendermint/tm-db"
+	"time"
 )
 
 var _ types.CommitMultiStore = &MultiStore{}
 
+// Multi stores are abstractions over the db; breaking it up into a few 'prefix' stores
+// this is built in Cosmos SDK architecture that can't be removed without modifying the
+// entire app structure.
+
 type MultiStore struct {
 	DB         *db.GoLevelDB
+	CacheDB    *cache.CacheDB
 	Stores     map[types.StoreKey]types.CommitStore
 	LastCommit types.CommitID
 }
@@ -17,6 +25,7 @@ type MultiStore struct {
 func NewStore(d db.DB) *MultiStore {
 	return &MultiStore{
 		DB:         d.(*db.GoLevelDB),
+		CacheDB:    cache.NewCacheDB(d, 0, maxCacheKeepHeights),
 		Stores:     make(map[types.StoreKey]types.CommitStore),
 		LastCommit: types.CommitID{},
 	}
@@ -33,21 +42,18 @@ func (m *MultiStore) LoadLatestVersion() (err error) {
 		m.LastCommit = commitID
 	}
 	for key := range m.Stores {
-		m.Stores[key] = NewStoreWithIAVL(m.DB, latestHeight, key.Name(), commitID)
+		m.Stores[key] = NewStoreWithIAVL(m.DB, m.CacheDB, latestHeight, key.Name(), commitID)
 	}
-	if latestHeight > 1 {
-		m.DeleteNextHeight()
-		m.PrepareNextHeight()
-	}
+	m.Preload(latestHeight)
 	return nil
 }
 
 func (m *MultiStore) LoadVersion(ver int64) (store *types.Store, err error) {
 	newStores := make(map[types.StoreKey]types.CommitStore)
 	for key := range m.Stores {
-		newStores[key] = NewStoreWithoutIAVL(m.DB, ver-1, key.Name())
+		newStores[key] = NewStoreWithoutIAVL(m.DB, m.CacheDB, m.LastCommit.Version, ver-1, key.Name())
 	}
-	return multiStoreToStore(m.DB, m.LastCommit, newStores), nil
+	return multiStoreToStore(m.DB, m.CacheDB, m.LastCommit, newStores), nil
 }
 
 func (m *MultiStore) Commit() (commitID types.CommitID) {
@@ -59,12 +65,13 @@ func (m *MultiStore) Commit() (commitID types.CommitID) {
 		StoreInfos: make([]StoreInfo, 0),
 	}
 	for key, s := range m.Stores {
-		commitID = s.(*Store).CommitBatch(batch)
+		commitID = s.(*Store).Commit()
 		commitInfo.StoreInfos = append(commitInfo.StoreInfos, StoreInfo{
 			Name: key.Name(),
 			Core: StoreCore{commitID},
 		})
 	}
+	m.CommitCache() // write preload to disk & prune cache
 	setCommitInfo(batch, nextVersion, commitInfo)
 	setLatestVersion(batch, nextVersion)
 	_ = batch.Write()
@@ -75,37 +82,34 @@ func (m *MultiStore) Commit() (commitID types.CommitID) {
 	return m.LastCommit
 }
 
+func (m *MultiStore) Preload(latestVersion int64) {
+	m.CacheDB.LatestHeight = latestVersion
+	m.CacheDB.Preload()
+}
+
+func (m *MultiStore) CommitCache() {
+	// commit cache
+	t := time.Now()
+	m.CacheDB.Commit()
+	fmt.Println("Cache commit took: " + time.Since(t).String())
+	// prune cache
+	oldestHeight := m.LastCommit.Version - maxCacheKeepHeights
+	if oldestHeight <= 1 {
+		return
+	}
+	m.CacheDB.DeleteHeight(oldestHeight)
+}
+
 func (m *MultiStore) CopyStore() *types.Store {
 	newStores := make(map[types.StoreKey]types.CommitStore)
 	for key, store := range m.Stores {
 		newStores[key] = store
 	}
-	return multiStoreToStore(m.DB, m.LastCommit, newStores)
+	return multiStoreToStore(m.DB, m.CacheDB, m.LastCommit, newStores)
 }
 
-func (m *MultiStore) PrepareNextHeight() {
-	batch := m.DB.NewBatch()
-	defer batch.Close()
-	for _, store := range m.Stores {
-		store.(*Store).Dedup.PrepareNextHeight(batch)
-	}
-	_ = batch.Write()
-}
-
-func (m *MultiStore) DeleteNextHeight() {
-	for _, store := range m.Stores {
-		store.(*Store).Dedup.DeleteNextHeight()
-	}
-}
-
-func (m *MultiStore) LastCommitID() types.CommitID {
-	//if m.LastCommit.Hash == nil {
-	//	_ = m.LoadLatestVersion()
-	//}
-	return m.LastCommit
-}
-
-func (m *MultiStore) CacheWrap() types.CacheWrap { return m.CacheMultiStore() }
+func (m *MultiStore) LastCommitID() types.CommitID { return m.LastCommit }
+func (m *MultiStore) CacheWrap() types.CacheWrap   { return m.CacheMultiStore() }
 func (m *MultiStore) CacheMultiStore() types.CacheMultiStore {
 	return cachemulti.NewCacheMulti(m.Stores)
 }

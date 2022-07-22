@@ -194,6 +194,11 @@ func UpdateConfig(datadir string) {
 
 	//Write Defaults on GlobalConfig.
 	GlobalConfig.TendermintConfig.LevelDBOptions = config2.DefaultLevelDBOpts()
+	GlobalConfig.TendermintConfig.LevelDBOptions.BlockSize = 1024
+	GlobalConfig.TendermintConfig.LevelDBOptions.BlockCacheCapacity = 32 * 1024 * 1024
+	GlobalConfig.TendermintConfig.LevelDBOptions.DisableBufferPool = false
+	GlobalConfig.TendermintConfig.LevelDBOptions.OpenFilesCacheCapacity = 1000
+	GlobalConfig.TendermintConfig.LevelDBOptions.WriteBuffer = 128 * 1024 * 1024
 	sdk.DefaultPocketConsensusConfig(GlobalConfig.TendermintConfig.Consensus)
 	GlobalConfig.TendermintConfig.P2P.AllowDuplicateIP = true
 	GlobalConfig.TendermintConfig.P2P.AddrBookStrict = false

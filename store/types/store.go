@@ -7,6 +7,8 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
+// NOTE: all of these interfaces are legacy Cosmos SDK. This can be untangled at some point.
+
 type Store interface { //nolint
 	CacheWrapper
 }

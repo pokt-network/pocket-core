@@ -1,56 +1,77 @@
 package dedup
 
 import (
+	"bytes"
 	"github.com/pokt-network/pocket-core/types"
 	dbm "github.com/tendermint/tm-db"
 )
 
-var _ types.Iterator = &DedupIterator{}
+var _ types.Iterator = &CascadeIterator{}
 var _ types.KVStore = &Store{}
-var _ types.CommitStore = &Store{}
 
-type DedupIterator struct {
-	parent dbm.DB
-	it     dbm.Iterator
+type CascadeIterator struct {
+	parent             dbm.DB
+	exclusiveEndHeight []byte
+	it                 dbm.Iterator
+	height             int64
+	prefix             string
+	value              []byte
 }
 
-func NewDedupIterator(parent dbm.DB, height int64, prefix string, startKey, endKey []byte, isReverse bool) (dedupIterator *DedupIterator, err error) {
-	start := HeightKey(height, prefix, startKey)
-	end := HeightKey(height, prefix, endKey)
-	dedupIterator = &DedupIterator{parent: parent}
+func NewCascadeIterator(parent dbm.DB, height int64, prefix string, exclusiveEndHeight, startKey, endKey []byte, isReverse bool) (cascadeIterator *CascadeIterator, err error) {
+	endPrefix := prefix
+	// iterate over the 'exists' space inorder to have only 1 key per historical set
+	start := KeyForExists(prefix, startKey)
+	if endKey == nil {
+		endPrefix = string(types.PrefixEndBytes([]byte(prefix)))
+	}
+	end := KeyForExists(endPrefix, endKey)
+	cascadeIterator = &CascadeIterator{
+		parent:             parent,
+		exclusiveEndHeight: exclusiveEndHeight,
+		height:             height,
+		prefix:             prefix,
+	}
 	if isReverse {
-		dedupIterator.it, err = parent.ReverseIterator(start, end)
+		cascadeIterator.it, err = parent.ReverseIterator(start, end)
 	} else {
-		dedupIterator.it, err = parent.Iterator(start, end)
+		cascadeIterator.it, err = parent.Iterator(start, end)
+	}
+	if cascadeIterator.it.Valid() {
+		cascadeIterator.Seek()
 	}
 	return
 }
 
-// NewDedupIteratorForHeight : is the same as the above function, except exclusively for iterating an entire
-// 'height'. It doesn't have any special functionality, rather a convenient way to initialize the iterator.
-func NewDedupIteratorForHeight(parentDB dbm.DB, height int64, prefix string) *DedupIterator {
-	startKey := HeightKey(height, prefix, nil)
-	endKey := types.PrefixEndBytes(startKey)
-	it := &DedupIterator{parent: parentDB}
-	it.it, _ = parentDB.Iterator(startKey, endKey)
-	return it
+func (c *CascadeIterator) Next() {
+	c.it.Next()
+	c.Seek()
 }
 
-func (d *DedupIterator) Value() (value []byte) {
-	dataStoreKey := d.it.Value()
-	if dataStoreKey == nil {
+func (c *CascadeIterator) Seek() {
+	// loop until we -> find a valid value OR get to the end of the iterator
+	for {
+		if !c.it.Valid() {
+			return
+		}
+		latestKey, found := GetLatestHeightKeyRelativeToQuery(c.prefix, c.exclusiveEndHeight, c.Key(), c.parent)
+		if !found { // it exists (we're iterating over exists space), so it must be a future height key
+			c.it.Next()
+			continue
+		}
+		c.value, _ = c.parent.Get(latestKey)
+		// deleted value, so continue
+		if bytes.Equal(c.value, DeletedValue) {
+			c.it.Next()
+			continue
+		}
 		return
 	}
-	value, err := d.parent.Get(dataStoreKey)
-	if err != nil {
-		panic("an error occurred in dedup iterator value call: " + err.Error())
-	}
-	return
 }
 
-func (d *DedupIterator) Next()                              { d.it.Next() }
-func (d *DedupIterator) Key() (key []byte)                  { return KeyFromHeightKey(d.it.Key()) }
-func (d *DedupIterator) Error() error                       { return d.it.Error() }
-func (d *DedupIterator) Close()                             { d.it.Close() }
-func (d *DedupIterator) Valid() bool                        { return d.it.Valid() }
-func (d *DedupIterator) Domain() (start []byte, end []byte) { panic("domain() not implemented") }
+func (c *CascadeIterator) Value() (value []byte)              { return c.value }
+func (c *CascadeIterator) Key() (key []byte)                  { return KeyFromExistsKey(c.prefix, c.it.Key()) }
+func (c *CascadeIterator) Error() error                       { return c.it.Error() }
+func (c *CascadeIterator) Close()                             { c.it.Close() }
+func (c *CascadeIterator) Valid() bool                        { return c.it.Valid() }
+func (c *CascadeIterator) Domain() (start []byte, end []byte) { return c.it.Domain() }

@@ -1,0 +1,15 @@
+syntax = "proto3";
+package store.slim.cache;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/pokt-network/pocket-core/store/slim/cache";
+
+message KVs {
+	repeated KV KVSlice = 1 [(gogoproto.nullable) = false];
+}
+
+message KV {
+	string key = 1;
+	bytes value = 2;
+}

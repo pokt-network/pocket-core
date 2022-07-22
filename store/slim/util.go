@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pokt-network/pocket-core/codec"
 	types2 "github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/store/slim/cache"
 	"github.com/pokt-network/pocket-core/store/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/crypto/merkle"
@@ -15,15 +16,18 @@ var cdc = codec.NewCodec(types2.NewInterfaceRegistry())
 
 const (
 	latestVersionKey = "s/latest"
-	commitInfoKeyFmt = "s/%d" // s/<version>
+	commitInfoKeyFmt = "s/%d"
 )
+
+// NOTE: almost all of this is legacy cosmos sdk
 
 var _ types.KVStore = &Store{}
 var _ types.CommitStore = &Store{}
 
-func multiStoreToStore(db *dbm.GoLevelDB, lastcommit types.CommitID, newStores map[types.StoreKey]types.CommitStore) *types.Store {
+func multiStoreToStore(db *dbm.GoLevelDB, cachedb *cache.CacheDB, lastcommit types.CommitID, newStores map[types.StoreKey]types.CommitStore) *types.Store {
 	newMultiStore := types.Store(&MultiStore{
 		DB:         db,
+		CacheDB:    cachedb,
 		Stores:     newStores,
 		LastCommit: lastcommit,
 	})
