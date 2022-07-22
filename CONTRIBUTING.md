@@ -6,7 +6,7 @@ This Contribution Guide aims to guide contributors through the process of propos
 
 #### Communicating proposals
 
-The first step towards contribution is to effectively propose your change by opening up a new issue using the **Contribution Proposal** issue template. Communicating your proposal effectively will be of the upmost importance throughout the lifecycle of your contribution, so make sure your description is clear and concise.
+The first step towards contribution is to effectively propose your change by opening up a new issue using the **Contribution Proposal** issue template. Communicating your proposal effectively will be of the upmost importance throughout the lifecycle of your contribution, so make sure your description is clear and concise. Feel free to also use the `#core-research` channel in our [Official Discord server](https://bit.ly/POKTARCADEdscrd) to ask any questions regarding the proposal you want to make to the repository.
 
 #### Consensus-breaking changes
 
@@ -65,7 +65,6 @@ And you will build a `pocket` binary in the root folder which can now be run.
 
 - Code must adhere to the official Go formatting guidelines (i.e. uses [gofmt](https://golang.org/cmd/gofmt)).
 - Code must be documented adhering to the official Go commentary guidelines.
-- Pull requests need to be based on and opened against the `staging` branch.
 
 ### Quality Assurance
 
@@ -81,13 +80,31 @@ The Regression Testing suite of Pocket Core is a series of scenarios that need t
 
 ### The Pull Request Process
 
-#### Submitting a PR
+#### Submitting a PR to a Release Window
 
-Open a PR against the `staging` branch in the official repository: `https://github.com/pokt-network/pocket-core`. To learn how to open a PR in Github please follow this [guide](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+Every PR will target an upcoming Release Window for the Pocket Core repository, these windows will be listed as Github Projects in the repository and will be listed in the repository [Projects Page](https://github.com/pokt-network/pocket-core/projects?type=classic). Every project in this page will represent a Release Window which contains the following:
+
+- A PR Cut-out date by which PR's must be approved to be included in the release.
+- An integration branch to submit PR's to for this release.
+
+Open a PR against the **integration branch** in the official repository: `https://github.com/pokt-network/pocket-core`. To learn how to open a PR in Github please follow this [guide](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 #### The PR review process
 
-Every Pull Request will require at least 1 reviewer from the Core team. Every proposal is different in scope and complexity, so the following points will increase the likelihood of you submitting a successful Pull Request:
+Every Pull Request will require at least 2 reviewers from the Core team. The reviews will be done in a 2 phase approach:
+
+1. A functional PR review where the code will be extensively reviewed by a Core Team member and feedback will be provided until the code quality meets the functional requirements of the intended Proposal.
+2. An Integration approval, every friday the Core Team will be evaluating PR's ready to be included, and selecting those into QA builds that will be tested as part of the Regression testing performed before each released is launched.
+
+#### The PR Success Criteria
+
+The Core Team will be requiring the following before merging a Pull Request:
+
+- It has a linked Contribution Proposal issue specifying the functionality implemented in the PR.
+- There is an associated pull request to the [Pocket Core Functional Tests repository](https://github.com/pokt-network/pocket-core-func-tests) with the appropiate QA scenarios associated with the functionality or fix contained in the PR.
+- Enough evidence (either automated or manual) of testing of these new scenarios included in the PR. This evidence must be presented in the format template contained [here](https://github.com/pokt-network/pocket-core/tree/staging/doc/qa/regression).
+
+Every proposal is different in scope and complexity, so the following points will increase the likelihood of you submitting a successful Pull Request:
 
 - Your proposal issue is clear, concise and informative.
 - Your PR is within the scope of the proposal.
