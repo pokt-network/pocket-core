@@ -16,7 +16,7 @@ var _ types.CommitMultiStore = &MultiStore{}
 // entire app structure.
 
 type MultiStore struct {
-	DB         *db.GoLevelDB
+	DB         db.DB
 	CacheDB    *cache.CacheDB
 	Stores     map[types.StoreKey]types.CommitStore
 	LastCommit types.CommitID
@@ -24,7 +24,7 @@ type MultiStore struct {
 
 func NewStore(d db.DB) *MultiStore {
 	return &MultiStore{
-		DB:         d.(*db.GoLevelDB),
+		DB:         d,
 		CacheDB:    cache.NewCacheDB(d, 0, maxCacheKeepHeights),
 		Stores:     make(map[types.StoreKey]types.CommitStore),
 		LastCommit: types.CommitID{},

@@ -19,7 +19,7 @@ type Store struct {
 	IAVLStore iavl.Store        // state commitment store
 }
 
-func NewStoreWithIAVL(persisted *db.GoLevelDB, cacheDB *cache.CacheDB, height int64, prefix string, commitID types.CommitID) *Store {
+func NewStoreWithIAVL(persisted db.DB, cacheDB *cache.CacheDB, height int64, prefix string, commitID types.CommitID) *Store {
 	iavlStore, _ := iavl.NewStore(db.NewPrefixDB(persisted, []byte("s/k:"+prefix+"/")), commitID)
 	return &Store{
 		Dedup:     dedup.NewStore(height, prefix, persisted),
@@ -28,7 +28,7 @@ func NewStoreWithIAVL(persisted *db.GoLevelDB, cacheDB *cache.CacheDB, height in
 	}
 }
 
-func NewStoreWithoutIAVL(persisted *db.GoLevelDB, cacheDB *cache.CacheDB, latestHeight, height int64, prefix string) *Store {
+func NewStoreWithoutIAVL(persisted db.DB, cacheDB *cache.CacheDB, latestHeight, height int64, prefix string) *Store {
 	if height > latestHeight-maxCacheKeepHeights {
 		return &Store{
 			Cache: cache.NewStore(height, prefix, cacheDB),
