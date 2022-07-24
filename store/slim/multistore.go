@@ -1,12 +1,10 @@
 package slim
 
 import (
-	"fmt"
 	"github.com/pokt-network/pocket-core/store/cachemulti"
 	"github.com/pokt-network/pocket-core/store/slim/cache"
 	"github.com/pokt-network/pocket-core/store/types"
 	db "github.com/tendermint/tm-db"
-	"time"
 )
 
 var _ types.CommitMultiStore = &MultiStore{}
@@ -89,9 +87,7 @@ func (m *MultiStore) Preload(latestVersion int64) {
 
 func (m *MultiStore) CommitCache() {
 	// commit cache
-	t := time.Now()
 	m.CacheDB.Commit()
-	fmt.Println("Cache commit took: " + time.Since(t).String())
 	// prune cache
 	oldestHeight := m.LastCommit.Version - maxCacheKeepHeights
 	if oldestHeight <= 1 {
