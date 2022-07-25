@@ -8,12 +8,34 @@ import (
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/tendermint/tendermint/crypto"
 
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // BurnForChallenge - Tries to remove coins from account & supply for a challenged validator
 func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.BigInt, address sdk.Address) {
-	coins := k.RelaysToTokensMultiplier(ctx).Mul(challenges)
+	var coins sdk.BigInt
+	//check if PIP22 is enabled, if so scale the rewards
+	if k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey) {
+		//grab stake
+		validator, found := k.GetValidator(ctx, address)
+		if !found {
+			ctx.Logger().Error(fmt.Errorf("no validator found for address %s; at height %d\n", address.String(), ctx.BlockHeight()).Error())
+			return
+		}
+
+		stake := validator.GetTokens()
+		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
+		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), (k.ServicerStakeWeightCeiling(ctx).Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx)))))
+		//Convert from tokens to a BIN number
+		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
+		//calculate the weight value
+		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), PIP_22_EXPONENT_DENOMINATOR).Quo(k.ServicerStakeWeightMultiplier(ctx))
+		coinsDecimal := k.RelaysToTokensMultiplier(ctx).ToDec().Mul(challenges.ToDec()).Mul(weight)
+		coins = coinsDecimal.TruncateInt()
+	} else {
+		coins = k.RelaysToTokensMultiplier(ctx).Mul(challenges)
+	}
 	k.simpleSlash(ctx, address, coins)
 }
 

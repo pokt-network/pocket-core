@@ -36,6 +36,8 @@ func mod(i *big.Int, i2 *big.Int) *big.Int { return new(big.Int).Mod(i, i2) }
 
 func neg(i *big.Int) *big.Int { return new(big.Int).Neg(i) }
 
+func exp(i *big.Int, i2 *big.Int) *big.Int { return new(big.Int).Exp(i, i2, nil) }
+
 func min(i *big.Int, i2 *big.Int) *big.Int {
 	if i.Cmp(i2) == 1 {
 		return new(big.Int).Set(i2)
@@ -302,6 +304,10 @@ func MinInt(i1, i2 BigInt) BigInt {
 // MaxInt returns the maximum between two integers.
 func MaxInt(i, i2 BigInt) BigInt {
 	return BigInt{max(i.BigInt(), i2.BigInt())}
+}
+
+func (i BigInt) Pow(i2 BigInt) (res BigInt) {
+	return BigInt{exp(i.BigInt(), i2.BigInt())}
 }
 
 // Human readable string

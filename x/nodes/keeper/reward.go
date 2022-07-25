@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -17,7 +18,32 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 			return sdk.ZeroInt()
 		}
 	}
-	coins := k.RelaysToTokensMultiplier(ctx).Mul(relays)
+
+	var coins sdk.BigInt
+
+	//check if PIP22 is enabled, if so scale the rewards
+	if k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey) {
+		//grab stake
+		validator, found := k.GetValidator(ctx, address)
+		if !found {
+			ctx.Logger().Error(fmt.Errorf("no validator found for address %s; at height %d\n", address.String(), ctx.BlockHeight()).Error())
+			return sdk.ZeroInt()
+		}
+
+		stake := validator.GetTokens()
+		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
+		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), (k.ServicerStakeWeightCeiling(ctx).Sub(k.ServicerStakeWeightCeiling(ctx).Mod(k.ServicerStakeFloorMultiplier(ctx)))))
+		//Convert from tokens to a BIN number
+		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
+		//calculate the weight value, weight will be a floatng point number so cast to DEC here and then truncate back to big int
+		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), PIP_22_EXPONENT_DENOMINATOR).Quo(k.ServicerStakeWeightMultiplier(ctx))
+		coinsDecimal := k.RelaysToTokensMultiplier(ctx).ToDec().Mul(relays.ToDec()).Mul(weight)
+		//truncate back to int
+		coins = coinsDecimal.TruncateInt()
+	} else {
+		coins = k.RelaysToTokensMultiplier(ctx).Mul(relays)
+	}
+
 	toNode, toFeeCollector := k.NodeReward(ctx, coins)
 	if toNode.IsPositive() {
 		k.mint(ctx, toNode, address)
