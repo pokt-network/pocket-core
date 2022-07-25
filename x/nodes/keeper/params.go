@@ -12,6 +12,9 @@ const (
 	DefaultParamspace = types.ModuleName
 )
 
+// This is used as an input to the decimal power function used for calculating the exponent in PIP22. This avoids any overflows when taking the CthRoot of A by ensuring that the exponient is always devisable by 100 giving the effective range of ServicerStakeFloorMultiplierExponent 0-1 in steps of 0.01.
+const PIP_22_EXPONENT_DENOMINATOR = 100 
+
 // ParamKeyTable for staking module
 func ParamKeyTable() sdk.KeyTable {
 	return sdk.NewKeyTable().RegisterParamSet(&types.Params{})
@@ -95,6 +98,32 @@ func (k Keeper) RelaysToTokensMultiplier(ctx sdk.Ctx) sdk.BigInt {
 	return sdk.NewInt(multiplier)
 }
 
+// ServicerStakeFloorMultiplier - Retrieve ServicerStakeFloorMultiplier
+func (k Keeper) ServicerStakeFloorMultiplier(ctx sdk.Ctx) sdk.BigInt {
+	var multiplier int64
+	k.Paramstore.Get(ctx, types.KeyServicerStakeFloorMultiplier, &multiplier)
+	return sdk.NewInt(multiplier)
+}
+
+// ServicerStakeWeightMultiplier - Retrieve ServicerStakeWeightMultiplier
+func (k Keeper) ServicerStakeWeightMultiplier(ctx sdk.Ctx) (res sdk.BigDec) {
+	k.Paramstore.Get(ctx, types.KeyServicerStakeWeightMultiplier, &res)
+	return
+}
+
+// ServicerStakeWeightCeiling - Retrieve ServicerStakeWeightCeiling
+func (k Keeper) ServicerStakeWeightCeiling(ctx sdk.Ctx) sdk.BigInt {
+	var multiplier int64
+	k.Paramstore.Get(ctx, types.KeyServicerStakeWeightCeiling, &multiplier)
+	return sdk.NewInt(multiplier)
+}
+
+// ServicerStakeFloorMultiplierExponent - Retrieve ServicerStakeFloorMultiplierExponent
+func (k Keeper) ServicerStakeFloorMultiplierExponent(ctx sdk.Ctx) (res sdk.BigDec) {
+	k.Paramstore.Get(ctx, types.KeyServicerStakeFloorMultiplierExponent, &res)
+	return
+}
+
 func (k Keeper) NodeReward(ctx sdk.Ctx, reward sdk.BigInt) (nodeReward sdk.BigInt, feesCollected sdk.BigInt) {
 	// convert reward to dec
 	r := reward.ToDec()
@@ -134,22 +163,26 @@ func (k Keeper) MaxJailedBlocks(ctx sdk.Ctx) (res int64) {
 // GetParams - Retrieve all parameters as types.Params
 func (k Keeper) GetParams(ctx sdk.Ctx) types.Params {
 	return types.Params{
-		RelaysToTokensMultiplier: k.RelaysToTokensMultiplier(ctx).Int64(),
-		UnstakingTime:            k.UnStakingTime(ctx),
-		MaxValidators:            k.MaxValidators(ctx),
-		StakeDenom:               k.StakeDenom(ctx),
-		StakeMinimum:             k.MinimumStake(ctx),
-		SessionBlockFrequency:    k.BlocksPerSession(ctx),
-		DAOAllocation:            k.DAOAllocation(ctx),
-		ProposerAllocation:       k.ProposerAllocation(ctx),
-		MaximumChains:            k.MaxChains(ctx),
-		MaxJailedBlocks:          k.MaxJailedBlocks(ctx),
-		MaxEvidenceAge:           k.MaxEvidenceAge(ctx),
-		SignedBlocksWindow:       k.SignedBlocksWindow(ctx),
-		MinSignedPerWindow:       sdk.NewDec(k.MinSignedPerWindow(ctx)),
-		DowntimeJailDuration:     k.DowntimeJailDuration(ctx),
-		SlashFractionDoubleSign:  k.SlashFractionDoubleSign(ctx),
-		SlashFractionDowntime:    k.SlashFractionDowntime(ctx),
+		RelaysToTokensMultiplier:             k.RelaysToTokensMultiplier(ctx).Int64(),
+		UnstakingTime:                        k.UnStakingTime(ctx),
+		MaxValidators:                        k.MaxValidators(ctx),
+		StakeDenom:                           k.StakeDenom(ctx),
+		StakeMinimum:                         k.MinimumStake(ctx),
+		SessionBlockFrequency:                k.BlocksPerSession(ctx),
+		DAOAllocation:                        k.DAOAllocation(ctx),
+		ProposerAllocation:                   k.ProposerAllocation(ctx),
+		MaximumChains:                        k.MaxChains(ctx),
+		MaxJailedBlocks:                      k.MaxJailedBlocks(ctx),
+		MaxEvidenceAge:                       k.MaxEvidenceAge(ctx),
+		SignedBlocksWindow:                   k.SignedBlocksWindow(ctx),
+		MinSignedPerWindow:                   sdk.NewDec(k.MinSignedPerWindow(ctx)),
+		DowntimeJailDuration:                 k.DowntimeJailDuration(ctx),
+		SlashFractionDoubleSign:              k.SlashFractionDoubleSign(ctx),
+		SlashFractionDowntime:                k.SlashFractionDowntime(ctx),
+		ServicerStakeFloorMultiplier:         k.ServicerStakeFloorMultiplier(ctx).Int64(),
+		ServicerStakeWeightMultiplier:        k.ServicerStakeWeightMultiplier(ctx),
+		ServicerStakeWeightCeiling:           k.ServicerStakeWeightCeiling(ctx).Int64(),
+		ServicerStakeFloorMultiplierExponent: k.ServicerStakeFloorMultiplierExponent(ctx),
 	}
 }
 

@@ -95,6 +95,10 @@ func ErrMinimumEditStake(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeMinimumEditStake, "validator must edit stake with a stake greater than or equal to current stake")
 }
 
+func ErrSameBinEditStake(codespace sdk.CodespaceType) sdk.Error {
+	return sdk.NewError(codespace, CodeMinimumEditStake, "validator must edit stake to a greater stake Bin than the current staked bin")
+}
+
 func ErrValidatorPubKeyExists(codespace sdk.CodespaceType) sdk.Error {
 	return sdk.NewError(codespace, CodeInvalidValidator, "validator already exist for this pubkey, must use new validator pubkey")
 }
