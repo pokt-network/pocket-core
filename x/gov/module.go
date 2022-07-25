@@ -125,6 +125,17 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 		//update params
 		am.keeper.SetParams(ctx, gParams)
 	}
+	
+	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey) {
+		params := am.keeper.GetParams(ctx)
+		//on the height we get the ACL and insert the key
+		params.ACL.SetOwner("pos/ServicerStakeFloorMultiplier", am.keeper.GetDAOOwner(ctx))
+		params.ACL.SetOwner("pos/ServicerStakeWeightMultiplier", am.keeper.GetDAOOwner(ctx))
+		params.ACL.SetOwner("pos/ServicerStakeWeightCeiling", am.keeper.GetDAOOwner(ctx))
+		params.ACL.SetOwner("pos/ServicerStakeFloorMultiplierExponent", am.keeper.GetDAOOwner(ctx))
+		//update params
+		am.keeper.SetParams(ctx, params)
+	}
 
 	u := am.keeper.GetUpgrade(ctx)
 	if ctx.AppVersion() < u.Version && ctx.BlockHeight() >= u.UpgradeHeight() && ctx.BlockHeight() != 0 {

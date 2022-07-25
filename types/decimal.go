@@ -424,6 +424,32 @@ func (d BigDec) Power(power uint64) BigDec {
 	return d.Mul(tmp)
 }
 
+// returns the power for a Decimal power with a known denominator
+func (d BigDec) FracPow(power BigDec, denominator int64) BigDec {
+	//A ^ (B/C) is the same as CthRoot(A ^ B).
+	// d^0 = 1
+
+	if power.IsZero() {
+		return OneDec()
+	}
+
+	C := denominator
+
+	//Multiply out B/C to isolate B and truncate B to denominator
+	B := NewInt(power.Mul(NewDec(denominator)).RoundInt64()).ToDec()
+
+	// take CthRoot of A
+	CthA, err := d.ApproxRoot(uint64(C))
+
+	if err != nil {
+		return OneDec()
+	}
+
+	// take power to B of CthRootA
+	output := CthA.Power(uint64(B.RoundInt64()))
+	return output
+}
+
 // ApproxSqrt is a wrapper around ApproxRoot for the common special case
 // of finding the square root of a number. It returns -(sqrt(abs(d)) if input is negative.
 func (d BigDec) ApproxSqrt() (BigDec, error) {

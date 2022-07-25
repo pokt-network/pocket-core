@@ -77,6 +77,16 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 	//same app no change no fail
 	updateNothingval := val
 	updateNothingval.StakedTokens = stakeAmount
+	//new staked amount doesn't push into the next bin
+	failPip22 := val
+	failPip22.StakedTokens = sdk.NewInt(29999000000)
+	//New staked amount does push into the next bin
+	passPip22NextBin := val
+	passPip22NextBin.StakedTokens = sdk.NewInt(30001000000)
+	//All updates should pass above the ceiling
+	passPip22AboveCeil := val
+	passPip22AboveCeil.StakedTokens = sdk.NewInt(60000000000).Add(sdk.OneInt())
+
 	tests := []struct {
 		name          string
 		accountAmount sdk.BigInt
@@ -84,6 +94,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 		amount        sdk.BigInt
 		want          types.Validator
 		err           sdk.Error
+		PIP22Edit     bool
 	}{
 		{
 			name:          "edit stake amount of existing validator",
@@ -91,6 +102,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			origApp:       val,
 			amount:        stakeAmount,
 			want:          updateStakeAmountApp,
+			PIP22Edit:     true,
 		},
 		{
 			name:          "FAIL edit stake amount of existing validator",
@@ -99,6 +111,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			amount:        stakeAmount,
 			want:          updateStakeAmountAppFail,
 			err:           types.ErrMinimumEditStake("pos"),
+			PIP22Edit:     false,
 		},
 		{
 			name:          "edit stake the chains of the validator",
@@ -106,6 +119,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			origApp:       val,
 			amount:        stakeAmount,
 			want:          updateChainsVal,
+			PIP22Edit:     false,
 		},
 		{
 			name:          "edit stake the serviceurl of the validator",
@@ -113,6 +127,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			origApp:       val,
 			amount:        stakeAmount,
 			want:          updateChainsVal,
+			PIP22Edit:     false,
 		},
 		{
 			name:          "FAIL not enough coins to bump stake amount of existing validator",
@@ -121,6 +136,7 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			amount:        stakeAmount,
 			want:          updateStakeAmountApp,
 			err:           types.ErrNotEnoughCoins("pos"),
+			PIP22Edit:     false,
 		},
 		{
 			name:          "update nothing for the validator",
@@ -128,12 +144,45 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			origApp:       val,
 			amount:        stakeAmount,
 			want:          updateNothingval,
+			PIP22Edit:     false,
+		},
+		{
+			name:          "PIP22 not enough to bump bin",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        sdk.NewInt(15001000000),
+			want:          failPip22,
+			err:           types.ErrSameBinEditStake("pos"),
+			PIP22Edit:     true,
+		},
+		{
+			name:          "PIP22 update to next bin",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        sdk.NewInt(15001000000),
+			want:          passPip22NextBin,
+			PIP22Edit:     true,
+		},
+		{
+			name:          "PIP22 above ceil",
+			accountAmount: accountAmount,
+			origApp:       val,
+			amount:        sdk.NewInt(60000000000),
+			want:          passPip22AboveCeil,
+			PIP22Edit:     true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// test setup
 			codec.UpgradeHeight = -1
+			if tt.PIP22Edit {
+				codec.UpgradeFeatureMap[codec.RSCALKey] = -1
+				codec.UpgradeFeatureMap[codec.VEDITKey] = -1
+			} else {
+				codec.UpgradeFeatureMap[codec.RSCALKey] = 0
+				codec.UpgradeFeatureMap[codec.VEDITKey] = 0
+			}
 			context, _, keeper := createTestInput(t, true)
 			coins := sdk.NewCoins(sdk.NewCoin(keeper.StakeDenom(context), tt.accountAmount))
 			err := keeper.AccountKeeper.MintCoins(context, types.StakedPoolName, coins)
