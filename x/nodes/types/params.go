@@ -103,32 +103,32 @@ func (p *Params) ParamSetPairs() sdk.ParamSetPairs {
 		{Key: KeyRelaysToTokensMultiplier, Value: &p.RelaysToTokensMultiplier},
 		{Key: KeyMaxChains, Value: &p.MaximumChains},
 		{Key: KeyMaxJailedBlocks, Value: &p.MaxJailedBlocks},
+		{Key: KeyServicerStakeFloorMultiplier, Value: &p.ServicerStakeFloorMultiplier},
+		{Key: KeyServicerStakeWeightMultiplier, Value: &p.ServicerStakeWeightMultiplier},
+		{Key: KeyServicerStakeWeightCeiling, Value: &p.ServicerStakeWeightCeiling},
+		{Key: KeyServicerStakeFloorMultiplierExponent, Value: &p.ServicerStakeFloorMultiplierExponent},
 	}
 }
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return Params{
-		UnstakingTime:                        DefaultUnstakingTime,
-		MaxValidators:                        DefaultMaxValidators,
-		StakeMinimum:                         DefaultMinStake,
-		StakeDenom:                           sdk.DefaultStakeDenom,
-		MaxEvidenceAge:                       DefaultMaxEvidenceAge,
-		SignedBlocksWindow:                   DefaultSignedBlocksWindow,
-		MinSignedPerWindow:                   DefaultMinSignedPerWindow,
-		DowntimeJailDuration:                 DefaultDowntimeJailDuration,
-		SlashFractionDoubleSign:              DefaultSlashFractionDoubleSign,
-		SlashFractionDowntime:                DefaultSlashFractionDowntime,
-		SessionBlockFrequency:                DefaultSessionBlocktime,
-		DAOAllocation:                        DefaultDAOAllocation,
-		ProposerAllocation:                   DefaultProposerAllocation,
-		RelaysToTokensMultiplier:             DefaultRelaysToTokensMultiplier,
-		MaximumChains:                        DefaultMaxChains,
-		MaxJailedBlocks:                      DefaultMaxJailedBlocks,
-		ServicerStakeFloorMultiplier:         DefaultServicerStakeFloorMultiplier,
-		ServicerStakeWeightMultiplier:        DefaultServicerStakeWeightMultiplier,
-		ServicerStakeWeightCeiling:           DefaultServicerStakeWeightCeiling,
-		ServicerStakeFloorMultiplierExponent: DefaultServicerStakeFloorMultiplierExponent,
+		UnstakingTime:            DefaultUnstakingTime,
+		MaxValidators:            DefaultMaxValidators,
+		StakeMinimum:             DefaultMinStake,
+		StakeDenom:               sdk.DefaultStakeDenom,
+		MaxEvidenceAge:           DefaultMaxEvidenceAge,
+		SignedBlocksWindow:       DefaultSignedBlocksWindow,
+		MinSignedPerWindow:       DefaultMinSignedPerWindow,
+		DowntimeJailDuration:     DefaultDowntimeJailDuration,
+		SlashFractionDoubleSign:  DefaultSlashFractionDoubleSign,
+		SlashFractionDowntime:    DefaultSlashFractionDowntime,
+		SessionBlockFrequency:    DefaultSessionBlocktime,
+		DAOAllocation:            DefaultDAOAllocation,
+		ProposerAllocation:       DefaultProposerAllocation,
+		RelaysToTokensMultiplier: DefaultRelaysToTokensMultiplier,
+		MaximumChains:            DefaultMaxChains,
+		MaxJailedBlocks:          DefaultMaxJailedBlocks,
 	}
 }
 

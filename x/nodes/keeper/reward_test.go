@@ -208,6 +208,8 @@ func TestKeeper_rewardFromRelaysPIP22NoEXP(t *testing.T) {
 	codec.UpgradeFeatureMap[codec.RSCALKey] = -1
 	context, _, keeper := createTestInput(t, true)
 	p := keeper.GetParams(context)
+	p.ServicerStakeFloorMultiplier = types.DefaultServicerStakeFloorMultiplier
+	p.ServicerStakeWeightMultiplier = types.DefaultServicerStakeWeightMultiplier
 	p.ServicerStakeFloorMultiplierExponent = sdk.NewDec(1)
 	p.ServicerStakeWeightCeiling = 60000000000
 	keeper.SetParams(context, p)
@@ -283,6 +285,8 @@ func TestKeeper_checkPIP22CheckCeiling(t *testing.T) {
 	codec.UpgradeFeatureMap[codec.RSCALKey] = -1
 	context, _, keeper := createTestInput(t, true)
 	p := keeper.GetParams(context)
+	p.ServicerStakeFloorMultiplier = types.DefaultServicerStakeFloorMultiplier
+	p.ServicerStakeWeightMultiplier = types.DefaultServicerStakeWeightMultiplier
 	p.ServicerStakeFloorMultiplierExponent = sdk.NewDec(1)
 	p.ServicerStakeWeightCeiling = 15000000000
 	keeper.SetParams(context, p)
@@ -342,6 +346,8 @@ func TestKeeper_rewardFromRelaysPIP22EXP(t *testing.T) {
 	codec.UpgradeFeatureMap[codec.RSCALKey] = -1
 	context, _, keeper := createTestInput(t, true)
 	p := keeper.GetParams(context)
+	p.ServicerStakeFloorMultiplier = types.DefaultServicerStakeFloorMultiplier
+	p.ServicerStakeWeightMultiplier = types.DefaultServicerStakeWeightMultiplier
 	p.ServicerStakeFloorMultiplierExponent = sdk.NewDecWithPrec(50, 2)
 	p.ServicerStakeWeightMultiplier = sdk.NewDec(1)
 	p.ServicerStakeWeightCeiling = 60000000000
