@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -69,8 +70,12 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, claimTx
 			}
 			continue
 		}
+		app, found := k.GetAppFromPublicKey(sessionCtx, evidence.ApplicationPubKey)
+		if !found {
+			ctx.Logger().Error(fmt.Sprintf("an error occurred creating the claim transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
+		}
 		// generate the merkle root for this evidence
-		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight)
+		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight, pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64())
 		// generate the auto txbuilder and clictx
 		txBuilder, cliCtx, err := newTxBuilderAndCliCtx(ctx, &pc.MsgClaim{}, n, kp, k)
 		if err != nil {
@@ -118,6 +123,11 @@ func (k Keeper) ValidateClaim(ctx sdk.Ctx, claim pc.MsgClaim) (err sdk.Error) {
 	// if not found return not found error
 	if !found {
 		return pc.NewAppNotFoundError(pc.ModuleName)
+	}
+	if pc.ModuleCdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.MaxRelayProtKey) {
+		if pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionContext)).LT(sdk.NewInt(claim.TotalProofs)) {
+			return pc.NewOverServiceError(pc.ModuleName)
+		}
 	}
 	// get the session node count for the time of the session
 	sessionNodeCount := int(k.SessionNodeCount(sessionContext))

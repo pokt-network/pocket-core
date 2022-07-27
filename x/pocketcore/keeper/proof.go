@@ -72,8 +72,12 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, proofTx func(cliCtx ut
 			ctx.Logger().Error(err.Error())
 			continue
 		}
+		app, found := k.GetAppFromPublicKey(sessionCtx, claim.SessionHeader.ApplicationPubKey)
+		if !found {
+			ctx.Logger().Error(fmt.Sprintf("an error occurred creating the proof transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
+		}
 		// get the merkle proof object for the pseudorandom index
-		mProof, leaf := evidence.GenerateMerkleProof(claim.SessionHeader.SessionBlockHeight, int(index))
+		mProof, leaf := evidence.GenerateMerkleProof(claim.SessionHeader.SessionBlockHeight, int(index), pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64())
 		// if prevalidation on, then pre-validate
 		if pc.GlobalPocketConfig.ProofPrevalidation {
 			// validate level count on claim by total relays

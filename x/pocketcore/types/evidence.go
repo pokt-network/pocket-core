@@ -31,11 +31,15 @@ func (e Evidence) Seal() CacheObject {
 }
 
 // "GenerateMerkleRoot" - Generates the merkle root for an GOBEvidence object
-func (e *Evidence) GenerateMerkleRoot(height int64) (root HashRange) {
+func (e *Evidence) GenerateMerkleRoot(height int64, maxRelays int64) (root HashRange) {
 	// seal the evidence in cache/db
 	ev, ok := SealEvidence(*e)
 	if !ok {
 		return HashRange{}
+	}
+	if int64(len(ev.Proofs)) > maxRelays {
+		ev.Proofs = ev.Proofs[:maxRelays]
+		ev.NumOfProofs = maxRelays
 	}
 	// generate the root object
 	root, _ = GenerateRoot(height, ev.Proofs)
@@ -53,7 +57,11 @@ func (e *Evidence) AddProof(p Proof) {
 }
 
 // "GenerateMerkleProof" - Generates the merkle Proof for an GOBEvidence
-func (e *Evidence) GenerateMerkleProof(height int64, index int) (proof MerkleProof, leaf Proof) {
+func (e *Evidence) GenerateMerkleProof(height int64, index int, maxRelays int64) (proof MerkleProof, leaf Proof) {
+	if int64(len(e.Proofs)) > maxRelays {
+		e.Proofs = e.Proofs[:maxRelays]
+		e.NumOfProofs = maxRelays
+	}
 	// generate the merkle proof
 	proof, leaf = GenerateProofs(height, e.Proofs, index)
 	// set the evidence in memory
