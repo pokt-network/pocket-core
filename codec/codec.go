@@ -42,10 +42,11 @@ const (
 	ValidatorSplitUpdateKey = "SPLIT"
 	NonCustodialUpdateKey   = "NCUST"
 	TxCacheEnhancementKey   = "REDUP"
+	MaxRelayProtKey         = "MREL"
 	ReplayBurnKey           = "REPBR"
 	BlockSizeModifyKey      = "BLOCK"
-	RSCALKey				= "RSCAL"
-	VEDITKey				= "VEDIT"
+	RSCALKey                = "RSCAL"
+	VEDITKey                = "VEDIT"
 )
 
 func GetCodecUpgradeHeight() int64 {
