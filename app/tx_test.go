@@ -961,6 +961,52 @@ func TestChangeParamsMaxBlocksizeBeforeActivationHeight(t *testing.T) {
 		})
 	}
 }
+func TestChangepip22ParamsBeforeActivationHeight(t *testing.T) {
+
+	tt := []struct {
+		name         string
+		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		*upgrades
+	}{
+		{name: "change pip22 parameter before activation height", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			codec.TestMode = -2
+			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			resetTestACL()
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(1 * time.Second)
+			cb, err := kb.GetCoinbase()
+			assert.Nil(t, err)
+			_, err = kb.List()
+			assert.Nil(t, err)
+			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+			<-evtChan // Wait for block
+			//Before Activation of the parameter ACL do not exist and the value and parameter should be 0 or nil
+			firstquery, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
+			assert.Equal(t, "0", firstquery.Value)
+			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+			//Tx wont modify anything as ACL is not configured (Txresult should be gov code 5)
+			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pos/ServicerStakeFloorMultiplier", 150000, "test", 10000, false)
+			assert.Nil(t, err)
+			assert.NotNil(t, tx)
+			select {
+			case _ = <-evtChan:
+				//fmt.Println(res)
+				assert.Nil(t, err)
+				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
+				//value should be equal to the first query of the param
+				assert.Equal(t, firstquery.Value, o.Value)
+				cleanup()
+				stopCli()
+			}
+		})
+	}
+}
 
 func TestChangeParamsMaxBlocksizeAfterActivationHeight(t *testing.T) {
 
@@ -1001,6 +1047,51 @@ func TestChangeParamsMaxBlocksizeAfterActivationHeight(t *testing.T) {
 				assert.Nil(t, err)
 				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
 				assert.Equal(t, "9000000", o.Value)
+				cleanup()
+				stopCli()
+			}
+		})
+	}
+}
+func TestChangeParamspip22afterActivationHeight(t *testing.T) {
+
+	tt := []struct {
+		name         string
+		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
+		*upgrades
+	}{
+		{name: "change pip22 parameter past activation height", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			codec.TestMode = -3
+			codec.UpgradeFeatureMap[codec.RSCALKey] = tc.upgrades.codecUpgrade.height
+			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
+				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
+				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
+			}
+			resetTestACL()
+			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
+			time.Sleep(1 * time.Second)
+			cb, err := kb.GetCoinbase()
+			assert.Nil(t, err)
+			_, err = kb.List()
+			assert.Nil(t, err)
+			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
+			<-evtChan // Wait for block
+			//After Activation of the parameter ACL should be created(allowing modifying the value) and parameter should have default value of 4000000
+			o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
+			assert.Equal(t, "15000000000", o.Value)
+			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
+			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pos/ServicerStakeFloorMultiplier", 16000000000, "test", 10000, false)
+			assert.Nil(t, err)
+			assert.NotNil(t, tx)
+			select {
+			case _ = <-evtChan:
+				//fmt.Println(res)
+				assert.Nil(t, err)
+				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
+				assert.Equal(t, "16000000000", o.Value)
 				cleanup()
 				stopCli()
 			}
