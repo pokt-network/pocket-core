@@ -20,25 +20,25 @@ var (
 
 const moduleName = "gov"
 
-// app module basics object
+// AppModuleBasic app module basics object
 type AppModuleBasic struct{}
 
-// module name
+// Name module name
 func (AppModuleBasic) Name() string {
 	return moduleName
 }
 
-// register module codec
+// RegisterCodec register module codec
 func (AppModuleBasic) RegisterCodec(cdc *codec.Codec) {
 	types.RegisterCodec(cdc)
 }
 
-// default genesis state
+// DefaultGenesis default genesis state
 func (AppModuleBasic) DefaultGenesis() json.RawMessage {
 	return types.ModuleCdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
-// module validate genesis
+// ValidateGenesis module validate genesis
 func (AppModuleBasic) ValidateGenesis(_ json.RawMessage) error { return nil }
 
 // AppModule implements an application module for the staking module.
@@ -115,27 +115,10 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 	return types.ModuleCdc.MustMarshalJSON(gs)
 }
 
-// module begin-block
+// BeginBlock module begin-block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 
-	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.BlockSizeModifyKey) {
-		gParams := am.keeper.GetParams(ctx)
-		//on the height we get the ACL and insert the key
-		gParams.ACL.SetOwner("pocketcore/BlockByteSize", am.keeper.GetDAOOwner(ctx))
-		//update params
-		am.keeper.SetParams(ctx, gParams)
-	}
-	
-	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey) {
-		params := am.keeper.GetParams(ctx)
-		//on the height we get the ACL and insert the key
-		params.ACL.SetOwner("pos/ServicerStakeFloorMultiplier", am.keeper.GetDAOOwner(ctx))
-		params.ACL.SetOwner("pos/ServicerStakeWeightMultiplier", am.keeper.GetDAOOwner(ctx))
-		params.ACL.SetOwner("pos/ServicerStakeWeightCeiling", am.keeper.GetDAOOwner(ctx))
-		params.ACL.SetOwner("pos/ServicerStakeFloorMultiplierExponent", am.keeper.GetDAOOwner(ctx))
-		//update params
-		am.keeper.SetParams(ctx, params)
-	}
+	ActivateAdditionalParametersACL(ctx, am)
 
 	u := am.keeper.GetUpgrade(ctx)
 	if ctx.AppVersion() < u.Version && ctx.BlockHeight() >= u.UpgradeHeight() && ctx.BlockHeight() != 0 {
@@ -155,6 +138,28 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 		}
 		os.Exit(2)
 		select {}
+	}
+}
+
+// ActivateAdditionalParametersACL ActivateAdditionalParameters activate additional parameters on their respective upgrade heights
+func ActivateAdditionalParametersACL(ctx sdk.Ctx, am AppModule) {
+
+	// activate BlockSizeModify params
+	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.BlockSizeModifyKey) {
+		gParams := am.keeper.GetParams(ctx)
+		//on the height we get the ACL and insert the key
+		gParams.ACL.SetOwner(types.NewACLKey(types.PocketcoreSubspace, "BlockByteSize"), am.keeper.GetDAOOwner(ctx))
+		//update params
+		am.keeper.SetParams(ctx, gParams)
+	}
+	//activate RSCALKey params
+	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey) {
+		params := am.keeper.GetParams(ctx)
+		params.ACL.SetOwner(types.NewACLKey(types.NodesSubspace, "ServicerStakeFloorMultiplier"), am.keeper.GetDAOOwner(ctx))
+		params.ACL.SetOwner(types.NewACLKey(types.NodesSubspace, "ServicerStakeWeightMultiplier"), am.keeper.GetDAOOwner(ctx))
+		params.ACL.SetOwner(types.NewACLKey(types.NodesSubspace, "ServicerStakeWeightCeiling"), am.keeper.GetDAOOwner(ctx))
+		params.ACL.SetOwner(types.NewACLKey(types.NodesSubspace, "ServicerStakeFloorMultiplierExponent"), am.keeper.GetDAOOwner(ctx))
+		am.keeper.SetParams(ctx, params)
 	}
 }
 

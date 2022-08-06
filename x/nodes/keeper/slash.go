@@ -26,11 +26,11 @@ func (k Keeper) BurnForChallenge(ctx sdk.Ctx, challenges sdk.BigInt, address sdk
 
 		stake := validator.GetTokens()
 		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
-		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), (k.ServicerStakeWeightCeiling(ctx).Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx)))))
+		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), k.ServicerStakeWeightCeiling(ctx).Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))))
 		//Convert from tokens to a BIN number
 		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
 		//calculate the weight value
-		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), PIP_22_EXPONENT_DENOMINATOR).Quo(k.ServicerStakeWeightMultiplier(ctx))
+		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), Pip22ExponentDenominator).Quo(k.ServicerStakeWeightMultiplier(ctx))
 		coinsDecimal := k.RelaysToTokensMultiplier(ctx).ToDec().Mul(challenges.ToDec()).Mul(weight)
 		coins = coinsDecimal.TruncateInt()
 	} else {

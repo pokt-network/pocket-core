@@ -32,11 +32,11 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 
 		stake := validator.GetTokens()
 		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
-		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), (k.ServicerStakeWeightCeiling(ctx).Sub(k.ServicerStakeWeightCeiling(ctx).Mod(k.ServicerStakeFloorMultiplier(ctx)))))
+		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), k.ServicerStakeWeightCeiling(ctx).Sub(k.ServicerStakeWeightCeiling(ctx).Mod(k.ServicerStakeFloorMultiplier(ctx))))
 		//Convert from tokens to a BIN number
 		bin := flooredStake.Quo(k.ServicerStakeFloorMultiplier(ctx))
 		//calculate the weight value, weight will be a floatng point number so cast to DEC here and then truncate back to big int
-		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), PIP_22_EXPONENT_DENOMINATOR).Quo(k.ServicerStakeWeightMultiplier(ctx))
+		weight := bin.ToDec().FracPow(k.ServicerStakeFloorMultiplierExponent(ctx), Pip22ExponentDenominator).Quo(k.ServicerStakeWeightMultiplier(ctx))
 		coinsDecimal := k.RelaysToTokensMultiplier(ctx).ToDec().Mul(relays.ToDec()).Mul(weight)
 		//truncate back to int
 		coins = coinsDecimal.TruncateInt()

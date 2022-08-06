@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -245,7 +246,7 @@ func (cdc *Codec) ProtoCodec() *ProtoCodec {
 	return cdc.protoCdc
 }
 
-//Note: includes the actual upgrade height
+// IsAfterCodecUpgrade Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterCodecUpgrade(height int64) bool {
 	if cdc.upgradeOverride != -1 {
 		return cdc.upgradeOverride == 1
@@ -253,34 +254,34 @@ func (cdc *Codec) IsAfterCodecUpgrade(height int64) bool {
 	return (GetCodecUpgradeHeight() <= height || height == -1) || TestMode <= -1
 }
 
-//Note: includes the actual upgrade height
+// IsAfterValidatorSplitUpgrade Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterValidatorSplitUpgrade(height int64) bool {
 	return height >= ValidatorSplitHeight || (height >= UpgradeHeight && UpgradeHeight > GetCodecUpgradeHeight()) || TestMode <= -2
 }
 
-//Note: includes the actual upgrade height
+// IsAfterNonCustodialUpgrade Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterNonCustodialUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height >= UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
 }
 
-//Note: includes the actual upgrade height
+// IsOnNonCustodialUpgrade Note: includes the actual upgrade height
 func (cdc *Codec) IsOnNonCustodialUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height == UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
 }
 
-//Note: includes the actual upgrade height
+// IsAfterNamedFeatureActivationHeight Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterNamedFeatureActivationHeight(height int64, key string) bool {
 	return UpgradeFeatureMap[key] != 0 && height >= UpgradeFeatureMap[key]
 }
 
-//Note: includes the actual upgrade height
+// IsOnNamedFeatureActivationHeight Note: includes the actual upgrade height
 func (cdc *Codec) IsOnNamedFeatureActivationHeight(height int64, key string) bool {
 	return UpgradeFeatureMap[key] != 0 && height == UpgradeFeatureMap[key]
 }
 
 // Upgrade Utils for feature map
 
-//merge slice to existing map
+// SliceToExistingMap merge slice to existing map
 func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {
 	var fmap = make(map[string]int64)
 	for k, v := range m {
@@ -294,7 +295,7 @@ func SliceToExistingMap(arr []string, m map[string]int64) map[string]int64 {
 	return fmap
 }
 
-//converts slice to map
+// SliceToMap converts slice to map
 func SliceToMap(arr []string) map[string]int64 {
 	var fmap = make(map[string]int64)
 	for _, v := range arr {
@@ -305,7 +306,7 @@ func SliceToMap(arr []string) map[string]int64 {
 	return fmap
 }
 
-//converts map to slice
+// MapToSlice converts map to slice
 func MapToSlice(m map[string]int64) []string {
 	var fslice = make([]string, 0)
 	for k, v := range m {
@@ -315,9 +316,10 @@ func MapToSlice(m map[string]int64) []string {
 	return fslice
 }
 
-//convert slice to map and back to remove duplicates
+// CleanUpgradeFeatureSlice convert slice to map and back to remove duplicates
 func CleanUpgradeFeatureSlice(arr []string) []string {
 	m := SliceToMap(arr)
 	s := MapToSlice(m)
+	sort.Strings(s)
 	return s
 }

@@ -7,7 +7,9 @@ import (
 )
 
 const (
-	ACLKeySep = "/"
+	ACLKeySep          = "/"
+	NodesSubspace      = "pos"
+	PocketcoreSubspace = "pocketcore"
 )
 
 func NewACLKey(subspaceName, paramName string) string {

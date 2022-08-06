@@ -41,6 +41,10 @@ func ValidateServiceURL(u string) sdk.Error {
 	if !strings.Contains(u, period) {
 		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("must contain one '.'"))
 	}
+	if len(u) > 255 {
+		return ErrInvalidServiceURL(ModuleName, fmt.Errorf("url too long"))
+	}
+
 	return nil
 }
 
