@@ -796,7 +796,7 @@ func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if params.Height == 0 {
 		params.Height = app.PCA.BaseApp.LastBlockHeight()
 	}
-	res, err := app.PCA.QueryUpgrade(0)
+	res, err := app.PCA.QueryUpgrade(params.Height)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

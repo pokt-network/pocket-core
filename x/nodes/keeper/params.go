@@ -10,8 +10,11 @@ import (
 // Default parameter namespace
 const (
 	DefaultParamspace = types.ModuleName
-	// This is used as an input to the decimal power function used for calculating the exponent in PIP22. This avoids any overflows when taking the CthRoot of A by ensuring that the exponient is always devisable by 100 giving the effective range of ServicerStakeFloorMultiplierExponent 0-1 in steps of 0.01.
-	PIP_22_EXPONENT_DENOMINATOR = 100
+	// Pip22ExponentDenominator This is used as an input to the decimal power function used for
+	//calculating the exponent in PIP22. This avoids any overflows when taking the CthRoot of A by ensuring
+	//that the exponient is always devisable by 100 giving the effective range of
+	//ServicerStakeFloorMultiplierExponent 0-1 in steps of 0.01.
+	Pip22ExponentDenominator = 100
 )
 
 // ParamKeyTable for staking module
