@@ -76,6 +76,9 @@ func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
 					MaxBytes: currentHeightBlockSize,
 					MaxGas:   -1,
 				},
+				Evidence: &abci.EvidenceParams{
+					MaxAge: 50,
+				},
 			}
 		}
 	}
