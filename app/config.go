@@ -721,7 +721,7 @@ func Codec() *codec.Codec {
 func MakeCodec() {
 	// create a new codec
 	cdc = codec.NewCodec(types2.NewInterfaceRegistry())
-	// register all of the app module types
+	// register all the app module types
 	module.NewBasicManager(
 		apps.AppModuleBasic{},
 		auth.AppModuleBasic{},
@@ -927,15 +927,15 @@ func GetAuthTokenFromFile() sdk.AuthToken {
 	if _, err := os.Stat(configFilepath); err == nil {
 		jsonFile, err = os.OpenFile(configFilepath, os.O_RDONLY, os.ModePerm)
 		if err != nil {
-			log2.Fatalf("cannot open config json file: " + err.Error())
+			log2.Fatalf("cannot open auth token json file: " + err.Error())
 		}
 		b, err := ioutil.ReadAll(jsonFile)
 		if err != nil {
-			log2.Fatalf("cannot read config file: " + err.Error())
+			log2.Fatalf("cannot read auth token json file: " + err.Error())
 		}
 		err = json.Unmarshal(b, &t)
 		if err != nil {
-			log2.Fatalf("cannot read config file into json: " + err.Error())
+			log2.Fatalf("cannot read auth token json file into json: " + err.Error())
 		}
 	}
 
