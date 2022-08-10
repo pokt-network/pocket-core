@@ -43,7 +43,7 @@ var (
 	GetParamPath,
 	GetStopPath,
 	GetQueryChains,
-	QueryAccounts string
+	GetAccountsPath string
 )
 
 func init() {
@@ -65,7 +65,7 @@ func init() {
 		case "QueryAccount":
 			GetAccountPath = route.Path
 		case "QueryAccounts":
-			GetAccountPath = route.Path
+			GetAccountsPath = route.Path
 		case "QueryApp":
 			GetAppPath = route.Path
 		case "QueryTX":
