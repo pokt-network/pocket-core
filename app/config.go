@@ -256,6 +256,7 @@ func UpdateConfig(datadir string) {
 	GlobalConfig.PocketConfig.CtxCacheSize = sdk.DefaultCtxCacheSize
 	GlobalConfig.PocketConfig.RPCTimeout = sdk.DefaultRPCTimeout
 	GlobalConfig.PocketConfig.IavlCacheSize = sdk.DefaultIavlCacheSize
+	GlobalConfig.PocketConfig.LeanPocket = sdk.DefaultLeanPocket
 
 	// Backup and Save the File
 	var jsonFile *os.File
