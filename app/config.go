@@ -2,7 +2,6 @@ package app
 
 import (
 	"bufio"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -940,18 +939,18 @@ func ReadValidatorPrivateKeyFileLean(filePath string) ([]crypto.PrivateKey, erro
 
 	pkFileDeduped := map[privval.PrivateKeyFile]struct{}{}
 	for _, pk := range arr {
+		_, exists := pkFileDeduped[pk]
+		if exists {
+			return nil, fmt.Errorf("duplicate validator private key found in " + filePath)
+		}
 		pkFileDeduped[pk] = struct{}{}
 	}
 
 	var pks []crypto.PrivateKey
-	for pk, _ := range pkFileDeduped {
-		bz, err := hex.DecodeString(pk.PrivateKey)
+	for _, pk := range arr {
+		a, err := crypto.NewPrivateKey(pk.PrivateKey)
 		if err != nil {
-			return nil, fmt.Errorf("an error occurred hex decoding this private key: %s, %s", pk, err.Error())
-		}
-		a, err := crypto.NewPrivateKeyBz(bz)
-		if err != nil {
-			return nil, fmt.Errorf("an error occurred creating a private key from hex input: %s, %s", pk, err)
+			return nil, err
 		}
 		pks = append(pks, a)
 	}
