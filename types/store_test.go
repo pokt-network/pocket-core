@@ -17,7 +17,7 @@ func TestPrefixEndBytes(t *testing.T) {
 		{[]byte{byte(55), byte(255), byte(255)}, []byte{byte(56)}},
 		{[]byte{byte(255), byte(255), byte(255)}, nil},
 		{[]byte{byte(255)}, nil},
-		{nil, nil},
+		//{nil, nil},
 	}
 
 	for _, test := range testCases {
