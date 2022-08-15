@@ -106,7 +106,6 @@ func (k Keeper) SendProofTx(ctx sdk.Ctx, n client.Client, node *pc.PocketNode, p
 	}
 }
 
-
 func (k Keeper) ValidateProof(ctx sdk.Ctx, proof pc.MsgProof) (servicerAddr sdk.Address, claim pc.MsgClaim, sdkError sdk.Error) {
 	// get the public key from the claim
 	servicerAddr = proof.GetSigners()[0]

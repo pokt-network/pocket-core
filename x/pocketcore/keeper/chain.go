@@ -15,4 +15,3 @@ func (k Keeper) SetHostedBlockchains(m map[string]pc.HostedBlockchain) *pc.Hoste
 	k.hostedBlockchains.L.Unlock()
 	return k.hostedBlockchains
 }
-

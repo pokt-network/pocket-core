@@ -14,8 +14,6 @@ func (k Keeper) GetNode(ctx sdk.Ctx, address sdk.Address) (n exported.ValidatorI
 	return n, true
 }
 
-
-
 // "AwardCoinsForRelays" - Award coins to nodes for relays completed using the nodes keeper
 func (k Keeper) AwardCoinsForRelays(ctx sdk.Ctx, relays int64, toAddr sdk.Address) sdk.BigInt {
 	return k.posKeeper.RewardForRelays(ctx, sdk.NewInt(relays), toAddr)

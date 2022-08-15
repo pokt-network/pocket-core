@@ -29,7 +29,7 @@ func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func LocalNodes(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	value := r.URL.Query().Get("authtoken")
 	if value != app.AuthToken.Value {
-		WriteErrorResponse(w, 401, "wrong authtoken " + value)
+		WriteErrorResponse(w, 401, "wrong authtoken "+value)
 		return
 	}
 	var localNodes []types4.PublicPocketNode

@@ -133,7 +133,7 @@ func TestRelay_Validate(t *testing.T) { // TODO add overservice, and not unique 
 			k2 := MockAppsKeeper{Applications: []exported2.ApplicationI{tt.app}}
 			k3 := MockPocketKeeper{}
 			pocketNode := GetPocketNode()
-			_, err := tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, k2, k3,  tt.hb, 1, pocketNode)
+			_, err := tt.relay.Validate(newContext(t, false).WithAppVersion("0.0.0"), k, k2, k3, tt.hb, 1, pocketNode)
 			assert.Equal(t, err != nil, tt.hasError)
 		})
 		ClearSessionCache(GlobalSessionCache)

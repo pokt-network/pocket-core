@@ -18,7 +18,7 @@ type Proof interface {
 	GetSigner() sdk.Address                                                                              // returns the main signer(s) for the proof (used in messages)
 	SessionHeader() SessionHeader                                                                        // returns the session header
 	Validate(appSupportedBlockchains []string, sessionNodeCount int, sessionBlockHeight int64) sdk.Error // validate the object
-	Store(max sdk.BigInt, storage *CacheStorage)                                                                                // handle the proof after validation
+	Store(max sdk.BigInt, storage *CacheStorage)                                                         // handle the proof after validation
 	ToProto() ProofI                                                                                     // convert to protobuf
 }
 

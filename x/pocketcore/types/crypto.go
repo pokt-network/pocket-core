@@ -17,7 +17,6 @@ var (
 	NetworkIdentifierLength = 4
 	AddrLength              = tmhash.TruncatedSize
 	globalPVKeyFile         = privval.FilePVKey{}
-
 )
 
 // "NetworkIdentifierVerification"- Verify the netID format (hex string)
