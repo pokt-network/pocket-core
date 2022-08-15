@@ -22,11 +22,15 @@ func (e Evidence) IsSealable() bool {
 }
 
 // "GenerateMerkleRoot" - Generates the merkle root for an GOBEvidence object
-func (e *Evidence) GenerateMerkleRoot(height int64, storage *CacheStorage) (root HashRange) {
+func (e *Evidence) GenerateMerkleRoot(height int64, maxRelays int64, storage *CacheStorage) (root HashRange) {
 	// seal the evidence in cache/db
 	ev, ok := SealEvidence(*e, storage)
 	if !ok {
 		return HashRange{}
+	}
+	if int64(len(ev.Proofs)) > maxRelays {
+		ev.Proofs = ev.Proofs[:maxRelays]
+		ev.NumOfProofs = maxRelays
 	}
 	// generate the root object
 	root, _ = GenerateRoot(height, ev.Proofs)

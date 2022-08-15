@@ -102,7 +102,17 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 	am.keeper.DeleteExpiredClaims(ctx)
 }
 
-// "EndBlock" - Functionality that is called at the end of (every) block
+// ActivateAdditionalParameters activate additional parameters on their respective upgrade heights
+func ActivateAdditionalParameters(ctx sdk.Ctx, am AppModule) {
+	if am.keeper.Cdc.IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.BlockSizeModifyKey) {
+		//on the height we set the default value
+		params := am.keeper.GetParams(ctx)
+		params.BlockByteSize = types.DefaultBlockByteSize
+		am.keeper.SetParams(ctx, params)
+	}
+}
+
+// EndBlock "EndBlock" - Functionality that is called at the end of (every) block
 func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	// get blocks per session
 	blocksPerSession := am.keeper.BlocksPerSession(ctx)
@@ -141,7 +151,7 @@ func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Validat
 	return []abci.ValidatorUpdate{}
 }
 
-// "InitGenesis" - Inits the module genesis from raw json
+// InitGenesis "InitGenesis" - Inits the module genesis from raw json
 func (am AppModule) InitGenesis(ctx sdk.Ctx, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	if data == nil {

@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/pokt-network/pocket-core/codec"
 	"time"
 
 	"github.com/pokt-network/pocket-core/crypto"
@@ -67,8 +68,12 @@ func (k Keeper) SendClaimTx(ctx sdk.Ctx, keeper Keeper, n client.Client, node *p
 			}
 			continue
 		}
+		app, found := k.GetAppFromPublicKey(sessionCtx, evidence.ApplicationPubKey)
+		if !found {
+			ctx.Logger().Error(fmt.Sprintf("an error occurred creating the claim transaction with app %s not found with evidence %v", evidence.ApplicationPubKey, evidence))
+		}
 		// generate the merkle root for this evidence
-		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight, node.EvidenceStore)
+		root := evidence.GenerateMerkleRoot(evidence.SessionHeader.SessionBlockHeight, pc.MaxPossibleRelays(app, k.SessionNodeCount(sessionCtx)).Int64(), node.EvidenceStore)
 		claimTxTotalTime := float64(time.Since(now).Milliseconds())
 		go func() {
 			pc.GlobalServiceMetric().AddClaimTiming(evidence.SessionHeader.Chain, claimTxTotalTime, &address)

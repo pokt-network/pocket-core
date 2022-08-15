@@ -45,6 +45,7 @@ type PocketConfig struct {
 	Cache                     bool   `json:"-"`
 	IavlCacheSize             int64  `json:"iavl_cache_size"`
 	ChainsHotReload           bool   `json:"chains_hot_reload"`
+	GenerateTokenOnStart      bool   `json:"generate_token_on_start"`
 	LeanPocket                bool   `json:"lean_pocket"`
 	LeanPocketUserKeyFileName string `json:"lean_pocket_user_key_file"`
 }
@@ -107,6 +108,7 @@ const (
 	AuthFileName                       = "auth.json"
 	DefaultIavlCacheSize               = 5000000
 	DefaultChainHotReload              = false
+	DefaultGenerateTokenOnStart        = true
 	DefaultLeanPocket                  = false
 	DefaultLeanPocketUserKeyFileName   = "lean_nodes_keys.json"
 )
@@ -115,32 +117,33 @@ func DefaultConfig(dataDir string) Config {
 	c := Config{
 		TendermintConfig: *config.DefaultConfig(),
 		PocketConfig: PocketConfig{
-			DataDir:                   dataDir,
-			GenesisName:               DefaultGenesisName,
-			ChainsName:                DefaultChainsName,
-			EvidenceDBName:            DefaultEvidenceDBName,
-			TendermintURI:             DefaultTMURI,
-			KeybaseName:               DefaultKeybaseName,
-			RPCPort:                   DefaultRPCPort,
-			ClientBlockSyncAllowance:  DefaultClientBlockSyncAllowance,
-			MaxEvidenceCacheEntires:   DefaultMaxEvidenceCacheEntries,
-			MaxSessionCacheEntries:    DefaultMaxSessionCacheEntries,
-			JSONSortRelayResponses:    DefaultJSONSortRelayResponses,
-			RemoteCLIURL:              DefaultRemoteCLIURL,
-			UserAgent:                 DefaultUserAgent,
-			ValidatorCacheSize:        DefaultValidatorCacheSize,
-			ApplicationCacheSize:      DefaultApplicationCacheSize,
-			RPCTimeout:                DefaultRPCTimeout,
-			PrometheusAddr:            DefaultPocketPrometheusListenAddr,
-			PrometheusMaxOpenfiles:    DefaultPrometheusMaxOpenFile,
-			MaxClaimAgeForProofRetry:  DefaultMaxClaimProofRetryAge,
-			ProofPrevalidation:        DefaultProofPrevalidation,
-			CtxCacheSize:              DefaultCtxCacheSize,
-			ABCILogging:               DefaultABCILogging,
-			RelayErrors:               DefaultRelayErrors,
-			DisableTxEvents:           DefaultRPCDisableTransactionEvents,
-			IavlCacheSize:             DefaultIavlCacheSize,
-			ChainsHotReload:           DefaultChainHotReload,
+			DataDir:                  dataDir,
+			GenesisName:              DefaultGenesisName,
+			ChainsName:               DefaultChainsName,
+			EvidenceDBName:           DefaultEvidenceDBName,
+			TendermintURI:            DefaultTMURI,
+			KeybaseName:              DefaultKeybaseName,
+			RPCPort:                  DefaultRPCPort,
+			ClientBlockSyncAllowance: DefaultClientBlockSyncAllowance,
+			MaxEvidenceCacheEntires:  DefaultMaxEvidenceCacheEntries,
+			MaxSessionCacheEntries:   DefaultMaxSessionCacheEntries,
+			JSONSortRelayResponses:   DefaultJSONSortRelayResponses,
+			RemoteCLIURL:             DefaultRemoteCLIURL,
+			UserAgent:                DefaultUserAgent,
+			ValidatorCacheSize:       DefaultValidatorCacheSize,
+			ApplicationCacheSize:     DefaultApplicationCacheSize,
+			RPCTimeout:               DefaultRPCTimeout,
+			PrometheusAddr:           DefaultPocketPrometheusListenAddr,
+			PrometheusMaxOpenfiles:   DefaultPrometheusMaxOpenFile,
+			MaxClaimAgeForProofRetry: DefaultMaxClaimProofRetryAge,
+			ProofPrevalidation:       DefaultProofPrevalidation,
+			CtxCacheSize:             DefaultCtxCacheSize,
+			ABCILogging:              DefaultABCILogging,
+			RelayErrors:              DefaultRelayErrors,
+			DisableTxEvents:          DefaultRPCDisableTransactionEvents,
+			IavlCacheSize:            DefaultIavlCacheSize,
+			ChainsHotReload:          DefaultChainHotReload,
+			GenerateTokenOnStart:     DefaultGenerateTokenOnStart,
 			LeanPocket:                DefaultLeanPocket,
 			LeanPocketUserKeyFileName: DefaultLeanPocketUserKeyFileName,
 		},

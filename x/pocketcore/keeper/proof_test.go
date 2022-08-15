@@ -18,14 +18,14 @@ func TestKeeper_ValidateProof(t *testing.T) { // happy path only todo
 	maxRelays := int64(5)
 	ctx, _, _, _, keeper, keys, _ := createTestInput(t, false)
 	types.ClearEvidence(types.GlobalEvidenceCache)
-	npk, header, _ := simulateRelays(t, keeper, &ctx, 5)
+	npk, header, _ := simulateRelays(t, keeper, &ctx, relaysDone)
 	evidence, err := types.GetEvidence(header, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
 	if err != nil {
 		t.Fatalf("Set evidence not found")
 	}
-	root := evidence.GenerateMerkleRoot(0, types.GlobalEvidenceCache)
+	root := evidence.GenerateMerkleRoot(0, maxRelays, types.GlobalEvidenceCache)
 	_, totalRelays := types.GetTotalProofs(header, types.RelayEvidence, sdk.NewInt(1000), types.GlobalEvidenceCache)
-	assert.Equal(t, totalRelays, int64(5))
+	assert.Equal(t, totalRelays, int64(relaysDone))
 	// generate a claim message
 	claimMsg := types.MsgClaim{
 		SessionHeader: header,

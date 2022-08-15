@@ -16,7 +16,7 @@ func TestKeeper_GetSetClaim(t *testing.T) {
 	assert.Nil(t, err)
 	claim := types.MsgClaim{
 		SessionHeader: header,
-		MerkleRoot:    evidence.GenerateMerkleRoot(0, types.GlobalEvidenceCache),
+		MerkleRoot:    evidence.GenerateMerkleRoot(0, 5, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk.Address()),
 		EvidenceType:  types.RelayEvidence,
@@ -44,7 +44,7 @@ func TestKeeper_GetSetDeleteClaims(t *testing.T) {
 		assert.Nil(t, err)
 		claim := types.MsgClaim{
 			SessionHeader: header,
-			MerkleRoot:    evidence.GenerateMerkleRoot(0, types.GlobalEvidenceCache),
+			MerkleRoot:    evidence.GenerateMerkleRoot(0, 5, types.GlobalEvidenceCache),
 			TotalProofs:   9,
 			FromAddress:   sdk.Address(sdk.Address(npk.Address())),
 			EvidenceType:  types.RelayEvidence,
@@ -77,14 +77,14 @@ func TestKeeper_GetMatureClaims(t *testing.T) {
 
 	matureClaim := types.MsgClaim{
 		SessionHeader: header,
-		MerkleRoot:    i.GenerateMerkleRoot(0, types.GlobalEvidenceCache),
+		MerkleRoot:    i.GenerateMerkleRoot(0, 9, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk.Address()),
 		EvidenceType:  types.RelayEvidence,
 	}
 	immatureClaim := types.MsgClaim{
 		SessionHeader: header2,
-		MerkleRoot:    i2.GenerateMerkleRoot(0, types.GlobalEvidenceCache),
+		MerkleRoot:    i2.GenerateMerkleRoot(0, 9, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk2.Address()),
 		EvidenceType:  types.RelayEvidence,
@@ -123,7 +123,7 @@ func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	assert.Nil(t, err)
 	expiredClaim := types.MsgClaim{
 		SessionHeader: header,
-		MerkleRoot:    i.GenerateMerkleRoot(0, types.GlobalEvidenceCache),
+		MerkleRoot:    i.GenerateMerkleRoot(0, 9, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk.Address()),
 		EvidenceType:  types.RelayEvidence,
@@ -131,7 +131,7 @@ func TestKeeper_DeleteExpiredClaims(t *testing.T) {
 	header2.SessionBlockHeight = int64(20) // NOTE start a later block than 1
 	notExpired := types.MsgClaim{
 		SessionHeader: header2,
-		MerkleRoot:    i2.GenerateMerkleRoot(0, types.GlobalEvidenceCache),
+		MerkleRoot:    i2.GenerateMerkleRoot(0, 9, types.GlobalEvidenceCache),
 		TotalProofs:   9,
 		FromAddress:   sdk.Address(npk2.Address()),
 		EvidenceType:  types.RelayEvidence,
