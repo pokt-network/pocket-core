@@ -51,6 +51,14 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 
 func handleStake(ctx sdk.Ctx, msg types.MsgStake, k keeper.Keeper, signer crypto.PublicKey) sdk.Result {
 	defer sdk.TimeTrack(time.Now())
+
+	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
+		err := msg.CheckServiceUrlLength(msg.ServiceUrl)
+		if err != nil {
+			return err.Result()
+		}
+	}
+
 	pk := msg.PublicKey
 	addr := pk.Address()
 	// create validator object using the message fields
