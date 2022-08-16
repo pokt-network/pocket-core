@@ -276,6 +276,13 @@ func (msg MsgStake) ToProto() MsgProtoStake {
 	}
 }
 
+func (msg MsgStake) CheckServiceUrlLength(url string) sdk.Error {
+	if len(url) > 255 {
+		return ErrInvalidServiceURL(DefaultCodespace, fmt.Errorf("url too long"))
+	}
+	return nil
+}
+
 func (*MsgProtoStake) XXX_MessageName() string {
 	return "x.nodes.MsgProtoStake8"
 }

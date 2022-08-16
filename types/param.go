@@ -17,6 +17,10 @@ const (
 var (
 	ParamsKey  = NewKVStoreKey(paramsKey)
 	ParamsTKey = NewTransientStoreKey(paramsTKey)
+	// AdditionalParametersKeys Tracks the keys for parameter added on the live network for RC-0.9.0 and future releases
+	AdditionalParametersKeys = []string{"BlockByteSize",
+		"ServicerStakeFloorMultiplier", "ServicerStakeWeightMultiplier",
+		"ServicerStakeWeightCeiling", "ServicerStakeFloorMultiplierExponent"}
 )
 
 // Individual parameter store for each keeper
@@ -291,7 +295,16 @@ func (s Subspace) SetParamSet(ctx Ctx, ps ParamSet) {
 		// since SetStruct is meant to be used in InitGenesis
 		// so this method will not be called frequently
 		v := reflect.Indirect(reflect.ValueOf(pair.Value)).Interface()
-		s.Set(ctx, pair.Key, v)
+		//if we are on the genesis or at codec upgrade height (heights where we call setParamSet For all the modules)
+		//ignore the additional parameter as they will alter the apphash
+		if ctx.BlockHeight() < 3 || ctx.IsOnUpgradeHeight() {
+			if !ContainsString(AdditionalParametersKeys, (string)(pair.Key)) {
+				s.Set(ctx, pair.Key, v)
+			}
+		} else {
+			s.Set(ctx, pair.Key, v)
+
+		}
 	}
 }
 
