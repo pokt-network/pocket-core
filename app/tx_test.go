@@ -942,7 +942,7 @@ func TestChangeParamsMaxBlocksizeBeforeActivationHeight(t *testing.T) {
 			<-evtChan // Wait for block
 			//Before Activation of the parameter ACL do not exist and the value and parameter should be 0 or nil
 			firstquery, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
-			assert.Equal(t, "0", firstquery.Value)
+			assert.Equal(t, "", firstquery.Value)
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 			//Tx wont modify anything as ACL is not configured (Txresult should be gov code 5)
 			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pocketcore/BlockByteSize", 9000000, "test", 10000, false)
@@ -987,18 +987,18 @@ func TestChangepip22ParamsBeforeActivationHeight(t *testing.T) {
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
 			//Before Activation of the parameter ACL do not exist and the value and parameter should be 0 or nil
-			firstquery, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
-			assert.Equal(t, "0", firstquery.Value)
+			firstquery, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeWeightMultiplier")
+			assert.Equal(t, "", firstquery.Value)
 			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
 			//Tx wont modify anything as ACL is not configured (Txresult should be gov code 5)
-			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pos/ServicerStakeFloorMultiplier", 150000, "test", 10000, false)
+			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pos/ServicerStakeWeightMultiplier", 1, "test", 10000, false)
 			assert.Nil(t, err)
 			assert.NotNil(t, tx)
 			select {
 			case _ = <-evtChan:
 				//fmt.Println(res)
 				assert.Nil(t, err)
-				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
+				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeWeightMultiplier")
 				//value should be equal to the first query of the param
 				assert.Equal(t, firstquery.Value, o.Value)
 				cleanup()
@@ -1020,7 +1020,7 @@ func TestChangeParamsMaxBlocksizeAfterActivationHeight(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			codec.TestMode = -2
-			codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = tc.upgrades.codecUpgrade.height
+			codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = tc.upgrades.codecUpgrade.height + 1
 			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
@@ -1034,6 +1034,7 @@ func TestChangeParamsMaxBlocksizeAfterActivationHeight(t *testing.T) {
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
+			<-evtChan // Wait for another block
 			//After Activation of the parameter ACL should be created(allowing modifying the value) and parameter should have default value of 4000000
 			o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
 			assert.Equal(t, "4000000", o.Value)
@@ -1065,7 +1066,7 @@ func TestChangeParamspip22afterActivationHeight(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			codec.TestMode = -3
-			codec.UpgradeFeatureMap[codec.RSCALKey] = tc.upgrades.codecUpgrade.height
+			codec.UpgradeFeatureMap[codec.RSCALKey] = tc.upgrades.codecUpgrade.height + 1
 			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
 				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
 				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
@@ -1079,6 +1080,7 @@ func TestChangeParamspip22afterActivationHeight(t *testing.T) {
 			assert.Nil(t, err)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
+			<-evtChan // Wait for another block
 			//After Activation of the parameter ACL should be created(allowing modifying the value) and parameter should have default value of 4000000
 			o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pos/ServicerStakeFloorMultiplier")
 			assert.Equal(t, "15000000000", o.Value)

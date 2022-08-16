@@ -141,3 +141,12 @@ func TimeTrack(start time.Time) {
 		log.Println(fmt.Sprintf("%s took %s", name, elapsed))
 	}
 }
+
+func ContainsString(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}

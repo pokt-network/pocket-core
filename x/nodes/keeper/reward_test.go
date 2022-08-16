@@ -205,8 +205,9 @@ func TestKeeper_rewardFromRelaysPIP22NoEXP(t *testing.T) {
 		validator4 types.Validator
 	}
 
-	codec.UpgradeFeatureMap[codec.RSCALKey] = -1
+	codec.UpgradeFeatureMap[codec.RSCALKey] = 3
 	context, _, keeper := createTestInput(t, true)
+	context = context.WithBlockHeight(3)
 	p := keeper.GetParams(context)
 	p.ServicerStakeFloorMultiplier = types.DefaultServicerStakeFloorMultiplier
 	p.ServicerStakeWeightMultiplier = types.DefaultServicerStakeWeightMultiplier
@@ -282,8 +283,9 @@ func TestKeeper_checkPIP22CheckCeiling(t *testing.T) {
 		validator2 types.Validator
 	}
 
-	codec.UpgradeFeatureMap[codec.RSCALKey] = -1
+	codec.UpgradeFeatureMap[codec.RSCALKey] = 3
 	context, _, keeper := createTestInput(t, true)
+	context = context.WithBlockHeight(3)
 	p := keeper.GetParams(context)
 	p.ServicerStakeFloorMultiplier = types.DefaultServicerStakeFloorMultiplier
 	p.ServicerStakeWeightMultiplier = types.DefaultServicerStakeWeightMultiplier
@@ -343,8 +345,9 @@ func TestKeeper_rewardFromRelaysPIP22EXP(t *testing.T) {
 		validator4 types.Validator
 	}
 
-	codec.UpgradeFeatureMap[codec.RSCALKey] = -1
+	codec.UpgradeFeatureMap[codec.RSCALKey] = 3
 	context, _, keeper := createTestInput(t, true)
+	context = context.WithBlockHeight(3)
 	p := keeper.GetParams(context)
 	p.ServicerStakeFloorMultiplier = types.DefaultServicerStakeFloorMultiplier
 	p.ServicerStakeWeightMultiplier = types.DefaultServicerStakeWeightMultiplier
