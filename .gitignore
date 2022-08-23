@@ -20,8 +20,6 @@ pocket
 logs/Logs
 *.idea/
 
-main
-
 
 app/cmd/rpc/data/pocket_evidence.db
 app/cmd/rpc/data/session.db
