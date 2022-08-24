@@ -24,7 +24,7 @@ type PocketNode struct {
 	DoCacheInitOnce sync.Once
 }
 
-func (n PocketNode) GetAddress() sdk.Address {
+func (n *PocketNode) GetAddress() sdk.Address {
 	return sdk.GetAddress(n.PrivateKey.PublicKey())
 }
 
