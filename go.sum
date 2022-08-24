@@ -157,8 +157,8 @@ github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870/go.mod h1:5tD+ne
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
 github.com/fatih/color v1.12.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
-github.com/fiagdao/tendermint v0.32.11-0.20220822131801-2169e8766dac h1:SvC8Mw8dlvZIKy7VB6GB1ojx8fhX3b6J1ypjSTrssDA=
-github.com/fiagdao/tendermint v0.32.11-0.20220822131801-2169e8766dac/go.mod h1:y0usVOA6uq/JyR2eVoRJwTZk/ZAuv4USj6Y0VnIkd9M=
+github.com/fiagdao/tendermint v0.32.11-0.20220824195748-2087fcc480c1 h1:L1dbcsGeC1syYCTrhpsQ/GJrysPhZczZf9BF/vVJyPg=
+github.com/fiagdao/tendermint v0.32.11-0.20220824195748-2087fcc480c1/go.mod h1:9Q8P/AXsxZ2BxD4irxhueg4HxHKSVK2r9jTUDpqDWjI=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/fortytw2/leaktest v1.3.0 h1:u8491cBMTQ8ft8aeV+adlcytMZylmA5nnwwkRZjI8vw=
 github.com/fortytw2/leaktest v1.3.0/go.mod h1:jDsjWgpAGjm2CA7WthBh/CdZYEPF31XHquHwclZch5g=
