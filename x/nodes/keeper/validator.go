@@ -92,10 +92,14 @@ func (k Keeper) SetValidators(ctx sdk.Ctx, validators types.Validators) {
 
 func (k Keeper) GetValidatorOutputAddress(ctx sdk.Ctx, operatorAddress sdk.Address) (sdk.Address, bool) {
 	val, found := k.GetValidator(ctx, operatorAddress)
+	return k.GetOutputAddressFromValidator(val), found
+}
+
+func (k Keeper) GetOutputAddressFromValidator(val types.Validator) sdk.Address {
 	if val.OutputAddress == nil {
-		return val.Address, found
+		return val.Address
 	}
-	return val.OutputAddress, found
+	return val.OutputAddress
 }
 
 // SetValidator - Store validator in the main store
