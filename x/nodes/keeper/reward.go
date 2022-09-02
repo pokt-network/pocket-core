@@ -10,26 +10,21 @@ import (
 
 // RewardForRelays - Award coins to an address (will be called at the beginning of the next block)
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
+	// get validator
+	validator, found := k.GetValidator(ctx, address)
+	if !found {
+		ctx.Logger().Error(fmt.Errorf("no validator found for address %s; at height %d\n", address.String(), ctx.BlockHeight()).Error())
+		return sdk.ZeroInt()
+	}
+
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
-		var found bool
-		address, found = k.GetValidatorOutputAddress(ctx, address)
-		if !found {
-			k.Logger(ctx).Error(fmt.Sprintf("no validator found for address %s; unable to mint the relay reward...", address.String()))
-			return sdk.ZeroInt()
-		}
+		address = k.GetOutputAddressFromValidator(validator)
 	}
 
 	var coins sdk.BigInt
 
 	//check if PIP22 is enabled, if so scale the rewards
 	if k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey) {
-		//grab stake
-		validator, found := k.GetValidator(ctx, address)
-		if !found {
-			ctx.Logger().Error(fmt.Errorf("no validator found for address %s; at height %d\n", address.String(), ctx.BlockHeight()).Error())
-			return sdk.ZeroInt()
-		}
-
 		stake := validator.GetTokens()
 		//floorstake to the lowest bin multiple or take ceiling, whicherver is smaller
 		flooredStake := sdk.MinInt(stake.Sub(stake.Mod(k.ServicerStakeFloorMultiplier(ctx))), k.ServicerStakeWeightCeiling(ctx).Sub(k.ServicerStakeWeightCeiling(ctx).Mod(k.ServicerStakeFloorMultiplier(ctx))))
