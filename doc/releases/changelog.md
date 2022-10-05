@@ -1,5 +1,8 @@
 # Changelog
 =======
+## RC-0.9.1.1
+-Fix for NCUST activation alongside RSCAL.
+
 ## RC-0.9.0
 - Mempool Refinements :
   - Tx max life in mempool is 2 blocks, after that txs are considered stale and evicted from the mempool
