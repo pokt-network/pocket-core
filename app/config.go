@@ -942,6 +942,9 @@ func ReadValidatorPrivateKeyFileLean(filePath string) ([]crypto.PrivateKey, erro
 }
 
 func SetValidatorsFilesLean(keys []crypto.PrivateKey) error {
+	if len(keys) == 0 {
+		return errors.New("user key file contained zero validator keys")
+	}
 	return SetValidatorsFilesWithPeerLean(keys, keys[0].PublicKey().Address().String())
 }
 
