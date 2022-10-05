@@ -132,7 +132,8 @@ func (am AppModule) EndBlock(ctx sdk.Ctx, _ abci.RequestEndBlock) []abci.Validat
 		}
 
 		if status.IsCatchingUp {
-			ctx.Logger().Error("tendermint is currently syncing still (cannot submit claims/proofs in this state)")
+			//moving this to Debug as it shows up as an error on every block while syncing.
+			ctx.Logger().Debug("tendermint is currently syncing still (cannot submit claims/proofs in this state)")
 			return
 		}
 

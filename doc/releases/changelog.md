@@ -1,6 +1,10 @@
 # Changelog
 =======
-## RC-0.9.1.2
+## Unreleased RC-0.9.2
+- LeanPOKT
+- Unconfirmed Tx / Txs endpoint for txs on the mempool.
+
+## RC-0.9.1.2 / RC-0.9.1.3
 -Fix for NCUST activation with caching
 
 ## RC-0.9.1.1

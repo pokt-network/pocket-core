@@ -38,7 +38,7 @@ Within your fork you are free to work however you want, but keep in mind that in
 
 #### Setting up the Go Environment
 
-Please follow the [Official Installation Guide](https://go.dev/doc/install) to complete this step. Pocket Core uses `go 1.17` so make sure to install the appropiate version before beginning development.
+Please follow the [Official Installation Guide](https://go.dev/doc/install) to complete this step. Pocket Core uses `go 1.18` so make sure to install the appropiate version before beginning development.
 
 #### Installing dependencies
 
