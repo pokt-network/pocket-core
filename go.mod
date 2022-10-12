@@ -3,6 +3,7 @@ module github.com/pokt-network/pocket-core
 go 1.18
 
 require (
+	github.com/alitto/pond v1.8.1
 	github.com/go-kit/kit v0.12.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2

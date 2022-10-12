@@ -791,6 +791,7 @@ func TestQueryRelay(t *testing.T) {
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			select {
 			case <-evtChan:
+				assert.Equal(t, uint64(1), types.GlobalEvidenceWorker.SuccessfulTasks())
 				inv, err := types.GetEvidence(types.SessionHeader{
 					ApplicationPubKey:  aat.ApplicationPublicKey,
 					Chain:              relay.Proof.Blockchain,
@@ -858,6 +859,8 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 			}
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
+			chain := sdk.PlaceholderHash
+			sessionBlockHeight := int64(1)
 			// setup relay
 			for _, v := range validators {
 				relay := types.Relay{
@@ -865,9 +868,9 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 					Meta:    types.RelayMeta{BlockHeight: 5}, // todo race condition here
 					Proof: types.RelayProof{
 						Entropy:            32598345349034509,
-						SessionBlockHeight: 1,
+						SessionBlockHeight: sessionBlockHeight,
 						ServicerPubKey:     v.PublicKey().RawString(),
-						Blockchain:         sdk.PlaceholderHash,
+						Blockchain:         chain,
 						Token:              aat,
 						Signature:          "",
 					},
@@ -886,23 +889,32 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 					BodyString(expectedRequest).
 					Reply(200).
 					BodyString(expectedResponse)
-
-				validatorAddress := sdk.GetAddress(v.PublicKey())
-				node, nodeErr := types.GetPocketNodeByAddress(&validatorAddress)
-
-				assert.Nil(t, nodeErr)
-				inv, err := types.GetEvidence(types.SessionHeader{
-					ApplicationPubKey:  aat.ApplicationPublicKey,
-					Chain:              relay.Proof.Blockchain,
-					SessionBlockHeight: relay.Proof.SessionBlockHeight,
-				}, types.RelayEvidence, sdk.NewInt(10000), node.EvidenceStore)
-				assert.Nil(t, err)
-				assert.NotNil(t, inv)
-				assert.Equal(t, inv.NumOfProofs, int64(1))
 			}
-			cleanup()
-			stopCli()
-			gock.Off()
+
+			select {
+			case <-evtChan:
+				// verify that each store task was successful
+				assert.Equal(t, uint64(len(validators)), types.GlobalEvidenceWorker.SuccessfulTasks())
+				// check the evidence store of each node.
+				for _, v := range validators {
+					validatorAddress := sdk.GetAddress(v.PublicKey())
+					_node, nodeErr := types.GetPocketNodeByAddress(&validatorAddress)
+
+					assert.Nil(t, nodeErr)
+					inv, err := types.GetEvidence(types.SessionHeader{
+						ApplicationPubKey:  aat.ApplicationPublicKey,
+						Chain:              chain,
+						SessionBlockHeight: sessionBlockHeight,
+					}, types.RelayEvidence, sdk.NewInt(10000), _node.EvidenceStore)
+					assert.Nil(t, err)
+					assert.NotNil(t, inv)
+					assert.Equal(t, int64(1), inv.NumOfProofs)
+				}
+
+				cleanup()
+				stopCli()
+				gock.Off()
+			}
 			return
 		})
 	}

@@ -17,11 +17,45 @@ import (
 
 const DEFAULTHTTPMETHOD = "POST"
 
+var (
+	chainHttpClient *http.Client
+)
+
 // "Relay" - A read / write API request from a hosted (non native) external blockchain
 type Relay struct {
 	Payload Payload    `json:"payload"` // the data payload of the request
 	Meta    RelayMeta  `json:"meta"`    // metadata for the relay request
 	Proof   RelayProof `json:"proof"`   // the authentication scheme needed for work
+}
+
+func GetChainsClient() *http.Client {
+	if chainHttpClient == nil {
+		InitHttpClient(1000, 1000, 1000)
+	}
+
+	return chainHttpClient
+}
+
+func InitHttpClient(maxIdleConns, maxConnsPerHost, maxIdleConnsPerHost int) {
+	var chainsTransport *http.Transport
+
+	t, ok := http.DefaultTransport.(*http.Transport)
+	if ok {
+		chainsTransport = t.Clone()
+		// this params may could be handled by config.json, but how much people know about this?
+		// tbd: figure out the right values to this, rn the priority is stop recreating new http client and connections.
+		chainsTransport.MaxIdleConns = maxIdleConns
+		chainsTransport.MaxConnsPerHost = maxConnsPerHost
+		chainsTransport.MaxIdleConnsPerHost = maxIdleConnsPerHost
+	} // if not ok, probably is because is *gock.Transport - test only
+
+	chainHttpClient = &http.Client{
+		Timeout: globalRPCTimeout * time.Second,
+	}
+
+	if chainsTransport != nil {
+		chainHttpClient.Transport = chainsTransport
+	}
 }
 
 // "Validate" - Checks the validity of a relay request using store data
@@ -316,7 +350,7 @@ func executeHTTPRequest(payload, url, userAgent string, basicAuth BasicAuth, met
 		}
 	}
 	// execute the request
-	resp, err := (&http.Client{Timeout: globalRPCTimeout * time.Millisecond}).Do(req)
+	resp, err := GetChainsClient().Do(req)
 	if err != nil {
 		return "", err
 	}

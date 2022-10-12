@@ -172,8 +172,10 @@ func TestRelay_Execute(t *testing.T) {
 		},
 	}
 	validRelay.Proof.RequestHash = validRelay.RequestHashString()
+	httpClient := GetChainsClient()
 	defer gock.Off() // Flush pending mocks after test execution
-
+	defer gock.RestoreClient(httpClient)
+	gock.InterceptClient(httpClient)
 	gock.New("https://server.com").
 		Post("/relay").
 		Reply(200).
@@ -185,6 +187,7 @@ func TestRelay_Execute(t *testing.T) {
 			URL: "https://server.com/relay/",
 		}},
 	}
+
 	response, err := validRelay.Execute(&hb, &nodeAddr)
 	assert.True(t, err == nil)
 	assert.Equal(t, response, "bar")

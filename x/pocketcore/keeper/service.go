@@ -61,8 +61,12 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		}
 		return nil, err
 	}
-	// store the proof before execution, because the proof corresponds to the previous relay
-	relay.Proof.Store(maxPossibleRelays, node.EvidenceStore)
+	// move this to a worker that will insert this proof in a series style to avoid memory consumption and relay proof race conditions
+	// https://github.com/pokt-network/pocket-core/issues/1457
+	pc.GlobalEvidenceWorker.Submit(func() {
+		// store the proof before execution, because the proof corresponds to the previous relay
+		relay.Proof.Store(maxPossibleRelays, node.EvidenceStore)
+	})
 	// attempt to execute
 	respPayload, err := relay.Execute(hostedBlockchains, &nodeAddress)
 	if err != nil {

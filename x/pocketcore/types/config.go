@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/alitto/pond"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/config"
@@ -20,13 +21,16 @@ var (
 	globalRPCTimeout       time.Duration
 	GlobalPocketConfig     types.PocketConfig
 	GlobalTenderMintConfig config.Config
+	GlobalEvidenceWorker   *pond.WorkerPool
 )
 
 func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 	ConfigOnce.Do(func() {
 		InitGlobalServiceMetric(chains, logger, c.PocketConfig.PrometheusAddr, c.PocketConfig.PrometheusMaxOpenfiles)
 	})
+	InitHttpClient(c.PocketConfig.RPCMaxIdleConns, c.PocketConfig.RPCMaxConnsPerHost, c.PocketConfig.RPCMaxIdleConnsPerHost)
 	InitPocketNodeCaches(c, logger)
+	InitEvidenceWorker(c, logger)
 	GlobalPocketConfig = c.PocketConfig
 	GlobalTenderMintConfig = c.TendermintConfig
 	if GlobalPocketConfig.LeanPocket {
@@ -35,6 +39,18 @@ func InitConfig(chains *HostedBlockchains, logger log.Logger, c types.Config) {
 		GlobalTenderMintConfig.NodeKey = types.DefaultPVSNameLean
 	}
 	SetRPCTimeout(c.PocketConfig.RPCTimeout)
+}
+
+func InitEvidenceWorker(_ types.Config, logger log.Logger) {
+	panicHandler := func(p interface{}) {
+		logger.Error(fmt.Sprintf("evidence storage task panicked: %v", p))
+	}
+	GlobalEvidenceWorker = pond.New(
+		1, 0,
+		pond.IdleTimeout(100),
+		pond.PanicHandler(panicHandler),
+		pond.Strategy(pond.Balanced()),
+	)
 }
 
 func ConvertEvidenceToProto(config types.Config) error {
@@ -65,6 +81,13 @@ func ConvertEvidenceToProto(config types.Config) error {
 		return fmt.Errorf("error flushing evidence objects to the database: %s", err.Error())
 	}
 	return nil
+}
+
+func StopEvidenceWorker() {
+	if !GlobalEvidenceWorker.Stopped() {
+		GlobalEvidenceWorker.StopAndWait()
+	}
+	GlobalEvidenceWorker = nil
 }
 
 func FlushSessionCache() {
