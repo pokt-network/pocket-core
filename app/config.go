@@ -88,6 +88,9 @@ func InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL string, keyba
 	}
 	// create logger
 	logger := InitLogger()
+	if GlobalConfig.PocketConfig.MeshNode && GlobalConfig.PocketConfig.GenerateTokenOnStart {
+		logger.Error("start node with mesh_node and generate_token_on_start both on true could lead to issues on mesh node side after node restart.")
+	}
 	// prestart hook, so users don't have to create their own set-validator prestart script
 	if GlobalConfig.PocketConfig.LeanPocket {
 		userProvidedKeyPath := GlobalConfig.PocketConfig.GetLeanPocketUserKeyFilePath()

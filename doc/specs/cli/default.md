@@ -57,6 +57,18 @@ Reset the Pocket node. Deletes the following files/folders:
 * priv\_val\_state
 * node\_keys
 
+## Start Mesh Node
+
+```text
+pocket start-mesh [--datadir] [--simulateRelay=(true | false)]
+```
+
+Starts the Mesh Pocket Node, picks up the config from the assigned `<datadir>`.
+
+Options:
+
+* `--simulateRelay`: Would you like to be able to test your relays.
+
 ## Show CLI Help
 
 ```text

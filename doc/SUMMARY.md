@@ -23,6 +23,7 @@
 * [Portable Private Key](specs/portable-private-key-spec.md)
 * [Application Authentication Token](specs/application-auth-token.md)
 * [Metrics](specs/metrics.md)
+* [Mesh](specs/mesh.md)
 
 ## Releases
 

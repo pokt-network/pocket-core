@@ -720,9 +720,13 @@ func TestQueryRelay(t *testing.T) {
 		name         string
 		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
+		isMesh bool
 	}{
-		{name: "query relay amino", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "query relay proto", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+		{name: "query relay amino", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}, isMesh: false},
+		{name: "query relay proto", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}, isMesh: false},
+		// mesh_node=true
+		{name: "query relay amino", memoryNodeFn: NewInMemoryTendermintNodeAmino, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}, isMesh: true},
+		{name: "query relay proto", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}, isMesh: true},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -780,14 +784,25 @@ func TestQueryRelay(t *testing.T) {
 			relay.Proof.Signature = hex.EncodeToString(sig)
 			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
-			res, _, err := PCA.HandleRelay(relay)
+			res, _, err := PCA.HandleRelay(relay, tc.isMesh)
 			assert.Nil(t, err, err)
-			assert.Equal(t, expectedResponse, res.Response)
-			gock.New(sdk.PlaceholderURL).
-				Post("").
-				BodyString(expectedRequest).
-				Reply(200).
-				BodyString(expectedResponse)
+			if tc.isMesh {
+				assert.Nil(t, res) // mesh does not need a "payload" response, just the 200 code to understand it works.
+				gock.New(sdk.PlaceholderURL).
+					Post("").
+					BodyString(expectedRequest).
+					// tbd: check if there is a better way to validate that executeHttp was not called.
+					Reply(500).
+					BodyString(expectedResponse)
+			} else {
+				assert.Equal(t, expectedResponse, res.Response)
+				gock.New(sdk.PlaceholderURL).
+					Post("").
+					BodyString(expectedRequest).
+					Reply(200).
+					BodyString(expectedResponse)
+			}
+
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			select {
 			case <-evtChan:
@@ -819,9 +834,13 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 		name         string
 		memoryNodeFn func(t *testing.T, genesisState []byte, validators []crypto.PrivateKey) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
 		*upgrades
+		isMesh bool
 	}{
-		{name: "query relay multiple validators amino", memoryNodeFn: NewInMemoryTendermintNodeAminoWithValidators, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}},
-		{name: "query relay multiple validators proto", memoryNodeFn: NewInMemoryTendermintNodeProtoWithValidators, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}},
+		{name: "query relay multiple validators amino", memoryNodeFn: NewInMemoryTendermintNodeAminoWithValidators, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}, isMesh: false},
+		{name: "query relay multiple validators proto", memoryNodeFn: NewInMemoryTendermintNodeProtoWithValidators, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}, isMesh: false},
+		// mesh_node=true
+		{name: "query relay multiple validators amino", memoryNodeFn: NewInMemoryTendermintNodeAminoWithValidators, upgrades: &upgrades{codecUpgrade: codecUpgrade{false, 7000}}, isMesh: true},
+		{name: "query relay multiple validators proto", memoryNodeFn: NewInMemoryTendermintNodeProtoWithValidators, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}, isMesh: true},
 	}
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
@@ -859,6 +878,7 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 			}
 			_, stopCli, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
 			<-evtChan // Wait for block
+
 			chain := sdk.PlaceholderHash
 			sessionBlockHeight := int64(1)
 			// setup relay
@@ -881,14 +901,24 @@ func TestQueryRelayMultipleNodes(t *testing.T) {
 					panic(err)
 				}
 				relay.Proof.Signature = hex.EncodeToString(sig)
-				res, _, err := PCA.HandleRelay(relay)
+				res, _, err := PCA.HandleRelay(relay, tc.isMesh)
 				assert.Nil(t, err, err)
-				assert.Equal(t, expectedResponse, res.Response)
-				gock.New(sdk.PlaceholderURL).
-					Post("").
-					BodyString(expectedRequest).
-					Reply(200).
-					BodyString(expectedResponse)
+				if tc.isMesh {
+					assert.Nil(t, res) // mesh does not need a "payload" response, just the 200 code to understand it works.
+					gock.New(sdk.PlaceholderURL).
+						Post("").
+						BodyString(expectedRequest).
+						// tbd: check if there is a better way to validate that executeHttp was not called.
+						Reply(500).
+						BodyString(expectedResponse)
+				} else {
+					assert.Equal(t, expectedResponse, res.Response)
+					gock.New(sdk.PlaceholderURL).
+						Post("").
+						BodyString(expectedRequest).
+						Reply(200).
+						BodyString(expectedResponse)
+				}
 			}
 
 			select {
