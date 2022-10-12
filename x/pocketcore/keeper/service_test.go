@@ -66,8 +66,10 @@ func TestKeeper_HandleRelay(t *testing.T) {
 		t.Fatalf(er.Error())
 	}
 	validRelay.Proof.Signature = hex.EncodeToString(clientSig)
+	httpClient := types.GetChainsClient()
 	defer gock.Off() // Flush pending mocks after test execution
-
+	defer gock.RestoreClient(httpClient)
+	gock.InterceptClient(httpClient)
 	gock.New("https://www.google.com:443").
 		Post("/").
 		Reply(200).

@@ -103,6 +103,7 @@ func NewInMemoryTendermintNodeAminoWithValidators(t *testing.T, genesisState []b
 			panic(err)
 		}
 		pocketTypes.CleanPocketNodes()
+		pocketTypes.StopEvidenceWorker()
 		PCA = nil
 		inMemKB = nil
 		err := inMemDB.Close()
@@ -168,6 +169,7 @@ func NewInMemoryTendermintNodeProtoWithValidators(t *testing.T, genesisState []b
 		}
 
 		pocketTypes.CleanPocketNodes()
+		pocketTypes.StopEvidenceWorker()
 
 		PCA = nil
 		inMemKB = nil
