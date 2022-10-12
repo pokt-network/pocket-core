@@ -65,7 +65,7 @@ func Relay(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteJSONResponseWithCode(w, string(j), r.URL.Path, r.Host, 400)
 		return
 	}
-	res, dispatch, err := app.PCA.HandleRelay(relay)
+	res, dispatch, err := app.PCA.HandleRelay(relay, false)
 	if err != nil {
 		response := RPCRelayErrorResponse{
 			Error:    err,

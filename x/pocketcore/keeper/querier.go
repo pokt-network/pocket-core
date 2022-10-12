@@ -65,7 +65,7 @@ func queryRelay(ctx sdk.Ctx, req abci.RequestQuery, k Keeper) ([]byte, sdk.Error
 		return nil, sdk.ErrInternal(fmt.Sprintf("failed to parse params: %s", err))
 	}
 	// handle the relay from the params
-	response, er := k.HandleRelay(ctx, params.Relay)
+	response, er := k.HandleRelay(ctx, params.Relay, false)
 	if er != nil {
 		return nil, er
 	}

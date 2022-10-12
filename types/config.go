@@ -53,6 +53,7 @@ type PocketConfig struct {
 	GenerateTokenOnStart       bool   `json:"generate_token_on_start"`
 	LeanPocket                 bool   `json:"lean_pocket"`
 	LeanPocketUserKeyFileName  string `json:"lean_pocket_user_key_file"`
+	MeshNode                  bool   `json:"mesh_node"`
 }
 
 func (c PocketConfig) GetLeanPocketUserKeyFilePath() string {
@@ -120,6 +121,7 @@ const (
 	DefaultGenerateTokenOnStart        = true
 	DefaultLeanPocket                  = false
 	DefaultLeanPocketUserKeyFileName   = "lean_nodes_keys.json"
+	DefaultMeshNode                    = false
 )
 
 func DefaultConfig(dataDir string) Config {
@@ -159,6 +161,7 @@ func DefaultConfig(dataDir string) Config {
 			GenerateTokenOnStart:       DefaultGenerateTokenOnStart,
 			LeanPocket:                 DefaultLeanPocket,
 			LeanPocketUserKeyFileName:  DefaultLeanPocketUserKeyFileName,
+			MeshNode:                  DefaultMeshNode,
 		},
 	}
 	c.TendermintConfig.LevelDBOptions = config.DefaultLevelDBOpts()

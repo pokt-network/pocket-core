@@ -116,7 +116,7 @@ func testRelayAt(
 		Post("/").
 		Reply(200).
 		BodyString("bar")
-	return keeper.HandleRelay(ctx, validRelay)
+	return keeper.HandleRelay(ctx, validRelay, false)
 }
 
 func TestKeeper_HandleRelay(t *testing.T) {

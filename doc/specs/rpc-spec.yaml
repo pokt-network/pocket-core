@@ -8,7 +8,7 @@ info:
   license:
     name: MIT License
     url: 'https://github.com/pokt-network/pocket-core/LICENSE.md'
-  version: 0.6.0
+  version: ALPHA-0.9.2
 externalDocs:
   description: Find out more about Pocket Network
   url: 'https://pokt.network'
@@ -23,6 +23,10 @@ tags:
     description: Dispatch and relay services
   - name: query
     description: Blockchain queries
+  - name: private
+    description: Private Node that help node runner to manage it remotely. Require Authentication.
+  - name: mesh
+    description: Mesh Node endpoints, mostly private that help node runner to manage it remotely. Require Authentication.
 paths:
   /:
     get:
@@ -49,6 +53,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Health'
+  /mesh/health:
+    get:
+      tags:
+        - health
+        - mesh
+      summary: Get current node version
+      responses:
+        '200':
+          description: Health status of the mesh node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeshHealth'
   /client/dispatch:
     post:
       tags:
@@ -1471,6 +1488,265 @@ paths:
                   message:
                     type: string
                     description: The error msg.
+  /private/mesh/relay:
+    post:
+      tags:
+        - private
+        - mesh
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+        - in: query
+          name: verify
+          schema:
+            type: string
+          description: Flag to run a verification by mesh node to check connectivity
+        - in: query
+          name: address
+          schema:
+            type: string
+          description: Servicer address to verify, used by mesh node to check servicer is supported on set url
+      requestBody:
+        description: Request to be relayed to a target blockchain
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRelayRequest'
+            example:
+              payload:
+                data: '"jsonrpc":"2.0","method":"web3_sha3","params":["0x68656c6c6f20776f726c64"],"id":64'
+                method: ''
+                path: ''
+              meta:
+                block_height: 5
+              proof:
+                request_hash: 7b227061796c6f6164223a7b2264617461223a225c226a736f6e7270635c223a5c22322e305c222c5c226d6574686f645c223a5c22776562335f736861335c222c5c22706172616d735c223a5b5c223078363836353663366336663230373736663732366336345c225d2c5c2269645c223a3634222c226d6574686f64223a22222c2270617468223a22227d2c226d657461223a7b22626c6f636b5f686569676874223a357d2c2270726f6f66223a7b22726571756573745f68617368223a22222c22656e74726f7079223a302c2273657373696f6e5f626c6f636b5f686569676874223a302c2273657276696365725f7075625f6b6579223a22222c22626c6f636b636861696e223a22222c22616174223a7b2276657273696f6e223a22222c226170705f7075625f6b6579223a22222c22636c69656e745f7075625f6b6579223a22222c227369676e6174757265223a22227d2c227369676e6174757265223a22227d7d
+                entropy: 32598345349034508
+                session_block_height: 1
+                servicer_pub_key: 76eb9563b731af2711f326deeaebef166ce1de42c2b60c5c9f50f996fbd318ad
+                blockchain: 36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80
+                aat:
+                  version: 0.0.1
+                  app_pub_key: 81068fcc400b476a332b1dcd17943cb05ffd4a3a030c6309de9bf02d8d91cd70
+                  client_pub_key: 81068fcc400b476a332b1dcd17943cb05ffd4a3a030c6309de9bf02d8d91cd70
+                  signature: c5923bd5a663d7bb3c990504a98008e4d32ab7c57a8689d9a494fa29274b497396cbffa9523a7acf8cdff8227b96a8bb3e2e1c1b008de32041aa86c68d0f2b08
+                signature: e3e3a18fee96d25d913d2c62fc32febe58400cda17958916047945252a72adf96a92557774ba051c87a9c03e554136ef23b0de1bec167050e5be099bac52590d
+      responses:
+        '200':
+          description: Return result of mesh relay operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeshRelay'
+        '401':
+          description: Wrong Auth token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
+  /private/mesh/session:
+    post:
+      tags:
+        - private
+        - mesh
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+        - in: query
+          name: verify
+          schema:
+            type: string
+          description: Flag to run a verification by mesh node to check connectivity
+        - in: query
+          name: address
+          schema:
+            type: string
+          description: Servicer address to verify, used by mesh node to check servicer is supported on set url
+      requestBody:
+        description: Request to be relayed to a target blockchain
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryMeshSessionRequest'
+      responses:
+        '200':
+          description: Return result of mesh relay operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryMeshSessionResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryMeshSessionErrorResponse'
+        '401':
+          description: Wrong Auth token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
+  /private/mesh/stop:
+    post:
+      tags:
+        - private
+        - mesh
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      responses:
+        '200':
+          description: Successful Stop
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: ""
+        '401':
+          description: Wrong Auth Token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
+  /private/mesh/chains:
+    post:
+      tags:
+        - private
+        - mesh
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      responses:
+        '200':
+          description: Return the Current Hosted Chains map
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+        '401':
+          description: Wrong Auth token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
+  /private/mesh/updatechains:
+    post:
+      tags:
+        - private
+        - mesh
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Chain'
+        required: true
+      responses:
+        '200':
+          description: Return the Current Hosted Chains map
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Wrong Auth token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
+  /private/mesh/servicer:
+    post:
+      tags:
+        - private
+        - mesh
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+            type: string
+          description: Current Authorization Token from pocket core.
+      responses:
+        '200':
+          description: Return the json array of pocket core client's current set validators' addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocalNode'
+        '401':
+          description: Wrong Auth token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
 components:
   schemas:
     LocalNode:
@@ -1489,6 +1765,11 @@ components:
           type: boolean
         is_catching_up:
           type: boolean
+    MeshHealth:
+      type: object
+      properties:
+        version:
+          type: string
     Chain:
       type: object
       properties:
@@ -1995,6 +2276,29 @@ components:
           $ref: '#/components/schemas/SessionHeader'
         merkle_root:
           $ref: '#/components/schemas/HashSum'
+    MeshRelay:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
+          description: Amino JSON Error String
+        dispatch:
+          $ref: '#/components/schemas/QueryDispatchResponse'
+    MeshSession:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
+          description: Amino JSON Error String
+        dispatch:
+          $ref: '#/components/schemas/QueryDispatchResponse'
+        remaining_relays:
+          type: number
+          description: How many relays could still been serviced by received servicer, app and blockchain combination
 
     SigningInfo:
       type: object
@@ -2373,6 +2677,37 @@ components:
         payload:
           type: string
           description: string response to relay
+    QueryMeshSessionRequest:
+      type: object
+      properties:
+        session_header:
+          $ref: '#/components/schemas/SessionHeader'
+        meta:
+          $ref: '#/components/schemas/RelayMetadata'
+        servicer_pub_key:
+          type: string
+        blockchain:
+          type: string
+        session_block_height:
+          type: number
+    QueryMeshSessionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        dispatch:
+          $ref: '#/components/schemas/QueryDispatchResponse'
+        remaining_relays:
+          type: number
+          description: how many relays could be serve for servicer, app and blockchain received on request
+    QueryMeshSessionErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: string
+          description: Amino JSON Error String
     QueryErrorRelayResponse:
       type: object
       properties:
