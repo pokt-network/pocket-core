@@ -29,6 +29,37 @@ const (
 	txHeightQuery          = "tx.height=%d"
 )
 
+type HealthResponse struct {
+	Version      string `json:"version"`
+	IsStarting   bool   `json:"is_starting"`
+	IsCatchingUp bool   `json:"is_catching_up"`
+	Height       int64  `json:"height"`
+}
+
+func (app PocketCoreApp) QueryHealth(version string) (res HealthResponse) {
+	res = HealthResponse{
+		Version:      version,
+		IsStarting:   true,
+		IsCatchingUp: false,
+		Height:       0,
+	}
+	res.Height = app.LastBlockHeight()
+	_, err := app.NewContext(res.Height)
+
+	if err != nil {
+		return
+	}
+
+	status, sErr := app.pocketKeeper.TmNode.ConsensusReactorStatus()
+	if sErr != nil {
+		return
+	}
+
+	res.IsStarting = false
+	res.IsCatchingUp = status.IsCatchingUp
+	return
+}
+
 // zero for height = latest
 func (app PocketCoreApp) QueryBlock(height *int64) (blockJSON []byte, err error) {
 	tmClient := app.GetClient()
