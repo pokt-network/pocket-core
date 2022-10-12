@@ -17,6 +17,8 @@ servers:
 tags:
   - name: version
     description: Version of the Pocket API
+  - name: health
+    description: Health of the Pocket Node
   - name: client
     description: Dispatch and relay services
   - name: query
@@ -35,6 +37,18 @@ paths:
               schema:
                 type: string
                 example: 0.0.1
+  /health:
+    get:
+      tags:
+        - health
+      summary: Get current node version, height, starting and running state
+      responses:
+        '200':
+          description: Health status of the node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
   /client/dispatch:
     post:
       tags:
@@ -1464,6 +1478,17 @@ components:
       properties:
         address:
           type: string
+    Health:
+      type: object
+      properties:
+        version:
+          type: string
+        height:
+          type: integer
+        is_starting:
+          type: boolean
+        is_catching_up:
+          type: boolean
     Chain:
       type: object
       properties:
