@@ -5,7 +5,6 @@ import (
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"github.com/pokt-network/pocket-core/store/types"
 	dbm "github.com/tendermint/tm-db"
-	"log"
 	"sort"
 	"strconv"
 	"sync"
@@ -108,7 +107,7 @@ func (cDB *CacheDB) Commit() {
 }
 
 func (cDB *CacheDB) Preload() {
-	log.Println("preloading into cache...")
+	//log.Println("preloading into cache...")
 	latestHeight := cDB.LatestHeight
 	if latestHeight == 0 {
 		return

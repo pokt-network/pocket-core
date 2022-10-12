@@ -71,7 +71,7 @@ func (i *StoreCache) Set(key, value []byte) error {
 	}
 	// TODO naive
 	if found {
-		fmt.Println("Setting from found storeCache")
+		//fmt.Println("Setting from found storeCache")
 		index := sort.Search(len(i.sortedCache), func(a int) bool { return bytes.Equal(i.sortedCache[a], key) })
 		i.sortedCache[index] = key
 	} else {

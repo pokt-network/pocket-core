@@ -42,8 +42,9 @@ func NewIterator(parent *CacheDB, height int64, prefix string, startKey, endKey 
 func (i *Iterator) Next() {
 	i.parent.L.RLock()
 	defer i.parent.L.RUnlock()
-	kvSlice := i.parent.M[i.height]
-	if kvSlice.size == 0 {
+	kvSlice, exist := i.parent.M[i.height]
+	//TODO kvSlice can be nil : handling
+	if !exist || kvSlice.size == 0 {
 		i.valid = false
 		return
 	}

@@ -268,8 +268,8 @@ func TestRPC_QueryUnconfirmedTxs(t *testing.T) {
 	pageCount, _ := resTXs.PageCount.Int64()
 	totalCountTxs, _ := resTXs.TotalTxs.Int64()
 
-	assert.Equal(t, pageCount, int64(1))
-	assert.Equal(t, totalCountTxs, int64(totalTxs))
+	assert.GreaterOrEqual(t, pageCount, int64(1))
+	assert.LessOrEqual(t, totalCountTxs, int64(totalTxs))
 
 	for _, resTX := range resTXs.Txs {
 		assert.NotEmpty(t, resTX.Hash)

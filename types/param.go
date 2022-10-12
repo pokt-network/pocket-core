@@ -12,8 +12,7 @@ const (
 )
 
 var (
-	ParamsKey  = NewKVStoreKey(paramsKey)
-	ParamsTKey = NewTransientStoreKey(paramsTKey)
+	ParamsKey = NewKVStoreKey(paramsKey)
 	// AdditionalParametersKeys Tracks the keys for parameter added on the live network for RC-0.9.0 and future releases
 	AdditionalParametersKeys = []string{"BlockByteSize",
 		"ServicerStakeFloorMultiplier", "ServicerStakeWeightMultiplier",

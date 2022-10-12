@@ -16,7 +16,7 @@ POCKET_CORE_DEPLOYMENTS_BRANCH="$4"
 # Parse parameters
 if [ ! -n "$GOLANG_VERSION" ]
 then
-    GOLANG_VERSION="1.13"
+    GOLANG_VERSION="1.18"
 fi
 
 if [ ! -n "$POCKET_CORE_DEPLOYMENTS_BRANCH" ]
