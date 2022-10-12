@@ -108,6 +108,10 @@ func testRelayAt(
 	assert.Nil(t, er)
 	validRelay.Proof.Signature = hex.EncodeToString(clientSig)
 
+	httpClient := types.GetChainsClient()
+	defer gock.Off() // Flush pending mocks after test execution
+	defer gock.RestoreClient(httpClient)
+	gock.InterceptClient(httpClient)
 	gock.New("https://www.google.com:443").
 		Post("/").
 		Reply(200).

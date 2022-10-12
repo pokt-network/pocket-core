@@ -36,6 +36,9 @@ type PocketConfig struct {
 	ValidatorCacheSize         int64  `json:"validator_cache_size"`
 	ApplicationCacheSize       int64  `json:"application_cache_size"`
 	RPCTimeout                 int64  `json:"rpc_timeout"`
+	RPCMaxIdleConns           int    `json:"rpc_max_idle_conns"`
+	RPCMaxConnsPerHost        int    `json:"rpc_max_conns_per_host"`
+	RPCMaxIdleConnsPerHost    int    `json:"rpc_max_idle_conns_per_host"`
 	PrometheusAddr             string `json:"pocket_prometheus_port"`
 	PrometheusMaxOpenfiles     int    `json:"prometheus_max_open_files"`
 	MaxClaimAgeForProofRetry   int    `json:"max_claim_age_for_proof_retry"`
@@ -104,6 +107,9 @@ const (
 	DefaultPocketPrometheusListenAddr  = "8083"
 	DefaultPrometheusMaxOpenFile       = 3
 	DefaultRPCTimeout                  = 30000
+	DefaultRPCMaxIdleConns             = 1000
+	DefaultRPCMaxConnsPerHost          = 1000
+	DefaultRPCMaxIdleConnsPerHost      = 1000
 	DefaultMaxClaimProofRetryAge       = 32
 	DefaultProofPrevalidation          = false
 	DefaultCtxCacheSize                = 20
@@ -138,6 +144,9 @@ func DefaultConfig(dataDir string) Config {
 			ValidatorCacheSize:         DefaultValidatorCacheSize,
 			ApplicationCacheSize:       DefaultApplicationCacheSize,
 			RPCTimeout:                 DefaultRPCTimeout,
+			RPCMaxIdleConns:           DefaultRPCMaxIdleConns,
+			RPCMaxConnsPerHost:        DefaultRPCMaxConnsPerHost,
+			RPCMaxIdleConnsPerHost:    DefaultRPCMaxIdleConnsPerHost,
 			PrometheusAddr:             DefaultPocketPrometheusListenAddr,
 			PrometheusMaxOpenfiles:     DefaultPrometheusMaxOpenFile,
 			MaxClaimAgeForProofRetry:   DefaultMaxClaimProofRetryAge,
