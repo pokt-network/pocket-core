@@ -27,6 +27,16 @@ func Version(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	WriteResponse(w, APIVersion, r.URL.Path, r.Host)
 }
 
+func Health(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	res := app.PCA.QueryHealth(APIVersion)
+	j, er := json.Marshal(res)
+	if er != nil {
+		WriteErrorResponse(w, 400, er.Error())
+		return
+	}
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
 func LocalNodes(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	value := r.URL.Query().Get("authtoken")
 	if value != app.AuthToken.Value {
