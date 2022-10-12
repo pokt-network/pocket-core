@@ -84,7 +84,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	mockCtx.On("PrevCtx", keeper.GetLatestSessionBlockHeight(mockCtx)).Return(ctx, nil)
 	mockCtx.On("Logger").Return(ctx.Logger())
 
-	resp, err := keeper.HandleRelay(mockCtx, validRelay)
+	resp, err := keeper.HandleRelay(mockCtx, validRelay, false)
 	assert.Nil(t, err, err)
 	assert.NotNil(t, resp)
 	assert.NotEmpty(t, resp)

@@ -61,7 +61,9 @@ func init() {
 	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
 	startCmd.Flags().BoolVar(&useCache, "useCache", false, "use cache")
 	startCmd.Flags().BoolVar(&forceSetValidatorsLean, "forceSetValidators", false, "reads your lean_pocket_user_key_file (lean_nodes_keys.json) and updates your last signed state/validator files before starting your node")
+	meshCmd.Flags().BoolVar(&simulateRelay, "simulateRelay", false, "would you like to be able to test your relays")
 	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(meshCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
 	rootCmd.AddCommand(stopCmd)
@@ -96,7 +98,7 @@ func start(cmd *cobra.Command, args []string) {
 		genesisType = app.TestnetGenesisType
 	}
 	tmNode := app.InitApp(datadir, tmNode, persistentPeers, seeds, remoteCLIURL, keybase, genesisType, useCache, forceSetValidatorsLean)
-	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload)
+	go rpc.StartRPC(app.GlobalConfig.PocketConfig.RPCPort, app.GlobalConfig.PocketConfig.RPCTimeout, simulateRelay, profileApp, allBlockTxs, app.GlobalConfig.PocketConfig.ChainsHotReload, app.GlobalConfig.PocketConfig.MeshNode)
 	// trap kill signals (2,3,15,9)
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
@@ -118,6 +120,26 @@ func start(cmd *cobra.Command, args []string) {
 		fmt.Println(message)
 		os.Exit(0)
 	}()
+}
+
+var meshCmd = &cobra.Command{
+	Use:   "start-mesh",
+	Short: "starts pocket-mesh daemon",
+	Long:  `Starts the Pocket mesh node, picks up the config from the assigned <datadir>`,
+	Run: func(cmd *cobra.Command, args []string) {
+		t := time.Unix(1666800000, 0) // Wed, October 26, 2022 12:00:00 PM GMT-04:00
+		sleepDuration := time.Until(t)
+		if time.Now().Before(t) {
+			fmt.Println("Sleeping for ", sleepDuration)
+			time.Sleep(sleepDuration)
+		}
+		startMesh(cmd, args)
+	},
+}
+
+func startMesh(cmd *cobra.Command, args []string) {
+	app.InitMeshConfig(datadir)
+	rpc.StartMeshRPC(simulateRelay)
 }
 
 // resetCmd represents the reset command

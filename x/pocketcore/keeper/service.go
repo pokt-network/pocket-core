@@ -10,7 +10,7 @@ import (
 )
 
 // HandleRelay handles an api (read/write) request to a non-native (external) blockchain
-func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
+func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay, isMesh bool) (*pc.RelayResponse, sdk.Error) {
 	relayTimeStart := time.Now()
 	// get the latest session block height because this relay will correspond with the latest session
 	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
@@ -61,34 +61,43 @@ func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk
 		}
 		return nil, err
 	}
-	// move this to a worker that will insert this proof in a series style to avoid memory consumption and relay proof race conditions
+	// move this to a worker that will insert this proof in a serie style to avoid memory consumption and relay proof race conditions
 	// https://github.com/pokt-network/pocket-core/issues/1457
 	pc.GlobalEvidenceWorker.Submit(func() {
 		// store the proof before execution, because the proof corresponds to the previous relay
 		relay.Proof.Store(maxPossibleRelays, node.EvidenceStore)
 	})
-	// attempt to execute
-	respPayload, err := relay.Execute(hostedBlockchains, &nodeAddress)
-	if err != nil {
-		ctx.Logger().Error(fmt.Sprintf("could not send relay with error: %s", err.Error()))
-		return nil, err
+
+	// store the proof before execution, because the proof corresponds to the previous relay
+	//relay.Proof.Store(maxPossibleRelays, node.EvidenceStore)
+
+	var resp *pc.RelayResponse
+
+	if !isMesh {
+		// attempt to execute
+		respPayload, err := relay.Execute(hostedBlockchains, &nodeAddress)
+		if err != nil {
+			ctx.Logger().Error(fmt.Sprintf("could not send relay with error: %s", err.Error()))
+			return nil, err
+		}
+		// generate response object
+		resp = &pc.RelayResponse{
+			Response: respPayload,
+			Proof:    relay.Proof,
+		}
+		// sign the response
+		sig, er := node.PrivateKey.Sign(resp.Hash())
+		if er != nil {
+			ctx.Logger().Error(
+				fmt.Sprintf("could not sign response for address: %s with hash: %v, with error: %s",
+					nodeAddress.String(), resp.HashString(), er.Error()),
+			)
+			return nil, pc.NewKeybaseError(pc.ModuleName, er)
+		}
+		// attach the signature in hex to the response
+		resp.Signature = hex.EncodeToString(sig)
 	}
-	// generate response object
-	resp := &pc.RelayResponse{
-		Response: respPayload,
-		Proof:    relay.Proof,
-	}
-	// sign the response
-	sig, er := node.PrivateKey.Sign(resp.Hash())
-	if er != nil {
-		ctx.Logger().Error(
-			fmt.Sprintf("could not sign response for address: %s with hash: %v, with error: %s",
-				nodeAddress.String(), resp.HashString(), er.Error()),
-		)
-		return nil, pc.NewKeybaseError(pc.ModuleName, er)
-	}
-	// attach the signature in hex to the response
-	resp.Signature = hex.EncodeToString(sig)
+
 	// track the relay time
 	relayTime := time.Since(relayTimeStart)
 	// add to metrics
@@ -184,4 +193,64 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 	}
 
 	return &pc.ChallengeResponse{Response: fmt.Sprintf("successfully stored challenge proof for %s", challenge.MinorityResponse.Proof.ServicerPubKey)}, nil
+}
+
+// HandleMeshSession - handles a request from a mesh node that runs minimum remote validations
+func (k Keeper) HandleMeshSession(ctx sdk.Ctx, session pc.MeshSession) (*pc.MeshSessionResponse, sdk.Error) {
+	// get the latest session block height because this relay will correspond with the latest session
+	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
+	var node *pc.PocketNode
+	// There is reference to node address so that way we don't have to recreate address twice for pre-leanpokt
+	var nodeAddress sdk.Address
+
+	if pc.GlobalPocketConfig.LeanPocket {
+		// if lean pocket enabled, grab the targeted servicer through the relay proof
+		servicerRelayPublicKey, err := crypto.NewPublicKey(session.ServicerPubKey)
+		if err != nil {
+			return nil, sdk.ErrInternal("Could not convert servicer hex to public key")
+		}
+		nodeAddress = sdk.GetAddress(servicerRelayPublicKey)
+		node, err = pc.GetPocketNodeByAddress(&nodeAddress)
+		if err != nil {
+			return nil, sdk.ErrInternal("Failed to find correct servicer PK")
+		}
+	} else {
+		// get self node (your validator) from the current state
+		node = pc.GetPocketNode()
+		nodeAddress = node.GetAddress()
+	}
+
+	// retrieve the nonNative blockchains your node is hosting
+	hostedBlockchains := k.GetHostedBlockchains()
+	// ensure the validity of the relay
+	remainingRelays, err := session.Validate(ctx, k.posKeeper, k.appKeeper, k, hostedBlockchains, sessionBlockHeight, node)
+	if err != nil {
+		if pc.GlobalPocketConfig.RelayErrors {
+			ctx.Logger().Error(
+				fmt.Sprintf("could not validate relay for app: %s for chainID: %v with error: %s",
+					session.ServicerPubKey,
+					session.Blockchain,
+					err.Error(),
+				),
+			)
+			ctx.Logger().Debug(
+				fmt.Sprintf(
+					"could not validate relay for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
+					session.ServicerPubKey,
+					session.Blockchain,
+					nodeAddress.String(),
+					sessionBlockHeight,
+					err.Error(),
+				),
+			)
+		}
+		return nil, err
+	}
+
+	dispatch, err := k.HandleDispatch(ctx, session.SessionHeader)
+
+	return &pc.MeshSessionResponse{
+		Session:         *dispatch,
+		RemainingRelays: remainingRelays.Int64(),
+	}, nil
 }
