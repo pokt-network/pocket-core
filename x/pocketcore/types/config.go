@@ -46,8 +46,7 @@ func InitEvidenceWorker(_ types.Config, logger log.Logger) {
 		logger.Error(fmt.Sprintf("evidence storage task panicked: %v", p))
 	}
 	GlobalEvidenceWorker = pond.New(
-		1, 0,
-		pond.IdleTimeout(100),
+		1, 0, pond.MinWorkers(1),
 		pond.PanicHandler(panicHandler),
 		pond.Strategy(pond.Balanced()),
 	)
