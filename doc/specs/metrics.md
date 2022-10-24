@@ -17,10 +17,10 @@ Pocket Metrics work expose service metrics per hosted chain for the validator. B
 
 | Name | Type | Tags | Description |
 | :--- | :--- | :--- | :--- |
-| relay_count\_for_ | Counter |  | The number of relays executed against a hosted blockchain |
-| challenge_count\_for_ | Counter |  | The number of challenges executed against a hosted blockchain |
-| err_count\_for_ | Counter |  | The number of errors executed against a hosted blockchain |
-| avg_relay\_time\_for_ | Histogram |  | The average relay time in ms executed against a hosted blockchain |
-| sessions\_count\_for | Counter |  | The number of unique sessions generated for a hosted blockchain |
-| tokens_earned\_for_ | Counter |  | The number of tokens earned in uPOKT for a hosted blockchain |
+| relay_count\_for_ | Counter | validator_address (LeanPOKT only) | The number of relays executed against a hosted blockchain |
+| challenge_count\_for_ | Counter | validator_address (LeanPOKT only) | The number of challenges executed against a hosted blockchain |
+| err_count\_for_ | Counter | validator_address (LeanPOKT only)  | The number of errors executed against a hosted blockchain |
+| avg_relay\_time\_for_ | Histogram | validator_address (LeanPOKT only) | The average relay time in ms executed against a hosted blockchain |
+| sessions\_count\_for | Counter | validator_address (LeanPOKT only) | The number of unique sessions generated for a hosted blockchain |
+| tokens_earned\_for_ | Counter | validator_address (LeanPOKT only) | The number of tokens earned in uPOKT for a hosted blockchain |
 
