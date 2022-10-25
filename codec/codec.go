@@ -36,19 +36,20 @@ var (
 )
 
 const (
-	UpgradeCodecHeight          = int64(30024)
-	CodecChainHaltHeight        = int64(30334)
-	ValidatorSplitHeight        = int64(45353)
-	NonCustodial1RollbackHeight = int64(69583)
-	UpgradeCodecUpdateKey       = "CODEC"
-	ValidatorSplitUpdateKey     = "SPLIT"
-	NonCustodialUpdateKey       = "NCUST"
-	TxCacheEnhancementKey       = "REDUP"
-	MaxRelayProtKey             = "MREL"
-	ReplayBurnKey               = "REPBR"
-	BlockSizeModifyKey          = "BLOCK"
-	RSCALKey                    = "RSCAL"
-	VEDITKey                    = "VEDIT"
+	UpgradeCodecHeight           = int64(30024)
+	CodecChainHaltHeight         = int64(30334)
+	ValidatorSplitHeight         = int64(45353)
+	NonCustodial1RollbackHeight  = int64(69583)
+	NonCustodial2AllowanceHeight = int64(74622)
+	UpgradeCodecUpdateKey        = "CODEC"
+	ValidatorSplitUpdateKey      = "SPLIT"
+	NonCustodialUpdateKey        = "NCUST"
+	TxCacheEnhancementKey        = "REDUP"
+	MaxRelayProtKey              = "MREL"
+	ReplayBurnKey                = "REPBR"
+	BlockSizeModifyKey           = "BLOCK"
+	RSCALKey                     = "RSCAL"
+	VEDITKey                     = "VEDIT"
 )
 
 func GetCodecUpgradeHeight() int64 {
