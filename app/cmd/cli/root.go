@@ -70,7 +70,7 @@ var startCmd = &cobra.Command{
 	Short: "starts pocket-core daemon",
 	Long:  `Starts the Pocket node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		t := time.Unix(1625263200, 0) // Friday, July 2, 2021 6:00:00 PM GMT-04:00
+		t := time.Unix(1666789200, 0) // Wed, October 26, 2022 9:00:00 AM GMT-04:00
 		sleepDuration := time.Until(t)
 		if time.Now().Before(t) {
 			fmt.Println("Sleeping for ", sleepDuration)
