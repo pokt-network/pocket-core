@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
@@ -12,10 +13,10 @@ import (
 func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Address) sdk.BigInt {
 	// feature flags
 	isAfterRSCAL := k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey)
-	isAfterNonCustodial := k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight())
+	isNonCustodialActive := k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight())
 
 	// The conditions of the original non-custodial issue:
-	isDuringFirstNonCustodialIssue := isAfterNonCustodial && isAfterRSCAL && ctx.BlockHeight() <= codec.NonCustodial1RollbackHeight
+	isDuringFirstNonCustodialIssue := isNonCustodialActive && isAfterRSCAL && ctx.BlockHeight() <= codec.NonCustodial1RollbackHeight
 
 	// get validator
 	validator, found := k.GetValidator(ctx, address)
@@ -24,7 +25,7 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 		return sdk.ZeroInt()
 	}
 
-	if isAfterNonCustodial {
+	if isNonCustodialActive {
 		// if during non-custodial rollback issue on height 69583, use the output address
 		// else only use the output address if after noncustodial allowance height 74622
 		if isDuringFirstNonCustodialIssue || ctx.BlockHeight() >= codec.NonCustodial2AllowanceHeight {

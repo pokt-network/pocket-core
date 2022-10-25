@@ -2,10 +2,11 @@ package keeper
 
 import (
 	"bytes"
+	"sort"
+
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
-	"sort"
 )
 
 func (k Keeper) MarshalValidator(ctx sdk.Ctx, validator types.Validator) ([]byte, error) {
@@ -42,7 +43,8 @@ func (k Keeper) UnmarshalValidator(ctx sdk.Ctx, valBytes []byte) (val types.Vali
 
 // GetValidator - Retrieve validator with address from the main store
 func (k Keeper) GetValidator(ctx sdk.Ctx, addr sdk.Address) (validator types.Validator, found bool) {
-	// NOTE: Removed validator caching as it caused halt on 74620
+	// NOTE: Removed validator caching due to chain halt on 74620 as an extra measure to guarantee
+	//       no state inconsistencies. Safe to re-enable in the future.
 	//val, found := k.validatorCache.GetWithCtx(ctx, addr.String())
 	//if found {
 	//	return val.(types.Validator), found
