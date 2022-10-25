@@ -15,7 +15,7 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 	isAfterNonCustodial := k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight())
 
 	// The conditions of the original non-custodial issue:
-	isDuringNonCustodialIssue := isAfterNonCustodial && isAfterRSCAL && ctx.BlockHeight() <= codec.NonCustodial1RollbackHeight
+	isDuringFirstNonCustodialIssue := isAfterNonCustodial && isAfterRSCAL && ctx.BlockHeight() <= codec.NonCustodial1RollbackHeight
 
 	// get validator
 	validator, found := k.GetValidator(ctx, address)
@@ -27,14 +27,14 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 	if isAfterNonCustodial {
 		// if during non-custodial rollback issue on height 69583, use the output address
 		// else only use the output address if after noncustodial allowance height 74622
-		if isDuringNonCustodialIssue || ctx.BlockHeight() >= codec.NonCustodial2AllowanceHeight {
+		if isDuringFirstNonCustodialIssue || ctx.BlockHeight() >= codec.NonCustodial2AllowanceHeight {
 			address = k.GetOutputAddressFromValidator(validator)
 		}
 	}
 
 	// This simulates the issue that happened between the original non-custodial rollout and the rollback height
 	// This code is needed to allow a 'history replay' of the issue during sync-from-scratch
-	if isDuringNonCustodialIssue {
+	if isDuringFirstNonCustodialIssue {
 		_, found := k.GetValidator(ctx, address)
 		if !found {
 			ctx.Logger().Error(fmt.Errorf("no validator found for address %s; at height %d\n", address.String(), ctx.BlockHeight()).Error())
