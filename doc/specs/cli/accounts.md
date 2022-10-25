@@ -197,6 +197,42 @@ Arguments:
 
 - `<address>`: Target address.
 
+## Show the Main Validators (LeanPOKT Only)
+
+```text
+pocket accounts get-validators
+```
+
+Returns the main validators from the `priv_val_lean` file.
+
+
+**NOTE:** LeanPOKT must be enabled for this command to work, which can be enabled by adding/editing `lean_pocket` to `true` to your `pocket_config` key found in your `config.json`
+
+## Set the Main Validators (LeanPOKT Only)
+
+```text
+pocket accounts set-validators <lean_nodes_keys_path>
+```
+
+Sets the new main validators in the `priv_val_lean` file.
+
+**NOTE:** LeanPOKT must be enabled for this command to work, which can be enabled by adding/editing `lean_pocket` to `true` to your `pocket_config` key found in your `config.json`
+
+Arguments:
+
+- `<lean_nodes_keys_path>`: The path where your lean nodes keys should live. Generally this lives in your pocket root directory, i.e `/home/app/.pocket/lean_nodes_keys.json`
+- lean_nodes_keys.json should be formatted as an array of json objects with `priv_key` of the validator(s), i.e
+```json
+[
+   {
+      "priv_key":"xxxxxx"
+   },
+   {
+      "priv_key":"xxxxx2"
+   }
+]
+```
+
 ## Update an Account's Passphrase
 
 ```text
