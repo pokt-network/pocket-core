@@ -25,7 +25,11 @@ func (k Keeper) RewardForRelays(ctx sdk.Ctx, relays sdk.BigInt, address sdk.Addr
 	}
 
 	if isAfterNonCustodial {
-		address = k.GetOutputAddressFromValidator(validator)
+		// if during non-custodial rollback issue on height 69583, use the output address
+		// else only use the output address if after noncustodial allowance height 74622
+		if isDuringNonCustodialIssue || ctx.BlockHeight() >= codec.NonCustodial2AllowanceHeight {
+			address = k.GetOutputAddressFromValidator(validator)
+		}
 	}
 
 	// This simulates the issue that happened between the original non-custodial rollout and the rollback height

@@ -1,5 +1,8 @@
 # Changelog
 =======
+## RC-0.9.1.2
+-Fix for NCUST activation with caching
+
 ## RC-0.9.1.1
 -Fix for NCUST activation alongside RSCAL.
 
