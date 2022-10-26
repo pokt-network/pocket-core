@@ -488,6 +488,10 @@ github.com/pokt-network/tendermint v0.32.11-0.20221025231155-dfaad4f5abc6 h1:9fb
 github.com/pokt-network/tendermint v0.32.11-0.20221025231155-dfaad4f5abc6/go.mod h1:K0FjOLKFgqlDB/fy/2cx3BoMgFg6JD2FP3EK/9M3Tlk=
 github.com/pokt-network/tendermint v0.32.11-0.20221025235541-7f787e4fe861 h1:jVk4KfGMvkCXfqqfkv2MgML/ap3s54W3o/vlDaJbu6o=
 github.com/pokt-network/tendermint v0.32.11-0.20221025235541-7f787e4fe861/go.mod h1:K0FjOLKFgqlDB/fy/2cx3BoMgFg6JD2FP3EK/9M3Tlk=
+github.com/pokt-network/tendermint v0.32.11-0.20221026192644-e8a103932e3b h1:cDPv+mBB+rb98ZwlLlcfpo+z93nJEa9Xq8M/J1zRA88=
+github.com/pokt-network/tendermint v0.32.11-0.20221026192644-e8a103932e3b/go.mod h1:K0FjOLKFgqlDB/fy/2cx3BoMgFg6JD2FP3EK/9M3Tlk=
+github.com/pokt-network/tendermint v0.32.11-0.20221026210824-2b5e11e47ed3 h1:Musf6JCooYUNsPT3t0RYdxhObPtK1wyfKqLcHigERZc=
+github.com/pokt-network/tendermint v0.32.11-0.20221026210824-2b5e11e47ed3/go.mod h1:K0FjOLKFgqlDB/fy/2cx3BoMgFg6JD2FP3EK/9M3Tlk=
 github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba h1:u2yqCF5l3Kaz8fra6A023nx9Bsfj+KCm2t5xEO4weOo=
 github.com/pokt-network/tm-db v0.5.2-0.20220118210553-9b2300f289ba/go.mod h1:7TGWH92hEbEFVzNJxGi8Ka0O+OohcLLjZCxco/xMrWY=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
