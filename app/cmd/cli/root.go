@@ -127,7 +127,7 @@ var meshCmd = &cobra.Command{
 	Short: "starts pocket-mesh daemon",
 	Long:  `Starts the Pocket mesh node, picks up the config from the assigned <datadir>`,
 	Run: func(cmd *cobra.Command, args []string) {
-		t := time.Unix(1666800000, 0) // Wed, October 26, 2022 12:00:00 PM GMT-04:00
+		t := time.Unix(1666886400, 0) // Wed, October 27, 2022 12:00:00 PM GMT-04:00
 		sleepDuration := time.Until(t)
 		if time.Now().Before(t) {
 			fmt.Println("Sleeping for ", sleepDuration)
