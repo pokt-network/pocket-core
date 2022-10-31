@@ -71,7 +71,9 @@ This guide assume you already have a Servicer properly setup and running. If not
    2. change `generate_token_on_start` option to `false` into the section `pocket_config`
 3. If your proxy has all the endpoints closed except `/v1` and `/v1/client`, please add:
    1. `/v1/private/mesh/relay` - allow mesh node to notify about relays done
-   2. `/v1/health` - return node status: version, height, starting, catching_up
+   2. `/v1/private/mesh/session` - allow mesh node to verify app session before process relays
+      * Used only if we don't have information on cache of that session.
+   3. `/v1/health` - return node status: version, height, starting, catching_up
 4. Start your node as you were doing.
 
 #### Setup Mesh Node:
@@ -83,7 +85,7 @@ This guide assume you already have a Servicer properly setup and running. If not
 	"data_dir": "/home/app/.pocket/mesh",
     "rpc_port": "8081", // mesh node listening port
     "chains_name": "chains/chains.json", // chains for mesh node. This should be a filename path relative to --datadir
-    "rpc_timeout": 30000, // chains rpc timeout
+    "rpc_timeout": 30000, // chains rpc timeout - time in milliseconds
     "log_level": "*:info", // log level, you can try with *:error or even *:debug (this print a lot)
     "user_agent": "mesh-node", // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
     "auth_token_file": "key/auth.json", // authtoken for mesh private endpoints. This should be a filename path relative to --datadir
@@ -91,7 +93,11 @@ This guide assume you already have a Servicer properly setup and running. If not
     "pocket_prometheus_port": "8083",
     "prometheus_max_open_files": 3,
     "relay_cache_file": "data/relays.pkt",
+  	"relay_cache_background_sync_interval": 60, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
+  	"relay_cache_background_compaction_interval": 300, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
     "session_cache_file": "data/session.pkt",
+    "session_cache_background_sync_interval": 60, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
+    "session_cache_background_compaction_interval": 300, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
     // Worker options match with: https://github.com/alitto/pond#resizing-strategies
     // These are used for the relay report queue
     "worker_strategy": "balanced", // Kind of worker strategy, could be: balanced | eager | lazy
@@ -103,8 +109,8 @@ This guide assume you already have a Servicer properly setup and running. If not
     "servicer_auth_token_file": "key/auth.json", // authtoken used to call servicer. This should be a filename path relative to --datadir
     // Servicer relay notification has a retry mechanism, refer to: https://github.com/hashicorp/go-retryablehttp
     "servicer_retry_max_times": 10,
-    "servicer_retry_wait_min": 10,
-    "servicer_retry_wait_max": 180000
+    "servicer_retry_wait_min": 10, // time in milliseconds
+    "servicer_retry_wait_max": 180000 // time in milliseconds
 }
 ```
 3. Create Servicer private key file with following format into the path you set on `config.json`:
