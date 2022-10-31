@@ -2243,11 +2243,11 @@ func prepareHttpClients() {
 	servicerTransport.MaxIdleConnsPerHost = 20
 
 	chainsClient = &http.Client{
-		Timeout:   time.Duration(app.GlobalMeshConfig.RPCTimeout) * time.Second,
+		Timeout:   time.Duration(app.GlobalMeshConfig.RPCTimeout) * time.Millisecond,
 		Transport: chainsTransport,
 	}
 	servicerClient = &http.Client{
-		Timeout:   time.Duration(app.GlobalMeshConfig.RPCTimeout) * time.Second,
+		Timeout:   time.Duration(app.GlobalMeshConfig.RPCTimeout) * time.Millisecond,
 		Transport: servicerTransport,
 	}
 
@@ -2349,7 +2349,17 @@ func initCache() {
 	var err error
 	logger.Info("initializing session cache")
 	sessionCacheFilePath := app.GlobalMeshConfig.DataDir + app.FS + app.GlobalMeshConfig.SessionCacheFile
-	sessionCacheDb, err = pogreb.Open(sessionCacheFilePath, nil)
+	sessionCacheDb, err = pogreb.Open(sessionCacheFilePath, &pogreb.Options{
+		// BackgroundSyncInterval sets the amount of time between background Sync() calls.
+		//
+		// Setting the value to 0 disables the automatic background synchronization.
+		// Setting the value to -1 makes the DB call Sync() after every write operation.
+		BackgroundSyncInterval: time.Duration(app.GlobalMeshConfig.SessionCacheBackgroundSyncInterval) * time.Millisecond,
+		// BackgroundCompactionInterval sets the amount of time between background Compact() calls.
+		//
+		// Setting the value to 0 disables the automatic background compaction.
+		BackgroundCompactionInterval: time.Duration(app.GlobalMeshConfig.SessionCacheBackgroundCompactionInterval) * time.Millisecond,
+	})
 	if err != nil {
 		log2.Fatal(err)
 		return
@@ -2379,7 +2389,17 @@ func initCache() {
 
 	logger.Info("initializing relays cache")
 	relaysCacheFilePath := app.GlobalMeshConfig.DataDir + app.FS + app.GlobalMeshConfig.RelayCacheFile
-	relaysCacheDb, err = pogreb.Open(relaysCacheFilePath, nil)
+	relaysCacheDb, err = pogreb.Open(relaysCacheFilePath, &pogreb.Options{
+		// BackgroundSyncInterval sets the amount of time between background Sync() calls.
+		//
+		// Setting the value to 0 disables the automatic background synchronization.
+		// Setting the value to -1 makes the DB call Sync() after every write operation.
+		BackgroundSyncInterval: time.Duration(app.GlobalMeshConfig.SessionCacheBackgroundSyncInterval) * time.Millisecond,
+		// BackgroundCompactionInterval sets the amount of time between background Compact() calls.
+		//
+		// Setting the value to 0 disables the automatic background compaction.
+		BackgroundCompactionInterval: time.Duration(app.GlobalMeshConfig.SessionCacheBackgroundCompactionInterval) * time.Millisecond,
+	})
 	if err != nil {
 		log2.Fatal(err)
 		return
