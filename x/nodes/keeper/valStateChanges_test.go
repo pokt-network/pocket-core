@@ -646,6 +646,7 @@ func TestKeeper_ValidateUnjailMessage(t *testing.T) {
 		v   types.Validator
 		msg types.MsgUnjail
 	}
+	codec.TestMode = -3
 	unauthSigner := getRandomValidatorAddress()
 	validator := getStakedValidator()
 	validator.Jailed = true

@@ -1,6 +1,7 @@
 package nodes
 
 import (
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/keeper"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
@@ -98,10 +99,11 @@ func Test_handleMsgUnjail(t *testing.T) {
 
 func TestKeeper_ValidateBeginUnstakeSigner(t *testing.T) {
 	type args struct {
-		ctx sdk.Context
-		k   keeper.Keeper
-		v   types.Validator
-		msg types.MsgBeginUnstake
+		ctx     sdk.Context
+		k       keeper.Keeper
+		v       types.Validator
+		msg     types.MsgBeginUnstake
+		forceNC bool
 	}
 	unauthSigner := getRandomValidatorAddress()
 	validator := getStakedValidator()
@@ -126,45 +128,54 @@ func TestKeeper_ValidateBeginUnstakeSigner(t *testing.T) {
 		want sdk.CodeType
 	}{
 		{"Test ValidateBeginUnstake With Output Address & AuthorizedByValidator", args{
-			ctx: context,
-			k:   keeper,
-			v:   validator,
-			msg: msgAuthorizedByValidator,
+			ctx:     context,
+			k:       keeper,
+			v:       validator,
+			msg:     msgAuthorizedByValidator,
+			forceNC: true,
 		}, 0},
 		{"Test ValidateBeginUnstake With Output Address & AuthorizedByOutput", args{
-			ctx: context,
-			k:   keeper,
-			v:   validator,
-			msg: msgAuthorizedByOutput,
+			ctx:     context,
+			k:       keeper,
+			v:       validator,
+			msg:     msgAuthorizedByOutput,
+			forceNC: true,
 		}, 0},
 		{"Test ValidateBeginUnstake Without Output Address & AuthorizedByValidator", args{
-			ctx: context,
-			k:   keeper,
-			v:   validatorNoOuptut,
-			msg: msgAuthorizedByValidator,
+			ctx:     context,
+			k:       keeper,
+			v:       validatorNoOuptut,
+			msg:     msgAuthorizedByValidator,
+			forceNC: true,
 		}, 0},
 		{"Test ValidateBeginUnstake Without Output Address & AuthroizedByOutput", args{
-			ctx: context,
-			k:   keeper,
-			v:   validatorNoOuptut,
-			msg: msgAuthorizedByOutput,
+			ctx:     context,
+			k:       keeper,
+			v:       validatorNoOuptut,
+			msg:     msgAuthorizedByOutput,
+			forceNC: true,
 		}, types.CodeUnauthorizedSigner},
 		{"Test ValidateBeginUnstake Without Output Address & Unauthorized", args{
-			ctx: context,
-			k:   keeper,
-			v:   validatorNoOuptut,
-			msg: msgUnauthorizedSigner,
+			ctx:     context,
+			k:       keeper,
+			v:       validatorNoOuptut,
+			msg:     msgUnauthorizedSigner,
+			forceNC: true,
 		}, types.CodeUnauthorizedSigner},
 
 		{"Test ValidateBeginUnstake With Output Address & Unauthorized", args{
-			ctx: context,
-			k:   keeper,
-			v:   validator,
-			msg: msgUnauthorizedSigner,
+			ctx:     context,
+			k:       keeper,
+			v:       validator,
+			msg:     msgUnauthorizedSigner,
+			forceNC: true,
 		}, types.CodeUnauthorizedSigner},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.forceNC == true {
+				codec.TestMode = -3
+			}
 			keeper.SetValidator(tt.args.ctx, tt.args.v)
 			keeper.SetValidatorSigningInfo(tt.args.ctx, tt.args.v.Address, types.ValidatorSigningInfo{
 				Address:             tt.args.v.Address,

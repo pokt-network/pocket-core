@@ -154,6 +154,7 @@ func TestKeeper_rewardFromRelays(t *testing.T) {
 	codec.TestMode = -3
 	codec.UpgradeFeatureMap[codec.RSCALKey] = 0
 	context, _, keeper := createTestInput(t, true)
+	context = context.WithBlockHeight(codec.NonCustodial2AllowanceHeight)
 	keeper.SetValidator(context, stakedValidator)
 	keeper.SetValidator(context, stakedValidatorNoOutput)
 	tests := []struct {
