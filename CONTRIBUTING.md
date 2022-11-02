@@ -127,7 +127,7 @@ RC (or release candidates) are releases meant for production deployment. Release
 
 #### Starting a disclosure
 
-To start the disclosure process, please send an email containing all evidence, documents and/or links for the vulnerability you are disclosing to `pocket-core-security@pokt.network`. You will receive a response within a 24 hour window outlining next steps.
+To start the disclosure process, please send an email containing all evidence, documents and/or links for the vulnerability you are disclosing to `security@pokt.network`. You will receive a response within a 24 hour window outlining next steps.
 
 #### Public disclosure
 
