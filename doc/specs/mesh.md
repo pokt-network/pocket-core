@@ -17,8 +17,10 @@ Also, you need to set both of them behind a Global DNS provider. The Global DNS 
 
 ### Features
 
-* Relay Approach: First Free
-  * this mean that mesh node will serve first relay for free and check the servicer notify response to understand it should keep servicing or not.
+* Relay Approach:
+  * Validate servicer_health + minimum validations like pokt node does and then:
+    * If not session in cache, query it to servicer_url/v1/private/mesh/session and then process relay
+    * If session in cache and MaxRelays is not hit, process the relay.
 * Proxy any request to servicer
 * Monitor Servicer health using /v1/health and in memory cron jobs
 * Keep sessions in local cache
@@ -26,10 +28,15 @@ Also, you need to set both of them behind a Global DNS provider. The Global DNS 
   * this ensures that even if the mesh node is restarted and the relay was not yet notified, they will be after node startup again
 * Auto clean up old serve session from cache
 * Servicer relays notification has a retry mechanism just in case the Servicer node is not responsive for a while.
-  * this will only retry in some scenarios.
-* Implements a worker queue for the notification to keep the process simple and secure event under crash circumstances.
+  * this will only retry in some scenarios like http code greater than 401 and few code from pocket core
+* Implements a worker queue (per address) for the notification to keep the process simple and secure event under crash circumstances.
+* Supports many servicer at once (like Lean Pokt)
 * Handle minimum mesh node side validations using response get from Health monitor about Height, Starting and Catching Up (same of pocket node)
 * Handle minimum relay validations about payload format (same of pocket node)
+* Check that servicer_url is reachable on the required paths.
+  * /v1/private/mesh/relay
+  * /v1/private/mesh/session
+  * /v1/health
 
 ### Included Branches:
 
@@ -99,11 +106,15 @@ This guide assume you already have a Servicer properly setup and running. If not
     "session_cache_background_sync_interval": 60, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
     "session_cache_background_compaction_interval": 300, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
     // Worker options match with: https://github.com/alitto/pond#resizing-strategies
-    // These are used for the relay report queue
+    // These are used:
+    // 1. interceptor of dispatch, health and height /v1/query endpoints
+    // 2. notify servicer
+    // the set of values is "repetead" for each worker per address,
+    // so if you set 20 max workers and set 10 addresses, that means 200 max_workers for notify + 20 for hooks
     "worker_strategy": "balanced", // Kind of worker strategy, could be: balanced | eager | lazy
     "max_workers": 20,
     "max_workers_capacity": 100,
-    "workers_idle_timeout": 1000,
+    "workers_idle_timeout": 10000,
     "servicer_private_key_file": "key/key.json", // servicer private key to sign proof message on relay response. This should be a filename path relative to --datadir
     "servicer_rpc_timeout": 30000, // servicer rpc timeout
     "servicer_auth_token_file": "key/auth.json", // authtoken used to call servicer. This should be a filename path relative to --datadir
@@ -147,10 +158,6 @@ Also, you can use [LocalNet Repository](https://github.com/pokt-scan/pocket-loca
 
 ### TODO/Enhancements:
 * Validate chains with servicer /v1/private/chains endpoint
-* Support "Always Bill" approach
-  * Allow mesh node to have a Remote CLI url (this should be a Pocket Node, close to mesh, not need to be stake) that will be used
-  by the mesh node to run any kind of validations about relays before service them, grab session/response in cache to reduce next call response times, and finally resolve the request.
-  * On this we may need a bit more of assistance from Pocket Core team to run the best possible validations for each relay using a cache from mesh side.
 * Community feedback, issues, etc.
 
 ### Resources:
