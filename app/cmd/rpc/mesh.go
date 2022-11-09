@@ -46,7 +46,7 @@ const (
 	ServicerHeader          = "X-Servicer"
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
-	AppVersion              = "ALPHA-0.2.0"
+	AppVersion              = "ALPHA-0.2.1"
 )
 
 type appCache struct {
@@ -771,9 +771,6 @@ func reloadServicers(servicersPath string) {
 
 	// reload servicer keys
 	loadServicerNodes()
-
-	// start cron jobs again
-	initCrons()
 }
 
 // initHotReload - initialize keys and chains file change detection
@@ -1023,7 +1020,12 @@ func evaluateServicerError(hash []byte, err *sdkErrorResponse) (isSessionStillVa
 		appSession.Error = err
 		storeAppSession(hash, appSession)
 	} else {
-		logger.Error(fmt.Sprintf("missing session cache hash=%s but it should be there.", hash))
+		logger.Error(
+			fmt.Sprintf(
+				"missing session hash=%s from cache; it should be there but if u see this after a restart it's ok.",
+				hex.EncodeToString(hash),
+			),
+		)
 	}
 
 	return
