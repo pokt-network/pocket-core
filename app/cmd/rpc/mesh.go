@@ -46,7 +46,7 @@ const (
 	ServicerHeader          = "X-Servicer"
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
-	AppVersion              = "ALPHA-0.2.1"
+	AppVersion              = "ALPHA-0.2.2"
 )
 
 type appCache struct {
@@ -2149,6 +2149,7 @@ func cleanOldSessions(c *cron.Cron) {
 			}
 
 			supportedNodes := appSession.Dispatch.GetSupportedNodes()
+			atLeastOneNode := false
 
 			for _, a := range supportedNodes {
 				s, ok := servicerPkMap.Load(a)
@@ -2156,6 +2157,8 @@ func cleanOldSessions(c *cron.Cron) {
 				if !ok {
 					continue
 				}
+
+				atLeastOneNode = true
 
 				servicerNode := s.(*servicer)
 
@@ -2165,6 +2168,13 @@ func cleanOldSessions(c *cron.Cron) {
 					// break because the session is the same for all the nodes.
 					break
 				}
+			}
+
+			// if no one of the supported nodes are part of a session we will remove it from cache
+			// no mater height of it.
+			if !atLeastOneNode {
+				// this session is secure to be removed
+				toDelete = append(toDelete, key.(string))
 			}
 
 			return true
