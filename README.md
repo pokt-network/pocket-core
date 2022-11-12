@@ -27,13 +27,13 @@ Official golang implementation of the Pocket Network Protocol.
     <!--<a href="https://github.com/pokt-network/pocket-core/issues"><img src="https://img.shields.io/github/issues-closed/pokt-network/pocket-core.svg"/></a>-->
 </div>
 
-The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable
-functionality and modules according to each deployment. For more information on the Pocket Network Protocol you can
-visit [pokt.network](https://pokt.network).
+The Pocket Core application will allow anyone to spin up a Pocket Network full node, with options to enable/disable functionality and modules according to each deployment. For more information on Pocket Network, visit [pokt.network](https://pokt.network).
 
-## Getting Started
+## Installation
 
-### Example usage
+Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go`.
+
+## Usage
 
 To run the Pocket Core binary you can use the following flags alongside the `main` executable:
 
@@ -44,12 +44,14 @@ Usage:
 Available Commands:
   accounts    account management
   apps        application management
+  completion  Generate the autocompletion script for the specified shell
   gov         governance management
   help        Help about any command
   nodes       node management
   query       query the blockchain
   reset       Reset pocket-core
   start       starts pocket-core daemon
+  stop        Stop pocket-core
   util        utility functions
   version     Get current version
 
@@ -60,28 +62,23 @@ Flags:
       --persistent_peers string   a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'
       --remoteCLIURL string       takes a remote endpoint in the form of <protocol>://<host> (uses RPC Port)
       --seeds string              a comma separated list of PeerURLs: '<ID>@<IP>:<PORT>,<ID2>@<IP2>:<PORT>...<IDn>@<IPn>:<PORT>'
-  -t, --toggle                    help message for toggle
 
 Use "pocket [command] --help" for more information about a command.
 ````
 
-### Installation
-
-Clone the repository, `cd` into it and run `go build app/cmd/pocket_core/main.go`
+For more detailed command information, see the [usage section](doc/specs/cli/).
 
 ## Documentation
 
-[Visit our developer portal](https://docs.pokt.network) for tutorials and technical documentation for the Pocket
-Network.
+[Visit our user documentation](https://docs.pokt.network) for tutorials and technical information on the Pocket Network.
 
 ## Running the tests
 
-To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory
+To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory.
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on
-contributions and the process of submitting pull requests.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on contributions and the process of submitting pull requests.
 
 ## Support & Contact
 
