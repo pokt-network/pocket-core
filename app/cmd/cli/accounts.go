@@ -114,7 +114,7 @@ var getNodesLean = &cobra.Command{
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
 		config := app.GlobalConfig
 		if !config.PocketConfig.LeanPocket {
-			fmt.Println("Lean pocket is not enabled")
+			fmt.Println("Lean pocket is not enabled. You might be trying to use get-validator.")
 			return
 		}
 
@@ -135,6 +135,11 @@ var getValidator = &cobra.Command{
 	Long:  `Retrieves the main validator from the priv_val file`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		if app.GlobalConfig.PocketConfig.LeanPocket {
+			fmt.Println("Lean pocket is enabled. You might be trying to use get-validators.")
+			return
+		}
+
 		kb := app.MustGetKeybase()
 		if kb == nil {
 			fmt.Println(app.UninitializedKeybaseError.Error())
@@ -152,9 +157,8 @@ var setValidatorsLean = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
-
 		if !app.GlobalConfig.PocketConfig.LeanPocket {
-			fmt.Println("Lean pocket is not enabled")
+			fmt.Println("Lean pocket is not enabled. You might be trying to use set-validator.")
 			return
 		}
 
@@ -179,6 +183,11 @@ var setValidator = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)
+		if app.GlobalConfig.PocketConfig.LeanPocket {
+			fmt.Println("Lean pocket is enabled. You  might be trying to use set-validators.")
+			return
+		}
+
 		addr, err := types.AddressFromHex(args[0])
 		if err != nil {
 			fmt.Printf("Address Error %s", err)
