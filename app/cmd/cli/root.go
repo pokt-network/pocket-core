@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 	"time"
 
@@ -28,6 +29,7 @@ var (
 	useCache               bool
 	forceSetValidatorsLean bool
 	useLean                bool
+	memoryLimit            int64
 )
 
 var CLIVersion = app.AppVersion
@@ -61,6 +63,7 @@ func init() {
 	startCmd.Flags().BoolVar(&profileApp, "profileApp", false, "expose cpu & memory profiling")
 	startCmd.Flags().BoolVar(&useCache, "useCache", false, "use cache")
 	startCmd.Flags().BoolVar(&forceSetValidatorsLean, "forceSetValidators", false, "reads your lean_pocket_user_key_file (lean_nodes_keys.json) and updates your last signed state/validator files before starting your node")
+	startCmd.Flags().Int64Var(&memoryLimit, "memoryLimit", 0, "number of bytes that on go 1.19 limits the amount of memory available for the process, 0 is unlimited, 8589934592 is 8gb")
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(resetCmd)
 	rootCmd.AddCommand(version)
@@ -84,6 +87,11 @@ var startCmd = &cobra.Command{
 }
 
 func start(cmd *cobra.Command, args []string) {
+	// should be realistically at least 1gb
+	if memoryLimit > 1000000000 {
+		debug.SetMemoryLimit(memoryLimit)
+	}
+
 	var genesisType app.GenesisType
 	if mainnet && testnet {
 		fmt.Println("cannot run with mainnet and testnet genesis simultaneously, please choose one")

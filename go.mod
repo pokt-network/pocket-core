@@ -1,6 +1,6 @@
 module github.com/pokt-network/pocket-core
 
-go 1.18
+go 1.19
 
 require (
 	github.com/alitto/pond v1.8.1
