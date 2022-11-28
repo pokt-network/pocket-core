@@ -31,7 +31,11 @@ type Relay struct {
 
 func GetChainsClient() *http.Client {
 	if chainHttpClient == nil {
-		InitHttpClient(1000, 1000, 1000)
+		InitHttpClient(
+			GlobalPocketConfig.RPCMaxIdleConns,
+			GlobalPocketConfig.RPCMaxConnsPerHost,
+			GlobalPocketConfig.RPCMaxIdleConnsPerHost,
+		)
 	}
 
 	return chainHttpClient
