@@ -1,4 +1,4 @@
-# # Claims, Proofs, and Merkle Sum Index Trees
+# Claims, Proofs, and Merkle Sum Index Trees
 
 ## Abstract
 
