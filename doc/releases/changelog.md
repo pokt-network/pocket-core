@@ -1,6 +1,6 @@
 # Changelog
 =======
-## Unreleased RC-0.9.2
+## RC-0.9.2
 - LeanPOKT
 - Unconfirmed Tx / Txs endpoint for txs on the mempool.
 
