@@ -1,5 +1,10 @@
 # Changelog
 =======
+## Unreleased 0.9.3
+- [WARNING] Persistence Replacement ( database not compatible needs backup or sync from scratch)
+- Fix #1457
+- Fix #1484
+
 ## RC-0.9.2
 - LeanPOKT
 - Unconfirmed Tx / Txs endpoint for txs on the mempool.
