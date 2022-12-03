@@ -74,6 +74,7 @@ func (t *TransactionIndexer) AddBatch(b *txindex.Batch) error {
 		if err != nil {
 			return err
 		}
+
 		storeBatch.Set(hash, rawBytes)
 	}
 
@@ -101,11 +102,11 @@ func (t *TransactionIndexer) Index(result *types.TxResult) error {
 	storeBatch.Set(keyForHeight(result), hash)
 
 	// index tx by hash
-	//rawBytes, err := cdc.MarshalBinaryBare(result, 0) // TODO make protobuf compatible
 	rawBytes, err := cdc.ProtoMarshalBinaryBare(TxResultToSlim(result))
 	if err != nil {
 		return err
 	}
+
 	storeBatch.Set(hash, rawBytes)
 
 	return storeBatch.WriteSync()
@@ -120,7 +121,6 @@ func (t *TransactionIndexer) Get(hash []byte) (*types.TxResult, error) {
 	if rawBytes == nil {
 		return nil, nil
 	}
-
 	txResult := new(TxResultSlim)
 	err := cdc.ProtoUnmarshalBinaryBare(rawBytes, txResult)
 	if err != nil {
@@ -312,11 +312,14 @@ func endKey(prefix []byte) []byte {
 
 func TxResultToSlim(result *types.TxResult) *TxResultSlim {
 	return &TxResultSlim{
-		Height:    uint32(result.Height),
-		Index:     result.Index,
-		Code:      CodeType(result.Result.Code),
-		Codespace: CodespaceType(result.Result.Codespace),
-		Tx:        result.Tx,
+		Height:      uint32(result.Height),
+		Index:       result.Index,
+		Code:        CodeType(result.Result.Code),
+		Codespace:   CodespaceType(result.Result.Codespace),
+		Tx:          result.Tx,
+		Signer:      result.Result.Signer,
+		Recepient:   result.Result.Recipient,
+		MessageType: result.Result.MessageType,
 	}
 }
 
@@ -326,8 +329,11 @@ func SlimToResult(slim *TxResultSlim) *types.TxResult {
 		Index:  slim.Index,
 		Tx:     slim.Tx,
 		Result: abci.ResponseDeliverTx{
-			Code:      uint32(slim.Code),
-			Codespace: string(slim.Codespace),
+			Code:        uint32(slim.Code),
+			Codespace:   string(slim.Codespace),
+			Signer:      slim.Signer,
+			Recipient:   slim.Recepient,
+			MessageType: slim.MessageType,
 		},
 	}
 }
