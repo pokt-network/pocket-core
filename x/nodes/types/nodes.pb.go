@@ -1075,7 +1075,10 @@ func (m *ProtoValidator) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthNodes
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthNodes
 			}
 			if (iNdEx + skippy) > l {
@@ -1363,7 +1366,10 @@ func (m *LegacyProtoValidator) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthNodes
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthNodes
 			}
 			if (iNdEx + skippy) > l {
@@ -1556,7 +1562,10 @@ func (m *ValidatorSigningInfo) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthNodes
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthNodes
 			}
 			if (iNdEx + skippy) > l {

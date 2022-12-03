@@ -1837,7 +1837,10 @@ func (m *SessionHeader) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -1986,7 +1989,10 @@ func (m *Session) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -2193,7 +2199,10 @@ func (m *MsgClaim) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -2328,7 +2337,10 @@ func (m *MsgProtoProof) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -2448,7 +2460,10 @@ func (m *ProofI) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -2640,7 +2655,10 @@ func (m *ProtoEvidence) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -2889,7 +2907,10 @@ func (m *RelayProof) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -3040,7 +3061,10 @@ func (m *ChallengeProofInvalidData) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -3187,7 +3211,10 @@ func (m *RelayResponse) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -3365,7 +3392,10 @@ func (m *AAT) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -3501,7 +3531,10 @@ func (m *MerkleProof) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -3589,7 +3622,10 @@ func (m *Range) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {
@@ -3706,7 +3742,10 @@ func (m *HashRange) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthPocket
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthPocket
 			}
 			if (iNdEx + skippy) > l {

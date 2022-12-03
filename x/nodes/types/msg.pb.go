@@ -1233,7 +1233,10 @@ func (m *MsgProtoStake) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthMsg
 			}
 			if (iNdEx + skippy) > l {
@@ -1415,7 +1418,10 @@ func (m *LegacyMsgProtoStake) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthMsg
 			}
 			if (iNdEx + skippy) > l {
@@ -1533,7 +1539,10 @@ func (m *MsgBeginUnstake) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthMsg
 			}
 			if (iNdEx + skippy) > l {
@@ -1617,7 +1626,10 @@ func (m *LegacyMsgBeginUnstake) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthMsg
 			}
 			if (iNdEx + skippy) > l {
@@ -1735,7 +1747,10 @@ func (m *MsgUnjail) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthMsg
 			}
 			if (iNdEx + skippy) > l {
@@ -1819,7 +1834,10 @@ func (m *LegacyMsgUnjail) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthMsg
 			}
 			if (iNdEx + skippy) > l {
@@ -1971,7 +1989,10 @@ func (m *MsgSend) Unmarshal(dAtA []byte) error {
 			if err != nil {
 				return err
 			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
+			if skippy < 0 {
+				return ErrInvalidLengthMsg
+			}
+			if (iNdEx + skippy) < 0 {
 				return ErrInvalidLengthMsg
 			}
 			if (iNdEx + skippy) > l {

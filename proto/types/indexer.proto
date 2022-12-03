@@ -14,4 +14,8 @@ message TxResultSlim {
 	uint32 code = 3 [(gogoproto.casttype) = "CodeType"];
 	string codespace = 4 [(gogoproto.casttype) = "CodespaceType"];
 	bytes  Tx = 5;
+	bytes signer = 6; // pocket network addition for custom tx indexer
+	bytes recepient = 7; // pocket network addition for custom  tx indexer
+	string message_type = 8; // pocket network addition for custom  tx indexer
+
 }
