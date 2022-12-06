@@ -11,7 +11,7 @@ pocket util generate-chains
 ```
 
 Generate the chains.json file for RelayChain Network Identifiers. Find the RelayChain Network
-Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
+Identifiers [here](https://docs.pokt.network/supported-blockchains/).
 
 Example output:
 
@@ -35,7 +35,7 @@ pocket util delete-chains
 ```
 
 Delete the chains.json file for RelayChain Network Identifiers. Find the RelayChain Network
-Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
+Identifiers [here](https://docs.pokt.network/supported-blockchains/).
 
 Example Output:
 

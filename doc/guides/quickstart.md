@@ -171,7 +171,7 @@ pocket accounts set-validator <address>
 {% hint style="info" %} Check with `pocket accounts get-validator`
 {% endhint %}
 
-### Set [Relay Chains](https://docs.pokt.network/home/references/supported-blockchains)
+### Set [Relay Chains](https://docs.pokt.network/supported-blockchains/)
 
 {% tabs %} {% tab title="Command" %}
 
@@ -209,7 +209,7 @@ Example:
 pocket start --seeds="64c91701ea98440bc3674fdb9a99311461cdfd6f@node1.mainnet.pokt.network:21656" --mainnet
 ```
 
-[Seeds](https://docs.pokt.network/references/seeds)
+[Seeds](https://docs.pokt.network/node/seeds/)
 
 {% hint style="warning" %} Ensure the node is all the way synced before proceeding to the next step. {% endhint %}
 
@@ -335,7 +335,7 @@ Pocket Core provides a configuration file found in `<datadir>/config/config.json
   laddr
 - **"Seeds"**: The seed nodes used to connect to the network. Must be a comma-separated list in this format:
   &lt;ADDRESS&gt;@ \(Ex: 03b74fa3c68356bb40d58ecc10129479b159a145@seed1.mainnet.pokt.network:20656\).
-  Click [here](https://docs.pokt.network/home/resources/references/seeds) to see a list of seed nodes on Mainnet or
+  Click [here](https://docs.pokt.network/node/seeds/) to see a list of seed nodes on Mainnet or
   Testnet
 - **"PersistentPeers"**: Comma separated list of nodes to keep persistent connections to. Must be a comma separated list
   in this format: &lt;ADDRESS&gt;@ \(Ex: 03b74fa3c68356bb40d58ecc10129479b159a145@seed1.mainnet.pokt.network:20656\)
@@ -449,7 +449,7 @@ Use pocket core flags --mainnet or --testnet to automatically write
 Use the CLI or Manually Edit: `$HOME/.pocket/config/chains.json`
 
 {% hint style="info" %} Relay Chain ID's and docs can be
-found [here](https://docs.pokt.network/home/references/supported-blockchains). {% endhint %}
+found [here](https://docs.pokt.network/supported-blockchains/). {% endhint %}
 
 These are external blockchain nodes such as ethereum, polygon and harmony. You will need to set these up by following their respective documentation. Once they are synced, you can enter the url and credentials into the following file. 
 

@@ -23,9 +23,9 @@ Arguments:
 
 * `<fromAddr>`: Target Address to stake.
 * `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `StakeMinimum`  parameter,
-  found [here](https://docs.pokt.network/home/references/protocol-parameters#stakeminimum).
+  found [here](https://docs.pokt.network/learn/protocol-parameters/#stakeminimum).
 * `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
-  Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
+  Identifiers [here](https://docs.pokt.network/supported-blockchains/).
 * `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
 * `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
@@ -57,9 +57,9 @@ Arguments:
 * `<operatorPublicKey>`: operatorAddress is the only valid signer for blocks & relays.
 * `<outputAddress>`: outputAddress is where reward and staked funds are directed.
 * `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `StakeMinimum`  parameter,
-  found [here](https://docs.pokt.network/home/references/protocol-parameters#stakeminimum).
+  found [here](https://docs.pokt.network/learn/protocol-parameters/#stakeminimum).
 * `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
-  Identifiers [here](https://docs.pokt.network/home/references/supported-blockchains).
+  Identifiers [here](https://docs.pokt.network/supported-blockchains/).
 * `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
 * `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
 * `<fee>`:  An amount of uPOKT for the network.
