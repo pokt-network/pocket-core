@@ -26,7 +26,7 @@ visit [pokt.network](https://pokt.network).
 
 [Protocol Forum](https://forum.pokt.network/)
 
-[Protocol Wiki](https://docs.pokt.network/home/main-concepts/protocol)
+[Protocol Wiki](https://docs.pokt.network/learn/protocol)
 
 [Community Discord](https://discord.com/invite/KRrqfd3tAK)
 

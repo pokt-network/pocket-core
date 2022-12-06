@@ -8,7 +8,7 @@ description: >-
 {% hint style="info" %} This document DOES NOT cover the architecture of the Pocket Network protocol. Rather it only
 covers the software-specific implementation details of Pocket Core and for the sake of clarity, orientation, and
 modularity, explicitly avoids covering any details that might duplicate the contents of the Pocket Network protocol
-specification, which can be found [here](https://docs.pokt.network/home/main-concepts/protocol). {% endhint %}
+specification, which can be found [here](https://docs.pokt.network/learn/protocol). {% endhint %}
 
 ## Tendermint and Cosmos SDK
 
