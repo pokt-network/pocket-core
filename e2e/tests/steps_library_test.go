@@ -33,7 +33,7 @@ func theUserHasAPocketClient() error {
 	if err != nil {
 		return err
 	}
-	pocketClient = launcher.NewPocketClient(pocketExecutablePath)
+	pocketClient = launcher.NewPocketClient(pocketExecutablePath, verbose)
 	return nil
 }
 

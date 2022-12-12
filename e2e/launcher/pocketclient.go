@@ -22,18 +22,22 @@ type PocketClient interface {
 	RunCommand(...string) (*CommandResult, error)
 }
 
-func NewPocketClient(executableLocation string) PocketClient {
+func NewPocketClient(executableLocation string, verbose bool) PocketClient {
 	return &pocketClient{
 		executableLocation: executableLocation,
+		verbose:            verbose,
 	}
 }
 
 type pocketClient struct {
 	executableLocation string
+	verbose            bool
 }
 
 func (pc *pocketClient) RunCommand(commandAndArgs ...string) (*CommandResult, error) {
-	fmt.Printf("Running Command: %v\n", commandAndArgs)
+	if pc.verbose {
+		fmt.Printf("Running Command: %v\n", commandAndArgs)
+	}
 	cmd := exec.Command(pc.executableLocation, commandAndArgs...)
 
 	so := &writerByteArray{}
