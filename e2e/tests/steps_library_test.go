@@ -109,12 +109,20 @@ func theUserRunsTheCommandAgainstValidator(command string, validatorIdx int) err
 	if len(pocketNetwork.Nodes) <= validatorIdx {
 		return errors.New(fmt.Sprintf("tried to use validator index %d, only index -1 through %d available", validatorIdx, len(pocketNetwork.Nodes)-1))
 	}
-	datadir := pocketNetwork.Nodes[validatorIdx].DataDir
+	invalidValidator := validatorIdx < 0
+	datadir := pocketNetwork.Nodes[0].DataDir
+	if !invalidValidator {
+		datadir = pocketNetwork.Nodes[validatorIdx].DataDir
+	}
+
 	_ = theUserHasAPocketClient()
 	commands := strings.Split(command, " ")
 	for i := 0; i < len(commands); i++ {
 		if commands[i] == "{{address}}" {
-			commands[i] = pocketNetwork.Nodes[validatorIdx].Address
+			commands[i] = "this_is_an_obviously_invalid_address"
+			if !invalidValidator {
+				commands[i] = pocketNetwork.Nodes[validatorIdx].Address
+			}
 		}
 	}
 	commands = append(commands, "--datadir="+datadir)
@@ -175,7 +183,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	// validators in the network are 0 indexed.
 	// if you need to use the validator's address, represent it with {{}}, as in: "query account {{address}}"
 	// if you need to have an invalid address, use validator -1
-	ctx.Step(`^the user runs the command "([^"]*)" against validator (\d+)$`, theUserRunsTheCommandAgainstValidator)
+	ctx.Step(`^the user runs the command "([^"]*)" against validator (-?\d+)$`, theUserRunsTheCommandAgainstValidator)
 
 	// this step allows to wait for the network to process a certain number of blocks before the tests go on.
 	// should only be called after a `the user is running the network` step.
