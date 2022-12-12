@@ -101,18 +101,18 @@
 	"Consensus": {
 	  "RootDir": "./",
 	  "WalPath": "data/cs.wal/wal",
-	  "TimeoutPropose": 120000000000,
-	  "TimeoutProposeDelta": 10000000000,
-	  "TimeoutPrevote": 60000000000,
-	  "TimeoutPrevoteDelta": 10000000000,
-	  "TimeoutPrecommit": 60000000000,
-	  "TimeoutPrecommitDelta": 10000000000,
-	  "TimeoutCommit": 780000000000,
+	  "TimeoutPropose": 6000000000,
+	  "TimeoutProposeDelta": 500000000,
+	  "TimeoutPrevote": 3000000000,
+	  "TimeoutPrevoteDelta": 500000000,
+	  "TimeoutPrecommit": 3000000000,
+	  "TimeoutPrecommitDelta": 500000000,
+	  "TimeoutCommit": 39000000000,
 	  "SkipTimeoutCommit": false,
 	  "CreateEmptyBlocks": true,
-	  "CreateEmptyBlocksInterval": 900000000000,
-	  "PeerGossipSleepDuration": 30000000000,
-	  "PeerQueryMaj23SleepDuration": 20000000000
+	  "CreateEmptyBlocksInterval": 45000000000,
+	  "PeerGossipSleepDuration": 1500000000,
+	  "PeerQueryMaj23SleepDuration": 1000000000
 	},
 	"TxIndex": {
 	  "Indexer": "kv",

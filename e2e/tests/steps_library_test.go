@@ -15,6 +15,7 @@ var pocketExecutablePath = ""
 var pocketClient launcher.PocketClient = nil
 var cmdr *launcher.CommandResult
 var pocketNetwork launcher.Network
+var verbose bool
 
 func theUserHasAPocketExecutable() error {
 	pocketExecutablePath = os.Getenv("POCKET_EXE")
@@ -95,7 +96,12 @@ func theUserIsRunningTheNetwork(netName string) error {
 		return launchErr
 	}
 	pocketNetwork = net
-	_ = pocketNetwork.Nodes[0].PocketServer.RegisterPatternActor(&launcher.PrinterPatternActor{}, launcher.StdOut)
+	if verbose {
+		err = pocketNetwork.Nodes[0].PocketServer.RegisterPatternActor(&launcher.PrinterPatternActor{}, launcher.StdOut)
+		if err != nil {
+			return err
+		}
+	}
 	time.Sleep(time.Second * 2)
 	return nil
 }
@@ -115,6 +121,19 @@ func theUserRunsTheCommandAgainstValidator(command string, validatorIdx int) err
 	var err error = nil
 	cmdr, err = pocketClient.RunCommand(commands...)
 	return err
+}
+
+func theUserWaitsForBlocks(count int) error {
+	bw := launcher.NewBlockWaiter(count, verbose)
+	err := pocketNetwork.Nodes[0].PocketServer.RegisterPatternActor(bw, launcher.StdOut)
+	if err != nil {
+		return err
+	}
+	if verbose {
+		fmt.Printf("Starting to wait for blocks; %d remaining.\n", count)
+	}
+	bw.Wg.Wait()
+	return nil
 }
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
@@ -157,4 +176,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	// if you need to use the validator's address, represent it with {{}}, as in: "query account {{address}}"
 	// if you need to have an invalid address, use validator -1
 	ctx.Step(`^the user runs the command "([^"]*)" against validator (\d+)$`, theUserRunsTheCommandAgainstValidator)
+
+	// this step allows to wait for the network to process a certain number of blocks before the tests go on.
+	// should only be called after a `the user is running the network` step.
+	// example: "Then the user waits for 1 block"
+	ctx.Step(`^the user waits for (\d+) blocks?$`, theUserWaitsForBlocks)
+
+	// this steps allows to see server output for test diagnosis and development purposes
+	ctx.Step(`^verbose server$`, func() { verbose = true })
 }

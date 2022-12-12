@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strings"
+	"sync"
 )
 
 type PocketServer interface {
@@ -86,4 +88,37 @@ type PrinterPatternActor struct {
 
 func (*PrinterPatternActor) MaybeAct(line string) {
 	fmt.Println("Printer prints: " + line)
+}
+
+func NewBlockWaiter(blocks int, verbose bool) *BlockWaiter {
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	return &BlockWaiter{
+		Wg:              wg,
+		RemainingBlocks: blocks,
+		done:            false,
+		verbose:         verbose,
+	}
+}
+
+type BlockWaiter struct {
+	Wg              *sync.WaitGroup
+	RemainingBlocks int
+	done            bool
+	verbose         bool
+}
+
+func (b *BlockWaiter) MaybeAct(line string) {
+	if b.Wg != nil && !b.done {
+		if strings.Contains(line, "Executed block") {
+			b.RemainingBlocks--
+			if b.verbose {
+				fmt.Printf("Block elapsed; remaining: %d\n", b.RemainingBlocks)
+			}
+		}
+		if b.RemainingBlocks <= 0 {
+			b.Wg.Done()
+			b.done = true
+		}
+	}
 }
