@@ -22,7 +22,6 @@ const networkConfigurationFileName = "network.json"
 func loadNetworkConfiguration(networkConfigDirectory string) (*NetworkConfiguration, error) {
 	var err error
 	networkConfigDirectory, err = filepath.Abs(networkConfigDirectory)
-
 	if err != nil {
 		return nil, err
 	}
