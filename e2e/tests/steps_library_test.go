@@ -14,7 +14,7 @@ import (
 var pocketExecutablePath = ""
 var pocketClient launcher.PocketClient = nil
 var cmdr *launcher.CommandResult
-var pocketNetwork launcher.Network
+var pocketNetwork *launcher.Network
 var verbose bool
 
 func theUserHasAPocketExecutable() error {
@@ -33,6 +33,7 @@ func theUserHasAPocketClient() error {
 	if err != nil {
 		return err
 	}
+
 	pocketClient = launcher.NewPocketClient(pocketExecutablePath, verbose)
 	return nil
 }
@@ -41,6 +42,7 @@ func theUserRunsTheCommand(cmd string) (err error) {
 	if pocketClient == nil {
 		return errors.New("pocket executable not available. The scenario might lack a `the user has a pocket client` or `the user is running the network` step")
 	}
+
 	commands := strings.Split(cmd, " ")
 	cmdr, err = pocketClient.RunCommand(commands...)
 	return
@@ -50,10 +52,12 @@ func theUserShouldBeAbleToSeeStandardOutputContaining(needle string) error {
 	if cmdr == nil {
 		return errors.New("no command result to analyze. The scenario might lack a `the user runs the command` or a `the user runs the command against validator` step")
 	}
+
 	if !strings.Contains(cmdr.Stdout, needle) {
 		errorMessage := fmt.Sprintf("standard output does not contain sought text. Text sought: \"%s\".\n Standard output contained:\n%s\n Standard error contained:\n%s\n", needle, cmdr.Stdout, cmdr.Stderr)
 		return errors.New(errorMessage)
 	}
+
 	return nil
 }
 
@@ -61,10 +65,12 @@ func theUserShouldBeAbleToSeeStandardErrorContaining(needle string) error {
 	if cmdr == nil {
 		return errors.New("no command result to analyze. The scenario might lack a `the user runs the command` or a `the user runs the command against validator` step")
 	}
+
 	if !strings.Contains(cmdr.Stderr, needle) {
 		errorMessage := fmt.Sprintf("standard output does not contain sought text. Text sought: \"%s\".\n Standard output contained:\n%s\n Standard error contained:\n%s\n", needle, cmdr.Stdout, cmdr.Stderr)
 		return errors.New(errorMessage)
 	}
+
 	return nil
 }
 
@@ -91,10 +97,12 @@ func theUserIsRunningTheNetwork(netName string) error {
 	if err != nil {
 		return err
 	}
+
 	net, launchErr := launcher.LaunchNetwork(netName, pocketExecutablePath)
 	if launchErr != nil {
 		return launchErr
 	}
+
 	pocketNetwork = net
 	if verbose {
 		err = pocketNetwork.Nodes[0].PocketServer.RegisterPatternActor(&launcher.PrinterPatternAction{}, launcher.StdOut)
@@ -102,6 +110,7 @@ func theUserIsRunningTheNetwork(netName string) error {
 			return err
 		}
 	}
+
 	time.Sleep(time.Second * 2)
 	return nil
 }
@@ -109,6 +118,7 @@ func theUserRunsTheCommandAgainstValidator(command string, validatorIdx int) err
 	if len(pocketNetwork.Nodes) <= validatorIdx {
 		return errors.New(fmt.Sprintf("tried to use validator index %d, only index -1 through %d available", validatorIdx, len(pocketNetwork.Nodes)-1))
 	}
+
 	invalidValidator := validatorIdx < 0
 	datadir := pocketNetwork.Nodes[0].DataDir
 	if !invalidValidator {
@@ -137,6 +147,7 @@ func theUserWaitsForBlocks(count int) error {
 	if err != nil {
 		return err
 	}
+
 	if verbose {
 		fmt.Printf("Starting to wait for blocks; %d remaining.\n", count)
 	}

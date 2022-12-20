@@ -10,7 +10,7 @@ type Network struct {
 	NetworkConfiguration *NetworkConfiguration
 }
 
-func LaunchNetwork(networkConfigDirectory string, executablePath string) (network Network, err error) {
+func LaunchNetwork(networkConfigDirectory string, executablePath string) (network *Network, err error) {
 	log.Printf("loading network from config: ./launcher/network_configs/%s\n", networkConfigDirectory)
 	networkConfiguration, err := loadNetworkConfiguration("../launcher/network_configs/" + networkConfigDirectory)
 	if err != nil {
@@ -38,7 +38,7 @@ func LaunchNetwork(networkConfigDirectory string, executablePath string) (networ
 
 		nodes = append(nodes, node)
 	}
-	network = Network{
+	network = &Network{
 		Nodes:                nodes,
 		NetworkConfiguration: networkConfiguration,
 	}
