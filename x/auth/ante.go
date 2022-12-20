@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"os"
+
 	"github.com/pokt-network/pocket-core/codec"
 	posCrypto "github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -11,7 +13,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/auth/types"
 	"github.com/tendermint/tendermint/state/txindex"
 	tmTypes "github.com/tendermint/tendermint/types"
-	"os"
 )
 
 // NewAnteHandler returns an AnteHandler that checks signatures and deducts fees from the first signer.
@@ -88,9 +89,9 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 		}
 		// get the sign bytes from the tx
 		signBytes, err := GetSignBytes(ctx.ChainID(), stdTx)
-		fmt.Println("OLSH signBytes", signBytes, ctx.ChainID())
+		// fmt.Println("OLSH signBytes", signBytes, ctx.ChainID())
 		if err != nil {
-			fmt.Println("OLSH internal error", err)
+			// fmt.Println("OLSH internal error", err)
 			return nil, sdk.ErrInternal(err.Error())
 		}
 		// get the fees from the tx
@@ -104,7 +105,10 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 				return nil, types.ErrInsufficientFee(ModuleName, expectedFee, stdTx.GetFee())
 			}
 			// validate signature for regular public key
+			fmt.Println("OLSH - Verifying key: ", pk.PubKey(), signBytes)
 			if !simulate && !pk.VerifyBytes(signBytes, stdTx.GetSignature().GetSignature()) {
+				fmt.Println("OLSH - Failed Verification: ")
+				fmt.Println(stdTx.GetSignature().GetSignature())
 				continue
 			}
 			return pk, nil

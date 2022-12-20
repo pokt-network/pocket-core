@@ -2,12 +2,13 @@ package app
 
 import (
 	"context"
-	"github.com/tendermint/tendermint/privval"
 	"io"
 	"os"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/tendermint/tendermint/privval"
 
 	types2 "github.com/pokt-network/pocket-core/codec/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
