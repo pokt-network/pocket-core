@@ -29,7 +29,7 @@ type Node struct {
 	privateKey    crypto.PrivateKey
 }
 
-func newNode(nodeConfiguration *NodeConfiguration, networkRootDirectory, genesisPath, executableLocation string) (*Node, error) {
+func newNode(nodeConfiguration *NodeConfiguration, networkRootDirectory, genesisPath, executablePath string) (*Node, error) {
 	pkBytes, err := hex.DecodeString(nodeConfiguration.PrivateKey)
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func newNode(nodeConfiguration *NodeConfiguration, networkRootDirectory, genesis
 		DataDir:       nodeDataDir,
 		configuration: pocketCoreConfig,
 		privateKey:    privateKey,
-		PocketServer:  NewPocketServer(executableLocation),
+		PocketServer:  NewPocketServer(executablePath),
 	}
 	return node, nil
 }

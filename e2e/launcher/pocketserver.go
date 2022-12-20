@@ -14,18 +14,18 @@ type PocketServer interface {
 	RegisterPatternActor(patternActor PatternAction, stream Stream) error
 }
 
-func NewPocketServer(executableLocation string) PocketServer {
+func NewPocketServer(executablePath string) PocketServer {
 	return &pocketServer{
-		executableLocation: executableLocation,
-		pocketInstance:     nil,
+		executablePath: executablePath,
+		pocketInstance: nil,
 	}
 }
 
 type pocketServer struct {
-	executableLocation string
-	pocketInstance     *exec.Cmd
-	stdOutPipeline     *PatternActionPipeline
-	stdErrPipeline     *PatternActionPipeline
+	executablePath string
+	pocketInstance *exec.Cmd
+	stdOutPipeline *PatternActionPipeline
+	stdErrPipeline *PatternActionPipeline
 }
 
 func (ps *pocketServer) Start(arguments ...string) error {
@@ -34,7 +34,7 @@ func (ps *pocketServer) Start(arguments ...string) error {
 	}
 	invocation := []string{"start"}
 	invocation = append(invocation, arguments...)
-	ps.pocketInstance = exec.Command(ps.executableLocation, invocation...)
+	ps.pocketInstance = exec.Command(ps.executablePath, invocation...)
 	ps.stdOutPipeline = &PatternActionPipeline{patternActors: []PatternAction{}}
 	ps.stdErrPipeline = &PatternActionPipeline{patternActors: []PatternAction{}}
 	ps.pocketInstance.Stdout = ps.stdOutPipeline
