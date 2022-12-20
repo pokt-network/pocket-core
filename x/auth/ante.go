@@ -88,7 +88,8 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 			continue
 		}
 		// get the sign bytes from the tx
-		signBytes, err := GetSignBytes(ctx.ChainID(), stdTx)
+		// signBytes, err := GetSignBytes(ctx.ChainID(), stdTx)
+		signBytes, err := GetSignBytes("mainnet", stdTx)
 		// fmt.Println("OLSH signBytes", signBytes, ctx.ChainID())
 		if err != nil {
 			// fmt.Println("OLSH internal error", err)
