@@ -17,10 +17,12 @@ func LaunchNetwork(networkConfigDirectory string, executablePath string) (networ
 	if err != nil {
 		return
 	}
+
 	networkRootDirectory, err := os.MkdirTemp("", networkConfiguration.NetworkId+"-")
 	if err != nil {
 		return
 	}
+
 	log.Printf("root network directory: %v", networkRootDirectory)
 	var nodes []*Node
 	for _, nodeConfiguration := range networkConfiguration.NodeConfigurations {
@@ -29,10 +31,12 @@ func LaunchNetwork(networkConfigDirectory string, executablePath string) (networ
 		if err != nil {
 			return
 		}
+
 		err = node.PocketServer.Start("--datadir="+node.DataDir, "--keybase=false")
 		if err != nil {
 			return
 		}
+
 		nodes = append(nodes, node)
 	}
 	network = Network{

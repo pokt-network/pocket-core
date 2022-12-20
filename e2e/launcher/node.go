@@ -130,6 +130,7 @@ func writeNodePrivValFile(privateKey crypto.PrivateKey, datadir string, privVali
 	if err != nil {
 		return err
 	}
+
 	return writeBytesToFile(filepath.Join(datadir, privValidatorKey), pvkBz)
 }
 
@@ -143,5 +144,6 @@ func loadNodePocketCoreConfiguration(path string) (pcc types.Config, err error) 
 	if err != nil {
 		return
 	}
+
 	return
 }

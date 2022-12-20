@@ -19,22 +19,21 @@ type NodeConfiguration struct {
 
 const networkConfigurationFileName = "network.json"
 
-func loadNetworkConfiguration(networkConfigDirectory string) (*NetworkConfiguration, error) {
-	var err error
+func loadNetworkConfiguration(networkConfigDirectory string) (networkConfiguration *NetworkConfiguration, err error) {
 	networkConfigDirectory, err = filepath.Abs(networkConfigDirectory)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	networkConfigurationFileContents, err := os.ReadFile(filepath.Join(networkConfigDirectory, networkConfigurationFileName))
+	var networkConfigurationFileContents []byte
+	networkConfigurationFileContents, err = os.ReadFile(filepath.Join(networkConfigDirectory, networkConfigurationFileName))
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	var networkConfiguration NetworkConfiguration
 	err = json.Unmarshal(networkConfigurationFileContents, &networkConfiguration)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	if !filepath.IsAbs(networkConfiguration.GenesisPath) {
@@ -47,5 +46,5 @@ func loadNetworkConfiguration(networkConfigDirectory string) (*NetworkConfigurat
 		}
 	}
 
-	return &networkConfiguration, err
+	return
 }

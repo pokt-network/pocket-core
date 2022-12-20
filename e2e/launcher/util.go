@@ -12,10 +12,12 @@ func writeBytesToFile(path string, contents []byte) error {
 	if err != nil {
 		return err
 	}
+
 	_, err = file.Write(contents)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -33,12 +35,13 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer closeIgnoreError(source)
 
+	defer closeIgnoreError(source)
 	destination, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
+
 	defer closeIgnoreError(destination)
 	_, err = io.Copy(destination, source)
 	return err
