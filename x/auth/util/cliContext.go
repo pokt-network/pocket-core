@@ -3,6 +3,7 @@ package util
 import (
 	"errors"
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/x/auth"
 	"github.com/pokt-network/pocket-core/x/auth/exported"
@@ -87,6 +88,7 @@ func (ctx CLIContext) GetNode() (rpcclient.Client, error) {
 func (ctx CLIContext) BroadcastTx(txBytes []byte) (res sdk.TxResponse, err error) {
 	switch ctx.BroadcastMode {
 	case BroadcastSync:
+		fmt.Println("OLSH BroadcastSync")
 		res, err = ctx.BroadcastTxSync(txBytes)
 
 	case BroadcastAsync:
@@ -140,6 +142,7 @@ func (ctx CLIContext) BroadcastTxSync(txBytes []byte) (sdk.TxResponse, error) {
 	}
 
 	res, err := node.BroadcastTxSync(txBytes)
+	fmt.Println("OLSH broadcasting bytes", txBytes)
 	return sdk.NewResponseFormatBroadcastTx(res), err
 }
 

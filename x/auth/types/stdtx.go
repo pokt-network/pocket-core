@@ -3,6 +3,9 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/codec/types"
 	posCrypto "github.com/pokt-network/pocket-core/crypto"
@@ -11,8 +14,6 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/multisig"
 	"gopkg.in/yaml.v2"
-	"log"
-	"os"
 )
 
 // ProtoStdTx is a standard way to wrap a ProtoMsg with Fee and Sigs.
@@ -44,24 +45,27 @@ func CountSubKeys(pub crypto.PubKey) int {
 
 // StdSignBytes returns the bytes to sign for a transaction.
 func StdSignBytes(chainID string, entropy int64, fee sdk.Coins, msg sdk.Msg, memo string) ([]byte, error) {
-	msgsBytes := msg.GetSignBytes()
 	var feeBytes sdk.Raw
+	msgsBytes := msg.GetSignBytes()
 	feeBytes, err := fee.MarshalJSON()
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal fee to json for StdSignBytes function: %v", err.Error())
 	}
-	bz, err := ModuleCdc.MarshalJSON(StdSignDoc{
+	stdSignDoc := StdSignDoc{
 		ChainID: chainID,
 		Fee:     feeBytes,
 		Memo:    memo,
 		Msg:     msgsBytes,
 		Entropy: entropy,
-	})
+	}
+	fmt.Println("OLSH StdSignBytes", stdSignDoc)
+	bz, err := ModuleCdc.MarshalJSON(stdSignDoc)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal bytes to json for StdSignDoc function: %v", err.Error())
 	}
-	fmt.Println("OLSH About to sort JSON", bz)
-	return sdk.MustSortJSON(bz), nil
+	fmt.Println("OLSH StdSignBytes bz", bz)
+	sortedBz := sdk.MustSortJSON(bz)
+	return sortedBz, nil
 }
 
 // Legacy Amino Code Below
