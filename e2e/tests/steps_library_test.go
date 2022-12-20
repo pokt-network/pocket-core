@@ -97,7 +97,7 @@ func theUserIsRunningTheNetwork(netName string) error {
 	}
 	pocketNetwork = net
 	if verbose {
-		err = pocketNetwork.Nodes[0].PocketServer.RegisterPatternActor(&launcher.PrinterPatternActor{}, launcher.StdOut)
+		err = pocketNetwork.Nodes[0].PocketServer.RegisterPatternActor(&launcher.PrinterPatternAction{}, launcher.StdOut)
 		if err != nil {
 			return err
 		}

@@ -11,7 +11,7 @@ import (
 type PocketServer interface {
 	Start(...string) error
 	Kill() error
-	RegisterPatternActor(patternActor PatternActor, stream Stream) error
+	RegisterPatternActor(patternActor PatternAction, stream Stream) error
 }
 
 func NewPocketServer(executableLocation string) PocketServer {
@@ -35,8 +35,8 @@ func (ps *pocketServer) Start(arguments ...string) error {
 	invocation := []string{"start"}
 	invocation = append(invocation, arguments...)
 	ps.pocketInstance = exec.Command(ps.executableLocation, invocation...)
-	ps.stdOutPipeline = &PatternActionPipeline{patternActors: []PatternActor{}}
-	ps.stdErrPipeline = &PatternActionPipeline{patternActors: []PatternActor{}}
+	ps.stdOutPipeline = &PatternActionPipeline{patternActors: []PatternAction{}}
+	ps.stdErrPipeline = &PatternActionPipeline{patternActors: []PatternAction{}}
 	ps.pocketInstance.Stdout = ps.stdOutPipeline
 	ps.pocketInstance.Stderr = ps.stdErrPipeline
 	err := ps.pocketInstance.Start()
@@ -56,7 +56,7 @@ const (
 	StdErr = Stream(2)
 )
 
-func (ps *pocketServer) RegisterPatternActor(patternActor PatternActor, stream Stream) error {
+func (ps *pocketServer) RegisterPatternActor(patternActor PatternAction, stream Stream) error {
 	switch stream {
 	case StdOut:
 		ps.stdOutPipeline.patternActors = append(ps.stdOutPipeline.patternActors, patternActor)
@@ -68,12 +68,12 @@ func (ps *pocketServer) RegisterPatternActor(patternActor PatternActor, stream S
 	return nil
 }
 
-type PatternActor interface {
+type PatternAction interface {
 	MaybeAct(string)
 }
 
 type PatternActionPipeline struct {
-	patternActors []PatternActor
+	patternActors []PatternAction
 }
 
 func (r PatternActionPipeline) Write(p []byte) (n int, err error) {
@@ -83,10 +83,10 @@ func (r PatternActionPipeline) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-type PrinterPatternActor struct {
+type PrinterPatternAction struct {
 }
 
-func (*PrinterPatternActor) MaybeAct(line string) {
+func (*PrinterPatternAction) MaybeAct(line string) {
 	fmt.Println("Printer prints: " + line)
 }
 
