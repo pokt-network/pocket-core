@@ -1,7 +1,6 @@
 package launcher
 
 import (
-	"fmt"
 	"log"
 	"os"
 )
@@ -12,7 +11,7 @@ type Network struct {
 }
 
 func LaunchNetwork(networkConfigDirectory string, executablePath string) (network Network, err error) {
-	fmt.Println("./launcher/network_configs/" + networkConfigDirectory)
+	log.Printf("loading network from config: ./launcher/network_configs/%s\n", networkConfigDirectory)
 	networkConfiguration, err := loadNetworkConfiguration("../launcher/network_configs/" + networkConfigDirectory)
 	if err != nil {
 		return

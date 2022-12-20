@@ -1,7 +1,7 @@
 package launcher
 
 import (
-	"fmt"
+	"log"
 	"os/exec"
 )
 
@@ -36,7 +36,7 @@ type pocketClient struct {
 
 func (pc *pocketClient) RunCommand(commandAndArgs ...string) (*CommandResult, error) {
 	if pc.verbose {
-		fmt.Printf("Running Command: %v\n", commandAndArgs)
+		log.Printf("Running Command: %v\n", commandAndArgs)
 	}
 	cmd := exec.Command(pc.executableLocation, commandAndArgs...)
 

@@ -87,7 +87,7 @@ type PrinterPatternAction struct {
 }
 
 func (*PrinterPatternAction) MaybeAct(line string) {
-	fmt.Println("Printer prints: " + line)
+	fmt.Printf("Printer prints: %s\n", line)
 }
 
 func NewBlockWaiter(blocks int, verbose bool) *BlockWaiter {
