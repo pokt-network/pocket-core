@@ -3,19 +3,13 @@ package launcher
 import (
 	"log"
 	"os/exec"
+	"strings"
 )
 
 type CommandResult struct {
 	Stdout string
 	Stderr string
 	Err    error
-}
-
-type writerByteArray []byte
-
-func (so *writerByteArray) Write(p []byte) (n int, err error) {
-	*so = append(*so, p...)
-	return len(p), nil
 }
 
 type PocketClient interface {
@@ -40,16 +34,16 @@ func (pc *pocketClient) RunCommand(commandAndArgs ...string) (*CommandResult, er
 	}
 	cmd := exec.Command(pc.executableLocation, commandAndArgs...)
 
-	so := &writerByteArray{}
-	se := &writerByteArray{}
+	so := &strings.Builder{}
+	se := &strings.Builder{}
 
 	cmd.Stdout = so
 	cmd.Stderr = se
 	err := cmd.Run()
 
 	return &CommandResult{
-		Stdout: string(*so),
-		Stderr: string(*se),
+		Stdout: so.String(),
+		Stderr: se.String(),
 		Err:    err,
 	}, nil
 }
