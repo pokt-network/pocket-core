@@ -60,6 +60,7 @@ func StdSignBytes(chainID string, entropy int64, fee sdk.Coins, msg sdk.Msg, mem
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal bytes to json for StdSignDoc function: %v", err.Error())
 	}
+	fmt.Println("OLSH About to sort JSON", bz)
 	return sdk.MustSortJSON(bz), nil
 }
 

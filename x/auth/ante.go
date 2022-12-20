@@ -62,7 +62,7 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 		return nil, types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
 	}
 	var pk posCrypto.PublicKey
-	fmt.Println("OLSH stdTx", stdTx.GetSigners())
+	fmt.Println("OLSH stdTx", stdTx)
 	fmt.Println("OLSH signers", stdTx.GetSigners())
 	for _, signer := range stdTx.GetSigners() {
 		// attempt to get the public key from the signature
@@ -88,7 +88,9 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 		}
 		// get the sign bytes from the tx
 		signBytes, err := GetSignBytes(ctx.ChainID(), stdTx)
+		fmt.Println("OLSH signBytes", signBytes, ctx.ChainID())
 		if err != nil {
+			fmt.Println("OLSH internal error", err)
 			return nil, sdk.ErrInternal(err.Error())
 		}
 		// get the fees from the tx
@@ -203,6 +205,7 @@ func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTx, signer posCry
 // GetSignBytes returns a slice of bytes to sign over for a given transaction
 // and an account.
 func GetSignBytes(chainID string, stdTx types.StdTx) ([]byte, error) {
+	fmt.Println("OLSH GetSignBytes", chainID, stdTx.GetEntropy(), stdTx.GetFee(), stdTx.GetMsg(), stdTx.GetMemo())
 	return StdSignBytes(
 		chainID, stdTx.GetEntropy(), stdTx.GetFee(), stdTx.GetMsg(), stdTx.GetMemo(),
 	)
