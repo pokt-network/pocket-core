@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"github.com/pokt-network/pocket-core/codec"
@@ -462,6 +463,7 @@ func newTxBz(cdc *codec.Codec, msg sdk.ProtoMsg, fromAddr sdk.Address, chainID s
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("OLSH-newTxBz ~~~ sig: %v; ~~~~ signBytes: %v; ~~~~~~ pubKey: %v ~~~~~~ address: %v ~~~~~~~ \n", sig, signBytes, pubKey.RawBytes(), pubKey.Address().String())
 	s := authTypes.StdSignature{PublicKey: pubKey, Signature: sig}
 	tx := authTypes.NewTx(msg, fees, s, memo, entropy)
 	if legacyCodec {

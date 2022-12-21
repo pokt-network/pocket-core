@@ -4,9 +4,11 @@ import (
 	ed255192 "crypto/ed25519"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"strings"
+
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/ed25519"
-	"strings"
 )
 
 type (
@@ -69,8 +71,21 @@ func (pub Ed25519PublicKey) Address() crypto.Address {
 }
 
 func (pub Ed25519PublicKey) VerifyBytes(msg []byte, sig []byte) bool {
-	return ed25519.PubKeyEd25519(pub).VerifyBytes(msg, sig)
+	var s [Ed25519PubKeySize]byte
+	copy(s[:], pub.RawBytes())
+	pubKey := ed25519.PubKeyEd25519(s)
+	// fmt.Println("LENGTHS", len(s), len(pubkey), len(pub), pubkey.Bytes(), pubkey.Address().String(), pubkey)
+
+	fmt.Println("LENGTHS", len(pub), len(pubKey), pub.RawBytes(), pubKey.Bytes(), pub.Address().String(), pubKey.Address().String())
+	return pubKey.VerifyBytes(msg, sig)
 }
+
+// func (pub Ed25519PublicKey) VerifyBytes(msg []byte, sig []byte) bool {
+// 	pubKey := ed25519.PubKeyEd25519(pub)
+// 	fmt.Println("LENGTHS", len(pub), len(pubKey), pub.RawBytes(), pubKey.Bytes(), pub.Address().String(), pubKey.Address().String())
+
+// 	return pub.RawBytes().VerifyBytes(msg, sig)
+// }
 
 func (pub Ed25519PublicKey) Equals(other crypto.PubKey) bool {
 	return ed25519.PubKeyEd25519(pub).Equals(ed25519.PubKeyEd25519(other.(Ed25519PublicKey)))

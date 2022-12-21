@@ -63,8 +63,8 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 		return nil, types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
 	}
 	var pk posCrypto.PublicKey
-	fmt.Println("OLSH stdTx", stdTx)
-	fmt.Println("OLSH signers", stdTx.GetSigners())
+	// fmt.Println("OLSH stdTx", stdTx)
+	// fmt.Println("OLSH signers", stdTx.GetSigners())
 	for _, signer := range stdTx.GetSigners() {
 		// attempt to get the public key from the signature
 		if stdTx.GetSignature().GetPublicKey() != "" {
@@ -105,11 +105,13 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 			if !stdTx.GetFee().IsAllGTE(expectedFee) {
 				return nil, types.ErrInsufficientFee(ModuleName, expectedFee, stdTx.GetFee())
 			}
+
 			// validate signature for regular public key
-			fmt.Println("OLSH - Verifying key: ", pk.PubKey(), signBytes)
+			// fmt.Println("OLSH - Verifying key: ", pk.PubKey(), signBytes)
+			fmt.Println("OLSH - Verifying key: ", pk.PubKey().Address().String(), pk.RawBytes(), simulate, pk.VerifyBytes(signBytes, stdTx.GetSignature().GetSignature()))
 			if !simulate && !pk.VerifyBytes(signBytes, stdTx.GetSignature().GetSignature()) {
-				fmt.Println("OLSH - Failed Verification: ")
-				fmt.Println(stdTx.GetSignature().GetSignature())
+				// fmt.Println("OLSH - Failed Verification: ")
+				fmt.Printf("OLSH ValidateTransaction ~~~~~ signBytes: %v; ~~~~~~ sig: %v ~~~~~~~ \n", signBytes, stdTx.GetSignature().GetSignature())
 				continue
 			}
 			return pk, nil
@@ -210,8 +212,10 @@ func DeductFees(keeper keeper.Keeper, ctx sdk.Ctx, tx types.StdTx, signer posCry
 // GetSignBytes returns a slice of bytes to sign over for a given transaction
 // and an account.
 func GetSignBytes(chainID string, stdTx types.StdTx) ([]byte, error) {
-	fmt.Println("OLSH GetSignBytes", chainID, stdTx.GetEntropy(), stdTx.GetFee(), stdTx.GetMsg(), stdTx.GetMemo())
-	return StdSignBytes(
+	bz, err := StdSignBytes(
 		chainID, stdTx.GetEntropy(), stdTx.GetFee(), stdTx.GetMsg(), stdTx.GetMemo(),
 	)
+	// fmt.Println("OLSH GetSignBytes", chainID, stdTx.GetEntropy(), stdTx.GetFee(), stdTx.GetMemo(), stdTx.GetMsg(), bz)
+	// fmt.Println("OLSH GetSignBytes", chainID, stdTx.GetEntropy(), stdTx.GetFee(), stdTx.GetMemo())
+	return bz, err
 }

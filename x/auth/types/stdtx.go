@@ -58,13 +58,14 @@ func StdSignBytes(chainID string, entropy int64, fee sdk.Coins, msg sdk.Msg, mem
 		Msg:     msgsBytes,
 		Entropy: entropy,
 	}
-	fmt.Println("OLSH StdSignBytes", stdSignDoc)
+	// fmt.Println("OLSH StdSignBytes", stdSignDoc)
 	bz, err := ModuleCdc.MarshalJSON(stdSignDoc)
 	if err != nil {
 		return nil, fmt.Errorf("could not marshal bytes to json for StdSignDoc function: %v", err.Error())
 	}
-	fmt.Println("OLSH StdSignBytes bz", bz)
+	// fmt.Println("OLSH StdSignBytes bz", bz)
 	sortedBz := sdk.MustSortJSON(bz)
+	// fmt.Println("OLSH Sorted bz", sortedBz)
 	return sortedBz, nil
 }
 

@@ -179,6 +179,7 @@ func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
+	// fmt.Println("OLSH Sending raw tx: ", params.RawHexBytes, " to address: ", params.Addr, "")
 	res, err := app.PCA.SendRawTx(params.Addr, bz)
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())
