@@ -12,7 +12,7 @@ Feature: Pocket Query Commands
 	When the user runs the command "query account {{address}}" against validator 0
 	Then the user should be able to see standard output containing "/v1/query/account"
 	And the user should be able to see standard output containing "address"
-	And the pocket client should have exited without error
+	But the pocket client should have exited without error
 
   Scenario: To query an existing account, wrong address
 	Given the user is running the network "single_node_network"
