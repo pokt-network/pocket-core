@@ -2,7 +2,7 @@ package launcher
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"os/exec"
 	"strings"
 	"sync"
@@ -87,7 +87,7 @@ type PrinterPatternAction struct {
 }
 
 func (*PrinterPatternAction) MaybeAct(line string) {
-	fmt.Printf("Printer prints: %s\n", line)
+	log.Printf("Printer prints: %s\n", line)
 }
 
 func NewBlockWaiter(blocks int, verbose bool) *BlockWaiter {
@@ -113,7 +113,7 @@ func (b *BlockWaiter) MaybeAct(line string) {
 		if strings.Contains(line, "Executed block") {
 			b.RemainingBlocks--
 			if b.verbose {
-				fmt.Printf("Block elapsed; remaining: %d\n", b.RemainingBlocks)
+				log.Printf("Block elapsed; remaining: %d\n", b.RemainingBlocks)
 			}
 		}
 		if b.RemainingBlocks <= 0 {
