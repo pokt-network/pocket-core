@@ -48,7 +48,7 @@ Feature: Accounts Namespace
 
   Scenario Outline: Running Commands With Correct Syntax and Bad Data
 	Given the user has a pocket client
-	Given the user runs the command <bad_command>
+	When the user runs the command <bad_command>
 	Then the user should be able to see standard output containing <message_contents>
 	And the pocket client should have exited without error
 	Examples:
