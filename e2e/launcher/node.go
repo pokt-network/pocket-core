@@ -97,8 +97,7 @@ func newNode(nodeConfiguration *NodeConfiguration, networkRootDirectory, genesis
 }
 
 func writePrivValState(datadir, privValState string) error {
-	cdc := app.Codec()
-	pvkBz, err := cdc.MarshalJSONIndent(privval.FilePVLastSignState{}, "", "  ")
+	pvkBz, err := app.Codec().MarshalJSONIndent(privval.FilePVLastSignState{}, "", "  ")
 	if err != nil {
 		return err
 	}
