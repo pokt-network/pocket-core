@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/akrylysov/pogreb"
 	"github.com/alitto/pond"
-	"github.com/fsnotify/fsnotify"
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/hashicorp/go-retryablehttp"
@@ -32,7 +31,6 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,7 +44,7 @@ const (
 	ServicerHeader          = "X-Servicer"
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
-	AppVersion              = "ALPHA-0.2.2"
+	AppVersion              = "ALPHA-0.2.3"
 )
 
 type appCache struct {
@@ -151,7 +149,6 @@ var (
 	relaysClient                 *retryablehttp.Client
 	sessionCache                 sync.Map
 	relaysCacheDb                *pogreb.DB
-	sessionCacheDb               *pogreb.DB
 	servicerPkMap                sync.Map
 	servicerList                 []string
 	chains                       *pocketTypes.HostedBlockchains
@@ -517,7 +514,7 @@ func popResponseModel(w *http.Response, model interface{}) error {
 
 	err := json.NewDecoder(w.Body).Decode(&model)
 	if err != nil {
-		log2.Fatal(err)
+		logger.Error(fmt.Sprintf("error in RPC Handler WriteErrorResponse: %v", err))
 		return err
 	}
 
@@ -774,61 +771,14 @@ func reloadServicers(servicersPath string) {
 }
 
 // initHotReload - initialize keys and chains file change detection
-func initHotReload(watcher *fsnotify.Watcher) {
+func initHotReload() {
 	chainsPath := getChainsFilePath()
 	servicersPath := getServicersFilePath()
 
-	chainsFolder := filepath.Dir(chainsPath)
-	servicersFolder := filepath.Dir(servicersPath)
-
-	if chainsFolder != servicersFolder {
-		err := watcher.Add(chainsFolder)
-		if err != nil {
-			log2.Fatal(err)
-		}
-		err = watcher.Add(servicersFolder)
-		if err != nil {
-			log2.Fatal(err)
-		}
-	} else {
-		err := watcher.Add(servicersFolder)
-		if err != nil {
-			log2.Fatal(err)
-		}
-	}
-
-	err := watcher.Add(chainsFolder)
-	if err != nil {
-		log2.Fatal(err)
-	}
-
 	for {
-		select {
-		case event, ok := <-watcher.Events:
-			if !ok {
-				return
-			}
-
-			logger.Debug(fmt.Sprintf("event detected: %s", event))
-			if event.Op == fsnotify.Write || event.Op == fsnotify.Chmod || event.Op == fsnotify.Rename {
-				switch event.Name {
-				case chainsPath:
-					time.Sleep(200)
-					reloadChains(chainsPath)
-					break
-				case servicersPath:
-					time.Sleep(200)
-					if fileExist(chainsPath) {
-						logger.Debug(fmt.Sprintf("event %s detected on %s; reloading...", event.Name, servicersPath))
-						reloadServicers(servicersPath)
-					}
-					break
-				default:
-					// ignore
-					logger.Debug(fmt.Sprintf("event handled for a non tracked file: %s - %s", event, event.Name))
-				}
-			}
-		}
+		time.Sleep(1 * time.Minute)
+		reloadChains(chainsPath)
+		reloadServicers(servicersPath)
 	}
 }
 
@@ -936,60 +886,25 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 func loadAppSession(hash []byte) (*appCache, bool) {
 	sHash := hex.EncodeToString(hash)
 	if v, ok := sessionCache.Load(sHash); ok {
-		if !ok {
-			return nil, ok
-		}
-
 		return v.(*appCache), ok
 	}
 
-	if ok, err := sessionCacheDb.Has(hash); err != nil || !ok {
-		if err != nil {
-			logger.Error("error checking session cache key" + err.Error())
-		}
-		return nil, ok
-	}
-
-	payload, err := sessionCacheDb.Get(hash)
-	if err != nil {
-		logger.Error("error loading session cache key" + err.Error())
-		return nil, false
-	}
-
-	appSession := decodeAppSession(payload)
-	ok := appSession != nil
-
-	if ok {
-		sessionCache.Store(sHash, appSession)
-	}
-
-	return appSession, ok
+	return nil, false
 }
 
 // decodeAppSession - decode []byte app session cache to appCache
-func decodeAppSession(body []byte) (appSession *appCache) {
-	if err := json.Unmarshal(body, &appSession); err != nil {
-		logger.Error("error decoding app session from cache")
-		return nil
-	}
-	return appSession
-}
+//func decodeAppSession(body []byte) (appSession *appCache) {
+//	if err := json.Unmarshal(body, &appSession); err != nil {
+//		logger.Error("error decoding app session from cache")
+//		return nil
+//	}
+//	return appSession
+//}
 
 // storeAppSession - store in cache (memory and persistent) an appCache
 func storeAppSession(hash []byte, appSession *appCache) {
 	hashString := hex.EncodeToString(hash)
 	sessionCache.Store(hashString, appSession)
-
-	rb, err := json.Marshal(appSession)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	err = sessionCacheDb.Put(hash, rb)
-	if err != nil {
-		logger.Error("error adding app session to cache" + err.Error())
-	}
 
 	return
 }
@@ -998,13 +913,6 @@ func storeAppSession(hash []byte, appSession *appCache) {
 func deleteAppSession(hash []byte) {
 	sHash := hex.EncodeToString(hash)
 	sessionCache.Delete(sHash)
-
-	if ok, _ := sessionCacheDb.Has(hash); ok {
-		err := sessionCacheDb.Delete(hash)
-		if err != nil {
-			logger.Error("error deleting app session from cache " + sHash)
-		}
-	}
 }
 
 // evaluateServicerError - this will change internalCache[hash].IsValid bool depending on the result of the evaluation
@@ -1449,10 +1357,6 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 		return
 	}
 
-	// store relay on cache; once we hit this point this relay will be processed so should be notified to servicer even
-	// if process is shutdown
-	storeRelay(r)
-
 	res, err = processRelay(r)
 
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
@@ -1472,12 +1376,14 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 				return
 			}
 			dispatch = response.Dispatch
-			return
 		} else {
 			dispatch = appSession.Dispatch
 		}
-
 	}
+
+	// store relay on cache; once we hit this point this relay will be processed so should be notified to servicer even
+	// if process is shutdown
+	storeRelay(r)
 
 	// add to task group pool
 	if servicerNode.Worker.Stopped() {
@@ -1959,6 +1865,10 @@ func getMeshRoutes(simulation bool) Routes {
 func checkServicerHealth(servicerNode *servicer) error {
 	requestURL := fmt.Sprintf("%s/v1/health", servicerNode.ServicerURL)
 	req, err := http.NewRequest("GET", requestURL, nil)
+	if err != nil {
+		return err
+	}
+
 	if app.GlobalMeshConfig.UserAgent != "" {
 		req.Header.Set("User-Agent", app.GlobalMeshConfig.UserAgent)
 	}
@@ -2188,6 +2098,20 @@ func cleanOldSessions(c *cron.Cron) {
 			}
 			deleteAppSession(hash)
 		}
+	})
+
+	if err != nil {
+		log2.Fatal(err)
+	}
+
+	_, err = c.AddFunc("@every 1h", func() {
+		compact, err := relaysCacheDb.Compact()
+		if err != nil {
+			logger.Error(fmt.Sprintf("Compact relays database was not successful %v", err))
+			return
+		}
+
+		logger.Info(fmt.Sprintf("Relays database compacted successfully. Claimed %d bytes", compact.ReclaimedBytes))
 	})
 
 	if err != nil {
@@ -2537,45 +2461,6 @@ func initWorkers() {
 // initCache - initialize cache
 func initCache() {
 	var err error
-	logger.Info("initializing session cache")
-	sessionCacheFilePath := app.GlobalMeshConfig.DataDir + app.FS + app.GlobalMeshConfig.SessionCacheFile
-	sessionCacheDb, err = pogreb.Open(sessionCacheFilePath, &pogreb.Options{
-		// BackgroundSyncInterval sets the amount of time between background Sync() calls.
-		//
-		// Setting the value to 0 disables the automatic background synchronization.
-		// Setting the value to -1 makes the DB call Sync() after every write operation.
-		BackgroundSyncInterval: time.Duration(app.GlobalMeshConfig.SessionCacheBackgroundSyncInterval) * time.Millisecond,
-		// BackgroundCompactionInterval sets the amount of time between background Compact() calls.
-		//
-		// Setting the value to 0 disables the automatic background compaction.
-		BackgroundCompactionInterval: time.Duration(app.GlobalMeshConfig.SessionCacheBackgroundCompactionInterval) * time.Millisecond,
-	})
-	if err != nil {
-		log2.Fatal(err)
-		return
-	}
-
-	logger.Info(fmt.Sprintf("loading %d sessions from cache", sessionCacheDb.Count()))
-	it := sessionCacheDb.Items()
-	for {
-		key, val, err := it.Next()
-		if err == pogreb.ErrIterationDone {
-			break
-		}
-		if err != nil {
-			log2.Fatal(err)
-		}
-
-		appSession := decodeAppSession(val)
-		if appSession != nil {
-			// omit load old session from before lean mesh node and app session fix (0.1.1)
-			if appSession.RemainingRelays == 0 || appSession.Dispatch == nil {
-				deleteAppSession(key)
-			} else {
-				storeAppSession(key, appSession)
-			}
-		}
-	}
 
 	logger.Info("initializing relays cache")
 	relaysCacheFilePath := app.GlobalMeshConfig.DataDir + app.FS + app.GlobalMeshConfig.RelayCacheFile
@@ -2596,7 +2481,7 @@ func initCache() {
 	}
 
 	logger.Info(fmt.Sprintf("resuming %d relays from cache", relaysCacheDb.Count()))
-	it = relaysCacheDb.Items()
+	it := relaysCacheDb.Items()
 	for {
 		key, val, err := it.Next()
 		if err == pogreb.ErrIterationDone {
@@ -2696,13 +2581,6 @@ func StopMeshRPC() {
 	}
 	logger.Info("relays cache database stopped!")
 
-	// close session cache db
-	logger.Info("stopping session cache database...")
-	if err := sessionCacheDb.Close(); err != nil {
-		logger.Error(fmt.Sprintf("session db shutdown error: %s", err.Error()))
-	}
-	logger.Info("session cache database stopped!")
-
 	// stop accepting new tasks and signal all workers to stop processing new tasks. Tasks being processed by workers
 	// will continue until completion unless the process is terminated.
 	logger.Info("stopping worker pools...")
@@ -2736,17 +2614,6 @@ func StartMeshRPC(simulation bool) {
 	// initialize pseudo random to choose servicer url
 	rand.Seed(time.Now().Unix())
 	sessionCache = sync.Map{}
-	// watch chains.json to reload them on changes.
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log2.Fatal(err)
-	}
-	defer func(watcher *fsnotify.Watcher) {
-		err := watcher.Close()
-		if err != nil {
-			logger.Error(fmt.Sprintf("error closing file watcher %s", err.Error()))
-		}
-	}(watcher)
 	// initialize worker pools
 	initWorkers()
 	// load auth token files (servicer and mesh node)
@@ -2754,7 +2621,7 @@ func StartMeshRPC(simulation bool) {
 	// retrieve the nonNative blockchains your node is hosting
 	chains = loadHostedChains()
 	// turn on chains hot reload
-	go initHotReload(watcher)
+	go initHotReload()
 	// initialize prometheus metrics
 	pocketTypes.InitGlobalServiceMetric(chains, logger, app.GlobalMeshConfig.PrometheusAddr, app.GlobalMeshConfig.PrometheusMaxOpenfiles)
 	// instantiate all the http clients used to call Chains and Servicer
