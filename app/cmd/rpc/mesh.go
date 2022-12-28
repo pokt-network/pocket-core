@@ -44,7 +44,7 @@ const (
 	ServicerHeader          = "X-Servicer"
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
-	AppVersion              = "ALPHA-0.2.3"
+	AppVersion              = "ALPHA-0.2.4"
 )
 
 type appCache struct {
@@ -775,8 +775,13 @@ func initHotReload() {
 	chainsPath := getChainsFilePath()
 	servicersPath := getServicersFilePath()
 
+	if app.GlobalMeshConfig.HotReloadInterval <= 0 {
+		logger.Info("skipping hot reload due to hot_reload_interval is less or equal to 0")
+		return
+	}
+
 	for {
-		time.Sleep(1 * time.Minute)
+		time.Sleep(time.Duration(app.GlobalMeshConfig.HotReloadInterval) * time.Millisecond)
 		reloadChains(chainsPath)
 		reloadServicers(servicersPath)
 	}
@@ -2019,7 +2024,7 @@ func nodeHealthStatusPooling(c *cron.Cron, servicerNode *servicer) {
 		)
 	}
 
-	_, err := c.AddFunc("@every 30s", func() {
+	_, err := c.AddFunc("@every 60s", func() {
 		value, ok := servicerPkMap.Load(servicerNode.Address.String())
 		if !ok {
 			log2.Fatal(fmt.Sprintf("unable to load %s from servicers", servicerNode.Address.String()))
@@ -2047,7 +2052,7 @@ func nodeHealthStatusPooling(c *cron.Cron, servicerNode *servicer) {
 
 // cleanOldSessions - clean up sessions that are longer than 50 blocks (just to be sure they are not needed)
 func cleanOldSessions(c *cron.Cron) {
-	_, err := c.AddFunc("@every 30s", func() {
+	_, err := c.AddFunc("@every 30m", func() {
 		toDelete := make([]string, 0)
 
 		sessionCache.Range(func(key any, value any) bool {
@@ -2103,16 +2108,6 @@ func cleanOldSessions(c *cron.Cron) {
 	if err != nil {
 		log2.Fatal(err)
 	}
-
-	_, err = c.AddFunc("@every 1h", func() {
-		compact, err := relaysCacheDb.Compact()
-		if err != nil {
-			logger.Error(fmt.Sprintf("Compact relays database was not successful %v", err))
-			return
-		}
-
-		logger.Info(fmt.Sprintf("Relays database compacted successfully. Claimed %d bytes", compact.ReclaimedBytes))
-	})
 
 	if err != nil {
 		log2.Fatal(err)
@@ -2469,11 +2464,11 @@ func initCache() {
 		//
 		// Setting the value to 0 disables the automatic background synchronization.
 		// Setting the value to -1 makes the DB call Sync() after every write operation.
-		BackgroundSyncInterval: time.Duration(app.GlobalMeshConfig.SessionCacheBackgroundSyncInterval) * time.Millisecond,
+		BackgroundSyncInterval: time.Duration(app.GlobalMeshConfig.RelayCacheBackgroundSyncInterval) * time.Millisecond,
 		// BackgroundCompactionInterval sets the amount of time between background Compact() calls.
 		//
 		// Setting the value to 0 disables the automatic background compaction.
-		BackgroundCompactionInterval: time.Duration(app.GlobalMeshConfig.SessionCacheBackgroundCompactionInterval) * time.Millisecond,
+		BackgroundCompactionInterval: time.Duration(app.GlobalMeshConfig.RelayCacheBackgroundCompactionInterval) * time.Millisecond,
 	})
 	if err != nil {
 		log2.Fatal(err)

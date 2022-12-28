@@ -29,10 +29,8 @@ type MeshConfig struct {
 	RelayCacheFile                         string `json:"relay_cache_file"`
 	RelayCacheBackgroundSyncInterval       int    `json:"relay_cache_background_sync_interval"`
 	RelayCacheBackgroundCompactionInterval int    `json:"relay_cache_background_compaction_interval"`
-	// Session Cache
-	SessionCacheFile                         string `json:"session_cache_file"`
-	SessionCacheBackgroundSyncInterval       int    `json:"session_cache_background_sync_interval"`
-	SessionCacheBackgroundCompactionInterval int    `json:"session_cache_background_compaction_interval"`
+	// Hot Reload Interval in milliseconds
+	HotReloadInterval int `json:"hot_reload_interval"`
 	// Workers
 	WorkerStrategy     string `json:"worker_strategy"`
 	MaxWorkers         int    `json:"max_workers"`
@@ -66,10 +64,8 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		RelayCacheFile:                         "data" + FS + "relays.pkt",
 		RelayCacheBackgroundSyncInterval:       3600,
 		RelayCacheBackgroundCompactionInterval: 18000,
-		// Session Cache
-		SessionCacheFile:                         "data" + FS + "session.pkt",
-		SessionCacheBackgroundSyncInterval:       3600,
-		SessionCacheBackgroundCompactionInterval: 18000,
+		// Hot Reload
+		HotReloadInterval: 180000,
 		// Worker
 		WorkerStrategy:     "balanced",
 		MaxWorkers:         10,
