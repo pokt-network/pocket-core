@@ -92,7 +92,7 @@ This guide assume you already have a Servicer properly setup and running. If not
 	"data_dir": "/home/app/.pocket/mesh",
     "rpc_port": "8081", // mesh node listening port
     "chains_name": "chains/chains.json", // chains for mesh node. This should be a filename path relative to --datadir
-    "rpc_timeout": 30000, // chains rpc timeout - time in milliseconds
+    "rpc_timeout": 60000, // chains rpc timeout - time in milliseconds
     "log_level": "*:info", // log level, you can try with *:error or even *:debug (this print a lot)
     "user_agent": "mesh-node", // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
     "auth_token_file": "key/auth.json", // authtoken for mesh private endpoints. This should be a filename path relative to --datadir
@@ -100,23 +100,21 @@ This guide assume you already have a Servicer properly setup and running. If not
     "pocket_prometheus_port": "8083",
     "prometheus_max_open_files": 3,
     "relay_cache_file": "data/relays.pkt",
-  	"relay_cache_background_sync_interval": 60, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
-  	"relay_cache_background_compaction_interval": 300, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
-    "session_cache_file": "data/session.pkt",
-    "session_cache_background_sync_interval": 60, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
-    "session_cache_background_compaction_interval": 300, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
+  	"relay_cache_background_sync_interval": -1, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
+  	"relay_cache_background_compaction_interval": 600000, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
+    "hot_reload_interval": 0, // amount of milliseconds that chains and servicers file are read again; 0 or less disable it
     // Worker options match with: https://github.com/alitto/pond#resizing-strategies
     // These are used:
     // 1. interceptor of dispatch, health and height /v1/query endpoints
     // 2. notify servicer
     // the set of values is "repetead" for each worker per address,
     // so if you set 20 max workers and set 10 addresses, that means 200 max_workers for notify + 20 for hooks
-    "worker_strategy": "balanced", // Kind of worker strategy, could be: balanced | eager | lazy
-    "max_workers": 20,
-    "max_workers_capacity": 100,
-    "workers_idle_timeout": 10000,
+    "worker_strategy": "balanced", // Kind of worker strategy, could be: balanced | eager | lazy - avoid eager if you see many timeout on servicer
+    "max_workers": 10,
+    "max_workers_capacity": 30,
+    "workers_idle_timeout": 60000,
     "servicer_private_key_file": "key/key.json", // servicer private key to sign proof message on relay response. This should be a filename path relative to --datadir
-    "servicer_rpc_timeout": 30000, // servicer rpc timeout
+    "servicer_rpc_timeout": 60000, // servicer rpc timeout - greater for faraway regions like (tokyo to us east)
     "servicer_auth_token_file": "key/auth.json", // authtoken used to call servicer. This should be a filename path relative to --datadir
     // Servicer relay notification has a retry mechanism, refer to: https://github.com/hashicorp/go-retryablehttp
     "servicer_retry_max_times": 10,
