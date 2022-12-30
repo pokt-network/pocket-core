@@ -74,7 +74,7 @@ For more detailed command information, see the [usage section](doc/specs/cli/).
 
 ## Running the tests
 
-To run the Pocket Core unit tests, use the go testing tools and the `go test ./...` command within the tests directory.
+To run the Pocket Core unit tests, `go test -short -v -p 1 ./...`
 
 ## Contributing
 
