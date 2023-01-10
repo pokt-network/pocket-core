@@ -44,7 +44,7 @@ const (
 	ServicerHeader          = "X-Servicer"
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
-	AppVersion              = "ALPHA-0.2.4"
+	AppVersion              = "ALPHA-0.2.5"
 )
 
 type appCache struct {
@@ -957,6 +957,9 @@ func getSessionHashFromRelay(r *pocketTypes.Relay) []byte {
 
 // notifyServicer - call servicer to ack about the processed relay.
 func notifyServicer(r *pocketTypes.Relay) {
+	// discard this relay at the end of this function, to end this function the servicer will be retried N times
+	defer deleteCacheRelay(r)
+
 	result := meshRPCRelayResponse{}
 	ctx := context.WithValue(context.Background(), "result", &result)
 	jsonData, err := json.Marshal(r)
@@ -968,6 +971,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 				err.Error(),
 			),
 		)
+
 		return
 	}
 
@@ -1015,6 +1019,10 @@ func notifyServicer(r *pocketTypes.Relay) {
 		r.Proof.Token.ApplicationPublicKey,
 	)
 	req, err := retryablehttp.NewRequestWithContext(ctx, "POST", requestURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		logger.Error(fmt.Sprintf("error formatting Servicer URL: %s", err.Error()))
+		return
+	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(ServicerHeader, servicerAddress)
 	if app.GlobalMeshConfig.UserAgent != "" {
@@ -1049,13 +1057,8 @@ func notifyServicer(r *pocketTypes.Relay) {
 				result.Error.Code, result.Error.Codespace, result.Error.Error,
 			),
 		)
-		if !evaluateServicerError(getSessionHashFromRelay(r), result.Error) {
-			// if session is not valid for handle more relay we should discard this relay.
-			deleteCacheRelay(r)
-		}
 	} else {
 		logger.Debug(fmt.Sprintf("servicer processed relay %s successfully", r.RequestHashString()))
-		deleteCacheRelay(r)
 
 		header := pocketTypes.SessionHeader{
 			ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
@@ -1095,7 +1098,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 }
 
 // validate - evaluate relay to understand if should or not processed.
-func validate(r *pocketTypes.Relay) (err sdk.Error) {
+func validate(r *pocketTypes.Relay) sdk.Error {
 	logger.Debug(fmt.Sprintf("validating relay %s", r.RequestHashString()))
 	// validate payload
 	if err := r.Payload.Validate(); err != nil {
@@ -1351,7 +1354,7 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 			fmt.Sprintf(
 				"could not validate relay %s for app: %s, for chainID %v on node %s, at session height: %v, with error: %s",
 				r.RequestHashString(),
-				r.Proof.ServicerPubKey,
+				r.Proof.Token.ApplicationPublicKey,
 				r.Proof.Blockchain,
 				servicerAddress,
 				r.Meta.BlockHeight,
@@ -1361,6 +1364,10 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 
 		return
 	}
+
+	// store relay on cache; once we hit this point this relay will be processed so should be notified to servicer even
+	// if process is shutdown
+	storeRelay(r)
 
 	res, err = processRelay(r)
 
@@ -1378,17 +1385,20 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 			response := meshRPCSessionResult{}
 			err1 := getAppSession(r, &response)
 			if err1 != nil {
-				return
+				logger.Error(
+					fmt.Sprintf(
+						"error getting app %s session; hash %s",
+						r.Proof.Token.ApplicationPublicKey,
+						hash,
+					),
+				)
+			} else {
+				dispatch = response.Dispatch
 			}
-			dispatch = response.Dispatch
 		} else {
 			dispatch = appSession.Dispatch
 		}
 	}
-
-	// store relay on cache; once we hit this point this relay will be processed so should be notified to servicer even
-	// if process is shutdown
-	storeRelay(r)
 
 	// add to task group pool
 	if servicerNode.Worker.Stopped() {
@@ -2104,10 +2114,6 @@ func cleanOldSessions(c *cron.Cron) {
 			deleteAppSession(hash)
 		}
 	})
-
-	if err != nil {
-		log2.Fatal(err)
-	}
 
 	if err != nil {
 		log2.Fatal(err)
