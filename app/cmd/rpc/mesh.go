@@ -44,7 +44,7 @@ const (
 	ServicerHeader          = "X-Servicer"
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
-	AppVersion              = "ALPHA-0.2.5"
+	AppVersion              = "ALPHA-0.2.6"
 )
 
 type appCache struct {
@@ -128,12 +128,13 @@ type dispatchResponse struct {
 // servicer - represents a node load from servicer_private_key_file
 // also handle status and dedicated worker group.
 type servicer struct {
-	PrivateKey  crypto.PrivateKey
-	Address     sdk.Address
-	ServicerURL string
-	Status      *app.HealthResponse
-	Crons       *cron.Cron
-	Worker      *pond.WorkerPool
+	PrivateKey   crypto.PrivateKey
+	Address      sdk.Address
+	ServicerURL  string
+	Status       *app.HealthResponse
+	Crons        *cron.Cron
+	Worker       *pond.WorkerPool
+	SessionCache sync.Map
 }
 
 type LevelHTTPLogger struct {
@@ -141,25 +142,21 @@ type LevelHTTPLogger struct {
 }
 
 var (
-	srv                          *http.Server
-	finish                       context.CancelFunc
-	logger                       log.Logger
-	chainsClient                 *http.Client
-	servicerClient               *http.Client
-	relaysClient                 *retryablehttp.Client
-	sessionCache                 sync.Map
-	relaysCacheDb                *pogreb.DB
-	servicerPkMap                sync.Map
-	servicerList                 []string
-	chains                       *pocketTypes.HostedBlockchains
-	meshAuthToken                sdk.AuthToken
-	servicerAuthToken            sdk.AuthToken
-	cronJobs                     *cron.Cron
-	interceptorPool              *pond.WorkerPool
-	dispatchInterceptorTaskGroup *pond.TaskGroup
-	heightInterceptorTaskGroup   *pond.TaskGroup
-	healthInterceptorTaskGroup   *pond.TaskGroup
-	mutex                        = sync.Mutex{}
+	srv               *http.Server
+	finish            context.CancelFunc
+	logger            log.Logger
+	chainsClient      *http.Client
+	servicerClient    *http.Client
+	relaysClient      *retryablehttp.Client
+	relaysCacheDb     *pogreb.DB
+	servicerPkMap     sync.Map
+	servicerList      []string
+	chains            *pocketTypes.HostedBlockchains
+	meshAuthToken     sdk.AuthToken
+	servicerAuthToken sdk.AuthToken
+	cronJobs          *cron.Cron
+	interceptorPool   *pond.WorkerPool
+	mutex             = sync.Mutex{}
 	// validate payload
 	//	modulename: pocketcore CodeEmptyPayloadDataError = 25
 	// ensures the block height is within the acceptable range
@@ -372,23 +369,6 @@ func (t *transport) RoundTrip(r *http.Request) (w *http.Response, err error) {
 
 	w.Body = io.NopCloser(rr)
 
-	switch r.URL.Path {
-	case "/v1/health":
-		healthInterceptorTaskGroup.Submit(func() {
-			handleQueryHealthResponse(r, w)
-		})
-	case "/v1/client/dispatch":
-		dispatchInterceptorTaskGroup.Submit(func() {
-			handleDispatchResponse(r, w)
-		})
-	case "/v1/query/height":
-		heightInterceptorTaskGroup.Submit(func() {
-			handleQueryHeightResponse(r, w)
-		})
-	default:
-		logger.Debug(fmt.Sprintf("Request to=%s can be ignored.\n", r.URL.Path))
-	}
-
 	return w, nil
 }
 
@@ -401,124 +381,6 @@ func isInvalidRelayCode(code sdk.CodeType) bool {
 	}
 
 	return false
-}
-
-// handleDispatchResponse - callback to keep updated our known session information
-func handleDispatchResponse(r *http.Request, w *http.Response) {
-	d := pocketTypes.SessionHeader{}
-	if err := popRequestModel(r, &d); err != nil {
-		return
-	}
-
-	result := dispatchResponse{}
-	err := popResponseModel(w, &result)
-	if err != nil {
-		return
-	}
-
-	// omit any dispatch call that return a session where this node is not in the list
-	if !result.ShouldKeep() {
-		return
-	}
-
-	key := d.Hash()
-
-	if appSession, ok := loadAppSession(key); ok {
-		if appSession.Dispatch.Session.Header.SessionBlockHeight < result.Session.Header.SessionBlockHeight {
-			appSession.Dispatch = &result
-			storeAppSession(key, appSession)
-		}
-	} else {
-		storeAppSession(key, &appCache{
-			PublicKey: d.ApplicationPubKey,
-			Chain:     d.Chain,
-			Dispatch:  &result,
-			IsValid:   false,
-		})
-	}
-}
-
-// handleQueryHeightResponse - callback to keep updated our known servicer height without call from someone else call response
-func handleQueryHeightResponse(r *http.Request, w *http.Response) {
-	requestedServicer := r.Header.Get(ServicerHeader)
-
-	result := HeightParams{}
-	err := popResponseModel(w, &result)
-	if err != nil {
-		return
-	}
-
-	s, ok := servicerPkMap.Load(requestedServicer)
-
-	if !ok {
-		return
-	}
-
-	servicerNode := s.(*servicer)
-
-	if result.Height > servicerNode.Status.Height {
-		servicerNode.Status.Height = result.Height
-	}
-}
-
-// handleQueryHealthResponse - no one except us maybe call this
-func handleQueryHealthResponse(r *http.Request, w *http.Response) {
-	requestedServicer := r.Header.Get(ServicerHeader)
-
-	result := app.HealthResponse{}
-	err := popResponseModel(w, &result)
-	if err != nil {
-		return
-	}
-
-	s, ok := servicerPkMap.Load(requestedServicer)
-
-	if !ok {
-		return
-	}
-
-	servicerNode := s.(*servicer)
-
-	if result.Height > servicerNode.Status.Height {
-		servicerNode.Status = &result
-	}
-}
-
-// popRequestModel - inflate request body into an struct
-func popRequestModel(r *http.Request, model interface{}) error {
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-	if err != nil {
-		return err
-	}
-	if len(body) == 0 {
-		return nil
-	}
-	if err := r.Body.Close(); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(body, model); err != nil {
-		return err
-	}
-	return nil
-}
-
-// popResponseModel - inflate response payload into an struct
-func popResponseModel(w *http.Response, model interface{}) error {
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			logger.Error(fmt.Sprintf("error in RPC Handler WriteErrorResponse: %v", err))
-			return
-		}
-	}(w.Body)
-
-	err := json.NewDecoder(w.Body).Decode(&model)
-	if err != nil {
-		logger.Error(fmt.Sprintf("error in RPC Handler WriteErrorResponse: %v", err))
-		return err
-	}
-
-	return nil
 }
 
 // serveReverseProxy - forward request to ServicerURL
@@ -887,10 +749,10 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 	return
 }
 
-// loadAppSession - retrieve from cache (memory or persistent) an app session cache
-func loadAppSession(hash []byte) (*appCache, bool) {
+// LoadAppSession - retrieve from cache (memory or persistent) an app session cache
+func (s *servicer) LoadAppSession(hash []byte) (*appCache, bool) {
 	sHash := hex.EncodeToString(hash)
-	if v, ok := sessionCache.Load(sHash); ok {
+	if v, ok := s.SessionCache.Load(sHash); ok {
 		return v.(*appCache), ok
 	}
 
@@ -906,32 +768,36 @@ func loadAppSession(hash []byte) (*appCache, bool) {
 //	return appSession
 //}
 
-// storeAppSession - store in cache (memory and persistent) an appCache
-func storeAppSession(hash []byte, appSession *appCache) {
+// StoreAppSession - store in cache (memory and persistent) an appCache
+func (s *servicer) StoreAppSession(hash []byte, appSession *appCache) {
 	hashString := hex.EncodeToString(hash)
-	sessionCache.Store(hashString, appSession)
+	s.SessionCache.Store(hashString, appSession)
 
 	return
 }
 
-// deleteAppSession - delete an app session from cache (memory and persistent)
-func deleteAppSession(hash []byte) {
+// DeleteAppSession - delete an app session from cache (memory and persistent)
+func (s *servicer) DeleteAppSession(hash []byte) {
 	sHash := hex.EncodeToString(hash)
-	sessionCache.Delete(sHash)
+	s.SessionCache.Delete(sHash)
 }
 
 // evaluateServicerError - this will change internalCache[hash].IsValid bool depending on the result of the evaluation
-func evaluateServicerError(hash []byte, err *sdkErrorResponse) (isSessionStillValid bool) {
+func evaluateServicerError(r *pocketTypes.Relay, err *sdkErrorResponse) (isSessionStillValid bool) {
+	hash := getSessionHashFromRelay(r)
+
 	isSessionStillValid = !isInvalidRelayCode(err.Code) // we should not retry if is invalid
 
 	if isSessionStillValid {
 		return isSessionStillValid
 	}
 
-	if appSession, ok := loadAppSession(hash); ok {
+	servicerNode := getServicerFromPubKey(r.Proof.ServicerPubKey)
+
+	if appSession, ok := servicerNode.LoadAppSession(hash); ok {
 		appSession.IsValid = isSessionStillValid
 		appSession.Error = err
-		storeAppSession(hash, appSession)
+		servicerNode.StoreAppSession(hash, appSession)
 	} else {
 		logger.Error(
 			fmt.Sprintf(
@@ -953,6 +819,34 @@ func getSessionHashFromRelay(r *pocketTypes.Relay) []byte {
 	}
 
 	return header.Hash()
+}
+
+func getServicerFromPubKey(pubKey string) *servicer {
+	servicerAddress, err := getServicerAddressFromPubKeyAsString(pubKey)
+
+	if err != nil {
+		logger.Error(
+			fmt.Sprintf(
+				"unable to decode servicer public key %s",
+				pubKey,
+			),
+		)
+		return nil
+	}
+
+	s, ok := servicerPkMap.Load(servicerAddress)
+
+	if !ok {
+		logger.Error(
+			fmt.Sprintf(
+				"unable to find servicer with address=%s",
+				servicerAddress,
+			),
+		)
+		return nil
+	}
+
+	return s.(*servicer)
 }
 
 // notifyServicer - call servicer to ack about the processed relay.
@@ -1057,6 +951,8 @@ func notifyServicer(r *pocketTypes.Relay) {
 				result.Error.Code, result.Error.Codespace, result.Error.Error,
 			),
 		)
+
+		evaluateServicerError(r, result.Error)
 	} else {
 		logger.Debug(fmt.Sprintf("servicer processed relay %s successfully", r.RequestHashString()))
 
@@ -1067,7 +963,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 		}
 
 		hash := header.Hash()
-		if appSession, ok := loadAppSession(hash); ok {
+		if appSession, ok := servicerNode.LoadAppSession(hash); ok {
 			appSession.RemainingRelays -= 1
 			logger.Debug(
 				fmt.Sprintf(
@@ -1090,7 +986,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 				appSession.IsValid = false
 				appSession.Error = newSdkErrorFromPocketSdkError(pocketTypes.NewOverServiceError(ModuleName))
 			}
-			storeAppSession(hash, appSession)
+			servicerNode.StoreAppSession(hash, appSession)
 		}
 	}
 
@@ -1134,7 +1030,9 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 
 	hash := header.Hash()
 
-	if appSession, ok := loadAppSession(hash); !ok {
+	servicerNode := getServicerFromPubKey(r.Proof.ServicerPubKey)
+
+	if appSession, ok := servicerNode.LoadAppSession(hash); !ok {
 		result := &meshRPCSessionResult{}
 		e2 := getAppSession(r, result)
 
@@ -1146,7 +1044,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 
 		isValid := result.Success && remainingRelays > 0 && result.Error == nil
 
-		storeAppSession(header.Hash(), &appCache{
+		servicerNode.StoreAppSession(header.Hash(), &appCache{
 			PublicKey:       header.ApplicationPubKey,
 			Chain:           header.Chain,
 			Dispatch:        result.Dispatch,
@@ -1381,7 +1279,7 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 
 		hash := header.Hash()
 
-		if appSession, ok := loadAppSession(hash); !ok {
+		if appSession, ok := servicerNode.LoadAppSession(hash); !ok {
 			response := meshRPCSessionResult{}
 			err1 := getAppSession(r, &response)
 			if err1 != nil {
@@ -1816,15 +1714,13 @@ func meshUpdateChains(w http.ResponseWriter, r *http.Request, ps httprouter.Para
 
 // getMeshRoutes - return routes that will be handled/proxied by mesh rpc server
 func getMeshRoutes(simulation bool) Routes {
-	// with reusable body
-	proxied := reuseBody(proxyRequest)
 	routes := Routes{
 		// Proxy
 		Route{Name: "AppVersion", Method: "GET", Path: "/v1", HandlerFunc: proxyRequest},
-		Route{Name: "Health", Method: "GET", Path: "/v1/health", HandlerFunc: proxied},
+		Route{Name: "Health", Method: "GET", Path: "/v1/health", HandlerFunc: proxyRequest},
 		Route{Name: "Challenge", Method: "POST", Path: "/v1/client/challenge", HandlerFunc: proxyRequest},
 		Route{Name: "ChallengeCORS", Method: "OPTIONS", Path: "/v1/client/challenge", HandlerFunc: proxyRequest},
-		Route{Name: "HandleDispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: proxied},
+		Route{Name: "HandleDispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: proxyRequest},
 		Route{Name: "HandleDispatchCORS", Method: "OPTIONS", Path: "/v1/client/dispatch", HandlerFunc: proxyRequest},
 		Route{Name: "SendRawTx", Method: "POST", Path: "/v1/client/rawtx", HandlerFunc: proxyRequest},
 		Route{Name: "Stop", Method: "POST", Path: "/v1/private/stop", HandlerFunc: proxyRequest},
@@ -1841,7 +1737,7 @@ func getMeshRoutes(simulation bool) Routes {
 		Route{Name: "QueryBlock", Method: "POST", Path: "/v1/query/block", HandlerFunc: proxyRequest},
 		Route{Name: "QueryBlockTxs", Method: "POST", Path: "/v1/query/blocktxs", HandlerFunc: proxyRequest},
 		Route{Name: "QueryDAOOwner", Method: "POST", Path: "/v1/query/daoowner", HandlerFunc: proxyRequest},
-		Route{Name: "QueryHeight", Method: "POST", Path: "/v1/query/height", HandlerFunc: proxied},
+		Route{Name: "QueryHeight", Method: "POST", Path: "/v1/query/height", HandlerFunc: proxyRequest},
 		Route{Name: "QueryNode", Method: "POST", Path: "/v1/query/node", HandlerFunc: proxyRequest},
 		Route{Name: "QueryNodeClaim", Method: "POST", Path: "/v1/query/nodeclaim", HandlerFunc: proxyRequest},
 		Route{Name: "QueryNodeClaims", Method: "POST", Path: "/v1/query/nodeclaims", HandlerFunc: proxyRequest},
@@ -2062,57 +1958,27 @@ func nodeHealthStatusPooling(c *cron.Cron, servicerNode *servicer) {
 
 // cleanOldSessions - clean up sessions that are longer than 50 blocks (just to be sure they are not needed)
 func cleanOldSessions(c *cron.Cron) {
-	_, err := c.AddFunc("@every 30m", func() {
-		toDelete := make([]string, 0)
+	_, err := c.AddFunc("@every 10s", func() {
+		servicerPkMap.Range(func(_, sn any) bool {
+			servicerNode := sn.(*servicer)
+			servicerNode.SessionCache.Range(func(key any, ss any) bool {
+				appSession := ss.(*appCache)
+				hash, err := hex.DecodeString(key.(string))
+				if err != nil {
+					logger.Error("error decoding session hash to delete from cache " + err.Error())
+					return true
+				}
 
-		sessionCache.Range(func(key any, value any) bool {
-			appSession := value.(*appCache)
+				if appSession.Dispatch == nil {
+					servicerNode.DeleteAppSession(hash)
+				} else if appSession.Dispatch.Session.Header.SessionBlockHeight < (servicerNode.Status.Height - 6) {
+					servicerNode.DeleteAppSession(hash)
+				}
 
-			if appSession.Dispatch == nil {
-				toDelete = append(toDelete, key.(string))
 				return true
-			}
-
-			supportedNodes := appSession.Dispatch.GetSupportedNodes()
-			atLeastOneNode := false
-
-			for _, a := range supportedNodes {
-				s, ok := servicerPkMap.Load(a)
-
-				if !ok {
-					continue
-				}
-
-				atLeastOneNode = true
-
-				servicerNode := s.(*servicer)
-
-				if appSession.Dispatch.Session.Header.SessionBlockHeight < (servicerNode.Status.Height - 16) {
-					// this session is secure to be removed
-					toDelete = append(toDelete, key.(string))
-					// break because the session is the same for all the nodes.
-					break
-				}
-			}
-
-			// if no one of the supported nodes are part of a session we will remove it from cache
-			// no mater height of it.
-			if !atLeastOneNode {
-				// this session is secure to be removed
-				toDelete = append(toDelete, key.(string))
-			}
-
+			})
 			return true
 		})
-
-		for _, key := range toDelete {
-			hash, err := hex.DecodeString(key)
-			if err != nil {
-				logger.Error("error decoding session hash to delete from cache " + err.Error())
-				return
-			}
-			deleteAppSession(hash)
-		}
 	})
 
 	if err != nil {
@@ -2183,8 +2049,9 @@ func loadServicerNodes() int {
 					IsCatchingUp: true,
 					Height:       1,
 				},
-				Crons:  servicerCronJobs,
-				Worker: newWorker(fmt.Sprintf("Notify Servicer %s", addressStr)),
+				Crons:        servicerCronJobs,
+				Worker:       newWorker(fmt.Sprintf("Notify Servicer %s", addressStr)),
+				SessionCache: sync.Map{},
 			}
 
 			servicerPkMap.Store(addressStr, &sRecord)
@@ -2449,16 +2316,6 @@ func newWorker(handler string) *pond.WorkerPool {
 	)
 }
 
-// initWorkers - initialize pond worker and task workers
-func initWorkers() {
-	logger.Info("initializing interceptor pool")
-	interceptorPool = newWorker("Interceptor")
-
-	dispatchInterceptorTaskGroup = interceptorPool.Group()
-	heightInterceptorTaskGroup = interceptorPool.Group()
-	healthInterceptorTaskGroup = interceptorPool.Group()
-}
-
 // initCache - initialize cache
 func initCache() {
 	var err error
@@ -2614,9 +2471,6 @@ func StartMeshRPC(simulation bool) {
 	logger = initLogger()
 	// initialize pseudo random to choose servicer url
 	rand.Seed(time.Now().Unix())
-	sessionCache = sync.Map{}
-	// initialize worker pools
-	initWorkers()
 	// load auth token files (servicer and mesh node)
 	loadAuthTokens()
 	// retrieve the nonNative blockchains your node is hosting
