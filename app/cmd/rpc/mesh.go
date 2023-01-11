@@ -1958,7 +1958,7 @@ func nodeHealthStatusPooling(c *cron.Cron, servicerNode *servicer) {
 
 // cleanOldSessions - clean up sessions that are longer than 50 blocks (just to be sure they are not needed)
 func cleanOldSessions(c *cron.Cron) {
-	_, err := c.AddFunc("@every 10s", func() {
+	_, err := c.AddFunc("@every 30m", func() {
 		servicerPkMap.Range(func(_, sn any) bool {
 			servicerNode := sn.(*servicer)
 			servicerNode.SessionCache.Range(func(key any, ss any) bool {
