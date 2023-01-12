@@ -417,7 +417,7 @@ func reuseBody(handler httprouter.Handle) httprouter.Handle {
 
 // getAppSession - call ServicerURL to get an application session using retrieve header
 func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorResponse {
-	servicerNode := getRandomServicer()
+	servicerNode := getServicerFromPubKey(relay.Proof.ServicerPubKey)
 	payload := pocketTypes.MeshSession{
 		SessionHeader: pocketTypes.SessionHeader{
 			ApplicationPubKey:  relay.Proof.Token.ApplicationPublicKey,
@@ -429,7 +429,7 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 		Blockchain:         relay.Proof.Blockchain,
 		SessionBlockHeight: relay.Proof.SessionBlockHeight,
 	}
-	logger.Debug("reading session from servicer")
+	logger.Debug(fmt.Sprintf("reading session from servicer %s", servicerNode.Address.String()))
 	jsonData, e := json.Marshal(payload)
 	if e != nil {
 		return newSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
@@ -442,12 +442,16 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 		servicerAuthToken.Value,
 	)
 	req, e := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonData))
+	if e != nil {
+		return newSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 	if app.GlobalMeshConfig.UserAgent != "" {
 		req.Header.Set("User-Agent", app.GlobalMeshConfig.UserAgent)
 	}
-	resp, e := servicerClient.Do(req)
 
+	resp, e := servicerClient.Do(req)
 	if e != nil {
 		return newSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 	}
