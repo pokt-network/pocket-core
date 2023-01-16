@@ -163,8 +163,12 @@ func (k Keeper) HandleChallenge(ctx sdk.Ctx, challenge pc.ChallengeProofInvalidD
 			return nil, err
 		}
 		// add to cache
+<<<<<<< HEAD
 		pc.SetSession(session, node.SessionStore)
 
+=======
+		pc.SetSession(session)
+>>>>>>> 580bd32a71c65ac7ae9493a3afae5eb15aaf0b77
 		// add session metric
 		k.GetHealthMetrics().AddSessionDuration(ctx, tt.End())
 	}
