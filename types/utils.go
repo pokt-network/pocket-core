@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/syndtr/goleveldb/leveldb/opt"
 	"log"
 	"regexp"
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/syndtr/goleveldb/leveldb/opt"
 
 	dbm "github.com/tendermint/tm-db"
 )
@@ -149,23 +150,6 @@ func ContainsString(s []string, e string) bool {
 		}
 	}
 	return false
-}
-
-type TimeTracker struct {
-	startTime time.Time
-}
-
-func NewTimeTracker() (tt TimeTracker) {
-	tt.startTime = time.Now()
-	return tt
-}
-
-func (tt TimeTracker) Start() {
-	tt.startTime = time.Now()
-}
-
-func (tt TimeTracker) End() time.Duration {
-	return time.Since(tt.startTime)
 }
 
 type TimeTracker struct {
