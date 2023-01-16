@@ -1,13 +1,12 @@
 package types
 
 import (
-
-"github.com/pokt-network/pocket-core/codec"
-sdk "github.com/pokt-network/pocket-core/types"
-appexported "github.com/pokt-network/pocket-core/x/apps/exported"
-authexported "github.com/pokt-network/pocket-core/x/auth/exported"
-nodesexported "github.com/pokt-network/pocket-core/x/nodes/exported"
-"github.com/tendermint/tendermint/health"
+	"github.com/pokt-network/pocket-core/codec"
+	sdk "github.com/pokt-network/pocket-core/types"
+	appexported "github.com/pokt-network/pocket-core/x/apps/exported"
+	authexported "github.com/pokt-network/pocket-core/x/auth/exported"
+	nodesexported "github.com/pokt-network/pocket-core/x/nodes/exported"
+	"github.com/tendermint/tendermint/health"
 )
 
 type PosKeeper interface {
