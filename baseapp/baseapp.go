@@ -71,18 +71,20 @@ const (
 // BaseApp reflects the ABCI application implementation.
 type BaseApp struct {
 	// initialized on creation
-	logger       log.Logger
-	name         string               // application name from abci.Info
-	db           dbm.DB               // common DB backend
-	tmNode       *node.Node           // <---- todo updated here
-	txIndexer    txindex.TxIndexer    // <---- todo updated here
-	blockstore   *tmStore.BlockStore  // <---- todo updated here
-	evidencePool *evidence.Pool       // <---- todo updated here
-	cms          sdk.CommitMultiStore // Main (uncached) state
-	cdc          *codec.Codec
-	router       sdk.Router      // handle any kind of message
-	queryRouter  sdk.QueryRouter // router for redirecting query calls
-	txDecoder    sdk.TxDecoder   // unmarshal []byte into sdk.Tx
+	logger           log.Logger
+	name             string               // application name from abci.Info
+	db               dbm.DB               // common DB backend
+	tmNode           *node.Node           // <---- todo updated here
+	txIndexer        txindex.TxIndexer    // <---- todo updated here
+	blockstore       *tmStore.BlockStore  // <---- todo updated here
+	evidencePool     *evidence.Pool       // <---- todo updated here
+	cms              sdk.CommitMultiStore // Main (uncached) state
+	cdc              *codec.Codec
+	router           sdk.Router      // handle any kind of message
+	queryRouter      sdk.QueryRouter // router for redirecting query calls
+	txDecoder        sdk.TxDecoder   // unmarshal []byte into sdk.Tx
+	transactionCache map[string]struct{}
+
 	// set upon RollbackVersion or LoadLatestVersion.
 	baseKey *sdk.KVStoreKey // Main KVStore in cms
 
@@ -118,7 +120,6 @@ type BaseApp struct {
 
 	// application's version string
 	appVersion string
-
 	// health metrics
 	HealthMetrics         *health.HealthMetrics
 	applicationDBPath     string
