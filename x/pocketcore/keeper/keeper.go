@@ -5,6 +5,7 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/pocketcore/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/health"
 	"github.com/tendermint/tendermint/rpc/client"
 	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 )
@@ -25,12 +26,8 @@ type Keeper struct {
 
 // NewKeeper creates new instances of the pocketcore module Keeper
 func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKeeper, posKeeper types.PosKeeper,
-<<<<<<< HEAD
 	appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace, healthMetrics *health.HealthMetrics,
 ) Keeper {
-=======
-	appKeeper types.AppsKeeper, hostedChains *types.HostedBlockchains, paramstore sdk.Subspace, healthMetrics *health.HealthMetrics) Keeper {
->>>>>>> 580bd32a71c65ac7ae9493a3afae5eb15aaf0b77
 	return Keeper{
 		authKeeper:        authKeeper,
 		posKeeper:         posKeeper,
@@ -39,11 +36,7 @@ func NewKeeper(storeKey sdk.StoreKey, cdc *codec.Codec, authKeeper types.AuthKee
 		Paramstore:        paramstore.WithKeyTable(ParamKeyTable()),
 		storeKey:          storeKey,
 		Cdc:               cdc,
-<<<<<<< HEAD
 		HealthMetrics:     healthMetrics,
-=======
-		HealthMetrics: healthMetrics,
->>>>>>> 580bd32a71c65ac7ae9493a3afae5eb15aaf0b77
 	}
 }
 
@@ -73,7 +66,6 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 	k.Cdc.DisableUpgradeOverride()
 }
 
-<<<<<<< HEAD
 func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
 	currentHeightBlockSize := k.BlockByteSize(ctx)
 	// If not 0 and different update
@@ -100,8 +92,6 @@ func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
 	return &abci.ConsensusParams{}
 }
 
-=======
->>>>>>> 580bd32a71c65ac7ae9493a3afae5eb15aaf0b77
 func (k Keeper) GetHealthMetrics() *health.HealthMetrics {
 	return k.HealthMetrics
 }
