@@ -1,6 +1,7 @@
 # End-to-end Pocket Core Testing Operation
 
 In order to run the e2e test suite for pocket-core, we need to have:
+
 - The `godog` executable available in our computer
 - A pocket-core executable
 - the `POCKET_EXE` environment variable with the path to the pocket-core
