@@ -6,43 +6,43 @@ import (
 	"path/filepath"
 )
 
+type NodeConfiguration struct {
+	PrivateKey string `json:"private_key"`
+	ConfigPath string `json:"config_path"`
+}
+
 type NetworkConfiguration struct {
 	NetworkId          string               `json:"network_id"`
 	GenesisPath        string               `json:"genesis_path"`
 	NodeConfigurations []*NodeConfiguration `json:"node_configurations"`
 }
 
-type NodeConfiguration struct {
-	PrivateKey string `json:"private_key"`
-	ConfigPath string `json:"config_path"`
-}
+const defaultNetworkConfigFilename = "network.json"
 
-const networkConfigurationFileName = "network.json"
-
-func loadNetworkConfiguration(networkConfigDirectory string) (networkConfiguration *NetworkConfiguration, err error) {
-	networkConfigDirectory, err = filepath.Abs(networkConfigDirectory)
+func loadNetworkConfiguration(networkConfigDir string) (networkConfig *NetworkConfiguration, err error) {
+	networkConfigDir, err = filepath.Abs(networkConfigDir)
 	if err != nil {
 		return
 	}
 
-	var networkConfigurationFileContents []byte
-	networkConfigurationFileContents, err = os.ReadFile(filepath.Join(networkConfigDirectory, networkConfigurationFileName))
+	var networkConfigFileContents []byte
+	networkConfigFileContents, err = os.ReadFile(filepath.Join(networkConfigDir, defaultNetworkConfigFilename))
 	if err != nil {
 		return
 	}
 
-	err = json.Unmarshal(networkConfigurationFileContents, &networkConfiguration)
+	err = json.Unmarshal(networkConfigFileContents, &networkConfig)
 	if err != nil {
 		return
 	}
 
-	if !filepath.IsAbs(networkConfiguration.GenesisPath) {
-		networkConfiguration.GenesisPath = filepath.Join(networkConfigDirectory, networkConfiguration.GenesisPath)
+	if !filepath.IsAbs(networkConfig.GenesisPath) {
+		networkConfig.GenesisPath = filepath.Join(networkConfigDir, networkConfig.GenesisPath)
 	}
 
-	for _, nodeConfig := range networkConfiguration.NodeConfigurations {
+	for _, nodeConfig := range networkConfig.NodeConfigurations {
 		if !filepath.IsAbs(nodeConfig.ConfigPath) {
-			nodeConfig.ConfigPath = filepath.Join(networkConfigDirectory, nodeConfig.ConfigPath)
+			nodeConfig.ConfigPath = filepath.Join(networkConfigDir, nodeConfig.ConfigPath)
 		}
 	}
 
