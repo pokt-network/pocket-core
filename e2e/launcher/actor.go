@@ -6,9 +6,11 @@ import (
 	"sync"
 )
 
+// IMPROVE: Need to document how how build/add new pattern actors
+
 // All PatternActors must implement this interface
 type PatternActor interface {
-	MaybeAct(string)
+	MaybeAct(string) // The action that the pattern actor may execute depending on the output being passed in
 }
 
 // A series of PatternActors
@@ -23,7 +25,7 @@ func (r PatternActorPipeline) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-// PrinterPatternActor - A pattern actor that prints all output to the scren
+// PrinterPatternActor - A pattern actor that prints all output to the screen
 
 type PrinterPatternActor interface {
 	PatternActor
@@ -42,7 +44,7 @@ func (*printerPatternActor) MaybeAct(line string) {
 	log.Printf("Printer prints: %s\n", line)
 }
 
-// BlockWaiterPatternActor - A pattern actor that prints all output to the scren
+// BlockWaiterPatternActor - A pattern actor that prints all output to the screen
 
 type BlockWaiterPatternActor interface {
 	PatternActor

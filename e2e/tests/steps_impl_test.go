@@ -10,6 +10,8 @@ import (
 	"github.com/pokt-network/pocket-core/e2e/launcher"
 )
 
+// IMPROVE: Is there a better way to maintain this state rather than global variables?
+// IMPROVE: The use of these global vars without checking there values can lead to a panic; the flow of calls is implicit
 var (
 	pocketExecutablePath                       = ""
 	pocketClient         launcher.PocketClient = nil
@@ -19,7 +21,7 @@ var (
 )
 
 // Internal helper for `theUserHasAPocketClient`
-func theUserHasAPocketExecutable() error {
+func verifyPocketExecutable() error {
 	pocketExecutablePath = os.Getenv("POCKET_EXE")
 	if pocketExecutablePath == "" {
 		return errors.New("`POCKET_EXE` not set. Please, set it to the output of `go build -o pocket app/cmd/pocket_core/main.go`")
@@ -31,7 +33,7 @@ func theUserHasAPocketExecutable() error {
 
 // Step: `the user has a pocket client`
 func theUserHasAPocketClient() error {
-	if err := theUserHasAPocketExecutable(); err != nil {
+	if err := verifyPocketExecutable(); err != nil {
 		return err
 	}
 
@@ -99,27 +101,26 @@ func pocketClientShouldHaveExitedWithError() (err error) {
 }
 
 // Step: `the user is running the network "([^"]*)`
-func theUserIsRunningTheNetwork(netName string) error {
-	err := theUserHasAPocketExecutable()
-	if err != nil {
+func theUserIsRunningTheNetwork(netName string) (err error) {
+	if err := verifyPocketExecutable(); err != nil {
 		return err
 	}
 
-	pocketNetwork, launchErr := launcher.LaunchNetwork(netName, pocketExecutablePath)
-	if launchErr != nil {
-		return launchErr
+	pocketNetwork, err = launcher.LaunchNetwork(netName, pocketExecutablePath)
+	if err != nil {
+		return
 	}
 
 	// IMPROVE: Should the printer pattern actor be registered by default?
 	if verbose {
 		printerActor := launcher.NewPrinterPatternActor()
 		if err = pocketNetwork.Nodes[0].PocketServer.RegisterPatternActor(printerActor, launcher.StdOut); err != nil {
-			return err
+			return
 		}
 	}
 
-	time.Sleep(time.Second * 2)
-	return nil
+	time.Sleep(time.Second * 2) // DOCUMENT: Why is this necessary?
+	return
 }
 
 // Step: `the user runs the command "([^"]*)" against validator (-?\d+)`
