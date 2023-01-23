@@ -1,71 +1,141 @@
-# End-to-end Pocket Core Testing Operation
+<!-- https://docs.google.com/presentation/d/1Rgt3mdLfKoBM6txUs6hxQDw4mnbcPVNdMPdsV5_3rUc/edit#slide=id.g1a221ddf00e_0_218 -->
 
-In order to run the e2e test suite for pocket-core, we need to have:
+# Pocket Core End-To-End (e2e) Test Framework <!-- omit in toc -->
 
-- The `godog` executable available in our computer
-- A pocket-core executable
-- the `POCKET_EXE` environment variable with the path to the pocket-core
-  executable we want to test
+- [Background](#background)
+  - [Terminology](#terminology)
+- [Requirements \& Setup](#requirements--setup)
+  - [Godog](#godog)
+  - [Pocket Core Executable](#pocket-core-executable)
+  - [POCKET\_EXE env](#pocket_exe-env)
+- [Running the e2e test suite](#running-the-e2e-test-suite)
+  - [tl;dr All at once](#tldr-all-at-once)
+  - [Full Suite](#full-suite)
+  - [Single Feature](#single-feature)
+  - [Single Scenario](#single-scenario)
+- [Adding New Tests](#adding-new-tests)
+  - [New Steps](#new-steps)
+  - [New Scenarios](#new-scenarios)
+  - [New Features](#new-features)
+- [Architecture](#architecture)
+- [Standalone Scenarios](#standalone-scenarios)
+  - [Standalone Architecture](#standalone-architecture)
+- [Network Bound Scenarios](#network-bound-scenarios)
+  - [Network Bound Architecture](#network-bound-architecture)
+  - [Implementation Details](#implementation-details)
+  - [Example](#example)
+
+## Background
+
+[Gherkin](https://cucumber.io/docs/gherkin/reference/) based test facilities, developed by [cucumber.io](https://cucumber.io), which use [godog](https://github.com/cucumber/godog).
+
+### Terminology
+
+- `Feature`: Tests are composed of `features` stored in `.feature` files
+- `Scenario`: Feature files contain a list of `scenarios`, defined using Gherkin's syntax
+- `Step`: Each `scenario` is composed of `steps` defined via go code in `steps_init_test.go`
+- `PatternActor`: A pattern that can be triggered based on certain node actions
+
+## Requirements & Setup
+
+In order to run the e2e test suite for `pocket-core`, we need to have:
+
+1. `godog` installed locally
+2. A local `pocket-core` executable; the one to be tested
+3. `POCKET_EXE` env variable set to the executable in step (2)
+
+### Godog
+
+Installing godog:
+
+```bash
+go install github.com/cucumber/godog/cmd/godog@latest
+```
+
+### Pocket Core Executable
+
+```bash
+go build -o pocket app/cmd/pocket_core/main.go # from the root directory
+```
+
+### POCKET_EXE env
+
+```bash
+export POCKET_EXE=`pwd`/pocket
+```
 
 ## Running the e2e test suite
 
-The e2e test suite lives in the e2e/tests directory.
+The e2e test suite lives under `/e2e/tests`.
 
-In order to run the full suite, we run `godog run *.feature`.
+The commands below assume you have executed `cd ./e2e/tests`.
 
-If we want to run a specific part of the suite, we can specify the file name,
-and the command looks something like this: `godog run root.feature`.
+### tl;dr All at once
 
-If we want to test only one scenario
-from the file, we can do it by specifying the line number of the Scenario,
-running something like `godog run root.feature:3`.
+```bash
+cd e2e/tests
+go build -o pocket ../../app/cmd/pocket_core/main.go
+POCKET_EXE=./../../pocket godog run *.feature
+```
 
-## Adding tests to the e2e test suite
+### Full Suite
 
-To add tests to the suite, we should look at the facilities we have
-available; those are documented in the `steps_library_test.go` file, where
-all the steps available are registered in the `InitializeScenario` function.
+The full test suite can be run with:
 
-If we need examples for different ways to create scenarios using the steps,
-we can look at the `.feature` files.
+```bash
+godog run \*.feature
+```
 
-We are grouping tests by pocket the command used to invoke the functionality.
-Thus, `query.feature` contains the scenarios that test the behavior we'd see
-by using `pocket query`, and `stake.query` contains the scenarios that test
-the behavior we'd see by using `pocket stake`, etc.
+### Single Feature
 
-An addition to the test suite will usually mean adding or modifying
-Scenarios in the existing `.feature` files.
+A specific part of the suite can be run by specifying the filename:
 
-### Facilities
+```bash
+godog run root.feature
+```
 
-Sometimes you need to add tests that need to do things that can't be done
-given the steps or events available. In that case, a ticket should be opened in
-the pocket-core repository asking for the facility you need, as those can
-only be added with go code.
+### Single Scenario
 
-It is important to describe what you are trying to test, so that a
-generalized step can be defined to achieve what you need and cooperate with
-the other existing steps.
+A specific Scenario can be executed by specifying the line number:
 
-# End-to-end Pocket Core Testing Tooling Architecture and Rationale
+```bash
+godog run root.feature:3
+```
 
-The tooling to allow automated end-to-end testing of Pocket Core has an
-architecture that can be extrapolated to allow for harnessing tests for
-other software. It depends on availability of gherkin based test facilities,
-which in the case of go means using `godog`.
+## Adding New Tests
 
-There are two types of scenarios to cover. The simpler one is when the
-executable runs and finishes -- ie: when it's "once and done";
-the`stdout` and `stderr` outputs can be examined for the desired results.
+### New Steps
 
-The more complex one is when the executable is ongoing, such as when
-running a pocket network node for a network bound scenario. In that case the
-`stdout` and `stderr` need to be available for inspection and reaction during runtime.
+Supported `Step`s are defined in `InitializeScenario` in [`steps_library_test.go`](./tests/steps_library_test.go).
+
+New `Step` definitions should be added there if needed.
+
+### New Scenarios
+
+The Steps available can be composed to create **Scenario**s, which can be found in any of the `.feature` files.
+
+See [Gherkin's keywords](https://cucumber.io/docs/gherkin/reference/#keywords) for a list of all the Step qualifiers available: `Given`, `When`, `Then`, `And`, `But`.
+
+### New Features
+
+Tests are grouped based on the pocket CLI command invoked.
+
+For example, `query.feature` contains the scenarios for the behaviour called via `pocket query`.
+
+## Architecture
+
+The test framework covers two execution types:
+
+1. **Once and done (Standalone)**
+2. **Ongoing (Network Bound)**
 
 ## Standalone Scenarios
 
-These scenarios use a small set of classes:
+The executable runs & finishes. The `stdout` and `stderr` outputs can be examined and validated against the desired result.
+
+### Standalone Architecture
+
+The following class diagram captures the implementation of the structures used in standalone (i.e. once-and-done) scenarios:
 
 ```mermaid
 classDiagram
@@ -75,114 +145,98 @@ PocketClient ..> CommandResult
 PocketClient ..> writerByteArray
 
 class CommandResult {
-	string Stdout
-	string Stderr
-	error Err
+    string Stdout
+    string Stderr
+    error Err
 }
 
 class PocketClient {
-	string executableLocation
-	runCommand(string command):(*CommandResult, error)
+    string executableLocation
+    runCommand(string command):(*CommandResult, error)
 }
 
 class writerByteArray{
-	Write([]byte)(int, error)
+    Write([]byte)(int, error)
 }
 
 io_Writer <|-- writerByteArray
 class io_Writer{
-	<<Interface>>
-	Write([]byte)(int, error)
+    <<Interface>>
+    Write([]byte)(int, error)
 }
 ```
 
-PocketClient coordinates all the work for these scenarios. It needs to
-receive the location of the executable to run. It depends on
-`os/exec/Command` to run it, and on the `writerByteArray`
-implementation of `io/Writer` to capture the results of the
-`os/exec/Command`'s output.
+`PocketClient` coordinates all the work for these scenarios:
 
-Segregating the contents of the output when adding them to `CommandResult`
-by stream allows tests to verify that a certain output is sent where
-expected, which is important in particular because both streams might be
-redirected to different places.
+1. Requires location of the executable to run
+2. Depends on `os/exec/Command` to run it
+3. Captures results of (2) via `writerByteArray` implementation of `io/Writer`
 
-The `Err` in `CommandResult` carries the error given by the
-`os/exec/Command`, so it can be used to know whether the process ended
-normally or if it could be started at all. This helps automate smokescreens,
-like flag combinations that should not proceed.
+`CommandResult` captures and enables processing of the output:
 
-### Note:
+- Separates the output of the `stdout` and `stderr` streams
+- Captures the error in `Err` to aid in automation
 
-All input to the commands is assumed to be given at startup via flags
-because Pocket Core's interactive reading of passwords
-doesn't work with a pipe to `stdin`, because Pocket Core uses a facility that
-allows hiding the password text in a terminal. This facility requires an
-interactive shell in order to be used because of the mechanism used to hide
-text. When it is not detected, the pipe is discarded along with the input and
-the program acts as if it received an `EOF` (^D).
+_NOTE: All input to the commands must be given to the executable via flags_
 
 ## Network Bound Scenarios
 
-These scenarios are more convoluted to support and run because we run
-_groups of processes_ and need to be able to react to the output of the
-processes while they are still running.
+Executable is ongoing; such as a network bound scenario. The `stdout` and `stderr` streams need to be continuously available for inspection & reaction during runtime.
 
-The regular case will be that the network bound scenarios will use both these
-classes and the classes needed for the Standalone scenarios.
+### Network Bound Architecture
 
-Here's the class diagram:
+The following class diagram captures the implementation of the structures used in network bound (i.e. ongoing) scenarios:
 
 ```mermaid
 classDiagram
 
 class Network{
-	NetowrkConfiguration networkConfiguration
-	[]*Node nodes
-	launchNetwork(string networkConfigDirectory)
+    NetworkConfiguration networkConfiguration
+    []*Node nodes
+    launchNetwork(string networkConfigDirectory)
 }
 
 class NetworkConfiguration{
-	string NetworkId
-	string GenesisPath
+    string NetworkId
+    string GenesisPath
 }
 
 class NodeConfiguration{
-	string PrivateKey
-	string ConfigPath
+    string PrivateKey
+    string ConfigPath
 }
 
 class Node{
-	string address
-	string dataDir
-	types.Config configuration
-	crypto.PrivateKey privateKey
-	PocketServer pocketServer
+    string address
+    string dataDir
+    types.Config configuration
+    crypto.PrivateKey privateKey
+    PocketServer pocketServer
 }
 
 class PocketServer{
-	<<Interface>>
-	string executableLocation
-	Start(string arguments) error
-	Kill()
-	RegisterPatternActor(patternActor PatternActor, stream Stream) error
+    <<Interface>>
+    string executableLocation
+    Start(string arguments) error
+    Kill()
+    RegisterPatternActor(patternActor PatternActor, stream Stream) error
 }
 
 class Stream{
-	<<Enum>>
-	StdIn
-	StdOut
-	StdErr
+    <<Enum>>
+    StdIn
+    StdOut
+    StdErr
 }
 
-io_Writer <|--PatternActionPipeline
+io_Writer <|--PatternActorPipeline
 
 class io_Writer{
-	<<Interface>>
-	Write([]byte)(int, error)
+    <<Interface>>
+    Write([]byte)(int, error)
 }
-class PatternActionPipeline{
-	[]PatternActor patternActors
+class PatternActorPipeline{
+    []PatternActor patternActors
 }
 
 Network "1" *-- "1..*" Node
@@ -190,68 +244,58 @@ Network "1" *-- "1" NetworkConfiguration
 NetworkConfiguration "1" *-- "1..*" NodeConfiguration
 Node "1" *--"1" PocketServer
 PocketServer ..> Stream
-PocketServer ..> PatternActionPipeline
+PocketServer ..> PatternActorPipeline
 PocketServer ..> PatternActor
 PocketServer ..> os_exec_Command
-PatternActionPipeline ..> PatternActor
+PatternActorPipeline ..> PatternActor
 
 class PatternActor {
-	<<Interface>>
-	MaybeAct(string)
+    <<Interface>>
+    MaybeAct(string)
 }
 ```
 
-The entry point for this diagram is the `Network`; in order to run scenarios
-like these we need to have a `NetworkConfiguration`, which represents the
-information needed to run an isolated pocket network cluster.
+### Implementation Details
 
-The information contained in `NetworkConfiguration` comprises:
+The complexity of these scenarios is larger due to the ongoing liveness of the processes and dependencies atop of the Standalone scenarios.
 
-- Node private keys and addresses
-- App private keys and addresses
-- genesis.json
-- config.json for each node
+The `Network` structure is the entrypoint to a `NetworkConfiguration` (an isolated cluster) containing the following:
 
-When getting launched, the `Network` ensures a temporary directory for all
-nodes to work from, and sets the respective data directory for each node
-accordingly.
+- Node - PrivateKeys and Addresses
+- App - PrivateKeys and Addresses
+- `genesis.json`
+- Node - `config.json` for each
 
-The `Node` objects know their data directory, address, pocket configuration,
-private key, and have access to the `PocketServer` instance, where the magic
-happens.
+Each launched Node as a `PocketServer` instance:
 
-The `PocketServer` has access to the `os/exec/Command`, where the `StdOut`
-and `StdErr` streams are connected to the `PatternActionPipeline`
-implementation of `Writer`.
+- Has a temporary working directory (datadir, address, config, key, etc...)
+- Output of `os/exec/Command` where `StdOut` and `StdErr` are streamed
+- Configured via a series of `PatternActors`; callbacks triggered when new data comes in
 
-The `PocketServer` can be configured with a series of `PatternActors`, which
-are functions that receive a string and "maybe act" on them. This is what
-allows event processing and information extracting from the logs of a running
-server.
+### Example
 
-An implementation of PatternActor to detect the latest height reported by
-one of the nodes might look like this:
+An implementation of the `PatternActor` to detect the latest height reported by one of the nodes might look like this:
 
 ```go
 package main
 
 import (
-	"regexp"
-	"strconv"
-	"strings"
+    "regexp"
+    "strconv"
+    "strings"
 )
 
 type ServerHeightReporter struct {
-	latestHeight int64
+    latestHeight int64
 }
 
 func (shr *ServerHeightReporter) MaybeAct(line string) {
-	if strings.Contains(line, "Executed block") {
-		var re = regexp.MustCompile(`([^\d]+)`)
-		i, err := strconv.ParseInt(re.ReplaceAllString(line, ""), 10, 64)
-		if err == nil {
-			shr.latestHeight = i
-		}
-	}
+    if strings.Contains(line, "Executed block") {
+        var re = regexp.MustCompile(`([^\d]+)`)
+        i, err := strconv.ParseInt(re.ReplaceAllString(line, ""), 10, 64)
+        if err == nil {
+            shr.latestHeight = i
+        }
+    }
 }
 ```

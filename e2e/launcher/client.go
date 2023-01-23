@@ -12,6 +12,8 @@ type CommandResult struct {
 	Err    error
 }
 
+var _ PocketClient = &pocketClient{}
+
 type PocketClient interface {
 	RunCommand(...string) (*CommandResult, error)
 }

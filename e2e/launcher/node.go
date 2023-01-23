@@ -3,14 +3,15 @@ package launcher
 import (
 	"encoding/hex"
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/types"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 type runtimeStatus int
@@ -22,15 +23,16 @@ const (
 )
 
 type Node struct {
-	PocketServer  PocketServer
-	Address       string
-	DataDir       string
+	PocketServer PocketServer
+	Address      string
+	DataDir      string
+
 	configuration types.Config
 	privateKey    crypto.PrivateKey
 }
 
-func newNode(nodeConfiguration *NodeConfiguration, networkRootDirectory, genesisPath, executablePath string) (*Node, error) {
-	pkBytes, err := hex.DecodeString(nodeConfiguration.PrivateKey)
+func newNode(nodeConfig *NodeConfiguration, networkRootDir, genesisPath, executablePath string) (*Node, error) {
+	pkBytes, err := hex.DecodeString(nodeConfig.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -41,12 +43,12 @@ func newNode(nodeConfiguration *NodeConfiguration, networkRootDirectory, genesis
 	}
 
 	address := strings.ToLower(privateKey.PublicKey().Address().String())
-	nodeDataDir, err := os.MkdirTemp(networkRootDirectory, address+"-")
+	nodeDataDir, err := os.MkdirTemp(networkRootDir, address+"-")
 	if err != nil {
 		return nil, err
 	}
 
-	pocketCoreConfig, err := loadNodePocketCoreConfiguration(nodeConfiguration.ConfigPath)
+	pocketCoreConfig, err := loadNodePocketCoreConfiguration(nodeConfig.ConfigPath)
 	if err != nil {
 		return nil, err
 	}

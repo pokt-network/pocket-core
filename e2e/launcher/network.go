@@ -1,32 +1,38 @@
 package launcher
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
 
 type Network struct {
-	Nodes                []*Node
-	NetworkConfiguration *NetworkConfiguration
+	Nodes         []*Node
+	NetworkConfig *NetworkConfiguration
 }
 
-func LaunchNetwork(networkConfigDirectory string, executablePath string) (network *Network, err error) {
-	log.Printf("loading network from config: ./launcher/network_configs/%s\n", networkConfigDirectory)
-	networkConfiguration, err := loadNetworkConfiguration("../launcher/network_configs/" + networkConfigDirectory)
+const (
+	networkConfigsLauncherPath = "./launcher/network_configs/"
+)
+
+func LaunchNetwork(networkConfigDir string, executablePath string) (network *Network, err error) {
+	log.Printf("loading network from config: ./%s%s\n", networkConfigsLauncherPath, networkConfigDir)
+
+	networkConfig, err := loadNetworkConfiguration(fmt.Sprintf("../%s/%s", networkConfigsLauncherPath, networkConfigDir))
 	if err != nil {
 		return
 	}
 
-	networkRootDirectory, err := os.MkdirTemp("", networkConfiguration.NetworkId+"-")
+	networkRootDir, err := os.MkdirTemp("", networkConfig.NetworkId+"-")
 	if err != nil {
 		return
 	}
+	log.Printf("root network directory: %v", networkRootDir)
 
-	log.Printf("root network directory: %v", networkRootDirectory)
 	var nodes []*Node
-	for _, nodeConfiguration := range networkConfiguration.NodeConfigurations {
+	for _, nodeConfig := range networkConfig.NodeConfigurations {
 		var node *Node
-		node, err = newNode(nodeConfiguration, networkRootDirectory, networkConfiguration.GenesisPath, executablePath)
+		node, err = newNode(nodeConfig, networkRootDir, networkConfig.GenesisPath, executablePath)
 		if err != nil {
 			return
 		}
@@ -38,9 +44,11 @@ func LaunchNetwork(networkConfigDirectory string, executablePath string) (networ
 
 		nodes = append(nodes, node)
 	}
+
 	network = &Network{
-		Nodes:                nodes,
-		NetworkConfiguration: networkConfiguration,
+		Nodes:         nodes,
+		NetworkConfig: networkConfig,
 	}
+
 	return
 }

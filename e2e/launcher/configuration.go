@@ -17,7 +17,9 @@ type NetworkConfiguration struct {
 	NodeConfigurations []*NodeConfiguration `json:"node_configurations"`
 }
 
-const defaultNetworkConfigFilename = "network.json"
+const (
+	defaultNetworkConfigFilename = "network.json"
+)
 
 func loadNetworkConfiguration(networkConfigDir string) (networkConfig *NetworkConfiguration, err error) {
 	networkConfigDir, err = filepath.Abs(networkConfigDir)
