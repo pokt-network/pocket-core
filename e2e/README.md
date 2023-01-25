@@ -1,5 +1,3 @@
-<!-- https://docs.google.com/presentation/d/1Rgt3mdLfKoBM6txUs6hxQDw4mnbcPVNdMPdsV5_3rUc/edit#slide=id.g1a221ddf00e_0_218 -->
-
 # Pocket Core End-To-End (e2e) Test Framework <!-- omit in toc -->
 
 - [Background](#background)
