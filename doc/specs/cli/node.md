@@ -4,6 +4,27 @@ description: Functions for Node management.
 
 # Nodes Namespace
 
+Terminology:
+
+- `Operator Address`: `Non-Custodial Address` aka `Node Runner` aka `Devops`
+- `Output Address`: `Custodial Address` aka `Deposit Owner` aka `Reward Earner`
+
+Basic Rules
+
+1. The `Operator Address` is the **only** valid signer for:
+   1. Block Tx
+   2. Claim & Proof Tx
+2. `Operator` and `Output` Address are valid signers for:
+   1. Stake Tx
+   2. EditStake Tx
+   3. Unstake Tx
+   4. Unjail Tx
+3. The `Output Address` is where:
+   1. Rewards are sent
+   2. Unstaked funds are sent (after unstaking)
+4. `Operator` and `Output` Address **cannot** be edited once staked
+   1. Requires unstaking to change either one
+
 ## Stake a Node / Update Stake (Custodial)
 
 ```text
@@ -21,16 +42,15 @@ the parameter, just enter the current parameter value \(the same one you entered
 
 Arguments:
 
-* `<fromAddr>`: Target Address to stake.
-* `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `StakeMinimum`  parameter,
+- `<fromAddr>`: Target Address to stake.
+- `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `StakeMinimum` parameter,
   found [here](https://docs.pokt.network/learn/protocol-parameters/#stakeminimum).
-* `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
+- `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
   Identifiers [here](https://docs.pokt.network/supported-blockchains/).
-* `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
-* `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
-* `<isBefore8.0>`:  true or false depending if non-custodial upgrade is activated.
-
+- `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
+- `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
+- `<isBefore8.0>`: true or false depending if non-custodial upgrade is activated.
 
 Example output:
 
@@ -54,16 +74,16 @@ the parameter, just enter the current parameter value \(the same one you entered
 
 Arguments:
 
-* `<operatorPublicKey>`: operatorAddress is the only valid signer for blocks & relays.
-* `<outputAddress>`: outputAddress is where reward and staked funds are directed.
-* `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `StakeMinimum`  parameter,
+- `<operatorPublicKey>`: operatorAddress is the only valid signer for blocks & relays.
+- `<outputAddress>`: outputAddress is where reward and staked funds are directed.
+- `<amount>`: The amount of uPOKT to stake. Must be higher than the current value of the `StakeMinimum` parameter,
   found [here](https://docs.pokt.network/learn/protocol-parameters/#stakeminimum).
-* `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
+- `<relayChainIDs>`: A comma separated list of RelayChain Network Identifiers. Find the RelayChain Network
   Identifiers [here](https://docs.pokt.network/supported-blockchains/).
-* `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
-* `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
-* `<isBefore8.0>`:  true or false depending if non custodial upgrade is activated.
+- `<serviceURI>`: The Service URI Applications will use to communicate with Nodes for Relays.
+- `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
+- `<isBefore8.0>`: true or false depending if non custodial upgrade is activated.
 
 Example output:
 
@@ -82,11 +102,11 @@ the `<fromAddr>` account passphrase.
 
 Arguments:
 
-* `<operatorAddr>`: Target staked operator address.
-* `<fromAddr>`: Signer address.
-* `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
-* `<isBefore8.0>`:  true or false depending if non custodial upgrade is activated.
+- `<operatorAddr>`: Target staked operator address.
+- `<fromAddr>`: Signer address.
+- `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
+- `<isBefore8.0>`: true or false depending if non custodial upgrade is activated.
 
 Example output:
 
@@ -105,15 +125,14 @@ user for the `<fromAddr>` account passphrase.
 
 Arguments:
 
-* `<operatorAddr>`: Target jailed operator address.
-* `<fromAddr>`: Signer address.
-* `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
-* `<fee>`:  An amount of uPOKT for the network.
-* `<isBefore8.0>`:  true or false depending if non custodial upgrade is activated.
+- `<operatorAddr>`: Target jailed operator address.
+- `<fromAddr>`: Signer address.
+- `<networkID>`: The Pocket chain identifier; "mainnet" or "testnet".
+- `<fee>`: An amount of uPOKT for the network.
+- `<isBefore8.0>`: true or false depending if non custodial upgrade is activated.
 
 Example output:
 
 ```text
 Transaction submitted with hash: <Transaction Hash>
 ```
-

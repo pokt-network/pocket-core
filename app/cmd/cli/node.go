@@ -3,9 +3,10 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 func init() {
@@ -17,8 +18,22 @@ func init() {
 var nodesCmd = &cobra.Command{
 	Use:   "nodes",
 	Short: "node management",
-	Long: `The node namespace handles all node related interactions,
-from staking and unstaking; to unjailing.`,
+	Long: `The node namespace handles all node related interactions, from staking and unstaking; to unjailing.
+
+---
+
+Operator Address (i.e. Non-Custodial Address) can do the following:
+- Submit Block, Claim & Proof Txs
+
+Output Address (i.e. Custodial Address) can do the following:
+- Receive earned rewards
+- Receive funds after unstaking
+
+Both Operator and Output Addresses can do the following:
+- Submit Stake, EditStake, Unstake, Unjail Txs
+
+---
+`,
 }
 
 func init() {
