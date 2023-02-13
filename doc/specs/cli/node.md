@@ -32,8 +32,7 @@ Basic Rules
 pocket nodes stake custodial <fromAddr> <amount> <relayChainIDs> <serviceURI> <networkID> <fee> <isBefore8.0>
 ```
 
-Stakes the Node into the network, making it available for service. Prompts the user for the `<fromAddr>` account
-passphrase.
+Stakes the Node into the network, making it available for service. The signer must specify the operator address when prompted for the `<fromAddr>` account passphrase.
 
 if the node is already staked, this transaction acts as an _update_ transaction. A node can update `<relayChainIDs>`
 , `<serviceURI>`, and increase the stake `<amount>` with this transaction. If the node is currently staked at `X` and
@@ -64,8 +63,8 @@ Transaction submitted with hash: <Transaction Hash>
 pocket nodes stake non-custodial <operatorPublicKey> <outputAddress> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> <isBefore8.0>
 ```
 
-Stake a node in the network, the signer may be the operator or the output address. The signer must specify the public
-key of the output or operator Prompts the user for the `<fromAddr>` account passphrase.
+Stake a node in the network, the signer may be the operator or the output address. The signer must specify either the public
+key of the output or operator address when prompted for the `<fromAddr>` account passphrase. This will determine where the staked funds are taken from. 
 
 if the node is already staked, this transaction acts as an _update_ transaction. A node can update `<relayChainIDs>`
 , `<serviceURI>`, and increase the stake `<amount>` with this transaction. If the node is currently staked at `X` and
