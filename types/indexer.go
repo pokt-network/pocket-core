@@ -131,30 +131,41 @@ func (t *TransactionIndexer) Get(hash []byte) (*types.TxResult, error) {
 // NOTE: Only supports op.Equal for hash, height, signer, or recipient, we only support op.Equal for simplicity and
 // optimization of our use case
 func (t *TransactionIndexer) Search(ctx context.Context, q *query.Query) (res []*types.TxResult, total int, err error) {
-	condition, err := q.Condition()
+	conditions, err := q.Conditions()
 	if err != nil {
-		return nil, 0, errors.Wrap(err, "error during parsing condition from query")
+		return nil, 0, errors.Wrap(err, "error during parsing conditions from query")
 	}
 
 	if q.Pagination.Size > maxPerPage {
 		q.Pagination.Size = maxPerPage
 	}
 
-	if condition.Op != query.OpEqual {
-		return nil, 0, fmt.Errorf("transaction indexer only supports op.Equal not %v", condition.Op)
+	for _, condition := range conditions {
+		if condition.Op != query.OpEqual {
+			return nil, 0, fmt.Errorf("transaction indexer only supports op.Equal not %v", condition.Op)
+		}
 	}
 
-	switch condition.CompositeKey {
+	primaryCondition := conditions[0]
+	secondaryCondition := query.Condition{}
+	if len(conditions) > 1 {
+		secondaryCondition = conditions[1]
+		if secondaryCondition.CompositeKey != TxHeightKey {
+			return nil, 0, fmt.Errorf("transaction indexer only supports secondary condition on tx.height not %v", secondaryCondition.CompositeKey)
+		}
+	}
+
+	switch primaryCondition.CompositeKey {
 	case TxHeightKey:
-		return t.heightQuery(condition, q.Pagination)
+		return t.heightQuery(primaryCondition, q.Pagination)
 	case TxSignerKey:
-		return t.signerQuery(condition, q.Pagination)
+		return t.signerQuery(primaryCondition, secondaryCondition, q.Pagination)
 	case TxRecipientKey:
-		return t.recipientQuery(condition, q.Pagination)
+		return t.recipientQuery(primaryCondition, secondaryCondition, q.Pagination)
 	case TxHashKey:
-		return t.hashQuery(condition)
+		return t.hashQuery(primaryCondition)
 	default:
-		return nil, 0, fmt.Errorf("Condition.CompositeKey: %v not supported on this indexer", condition.CompositeKey)
+		return nil, 0, fmt.Errorf("Condition.CompositeKey: %v not supported on this indexer", primaryCondition.CompositeKey)
 	}
 }
 
@@ -200,18 +211,32 @@ func (t *TransactionIndexer) heightQuery(condition query.Condition, pagination *
 	return t.getByPrefix(prefixKeyForHeight(height), pagination)
 }
 
-func (t *TransactionIndexer) signerQuery(condition query.Condition, pagination *query.Page) (res []*types.TxResult, total int, err error) {
-	signer, err := hex.DecodeString(condition.Operand.(string))
+func (t *TransactionIndexer) signerQuery(primaryCondition query.Condition, secondaryCondition query.Condition, pagination *query.Page) (res []*types.TxResult, total int, err error) {
+	signer, err := hex.DecodeString(primaryCondition.Operand.(string))
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "error during searching for a address in the query")
+	}
+	if secondaryCondition.CompositeKey == TxHeightKey {
+		height, ok := secondaryCondition.Operand.(int64)
+		if !ok {
+			return nil, 0, errors.New("error during searching for a height in the query, c.Operand not type int64")
+		}
+		return t.getByPrefix(prefixKeyForSignerAndHeight(signer, height), pagination)
 	}
 	return t.getByPrefix(prefixKeyForSigner(signer), pagination)
 }
 
-func (t *TransactionIndexer) recipientQuery(condition query.Condition, pagination *query.Page) (res []*types.TxResult, total int, err error) {
-	recipient, err := hex.DecodeString(condition.Operand.(string))
+func (t *TransactionIndexer) recipientQuery(primaryCondition query.Condition, secondaryCondition query.Condition, pagination *query.Page) (res []*types.TxResult, total int, err error) {
+	recipient, err := hex.DecodeString(primaryCondition.Operand.(string))
 	if err != nil {
 		return nil, 0, errors.Wrap(err, "error during searching for a address in the query")
+	}
+	if secondaryCondition.CompositeKey == TxHeightKey {
+		height, ok := secondaryCondition.Operand.(int64)
+		if !ok {
+			return nil, 0, errors.New("error during searching for a height in the query, c.Operand not type int64")
+		}
+		return t.getByPrefix(prefixKeyForRecipientAndHeight(recipient, height), pagination)
 	}
 	return t.getByPrefix(prefixKeyForRecipient(recipient), pagination)
 }
@@ -273,6 +298,14 @@ func prefixKeyForSigner(signer Address) []byte {
 	))
 }
 
+func prefixKeyForSignerAndHeight(signer Address, height int64) []byte {
+	return []byte(fmt.Sprintf("%s/%s/%s",
+		TxSignerKey,
+		signer,
+		elenEncoder.EncodeInt(int(height)), // totally safe right?
+	))
+}
+
 func keyForRecipient(result *types.TxResult) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%s/%s",
 		TxRecipientKey,
@@ -287,6 +320,14 @@ func prefixKeyForRecipient(recipient Address) []byte {
 		TxRecipientKey,
 		recipient,
 		elenEncoder.EncodeInt(0),
+	))
+}
+
+func prefixKeyForRecipientAndHeight(recipient Address, height int64) []byte {
+	return []byte(fmt.Sprintf("%s/%s/%s",
+		TxRecipientKey,
+		recipient,
+		elenEncoder.EncodeInt(int(height)), // totally safe right?
 	))
 }
 

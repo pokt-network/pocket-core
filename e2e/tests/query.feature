@@ -51,7 +51,7 @@ Feature: Pocket Query Commands
   Scenario: To query an existing account txs
 	Given the user is running the network "single_node_network"
 	And the user has a pocket client
-	When the user runs the command "query account-txs c7b6a62385f8999c0cb63ad9cb464ee730c597b1 0 1 0 0" against validator 0
+	When the user runs the command "query account-txs c7b6a62385f8999c0cb63ad9cb464ee730c597b1 0 1 0 0 0" against validator 0
 	Then the user should be able to see standard output containing "page_count"
 	And the user should be able to see standard output containing "total_txs"
 	And the pocket client should have exited without error
@@ -59,7 +59,7 @@ Feature: Pocket Query Commands
   Scenario: To query an existing account txs, wrong address
 	Given the user is running the network "single_node_network"
 	And the user has a pocket client
-	When the user runs the command "query account-txs c7b6a62385f8999c0cb63ad9cb464ee730c597bw 0 1 0 0" against validator 0
+	When the user runs the command "query account-txs c7b6a62385f8999c0cb63ad9cb464ee730c597bw 0 1 0 0 0" against validator 0
 	Then the user should be able to see standard output containing "encoding/hex: invalid byte:"
 	And the pocket client should have exited without error
 
