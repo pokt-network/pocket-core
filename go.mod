@@ -11,7 +11,7 @@ require (
 	github.com/jordanorelli/lexnum v0.0.0-20141216151731-460eeb125754
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/client_golang v1.11.1
 	github.com/regen-network/cosmos-proto v0.3.0
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.0
