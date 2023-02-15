@@ -1,0 +1,15 @@
+{
+	"network_id": "single-node-network",
+	"genesis_path": "genesis.json",
+	"node_configurations": [
+		{
+			"config_path": "config_1.json",
+			"private_key": "741c69b7a0a3ac89b17b77677355fbd32ac06c82f00e54e8a512c8c58186b1365c34faa9f5a98d9e3bb6964ac09eede307a7b1c4e0fa028be2540e4a582dc51f"
+		}
+	],
+	"app_configurations": [
+		{
+			"private_key": "89b6844229bec218ebff6205280107f45dfcc3d01c49bf0edfed336e292e300eab6405b3e224920d69245964c94339b95c31fb06aa169fdc809adc9d4aea46df"
+		}
+	]
+}
