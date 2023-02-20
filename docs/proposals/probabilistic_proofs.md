@@ -3,14 +3,16 @@
 - [Background \& Setup](#background--setup)
 - [Flow](#flow)
 - [Modelling the Attack](#modelling-the-attack)
-  - [Definitions](#definitions)
+  - [Requirements](#requirements)
   - [Questions](#questions)
   - [Example](#example)
     - [Setup](#setup)
     - [Model](#model)
       - [Burn Amount](#burn-amount)
-  - [Solution](#solution)
-- [\[WIP - do not read\]](#wip---do-not-read)
+  - [Definitions 1 (network POV)](#definitions-1-network-pov)
+  - [\[WIP\] Definitions 2 (attacker's POV)](#wip-definitions-2-attackers-pov)
+  - [\[WIP\] Solution](#wip-solution)
+- [\[WIP\] Alt](#wip-alt)
   - [Alt Solutions (Dissenting Opinions)](#alt-solutions-dissenting-opinions)
   - [Alt Attacks](#alt-attacks)
 
@@ -51,20 +53,9 @@ stateDiagram-v2
 
 ## Modelling the Attack
 
-### Definitions
+### Requirements
 
-Define the sample space with a single definition success, and failure capturing everything else.
-
-**Success**: Submit a false claim and get caught
-
-**Failure**:
-
-- (honest) Submit a true claim and prove it
-- (honest) Submit a true claim and have no requirement to prove it
-- (steal): Submit a false claim and get away with it
-- (unlucky-tbd): Submit a true claim, but fail to prove it when required (e.g. technical reasons)
-
-**TBD (be honest but unlucky)**:
+- Need to define what a `Success` and `Failure` are
 
 ### Questions
 
@@ -92,7 +83,7 @@ Since the attacker will never pass the `ProofRequiredThreshold` threshold, they 
 
 The value for `ProofRequiredThreshold` is ignored since it "short circuits" the model.
 
-We can use a [Geometric_distribution](https://en.wikipedia.org/wiki/Geometric_distribution) and identify the probability of `N` failures until a single success.
+We can use a [Geometric_distribution](https://en.wikipedia.org/wiki/Geometric_distribution) and identify the probability of `k` failures until a single success or vice versa.
 
 $$ p = ProbabilityOfProofRequest $$
 $$ q = 1 - p $$
@@ -102,31 +93,66 @@ $$ k = \frac{log(1-Pr(X=k))}{log(q)} $$
 
 To answer this question, we need to:
 
-- Pick `p` - variable for scaling the network: 0.25 => 4x scale
+- Pick `p` - variable for scaling the network; e.g. 0.25 => 4x networkscale
 - Select `Pr(X=k)` - the likelihood of `k` failures
-- Introduce `BurnForFailedClaimSubmission` - penalty
-
-```
-  p = 0.25 => 4x scale
-  0.99 = (1-0.25)\*_(x-1) _ 0.25
-  x ≈ 4.766 = round(5)
-  Set burn to threshold \* x
-```
+- Introduce `BurnForFailedClaimSubmission` - penalty for getting caught in falsifying a claim (or failing to submit a real claim)
 
 ##### Burn Amount
 
-`BurnForFailedClaimSubmission` is the penalty after `pocketcore/ClaimExpiration` expires. The validators will need to query all claims
-expiring at the current height and apply the appropriate penalties.
+`BurnForFailedClaimSubmission` is the penalty after `pocketcore/ClaimExpiration` expires. The validators will need to query all claims expiring at the current height and apply the appropriate penalties.
 
-### Solution
+### Definitions 1 (network POV)
+
+Define the sample space with a single definition success, and failure capturing everything else.
+
+**Success**: Submit a false claim and get caught
+
+**Failure**:
+
+- (steal): Submit a false claim and get away with it
+- (honest) Submit a true claim and prove it
+- (honest) Submit a true claim and have no requirement to prove it
+- (unlucky-tbd): Submit a true claim, but fail to prove it when required (e.g. technical reasons)
+
+### [WIP] Definitions 2 (attacker's POV)
+
+_Note: Success criteria makes more sense but harder to model_
+
+**Success**: Submit a false claim and get away with it
+
+**Failure**:
+
+- (steal): Submit a false claim and get caught
+- (honest) Submit a true claim and prove it
+- (honest) Submit a true claim and have no requirement to prove it
+- (unlucky-tbd): Submit a true claim, but fail to prove it when required (e.g. technical reasons)
+
+### [WIP] Solution
 
 `ProofRequiredThreshold` - Should be set to a value whereby that that is `2σ` greater than the mean claim. This will mean that the other `97.3%` of claims will be subject to `ProbabilityOfProofRequest`.
 
-`ProbabilityOfProofRequest` -
+`ProbabilityOfProofRequest (p)` - Should be set to 1/n where n is the scaling factor needed for the network.
 
-ProofRequiredThreshold
+`k` - The number of claims submitted (failures) until a single success (a false claim is caught)
 
-## [WIP - do not read]
+`BurnForFailedClaimSubmission` - Should be set to `k * ProofRequiredThreshold`
+
+**Question**: how many claims will be submitted (real or not) until we have a 99% confidence that we catch a false one given p=0.25?
+
+$$ Pr(X=k) = 0.99 $$
+$$ p = 0.25 $$
+$$ q = 1 - 0.25 = 0.75 $$
+
+$$ k = \frac{log(1-Pr(X=k))}{log(q)} $$
+$$ k = \frac{log(1-0.99)}{log(0.75)} $$
+$$ k = \frac{log(0.01)}{log(0.75)} $$
+$$ k = 16 $$
+
+Therefore, the burn would need to be `ProofRequiredThreshold` \* 16.
+
+Assuming `100 POKT` -> a burn would be 1,600 POKT.
+
+## [WIP] Alt
 
 ### Alt Solutions (Dissenting Opinions)
 
@@ -142,7 +168,3 @@ ProofRequiredThreshold
 
 - Specify: how many times can I succeed? (i.e. steal pokt)
 - How many times can I fail? (i.e. get caught) -> only once
-
-```
-
-```
