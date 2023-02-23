@@ -2,6 +2,14 @@
 
 This is a specification & proposal that will be submitted to [forum.pokt.network](https://forum.pokt.network) after peer-review.
 
+**tl;dr Values Selected**
+
+- `ProofRequirementThreshold` = `2σ` above network claim Claim `μ`
+- `ProofRequestProbability` = `0.25`
+- `Pr(X=k)` = `0.01`
+- `k` (num failures) = `12`
+- `ProofMissingPenalty` = `ProofRequirementThreshold * k`
+
 - [Summary](#summary)
 - [Specification](#specification)
   - [Governance Parameters](#governance-parameters)
@@ -14,7 +22,6 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
   - [Example](#example)
   - [Model](#model)
   - [Selecting Values](#selecting-values)
-    - [Values Selected](#values-selected)
     - [Calculation](#calculation)
 - [Dissenting Opinions](#dissenting-opinions)
   - [Malicious Attackers Bloating State](#malicious-attackers-bloating-state)
@@ -24,7 +31,7 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
 
 The number of relays in Pocket Network (V0) is limited by the amount of block space utilized by Claim Proofs. The estimations done [here](https://docs.google.com/document/d/1QcsPfhj636zBazw2jAay8H6gdBKXcIMmohY0o321hhQ/edit) approximated it to be ~3B/day.
 
-Several solutions were proposed [in this document](https://docs.google.com/document/d/1uBomaVieGAjsyHeqSlwmqOyPOln1CemVlWXZjQXUMRY/edit). This proposal outlines an alternate solution: Probabilistic Proofs.
+Several solutions were proposed [in this document](https://docs.google.com/document/d/1uBomaVieGAjsyHeqSlwmqOyPOln1CemVlWXZjQXUMRY/edit). This proposal outlines an alternate solution: **Probabilistic Proofs**.
 
 In order for Servicers to be rewarded for their work, a fraction of the Claims submitted on-chain will require a Proof to also be submitted-on chain probabilistically under the random Oracle model.
 
@@ -152,19 +159,11 @@ $$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
 
 ### Selecting Values
 
-#### Values Selected
-
-- `ProofRequirementThreshold` = `2σ` above network claim Claim `μ`
-- `ProofRequestProbability` = `0.25`
-- `Pr(X=k)` = `0.01`
-- `k` (num failures) = `12`
-- `ProofMissingPenalty` = `ProofRequirementThreshold * k`
-
 #### Calculation
 
-`ProofRequirementThreshold` should be as small as possible so that most such that most Claims for into the probabilistic bucket, while also balancing out penalties that may be too large for faulty honest Servicers. It will be selected to be `2σ` above the Claim `μ` such that `97.3%` fall into the `ProofRequestProbability` part of the piecewise function.
-
 _TODO(olshansky): Look at claims data to figure out the value for ProofRequirementThreshold_
+
+`ProofRequirementThreshold` should be as small as possible so that most such that most Claims for into the probabilistic bucket, while also balancing out penalties that may be too large for faulty honest Servicers. It will be selected to be `2σ` above the Claim `μ` such that `97.3%` fall into the `ProofRequestProbability` part of the piecewise function.
 
 `ProofRequestProbability (p)` is selected as `0.25` to enable scaling the network by `4x`.
 
@@ -176,9 +175,9 @@ $$ k ≈ 12.19 $$
 
 Selecting `k = 12` implies that there is an `~1%` of 12 failures (includes the sample space where an attacker gets away) until a single success (an attacker is caught). To deter this behaviour, the `ProofMissingPenalty` should be selected as 12 times `ProofRequirementThreshold`.
 
-To answer this question, we need to select:
+To answer this question, we need to:
 
-- Pick `p` - variable for scaling the network; e.g. 0.25 => 4x networkscale
+- Pick `p` - variable for scaling the network (e.g. 0.25 => 4x network scale)
 - Select `Pr(X=k)` - the likelihood of `k` failures
 - Introduce `BurnForFailedClaimSubmission` - penalty for getting caught in falsifying a claim (or failing to submit a real claim)
 
@@ -195,11 +194,13 @@ To answer this question, we need to select:
 ### Malicious Attackers Bloating State
 
 **Q**: Adversarial actors may continue submitting Proofs in excess of what's required to bloat the state of the chain.
+
 **A**: In the Random Oracle model, only pseudo-randomly selected Claims seeded by on-chain data (e.g. LastBlockHash, hash(claim), ServicerPubKey, etc...) will be included by block proposers.
 
 ### Honest Servicers Getting Burnt
 
 **Q**: An honest Servicer that submitted a Claim, but failed to submit a Proof within `pocketcore/ClaimExpiration` will be burnt. In today's model, they will only lose the rewards for the unproven Claim.
+
 **A**: The onus is on the Servicer to upkeep their infrastructure. This is a tradeoff that must be considered as a risk/reward in exchange for the network's growth.
 
 <!-- Supporting Python Code
