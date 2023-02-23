@@ -1,30 +1,63 @@
 # Probabilistic Proofs <!-- omit in toc -->
 
-- [Background \& Setup](#background--setup)
-- [Flow](#flow)
-- [Modelling the Attack](#modelling-the-attack)
-  - [Requirements](#requirements)
-  - [Questions](#questions)
+This is a specification & proposal that will be submitted to [forum.pokt.network](https://forum.pokt.network) after peer-review.
+
+- [Summary](#summary)
+- [Specification](#specification)
+  - [Governance Parameters](#governance-parameters)
+  - [Parameter Usage](#parameter-usage)
+  - [Flow](#flow)
+  - [Scaling Benefits](#scaling-benefits)
+- [Attack Modelling](#attack-modelling)
+  - [Approach](#approach)
+  - [Definitions](#definitions)
   - [Example](#example)
-    - [Setup](#setup)
-    - [Model](#model)
-      - [Burn Amount](#burn-amount)
-  - [Definitions 1 (network POV)](#definitions-1-network-pov)
-  - [\[WIP\] Definitions 2 (attacker's POV)](#wip-definitions-2-attackers-pov)
-  - [\[WIP\] Solution](#wip-solution)
-- [\[WIP\] Alt](#wip-alt)
-  - [Alt Solutions (Dissenting Opinions)](#alt-solutions-dissenting-opinions)
-  - [Alt Attacks](#alt-attacks)
+  - [Model](#model)
+  - [Selecting Values](#selecting-values)
+    - [Values Selected](#values-selected)
+    - [Calculation](#calculation)
+- [Dissenting Opinions](#dissenting-opinions)
+  - [Malicious Attackers Bloating State](#malicious-attackers-bloating-state)
+  - [Honest Servicers Getting Burnt](#honest-servicers-getting-burnt)
 
-## Background & Setup
+## Summary
 
-TODO: Copy over context from [notion](https://www.notion.so/Idea-Probabilistic-Proofs-f3fa87447f1c4c63b38b1ff46c049f67#d1f7699135fd438cb2251fa11a91f8cb)
+The number of relays in Pocket Network (V0) is limited by the amount of block space utilized by Claim Proofs. The estimations done [here](https://docs.google.com/document/d/1QcsPfhj636zBazw2jAay8H6gdBKXcIMmohY0o321hhQ/edit) approximated it to be ~3B/day.
 
-## Flow
+Several solutions were proposed [in this document](https://docs.google.com/document/d/1uBomaVieGAjsyHeqSlwmqOyPOln1CemVlWXZjQXUMRY/edit). This proposal outlines an alternate solution: Probabilistic Proofs.
+
+In order for Servicers to be rewarded for their work, a fraction of the Claims submitted on-chain will require a Proof to also be submitted-on chain probabilistically under the random Oracle model.
+
+This document assumes the reader has an understanding of the [reward protocol](https://github.com/pokt-network/pocket-core/blob/staging/doc/specs/reward_protocol.md).
+
+## Specification
+
+### Governance Parameters
+
+Three new governance parameters will need to be added:
+
+- `ProofRequestProbability`: Probability that a Claim will require a Proof to be rewarded; x ∈ ℝ ∣ 0 < x ≤ 1
+- `ProofRequirementThreshold`: Claim amount (in uPOKT) above which a Proof will always be required; x ∈ ℝ ∣ x > 0
+- `ProofMissingPenalty`: Burn (in uPOKT) that the Servicer faces if it does not provide a proof within `pocketcore/ClaimExpiration` for a Claim it previously submitted; x ∈ ℝ ∣ x > 0
+
+### Parameter Usage
+
+$$
+Probably(ProofRequired)=\left\{
+\begin{array}{ll}
+ProbabilityOfProofRequest &\text{if } Claim < ProofRequiredThreshold  \\
+1.0 &\text{if } Claim >= ProofRequiredThreshold.
+\end{array}
+\right.
+$$
+
+### Flow
+
+The high-level flow is captured in the following diagram:
 
 ```mermaid
 ---
-title: Probabilistic Proof
+title: Probabilistic Proofs Flow
 ---
 stateDiagram-v2
     state claim_threshold <<choice>>
@@ -34,137 +67,135 @@ stateDiagram-v2
     NP: Proof NOT Required
     PR: Proof Required
     DR: Distribute Reward
-    B: Peanlty / Burn
+    B: Penalty / Burn<br>ProofMissingPenalty
 
     [*] --> SC
     SC --> claim_threshold
 
-    claim_threshold --> PR : Claim >= ProofRequiredThreshold
-    claim_threshold --> random_selection: Claim < ProofRequiredThreshold
+    claim_threshold --> PR : Claim >= ProofRequirementThreshold
+    claim_threshold --> random_selection: Claim < ProofRequirementThreshold
 
-    random_selection --> NP: P(1-ProbabilityOfProofRequest)
-    random_selection --> PR: P(ProbabilityOfProofRequest)
+    random_selection --> NP: P(1-ProofRequestProbability)
+    random_selection --> PR: P(ProofRequestProbability)
 
-    PR --> DR: Proof available
-    PR --> B: Proof NOT available<br>(honest or malicious)
+    PR --> DR: Proof Available
+    PR --> B: Proof NOT Available<br>(honest or malicious)
 
     NP --> DR
 ```
 
-## Modelling the Attack
+### Scaling Benefits
 
-### Requirements
+Assuming the majority of the block space is taken up by Proofs, The number of relays in the network scales inversely to `ProofRequestProbability`. Example:
 
-- Need to define what a `Success` and `Failure` are
+- `ProofRequestProbability` = 0.5 -> 2x scale (~6B relays)
+- `ProofRequestProbability` = 0.25 -> 4x scale (~12B relays)
+- `ProofRequestProbability` = 0.1 -> 10x scale (~30B relays)
 
-### Questions
+**Side benefit**: It has been shown that the majority of block verification time is spent validating the Proofs, so there would also be an upside on resource consumption.
 
+_TODO(olshansky): Collect & provide data showing that the majority of the block space is taken up by proofs._
+_TODO(olshansky): Collect & provide data showing that the majority of block verification._
+
+## Attack Modelling
+
+In order to select the values for the three parameters, the attacker's likelihood of adversarial reward & penalty must be modeled.
+
+### Approach
+
+An _attack by example_ approach is used determining the appropriate values for `ProofRequestProbability`, `ProofRequirementThreshold` and `ProofMissingPenalty`. This will demonstrate the optimal malicious behaviour an attacker should follow and tend to that case.
+
+### Definitions
+
+A Bernoulli probability distribution will be used whereby each `Claim` & `Proof` pair can be treated as an independent Bernoulli Trial. When the `Claim` exceeds `ProofRequirementThreshold`, the model is _"short-circuited"_ and is therefore outside the sample space for this definition.
+
+The definition for success is taken from the Network's point of view.
+
+- **Success**: Servicer submits a false claim and gets caught
+- **Failure** (the remainder of the sample space excluding Success):
+  - Servicer submits a true claim and is required prove it
+  - Servicer a true claim and have no requirement to prove it
+  - Servicer submits a false claim and gets away with it
+  - Servicer submits a true claim, but fails to prove it
+
+The types of questions we can ask are:
+
+- What is the stopping condition?
 - How many success until a single failure?
 - How many failures until a single success?
 - How many failures until N success?
 - How many success until N failures?
-- What is the stopping condition?
-- What should the burn amount be for failing to submit a required claim?
-- What should `ProofRequiredThreshold` be?
-- What should `ProbabilityOfProofRequest` be?
-- With what probability should a malicious servicer get away?
+- How much scalability does the network need?
+- With what likelihood should an attacker get away?
 
 ### Example
 
-#### Setup
+Assume:
 
-The proofs for determining the appropriate values of `ProbabilityOfProofRequest` and `ProofRequiredThreshold` will be done by demonstrating the most optimal malicious behaviour an attacker should follow by example.
+- `ProofRequirementThreshold = 100 POKT`
+- `ProofRequestProbability = 0.25`
 
-Assume `ProofRequiredThreshold = 100 POKT`. If the `Claim` is greater than or equal to `100 POKT`, a proof is mandatory. Therefore, the attacker can freeload by submitting claims for `99.99 POKT` and hope they never get caught. If they do get caught, the penalty (i.e. burn) should exceed the reward.
+If the `Claim` is greater than or equal to `100 POKT`, a proof is mandatory and the model is _"short-circuited"_. Therefore, the attacker can _freeload_ by submitting claims for `99.99 POKT` and hope they never get caught. If they do get caught (i.e. `Success`), the burn (i.e. `ProofMissingPenalty`) should exceed the total reward accumulated.
 
-Since the attacker will never pass the `ProofRequiredThreshold` threshold, they can only get caught with `ProbabilityOfProofRequest` likelihood.
+Since each claim is independent, an attacker would never submit a `Claim` exceeding `ProofRequirementThreshold`, and therefore have a `ProofRequestProbability` likelihood of being required to submit a proof.
 
-#### Model
+### Model
 
-The value for `ProofRequiredThreshold` is ignored since it "short circuits" the model.
+A [Geometric_distribution](https://en.wikipedia.org/wiki/Geometric_distribution) is used to identify the probability of `k` failures (sample space containing an attacker getting away) until a single success (an attacker is caught).
 
-We can use a [Geometric_distribution](https://en.wikipedia.org/wiki/Geometric_distribution) and identify the probability of `k` failures until a single success or vice versa.
-
-$$ p = ProbabilityOfProofRequest $$
+$$ p = ProofRequestProbability $$
 $$ q = 1 - p $$
 $$ Pr(X=k) = (1-p)^{k-1}p $$
-$$ k = \frac{log(1-Pr(X=k))}{log(1-p)} $$
-$$ k = \frac{log(1-Pr(X=k))}{log(q)} $$
+$$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
 
-To answer this question, we need to:
+### Selecting Values
+
+#### Values Selected
+
+- `ProofRequirementThreshold` = `2σ` above network claim Claim `μ`
+- `ProofRequestProbability` = `0.25`
+- `Pr(X=k)` = `0.01`
+- `k` (num failures) = `12`
+- `ProofMissingPenalty` = `ProofRequirementThreshold * k`
+
+#### Calculation
+
+`ProofRequirementThreshold` should be as small as possible so that most such that most Claims for into the probabilistic bucket, while also balancing out penalties that may be too large for faulty honest Servicers. It will be selected to be `2σ` above the Claim `μ` such that `97.3%` fall into the `ProofRequestProbability` part of the piecewise function.
+
+_TODO(olshansky): Look at claims data to figure out the value for ProofRequirementThreshold_
+
+`ProofRequestProbability (p)` is selected as `0.25` to enable scaling the network by `4x`.
+
+`Pr(X=k) > 0` must be greater than 0 while minimizing `k` as much as possible, so it is selected at approximately `0.01.`.
+
+$$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
+$$ k = \frac{ln(\frac{0.01}{0.25})}{ln(1-0.25)} + 1 $$
+$$ k ≈ 12.19 $$
+
+Selecting `k = 12` implies that there is an `~1%` of 12 failures (includes the sample space where an attacker gets away) until a single success (an attacker is caught). To deter this behaviour, the `ProofMissingPenalty` should be selected as 12 times `ProofRequirementThreshold`.
+
+To answer this question, we need to select:
 
 - Pick `p` - variable for scaling the network; e.g. 0.25 => 4x networkscale
 - Select `Pr(X=k)` - the likelihood of `k` failures
 - Introduce `BurnForFailedClaimSubmission` - penalty for getting caught in falsifying a claim (or failing to submit a real claim)
 
-##### Burn Amount
+`ProofRequirementThreshold` - Should be set to a value whereby that that is `2σ` greater than the mean claim. This will mean that the other `97.3%` of claims will be subject to `ProofRequestProbability`.
 
-`BurnForFailedClaimSubmission` is the penalty after `pocketcore/ClaimExpiration` expires. The validators will need to query all claims expiring at the current height and apply the appropriate penalties.
-
-### Definitions 1 (network POV)
-
-Define the sample space with a single definition success, and failure capturing everything else.
-
-**Success**: Submit a false claim and get caught
-
-**Failure**:
-
-- (steal): Submit a false claim and get away with it
-- (honest) Submit a true claim and prove it
-- (honest) Submit a true claim and have no requirement to prove it
-- (unlucky-tbd): Submit a true claim, but fail to prove it when required (e.g. technical reasons)
-
-### [WIP] Definitions 2 (attacker's POV)
-
-_Note: Success criteria makes more sense but harder to model_
-
-**Success**: Submit a false claim and get away with it
-
-**Failure**:
-
-- (steal): Submit a false claim and get caught
-- (honest) Submit a true claim and prove it
-- (honest) Submit a true claim and have no requirement to prove it
-- (unlucky-tbd): Submit a true claim, but fail to prove it when required (e.g. technical reasons)
-
-### [WIP] Solution
-
-`ProofRequiredThreshold` - Should be set to a value whereby that that is `2σ` greater than the mean claim. This will mean that the other `97.3%` of claims will be subject to `ProbabilityOfProofRequest`.
-
-`ProbabilityOfProofRequest (p)` - Should be set to 1/n where n is the scaling factor needed for the network.
+`ProofRequestProbability (p)` - Should be set to 1/n where n is the scaling factor needed for the network.
 
 `k` - The number of claims submitted (failures) until a single success (a false claim is caught)
 
-`BurnForFailedClaimSubmission` - Should be set to `k * ProofRequiredThreshold`
+`BurnForFailedClaimSubmission` - Should be set to `k * ProofRequirementThreshold`
 
-**Question**: how many claims will be submitted (real or not) until we have a 99% confidence that we catch a false one given p=0.25?
+## Dissenting Opinions
 
-$$ Pr(X=k) = 0.99 $$
-$$ p = 0.25 $$
-$$ q = 1 - 0.25 = 0.75 $$
+### Malicious Attackers Bloating State
 
-$$ k = \frac{log(1-Pr(X=k))}{log(q)} $$
-$$ k = \frac{log(1-0.99)}{log(0.75)} $$
-$$ k = \frac{log(0.01)}{log(0.75)} $$
-$$ k = 16 $$
+**Q**: Adversarial actors may continue submitting Proofs in excess of what's required to bloat the state of the chain.
+**A**: In the Random Oracle model, only pseudo-randomly selected Claims seeded by on-chain data (e.g. LastBlockHash, hash(claim), ServicerPubKey, etc...) will be included by block proposers.
 
-Therefore, the burn would need to be `ProofRequiredThreshold` \* 16.
+### Honest Servicers Getting Burnt
 
-Assuming `100 POKT` -> a burn would be 1,600 POKT.
-
-## [WIP] Alt
-
-### Alt Solutions (Dissenting Opinions)
-
-- Warnings: Allow a tolerance (e.g. 2 warnings) until a burn happens.
-  - Too complex
-- Unclaim: Servicers can submit an unclaim message.
-  - Too much state
-
-### Alt Attacks
-
-- A: Malicious users submit claims to bloat state?
-- S: Validators need to disallow including it in the block if proof is not required
-
-- Specify: how many times can I succeed? (i.e. steal pokt)
-- How many times can I fail? (i.e. get caught) -> only once
+**Q**: An honest Servicer that submitted a Claim, but failed to submit a Proof within `pocketcore/ClaimExpiration` will be burnt. In today's model, they will only lose the rewards for the unproven Claim.
+**A**: The onus is on the Servicer to upkeep their infrastructure. This is a tradeoff that must be considered as a risk/reward in exchange for the network's growth.
