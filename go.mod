@@ -70,9 +70,9 @@ require (
 	github.com/willf/bitset v1.1.10 // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
 	golang.org/x/net v0.0.0-20210917221730-978cfadd31cf // indirect
-	golang.org/x/sys v0.0.0-20210917161153-d61c044b1678 // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	google.golang.org/genproto v0.0.0-20210917145530-b395a37504d4 // indirect
 	google.golang.org/grpc v1.40.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
