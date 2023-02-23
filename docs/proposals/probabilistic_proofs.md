@@ -50,12 +50,11 @@ Three new governance parameters will need to be added:
 ### Parameter Usage
 
 $$
-Probably(ProofRequired)=\left\{
-\begin{array}{ll}
-ProbabilityOfProofRequest &\text{if } Claim < ProofRequiredThreshold  \\
-1.0 &\text{if } Claim >= ProofRequiredThreshold.
-\end{array}
-\right.
+Probably(ProofRequired) =
+  \begin{cases}
+    ProbabilityOfProofRequest &\text{if } Claim < ProofRequiredThreshold  \\
+    1 &\text{if } Claim >= ProofRequiredThreshold.
+  \end{cases}
 $$
 
 ### Flow
@@ -125,6 +124,7 @@ The definition for success is taken from the Network's point of view.
   - Servicer submits a false claim and gets away with it
   - Servicer submits a true claim, but fails to prove it
 
+<!--
 The types of questions we can ask are:
 
 - What is the stopping condition?
@@ -134,6 +134,7 @@ The types of questions we can ask are:
 - How many success until N failures?
 - How much scalability does the network need?
 - With what likelihood should an attacker get away?
+-->
 
 ### Example
 
@@ -151,11 +152,12 @@ Since each claim is independent, an attacker would never submit a `Claim` exceed
 A [Geometric_distribution](https://en.wikipedia.org/wiki/Geometric_distribution) is used to identify the probability of `k` failures (sample space containing an attacker getting away) until a single success (an attacker is caught).
 
 $$ p = ProofRequestProbability $$
-$$ q = 1 - p $$
-$$ Pr(X=k) = (1-p)^{k-1}p $$
-$$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
 
-#### Model Visualization
+$$ q = 1 - p $$
+
+$$ Pr(X=k) = (1-p)^{k-1}p $$
+
+$$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
 
 ![download](https://user-images.githubusercontent.com/1892194/220803154-90dcdd6b-8141-40d2-9cca-ed27a995fcfb.png)
 
@@ -172,7 +174,9 @@ _TODO(olshansky): Look at claims data to figure out the value for ProofRequireme
 `Pr(X=k) > 0` must be greater than 0 while minimizing `k` as much as possible, so it is selected at approximately `0.01.`.
 
 $$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
+
 $$ k = \frac{ln(\frac{0.01}{0.25})}{ln(1-0.25)} + 1 $$
+
 $$ k ≈ 12.19 $$
 
 Selecting `k = 12` implies that there is an `~1%` of 12 failures (includes the sample space where an attacker gets away) until a single success (an attacker is caught). To deter this behaviour, the `ProofMissingPenalty` should be selected as 12 times `ProofRequirementThreshold`.
