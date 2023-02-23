@@ -148,6 +148,8 @@ $$ q = 1 - p $$
 $$ Pr(X=k) = (1-p)^{k-1}p $$
 $$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
 
+![download](https://user-images.githubusercontent.com/1892194/220803154-90dcdd6b-8141-40d2-9cca-ed27a995fcfb.png)
+
 ### Selecting Values
 
 #### Values Selected
@@ -199,3 +201,34 @@ To answer this question, we need to select:
 
 **Q**: An honest Servicer that submitted a Claim, but failed to submit a Proof within `pocketcore/ClaimExpiration` will be burnt. In today's model, they will only lose the rewards for the unproven Claim.
 **A**: The onus is on the Servicer to upkeep their infrastructure. This is a tradeoff that must be considered as a risk/reward in exchange for the network's growth.
+
+<!-- Supporting Python Code
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the function
+def f(x, p):
+    return np.log(x/p) / np.log(1-p)
+
+# Define the range of x values to plot
+x = np.linspace(0.01, 1, 200)
+
+# Plot the function for p = 0.2, p = 0.5, and p = 0.8
+for p in [0.25, 0.5, 0.75, 0.9]:
+    y = f(x, p)
+    plt.plot(x, y, label=f'p = {p}')
+
+
+# Add a horizontal line at y = 0
+plt.axhline(y=0, color='red', linestyle='--')
+
+# Add legend, axis labels, and title
+plt.legend()
+plt.xlabel('Probability(X=k)')
+plt.ylabel('k (num failures)')
+plt.title('Number of failures until a single success')
+
+# Display the plot
+plt.show()
+
+-->
