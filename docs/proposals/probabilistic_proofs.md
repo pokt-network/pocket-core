@@ -155,6 +155,8 @@ $$ q = 1 - p $$
 $$ Pr(X=k) = (1-p)^{k-1}p $$
 $$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
 
+#### Model Visualization
+
 ![download](https://user-images.githubusercontent.com/1892194/220803154-90dcdd6b-8141-40d2-9cca-ed27a995fcfb.png)
 
 ### Selecting Values
