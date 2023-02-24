@@ -12,9 +12,13 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
 
 - `ProofRequirementThreshold` = `2σ` above network claim Claim `μ`
 - `ProofRequestProbability` = `0.25`
-- `Pr(X=k)` = `0.01`
-- `k` (num failures) = `12`
+- `k` (num failures) = `16`
+- `Pr(X<=k)` = `0.99`
 - `ProofMissingPenalty` = `ProofRequirementThreshold * k`
+
+**The question being answered by the distribution**: What is the probability of the network (i.e. the protocol) failing `k` times or less(i.e. handling a normal claim or not catching an attacker) until a single success (i.e. catching an attacker).
+
+## Table of Contents <!-- omit in toc -->
 
 - [Summary](#summary)
 - [Specification](#specification)
@@ -27,6 +31,8 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
   - [Definitions](#definitions)
   - [Example](#example)
   - [Model](#model)
+  - [Geometric PDF](#geometric-pdf)
+  - [Geometric CDF](#geometric-cdf)
   - [Selecting Values](#selecting-values)
     - [Calculation](#calculation)
 - [Dissenting Opinions](#dissenting-opinions)
@@ -144,10 +150,7 @@ The types of questions we can ask are:
 
 ### Example
 
-Assume:
-
-- `ProofRequirementThreshold = 100 POKT`
-- `ProofRequestProbability = 0.25`
+Let `ProofRequirementThreshold = 100 POKT`
 
 If the `Claim` is greater than or equal to `100 POKT`, a proof is mandatory and the model is _"short-circuited"_. Therefore, the attacker can _freeload_ by submitting claims for `99.99 POKT` and hope they never get caught. If they do get caught (i.e. `Success`), the burn (i.e. `ProofMissingPenalty`) should exceed the total reward accumulated.
 
@@ -155,26 +158,33 @@ Since each claim is independent, an attacker would never submit a `Claim` exceed
 
 ### Model
 
-A [Geometric_distribution](https://en.wikipedia.org/wiki/Geometric_distribution) is used to identify the probability of `k` failures (sample space containing an attacker getting away) until a single success (an attacker is caught).
+A [Geometric PDF](https://en.wikipedia.org/wiki/Geometric_distribution) was selected to identify the probability of `k` failures (sample space containing an attacker getting away) until a single success (an attacker is caught).
+
+However, as pointed out by @RawthiL, what we're actually interested in is the likelihood of `k` **or less** failures until a single success.
 
 ### Geometric PDF
 
 $$ p = ProofRequestProbability $$
 
-$$ Pr(X<=k) = 1 - (1 - p)^k $$
-
-![Geometric PDF](https://user-images.githubusercontent.com/1892194/221075888-1092d3d3-b530-416d-8112-7957057a35df.png)
-
-### Geometric CDF
-
-$$ p = ProofRequestProbability $$
 $$ q = 1 - p $$
 
 $$ Pr(X=k) = (1-p)^{k-1}p $$
 
 $$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
 
-![Geometric CDF]()
+![Geometric PDF](https://user-images.githubusercontent.com/1892194/221076333-f6578bc2-0567-4e9d-ae7f-8a483a86cc2d.png)
+
+### Geometric CDF
+
+$$ x ∈ ℝ ∣ 0 ≤ x < 1 $$
+
+$$ p = ProofRequestProbability $$
+
+$$ P(X<=k) = 1 - (1 - p)^{k} $$
+
+$$ k = \frac{log(1 - P(X<=k))}{log(1 - p)} $$
+
+![Geometric CDF](https://user-images.githubusercontent.com/1892194/221086054-df25a888-558a-497e-9c13-87c6e07cbe6d.png)
 
 ### Selecting Values
 
@@ -186,29 +196,17 @@ _TODO(olshansky): Look at claims data to figure out the value for ProofRequireme
 
 `ProofRequestProbability (p)` is selected as `0.25` to enable scaling the network by `4x`.
 
-`Pr(X=k) > 0` must be greater than 0 while minimizing `k` as much as possible, so it is selected at approximately `0.01.`.
+`BurnForFailedClaimSubmission` - Should be set to `k * ProofRequirementThreshold` to deter `k` failures or less.
 
-$$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
+`Pr(X<=k)` must be as high as possible while keeping `k` reasonably low since it'll impact the penalty for honest but faulty servicers that fail to submit a Claim within the expiration window. We are selecting `Pr(X<=k) = 0.99`
 
-$$ k = \frac{ln(\frac{0.01}{0.25})}{ln(1-0.25)} + 1 $$
+$$ k = \frac{log(1 - P(X<=k))}{log(1 - p)} $$
 
-$$ k ≈ 12.19 $$
+$$ k = \frac{log(1 - 0.99)}{log(1 - 0.25)} $$
 
-Selecting `k = 12` implies that there is an `~1%` of 12 failures (includes the sample space where an attacker gets away) until a single success (an attacker is caught). To deter this behaviour, the `ProofMissingPenalty` should be selected as 12 times `ProofRequirementThreshold`.
+$$ k ≈ 16 $$
 
-To answer this question, we need to:
-
-- Pick `p` - variable for scaling the network (e.g. 0.25 => 4x network scale)
-- Select `Pr(X=k)` - the likelihood of `k` failures
-- Introduce `BurnForFailedClaimSubmission` - penalty for getting caught in falsifying a claim (or failing to submit a real claim)
-
-`ProofRequirementThreshold` - Should be set to a value whereby that that is `2σ` greater than the mean claim. This will mean that the other `97.3%` of claims will be subject to `ProofRequestProbability`.
-
-`ProofRequestProbability (p)` - Should be set to 1/n where n is the scaling factor needed for the network.
-
-`k` - The number of claims submitted (failures) until a single success (a false claim is caught)
-
-`BurnForFailedClaimSubmission` - Should be set to `k * ProofRequirementThreshold`
+Selecting `k = 16` implies that `99%` of the time, an attacker will get a penalty of `BurnForFailedClaimSubmission`, making it not worthwhile to take the risk.
 
 ## Dissenting Opinions
 
@@ -235,21 +233,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-# Define the function
-def f(x, p):
+def pdf(x, p):
     return np.log(x/p) / np.log(1-p)
 
-# Define the range of x values to plot
+# Line Graph
 x = np.linspace(0.01, 1, 200)
-xp = np.linspace(0.01, 1, 10)
 
-# Plot the function for p = 0.2, p = 0.5, and p = 0.8
+# Points
+xp = np.linspace(0.01, 1, 20)
+
+# Plot the actual functions
 ps = [0.25, 0.5, 0.75, 0.9]
 colors = cm.get_cmap('hsv', len(ps)+1)
 for i, p in enumerate(ps):
     color = colors(i)
-    y = f(x, p)
-    yp = f(xp, p)
+    y = pdf(x, p)
+    yp = pdf(xp, p)
     plt.plot(x, y, label=f'p = {p}', color=color)
     # Select only the points where y > 0 and plot them as dots
     x_pos = xp[np.where(yp > 0)]
@@ -271,5 +270,44 @@ plt.show()
 ```
 
 ### Python Code - Geometric CDF
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+
+def cdf(x, p):
+    return np.log(1-x)/np.log(1-p)
+
+# Line Graph
+x = np.linspace(0.01, 1, 200)
+
+# Points
+xp = np.linspace(0.01, 1, 20)
+
+# Plot the actual functions
+ps = [0.25, 0.5, 0.75, 0.9]
+colors = cm.get_cmap('hsv', len(ps)+1)
+for i, p in enumerate(ps):
+    color = colors(i)
+    y = cdf(x, p)
+    yp = cdf(xp, p)
+    plt.plot(x, y, label=f'p = {p}', color=color)
+    # Select only the points where y > 0 and plot them as dots
+    x_pos = xp[np.where(yp > 0)]
+    y_pos = yp[np.where(yp > 0)]
+    plt.plot(x_pos, y_pos, 'o', color=color)
+
+
+# Add a horizontal line at y = 0
+plt.axhline(y=0, color='gray', linestyle='--')
+
+# Add legend, axis labels, and title
+plt.legend()
+plt.xlabel('Probability(X<=k)')
+plt.ylabel('k (num failures)')
+plt.title('CDF - k failures or less until a single success')
+
+# Display the plot
+plt.show()
 
 -->
