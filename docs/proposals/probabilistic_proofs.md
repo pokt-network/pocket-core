@@ -157,15 +157,24 @@ Since each claim is independent, an attacker would never submit a `Claim` exceed
 
 A [Geometric_distribution](https://en.wikipedia.org/wiki/Geometric_distribution) is used to identify the probability of `k` failures (sample space containing an attacker getting away) until a single success (an attacker is caught).
 
+### Geometric PDF
+
 $$ p = ProofRequestProbability $$
 
+$$ Pr(X<=k) = 1 - (1 - p)^k $$
+
+![Geometric PDF](https://user-images.githubusercontent.com/1892194/221075888-1092d3d3-b530-416d-8112-7957057a35df.png)
+
+### Geometric CDF
+
+$$ p = ProofRequestProbability $$
 $$ q = 1 - p $$
 
 $$ Pr(X=k) = (1-p)^{k-1}p $$
 
 $$ k = \frac{ln(\frac{Pr(X=k)}{p})}{ln(1-p)} + 1 $$
 
-![download](https://user-images.githubusercontent.com/1892194/220803154-90dcdd6b-8141-40d2-9cca-ed27a995fcfb.png)
+![Geometric CDF]()
 
 ### Selecting Values
 
@@ -216,8 +225,15 @@ To answer this question, we need to:
 **A**: The onus is on the Servicer to upkeep their infrastructure. This is a tradeoff that must be considered as a risk/reward in exchange for the network's growth.
 
 <!-- Supporting Python Code
+
+## Appendix
+
+### Python Code - Geometric PDF
+
+```python
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 # Define the function
 def f(x, p):
@@ -225,15 +241,24 @@ def f(x, p):
 
 # Define the range of x values to plot
 x = np.linspace(0.01, 1, 200)
+xp = np.linspace(0.01, 1, 10)
 
 # Plot the function for p = 0.2, p = 0.5, and p = 0.8
-for p in [0.25, 0.5, 0.75, 0.9]:
+ps = [0.25, 0.5, 0.75, 0.9]
+colors = cm.get_cmap('hsv', len(ps)+1)
+for i, p in enumerate(ps):
+    color = colors(i)
     y = f(x, p)
-    plt.plot(x, y, label=f'p = {p}')
+    yp = f(xp, p)
+    plt.plot(x, y, label=f'p = {p}', color=color)
+    # Select only the points where y > 0 and plot them as dots
+    x_pos = xp[np.where(yp > 0)]
+    y_pos = yp[np.where(yp > 0)]
+    plt.plot(x_pos, y_pos, 'o', color=color)
 
 
 # Add a horizontal line at y = 0
-plt.axhline(y=0, color='red', linestyle='--')
+plt.axhline(y=0, color='gray', linestyle='--')
 
 # Add legend, axis labels, and title
 plt.legend()
@@ -243,5 +268,8 @@ plt.title('Number of failures until a single success')
 
 # Display the plot
 plt.show()
+```
+
+### Python Code - Geometric CDF
 
 -->
