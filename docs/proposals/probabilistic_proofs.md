@@ -10,15 +10,15 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
 
 **tl;dr Values Selected**
 
-- `ProofRequirementThreshold` = `2σ` above network claim Claim `μ`
-- `ProofRequestProbability` = `0.25`
-- `k` (num failures) = `16`
-- `Pr(X<=k)` = `0.99`
-- `ProofMissingPenalty` = `ProofRequirementThreshold * k`
+- `Pr(X<=k)` = `0.99`; selected manually to maintain 2 nine protocol safety
+- `k` (num failures) = `16`; computed using a cumulative geometric probability distribution
+- `ProofRequestProbability` = `0.25`; selected manually to scale the network by 4x
+- `ProofRequirementThreshold` = `20 POKT`; selected to a value that is above p95 of all POKT claims
+- `ProofMissingPenalty` = `320 POKT`; calculated via `ProofRequirementThreshold * k` to deter malicious behaviour
 
 **The question being answered by the distribution**: What is the probability of the network (i.e. the protocol) failing `k` times or less(i.e. handling a normal claim or not catching an attacker) until a single success (i.e. catching an attacker).
 
-**Answer**: Selecting `k = 16` implies that `99%` of the time, an attacker will get a penalty of `BurnForFailedClaimSubmission`, making it not worthwhile to take the risk.
+**Answer**: Selecting `k = 16` and `ProofRequirementThreshold = 20 POKT` implies that if an attacker continues submitting claims for `19.99 POKT` or less, they will get caught `99.99%` of the time, and will be penalized for `320 POKT`.
 
 ## Table of Contents <!-- omit in toc -->
 
@@ -40,6 +40,11 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
 - [Dissenting Opinions](#dissenting-opinions)
   - [Malicious Attackers Bloating State](#malicious-attackers-bloating-state)
   - [Honest Servicers Getting Burnt](#honest-servicers-getting-burnt)
+- [Appendix](#appendix)
+  - [Claim Data](#claim-data)
+  - [Python Code](#python-code)
+    - [Python Code - Geometric PDF](#python-code---geometric-pdf)
+    - [Python Code - Geometric CDF](#python-code---geometric-cdf)
 
 ## Summary
 
@@ -115,7 +120,7 @@ Assuming the majority of the block space is taken up by Proofs, The number of re
 **Side benefit**: It has been shown that the majority of block verification time is spent validating the Proofs, so there would also be an upside on resource consumption.
 
 _TODO(olshansky): Collect & provide data showing that the majority of the block space is taken up by proofs._
-_TODO(olshansky): Collect & provide data showing that the majority of block verification._
+_OPTIONAL-TODO(olshansky): Collect & provide data showing that the majority of block verification._
 
 ## Attack Modelling
 
@@ -192,8 +197,6 @@ $$ k = \frac{log(1 - P(X<=k))}{log(1 - p)} $$
 
 #### Calculation
 
-_TODO(olshansky): Look at claims data to figure out the value for ProofRequirementThreshold_
-
 `ProofRequirementThreshold` should be as small as possible so that most such that most Claims for into the probabilistic bucket, while also balancing out penalties that may be too large for faulty honest Servicers. It will be selected to be `2σ` above the Claim `μ` such that `97.3%` fall into the `ProofRequestProbability` part of the piecewise function.
 
 `ProofRequestProbability (p)` is selected as `0.25` to enable scaling the network by `4x`.
@@ -224,11 +227,27 @@ Selecting `k = 16` implies that `99%` of the time, an attacker will get a penalt
 
 **A**: The onus is on the Servicer to upkeep their infrastructure. This is a tradeoff that must be considered as a risk/reward in exchange for the network's growth.
 
-<!-- Supporting Python Code
-
 ## Appendix
 
-### Python Code - Geometric PDF
+### Claim Data
+
+The claim data below was collected by @RawthiL [here](https://github.com/pokt-network/pocket-core/issues/1523#issuecomment-1441924408).
+
+| Percentage | Limit     |
+| ---------- | --------- |
+| 25.0       | 1.010101  |
+| 50.0       | 2.525253  |
+| 75.0       | 5.555556  |
+| 90.0       | 16.161616 |
+| 95.0       | 18.181818 |
+
+![imagen](https://user-images.githubusercontent.com/141699/220939267-83504646-7aef-4f02-b365-3eafe85274bd.png)
+![imagen](https://user-images.githubusercontent.com/141699/220940745-96875a19-2e6c-4bf8-b9fd-5eeed2e1c950.png)
+![imagen](https://user-images.githubusercontent.com/141699/220940864-b54f2577-30db-4f76-9968-dc12e7db74df.png)
+
+### Python Code
+
+#### Python Code - Geometric PDF
 
 ```python
 import numpy as np
@@ -271,8 +290,9 @@ plt.title('Number of failures until a single success')
 plt.show()
 ```
 
-### Python Code - Geometric CDF
+#### Python Code - Geometric CDF
 
+```python
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -311,5 +331,4 @@ plt.title('CDF - k failures or less until a single success')
 
 # Display the plot
 plt.show()
-
--->
+```
