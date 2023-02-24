@@ -18,7 +18,7 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
 
 **The question being answered by the distribution**: What is the probability of the network (i.e. the protocol) failing `k` times or less(i.e. handling a normal claim or not catching an attacker) until a single success (i.e. catching an attacker).
 
-**Answer**: Selecting `k = 16` and `ProofRequirementThreshold = 20 POKT` implies that if an attacker continues submitting claims for `19.99 POKT` or less, they will get caught `99.99%` of the time, and will be penalized for `320 POKT`.
+**Answer**: Selecting `k = 16` and `ProofRequirementThreshold = 20 POKT` implies that if an attacker continues submitting claims for `19.99 POKT` or less, they will get caught `99%` of the time, and will be penalized for `320 POKT`.
 
 ## Table of Contents <!-- omit in toc -->
 
