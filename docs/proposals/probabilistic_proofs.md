@@ -18,6 +18,8 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
 
 **The question being answered by the distribution**: What is the probability of the network (i.e. the protocol) failing `k` times or less(i.e. handling a normal claim or not catching an attacker) until a single success (i.e. catching an attacker).
 
+**Answer**: Selecting `k = 16` implies that `99%` of the time, an attacker will get a penalty of `BurnForFailedClaimSubmission`, making it not worthwhile to take the risk.
+
 ## Table of Contents <!-- omit in toc -->
 
 - [Summary](#summary)
