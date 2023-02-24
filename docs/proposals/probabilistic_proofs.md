@@ -16,7 +16,7 @@ This is a specification & proposal that will be submitted to [forum.pokt.network
 - `ProofRequirementThreshold` = `20 POKT`; selected to a value that is above p95 of all POKT claims
 - `ProofMissingPenalty` = `320 POKT`; calculated via `ProofRequirementThreshold * k` to deter malicious behaviour
 
-**The question being answered by the distribution**: What is the probability of the network (i.e. the protocol) failing `k` times or less(i.e. handling a normal claim or not catching an attacker) until a single success (i.e. catching an attacker).
+**The question being answered by the distribution**: What is the probability of the protocol trusting (i.e. failing) `k` Claims or less (i.e. handling a normal claim or not catching an attacker) until a single penalty enforcement (i.e. successfully catching an attacker).
 
 **Answer**: Selecting `k = 16` and `ProofRequirementThreshold = 20 POKT` implies that if an attacker continues submitting claims for `19.99 POKT` or less, they will get caught `99%` of the time, and will be penalized for `320 POKT`.
 
@@ -143,18 +143,6 @@ The definition for success is taken from the Network's point of view.
   - Servicer submits a false claim and gets away with it
   - Servicer submits a true claim, but fails to prove it
 
-<!--
-The types of questions we can ask are:
-
-- What is the stopping condition?
-- How many success until a single failure?
-- How many failures until a single success?
-- How many failures until N success?
-- How many success until N failures?
-- How much scalability does the network need?
-- With what likelihood should an attacker get away?
--->
-
 ### Example
 
 Let `ProofRequirementThreshold = 100 POKT`
@@ -197,7 +185,7 @@ $$ k = \frac{log(1 - P(X<=k))}{log(1 - p)} $$
 
 #### Calculation
 
-`ProofRequirementThreshold` should be as small as possible so that most such that most Claims for into the probabilistic bucket, while also balancing out penalties that may be too large for faulty honest Servicers. It will be selected to be `2σ` above the Claim `μ` such that `97.3%` fall into the `ProofRequestProbability` part of the piecewise function.
+`ProofRequirementThreshold` should be as small as possible so that most such that most Claims for into the probabilistic bucket, while also balancing out penalties that may be too large for faulty honest Servicers. Ideally, it should be selected to be `2σ` above the Claim `μ` such that `97.3%` fall into the `ProofRequestProbability` part of the piecewise function. However, as seen in the Appendix, the POKT Claim distribution does not follow a normal distribution. Instead, 20 POKT was selected since it is greater than `p95` of POKT claim using the data collected.
 
 `ProofRequestProbability (p)` is selected as `0.25` to enable scaling the network by `4x`.
 
