@@ -1,5 +1,11 @@
 # Probabilistic Proofs <!-- omit in toc -->
 
+<p align="center">
+    @olshansk - Daniel Olshansky<br>
+    @RawthiL - Ramiro R. C.<br>
+    Feb 2023
+</p>
+
 This is a specification & proposal that will be submitted to [forum.pokt.network](https://forum.pokt.network) after peer-review.
 
 **tl;dr Values Selected**
