@@ -2,7 +2,7 @@
 
 <p align="center">
     @olshansk - Daniel Olshansky<br>
-    @RawthiL - Ramiro R. C.<br>
+    @RawthiL - Ramiro Rodríguez Colmeiro<br>
     Feb 2023
 </p>
 
