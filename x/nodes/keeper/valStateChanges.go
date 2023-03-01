@@ -652,6 +652,8 @@ func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		k.Logger(ctx).Error(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v at height %d\n", validator, ctx.BlockHeight()))
 		return
 	}
+	// clear cache
+	k.PocketKeeper.ClearSessionCache()
 	validator.Jailed = false
 	k.SetValidator(ctx, validator)
 	k.ResetValidatorSigningInfo(ctx, addr)
