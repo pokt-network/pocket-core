@@ -1,6 +1,6 @@
 # Changelog
 =======
-## RC-0.9.3
+## RC-0.10.0
 - Adds a new activation key CRVAL for clearing sessions for unjailed vals
 
 ## RC-0.9.2
