@@ -50,6 +50,7 @@ const (
 	BlockSizeModifyKey           = "BLOCK"
 	RSCALKey                     = "RSCAL"
 	VEDITKey                     = "VEDIT"
+	ClearUnjailedValSessionKey   = "CRVAL"
 )
 
 func GetCodecUpgradeHeight() int64 {

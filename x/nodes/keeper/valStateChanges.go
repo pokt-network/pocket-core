@@ -652,6 +652,12 @@ func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		k.Logger(ctx).Error(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v at height %d\n", validator, ctx.BlockHeight()))
 		return
 	}
+
+	// After or on this upgrade height, we will start clearing the global session cache to prevent any non-deterministic cache consistency issues.
+	if k.Cdc.IsAfterNamedFeatureActivationHeight(ctx.BlockHeight(), codec.ClearUnjailedValSessionKey) {
+		k.PocketKeeper.ClearSessionCache()
+	}
+
 	validator.Jailed = false
 	k.SetValidator(ctx, validator)
 	k.ResetValidatorSigningInfo(ctx, addr)

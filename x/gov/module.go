@@ -3,6 +3,7 @@ package gov
 import (
 	"encoding/json"
 	"fmt"
+	valTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"os"
 
 	"github.com/pokt-network/pocket-core/codec"
@@ -120,6 +121,12 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 
 	ActivateAdditionalParametersACL(ctx, am)
 
+	// On this upgrade height, Pocket Core will start clearing the global session cache to prevent any non-deterministic cache consistency issues.
+	// This code will ensure it is cleared on the upgrade height for a fresh start.
+	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.ClearUnjailedValSessionKey) {
+		valTypes.ClearSessionCache(valTypes.GlobalSessionCache)
+	}
+
 	u := am.keeper.GetUpgrade(ctx)
 	if ctx.AppVersion() < u.Version && ctx.BlockHeight() >= u.UpgradeHeight() && ctx.BlockHeight() != 0 {
 		ctx.Logger().Error("MUST UPGRADE TO NEXT VERSION: ", u.Version)
@@ -161,6 +168,7 @@ func ActivateAdditionalParametersACL(ctx sdk.Ctx, am AppModule) {
 		params.ACL.SetOwner(types.NewACLKey(types.NodesSubspace, "ServicerStakeFloorMultiplierExponent"), am.keeper.GetDAOOwner(ctx))
 		am.keeper.SetParams(ctx, params)
 	}
+
 }
 
 // EndBlock returns the end blocker for the staking module. It returns no validator

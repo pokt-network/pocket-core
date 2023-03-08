@@ -1,5 +1,8 @@
 # Changelog
 =======
+## RC-0.9.3
+- Adds a new activation key CRVAL for clearing sessions for unjailed vals
+
 ## RC-0.9.2
 - LeanPOKT
 - Unconfirmed Tx / Txs endpoint for txs on the mempool.
