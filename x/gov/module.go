@@ -123,7 +123,7 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 
 	// On this upgrade height, Pocket Core will start clearing the global session cache to prevent any non-deterministic cache consistency issues.
 	// This code will ensure it is cleared on the upgrade height for a fresh start.
-	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.ClearUnjailedValSessionKey) {
+	if am.keeper.GetCodec().IsBetweenNamedFeatureActivationHeight(ctx.BlockHeight(), codec.ClearUnjailedValSessionKey, 2) {
 		valTypes.ClearSessionCache(valTypes.GlobalSessionCache)
 	}
 

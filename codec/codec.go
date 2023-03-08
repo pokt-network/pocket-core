@@ -282,6 +282,16 @@ func (cdc *Codec) IsOnNamedFeatureActivationHeight(height int64, key string) boo
 	return UpgradeFeatureMap[key] != 0 && height == UpgradeFeatureMap[key]
 }
 
+func (cdc *Codec) IsBetweenNamedFeatureActivationHeight(height int64, key string, tolerance int64) bool {
+	upgradeHeight := UpgradeFeatureMap[key]
+	if upgradeHeight == 0 {
+		return false
+	}
+	minHeight := upgradeHeight - tolerance
+	maxHeight := upgradeHeight + tolerance
+	return height >= minHeight && height <= maxHeight
+}
+
 // Upgrade Utils for feature map
 
 // SliceToExistingMap merge slice to existing map
