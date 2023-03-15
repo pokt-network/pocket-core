@@ -21,7 +21,7 @@ pocket nodes stake custodial <fromAddr> <amount> <relayChainIDs> <serviceURI> <n
 
 The updated command expects 1 new parameter:
 
-* `<isBefore8.0>`:  true or false depending if non-custodial upgrade is activated.
+- `<isBefore8.0>`: true or false depending if non-custodial upgrade is activated.
 
 Before the upgrade is activated be sure to use `true` for `<isBefore8.0>` or the transaction won't go through
 
@@ -33,9 +33,9 @@ pocket nodes stake non-custodial <operatorPublicKey> <outputAddress> <amount> <R
 
 The new stake command expects 3 new parameters:
 
-* `<operatorPublicKey>`: operatorAddress is the only valid signer for blocks & relays. Should match the running node.
-* `<outputAddress>`: outputAddress is where reward and staked funds are directed.
-* `<isBefore8.0>`:  true or false depending if non custodial upgrade is activated.
+- `<operatorPublicKey>`: operatorAddress is the only valid signer for blocks & relays. Should match the running node.
+- `<outputAddress>`: outputAddress is where reward and staked funds are directed.
+- `<isBefore8.0>`: true or false depending if non custodial upgrade is activated.
 
 Replacing the `<fromAddr>` we have the `<operatorPublicKey>`, notice the change from using an address to using the
 public key of the node. Also, we have the `<outputAddress>`, where rewards and funds will be delivered after the update
@@ -67,17 +67,17 @@ check or update your hosted chains.
 
 To use the endpoint:
 
-* First make sure to set `"chains_hot_reload": false` before beginning, hot reloading and the update endpoint can't be
+- First make sure to set `"chains_hot_reload": false` before beginning, hot reloading and the update endpoint can't be
   used at the same time (enabling hot reload disables the update endpoint).
-* Locate your `auth.json` file in the config directory, this file contains your `authtoken` you need its value to send
+- Locate your `auth.json` file in the config directory, this file contains your `authtoken` you need its value to send
   request to protected endpoints (../v1/private/..).
-    ```json
-    {
-    "Value": "<TOKEN>",
-    "Issued": "2022-04-08T07:35:35.858373-04:00"
-    }
-    ```
-* Copy the token value and replace the placeholder `<TOKEN>` with its value on this example call
+  ```json
+  {
+  	"Value": "<TOKEN>",
+  	"Issued": "2022-04-08T07:35:35.858373-04:00"
+  }
+  ```
+- Copy the token value and replace the placeholder `<TOKEN>` with its value on this example call
   ```text
     curl --location --request POST 'http://localhost:8081/v1/private/updatechains?authtoken=<TOKEN>' \
     --header 'Content-Type: application/json' \
@@ -85,30 +85,22 @@ To use the endpoint:
     {
     "id": "0001",
     "url": "http://localhost:8081",
-    "basic_auth": {
-    "username": "",
-    "password": ""
-    }
     }
     ]'
-    ```
-* Check If your request is successful using this other call
+  ```
+- Check If your request is successful using this other call
   ```
   curl --location --request POST 'http://localhost:8081/v1/private/chains?authtoken=<TOKEN>'
   ```
   you should receive a response like this :
   ```json
   {
-    "0001": {
-        "basic_auth": {
-            "password": "",
-            "username": ""
-        },
-        "id": "0001",
-        "url": "http://localhost:8081"
-    }
+  	"0001": {
+  		"id": "0001",
+  		"url": "http://localhost:8081"
+  	}
   }
-    ```
-* Remember to manually update your chains.json with the desired changes before or after using this method as any changes
+  ```
+- Remember to manually update your chains.json with the desired changes before or after using this method as any changes
   done using the `updatechains` endpoint will be overwritten at restart by loading the chains.json
-* Also, if you are writing any automations remember the `authtoken` is recreated on every restart.
+- Also, if you are writing any automations remember the `authtoken` is recreated on every restart.
