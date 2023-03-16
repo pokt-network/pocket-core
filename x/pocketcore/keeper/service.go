@@ -12,8 +12,14 @@ import (
 // HandleRelay handles an api (read/write) request to a non-native (external) blockchain
 func (k Keeper) HandleRelay(ctx sdk.Ctx, relay pc.Relay) (*pc.RelayResponse, sdk.Error) {
 	relayTimeStart := time.Now()
-	// get the latest session block height because this relay will correspond with the latest session
-	sessionBlockHeight := k.GetLatestSessionBlockHeight(ctx)
+
+	sessionBlockHeight := relay.Proof.SessionBlockHeight
+
+	if !k.IsProofSessionHeightWithinTolerance(ctx, sessionBlockHeight) {
+		// For legacy support, we are intentionally returning the invalid block height error.
+		return nil, pc.NewInvalidBlockHeightError(pc.ModuleName)
+	}
+
 	var node *pc.PocketNode
 	// There is reference to node address so that way we don't have to recreate address twice for pre-leanpokt
 	var nodeAddress sdk.Address
