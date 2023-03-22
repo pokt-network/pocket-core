@@ -12,7 +12,6 @@ require (
 	github.com/akrylysov/pogreb v0.10.1
 	github.com/alitto/pond v1.8.1
 	github.com/cucumber/godog v0.12.6
-	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-kit/kit v0.12.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.3
