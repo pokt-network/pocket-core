@@ -44,7 +44,7 @@ const (
 	ServicerHeader          = "X-Servicer"
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
-	AppVersion              = "ALPHA-0.2.6"
+	AppVersion              = "RC-0.2.6"
 )
 
 type appCache struct {
