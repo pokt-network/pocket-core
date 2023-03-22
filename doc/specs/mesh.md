@@ -40,9 +40,10 @@ Also, you need to set both of them behind a Global DNS provider. The Global DNS 
 
 ### Included Branches:
 
-* [Lean Node](https://github.com/pokt-network/pocket-core/tree/ethereal-wombat)
+* RC-0.9.2 [Lean Node](https://github.com/pokt-network/pocket-core/tree/staging)
 * [Fix #1457 & Memory enhance](https://github.com/pokt-network/pocket-core/pull/1485)
 * [Feature #1456](https://github.com/pokt-network/pocket-core/pull/1483)
+  * This two PR was already merge for the next big RC of Pocket but due to the v0 was set on a sort of maintenance mode this change will not be release by them.
 
 ### Hardware Requirements
 (we are expecting your feedback on this!)
