@@ -5,7 +5,7 @@
 - [Requirements \& Setup](#requirements--setup)
   - [Godog](#godog)
   - [Pocket Core Executable](#pocket-core-executable)
-  - [POCKET\_EXE env](#pocket_exe-env)
+  - [POCKET_EXE env](#pocket_exe-env)
 - [Running the e2e test suite](#running-the-e2e-test-suite)
   - [tl;dr All at once](#tldr-all-at-once)
   - [Full Suite](#full-suite)

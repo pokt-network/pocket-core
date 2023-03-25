@@ -3,6 +3,7 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"sort"
 	"strconv"
 
@@ -14,6 +15,7 @@ const MerkleHashLength = blake2b.Size256
 func (r Range) Equal(r2 Range) bool {
 	return r.Lower == r2.Lower && r.Upper == r2.Upper
 }
+
 func (r Range) Bytes() []byte {
 	return uint64ToBytes(r.Lower, r.Upper)
 }
@@ -204,7 +206,13 @@ func levelUp(height int64, data []HashRange) (nextLevelData []HashRange, atRoot 
 			continue
 		}
 		// calculate the parent range, the right child upper is new upper
-		data[i/2].Range.Upper = data[i+1].Range.Upper
+		if i >= len(data) {
+			fmt.Println("OLSH - out of range")
+			data[i/2].Range.Upper = data[len(data)-1].Range.Upper
+		} else {
+			fmt.Println("OLSH - in range")
+			data[i/2].Range.Upper = data[i+1].Range.Upper
+		}
 		// the left child lower is new lower
 		data[i/2].Range.Lower = data[i].Range.Lower
 		// calculate the parent merkleHash
