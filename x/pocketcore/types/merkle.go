@@ -3,7 +3,6 @@ package types
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"sort"
 	"strconv"
 
@@ -206,13 +205,7 @@ func levelUp(height int64, data []HashRange) (nextLevelData []HashRange, atRoot 
 			continue
 		}
 		// calculate the parent range, the right child upper is new upper
-		if i >= len(data) {
-			fmt.Println("OLSH - out of range")
-			data[i/2].Range.Upper = data[len(data)-1].Range.Upper
-		} else {
-			fmt.Println("OLSH - in range")
-			data[i/2].Range.Upper = data[i+1].Range.Upper
-		}
+		data[i/2].Range.Upper = data[i+1].Range.Upper
 		// the left child lower is new lower
 		data[i/2].Range.Lower = data[i].Range.Lower
 		// calculate the parent merkleHash
