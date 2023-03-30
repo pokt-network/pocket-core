@@ -74,7 +74,7 @@ func TestApplication_CalculateAppRelays(t *testing.T) {
 			wantSessionRelays:   sdk.NewInt(185695833),
 		},
 		{
-			testName:            "Calculate App relays - standard app w/ params at height=90074",
+			testName:            "Calculate App relays - standard app for 3 chains w/ params at height=90074",
 			appStake:            sdk.NewInt(1000000000), // 1000 POKT
 			appChains:           []string{"0021", "0022", "0023"},
 			stabilityAdjustment: 0,
@@ -83,6 +83,17 @@ func TestApplication_CalculateAppRelays(t *testing.T) {
 			sessionNodeCount:    24,
 			wantAppRelays:       sdk.NewInt(2000000),
 			wantSessionRelays:   sdk.NewInt(27778),
+		},
+		{
+			testName:            "Calculate App relays - standard app for 1 chain w/ params at height=90074",
+			appStake:            sdk.NewInt(1000000000), // 1000 POKT
+			appChains:           []string{"0021"},
+			stabilityAdjustment: 0,
+			baseRelaysPerPOKT:   200000,
+			participationRateOn: false,
+			sessionNodeCount:    24,
+			wantAppRelays:       sdk.NewInt(2000000),
+			wantSessionRelays:   sdk.NewInt(83333),
 		},
 	}
 	for _, tt := range tests {
