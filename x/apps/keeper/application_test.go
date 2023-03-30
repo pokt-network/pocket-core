@@ -1,10 +1,12 @@
 package keeper
 
 import (
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	"reflect"
 	"testing"
+
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/apps/types"
+	coreTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 )
 
 func TestApplication_SetAndGetApplication(t *testing.T) {
@@ -42,25 +44,66 @@ func TestApplication_SetAndGetApplication(t *testing.T) {
 }
 
 func TestApplication_CalculateAppRelays(t *testing.T) {
-	application := getStakedApplication()
-
 	tests := []struct {
-		name        string
-		application types.Application
-		want        sdk.BigInt
+		testName            string
+		appStake            sdk.BigInt // uPOKT
+		appChains           []string
+		stabilityAdjustment int64
+		baseRelaysPerPOKT   int64
+		participationRateOn bool
+		sessionNodeCount    int64
+		wantAppRelays       sdk.BigInt // 1 * (baseRelaysPerPOKT / 100) * (appStake / 1000000) + 0
+		wantSessionRelays   sdk.BigInt // wantAppRelays / numAppChains / sessionNodeCount
 	}{
 		{
-			name:        "calculates App relays",
-			application: application,
-			want:        sdk.NewInt(100000),
+			testName:          "Calculate App relays - default",
+			appStake:          getStakedApplication().StakedTokens, // default
+			sessionNodeCount:  1,
+			wantAppRelays:     sdk.NewInt(100000),
+			wantSessionRelays: sdk.NewInt(100000),
+		},
+		{
+			testName:            "Calculate App relays - param values at height=90074",
+			appStake:            sdk.NewInt(2228350000000),
+			appChains:           []string{"0021"},
+			stabilityAdjustment: 0,
+			baseRelaysPerPOKT:   200000,
+			participationRateOn: false,
+			sessionNodeCount:    24,
+			wantAppRelays:       sdk.NewInt(4456700000),
+			wantSessionRelays:   sdk.NewInt(185695833),
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			context, _, keeper := createTestInput(t, true)
+		t.Run(tt.testName, func(t *testing.T) {
+			ctx, _, keeper := createTestInput(t, true)
+			if tt.stabilityAdjustment != 0 {
+				keeper.Paramstore.Set(ctx, types.StabilityAdjustment, tt.stabilityAdjustment)
+			}
+			if tt.baseRelaysPerPOKT != 0 {
+				keeper.Paramstore.Set(ctx, types.BaseRelaysPerPOKT, tt.baseRelaysPerPOKT)
+			}
+			if tt.participationRateOn {
+				keeper.Paramstore.Set(ctx, types.ParticipationRateOn, tt.participationRateOn)
+			}
 
-			if got := keeper.CalculateAppRelays(context, tt.application); !got.Equal(tt.want) {
-				t.Errorf("Applicaiton.CalculateAppRelays() = got %v, want %v", got, tt.want)
+			application := getStakedApplication()
+			if tt.appStake.IsInt64() {
+				application.StakedTokens = tt.appStake
+			}
+			if tt.appChains != nil {
+				application.Chains = tt.appChains
+			}
+
+			gotAppRelays := keeper.CalculateAppRelays(ctx, application)
+			if !gotAppRelays.Equal(tt.wantAppRelays) {
+				t.Errorf("Application.CalculateAppRelays() = got %v, want %v", gotAppRelays, tt.wantAppRelays)
+			}
+			application.MaxRelays = gotAppRelays
+
+			gotMaxPossibleRelays := coreTypes.MaxPossibleRelays(application, tt.sessionNodeCount)
+			if !gotMaxPossibleRelays.Equal(tt.wantSessionRelays) {
+				t.Errorf("Application.MaxPossibleRelays() = got %v, want %v", gotMaxPossibleRelays, tt.wantSessionRelays)
 			}
 		})
 	}
