@@ -64,7 +64,7 @@ func TestApplication_CalculateAppRelays(t *testing.T) {
 		},
 		{
 			testName:            "Calculate App relays - param values at height=90074",
-			appStake:            sdk.NewInt(2228350000000),
+			appStake:            sdk.NewInt(2228350000000), // maximum app stake found
 			appChains:           []string{"0021"},
 			stabilityAdjustment: 0,
 			baseRelaysPerPOKT:   200000,
