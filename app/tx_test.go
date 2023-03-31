@@ -2,9 +2,11 @@
 package app
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
+	"sync"
 	"testing"
 	"time"
 
@@ -915,7 +917,121 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 	}
 }
 
-func TestChangeParams_BlockByteSize(t *testing.T) {
+// IMPORTANT: This is a hacky test prone to to timing dependencies and global variable
+// modifications, but it is the only way to test the block size feature given Tendermint's
+// consensus engine.
+func TestBlockSize_MaximumSize(t *testing.T) {
+	// Prepare governance parameters
+	blockSizeKey := "pocketcore/BlockByteSize"
+	codec.TestMode = -2
+	codec.UpgradeHeight = 2                               // Upgrade the network codec at height 1
+	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Enable the block size param at height 1
+	_ = memCodecMod(true)
+	resetTestACL()
+
+	// Get the current global values using for testing
+	globalBlockParamsMaxBytes := genesisBlockParamsMaxBytes
+	globalTendermintTimeoutCommit := tendermintTimeoutCommit
+
+	// During cleanup, revert these global values so they are the same everywhere else
+	t.Cleanup(func() {
+		genesisBlockParamsMaxBytes = globalBlockParamsMaxBytes
+		tendermintTimeoutCommit = globalTendermintTimeoutCommit
+	})
+
+	// Set a long timeout commit so we have time to accumulate a lot of transactions
+	tendermintTimeoutCommit = time.Duration(5) * time.Second
+
+	// Set the block size to 5kb (small)
+	genesisBlockParamsMaxBytes = int64(2000)
+
+	// Prepare the test network
+	_, kb, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
+	defer cleanup()
+
+	// Wait for the first block
+	_, _, newBlockEventChan := subscribeTo(t, tmTypes.EventNewBlock)
+	<-newBlockEventChan
+	<-newBlockEventChan
+	<-newBlockEventChan
+
+	fmt.Println("HEIGHT", (PCA.LastBlockHeight()))
+	queryRes, err := PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, "4000000", queryRes.Value)
+
+	// Get the address of the ACL owner (i.e. the DAO)
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+
+	wg := sync.WaitGroup{}
+	wg.Add(10) // 2kb, 4kb and 8kb, ...
+
+	// Send as many transactions as possible in the background
+	ctx2, cancel := context.WithCancel(context.Background())
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// Create a new random keypair
+				kp, err := kb.Create("test")
+				assert.Nil(t, err)
+				// Send funds from the DAO to the new address
+				_, err = nodes.Send(memCodec(), getInMemoryTMClient(), kb, cb.GetAddress(), kp.GetAddress(), "test", sdk.NewInt(10000), false)
+				assert.Nil(t, err)
+			}
+		}
+	}(ctx2)
+	defer cancel()
+
+	// New blocks are created every tendermintTimeoutCommit, so asynchronously capture
+	// new ones in the background to see how the blocks were created.
+	ctx1, cancel := context.WithCancel(context.Background())
+	go func(ctx context.Context) {
+		for {
+			// _, _, newBlockEventChan = subscribeTo(t, tmTypes.EventNewBlock)
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				fmt.Println("HERE")
+				// Wait for block
+				<-newBlockEventChan
+				// time.Sleep(tendermintTimeoutCommit)
+				// Grab all the latest transactions from the block
+				height := PCA.LastBlockHeight()
+				fmt.Println(height)
+				res, err := PCA.QueryAllBlockTxs(height, 0, 100)
+				assert.Nil(t, err)
+				// Check the total size of the transactions
+				total := 0
+				for _, tx := range res.Txs {
+					total += len(tx.Tx)
+				}
+				// Current max value
+				queryRes, err := PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+				assert.Nil(t, err)
+				// Print result
+				fmt.Println("TOTAL", total, len(res.Txs), res.TotalCount, queryRes.Value)
+
+				// Change the parameter
+				genesisBlockParamsMaxBytes *= 2
+				tx, err := gov.ChangeParamsTx(memCodec(), getInMemoryTMClient(), kb, cb.GetAddress(), blockSizeKey, fmt.Sprintf("%d", genesisBlockParamsMaxBytes), "test", 10000, false)
+				assert.Nil(t, err)
+				assert.NotNil(t, tx)
+
+				wg.Done()
+			}
+		}
+	}(ctx1)
+	defer cancel()
+
+	wg.Wait()
+}
+
+func TestBlockSize_ChangeParams(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
 
 	// TODO: Understand why we need this?

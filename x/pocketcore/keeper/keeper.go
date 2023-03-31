@@ -69,10 +69,10 @@ func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
 		// If the block size has changed, update the consensus params
 		if lastBlockSize != currentHeightBlockSize {
 			// Floor the block size to the initial default value
-			if currentHeightBlockSize < types.DefaultBlockByteSize {
-				ctx.Logger().Error("block size is less than default value, this should never happen")
-				return &abci.ConsensusParams{}
-			}
+			// if currentHeightBlockSize < types.DefaultBlockByteSize {
+			// 	ctx.Logger().Error("block size is less than default value, this should never happen")
+			// 	return &abci.ConsensusParams{}
+			// }
 			return &abci.ConsensusParams{
 				Block: &abci.BlockParams{
 					MaxBytes: currentHeightBlockSize,
