@@ -30,7 +30,8 @@ type MeshConfig struct {
 	RelayCacheBackgroundSyncInterval       int    `json:"relay_cache_background_sync_interval"`
 	RelayCacheBackgroundCompactionInterval int    `json:"relay_cache_background_compaction_interval"`
 	// Hot Reload Interval in milliseconds
-	HotReloadInterval int `json:"hot_reload_interval"`
+	KeysHotReloadInterval   int `json:"keys_hot_reload_interval"`
+	ChainsHotReloadInterval int `json:"chains_hot_reload_interval"`
 	// Workers
 	WorkerStrategy     string `json:"worker_strategy"`
 	MaxWorkers         int    `json:"max_workers"`
@@ -44,6 +45,9 @@ type MeshConfig struct {
 	ServicerRetryMaxTimes  int    `json:"servicer_retry_max_times"`
 	ServicerRetryWaitMin   int    `json:"servicer_retry_wait_min"`
 	ServicerRetryWaitMax   int    `json:"servicer_retry_wait_max"`
+
+	// Node Health check interval in seconds
+	NodeCheckInterval int `json:"node_check_interval"`
 }
 
 func defaultMeshConfig(dataDir string) MeshConfig {
@@ -65,7 +69,8 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		RelayCacheBackgroundSyncInterval:       3600,
 		RelayCacheBackgroundCompactionInterval: 18000,
 		// Hot Reload
-		HotReloadInterval: 180000,
+		KeysHotReloadInterval:   180000,
+		ChainsHotReloadInterval: 180000,
 		// Worker
 		WorkerStrategy:     "balanced",
 		MaxWorkers:         10,
@@ -79,6 +84,8 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ServicerRetryMaxTimes:  10,
 		ServicerRetryWaitMin:   5,
 		ServicerRetryWaitMax:   180,
+		// Node Check
+		NodeCheckInterval: 60,
 	}
 
 	return c
