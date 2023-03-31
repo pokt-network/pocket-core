@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/strings"
 	"time"
 
-	"github.com/pokt-network/pocket-core/crypto"
-	abci "github.com/tendermint/tendermint/abci/types"
-
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/strings"
 )
 
 // UpdateTendermintValidators - Apply and return accumulated updates to the staked validator set
@@ -109,48 +108,68 @@ func (k Keeper) UpdateTendermintValidators(ctx sdk.Ctx) (updates []abci.Validato
 }
 
 // ValidateValidatorStaking - Check Validator before staking
-func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator, amount sdk.BigInt, signerAddress sdk.Address) sdk.Error {
+func (k Keeper) ValidateValidatorStaking(
+	ctx sdk.Ctx,
+	validatorNew types.Validator,
+	amount sdk.BigInt,
+	signerAddress sdk.Address,
+) sdk.Error {
+	// check to see if the public key has already been register for that validator
+	validatorCur, found := k.GetValidator(ctx, validatorNew.Address)
 
-	//check the "new" validator's signature validity
-	//will recheck if validator exists
-	err, valid := ValidateValidatorMsgSigner(validator, signerAddress, k)
-	if !valid {
-		return err
+	// Before the upgrade, we validate a signer against the new validator's state
+	// via ValidateValidatorMsgSigner.  After the upgrade, however, we accept
+	// MsgStake signed by the current output address that doesn't appear in the
+	// new validator's state.  So we skip ValidateValidatorMsgSigner if 1) the
+	// current height is after the upgrade, 2) this is an edit-stake changing the
+	// output address, and 3) the signer is the current output address.
+	skipMsgSignerValidation := found &&
+		k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) &&
+		k.Cdc.IsAfterOutputAddressEditorUpgrade(ctx.BlockHeight()) &&
+		validatorNew.Address.Equals(validatorCur.Address) &&
+		validatorNew.OutputAddress != nil &&
+		!validatorCur.OutputAddress.Equals(validatorNew.OutputAddress) &&
+		validatorCur.OutputAddress.Equals(signerAddress)
+
+	if !skipMsgSignerValidation {
+		// check the "new" validator's state first
+		err, valid := ValidateValidatorMsgSigner(validatorNew, signerAddress, k)
+		if !valid {
+			return err
+		}
 	}
 
 	//check that we don't allow nil output if we are after noncustodial upgrade
 	//so we won't accept stakes/edits with nil outputAddress
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
-		if validator.OutputAddress == nil {
+		if validatorNew.OutputAddress == nil {
 			return types.ErrNilOutputAddr(k.codespace)
 		}
 	}
 
 	coin := sdk.NewCoins(sdk.NewCoin(k.StakeDenom(ctx), amount))
 
-	if int64(len(validator.Chains)) > k.MaxChains(ctx) {
+	if int64(len(validatorNew.Chains)) > k.MaxChains(ctx) {
 		return types.ErrTooManyChains(types.ModuleName)
 	}
 
-	// check to see if the public key has already been register for that validator
-	val, found := k.GetValidator(ctx, validator.Address)
 	if found {
-		//check again based on the found "state" validator
-		err, valid := ValidateValidatorMsgSigner(val, signerAddress, k)
+		//check again based on the "current" validator's state
+		err, valid := ValidateValidatorMsgSigner(validatorCur, signerAddress, k)
 		if !valid {
 			return err
 		}
 		// edit stake in 6.X upgrade
-		if ctx.IsAfterUpgradeHeight() && val.IsStaked() {
-			return k.ValidateEditStake(ctx, val, validator, amount, signerAddress)
+		if ctx.IsAfterUpgradeHeight() && validatorCur.IsStaked() {
+			return k.ValidateEditStake(ctx, validatorCur, validatorNew, amount, signerAddress)
 		}
-		if !val.IsUnstaked() { // unstaking or already staked but before the upgrade
+		if !validatorCur.IsUnstaked() { // unstaking or already staked but before the upgrade
 			return types.ErrValidatorStatus(k.codespace)
 		}
 	} else {
 		// check the consensus params
 		if ctx.ConsensusParams() != nil {
-			tmPubKey, err := crypto.CheckConsensusPubKey(validator.PublicKey.PubKey())
+			tmPubKey, err := crypto.CheckConsensusPubKey(validatorNew.PublicKey.PubKey())
 			if err != nil {
 				return types.ErrValidatorPubKeyTypeNotSupported(k.Codespace(),
 					err.Error(),
@@ -171,7 +190,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 			return types.ErrNotEnoughCoins(k.codespace)
 		}
 	} else {
-		if !k.AccountKeeper.HasCoins(ctx, validator.Address, coin) {
+		if !k.AccountKeeper.HasCoins(ctx, validatorNew.Address, coin) {
 			return types.ErrNotEnoughCoins(k.codespace)
 		}
 	}
@@ -179,7 +198,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	return nil
 }
 
-//ValidateValidatorMsgSigner Check Validator Signature
+// ValidateValidatorMsgSigner Check Validator Signature
 func ValidateValidatorMsgSigner(validator types.Validator, signerAddress sdk.Address, k Keeper) (sdk.Error, bool) {
 	//check if outputAddress is defined, if not only the operator/node signature is valid
 	if validator.OutputAddress == nil {
@@ -228,10 +247,17 @@ func (k Keeper) ValidateEditStake(ctx sdk.Ctx, currentValidator, newValidtor typ
 		}
 	}
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
-		// ensure output address doesn't change
-		if currentValidator.OutputAddress != nil {
-			if !newValidtor.OutputAddress.Equals(currentValidator.OutputAddress) {
-				fmt.Println(currentValidator.String())
+		if k.Cdc.IsAfterOutputAddressEditorUpgrade(ctx.BlockHeight()) {
+			// ensure only the current output address owner can change the output address
+			if currentValidator.OutputAddress != nil &&
+				!signer.Equals(currentValidator.OutputAddress) &&
+				!newValidtor.OutputAddress.Equals(currentValidator.OutputAddress) {
+				return types.ErrDisallowedOutputAddressEdit(k.Codespace())
+			}
+		} else {
+			// ensure output address doesn't change
+			if currentValidator.OutputAddress != nil &&
+				!newValidtor.OutputAddress.Equals(currentValidator.OutputAddress) {
 				return types.ErrUnequalOutputAddr(k.Codespace())
 			}
 		}
@@ -297,7 +323,9 @@ func (k Keeper) EditStakeValidator(ctx sdk.Ctx, currentValidator, updatedValidat
 		currentValidator.StakedTokens = currentValidator.StakedTokens.Add(diff)
 	}
 	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) {
-		if currentValidator.OutputAddress == nil {
+		// After the upgrade, we allow output address change
+		if k.Cdc.IsAfterOutputAddressEditorUpgrade(ctx.BlockHeight()) ||
+			currentValidator.OutputAddress == nil {
 			currentValidator.OutputAddress = updatedValidator.OutputAddress
 		}
 	}

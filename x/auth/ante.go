@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"os"
+
 	"github.com/pokt-network/pocket-core/codec"
 	posCrypto "github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
@@ -11,7 +13,6 @@ import (
 	"github.com/pokt-network/pocket-core/x/auth/types"
 	"github.com/tendermint/tendermint/state/txindex"
 	tmTypes "github.com/tendermint/tendermint/types"
-	"os"
 )
 
 // NewAnteHandler returns an AnteHandler that checks signatures and deducts fees from the first signer.
@@ -61,8 +62,18 @@ func ValidateTransaction(ctx sdk.Ctx, k Keeper, stdTx types.StdTx, params Params
 	if res != nil {
 		return nil, types.ErrDuplicateTx(ModuleName, hex.EncodeToString(txHash))
 	}
+
+	validSigners := stdTx.GetSigners()
+	if k.Cdc.IsAfterNonCustodialUpgrade(ctx.BlockHeight()) &&
+		k.Cdc.IsAfterOutputAddressEditorUpgrade(ctx.BlockHeight()) {
+		// MsgStake may be signed by the current output address.  We need to ask
+		// the node keeper to retrieve the current output address.
+		validSigners = append(validSigners,
+			k.POSKeeper.GetMsgStakeOutputSigner(ctx, stdTx.Msg))
+	}
+
 	var pk posCrypto.PublicKey
-	for _, signer := range stdTx.GetSigners() {
+	for _, signer := range validSigners {
 		// attempt to get the public key from the signature
 		if stdTx.GetSignature().GetPublicKey() != "" {
 			var err error

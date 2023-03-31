@@ -1,26 +1,24 @@
 package keeper
 
 import (
-	types2 "github.com/pokt-network/pocket-core/codec/types"
 	"math/rand"
 	"testing"
 
-	"github.com/pokt-network/pocket-core/crypto"
-	"github.com/pokt-network/pocket-core/types/module"
-	"github.com/pokt-network/pocket-core/x/gov"
-	"github.com/pokt-network/pocket-core/x/nodes/exported"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
-	dbm "github.com/tendermint/tm-db"
-
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-
 	"github.com/pokt-network/pocket-core/codec"
+	types2 "github.com/pokt-network/pocket-core/codec/types"
+	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/store"
 	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/auth"
+	"github.com/pokt-network/pocket-core/x/gov"
+	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	tmtypes "github.com/tendermint/tendermint/types"
+	dbm "github.com/tendermint/tm-db"
 )
 
 var (
@@ -133,6 +131,23 @@ func sendFromModuleToAccount(t *testing.T, ctx sdk.Ctx, k *Keeper, module string
 	if err != nil {
 		t.Fail()
 	}
+}
+
+// fundAccount mints new tokens in the stake pool and sends them
+// to the address provided, for testing purposes.
+func fundAccount(
+	ctx sdk.Context,
+	k Keeper,
+	address sdk.Address,
+	coin sdk.Coin,
+) sdk.Error {
+	coins := sdk.NewCoins(coin)
+	if err := k.AccountKeeper.MintCoins(
+		ctx, types.StakedPoolName, coins); err != nil {
+		return err
+	}
+	return k.AccountKeeper.SendCoinsFromModuleToAccount(
+		ctx, types.StakedPoolName, address, coins)
 }
 
 func getRandomPubKey() crypto.Ed25519PublicKey {

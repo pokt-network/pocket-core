@@ -3,13 +3,14 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/pocket-core/types"
-	"github.com/spf13/cobra"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pokt-network/pocket-core/app"
+	"github.com/pokt-network/pocket-core/types"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -93,11 +94,19 @@ var nonCustodialstakeCmd = &cobra.Command{
 	Use:   "non-custodial <operatorPublicKey> <outputAddress> <amount> <RelayChainIDs> <serviceURI> <networkID> <fee> <isBefore8.0>",
 	Short: "Stake a node in the network, non-custodial stake allows a different output address for rewards/return of staked funds. The signer may be the operator or the output address. The signer must specify the public key of the operator",
 	Long: `Stake the node into the network, making it available for service.
-Will prompt the user for the signer account passphrase, fund and fees are collected from signer account. If both accounts are present signer priority is first output then operator. If the node is already staked, this transaction acts as an *update* transaction.
-A node can updated relayChainIDs, serviceURI, and raise the stake amount with this transaction.
-If the node is currently staked at X and you submit an update with new stake Y. Only Y-X will be subtracted from an account
-If no changes are desired for the parameter, just enter the current param value just as before.
-The signer may be the operator or the output address.`,
+Searches the keybase for the operator address, the new output address, and the
+current output address in order and chooses the first address available in the
+keybase as a signer.
+Will prompt the user for the signer account passphrase, fund and fees are
+collected from signer account.  If the node is already staked, this transaction
+acts as an *update* transaction.  A node can update relayChainIDs, serviceURI,
+and raise the stake amount with this transaction.  The output address can be
+changed when the output address is empty or a transaction is signed by the
+current output address.
+If the node is currently staked at X and you submit an update with new stake Y,
+only Y-X will be subtracted from an account.
+If no changes are desired for the parameter, just enter the current param value
+just as before.`,
 	Args: cobra.ExactArgs(8),
 	Run: func(cmd *cobra.Command, args []string) {
 		app.InitConfig(datadir, tmNode, persistentPeers, seeds, remoteCLIURL)

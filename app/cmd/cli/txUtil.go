@@ -5,21 +5,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/app"
 	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"github.com/pokt-network/pocket-core/codec"
 	"github.com/pokt-network/pocket-core/crypto"
 	"github.com/pokt-network/pocket-core/crypto/keys"
-	appsType "github.com/pokt-network/pocket-core/x/apps/types"
-	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
-	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
-	"github.com/tendermint/tendermint/libs/rand"
-
-	//"github.com/pokt-network/pocket-core/crypto/keys/mintkey"
 	sdk "github.com/pokt-network/pocket-core/types"
+	appsType "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth"
 	authTypes "github.com/pokt-network/pocket-core/x/auth/types"
 	govTypes "github.com/pokt-network/pocket-core/x/gov/types"
+	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
+	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/tendermint/tendermint/libs/rand"
 )
 
 // SendTransaction - Deliver Transaction to node
@@ -123,11 +122,41 @@ func LegacyStakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID 
 	}, nil
 }
 
+func getCurrentOutputAddress(operatorAddr sdk.Address) (sdk.Address, error) {
+	j, err := json.Marshal(rpc.HeightAndAddrParams{
+		Height:  0,
+		Address: operatorAddr.String(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	var node nodeTypes.Validator
+	res, err := QueryRPC(GetNodePath, j)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal([]byte(res), &node); err != nil {
+		return nil, err
+	}
+
+	return node.OutputAddress, err
+}
+
+func getFirstAddressAvailableInKeybase(
+	kb keys.Keybase,
+	addresses []sdk.Address,
+) (sdk.Address, bool) {
+	for _, address := range addresses {
+		if kp, err := kb.Get(address); err == nil {
+			return kp.GetAddress(), true
+		}
+	}
+	return sdk.Address{}, false
+}
+
 // StakeNode - Deliver Stake message to node
 func StakeNode(chains []string, serviceURL, operatorPubKey, output, passphrase, chainID string, amount sdk.BigInt, fees int64, isBefore8 bool) (*rpc.SendRawTxParams, error) {
-	var operatorPublicKey crypto.PublicKey
-	var operatorAddress sdk.Address
-	var fromAddress sdk.Address
 	kb, err := app.GetKeybase()
 	if err != nil {
 		return nil, err
@@ -141,23 +170,30 @@ func StakeNode(chains []string, serviceURL, operatorPubKey, output, passphrase, 
 	if err != nil {
 		return nil, err
 	}
-	operatorPublicKey = pbkey
+	operatorPublicKey := pbkey
 
 	outputAddress, err := sdk.AddressFromHex(output)
 	if err != nil {
 		return nil, err
 	}
-	kp, err := kb.Get(outputAddress)
-	if err != nil {
-		operatorAddress = sdk.Address(operatorPublicKey.Address())
-		kp, err = kb.Get(operatorAddress)
-		if err != nil {
-			return nil, errors.New("Neither the Output Address nor the Operator Address is able to be retrieved from the keybase" + err.Error())
-		}
-		fromAddress = kp.GetAddress()
-	} else {
-		fromAddress = outputAddress
+
+	operatorAddress := sdk.Address(operatorPublicKey.Address())
+	validSigners := []sdk.Address{
+		outputAddress,
+		operatorAddress,
 	}
+
+	if outputCur, err := getCurrentOutputAddress(operatorAddress); err == nil {
+		validSigners = append(validSigners, outputCur)
+	}
+
+	fromAddress, found := getFirstAddressAvailableInKeybase(kb, validSigners)
+	if !found {
+		return nil, errors.New(
+			"None of the operator address, the new output address, or the current" +
+				" output address is able to be retrieved from the keybase")
+	}
+
 	m := make(map[string]struct{})
 	for _, chain := range chains {
 		if _, found := m[chain]; found {
