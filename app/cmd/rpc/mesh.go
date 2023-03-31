@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/akrylysov/pogreb"
 	"github.com/alitto/pond"
+	mapset "github.com/deckarep/golang-set/v2"
 	kitlevel "github.com/go-kit/kit/log/level"
 	"github.com/go-kit/kit/log/term"
 	"github.com/hashicorp/go-retryablehttp"
@@ -22,6 +23,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
+	"github.com/xeipuuv/gojsonschema"
 	"io"
 	"io/ioutil"
 	log2 "log"
@@ -34,7 +36,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"syscall"
 	"time"
 )
@@ -44,21 +45,141 @@ const (
 	ServicerHeader          = "X-Servicer"
 	ServicerRelayEndpoint   = "/v1/private/mesh/relay"
 	ServicerSessionEndpoint = "/v1/private/mesh/session"
-	AppVersion              = "RC-0.2.6"
+	ServicerCheckEndpoint   = "/v1/private/mesh/check"
+	AppVersion              = "RC-0.3.0"
 )
 
-type appCache struct {
-	PublicKey       string
-	Chain           string
-	Dispatch        *dispatchResponse
-	RemainingRelays int64
-	IsValid         bool
-	Error           *sdkErrorResponse
+var fallbackNodeFileSchema = `
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "minItems": 1,
+  "uniqueItems": true,
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "priv_key": {
+          "type": "string"
+        },
+        "servicer_url": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "priv_key",
+        "servicer_url"
+      ]
+    }
+  ]
+}
+`
+
+var nodeFileSchema = `
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "minItems": 1,
+  "uniqueItems": true,
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": [
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "keys"
+      ]
+    }
+  ]
+}
+`
+
+type transport struct {
+	http.RoundTripper
 }
 
-type servicerFile struct {
+type reusableReader struct {
+	io.Reader
+	readBuf *bytes.Buffer
+	backBuf *bytes.Buffer
+}
+
+type LevelHTTPLogger struct {
+	retryablehttp.LeveledLogger
+}
+
+// FullNode - represent the pocket client instance running that could handle 1 or N addresses (lean)
+type fullNode struct {
+	URL       string
+	Servicers []*servicer
+	Status    *app.HealthResponse
+	Worker    *pond.WorkerPool
+	Crons     *cron.Cron
+}
+
+// Servicer - represents a staked address read from servicer_private_key_file
+type servicer struct {
+	SessionCache sync.Map
+	PrivateKey   crypto.PrivateKey
+	Address      sdk.Address
+	Node         *fullNode
+}
+
+type nodeFileItem struct {
+	URL  string   `json:"url"`
+	Keys []string `json:"keys"`
+}
+
+type fallbackNodeFileItem struct {
 	PrivateKey  string `json:"priv_key"`
 	ServicerUrl string `json:"servicer_url"`
+}
+
+type sdkErrorResponse struct {
+	Code      sdk.CodeType      `json:"code"`
+	Codespace sdk.CodespaceType `json:"codespace"`
+	Error     string            `json:"message"`
+}
+
+type dispatchSessionNode struct {
+	Address       string          `json:"address"`
+	Chains        []string        `json:"chains"`
+	Jailed        bool            `json:"jailed"`
+	OutputAddress string          `json:"output_address"`
+	PublicKey     string          `json:"public_key"`
+	ServiceUrl    string          `json:"service_url"`
+	Status        sdk.StakeStatus `json:"status"`
+	Tokens        string          `json:"tokens"`
+	UnstakingTime time.Time       `json:"unstaking_time"`
+}
+
+type dispatchSession struct {
+	Header pocketTypes.SessionHeader `json:"header"`
+	Key    string                    `json:"key"`
+	Nodes  []dispatchSessionNode     `json:"nodes"`
+}
+
+// dispatchResponse handle /v1/client/dispatch response due to was unable to inflate it using pocket core struct
+// it was throwing an error about Nodes unmarshalling
+type dispatchResponse struct {
+	BlockHeight int64           `json:"block_height"`
+	Session     dispatchSession `json:"session"`
 }
 
 type meshHealthResponse struct {
@@ -84,61 +205,28 @@ type meshRPCRelayResponse struct {
 	Dispatch *dispatchResponse `json:"dispatch"`
 }
 
-type sdkErrorResponse struct {
-	Code      sdk.CodeType      `json:"code"`
-	Codespace sdk.CodespaceType `json:"codespace"`
-	Error     string            `json:"message"`
+type appSessionCache struct {
+	PublicKey       string
+	Chain           string
+	Dispatch        *dispatchResponse
+	RemainingRelays int64
+	IsValid         bool
+	Error           *sdkErrorResponse
 }
 
-type transport struct {
-	http.RoundTripper
+type meshCheckPayload struct {
+	Servicers []string `json:"servicers"`
+	Chains    []string `json:"chains"`
 }
 
-type reusableReader struct {
-	io.Reader
-	readBuf *bytes.Buffer
-	backBuf *bytes.Buffer
-}
-
-type dispatchSessionNode struct {
-	Address       string          `json:"address"`
-	Chains        []string        `json:"chains"`
-	Jailed        bool            `json:"jailed"`
-	OutputAddress string          `json:"output_address"`
-	PublicKey     string          `json:"public_key"`
-	ServiceUrl    string          `json:"service_url"`
-	Status        sdk.StakeStatus `json:"status"`
-	Tokens        string          `json:"tokens"`
-	UnstakingTime time.Time       `json:"unstaking_time"`
-}
-
-type dispatchSession struct {
-	Header pocketTypes.SessionHeader `json:"header"`
-	Key    string                    `json:"key"`
-	Nodes  []dispatchSessionNode     `json:"nodes"`
-}
-
-// handle /v1/client/dispatch response due to was unable to inflate it using pocket core struct
-// it was throwing an error about Nodes unmarshalling
-type dispatchResponse struct {
-	BlockHeight int64           `json:"block_height"`
-	Session     dispatchSession `json:"session"`
-}
-
-// servicer - represents a node load from servicer_private_key_file
-// also handle status and dedicated worker group.
-type servicer struct {
-	PrivateKey   crypto.PrivateKey
-	Address      sdk.Address
-	ServicerURL  string
-	Status       *app.HealthResponse
-	Crons        *cron.Cron
-	Worker       *pond.WorkerPool
-	SessionCache sync.Map
-}
-
-type LevelHTTPLogger struct {
-	retryablehttp.LeveledLogger
+type meshCheckResponse struct {
+	Success        bool               `json:"success"`
+	Error          *sdkErrorResponse  `json:"error"`
+	Status         app.HealthResponse `json:"status"`
+	Servicers      bool               `json:"servicers"`
+	Chains         bool               `json:"chains"`
+	WrongServicers []string           `json:"wrong_servicers"`
+	WrongChains    []string           `json:"wrong_chains"`
 }
 
 var (
@@ -149,13 +237,13 @@ var (
 	servicerClient    *http.Client
 	relaysClient      *retryablehttp.Client
 	relaysCacheDb     *pogreb.DB
-	servicerPkMap     sync.Map
+	servicerMap       sync.Map
+	nodesMap          sync.Map
 	servicerList      []string
 	chains            *pocketTypes.HostedBlockchains
 	meshAuthToken     sdk.AuthToken
 	servicerAuthToken sdk.AuthToken
 	cronJobs          *cron.Cron
-	interceptorPool   *pond.WorkerPool
 	mutex             = sync.Mutex{}
 	// validate payload
 	//	modulename: pocketcore CodeEmptyPayloadDataError = 25
@@ -318,7 +406,7 @@ func (sn dispatchResponse) Contains(addr sdk.Address) bool {
 		if err != nil {
 			log2.Fatal(err)
 		}
-		if _, ok := servicerPkMap.Load(address); ok {
+		if _, ok := servicerMap.Load(address); ok {
 			return true
 		}
 	}
@@ -329,7 +417,7 @@ func (sn dispatchResponse) Contains(addr sdk.Address) bool {
 func (sn dispatchResponse) ShouldKeep() bool {
 	// loop over the nodes
 	for _, node := range sn.Session.Nodes {
-		if _, ok := servicerPkMap.Load(node.Address); ok {
+		if _, ok := servicerMap.Load(node.Address); ok {
 			return true
 		}
 	}
@@ -343,7 +431,7 @@ func (sn dispatchResponse) GetSupportedNodes() []string {
 	// loop over the nodes
 	for _, node := range sn.Session.Nodes {
 		// There is reference to node address so that way we don't have to recreate address twice for pre-leanpokt
-		if _, ok := servicerPkMap.Load(node.Address); ok {
+		if _, ok := servicerMap.Load(node.Address); ok {
 			nodes = append(nodes, node.Address)
 		}
 	}
@@ -437,7 +525,7 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 
 	requestURL := fmt.Sprintf(
 		"%s%s?authtoken=%s",
-		servicerNode.ServicerURL,
+		servicerNode.Node.URL,
 		ServicerSessionEndpoint,
 		servicerAuthToken.Value,
 	)
@@ -490,15 +578,15 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 }
 
 // getRandomServicer - return a random servicer object from the list load at the start
-func getRandomServicer() *servicer {
+func getRandomNode() *fullNode {
 	mutex.Lock()
 	address := servicerList[rand.Intn(len(servicerList))]
 	mutex.Unlock()
-	s, ok := servicerPkMap.Load(address)
+	s, ok := servicerMap.Load(address)
 	if !ok {
 		return nil
 	}
-	return s.(*servicer)
+	return s.(*servicer).Node
 }
 
 // getServicerAddressFromPubKey - return an address as string from a public key string
@@ -513,8 +601,7 @@ func getServicerAddressFromPubKeyAsString(pubKey string) (string, error) {
 
 // proxyRequest - proxy request to ServicerURL
 func proxyRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	servicerNode := getRandomServicer()
-	serveReverseProxy(servicerNode.ServicerURL, w, r)
+	serveReverseProxy(getRandomNode().URL, w, r)
 }
 
 // updateChains - update chainName file with the retrieve chains value.
@@ -548,7 +635,8 @@ func updateChains(chains []pocketTypes.HostedBlockchain) {
 }
 
 // reloadChains - reload chainsName file
-func reloadChains(chainsPath string) {
+func reloadChains() {
+	chainsPath := getChainsFilePath()
 	// if file exists open, else create and open
 	var jsonFile *os.File
 	var bz []byte
@@ -589,67 +677,122 @@ func reloadChains(chainsPath string) {
 }
 
 // reloadServicers - reload servicersName file
-func reloadServicers(servicersPath string) {
-	if !fileExist(servicersPath) {
-		log2.Println(fmt.Sprintf("servicers file not found at %s; ignoring reload", servicersPath))
-		return
-	}
+func reloadServicers() {
+	nodes, servicers := loadServicersFromFile()
 
-	newServicers := getServicersFromFile()
-	newServicersMap := map[string]bool{}
+	currentNodes := mapset.NewSet[string]()
+	currentServicers := mapset.NewSet[string]()
+	reloadedNodes := mapset.NewSet[string]()
+	reloadedServicers := mapset.NewSet[string]()
 
-	for i := range newServicers {
-		ns := &newServicers[i]
+	nodesMap.Range(func(key, _ any) bool {
+		currentNodes.Add(key.(string))
+		return true
+	})
+	nodes.Range(func(key, _ any) bool {
+		reloadedNodes.Add(key.(string))
+		return true
+	})
+	servicerMap.Range(func(key, _ any) bool {
+		currentServicers.Add(key.(string))
+		return true
+	})
+	servicers.Range(func(key, _ any) bool {
+		reloadedServicers.Add(key.(string))
+		return true
+	})
 
-		pk, err := crypto.NewPrivateKey(ns.PrivateKey)
-		if err != nil {
-			log2.Fatal(fmt.Errorf("error parsing private key at index=%d of the file %s", i, servicersPath))
+	newNodes := reloadedNodes.Difference(currentNodes)
+	newServicers := reloadedServicers.Difference(currentServicers)
+
+	removedNodes := currentNodes.Difference(reloadedNodes)
+	removedServicers := currentServicers.Difference(reloadedServicers)
+
+	orphanServicers := sync.Map{}
+
+	removedNodes.Each(func(s string) bool {
+		if v, ok := nodesMap.LoadAndDelete(s); ok {
+			n := v.(*fullNode)
+			for i := range n.Servicers {
+				address := n.Servicers[i].Address.String()
+				if v, ok := servicerMap.LoadAndDelete(address); ok {
+					// so we can use same servicer if basically was a move from node A to node B
+					orphanServicers.Store(n.Servicers[i].Address.String(), v)
+				}
+			}
+			stopNode(v.(*fullNode))
 		}
-
-		address, err := sdk.AddressFromHex(pk.PubKey().Address().String())
-		if err != nil {
-			log2.Fatal(fmt.Errorf("error getting address from private key at index=%d of the file %s", i, servicersPath))
+		return true
+	})
+	removedServicers.Each(func(address string) bool {
+		if v, ok := servicerMap.LoadAndDelete(address); ok {
+			s := v.(*servicer)
+			for i := range s.Node.Servicers {
+				if s.Node.Servicers[i].Address.String() == address {
+					s.Node.Servicers[i] = s.Node.Servicers[len(s.Node.Servicers)-1]
+					s.Node.Servicers = s.Node.Servicers[:len(s.Node.Servicers)-1]
+				}
+			}
 		}
+		return true
+	})
 
-		addressStr := address.String()
-
-		newServicersMap[addressStr] = true
-	}
-
-	// looking for removed pk if any
-	mutex.Lock()
-	removedAddresses := make([]string, 0)
-	for _, address := range servicerList {
-		if _, ok := newServicersMap[address]; ok {
-			// still there
-			continue
+	newNodes.Each(func(s string) bool {
+		v, _ := nodes.Load(s)
+		// just add it because is new
+		nodesMap.Store(s, v)
+		node := v.(*fullNode)
+		for i := range node.Servicers {
+			address := node.Servicers[i].Address.String()
+			// if servicer was already present previous to reload, set same reference to avoid need to get app session cache
+			if v, ok := servicerMap.Load(address); ok {
+				node.Servicers[i] = v.(*servicer)
+			} else if v, ok := orphanServicers.Load(address); ok {
+				orphanServicers.Delete(address) // remove it from orphans and assign to new node
+				node.Servicers[i] = v.(*servicer)
+			}
 		}
+		node.Crons.Start()
+		return true
+	})
+	newServicers.Each(func(address string) bool {
+		v, _ := servicers.Load(address)
+		servicerMap.Store(address, v)
+		s := v.(*servicer)
+		if n, ok := nodesMap.Load(s.Node.URL); ok {
+			// set the already existent fullNode reference instead of the new one.
+			s.Node = n.(*fullNode)
+		}
+		orphanServicers.Delete(address) // just in case it remain on orphans one.
+		return true
+	})
 
-		removedAddresses = append(removedAddresses, address)
-	}
-	mutex.Unlock()
-
-	// remove servicers
-	removeServicers(removedAddresses)
-
-	// reload servicer keys
-	loadServicerNodes()
+	// run connectivity checks only for the new nodes
+	connectivityChecks(newNodes)
 }
 
 // initHotReload - initialize keys and chains file change detection
-func initHotReload() {
-	chainsPath := getChainsFilePath()
-	servicersPath := getServicersFilePath()
-
-	if app.GlobalMeshConfig.HotReloadInterval <= 0 {
-		logger.Info("skipping hot reload due to hot_reload_interval is less or equal to 0")
+func initChainsHotReload() {
+	if app.GlobalMeshConfig.ChainsHotReloadInterval <= 0 {
+		logger.Info("skipping hot reload due to chains_hot_reload_interval is less or equal to 0")
 		return
 	}
 
 	for {
-		time.Sleep(time.Duration(app.GlobalMeshConfig.HotReloadInterval) * time.Millisecond)
-		reloadChains(chainsPath)
-		reloadServicers(servicersPath)
+		time.Sleep(time.Duration(app.GlobalMeshConfig.ChainsHotReloadInterval) * time.Millisecond)
+		reloadChains()
+	}
+}
+
+func initKeysHotReload() {
+	if app.GlobalMeshConfig.KeysHotReloadInterval <= 0 {
+		logger.Info("skipping hot reload due to keys_hot_reload_interval is less or equal to 0")
+		return
+	}
+
+	for {
+		time.Sleep(time.Duration(app.GlobalMeshConfig.KeysHotReloadInterval) * time.Millisecond)
+		reloadServicers()
 	}
 }
 
@@ -754,10 +897,10 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 }
 
 // LoadAppSession - retrieve from cache (memory or persistent) an app session cache
-func (s *servicer) LoadAppSession(hash []byte) (*appCache, bool) {
+func (s *servicer) LoadAppSession(hash []byte) (*appSessionCache, bool) {
 	sHash := hex.EncodeToString(hash)
 	if v, ok := s.SessionCache.Load(sHash); ok {
-		return v.(*appCache), ok
+		return v.(*appSessionCache), ok
 	}
 
 	return nil, false
@@ -773,7 +916,7 @@ func (s *servicer) LoadAppSession(hash []byte) (*appCache, bool) {
 //}
 
 // StoreAppSession - store in cache (memory and persistent) an appCache
-func (s *servicer) StoreAppSession(hash []byte, appSession *appCache) {
+func (s *servicer) StoreAppSession(hash []byte, appSession *appSessionCache) {
 	hashString := hex.EncodeToString(hash)
 	s.SessionCache.Store(hashString, appSession)
 
@@ -838,7 +981,7 @@ func getServicerFromPubKey(pubKey string) *servicer {
 		return nil
 	}
 
-	s, ok := servicerPkMap.Load(servicerAddress)
+	s, ok := servicerMap.Load(servicerAddress)
 
 	if !ok {
 		logger.Error(
@@ -893,7 +1036,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 		),
 	)
 
-	s, ok := servicerPkMap.Load(servicerAddress)
+	s, ok := servicerMap.Load(servicerAddress)
 
 	if !ok {
 		logger.Error(
@@ -910,7 +1053,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 
 	requestURL := fmt.Sprintf(
 		"%s%s?authtoken=%s&chain=%s&app=%s",
-		servicerNode.ServicerURL,
+		servicerNode.Node.URL,
 		ServicerRelayEndpoint,
 		servicerAuthToken.Value,
 		r.Proof.Blockchain,
@@ -943,8 +1086,8 @@ func notifyServicer(r *pocketTypes.Relay) {
 
 	isSuccess := resp.StatusCode == 200
 
-	if result.Dispatch != nil && result.Dispatch.BlockHeight > servicerNode.Status.Height {
-		servicerNode.Status.Height = result.Dispatch.BlockHeight
+	if result.Dispatch != nil && result.Dispatch.BlockHeight > servicerNode.Node.Status.Height {
+		servicerNode.Node.Status.Height = result.Dispatch.BlockHeight
 	}
 
 	if !isSuccess {
@@ -1022,7 +1165,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 		return sdk.ErrInternal("could not convert servicer hex to public key")
 	}
 	// load servicer from servicer map, if not there maybe the servicer is pk is not loaded
-	if _, ok := servicerPkMap.Load(servicerAddress); !ok {
+	if _, ok := servicerMap.Load(servicerAddress); !ok {
 		return pocketTypes.NewInvalidSessionError(ModuleName)
 	}
 
@@ -1048,7 +1191,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 
 		isValid := result.Success && remainingRelays > 0 && result.Error == nil
 
-		servicerNode.StoreAppSession(header.Hash(), &appCache{
+		servicerNode.StoreAppSession(header.Hash(), &appSessionCache{
 			PublicKey:       header.ApplicationPubKey,
 			Chain:           header.Chain,
 			Dispatch:        result.Dispatch,
@@ -1180,7 +1323,7 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 		return nil, sdk.ErrInternal("could not convert servicer hex to public key")
 	}
 
-	s, ok := servicerPkMap.Load(servicerAddress)
+	s, ok := servicerMap.Load(servicerAddress)
 	if !ok {
 		return nil, sdk.ErrInternal("failed to find correct servicer PK")
 	}
@@ -1230,22 +1373,22 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 		return nil, nil, errors.New("could not convert servicer hex to public key")
 	}
 
-	s, ok := servicerPkMap.Load(servicerAddress)
+	s, ok := servicerMap.Load(servicerAddress)
 	if !ok {
 		return nil, nil, errors.New("failed to find correct servicer PK")
 	}
 
 	servicerNode := s.(*servicer)
 
-	if servicerNode.Status == nil {
+	if servicerNode.Node.Status == nil {
 		return nil, nil, fmt.Errorf("pocket node is currently unavailable")
 	}
 
-	if servicerNode.Status.IsStarting {
+	if servicerNode.Node.Status.IsStarting {
 		return nil, nil, fmt.Errorf("pocket node is unable to retrieve synced status from tendermint node, cannot service in this state")
 	}
 
-	if servicerNode.Status.IsCatchingUp {
+	if servicerNode.Node.Status.IsCatchingUp {
 		return nil, nil, fmt.Errorf("pocket node is currently syncing to the blockchain, cannot service in this state")
 	}
 
@@ -1303,13 +1446,13 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	}
 
 	// add to task group pool
-	if servicerNode.Worker.Stopped() {
+	if servicerNode.Node.Worker.Stopped() {
 		// this should not happen, but just in case avoid a panic here.
-		logger.Error(fmt.Sprintf("Worker of servicer %s was already stopped", servicerNode.Address.String()))
+		logger.Error(fmt.Sprintf("Worker of node %s was already stopped", servicerNode.Node.URL))
 		return
 	}
 
-	servicerNode.Worker.Submit(func() {
+	servicerNode.Node.Worker.Submit(func() {
 		notifyServicer(r)
 	})
 
@@ -1479,13 +1622,6 @@ func meshServicerNodeRelay(w http.ResponseWriter, r *http.Request, ps httprouter
 			Dispatch: nil,
 		}
 
-		address := r.URL.Query().Get("address")
-		if err := checkAddressIsSupported(address); err != nil {
-			response.Success = false
-			response.Error = err
-			code = 400
-		}
-
 		j, _ := json.Marshal(response)
 		WriteJSONResponseWithCode(w, string(j), r.URL.Path, r.Host, code)
 		return
@@ -1545,13 +1681,6 @@ func meshServicerNodeSession(w http.ResponseWriter, r *http.Request, ps httprout
 			Dispatch: nil,
 		}
 
-		address := r.URL.Query().Get("address")
-		if err := checkAddressIsSupported(address); err != nil {
-			response.Success = false
-			response.Error = newSdkErrorFromPocketSdkError(sdk.ErrInternal(err.Error()))
-			code = 400
-		}
-
 		j, _ := json.Marshal(response)
 		WriteJSONResponseWithCode(w, string(j), r.URL.Path, r.Host, code)
 		return
@@ -1606,6 +1735,75 @@ func meshServicerNodeSession(w http.ResponseWriter, r *http.Request, ps httprout
 		Dispatch:        &dispatch,
 		RemainingRelays: json.Number(strconv.FormatInt(res.RemainingRelays, 10)),
 	}
+	j, er := json.Marshal(response)
+	if er != nil {
+		WriteErrorResponse(w, 400, er.Error())
+		return
+	}
+
+	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
+}
+
+// meshServicerNodeCheck - receive requests from mesh node to validate servicers, chains and health status
+func meshServicerNodeCheck(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var checkPayload meshCheckPayload
+
+	token := r.URL.Query().Get("authtoken")
+	if token != app.AuthToken.Value {
+		WriteErrorResponse(w, 401, "wrong authtoken: "+token)
+		return
+	}
+
+	verify := r.URL.Query().Get("verify")
+	// useful just to test that mesh node is able to reach servicer - this payload should be ignored
+	if verify == "true" {
+		code := 200
+		j, _ := json.Marshal(map[string]interface{}{})
+		WriteJSONResponseWithCode(w, string(j), r.URL.Path, r.Host, code)
+		return
+	}
+
+	if err := PopModel(w, r, ps, &checkPayload); err != nil {
+		WriteErrorResponse(w, 400, err.Error())
+		return
+	}
+
+	chainsMap, err := app.PCA.QueryHostedChains()
+	health := app.PCA.QueryHealth(APIVersion)
+
+	if err != nil {
+		response := meshRPCSessionResult{
+			Success: false,
+			Error:   newSdkErrorFromPocketSdkError(sdk.ErrInternal(err.Error())),
+		}
+		j, _ := json.Marshal(response)
+		WriteJSONResponseWithCode(w, string(j), r.URL.Path, r.Host, 400)
+		return
+	}
+
+	response := meshCheckResponse{
+		Success:        true,
+		Status:         health,
+		Servicers:      true,
+		Chains:         true,
+		WrongServicers: make([]string, 0),
+		WrongChains:    make([]string, 0),
+	}
+
+	for _, address := range checkPayload.Servicers {
+		if err := checkAddressIsSupported(address); err != nil {
+			response.Servicers = false
+			response.WrongServicers = append(response.WrongServicers, address)
+		}
+	}
+
+	for _, chain := range checkPayload.Chains {
+		if _, ok := chainsMap[chain]; !ok {
+			response.Chains = false
+			response.WrongChains = append(response.WrongChains, chain)
+		}
+	}
+
 	j, er := json.Marshal(response)
 	if er != nil {
 		WriteErrorResponse(w, 400, er.Error())
@@ -1776,10 +1974,195 @@ func getMeshRoutes(simulation bool) Routes {
 	return routes
 }
 
-// checkServicerHealth - check server /v1/health endpoint
-func checkServicerHealth(servicerNode *servicer) error {
-	requestURL := fmt.Sprintf("%s/v1/health", servicerNode.ServicerURL)
-	req, err := http.NewRequest("GET", requestURL, nil)
+// runNodeCheck - check server /v1/health endpoint
+//func checkServicerHealth(servicerNode *servicer) error {
+//	requestURL := fmt.Sprintf("%s/v1/health", servicerNode.ServicerURL)
+//	req, err := http.NewRequest("GET", requestURL, nil)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if app.GlobalMeshConfig.UserAgent != "" {
+//		req.Header.Set("User-Agent", app.GlobalMeshConfig.UserAgent)
+//	}
+//	resp, err := servicerClient.Do(req)
+//
+//	if err != nil {
+//		return err
+//	}
+//
+//	defer func(Body io.ReadCloser) {
+//		err := Body.Close()
+//		if err != nil {
+//			return // add log here
+//		}
+//	}(resp.Body)
+//
+//	if resp.StatusCode != 200 || !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
+//		if resp.StatusCode != 200 {
+//			err = errors.New(fmt.Sprintf("servicer %s is returning a non 200 code response from /v1/health", servicerNode.Address.String()))
+//		} else {
+//			err = errors.New(fmt.Sprintf("servicer %s is returning a non json response from /v1/health", servicerNode.Address.String()))
+//		}
+//
+//		return err
+//	}
+//
+//	res := &app.HealthResponse{}
+//	err = json.NewDecoder(resp.Body).Decode(&res)
+//	if err != nil {
+//		return err
+//	}
+//
+//	servicerNode.Status = res
+//
+//	return nil
+//}
+
+// checkNodeEndpoint - check node endpoint
+func checkNodeEndpoint(node *fullNode, endpoint string) error {
+	requestURL := fmt.Sprintf(
+		"%s%s?authtoken=%s&verify=true",
+		node.URL,
+		endpoint,
+		servicerAuthToken.Value,
+	)
+	req, err := http.NewRequest("POST", requestURL, nil)
+	req.Header.Set("Content-Type", "application/json")
+	if app.GlobalMeshConfig.UserAgent != "" {
+		req.Header.Set("User-Agent", app.GlobalMeshConfig.UserAgent)
+	}
+	resp, err := servicerClient.Do(req)
+
+	if err != nil {
+		return err
+	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	}(resp.Body)
+
+	isSuccess := resp.StatusCode == 200
+
+	if !isSuccess {
+		return errors.New(
+			fmt.Sprintf(
+				"error=StatusCode != 200 code=%d",
+				resp.StatusCode,
+			),
+		)
+	}
+
+	return nil
+}
+
+// connectivityChecks - run check over critical endpoints that mesh node need to be able to reach on servicer
+func connectivityChecks(onlyFor mapset.Set[string]) {
+	logger.Info("start connectivity checks")
+	totalNodes := 0
+	nodesMap.Range(func(key, value any) bool {
+		totalNodes++
+		return true
+	})
+	connectivityWorkerPool := pond.New(
+		totalNodes, 0, pond.MinWorkers(100),
+		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
+		pond.Strategy(pond.Eager()),
+	)
+
+	var success uint32
+
+	endpoints := []string{ServicerRelayEndpoint, ServicerSessionEndpoint, ServicerCheckEndpoint}
+
+	// check health for all the servicer nodes before start.
+	nodesMap.Range(func(key, value any) bool {
+		node := value.(*fullNode)
+		for _, endpoint := range endpoints {
+			connectivityWorkerPool.Submit(func() {
+				ep := endpoint
+				e := checkNodeEndpoint(node, ep)
+				if e != nil {
+					// any connectivity error with the node will stop this mesh client
+					log2.Fatal(fmt.Sprintf("unable to reach node %s at endpoint %s. error: %s", node.URL, ep, e.Error()))
+				}
+				success++
+			})
+		}
+		return true
+	})
+
+	// Wait for all HTTP requests to complete.
+	connectivityWorkerPool.StopAndWait()
+
+	if success == 0 {
+		logger.Error(fmt.Sprintf("any node was able to be reach at endpoints: %s", strings.Join(endpoints[:], ",")))
+		log2.Fatal(fmt.Sprintf("nodes=%d; reachable=%d", totalNodes, success))
+	}
+
+	if int(success) != totalNodes*len(endpoints) {
+		logger.Error(fmt.Sprintf("IMPORTANT!!! few endpoints on nodes are not reachable"))
+		logger.Error("you should stop this and fix the connectivity before continue")
+	}
+
+	firstCheckWorker := pond.New(
+		totalNodes, 0, pond.MinWorkers(100),
+		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
+		pond.Strategy(pond.Eager()),
+	)
+
+	nodesMap.Range(func(key, value any) bool {
+		node := value.(*fullNode)
+		// it will not kill the process because sometimes there is errors on the node side that are solved without
+		// need to restart mesh client, like routing one.
+		firstCheckWorker.Submit(func() {
+			// run first time node check
+			e := runNodeCheck(node)
+			if e != nil {
+				logger.Error(fmt.Sprintf("node %s fail check with: %s", node.URL, e.Error()))
+			}
+		})
+
+		// start crons - for the next checks
+		node.Crons.Start()
+
+		return true
+	})
+
+	logger.Info("connectivity check done")
+}
+
+// runNodeCheck - check server /v1/health endpoint
+func runNodeCheck(node *fullNode) error {
+	logger.Debug(fmt.Sprintf("running node %s check", node.URL))
+	servicers := make([]string, 0)
+	for _, s := range node.Servicers {
+		servicers = append(servicers, s.Address.String())
+	}
+	payload := meshCheckPayload{
+		Servicers: servicers,
+		Chains:    make([]string, 0),
+	}
+
+	for _, chain := range chains.M {
+		payload.Chains = append(payload.Chains, chain.ID)
+	}
+
+	jsonData, e := json.Marshal(payload)
+	if e != nil {
+		return e
+	}
+
+	requestURL := fmt.Sprintf(
+		"%s%s?authtoken=%s",
+		node.URL,
+		ServicerCheckEndpoint,
+		servicerAuthToken.Value,
+	)
+	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
@@ -1802,153 +2185,42 @@ func checkServicerHealth(servicerNode *servicer) error {
 
 	if resp.StatusCode != 200 || !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
 		if resp.StatusCode != 200 {
-			err = errors.New(fmt.Sprintf("servicer %s is returning a non 200 code response from /v1/health", servicerNode.Address.String()))
+			err = errors.New(fmt.Sprintf("node is returning a non 200 code response from %s", requestURL))
 		} else {
-			err = errors.New(fmt.Sprintf("servicer %s is returning a non json response from /v1/health", servicerNode.Address.String()))
+			err = errors.New(fmt.Sprintf("node is returning a non json response from %s", requestURL))
 		}
 
 		return err
 	}
 
-	res := &app.HealthResponse{}
+	res := &meshCheckResponse{}
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
 		return err
 	}
 
-	servicerNode.Status = res
+	node.Status = &res.Status
 
-	return nil
-}
-
-// checkNotifyServicerEndpoint - check servicer ServicerRelayEndpoint endpoint
-func checkServicerEndpoint(servicerNode *servicer, endpoint string) error {
-	requestURL := fmt.Sprintf(
-		"%s%s?authtoken=%s&verify=true&address=%s",
-		servicerNode.ServicerURL,
-		endpoint,
-		servicerAuthToken.Value,
-		servicerNode.Address.String(),
-	)
-	req, err := http.NewRequest("POST", requestURL, nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(ServicerHeader, servicerNode.Address.String())
-	if app.GlobalMeshConfig.UserAgent != "" {
-		req.Header.Set("User-Agent", app.GlobalMeshConfig.UserAgent)
-	}
-	resp, err := servicerClient.Do(req)
-
-	if err != nil {
-		return errors.New(
-			fmt.Sprintf(
-				"error verifying %s connectivity for servicer %s error=%s",
-				endpoint,
-				servicerNode.Address.String(),
-				err.Error(),
-			),
-		)
+	if len(res.WrongChains) > 0 {
+		return errors.New(fmt.Sprintf("unable to validate following chains: %s", strings.Join(res.WrongChains[:], ",")))
 	}
 
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-	}(resp.Body)
-
-	isSuccess := resp.StatusCode == 200
-
-	if !isSuccess {
-		return errors.New(
-			fmt.Sprintf(
-				"error verifying %s connectivity for servicer %s error=non 200 code code=%d",
-				endpoint,
-				servicerNode.Address.String(),
-				resp.StatusCode,
-			),
-		)
+	if len(res.WrongServicers) > 0 {
+		return errors.New(fmt.Sprintf("unable to validate following servicers: %s", strings.Join(res.WrongServicers[:], ",")))
 	}
 
 	return nil
 }
 
-// connectivityChecks - run check over critical endpoints that mesh node need to be able to reach on servicer
-func connectivityChecks() {
-	logger.Info("start connectivity checks")
-	mutex.Lock()
-	totalServicers := len(servicerList)
-	mutex.Unlock()
-	connectivityWorkerPool := pond.New(
-		totalServicers, 0, pond.MinWorkers(10),
-		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
-		pond.Strategy(pond.Eager()),
-	)
-
-	var success uint32
-
-	// check health for all the servicer nodes before start.
-	servicerPkMap.Range(func(key, value any) bool {
-		servicerNode := value.(*servicer)
-		connectivityWorkerPool.Submit(func() {
-			e1 := checkServicerEndpoint(servicerNode, ServicerRelayEndpoint)
-			e2 := checkServicerEndpoint(servicerNode, ServicerSessionEndpoint)
-			if e1 != nil {
-				logger.Error(e1.Error())
-			}
-			if e2 != nil {
-				logger.Error(e2.Error())
-			}
-			atomic.AddUint32(&success, 1)
-			return
-		})
-		return true
-	})
-
-	// Wait for all HTTP requests to complete.
-	connectivityWorkerPool.StopAndWait()
-
-	if success == 0 {
-		logger.Error(fmt.Sprintf("any servicer was able to be reach at %s", ServicerRelayEndpoint))
-		log2.Fatal(fmt.Sprintf("servicers=%d; reachable=%d", totalServicers, success))
-	}
-
-	if int(success) != totalServicers {
-		logger.Error(fmt.Sprintf("IMPORTANT!!! %d servicer are not reachable at %s", totalServicers-int(success), ServicerRelayEndpoint))
-		logger.Error("you should stop this and fix the connectivity before continue")
-	}
-	logger.Info("connectivity check pass")
-}
-
-// nodeHealthStatusPooling - schedule a node heal pooling
-func nodeHealthStatusPooling(c *cron.Cron, servicerNode *servicer) {
-	e := checkServicerHealth(servicerNode)
-	if e != nil {
-		logger.Error(
-			fmt.Sprintf(
-				"servicer %s failed health check at: GET %s/v1/health error=%s",
-				servicerNode.Address,
-				servicerNode.ServicerURL,
-				e.Error(),
-			),
-		)
-	}
-
-	_, err := c.AddFunc("@every 60s", func() {
-		value, ok := servicerPkMap.Load(servicerNode.Address.String())
-		if !ok {
-			log2.Fatal(fmt.Sprintf("unable to load %s from servicers", servicerNode.Address.String()))
-		}
-
-		servicerNode := value.(*servicer)
-
-		e := checkServicerHealth(servicerNode)
+// scheduleNodeChecks - schedule a node heal pooling
+func scheduleNodeChecks(c *cron.Cron, node *fullNode) {
+	_, err := c.AddFunc(fmt.Sprintf("@every %ds", app.GlobalMeshConfig.NodeCheckInterval), func() {
+		e := runNodeCheck(node)
 		if e != nil {
 			logger.Error(
 				fmt.Sprintf(
-					"servicer %s failed health check at: GET %s/v1/health error=%s",
-					servicerNode.Address,
-					servicerNode.ServicerURL,
+					"node %s failed check with error=%s",
+					node.URL,
 					e.Error(),
 				),
 			)
@@ -1963,10 +2235,10 @@ func nodeHealthStatusPooling(c *cron.Cron, servicerNode *servicer) {
 // cleanOldSessions - clean up sessions that are longer than 50 blocks (just to be sure they are not needed)
 func cleanOldSessions(c *cron.Cron) {
 	_, err := c.AddFunc("@every 30m", func() {
-		servicerPkMap.Range(func(_, sn any) bool {
+		servicerMap.Range(func(_, sn any) bool {
 			servicerNode := sn.(*servicer)
 			servicerNode.SessionCache.Range(func(key any, ss any) bool {
-				appSession := ss.(*appCache)
+				appSession := ss.(*appSessionCache)
 				hash, err := hex.DecodeString(key.(string))
 				if err != nil {
 					logger.Error("error decoding session hash to delete from cache " + err.Error())
@@ -1975,7 +2247,7 @@ func cleanOldSessions(c *cron.Cron) {
 
 				if appSession.Dispatch == nil {
 					servicerNode.DeleteAppSession(hash)
-				} else if appSession.Dispatch.Session.Header.SessionBlockHeight < (servicerNode.Status.Height - 6) {
+				} else if appSession.Dispatch.Session.Header.SessionBlockHeight < (servicerNode.Node.Status.Height - 6) {
 					servicerNode.DeleteAppSession(hash)
 				}
 
@@ -2000,82 +2272,185 @@ func getServicersFilePath() string {
 	return app.GlobalMeshConfig.DataDir + app.FS + app.GlobalMeshConfig.ServicerPrivateKeyFile
 }
 
-func getServicersFromFile() []servicerFile {
+// createNode - returns a fullNode instance
+func createNode(url string) *fullNode {
+	nodeCronJobsWorker := cron.New()
+
+	nodeWorker := newWorker(fmt.Sprintf("Node Worker of %s", url))
+
+	node := &fullNode{
+		URL:       url,
+		Servicers: make([]*servicer, 0),
+		Status:    nil,
+		Worker:    nodeWorker,
+		Crons:     nodeCronJobsWorker,
+	}
+
+	scheduleNodeChecks(nodeCronJobsWorker, node)
+
+	return node
+}
+
+// loadServicersFromFile return a sync.Map of nodes/servicers that could be used to start working or calculate a reload
+func loadServicersFromFile() (nodes sync.Map, servicers sync.Map) {
 	path := getServicersFilePath()
 	logger.Info("reading private key path=" + path)
-	var readServicers []servicerFile
+
+	fallbackSchemaLoader := gojsonschema.NewSchemaLoader()
+	fallbackSchemaStringLoader := gojsonschema.NewStringLoader(fallbackNodeFileSchema)
+	fallbackSchema, fallbackSchemaError := fallbackSchemaLoader.Compile(fallbackSchemaStringLoader)
+	if fallbackSchemaError != nil {
+		log2.Fatal(fmt.Errorf("an error occurred loading fallback json schema: %s", fallbackSchemaError.Error()))
+	}
+
+	currentSchemaLoader := gojsonschema.NewSchemaLoader()
+	currentSchemaStringLoader := gojsonschema.NewStringLoader(nodeFileSchema)
+	currentSchema, currentSchemaError := currentSchemaLoader.Compile(currentSchemaStringLoader)
+	if currentSchemaError != nil {
+		log2.Fatal(fmt.Errorf("an error occurred loading json schema: %s", currentSchemaError.Error()))
+	}
+
 	data, err := os.ReadFile(path)
 	if err != nil {
 		log2.Fatal(fmt.Errorf("an error occurred attempting to read the servicer key file: %s", err.Error()))
 	}
 
-	if err := json.Unmarshal(data, &readServicers); err != nil {
-		log2.Fatal(fmt.Errorf("an error occurred attempting to parse the servicer key file: %s", err.Error()))
+	strData := gojsonschema.NewStringLoader(string(data[:]))
+
+	if r, e := fallbackSchema.Validate(strData); e != nil || len(r.Errors()) > 0 {
+		if r2, e2 := currentSchema.Validate(strData); e2 != nil || len(r2.Errors()) > 0 {
+			log2.Fatal(fmt.Errorf("unable to parse file %s to any of the supported key schemas", path))
+		} else {
+			var readServicers []nodeFileItem
+			// load servicers with new format
+			if err := json.Unmarshal(data, &readServicers); err != nil {
+				log2.Fatal(fmt.Errorf("an error occurred attempting to parse the servicer key file: %s", err.Error()))
+			}
+
+			for _, n := range readServicers {
+				var node *fullNode
+
+				if v, ok := nodes.Load(n.URL); !ok {
+					node = createNode(n.URL)
+					nodes.Store(n.URL, node)
+				} else {
+					node = v.(*fullNode)
+				}
+
+				for index, pkStr := range n.Keys {
+					pk, err := crypto.NewPrivateKey(pkStr)
+					if err != nil {
+						log2.Fatal(fmt.Errorf("error parsing private key on node=%s index=%d of the file %s", n.URL, index, path))
+					}
+
+					address, err := sdk.AddressFromHex(pk.PubKey().Address().String())
+					if err != nil {
+						log2.Fatal(fmt.Errorf("error getting address from private key on node=%s index=%d of the file %s", n.URL, index, path))
+					}
+
+					addressStr := address.String()
+
+					if v, ok := servicers.Load(addressStr); ok {
+						servicer := v.(*servicer)
+						node.Servicers = append(node.Servicers, servicer)
+					} else {
+						servicer := &servicer{
+							SessionCache: sync.Map{},
+							PrivateKey:   pk,
+							Address:      address,
+							Node:         node,
+						}
+						servicers.Store(addressStr, servicer)
+						node.Servicers = append(node.Servicers, servicer)
+					}
+				}
+			}
+		}
+	} else {
+		// load servicer with fallback one.
+		var readServicers []fallbackNodeFileItem
+		// load servicers with new format
+		if err := json.Unmarshal(data, &readServicers); err != nil {
+			log2.Fatal(fmt.Errorf("an error occurred attempting to parse the servicer key file: %s", err.Error()))
+		}
+
+		for index, n := range readServicers {
+			var node *fullNode
+
+			if v, ok := nodes.Load(n.ServicerUrl); !ok {
+				node = createNode(n.ServicerUrl)
+				nodes.Store(n.ServicerUrl, node)
+			} else {
+				node = v.(*fullNode)
+			}
+
+			pk, err := crypto.NewPrivateKey(n.PrivateKey)
+			if err != nil {
+				log2.Fatal(fmt.Errorf("error parsing private key on node=%s index=%d of the file %s", n.ServicerUrl, index, path))
+			}
+
+			address, err := sdk.AddressFromHex(pk.PubKey().Address().String())
+			if err != nil {
+				log2.Fatal(fmt.Errorf("error getting address from private key on node=%s index=%d of the file %s", n.ServicerUrl, index, path))
+			}
+
+			addressStr := address.String()
+
+			if v, ok := servicers.Load(addressStr); ok {
+				servicer := v.(*servicer)
+				node.Servicers = append(node.Servicers, servicer)
+			} else {
+				servicer := &servicer{
+					SessionCache: sync.Map{},
+					PrivateKey:   pk,
+					Address:      address,
+					Node:         node,
+				}
+				servicers.Store(addressStr, servicer)
+				node.Servicers = append(node.Servicers, servicer)
+			}
+		}
 	}
 
-	return readServicers
+	return
 }
 
 // loadServicerNodes - read servicer address and cast to sdk.Address
-func loadServicerNodes() int {
-	servicersPath := getServicersFilePath()
+func loadServicerNodes() (totalNodes, totalServicers int) {
+	nodes, servicers := loadServicersFromFile()
 
-	readServicers := getServicersFromFile()
-	if len(readServicers) == 0 {
-		log2.Fatal(fmt.Errorf("read 0 servicers from servicer key file: %s", servicersPath))
-	}
+	nodes.Range(func(key, value any) bool {
+		nodesMap.Store(key, value)
+		return true
+	})
+
+	servicers.Range(func(key, value any) bool {
+		nodesMap.Store(key, value)
+		return true
+	})
 
 	loadedServicerList := make([]string, 0)
+	loadedNodeList := make([]string, 0)
 
-	for i, s := range readServicers {
-		pk, err := crypto.NewPrivateKey(s.PrivateKey)
-		if err != nil {
-			log2.Fatal(fmt.Errorf("error parsing private key at index=%d of the file %s", i, servicersPath))
-		}
+	servicerMap.Range(func(key, value any) bool {
+		s := value.(*servicer)
+		loadedServicerList = append(loadedServicerList, s.Address.String())
+		return true
+	})
 
-		address, err := sdk.AddressFromHex(pk.PubKey().Address().String())
-		if err != nil {
-			log2.Fatal(fmt.Errorf("error getting address from private key at index=%d of the file %s", i, servicersPath))
-		}
+	nodesMap.Range(func(key, value any) bool {
+		node := value.(*fullNode)
+		loadedNodeList = append(loadedNodeList, node.URL)
+		return true
+	})
 
-		addressStr := address.String()
-
-		if _, ok := servicerPkMap.Load(addressStr); !ok {
-			logger.Info(fmt.Sprintf("initializing servicer %s health cron job", addressStr))
-			servicerCronJobs := cron.New()
-
-			sRecord := servicer{
-				PrivateKey:  pk,
-				Address:     address,
-				ServicerURL: s.ServicerUrl,
-				Status: &app.HealthResponse{
-					IsStarting:   true,
-					IsCatchingUp: true,
-					Height:       1,
-				},
-				Crons:        servicerCronJobs,
-				Worker:       newWorker(fmt.Sprintf("Notify Servicer %s", addressStr)),
-				SessionCache: sync.Map{},
-			}
-
-			servicerPkMap.Store(addressStr, &sRecord)
-
-			// check node status before start and schedule job
-			nodeHealthStatusPooling(servicerCronJobs, &sRecord)
-
-			servicerCronJobs.Start()
-			logger.Info(fmt.Sprintf("servicer %s health cron job started", addressStr))
-		}
-
-		loadedServicerList = append(loadedServicerList, addressStr)
-	}
-
-	totalServicers := len(loadedServicerList)
+	totalNodes = len(loadedNodeList)
+	totalServicers = len(loadedServicerList)
 	mutex.Lock()
 	servicerList = loadedServicerList
 	mutex.Unlock()
 
-	return totalServicers
+	return
 }
 
 // removeServicers - stop receiving work for them and remove after that.
@@ -2090,7 +2465,7 @@ func removeServicers(servicers []string) {
 		)
 	}
 	for _, address := range servicers {
-		s, ok := servicerPkMap.LoadAndDelete(address)
+		s, ok := servicerMap.LoadAndDelete(address)
 
 		if !ok {
 			// is not there
@@ -2104,8 +2479,20 @@ func removeServicers(servicers []string) {
 				getServicersFilePath(),
 			),
 		)
-		servicerNode.Crons.Stop()
-		servicerNode.Worker.StopAndWait()
+		var matchIndex int
+		for i := range servicerNode.Node.Servicers {
+			if servicerNode.Node.Servicers[i].Address.String() == servicerNode.Address.String() {
+				matchIndex = i
+				break
+			}
+		}
+		// faster way than iterate over all the elements; we do not care about sort here.
+		// ------------------------------------------------------------------------------
+		// replace removed element with the last one
+		servicerNode.Node.Servicers[matchIndex] = servicerNode.Node.Servicers[len(servicerNode.Node.Servicers)-1]
+		// reassign array with the new one without last entry
+		servicerNode.Node.Servicers = servicerNode.Node.Servicers[:len(servicerNode.Node.Servicers)-1]
+
 		logger.Info(
 			fmt.Sprintf(
 				"servicer %s successfuly drained and removed",
@@ -2369,7 +2756,7 @@ func initCache() {
 				continue
 			}
 
-			s, ok := servicerPkMap.Load(servicerAddress)
+			s, ok := servicerMap.Load(servicerAddress)
 			if !ok {
 				logger.Debug(
 					fmt.Sprintf(
@@ -2395,7 +2782,7 @@ func initCache() {
 				continue
 			}
 
-			servicerNode.Worker.Submit(func() {
+			servicerNode.Node.Worker.Submit(func() {
 				notifyServicer(relay)
 			})
 		}
@@ -2420,9 +2807,20 @@ func GetServicerMeshRoutes() Routes {
 	routes := Routes{
 		{Name: "MeshRelay", Method: "POST", Path: ServicerRelayEndpoint, HandlerFunc: meshServicerNodeRelay},
 		{Name: "MeshSession", Method: "POST", Path: ServicerSessionEndpoint, HandlerFunc: meshServicerNodeSession},
+		{Name: "MeshCheck", Method: "POST", Path: ServicerCheckEndpoint, HandlerFunc: meshServicerNodeCheck},
 	}
 
 	return routes
+}
+
+func stopNode(node *fullNode) {
+	logger.Debug(fmt.Sprintf("stopping worker pool of node %s", node.URL))
+	node.Worker.Stop()
+	logger.Debug(fmt.Sprintf("worker pool of node %s stopped!", node.URL))
+
+	logger.Debug(fmt.Sprintf("stopping health cron job of node %s", node.URL))
+	node.Crons.Stop()
+	logger.Debug(fmt.Sprintf("check cron job of node %s stopped!", node.URL))
 }
 
 // StopMeshRPC - stop http server
@@ -2446,20 +2844,11 @@ func StopMeshRPC() {
 	// stop accepting new tasks and signal all workers to stop processing new tasks. Tasks being processed by workers
 	// will continue until completion unless the process is terminated.
 	logger.Info("stopping worker pools...")
-	servicerPkMap.Range(func(key, value any) bool {
-		servicerNode := value.(*servicer)
-
-		logger.Debug(fmt.Sprintf("stopping worker pool of servicer %s", servicerNode.Address.String()))
-		servicerNode.Worker.Stop()
-		logger.Debug(fmt.Sprintf("worker pool of servicer %s stopped!", servicerNode.Address.String()))
-
-		logger.Debug(fmt.Sprintf("stopping health cron job of servicer %s", servicerNode.Address.String()))
-		servicerNode.Crons.Stop()
-		logger.Debug(fmt.Sprintf("health cron job of servicer %s stopped!", servicerNode.Address.String()))
-
+	nodesMap.Range(func(key, value any) bool {
+		node := value.(*fullNode)
+		stopNode(node)
 		return true
 	})
-	interceptorPool.Stop()
 	logger.Info("worker pools stopped!")
 
 	logger.Info("stopping clean session cron job")
@@ -2473,14 +2862,15 @@ func StartMeshRPC(simulation bool) {
 	finish = cancel
 	defer cancel()
 	logger = initLogger()
-	// initialize pseudo random to choose servicer url
-	rand.Seed(time.Now().Unix())
+	//// initialize pseudo random to choose servicer url
+	//rand.Seed(time.Now().Unix())
 	// load auth token files (servicer and mesh node)
 	loadAuthTokens()
 	// retrieve the nonNative blockchains your node is hosting
 	chains = loadHostedChains()
 	// turn on chains hot reload
-	go initHotReload()
+	go initKeysHotReload()
+	go initChainsHotReload()
 	// initialize prometheus metrics
 	pocketTypes.InitGlobalServiceMetric(chains, logger, app.GlobalMeshConfig.PrometheusAddr, app.GlobalMeshConfig.PrometheusMaxOpenfiles)
 	// instantiate all the http clients used to call Chains and Servicer
@@ -2488,9 +2878,9 @@ func StartMeshRPC(simulation bool) {
 	// read mesh node routes
 	routes := getMeshRoutes(simulation)
 	// read servicer
-	totalServicers := loadServicerNodes()
+	totalNodes, totalServicers := loadServicerNodes()
 	// check servicers are reachable at required endpoints
-	connectivityChecks()
+	connectivityChecks(mapset.NewSet[string]())
 	// initialize crons
 	initCrons()
 	// bootstrap cache
@@ -2510,7 +2900,7 @@ func StartMeshRPC(simulation bool) {
 
 	go catchSignal()
 
-	logger.Info(fmt.Sprintf("start serving relay as mesh node for %d servicer nodes", totalServicers))
+	logger.Info(fmt.Sprintf("start serving relay as mesh node for %d servicer in %d nodes", totalServicers, totalNodes))
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
