@@ -918,22 +918,21 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 	}
 }
 
-// NOTE: This is a single long test to show the lifecycle of the query paramerter feature
+// NOTE: This is a single long test to show the lifecycle of the query parameter feature
 func TestBlockSize_ChangeParams(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
-
-	// TODO: Understand why we need this?
-	codec.TestMode = -2
+	newBlockSize := "69420" // bytes
 
 	// Prepare governance parameters
-	codec.UpgradeHeight = 2                               // Upgrade the network at height 2
-	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Enable the feature at height 4
+	codec.TestMode = -3                                   // Includes codec upgrade, validator split and non-custodial upgrade
+	codec.UpgradeHeight = 2                               // Height at which codec was upgraded from amino to proto
+	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
 	_ = memCodecMod(true)
 	resetTestACL()
 
 	// Prepare the test network
 	_, kb, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
-	time.Sleep(1 * time.Second)
+	defer cleanup()
 
 	// Get the address of the ACL owner (i.e. the DAO)
 	cb, err := kb.GetCoinbase()
@@ -943,45 +942,48 @@ func TestBlockSize_ChangeParams(t *testing.T) {
 	// Subscribe to new events
 	_, _, newBlockEventChan := subscribeTo(t, tmTypes.EventNewBlock)
 	memCli, stopCli, txEventChan := subscribeTo(t, tmTypes.EventTx)
+	defer stopCli()
 
-	// Wait for block 2
-	<-newBlockEventChan
+	<-newBlockEventChan // Wait for block 1
+	<-newBlockEventChan // Wait for block 2
 
 	// Before activation, the parameter does not exist and should be an empty string
 	queryRes, err := PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
 	assert.Nil(t, err)
 	assert.Equal(t, "", queryRes.Value)
 
-	// Wait for block 3
-	<-newBlockEventChan
+	<-newBlockEventChan // Wait for block 3
 
 	// After activation, the parameter should be the default value
 	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
 	assert.Nil(t, err)
 	assert.Equal(t, "4000000", queryRes.Value)
+	assert.Equal(t, strconv.Itoa(int(pocketTypes.DefaultBlockByteSize)), queryRes.Value)
 
 	// Changing the parameter after activation
-	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, daoAddr, blockSizeKey, "9000000", "test", 10000, false)
+	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, daoAddr, blockSizeKey, newBlockSize, "test", 10000, false)
 	assert.Nil(t, err)
 	assert.NotNil(t, tx)
+	<-txEventChan // wait for change to take affect
 
-	// Parameter still does not exist and should be an empty string
-	<-txEventChan
+	// Parameter should be updated
 	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
 	assert.Nil(t, err)
-	assert.Equal(t, "9000000", queryRes.Value)
+	assert.Equal(t, newBlockSize, queryRes.Value)
 
-	// Wait for block 4
-	<-newBlockEventChan
+	<-newBlockEventChan // Wait for block 4
 
-	// Verify the parameter maintains the new value
+	// Verify the parameter change is stable
 	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
 	assert.Nil(t, err)
-	assert.Equal(t, "9000000", queryRes.Value)
+	assert.Equal(t, newBlockSize, queryRes.Value)
 
-	// Cleanup
-	cleanup()
-	stopCli()
+	<-newBlockEventChan // Wait for block 5
+
+	// Verify the parameter change is stable
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, newBlockSize, queryRes.Value)
 }
 
 // NOTE: This is a hacky test prone to race conditions and global variable management to account for lack of
@@ -997,6 +999,7 @@ func TestBlockSize_ChangeParams(t *testing.T) {
 // 1. Verify that smaller block sizes cannot be completely filled
 // 2. Verify a sufficiently large block includes the backlog of transactions
 // 3. Verify that at steady state (i.e. block is large enough to include all transactions), the number of txs in each block is the same
+// 4. Emperically, the steady state is approximately 50 txs per block given the configurations below; see #1538 for more details
 func TestBlockSize_MaximumSize(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
 
