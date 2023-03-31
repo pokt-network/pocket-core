@@ -118,13 +118,15 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 // BeginBlock module begin-block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 
-	ActivateAdditionalParametersACL(ctx, am)
+	am.activateAdditionalParametersACL(ctx)
 
 	u := am.keeper.GetUpgrade(ctx)
+
+	// We have an issue if the context version is behind the upgrade version but the context block height is ahead of the upgrade height
 	if ctx.AppVersion() < u.Version && ctx.BlockHeight() >= u.UpgradeHeight() && ctx.BlockHeight() != 0 {
 		ctx.Logger().Error("MUST UPGRADE TO NEXT VERSION: ", u.Version)
-		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventMustUpgrade,
-			sdk.NewAttribute("VERSION:", u.UpgradeVersion())))
+		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventMustUpgrade, sdk.NewAttribute("VERSION:", u.UpgradeVersion())))
+
 		ctx.Logger().Error(fmt.Sprintf("GRACEFULLY EXITING FOR UPGRADE, AT HEIGHT: %d", ctx.BlockHeight()))
 		p, err := os.FindProcess(os.Getpid())
 		if err != nil {
@@ -136,23 +138,24 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 			ctx.Logger().Error(err.Error())
 			os.Exit(1)
 		}
-		os.Exit(2)
-		select {}
+		os.Exit(2) // Send a SIGINT signal if neither of the above worked
+		select {}  // why do we need this?
 	}
 }
 
-// ActivateAdditionalParametersACL ActivateAdditionalParameters activate additional parameters on their respective upgrade heights
-func ActivateAdditionalParametersACL(ctx sdk.Ctx, am AppModule) {
+// activateAdditionalParametersACL activates additional parameters on their respective upgrade heights
+func (am AppModule) activateAdditionalParametersACL(ctx sdk.Ctx) {
 
-	// activate BlockSizeModify params
+	// Activate BlockSizeModify params
 	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.BlockSizeModifyKey) {
 		gParams := am.keeper.GetParams(ctx)
-		//on the height we get the ACL and insert the key
+		// Adding a neww ACL owner for the block parameter key (before its activation)
 		gParams.ACL.SetOwner(types.NewACLKey(types.PocketcoreSubspace, "BlockByteSize"), am.keeper.GetDAOOwner(ctx))
-		//update params
+		// Update all the params
 		am.keeper.SetParams(ctx, gParams)
 	}
-	//activate RSCALKey params
+
+	// Activate RSCALKey params
 	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.RSCALKey) {
 		params := am.keeper.GetParams(ctx)
 		params.ACL.SetOwner(types.NewACLKey(types.NodesSubspace, "ServicerStakeFloorMultiplier"), am.keeper.GetDAOOwner(ctx))

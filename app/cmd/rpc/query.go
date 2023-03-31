@@ -4,6 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"net/http"
+	"strconv"
+
 	types4 "github.com/pokt-network/pocket-core/app/cmd/rpc/types"
 	sdk "github.com/pokt-network/pocket-core/types"
 	types2 "github.com/pokt-network/pocket-core/x/auth/types"
@@ -11,9 +15,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/bytes"
 	"github.com/tendermint/tendermint/types"
-	"math/big"
-	"net/http"
-	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
@@ -937,7 +938,7 @@ func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		WriteErrorResponse(w, 400, err.Error())
 		return
 	}
-	WriteResponse(w, string(s), r.URL.Path, r.Host)
+	WriteJSONResponse(w, string(s), r.URL.Path, r.Host)
 }
 
 func ACL(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

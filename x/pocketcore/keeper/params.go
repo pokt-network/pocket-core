@@ -59,6 +59,8 @@ func (k Keeper) MinimumNumberOfProofs(ctx sdk.Ctx) (res int64) {
 	return
 }
 
+// BlockByteSize - Returns the block byte size parameter from the paramstore governing
+// the maximum size of each block4000000
 func (k Keeper) BlockByteSize(ctx sdk.Ctx) (res int64) {
 	k.Paramstore.Get(ctx, types.KeyBlockByteSize, &res)
 	return

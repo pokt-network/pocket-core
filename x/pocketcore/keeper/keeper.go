@@ -62,13 +62,15 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 
 func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
 	currentHeightBlockSize := k.BlockByteSize(ctx)
-	//If not 0 and different update
+	// If it's 0, we're using the default value from genesis (i.e. unset)
 	if currentHeightBlockSize > 0 {
 		previousBlockCtx, _ := ctx.PrevCtx(ctx.BlockHeight() - 1)
 		lastBlockSize := k.BlockByteSize(previousBlockCtx)
+		// If the block size has changed, update the consensus params
 		if lastBlockSize != currentHeightBlockSize {
-			//not go under default value
+			// Floor the block size to the initial default value
 			if currentHeightBlockSize < types.DefaultBlockByteSize {
+				ctx.Logger().Error("block size is less than default value, this should never happen")
 				return &abci.ConsensusParams{}
 			}
 			return &abci.ConsensusParams{
@@ -76,6 +78,8 @@ func (k Keeper) ConsensusParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams {
 					MaxBytes: currentHeightBlockSize,
 					MaxGas:   -1,
 				},
+				// TODO: This is a temporary fix to prevent the evidence pool from filling up
+				// during the block size upgrade.
 				Evidence: &abci.EvidenceParams{
 					MaxAge: 50,
 				},

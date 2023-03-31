@@ -2,8 +2,9 @@ package types
 
 import (
 	"fmt"
-	sdk "github.com/pokt-network/pocket-core/types"
 	"strings"
+
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 const (
@@ -38,7 +39,8 @@ func (a ACL) Validate(adjacencyMap map[string]bool) error {
 			return ErrInvalidACL(ModuleName, fmt.Errorf("the address provided for: %s is nil", key))
 		}
 	}
-	//removing unowned check as we need to be able to add new acl/params that won't be owned until active
+	// We are not checking for non-activated but owned parameters
+	// See commit bc6e098c27f94d417dc975aaea076f9e3d6afb4b for previous behaviour
 	return nil
 }
 

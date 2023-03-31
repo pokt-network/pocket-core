@@ -1,9 +1,9 @@
 /*
 Package module contains application module patterns and associated "manager" functionality.
 The module pattern has been broken down by:
- - independent module functionality (AppModuleBasic)
- - inter-dependent module genesis functionality (AppModuleGenesis)
- - inter-dependent module full functionality (AppModule)
+  - independent module functionality (AppModuleBasic)
+  - inter-dependent module genesis functionality (AppModuleGenesis)
+  - inter-dependent module full functionality (AppModule)
 
 inter-dependent module functionality is module functionality which somehow
 depends on other modules, typically through the module keeper.  Many of the
@@ -36,7 +36,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
-//__________________________________________________________________________________________
+// __________________________________________________________________________________________
 // AppModuleBasic is the standard form for basic non-dependant elements of an application module.
 type AppModuleBasic interface {
 	Name() string
@@ -84,7 +84,7 @@ func (bm BasicManager) ValidateGenesis(genesis map[string]json.RawMessage) error
 	return nil
 }
 
-//_________________________________________________________
+// _________________________________________________________
 // AppModuleGenesis is the standard form for an application module genesis functions
 type AppModuleGenesis interface {
 	AppModuleBasic
@@ -111,7 +111,7 @@ type AppModule interface {
 	ConsensusParamsUpdate(ctx sdk.Ctx) *abci.ConsensusParams
 }
 
-//___________________________
+// ___________________________
 // app module
 type GenesisOnlyAppModule struct {
 	AppModuleGenesis
@@ -153,7 +153,7 @@ func (GenesisOnlyAppModule) EndBlock(_ sdk.Ctx, _ abci.RequestEndBlock) []abci.V
 	return []abci.ValidatorUpdate{}
 }
 
-//____________________________________________________________________________
+// ____________________________________________________________________________
 // module manager provides the high level utility for managing and executing
 // operations for a group of modules
 type Manager struct {
@@ -299,40 +299,38 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 	defer sdk.TimeTrack(time.Now())
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 	validatorUpdates := []abci.ValidatorUpdate{}
-	updateToApply := &abci.ConsensusParams{}
+	var consensusUpdates *abci.ConsensusParams
 
 	for _, moduleName := range m.OrderEndBlockers {
+		// Use these validator updates if provided
 		moduleValUpdates := m.Modules[moduleName].EndBlock(ctx, req)
-
-		// use these validator updates if provided, the module manager assumes
-		// only one module will update the validator set
 		if len(moduleValUpdates) > 0 {
+			// the module manager assumes only one module will update the validator set
 			if len(validatorUpdates) > 0 {
 				panic("validator EndBlock updates already set by a previous module")
 			}
-
 			validatorUpdates = moduleValUpdates
 		}
-		//Currently its only a non empty struct on pocketcore module
+
+		//Currently its only a non-empty struct in the pocket-core modules
 		consensusParamUpdate := m.Modules[moduleName].ConsensusParamsUpdate(ctx)
 		if !consensusParamUpdate.Equal(&abci.ConsensusParams{}) {
-			updateToApply = consensusParamUpdate
+			consensusUpdates = consensusParamUpdate
 		}
 	}
 
-	//not adding empty struct  saves us from updating consensus params every block if there are no updates.
-	if updateToApply.Equal(&abci.ConsensusParams{}) {
+	// Only attach the consensus updates if present.
+	// Avoids sending the update (i.e. an empty struct) every block
+	if consensusUpdates != nil {
 		return abci.ResponseEndBlock{
-			ValidatorUpdates: validatorUpdates,
-			Events:           ctx.EventManager().ABCIEvents(),
+			ValidatorUpdates:      validatorUpdates,
+			Events:                ctx.EventManager().ABCIEvents(),
+			ConsensusParamUpdates: consensusUpdates,
 		}
 	}
 
 	return abci.ResponseEndBlock{
-		ValidatorUpdates:      validatorUpdates,
-		Events:                ctx.EventManager().ABCIEvents(),
-		ConsensusParamUpdates: updateToApply,
+		ValidatorUpdates: validatorUpdates,
+		Events:           ctx.EventManager().ABCIEvents(),
 	}
 }
-
-// DONTCOVER

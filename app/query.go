@@ -4,11 +4,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	tmtypes "github.com/tendermint/tendermint/types"
 	"math"
 	"reflect"
 	"strconv"
 	"strings"
+
+	tmtypes "github.com/tendermint/tendermint/types"
 
 	sdk "github.com/pokt-network/pocket-core/types"
 	appsTypes "github.com/pokt-network/pocket-core/x/apps/types"

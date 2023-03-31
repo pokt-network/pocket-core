@@ -17,7 +17,7 @@ const (
 	DefaultClaimExpiration            = int64(100)     // default sessions to exprie claims
 	DefaultReplayAttackBurnMultiplier = int64(3)       // default replay attack burn multiplier
 	DefaultMinimumNumberOfProofs      = int64(5)       // default minimum number of proofs
-	DefaultBlockByteSize              = int64(4000000) // default block size in bytes
+	DefaultBlockByteSize              = int64(4000000) // default block size in bytes; 4MB
 
 )
 
