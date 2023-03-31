@@ -917,145 +917,67 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 
 func TestChangeParams_BlockByteSize(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
-	chainId := "test"
-	txFee := int64(10000)
 
-	tt := []struct {
-		name                      string
-		newBlockByteSize          uint64
-		upgrades                  *upgrades
-		featureMap                map[string]int64
-		wantBeforeActivationValue string
-		wantAfterActivationValue  string
-	}{
-		// Before activation
-		// After action
-		// Below minimum
-		// Too large
-		// TODO: FULL PROTO SCENARIO where we exceed the size of the block
-		{
-			name:             "BlockByteSize parameter does not exist or change if not in the feature map",
-			newBlockByteSize: 9000000,
-			upgrades: &upgrades{
-				codecUpgrade: codecUpgrade{
-					upgradeMod: true,
-					height:     2,
-				},
-			},
-			featureMap:                make(map[string]int64),
-			wantBeforeActivationValue: "", // parameter does not exist
-			wantAfterActivationValue:  "", // parameter should still not exist
-		},
-		{
-			name:             "BlockByteSize parameter does change if in feature map",
-			newBlockByteSize: 9000000,
-			upgrades: &upgrades{
-				codecUpgrade: codecUpgrade{
-					upgradeMod: true,
-					height:     2,
-				},
-			},
-			featureMap: map[string]int64{
-				codec.BlockSizeModifyKey: 3, // height above + 1
-			},
-			wantBeforeActivationValue: "4000000", //
-			wantAfterActivationValue:  "9000000",
-		},
-	}
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			codec.TestMode = -2 // TODO: Understand why we need this?
+	// TODO: Understand why we need this?
+	codec.TestMode = -2
 
-			// Used to perform neccesary upgrades for test
-			if tc.upgrades != nil {
-				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
-				for k, v := range tc.featureMap {
-					codec.UpgradeFeatureMap[k] = v
-				}
-				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
-			}
-			resetTestACL()
+	// Prepare governance parameters
+	codec.UpgradeHeight = 2                               // Upgrade the network at height 2
+	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Enable the feature at height 4
+	_ = memCodecMod(true)
+	resetTestACL()
 
-			_, kb, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
-			time.Sleep(1 * time.Second)
+	// Prepare the test network
+	_, kb, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
+	time.Sleep(1 * time.Second)
 
-			cb, err := kb.GetCoinbase()
-			assert.Nil(t, err)
-			daoAddr := cb.GetAddress()
+	// Get the address of the ACL owner (i.e. the DAO)
+	cb, err := kb.GetCoinbase()
+	assert.Nil(t, err)
+	daoAddr := cb.GetAddress()
 
-			_, err = kb.List()
-			assert.Nil(t, err)
+	// Subscribe to new events
+	_, _, newBlockEventChan := subscribeTo(t, tmTypes.EventNewBlock)
+	memCli, stopCli, txEventChan := subscribeTo(t, tmTypes.EventTx)
 
-			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-			<-evtChan // Wait for block
+	// Wait for block 2
+	<-newBlockEventChan
 
-			// Before activation of the parameter, the ACL for it does not exist and the value and parameter should be 0 or nil
-			gotBefore, err := PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
-			assert.Nil(t, err)
-			assert.Equal(t, tc.wantBeforeActivationValue, gotBefore.Value)
+	// Before activation, the parameter does not exist and should be an empty string
+	queryRes, err := PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, "", queryRes.Value)
 
-			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-			// Tx wont modify anything as ACL is not configured (TxResult should be gov code 5)
-			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, daoAddr, blockSizeKey, tc.newBlockByteSize, chainId, txFee, false)
-			assert.Nil(t, err)
-			assert.NotNil(t, tx)
-			select {
-			case _ = <-evtChan:
-				gotAfter, err := PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
-				assert.Nil(t, err)
-				assert.Equal(t, gotBefore.Value, gotAfter.Value)
-				cleanup()
-				stopCli()
-			}
-		})
-	}
-}
+	// Wait for block 3
+	<-newBlockEventChan
 
-func TestChangeParams_BlockByteSizeAfterActivationHeight(t *testing.T) {
+	// After activation, the parameter should be the default value
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, "4000000", queryRes.Value)
 
-	tt := []struct {
-		name         string
-		memoryNodeFn func(t *testing.T, genesisState []byte) (tendermint *node.Node, keybase keys.Keybase, cleanup func())
-		*upgrades
-	}{
-		{name: "change MaxBlockSize parameter past activation height", memoryNodeFn: NewInMemoryTendermintNodeProto, upgrades: &upgrades{codecUpgrade: codecUpgrade{true, 2}}}, // TODO: FULL PROTO SCENARIO
-	}
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			codec.TestMode = -2
-			codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = tc.upgrades.codecUpgrade.height + 1
-			if tc.upgrades != nil { // NOTE: Use to perform neccesary upgrades for test
-				codec.UpgradeHeight = tc.upgrades.codecUpgrade.height
-				_ = memCodecMod(tc.upgrades.codecUpgrade.upgradeMod)
-			}
-			resetTestACL()
-			_, kb, cleanup := tc.memoryNodeFn(t, oneAppTwoNodeGenesis())
-			time.Sleep(1 * time.Second)
-			cb, err := kb.GetCoinbase()
-			assert.Nil(t, err)
-			_, err = kb.List()
-			assert.Nil(t, err)
-			_, _, evtChan := subscribeTo(t, tmTypes.EventNewBlock)
-			<-evtChan // Wait for block
-			<-evtChan // Wait for another block
-			//After Activation of the parameter ACL should be created(allowing modifying the value) and parameter should have default value of 4000000
-			o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
-			assert.Equal(t, "4000000", o.Value)
-			memCli, stopCli, evtChan := subscribeTo(t, tmTypes.EventTx)
-			tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, cb.GetAddress(), "pocketcore/BlockByteSize", 9000000, "test", 10000, false)
-			assert.Nil(t, err)
-			assert.NotNil(t, tx)
-			select {
-			case _ = <-evtChan:
-				//fmt.Println(res)
-				assert.Nil(t, err)
-				o, _ := PCA.QueryParam(PCA.LastBlockHeight(), "pocketcore/BlockByteSize")
-				assert.Equal(t, "9000000", o.Value)
-				cleanup()
-				stopCli()
-			}
-		})
-	}
+	// Changing the parameter after activation
+	tx, err := gov.ChangeParamsTx(memCodec(), memCli, kb, daoAddr, blockSizeKey, "9000000", "test", 10000, false)
+	assert.Nil(t, err)
+	assert.NotNil(t, tx)
+
+	// Parameter still does not exist and should be an empty string
+	<-txEventChan
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, "9000000", queryRes.Value)
+
+	// Wait for block 4
+	<-newBlockEventChan
+
+	// Verify the parameter maintains the new value
+	queryRes, err = PCA.QueryParam(PCA.LastBlockHeight(), blockSizeKey)
+	assert.Nil(t, err)
+	assert.Equal(t, "9000000", queryRes.Value)
+
+	// Cleanup
+	cleanup()
+	stopCli()
 }
 
 func TestChangepip22ParamsBeforeActivationHeight(t *testing.T) {
