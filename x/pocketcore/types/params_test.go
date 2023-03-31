@@ -78,6 +78,7 @@ func TestDefaultParams(t *testing.T) {
 		ClaimExpiration:            DefaultClaimExpiration,
 		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
 		MinimumNumberOfProofs:      DefaultMinimumNumberOfProofs,
+		BlockByteSize:              DefaultBlockByteSize,
 	}.Equal(DefaultParams()))
 }
 

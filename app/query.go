@@ -86,6 +86,7 @@ func (app PocketCoreApp) QueryBlockTxs(height int64, page, perPage int, prove bo
 func (app PocketCoreApp) QueryAllBlockTxs(height int64, page, perPage int) (res *core_types.ResultTxSearch, err error) {
 	res = &core_types.ResultTxSearch{}
 	tmClient := app.GetClient()
+	// DISCUSS: Why is the tmClient being stopped at the end of the query?
 	// defer func() { _ = tmClient.Stop() }()
 	page, perPage = checkPagination(page, perPage)
 	b, err := tmClient.Block(&height)

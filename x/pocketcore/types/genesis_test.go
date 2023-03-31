@@ -139,6 +139,7 @@ func TestDefaultGenesisState(t *testing.T) {
 		ClaimExpiration:            DefaultClaimExpiration,
 		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
 		MinimumNumberOfProofs:      DefaultMinimumNumberOfProofs,
+		BlockByteSize:              DefaultBlockByteSize,
 	}}
 	tests := []struct {
 		name         string

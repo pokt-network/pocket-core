@@ -46,8 +46,7 @@ const (
 )
 
 var (
-	genesisBlockParamsMaxBytes = int64(15000)
-	tendermintTimeoutCommit    = time.Duration(500) * time.Millisecond
+	tendermintTimeoutCommit = time.Duration(500) * time.Millisecond
 )
 
 type upgrades struct {
@@ -259,7 +258,7 @@ func inMemTendermintNodeWithValidators(genesisState []byte, validatorsPk []crypt
 			ChainID:     "pocket-test",
 			ConsensusParams: &types.ConsensusParams{
 				Block: types.BlockParams{
-					MaxBytes:   genesisBlockParamsMaxBytes,
+					MaxBytes:   pocketTypes.DefaultBlockByteSize,
 					MaxGas:     -1,
 					TimeIotaMs: 1,
 				},

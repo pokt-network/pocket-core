@@ -32,7 +32,7 @@ var (
 	UpgradeHeight                    int64 = math.MaxInt64
 	OldUpgradeHeight                 int64 = 0
 	NotProtoCompatibleInterfaceError       = errors.New("the interface passed for encoding does not implement proto marshaller")
-	TestMode                         int64 = 0
+	TestMode                         int64 = 0 // Used to short-circuit specific protocol upgrades in tests; e.g. <= -1 implies the proto over amino upgrade
 )
 
 const (
