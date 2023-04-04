@@ -93,7 +93,14 @@ cd pocket-e2e-stack
 
 **What am I running?**
 
-This stack consists of four pocket validator nodes. You can submit a Pocket RPC to each node via 8082, 8083, 8084, and 8085/tcp respectively, and a Tendermint RPC to each node via 26658, 26659, 26660, 26661/tcp respectively.
+- Four containerized `Validator` nodes
+- A local version of the `Tendermint` library
+- Hot reloading code in both `Tendermint` and `Pocket-Core`
+- A bot that can be used to send transactions to the network
+- Pocket RPC endpoints are exposed at 8082, 8083, 8084, and 8085/tcp on each node respectively
+- Tendermint RPC endpoints are exposed at 26658, 26659, 26660, 26661/tcp respectively
+
+https://user-images.githubusercontent.com/1892194/225497350-3817b262-f5d5-483b-bb8f-47fb0b614321.mov
 
 **IMPORTANT: Inspect the logs in case something looks abnormal or an error occurred.**
 
