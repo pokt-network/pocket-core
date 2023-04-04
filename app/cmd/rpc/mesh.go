@@ -126,11 +126,13 @@ type LevelHTTPLogger struct {
 
 // FullNode - represent the pocket client instance running that could handle 1 or N addresses (lean)
 type fullNode struct {
-	URL       string
-	Servicers []*servicer
-	Status    *app.HealthResponse
-	Worker    *pond.WorkerPool
-	Crons     *cron.Cron
+	URL            string
+	Servicers      []*servicer
+	Status         *app.HealthResponse
+	Worker         *pond.WorkerPool
+	Crons          *cron.Cron
+	NeedResize     bool
+	ResizingWorker bool
 }
 
 // Servicer - represents a staked address read from servicer_private_key_file
@@ -678,6 +680,7 @@ func reloadChains() {
 
 // reloadServicers - reload servicersName file
 func reloadServicers() {
+	logger.Debug("initializing servicer reload process")
 	nodes, servicers := loadServicersFromFile()
 
 	currentNodes := mapset.NewSet[string]()
@@ -720,7 +723,7 @@ func reloadServicers() {
 					orphanServicers.Store(n.Servicers[i].Address.String(), v)
 				}
 			}
-			stopNode(v.(*fullNode))
+			v.(*fullNode).stopNode()
 		}
 		return true
 	})
@@ -729,8 +732,11 @@ func reloadServicers() {
 			s := v.(*servicer)
 			for i := range s.Node.Servicers {
 				if s.Node.Servicers[i].Address.String() == address {
+					mutex.Lock() // lock it because could be in use by rpc
+					s.Node.NeedResize = true
 					s.Node.Servicers[i] = s.Node.Servicers[len(s.Node.Servicers)-1]
 					s.Node.Servicers = s.Node.Servicers[:len(s.Node.Servicers)-1]
+					mutex.Unlock()
 				}
 			}
 		}
@@ -744,6 +750,7 @@ func reloadServicers() {
 		node := v.(*fullNode)
 		for i := range node.Servicers {
 			address := node.Servicers[i].Address.String()
+			mutex.Lock() // lock it because could be in use by rpc
 			// if servicer was already present previous to reload, set same reference to avoid need to get app session cache
 			if v, ok := servicerMap.Load(address); ok {
 				node.Servicers[i] = v.(*servicer)
@@ -751,7 +758,9 @@ func reloadServicers() {
 				orphanServicers.Delete(address) // remove it from orphans and assign to new node
 				node.Servicers[i] = v.(*servicer)
 			}
+			mutex.Unlock()
 		}
+		// if cron is already running it will omit this call.
 		node.Crons.Start()
 		return true
 	})
@@ -762,13 +771,49 @@ func reloadServicers() {
 		if n, ok := nodesMap.Load(s.Node.URL); ok {
 			// set the already existent fullNode reference instead of the new one.
 			s.Node = n.(*fullNode)
+			mutex.Lock() // lock it because could be in use by rpc
+			s.Node.Servicers = append(s.Node.Servicers, s)
+			s.Node.NeedResize = true
+			mutex.Unlock()
 		}
 		orphanServicers.Delete(address) // just in case it remain on orphans one.
 		return true
 	})
 
-	// run connectivity checks only for the new nodes
-	connectivityChecks(newNodes)
+	totalModifications := newNodes.Cardinality() + newServicers.Cardinality() + removedNodes.Cardinality() + removedServicers.Cardinality()
+
+	if totalModifications > 0 {
+		logger.Info(fmt.Sprintf("Servicer reload detect a total of %d modifications:", totalModifications))
+		logger.Info(fmt.Sprintf("New Nodes: %d Removed Nodes: %d", newNodes.Cardinality(), removedNodes.Cardinality()))
+		logger.Info(fmt.Sprintf("New Servicer: %d Removed Servicer: %d", newServicers.Cardinality(), removedServicers.Cardinality()))
+
+		newServicersList := make([]string, 0)
+		totalNodes := 0
+
+		nodesMap.Range(func(key, value any) bool {
+			totalNodes++
+			value.(*fullNode).ResizeWorker()
+
+			return true
+		})
+
+		servicerMap.Range(func(key, value any) bool {
+			s := value.(*servicer)
+			newServicersList = append(newServicersList, s.Address.String())
+			return true
+		})
+
+		mutex.Lock()
+		servicerList = newServicersList
+		mutex.Unlock()
+
+		logger.Debug(fmt.Sprintf("Current Node Map lenght after modification is: %d", totalNodes))
+		logger.Debug(fmt.Sprintf("Current Servicer Map lenght after modification is: %d", len(servicerList)))
+		// run connectivity checks only for the new nodes
+		connectivityChecks(newNodes)
+	}
+
+	logger.Debug("servicers reload process done")
 }
 
 // initHotReload - initialize keys and chains file change detection
@@ -2276,15 +2321,14 @@ func getServicersFilePath() string {
 func createNode(url string) *fullNode {
 	nodeCronJobsWorker := cron.New()
 
-	nodeWorker := newWorker(fmt.Sprintf("Node Worker of %s", url))
-
 	node := &fullNode{
 		URL:       url,
 		Servicers: make([]*servicer, 0),
 		Status:    nil,
-		Worker:    nodeWorker,
 		Crons:     nodeCronJobsWorker,
 	}
+
+	node.NewWorker()
 
 	scheduleNodeChecks(nodeCronJobsWorker, node)
 
@@ -2425,7 +2469,7 @@ func loadServicerNodes() (totalNodes, totalServicers int) {
 	})
 
 	servicers.Range(func(key, value any) bool {
-		nodesMap.Store(key, value)
+		servicerMap.Store(key, value)
 		return true
 	})
 
@@ -2677,10 +2721,10 @@ func catchSignal() {
 	}
 }
 
-// newWorker - generate a new worker.
-func newWorker(handler string) *pond.WorkerPool {
+// NewWorker - generate a new worker.
+func (node *fullNode) NewWorker() {
 	panicHandler := func(p interface{}) {
-		logger.Error(fmt.Sprintf("%s Worker task throw panic error: %v", handler, p))
+		logger.Error(fmt.Sprintf("Node %s Worker task paniced: %v", node.URL, p))
 	}
 
 	var strategy pond.ResizingStrategy
@@ -2699,12 +2743,35 @@ func newWorker(handler string) *pond.WorkerPool {
 		log2.Fatal(fmt.Sprintf("strategy %s is not a valid option; allowed values are: lazy|eager|balanced", app.GlobalMeshConfig.WorkerStrategy))
 	}
 
-	return pond.New(
-		app.GlobalMeshConfig.MaxWorkers, app.GlobalMeshConfig.MaxWorkersCapacity,
+	node.Worker = pond.New(
+		// size worker dynamically based on amount of servicers.
+		app.GlobalMeshConfig.MaxWorkers, len(node.Servicers)*app.GlobalMeshConfig.MaxWorkersCapacity,
 		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
 		pond.PanicHandler(panicHandler),
 		pond.Strategy(strategy),
 	)
+
+	return
+}
+
+// ResizeWorker - stop current worker and spam a new one.
+func (node *fullNode) ResizeWorker() {
+	if !node.NeedResize {
+		return
+	}
+
+	mutex.Lock()
+	node.ResizingWorker = true
+	mutex.Unlock()
+
+	node.Worker.StopAndWait()
+
+	node.NewWorker()
+
+	mutex.Lock()
+	node.NeedResize = false
+	node.ResizingWorker = false
+	mutex.Unlock()
 }
 
 // initCache - initialize cache
@@ -2782,9 +2849,25 @@ func initCache() {
 				continue
 			}
 
-			servicerNode.Node.Worker.Submit(func() {
-				notifyServicer(relay)
-			})
+			// the node worker pool is dynamic so if the keys are reloaded and the current worker is reloaded + modified
+			// it will need to be resized, for that the current way is stop the current worker and create a new one
+			// so at that moment the node will have this flag on "true" until it get done.
+			if servicerNode.Node.ResizingWorker {
+				go func(s *servicer, relay *pocketTypes.Relay) {
+					for {
+						time.Sleep(10 * time.Millisecond)
+						if !s.Node.ResizingWorker {
+							s.Node.Worker.Submit(func() {
+								notifyServicer(relay)
+							})
+						}
+					}
+				}(servicerNode, relay)
+			} else {
+				servicerNode.Node.Worker.Submit(func() {
+					notifyServicer(relay)
+				})
+			}
 		}
 	}
 }
@@ -2813,7 +2896,7 @@ func GetServicerMeshRoutes() Routes {
 	return routes
 }
 
-func stopNode(node *fullNode) {
+func (node *fullNode) stopNode() {
 	logger.Debug(fmt.Sprintf("stopping worker pool of node %s", node.URL))
 	node.Worker.Stop()
 	logger.Debug(fmt.Sprintf("worker pool of node %s stopped!", node.URL))
@@ -2846,7 +2929,7 @@ func StopMeshRPC() {
 	logger.Info("stopping worker pools...")
 	nodesMap.Range(func(key, value any) bool {
 		node := value.(*fullNode)
-		stopNode(node)
+		node.stopNode()
 		return true
 	})
 	logger.Info("worker pools stopped!")
@@ -2858,6 +2941,7 @@ func StopMeshRPC() {
 
 // StartMeshRPC - Start mesh rpc server
 func StartMeshRPC(simulation bool) {
+	println(getServicerAddressFromPubKeyAsString("faa0ca39c740db415c9522c90d0f55e97dd80ead4e8e1c560ce3d2f418f2c2ce"))
 	ctx, cancel := context.WithCancel(context.Background())
 	finish = cancel
 	defer cancel()
