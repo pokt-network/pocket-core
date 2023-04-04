@@ -3,7 +3,9 @@ package keeper
 import (
 	"testing"
 
+	appTypes "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/auth/types"
+	nodeTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,4 +35,30 @@ func TestSetAndGetAccounts(t *testing.T) {
 
 	gotAcc := keeper.GetAccount(ctx, baseAcc.GetAddress())
 	assert.Equal(t, baseAcc, gotAcc)
+}
+
+func TestGetPoolAddresses(t *testing.T) {
+	tests := []struct {
+		name    string
+		pool    string
+		address string
+	}{
+		{
+			name:    "Staked nodes pool address",
+			pool:    nodeTypes.StakedPoolName,
+			address: "8ef97b488e66a2b2e89a3b4999549816768910fb",
+		},
+		{
+			name:    "App nodes pool address",
+			pool:    appTypes.StakedPoolName,
+			address: "63533fb8f43b4883a1f37265f1561ce7b1c6c307",
+		},
+	}
+	ctx, keeper := createTestInput(t, false, initialPower, 0)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			baseAcc, _ := keeper.NewAccountWithAddress(ctx, types.NewModuleAddress(tt.pool))
+			assert.Equal(t, tt.address, baseAcc.Address.String())
+		})
+	}
 }
