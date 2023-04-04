@@ -37,6 +37,9 @@ func TestSetAndGetAccounts(t *testing.T) {
 	assert.Equal(t, baseAcc, gotAcc)
 }
 
+// There are a few orphaned addresses that are owned by the protocol to manage staked pool funds.
+// For example, when one stakes, their funds are moved to the pool. Once an unstake occurs, the funds are moved back from the pool to the owner.
+// These are owned by the protocol and their supply can be checked via `pocket query supply`
 func TestGetPoolAddresses(t *testing.T) {
 	tests := []struct {
 		name    string
