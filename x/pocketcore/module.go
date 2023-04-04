@@ -107,7 +107,7 @@ func (am AppModule) activateAdditionalParameters(ctx sdk.Ctx) {
 	if am.keeper.Cdc.IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.BlockSizeModifyKey) {
 		//on the height we set the default value
 		params := am.keeper.GetParams(ctx)
-		params.BlockByteSize = types.DefaultBlockByteSize // olsh
+		params.BlockByteSize = types.DefaultBlockByteSize
 		am.keeper.SetParams(ctx, params)
 	}
 }
