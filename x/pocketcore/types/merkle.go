@@ -14,7 +14,6 @@ const MerkleHashLength = blake2b.Size256
 func (r Range) Equal(r2 Range) bool {
 	return r.Lower == r2.Lower && r.Upper == r2.Upper
 }
-
 func (r Range) Bytes() []byte {
 	return uint64ToBytes(r.Lower, r.Upper)
 }

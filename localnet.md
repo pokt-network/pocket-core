@@ -5,7 +5,6 @@
 - [Prerequisites](#prerequisites)
   - [Dependencies](#dependencies)
   - [Download Repos](#download-repos)
-  - [Verify Directory Structure](#verify-directory-structure)
 - [Playground](#playground)
   - [Setup E2E Stack Environment](#setup-e2e-stack-environment)
   - [Pocket E2E Stack](#pocket-e2e-stack)
@@ -35,26 +34,7 @@ cd v0_localnet
 git clone git@github.com:pokt-network/pocket-core.git
 git clone git@github.com:pokt-network/tendermint.git
 git clone git@github.com:pokt-network/tx-bot.git
-git clone git@github.com:pokt-network/pocket-e2e-stack.git
-git -C pocket-e2e-stack submodule update --init --recursive # This pulls in https://github.com/pokt-network/local_playground
-```
-
-### Verify Directory Structure
-
-Run `tree`:
-
-```bash
-tree -L 1
-```
-
-You should have all the repositories in a single directory like so:
-
-```bash
-.
-├── pocket-core
-├── pocket-e2e-stack
-├── tendermint
-└── tx-bot
+git clone --recurse-submodules git@github.com:pokt-network/pocket-e2e-stack.git
 ```
 
 Run `pwd` and identify the current path as it will be referenced to as `POCKET_CORE_REPOS_PATH` below
@@ -71,10 +51,22 @@ cp .env.template .env
 cp .playground.env.example .playground.env
 ```
 
-1. Update `POCKET_CORE_REPOS_PATH` in `.env` to be the full path reflecting where you downloaded all the repos.
-2. Update `POCKET_CORE_REPOS_PATH` in `.playground.env` to be the full path reflecting the path where you downloaded all the repos
-3. Update `ETH_ALTRUIST` and `POLY_ALTRUIST` appropriately.
-4. Source the env variables
+2. Update `POCKET_CORE_REPOS_PATH` in the appropriate `.env` variables:
+
+```bash
+# Update `POCKET_CORE_REPOS_PATH` in `.env` to be the full path reflecting where you downloaded all the repos.
+sed -i 's|^POCKET_CORE_REPOS_PATH=.*$|POCKET_CORE_REPOS_PATH='$PWD'|' pocket-e2e-stack/.env
+# Update `POCKET_CORE_REPOS_PATH` in `.playground.env` to be the full path reflecting the path where you downloaded all the
+sed -i 's|^POCKET_CORE_REPOS_PATH=.*$|POCKET_CORE_REPOS_PATH='$PWD'|' pocket-e2e-stack/.playground.env
+```
+
+3. Update the Ethereum & Polygon altruist nodes
+
+```bash
+# Update `ETH_ALTRUIST` and `POLY_ALTRUIST` appropriately.
+sed -i 's|^# ETH_ALTRUIST=.*$|ETH_ALTRUIST=<Your or public Ethereum endpoint>|' pocket-e2e-stack/.env
+sed -i 's|^# POLY_ALTRUIST=.*$|POLY_ALTRUIST=<Your or public Polygon endpoint>|' pocket-e2e-stack/.env
+```
 
 ```bash
 source .env
@@ -99,12 +91,16 @@ cd pocket-e2e-stack
 ./bin/pokt-net/playground.sh up
 ```
 
+**What am I running?**
+
+This stack consists of four pocket validator nodes. You can submit a Pocket RPC to each node via 8082, 8083, 8084, and 8085/tcp respectively, and a Tendermint RPC to each node via 26658, 26659, 26660, 26661/tcp respectively.
+
 **IMPORTANT: Inspect the logs in case something looks abnormal or an error occurred.**
 
 #### 3. Watch the network
 
 ```bash
-watch -n 5 "curl -s -X 'POST' 'http://localhost:8084/v1/query/height'
+watch -n 5 "curl -s -X 'POST' 'http://localhost:8084/v1/query/height'"
 ```
 
 The full RPC spec can be found [here](https://editor.swagger.io/?url=https://raw.githubusercontent.com/pokt-network/pocket-core/staging/doc/specs/rpc-spec.yaml).
