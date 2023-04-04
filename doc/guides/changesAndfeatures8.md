@@ -40,11 +40,11 @@ The new stake command expects 3 new parameters:
 Replacing the `<fromAddr>` we have the `<operatorPublicKey>`, notice the change from using an address to using the
 public key of the node. Also, we have the `<outputAddress>`, where rewards and funds will be delivered after the update
 is activated. Keep in mind that even if you are using the command before the upgrade is activated you are required to
-complete all the parameter.
+complete all the parameters.
 
 Before the upgrade is activated be sure to use `true` for `<isBefore8.0>` or the transaction won't go through
 
-**NOTE**: Even if the command is available, Non-custodial won't work until the consensus rule change is activated , we
+**NOTE**: Even if the command is available, Non-custodial won't work until the consensus rule change is activated, we
 recommend using `pocket nodes stake custodial [...] true` before the upgrade is activated.
 
 ## Chains.json hot reload + DIY Bonus Endpoint
