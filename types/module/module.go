@@ -321,16 +321,13 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 
 	// Only attach the consensus updates if present.
 	// Avoids sending the update (i.e. an empty struct) every block
-	if consensusUpdates != nil {
-		return abci.ResponseEndBlock{
-			ValidatorUpdates:      validatorUpdates,
-			Events:                ctx.EventManager().ABCIEvents(),
-			ConsensusParamUpdates: consensusUpdates,
-		}
-	}
-
-	return abci.ResponseEndBlock{
+	responseBlock := abci.ResponseEndBlock{
 		ValidatorUpdates: validatorUpdates,
 		Events:           ctx.EventManager().ABCIEvents(),
 	}
+
+	if consensusUpdates != nil {
+		responseBlock.ConsensusParamUpdates = consensusUpdates
+	}
+	return responseBlock
 }
