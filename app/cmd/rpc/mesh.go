@@ -20,6 +20,7 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
+	"github.com/puzpuzpuz/xsync"
 	"github.com/robfig/cron/v3"
 	"github.com/tendermint/tendermint/libs/cli/flags"
 	"github.com/tendermint/tendermint/libs/log"
@@ -127,7 +128,7 @@ type LevelHTTPLogger struct {
 // FullNode - represent the pocket client instance running that could handle 1 or N addresses (lean)
 type fullNode struct {
 	URL            string
-	Servicers      []*servicer
+	Servicers      *xsync.MapOf[string, *servicer]
 	Status         *app.HealthResponse
 	Worker         *pond.WorkerPool
 	Crons          *cron.Cron
@@ -137,7 +138,7 @@ type fullNode struct {
 
 // Servicer - represents a staked address read from servicer_private_key_file
 type servicer struct {
-	SessionCache sync.Map
+	SessionCache *xsync.MapOf[string, *appSessionCache]
 	PrivateKey   crypto.PrivateKey
 	Address      sdk.Address
 	Node         *fullNode
@@ -239,8 +240,8 @@ var (
 	servicerClient    *http.Client
 	relaysClient      *retryablehttp.Client
 	relaysCacheDb     *pogreb.DB
-	servicerMap       sync.Map
-	nodesMap          sync.Map
+	servicerMap       = xsync.NewMapOf[*servicer]()
+	nodesMap          = xsync.NewMapOf[*fullNode]()
 	servicerList      []string
 	chains            *pocketTypes.HostedBlockchains
 	meshAuthToken     sdk.AuthToken
@@ -408,7 +409,7 @@ func (sn dispatchResponse) Contains(addr sdk.Address) bool {
 		if err != nil {
 			log2.Fatal(err)
 		}
-		if _, ok := servicerMap.Load(address); ok {
+		if _, ok := servicerMap.Load(address.String()); ok {
 			return true
 		}
 	}
@@ -588,7 +589,7 @@ func getRandomNode() *fullNode {
 	if !ok {
 		return nil
 	}
-	return s.(*servicer).Node
+	return s.Node
 }
 
 // getServicerAddressFromPubKey - return an address as string from a public key string
@@ -688,20 +689,20 @@ func reloadServicers() {
 	reloadedNodes := mapset.NewSet[string]()
 	reloadedServicers := mapset.NewSet[string]()
 
-	nodesMap.Range(func(key, _ any) bool {
-		currentNodes.Add(key.(string))
+	nodesMap.Range(func(key string, _ *fullNode) bool {
+		currentNodes.Add(key)
 		return true
 	})
-	nodes.Range(func(key, _ any) bool {
-		reloadedNodes.Add(key.(string))
+	nodes.Range(func(key string, _ *fullNode) bool {
+		reloadedNodes.Add(key)
 		return true
 	})
-	servicerMap.Range(func(key, _ any) bool {
-		currentServicers.Add(key.(string))
+	servicerMap.Range(func(key string, _ *servicer) bool {
+		currentServicers.Add(key)
 		return true
 	})
-	servicers.Range(func(key, _ any) bool {
-		reloadedServicers.Add(key.(string))
+	servicers.Range(func(key string, _ *servicer) bool {
+		reloadedServicers.Add(key)
 		return true
 	})
 
@@ -711,68 +712,70 @@ func reloadServicers() {
 	removedNodes := currentNodes.Difference(reloadedNodes)
 	removedServicers := currentServicers.Difference(reloadedServicers)
 
-	orphanServicers := sync.Map{}
+	orphanServicers := xsync.NewMapOf[*servicer]()
 
 	removedNodes.Each(func(s string) bool {
-		if v, ok := nodesMap.LoadAndDelete(s); ok {
-			n := v.(*fullNode)
-			for i := range n.Servicers {
-				address := n.Servicers[i].Address.String()
+		if node, ok := nodesMap.LoadAndDelete(s); ok {
+			node.Servicers.Range(func(key string, s *servicer) bool {
+				address := s.Address.String()
 				if v, ok := servicerMap.LoadAndDelete(address); ok {
 					// so we can use same servicer if basically was a move from node A to node B
-					orphanServicers.Store(n.Servicers[i].Address.String(), v)
+					orphanServicers.Store(address, v)
 				}
-			}
-			v.(*fullNode).stopNode()
+				return true
+			})
+			node.stop()
 		}
 		return true
 	})
 	removedServicers.Each(func(address string) bool {
-		if v, ok := servicerMap.LoadAndDelete(address); ok {
-			s := v.(*servicer)
-			for i := range s.Node.Servicers {
-				if s.Node.Servicers[i].Address.String() == address {
-					mutex.Lock() // lock it because could be in use by rpc
-					s.Node.NeedResize = true
-					s.Node.Servicers[i] = s.Node.Servicers[len(s.Node.Servicers)-1]
-					s.Node.Servicers = s.Node.Servicers[:len(s.Node.Servicers)-1]
-					mutex.Unlock()
-				}
+		if s, ok := servicerMap.LoadAndDelete(address); ok {
+			_, loaded := s.Node.Servicers.LoadAndDelete(address)
+			if loaded {
+				mutex.Lock() // lock it because could be in use by rpc
+				s.Node.NeedResize = true
+				mutex.Unlock()
 			}
 		}
 		return true
 	})
 
 	newNodes.Each(func(s string) bool {
-		v, _ := nodes.Load(s)
+		node, _ := nodes.Load(s)
 		// just add it because is new
-		nodesMap.Store(s, v)
-		node := v.(*fullNode)
-		for i := range node.Servicers {
-			address := node.Servicers[i].Address.String()
-			mutex.Lock() // lock it because could be in use by rpc
-			// if servicer was already present previous to reload, set same reference to avoid need to get app session cache
-			if v, ok := servicerMap.Load(address); ok {
-				node.Servicers[i] = v.(*servicer)
+		nodesMap.Store(s, node)
+
+		node.Servicers.Range(func(key string, s *servicer) bool {
+			address := s.Address.String()
+			if currentServicer, ok := servicerMap.Load(address); ok {
+				node.Servicers.Store(address, currentServicer)
 			} else if v, ok := orphanServicers.Load(address); ok {
-				orphanServicers.Delete(address) // remove it from orphans and assign to new node
-				node.Servicers[i] = v.(*servicer)
+				// remove it from orphans and assign to new node
+				orphanServicers.Delete(address)
+				node.Servicers.Store(address, v)
 			}
-			mutex.Unlock()
-		}
+			return true
+		})
 		// if cron is already running it will omit this call.
-		node.Crons.Start()
+		node.start()
 		return true
 	})
 	newServicers.Each(func(address string) bool {
-		v, _ := servicers.Load(address)
-		servicerMap.Store(address, v)
-		s := v.(*servicer)
-		if n, ok := nodesMap.Load(s.Node.URL); ok {
+		s, _ := servicers.Load(address)
+		servicerMap.Store(address, s)
+		if node, ok := nodesMap.Load(s.Node.URL); ok {
 			// set the already existent fullNode reference instead of the new one.
-			s.Node = n.(*fullNode)
+			s.Node = node
+
+			if orphan, ok := orphanServicers.Load(address); ok {
+				orphan.Node = node
+				s = orphan
+				// reassign to reuse the orphan one
+			}
+
+			s.Node.Servicers.Store(address, s)
+
 			mutex.Lock() // lock it because could be in use by rpc
-			s.Node.Servicers = append(s.Node.Servicers, s)
 			s.Node.NeedResize = true
 			mutex.Unlock()
 		}
@@ -788,17 +791,15 @@ func reloadServicers() {
 		logger.Info(fmt.Sprintf("New Servicer: %d Removed Servicer: %d", newServicers.Cardinality(), removedServicers.Cardinality()))
 
 		newServicersList := make([]string, 0)
-		totalNodes := 0
+		totalNodes := nodesMap.Size()
 
-		nodesMap.Range(func(key, value any) bool {
-			totalNodes++
-			value.(*fullNode).ResizeWorker()
+		nodesMap.Range(func(key string, node *fullNode) bool {
+			node.ResizeWorker()
 
 			return true
 		})
 
-		servicerMap.Range(func(key, value any) bool {
-			s := value.(*servicer)
+		servicerMap.Range(func(key string, s *servicer) bool {
 			newServicersList = append(newServicersList, s.Address.String())
 			return true
 		})
@@ -823,6 +824,8 @@ func initChainsHotReload() {
 		return
 	}
 
+	logger.Info(fmt.Sprintf("chains hot reload set to run every %d milliseconds", app.GlobalMeshConfig.ChainsHotReloadInterval))
+
 	for {
 		time.Sleep(time.Duration(app.GlobalMeshConfig.ChainsHotReloadInterval) * time.Millisecond)
 		reloadChains()
@@ -834,6 +837,8 @@ func initKeysHotReload() {
 		logger.Info("skipping hot reload due to keys_hot_reload_interval is less or equal to 0")
 		return
 	}
+
+	logger.Info(fmt.Sprintf("keys hot reload set to run every %d milliseconds", app.GlobalMeshConfig.KeysHotReloadInterval))
 
 	for {
 		time.Sleep(time.Duration(app.GlobalMeshConfig.KeysHotReloadInterval) * time.Millisecond)
@@ -945,7 +950,7 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 func (s *servicer) LoadAppSession(hash []byte) (*appSessionCache, bool) {
 	sHash := hex.EncodeToString(hash)
 	if v, ok := s.SessionCache.Load(sHash); ok {
-		return v.(*appSessionCache), ok
+		return v, ok
 	}
 
 	return nil, false
@@ -1038,7 +1043,7 @@ func getServicerFromPubKey(pubKey string) *servicer {
 		return nil
 	}
 
-	return s.(*servicer)
+	return s
 }
 
 // notifyServicer - call servicer to ack about the processed relay.
@@ -1081,7 +1086,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 		),
 	)
 
-	s, ok := servicerMap.Load(servicerAddress)
+	servicerNode, ok := servicerMap.Load(servicerAddress)
 
 	if !ok {
 		logger.Error(
@@ -1093,8 +1098,6 @@ func notifyServicer(r *pocketTypes.Relay) {
 		)
 		return
 	}
-
-	servicerNode := s.(*servicer)
 
 	requestURL := fmt.Sprintf(
 		"%s%s?authtoken=%s&chain=%s&app=%s",
@@ -1368,12 +1371,10 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 		return nil, sdk.ErrInternal("could not convert servicer hex to public key")
 	}
 
-	s, ok := servicerMap.Load(servicerAddress)
+	servicerNode, ok := servicerMap.Load(servicerAddress)
 	if !ok {
 		return nil, sdk.ErrInternal("failed to find correct servicer PK")
 	}
-
-	servicerNode := s.(*servicer)
 
 	// attempt to execute
 	respPayload, err := execute(relay, chains, &servicerNode.Address)
@@ -1418,12 +1419,10 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 		return nil, nil, errors.New("could not convert servicer hex to public key")
 	}
 
-	s, ok := servicerMap.Load(servicerAddress)
+	servicerNode, ok := servicerMap.Load(servicerAddress)
 	if !ok {
 		return nil, nil, errors.New("failed to find correct servicer PK")
 	}
-
-	servicerNode := s.(*servicer)
 
 	if servicerNode.Node.Status == nil {
 		return nil, nil, fmt.Errorf("pocket node is currently unavailable")
@@ -2108,13 +2107,12 @@ func checkNodeEndpoint(node *fullNode, endpoint string) error {
 // connectivityChecks - run check over critical endpoints that mesh node need to be able to reach on servicer
 func connectivityChecks(onlyFor mapset.Set[string]) {
 	logger.Info("start connectivity checks")
-	totalNodes := 0
-	nodesMap.Range(func(key, value any) bool {
-		totalNodes++
-		return true
-	})
+	totalNodes := nodesMap.Size()
+	if onlyFor.Cardinality() > 0 {
+		totalNodes = onlyFor.Cardinality()
+	}
 	connectivityWorkerPool := pond.New(
-		totalNodes, 0, pond.MinWorkers(100),
+		totalNodes, totalNodes, pond.MinWorkers(totalNodes), // as fast as possible.
 		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
 		pond.Strategy(pond.Eager()),
 	)
@@ -2124,8 +2122,13 @@ func connectivityChecks(onlyFor mapset.Set[string]) {
 	endpoints := []string{ServicerRelayEndpoint, ServicerSessionEndpoint, ServicerCheckEndpoint}
 
 	// check health for all the servicer nodes before start.
-	nodesMap.Range(func(key, value any) bool {
-		node := value.(*fullNode)
+	nodesMap.Range(func(key string, node *fullNode) bool {
+		// run this check only if something is sent, otherwise (like on first start) it will run for all the nodes.
+		if onlyFor.Cardinality() > 0 && !onlyFor.Contains(key) {
+			// skip node because
+			return true
+		}
+
 		for _, endpoint := range endpoints {
 			connectivityWorkerPool.Submit(func() {
 				ep := endpoint
@@ -2154,13 +2157,12 @@ func connectivityChecks(onlyFor mapset.Set[string]) {
 	}
 
 	firstCheckWorker := pond.New(
-		totalNodes, 0, pond.MinWorkers(100),
+		totalNodes, totalNodes, pond.MinWorkers(totalNodes),
 		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
 		pond.Strategy(pond.Eager()),
 	)
 
-	nodesMap.Range(func(key, value any) bool {
-		node := value.(*fullNode)
+	nodesMap.Range(func(key string, node *fullNode) bool {
 		// it will not kill the process because sometimes there is errors on the node side that are solved without
 		// need to restart mesh client, like routing one.
 		firstCheckWorker.Submit(func() {
@@ -2169,24 +2171,33 @@ func connectivityChecks(onlyFor mapset.Set[string]) {
 			if e != nil {
 				logger.Error(fmt.Sprintf("node %s fail check with: %s", node.URL, e.Error()))
 			}
-		})
 
-		// start crons - for the next checks
-		node.Crons.Start()
+			// start node working
+			node.start()
+		})
 
 		return true
 	})
+
+	firstCheckWorker.StopAndWait()
 
 	logger.Info("connectivity check done")
 }
 
 // runNodeCheck - check server /v1/health endpoint
 func runNodeCheck(node *fullNode) error {
-	logger.Debug(fmt.Sprintf("running node %s check", node.URL))
-	servicers := make([]string, 0)
-	for _, s := range node.Servicers {
-		servicers = append(servicers, s.Address.String())
+	if node.Servicers.Size() == 0 {
+		return errors.New(fmt.Sprintf("node %s has 0 servicers load.", node.URL))
 	}
+
+	logger.Debug(fmt.Sprintf("checking node %s connectivity", node.URL))
+	servicers := make([]string, 0)
+
+	node.Servicers.Range(func(key string, s *servicer) bool {
+		servicers = append(servicers, s.Address.String())
+		return true
+	})
+
 	payload := meshCheckPayload{
 		Servicers: servicers,
 		Chains:    make([]string, 0),
@@ -2280,11 +2291,9 @@ func scheduleNodeChecks(c *cron.Cron, node *fullNode) {
 // cleanOldSessions - clean up sessions that are longer than 50 blocks (just to be sure they are not needed)
 func cleanOldSessions(c *cron.Cron) {
 	_, err := c.AddFunc("@every 30m", func() {
-		servicerMap.Range(func(_, sn any) bool {
-			servicerNode := sn.(*servicer)
-			servicerNode.SessionCache.Range(func(key any, ss any) bool {
-				appSession := ss.(*appSessionCache)
-				hash, err := hex.DecodeString(key.(string))
+		servicerMap.Range(func(_ string, servicerNode *servicer) bool {
+			servicerNode.SessionCache.Range(func(key string, appSession *appSessionCache) bool {
+				hash, err := hex.DecodeString(key)
 				if err != nil {
 					logger.Error("error decoding session hash to delete from cache " + err.Error())
 					return true
@@ -2323,12 +2332,10 @@ func createNode(url string) *fullNode {
 
 	node := &fullNode{
 		URL:       url,
-		Servicers: make([]*servicer, 0),
+		Servicers: xsync.NewMapOf[*servicer](),
 		Status:    nil,
 		Crons:     nodeCronJobsWorker,
 	}
-
-	node.NewWorker()
 
 	scheduleNodeChecks(nodeCronJobsWorker, node)
 
@@ -2336,7 +2343,10 @@ func createNode(url string) *fullNode {
 }
 
 // loadServicersFromFile return a sync.Map of nodes/servicers that could be used to start working or calculate a reload
-func loadServicersFromFile() (nodes sync.Map, servicers sync.Map) {
+func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *xsync.MapOf[string, *servicer]) {
+	nodes = xsync.NewMapOf[*fullNode]()
+	servicers = xsync.NewMapOf[*servicer]()
+
 	path := getServicersFilePath()
 	logger.Info("reading private key path=" + path)
 
@@ -2378,7 +2388,7 @@ func loadServicersFromFile() (nodes sync.Map, servicers sync.Map) {
 					node = createNode(n.URL)
 					nodes.Store(n.URL, node)
 				} else {
-					node = v.(*fullNode)
+					node = v
 				}
 
 				for index, pkStr := range n.Keys {
@@ -2394,18 +2404,17 @@ func loadServicersFromFile() (nodes sync.Map, servicers sync.Map) {
 
 					addressStr := address.String()
 
-					if v, ok := servicers.Load(addressStr); ok {
-						servicer := v.(*servicer)
-						node.Servicers = append(node.Servicers, servicer)
+					if s, ok := servicers.Load(addressStr); ok {
+						node.Servicers.Store(addressStr, s)
 					} else {
-						servicer := &servicer{
-							SessionCache: sync.Map{},
+						newServicer := &servicer{
+							SessionCache: xsync.NewMapOf[*appSessionCache](),
 							PrivateKey:   pk,
 							Address:      address,
 							Node:         node,
 						}
-						servicers.Store(addressStr, servicer)
-						node.Servicers = append(node.Servicers, servicer)
+						servicers.Store(addressStr, newServicer)
+						node.Servicers.Store(addressStr, newServicer)
 					}
 				}
 			}
@@ -2425,7 +2434,7 @@ func loadServicersFromFile() (nodes sync.Map, servicers sync.Map) {
 				node = createNode(n.ServicerUrl)
 				nodes.Store(n.ServicerUrl, node)
 			} else {
-				node = v.(*fullNode)
+				node = v
 			}
 
 			pk, err := crypto.NewPrivateKey(n.PrivateKey)
@@ -2440,18 +2449,17 @@ func loadServicersFromFile() (nodes sync.Map, servicers sync.Map) {
 
 			addressStr := address.String()
 
-			if v, ok := servicers.Load(addressStr); ok {
-				servicer := v.(*servicer)
-				node.Servicers = append(node.Servicers, servicer)
+			if s, ok := servicers.Load(addressStr); ok {
+				node.Servicers.Store(addressStr, s)
 			} else {
-				servicer := &servicer{
-					SessionCache: sync.Map{},
+				newServicer := &servicer{
+					SessionCache: xsync.NewMapOf[*appSessionCache](),
 					PrivateKey:   pk,
 					Address:      address,
 					Node:         node,
 				}
-				servicers.Store(addressStr, servicer)
-				node.Servicers = append(node.Servicers, servicer)
+				servicers.Store(addressStr, newServicer)
+				node.Servicers.Store(addressStr, newServicer)
 			}
 		}
 	}
@@ -2463,87 +2471,30 @@ func loadServicersFromFile() (nodes sync.Map, servicers sync.Map) {
 func loadServicerNodes() (totalNodes, totalServicers int) {
 	nodes, servicers := loadServicersFromFile()
 
-	nodes.Range(func(key, value any) bool {
+	nodes.Range(func(key string, value *fullNode) bool {
 		nodesMap.Store(key, value)
 		return true
 	})
 
-	servicers.Range(func(key, value any) bool {
+	servicers.Range(func(key string, value *servicer) bool {
 		servicerMap.Store(key, value)
 		return true
 	})
 
 	loadedServicerList := make([]string, 0)
-	loadedNodeList := make([]string, 0)
 
-	servicerMap.Range(func(key, value any) bool {
-		s := value.(*servicer)
-		loadedServicerList = append(loadedServicerList, s.Address.String())
+	servicerMap.Range(func(key string, value *servicer) bool {
+		loadedServicerList = append(loadedServicerList, value.Address.String())
 		return true
 	})
 
-	nodesMap.Range(func(key, value any) bool {
-		node := value.(*fullNode)
-		loadedNodeList = append(loadedNodeList, node.URL)
-		return true
-	})
-
-	totalNodes = len(loadedNodeList)
-	totalServicers = len(loadedServicerList)
+	totalNodes = nodes.Size()
+	totalServicers = servicers.Size()
 	mutex.Lock()
 	servicerList = loadedServicerList
 	mutex.Unlock()
 
 	return
-}
-
-// removeServicers - stop receiving work for them and remove after that.
-func removeServicers(servicers []string) {
-	if len(servicers) > 0 {
-		logger.Debug(
-			fmt.Sprintf(
-				"start drain of %d servicers after a hot reload of %s",
-				len(servicers),
-				getServicersFilePath(),
-			),
-		)
-	}
-	for _, address := range servicers {
-		s, ok := servicerMap.LoadAndDelete(address)
-
-		if !ok {
-			// is not there
-			continue
-		}
-		servicerNode := s.(*servicer)
-		logger.Info(
-			fmt.Sprintf(
-				"removing servicer %s after a hot reload of %s",
-				servicerNode.Address.String(),
-				getServicersFilePath(),
-			),
-		)
-		var matchIndex int
-		for i := range servicerNode.Node.Servicers {
-			if servicerNode.Node.Servicers[i].Address.String() == servicerNode.Address.String() {
-				matchIndex = i
-				break
-			}
-		}
-		// faster way than iterate over all the elements; we do not care about sort here.
-		// ------------------------------------------------------------------------------
-		// replace removed element with the last one
-		servicerNode.Node.Servicers[matchIndex] = servicerNode.Node.Servicers[len(servicerNode.Node.Servicers)-1]
-		// reassign array with the new one without last entry
-		servicerNode.Node.Servicers = servicerNode.Node.Servicers[:len(servicerNode.Node.Servicers)-1]
-
-		logger.Info(
-			fmt.Sprintf(
-				"servicer %s successfuly drained and removed",
-				servicerNode.Address.String(),
-			),
-		)
-	}
 }
 
 // getAuthTokenFromFile - read from path a json that match sdk.AuthToken struct
@@ -2743,9 +2694,16 @@ func (node *fullNode) NewWorker() {
 		log2.Fatal(fmt.Sprintf("strategy %s is not a valid option; allowed values are: lazy|eager|balanced", app.GlobalMeshConfig.WorkerStrategy))
 	}
 
+	workerMaxCapacity := node.Servicers.Size() * app.GlobalMeshConfig.MaxWorkersCapacity
+	logger.Debug(
+		fmt.Sprintf(
+			"starting worker for node %s with MaxWorkers=%d and MaxCapacity=%d",
+			node.URL, app.GlobalMeshConfig.MaxWorkers, workerMaxCapacity,
+		),
+	)
 	node.Worker = pond.New(
 		// size worker dynamically based on amount of servicers.
-		app.GlobalMeshConfig.MaxWorkers, len(node.Servicers)*app.GlobalMeshConfig.MaxWorkersCapacity,
+		app.GlobalMeshConfig.MaxWorkers, workerMaxCapacity,
 		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
 		pond.PanicHandler(panicHandler),
 		pond.Strategy(strategy),
@@ -2823,7 +2781,7 @@ func initCache() {
 				continue
 			}
 
-			s, ok := servicerMap.Load(servicerAddress)
+			servicerNode, ok := servicerMap.Load(servicerAddress)
 			if !ok {
 				logger.Debug(
 					fmt.Sprintf(
@@ -2836,7 +2794,6 @@ func initCache() {
 				continue
 			}
 
-			servicerNode, ok := s.(*servicer)
 			if !ok {
 				logger.Debug(
 					fmt.Sprintf(
@@ -2896,7 +2853,13 @@ func GetServicerMeshRoutes() Routes {
 	return routes
 }
 
-func (node *fullNode) stopNode() {
+func (node *fullNode) start() {
+	logger.Debug(fmt.Sprintf("starting node %s with %d servicers", node.URL, node.Servicers.Size()))
+	node.Crons.Start()
+	node.NewWorker()
+}
+
+func (node *fullNode) stop() {
 	logger.Debug(fmt.Sprintf("stopping worker pool of node %s", node.URL))
 	node.Worker.Stop()
 	logger.Debug(fmt.Sprintf("worker pool of node %s stopped!", node.URL))
@@ -2927,9 +2890,8 @@ func StopMeshRPC() {
 	// stop accepting new tasks and signal all workers to stop processing new tasks. Tasks being processed by workers
 	// will continue until completion unless the process is terminated.
 	logger.Info("stopping worker pools...")
-	nodesMap.Range(func(key, value any) bool {
-		node := value.(*fullNode)
-		node.stopNode()
+	nodesMap.Range(func(key string, node *fullNode) bool {
+		node.stop()
 		return true
 	})
 	logger.Info("worker pools stopped!")
