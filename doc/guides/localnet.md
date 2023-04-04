@@ -93,17 +93,7 @@ cd pocket-e2e-stack
 
 **What am I running?**
 
-- Four containerized `Validator` nodes
-- A local version of the `Tendermint` library
-- Hot reloading code in both `Tendermint` and `Pocket-Core`
-- A bot that can be used to send transactions to the network
-- A short (~30 second) block time
-
-You can see a demo of the LocalNet here:
-
-https://user-images.githubusercontent.com/1892194/225497350-3817b262-f5d5-483b-bb8f-47fb0b614321.mov
-
-- This stack consists of four pocket validator nodes. You can submit a Pocket RPC to each node via 8082, 8083, 8084, and 8085/tcp respectively, and a Tendermint RPC to each node via 26658, 26659, 26660, 26661/tcp respectively.
+This stack consists of four pocket validator nodes. You can submit a Pocket RPC to each node via 8082, 8083, 8084, and 8085/tcp respectively, and a Tendermint RPC to each node via 26658, 26659, 26660, 26661/tcp respectively.
 
 **IMPORTANT: Inspect the logs in case something looks abnormal or an error occurred.**
 
