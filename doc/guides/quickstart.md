@@ -451,17 +451,13 @@ Use the CLI or Manually Edit: `$HOME/.pocket/config/chains.json`
 {% hint style="info" %} Relay Chain ID's and docs can be
 found [here](https://docs.pokt.network/supported-blockchains/). {% endhint %}
 
-These are external blockchain nodes such as ethereum, polygon and harmony. You will need to set these up by following their respective documentation. Once they are synced, you can enter the url and credentials into the following file. 
+These are external blockchain nodes such as ethereum, polygon and harmony. You will need to set these up by following their respective documentation. Once they are synced, you can enter the url and credentials into the following file.
 
 ```text
 [
   {
     "id": "0002",
     "url": "http://eth-geth.com",
-    "basic_auth": {
-      "username": "",
-      "password": ""
-    }
   }
 ]
 ```

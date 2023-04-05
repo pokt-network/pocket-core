@@ -299,7 +299,7 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 	defer sdk.TimeTrack(time.Now())
 	ctx = ctx.WithEventManager(sdk.NewEventManager())
 	validatorUpdates := []abci.ValidatorUpdate{}
-	UpdateToApply := &abci.ConsensusParams{}
+	updateToApply := &abci.ConsensusParams{}
 
 	for _, moduleName := range m.OrderEndBlockers {
 		moduleValUpdates := m.Modules[moduleName].EndBlock(ctx, req)
@@ -316,12 +316,12 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 		//Currently its only a non empty struct on pocketcore module
 		consensusParamUpdate := m.Modules[moduleName].ConsensusParamsUpdate(ctx)
 		if !consensusParamUpdate.Equal(&abci.ConsensusParams{}) {
-			UpdateToApply = consensusParamUpdate
+			updateToApply = consensusParamUpdate
 		}
 	}
 
 	//not adding empty struct  saves us from updating consensus params every block if there are no updates.
-	if UpdateToApply.Equal(&abci.ConsensusParams{}) {
+	if updateToApply.Equal(&abci.ConsensusParams{}) {
 		return abci.ResponseEndBlock{
 			ValidatorUpdates: validatorUpdates,
 			Events:           ctx.EventManager().ABCIEvents(),
@@ -331,7 +331,7 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 	return abci.ResponseEndBlock{
 		ValidatorUpdates:      validatorUpdates,
 		Events:                ctx.EventManager().ABCIEvents(),
-		ConsensusParamUpdates: UpdateToApply,
+		ConsensusParamUpdates: updateToApply,
 	}
 }
 
