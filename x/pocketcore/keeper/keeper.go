@@ -83,11 +83,10 @@ func (k Keeper) consensusBlockSizeParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams
 		return &abci.ConsensusParams{}
 	}
 
-	// DISCUSS: Should we floor the block size to the genesis default value?
-	// if currentHeightBlockSize < types.DefaultBlockByteSize {
-	// 	ctx.Logger().Error("block size is less than default value, this should never happen")
-	// 	return &abci.ConsensusParams{}
-	// }
+	if currentHeightBlockSize < types.DefaultBlockByteSize || codec.TestMode > -4 {
+		ctx.Logger().Error("block size is less than default value, this should never happen")
+		return &abci.ConsensusParams{}
+	}
 
 	// If the block size has changed
 	return &abci.ConsensusParams{

@@ -999,13 +999,13 @@ func TestBlockSize_ChangeParams(t *testing.T) {
 // 1. Verify that smaller block sizes cannot be completely filled
 // 2. Verify a sufficiently large block includes the backlog of transactions
 // 3. Verify that at steady state (i.e. block is large enough to include all transactions), the number of txs in each block is the same
-// 4. Emperically, the steady state is approximately 50 txs per block given the configurations below; see #1538 for more details
+// 4. Empirically, the steady state is approximately 50 txs per block given the configurations below; see #1538 for more details
 func TestBlockSize_MaximumSize(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
 
 	// Prepare network configs
-	codec.TestMode = -3                                   // Includes codec upgrade, validator split and non-custodial upgrade
-	codec.UpgradeHeight = 2                               // Height at which codec was upgraded from amino to proto
+	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade
+	codec.UpgradeHeight = -1                              // Height at which codec was upgraded from amino to proto
 	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
 	_ = memCodecMod(true)
 	resetTestACL()
