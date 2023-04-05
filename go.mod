@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/gogoproto v1.4.10
 	github.com/cucumber/godog v0.12.5
 	github.com/akrylysov/pogreb v0.10.1
-	github.com/alitto/pond v1.8.1
+	github.com/alitto/pond v1.8.3
 	github.com/cucumber/godog v0.12.6
 	github.com/deckarep/golang-set/v2 v2.3.0
 	github.com/go-kit/kit v0.12.0
