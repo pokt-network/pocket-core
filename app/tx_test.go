@@ -1004,11 +1004,9 @@ func TestBlockSize_MaximumSize(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
 
 	// Prepare network configs
-	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade
+	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade and allows block size decreases
 	codec.UpgradeHeight = -1                              // Height at which codec was upgraded from amino to proto
 	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
-	_ = memCodecMod(true)
-	resetTestACL()
 
 	// Pick a small initial genesis block size
 	blockParamsMaxBytes := int64(2000)

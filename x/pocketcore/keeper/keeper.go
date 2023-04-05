@@ -83,7 +83,7 @@ func (k Keeper) consensusBlockSizeParamUpdate(ctx sdk.Ctx) *abci.ConsensusParams
 		return &abci.ConsensusParams{}
 	}
 
-	if currentHeightBlockSize < types.DefaultBlockByteSize || codec.TestMode > -4 {
+	if currentHeightBlockSize < types.DefaultBlockByteSize && codec.TestMode > -4 {
 		ctx.Logger().Error("block size is less than default value, this should never happen")
 		return &abci.ConsensusParams{}
 	}
