@@ -178,7 +178,7 @@ func StartMeshRPC(simulation bool) {
 		Addr:              ":" + app.GlobalMeshConfig.RPCPort,
 		Handler: http.TimeoutHandler(
 			rpc.Router(routes),
-			time.Duration(app.GlobalMeshConfig.RPCTimeout)*time.Millisecond,
+			time.Duration(app.GlobalMeshConfig.ClientRPCTimeout)*time.Millisecond,
 			"Server Timeout Handling Request",
 		),
 	}

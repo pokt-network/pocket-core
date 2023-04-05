@@ -17,7 +17,8 @@ type MeshConfig struct {
 	DataDir                string `json:"data_dir"`
 	RPCPort                string `json:"rpc_port"`
 	ChainsName             string `json:"chains_name"`
-	RPCTimeout             int64  `json:"rpc_timeout"`
+	ClientRPCTimeout       int64  `json:"client_rpc_timeout"`
+	ChainRPCTimeout        int64  `json:"chain_rpc_timeout"`
 	LogLevel               string `json:"log_level"`
 	UserAgent              string `json:"user_agent"`
 	AuthTokenFile          string `json:"auth_token_file"`
@@ -40,7 +41,6 @@ type MeshConfig struct {
 
 	// Servicer
 	ServicerPrivateKeyFile string `json:"servicer_private_key_file"`
-	ServicerURL            string `json:"servicer_url"`
 	ServicerRPCTimeout     int64  `json:"servicer_rpc_timeout"`
 	ServicerAuthTokenFile  string `json:"servicer_auth_token_file"`
 	ServicerRetryMaxTimes  int    `json:"servicer_retry_max_times"`
@@ -71,7 +71,8 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		DataDir:                dataDir,
 		RPCPort:                sdk.DefaultRPCPort,
 		ChainsName:             sdk.DefaultChainsName,
-		RPCTimeout:             sdk.DefaultRPCTimeout,
+		ClientRPCTimeout:       sdk.DefaultRPCTimeout,
+		ChainRPCTimeout:        sdk.DefaultRPCTimeout,
 		LogLevel:               "*:info, *:error",
 		UserAgent:              sdk.DefaultUserAgent,
 		AuthTokenFile:          "auth" + FS + "mesh.json",
@@ -93,7 +94,6 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		WorkersIdleTimeout: 10000,
 		// Servicer
 		ServicerPrivateKeyFile: "key" + FS + "key.json",
-		ServicerURL:            sdk.DefaultRemoteCLIURL,
 		ServicerRPCTimeout:     sdk.DefaultRPCTimeout,
 		ServicerAuthTokenFile:  "auth" + FS + "servicer.json",
 		ServicerRetryMaxTimes:  10,
@@ -106,8 +106,9 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		// Worker
 		MetricsWorkerStrategy:     "lazy",
 		MetricsMaxWorkers:         10,
-		MetricsMaxWorkersCapacity: 0,
+		MetricsMaxWorkersCapacity: 1000,
 		MetricsWorkersIdleTimeout: 10000,
+		MetricsReportInterval:     10,
 	}
 
 	return c
