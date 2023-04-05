@@ -22,21 +22,28 @@ Also, you need to set both of them behind a Global DNS provider. The Global DNS 
     * If not session in cache, query it to servicer_url/v1/private/mesh/session and then process relay
     * If session in cache and MaxRelays is not hit, process the relay.
 * Proxy any request to servicer
-* Monitor Servicer health using /v1/health and in memory cron jobs
-* Keep sessions in local cache
-* Keep relays in local cache until they are notified
+* Monitor Pocket node. It will check the following:
+  * Chains
+  * Servicer addresses
+  * Health (starting, catching up and height)
+* Keep sessions in memory cache
+* Keep relays in local cache (persistent) until they are notified
   * this ensures that even if the mesh node is restarted and the relay was not yet notified, they will be after node startup again
 * Auto clean up old serve session from cache
 * Servicer relays notification has a retry mechanism just in case the Servicer node is not responsive for a while.
   * this will only retry in some scenarios like http code greater than 401 and few code from pocket core
-* Implements a worker queue (per address) for the notification to keep the process simple and secure event under crash circumstances.
-* Supports many servicer at once (like Lean Pokt)
+* Implements a worker queue (per pocket node) for the notification to keep the process simple and secure event under crash circumstances.
+* Supports many nodes/servicer at once (like Lean Pokt or even multiple Lean Pokt at once)
 * Handle minimum mesh node side validations using response get from Health monitor about Height, Starting and Catching Up (same of pocket node)
 * Handle minimum relay validations about payload format (same of pocket node)
-* Check that servicer_url is reachable on the required paths.
-  * /v1/private/mesh/relay
-  * /v1/private/mesh/session
-  * /v1/health
+* Run connectivity chains on startup or reload:
+  * Check: /v1/private/mesh/relay
+  * Check: /v1/private/mesh/session
+  * Check /v1/private/mesh/check
+* Reload chains
+* Reload keys
+* Expose metrics of servicer relays
+* Expose metrics of workers
 
 ### Included Branches:
 
@@ -77,11 +84,7 @@ This guide assume you already have a Servicer properly setup and running. If not
 2. Update your `config.json`
    1. add `mesh_node` option as `true` into the section `pocket_config`
    2. change `generate_token_on_start` option to `false` into the section `pocket_config`
-3. If your proxy has all the endpoints closed except `/v1` and `/v1/client`, please add:
-   1. `/v1/private/mesh/relay` - allow mesh node to notify about relays done
-   2. `/v1/private/mesh/session` - allow mesh node to verify app session before process relays
-      * Used only if we don't have information on cache of that session.
-   3. `/v1/health` - return node status: version, height, starting, catching_up
+3. If your proxy has all the endpoints closed except `/v1` and `/v1/client`, please add: `/v1/private/mesh/<health|relay|session|check>`
 4. Start your node as you were doing.
 
 #### Setup Mesh Node:
@@ -90,51 +93,68 @@ This guide assume you already have a Servicer properly setup and running. If not
 2. Create the following `config.json` file inside the `--datadir` directory
 ```json
 {
-	"data_dir": "/home/app/.pocket/mesh",
-    "rpc_port": "8081", // mesh node listening port
-    "chains_name": "chains/chains.json", // chains for mesh node. This should be a filename path relative to --datadir
-    "rpc_timeout": 60000, // chains rpc timeout - time in milliseconds
-    "log_level": "*:info", // log level, you can try with *:error or even *:debug (this print a lot)
-    "user_agent": "mesh-node", // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
-    "auth_token_file": "key/auth.json", // authtoken for mesh private endpoints. This should be a filename path relative to --datadir
-    "json_sort_relay_responses": true,
-    "pocket_prometheus_port": "8083",
-    "prometheus_max_open_files": 3,
-    "relay_cache_file": "data/relays.pkt",
-  	"relay_cache_background_sync_interval": -1, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
-  	"relay_cache_background_compaction_interval": 600000, // time in milliseconds. https://pkg.go.dev/github.com/akrylysov/pogreb#Options
-    "hot_reload_interval": 0, // amount of milliseconds that chains and servicers file are read again; 0 or less disable it
-    // Worker options match with: https://github.com/alitto/pond#resizing-strategies
-    // These are used:
-    // 1. interceptor of dispatch, health and height /v1/query endpoints
-    // 2. notify servicer
-    // the set of values is "repetead" for each worker per address,
-    // so if you set 20 max workers and set 10 addresses, that means 200 max_workers for notify + 20 for hooks
-    "worker_strategy": "balanced", // Kind of worker strategy, could be: balanced | eager | lazy - avoid eager if you see many timeout on servicer
-    "max_workers": 10,
-    "max_workers_capacity": 30,
-    "workers_idle_timeout": 60000,
-    "servicer_private_key_file": "key/key.json", // servicer private key to sign proof message on relay response. This should be a filename path relative to --datadir
-    "servicer_rpc_timeout": 60000, // servicer rpc timeout - greater for faraway regions like (tokyo to us east)
-    "servicer_auth_token_file": "key/auth.json", // authtoken used to call servicer. This should be a filename path relative to --datadir
-    // Servicer relay notification has a retry mechanism, refer to: https://github.com/hashicorp/go-retryablehttp
-    "servicer_retry_max_times": 10,
-    "servicer_retry_wait_min": 10, // time in milliseconds
-    "servicer_retry_wait_max": 180000 // time in milliseconds
+  "data_dir": "/home/app/.pocket/mesh",
+  "rpc_port": "8081",
+  "chains_name": "chains/chains.json",
+  "client_rpc_timeout": 30000,
+  "chains_rpc_timeout": 30000,
+  "log_level": "*:info, *:error",
+  "user_agent": "mesh-node",
+  "auth_token_file": "key/auth.json",
+  "json_sort_relay_responses": true,
+  "relay_cache_file": "data/relays.pkt",
+  "relay_cache_background_sync_interval": 3600,
+  "relay_cache_background_compaction_interval": 18000,
+  "keys_hot_reload_interval": 180000,
+  "chains_hot_reload_interval": 180000,
+  "worker_strategy": "balanced",
+  "max_workers": 10,
+  "max_workers_capacity": 1000,
+  "workers_idle_timeout": 10000,
+  "servicer_private_key_file": "key/key.json",
+  "servicer_rpc_timeout": 60000,
+  "servicer_auth_token_file": "key/auth.json",
+  "servicer_retry_max_times": 10,
+  "servicer_retry_wait_min": 10,
+  "servicer_retry_wait_max": 180000,
+  "node_check_interval": 60,
+  "session_cache_clean_up_interval": 1800,
+  "pocket_prometheus_port": "8083",
+  "prometheus_max_open_files": 3,
+  "metrics_worker_strategy": "lazy",
+  "metrics_max_workers": 10,
+  "metrics_max_workers_capacity": 1000,
+  "metrics_workers_idle_timeout": 10000,
+  "metrics_report_interval": 10
 }
 ```
-3. Create Servicer private key file with following format into the path you set on `config.json`:
+3. Create Servicer private key file with one of the  following formats into the path you set on `config.json`:
 ```json
 [
   {
-	"priv_key": "aaabbbbcccccddd", // servicer private key
-	"servicer_url": "http://localhost:8081" // servicer url/ip where mesh node can reach the servicer node to check health, proxy requests and notify relays
+    // servicer private key
+    "priv_key": "aaabbbbcccccddd",
+    // servicer url/ip where mesh node can reach the servicer node to check health, proxy requests and notify relays
+    "servicer_url": "http://localhost:8081"
   },
   {
-	... // add as much servicers as you need to handle with one single geo-mesh process.
+    ... // add as much servicers as you need to handle with one single geo-mesh process.
   }
 ]
-
+```
+```json
+[
+  {
+    // servicer url/ip where mesh node can reach the servicer node to check health, proxy requests and notify relays
+    "url": "http://localhost:8081",
+    // servicers private keys
+    "keys": ["<key1>", "<keyN>"]
+  },
+  {
+    ...
+    // add as much node/servicers as you need to handle with one single geo-mesh process.
+  }
+]
 ```
 4. Create auth.json files into the path you set on `config.json` for `auth_token_file` and `servicer_auth_token_file`:
 ```json
@@ -147,7 +167,45 @@ This guide assume you already have a Servicer properly setup and running. If not
    * IMPORTANT: this need to handle all the chains that servicer support.
    * NOTE: If you want to support a subset of chains in a region, you will need set the chains here too but point them to the closest chain you have.
 6. Start your mesh node: `pocket start-mesh --datadir </your/path>`
-7. Call your mesh node at `/v1/mesh/health` to check it is alive
+7. Call your mesh node at `/v1/private/mesh/health?authtoken=<token>` to check it is alive and how many nodes/servicers it loaded from your setup.
+
+### Config file details
+
+| Key                                        	| Type   	| Default            	| Description                                                                                                                                                               	|
+|--------------------------------------------	|--------	|--------------------	|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| data_dir                                   	| String 	| -                  	| Where the data will be                                                                                                                                                    	|
+| rpc_port                                   	| String 	| 8081               	| Listening port                                                                                                                                                            	|
+| chains_name                                	| String 	| chains.json        	| Chains file path. This should be a filename path relative to --datadir                                                                                                    	|
+| client_rpc_timeout                         	| Number 	| 30000              	| Mesh Client RPC timeout                                                                                                                                                   	|
+| chain_rpc_timeout                          	| Number 	| 30000              	| Chains RPC timeout                                                                                                                                                        	|
+| log_level                                  	| String 	| *:info, *:error    	| Logger namespace:level. Allow multiple values split by comma                                                                                                              	|
+| user_agent                                 	| String 	| -                  	| HTTP Header User-Agent value used on every sent request to Pocket Node.                                                                                                   	|
+| auth_token_file                            	| String 	| auth/mesh.json     	| Auth Token file for mesh private endpoints. This should be a filename path relative to --datadir                                                                          	|
+| json_sort_relay_responses                  	| Bool   	| true               	| Turn on JSON payload sorting for responses.                                                                                                                               	|
+| relay_cache_file                           	| String 	| data/relays.pkt    	| Relays cache database. This database is used to persist relays in case mesh node is restarted, avoiding lost relays. This should be a filename path relative to --datadir 	|
+| relay_cache_background_sync_interval       	| Number 	| 3600               	| Time in milliseconds. Read More: https://pkg.go.dev/github.com/akrylysov/pogreb#Options                                                                                   	|
+| relay_cache_background_compaction_interval 	| Number 	| 18000              	| Time in milliseconds. Read More: https://pkg.go.dev/github.com/akrylysov/pogreb#Options                                                                                   	|
+| keys_hot_reload_interval                   	| Number 	| 180000             	| Interval in milliseconds to reload keys. Set 0 to disable.                                                                                                                	|
+| chains_hot_reload_interval                 	| Number 	| 180000             	| Interval in milliseconds to reload chains. Set 0 to disable.                                                                                                              	|
+| worker_strategy                            	| String 	| balanced           	| balanced \| eager \| lazy - Read more: https://github.com/alitto/pond#resizing-strategies                                                                                 	|
+| max_workers                                	| Number 	| 10                 	| Max amount of workers for each Pocket Node                                                                                                                                	|
+| max_workers_capacity                       	| Number 	| 1000               	| Max amount of tasks in queue without block it.                                                                                                                            	|
+| workers_idle_timeout                       	| Number 	| 10000              	| Worker idle timeout. Avoid values lowers than default one.                                                                                                                	|
+| servicer_private_key_file                  	| String 	| key/key.json       	| Pocket Node / Servicer key file. This should be a filename path relative to --datadir                                                                                     	|
+| servicer_rpc_timeout                       	| Number 	| 30000              	| Pocket Node RPC calls timeout. Time in milliseconds.                                                                                                                      	|
+| servicer_auth_token_file                   	| String 	| auth/servicer.json 	| Auth Token file for call Pocket Node mesh endpoints. This should be a filename path relative to --datadir                                                                 	|
+| servicer_retry_max_times                   	| Number 	| 10                 	| How many time will a Pocket Node RPC call be retried.                                                                                                                     	|
+| servicer_retry_wait_min                    	| Number 	| 5                  	| How much is the min time to wait until retry a Pocket Node RPC call. Time in milliseconds.                                                                                	|
+| servicer_retry_wait_max                    	| Number 	| 180                	| How much is the max time to wait until retry a Pocket Node RPC call. Time in milliseconds.                                                                                	|
+| node_check_interval                        	| Number 	| 60                 	| Pocket node check interval time. Time in seconds.                                                                                                                         	|
+| session_cache_clean_up_interval            	| Number 	| 1800               	| In memory cache clean up interval time. Time in seconds.                                                                                                                  	|
+| pocket_prometheus_port                     	| String 	| 8083               	| Prometheus metrics listening port.                                                                                                                                        	|
+| prometheus_max_open_files                  	| Number 	| 3                  	| Prometheus max open files.                                                                                                                                                	|
+| metrics_worker_strategy                    	| String 	| lazy               	| balanced \| eager \| lazy - Read more: <br>https://github.com/alitto/pond#resizing-strategies                                                                             	|
+| metrics_max_workers                        	| Number 	| 10                 	| Max amount of workers for each Metrics of each Pocket Node                                                                                                                	|
+| metrics_max_workers_capacity               	| Number 	| 1000               	| Max amount of tasks in queue without block it.                                                                                                                            	|
+| metrics_workers_idle_timeout               	| Number 	| 10000              	| Worker idle timeout. Avoid values lowers than default one.                                                                                                                	|
+| metrics_report_interval                    	| Number 	| 10                 	| Report interval for each Pocket node metric. Time in seconds.                                                                                                             	|
 
 ### How to Test?
 

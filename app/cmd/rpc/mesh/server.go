@@ -419,11 +419,11 @@ func prepareHttpClients() {
 	servicerTransport.MaxIdleConnsPerHost = 50
 
 	chainsClient = &http.Client{
-		Timeout:   time.Duration(app.GlobalMeshConfig.RPCTimeout) * time.Millisecond,
+		Timeout:   time.Duration(app.GlobalMeshConfig.ChainRPCTimeout) * time.Millisecond,
 		Transport: chainsTransport,
 	}
 	servicerClient = &http.Client{
-		Timeout:   time.Duration(app.GlobalMeshConfig.RPCTimeout) * time.Millisecond,
+		Timeout:   time.Duration(app.GlobalMeshConfig.ServicerRPCTimeout) * time.Millisecond,
 		Transport: servicerTransport,
 	}
 
