@@ -1,12 +1,13 @@
 package keeper
 
 import (
-	sdk "github.com/pokt-network/pocket-core/types"
-	"github.com/pokt-network/pocket-core/x/apps/exported"
-	"github.com/pokt-network/pocket-core/x/apps/types"
 	"math"
 	"math/big"
 	"os"
+
+	sdk "github.com/pokt-network/pocket-core/types"
+	"github.com/pokt-network/pocket-core/x/apps/exported"
+	"github.com/pokt-network/pocket-core/x/apps/types"
 )
 
 // GetApplication - Retrieve a single application from the main store

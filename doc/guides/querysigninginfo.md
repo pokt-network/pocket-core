@@ -134,5 +134,5 @@ Now lets see how to check if your node is at risk:
     }
     ```
 - If your node  **"jailed_blocks_counter"** is close to that value, is ```highly recommended``` that you send and unjail
-  tx immediately to solve this situation, or you may risk losing you staked tokens.
+  tx immediately to solve this situation, or you may risk losing your staked tokens.
 
