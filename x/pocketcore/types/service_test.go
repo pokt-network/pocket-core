@@ -2,17 +2,14 @@ package types
 
 import (
 	"encoding/hex"
-	"github.com/pokt-network/pocket-core/codec"
-	types2 "github.com/pokt-network/pocket-core/codec/types"
-	"github.com/pokt-network/pocket-core/crypto"
-	exported2 "github.com/pokt-network/pocket-core/x/apps/exported"
-	"github.com/pokt-network/pocket-core/x/auth"
-	"github.com/pokt-network/pocket-core/x/gov"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
+	exported2 "github.com/pokt-network/pocket-core/x/apps/exported"
 	appsType "github.com/pokt-network/pocket-core/x/apps/types"
 	"github.com/pokt-network/pocket-core/x/nodes/exported"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
@@ -331,7 +328,7 @@ type MockPosKeeper struct {
 type MockPocketKeeper struct{}
 
 func (m MockPocketKeeper) Codec() *codec.Codec {
-	return makeTestCodec()
+	panic("implement me")
 }
 
 func (m MockPocketKeeper) SessionNodeCount(ctx sdk.Ctx) (res int64) {
@@ -395,13 +392,4 @@ func (m MockPosKeeper) BlocksPerSession(ctx sdk.Ctx) (res int64) {
 
 func (m MockPosKeeper) StakeDenom(ctx sdk.Ctx) (res string) {
 	panic("implement me")
-}
-
-func makeTestCodec() *codec.Codec {
-	var cdc = codec.NewCodec(types2.NewInterfaceRegistry())
-	auth.RegisterCodec(cdc)
-	gov.RegisterCodec(cdc)
-	sdk.RegisterCodec(cdc)
-	crypto.RegisterAmino(cdc.AminoCodec().Amino)
-	return cdc
 }

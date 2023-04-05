@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/tendermint/tendermint/libs/strings"
 	"time"
 
-	"github.com/pokt-network/pocket-core/crypto"
-	abci "github.com/tendermint/tendermint/abci/types"
-
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/strings"
 )
 
 // UpdateTendermintValidators - Apply and return accumulated updates to the staked validator set
@@ -179,7 +178,7 @@ func (k Keeper) ValidateValidatorStaking(ctx sdk.Ctx, validator types.Validator,
 	return nil
 }
 
-//ValidateValidatorMsgSigner Check Validator Signature
+// ValidateValidatorMsgSigner Check Validator Signature
 func ValidateValidatorMsgSigner(validator types.Validator, signerAddress sdk.Address, k Keeper) (sdk.Error, bool) {
 	//check if outputAddress is defined, if not only the operator/node signature is valid
 	if validator.OutputAddress == nil {
@@ -652,8 +651,18 @@ func (k Keeper) UnjailValidator(ctx sdk.Ctx, addr sdk.Address) {
 		k.Logger(ctx).Error(fmt.Sprintf("cannot unjail already unjailed validator, validator: %v at height %d\n", validator, ctx.BlockHeight()))
 		return
 	}
-	// clear cache
-	k.PocketKeeper.ClearSessionCache()
+
+	// On and after this upgrade height, we start clearing the global session
+	// cache every time a node is unjailed to prevent any non-deterministic cache
+	// consistency issues.  We have been doing the same in other events such as
+	// editstake, unstake, and jail.  See #1529 for more details.
+	if k.Cdc.IsAfterNamedFeatureActivationHeight(
+		ctx.BlockHeight(),
+		codec.ClearUnjailedValSessionKey,
+	) {
+		k.PocketKeeper.ClearSessionCache()
+	}
+
 	validator.Jailed = false
 	k.SetValidator(ctx, validator)
 	k.ResetValidatorSigningInfo(ctx, addr)
