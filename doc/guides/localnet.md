@@ -45,10 +45,11 @@ Run `pwd` and identify the current path as it will be referenced to as `POCKET_C
 
 1. Copy the template env variables
 
+_NOTE: You may need to replace `sed -i` with `sed -i ''` below if you are using a mac_
+
 ```bash
-cd pocket-e2e-stack
-cp .env.template .env
-cp .playground.env.example .playground.env
+cp pocket-e2e-stack/.env.template pocket-e2e-stack/.env
+cp pocket-e2e-stack/.playground.env.example pocket-e2e-stack/.playground.env
 ```
 
 2. Update `POCKET_CORE_REPOS_PATH` in the appropriate `.env` variables:
@@ -66,11 +67,6 @@ sed -i 's|^POCKET_CORE_REPOS_PATH=.*$|POCKET_CORE_REPOS_PATH='$PWD'|' pocket-e2e
 # Update `ETH_ALTRUIST` and `POLY_ALTRUIST` appropriately.
 sed -i 's|^# ETH_ALTRUIST=.*$|ETH_ALTRUIST=<Your or public Ethereum endpoint>|' pocket-e2e-stack/.env
 sed -i 's|^# POLY_ALTRUIST=.*$|POLY_ALTRUIST=<Your or public Polygon endpoint>|' pocket-e2e-stack/.env
-```
-
-```bash
-source .env
-source .playground.env
 ```
 
 ### Pocket E2E Stack
