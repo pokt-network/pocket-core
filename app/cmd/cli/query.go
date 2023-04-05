@@ -125,7 +125,7 @@ var queryAccountTxs = &cobra.Command{
 		prove := false
 		received := false
 		order := "desc"
-		height := int64(0)
+		height := int64(0) // height=0 is ignored and implies latest height
 		if len(args) >= 2 {
 			parsedPage, err := strconv.Atoi(args[1])
 			if err == nil {
