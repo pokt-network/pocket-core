@@ -8,7 +8,7 @@ replace github.com/tendermint/tm-db => github.com/pokt-network/tm-db v0.5.2-0.20
 
 require (
 	github.com/akrylysov/pogreb v0.10.1
-	github.com/alitto/pond v1.8.1
+	github.com/alitto/pond v1.8.3
 	github.com/cucumber/godog v0.12.6
 	github.com/deckarep/golang-set/v2 v2.3.0
 	github.com/go-kit/kit v0.12.0

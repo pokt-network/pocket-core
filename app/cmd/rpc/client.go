@@ -191,13 +191,13 @@ func SendRawTx(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	WriteJSONResponse(w, string(j), r.URL.Path, r.Host)
 }
 
-type simRelayParams struct {
+type SimRelayParams struct {
 	RelayNetworkID string        `json:"relay_network_id"` // RelayNetworkID
 	Payload        types.Payload `json:"payload"`          // the data payload of the request
 }
 
 func SimRequest(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var params = simRelayParams{}
+	var params = SimRelayParams{}
 	if err := PopModel(w, r, ps, &params); err != nil {
 		WriteErrorResponse(w, 400, err.Error())
 		return

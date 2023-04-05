@@ -22,21 +22,22 @@ type MeshConfig struct {
 	UserAgent              string `json:"user_agent"`
 	AuthTokenFile          string `json:"auth_token_file"`
 	JSONSortRelayResponses bool   `json:"json_sort_relay_responses"`
-	// Prometheus
-	PrometheusAddr         string `json:"pocket_prometheus_port"`
-	PrometheusMaxOpenfiles int    `json:"prometheus_max_open_files"`
+
 	// Relay Cache
 	RelayCacheFile                         string `json:"relay_cache_file"`
 	RelayCacheBackgroundSyncInterval       int    `json:"relay_cache_background_sync_interval"`
 	RelayCacheBackgroundCompactionInterval int    `json:"relay_cache_background_compaction_interval"`
+
 	// Hot Reload Interval in milliseconds
 	KeysHotReloadInterval   int `json:"keys_hot_reload_interval"`
 	ChainsHotReloadInterval int `json:"chains_hot_reload_interval"`
+
 	// Workers
 	WorkerStrategy     string `json:"worker_strategy"`
 	MaxWorkers         int    `json:"max_workers"`
 	MaxWorkersCapacity int    `json:"max_workers_capacity"`
 	WorkersIdleTimeout int    `json:"workers_idle_timeout"`
+
 	// Servicer
 	ServicerPrivateKeyFile string `json:"servicer_private_key_file"`
 	ServicerURL            string `json:"servicer_url"`
@@ -46,8 +47,22 @@ type MeshConfig struct {
 	ServicerRetryWaitMin   int    `json:"servicer_retry_wait_min"`
 	ServicerRetryWaitMax   int    `json:"servicer_retry_wait_max"`
 
-	// Node Health check interval in seconds
+	// Node Health check interval (seconds)
 	NodeCheckInterval int `json:"node_check_interval"`
+
+	// Session cache (in-memory) clean up interval (seconds)
+	SessionCacheCleanUpInterval int `json:"session_cache_clean_up_interval"`
+
+	// Prometheus
+	PrometheusAddr         string `json:"pocket_prometheus_port"`
+	PrometheusMaxOpenfiles int    `json:"prometheus_max_open_files"`
+	// Metrics Workers
+	MetricsWorkerStrategy     string `json:"metrics_worker_strategy"`
+	MetricsMaxWorkers         int    `json:"metrics_max_workers"`
+	MetricsMaxWorkersCapacity int    `json:"metrics_max_workers_capacity"`
+	MetricsWorkersIdleTimeout int    `json:"metrics_workers_idle_timeout"`
+	// Metrics report interval in seconds
+	MetricsReportInterval int `json:"metrics_report_interval"`
 }
 
 func defaultMeshConfig(dataDir string) MeshConfig {
@@ -75,7 +90,7 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		WorkerStrategy:     "balanced",
 		MaxWorkers:         10,
 		MaxWorkersCapacity: 1000,
-		WorkersIdleTimeout: 100,
+		WorkersIdleTimeout: 10000,
 		// Servicer
 		ServicerPrivateKeyFile: "key" + FS + "key.json",
 		ServicerURL:            sdk.DefaultRemoteCLIURL,
@@ -86,6 +101,13 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ServicerRetryWaitMax:   180,
 		// Node Check
 		NodeCheckInterval: 60,
+		// Session cache (in-memory) clean up interval (seconds)
+		SessionCacheCleanUpInterval: 1800,
+		// Worker
+		MetricsWorkerStrategy:     "lazy",
+		MetricsMaxWorkers:         10,
+		MetricsMaxWorkersCapacity: 0,
+		MetricsWorkersIdleTimeout: 10000,
 	}
 
 	return c

@@ -1426,7 +1426,7 @@ func TestRPC_SimRelay(t *testing.T) {
 		Data:   expectedRequest,
 		Method: "POST",
 	}
-	simParams := simRelayParams{
+	simParams := SimRelayParams{
 		RelayNetworkID: dummyChainsHash,
 		Payload:        payload,
 	}
