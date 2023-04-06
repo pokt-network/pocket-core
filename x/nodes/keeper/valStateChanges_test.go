@@ -212,6 +212,9 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			tt.want.Status = sdk.Staked
 			// see if the changes stuck
 			got, _ := keeper.GetValidator(context, tt.origApp.Address)
+			assert.Nil(t, got.OutputAddress, "OutputAddress was set before NCUST update")
+			// Manually updated `got` to account for post NCUST updates
+			got.OutputAddress = tt.want.OutputAddress
 			if !got.Equals(tt.want) {
 				t.Fatalf("Got app %s\nWanted app %s", got.String(), tt.want.String())
 			}

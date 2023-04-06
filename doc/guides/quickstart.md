@@ -248,7 +248,7 @@ Pocket Core provides a configuration file found in `<datadir>/config/config.json
 - **"tendermint_uri"**: The RPC Port of Tendermint \(also defined above in Tendermint/RPC\)
 - **"keybase_name"**: The name of the keybase
 - **"rpc_port"**: The port of Pocket Core's RPC
-- **"client_block_sync_allowance"**: The +/- allowance in blocks for of a relay request \(security mechanism that can
+- **"client_block_sync_allowance"**: The +/- allowance in blocks for a relay request \(security mechanism that can
   help filter misconfigured clients\)
 - **"max_evidence_cache_entries"**: Maximum number of relay evidence stored in cache memory
 - **"max_session_cache_entries"**: Maximum number of sessions stored in cache memory
@@ -275,7 +275,7 @@ Pocket Core provides a configuration file found in `<datadir>/config/config.json
 
 - **"RootDir"**: The data directory of Tendermint \(should be the same directory as Pocket Core's data dir\)
 - ProxyApp": Pocket Core is always run "in-process", so this typically isn't applicable. However, this configuration is
-  the path of the the TCP connection exposed by Pocket Core.
+  the path of the TCP connection exposed by Pocket Core.
 - **Moniker"**: The P2P name that will be shown in \`Tendermint Peers
 - **"FastSyncMode"**: Fast sync allows you to process blocks faster when `catching up` to the latest height. With this
   mode true, the node checks the merkle tree of validators, and doesn't run the real-time consensus gossip protocol.
@@ -451,17 +451,13 @@ Use the CLI or Manually Edit: `$HOME/.pocket/config/chains.json`
 {% hint style="info" %} Relay Chain ID's and docs can be
 found [here](https://docs.pokt.network/supported-blockchains/). {% endhint %}
 
-These are external blockchain nodes such as ethereum, polygon and harmony. You will need to set these up by following their respective documentation. Once they are synced, you can enter the url and credentials into the following file. 
+These are external blockchain nodes such as ethereum, polygon and harmony. You will need to set these up by following their respective documentation. Once they are synced, you can enter the url and credentials into the following file.
 
 ```text
 [
   {
     "id": "0002",
     "url": "http://eth-geth.com",
-    "basic_auth": {
-      "username": "",
-      "password": ""
-    }
   }
 ]
 ```

@@ -116,7 +116,7 @@ Now we just need to move this Ctx struct onto `x/pocketcore/keeper/common_go` fo
 
 ## Creating Proto Go types
 
-As of RC-0.6.0 the adoption of protobuffers for encoding it's necessary to update poto types which can be located
+As of RC-0.6.0 the adoption of protobuffers for encoding it's necessary to update proto types which can be located
 within `proto/`
 
 ### Requirements

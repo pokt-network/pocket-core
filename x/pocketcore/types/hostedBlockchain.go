@@ -1,17 +1,20 @@
 package types
 
 import (
-	sdk "github.com/pokt-network/pocket-core/types"
 	"sync"
+
+	sdk "github.com/pokt-network/pocket-core/types"
 )
 
 // HostedBlockchain" - An object that represents a local hosted non-native blockchain
 type HostedBlockchain struct {
 	ID        string    `json:"id"`         // network identifier of the hosted blockchain
 	URL       string    `json:"url"`        // url of the hosted blockchain
-	BasicAuth BasicAuth `json:"basic_auth"` // basic http auth optinal
+	BasicAuth BasicAuth `json:"basic_auth"` // Optional; basic http auth
 }
 
+// BasicAuth is an optional http auth mechanism if the URL does not embed the secrets directly.
+// Removed from examples & documentation for clarity.
 type BasicAuth struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

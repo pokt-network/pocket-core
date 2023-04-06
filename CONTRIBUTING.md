@@ -132,4 +132,3 @@ To start the disclosure process, please send an email containing all evidence, d
 #### Public disclosure
 
 Once the vulnerability has been patched and deployed to the appropiate environments, the team will create a public disclosure announcement, acknowledging the vulnerability and giving credit to the original discloser or disclosers in case more than one person identifies and discloses the vulnerability.
-

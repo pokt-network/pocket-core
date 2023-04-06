@@ -51,6 +51,7 @@ const (
 	RSCALKey                     = "RSCAL"
 	VEDITKey                     = "VEDIT"
 	OutputAddressEditKey         = "OEDIT"
+	ClearUnjailedValSessionKey   = "CRVAL"
 )
 
 func GetCodecUpgradeHeight() int64 {
@@ -286,6 +287,24 @@ func (cdc *Codec) IsAfterNamedFeatureActivationHeight(height int64, key string) 
 // IsOnNamedFeatureActivationHeight Note: includes the actual upgrade height
 func (cdc *Codec) IsOnNamedFeatureActivationHeight(height int64, key string) bool {
 	return UpgradeFeatureMap[key] != 0 && height == UpgradeFeatureMap[key]
+}
+
+// IsOnNamedFeatureActivationHeightWithTolerance is used to enable certain
+// business logic within some tolerance (i.e. only a few blocks) of feature
+// activation to have more confidence in the feature's release and avoid
+// non-deterministic or hard-to-predict behaviour.
+func (cdc *Codec) IsOnNamedFeatureActivationHeightWithTolerance(
+	height int64,
+	featureKey string,
+	tolerance int64,
+) bool {
+	upgradeHeight := UpgradeFeatureMap[featureKey]
+	if upgradeHeight == 0 {
+		return false
+	}
+	minHeight := upgradeHeight - tolerance
+	maxHeight := upgradeHeight + tolerance
+	return height >= minHeight && height <= maxHeight
 }
 
 // Upgrade Utils for feature map
