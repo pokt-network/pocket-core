@@ -117,3 +117,16 @@ func (k Keeper) ConvertState(ctx sdk.Ctx) {
 	k.SetValidatorSigningInfos(ctx, signingInfos)
 	k.Cdc.DisableUpgradeOverride()
 }
+
+func (k Keeper) GetMsgStakeOutputSigner(ctx sdk.Ctx, msg sdk.Msg) sdk.Address {
+	stakeMsg, ok := msg.(*types.MsgStake)
+	if !ok {
+		return nil
+	}
+	operatorAddr := sdk.Address(stakeMsg.PublicKey.Address())
+	outputAddr, found := k.GetValidatorOutputAddress(ctx, operatorAddr)
+	if !found {
+		return nil
+	}
+	return outputAddr
+}

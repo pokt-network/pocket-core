@@ -50,6 +50,7 @@ const (
 	BlockSizeModifyKey           = "BLOCK"
 	RSCALKey                     = "RSCAL"
 	VEDITKey                     = "VEDIT"
+	OutputAddressEditKey         = "OEDIT"
 	ClearUnjailedValSessionKey   = "CRVAL"
 )
 
@@ -265,6 +266,12 @@ func (cdc *Codec) IsAfterValidatorSplitUpgrade(height int64) bool {
 // IsAfterNonCustodialUpgrade Note: includes the actual upgrade height
 func (cdc *Codec) IsAfterNonCustodialUpgrade(height int64) bool {
 	return (UpgradeFeatureMap[NonCustodialUpdateKey] != 0 && height >= UpgradeFeatureMap[NonCustodialUpdateKey]) || TestMode <= -3
+}
+
+func (cdc *Codec) IsAfterOutputAddressEditorUpgrade(height int64) bool {
+	return (UpgradeFeatureMap[OutputAddressEditKey] != 0 &&
+		height >= UpgradeFeatureMap[OutputAddressEditKey]) ||
+		TestMode <= -3
 }
 
 // IsOnNonCustodialUpgrade Note: includes the actual upgrade height
