@@ -5,13 +5,14 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"math"
+
 	"github.com/jordanorelli/lexnum"
 	"github.com/pkg/errors"
 	"github.com/tendermint/tendermint/libs/pubsub/query"
 	"github.com/tendermint/tendermint/state/txindex"
 	"github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"math"
 )
 
 var (
@@ -25,6 +26,10 @@ var (
 )
 
 const (
+	// Transaction(tx) Block height index key.
+	//
+	// Note: Block height is cast as int when querying using the tx height index due to the lexicographic encoder library,
+	// this is safe because v0 block height should never exceed 2^63-1 on 64-bit systems or 2^31-1 on 32-bit systems.
 	TxHeightKey         = "tx.height"
 	TxSignerKey         = "tx.signer"
 	TxRecipientKey      = "tx.recipient"
@@ -302,7 +307,7 @@ func prefixKeyForSignerAndHeight(signer Address, height int64) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%s",
 		TxSignerKey,
 		signer,
-		elenEncoder.EncodeInt(int(height)), // totally safe right?
+		elenEncoder.EncodeInt(int(height)),
 	))
 }
 
@@ -327,7 +332,7 @@ func prefixKeyForRecipientAndHeight(recipient Address, height int64) []byte {
 	return []byte(fmt.Sprintf("%s/%s/%s",
 		TxRecipientKey,
 		recipient,
-		elenEncoder.EncodeInt(int(height)), // totally safe right?
+		elenEncoder.EncodeInt(int(height)),
 	))
 }
 
