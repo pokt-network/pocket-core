@@ -13,14 +13,14 @@ import (
 
 // Servicer - represents a staked address read from servicer_private_key_file
 type servicer struct {
-	SessionCache *xsync.MapOf[string, *appSessionCache]
+	SessionCache *xsync.MapOf[string, *AppSessionCache]
 	PrivateKey   crypto.PrivateKey
 	Address      sdk.Address
 	Node         *fullNode
 }
 
 // LoadAppSession - retrieve from cache (memory or persistent) an app session cache
-func (s *servicer) LoadAppSession(hash []byte) (*appSessionCache, bool) {
+func (s *servicer) LoadAppSession(hash []byte) (*AppSessionCache, bool) {
 	sHash := hex.EncodeToString(hash)
 	if v, ok := s.SessionCache.Load(sHash); ok {
 		return v, ok
@@ -30,7 +30,7 @@ func (s *servicer) LoadAppSession(hash []byte) (*appSessionCache, bool) {
 }
 
 // StoreAppSession - store in cache (memory and persistent) an appCache
-func (s *servicer) StoreAppSession(hash []byte, appSession *appSessionCache) {
+func (s *servicer) StoreAppSession(hash []byte, appSession *AppSessionCache) {
 	hashString := hex.EncodeToString(hash)
 	s.SessionCache.Store(hashString, appSession)
 
@@ -198,7 +198,7 @@ func initKeysHotReload() {
 
 // getServicerFromPubKey - return the servicer instance base on public key.
 func getServicerFromPubKey(pubKey string) *servicer {
-	servicerAddress, err := getAddressFromPubKeyAsString(pubKey)
+	servicerAddress, err := GetAddressFromPubKeyAsString(pubKey)
 
 	if err != nil {
 		logger.Error(
@@ -223,4 +223,19 @@ func getServicerFromPubKey(pubKey string) *servicer {
 	}
 
 	return s
+}
+
+// GetServicerLists - return a copy of the servicers as array of strings
+func GetServicerLists() (servicers []string) {
+	mutex.Lock()
+	for _, a := range servicerList {
+		servicers = append(servicers, a)
+	}
+	mutex.Unlock()
+	return
+}
+
+// ServicersSize - return how many servicers are registered under servicerMap
+func ServicersSize() int {
+	return servicerMap.Size()
 }

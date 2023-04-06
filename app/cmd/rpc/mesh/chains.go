@@ -3,6 +3,7 @@ package mesh
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/pokt-network/pocket-core/app"
 	nodesTypes "github.com/pokt-network/pocket-core/x/nodes/types"
@@ -21,13 +22,26 @@ func getChainsFilePath() string {
 	return app.GlobalMeshConfig.DataDir + app.FS + app.GlobalMeshConfig.ChainsName
 }
 
-// updateChains - update chainName file with the retrieve chains value.
-func updateChains(chains []pocketTypes.HostedBlockchain) {
+// UpdateChains - update chainName file with the retrieve chains value.
+func UpdateChains(c []pocketTypes.HostedBlockchain) (*pocketTypes.HostedBlockchains, error) {
+	m := make(map[string]pocketTypes.HostedBlockchain)
+	for _, chain := range c {
+		if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
+			return chains, errors.New(fmt.Sprintf("invalid ID: %s in network identifier in json", chain.ID))
+		}
+	}
+
+	chains = &pocketTypes.HostedBlockchains{
+		M: m,
+		L: sync.RWMutex{},
+	}
+
 	var chainsPath = app.GlobalMeshConfig.DataDir + app.FS + app.GlobalMeshConfig.ChainsName
 	var jsonFile *os.File
 	if _, err := os.Stat(chainsPath); err != nil && os.IsNotExist(err) {
-		logger.Error(fmt.Sprintf("no chains.json found @ %s", chainsPath))
-		return
+		e := errors.New(fmt.Sprintf("no chains.json found @ %s", chainsPath))
+		logger.Error(e.Error())
+		return chains, e
 	}
 	// reopen the file to read into the variable
 	jsonFile, err := os.OpenFile(chainsPath, os.O_WRONLY, os.ModePerm)
@@ -49,6 +63,7 @@ func updateChains(chains []pocketTypes.HostedBlockchain) {
 	if err != nil {
 		log2.Fatal(app.NewInvalidChainsError(err))
 	}
+	return chains, nil
 }
 
 // loadHostedChains - load chainName file and read the content of it.
@@ -102,7 +117,7 @@ func reloadChains() {
 	// if file exists open, else create and open
 	var jsonFile *os.File
 	var bz []byte
-	if !fileExist(chainsPath) {
+	if !FileExist(chainsPath) {
 		log2.Println(fmt.Sprintf("chains file no found at %s; ignoring reload", chainsPath))
 		return
 	}
@@ -153,8 +168,8 @@ func initChainsHotReload() {
 	}
 }
 
-// executeBlockchainHTTPRequest - run the non-native blockchain http request reusing chains http client.
-func executeBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pocketTypes.BasicAuth, method string, headers map[string]string) (string, error) {
+// ExecuteBlockchainHTTPRequest - run the non-native blockchain http request reusing chains http client.
+func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pocketTypes.BasicAuth, method string, headers map[string]string) (string, error) {
 	var m string
 	if method == "" {
 		m = pocketTypes.DEFAULTHTTPMETHOD
@@ -202,4 +217,9 @@ func executeBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 	logger.Debug(fmt.Sprintf("executing blockchain request:\nURL=%s\nMETHOD=%s\nREQ=%s\nSTATUS=%d\nRES=%s", url, m, payload, resp.StatusCode, string(body)))
 	// return
 	return string(body), nil
+}
+
+// GetChains - return current chains list.
+func GetChains() *pocketTypes.HostedBlockchains {
+	return chains
 }

@@ -14,8 +14,8 @@ import (
 	"time"
 )
 
-// isInvalidRelayCode - check if the error code is someone that block incoming relays for current session.
-func isInvalidRelayCode(code sdk.CodeType) bool {
+// IsInvalidRelayCode - check if the error code is someone that block incoming relays for current session.
+func IsInvalidRelayCode(code sdk.CodeType) bool {
 	for _, c := range invalidCodes {
 		if c == code {
 			return true
@@ -25,8 +25,8 @@ func isInvalidRelayCode(code sdk.CodeType) bool {
 	return false
 }
 
-// getRandomNode - return a random servicer object from the list load at the start
-func getRandomNode() *fullNode {
+// GetRandomNode - return a random servicer object from the list load at the start
+func GetRandomNode() *fullNode {
 	mutex.Lock()
 	address := servicerList[rand.Intn(len(servicerList))]
 	mutex.Unlock()
@@ -37,8 +37,8 @@ func getRandomNode() *fullNode {
 	return s.Node
 }
 
-// getAddressFromPubKeyAsString - return an address as string from a public key string
-func getAddressFromPubKeyAsString(pubKey string) (string, error) {
+// GetAddressFromPubKeyAsString - return an address as string from a public key string
+func GetAddressFromPubKeyAsString(pubKey string) (string, error) {
 	key, err := crypto.NewPublicKey(pubKey)
 	if err != nil {
 		return "", err
@@ -47,8 +47,8 @@ func getAddressFromPubKeyAsString(pubKey string) (string, error) {
 	return sdk.GetAddress(key).String(), nil
 }
 
-// getNodeFromAddress - lookup a node from a servicer address
-func getNodeFromAddress(address string) *fullNode {
+// GetNodeFromAddress - lookup a node from a servicer address
+func GetNodeFromAddress(address string) *fullNode {
 	s, ok := servicerMap.Load(address)
 
 	if !ok {
@@ -58,8 +58,8 @@ func getNodeFromAddress(address string) *fullNode {
 	return s.Node
 }
 
-// fileExist - check if file exists or not.
-func fileExist(file string) bool {
+// FileExist - check if file exists or not.
+func FileExist(file string) bool {
 	_, err := os.Stat(file)
 	if err != nil {
 		if os.IsExist(err) {
@@ -88,22 +88,22 @@ func sortJSONResponse(response string) string {
 	return string(bz)
 }
 
-// newSdkErrorFromPocketSdkError - return a mesh node sdkErrorResponse from a pocketcore sdk.Error
-func newSdkErrorFromPocketSdkError(e sdk.Error) *sdkErrorResponse {
-	return &sdkErrorResponse{
+// NewSdkErrorFromPocketSdkError - return a mesh node sdkErrorResponse from a pocketcore sdk.Error
+func NewSdkErrorFromPocketSdkError(e sdk.Error) *SdkErrorResponse {
+	return &SdkErrorResponse{
 		Code:      e.Code(),
 		Codespace: e.Codespace(),
 		Error:     e.Error(),
 	}
 }
 
-// newPocketSdkErrorFromSdkError - return a pocketcore sdk.Error from a mesh node sdkErrorResponse
-func newPocketSdkErrorFromSdkError(e *sdkErrorResponse) sdk.Error {
+// NewPocketSdkErrorFromSdkError - return a pocketcore sdk.Error from a mesh node sdkErrorResponse
+func NewPocketSdkErrorFromSdkError(e *SdkErrorResponse) sdk.Error {
 	return sdk.NewError(e.Codespace, e.Code, errors.New(e.Error).Error())
 }
 
-// servicerIsSupported - use on pocket node side to verify if the address is handled by the running process.
-func servicerIsSupported(address string) error {
+// ServicerIsSupported - use on pocket node side to verify if the address is handled by the running process.
+func ServicerIsSupported(address string) error {
 	if address == "" {
 		return errors.New("missing query param address")
 	} else {
@@ -121,8 +121,8 @@ func servicerIsSupported(address string) error {
 	return nil
 }
 
-// newWorkerPool - create pond.WorkerPool instance with the right params in place.
-func newWorkerPool(name string, strategyName string, maxWorkers, maxCapacity, idleTimeout int) *pond.WorkerPool {
+// NewWorkerPool - create pond.WorkerPool instance with the right params in place.
+func NewWorkerPool(name string, strategyName string, maxWorkers, maxCapacity, idleTimeout int) *pond.WorkerPool {
 	panicHandler := func(p interface{}) {
 		logger.Error(fmt.Sprintf("Worker %s task paniced: %v", name, p))
 	}

@@ -6,8 +6,8 @@ import (
 	"github.com/akrylysov/pogreb"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	sdk "github.com/pokt-network/pocket-core/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/puzpuzpuz/xsync"
@@ -45,66 +45,56 @@ var (
 	servicerAuthToken sdk.AuthToken
 	cronJobs          *cron.Cron
 	mutex             = sync.Mutex{}
-	// validate payload
-	//	modulename: pocketcore CodeEmptyPayloadDataError = 25
-	// ensures the block height is within the acceptable range
-	//	modulename: pocketcore CodeOutOfSyncRequestError            = 75
-	// validate the relay merkleHash = request merkleHash
-	// 	modulename: pocketcore CodeRequestHash                      = 74
-	// ensure the blockchain is supported locally
-	// 	CodeUnsupportedBlockchainNodeError   = 26
-	// ensure session block height == one in the relay proof
-	// 	CodeInvalidBlockHeightError          = 60
-	// get the session context
-	// 	CodeInternal              CodeType = 1
-	// get the application that staked on behalf of the client
-	// 	CodeAppNotFoundError                 = 45
-	// validate unique relay
-	// 	CodeEvidenceSealed                   = 90
-	// get evidence key by proof
-	// 	CodeDuplicateProofError              = 37
-	// validate not over service
-	// 	CodeOverServiceError                 = 71
-	// "ValidateLocal" - Validates the proof object, where the owner of the proof is the local node
-	// 	CodeInvalidBlockHeightError          = 60
-	// 	CodePublKeyDecodeError               = 6
-	// 	CodePubKeySizeError                  = 42
-	// 	CodeNewHexDecodeError                = 52
-	// 	CodeEmptyBlockHashError              = 23
-	// 	CodeInvalidHashLengthError           = 62
-	// 	CodeInvalidEntropyError              = 29
-	// 	CodeInvalidTokenError                = 4
-	// 	CodeSigDecodeError                   = 39
-	// 	CodeInvalidSignatureSizeError        = 38
-	// 	CodePublKeyDecodeError               = 6
-	// 	CodeMsgDecodeError                   = 40
-	// 	CodeInvalidSigError                  = 41
-	// 	CodeInvalidEntropyError              = 29
-	// 	CodeInvalidNodePubKeyError           = 34
-	// 	CodeUnsupportedBlockchainAppError    = 13
-	invalidCodes = []sdk.CodeType{
-		pocketTypes.CodeRequestHash,
-		pocketTypes.CodeAppNotFoundError,
-		pocketTypes.CodeEvidenceSealed,
-		pocketTypes.CodeOverServiceError,
-		pocketTypes.CodeOutOfSyncRequestError,
-		pocketTypes.CodeInvalidBlockHeightError,
-	}
 )
 
-// GetServicerMeshRoutes - return routes that need to be added to servicer to allow mesh node to communicate with.
-func GetServicerMeshRoutes() rpc.Routes {
-	routes := rpc.Routes{
-		{Name: "MeshRelay", Method: "POST", Path: ServicerRelayEndpoint, HandlerFunc: meshServicerNodeRelay},
-		{Name: "MeshSession", Method: "POST", Path: ServicerSessionEndpoint, HandlerFunc: meshServicerNodeSession},
-		{Name: "MeshCheck", Method: "POST", Path: ServicerCheckEndpoint, HandlerFunc: meshServicerNodeCheck},
-	}
-
-	return routes
+// validate payload
+//	modulename: pocketcore CodeEmptyPayloadDataError = 25
+// ensures the block height is within the acceptable range
+//	modulename: pocketcore CodeOutOfSyncRequestError            = 75
+// validate the relay merkleHash = request merkleHash
+// 	modulename: pocketcore CodeRequestHash                      = 74
+// ensure the blockchain is supported locally
+// 	CodeUnsupportedBlockchainNodeError   = 26
+// ensure session block height == one in the relay proof
+// 	CodeInvalidBlockHeightError          = 60
+// get the session context
+// 	CodeInternal              CodeType = 1
+// get the application that staked on behalf of the client
+// 	CodeAppNotFoundError                 = 45
+// validate unique relay
+// 	CodeEvidenceSealed                   = 90
+// get evidence key by proof
+// 	CodeDuplicateProofError              = 37
+// validate not over service
+// 	CodeOverServiceError                 = 71
+// "ValidateLocal" - Validates the proof object, where the owner of the proof is the local node
+// 	CodeInvalidBlockHeightError          = 60
+// 	CodePublKeyDecodeError               = 6
+// 	CodePubKeySizeError                  = 42
+// 	CodeNewHexDecodeError                = 52
+// 	CodeEmptyBlockHashError              = 23
+// 	CodeInvalidHashLengthError           = 62
+// 	CodeInvalidEntropyError              = 29
+// 	CodeInvalidTokenError                = 4
+// 	CodeSigDecodeError                   = 39
+// 	CodeInvalidSignatureSizeError        = 38
+// 	CodePublKeyDecodeError               = 6
+// 	CodeMsgDecodeError                   = 40
+// 	CodeInvalidSigError                  = 41
+// 	CodeInvalidEntropyError              = 29
+// 	CodeInvalidNodePubKeyError           = 34
+// 	CodeUnsupportedBlockchainAppError    = 13
+var invalidCodes = []sdk.CodeType{
+	pocketTypes.CodeRequestHash,
+	pocketTypes.CodeAppNotFoundError,
+	pocketTypes.CodeEvidenceSealed,
+	pocketTypes.CodeOverServiceError,
+	pocketTypes.CodeOutOfSyncRequestError,
+	pocketTypes.CodeInvalidBlockHeightError,
 }
 
-// StopMeshRPC - stop http server
-func StopMeshRPC() {
+// StopRPC - stop http server
+func StopRPC() {
 	// stop receiving new requests
 	logger.Info("stopping http server...")
 	if srv != nil {
@@ -138,8 +128,8 @@ func StopMeshRPC() {
 	UnregisterMetrics()
 }
 
-// StartMeshRPC - Start mesh rpc server
-func StartMeshRPC(simulation bool) {
+// StartRPC - Start mesh rpc server
+func StartRPC(router *httprouter.Router) {
 	ctx, cancel := context.WithCancel(context.Background())
 	finish = cancel
 	defer cancel()
@@ -158,8 +148,6 @@ func StartMeshRPC(simulation bool) {
 	pocketTypes.InitGlobalServiceMetric(chains, logger, app.GlobalMeshConfig.PrometheusAddr, app.GlobalMeshConfig.PrometheusMaxOpenfiles)
 	// instantiate all the http clients used to call Chains and Servicer
 	prepareHttpClients()
-	// read mesh node routes
-	routes := getMeshRoutes(simulation)
 	// read servicer
 	totalNodes, totalServicers := loadServicerNodes()
 	// check servicers are reachable at required endpoints
@@ -177,7 +165,7 @@ func StartMeshRPC(simulation bool) {
 		WriteTimeout:      60 * time.Second,
 		Addr:              ":" + app.GlobalMeshConfig.RPCPort,
 		Handler: http.TimeoutHandler(
-			rpc.Router(routes),
+			router,
 			time.Duration(app.GlobalMeshConfig.ClientRPCTimeout)*time.Millisecond,
 			"Server Timeout Handling Request",
 		),

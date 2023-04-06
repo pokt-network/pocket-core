@@ -57,10 +57,10 @@ func deleteCacheRelay(relay *pocketTypes.Relay) {
 }
 
 // evaluateServicerError - this will change internalCache[hash].IsValid bool depending on the result of the evaluation
-func evaluateServicerError(r *pocketTypes.Relay, err *sdkErrorResponse) (isSessionStillValid bool) {
+func evaluateServicerError(r *pocketTypes.Relay, err *SdkErrorResponse) (isSessionStillValid bool) {
 	hash := getSessionHashFromRelay(r)
 
-	isSessionStillValid = !isInvalidRelayCode(err.Code) // we should not retry if is invalid
+	isSessionStillValid = !IsInvalidRelayCode(err.Code) // we should not retry if is invalid
 
 	if isSessionStillValid {
 		return isSessionStillValid
@@ -89,7 +89,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 	// discard this relay at the end of this function, to end this function the servicer will be retried N times
 	defer deleteCacheRelay(r)
 
-	result := meshRPCRelayResponse{}
+	result := RPCRelayResponse{}
 	ctx := context.WithValue(context.Background(), "result", &result)
 	jsonData, err := json.Marshal(r)
 	if err != nil {
@@ -104,7 +104,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 		return
 	}
 
-	servicerAddress, err := getAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
+	servicerAddress, err := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
 
 	if err != nil {
 		logger.Error(
@@ -217,7 +217,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 					),
 				)
 				appSession.IsValid = false
-				appSession.Error = newSdkErrorFromPocketSdkError(pocketTypes.NewOverServiceError(ModuleName))
+				appSession.Error = NewSdkErrorFromPocketSdkError(pocketTypes.NewOverServiceError(ModuleName))
 			}
 			servicerNode.StoreAppSession(hash, appSession)
 		}
@@ -228,7 +228,7 @@ func notifyServicer(r *pocketTypes.Relay) {
 
 // execute - Attempts to do a request on the non-native blockchain specified
 func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockchains, address *sdk.Address) (string, sdk.Error) {
-	node := getNodeFromAddress(address.String())
+	node := GetNodeFromAddress(address.String())
 
 	if node == nil {
 		return "", sdk.ErrInternal("Failed to find correct servicer PK")
@@ -247,7 +247,7 @@ func execute(r *pocketTypes.Relay, hostedBlockchains *pocketTypes.HostedBlockcha
 	}
 
 	// do basic http request on the relay
-	res, er := executeBlockchainHTTPRequest(
+	res, er := ExecuteBlockchainHTTPRequest(
 		r.Payload.Data, _url,
 		app.GlobalMeshConfig.UserAgent, chain.BasicAuth,
 		r.Payload.Method, r.Payload.Headers,
@@ -265,7 +265,7 @@ func processRelay(relay *pocketTypes.Relay) (*pocketTypes.RelayResponse, sdk.Err
 	relayTimeStart := time.Now()
 	logger.Debug(fmt.Sprintf("processing relay %s", relay.RequestHashString()))
 
-	servicerAddress, e := getAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
+	servicerAddress, e := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
 
 	if e != nil {
 		return nil, sdk.ErrInternal("could not convert servicer hex to public key")
@@ -326,7 +326,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 		return pocketTypes.NewRequestHashError(ModuleName)
 	}
 	// validate servicer public key
-	servicerAddress, e := getAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
+	servicerAddress, e := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
 	if e != nil {
 		return sdk.ErrInternal("could not convert servicer hex to public key")
 	}
@@ -346,18 +346,18 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 	servicerNode := getServicerFromPubKey(r.Proof.ServicerPubKey)
 
 	if appSession, ok := servicerNode.LoadAppSession(hash); !ok {
-		result := &meshRPCSessionResult{}
+		result := &RPCSessionResult{}
 		e2 := getAppSession(r, result)
 
 		if e2 != nil {
 			logger.Error("Failure getting session information", "err", e2)
-			return newPocketSdkErrorFromSdkError(e2)
+			return NewPocketSdkErrorFromSdkError(e2)
 		}
 
 		if !result.Success {
 			logger.Error("Failure getting session information", "result", result)
 			if result.Error != nil {
-				return newPocketSdkErrorFromSdkError(result.Error)
+				return NewPocketSdkErrorFromSdkError(result.Error)
 			}
 			return pocketTypes.NewInvalidBlockHeightError(ModuleName)
 		}
@@ -366,7 +366,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 
 		isValid := result.Success && remainingRelays > 0 && result.Error == nil
 
-		servicerNode.StoreAppSession(header.Hash(), &appSessionCache{
+		servicerNode.StoreAppSession(header.Hash(), &AppSessionCache{
 			PublicKey:       header.ApplicationPubKey,
 			Chain:           header.Chain,
 			Dispatch:        result.Dispatch,
@@ -377,7 +377,7 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 	} else {
 		if !appSession.IsValid {
 			if appSession.Error != nil {
-				return newPocketSdkErrorFromSdkError(appSession.Error)
+				return NewPocketSdkErrorFromSdkError(appSession.Error)
 			} else {
 				return sdk.ErrInternal("invalid session")
 			}
@@ -388,9 +388,9 @@ func validate(r *pocketTypes.Relay) sdk.Error {
 	return nil
 }
 
-// handleRelay - evaluate node status, validate relay payload and call processRelay
-func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *dispatchResponse, err error) {
-	servicerAddress, e := getAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
+// HandleRelay - evaluate node status, validate relay payload and call processRelay
+func HandleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch *DispatchResponse, err error) {
+	servicerAddress, e := GetAddressFromPubKeyAsString(r.Proof.ServicerPubKey)
 
 	if e != nil {
 		return nil, nil, errors.New("could not convert servicer hex to public key")
@@ -438,7 +438,6 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 	res, err = processRelay(r)
 
 	if err != nil && pocketTypes.ErrorWarrantsDispatch(err) {
-		// TODO: check if for request header hash we have the dispatch
 		header := pocketTypes.SessionHeader{
 			ApplicationPubKey:  r.Proof.Token.ApplicationPublicKey,
 			Chain:              r.Proof.Blockchain,
@@ -448,7 +447,7 @@ func handleRelay(r *pocketTypes.Relay) (res *pocketTypes.RelayResponse, dispatch
 		hash := header.Hash()
 
 		if appSession, ok := servicerNode.LoadAppSession(hash); !ok {
-			response := meshRPCSessionResult{}
+			response := RPCSessionResult{}
 			err1 := getAppSession(r, &response)
 			if err1 != nil {
 				logger.Error(
