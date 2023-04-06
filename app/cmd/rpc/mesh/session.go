@@ -15,8 +15,8 @@ import (
 	"time"
 )
 
-// dispatchSessionNode - app session node structure
-type dispatchSessionNode struct {
+// DispatchSessionNode - app session node structure
+type DispatchSessionNode struct {
 	Address       string          `json:"address"`
 	Chains        []string        `json:"chains"`
 	Jailed        bool            `json:"jailed"`
@@ -28,22 +28,22 @@ type dispatchSessionNode struct {
 	UnstakingTime time.Time       `json:"unstaking_time"`
 }
 
-// dispatchSession - app session structure
-type dispatchSession struct {
+// DispatchSession - app session structure
+type DispatchSession struct {
 	Header pocketTypes.SessionHeader `json:"header"`
 	Key    string                    `json:"key"`
-	Nodes  []dispatchSessionNode     `json:"nodes"`
+	Nodes  []DispatchSessionNode     `json:"nodes"`
 }
 
-// dispatchResponse handle /v1/client/dispatch response due to was unable to inflate it using pocket core struct
+// DispatchResponse handle /v1/client/dispatch response due to was unable to inflate it using pocket core struct
 // it was throwing an error about Nodes unmarshalling
-type dispatchResponse struct {
+type DispatchResponse struct {
 	BlockHeight int64           `json:"block_height"`
-	Session     dispatchSession `json:"session"`
+	Session     DispatchSession `json:"session"`
 }
 
 // Contains - evaluate if the dispatch response contains passed address in their node list
-func (sn dispatchResponse) Contains(addr sdk.Address) bool {
+func (sn DispatchResponse) Contains(addr sdk.Address) bool {
 	// if nil return
 	if addr == nil {
 		return false
@@ -63,7 +63,7 @@ func (sn dispatchResponse) Contains(addr sdk.Address) bool {
 }
 
 // ShouldKeep - evaluate if this dispatch response is one that we need to keep for the running mesh node.
-func (sn dispatchResponse) ShouldKeep() bool {
+func (sn DispatchResponse) ShouldKeep() bool {
 	// loop over the nodes
 	for _, node := range sn.Session.Nodes {
 		if _, ok := servicerMap.Load(node.Address); ok {
@@ -74,8 +74,8 @@ func (sn dispatchResponse) ShouldKeep() bool {
 	return false
 }
 
-// GetSupportedNodes - return a list of the supported nodes of running mesh node from the dispatchResponse payload.
-func (sn dispatchResponse) GetSupportedNodes() []string {
+// GetSupportedNodes - return a list of the supported nodes of running mesh node from the DispatchResponse payload.
+func (sn DispatchResponse) GetSupportedNodes() []string {
 	nodes := make([]string, 0)
 	// loop over the nodes
 	for _, node := range sn.Session.Nodes {
@@ -88,17 +88,17 @@ func (sn dispatchResponse) GetSupportedNodes() []string {
 	return nodes
 }
 
-type appSessionCache struct {
+type AppSessionCache struct {
 	PublicKey       string
 	Chain           string
-	Dispatch        *dispatchResponse
+	Dispatch        *DispatchResponse
 	RemainingRelays int64
 	IsValid         bool
-	Error           *sdkErrorResponse
+	Error           *SdkErrorResponse
 }
 
 // getAppSession - call ServicerURL to get an application session using retrieve header
-func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorResponse {
+func getAppSession(relay *pocketTypes.Relay, model interface{}) *SdkErrorResponse {
 	servicerNode := getServicerFromPubKey(relay.Proof.ServicerPubKey)
 	payload := pocketTypes.MeshSession{
 		SessionHeader: pocketTypes.SessionHeader{
@@ -114,7 +114,7 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 	logger.Debug(fmt.Sprintf("reading session from servicer %s", servicerNode.Address.String()))
 	jsonData, e := json.Marshal(payload)
 	if e != nil {
-		return newSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
+		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 	}
 
 	requestURL := fmt.Sprintf(
@@ -125,7 +125,7 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 	)
 	req, e := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonData))
 	if e != nil {
-		return newSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
+		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -135,7 +135,7 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 
 	resp, e := servicerClient.Do(req)
 	if e != nil {
-		return newSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
+		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 	}
 
 	defer func(Body io.ReadCloser) {
@@ -146,7 +146,7 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 	}(resp.Body)
 
 	if resp.StatusCode == 401 {
-		return newSdkErrorFromPocketSdkError(
+		return NewSdkErrorFromPocketSdkError(
 			sdk.ErrUnauthorized(
 				fmt.Sprintf("wrong auth form %s", ServicerSessionEndpoint),
 			),
@@ -156,16 +156,16 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *sdkErrorRespons
 	isSuccess := resp.StatusCode == 200
 
 	if !isSuccess {
-		result := meshRPCSessionResult{}
+		result := RPCSessionResult{}
 		e = json.NewDecoder(resp.Body).Decode(&result)
 		if e != nil {
-			return newSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
+			return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 		}
 		return nil
 	} else {
 		e = json.NewDecoder(resp.Body).Decode(model)
 		if e != nil {
-			return newSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
+			return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 		}
 		return nil
 	}
@@ -186,7 +186,7 @@ func getSessionHashFromRelay(r *pocketTypes.Relay) []byte {
 func cleanOldSessions(c *cron.Cron) {
 	_, err := c.AddFunc(fmt.Sprintf("@every %ds", app.GlobalMeshConfig.SessionCacheCleanUpInterval), func() {
 		servicerMap.Range(func(_ string, servicerNode *servicer) bool {
-			servicerNode.SessionCache.Range(func(key string, appSession *appSessionCache) bool {
+			servicerNode.SessionCache.Range(func(key string, appSession *AppSessionCache) bool {
 				hash, err := hex.DecodeString(key)
 				if err != nil {
 					logger.Error("error decoding session hash to delete from cache " + err.Error())

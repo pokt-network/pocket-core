@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
@@ -44,7 +43,7 @@ func (t *transport) RoundTrip(r *http.Request) (w *http.Response, err error) {
 		return w, nil
 	}
 
-	rr, err := newReusableReader(w.Body)
+	rr, err := NewReusableReader(w.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +73,8 @@ func (r reusableReader) reset() {
 	_, _ = io.Copy(r.readBuf, r.backBuf)
 }
 
-// newReusableReader - create new Reader that allow to be read multiple times.
-func newReusableReader(r io.Reader) (io.Reader, error) {
+// NewReusableReader - create new Reader that allow to be read multiple times.
+func NewReusableReader(r io.Reader) (io.Reader, error) {
 	readBuf := bytes.Buffer{}
 	_, err := readBuf.ReadFrom(r)
 	if err != nil {
@@ -88,14 +87,6 @@ func newReusableReader(r io.Reader) (io.Reader, error) {
 		&readBuf,
 		&backBuf,
 	}, nil
-}
-
-// cors - set cors headers
-func cors(w *http.ResponseWriter, r *http.Request) (isOptions bool) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-	(*w).Header().Set("Access-Control-Allow-Methods", "POST")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	return (*r).Method == "OPTIONS"
 }
 
 // loadServicersFromFile return a sync.Map of nodes/servicers that could be used to start working or calculate a reload
@@ -164,7 +155,7 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 						node.Servicers.Store(addressStr, s)
 					} else {
 						newServicer := &servicer{
-							SessionCache: xsync.NewMapOf[*appSessionCache](),
+							SessionCache: xsync.NewMapOf[*AppSessionCache](),
 							PrivateKey:   pk,
 							Address:      address,
 							Node:         node,
@@ -209,7 +200,7 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 				node.Servicers.Store(addressStr, s)
 			} else {
 				newServicer := &servicer{
-					SessionCache: xsync.NewMapOf[*appSessionCache](),
+					SessionCache: xsync.NewMapOf[*AppSessionCache](),
 					PrivateKey:   pk,
 					Address:      address,
 					Node:         node,
@@ -278,7 +269,7 @@ func retryRelaysPolicy(ctx context.Context, resp *http.Response, err error) (boo
 			return true, nil
 		}
 
-		result := meshRPCRelayResponse{}
+		result := RPCRelayResponse{}
 		err = json.NewDecoder(resp.Body).Decode(&result)
 
 		if err != nil {
@@ -292,7 +283,7 @@ func retryRelaysPolicy(ctx context.Context, resp *http.Response, err error) (boo
 			return true, err
 		}
 
-		ctxResult := ctx.Value("result").(*meshRPCRelayResponse)
+		ctxResult := ctx.Value("result").(*RPCRelayResponse)
 		ctxResult.Success = result.Success
 		ctxResult.Dispatch = result.Dispatch
 		ctxResult.Error = result.Error
@@ -301,7 +292,7 @@ func retryRelaysPolicy(ctx context.Context, resp *http.Response, err error) (boo
 			return false, nil
 		}
 
-		return !isInvalidRelayCode(result.Error.Code), nil
+		return !IsInvalidRelayCode(result.Error.Code), nil
 	}
 
 	return false, nil
@@ -326,83 +317,9 @@ func serveReverseProxy(target string, res http.ResponseWriter, req *http.Request
 	proxy.ServeHTTP(res, req)
 }
 
-// proxyRequest - proxy request to ServicerURL
-func proxyRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	serveReverseProxy(getRandomNode().URL, w, r)
-}
-
-// reuseBody - transform request body in a reusable reader to allow multiple source read it.
-func reuseBody(handler httprouter.Handle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		rr, err := newReusableReader(r.Body)
-		if err != nil {
-			rpc.WriteErrorResponse(w, 500, fmt.Sprintf("error in RPC Handler WriteErrorResponse: %v", err))
-		} else {
-			r.Body = io.NopCloser(rr)
-			handler(w, r, ps)
-		}
-	}
-}
-
-// getMeshRoutes - return routes that will be handled/proxied by mesh rpc server
-func getMeshRoutes(simulation bool) rpc.Routes {
-	routes := rpc.Routes{
-		// Proxy
-		rpc.Route{Name: "AppVersion", Method: "GET", Path: "/v1", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "Health", Method: "GET", Path: "/v1/health", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "Challenge", Method: "POST", Path: "/v1/client/challenge", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "ChallengeCORS", Method: "OPTIONS", Path: "/v1/client/challenge", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "HandleDispatch", Method: "POST", Path: "/v1/client/dispatch", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "HandleDispatchCORS", Method: "OPTIONS", Path: "/v1/client/dispatch", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "SendRawTx", Method: "POST", Path: "/v1/client/rawtx", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "Stop", Method: "POST", Path: "/v1/private/stop", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryChains", Method: "POST", Path: "/v1/private/chains", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryAccount", Method: "POST", Path: "/v1/query/account", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryAccounts", Method: "POST", Path: "/v1/query/accounts", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryAccountTxs", Method: "POST", Path: "/v1/query/accounttxs", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryACL", Method: "POST", Path: "/v1/query/acl", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryAllParams", Method: "POST", Path: "/v1/query/allparams", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryApp", Method: "POST", Path: "/v1/query/app", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryAppParams", Method: "POST", Path: "/v1/query/appparams", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryApps", Method: "POST", Path: "/v1/query/apps", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryBalance", Method: "POST", Path: "/v1/query/balance", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryBlock", Method: "POST", Path: "/v1/query/block", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryBlockTxs", Method: "POST", Path: "/v1/query/blocktxs", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryDAOOwner", Method: "POST", Path: "/v1/query/daoowner", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryHeight", Method: "POST", Path: "/v1/query/height", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryNode", Method: "POST", Path: "/v1/query/node", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryNodeClaim", Method: "POST", Path: "/v1/query/nodeclaim", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryNodeClaims", Method: "POST", Path: "/v1/query/nodeclaims", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryNodeParams", Method: "POST", Path: "/v1/query/nodeparams", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryNodes", Method: "POST", Path: "/v1/query/nodes", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryParam", Method: "POST", Path: "/v1/query/param", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryPocketParams", Method: "POST", Path: "/v1/query/pocketparams", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryState", Method: "POST", Path: "/v1/query/state", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QuerySupply", Method: "POST", Path: "/v1/query/supply", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QuerySupportedChains", Method: "POST", Path: "/v1/query/supportedchains", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryTX", Method: "POST", Path: "/v1/query/tx", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryUpgrade", Method: "POST", Path: "/v1/query/upgrade", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QuerySigningInfo", Method: "POST", Path: "/v1/query/signinginfo", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "LocalNodes", Method: "POST", Path: "/v1/private/nodes", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryUnconfirmedTxs", Method: "POST", Path: "/v1/query/unconfirmedtxs", HandlerFunc: proxyRequest},
-		rpc.Route{Name: "QueryUnconfirmedTx", Method: "POST", Path: "/v1/query/unconfirmedtx", HandlerFunc: proxyRequest},
-		//
-		rpc.Route{Name: "MeshService", Method: "POST", Path: "/v1/client/relay", HandlerFunc: reuseBody(meshNodeRelay)},
-		// mesh private routes
-		rpc.Route{Name: "MeshHealth", Method: "GET", Path: "/v1/private/mesh/health", HandlerFunc: meshHealth},
-		rpc.Route{Name: "QueryMeshNodeChains", Method: "POST", Path: "/v1/private/mesh/chains", HandlerFunc: meshChains},
-		rpc.Route{Name: "MeshNodeServicer", Method: "POST", Path: "/v1/private/mesh/servicers", HandlerFunc: meshServicerNode},
-		rpc.Route{Name: "UpdateMeshNodeChains", Method: "POST", Path: "/v1/private/mesh/updatechains", HandlerFunc: meshUpdateChains},
-		rpc.Route{Name: "StopMeshNode", Method: "POST", Path: "/v1/private/mesh/stop", HandlerFunc: meshStop},
-	}
-
-	// check if simulation is turn on
-	if simulation {
-		simRoute := rpc.Route{Name: "SimulateRequest", Method: "POST", Path: "/v1/client/sim", HandlerFunc: meshSimulateRelay}
-		routes = append(routes, simRoute)
-	}
-
-	return routes
+// ProxyRequest - proxy request to ServicerURL
+func ProxyRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	serveReverseProxy(GetRandomNode().URL, w, r)
 }
 
 // prepareHttpClients - prepare http clients & transports
@@ -449,7 +366,7 @@ func catchSignal() {
 		select {
 		case s := <-terminateSignals:
 			logger.Info("shutting down server gracefully, SIGNAL NAME:", s)
-			StopMeshRPC()
+			StopRPC()
 			finish()
 			break //break is not necessary to add here as if server is closed our main function will end.
 		case s := <-reloadSignals:
@@ -496,7 +413,7 @@ func initCache() {
 		relay := decodeCacheRelay(val)
 
 		if relay != nil {
-			servicerAddress, err := getAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
+			servicerAddress, err := GetAddressFromPubKeyAsString(relay.Proof.ServicerPubKey)
 			if err != nil {
 				logger.Debug(
 					fmt.Sprintf(

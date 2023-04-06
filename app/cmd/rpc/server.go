@@ -3,7 +3,6 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pokt-network/pocket-core/app/cmd/rpc/mesh"
 	"io"
 	"io/ioutil"
 	"log"
@@ -53,7 +52,7 @@ func StartRPC(port string, timeout int64, simulation, debug, allBlockTxs, hotRel
 
 	if meshNode {
 		// allow mesh node to notify servicer node
-		routes = append(routes, mesh.GetServicerMeshRoutes()...)
+		routes = append(routes, GetServicerMeshRoutes()...)
 	}
 
 	srv := &http.Server{

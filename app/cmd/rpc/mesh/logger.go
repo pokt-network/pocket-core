@@ -113,3 +113,7 @@ func initLogger() (logger log.Logger) {
 	logger = l
 	return
 }
+
+func GetLogger() log.Logger {
+	return logger
+}

@@ -3,11 +3,9 @@ package mesh
 import (
 	"encoding/json"
 	"github.com/pokt-network/pocket-core/app"
-	"github.com/pokt-network/pocket-core/app/cmd/rpc"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"io/ioutil"
 	log2 "log"
-	"net/http"
 	"os"
 )
 
@@ -53,13 +51,7 @@ func loadAuthTokens() {
 	servicerAuthToken = getAuthTokenFromFile(servicerAuthFile)
 }
 
-// isAuthorized - check if the request is authorized using authToken of the auth.json file
-func isAuthorized(w http.ResponseWriter, r *http.Request) bool {
-	token := r.URL.Query().Get("authtoken")
-	if token == meshAuthToken.Value {
-		return true
-	} else {
-		rpc.WriteErrorResponse(w, 401, "wrong authtoken: "+token)
-		return false
-	}
+// GetAuthToken - return mesh auth token value load from auth file
+func GetAuthToken() string {
+	return meshAuthToken.Value
 }

@@ -33,7 +33,7 @@ type fullNode struct {
 func (node *fullNode) NewWorker() {
 	workerMaxCapacity := node.Servicers.Size() * app.GlobalMeshConfig.MaxWorkersCapacity
 
-	node.Worker = newWorkerPool(
+	node.Worker = NewWorkerPool(
 		node.URL,
 		app.GlobalMeshConfig.WorkerStrategy,
 		app.GlobalMeshConfig.MaxWorkers,
@@ -145,7 +145,7 @@ func (node *fullNode) runCheck() error {
 		return true
 	})
 
-	payload := meshCheckPayload{
+	payload := CheckPayload{
 		Servicers: servicers,
 		Chains:    make([]string, 0),
 	}
@@ -196,7 +196,7 @@ func (node *fullNode) runCheck() error {
 		return err
 	}
 
-	res := &meshCheckResponse{}
+	res := &CheckResponse{}
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
 		return err
@@ -329,4 +329,9 @@ func connectivityChecks(onlyFor mapset.Set[string]) {
 	firstCheckWorker.StopAndWait()
 
 	logger.Info("connectivity check done")
+}
+
+// NodesSize - return how many nodes are registered under nodesMap
+func NodesSize() int {
+	return nodesMap.Size()
 }

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var ServiceMetricsNamespace = "geo-mesh"
+var ServiceMetricsNamespace = "geo_mesh"
 
 var (
 	// pool metrics
@@ -73,7 +73,7 @@ var (
 			Name:      "node_tasks_completed_total",
 			Help:      "Number of tasks that completed either successfully or with panic",
 		},
-		[]string{"worker"})
+		[]string{"node_worker"})
 
 	// internal worker metrics
 	internalRunningWorkers = stdPrometheus.NewGaugeVec(
@@ -169,14 +169,14 @@ func (m *Metrics) report() {
 
 // AddServiceMetricErrorFor - add to prometheus metrics an error for a servicer
 func (m *Metrics) AddServiceMetricErrorFor(blockchain string, address *sdk.Address) {
-	m.pool.Submit(func() {
+	m.worker.Submit(func() {
 		pocketTypes.GlobalServiceMetric().AddErrorFor(blockchain, address)
 	})
 }
 
 // AddServiceMetricRelayFor - add to prometheus metrics a relay for a servicer
 func (m *Metrics) AddServiceMetricRelayFor(relay *pocketTypes.Relay, address *sdk.Address, relayTime time.Duration) {
-	m.pool.Submit(func() {
+	m.worker.Submit(func() {
 		logger.Debug(fmt.Sprintf("adding metric for relay %s", relay.RequestHashString()))
 		pocketTypes.GlobalServiceMetric().AddRelayTimingFor(
 			relay.Proof.Blockchain,
@@ -202,7 +202,7 @@ func (m *Metrics) Stop() {
 
 // NewWorkerPoolMetrics - create a metric instance with the needed worker and crons
 func NewWorkerPoolMetrics(name string, pool *pond.WorkerPool) *Metrics {
-	worker := newWorkerPool(
+	worker := NewWorkerPool(
 		name,
 		app.GlobalMeshConfig.MetricsWorkerStrategy,
 		app.GlobalMeshConfig.MetricsMaxWorkers,
