@@ -69,6 +69,7 @@ func TestKeeper_GetParams(t *testing.T) {
 		ClaimExpiration:            k.ClaimExpiration(ctx),
 		ReplayAttackBurnMultiplier: k.ReplayAttackBurnMultiplier(ctx),
 		MinimumNumberOfProofs:      k.MinimumNumberOfProofs(ctx),
+		BlockByteSize:              k.BlockByteSize(ctx),
 	}
 	paramz := k.GetParams(ctx)
 	assert.NotNil(t, paramz)
