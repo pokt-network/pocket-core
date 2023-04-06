@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/auth/types"
@@ -11,6 +12,7 @@ import (
 // Keeper of the supply store
 type Keeper struct {
 	Cdc       *codec.Codec
+	POSKeeper types.PosKeeper
 	storeKey  sdk.StoreKey
 	subspace  sdk.Subspace
 	permAddrs map[string]types.PermissionsForAddress

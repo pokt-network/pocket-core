@@ -1,14 +1,16 @@
 package keeper
 
 import (
+	"reflect"
+	"testing"
+	"time"
+
 	"github.com/pokt-network/pocket-core/codec"
+	"github.com/pokt-network/pocket-core/crypto"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"reflect"
-	"testing"
-	"time"
 )
 
 func TestKeeper_FinishUnstakingValidator(t *testing.T) {
@@ -210,6 +212,9 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 			tt.want.Status = sdk.Staked
 			// see if the changes stuck
 			got, _ := keeper.GetValidator(context, tt.origApp.Address)
+			assert.Nil(t, got.OutputAddress, "OutputAddress was set before NCUST update")
+			// Manually updated `got` to account for post NCUST updates
+			got.OutputAddress = tt.want.OutputAddress
 			if !got.Equals(tt.want) {
 				t.Fatalf("Got app %s\nWanted app %s", got.String(), tt.want.String())
 			}
@@ -348,6 +353,129 @@ func TestValidatorStateChange_EditAndValidateStakeValidatorAfterNonCustodialUpgr
 		})
 
 	}
+}
+
+// handleStakeForTesting is a helper fnction to stake a new node with
+// a given MsgStake in the same way as handleStake does.
+func handleStakeForTesting(
+	ctx sdk.Context,
+	k Keeper,
+	msg types.MsgStake,
+	signer crypto.PublicKey,
+) sdk.Error {
+	validator := types.NewValidator(
+		sdk.Address(msg.PublicKey.Address()),
+		msg.PublicKey,
+		msg.Chains,
+		msg.ServiceUrl,
+		sdk.ZeroInt(),
+		msg.Output)
+	if err := k.ValidateValidatorStaking(
+		ctx, validator, msg.Value, sdk.Address(signer.Address())); err != nil {
+		return err
+	}
+	return k.StakeValidator(ctx, validator, msg.Value, signer)
+}
+
+func TestValidatorStateChange_OutputAddressEdit(t *testing.T) {
+	ctx, _, k := createTestInput(t, true)
+
+	// Enable EditStake
+	codec.UpgradeHeight = -1
+
+	stakeAmount := sdk.NewCoin(k.StakeDenom(ctx), sdk.NewInt(k.MinimumStake(ctx)))
+	outputPubKey := getRandomPubKey()
+	outputAddress := sdk.Address(outputPubKey.Address())
+
+	runStake := func(
+		operatorPubKey crypto.PublicKey,
+		outputAddress sdk.Address,
+		signer crypto.PublicKey,
+	) sdk.Error {
+		msgStake := types.MsgStake{
+			Chains:     []string{"0021", "0040"},
+			ServiceUrl: "https://www.pokt.network:443",
+			Value:      stakeAmount.Amount,
+			PublicKey:  operatorPubKey,
+			Output:     outputAddress,
+		}
+		return handleStakeForTesting(ctx, k, msgStake, signer)
+	}
+
+	// Create and fund accounts
+	operatorPubKey1 := getRandomPubKey()
+	operatorPubKey2 := getRandomPubKey()
+	operatorPubKey3 := getRandomPubKey()
+	operatorAddr1 := sdk.Address(operatorPubKey1.Address())
+	operatorAddr2 := sdk.Address(operatorPubKey2.Address())
+	operatorAddr3 := sdk.Address(operatorPubKey3.Address())
+	assert.Nil(t, fundAccount(ctx, k, operatorAddr1, stakeAmount))
+	assert.Nil(t, fundAccount(ctx, k, operatorAddr2, stakeAmount))
+	assert.Nil(t, fundAccount(ctx, k, outputAddress, stakeAmount))
+
+	// Stake two nodes before NCUST
+	assert.Nil(t, runStake(operatorPubKey1, outputAddress, operatorPubKey1))
+	assert.Nil(t, runStake(operatorPubKey2, outputAddress, operatorPubKey2))
+
+	// Verify staked nodes having nil output address
+	validatorCur, found := k.GetValidator(ctx, operatorAddr1)
+	assert.True(t, found)
+	assert.Nil(t, validatorCur.OutputAddress)
+	validatorCur, found = k.GetValidator(ctx, operatorAddr2)
+	assert.True(t, found)
+	assert.Nil(t, validatorCur.OutputAddress)
+
+	// Enable NCUST
+	codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = -1
+
+	// Set an output address on Addr1 after NCUST
+	assert.Nil(t, runStake(operatorPubKey1, outputAddress, operatorPubKey1))
+	validatorCur, found = k.GetValidator(ctx, operatorAddr1)
+	assert.True(t, found)
+	assert.Equal(t, validatorCur.OutputAddress, outputAddress)
+
+	// Attempt to change the output address with operator's signature --> Fail
+	err := runStake(operatorPubKey1, operatorAddr1, operatorPubKey1)
+	assert.NotNil(t, err)
+	assert.Equal(t, k.codespace, err.Codespace())
+	assert.Equal(t, types.CodeUnequalOutputAddr, err.Code())
+
+	// Attempt to change the output address with output's signature --> Fail
+	err = runStake(operatorPubKey1, operatorAddr1, outputPubKey)
+	assert.NotNil(t, err)
+	assert.Equal(t, k.codespace, err.Codespace())
+	assert.Equal(t, types.CodeUnauthorizedSigner, err.Code())
+
+	// Enable OEDIT
+	codec.UpgradeFeatureMap[codec.OutputAddressEditKey] = -1
+
+	// Attempt to change the output address with operator's signature --> Fail
+	err = runStake(operatorPubKey1, operatorAddr1, operatorPubKey1)
+	assert.NotNil(t, err)
+	assert.Equal(t, k.codespace, err.Codespace())
+	assert.Equal(t, types.CodeDisallowedOutputAddressEdit, err.Code())
+
+	// Attempt to change the output address with output's signature --> Success
+	err = runStake(operatorPubKey1, operatorAddr1, outputPubKey)
+	assert.Nil(t, err)
+	validatorCur, found = k.GetValidator(ctx, operatorAddr1)
+	assert.True(t, found)
+	assert.Equal(t, validatorCur.OutputAddress, operatorAddr1)
+
+	// Attempt to change the output address from nil
+	// with operator's signature --> Success
+	err = runStake(operatorPubKey2, outputAddress, operatorPubKey2)
+	assert.Nil(t, err)
+	validatorCur, found = k.GetValidator(ctx, operatorAddr2)
+	assert.True(t, found)
+	assert.Equal(t, validatorCur.OutputAddress, outputAddress)
+
+	// New non-custodial stake with output's signature --> Success
+	err = runStake(operatorPubKey3, outputAddress, outputPubKey)
+	assert.Nil(t, err)
+	validatorCur, found = k.GetValidator(ctx, operatorAddr3)
+	assert.True(t, found)
+	assert.Equal(t, validatorCur.OutputAddress, outputAddress)
 }
 
 func TestKeeper_JailValidator(t *testing.T) {

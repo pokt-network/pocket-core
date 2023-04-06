@@ -10,6 +10,7 @@ import (
 	"github.com/pokt-network/pocket-core/types/module"
 	"github.com/pokt-network/pocket-core/x/gov/keeper"
 	"github.com/pokt-network/pocket-core/x/gov/types"
+	pc "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 )
 
@@ -119,6 +120,18 @@ func (am AppModule) ExportGenesis(ctx sdk.Ctx) json.RawMessage {
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 
 	am.activateAdditionalParametersACL(ctx)
+
+	// Around this upgrade height, we clear the global session cache to prevent
+	// any non-deterministic cache consistency issues.
+	// See #1529 for more details.
+	const clearSessionCacheTolerance = 2
+	if am.keeper.GetCodec().IsOnNamedFeatureActivationHeightWithTolerance(
+		ctx.BlockHeight(),
+		codec.ClearUnjailedValSessionKey,
+		clearSessionCacheTolerance,
+	) {
+		pc.ClearSessionCache(pc.GlobalSessionCache)
+	}
 
 	u := am.keeper.GetUpgrade(ctx)
 
