@@ -97,14 +97,17 @@ var nonCustodialstakeCmd = &cobra.Command{
 Searches the keybase for the operator address, the new output address, and the
 current output address in order and chooses the first address available in the
 keybase as a signer.
+
 Will prompt the user for the signer account passphrase, fund and fees are
 collected from signer account.  If the node is already staked, this transaction
 acts as an *update* transaction.  A node can update relayChainIDs, serviceURI,
 and raise the stake amount with this transaction.  The output address can be
 changed when the output address is empty or a transaction is signed by the
 current output address.
+
 If the node is currently staked at X and you submit an update with new stake Y,
 only Y-X will be subtracted from an account.
+
 If no changes are desired for the parameter, just enter the current param value
 just as before.`,
 	Args: cobra.ExactArgs(8),

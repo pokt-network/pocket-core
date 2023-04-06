@@ -122,6 +122,8 @@ func LegacyStakeNode(chains []string, serviceURL, fromAddr, passphrase, chainID 
 	}, nil
 }
 
+// getCurrentOutputAddress returns the current output address for the operator
+// provided.  Nil is returned if there is no output address.
 func getCurrentOutputAddress(operatorAddr sdk.Address) (sdk.Address, error) {
 	j, err := json.Marshal(rpc.HeightAndAddrParams{
 		Height:  0,
@@ -130,29 +132,33 @@ func getCurrentOutputAddress(operatorAddr sdk.Address) (sdk.Address, error) {
 	if err != nil {
 		return nil, err
 	}
-	var node nodeTypes.Validator
+
 	res, err := QueryRPC(GetNodePath, j)
 	if err != nil {
 		return nil, err
 	}
 
+	var node nodeTypes.Validator
 	if err := json.Unmarshal([]byte(res), &node); err != nil {
 		return nil, err
 	}
 
-	return node.OutputAddress, err
+	return node.OutputAddress, nil
 }
 
+// getFirstAddressAvailableInKeybase searches the given keybase for each of the
+// given addresses in order, and returns the first address that exists.  Nil is
+// returned if none of the addresses exists.
 func getFirstAddressAvailableInKeybase(
 	kb keys.Keybase,
 	addresses []sdk.Address,
-) (sdk.Address, bool) {
+) *sdk.Address {
 	for _, address := range addresses {
-		if kp, err := kb.Get(address); err == nil {
-			return kp.GetAddress(), true
+		if _, err := kb.Get(address); err == nil {
+			return &address
 		}
 	}
-	return sdk.Address{}, false
+	return nil
 }
 
 // StakeNode - Deliver Stake message to node
@@ -187,8 +193,8 @@ func StakeNode(chains []string, serviceURL, operatorPubKey, output, passphrase, 
 		validSigners = append(validSigners, outputCur)
 	}
 
-	fromAddress, found := getFirstAddressAvailableInKeybase(kb, validSigners)
-	if !found {
+	fromAddress := getFirstAddressAvailableInKeybase(kb, validSigners)
+	if fromAddress == nil {
 		return nil, errors.New(
 			"None of the operator address, the new output address, or the current" +
 				" output address is able to be retrieved from the keybase")
@@ -235,7 +241,7 @@ func StakeNode(chains []string, serviceURL, operatorPubKey, output, passphrase, 
 	if err != nil {
 		return nil, err
 	}
-	txBz, err := newTxBz(app.Codec(), msg, fromAddress, chainID, kb, passphrase, fees, "", false)
+	txBz, err := newTxBz(app.Codec(), msg, *fromAddress, chainID, kb, passphrase, fees, "", false)
 	if err != nil {
 		return nil, err
 	}
