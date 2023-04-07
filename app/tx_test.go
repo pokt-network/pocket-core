@@ -923,12 +923,20 @@ func TestBlockSize_ChangeParamValue(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
 	newBlockSize := "69420" // bytes
 
+	testModeTemp := codec.TestMode
+	upgradeHeightTemp := codec.UpgradeHeight
+
 	// Prepare governance parameters
 	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade and block size reduction
 	codec.UpgradeHeight = 2                               // Height at which codec was upgraded from amino to proto
 	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
-	_ = memCodecMod(true)
 	resetTestACL()
+
+	// On cleanup, revert global values so they are the same everywhere else
+	t.Cleanup(func() {
+		codec.TestMode = testModeTemp
+		codec.UpgradeHeight = upgradeHeightTemp
+	})
 
 	// Prepare the test network
 	_, kb, cleanup := NewInMemoryTendermintNodeProto(t, oneAppTwoNodeGenesis())
@@ -1003,10 +1011,14 @@ func TestBlockSize_ChangeParamValue(t *testing.T) {
 func TestBlockSize_ChangeAndFillBlockSize(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
 
+	testModeTemp := codec.TestMode
+	upgradeHeightTemp := codec.UpgradeHeight
+
 	// Prepare network configs
 	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade and block size reduction
 	codec.UpgradeHeight = -1                              // Height at which codec was upgraded from amino to proto
 	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
+	resetTestACL()
 
 	// Pick a small initial genesis block size
 	blockParamsMaxBytes := int64(2000)
@@ -1017,6 +1029,8 @@ func TestBlockSize_ChangeAndFillBlockSize(t *testing.T) {
 	// On cleanup, revert global values so they are the same everywhere else
 	t.Cleanup(func() {
 		tendermintTimeoutCommit = globalTendermintTimeoutCommit
+		codec.TestMode = testModeTemp
+		codec.UpgradeHeight = upgradeHeightTemp
 	})
 
 	// Increase the Tendermint timeout commit: the min amount of time to wait between blocks.
