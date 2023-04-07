@@ -61,6 +61,13 @@ func (p *Params) ParamSetPairs() types.ParamSetPairs {
 
 // "DefaultParams" - Returns a default set of parameters
 func DefaultParams() Params {
+	defaultGenesisParams := DefaultGenesisParams()
+	defaultGenesisParams.BlockByteSize = DefaultBlockByteSize
+	return defaultGenesisParams
+}
+
+// "DefaultParams" - Returns a default set of parameters at genesis
+func DefaultGenesisParams() Params {
 	return Params{
 		SessionNodeCount:           DefaultSessionNodeCount,
 		ClaimSubmissionWindow:      DefaultClaimSubmissionWindow,
@@ -68,7 +75,6 @@ func DefaultParams() Params {
 		ClaimExpiration:            DefaultClaimExpiration,
 		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
 		MinimumNumberOfProofs:      DefaultMinimumNumberOfProofs,
-		BlockByteSize:              DefaultBlockByteSize,
 	}
 }
 
