@@ -105,7 +105,7 @@ func (s Subspace) Get(ctx Ctx, key []byte, ptr interface{}) {
 		return
 	}
 
-	//if empty bytes, we return immediately
+	// If empty bytes, we return immediately
 	if len(bz) == 0 {
 		ctx.Logger().Info("Store contains zero bytes for key %s", string(key))
 		return

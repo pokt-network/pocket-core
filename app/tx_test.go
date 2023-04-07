@@ -919,12 +919,12 @@ func TestChangeParamsSimpleTx(t *testing.T) {
 }
 
 // NOTE: This is a single long test to show the lifecycle of the query parameter feature
-func TestBlockSize_ChangeParams(t *testing.T) {
+func TestBlockSize_ChangeParamValue(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
 	newBlockSize := "69420" // bytes
 
 	// Prepare governance parameters
-	codec.TestMode = -3                                   // Includes codec upgrade, validator split and non-custodial upgrade
+	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade and block size reduction
 	codec.UpgradeHeight = 2                               // Height at which codec was upgraded from amino to proto
 	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
 	_ = memCodecMod(true)
@@ -1000,11 +1000,11 @@ func TestBlockSize_ChangeParams(t *testing.T) {
 // 2. Verify a sufficiently large block includes the backlog of transactions
 // 3. Verify that at steady state (i.e. block is large enough to include all transactions), the number of txs in each block is the same
 // 4. Empirically, the steady state is approximately 50 txs per block given the configurations below; see #1538 for more details
-func TestBlockSize_MaximumSize(t *testing.T) {
+func TestBlockSize_ChangeAndFillBlockSize(t *testing.T) {
 	blockSizeKey := "pocketcore/BlockByteSize"
 
 	// Prepare network configs
-	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade and allows block size decreases
+	codec.TestMode = -4                                   // Includes codec upgrade, validator split and non-custodial upgrade and block size reduction
 	codec.UpgradeHeight = -1                              // Height at which codec was upgraded from amino to proto
 	codec.UpgradeFeatureMap[codec.BlockSizeModifyKey] = 3 // Height at which to enable block size upgrades
 

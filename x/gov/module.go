@@ -152,7 +152,7 @@ func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
 			os.Exit(1)
 		}
 		os.Exit(2) // Send a SIGINT signal if neither of the above worked
-		select {}  // why do we need this?
+		select {}  // Olshansky: not sure wy we need this...
 	}
 }
 

@@ -305,14 +305,14 @@ func (m *Manager) EndBlock(ctx sdk.Ctx, req abci.RequestEndBlock) abci.ResponseE
 		// Use these validator updates if provided
 		moduleValUpdates := m.Modules[moduleName].EndBlock(ctx, req)
 		if len(moduleValUpdates) > 0 {
-			// the module manager assumes only one module will update the validator set
+			// The module manager assumes only one module will update the validator set
 			if len(validatorUpdates) > 0 {
 				panic("validator EndBlock updates already set by a previous module")
 			}
 			validatorUpdates = moduleValUpdates
 		}
 
-		//Currently its only a non-empty struct in the pocket-core modules
+		// Currently its only a non-empty struct in the pocket-core modules
 		consensusParamUpdate := m.Modules[moduleName].ConsensusParamsUpdate(ctx)
 		if !consensusParamUpdate.Equal(&abci.ConsensusParams{}) {
 			consensusUpdates = consensusParamUpdate
