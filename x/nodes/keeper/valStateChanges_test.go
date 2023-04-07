@@ -223,6 +223,13 @@ func TestValidatorStateChange_EditAndValidateStakeValidator(t *testing.T) {
 	}
 }
 func TestValidatorStateChange_EditAndValidateStakeValidatorAfterNonCustodialUpgrade(t *testing.T) {
+	originalUpgradeHeight := codec.UpgradeHeight
+	originalTestMode := codec.TestMode
+	t.Cleanup(func() {
+		codec.UpgradeHeight = originalUpgradeHeight
+		codec.TestMode = originalTestMode
+	})
+
 	stakeAmount := sdk.NewInt(100000000000)
 	accountAmount := sdk.NewInt(1000000000000).Add(stakeAmount)
 	bumpStakeAmount := sdk.NewInt(1000000000000)
@@ -351,7 +358,6 @@ func TestValidatorStateChange_EditAndValidateStakeValidatorAfterNonCustodialUpgr
 				t.Fatalf("Got app %s\nWanted app %s", got.String(), tt.want.String())
 			}
 		})
-
 	}
 }
 
@@ -380,8 +386,22 @@ func handleStakeForTesting(
 func TestValidatorStateChange_OutputAddressEdit(t *testing.T) {
 	ctx, _, k := createTestInput(t, true)
 
+	originalUpgradeHeight := codec.UpgradeHeight
+	originalTestMode := codec.TestMode
+	originalNCUST := codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey]
+	originalOEDIT := codec.UpgradeFeatureMap[codec.OutputAddressEditKey]
+	t.Cleanup(func() {
+		codec.UpgradeHeight = originalUpgradeHeight
+		codec.TestMode = originalTestMode
+		codec.UpgradeFeatureMap[codec.NonCustodialUpdateKey] = originalNCUST
+		codec.UpgradeFeatureMap[codec.OutputAddressEditKey] = originalOEDIT
+	})
+
 	// Enable EditStake
 	codec.UpgradeHeight = -1
+
+	// Make sure NCUST is disabled
+	codec.TestMode = 0
 
 	stakeAmount := sdk.NewCoin(k.StakeDenom(ctx), sdk.NewInt(k.MinimumStake(ctx)))
 	outputPubKey := getRandomPubKey()
@@ -708,6 +728,11 @@ func TestKeeper_ValidateValidatorStaking(t *testing.T) {
 		amount    sdk.BigInt
 	}
 
+	originalTestMode := codec.TestMode
+	t.Cleanup(func() {
+		codec.TestMode = originalTestMode
+	})
+
 	validator := getUnstakedValidator()
 	context, _, keeper := createTestInput(t, true)
 
@@ -774,7 +799,13 @@ func TestKeeper_ValidateUnjailMessage(t *testing.T) {
 		v   types.Validator
 		msg types.MsgUnjail
 	}
+
+	originalTestMode := codec.TestMode
+	t.Cleanup(func() {
+		codec.TestMode = originalTestMode
+	})
 	codec.TestMode = -3
+
 	unauthSigner := getRandomValidatorAddress()
 	validator := getStakedValidator()
 	validator.Jailed = true

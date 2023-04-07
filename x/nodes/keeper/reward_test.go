@@ -1,9 +1,9 @@
 package keeper
 
 import (
-	"github.com/pokt-network/pocket-core/codec"
 	"testing"
 
+	"github.com/pokt-network/pocket-core/codec"
 	sdk "github.com/pokt-network/pocket-core/types"
 	"github.com/pokt-network/pocket-core/x/nodes/types"
 	"github.com/stretchr/testify/assert"
@@ -91,13 +91,20 @@ func TestKeeper_rewardFromFees(t *testing.T) {
 	type fields struct {
 		keeper Keeper
 	}
-
 	type args struct {
 		ctx              sdk.Context
 		previousProposer sdk.Address
 		Output           sdk.Address
 		Amount           sdk.BigInt
 	}
+
+	originalTestMode := codec.TestMode
+	originalRSCAL := codec.UpgradeFeatureMap[codec.RSCALKey]
+	t.Cleanup(func() {
+		codec.TestMode = originalTestMode
+		codec.UpgradeFeatureMap[codec.RSCALKey] = originalRSCAL
+	})
+
 	stakedValidator := getStakedValidator()
 	stakedValidator.OutputAddress = getRandomValidatorAddress()
 	codec.UpgradeFeatureMap[codec.RSCALKey] = 0
@@ -147,6 +154,14 @@ func TestKeeper_rewardFromRelays(t *testing.T) {
 		validatorNoOutput sdk.Address
 		OutputNoOutput    sdk.Address
 	}
+
+	originalTestMode := codec.TestMode
+	originalRSCAL := codec.UpgradeFeatureMap[codec.RSCALKey]
+	t.Cleanup(func() {
+		codec.TestMode = originalTestMode
+		codec.UpgradeFeatureMap[codec.RSCALKey] = originalRSCAL
+	})
+
 	stakedValidator := getStakedValidator()
 	stakedValidatorNoOutput := getStakedValidator()
 	stakedValidatorNoOutput.OutputAddress = nil
