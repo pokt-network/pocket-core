@@ -86,6 +86,7 @@ type PaginateAddrParams struct {
 	Received bool   `json:"received,omitempty"`
 	Prove    bool   `json:"prove,omitempty"`
 	Sort     string `json:"order,omitempty"`
+	Height   int64  `json:"height,omitempty"`
 }
 
 type PaginatedHeightParams struct {
@@ -317,9 +318,9 @@ func AccountTxs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var res *core_types.ResultTxSearch
 	var err error
 	if !params.Received {
-		res, err = app.PCA.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort)
+		res, err = app.PCA.QueryAccountTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort, params.Height)
 	} else {
-		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort)
+		res, err = app.PCA.QueryRecipientTxs(params.Address, params.Page, params.PerPage, params.Prove, params.Sort, params.Height)
 	}
 	if err != nil {
 		WriteErrorResponse(w, 400, err.Error())

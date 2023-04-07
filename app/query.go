@@ -22,6 +22,7 @@ import (
 
 const (
 	messageSenderQuery     = "tx.signer='%s'"
+	heightQuery            = "tx.height=%d"
 	transferRecipientQuery = "tx.recipient='%s'"
 	txHeightQuery          = "tx.height=%d"
 )
@@ -48,7 +49,7 @@ func (app PocketCoreApp) QueryTx(hash string, prove bool) (res *core_types.Resul
 	return
 }
 
-func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
+func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove bool, sort string, height int64) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
@@ -56,11 +57,14 @@ func (app PocketCoreApp) QueryAccountTxs(addr string, page, perPage int, prove b
 		return nil, err
 	}
 	query := fmt.Sprintf(messageSenderQuery, addr)
+	if height > 0 {
+		query = fmt.Sprintf("%s AND %s", query, fmt.Sprintf(heightQuery, height))
+	}
 	page, perPage = checkPagination(page, perPage)
 	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
 	return
 }
-func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool, sort string) (res *core_types.ResultTxSearch, err error) {
+func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove bool, sort string, height int64) (res *core_types.ResultTxSearch, err error) {
 	tmClient := app.GetClient()
 	defer func() { _ = tmClient.Stop() }()
 	_, err = hex.DecodeString(addr)
@@ -68,6 +72,9 @@ func (app PocketCoreApp) QueryRecipientTxs(addr string, page, perPage int, prove
 		return nil, err
 	}
 	query := fmt.Sprintf(transferRecipientQuery, addr)
+	if height > 0 {
+		query = fmt.Sprintf("%s AND %s", query, fmt.Sprintf(heightQuery, height))
+	}
 	page, perPage = checkPagination(page, perPage)
 	res, err = tmClient.TxSearch(query, prove, page, perPage, checkSort(sort))
 	return
