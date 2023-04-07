@@ -68,6 +68,7 @@ func DefaultParams() Params {
 		ClaimExpiration:            DefaultClaimExpiration,
 		ReplayAttackBurnMultiplier: DefaultReplayAttackBurnMultiplier,
 		MinimumNumberOfProofs:      DefaultMinimumNumberOfProofs,
+		BlockByteSize:              DefaultBlockByteSize,
 	}
 }
 
