@@ -119,7 +119,11 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	ctx, keeper, kvkeys, clientPrivateKey, appPrivateKey, nodePubKey, chain :=
 		setupHandleRelayTest(t)
 
-	// Eliminate the impact of ClientBlockSyncAllowance
+	// Store the original allowances to clean up at the end of this test
+	originalClientBlockSyncAllowance := types.GlobalPocketConfig.ClientBlockSyncAllowance
+	originalClientSessionSyncAllowance := types.GlobalPocketConfig.ClientSessionSyncAllowance
+
+	// Eliminate the impact of ClientBlockSyncAllowance to avoid any relay meta validation errors (OutOfSyncError)
 	types.GlobalPocketConfig.ClientBlockSyncAllowance = 10000
 
 	nodeBlockHeight := ctx.BlockHeight()
@@ -127,6 +131,8 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	latestSessionHeight := keeper.GetLatestSessionBlockHeight(ctx)
 
 	t.Cleanup(func() {
+		types.GlobalPocketConfig.ClientBlockSyncAllowance = originalClientBlockSyncAllowance
+		types.GlobalPocketConfig.ClientSessionSyncAllowance = originalClientSessionSyncAllowance
 		gock.Off() // Flush pending mocks after test execution
 	})
 
