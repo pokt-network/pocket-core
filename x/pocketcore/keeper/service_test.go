@@ -242,7 +242,7 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	// --> InvalidBlockHeightError on forward session block height
 	// --> InvalidBlockHeightError on forward session block height
 	SessionRangeTc = 2
-	types.GlobalPocketConfig.ClientSessionBlockSyncAllowance = 1
+	types.GlobalPocketConfig.ClientSessionSyncAllowance = 1
 
 	resp, err = testRelayAt(
 		t,
