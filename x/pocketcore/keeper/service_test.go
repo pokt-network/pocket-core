@@ -119,7 +119,6 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	ctx, keeper, kvkeys, clientPrivateKey, appPrivateKey, nodePubKey, chain :=
 		setupHandleRelayTest(t)
 
-	SessionRangesToTest := 2
 	// Eliminate the impact of ClientBlockSyncAllowance
 	types.GlobalPocketConfig.ClientBlockSyncAllowance = 10000
 
@@ -137,8 +136,11 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	mockCtx.On("BlockHeight").Return(ctx.BlockHeight())
 	mockCtx.On("Logger").Return(ctx.Logger())
 	mockCtx.On("PrevCtx", nodeBlockHeight).Return(ctx, nil)
+
+	AllSessionRangesTests := 4 // The range of block heights we will mock
+
 	// Set up mocks for heights we'll query later.
-	for i := int64(1); i <= blocksPerSesssion*int64(SessionRangesToTest); i++ {
+	for i := int64(1); i <= blocksPerSesssion*int64(AllSessionRangesTests); i++ {
 		mockCtx.On("PrevCtx", nodeBlockHeight-i).Return(ctx, nil)
 		mockCtx.On("PrevCtx", nodeBlockHeight+i).Return(ctx, nil)
 	}
@@ -159,9 +161,11 @@ func TestKeeper_HandleRelay(t *testing.T) {
 	assert.NotEmpty(t, resp)
 	assert.Equal(t, resp.Response, "bar")
 
-	// Client is behind or advanced beyond Node's height
-	//   --> CodeInvalidBlockHeightError
-	for i := 1; i <= SessionRangesToTest; i++ {
+	// TC 1:
+	// Client is behind or advanced beyond Node's height with ClientSessionSyncAllowance 0
+	// --> CodeInvalidBlockHeightError
+	types.GlobalPocketConfig.ClientSessionSyncAllowance = 0
+	for i := 1; i <= AllSessionRangesTests; i++ {
 		resp, err = testRelayAt(
 			t,
 			mockCtx,
@@ -191,4 +195,83 @@ func TestKeeper_HandleRelay(t *testing.T) {
 		assert.Equal(t, err.Codespace(), sdk.CodespaceType(types.ModuleName))
 		assert.Equal(t, err.Code(), sdk.CodeType(types.CodeInvalidBlockHeightError))
 	}
+
+	// TC2:
+	// Test a relay while one session behind and forward,
+	// while ClientSessionSyncAllowance = 1
+	// --> Success on behind session block height
+	// --> InvalidBlockHeightError on forward session block height
+	SessionRangeTc := 1
+	types.GlobalPocketConfig.ClientSessionSyncAllowance = int64(SessionRangeTc)
+
+	// First test the minimum boundary
+	resp, err = testRelayAt(
+		t,
+		mockCtx,
+		keeper,
+		latestSessionHeight-blocksPerSesssion*int64(SessionRangeTc),
+		clientPrivateKey,
+		appPrivateKey,
+		nodePubKey,
+		chain,
+	)
+	assert.Nil(t, err, err)
+	assert.NotNil(t, resp)
+	assert.NotEmpty(t, resp)
+	assert.Equal(t, resp.Response, "bar")
+
+	// Second test the maximum boundary
+	resp, err = testRelayAt(
+		t,
+		mockCtx,
+		keeper,
+		latestSessionHeight+blocksPerSesssion*int64(SessionRangeTc),
+		clientPrivateKey,
+		appPrivateKey,
+		nodePubKey,
+		chain,
+	)
+	assert.Nil(t, resp)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Codespace(), sdk.CodespaceType(types.ModuleName))
+	assert.Equal(t, err.Code(), sdk.CodeType(types.CodeInvalidBlockHeightError))
+
+	// TC2:
+	// Test a relay while two sessions behind and forward,
+	// while ClientSessionSyncAllowance = 1
+	// --> InvalidBlockHeightError on forward session block height
+	// --> InvalidBlockHeightError on forward session block height
+	SessionRangeTc = 2
+	types.GlobalPocketConfig.ClientSessionBlockSyncAllowance = 1
+
+	resp, err = testRelayAt(
+		t,
+		mockCtx,
+		keeper,
+		latestSessionHeight-blocksPerSesssion*int64(SessionRangeTc),
+		clientPrivateKey,
+		appPrivateKey,
+		nodePubKey,
+		chain,
+	)
+	assert.Nil(t, resp)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Codespace(), sdk.CodespaceType(types.ModuleName))
+	assert.Equal(t, err.Code(), sdk.CodeType(types.CodeInvalidBlockHeightError))
+
+	// Second test the maximum boundary
+	resp, err = testRelayAt(
+		t,
+		mockCtx,
+		keeper,
+		latestSessionHeight+blocksPerSesssion*int64(SessionRangeTc),
+		clientPrivateKey,
+		appPrivateKey,
+		nodePubKey,
+		chain,
+	)
+	assert.Nil(t, resp)
+	assert.NotNil(t, err)
+	assert.Equal(t, err.Codespace(), sdk.CodespaceType(types.ModuleName))
+	assert.Equal(t, err.Code(), sdk.CodeType(types.CodeInvalidBlockHeightError))
 }
