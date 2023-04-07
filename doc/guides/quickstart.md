@@ -250,6 +250,7 @@ Pocket Core provides a configuration file found in `<datadir>/config/config.json
 - **"rpc_port"**: The port of Pocket Core's RPC
 - **"client_block_sync_allowance"**: The +/- allowance in blocks for a relay request \(security mechanism that can
   help filter misconfigured clients\)
+- **"client_session_sync_allowance"**: The +/- allowance in amount of sessions for a relay request \(mechanism to allow for servicing stale sessions for whenever session height changes.)
 - **"max_evidence_cache_entries"**: Maximum number of relay evidence stored in cache memory
 - **"max_session_cache_entries"**: Maximum number of sessions stored in cache memory
 - **"json_sort_relay_responses"**: Detect and sort if relay response is in json \(can help response comparisons if
