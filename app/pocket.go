@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/tendermint/tendermint/libs/os"
 
 	bam "github.com/pokt-network/pocket-core/baseapp"
@@ -153,6 +154,10 @@ func (app *PocketCoreApp) ExportAppState(height int64, forZeroHeight bool, jailW
 }
 
 func (app *PocketCoreApp) ExportState(height int64, chainID string) (string, error) {
+	ctx, err := app.NewContext(height)
+	if err != nil {
+		return "", err
+	}
 	j, err := app.ExportAppState(height, false, nil)
 	if err != nil {
 		return "", err
@@ -164,7 +169,7 @@ func (app *PocketCoreApp) ExportState(height int64, chainID string) (string, err
 		ChainID: chainID,
 		ConsensusParams: &types.ConsensusParams{
 			Block: types.BlockParams{
-				MaxBytes:   4000000,
+				MaxBytes:   app.pocketKeeper.BlockByteSize(ctx),
 				MaxGas:     -1,
 				TimeIotaMs: 1,
 			},

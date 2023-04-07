@@ -97,13 +97,13 @@ func (am AppModule) NewQuerierHandler() sdk.Querier {
 
 // BeginBlock "BeginBlock" - Functionality that is called at the beginning of (every) block
 func (am AppModule) BeginBlock(ctx sdk.Ctx, req abci.RequestBeginBlock) {
-	ActivateAdditionalParameters(ctx, am)
+	am.activateAdditionalParameters(ctx)
 	// delete the expired claims
 	am.keeper.DeleteExpiredClaims(ctx)
 }
 
 // ActivateAdditionalParameters activate additional parameters on their respective upgrade heights
-func ActivateAdditionalParameters(ctx sdk.Ctx, am AppModule) {
+func (am AppModule) activateAdditionalParameters(ctx sdk.Ctx) {
 	if am.keeper.Cdc.IsOnNamedFeatureActivationHeight(ctx.BlockHeight(), codec.BlockSizeModifyKey) {
 		//on the height we set the default value
 		params := am.keeper.GetParams(ctx)

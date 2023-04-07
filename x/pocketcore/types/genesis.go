@@ -25,6 +25,6 @@ func ValidateGenesis(gs GenesisState) error {
 // "DefaultGenesisState" - Returns the default genesis state for pocketcore module
 func DefaultGenesisState() GenesisState {
 	return GenesisState{
-		Params: DefaultParams(),
+		Params: DefaultGenesisParams(),
 	}
 }

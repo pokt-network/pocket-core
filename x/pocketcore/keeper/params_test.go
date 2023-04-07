@@ -69,6 +69,7 @@ func TestKeeper_GetParams(t *testing.T) {
 		ClaimExpiration:            k.ClaimExpiration(ctx),
 		ReplayAttackBurnMultiplier: k.ReplayAttackBurnMultiplier(ctx),
 		MinimumNumberOfProofs:      k.MinimumNumberOfProofs(ctx),
+		BlockByteSize:              k.BlockByteSize(ctx),
 	}
 	paramz := k.GetParams(ctx)
 	assert.NotNil(t, paramz)
@@ -88,13 +89,4 @@ func TestKeeper_SetParams(t *testing.T) {
 	k.SetParams(ctx, p)
 	paramz := k.GetParams(ctx)
 	assert.Equal(t, paramz, p)
-}
-
-func TestKeeper_BlockByteSize(t *testing.T) {
-	ctx, _, _, _, keeper, _, _ := createTestInput(t, false)
-	blocksize := keeper.BlockByteSize(ctx)
-	assert.NotNil(t, blocksize)
-	assert.Empty(t, blocksize)
-	//expected 0 as we are not using a default value for compatibility
-	assert.Equal(t, int64(0), blocksize)
 }

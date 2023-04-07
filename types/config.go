@@ -1,11 +1,12 @@
 package types
 
 import (
-	"github.com/tendermint/tendermint/config"
-	db "github.com/tendermint/tm-db"
 	"path"
 	"sync"
 	"time"
+
+	"github.com/tendermint/tendermint/config"
+	db "github.com/tendermint/tm-db"
 )
 
 // TmConfig is the structure that holds the SDK configuration parameters.
@@ -172,6 +173,7 @@ func DefaultConfig(dataDir string) Config {
 	return c
 }
 
+// Default Consensus Configs
 func DefaultPocketConsensusConfig(cconfig *config.ConsensusConfig) {
 	cconfig.TimeoutPropose = 120000000000
 	cconfig.TimeoutProposeDelta = 10000000000
