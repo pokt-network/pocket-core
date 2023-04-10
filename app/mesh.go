@@ -18,11 +18,16 @@ type MeshConfig struct {
 	RPCPort                string `json:"rpc_port"`
 	ChainsName             string `json:"chains_name"`
 	ClientRPCTimeout       int64  `json:"client_rpc_timeout"`
-	ChainRPCTimeout        int64  `json:"chain_rpc_timeout"`
 	LogLevel               string `json:"log_level"`
 	UserAgent              string `json:"user_agent"`
 	AuthTokenFile          string `json:"auth_token_file"`
 	JSONSortRelayResponses bool   `json:"json_sort_relay_responses"`
+
+	// Chains HTTP Client
+	ChainRPCTimeout             int64 `json:"chain_rpc_timeout"`
+	ChainRPCMaxIdleConnections  int   `json:"chain_rpc_max_idle_connections"`
+	ChainRPCMaxConnsPerHost     int   `json:"chain_rpc_max_conns_per_host"`
+	ChainRPCMaxIdleConnsPerHost int   `json:"chain_rpc_max_idle_conns_per_host"`
 
 	// Relay Cache
 	RelayCacheFile                         string `json:"relay_cache_file"`
@@ -40,12 +45,15 @@ type MeshConfig struct {
 	WorkersIdleTimeout int    `json:"workers_idle_timeout"`
 
 	// Servicer
-	ServicerPrivateKeyFile string `json:"servicer_private_key_file"`
-	ServicerRPCTimeout     int64  `json:"servicer_rpc_timeout"`
-	ServicerAuthTokenFile  string `json:"servicer_auth_token_file"`
-	ServicerRetryMaxTimes  int    `json:"servicer_retry_max_times"`
-	ServicerRetryWaitMin   int    `json:"servicer_retry_wait_min"`
-	ServicerRetryWaitMax   int    `json:"servicer_retry_wait_max"`
+	ServicerPrivateKeyFile         string `json:"servicer_private_key_file"`
+	ServicerRPCTimeout             int64  `json:"servicer_rpc_timeout"`
+	ServicerRPCMaxIdleConnections  int    `json:"servicer_rpc_max_idle_connections"`
+	ServicerRPCMaxConnsPerHost     int    `json:"servicer_rpc_max_conns_per_host"`
+	ServicerRPCMaxIdleConnsPerHost int    `json:"servicer_rpc_max_idle_conns_per_host"`
+	ServicerAuthTokenFile          string `json:"servicer_auth_token_file"`
+	ServicerRetryMaxTimes          int    `json:"servicer_retry_max_times"`
+	ServicerRetryWaitMin           int    `json:"servicer_retry_wait_min"`
+	ServicerRetryWaitMax           int    `json:"servicer_retry_wait_max"`
 
 	// Node Health check interval (seconds)
 	NodeCheckInterval int `json:"node_check_interval"`
@@ -72,14 +80,15 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		RPCPort:                sdk.DefaultRPCPort,
 		ChainsName:             sdk.DefaultChainsName,
 		ClientRPCTimeout:       sdk.DefaultRPCTimeout,
-		ChainRPCTimeout:        sdk.DefaultRPCTimeout,
 		LogLevel:               "*:info, *:error",
 		UserAgent:              sdk.DefaultUserAgent,
 		AuthTokenFile:          "auth" + FS + "mesh.json",
 		JSONSortRelayResponses: sdk.DefaultJSONSortRelayResponses,
-		// Prometheus
-		PrometheusAddr:         sdk.DefaultPocketPrometheusListenAddr,
-		PrometheusMaxOpenfiles: sdk.DefaultPrometheusMaxOpenFile,
+		// Chains Client
+		ChainRPCTimeout:             sdk.DefaultRPCTimeout,
+		ChainRPCMaxIdleConnections:  2500,
+		ChainRPCMaxConnsPerHost:     2500,
+		ChainRPCMaxIdleConnsPerHost: 2500,
 		// Relay Cache
 		RelayCacheFile:                         "data" + FS + "relays.pkt",
 		RelayCacheBackgroundSyncInterval:       3600,
@@ -93,17 +102,23 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		MaxWorkersCapacity: 1000,
 		WorkersIdleTimeout: 10000,
 		// Servicer
-		ServicerPrivateKeyFile: "key" + FS + "key.json",
-		ServicerRPCTimeout:     sdk.DefaultRPCTimeout,
-		ServicerAuthTokenFile:  "auth" + FS + "servicer.json",
-		ServicerRetryMaxTimes:  10,
-		ServicerRetryWaitMin:   5,
-		ServicerRetryWaitMax:   180,
+		ServicerPrivateKeyFile:         "key" + FS + "key.json",
+		ServicerRPCTimeout:             sdk.DefaultRPCTimeout,
+		ServicerRPCMaxIdleConnections:  2500,
+		ServicerRPCMaxConnsPerHost:     2500,
+		ServicerRPCMaxIdleConnsPerHost: 2500,
+		ServicerAuthTokenFile:          "auth" + FS + "servicer.json",
+		ServicerRetryMaxTimes:          10,
+		ServicerRetryWaitMin:           5,
+		ServicerRetryWaitMax:           180,
 		// Node Check
 		NodeCheckInterval: 60,
 		// Session cache (in-memory) clean up interval (seconds)
 		SessionCacheCleanUpInterval: 1800,
-		// Worker
+		// Metrics
+		// Prometheus
+		PrometheusAddr:            sdk.DefaultPocketPrometheusListenAddr,
+		PrometheusMaxOpenfiles:    sdk.DefaultPrometheusMaxOpenFile,
 		MetricsWorkerStrategy:     "lazy",
 		MetricsMaxWorkers:         10,
 		MetricsMaxWorkersCapacity: 1000,
