@@ -12,6 +12,7 @@ import (
 	sdk "github.com/pokt-network/pocket-core/types"
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"io"
+	"io/ioutil"
 	"strings"
 	"time"
 )
@@ -169,6 +170,13 @@ func notifyServicer(r *pocketTypes.Relay) {
 			return
 		}
 	}(resp.Body)
+
+	// read the body just to allow http 1.x be able to reuse the connection
+	_, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logger.Error("Couldn't parse response body.", "err", err)
+		return
+	}
 
 	isSuccess := resp.StatusCode == 200
 
