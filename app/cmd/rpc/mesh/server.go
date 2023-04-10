@@ -326,14 +326,14 @@ func ProxyRequest(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 func prepareHttpClients() {
 	logger.Info("initializing http clients")
 	chainsTransport := http.DefaultTransport.(*http.Transport).Clone()
-	chainsTransport.MaxIdleConns = 1000
-	chainsTransport.MaxConnsPerHost = 1000
-	chainsTransport.MaxIdleConnsPerHost = 1000
+	chainsTransport.MaxIdleConns = app.GlobalMeshConfig.ChainRPCMaxIdleConnections
+	chainsTransport.MaxConnsPerHost = app.GlobalMeshConfig.ChainRPCMaxConnsPerHost
+	chainsTransport.MaxIdleConnsPerHost = app.GlobalMeshConfig.ChainRPCMaxIdleConnsPerHost
 
 	servicerTransport := http.DefaultTransport.(*http.Transport).Clone()
-	servicerTransport.MaxIdleConns = 50
-	servicerTransport.MaxConnsPerHost = 50
-	servicerTransport.MaxIdleConnsPerHost = 50
+	servicerTransport.MaxIdleConns = app.GlobalMeshConfig.ServicerRPCMaxIdleConnections
+	servicerTransport.MaxConnsPerHost = app.GlobalMeshConfig.ServicerRPCMaxConnsPerHost
+	servicerTransport.MaxIdleConnsPerHost = app.GlobalMeshConfig.ServicerRPCMaxIdleConnsPerHost
 
 	chainsClient = &http.Client{
 		Timeout:   time.Duration(app.GlobalMeshConfig.ChainRPCTimeout) * time.Millisecond,
