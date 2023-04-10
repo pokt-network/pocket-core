@@ -53,19 +53,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Health'
-  /mesh/health:
-    get:
-      tags:
-        - health
-        - mesh
-      summary: Get current node version
-      responses:
-        '200':
-          description: Health status of the mesh node
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MeshHealth'
   /client/dispatch:
     post:
       tags:
@@ -1488,6 +1475,19 @@ paths:
                   message:
                     type: string
                     description: The error msg.
+  /private/mesh/health:
+    get:
+      tags:
+        - health
+        - mesh
+      summary: Get current node version
+      responses:
+        '200':
+          description: Health status of the mesh node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeshHealth'
   /private/mesh/relay:
     post:
       tags:
@@ -1596,6 +1596,55 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryMeshSessionErrorResponse'
+        '401':
+          description: Wrong Auth token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: The error code.
+                  message:
+                    type: string
+                    description: The error msg.
+  /private/mesh/check:
+    post:
+      tags:
+        - private
+        - mesh
+      parameters:
+        - in: query
+          name: authtoken
+          schema:
+              type: string
+          description: Current Authorization Token from pocket core.
+        - in: query
+          name: verify
+          schema:
+              type: string
+          description: Flag to run a verification by mesh node to check connectivity
+      requestBody:
+        description: Chains and Servicers to be check
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryMeshCheckRequest'
+      responses:
+        '200':
+          description: Return result of mesh check
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryMeshCheckResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryMeshCheckResponse'
         '401':
           description: Wrong Auth token
           content:
@@ -1770,6 +1819,12 @@ components:
       properties:
         version:
           type: string
+        servicers:
+          type: integer
+          description: Loaded servicers
+        full_nodes:
+          type: integer
+          description: Loaded full nodes
     Chain:
       type: object
       properties:
@@ -2708,6 +2763,63 @@ components:
         error:
           type: string
           description: Amino JSON Error String
+    QueryMeshCheckRequest:
+      type: object
+      properties:
+        servicers:
+          type: array
+          description: Servicer address to check
+          items:
+            type: string
+        chains:
+          type: array
+          description: Blockchain ids to check
+          items:
+            type: string
+    QueryMeshCheckResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+              description: The error code.
+            codespace:
+              type: string
+              description: Codespace identifier
+            message:
+              type: string
+              description: The error msg.
+        status:
+          type: object
+          properties:
+            version:
+              type: string
+            is_starting:
+              type: boolean
+            is_catching_up:
+              type: boolean
+            height:
+              type: integer
+            servicers:
+              type: boolean
+              description: Flag that indicates true if all servicers address was able to be validated. False otherwise.
+            chains:
+              type: boolean
+              description: Flag that indicates true if all blockchain ids was able to be validated. False otherwise.
+            wrong_servicers:
+              type: array
+              description: List of non valid addresses
+              items:
+                type: string
+            wrong_chains:
+              type: array
+              description: List of non valid blockchain ids
+              items:
+                type: string
     QueryErrorRelayResponse:
       type: object
       properties:
