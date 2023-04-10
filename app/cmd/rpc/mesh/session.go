@@ -10,6 +10,7 @@ import (
 	pocketTypes "github.com/pokt-network/pocket-core/x/pocketcore/types"
 	"github.com/robfig/cron/v3"
 	"io"
+	"io/ioutil"
 	log2 "log"
 	"net/http"
 	"time"
@@ -145,6 +146,13 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *SdkErrorRespons
 		}
 	}(resp.Body)
 
+	// read the body just to allow http 1.x be able to reuse the connection
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(err.Error()))
+	}
+
 	if resp.StatusCode == 401 {
 		return NewSdkErrorFromPocketSdkError(
 			sdk.ErrUnauthorized(
@@ -157,13 +165,13 @@ func getAppSession(relay *pocketTypes.Relay, model interface{}) *SdkErrorRespons
 
 	if !isSuccess {
 		result := RPCSessionResult{}
-		e = json.NewDecoder(resp.Body).Decode(&result)
+		e = json.Unmarshal(body, &result)
 		if e != nil {
 			return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 		}
 		return nil
 	} else {
-		e = json.NewDecoder(resp.Body).Decode(model)
+		e = json.Unmarshal(body, model)
 		if e != nil {
 			return NewSdkErrorFromPocketSdkError(sdk.ErrInternal(e.Error()))
 		}

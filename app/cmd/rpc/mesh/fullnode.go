@@ -194,6 +194,13 @@ func (node *fullNode) runCheck() error {
 		}
 	}(resp.Body)
 
+	// read the body just to allow http 1.x be able to reuse the connection
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return err
+	}
+
 	if resp.StatusCode != 200 || !strings.Contains(resp.Header.Get("Content-Type"), "application/json") {
 		if resp.StatusCode != 200 {
 			err = errors.New(fmt.Sprintf("node is returning a non 200 code response from %s", requestURL))
@@ -205,7 +212,7 @@ func (node *fullNode) runCheck() error {
 	}
 
 	res := &CheckResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&res)
+	err = json.Unmarshal(body, &res)
 	if err != nil {
 		return err
 	}
