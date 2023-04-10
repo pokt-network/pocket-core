@@ -368,10 +368,11 @@ func catchSignal() {
 			logger.Info("shutting down server gracefully, SIGNAL NAME:", s)
 			StopRPC()
 			finish()
-			break //break is not necessary to add here as if server is closed our main function will end.
+			break // break is not necessary to add here as if server is closed our main function will end.
 		case s := <-reloadSignals:
-			logger.Debug("reloading, SIGNAL NAME:", s)
-			// todo: reload config? reload chains? reload auth/key? is really this needed?
+			logger.Debug("reloading SIGNAL received:", s)
+			reloadChains()
+			reloadServicers()
 		}
 	}
 }

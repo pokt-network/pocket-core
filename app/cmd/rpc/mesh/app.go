@@ -124,8 +124,8 @@ func StopRPC() {
 	cronJobs.Stop()
 	logger.Info("clean session job stopped!")
 
-	// Unregister node and metrics collectors
-	UnregisterMetrics()
+	// Stop prometheus server
+	StopPrometheusServer()
 }
 
 // StartRPC - Start mesh rpc server
@@ -145,7 +145,7 @@ func StartRPC(router *httprouter.Router) {
 	go initKeysHotReload()
 	go initChainsHotReload()
 	// initialize prometheus metrics
-	pocketTypes.InitGlobalServiceMetric(chains, logger, app.GlobalMeshConfig.PrometheusAddr, app.GlobalMeshConfig.PrometheusMaxOpenfiles)
+	StartPrometheusServer()
 	// instantiate all the http clients used to call Chains and Servicer
 	prepareHttpClients()
 	// read servicer
@@ -156,8 +156,6 @@ func StartRPC(router *httprouter.Router) {
 	initCrons()
 	// bootstrap cache
 	initCache()
-	// Register node and metrics collectors
-	RegisterMetrics()
 
 	srv = &http.Server{
 		ReadTimeout:       30 * time.Second,
@@ -183,7 +181,6 @@ func StartRPC(router *httprouter.Router) {
 	)
 
 	go func() {
-		logger.Info("start servicing at http://0.0.0.0:" + app.GlobalMeshConfig.RPCPort)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log2.Fatal(err)
 		}
