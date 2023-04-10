@@ -11,6 +11,7 @@ import (
 	"github.com/puzpuzpuz/xsync"
 	"github.com/robfig/cron/v3"
 	"io"
+	"io/ioutil"
 	log2 "log"
 	"net/http"
 	"strings"
@@ -116,6 +117,13 @@ func (node *fullNode) checkNodeEndpoint(endpoint string) error {
 			return
 		}
 	}(resp.Body)
+
+	// read the body just to allow http 1.x be able to reuse the connection
+	_, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		e := errors.New(fmt.Sprintf("Couldn't parse response body. Error: %s", err.Error()))
+		return e
+	}
 
 	isSuccess := resp.StatusCode == 200
 
