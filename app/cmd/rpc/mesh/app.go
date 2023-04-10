@@ -167,15 +167,23 @@ func StartRPC(router *httprouter.Router) {
 		Handler: http.TimeoutHandler(
 			router,
 			time.Duration(app.GlobalMeshConfig.ClientRPCTimeout)*time.Millisecond,
-			"Server Timeout Handling Request",
+			"server Timeout Handling Request",
 		),
 	}
 
 	go catchSignal()
 
-	logger.Info(fmt.Sprintf("start serving relay as mesh node for %d servicer in %d nodes", totalServicers, totalNodes))
+	logger.Info(
+		fmt.Sprintf(
+			"start serving relay as mesh node on http://0.0.0.0:%s for %d servicer in %d nodes",
+			app.GlobalMeshConfig.RPCPort,
+			totalServicers,
+			totalNodes,
+		),
+	)
 
 	go func() {
+		logger.Info("start servicing at http://0.0.0.0:" + app.GlobalMeshConfig.RPCPort)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log2.Fatal(err)
 		}

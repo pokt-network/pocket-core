@@ -29,12 +29,13 @@ func UpdateChains(c []pocketTypes.HostedBlockchain) (*pocketTypes.HostedBlockcha
 		if err := nodesTypes.ValidateNetworkIdentifier(chain.ID); err != nil {
 			return chains, errors.New(fmt.Sprintf("invalid ID: %s in network identifier in json", chain.ID))
 		}
+
+		m[chain.ID] = chain
 	}
 
-	chains = &pocketTypes.HostedBlockchains{
-		M: m,
-		L: sync.RWMutex{},
-	}
+	chains.L.Lock()
+	chains.M = m
+	chains.L.Unlock()
 
 	var chainsPath = app.GlobalMeshConfig.DataDir + app.FS + app.GlobalMeshConfig.ChainsName
 	var jsonFile *os.File
@@ -49,7 +50,7 @@ func UpdateChains(c []pocketTypes.HostedBlockchain) (*pocketTypes.HostedBlockcha
 		log2.Fatal(app.NewInvalidChainsError(err))
 	}
 	// create dummy input for the file
-	res, err := json.MarshalIndent(chains, "", "  ")
+	res, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		log2.Fatal(app.NewInvalidChainsError(err))
 	}
@@ -113,6 +114,7 @@ func loadHostedChains() *pocketTypes.HostedBlockchains {
 
 // reloadChains - reload chainsName file
 func reloadChains() {
+	logger.Debug("initializing chains reload process")
 	chainsPath := getChainsFilePath()
 	// if file exists open, else create and open
 	var jsonFile *os.File
@@ -151,6 +153,7 @@ func reloadChains() {
 	chains.L.Lock()
 	chains.M = m
 	chains.L.Unlock()
+	logger.Debug("chains reload process done")
 }
 
 // initHotReload - initialize keys and chains file change detection
