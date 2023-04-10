@@ -34,6 +34,10 @@ func GetCacheKey(height int, value string) (key string) {
 	return key
 }
 
+func IsBetween(target, minInclusive, maxInclusive int64) bool {
+	return minInclusive <= target && target <= maxInclusive
+}
+
 // SortedJSON takes any JSON and returns it sorted by keys. Also, all white-spaces
 // are removed.
 // This method can be used to canonicalize JSON to be returned by GetSignBytes,
