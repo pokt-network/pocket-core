@@ -23,7 +23,7 @@ workflows:
   # This workflow calls Reviewpad AI agent to summarize the pull request.
   - name: summarize
     description: Summarize the pull request
-    always-run: true
+    always-run: false
     if:
       # Summarize the pull requests when pull requests are opened or synchronized.
       - rule: ($eventType() == "synchronize" || $eventType() == "opened") && $state() == "open"
