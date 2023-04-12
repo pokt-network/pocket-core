@@ -3,6 +3,7 @@ package mesh
 import "github.com/pokt-network/pocket-core/app"
 
 type nodeFileItem struct {
+	Name string   `json:"name"`
 	URL  string   `json:"url"`
 	Keys []string `json:"keys"`
 }

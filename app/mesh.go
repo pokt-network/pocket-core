@@ -39,10 +39,10 @@ type MeshConfig struct {
 	ChainsHotReloadInterval int `json:"chains_hot_reload_interval"`
 
 	// Workers
-	WorkerStrategy     string `json:"worker_strategy"`
-	MaxWorkers         int    `json:"max_workers"`
-	MaxWorkersCapacity int    `json:"max_workers_capacity"`
-	WorkersIdleTimeout int    `json:"workers_idle_timeout"`
+	ServicerWorkerStrategy     string `json:"servicer_worker_strategy"`
+	ServicerMaxWorkers         int    `json:"servicer_max_workers"`
+	ServicerMaxWorkersCapacity int    `json:"servicer_max_workers_capacity"`
+	ServicerWorkersIdleTimeout int    `json:"servicer_workers_idle_timeout"`
 
 	// Servicer
 	ServicerPrivateKeyFile         string `json:"servicer_private_key_file"`
@@ -96,11 +96,6 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		// Hot Reload
 		KeysHotReloadInterval:   180000,
 		ChainsHotReloadInterval: 180000,
-		// Worker
-		WorkerStrategy:     "balanced",
-		MaxWorkers:         10,
-		MaxWorkersCapacity: 1000,
-		WorkersIdleTimeout: 10000,
 		// Servicer
 		ServicerPrivateKeyFile:         "key" + FS + "key.json",
 		ServicerRPCTimeout:             sdk.DefaultRPCTimeout,
@@ -111,6 +106,10 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ServicerRetryMaxTimes:          10,
 		ServicerRetryWaitMin:           5,
 		ServicerRetryWaitMax:           180,
+		ServicerWorkerStrategy:         "balanced",
+		ServicerMaxWorkers:             50,
+		ServicerMaxWorkersCapacity:     50000,
+		ServicerWorkersIdleTimeout:     10000,
 		// Node Check
 		NodeCheckInterval: 60,
 		// Session cache (in-memory) clean up interval (seconds)
@@ -120,8 +119,8 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		PrometheusAddr:            sdk.DefaultPocketPrometheusListenAddr,
 		PrometheusMaxOpenfiles:    sdk.DefaultPrometheusMaxOpenFile,
 		MetricsWorkerStrategy:     "lazy",
-		MetricsMaxWorkers:         10,
-		MetricsMaxWorkersCapacity: 1000,
+		MetricsMaxWorkers:         50,
+		MetricsMaxWorkersCapacity: 50000,
 		MetricsWorkersIdleTimeout: 10000,
 		MetricsReportInterval:     10,
 	}

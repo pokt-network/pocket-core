@@ -129,7 +129,7 @@ func NewWorkerPool(name string, strategyName string, maxWorkers, maxCapacity, id
 
 	var strategy pond.ResizingStrategy
 
-	switch app.GlobalMeshConfig.WorkerStrategy {
+	switch app.GlobalMeshConfig.ServicerWorkerStrategy {
 	case "lazy":
 		strategy = pond.Lazy()
 		break
