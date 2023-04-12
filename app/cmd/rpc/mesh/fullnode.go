@@ -14,58 +14,36 @@ import (
 	"io/ioutil"
 	log2 "log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
 
 // fullNode - represent the pocket client instance running that could handle 1 or N addresses (lean)
 type fullNode struct {
-	URL            string
-	Servicers      *xsync.MapOf[string, *servicer]
-	Status         *app.HealthResponse
-	Worker         *pond.WorkerPool
-	MetricsWorker  *Metrics
-	Crons          *cron.Cron
-	NeedResize     bool
-	ResizingWorker bool
+	Name          string
+	URL           string
+	Servicers     *xsync.MapOf[string, *servicer]
+	Status        *app.HealthResponse
+	Worker        *pond.WorkerPool
+	MetricsWorker *Metrics
+	Crons         *cron.Cron
 }
 
 // NewWorker - generate a new worker.
 func (node *fullNode) NewWorker() {
-	workerMaxCapacity := node.Servicers.Size() * app.GlobalMeshConfig.MaxWorkersCapacity
-
 	node.Worker = NewWorkerPool(
 		node.URL,
-		app.GlobalMeshConfig.WorkerStrategy,
-		app.GlobalMeshConfig.MaxWorkers,
-		workerMaxCapacity,
-		app.GlobalMeshConfig.WorkersIdleTimeout,
+		app.GlobalMeshConfig.ServicerWorkerStrategy,
+		app.GlobalMeshConfig.ServicerMaxWorkers,
+		app.GlobalMeshConfig.ServicerMaxWorkersCapacity,
+		app.GlobalMeshConfig.ServicerWorkersIdleTimeout,
 	)
 
 	node.MetricsWorker = NewWorkerPoolMetrics(
-		fmt.Sprintf("metrics of node %s", node.URL),
+		node.Name,
 		node.Worker,
 	)
-}
-
-// ResizeWorker - stop current worker and spam a new one.
-func (node *fullNode) ResizeWorker() {
-	if !node.NeedResize {
-		return
-	}
-
-	mutex.Lock()
-	node.ResizingWorker = true
-	mutex.Unlock()
-
-	node.Worker.StopAndWait()
-
-	node.NewWorker()
-
-	mutex.Lock()
-	node.NeedResize = false
-	node.ResizingWorker = false
-	mutex.Unlock()
 }
 
 // start - start worker and cron jobs
@@ -251,11 +229,24 @@ func (node *fullNode) scheduleNodeChecks() {
 }
 
 // createNode - returns a fullNode instance
-func createNode(url string) *fullNode {
+func createNode(urlStr, name string) *fullNode {
 	nodeCronJobsWorker := cron.New()
 
+	if name == "" {
+		u, err := url.Parse(urlStr)
+		if err != nil {
+			logger.Error("Unable to parse url of node", "err", err)
+			name = urlStr
+		} else {
+			name = u.Hostname()
+		}
+	}
+
+	logger.Debug(fmt.Sprintf("new node name=%s url=%s", name, urlStr))
+
 	node := &fullNode{
-		URL:       url,
+		Name:      name,
+		URL:       urlStr,
 		Servicers: xsync.NewMapOf[*servicer](),
 		Status:    nil,
 		Crons:     nodeCronJobsWorker,
@@ -274,8 +265,7 @@ func connectivityChecks(onlyFor mapset.Set[string]) {
 		totalNodes = onlyFor.Cardinality()
 	}
 	connectivityWorkerPool := pond.New(
-		totalNodes, totalNodes, pond.MinWorkers(totalNodes), // as fast as possible.
-		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
+		totalNodes, totalNodes, pond.MinWorkers(totalNodes),
 		pond.Strategy(pond.Eager()),
 	)
 
@@ -320,7 +310,7 @@ func connectivityChecks(onlyFor mapset.Set[string]) {
 
 	firstCheckWorker := pond.New(
 		totalNodes, totalNodes, pond.MinWorkers(totalNodes),
-		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.WorkersIdleTimeout)*time.Millisecond),
+		pond.IdleTimeout(time.Duration(app.GlobalMeshConfig.ServicerWorkersIdleTimeout)*time.Millisecond),
 		pond.Strategy(pond.Eager()),
 	)
 

@@ -36,7 +36,11 @@ var nodeFileSchema = `
   "items": [
     {
       "type": "object",
+      "required": ["url", "keys"],
       "properties": {
+        "name": {
+          "type": "string"
+		},
         "url": {
           "type": "string"
         },

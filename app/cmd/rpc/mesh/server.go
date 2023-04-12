@@ -132,7 +132,7 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 				var node *fullNode
 
 				if v, ok := nodes.Load(n.URL); !ok {
-					node = createNode(n.URL)
+					node = createNode(n.URL, n.Name)
 					nodes.Store(n.URL, node)
 				} else {
 					node = v
@@ -178,7 +178,7 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 			var node *fullNode
 
 			if v, ok := nodes.Load(n.ServicerUrl); !ok {
-				node = createNode(n.ServicerUrl)
+				node = createNode(n.ServicerUrl, "")
 				nodes.Store(n.ServicerUrl, node)
 			} else {
 				node = v
@@ -451,25 +451,9 @@ func initCache() {
 				continue
 			}
 
-			// the node worker pool is dynamic so if the keys are reloaded and the current worker is reloaded + modified
-			// it will need to be resized, for that the current way is stop the current worker and create a new one
-			// so at that moment the node will have this flag on "true" until it get done.
-			if servicerNode.Node.ResizingWorker {
-				go func(s *servicer, relay *pocketTypes.Relay) {
-					for {
-						time.Sleep(10 * time.Millisecond)
-						if !s.Node.ResizingWorker {
-							s.Node.Worker.Submit(func() {
-								notifyServicer(relay)
-							})
-						}
-					}
-				}(servicerNode, relay)
-			} else {
-				servicerNode.Node.Worker.Submit(func() {
-					notifyServicer(relay)
-				})
-			}
+			servicerNode.Node.Worker.Submit(func() {
+				notifyServicer(relay)
+			})
 		}
 	}
 }

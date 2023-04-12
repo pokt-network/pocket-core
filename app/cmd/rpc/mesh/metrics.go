@@ -102,6 +102,30 @@ var (
 			Help:      "Number of tasks that completed either successfully or with panic",
 		},
 		[]string{NodeWorkerLabel})
+	minWorker = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "node_min_workers",
+			Help:      "Number min workers of node pool",
+		},
+		[]string{NodeWorkerLabel})
+	maxWorker = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "node_max_workers",
+			Help:      "Number max workers of node pool",
+		},
+		[]string{NodeWorkerLabel})
+	maxCapacity = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "node_max_capacity",
+			Help:      "Number max capacity of node pool",
+		},
+		[]string{NodeWorkerLabel})
 
 	// internal worker metrics
 	internalRunningWorkers = stdPrometheus.NewGaugeVec(
@@ -158,6 +182,30 @@ var (
 			Subsystem: ServiceMetricsNamespace,
 			Name:      "metrics_tasks_completed_total",
 			Help:      "Number of tasks that completed either successfully or with panic",
+		},
+		[]string{MetricsWorkerLabel})
+	internalMinWorker = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "metrics_min_workers",
+			Help:      "Number min workers of metrics pool",
+		},
+		[]string{MetricsWorkerLabel})
+	internalMaxWorker = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "metrics_max_workers",
+			Help:      "Number max workers of metrics pool",
+		},
+		[]string{MetricsWorkerLabel})
+	internalMaxCapacity = stdPrometheus.NewGaugeVec(
+		stdPrometheus.GaugeOpts{
+			Namespace: ModuleName,
+			Subsystem: ServiceMetricsNamespace,
+			Name:      "metrics_max_capacity",
+			Help:      "Number max capacity of metrics pool",
 		},
 		[]string{MetricsWorkerLabel})
 )
@@ -258,6 +306,9 @@ func (m *Metrics) report() {
 	successTasksTotal.With(nodeWorkerLabel).Set(float64(m.pool.SuccessfulTasks()))
 	failedTasksTotal.With(nodeWorkerLabel).Set(float64(m.pool.FailedTasks()))
 	completedTasksTotal.With(nodeWorkerLabel).Set(float64(m.pool.CompletedTasks()))
+	minWorker.With(nodeWorkerLabel).Set(float64(m.pool.MinWorkers()))
+	maxWorker.With(nodeWorkerLabel).Set(float64(m.pool.MaxWorkers()))
+	maxCapacity.With(nodeWorkerLabel).Set(float64(m.pool.MaxCapacity()))
 
 	metricsWorkerLabel := map[string]string{MetricsWorkerLabel: m.name}
 	// internal metrics
@@ -268,6 +319,9 @@ func (m *Metrics) report() {
 	internalSuccessTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.SuccessfulTasks()))
 	internalFailedTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.FailedTasks()))
 	internalCompletedTasksTotal.With(metricsWorkerLabel).Set(float64(m.worker.CompletedTasks()))
+	internalMinWorker.With(metricsWorkerLabel).Set(float64(m.worker.MinWorkers()))
+	internalMaxWorker.With(metricsWorkerLabel).Set(float64(m.worker.MaxWorkers()))
+	internalMaxCapacity.With(metricsWorkerLabel).Set(float64(m.worker.MaxCapacity()))
 }
 
 // AddServiceMetricErrorFor - add to prometheus metrics an error for a servicer
@@ -456,6 +510,9 @@ func RegisterMetrics() {
 		successTasksTotal,
 		failedTasksTotal,
 		completedTasksTotal,
+		minWorker,
+		maxWorker,
+		maxCapacity,
 		// internal collectors
 		internalRunningWorkers,
 		internalIdleWorkers,
@@ -464,6 +521,9 @@ func RegisterMetrics() {
 		internalSuccessTasksTotal,
 		internalFailedTasksTotal,
 		internalCompletedTasksTotal,
+		internalMinWorker,
+		internalMaxWorker,
+		internalMaxCapacity,
 	)
 }
 

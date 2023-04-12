@@ -93,14 +93,7 @@ func reloadServicers() {
 		return true
 	})
 	removedServicers.Each(func(address string) bool {
-		if s, ok := servicerMap.LoadAndDelete(address); ok {
-			_, loaded := s.Node.Servicers.LoadAndDelete(address)
-			if loaded {
-				mutex.Lock() // lock it because could be in use by rpc
-				s.Node.NeedResize = true
-				mutex.Unlock()
-			}
-		}
+		servicerMap.Delete(address)
 		return true
 	})
 
@@ -138,10 +131,6 @@ func reloadServicers() {
 			}
 
 			s.Node.Servicers.Store(address, s)
-
-			mutex.Lock() // lock it because could be in use by rpc
-			s.Node.NeedResize = true
-			mutex.Unlock()
 		}
 		orphanServicers.Delete(address) // just in case it remain on orphans one.
 		return true
@@ -156,12 +145,6 @@ func reloadServicers() {
 
 		newServicersList := make([]string, 0)
 		totalNodes := nodesMap.Size()
-
-		nodesMap.Range(func(key string, node *fullNode) bool {
-			node.ResizeWorker()
-
-			return true
-		})
 
 		servicerMap.Range(func(key string, s *servicer) bool {
 			newServicersList = append(newServicersList, s.Address.String())

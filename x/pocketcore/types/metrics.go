@@ -73,7 +73,7 @@ func (sm *ServiceMetrics) getValidatorLabel(nodeAddress *sdk.Address) []string {
 	return []string{"validator_address", nodeAddress.String()}
 }
 
-// startPrometheusServer starts a Prometheus HTTP server, listening for metrics
+// StartPrometheusServer - starts a Prometheus HTTP server, listening for metrics
 // collectors on addr.
 func (sm *ServiceMetrics) StartPrometheusServer(addr string, maxOpenConn int) *http.Server {
 	srv := &http.Server{
