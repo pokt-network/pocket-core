@@ -129,12 +129,14 @@ This guide assume you already have a Servicer properly setup and running. If not
 }
 ```
 3. Create Servicer private key file with one of the  following formats into the path you set on `config.json`:
+Fallback Format:
 ```json
 [
   {
     // servicer private key
     "priv_key": "aaabbbbcccccddd",
     // servicer url/ip where mesh node can reach the servicer node to check health, proxy requests and notify relays
+    // NOTE: name will be hostname parsed from servicer_url
     "servicer_url": "http://localhost:8081"
   },
   {
@@ -142,6 +144,7 @@ This guide assume you already have a Servicer properly setup and running. If not
   }
 ]
 ```
+New Format:
 ```json
 [
   {
