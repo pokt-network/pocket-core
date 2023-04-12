@@ -19,16 +19,16 @@ labels:
 # Define the list of workflows to be run by Reviewpad.
 # A workflow is a list of actions that will be executed based on the defined rules.
 # For more details see https://docs.reviewpad.com/guides/syntax#workflow.
-workflows:
-  # This workflow calls Reviewpad AI agent to summarize the pull request.
-  - name: summarize
-    description: Summarize the pull request
-    always-run: false
-    if:
-      # Summarize the pull requests when pull requests are opened or synchronized.
-      - rule: ($eventType() == "synchronize" || $eventType() == "opened") && $state() == "open"
-        extra-actions:
-          - $summarize()
+# workflows:
+#   # This workflow calls Reviewpad AI agent to summarize the pull request.
+#   - name: summarize
+#     description: Summarize the pull request
+#     always-run: true
+#     if:
+#       # Summarize the pull requests when pull requests are opened or synchronized.
+#       - rule: ($eventType() == "synchronize" || $eventType() == "opened") && $state() == "open"
+#         extra-actions:
+#           - $summarize()
 
   # This workflow assigns the most relevant reviewer to pull requests.
   # This helps guarantee that pull requests are reviewed by at least one person.
