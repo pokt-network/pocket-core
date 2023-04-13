@@ -19,6 +19,8 @@ type MeshConfig struct {
 	ChainsName             string `json:"chains_name"`
 	ClientRPCTimeout       int64  `json:"client_rpc_timeout"`
 	LogLevel               string `json:"log_level"`
+	LogChainRequest        bool   `json:"log_chain_request"`
+	LogChainResponse       bool   `json:"log_chain_response"`
 	UserAgent              string `json:"user_agent"`
 	AuthTokenFile          string `json:"auth_token_file"`
 	JSONSortRelayResponses bool   `json:"json_sort_relay_responses"`
@@ -81,6 +83,8 @@ func defaultMeshConfig(dataDir string) MeshConfig {
 		ChainsName:             sdk.DefaultChainsName,
 		ClientRPCTimeout:       sdk.DefaultRPCTimeout,
 		LogLevel:               "*:info, *:error",
+		LogChainRequest:        false,
+		LogChainResponse:       false,
 		UserAgent:              sdk.DefaultUserAgent,
 		AuthTokenFile:          "auth" + FS + "mesh.json",
 		JSONSortRelayResponses: sdk.DefaultJSONSortRelayResponses,
