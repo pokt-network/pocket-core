@@ -95,7 +95,6 @@ func loadServicersFromFile() (nodes *xsync.MapOf[string, *fullNode], servicers *
 	servicers = xsync.NewMapOf[*servicer]()
 
 	path := getServicersFilePath()
-	logger.Info("reading private key path=" + path)
 
 	fallbackSchemaLoader := gojsonschema.NewSchemaLoader()
 	fallbackSchemaStringLoader := gojsonschema.NewStringLoader(fallbackNodeFileSchema)

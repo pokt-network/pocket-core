@@ -217,8 +217,17 @@ func ExecuteBlockchainHTTPRequest(payload, url, userAgent string, basicAuth pock
 	if app.GlobalMeshConfig.JSONSortRelayResponses {
 		body = []byte(sortJSONResponse(string(body)))
 	}
-	logger.Debug(fmt.Sprintf("executing blockchain request:\nURL=%s\nMETHOD=%s\nREQ=%s\nSTATUS=%d\nRES=%s", url, m, payload, resp.StatusCode, string(body)))
-	// return
+
+	logStr := fmt.Sprintf("executing blockchain request:\nURL=%s\nMETHOD=%s\nSTATUS=%d\n", url, m, resp.StatusCode)
+
+	if !app.GlobalMeshConfig.LogChainRequest {
+		logStr = logStr + fmt.Sprintf("REQ=%s\n", payload)
+	}
+
+	if !app.GlobalMeshConfig.LogChainResponse {
+		logStr = logStr + fmt.Sprintf("RES=%s\n", string(body))
+	}
+
 	return string(body), nil
 }
 
