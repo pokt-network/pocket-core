@@ -17,7 +17,7 @@ var fallbackNodeFileSchema = `
           "type": "string"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "priv_key",
         "servicer_url"
@@ -37,6 +37,7 @@ var nodeFileSchema = `
     {
       "type": "object",
       "required": ["url", "keys"],
+	  "additionalProperties": true,
       "properties": {
         "name": {
           "type": "string"
@@ -54,12 +55,7 @@ var nodeFileSchema = `
             }
           ]
         }
-      },
-      "additionalProperties": false,
-      "required": [
-        "url",
-        "keys"
-      ]
+      }
     }
   ]
 }
